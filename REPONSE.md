@@ -1,6 +1,13 @@
 # Réponse de Claude
 
-*Mis à jour le 9 octobre 2026, 19 h.*
+*Mis à jour le 9 octobre 2026, 19 h 20.*
+
+## Atelier mis à jour : retélécharge-le
+
+Le wiki a révisé sa façon de noter les decks, sans que le jeu change : tous les scores baissent d'environ 10 à 14 %.
+Le deck chimère passe à 7 235, « Essai Dragon Ciel » à 7 795 (4e de ta collection), et le meilleur deck que tu
+possèdes, Esprit Nature, Lame de la forêt, Keria, Dragon Ciel, fait 8 512. Retélécharge
+[`interface/atelier-spam.html`](interface/atelier-spam.html) : tes decks enregistrés restent.
 
 ## Ton envoi du 9 octobre (dossier Ticroco) : le jeu garde tes parties
 
