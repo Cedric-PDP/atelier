@@ -30,11 +30,12 @@ Pages : [Atelier](https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE) · [Journal
 
 Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` porte l'Atelier hors ligne, le mode d'emploi des envois et nos réponses (voir CLAUDE.md, « Le PC perso »).
 
-- [x] Premier envoi (2026-10-09, `Ticroco.zip`) : le jeu garde un replay de chaque partie (`LocalLow\Ticroco\Spam\replays`). Les 2 parties sont dans le Journal (en-tête seulement, `source` = `pc-perso@31362e4`).
+- [x] Premier envoi (2026-10-09, `Ticroco.zip`) : le jeu garde un replay de chaque partie (`LocalLow\Ticroco\Spam\replays`). Les 2 parties sont dans le Journal (en-tête seulement, `source` = `pc-perso@bbfb1ca`).
 - [ ] Décoder les messages binaires des replays `.srpl` (script Node dans `scripts/`) : tours, attaques, boutique, bans, absorption. Puis compléter les parties du Journal (`timeline`, `shop`, `bans`) et répondre aux règles à vérifier ci-dessus. **En cours** : session « Replays » de l'orchestratrice (2026-10-09), lecteur dans `scripts/replay/`.
 - [ ] Commande PowerShell qui exporte du registre les réglages du jeu (PlayerPrefs Unity, qui peuvent contenir des jetons de connexion) : préparée puis écartée, le contrôle de sécurité d'une session l'a refusée. Décision de l'utilisateur ; peu utile si les replays suffisent.
 - [ ] Le Journal sur le PC perso : en faire aussi une copie hors ligne (lecture seule, instantané de la base) ? Décision de l'utilisateur.
-- [ ] Page Pont : la garder telle quelle, la supprimer, ou la réduire à un renvoi vers GitHub ? Décision de l'utilisateur.
+- [ ] Si le décodage des replays marche, les parties viendront seulement des replays : plus besoin de mécanisme ni de page pour en ajouter (décision de l'utilisateur, 2026-10-09). Cela vise l'analyse de captures et la saisie manuelle du Journal, et le Pont.
+- [ ] Page Pont : plus nécessaire (ligne ci-dessus). La supprimer seulement si l'utilisateur le demande.
 
 ## Journal
 
@@ -56,4 +57,4 @@ Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` por
 - [ ] CLAUDE.md, à valider par l'utilisateur :
   - le plan du dépôt, avec `pont/`, `journal/` et les nouveaux scripts ;
   - la procédure de recalcul par version, déjà écrite par « Data collection ».
-- [ ] Skill `spam-journal` : le déplacer de `~/.claude/skills` vers `spam-atelier/.claude/skills/` ? Décision de l'utilisateur.
+- [x] Skill `spam-journal` déplacé dans `.claude/skills/` du projet (2026-10-09) : il n'apparaît plus dans les sessions des autres projets.

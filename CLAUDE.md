@@ -34,7 +34,7 @@ branche GitHub `pc-perso` (section « Le PC perso » ci-dessous).
 - **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Procédure d'analyse des
   captures, barème de certitude et schéma dans [journal/README.md](journal/README.md) ; smoke =
   `node journal/page/smoke_journal.js journal/journal-spam.html` (doit finir par `SMOKE OK`). Le skill
-  utilisateur `spam-journal` (`~/.claude/skills/`) ne fait que pointer vers ce README.
+  du projet `spam-journal` (`.claude/skills/`) ne fait que pointer vers ce README.
 - **Pont** : conçu pour que l'utilisateur y dépose depuis son PC perso les dossiers du jeu, il est inutilisable
   là-bas (compte d'organisation). Il reste publié mais ne sert plus et n'évolue plus ; son mode d'emploi (chemins,
   commande PowerShell, fichiers exclus) est repris dans le README de la branche `pc-perso`.
