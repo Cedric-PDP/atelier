@@ -154,8 +154,8 @@ section « Le PC perso ». Ici, seulement ce qui touche le Journal.
    partie du Journal par entrée.
    - Cartes : les uuid de `MyCards` / `OpponentCards` sont les `id` de `spam/versions/<v>/js/model.json` ; le numéro
      est son champ `number`.
-   - `result` : `V` si `WinnerId` = `AccountId`, sinon `D`. `opp.name` = `OpponentName`. `mode` : `GameMode` 0 =
-     `normal`. `turns` = `TurnCount`. `date` = `StartUtc` (ISO). `Seat` n'est pas encore relié à `first`.
+   - `result` : `N` si `IsDraw`, sinon `V` si `WinnerId` = `AccountId`, sinon `D`. `opp.name` = `OpponentName`.
+     `mode` : `GameMode` 0 (Casual) = `normal`. `turns` = `TurnCount`. `date` = `StartUtc` (ISO). `Seat` n'est pas encore relié à `first`.
    - Id : `AAAA-MM-JJ-HHMM-xxxx`, à l'heure de Paris, `xxxx` = les 4 derniers chiffres du numéro du replay
      (`match-<n>.srpl`).
    - Tant que les `.srpl` ne sont pas décodés : `evidence.coverage` dit « en-tête du replay », et `gaps` couvre
