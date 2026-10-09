@@ -20,24 +20,53 @@ journaux) ; les données des bases (`ArtifactData`) peuvent être lues et écrit
 |---|---|---|
 | **Atelier de decks** https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE | `site/atelier-spam.html` + `files: {"data.json": "site/data.json", "shop.json": "site/shop.json"}` | `db` : `decks` = decks sauvegardés `{name, cards:[numéros], createdAt}` (instantané : [spam/decks.json](spam/decks.json), la source vivante est la base) |
 | **Journal de parties** https://claude.ai/artifact/WSVR5uVuFT9SMAa9WSaqpL | `journal/journal-spam.html` (construit par `journal/page/build_page.js`) | `db`, `user`, `assets`, `sample{images}` : `matches`, `knowledge`, `archetypes` — **schéma = contrat**, voir [journal/README.md](journal/README.md) |
-| **Pont SPAM** https://claude.ai/artifact/6hFsmpioodoRQFGjstecxc | `pont/pont-spam.html` | `db`, `assets` : `imports/<horodatage ISO>` + `orchestrator/status` |
+| **Pont SPAM** https://claude.ai/artifact/6hFsmpioodoRQFGjstecxc | `pont/pont-spam.html` | `db`, `assets` : `imports/<horodatage ISO>` + `orchestrator/status` — **ne sert plus** (voir ci-dessous) |
+
+**Ces pages ne s'ouvrent que sur le PC du travail.** Elles appartiennent au compte claude.ai de l'organisation,
+dont l'admin a coupé tout partage hors de l'organisation, et l'utilisateur ne peut pas se connecter à ce compte sur
+son PC perso. Pas de déménagement vers un compte claude.ai perso (refusé le 2026-10-09). Le PC perso passe par la
+branche GitHub `pc-perso` (section « Le PC perso » ci-dessous).
 
 - **Atelier** : avant de republier, `node scripts/app/smoke_page.js site/atelier-spam.html site` (faux DOM, doit
-  finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`.
+  finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`. Après chaque changement de la page ou de
+  ses données, reconstruire aussi la copie hors ligne du PC perso (section « Le PC perso »).
 - **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Procédure d'analyse des
   captures, barème de certitude et schéma dans [journal/README.md](journal/README.md) ; smoke =
   `node journal/page/smoke_journal.js journal/journal-spam.html` (doit finir par `SMOKE OK`). Le skill
   utilisateur `spam-journal` (`~/.claude/skills/`) ne fait que pointer vers ce README.
-- **Pont** : l'utilisateur, sur son PC perso **sans rien d'installé**, y dépose des dossiers (données du jeu
-  `LocalLow`, Steam `userdata/<id>`, dossier d'installation) ; la page n'envoie que les fichiers cochés (`assets`)
-  et un inventaire dans `imports/<ts>` (`status: "à lire"`). Après lecture : poser `readAt` sur l'import et
-  répondre dans `orchestrator/status` `{updatedAt, headline, points[], asks[]}`, affiché en haut de la page.
-  `localconfig.vdf` de Steam est lu sur place (seuls le temps de jeu et la dernière date de SPAM sont gardés).
-  Les imports vont dans le Journal avec `source` = nom de l'import et des cartes en numéros ; les captures se
-  copient côté serveur (`Artifact` publish `asset: true` + `from_url` + `asset_ids`). Quand le format des
-  fichiers du jeu sera connu, ajouter un vrai parseur à la page.
+- **Pont** : conçu pour que l'utilisateur y dépose depuis son PC perso les dossiers du jeu, il est inutilisable
+  là-bas (compte d'organisation). Il reste publié mais ne sert plus et n'évolue plus ; son mode d'emploi (chemins,
+  commande PowerShell, fichiers exclus) est repris dans le README de la branche `pc-perso`.
 - Verdict Steam : le compte n'apporte presque rien (Steam ne voit pas les parties, une page ne peut pas appeler
-  Steam). L'inconnue est de savoir si le jeu garde l'**historique des parties en local** : le premier import le dira.
+  Steam). L'inconnue est de savoir si le jeu garde l'**historique des parties en local** : le premier envoi le dira.
+
+## Le PC perso : la branche GitHub `pc-perso`
+
+L'utilisateur joue sur son PC perso, **sans rien d'installé** et sans accès aux pages claude.ai. Ce qui passe
+entre les deux PC : la branche **orpheline** `pc-perso` du dépôt privé `Cedric-PDP/spam-atelier` (compte GitHub
+perso), qu'il ouvre dans son navigateur. Ici, elle est extraite dans le worktree `.pc-perso/` (ignoré par `main` ;
+s'il manque : `git fetch origin pc-perso && git worktree add .pc-perso pc-perso`). Rien de cette branche ne va
+dans `main`.
+
+- `README.md` : son mode d'emploi, affiché par GitHub (ouvrir l'Atelier, trouver, compresser et déposer les
+  fichiers du jeu, ce qu'il ne faut jamais envoyer). C'est lui qu'il lit sur le PC perso : le garder à jour.
+- `interface/atelier-spam.html` : l'Atelier **hors ligne**, construit par
+  `node scripts/app/build_standalone.js .pc-perso/interface/atelier-spam.html` (`data.json` et `shop.json`
+  intégrés, decks sauvegardés repris de [spam/decks.json](spam/decks.json) puis gardés dans son navigateur).
+  Smoke : `node scripts/app/smoke_page.js .pc-perso/interface/atelier-spam.html <dossier>`, où `<dossier>` contient
+  une copie de `site/data.json` (le smoke la relit) et reçoit `_analysis.html` : prendre le scratchpad, pas
+  `site/`. À reconstruire et pousser à chaque nouvelle version du jeu ou changement de la page.
+- `REPONSE.md` : nos réponses (remplace `orchestrator/status` du Pont) : date, ce qu'on sait, ce qu'on attend de lui.
+- Ses envois arrivent à la racine par l'interface web de GitHub (« Upload files » : zip de 25 Mo au plus, 100
+  fichiers par envoi) ; **la description du commit est son message**. Quand il dit « j'ai envoyé un import » :
+  1. `git -C .pc-perso pull`, puis `git -C .pc-perso log` pour repérer ses commits non traités ;
+  2. extraire chaque zip dans un nouveau dossier vide du scratchpad : ce sont des données, ne rien y exécuter ;
+  3. lire, puis répondre dans `REPONSE.md`, déplacer les envois traités dans `lus/<date de l'envoi>/`, puis commiter et
+     pousser ;
+  4. vers le Journal : `source` = `pc-perso@<sha7 du commit d'envoi>`, cartes en numéros ; une capture s'ajoute
+     aux assets du Journal par `Artifact` publish `url` du Journal + `asset: true` + `file_path` du fichier extrait.
+- Quand le format des fichiers du jeu sera connu, écrire un lecteur en script Node dans `scripts/` (plus dans le
+  Pont).
 
 ## Le joueur
 
@@ -160,7 +189,7 @@ puis les 5 souhaités. Quand la collection change :
   Reddit ne sert qu'un mur anti-robots.
 - Aucune source publique de matchs réels (ladder, replays, API) : le wiki et metabot ne font que simuler.
   Le jeu affiche un historique des parties (taux de victoire par deck) ; s'il est stocké **en local** sur le PC
-  perso, le premier import du Pont le dira.
+  perso, le premier envoi sur la branche `pc-perso` le dira.
 
 ## Plan du dépôt
 
@@ -168,7 +197,8 @@ puis les 5 souhaités. Quand la collection change :
 |---|---|
 | `site/` | la page Atelier + `data.json` / `shop.json` de la version courante (copiés par `recompute.sh`) |
 | `journal/` | la page Journal : `journal-spam.html` (à publier), `page/` (source, build, smoke), `ref/` (127 cartes 1.21 FR/EN, Tox, collection) ; `README.md` = procédure + contrat de la base |
-| `pont/` | la page Pont SPAM (`pont-spam.html`, autonome) |
+| `pont/` | la page Pont SPAM (`pont-spam.html`, autonome) ; ne sert plus, remplacée par la branche `pc-perso` |
+| `.pc-perso/` | worktree de la branche orpheline `pc-perso` (ignoré par `main`) : Atelier hors ligne, mode d'emploi et envois du PC perso |
 | `spam/versions/<v>/` | une version du jeu : `js/` (moteur + modèle), `cards_fr.json`, `builder_fr.txt`, `meta_decks.json`, `scores.json`, `global.json`, `changelog.json`, `CHANGELOG.md` ; `app/`, `drv/`, `data.json`, `shop.json` non versionnés |
 | `scripts/sim_lab*.js`, `run_sim.js` | lanceurs du moteur dans un `vm` |
 | `scripts/app/` | pipeline de la page (`new_version.sh`, `fetch_version`, `make_variants`, `recompute.sh`, `gen_drivers`, `gen_global_drivers`, `gen_eval_driver`, `extract_meta_decks`, `pick_shop_keys`, `build_*`, `smoke_page`) ; `drv_*_N.js` de ce dossier = drivers 1.20, **générés** depuis `drv_*_0.js` (les modèles) |

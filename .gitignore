@@ -24,3 +24,6 @@ spam/versions/*/shop.json
 node_modules/
 .DS_Store
 Thumbs.db
+
+# Worktree of the orphan branch `pc-perso` (interface and uploads for the personal PC, see CLAUDE.md)
+.pc-perso/

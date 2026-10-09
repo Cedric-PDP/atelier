@@ -25,12 +25,16 @@ Pages : [Atelier](https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE) · [Journal
 - [ ] **Prolongation à partir du tour 20** : elle est dans les constantes du moteur mais n'est pas simulée.
 - [ ] Ban d'une carte du deck : MIS DE CÔTÉ. Jamais vu en jeu, peut-être réservé au mode Classé. À rouvrir seulement si une capture le montre.
 
-## Pont, depuis le PC perso
+## PC perso (branche GitHub `pc-perso`)
 
-- [ ] Premier envoi depuis le PC perso : dossier de l'éditeur dans `AppData\LocalLow`, `Steam\userdata\<numéro>`, installation du jeu. Il dira si le jeu garde l'historique des parties en local.
+Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` porte l'Atelier hors ligne, le mode d'emploi des envois et nos réponses (voir CLAUDE.md, « Le PC perso »).
+
+- [ ] Premier envoi depuis le PC perso : dossier du jeu dans `AppData\LocalLow`, captures F12, sauvegarde cloud. Il dira si le jeu garde l'historique des parties en local.
 - [ ] Après ce premier envoi :
-  - ajouter au Pont un lecteur pour le format trouvé ;
-  - transférer les captures et les parties vers le Journal, avec `source` = le nom de l'envoi et les cartes en numéros, selon `journal/README.md`.
+  - écrire un lecteur (script Node dans `scripts/`) pour le format trouvé ;
+  - transférer les captures et les parties vers le Journal, avec `source` = `pc-perso@<commit>` et les cartes en numéros, selon `journal/README.md`.
+- [ ] Le Journal sur le PC perso : en faire aussi une copie hors ligne (lecture seule, instantané de la base) ? Décision de l'utilisateur.
+- [ ] Page Pont : la garder telle quelle, la supprimer, ou la réduire à un renvoi vers GitHub ? Décision de l'utilisateur.
 
 ## Journal
 
