@@ -4,28 +4,41 @@
 //   global.json    the fixed 24,000-deck global sample scored by this version (s1 by sample index)
 //   changelog.json what changed (cards, Tox, references, card impact, player's decks, wiki meta decks, notes)
 //   CHANGELOG.md   the same, readable in the repo
+//   revision.json  only when the wiki changed its ENGINE under the same game version (1.21 on 2026-10-09: same cards, new
+//                  scoring): that revision's own effect on the same 24,000 decks, explained first in the notes, since
+//                  every « prev → ver » gap then mixes the game patch and the new scoring. Versioned, so reruns keep it.
 // and embeds the changelog in spam/versions/<ver>/data.json as data.changelog (+ prev scores aligned on data.decks so
 // the page can show « 1.20 → 1.21 » on any deck). Without <prev> it only writes scores.json and global.json.
-// Usage: node scripts/app/build_changelog.js <repoRoot>/spam <ver> [<prev>]
+// Usage: node scripts/app/build_changelog.js <repoRoot>/spam <ver> [<prev>] [--rev-from=<dir>]
+//   --rev-from  the previous engine revision of <ver>: <dir>/global.json + <dir>/js/model.json (e.g. `git show` of the
+//               archived files). Without it, a revision is detected when the global.json about to be overwritten
+//               carries another engineHash (archives carry it from 2026-10-09 on).
 const fs=require('fs'),path=require('path');
-const [D,VER,PREV]=process.argv.slice(2);if(!VER)throw new Error('usage: build_changelog.js <spamDir> <ver> [<prev>]');
+const ARGS=process.argv.slice(2),[D,VER,PREV]=ARGS.filter(a=>!a.startsWith('--'));if(!VER)throw new Error('usage: build_changelog.js <spamDir> <ver> [<prev>] [--rev-from=<dir>]');
+const REV_FROM=(ARGS.find(a=>a.startsWith('--rev-from='))||'').slice('--rev-from='.length);
 const JP=p=>JSON.parse(fs.readFileSync(p,'utf8'));const W=(p,o)=>fs.writeFileSync(p,typeof o==='string'?o:JSON.stringify(o));
 const V=path.join(D,'versions',VER),PV=PREV?path.join(D,'versions',PREV):null;
 const data=JP(path.join(V,'data.json'));
+const mCur=JP(path.join(V,'js/model.json')),HASH=mCur.engineHash;
 const dkey=d=>d.slice().sort((a,b)=>a-b).join('-');
 const poolNums=data.cards.map(c=>c.n);
 const decksOf=dt=>{const k=dt.decks.k,n=k.length/4,out=new Array(n);for(let i=0;i<n;i++)out[i]=[0,1,2,3].map(j=>dt.cards[parseInt(k[4*i+j],32)].n);return out};
+// ---- previous engine revision of this same version (read before the archives below are overwritten) ----
+const gF=path.join(V,'global.json');let revFrom=null;
+if(REV_FROM)revFrom={g:JP(path.join(REV_FROM,'global.json')).s1,m:JP(path.join(REV_FROM,'js/model.json'))};
+else if(fs.existsSync(gF)){const g=JP(gF);if(g.engineHash&&g.engineHash!==HASH)revFrom={g:g.s1,m:{engineHash:g.engineHash,noTalent:g.noTalent}}}
+if(revFrom&&revFrom.m.engineHash===HASH)throw new Error('--rev-from has the same engineHash as '+VER+': '+HASH);
 // ---- this version's archives (always) ----
 const newDecks=decksOf(data);
-W(path.join(V,'scores.json'),{version:VER,lostMethod:data.meta.lostMethod||'dead-card',d:newDecks.map(dkey),s1:data.decks.s1,s0:data.decks.s0});
+W(path.join(V,'scores.json'),{version:VER,engineHash:HASH,lostMethod:data.meta.lostMethod||'dead-card',d:newDecks.map(dkey),s1:data.decks.s1,s0:data.decks.s0});
 const globalRows=dir=>{const s=[];for(const f of fs.readdirSync(dir).filter(f=>/^g_(res_|old_)?\d+\.json$/.test(f)))for(const r of JP(path.join(dir,f)).rows)s[r[0]]=r[1];return s};
-const gNew=globalRows(path.join(V,'app'));W(path.join(V,'global.json'),{version:VER,s1:gNew});
+const gNew=globalRows(path.join(V,'app'));W(gF,{version:VER,engineHash:HASH,noTalent:mCur.noTalent,s1:gNew});
 if(!PREV){console.log('scores + global written for',VER,'(no previous version: no changelog)');process.exit(0)}
 
 // ---- inputs of the previous version ----
 const prevScores=JP(path.join(PV,'scores.json')),gOld=JP(path.join(PV,'global.json')).s1;
 const prevBy=new Map();prevScores.d.forEach((k,i)=>prevBy.set(k,i));
-const mNew=JP(path.join(V,'js/model.json')),mOld=JP(path.join(PV,'js/model.json'));
+const mNew=mCur,mOld=JP(path.join(PV,'js/model.json'));
 const metaNew=JP(path.join(V,'app/meta_eval.json')).rows,metaOld=JP(path.join(V,'app/meta_eval_prev.json')).rows;
 const listNew=JP(path.join(V,'meta_decks.json')).decks.map(dkey),listOld=fs.existsSync(path.join(PV,'meta_decks.json'))?JP(path.join(PV,'meta_decks.json')).decks.map(dkey):[];
 const NOWN=data.meta.nOwn,own=new Set(poolNums.slice(0,NOWN)),wish=new Set(poolNums.slice(NOWN));
@@ -69,11 +82,30 @@ const toxChanges=[];if(fs.existsSync(toxOldF)){const toxOld=JP(toxOldF).tox;for(
 const gd=JP(path.join(D,'stats/global_decks.json'));const idNum={};mNew.cards.concat(mOld.cards).forEach(c=>idNum[c.id]=c.number);
 const sorted=a=>a.filter(x=>x!=null).sort((x,y)=>x-y);const q=(s,p)=>s[Math.floor(p*(s.length-1))];
 const so=sorted(gOld),sn=sorted(gNew);
-let sumAll=0,nAll=0;const per={};
-gd.decks.forEach((d,i)=>{const a=gOld[i],b=gNew[i];if(a==null||b==null||a<=0)return;const r=b/a-1;sumAll+=r;nAll++;
-  for(const j of d){const n=idNum[gd.ids[j]];(per[n]=per[n]||{s:0,n:0});per[n].s+=r;per[n].n++}});
-const meanAll=sumAll/nAll;
-const impact=Object.entries(per).map(([n,o])=>({n:+n,name:nameOf(+n),own:own.has(+n),wish:wish.has(+n),d:R1(100*(o.s/o.n-meanAll)),decks:o.n})).sort((a,b)=>b.d-a.d);
+// mean relative shift of the sample, and per card: mean shift of the decks playing it minus the overall mean
+const shift=(gA,gB)=>{let sum=0,n=0;const per={};
+  gd.decks.forEach((d,i)=>{const a=gA[i],b=gB[i];if(a==null||b==null||a<=0)return;const r=b/a-1;sum+=r;n++;
+    for(const j of d){const k=idNum[gd.ids[j]];(per[k]=per[k]||{s:0,n:0});per[k].s+=r;per[k].n++}});
+  const mean=sum/n;
+  return {mean,impact:Object.entries(per).map(([k,o])=>({n:+k,name:nameOf(+k),own:own.has(+k),wish:wish.has(+k),d:R1(100*(o.s/o.n-mean)),decks:o.n})).sort((a,b)=>b.d-a.d)}};
+const {mean:meanAll,impact}=shift(gOld,gNew);
+
+// ---- wiki engine revision under the same version: its own effect (same decks, same cards, old → new scoring) ----
+const revF=path.join(V,'revision.json');let revision=null;
+if(revFrom){const s=shift(revFrom.g,gNew),p=shift(gOld,revFrom.g),sp0=sorted(revFrom.g),old=fs.existsSync(revF)?JP(revF):{};
+  const src=fs.existsSync(path.join(V,'js/source.json'))?JP(path.join(V,'js/source.json')):{};
+  const pick=x=>({n:x.n,name:x.name,d:x.d});
+  // the owned card the patch moved most, to show how the new scoring rescales the per-card effect
+  const ex=p.impact.filter(x=>x.own).sort((a,b)=>Math.abs(b.d)-Math.abs(a.d))[0];
+  revision={version:VER,date:(src.fetched||new Date().toISOString()).slice(0,10),
+    // `what` (what the wiki changed, read in the engine diff) is written by hand and kept across reruns
+    what:old.from&&old.from.engineHash===revFrom.m.engineHash&&old.to&&old.to.engineHash===HASH?old.what:undefined,
+    from:{engineHash:revFrom.m.engineHash,...revFrom.m.noTalent},to:{engineHash:HASH,...mCur.noTalent},
+    meanDeltaPct:R1(100*s.mean),median:[q(sp0,.5),q(sn,.5)],
+    patchOnlyPct:R1(100*p.mean),patchOnlyExample:ex?pick(ex):null,
+    up:s.impact.slice(0,5).map(pick),down:s.impact.slice(-5).reverse().map(pick)};
+  W(revF,JSON.stringify(revision,null,1))}
+else if(fs.existsSync(revF)){const r=JP(revF);if(r.to&&r.to.engineHash===HASH)revision=r}
 
 // ---- the player's decks (pool decks scored by both versions) ----
 const rows=newDecks.map((d,i)=>{const j=prevBy.get(dkey(d));return {d,i,s1:data.decks.s1[i],s0:data.decks.s0[i],o1:j==null?null:prevScores.s1[j],o0:j==null?null:prevScores.s0[j]}});
@@ -115,6 +147,13 @@ const metaMoves=meta.filter(m=>m.dp!=null);const metaTop=metaMoves.slice().sort(
 // ---- notes: the few things worth reading first ----
 const nt0=mOld.noTalent,nt1=mNew.noTalent;const dn=d=>d.map(nameOf).join(' · ');
 const notes=[];
+if(revision){const r=revision,f=r.from,t=r.to,cards=a=>a.map(x=>`${x.name} (${sp(x.d)})`).join(', ');
+  const day=new Date(r.date+'T12:00:00Z').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+  notes.push(`Le wiki a révisé sa notation le ${day} sans que le jeu change (toujours la ${VER}, mêmes cartes)${r.what?` : ${r.what}`:''}. À elle seule, cette révision fait ${sp(r.meanDeltaPct)} en moyenne sur les mêmes 24 000 decks (deck moyen ${fmt(f.baseline)} → ${fmt(t.baseline)}, meilleur deck ${f.best===t.best?`inchangé à ${fmt(t.best)}`:`${fmt(f.best)} → ${fmt(t.best)}`}). Les écarts ${PREV} → ${VER} de cette page (repères, tes decks, méta, effet par carte) mêlent donc le patch du jeu et cette révision ; le patch seul, mesuré avec l'ancienne notation, faisait ${sp(r.patchOnlyPct)} sur ces mêmes decks (deck moyen ${fmt(nt0.baseline)} → ${fmt(f.baseline)}).`);
+  // per-card effect: still the patch's when the revision alone hardly moves any card around the mean
+  const maxAbs=Math.max(Math.abs(r.up[0]?.d??0),Math.abs(r.down[0]?.d??0)),ex=r.patchOnlyExample,exNow=ex&&impact.find(x=>x.n===ex.n);
+  notes.push(maxAbs<=5?`Effet par carte : à jeu égal, la nouvelle notation ne déplace aucune carte de plus de ${maxAbs.toFixed(1).replace('.',',')} % autour de la moyenne (${[r.down[0],r.up[0]].map(x=>`${x.name} ${sp(x.d)}`).join(', ')}). L'« effet » affiché reste donc celui du patch, seulement réduit avec l'ensemble des scores${exNow?` (${ex.name} : ${sp(exNow.d)}, contre ${sp(ex.d)} avec l'ancienne notation)`:''}.`
+    :`Effet par carte : à jeu égal, la nouvelle notation déplace aussi les cartes (en hausse ${cards(r.up.slice(0,3))} ; en baisse ${cards(r.down.slice(0,3))}) : l'« effet » affiché mêle le patch et la révision.`)}
 notes.push(`Repères du modèle (sans talent) : deck moyen ${fmt(nt0.baseline)} → ${fmt(nt1.baseline)} (${sp(pct(nt0.baseline,nt1.baseline))}), meilleur deck ${fmt(nt0.best)} → ${fmt(nt1.best)} (${sp(pct(nt0.best,nt1.best))}). Les paliers S/A/B/C bougent avec eux.`);
 notes.push(`Sur les mêmes 24 000 decks aléatoires, le score moyen évolue de ${sp(100*meanAll)} (médiane ${fmt(q(so,.5))} → ${fmt(q(sn,.5))}).`);
 const ownChanged=cardChanges.filter(c=>c.own);if(ownChanged.length)notes.push(`${ownChanged.length} carte${ownChanged.length>1?'s':''} de ta collection modifiée${ownChanged.length>1?'s':''} : ${ownChanged.map(c=>{const im=impact.find(x=>x.n===c.n);return c.name+(im?` (${sp(im.d)})`:'')}).join(', ')} — entre parenthèses, l'effet moyen sur les decks qui la jouent, comparé au reste du jeu.`);
@@ -134,7 +173,7 @@ if(ban)notes.push(`Tox que l'adversaire a intérêt à bannir contre toi : ${ban
 const changelog={from:PREV,to:VER,built:new Date().toISOString().slice(0,10),
   refs:{baseline:[nt0.baseline,nt1.baseline],best:[nt0.best,nt1.best]},
   global:{median:[q(so,.5),q(sn,.5)],p90:[q(so,.9),q(sn,.9)],meanDeltaPct:R1(100*meanAll)},
-  notes,cards:cardChanges,textOnly,tox:toxChanges,impact,ban,
+  revision,notes,cards:cardChanges,textOnly,tox:toxChanges,impact,ban,
   mine:{top,risers,fallers,saved,lowCrit:lowCritNew?{new:deckOut(lowCritNew,lowCritNew.ro),old:lowCritOld?deckOut(lowCritOld,lowCritOld.ro):null}:null},
   meta};
 W(path.join(V,'changelog.json'),JSON.stringify(changelog,null,1));

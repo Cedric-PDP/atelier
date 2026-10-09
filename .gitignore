@@ -13,7 +13,8 @@ spam/audit/D_raw/
 
 # Per-version work files (recompute.sh rebuilds them from spam/versions/<v>/js in ~15 min). Kept in git: js/model.json,
 # js/simulation.js, js/source.json, cards_fr.json, builder_fr.txt, meta_decks.json, scores.json, global.json,
-# changelog.json, CHANGELOG.md — what the next version's changelog needs. site/ holds the current data.json/shop.json.
+# changelog.json, CHANGELOG.md, revision.json — what the next version's changelog needs. site/ holds the current
+# data.json/shop.json.
 spam/versions/*/app/
 spam/versions/*/drv/
 spam/versions/*/js/model_*.json

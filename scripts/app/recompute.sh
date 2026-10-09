@@ -25,8 +25,13 @@ V="$D/versions/$VER"; JS="$V/js"; A="$V/app"; DRV="$V/drv"; E="$JS/simulation.js
 mkdir -p "$A" "$DRV"
 echo "version $VER (previous: ${PREV:-none}), $N processes per step"
 
-variants() { # <js dir>: build the model variants when missing (they are not versioned)
-  [ -f "$1/model_nocrit.json" ] && [ -f "$1/model_dead.json" ] && [ -f "$1/model_crit0.5.json" ] || node "$S/make_variants.js" "$1/model.json" "$1"
+variants() { # <js dir>: build the model variants (not versioned) when missing or made from another model.json: the wiki
+  # can serve a new engine + model under the same game version (1.21, 2026-10-09), and the engine reads the model's
+  # baseline / recommended talents, so stale variants would score with the old ones.
+  local h; h=$(grep -o '"engineHash":"[^"]*"' "$1/model.json" | head -1 || true)
+  [ -f "$1/model_nocrit.json" ] && [ -f "$1/model_dead.json" ] && [ -f "$1/model_crit0.5.json" ] \
+    && grep -q "$h" "$1/model_nocrit.json" && grep -q "$h" "$1/model_dead.json" && grep -q "$h" "$1/model_crit0.5.json" \
+    || node "$S/make_variants.js" "$1/model.json" "$1"
 }
 run() { # <kind> <chunks> <models spec> [engine]: drivers $DRV/drv_<kind>_<i>.js -> $A/<kind>_<i>.json
   local kind=$1 n=$2 models=$3 eng=${4:-$E} pids=() fail=0

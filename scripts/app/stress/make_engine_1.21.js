@@ -3,33 +3,63 @@
 // "lost card" metric L: each card in turn is REMOVED at the start of turn 1 (absorb, no HP given to the enemy) instead
 // of being replaced by the 1-HP 'dead-card', whose death on turn 1 fired the allies' on-death effects (Vengeur innate
 // on Dragon Ciel, Cimetière, Vitalité des Âmes) and inflated L by ~+977 points on Dragon Ciel decks (audit 2026-10-09).
-// Ported from the audit session's make_engine121.js; the anchors and minified names below are 1.21-specific: a new
-// game version needs its own make_engine_<v>.js (recompute.sh falls back to dead-card, flagged, when there is none).
+// Ported from the audit session's make_engine121.js. The anchors use the engine's MINIFIED names, which change with
+// every rebuild of the wiki: a new game version needs its own make_engine_<v>.js (recompute.sh falls back to
+// dead-card, flagged, when there is none), and the wiki may also rebuild the engine under the SAME game version.
+// 1.21 has two engine revisions; the patcher recognises which one it is given by signature (every binding below must
+// be defined exactly once, for exactly one revision) and applies that revision's names:
+//   rev1  engineHash 36e2c03d5b7bf4a1, /_astro/simulation-KlJhEEqL.js (game 1.21 release, 2026-10-09 15:03)
+//   rev2  engineHash e77f882d0c1284ef, /_astro/simulation-BFLulMa_.js (wiki scoring revision, 2026-10-09 16:19:
+//         offense of an unfinished match = 3·enemy HP·n/ttk instead of usefulByTurn; cards ranked with their best
+//         talent). Renamed: enemyKill ce→le, onDeath se→ce, enemyAct le→ue; everything the patches touch is otherwise
+//         byte-identical.
+// To port a new revision: run it, read which binding check fails, find the renamed function (same body), add a row.
 // Usage: node scripts/app/stress/make_engine_1.21.js <simulation.js> <out engine_stress.js>
 const fs = require('fs');
 const [SRC, OUT] = process.argv.slice(2); if (!OUT) throw new Error('usage: make_engine_1.21.js <simulation.js> <out.js>');
 let s = fs.readFileSync(SRC, 'utf8');
-// v1.20 -> v1.21 names of the engine bindings the helpers use
-const N = { curHp: 'O', enemyKill: 'ce', onDeath: 'se', profile: 'T', focus: 'w', consts: 'g', cfg: 'o' };
-const defs = [
-  [`const ${N.curHp}=e=>e.hpMax-e.dmgTaken;`],
-  [`function ${N.enemyKill}(e,t,n,r){e.enemyDeaths+=1,`],
-  [`function ${N.onDeath}(e,t,n,r){for(let r of e.cards){if(r.cimetiere)`],
-  [`function ${N.profile}(e){let t=y(0);for(let{card:n}of e)`],
-  [`function ${N.focus}(e){let t=e.opts.focus;return e.enemies.filter(e=>e.hp>0)`],
-  [`,${N.consts}={stunPerTargetTurn:60,`],
-  [`,${N.cfg}={deckSize:e.cardsPerDeck,`],
+// Minified names per engine revision. curHp, profile, focus, consts, cfg: bindings the appended helpers call;
+// enemyKill/onDeath/enemyAct/resurrect/allyKeys: patched functions; match/score/mean/profiles/entries: API of __lostAbsorb.
+const base = { curHp: 'O', profile: 'T', focus: 'w', consts: 'g', cfg: 'o', resurrect: '_e', allyKeys: 'be',
+  match: 'J', score: 'Y', mean: 'X', profiles: 'd', entries: 'pt' };
+const REVS = {
+  rev1: { ...base, enemyKill: 'ce', onDeath: 'se', enemyAct: 'le' },
+  rev2: { ...base, enemyKill: 'le', onDeath: 'ce', enemyAct: 'ue' },
+};
+const defsOf = N => [
+  `const ${N.curHp}=e=>e.hpMax-e.dmgTaken;`,
+  `function ${N.enemyKill}(e,t,n,r){e.enemyDeaths+=1,`,
+  `function ${N.onDeath}(e,t,n,r){for(let r of e.cards){if(r.cimetiere)`,
+  `function ${N.profile}(e){let t=y(0);for(let{card:n}of e)`,
+  `function ${N.focus}(e){let t=e.opts.focus;return e.enemies.filter(e=>e.hp>0)`,
+  `,${N.consts}={stunPerTargetTurn:60,`,
+  `,${N.cfg}={deckSize:e.cardsPerDeck,`,
+  `function ${N.enemyAct}(e,t){let n=e.enemies.filter(e=>e.hp>0);`,
+  `function ${N.resurrect}(e,t){let n=e.cards.filter(e=>e.dead);`,
+  `o=null,s=-1/0;for(let t of e.cards){let e=a(t),n=${N.allyKeys}.map(e=>t[e]);`,
+  `function ${N.match}(e,t={}){`,
+  `function ${N.score}(e,t=s){return e.offense*`,
+  `,${N.mean}=e=>e.reduce(`,
+  `,${N.profiles}=[{id:\`neutral\``,
+  `function ${N.entries}(e,t){if(!Array.isArray(e)||e.length!==o.deckSize)`,
 ];
-for (const [d] of defs) { const n = s.split(d).length - 1; if (n !== 1) throw new Error('binding check ' + n + ' for ' + d); }
+const count = d => s.split(d).length - 1;
+const fails = Object.fromEntries(Object.entries(REVS).map(([k, N]) => [k, defsOf(N).filter(d => count(d) !== 1)]));
+const ok = Object.keys(REVS).filter(k => !fails[k].length);
+if (ok.length !== 1) {
+  for (const [k, f] of Object.entries(fails)) console.error(k + ': ' + (f.length ? f.map(d => 'binding check ' + count(d) + ' for ' + d).join('\n  ') : 'ok'));
+  throw new Error(ok.length ? 'ambiguous engine revision: ' + ok.join(', ') : 'unknown engine revision (port the names, see the header)');
+}
+const REV = ok[0], N = REVS[REV];
 for (const k of ['immunityPerHp:', 'mysteryDefense:', 'deathBounty:e.deathBounty']) if (!s.includes(k)) throw new Error('missing ' + k);
 const patches = [
-  // 1. per-match stress state + turn-start hook (phase 0) — match function J() in v1.21 (q() in v1.20)
+  // 1. per-match stress state + turn-start hook (phase 0) — match function J()
   ['for(let e=1;e<=n&&!s.over;e++){if(s.turn=e,',
    's.stress=__stInit(s,t);for(let e=1;e<=n&&!s.over;e++){if(s.stress&&__stTurn(s,e,0),s.turn=e,'],
-  // 2. enemy-action hook (phase 1): le() in v1.21 (de() in v1.20)
-  ['function le(e,t){let n=e.enemies.filter(e=>e.hp>0);',
-   'function le(e,t){e.stress&&__stTurn(e,t,1);let n=e.enemies.filter(e=>e.hp>0);'],
-  // 3. one-time enemy revive in the kill loop of K() (G() in v1.20)
+  // 2. enemy-action hook (phase 1)
+  [`function ${N.enemyAct}(e,t){let n=e.enemies.filter(e=>e.hp>0);`,
+   `function ${N.enemyAct}(e,t){e.stress&&__stTurn(e,t,1);let n=e.enemies.filter(e=>e.hp>0);`],
+  // 3. one-time enemy revive in the kill loop of K() (t = turn, r/i = our card/ability: the function's params)
   ['for(let n of l){if(n.phoenix>0){',
    'for(let n of l){if(e.stress&&__stRevive(e,t,n,r,i))continue;if(n.phoenix>0){'],
   // 4-5. remaining enemy HP includes HP added by absorb / heal / revive
@@ -37,19 +67,19 @@ const patches = [
    'r=e.perCard?e.hpTurnStart:e.opp.totalHp+(e.stHp||0)-e.dmgTurnStart'],
   ['s.opp.totalHp-s.totals.dmg,',
    's.opp.totalHp+(s.stHp||0)-s.totals.dmg,'],
-  // 6. our Resurrection _e() (ve() in v1.20) cannot bring back an absorbed card
-  ['function _e(e,t){let n=e.cards.filter(e=>e.dead);',
-   'function _e(e,t){let n=e.cards.filter(e=>e.dead&&!e.absorbed);'],
-  // 7-10. absorbed card is no longer a candidate for ally buffs, random-ally buffs, ally cooldown cuts (Se,
-  // Ce in v1.20) and on-death passives (se, le in v1.20)
+  // 6. our Resurrection cannot bring back an absorbed card
+  [`function ${N.resurrect}(e,t){let n=e.cards.filter(e=>e.dead);`,
+   `function ${N.resurrect}(e,t){let n=e.cards.filter(e=>e.dead&&!e.absorbed);`],
+  // 7-10. absorbed card is no longer a candidate for ally buffs, random-ally buffs, ally cooldown cuts (Se) and
+  // on-death passives
   ['if(n.scope===`randomAlly`){for(let t of e.cards)r(t,1/e.cards.length);return}',
    'if(n.scope===`randomAlly`){for(let t of e.cards)t.absorbed||r(t,1/(e.cards.length-(e.stAbs||0)));return}'],
-  ['o=null,s=-1/0;for(let t of e.cards){let e=a(t),n=be.map(e=>t[e]);',
-   'o=null,s=-1/0;for(let t of e.cards){if(t.absorbed)continue;let e=a(t),n=be.map(e=>t[e]);'],
+  [`o=null,s=-1/0;for(let t of e.cards){let e=a(t),n=${N.allyKeys}.map(e=>t[e]);`,
+   `o=null,s=-1/0;for(let t of e.cards){if(t.absorbed)continue;let e=a(t),n=${N.allyKeys}.map(e=>t[e]);`],
   ['for(let n of e.cards)for(let e of n.abilities){let n=e.nextTurn-t;',
    'for(let n of e.cards)if(!n.absorbed)for(let e of n.abilities){let n=e.nextTurn-t;'],
-  ['function se(e,t,n,r){for(let r of e.cards){',
-   'function se(e,t,n,r){for(let r of e.cards){if(r.absorbed)continue;'],
+  [`function ${N.onDeath}(e,t,n,r){for(let r of e.cards){`,
+   `function ${N.onDeath}(e,t,n,r){for(let r of e.cards){if(r.absorbed)continue;`],
 ];
 for (const [a, b] of patches) {
   const n = s.split(a).length - 1;
@@ -145,16 +175,16 @@ function __stRevive(e,t,n,r,i){
   return true;
 }
 `;
-for (const k of ['function J(e,t={}){', 'function Y(e,t=s){', ',X=e=>e.reduce(', ',d=[{id:`neutral`', 'function pt(e,t){']) if (!s.includes(k)) throw new Error('api binding missing: ' + k);
+const { match: J, score: Y, mean: X, profiles: d, entries: pt } = N;
 s += `
 /* ===== lost-card metric: remove card p at the start of turn 1 (no death, no on-death trigger) ===== */
-globalThis.__lostAbsorb=function(M,ids){const entries=pt(ids.map(id=>({id,talentId:null})),M.cards);const out=[];
+globalThis.__lostAbsorb=function(M,ids){const entries=${pt}(ids.map(id=>({id,talentId:null})),M.cards);const out=[];
   for(let p=0;p<ids.length;p++){globalThis.STRESS={absorb:{turn:1,pos:p,at:'start',gain:false}};const ms=[];
-    try{for(const prof of d)for(const pl of [1,2])ms.push(Y(J(entries,{opponent:prof,player:pl})))}finally{globalThis.STRESS=null}
-    out.push(X(ms))}
+    try{for(const prof of ${d})for(const pl of [1,2])ms.push(${Y}(${J}(entries,{opponent:prof,player:pl})))}finally{globalThis.STRESS=null}
+    out.push(${X}(ms))}
   return out};
-globalThis.__plainScore=function(M,ids){const entries=pt(ids.map(id=>({id,talentId:null})),M.cards);const ms=[];
-  for(const prof of d)for(const pl of [1,2])ms.push(Y(J(entries,{opponent:prof,player:pl})));return X(ms)};
+globalThis.__plainScore=function(M,ids){const entries=${pt}(ids.map(id=>({id,talentId:null})),M.cards);const ms=[];
+  for(const prof of ${d})for(const pl of [1,2])ms.push(${Y}(${J}(entries,{opponent:prof,player:pl})));return ${X}(ms)};
 `;
 fs.writeFileSync(OUT, s);
-console.log('wrote', OUT, s.length, 'bytes');
+console.log('wrote', OUT, s.length, 'bytes, engine', REV);

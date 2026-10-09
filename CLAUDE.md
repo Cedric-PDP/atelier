@@ -110,12 +110,23 @@ qui dit s'il marche.
 
 ## Le moteur : un instantané du wiki PAR VERSION du jeu (`spam/versions/<v>/`)
 
-- **Version courante : 1.21** (engineHash `36e2c03d5b7bf4a1`, sortie le 2026-10-09). 1.20 est archivée à côté.
+- **Version courante : 1.21** (sortie le 2026-10-09), moteur du wiki **rev2** : engineHash `e77f882d0c1284ef`
+  (`model-bcfe0dc12085596f.json` + `simulation-BFLulMa_.js`, récupéré à 16 h 19). 1.20 est archivée à côté.
+- **Le wiki a révisé sa notation le même jour, sous le même numéro** (rev1 → rev2, mêmes 127 cartes, jeu
+  inchangé). rev1 = engineHash `36e2c03d5b7bf4a1` (`model-edeb0ebc315cfd15.json` + `simulation-KlJhEEqL.js`,
+  15 h 03), dans l'historique git. Différences : l'offensive d'un match que le deck ne finit pas en 10 tours
+  passe des dégâts utiles par tour (`usefulByTurn`) à `3 · PV adverses · n / ttk` (−14 % pour ces decks, −2 %
+  pour ceux qui gagnent dans l'horizon ; −13,4 % en moyenne sur les 24 000 decks, contre +4,5 % pour le patch
+  seul en notation rev1) ; les cartes du wiki sont classées avec leur meilleur talent (`rankMetrics`, sans effet
+  sur la page) ; le modèle change `recommended` (talents) et `baseline`. Détail : `spam/versions/1.21/revision.json`
+  et les deux premières notes du changelog.
 - `spam/versions/<v>/js/simulation.js` = `/_astro/simulation-*.js` de spamgame-wiki.com, `js/model.json` =
   `/data/model-*.json` (127 cartes), `js/source.json` = URLs hachées, engineHash et date de récupération.
   Variantes générées par `scripts/app/make_variants.js` (non versionnées) : `model_nocrit` (sans critiques),
   `model_crit0.5` (chances de critique ×0,5, multiplicateurs gardés), `model_dead` (+ une carte factice
   `dead-card`, 1 PV, pour la carte perdue). Vérifié : elles redonnent à l'identique celles de 1.20.
+  `recompute.sh` les refait quand elles manquent ou viennent d'un autre engineHash (le moteur lit `noTalent` et
+  `recommended` dans le modèle).
 - `spam/js/` (et `model_crit<k>`) = l'ancien emplacement 1.20, encore lu par les scripts d'analyse ponctuelle
   et l'audit ; le pipeline de la page ne s'en sert plus.
 - 1.21 : `bestDecks` prend `[{id, talents:[]}]` (plus une liste d'ids) et ne rend que 3 decks ; `evaluate`
@@ -123,12 +134,15 @@ qui dit s'il marche.
 - **Métrique « carte perdue » L** (« Sans sa carte clé » dans la page) : depuis 1.21, la carte est **retirée au
   tour 1 sans mourir** (absorption), via `js/engine_stress.js` = moteur + bascules de l'audit (`globalThis.STRESS`,
   éteintes par défaut, scores identiques à l'octet) + `__lostAbsorb(model, ids)`. Construit par
-  `scripts/app/stress/make_engine_<v>.js` (ancres et noms minifiés **propres à chaque version** : à porter à
-  chaque patch du jeu, en partant de celui de la version précédente). Sans patcher pour la version, `recompute.sh`
+  `scripts/app/stress/make_engine_<v>.js` (ancres et noms minifiés **propres à chaque moteur** : à porter à
+  chaque patch du jeu, en partant de celui de la version précédente, **et à chaque reconstruction du moteur par
+  le wiki sous le même numéro** — `make_engine_1.21.js` a une table de noms par révision, reconnue par signature :
+  rev1 et rev2 ci-dessous ; un nouveau moteur fait planter `binding check …` → ajouter une ligne à la table, puis
+  vérifier STRESS éteint = sorties d'`evaluate` identiques à l'octet). Sans patcher pour la version, `recompute.sh`
   retombe sur l'ancienne fausse carte `dead-card` de 1 PV et l'écrit dans `meta.lostMethod`. ⚠️ Cette fausse
   carte MEURT au tour 1 : ça déclenche les effets à la mort des alliés (Vengeur inné de Dragon Ciel, Cimetière,
   Vitalité des Âmes) et gonfle L de ~+977 points sur les decks avec Dragon Ciel (audit du 2026-10-09 ; ex.
-  117-156-180-238 : 5 220 au lieu de 3 519), contre −15 ailleurs.
+  117-156-180-238 : 5 220 au lieu de 3 519 en rev1 ; 3 041 en rev2), contre −15 ailleurs.
 - Exécuté dans un `vm` Node isolé (ni `require` ni `fs` dedans) : `scripts/sim_lab2.js <engine>
   "x1=<model>;x0=<model>" <driver.js> <out.json>`. Le driver est du JS évalué dans le contexte du moteur :
   globals `MODELS`, `OUT` (écrit dans out.json), `ht` (fabrique d'évaluateur) ; les données doivent être
@@ -137,11 +151,14 @@ qui dit s'il marche.
   (()=>{const I=ht(MODELS.x1);const r=I.evaluate(ids.map(id=>({id,talentId:null})),{optimize:false,suggestions:false,shop:false});
    OUT.res={score:r.score,ttk:r.ttk,matchups:r.matchups,dmgByTurn:r.dmgByTurn};})();
   ```
-- Repères sans talent (`model.noTalent`) : 1.20 baseline 4 714,7 / meilleur 15 336,6 ; 1.21 baseline 4 865 /
-  meilleur 15 327,5. Deck chimere = 8 018 en 1.20 (48 % des dégâts viennent des critiques), 8 011 en 1.21.
+- Repères sans talent (`model.noTalent`) : 1.20 baseline 4 714,7 / meilleur 15 336,6 ; 1.21 rev2 baseline
+  4 216,7 / meilleur 15 327,5 (rev1 : 4 865 / 15 327,5). Deck chimere (103-117-156-238) = 8 018 en 1.20 (48 % des
+  dégâts viennent des critiques), 8 011 en 1.21 rev1, **7 235 en 1.21 rev2** (sans critiques 3 630, sans sa carte
+  clé 1 722 — sans la Chimère).
 - 1.21 en bref (détail : `spam/versions/1.21/CHANGELOG.md`) : Dragon Ciel (AoE + Nature +4) passe en tête de la
-  collection, meilleur deck possédé Esprit Nature · Lame de la forêt · Keria · Dragon Ciel ≈ 8 934. Côté menaces :
-  Tisseuse de Mots à 2 Spamtons, Zombie Floral en AoE Disparition, Gel à 60.
+  collection, meilleur deck possédé Esprit Nature · Lame de la forêt · Keria · Dragon Ciel (3-103-117-180) =
+  **8 512** en rev2 (8 934 en rev1), devant Lame de la forêt · Keria · L'Œil des montagnes · Dragon Ciel (8 029).
+  Côté menaces : Tisseuse de Mots à 2 Spamtons, Zombie Floral en AoE Disparition, Gel à 60.
 - **Leçon : le moteur du wiki affronte un adversaire ABSTRAIT** (une courbe de dégâts, aucune mécanique).
   L'absorption de carte (Veuve noire de Tisseuse), la Provocation permanente (Fleur de Vie), le Gel, le Renvoi…
   sont invisibles dans ses scores : toujours éprouver un deck face aux mécaniques adverses (`spam/audit/E1`, `E2`,
@@ -156,7 +173,10 @@ bash scripts/app/new_version.sh          # --force pour tout refaire, --no-site 
 1. `fetch_version.js` lit la page builder du wiki, retrouve `model-*.json` et `simulation-*.js` (noms hachés,
    le second via les scripts de la page), et crée `spam/versions/<v>/` : `js/`, `cards_fr.json` (page cartes),
    `builder_fr.txt` (textes des Tox), `meta_decks.json` (decks de la tier list du wiki = la « méta »). Exit 3
-   et rien d'autre si le wiki sert les mêmes fichiers que la dernière fois.
+   et rien d'autre si le wiki sert les mêmes fichiers que la dernière fois. **Le wiki peut changer de moteur sous
+   le même numéro** (1.21, 2026-10-09 : même jeu, notation révisée) : le dossier `<v>/` est alors réécrit (l'ancien
+   moteur reste dans l'historique git), le patcher de L est peut-être à porter (voir « Le moteur »), et le
+   changelog le signale (ci-dessous).
 2. `recompute.sh <v>` recalcule tout avec ce moteur (détail ci-dessous), écrit le changelog contre la version
    précédente et copie `data.json` / `shop.json` dans `site/`.
 3. Publier reste manuel (voir « L'interface publiée »). La page affiche l'onglet « Nouveautés <v> ».
@@ -189,7 +209,11 @@ la boutique : Tox les plus achetés par les plans de boutique de tes decks de r�
 (sur les MÊMES 24 000 decks aléatoires, `spam/stats/global_decks.json`, écart des decks qui jouent la carte
 comparé à l'évolution moyenne), tes decks (top 10, hausses/baisses parmi tes 300 meilleurs, meilleur sans
 critiques, decks sauvegardés), decks méta du wiki (rangs et scores avant/après). Il écrit aussi `scores.json` et
-`global.json`, versionnés : c'est ce que la version SUIVANTE compare.
+`global.json`, versionnés (avec l'engineHash) : c'est ce que la version SUIVANTE compare. **Révision du moteur
+sous le même numéro** : si le `global.json` qu'il va écraser porte un autre engineHash (ou avec
+`--rev-from=<dossier>` contenant `global.json` + `js/model.json` de l'ancienne révision, extraits de git), il écrit
+`revision.json` (versionné : effet de la seule révision sur les mêmes 24 000 decks, patch seul en ancienne notation,
+cartes les plus touchées ; le champ `what` s'écrit à la main et est conservé) et deux notes en tête du changelog.
 
 Le **pool** = [spam/app/pool_order.json](spam/app/pool_order.json) : 31 uuid, les **26 possédés d'abord**,
 puis les 5 souhaités. Quand la collection change :
@@ -215,7 +239,7 @@ puis les 5 souhaités. Quand la collection change :
 | `journal/` | la page Journal : `journal-spam.html` (à publier), `page/` (source, build, smoke), `ref/` (127 cartes 1.21 FR/EN, Tox, collection) ; `README.md` = procédure + contrat de la base |
 | `pont/` | la page Pont SPAM (`pont-spam.html`, autonome) ; ne sert plus, remplacée par la branche `pc-perso` |
 | `.pc-perso/` | worktree de la branche orpheline `pc-perso` (ignoré par `main`) : Atelier hors ligne, mode d'emploi et envois du PC perso |
-| `spam/versions/<v>/` | une version du jeu : `js/` (moteur + modèle), `cards_fr.json`, `builder_fr.txt`, `meta_decks.json`, `scores.json`, `global.json`, `changelog.json`, `CHANGELOG.md` ; `app/`, `drv/`, `data.json`, `shop.json` non versionnés |
+| `spam/versions/<v>/` | une version du jeu : `js/` (moteur + modèle), `cards_fr.json`, `builder_fr.txt`, `meta_decks.json`, `scores.json`, `global.json`, `changelog.json`, `CHANGELOG.md`, `revision.json` (si le wiki a changé de moteur sous ce numéro) ; `app/`, `drv/`, `data.json`, `shop.json` non versionnés |
 | `scripts/sim_lab*.js`, `run_sim.js` | lanceurs du moteur dans un `vm` |
 | `scripts/app/` | pipeline de la page (`new_version.sh`, `fetch_version`, `make_variants`, `recompute.sh`, `gen_drivers`, `gen_global_drivers`, `gen_eval_driver`, `extract_meta_decks`, `pick_shop_keys`, `build_*`, `smoke_page`) ; `drv_*_N.js` de ce dossier = drivers 1.20, **générés** depuis `drv_*_0.js` (les modèles) |
 | `scripts/*.js`, `stats/`, `addx/`, `mcv2/` | drivers des analyses ponctuelles (critiques, talents, Monte-Carlo, ajout de carte…) ; `mcv2/drv_*.js` sont aussi relancés à chaque version |

@@ -1,12 +1,12 @@
 {
  "version": "1.21",
- "engineHash": "36e2c03d5b7bf4a1",
- "model": "/data/model-edeb0ebc315cfd15.json",
- "simulation": "/_astro/simulation-KlJhEEqL.js",
- "fetched": "2026-10-09T15:03:56.533Z",
+ "engineHash": "e77f882d0c1284ef",
+ "model": "/data/model-bcfe0dc12085596f.json",
+ "simulation": "/_astro/simulation-BFLulMa_.js",
+ "fetched": "2026-10-09T16:19:01.565Z",
  "noTalent": {
   "best": 15327.5,
-  "baseline": 4865
+  "baseline": 4216.7
  },
  "cards": 127
 }

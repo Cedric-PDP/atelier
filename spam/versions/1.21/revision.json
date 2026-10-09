@@ -1,0 +1,80 @@
+{
+ "version": "1.21",
+ "date": "2026-10-09",
+ "what": "un match que le deck ne finit pas en 10 tours est maintenant noté sur son temps estimé pour tuer l’adversaire (3 × PV adverses × 10 / ttk) au lieu de ses dégâts utiles par tour ; parmi les decks de ton pool, ceux qui gagnent en moins de 10 tours perdent environ 2 %, les autres environ 14 %",
+ "from": {
+  "engineHash": "36e2c03d5b7bf4a1",
+  "best": 15327.5,
+  "baseline": 4865
+ },
+ "to": {
+  "engineHash": "e77f882d0c1284ef",
+  "best": 15327.5,
+  "baseline": 4216.7
+ },
+ "meanDeltaPct": -13.4,
+ "median": [
+  4759.32,
+  4111.15
+ ],
+ "patchOnlyPct": 4.5,
+ "patchOnlyExample": {
+  "n": 180,
+  "name": "Dragon Ciel",
+  "d": 40.1
+ },
+ "up": [
+  {
+   "n": 188,
+   "name": "Commando Gerz",
+   "d": 2.4
+  },
+  {
+   "n": 22,
+   "name": "Lueur d'Espoir",
+   "d": 2.2
+  },
+  {
+   "n": 262,
+   "name": "Yotaru Gardefeuille",
+   "d": 2
+  },
+  {
+   "n": 140,
+   "name": "Souris des blés",
+   "d": 1.4
+  },
+  {
+   "n": 174,
+   "name": "Zombie Floral",
+   "d": 1.4
+  }
+ ],
+ "down": [
+  {
+   "n": 244,
+   "name": "Gazpoison Flottant",
+   "d": -3.6
+  },
+  {
+   "n": 227,
+   "name": "Chouette Polychrome",
+   "d": -3.2
+  },
+  {
+   "n": 97,
+   "name": "Pyro",
+   "d": -2.3
+  },
+  {
+   "n": 134,
+   "name": "Wibs l'Enflammé",
+   "d": -1.7
+  },
+  {
+   "n": 85,
+   "name": "Bleu-mange-cailloux",
+   "d": -1.5
+  }
+ ]
+}
