@@ -1,0 +1,648 @@
+{
+ "res": {
+  "reroll0": {
+   "x1": {
+    "mean": 8384,
+    "p10": 7738
+   },
+   "x05": {
+    "mean": 8092,
+    "p10": 7406
+   },
+   "buys": 3.7,
+   "fams": [
+    "CoeurNature:54%",
+    "CoeurEau:51%",
+    "Berserk:47%",
+    "Poison:43%",
+    "Aoe:38%",
+    "PunchingBag:31%",
+    "CoeurLumiere:29%"
+   ]
+  },
+  "reroll2": {
+   "x1": {
+    "mean": 8644,
+    "p10": 8137
+   },
+   "x05": {
+    "mean": 8378,
+    "p10": 7800
+   },
+   "buys": 4.68,
+   "fams": [
+    "CoeurEau:71%",
+    "CoeurNature:69%",
+    "Poison:61%",
+    "Berserk:60%",
+    "CoeurLumiere:46%",
+    "Aoe:41%",
+    "PunchingBag:36%"
+   ]
+  }
+ },
+ "y": {
+  "y1": 6989,
+  "y05": 6625
+ },
+ "timeline": [
+  {
+   "turn": 2,
+   "luck": 3,
+   "spamton": 61,
+   "odds": {
+    "common": 92.9,
+    "rare": 7.1,
+    "epic": 0,
+    "legendary": 0
+   }
+  },
+  {
+   "turn": 4,
+   "luck": 6,
+   "spamton": 126,
+   "odds": {
+    "common": 50.1,
+    "rare": 45,
+    "epic": 4.9,
+    "legendary": 0
+   }
+  },
+  {
+   "turn": 6,
+   "luck": 9,
+   "spamton": 195,
+   "odds": {
+    "common": 16.5,
+    "rare": 53.3,
+    "epic": 30.2,
+    "legendary": 0
+   }
+  },
+  {
+   "turn": 8,
+   "luck": 12,
+   "spamton": 268,
+   "odds": {
+    "common": 4.5,
+    "rare": 41.6,
+    "epic": 52.8,
+    "legendary": 1.1
+   }
+  },
+  {
+   "turn": 10,
+   "luck": 15,
+   "spamton": 345,
+   "odds": {
+    "common": 0.1,
+    "rare": 31.4,
+    "epic": 60.1,
+    "legendary": 8.4
+   }
+  }
+ ],
+ "ttk": 15.2,
+ "slots": [
+  {
+   "k": "6428d28c-4897-46e4-bcc5-5165484fda2b|Haleau",
+   "top": [
+    [
+     "CoeurEau_L",
+     31.7,
+     37.7
+    ],
+    [
+     "CoeurNature_L",
+     31.7,
+     37.7
+    ],
+    [
+     "CoeurEau_E",
+     22.9,
+     25.9
+    ],
+    [
+     "CoeurNature_E",
+     22.9,
+     25.9
+    ],
+    [
+     "Berserk_L",
+     22,
+     25.3
+    ],
+    [
+     "Berserk_E",
+     7.5,
+     8
+    ],
+    [
+     "CoeurEau_R",
+     3.6,
+     2
+    ],
+    [
+     "CoeurNature_R",
+     3.6,
+     2
+    ]
+   ]
+  },
+  {
+   "k": "6428d28c-4897-46e4-bcc5-5165484fda2b|Digue",
+   "top": [
+    [
+     "CoeurEau_L",
+     41.8,
+     48.5
+    ],
+    [
+     "Berserk_L",
+     39.4,
+     41.5
+    ],
+    [
+     "CoeurEau_E",
+     39.4,
+     40.7
+    ],
+    [
+     "CoeurNature_L",
+     38.6,
+     42.1
+    ],
+    [
+     "CoeurNature_E",
+     33.4,
+     39.4
+    ],
+    [
+     "Berserk_E",
+     29.1,
+     25.7
+    ],
+    [
+     "CoeurLumiere_L",
+     12.3,
+     0.7
+    ],
+    [
+     "CoeurEau_R",
+     10.9,
+     5.1
+    ]
+   ]
+  },
+  {
+   "k": "6428d28c-4897-46e4-bcc5-5165484fda2b|Chance_C",
+   "top": [
+    [
+     "CoeurEau_L",
+     40.9,
+     47.4
+    ],
+    [
+     "Berserk_L",
+     38.4,
+     40.1
+    ],
+    [
+     "CoeurNature_L",
+     38.4,
+     40.6
+    ],
+    [
+     "CoeurEau_E",
+     37.4,
+     37.8
+    ],
+    [
+     "CoeurNature_E",
+     32.5,
+     38.1
+    ],
+    [
+     "CoeurLumiere_L",
+     30,
+     23.3
+    ],
+    [
+     "Berserk_E",
+     28.5,
+     27.9
+    ],
+    [
+     "Aoe_L",
+     22.2,
+     18
+    ]
+   ]
+  },
+  {
+   "k": "6598bdc6-b5f4-47a8-be11-761422965f71|Galop arctique",
+   "top": [
+    [
+     "CoeurLumiere_L",
+     -16.8,
+     -15.9
+    ],
+    [
+     "CoeurEau_L",
+     -16.8,
+     -15.9
+    ],
+    [
+     "Berserk_L",
+     -17.4,
+     -15.3
+    ],
+    [
+     "Reflect_L",
+     -23,
+     -21.1
+    ],
+    [
+     "CoeurEau_E",
+     -24.5,
+     -22.9
+    ],
+    [
+     "CoeurLumiere_E",
+     -24.5,
+     -22.9
+    ],
+    [
+     "CoeurNature_L",
+     -24.6,
+     -23.6
+    ],
+    [
+     "Berserk_E",
+     -28.9,
+     -28.9
+    ]
+   ]
+  },
+  {
+   "k": "6598bdc6-b5f4-47a8-be11-761422965f71|Life Steal_E",
+   "top": [
+    [
+     "CoeurEau_L",
+     27.9,
+     32.7
+    ],
+    [
+     "Berserk_L",
+     27.8,
+     30.1
+    ],
+    [
+     "CoeurNature_L",
+     17.7,
+     18.3
+    ],
+    [
+     "CoeurLumiere_L",
+     10.3,
+     -1
+    ],
+    [
+     "CoeurEau_E",
+     1.9,
+     5.9
+    ],
+    [
+     "Poison_C",
+     1.6,
+     3
+    ],
+    [
+     "Poison_R",
+     1.6,
+     3
+    ],
+    [
+     "Poison_E",
+     1.6,
+     3
+    ]
+   ]
+  },
+  {
+   "k": "6598bdc6-b5f4-47a8-be11-761422965f71|Mimetisme_R",
+   "top": [
+    [
+     "CoeurEau_L",
+     40,
+     47.4
+    ],
+    [
+     "CoeurNature_L",
+     33.5,
+     40.6
+    ],
+    [
+     "Berserk_L",
+     32.8,
+     39
+    ],
+    [
+     "CoeurEau_E",
+     32.3,
+     37.8
+    ],
+    [
+     "CoeurNature_E",
+     31.3,
+     36.8
+    ],
+    [
+     "Reflect_L",
+     27.5,
+     29.9
+    ],
+    [
+     "CoeurLumiere_L",
+     26.6,
+     11.8
+    ],
+    [
+     "Poison_C",
+     25.7,
+     30.8
+    ]
+   ]
+  },
+  {
+   "k": "9f744687-461b-493e-9a9a-408906fafbde|Supra rayon humide",
+   "top": [
+    [
+     "CoeurEau_L",
+     31.4,
+     37
+    ],
+    [
+     "CoeurNature_L",
+     28.2,
+     31.9
+    ],
+    [
+     "CoeurEau_E",
+     19.8,
+     20.3
+    ],
+    [
+     "Berserk_L",
+     16.5,
+     17
+    ],
+    [
+     "CoeurNature_E",
+     10.5,
+     10.6
+    ],
+    [
+     "Berserk_E",
+     -5.4,
+     -4.8
+    ],
+    [
+     "CoeurEau_R",
+     -8,
+     -8.3
+    ],
+    [
+     "CoeurNature_R",
+     -13.2,
+     -14.3
+    ]
+   ]
+  },
+  {
+   "k": "9f744687-461b-493e-9a9a-408906fafbde|Reset_E",
+   "top": [
+    [
+     "CoeurEau_L",
+     40,
+     47.5
+    ],
+    [
+     "CoeurNature_L",
+     33.3,
+     39.9
+    ],
+    [
+     "Berserk_L",
+     33.3,
+     40
+    ],
+    [
+     "CoeurEau_E",
+     32.4,
+     37.7
+    ],
+    [
+     "CoeurNature_E",
+     30.1,
+     33.3
+    ],
+    [
+     "Berserk_E",
+     25.9,
+     26.5
+    ],
+    [
+     "CoeurLumiere_L",
+     20.8,
+     17.4
+    ],
+    [
+     "Aoe_L",
+     16.5,
+     19.3
+    ]
+   ]
+  },
+  {
+   "k": "9f744687-461b-493e-9a9a-408906fafbde|Brut_R",
+   "top": [
+    [
+     "CoeurEau_L",
+     40.9,
+     47.5
+    ],
+    [
+     "CoeurNature_L",
+     38.5,
+     40.7
+    ],
+    [
+     "Berserk_L",
+     37.9,
+     39
+    ],
+    [
+     "CoeurEau_E",
+     36.7,
+     37.7
+    ],
+    [
+     "CoeurNature_E",
+     32.3,
+     37.2
+    ],
+    [
+     "Berserk_E",
+     27.1,
+     22.3
+    ],
+    [
+     "Aoe_L",
+     26.4,
+     24.5
+    ],
+    [
+     "Aoe_E",
+     23.3,
+     21.4
+    ]
+   ]
+  },
+  {
+   "k": "5721ea5f-5978-4328-8874-28abc283f6b8|null",
+   "top": [
+    [
+     "CoeurEau_L",
+     41.1,
+     47.6
+    ],
+    [
+     "Berserk_L",
+     38.5,
+     40.3
+    ],
+    [
+     "CoeurNature_L",
+     38.5,
+     40.8
+    ],
+    [
+     "CoeurEau_E",
+     37.6,
+     37.9
+    ],
+    [
+     "CoeurNature_E",
+     32.6,
+     38.2
+    ],
+    [
+     "CoeurLumiere_L",
+     30.2,
+     23.5
+    ],
+    [
+     "Berserk_E",
+     28.6,
+     28
+    ],
+    [
+     "CoeurEau_R",
+     20.5,
+     18.8
+    ]
+   ]
+  },
+  {
+   "k": "5721ea5f-5978-4328-8874-28abc283f6b8|Feu allié",
+   "top": [
+    [
+     "CoeurEau_L",
+     29.8,
+     34.5
+    ],
+    [
+     "CoeurNature_L",
+     28,
+     32.4
+    ],
+    [
+     "Berserk_L",
+     27.1,
+     22.6
+    ],
+    [
+     "CoeurEau_E",
+     13.1,
+     16.5
+    ],
+    [
+     "CoeurNature_E",
+     11.3,
+     11.9
+    ],
+    [
+     "Berserk_E",
+     4.8,
+     2.7
+    ],
+    [
+     "CoeurLumiere_L",
+     0.2,
+     0.9
+    ],
+    [
+     "CoeurLumiere_E",
+     -5.1,
+     -7.2
+    ]
+   ]
+  },
+  {
+   "k": "5721ea5f-5978-4328-8874-28abc283f6b8|Embrasement",
+   "top": [
+    [
+     "CoeurEau_L",
+     39.8,
+     47.4
+    ],
+    [
+     "CoeurNature_L",
+     32.8,
+     40.1
+    ],
+    [
+     "Berserk_L",
+     31.8,
+     39.1
+    ],
+    [
+     "CoeurEau_E",
+     29.5,
+     36.6
+    ],
+    [
+     "CoeurNature_E",
+     28.5,
+     35.5
+    ],
+    [
+     "Berserk_E",
+     14.4,
+     20.4
+    ],
+    [
+     "CoeurEau_R",
+     9.9,
+     15.7
+    ],
+    [
+     "CoeurNature_R",
+     7.5,
+     13.1
+    ]
+   ]
+  }
+ ]
+}

@@ -1,0 +1,249 @@
+SPAM deck Verdant Fruit Cruncher + Thorn of Love (tier C): gameplan and Tox - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+Tier lists
+The gameplan
+Share
+# Verdant Fruit Cruncher + Thorn of Love
+Four cards. A shared purpose.
+Accessible Elemental ramp
+Earth
+C Tier 50% · Relative index v1.20
+No talent : Tier D · 41.6% · The reading for a player without duplicates: no talent is active. Same composition, same page, ranked on the no-talent deck scale.
+Ideal setup: the abilities to keep and the Tox to aim for, slot by slot. You don’t need them all: the purchase plan gives the priority order.
+S
+### Verdant Fruit Cruncher
+Earth · Common
+Epic AOE Talent · Recommended
+-
+Torrent ability Deck core
+-
+Earthheart tox Replaceable
+or replace with Earthheart + 24.6 %
+-
+Poison + 5.6 % Free slot T 2
+to buy
+D
+### Thorn of Love
+Earth · Common
+Weaken Talent · Recommended
+-
+Wisdom ability Deck core
+-
+Reflection tox Deck core
+-
+Phoenix Free slot T 6
+to buy
+A
+### Golden Boar
+Earth · Common
+Soul Vitality Talent · Recommended
+-
+Earth Shaker ability Deck core
+-
+Punching Bag tox Deck core
+-
+Earthheart Free slot T 8
+to buy
+B
+### Protector of Ruins
+Earth · Common
+F/W-Shield Talent · Recommended
+-
+Roly-Poly ability Deck core
+-
+Vitalheart Free slot T 4
+to buy
+-
+Free slot
+Earthheart + 33.1 %
+to buy
+### Tox priorities
+Priority order: which Tox to aim for at each shop opening, and which slot to put it in. The plan follows the Spamtons the deck generates and the rarities the shop offers as turns go by (everything is common at first, legendaries come late); draws remain random, one purchase per opening. The lines that carry the deck (Deck core) are never replaced, except by a better rarity of the same Tox.
+4 shop openings 338 Spamtons generated + 25.1 % Plan potential
+#### Shop openings
+At each opening: the odds of each rarity given the deck’s Luck on that turn, the Spamtons generated so far, and the advised purchase. One purchase per opening.
+Common Rare Epic Legendary
+- T 2 100 %
+Luck 2 · 61 Spamtons Poison
+- T 4 80 % 20 %
+Luck 4 · 126 Spamtons Vitalheart
+- T 6 50 % 45 %
+Luck 6 · 245 Spamtons Phoenix
+- T 8 27 % 53 % 20 %
+Luck 8 · 306 Spamtons Earthheart
+T 2
+#### Poison
+Verdant Fruit Cruncher · Common
++ 5.6 % T 4
+#### Vitalheart
+Protector of Ruins · Rare
++ 1.1 % T 6
+#### Phoenix
+Thorn of Love · Rare
++ 6.1 % T 8
+#### Earthheart
+Golden Boar · Rare
++ 12.4 %
+Expected value of a random purchase, before → after this plan: + 3.1 % → + 0.4 %
+Avoid for this deck Brutal · Waterheart · Shadowheart · Fireheart · Lightheart · Natureheart · Erosion · Inversion · Shapeshifter · Mimicry · Taunt · Revenge · Temporality
+Theoretical score 11,004
+Estimated elimination 9 turns
+Effective HP 4,981
+Healing 0
+Spamtons / turn 29
+### Opponent profiles
+Score averaged over nine theoretical opponents, as no real meta can be observed: neutral (700 HP, 10% resistance), fragile, tank, and six decks resisting one element (+25%), each played first and second. Score gap against the neutral profile, the one used for the displayed gameplan.
+Play order First + 0.2 % · 9.3 turns Second -0.2 % · 9.4 turns
+- Fragile deck + 11.7 % 8 turns · strength
+- Tank deck -13 % 11.2 turns · weakness
+-
+Resists Fire 0 % 9 turns
+-
+Resists Water 0 % 9 turns
+-
+Resists Earth -12.9 % 10.8 turns · weakness
+-
+Resists Nature 0 % 9 turns
+-
+Resists Shadow 0 % 9 turns
+-
+Resists Light 0 % 9 turns
+### Strengths
+-
+3 cards with active generation.
+-
+Estimated elimination in 9 turns.
+### Watch points
+-
+Sensitive to Earth resistance: -13% score, elimination in 10.8 turns against that profile.
+-
+No healing in the simulation.
+-
+No control recorded by the model.
+### Four key moments
+- 01 Set up opening bonuses and talents.
+- 02 Fuel the Earth axes.
+- 03 Simulated damage peak: turn 8.
+- 04 Estimated elimination: 9 turns.
+### Model ranking
+0% = average random deck. 100% = best deck found. This score is not a win rate.
+Understanding the scores
+### Talents
+#### Epic AOE
+Verdant Fruit Cruncher
+Start the game with the "AoE" passive.
+Recommended
+#### Weaken
+Thorn of Love
+Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Recommended
+#### Soul Vitality
+Golden Boar
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+#### F/W-Shield
+Protector of Ruins
+Fire resistance (+25%)
+Water resistance (+25%)
+Recommended
+Adapt in the workshop
+Copy deck
+### Why it works
+#### Start the engine
+Verdant Fruit Cruncher, Thorn of Love, Golden Boar feed the composition with bonuses. The main axes are Earth. Each bonus point increases damage and healing in its element by 10% in the model.
+#### Convert your bonuses
+Verdant Fruit Cruncher + Protector of Ruins have the strongest individual offensive profiles in this composition. The deck reaches 2,800 useful simulated damage, with elimination estimated at 9 turns. Check the curve to see when the investment pays off.
+#### Protect the composition
+The model estimates 4,981 effective HP and 0 healing. Healing is limited: check whether the offensive tempo fits your plan.
+### The gameplan Theoretical analysis
+Turn by turn, what the engine plays with this deck. The first two turns are unfolded.
+01 Turn 1 87 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Torrent Verdant Fruit Cruncher
+⚔ 69
+Roly-Poly Protector of Ruins
+⚔ 18
+02 Turn 2 204 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Earth Shaker Golden Boar
+⚔ 71 Earth +2
+Torrent Verdant Fruit Cruncher
+⚔ 98
+Roly-Poly Protector of Ruins
+⚔ 35
+See the rest of the plan Collapse the plan + 8 turns 03 Turn 3 169 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Torrent Verdant Fruit Cruncher
+⚔ 116
+Roly-Poly Protector of Ruins
+⚔ 53
+04 Turn 4 333 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Earth Shaker Golden Boar
+⚔ 106 Earth +2
+Torrent Verdant Fruit Cruncher
+⚔ 147
+Roly-Poly Protector of Ruins
+⚔ 80
+05 Turn 5 242 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Torrent Verdant Fruit Cruncher
+⚔ 136
+Roly-Poly Protector of Ruins
+⚔ 106
+06 Turn 6 412 damage Wisdom Thorn of Love
+Earth +2 · Nature +2 · Light +2
+Earth Shaker Golden Boar
+⚔ 143 Earth +2
+Torrent Verdant Fruit Cruncher
+⚔ 126
+Roly-Poly Protector of Ruins
+⚔ 143
+07 Turn 7 302 damage Torrent Verdant Fruit Cruncher
+⚔ 132
+Roly-Poly Protector of Ruins
+⚔ 170
+08 Turn 8 479 damage Earth Shaker Golden Boar
+⚔ 167 Earth +2
+Torrent Verdant Fruit Cruncher
+⚔ 104
+Roly-Poly Protector of Ruins
+⚔ 208
+09 Turn 9 348 damage Torrent Verdant Fruit Cruncher
+⚔ 109
+Roly-Poly Protector of Ruins
+⚔ 239
+10 Turn 10 Simulation complete. Simulation complete.
+### The rhythm of the deck
+152
+T 1
+278
+T 2
+252
+T 3
+403
+T 4
+320
+T 5
+441
+T 6
+301
+T 7
+479
+T 8
+348
+T 9
+0
+T 10
+Simulated raw damage per turn, including overkill. Simulation stops when the opponent is eliminated.
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

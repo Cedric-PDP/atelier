@@ -1,0 +1,878 @@
+{
+ "res": {
+  "A": {
+   "base": 8018,
+   "idealPct": 37.4,
+   "plan": [
+    "CoeurNature_C@T2",
+    "CoeurVital_R@T4",
+    "CoeurEau_E@T8",
+    "Berserk_R@T10"
+   ],
+   "famList": [
+    {
+     "fam": "CoeurEau",
+     "bestRarity": "CoeurEau_L",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 46.5
+    },
+    {
+     "fam": "CoeurNature",
+     "bestRarity": "CoeurNature_L",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 38.3
+    },
+    {
+     "fam": "Berserk",
+     "bestRarity": "Berserk_L",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 26.6
+    },
+    {
+     "fam": "Temporality",
+     "bestRarity": "Temporality_L",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 14.1
+    },
+    {
+     "fam": "Reflect",
+     "bestRarity": "Reflect_L",
+     "card": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "rem": null,
+     "pct": 13.9
+    },
+    {
+     "fam": "Mystere",
+     "bestRarity": "Mystere_R",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 10.2
+    },
+    {
+     "fam": "PunchingBag",
+     "bestRarity": "PunchingBag_C",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 10
+    },
+    {
+     "fam": "Mimetisme",
+     "bestRarity": "Mimetisme_R",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 9.4
+    },
+    {
+     "fam": "Frozen",
+     "bestRarity": "Frozen_E",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 6.9
+    },
+    {
+     "fam": "CoeurVital",
+     "bestRarity": "CoeurVital_L",
+     "card": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "rem": null,
+     "pct": 5.8
+    },
+    {
+     "fam": "Poison",
+     "bestRarity": "Poison_C",
+     "card": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "rem": null,
+     "pct": 5.7
+    }
+   ],
+   "pol": {
+    "none": {
+     "mean": 8018,
+     "pct": 0,
+     "p10": 8018,
+     "p90": 8018,
+     "buys": 0,
+     "fams": []
+    },
+    "rigid": {
+     "mean": 8328,
+     "pct": 3.9,
+     "p10": 8018,
+     "p90": 9006,
+     "buys": 0.72,
+     "fams": [
+      "CoeurNature:30%",
+      "Berserk:19%",
+      "CoeurVital:15%",
+      "CoeurEau:7%"
+     ]
+    },
+    "family": {
+     "mean": 8491,
+     "pct": 5.9,
+     "p10": 8018,
+     "p90": 9028,
+     "buys": 1.37,
+     "fams": [
+      "CoeurNature:50%",
+      "CoeurVital:42%",
+      "Berserk:25%",
+      "CoeurEau:20%"
+     ]
+    },
+    "adaptive": {
+     "mean": 8899,
+     "pct": 11,
+     "p10": 8498,
+     "p90": 9294,
+     "buys": 2.56,
+     "fams": [
+      "CoeurNature:60%",
+      "CoeurEau:47%",
+      "Berserk:41%",
+      "Reflect:22%",
+      "CoeurVital:19%",
+      "PunchingBag:18%"
+     ]
+    },
+    "adaptive_reroll": {
+     "mean": 9040,
+     "pct": 12.7,
+     "p10": 8646,
+     "p90": 9409,
+     "buys": 3.1,
+     "fams": [
+      "CoeurNature:82%",
+      "CoeurEau:73%",
+      "Berserk:53%",
+      "Reflect:23%",
+      "Primitive heal:17%",
+      "CoeurVital:17%"
+     ]
+    }
+   },
+   "hitGood": [
+    {
+     "turn": 2,
+     "pct": 56
+    },
+    {
+     "turn": 4,
+     "pct": 58
+    },
+    {
+     "turn": 6,
+     "pct": 59
+    },
+    {
+     "turn": 8,
+     "pct": 60
+    },
+    {
+     "turn": 10,
+     "pct": 60
+    }
+   ]
+  },
+  "B": {
+   "base": 6523,
+   "idealPct": 94,
+   "plan": [
+    "Poison_C@T2",
+    "CoeurVital_R@T4",
+    "CoeurEau_R@T6",
+    "Berserk_E@T8",
+    "CoeurEau_E@T10"
+   ],
+   "famList": [
+    {
+     "fam": "Berserk",
+     "bestRarity": "Berserk_L",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 56.3
+    },
+    {
+     "fam": "CoeurEau",
+     "bestRarity": "CoeurEau_L",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 51
+    },
+    {
+     "fam": "Poison",
+     "bestRarity": "Poison_C",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 34
+    },
+    {
+     "fam": "Reflect",
+     "bestRarity": "Reflect_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 32.8
+    },
+    {
+     "fam": "CoeurNature",
+     "bestRarity": "CoeurNature_L",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 29.1
+    },
+    {
+     "fam": "Cimetiere",
+     "bestRarity": "Cimetiere_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": "Primitive heal_C",
+     "pct": 25.9
+    },
+    {
+     "fam": "Multiplicator",
+     "bestRarity": "Multiplicator_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 22.8
+    },
+    {
+     "fam": "Aoe",
+     "bestRarity": "Aoe_L",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 22.7
+    },
+    {
+     "fam": "Bomba",
+     "bestRarity": "Bomba_E",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": "Primitive heal_C",
+     "pct": 16.8
+    },
+    {
+     "fam": "CoeurVital",
+     "bestRarity": "CoeurVital_E",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 14.9
+    },
+    {
+     "fam": "Primitive heal",
+     "bestRarity": "Primitive heal_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 13.4
+    },
+    {
+     "fam": "Phoenix",
+     "bestRarity": "Phoenix_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 12.7
+    },
+    {
+     "fam": "CoeurResistance",
+     "bestRarity": "CoeurResistance_L",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 10.4
+    },
+    {
+     "fam": "Taunt",
+     "bestRarity": "Taunt_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 10.1
+    },
+    {
+     "fam": "Frozen",
+     "bestRarity": "Frozen_E",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 8.1
+    },
+    {
+     "fam": "Mystere",
+     "bestRarity": "Mystere_R",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 7.5
+    },
+    {
+     "fam": "Brut",
+     "bestRarity": "Brut_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 7.4
+    },
+    {
+     "fam": "PunchingBag",
+     "bestRarity": "PunchingBag_C",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 7.3
+    },
+    {
+     "fam": "Vengeur",
+     "bestRarity": "Vengeur_E",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 6.9
+    },
+    {
+     "fam": "Tenacite",
+     "bestRarity": "Tenacite_C",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 6.5
+    },
+    {
+     "fam": "Mimetisme",
+     "bestRarity": "Mimetisme_R",
+     "card": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "rem": null,
+     "pct": 5.7
+    },
+    {
+     "fam": "Erosion",
+     "bestRarity": "Erosion_C",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 5
+    }
+   ],
+   "pol": {
+    "none": {
+     "mean": 6523,
+     "pct": 0,
+     "p10": 6523,
+     "p90": 6523,
+     "buys": 0,
+     "fams": []
+    },
+    "rigid": {
+     "mean": 7129,
+     "pct": 9.3,
+     "p10": 6523,
+     "p90": 8522,
+     "buys": 0.74,
+     "fams": [
+      "Poison:31%",
+      "CoeurEau:21%",
+      "CoeurVital:15%",
+      "Berserk:8%"
+     ]
+    },
+    "family": {
+     "mean": 7524,
+     "pct": 15.3,
+     "p10": 6664,
+     "p90": 8522,
+     "buys": 1.78,
+     "fams": [
+      "CoeurEau:49%",
+      "Berserk:46%",
+      "Poison:45%",
+      "CoeurVital:39%"
+     ]
+    },
+    "adaptive": {
+     "mean": 7992,
+     "pct": 22.5,
+     "p10": 7349,
+     "p90": 8686,
+     "buys": 4.36,
+     "fams": [
+      "Berserk:53%",
+      "Poison:50%",
+      "CoeurEau:47%",
+      "Reflect:41%",
+      "Cimetiere:32%",
+      "CoeurNature:32%"
+     ]
+    },
+    "adaptive_reroll": {
+     "mean": 8102,
+     "pct": 24.2,
+     "p10": 7488,
+     "p90": 8725,
+     "buys": 4.81,
+     "fams": [
+      "Poison:57%",
+      "CoeurEau:56%",
+      "Berserk:53%",
+      "Reflect:45%",
+      "Cimetiere:38%",
+      "PunchingBag:35%"
+     ]
+    }
+   },
+   "hitGood": [
+    {
+     "turn": 2,
+     "pct": 93
+    },
+    {
+     "turn": 4,
+     "pct": 93
+    },
+    {
+     "turn": 6,
+     "pct": 93
+    },
+    {
+     "turn": 8,
+     "pct": 94
+    },
+    {
+     "turn": 10,
+     "pct": 93
+    }
+   ]
+  },
+  "C": {
+   "base": 7165,
+   "idealPct": 45,
+   "plan": [
+    "CoeurEau_C@T2",
+    "CoeurVital_R@T4",
+    "CoeurEau_R@T6",
+    "CoeurEau_E@T8"
+   ],
+   "famList": [
+    {
+     "fam": "CoeurEau",
+     "bestRarity": "CoeurEau_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 43.5
+    },
+    {
+     "fam": "Berserk",
+     "bestRarity": "Berserk_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 42.5
+    },
+    {
+     "fam": "CoeurNature",
+     "bestRarity": "CoeurNature_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 27.7
+    },
+    {
+     "fam": "Cimetiere",
+     "bestRarity": "Cimetiere_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": "Primitive heal_C",
+     "pct": 25.2
+    },
+    {
+     "fam": "Poison",
+     "bestRarity": "Poison_C",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 24.3
+    },
+    {
+     "fam": "Reflect",
+     "bestRarity": "Reflect_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 21.1
+    },
+    {
+     "fam": "Multiplicator",
+     "bestRarity": "Multiplicator_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 18.2
+    },
+    {
+     "fam": "CoeurVital",
+     "bestRarity": "CoeurVital_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 14.3
+    },
+    {
+     "fam": "Bomba",
+     "bestRarity": "Bomba_E",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 13.1
+    },
+    {
+     "fam": "Phoenix",
+     "bestRarity": "Phoenix_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 11.3
+    },
+    {
+     "fam": "Primitive heal",
+     "bestRarity": "Primitive heal_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 11.2
+    },
+    {
+     "fam": "CoeurResistance",
+     "bestRarity": "CoeurResistance_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 10.1
+    },
+    {
+     "fam": "Taunt",
+     "bestRarity": "Taunt_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 9.2
+    },
+    {
+     "fam": "Mystere",
+     "bestRarity": "Mystere_R",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 8.2
+    },
+    {
+     "fam": "PunchingBag",
+     "bestRarity": "PunchingBag_C",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 8
+    },
+    {
+     "fam": "Brut",
+     "bestRarity": "Brut_R",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 6.6
+    },
+    {
+     "fam": "Temporality",
+     "bestRarity": "Temporality_L",
+     "card": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "rem": null,
+     "pct": 6.3
+    }
+   ],
+   "pol": {
+    "none": {
+     "mean": 7165,
+     "pct": 0,
+     "p10": 7165,
+     "p90": 7165,
+     "buys": 0,
+     "fams": []
+    },
+    "rigid": {
+     "mean": 7522,
+     "pct": 5,
+     "p10": 7165,
+     "p90": 8154,
+     "buys": 0.69,
+     "fams": [
+      "CoeurEau:53%",
+      "CoeurVital:15%"
+     ]
+    },
+    "family": {
+     "mean": 7530,
+     "pct": 5.1,
+     "p10": 7165,
+     "p90": 8154,
+     "buys": 0.74,
+     "fams": [
+      "CoeurEau:53%",
+      "CoeurVital:21%"
+     ]
+    },
+    "adaptive": {
+     "mean": 8443,
+     "pct": 17.8,
+     "p10": 7965,
+     "p90": 8913,
+     "buys": 3.7,
+     "fams": [
+      "Berserk:48%",
+      "CoeurEau:47%",
+      "CoeurNature:43%",
+      "Cimetiere:35%",
+      "Reflect:35%",
+      "PunchingBag:29%"
+     ]
+    },
+    "adaptive_reroll": {
+     "mean": 8583,
+     "pct": 19.8,
+     "p10": 8178,
+     "p90": 9041,
+     "buys": 3.97,
+     "fams": [
+      "CoeurEau:56%",
+      "Berserk:53%",
+      "CoeurNature:44%",
+      "PunchingBag:39%",
+      "Cimetiere:38%",
+      "Reflect:35%"
+     ]
+    }
+   },
+   "hitGood": [
+    {
+     "turn": 2,
+     "pct": 86
+    },
+    {
+     "turn": 4,
+     "pct": 86
+    },
+    {
+     "turn": 6,
+     "pct": 86
+    },
+    {
+     "turn": 8,
+     "pct": 86
+    },
+    {
+     "turn": 10,
+     "pct": 85
+    }
+   ]
+  },
+  "D": {
+   "base": 6210,
+   "idealPct": 96.2,
+   "plan": [
+    "Poison_C@T2",
+    "CoeurVital_R@T4",
+    "CoeurEau_R@T6",
+    "Berserk_E@T8",
+    "CoeurEau_E@T10"
+   ],
+   "famList": [
+    {
+     "fam": "Berserk",
+     "bestRarity": "Berserk_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 54.6
+    },
+    {
+     "fam": "CoeurEau",
+     "bestRarity": "CoeurEau_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 52.7
+    },
+    {
+     "fam": "Poison",
+     "bestRarity": "Poison_C",
+     "card": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "rem": "Life Steal_E",
+     "pct": 39.9
+    },
+    {
+     "fam": "Aoe",
+     "bestRarity": "Aoe_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 34.9
+    },
+    {
+     "fam": "CoeurNature",
+     "bestRarity": "CoeurNature_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 34.4
+    },
+    {
+     "fam": "Cimetiere",
+     "bestRarity": "Cimetiere_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 33.5
+    },
+    {
+     "fam": "Reflect",
+     "bestRarity": "Reflect_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 30.6
+    },
+    {
+     "fam": "CoeurTerre",
+     "bestRarity": "CoeurTerre_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 25.5
+    },
+    {
+     "fam": "Bomba",
+     "bestRarity": "Bomba_E",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 18.4
+    },
+    {
+     "fam": "CoeurVital",
+     "bestRarity": "CoeurVital_E",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 17.5
+    },
+    {
+     "fam": "Primitive heal",
+     "bestRarity": "Primitive heal_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 16.6
+    },
+    {
+     "fam": "Phoenix",
+     "bestRarity": "Phoenix_L",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 15
+    },
+    {
+     "fam": "Multiplicator",
+     "bestRarity": "Multiplicator_R",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 14.6
+    },
+    {
+     "fam": "Taunt",
+     "bestRarity": "Taunt_R",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 12.8
+    },
+    {
+     "fam": "CoeurResistance",
+     "bestRarity": "CoeurResistance_L",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 11.2
+    },
+    {
+     "fam": "Mystere",
+     "bestRarity": "Mystere_R",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 6.3
+    },
+    {
+     "fam": "Mimetisme",
+     "bestRarity": "Mimetisme_R",
+     "card": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "rem": null,
+     "pct": 6.1
+    },
+    {
+     "fam": "PunchingBag",
+     "bestRarity": "PunchingBag_C",
+     "card": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "rem": null,
+     "pct": 6.1
+    }
+   ],
+   "pol": {
+    "none": {
+     "mean": 6210,
+     "pct": 0,
+     "p10": 6210,
+     "p90": 6210,
+     "buys": 0,
+     "fams": []
+    },
+    "rigid": {
+     "mean": 6868,
+     "pct": 10.6,
+     "p10": 6210,
+     "p90": 8442,
+     "buys": 0.74,
+     "fams": [
+      "Poison:31%",
+      "CoeurEau:21%",
+      "CoeurVital:15%",
+      "Berserk:8%"
+     ]
+    },
+    "family": {
+     "mean": 7246,
+     "pct": 16.7,
+     "p10": 6326,
+     "p90": 8442,
+     "buys": 1.78,
+     "fams": [
+      "CoeurEau:49%",
+      "Berserk:46%",
+      "Poison:45%",
+      "CoeurVital:39%"
+     ]
+    },
+    "adaptive": {
+     "mean": 7695,
+     "pct": 23.9,
+     "p10": 7073,
+     "p90": 8692,
+     "buys": 4.46,
+     "fams": [
+      "Berserk:52%",
+      "CoeurEau:47%",
+      "Cimetiere:41%",
+      "Reflect:38%",
+      "CoeurNature:33%",
+      "Aoe:32%"
+     ]
+    },
+    "adaptive_reroll": {
+     "mean": 7810,
+     "pct": 25.8,
+     "p10": 7174,
+     "p90": 8766,
+     "buys": 4.86,
+     "fams": [
+      "Berserk:55%",
+      "CoeurEau:51%",
+      "Cimetiere:48%",
+      "CoeurNature:40%",
+      "Reflect:40%",
+      "Poison:34%"
+     ]
+    }
+   },
+   "hitGood": [
+    {
+     "turn": 2,
+     "pct": 86
+    },
+    {
+     "turn": 4,
+     "pct": 87
+    },
+    {
+     "turn": 6,
+     "pct": 89
+    },
+    {
+     "turn": 8,
+     "pct": 90
+    },
+    {
+     "turn": 10,
+     "pct": 90
+    }
+   ]
+  }
+ }
+}

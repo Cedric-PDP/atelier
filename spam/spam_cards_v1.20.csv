@@ -1,0 +1,318 @@
+﻿n;name;element;rarity;hp;spamton;tier;rank;roles;talents;abilities_text
+1;"Fire Spirit";fire;common;500;10;C;95;"balanced";"Fire Heart | Aquatic Field | Cavalry";"Fire Spirit Breath of Flames Deal 10 Fire damage Fire bonus (+1) Blaze Fire bonus (+1) Fire Heart Aquatic Field Cavalry"
+2;"Water Spirit";water;common;500;10;D;100;"balanced";"Water Heart | Blazing Field | Cavalry";"Water Spirit Aquatic Breath Deal 10 Water damage Water bonus (+1) Wave Water bonus (+1) Water Heart Blazing Field Cavalry"
+3;"Nature Spirit";nature;common;500;10;C;93;"balanced";"Nature Heart | Earth Field | Cavalry";"Nature Spirit Breeze Whisper Deal 10 Nature damage Nature bonus (+1) Windmill Nature bonus (+1) Nature Heart Earth Field Cavalry"
+4;"Earth Spirit";earth;common;500;10;C;94;"balanced";"Earth Heart | Natural Field | Cavalry";"Earth Spirit Earthen Breath Deal 10 Earth damage Earth bonus (+1) Rampart Earth bonus (+1) Earth Heart Natural Field Cavalry"
+5;"Shadow Spirit";shadow;common;500;10;D;101;"balanced";"Shadow Heart | Luminous Field | Cavalry";"Shadow Spirit Shadow Breath Deal 10 Shadow damage Shadow bonus (+1) Umbral Shadow bonus (+1) Shadow Heart Luminous Field Cavalry"
+6;"Light Spirit";light;common;500;10;D;96;"balanced";"Light Heart | Shadow Field | Cavalry";"Light Spirit Radiant Whisper Deal 10 Light damage Light bonus (+1) Screen Light bonus (+1) Light Heart Shadow Field Cavalry"
+12;"Hibernatus";water;common;750;12;C;64;"generation/economy";"Multi Start | Bomb-8 | Anticipation";"Hibernatus Aquallo Deal [10 to 20] Light damage
+Deal [10 to 20] Water damage
+Bonus (+5) in a random element Dyke Apply Taunt Multi Start Bomb-8 Anticipation Lucky"
+17;"Verdant Fruit Cruncher";earth;common;650;11;S;7;"offense/economy";"Epic AOE | Lucky Tox | Breath-8";"Verdant Fruit Cruncher Torrent Deal [20 to 30] Earth damage Random Epic AOE Lucky Tox Breath-8 Earthheart"
+21;"Wandering Feline";shadow;common;550;5;B;58;"balanced";"Cash Out | Roulette | Evolution";"Wandering Feline Offensive Aim Deal 15 Shadow damage
+Eternity on critical hit Swift Leap Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%) Cash Out Roulette Evolution Vitalheart"
+22;"Glimmer of Hope";light;common;900;10;D;104;"support/defense/economy";"Lucky Tox | Roulette | Transition";"Glimmer of Hope Breath Heal 20 Nature
+Heal 20 Light
+Resistance in a random element (+15) Lucky Tox Roulette Transition Lucky"
+23;"Artisan of Hours";light;common;700;5;D;111;"defense/control";"Reckless | Debt | Resilience";"Artisan of Hours Slowing Apply Eternity Flash Deal 35 Light damage
+[Freeze] Reckless Debt Resilience"
+25;"Amber";fire;rare;750;10;A;25;"generation";"Roulette | Inversion | F/W-Shield";"Amber Amber Mist Deal 10 Fire damage
+Deal 20 Water damage Water bonus (+4) Misty Blaze Deal 10 Water damage
+Deal 20 Fire damage Fire bonus (+4) Roulette Inversion F/W-Shield"
+26;"Blaze";fire;rare;750;10;A;26;"generation";"Roulette | Inversion | F/W-Shield";"Blaze Amber Mist Deal 10 Fire damage
+Deal 20 Water damage Water bonus (+4) Misty Blaze Deal 10 Water damage
+Deal 20 Fire damage Fire bonus (+4) Roulette Inversion F/W-Shield"
+27;"Nimbus Seahorse";water;rare;900;4;C;77;"balanced";"Multi Start | Piercing | Inaccuracy";"Nimbus Seahorse Supra-Dew-Ray Deal 25 Water, 25 Light and 25 Nature damage Water bonus (+3) & Light bonus (+3) & Nature bonus (+3) Multi Start Piercing Inaccuracy Reset Brutal"
+29;"Princess Meridia";nature;rare;750;7;A;17;"generation/defense/control";"Life-8 | Strike | Length";"Princess Meridia Critical Wind Deal 40 Nature damage
+[Freeze] Delight Water bonus (+2 to +5) Nature bonus (+2 to +5) Life-8 Strike Length"
+30;"Birth of Aldrin";nature;rare;700;7;D;124;"utility";"Ultimate Reset | Phoenix Feather | 360 Turn";"Birth of Aldrin First Waltz Deal 50 Nature damage Ultimate Reset Phoenix Feather 360 Turn Phoenix Reset"
+31;"Raffteru";earth;rare;600;5;C;92;"balanced";"Ultimate Reset | Crit Sphere | Brutal";"Raffteru Random Rumble Deal 70 Earth damage
+Critical (+20%) on all allied cards Fortunate Leap Deal 10 Nature damage
+Echo (50%) Ultimate Reset Crit Sphere Brutal"
+32;"Mistress of Tints";earth;rare;600;10;B;41;"balanced";"Multi Start | Heart of Steel | Piercing";"Mistress of Tints Elemental Chaos Deal 15 Nature damage Random
+15 Earth damage
+15 Fire damage
+15 Light damage
+15 Shadow damage
+15 Water damage Multiboost Bonus (+3) in every element Multi Start Heart of Steel Piercing"
+33;"Nakyel";shadow;rare;500;3;D;109;"utility";"Shadow Heart | Length | Soul Vitality";"Nakyel Skinning Deal 20 Shadow damage
+Increases base damage by (+5)
+Increases the caster's resistances by (+5%) Shadow Heart Length Soul Vitality Eternity"
+34;"Gleam of the White Fox";shadow;rare;700;5;S;5;"offense/control";"Strike | Critical | Reckless";"Gleam of the White Fox Doubleshadow Deal 15 Shadow damage to all enemy cards Shadow bonus (+2) Darkaqua Choice
+Deal 20 Water damage
+[Freeze]
+---------- or ----------
+Deal 20 Shadow damage
+Apply Eternity Strike Critical Reckless"
+35;"Léo";light;rare;800;6;C;68;"defense";"Length | Life-8 | Mimicry";"Léo Purifying Flash Deal [20 to 60] Light damage
+Deal [20 to 60] Light damage
+Random enemies
+Apply Eternity Length Life-8 Mimicry Mimicry"
+36;"Astry";light;rare;600;10;B;47;"generation";"Mystery | Reckless | Blue Whale";"Astry Misunderstood Genius Bonus (+35) in a random element Chiaroscuro Deal 40 Shadow damage
+Heal the caster 40 Light Mystery Reckless Blue Whale"
+37;"King of the Blazing Flames";fire;epic;900;7;C;81;"balanced";"Counter | Evolution | Crit Sphere";"King of the Blazing Flames Scorching Bite Deal 15 Fire damage
+Deal 15 Earth damage
+Critical of all the caster's cards (+5%) Counter Evolution Crit Sphere Phoenix"
+39;"Sylvan, Protector of the Verdure";nature;common;550;5;C;65;"balanced";"Increasing Error | 360 Turn | Piercing";"Sylvan, Protector of the Verdure Double Breath Deal 25 Nature damage
+Deal 25 Nature damage
+Deal 25 Nature damage Swift Leap Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%) Increasing Error 360 Turn Piercing Erosion"
+42;"Wyrmling of Lights";light;epic;500;3;B;52;"balanced";"New Rich | New Life | Magic Coin";"Wyrmling of Lights Peaceful Glow Deal 20 Light damage
+Steals (+1) Light Thoughtful Aid Apply Temporality New Rich New Life Magic Coin"
+43;"Sovereign of Flames";fire;legendary;900;7;A;13;"offense/defense";"Critical | Eternalized | Shared Shield";"Sovereign of Flames Roaring Ember Deal 10 Fire damage Fire resistance (+3) Divine Warmth Deal 20 Fire damage to all enemy cards Ignition Critical (+5%) on all allied cards Critical Eternalized Shared Shield"
+44;"Leviathan of the Skies";water;legendary;1000;5;B;37;"defense";"Blue Whale | Soul Vitality | Evolution";"Leviathan of the Skies Crushwave Deal damage equal to 30% of the target's max HP Ultimate Relief Heals itself for 50% of its max HP Blue Whale Soul Vitality Evolution Waterheart"
+45;"Aldrin & Gorakar";nature;legendary;700;4;C;75;"offense";"Blazing Field | Eternalized | Ultimate Reset";"Aldrin & Gorakar Waltz of Clouds Deal 90 Nature damage
+[Limited Use 1/1] Critical Breath Deal 7 Nature damage
+Deal 7 Nature damage Earthstamp Deal 10 Earth damage
+Deal 10 Nature damage Blazing Field Eternalized Ultimate Reset"
+47;"Nocturnal Watcher";shadow;legendary;800;7;A;19;"economy";"Reckless | Legacy | Revaluation";"Nocturnal Watcher Final Night Apply Temporality x(+3) to all allied cards Shadowcleave Deal [10 to 30] Shadow damage
+Deal [10 to 30] Nature damage Tenebr'heal Deal 40 Shadow damage Shadow bonus (+1)
+Vampirism Reckless Legacy Revaluation"
+51;"Pyrokinetic Sorceress";fire;common;800;8;A;22;"defense";"Light Heart | Resilience | Weaken";"Pyrokinetic Sorceress Enchanted Flame Deal 25 Fire damage
+Apply Eternity on critical hit
+Deal 25 Light damage
+Apply Eternity on critical hit
+Lowers the opponent's Fire and Light resistance by (10%) Solid Veil Resistance to all elements (+3) Light Heart Resilience Weaken"
+54;"Intrepid Otter";water;common;650;5;B;62;"support";"Roulette | Critical | Weaken";"Intrepid Otter Bite Deal 6 Water damage
+Critical (+3%) on all allied cards Roulette Critical Weaken"
+56;"Lisa, the Dragonrider";nature;common;800;7;S;3;"offense";"Increasing Error | Transition | Rare AOE";"Lisa, the Dragonrider Random Current Deal [30 to 50] Nature damage Random Nature bonus (+2) Increasing Error Transition Rare AOE Vanish"
+58;"The Wild Carrier";earth;common;1000;7;D;116;"utility";"Focus | Evolution | Cavalry";"The Wild Carrier Stronghold Apply Taunt for 2 turns Focus Evolution Cavalry Punching Bag"
+59;"Snow Warrior";earth;common;600;7;B;44;"control";"Bomb-8 | Vital Chance | Brutal";"Snow Warrior Earthcleave Deal 30 Earth damage
+[Freeze] Multiboost Bonus (+3) in every element Bomb-8 Vital Chance Brutal"
+60;"Protector of Ruins";earth;common;700;6;B;54;"offense";"F/W-Shield | F/E-Shield | L-Shield";"Protector of Ruins Roly-Poly Deal 15 Earth damage
+Base damage increases by 5 F/W-Shield F/E-Shield L-Shield"
+63;"Shado, Abyssal Scourge";shadow;common;800;11;B;57;"defense/economy";"Resilience | Evolution | Soul Armor";"Shado, Abyssal Scourge Tenebr'heal Deal 40 Shadow damage Shadow bonus (+1)
+Vampirism Resilience Evolution Soul Armor Ancient Healing AoE"
+64;"Master Thronebéur";light;common;850;8;C;88;"support";"Length | Multi Start | Fortune";"Master Thronebéur Slowing Apply Eternity Luminous Hammer Deal 20 Light damage
+Deal 20 Earth damage
+Accuracy (+20%) on all allied cards Length Multi Start Fortune"
+67;"Logidrake, the Ignatius";fire;rare;500;5;C;91;"offense";"Cash Out | New Life | Heart of Steel";"Logidrake, the Ignatius Lucky-Fire Deal 7 Fire damage
+Deal 7 Fire damage
+Deal 7 Fire damage
+Echo (50%) Cash Out New Life Heart of Steel Vampirism"
+69;"Scorch, the Ignited Lizards";water;rare;350;7;D;117;"generation";"New Life | Evolution | Debt";"Scorch, the Ignited Lizards Flameflow Fire bonus (+3) Water bonus (+3) Earth bonus (+3) New Life Evolution Debt Ancient Healing"
+71;"Astral Healer of the Woods";nature;rare;600;11;C;90;"support/economy";"Legacy | Crit Sphere | Evolution";"Astral Healer of the Woods Magic Leaf Heal 10 Nature
+Critical (+2%) on all allied cards Legacy Crit Sphere Evolution Natureheart Lucky"
+72;"Floral Giraffe";nature;rare;750;7;D;110;"support";"Multi Start | Cavalry | Corrosion";"Floral Giraffe Sylvan Rebirth Apply Taunt
+Accuracy and Critical (+5%) on all allied cards Multi Start Cavalry Corrosion Punching Bag"
+78;"Green Guardian";light;rare;800;10;A;15;"control";"13th month | Heart of Steel | AOE";"Green Guardian Radiance Deal 80 Light damage
+The target's cooldowns are reset to maximum Multi Heal Heal 40 Light to all allied cards 13th month Heart of Steel AOE"
+81;"Abyssal Lightbearer";water;epic;600;4;B;46;"offense";"Roulette | Increasing Error | One Man Army";"Abyssal Lightbearer Hazardo Deal [20 to +30] Water damage Random Beacon Deal [30 to 50] Light damage to all enemy cards
+Accuracy (-10%) Roulette Increasing Error One Man Army"
+82;"Prankster Whale";water;common;1000;7;B;60;"offense";"Blue Whale | Hardening | Cavalry";"Prankster Whale Hydroluck Deal 35 Water damage
+Echo (50%) Hahahahahaha Caster's critical (+50%) Blue Whale Hardening Cavalry"
+83;"Imaginary Panther";nature;epic;600;4;C;84;"offense";"Vital Chance | Roulette | Brutal";"Imaginary Panther Crazy Speed Deal 9 Nature damage
+Echo (75%) Vital Chance Roulette Brutal"
+85;"Blue-Stone-Eater";earth;epic;500;4;C;71;"offense";"Inscribed | Strike | Phoenix Feather";"Blue-Stone-Eater Rock-Swallower Choice
+Deal 30 Earth damage to all enemy cards
+---------- or ----------
+Deal [10 to 70] Earth damage to all enemy cards Inscribed Strike Phoenix Feather Phoenix Reset"
+86;"Regent of the Abysses";earth;epic;1000;6;B;42;"generation/defense";"Focus | Resilience | One Man Army";"Regent of the Abysses Quakecry Deal 15 Earth damage
+Deal 15 Shadow damage Earth bonus (+3) Shadow bonus (+3) Engulfment Absorbs an allied card Focus Resilience One Man Army Ancient Healing"
+88;"Faerylia";shadow;epic;600;5;C;89;"control";"Revitalization | Multi Start | Doomed Hour";"Faerylia Global Aim Apply Eternity to all enemy cards Offensive Aim Deal 15 Shadow damage
+Eternity on critical hit Multiboost Bonus (+3) in every element Revitalization Multi Start Doomed Hour"
+91;"Ignea";fire;legendary;750;10;S;6;"control";"Blue Whale | Reckless | Ultimate Reset";"Ignea Incandescence Deal 120 Fire damage Random Fire bonus (+2) Silentfire Apply [Freeze] Blue Whale Reckless Ultimate Reset"
+92;"Frost & Glacier";water;legendary;500;4;C;69;"offense/control";"Ultimate Reset | Revaluation | Magic Coin";"Frost & Glacier Muddy Water Deal 25 Water damage
+Deal 25 Water damage
+Random enemies Ultimate Reset Revaluation Magic Coin Freeze Erosion"
+94;"Zayd";earth;legendary;600;1;D;122;"utility";"Shared Shield | Heart of Steel | Critical";"Zayd World's End Deal 50 Earth damage Random
+Deal 50 Nature damage
+Deal 50 Fire damage
+Deal 50 Light damage
+Deal 50 Shadow damage
+Deal 50 Water damage Fortress Apply Taunt Shared Shield Heart of Steel Critical Revenge"
+96;"Melody of Divinities";light;legendary;550;3;A;18;"offense/economy";"Legacy | Corrupted Heart | One Man Army";"Melody of Divinities Celestial Arrows Deal 3 Light damage Random X18 Divine Judgment The opponent's Spamtons drop to 0 Legacy Corrupted Heart One Man Army"
+97;"Pyro";fire;common;500;4;B;36;"offense";"Crit Sphere | Eternalized | Phoenix Feather";"Pyro Conflagration Deal 5 Fire damage to all enemy cards
+Fire bonus (+1) Crit Sphere Eternalized Phoenix Feather"
+100;"Aquatic Whiteness";water;common;700;7;A;29;"defense";"F/E-Shield | F/W-Shield | L-Shield";"Aquatic Whiteness Swallowater Deal 100 Water damage
+Heal the caster 100 Water Water bonus (+2) F/E-Shield F/W-Shield L-Shield"
+101;"Neilla";water;common;650;9;D;99;"defense";"Inscribed | Reducer | Breath-8";"Neilla Marine Protection Heal 80 Water
+Resistance to all elements (+15)
+Apply Taunt Inscribed Reducer Breath-8 Temporality"
+102;"Murmurs of Black Coral";water;common;500;7;B;45;"balanced";"Shared Shield | Roulette | Shadow Field";"Murmurs of Black Coral Whisper Heal 10 Water
+Base healing increases by 5 Aquatic Breath Deal 10 Water damage Water bonus (+1) Shared Shield Roulette Shadow Field Multiplier"
+103;"Blade of the Forest";nature;common;650;5;B;49;"support";"Nature Heart | Extortion | Weaken";"Blade of the Forest Pincers Deal 5 Nature damage Critical Recovery Heal 20 Nature
+Critical (+10%) on critical hit Nature Heart Extortion Weaken"
+106;"Thorn of Love";earth;common;500;6;D;97;"generation";"Revaluation | Magic Coin | Weaken";"Thorn of Love Wisdom Earth bonus (+2) Nature bonus (+2) Light bonus (+2) Revaluation Magic Coin Weaken Reflection"
+113;"Lums";light;common;600;7;D;102;"balanced";"Light Heart | Shadow Heart | Crit Sphere";"Lums Silver Wind Choice
+Deal 10 Light and 10 Shadow damage
+---------- or ----------
+Light bonus (+3) & Shadow bonus (+3) Liftoff Critical damage (+1) on all cards on the field Light Heart Shadow Heart Crit Sphere"
+115;"Aidan";fire;common;750;8;C;66;"generation";"Counter | Focus | Transition";"Aidan Luckster Bonus (+10) in a random element Pay-torch [Cost 10 Fire]
+Deal 30 damage in a random element Counter Focus Transition Vanish"
+116;"Prisoner of the Machine";fire;common;1000;3;B;55;"balanced";"Paradox | 360 Turn | Punching Bag";"Prisoner of the Machine Explosion [Cost 100 HP]
+Deal 10 Fire damage
+After use, this attack’s base damage increases by (+10) Emberguard Apply Taunt Paradox 360 Turn Punching Bag"
+117;"Keria";fire;rare;550;8;D;123;"support";"Shared Shield | Eternalized | Breath-8";"Keria Allied Fire Base damage and healing increase by 3 for all allied cards Ignition Critical (+5%) on all allied cards Shared Shield Eternalized Breath-8"
+119;"Marineflower";water;common;600;6;A;27;"balanced";"Piercing | Critical | Increasing Error";"Marineflower Whistling fin Deal 10 Water damage
++ Water bonus (+2) on critical hit
+Deal 10 Nature damage
++ Nature bonus (+2) on critical hit Seabed Accuracy (+12%) Piercing Critical Increasing Error"
+122;"Spirit of the Fauna";nature;common;800;8;S;2;"offense/control";"Length | Immunity-8 | Erosion";"Spirit of the Fauna Call of the Forest Deal 30 Nature damage to all enemy cards Nature bonus (+4) Solar heal Heal 60 Light
+[Freeze] Length Immunity-8 Erosion"
+123;"Weaver of Words";nature;common;500;3;B;50;"balanced";"Legacy | Vital Surge | Corrosion";"Weaver of Words Black Widow Absorbs a card Legacy Vital Surge Corrosion Punching Bag"
+124;"Horned Dune Wyrm";earth;common;500;4;D;119;"utility";"Erosion | Life-8 | Last Breath";"Horned Dune Wyrm Scorching Bite Deal 15 Fire damage
+Deal 15 Earth damage
+Critical of all the caster's cards (+5%) Erosion Life-8 Last Breath Mimicry"
+127;"Canine Specter";shadow;common;1000;7;S;4;"offense";"Eternalized | Hardening | One Man Army";"Canine Specter Bang-Boom Deal 20 Shadow and 20 Light damage to all enemy cards Eternalized Hardening One Man Army Shadowheart Lightheart"
+128;"Devourer of Fauna";shadow;common;700;5;C;76;"balanced";"L-Shield | F/E-Shield | F/W-Shield";"Devourer of Fauna Ball of Hatred Deal 5 Shadow damage
+Base damage increases by 5 L-Shield F/E-Shield F/W-Shield Vampirism"
+134;"Wibs the Blazing";fire;common;550;5;A;28;"offense";"F/E-Shield | Strike | Increasing Error";"Wibs the Blazing Lava-flow Deal 5 Fire damage
+Deal 5 Fire damage F/E-Shield Strike Increasing Error Fireheart Poison"
+136;"Sovereign of the Ether Falls";water;rare;800;5;A;20;"offense/support";"Legacy | Piercing | Last Breath";"Sovereign of the Ether Falls Glacial Laser Deal 10 Water damage Critical Fall Critical (+10%) Precise Fall Accuracy (+10%) Legacy Piercing Last Breath"
+137;"Deer of Mournful Colors";nature;rare;600;5;C;74;"offense";"Cash Out | Multi Start | Soul Armor";"Deer of Mournful Colors Elemental Drain Deal 6 Earth damage Random
+Deal 6 Nature damage
+Deal 6 Fire damage
+Deal 6 Water damage
+Deal 6 Light damage
+Deal 6 Shadow damage
+Vampirism Cash Out Multi Start Soul Armor Multiplier"
+139;"Mythic Horned One";earth;rare;700;5;B;56;"offense";"Roulette | 360 Turn | Breath-8";"Mythic Horned One Horn 25 The target is set to 25% of its max HP Horn 75 The target is set to 75% of its max HP Roulette 360 Turn Breath-8"
+140;"Mouse of the Wheat";earth;rare;500;10;D;107;"support";"Luminous Field | Bargain | Length";"Mouse of the Wheat Outbreak Heal 125 Earth Earth bonus (+2) Luminous Field Bargain Length Vanish"
+142;"Squall, Emissary of Nightmares";shadow;rare;1000;8;B;40;"defense";"Blue Whale | Counter | One Man Army";"Squall, Emissary of Nightmares Cosmic Flames Deal 15 Fire damage
+Deal 20 Shadow damage Fire bonus (+3) Cosmic Light Deal 15 Light damage
+Deal 20 Shadow damage Light bonus (+3) Blue Whale Counter One Man Army Berserk"
+146;"Chatty Octopus";water;epic;500;3;D;105;"balanced";"New Life | Shared Shield | Inversion";"Chatty Octopus Dry ink Heal 10 Water Water bonus (+2) New Life Shared Shield Inversion Smoke"
+151;"Minion of Flames";fire;common;800;9;D;114;"support";"Length | Inscribed | Evolution";"Minion of Flames Sweet Home Heal 25 Fire Random
+Heal 25 Fire
+Heal 25 Fire Length Inscribed Evolution AoE Berserk"
+152;"Herald of Ashes";fire;common;800;8;D;118;"economy";"Fortune | Focus | Corrosion";"Herald of Ashes Dragon's Breath Choice
+Deal 30 Fire damage
+Deal 10 Nature damage
+Deal 10 Nature damage
+---------- or ----------
+Fire bonus (+5) Nature bonus (+5) Fortune Focus Corrosion Smoke Lucky"
+153;"The Inventor";fire;common;1000;5;D;121;"defense";"Roulette | Vital Chance | Soul Vitality";"The Inventor Materia Bonus [-8 to +10] in every element Rainbow Deal 10 damage in a random element Roulette Vital Chance Soul Vitality Multiplier"
+156;"The Eye of the Mountains";water;common;600;6;D;108;"balanced";"Heart of Steel | Inscribed | Critical";"The Eye of the Mountains Revitalization Heal 50 Water
+Critical damage (+1) Heart of Steel Inscribed Critical Berserk Waterheart"
+158;"Feathered Rabbit";nature;common;1000;7;C;78;"balanced";"Soul Vitality | Evolution | One Man Army";"Feathered Rabbit Piercing Sound [Cost 1 Nature]
+Deal 20 Nature damage
+Base damage of this attack increases by (+2) after use Soul Vitality Evolution One Man Army Heart Resistance Backlash"
+160;"Golden Boar";earth;common;900;6;A;11;"defense";"Blue Whale | Vital Surge | Soul Vitality";"Golden Boar Earth Shaker Deal 40 Earth damage Random
+Increases its max HP by 40 Earth Earth bonus (+2) Blue Whale Vital Surge Soul Vitality Punching Bag"
+174;"Floral Zombie";nature;common;1000;5;B;61;"balanced";"Revaluation | Ultimate Reset | Transition";"Floral Zombie Aquatic Curse Deal [30 to +60] Water damage
+Deal [30 to +60] Nature damage
+Apply Vanish Revaluation Ultimate Reset Transition Waterheart Natureheart"
+176;"Rob the Adventurer";earth;common;500;9;D;103;"generation";"Inscribed | Doomed Hour | Evolution";"Rob the Adventurer Adventure Base damage and healing increase by 1
+Accuracy and Critical (+4%) Inscribed Doomed Hour Evolution Shadowheart Earthheart"
+177;"Moxilys, the Humming One";shadow;common;900;9;S;1;"offense/support/defense";"Resilience | Life-8 | Magic Coin";"Moxilys, the Humming One Doubleshadow Deal 15 Shadow damage to all enemy cards Shadow bonus (+2) Regenair Heal 10 Nature Random X4 Resilience Life-8 Magic Coin"
+178;"Medusine Thorn";shadow;common;800;10;S;10;"offense";"Aquatic Field | Blazing Field | Weaken";"Medusine Thorn Inflamed Toxin Deal [1 to 35] Water damage
+Heal [1 to 35] Fire Aquatic Field Blazing Field Weaken Multiplier"
+180;"Sky Dragon";light;common;700;8;D;120;"economy";"Last Breath | Ultimate Reset | Fortune";"Sky Dragon Dazzling Breath Deal 40 Light damage Tornado Breath Deal 40 Nature damage Last Breath Ultimate Reset Fortune Avenger"
+188;"Commando Gerz";earth;rare;1200;4;S;9;"generation/defense";"Inaccuracy | Heart of Steel | Soul Vitality";"Commando Gerz Cigarillos Earth bonus (+3) Light bonus (+3) Final Delight Deal 100 Earth damage Random
+Deal 100 Light damage Inaccuracy Heart of Steel Soul Vitality Berserk"
+190;"Wander Blades";shadow;rare;550;15;D;127;"economy";"Bargain | Cavalry | Length";"Wander Blades Bargain Cavalry Length Graveyard Heart Resistance Lucky"
+191;"Ameru";light;rare;800;15;B;59;"generation/economy";"Corrosion | Hardening | Cavalry";"Ameru Smoky Dream Deal 15 Light, 15 Water and 15 Shadow damage Light bonus (+4) & Water bonus (+4) & Shadow bonus (+4) Corrosion Hardening Cavalry Smoke"
+193;"Vladislaus";fire;epic;350;4;D;126;"utility";"Vital Surge | Phoenix Feather | Soul Vitality";"Vladislaus Double Influx Deal 5 Fire damage
+Deal 5 Shadow damage
+Base damage increases by 5 Transfusion Steals 100 max HP from an ally to heal itself for the same amount Vital Surge Phoenix Feather Soul Vitality Tenacity"
+195;"Gabriel";nature;epic;1000;9;A;12;"generation";"Earth Field | Soul Vitality | Lucky Tox";"Gabriel Cocoon Deal 20 Nature damage Nature bonus (+5)
+[Limited Use 1/1] Caterpillar Deal 40 Nature damage Nature bonus (+10)
+[Limited Use 1/1] Butterfly Deal 60 Nature damage Nature bonus (+15)
+[Limited Use 1/1] Earth Field Soul Vitality Lucky Tox"
+197;"Codex of Ancient Woes";shadow;epic;1000;10;C;79;"generation/defense";"F/W-Shield | L-Shield | F/E-Shield";"Codex of Ancient Woes Dark Script Shadow bonus (+1). Base bonus increases by 1 F/W-Shield L-Shield F/E-Shield Immunity"
+198;"Codex of Luminous Spells";light;epic;1000;10;C;80;"generation/defense";"F/W-Shield | L-Shield | F/E-Shield";"Codex of Luminous Spells Luminescent Script Light bonus (+1). Base bonus increases by 1 F/W-Shield L-Shield F/E-Shield Immunity"
+203;"Ashtarae Lycaria";shadow;legendary;1000;8;A;21;"support/defense";"Heart of Steel | Life-8 | Increasing Error";"Ashtarae Lycaria Melody No. 1 Deal [15 to 25] Shadow damage
+Critical (+2%) on all allied cards Melody No. 2 Heal [15 to 25] Shadow
+Accuracy (+2%) on all allied cards Resurrection Revives the last destroyed ally with half of its max HP Heart of Steel Life-8 Increasing Error"
+204;"Ephial";light;legendary;1500;12;C;87;"support/defense/economy";"Cavalry | Focus | Lucky Tox";"Ephial Astral Tackle Deal 20 Light damage
+Deal 20 Shadow damage
+Deal 20 Nature damage Planet Heal Heal 70 Light to all allied cards Cavalry Focus Lucky Tox Reset"
+206;"Catimimi";fire;common;500;5;C;73;"offense";"Eternalized | Legacy | Magic Coin";"Catimimi Darkflight Slap [Cost 2 Fire & 2 Shadow & 2 Nature]
+Deal 15 Shadow, 15 Nature and 15 Fire damage to all enemy cards
+Shadow bonus (+3) & Nature bonus (+3) & Fire bonus (+3) Eternalized Legacy Magic Coin"
+211;"Celestial Dragosaur";nature;common;800;12;A;23;"control/economy";"Rare AOE | Critical | Soul Armor";"Celestial Dragosaur Howl Strike Choice
+Deal [10 to 100] Nature damage
+[Freeze]
+---------- or ----------
+Deal [45 to 65] Earth damage
+[Freeze] Rare AOE Critical Soul Armor Reset"
+219;"Catixy";shadow;common;600;5;A;24;"offense/support";"Extortion | Critical | Inversion";"Catixy Mewling Deal [4 to 16] Shadow damage
+Caster's critical (+5%) Sinister Charm Critical (+25%) on a random allied card Extortion Critical Inversion"
+221;"Toad of the Stars";light;common;900;6;B;53;"balanced";"Aquatic Field | Evolution | Soul Vitality";"Toad of the Stars Eye for an Eye Deal 40 Light damage Aquatic Field Evolution Soul Vitality Punching Bag Backlash"
+222;"Flower of Life";light;common;600;7;D;113;"utility";"Shared Shield | Corrupted Heart | Piercing";"Flower of Life Radiant Whisper Deal 10 Light damage Light bonus (+1) Floral Barrier Apply Taunt to the caster Shared Shield Corrupted Heart Piercing"
+226;"Apprentice Evoker";water;common;800;10;B;48;"balanced";"Resilience | Reckless | Soul Vitality";"Apprentice Evoker Little Spell Deal [40 to 60] Water damage Resilience Reckless Soul Vitality Mystery Mystery"
+227;"Polychrome Owl";nature;common;500;9;C;86;"balanced";"360 Turn | Reckless | Last Breath";"Polychrome Owl Dance of Feathers Deal 30 Nature damage to random cards on the field
+Deal 30 Fire damage
+Deal 30 Shadow damage
+Deal 30 Light damage
+Deal 30 Water damage
+Deal 30 Earth damage
+Apply Temporality to the targeted card on critical hit 360 Turn Reckless Last Breath"
+229;"Master Amphibian";earth;common;700;4;B;43;"offense";"Length | Hardening | 13th month";"Master Amphibian Miasmas of Wisdom Deal 15 Earth and 15 Water damage to all enemy cards Length Hardening 13th month Erosion"
+231;"Aleera, Nightmare-Eater";shadow;common;500;5;S;8;"offense";"F/W-Shield | L-Shield | Resilience";"Aleera, Nightmare-Eater Word-Chew Deal 5 Shadow damage to all enemy cards + 50% of the caster's missing HP F/W-Shield L-Shield Resilience Punching Bag Shadowheart"
+233;"Hatchlings of Midas";light;common;500;8;A;16;"support";"Breath-8 | Reckless | Paradox";"Hatchlings of Midas Chirp-chirp-chirp Heal 10 Light
+Heal 10 Light
+Heal 10 Light
+Heal 10 Light Light bonus (+3) Quintet Base damage and healing increase by 2 Breath-8 Reckless Paradox"
+234;"Cloudy Rodent";light;common;750;11;D;106;"economy";"L-Shield | F/E-Shield | Evolution";"Cloudy Rodent Cloud Gnawer Deal 30 Light damage Light bonus (+1) L-Shield F/E-Shield Evolution Taunt Berserk"
+236;"Apprentice of Death";fire;rare;700;6;C;85;"utility";"Revitalization | Hardening | Doomed Hour";"Apprentice of Death Nocturnal Burn Deal 15 Fire and 15 Shadow damage to all enemy cards Revitalization Hardening Doomed Hour Graveyard Avenger"
+237;"Traveler of the Ridges";water;rare;1000;9;B;38;"offense/defense";"Revitalization | Heart of Steel | Resilience";"Traveler of the Ridges End of the Journey Deal 65 Water damage
+Fully heals itself Revitalization Heart of Steel Resilience Immunity AoE"
+238;"Flesh-Melding Chimera";water;rare;525;5;C;70;"offense";"Critical | Strike | Magic Coin";"Flesh-Melding Chimera Arctic Gallop Deal 10 Water and 10 Nature damage to all enemy cards Critical Strike Magic Coin Vampirism Mimicry"
+243;"Vivy";shadow;common;1000;9;C;82;"defense";"Brutal | Luminous Field | Blue Whale";"Vivy Wave of Darkness Deal 40 Shadow damage
+Deal [+1 to +40] Light damage
+Caster's critical (+20) Brutal Luminous Field Blue Whale Smoke"
+244;"Floating Poison Gas";shadow;rare;450;4;C;67;"offense";"Counter | Evolution | Corrosion";"Floating Poison Gas Exploison Deal 10 Shadow damage to all enemy cards Counter Evolution Corrosion Poison Tenacity"
+245;"Radiant Shinobi";light;rare;600;6;B;63;"offense";"Crit Sphere | Multicolor | Brutal";"Radiant Shinobi Yellow Lightning Deal 50 Light damage to all enemy cards Kung‑Fu Deal 40 Earth damage
+AoE Crit Sphere Multicolor Brutal"
+247;"Fire King";fire;epic;1000;10;B;30;"generation";"Focus | Evolution | Ultimate Reset";"Fire King Blade-F Deal [40 to 60] Fire damage Burning Choice Choice
+Fire bonus [1 to 20]
+---------- or ----------
+Fire bonus [5 to 15]
+---------- or ----------
+Fire bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+248;"Water King";water;epic;1000;10;B;31;"generation";"Focus | Evolution | Ultimate Reset";"Water King Blade-E Deal [40 to 60] Water damage Watery Choice Choice
+Water bonus [1 to 20]
+---------- or ----------
+Water bonus [5 to 15]
+---------- or ----------
+Water bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+249;"Nature King";nature;epic;1000;10;B;32;"generation";"Focus | Evolution | Ultimate Reset";"Nature King Blade-N Deal [40 to 60] Nature damage Floral Choice Choice
+Nature bonus [1 to 20]
+---------- or ----------
+Nature bonus [5 to 15]
+---------- or ----------
+Nature bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+250;"Earth King";earth;epic;1000;10;B;33;"generation";"Focus | Evolution | Ultimate Reset";"Earth King Blade-T Deal [40 to 60] Earth damage Earthly Choice Choice
+Earth bonus [1 to 20]
+---------- or ----------
+Earth bonus [5 to 15]
+---------- or ----------
+Earth bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+251;"Shadow King";shadow;epic;1000;10;B;34;"generation";"Focus | Evolution | Ultimate Reset";"Shadow King Blade-O Deal [40 to 60] Shadow damage Dark Choice Choice
+Shadow bonus [1 to 20]
+---------- or ----------
+Shadow bonus [5 to 15]
+---------- or ----------
+Shadow bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+252;"Light King";light;epic;1000;10;B;35;"generation";"Focus | Evolution | Ultimate Reset";"Light King Blade-L Deal [40 to 60] Light damage Solar Choice Choice
+Light bonus [1 to 20]
+---------- or ----------
+Light bonus [5 to 15]
+---------- or ----------
+Light bonus [8 to 12] Focus Evolution Ultimate Reset Punching Bag"
+255;"Verdelune";nature;legendary;900;5;C;72;"defense";"Length | Critical | Last Breath";"Verdelune Multi-Foliage Deal 5 Nature damage Random
+Deal 15 Nature damage
+Deal 25 Nature damage
+Deal 35 Nature damage Truce Heal 60 Nature
+Resistance to all elements (+10) Length Critical Last Breath Temporality"
+256;"Serpentine Heraldess";earth;legendary;900;9;D;112;"balanced";"Shadow Field | Doomed Hour | Transition";"Serpentine Heraldess Eternal Constriction Deal 30 Earth damage Random X8 Sacrifice [Cost 7 Earth]
+Fully heals itself Shadow Field Doomed Hour Transition Eternity"
+259;"Dragon of the Infernal City";fire;common;550;10;C;83;"control";"Fire Heart | Shadow Heart | Immunity-8";"Dragon of the Infernal City Draconic Duality Choice
+Deal [10 to 40] Fire damage
+---------- or ----------
+Deal [10 to 40] Shadow damage Fire Heart Shadow Heart Immunity-8 Freeze"
+260;"The Companion of Spirits";water;common;600;5;B;39;"offense/economy";"Counter | One Man Army | Magic Coin";"The Companion of Spirits Small Wave Deal 10 Water damage
+Increases its Spamton generation by (+1)
+Echo (50%) Hazardo Deal [20 to +30] Water damage Random Counter One Man Army Magic Coin Immunity"
+261;"Godlur";earth;common;1000;7;D;98;"defense";"Piercing | Evolution | Revaluation";"Godlur Golem Strike Deal 25 Earth damage
+Smoke Piercing Evolution Revaluation Tenacity Ancient Healing"
+262;"Yotaru, Leafguard";nature;common;500;5;D;115;"support/defense";"Shared Shield | Focus | Transition";"Yotaru, Leafguard Protect Apply Taunt to a random allied card Earthguard Breaks a Taunt to grant 100 max HP Boostguard Breaks a Taunt to increase base damage and healing by 3 Shared Shield Focus Transition"
+263;"Paguroniyx";shadow;common;850;8;A;14;"support/defense";"Multi Start | Anticipation | Soul Vitality";"Paguroniyx Burrow Increases the max HP of all allied cards by 100 Venomous Shears Deal 30 Shadow damage Multi Start Anticipation Soul Vitality Mystery"
+264;"Nebular Aristocrat";light;common;500;3;D;125;"support";"Length | Transition | Eternalized";"Nebular Aristocrat Cosmic Masquerade Choice
+Accuracy (+20%)
+---------- or ----------
+Critical (+20%) Length Transition Eternalized"
+265;"Aeltheria, Primordial Mother";divine;divine;700;10;B;51;"generation";"Roulette | Resilience | Corrosion";"Aeltheria, Primordial Mother Elemental Breath Deal 30 damage in its element Cradle of Elements Bonus (1 to 5) in its element Mythic Randomly changes your card's element Roulette Resilience Corrosion"

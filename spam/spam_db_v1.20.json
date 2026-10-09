@@ -1,0 +1,4474 @@
+[
+ {
+  "n": 177,
+  "name": "Moxilys, the Humming One",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 900,
+  "spt": 9,
+  "tier": "S",
+  "rank": 1,
+  "score": 74.7,
+  "roles": [
+   "offense",
+   "support",
+   "defense"
+  ],
+  "pct": {
+   "offense": 89.8,
+   "offenseSolo": 84.3,
+   "generation": 55.1,
+   "defense": 98.4,
+   "support": 88.2,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Life-8",
+  "talents": [
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "Life-8: The card's HP and max HP are doubled at the start of turn 8",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Doubleshadow [CD2] Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)",
+   "Regenair [CD1] Heal 10 Nature Random X4"
+  ],
+  "passives": []
+ },
+ {
+  "n": 122,
+  "name": "Spirit of the Fauna",
+  "el": "nature",
+  "rar": "common",
+  "hp": 800,
+  "spt": 8,
+  "tier": "S",
+  "rank": 2,
+  "score": 71.6,
+  "roles": [
+   "offense",
+   "control"
+  ],
+  "pct": {
+   "offense": 81.1,
+   "offenseSolo": 81.1,
+   "generation": 52,
+   "defense": 67.7,
+   "support": 74.8,
+   "control": 93.7,
+   "economy": 52
+  },
+  "bestTalent": "TErosion",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Immunity-8: Applies the \"Immunity\" passive on turn 8",
+   "Erosion: Start the game with the \"Erosion\" passive"
+  ],
+  "abilities": [
+   "Call of the Forest [CD4] Deal 30 Nature damage to all enemy cards Nature bonus (+4)",
+   "Solar heal [CD3] Heal 60 Light / [Freeze]"
+  ],
+  "passives": []
+ },
+ {
+  "n": 56,
+  "name": "Lisa, the Dragonrider",
+  "el": "nature",
+  "rar": "common",
+  "hp": 800,
+  "spt": 7,
+  "tier": "S",
+  "rank": 3,
+  "score": 64.6,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 90.6,
+   "offenseSolo": 85.8,
+   "generation": 55.1,
+   "defense": 49.6,
+   "support": 0.8,
+   "control": 89,
+   "economy": 38.6
+  },
+  "bestTalent": "TAoe_R",
+  "talents": [
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+   "Rare AOE: Start the game with the \"AoE\" passive."
+  ],
+  "abilities": [
+   "Random Current [CD2] Deal [30 to 50] Nature damage Random Nature bonus (+2)"
+  ],
+  "passives": [
+   "Vanish (legendary): Removes the target's last passive"
+  ]
+ },
+ {
+  "n": 127,
+  "name": "Canine Specter",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 7,
+  "tier": "S",
+  "rank": 4,
+  "score": 63.1,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 89,
+   "offenseSolo": 91.3,
+   "generation": 74,
+   "defense": 66.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "OneManArmy",
+  "talents": [
+   "Eternalized: The card is immune to Eternity effects",
+   "Hardening: Increases this card’s elemental resistances by (+15%).",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Bang-Boom [CD2] Deal 20 Shadow and 20 Light damage to all enemy cards"
+  ],
+  "passives": [
+   "Shadowheart (common): Shadow bonus (+1) per turn",
+   "Lightheart (common): Light bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 34,
+  "name": "Gleam of the White Fox",
+  "el": "shadow",
+  "rar": "rare",
+  "hp": 700,
+  "spt": 5,
+  "tier": "S",
+  "rank": 5,
+  "score": 62.5,
+  "roles": [
+   "offense",
+   "control"
+  ],
+  "pct": {
+   "offense": 92.1,
+   "offenseSolo": 88.2,
+   "generation": 55.1,
+   "defense": 41.7,
+   "support": 0.8,
+   "control": 91.3,
+   "economy": 13.4
+  },
+  "bestTalent": "Critique",
+  "talents": [
+   "Strike: Increases critical damage by (+1).",
+   "Critical: Critical bonus (+10%).",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP."
+  ],
+  "abilities": [
+   "Doubleshadow [CD2] Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)",
+   "Darkaqua [CD4] Choice / Deal 20 Water damage / [Freeze] / ---------- or ---------- / Deal 20 Shadow damage / Apply Eternity"
+  ],
+  "passives": []
+ },
+ {
+  "n": 91,
+  "name": "Ignea",
+  "el": "fire",
+  "rar": "legendary",
+  "hp": 750,
+  "spt": 10,
+  "tier": "S",
+  "rank": 6,
+  "score": 60.4,
+  "roles": [
+   "control"
+  ],
+  "pct": {
+   "offense": 74.8,
+   "offenseSolo": 66.9,
+   "generation": 44.9,
+   "defense": 61.4,
+   "support": 0.8,
+   "control": 93.7,
+   "economy": 67.7
+  },
+  "bestTalent": "Baleine bleue",
+  "talents": [
+   "Blue Whale: Increases this card’s HP by (+200)",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Incandescence [CD4] Deal 120 Fire damage Random Fire bonus (+2)",
+   "Silentfire [CD3] Apply [Freeze]"
+  ],
+  "passives": []
+ },
+ {
+  "n": 17,
+  "name": "Verdant Fruit Cruncher",
+  "el": "earth",
+  "rar": "common",
+  "hp": 650,
+  "spt": 11,
+  "tier": "S",
+  "rank": 7,
+  "score": 60,
+  "roles": [
+   "offense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 96.9,
+   "offenseSolo": 96.9,
+   "generation": 55.1,
+   "defense": 26.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 88.2
+  },
+  "bestTalent": "TAoe_E",
+  "talents": [
+   "Epic AOE: Start the game with the \"AoE\" passive.",
+   "Lucky Tox: Each Tox rarity has exactly a 25% chance to be obtained.",
+   "Breath-8: Gains the Elemental Breath attack at the start of turn 8"
+  ],
+  "abilities": [
+   "Torrent [CD1] Deal [20 to 30] Earth damage Random"
+  ],
+  "passives": [
+   "Earthheart (common): Earth bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 231,
+  "name": "Aleera, Nightmare-Eater",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 500,
+  "spt": 5,
+  "tier": "S",
+  "rank": 8,
+  "score": 58.7,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 98.4,
+   "offenseSolo": 99.2,
+   "generation": 69.3,
+   "defense": 29.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Resilience",
+  "talents": [
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)",
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%)."
+  ],
+  "abilities": [
+   "Word-Chew [CD2] Deal 5 Shadow damage to all enemy cards + 50% of the caster's missing HP"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked",
+   "Shadowheart (common): Shadow bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 188,
+  "name": "Commando Gerz",
+  "el": "earth",
+  "rar": "rare",
+  "hp": 1200,
+  "spt": 4,
+  "tier": "S",
+  "rank": 9,
+  "score": 58.6,
+  "roles": [
+   "generation",
+   "defense"
+  ],
+  "pct": {
+   "offense": 66.9,
+   "offenseSolo": 87.4,
+   "generation": 90.6,
+   "defense": 89,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Inaccuracy: At the start of the game, a random enemy card loses (-20%) accuracy.",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Cigarillos [CD2] Earth bonus (+3) Light bonus (+3)",
+   "Final Delight [CD10] Deal 100 Earth damage Random / Deal 100 Light damage"
+  ],
+  "passives": [
+   "Berserk (rare): All your cards' damage and heals are increased by 25%"
+  ]
+ },
+ {
+  "n": 178,
+  "name": "Medusine Thorn",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 800,
+  "spt": 10,
+  "tier": "S",
+  "rank": 10,
+  "score": 57.5,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 85.8,
+   "offenseSolo": 82.7,
+   "generation": 0,
+   "defense": 72.4,
+   "support": 75.6,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Terrain aquatique",
+  "talents": [
+   "Aquatic Field: Water bonus (+7).",
+   "Blazing Field: Fire bonus (+7).",
+   "Weaken: Reduces the elemental resistances of all enemy cards by (-1%) per turn"
+  ],
+  "abilities": [
+   "Inflamed Toxin [CD1] Deal [1 to 35] Water damage / Heal [1 to 35] Fire"
+  ],
+  "passives": [
+   "Multiplier (rare): Elemental bonuses are doubled for this card's damage and heals"
+  ]
+ },
+ {
+  "n": 160,
+  "name": "Golden Boar",
+  "el": "earth",
+  "rar": "common",
+  "hp": 900,
+  "spt": 6,
+  "tier": "A",
+  "rank": 11,
+  "score": 57.3,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 71.7,
+   "offenseSolo": 75.6,
+   "generation": 69.3,
+   "defense": 84.3,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Blue Whale: Increases this card’s HP by (+200)",
+   "Vital Surge: At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Earth Shaker [CD2] Deal 40 Earth damage Random / Increases its max HP by 40 Earth Earth bonus (+2)"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 195,
+  "name": "Gabriel",
+  "el": "nature",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 9,
+  "tier": "A",
+  "rank": 12,
+  "score": 57.2,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 61.4,
+   "offenseSolo": 71.7,
+   "generation": 90.6,
+   "defense": 68.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Terrain terrestre",
+  "talents": [
+   "Earth Field: Earth bonus (+7).",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+   "Lucky Tox: Each Tox rarity has exactly a 25% chance to be obtained."
+  ],
+  "abilities": [
+   "Cocoon [CD3] Deal 20 Nature damage Nature bonus (+5) / [Limited Use 1/1]",
+   "Caterpillar [CD6] Deal 40 Nature damage Nature bonus (+10) / [Limited Use 1/1]",
+   "Butterfly [CD9] Deal 60 Nature damage Nature bonus (+15) / [Limited Use 1/1]"
+  ],
+  "passives": []
+ },
+ {
+  "n": 43,
+  "name": "Sovereign of Flames",
+  "el": "fire",
+  "rar": "legendary",
+  "hp": 900,
+  "spt": 7,
+  "tier": "A",
+  "rank": 13,
+  "score": 56.8,
+  "roles": [
+   "offense",
+   "defense"
+  ],
+  "pct": {
+   "offense": 81.9,
+   "offenseSolo": 68.5,
+   "generation": 0,
+   "defense": 88.2,
+   "support": 81.1,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "Critical: Critical bonus (+10%).",
+   "Eternalized: The card is immune to Eternity effects",
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%)."
+  ],
+  "abilities": [
+   "Roaring Ember [CD1] Deal 10 Fire damage Fire resistance (+3)",
+   "Divine Warmth [CD4] Deal 20 Fire damage to all enemy cards",
+   "Ignition [CD2] Critical (+5%) on all allied cards"
+  ],
+  "passives": []
+ },
+ {
+  "n": 263,
+  "name": "Paguroniyx",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 850,
+  "spt": 8,
+  "tier": "A",
+  "rank": 14,
+  "score": 55.3,
+  "roles": [
+   "support",
+   "defense"
+  ],
+  "pct": {
+   "offense": 52,
+   "offenseSolo": 46.5,
+   "generation": 46.5,
+   "defense": 81.1,
+   "support": 94.5,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Multi Start: Gain (+3) in each element.",
+   "Anticipation: At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Burrow [CD4] Increases the max HP of all allied cards by 100",
+   "Venomous Shears [CD2] Deal 30 Shadow damage"
+  ],
+  "passives": [
+   "Mystery (rare): Starts the game with a random passive"
+  ]
+ },
+ {
+  "n": 78,
+  "name": "Green Guardian",
+  "el": "light",
+  "rar": "rare",
+  "hp": 800,
+  "spt": 10,
+  "tier": "A",
+  "rank": 15,
+  "score": 55.3,
+  "roles": [
+   "control"
+  ],
+  "pct": {
+   "offense": 63.8,
+   "offenseSolo": 32.3,
+   "generation": 0,
+   "defense": 59.1,
+   "support": 84.3,
+   "control": 96.9,
+   "economy": 67.7
+  },
+  "bestTalent": "TAoe_C",
+  "talents": [
+   "13th month: The first time you reach 200 Spamton or more, gain 100 additional Spamton.",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "AOE: Start the game with the \"AoE\" passive."
+  ],
+  "abilities": [
+   "Radiance [CD5] Deal 80 Light damage / The target's cooldowns are reset to maximum",
+   "Multi Heal [CD5] Heal 40 Light to all allied cards"
+  ],
+  "passives": []
+ },
+ {
+  "n": 233,
+  "name": "Hatchlings of Midas",
+  "el": "light",
+  "rar": "common",
+  "hp": 500,
+  "spt": 8,
+  "tier": "A",
+  "rank": 16,
+  "score": 54.7,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 53.5,
+   "offenseSolo": 44.1,
+   "generation": 69.3,
+   "defense": 40.9,
+   "support": 96.9,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "Souffle-8",
+  "talents": [
+   "Breath-8: Gains the Elemental Breath attack at the start of turn 8",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Paradox: This card's resistances are inverted: positive ones become negative, and vice versa."
+  ],
+  "abilities": [
+   "Chirp-chirp-chirp [CD2] Heal 10 Light / Heal 10 Light / Heal 10 Light / Heal 10 Light Light bonus (+3)",
+   "Quintet [CD2] Base damage and healing increase by 2"
+  ],
+  "passives": []
+ },
+ {
+  "n": 29,
+  "name": "Princess Meridia",
+  "el": "nature",
+  "rar": "rare",
+  "hp": 750,
+  "spt": 7,
+  "tier": "A",
+  "rank": 17,
+  "score": 54.7,
+  "roles": [
+   "generation",
+   "defense",
+   "control"
+  ],
+  "pct": {
+   "offense": 28.3,
+   "offenseSolo": 30.7,
+   "generation": 93.7,
+   "defense": 96.9,
+   "support": 0.8,
+   "control": 91.3,
+   "economy": 38.6
+  },
+  "bestTalent": "Life-8",
+  "talents": [
+   "Life-8: The card's HP and max HP are doubled at the start of turn 8",
+   "Strike: Increases critical damage by (+1).",
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\""
+  ],
+  "abilities": [
+   "Critical Wind [CD4] Deal 40 Nature damage / [Freeze]",
+   "Delight [CD2] Water bonus (+2 to +5) Nature bonus (+2 to +5)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 96,
+  "name": "Melody of Divinities",
+  "el": "light",
+  "rar": "legendary",
+  "hp": 550,
+  "spt": 3,
+  "tier": "A",
+  "rank": 18,
+  "score": 54.6,
+  "roles": [
+   "offense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 78,
+   "offenseSolo": 80.3,
+   "generation": 74,
+   "defense": 13.4,
+   "support": 0.8,
+   "control": 0,
+   "economy": 93.7
+  },
+  "bestTalent": "TCoeurCorrompu",
+  "talents": [
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Corrupted Heart: Start the game with a random Rare Heart passive",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Celestial Arrows [CD2] Deal 3 Light damage Random X18",
+   "Divine Judgment [CD10] The opponent's Spamtons drop to 0"
+  ],
+  "passives": []
+ },
+ {
+  "n": 47,
+  "name": "Nocturnal Watcher",
+  "el": "shadow",
+  "rar": "legendary",
+  "hp": 800,
+  "spt": 7,
+  "tier": "A",
+  "rank": 19,
+  "score": 54.1,
+  "roles": [
+   "economy"
+  ],
+  "pct": {
+   "offense": 58.3,
+   "offenseSolo": 52.8,
+   "generation": 42.5,
+   "defense": 54.3,
+   "support": 78,
+   "control": 0,
+   "economy": 91.3
+  },
+  "bestTalent": "Revalorisation",
+  "talents": [
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Revaluation: Increases this card’s Spamton generation by (+5)."
+  ],
+  "abilities": [
+   "Final Night [CD9] Apply Temporality x(+3) to all allied cards",
+   "Shadowcleave [CD4] Deal [10 to 30] Shadow damage / Deal [10 to 30] Nature damage",
+   "Tenebr'heal [CD3] Deal 40 Shadow damage Shadow bonus (+1) / Vampirism"
+  ],
+  "passives": []
+ },
+ {
+  "n": 136,
+  "name": "Sovereign of the Ether Falls",
+  "el": "water",
+  "rar": "rare",
+  "hp": 800,
+  "spt": 5,
+  "tier": "A",
+  "rank": 20,
+  "score": 53,
+  "roles": [
+   "offense",
+   "support"
+  ],
+  "pct": {
+   "offense": 87.4,
+   "offenseSolo": 70.1,
+   "generation": 0,
+   "defense": 51.2,
+   "support": 94.5,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Incisif",
+  "talents": [
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn",
+   "Last Breath: Applies Temporality to all your cards when this card dies"
+  ],
+  "abilities": [
+   "Glacial Laser [CD1] Deal 10 Water damage",
+   "Critical Fall [CD1] Critical (+10%)",
+   "Precise Fall [CD1] Accuracy (+10%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 203,
+  "name": "Ashtarae Lycaria",
+  "el": "shadow",
+  "rar": "legendary",
+  "hp": 1000,
+  "spt": 8,
+  "tier": "A",
+  "rank": 21,
+  "score": 52.6,
+  "roles": [
+   "support",
+   "defense"
+  ],
+  "pct": {
+   "offense": 60.6,
+   "offenseSolo": 41.7,
+   "generation": 0,
+   "defense": 99.2,
+   "support": 98.4,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "Life-8",
+  "talents": [
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Life-8: The card's HP and max HP are doubled at the start of turn 8",
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy"
+  ],
+  "abilities": [
+   "Melody No. 1 [CD1] Deal [15 to 25] Shadow damage / Critical (+2%) on all allied cards",
+   "Melody No. 2 [CD1] Heal [15 to 25] Shadow / Accuracy (+2%) on all allied cards",
+   "Resurrection [CD8] Revives the last destroyed ally with half of its max HP"
+  ],
+  "passives": []
+ },
+ {
+  "n": 51,
+  "name": "Pyrokinetic Sorceress",
+  "el": "fire",
+  "rar": "common",
+  "hp": 800,
+  "spt": 8,
+  "tier": "A",
+  "rank": 22,
+  "score": 52.2,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 26.8,
+   "offenseSolo": 40.2,
+   "generation": 55.1,
+   "defense": 85.8,
+   "support": 72.4,
+   "control": 83.5,
+   "economy": 52
+  },
+  "bestTalent": "TCoeurLumiere_C",
+  "talents": [
+   "Light Heart: Start the game with the \"Lightheart\" passive",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "Weaken: Reduces the elemental resistances of all enemy cards by (-1%) per turn"
+  ],
+  "abilities": [
+   "Enchanted Flame [CD3] Deal 25 Fire damage / Apply Eternity on critical hit / Deal 25 Light damage / Apply Eternity on critical hit / Lowers the opponent's Fire and Light resistance by (10%)",
+   "Solid Veil [CD1] Resistance to all elements (+3)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 211,
+  "name": "Celestial Dragosaur",
+  "el": "nature",
+  "rar": "common",
+  "hp": 800,
+  "spt": 12,
+  "tier": "A",
+  "rank": 23,
+  "score": 52,
+  "roles": [
+   "control",
+   "economy"
+  ],
+  "pct": {
+   "offense": 73.2,
+   "offenseSolo": 51.2,
+   "generation": 0,
+   "defense": 58.3,
+   "support": 0.8,
+   "control": 93.7,
+   "economy": 91.3
+  },
+  "bestTalent": "TAoe_R",
+  "talents": [
+   "Rare AOE: Start the game with the \"AoE\" passive.",
+   "Critical: Critical bonus (+10%).",
+   "Soul Armor: Whenever a card on the field dies, this card's elemental resistances increase by (+10%)"
+  ],
+  "abilities": [
+   "Howl Strike [CD3] Choice / Deal [10 to 100] Nature damage / [Freeze] / ---------- or ---------- / Deal [45 to 65] Earth damage / [Freeze]"
+  ],
+  "passives": [
+   "Reset (epic): When you kill an ENEMY card with one of your attacks, that attack remains available"
+  ]
+ },
+ {
+  "n": 219,
+  "name": "Catixy",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 600,
+  "spt": 5,
+  "tier": "A",
+  "rank": 24,
+  "score": 51.7,
+  "roles": [
+   "offense",
+   "support"
+  ],
+  "pct": {
+   "offense": 84.3,
+   "offenseSolo": 70.9,
+   "generation": 0,
+   "defense": 28.3,
+   "support": 90.6,
+   "control": 0,
+   "economy": 66.9
+  },
+  "bestTalent": "Racket",
+  "talents": [
+   "Extortion: Each time this card deals damage, the opponent loses 5 Spamton.",
+   "Critical: Critical bonus (+10%).",
+   "Inversion: Start the game with the \"Inversion\" passive"
+  ],
+  "abilities": [
+   "Mewling [CD1] Deal [4 to 16] Shadow damage / Caster's critical (+5%)",
+   "Sinister Charm [CD2] Critical (+25%) on a random allied card"
+  ],
+  "passives": []
+ },
+ {
+  "n": 25,
+  "name": "Amber",
+  "el": "fire",
+  "rar": "rare",
+  "hp": 750,
+  "spt": 10,
+  "tier": "A",
+  "rank": 25,
+  "score": 51.7,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 56.7,
+   "offenseSolo": 73.2,
+   "generation": 89,
+   "defense": 42.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "TRoulette",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Inversion: Start the game with the \"Inversion\" passive",
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)"
+  ],
+  "abilities": [
+   "Amber Mist [CD3] Deal 10 Fire damage / Deal 20 Water damage Water bonus (+4)",
+   "Misty Blaze [CD3] Deal 10 Water damage / Deal 20 Fire damage Fire bonus (+4)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 26,
+  "name": "Blaze",
+  "el": "fire",
+  "rar": "rare",
+  "hp": 750,
+  "spt": 10,
+  "tier": "A",
+  "rank": 26,
+  "score": 51.7,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 56.7,
+   "offenseSolo": 73.2,
+   "generation": 89,
+   "defense": 42.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "TRoulette",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Inversion: Start the game with the \"Inversion\" passive",
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)"
+  ],
+  "abilities": [
+   "Amber Mist [CD3] Deal 10 Fire damage / Deal 20 Water damage Water bonus (+4)",
+   "Misty Blaze [CD3] Deal 10 Water damage / Deal 20 Fire damage Fire bonus (+4)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 119,
+  "name": "Marineflower",
+  "el": "water",
+  "rar": "common",
+  "hp": 600,
+  "spt": 6,
+  "tier": "A",
+  "rank": 27,
+  "score": 51.6,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 62.2,
+   "offenseSolo": 76.4,
+   "generation": 73.2,
+   "defense": 17.3,
+   "support": 74,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Incisif",
+  "talents": [
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn",
+   "Critical: Critical bonus (+10%).",
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy"
+  ],
+  "abilities": [
+   "Whistling fin [CD1] Deal 10 Water damage / + Water bonus (+2) on critical hit / Deal 10 Nature damage / + Nature bonus (+2) on critical hit",
+   "Seabed [CD2] Accuracy (+12%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 134,
+  "name": "Wibs the Blazing",
+  "el": "fire",
+  "rar": "common",
+  "hp": 550,
+  "spt": 5,
+  "tier": "A",
+  "rank": 28,
+  "score": 51.5,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 79.5,
+   "offenseSolo": 92.9,
+   "generation": 74,
+   "defense": 26,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Blindage N/T",
+  "talents": [
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)",
+   "Strike: Increases critical damage by (+1).",
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy"
+  ],
+  "abilities": [
+   "Lava-flow [CD1] Deal 5 Fire damage / Deal 5 Fire damage"
+  ],
+  "passives": [
+   "Fireheart (rare): Fire bonus (+2) per turn",
+   "Poison (common): Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns."
+  ]
+ },
+ {
+  "n": 100,
+  "name": "Aquatic Whiteness",
+  "el": "water",
+  "rar": "common",
+  "hp": 700,
+  "spt": 7,
+  "tier": "A",
+  "rank": 29,
+  "score": 51.4,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 67.7,
+   "offenseSolo": 48,
+   "generation": 44.9,
+   "defense": 83.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Blindage N/T",
+  "talents": [
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)",
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)",
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)"
+  ],
+  "abilities": [
+   "Swallowater [CD5] Deal 100 Water damage / Heal the caster 100 Water Water bonus (+2)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 247,
+  "name": "Fire King",
+  "el": "fire",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 30,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-F [CD5] Deal [40 to 60] Fire damage",
+   "Burning Choice [CD5] Choice / Fire bonus [1 to 20] / ---------- or ---------- / Fire bonus [5 to 15] / ---------- or ---------- / Fire bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 248,
+  "name": "Water King",
+  "el": "water",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 31,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-E [CD5] Deal [40 to 60] Water damage",
+   "Watery Choice [CD5] Choice / Water bonus [1 to 20] / ---------- or ---------- / Water bonus [5 to 15] / ---------- or ---------- / Water bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 249,
+  "name": "Nature King",
+  "el": "nature",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 32,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-N [CD5] Deal [40 to 60] Nature damage",
+   "Floral Choice [CD5] Choice / Nature bonus [1 to 20] / ---------- or ---------- / Nature bonus [5 to 15] / ---------- or ---------- / Nature bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 250,
+  "name": "Earth King",
+  "el": "earth",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 33,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-T [CD5] Deal [40 to 60] Earth damage",
+   "Earthly Choice [CD5] Choice / Earth bonus [1 to 20] / ---------- or ---------- / Earth bonus [5 to 15] / ---------- or ---------- / Earth bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 251,
+  "name": "Shadow King",
+  "el": "shadow",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 34,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-O [CD5] Deal [40 to 60] Shadow damage",
+   "Dark Choice [CD5] Choice / Shadow bonus [1 to 20] / ---------- or ---------- / Shadow bonus [5 to 15] / ---------- or ---------- / Shadow bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 252,
+  "name": "Light King",
+  "el": "light",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "B",
+  "rank": 35,
+  "score": 51.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 46.5,
+   "offenseSolo": 53.5,
+   "generation": 83.5,
+   "defense": 74.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Blade-L [CD5] Deal [40 to 60] Light damage",
+   "Solar Choice [CD5] Choice / Light bonus [1 to 20] / ---------- or ---------- / Light bonus [5 to 15] / ---------- or ---------- / Light bonus [8 to 12]"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 97,
+  "name": "Pyro",
+  "el": "fire",
+  "rar": "common",
+  "hp": 500,
+  "spt": 4,
+  "tier": "B",
+  "rank": 36,
+  "score": 51.1,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 97.6,
+   "offenseSolo": 97.6,
+   "generation": 55.1,
+   "defense": 3.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "BouleDeCrit",
+  "talents": [
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn",
+   "Eternalized: The card is immune to Eternity effects",
+   "Phoenix Feather: 50% chance to regain the Phoenix passive once used."
+  ],
+  "abilities": [
+   "Conflagration [CD1] Deal 5 Fire damage to all enemy cards / Fire bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 44,
+  "name": "Leviathan of the Skies",
+  "el": "water",
+  "rar": "legendary",
+  "hp": 1000,
+  "spt": 5,
+  "tier": "B",
+  "rank": 37,
+  "score": 50.9,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 65.4,
+   "offenseSolo": 90.6,
+   "generation": 55.1,
+   "defense": 85,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Blue Whale: Increases this card’s HP by (+200)",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Crushwave [CD3] Deal damage equal to 30% of the target's max HP",
+   "Ultimate Relief [CD6] Heals itself for 50% of its max HP"
+  ],
+  "passives": [
+   "Waterheart (common): Water bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 237,
+  "name": "Traveler of the Ridges",
+  "el": "water",
+  "rar": "rare",
+  "hp": 1000,
+  "spt": 9,
+  "tier": "B",
+  "rank": 38,
+  "score": 50.8,
+  "roles": [
+   "offense",
+   "defense"
+  ],
+  "pct": {
+   "offense": 80.3,
+   "offenseSolo": 58.3,
+   "generation": 0,
+   "defense": 96.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "TCoeurAcier",
+  "talents": [
+   "Revitalization: 5% chance each turn to restore this card’s HP to maximum.",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%)."
+  ],
+  "abilities": [
+   "End of the Journey [CD5] Deal 65 Water damage / Fully heals itself"
+  ],
+  "passives": [
+   "Immunity (epic): The card is immune to all effects from enemy cards",
+   "AoE (epic): Attacks and heals adjacent targets for 80% of the damage dealt"
+  ]
+ },
+ {
+  "n": 260,
+  "name": "The Companion of Spirits",
+  "el": "water",
+  "rar": "common",
+  "hp": 600,
+  "spt": 5,
+  "tier": "B",
+  "rank": 39,
+  "score": 50.2,
+  "roles": [
+   "offense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 93.7,
+   "offenseSolo": 83.5,
+   "generation": 0,
+   "defense": 39.4,
+   "support": 0.8,
+   "control": 0,
+   "economy": 96.9
+  },
+  "bestTalent": "OneManArmy",
+  "talents": [
+   "Counter: Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Small Wave [CD1] Deal 10 Water damage / Increases its Spamton generation by (+1) / Echo (50%)",
+   "Hazardo [CD1] Deal [20 to +30] Water damage Random"
+  ],
+  "passives": [
+   "Immunity (epic): The card is immune to all effects from enemy cards"
+  ]
+ },
+ {
+  "n": 142,
+  "name": "Squall, Emissary of Nightmares",
+  "el": "shadow",
+  "rar": "rare",
+  "hp": 1000,
+  "spt": 8,
+  "tier": "B",
+  "rank": 40,
+  "score": 49.8,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 45.7,
+   "offenseSolo": 64.6,
+   "generation": 71.7,
+   "defense": 89.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "OneManArmy",
+  "talents": [
+   "Blue Whale: Increases this card’s HP by (+200)",
+   "Counter: Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Cosmic Flames [CD3] Deal 15 Fire damage / Deal 20 Shadow damage Fire bonus (+3)",
+   "Cosmic Light [CD3] Deal 15 Light damage / Deal 20 Shadow damage Light bonus (+3)"
+  ],
+  "passives": [
+   "Berserk (common): All your cards' damage and heals are increased by 12%"
+  ]
+ },
+ {
+  "n": 32,
+  "name": "Mistress of Tints",
+  "el": "earth",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 10,
+  "tier": "B",
+  "rank": 41,
+  "score": 49.4,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 72.4,
+   "offenseSolo": 92.1,
+   "generation": 52.8,
+   "defense": 33.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Multi Start: Gain (+3) in each element.",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn"
+  ],
+  "abilities": [
+   "Elemental Chaos [CD3] Deal 15 Nature damage Random / 15 Earth damage / 15 Fire damage / 15 Light damage / 15 Shadow damage / 15 Water damage",
+   "Multiboost [CD3] Bonus (+3) in every element"
+  ],
+  "passives": []
+ },
+ {
+  "n": 86,
+  "name": "Regent of the Abysses",
+  "el": "earth",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 6,
+  "tier": "B",
+  "rank": 42,
+  "score": 49.3,
+  "roles": [
+   "generation",
+   "defense"
+  ],
+  "pct": {
+   "offense": 38.6,
+   "offenseSolo": 62.2,
+   "generation": 90.6,
+   "defense": 90.6,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Quakecry [CD2] Deal 15 Earth damage / Deal 15 Shadow damage Earth bonus (+3) Shadow bonus (+3)",
+   "Engulfment [CD5] Absorbs an allied card"
+  ],
+  "passives": [
+   "Ancient Healing (common): At the start of each turn, the card recovers 4% of its max HP"
+  ]
+ },
+ {
+  "n": 229,
+  "name": "Master Amphibian",
+  "el": "earth",
+  "rar": "common",
+  "hp": 700,
+  "spt": 4,
+  "tier": "B",
+  "rank": 43,
+  "score": 48.7,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 92.9,
+   "offenseSolo": 93.7,
+   "generation": 0,
+   "defense": 74,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Durcissement",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Hardening: Increases this card’s elemental resistances by (+15%).",
+   "13th month: The first time you reach 200 Spamton or more, gain 100 additional Spamton."
+  ],
+  "abilities": [
+   "Miasmas of Wisdom [CD1] Deal 15 Earth and 15 Water damage to all enemy cards"
+  ],
+  "passives": [
+   "Erosion (common): Reduces the target's max HP by 50% of the damage dealt"
+  ]
+ },
+ {
+  "n": 59,
+  "name": "Snow Warrior",
+  "el": "earth",
+  "rar": "common",
+  "hp": 600,
+  "spt": 7,
+  "tier": "B",
+  "rank": 44,
+  "score": 48.4,
+  "roles": [
+   "control"
+  ],
+  "pct": {
+   "offense": 59.8,
+   "offenseSolo": 59.8,
+   "generation": 52.8,
+   "defense": 24.4,
+   "support": 0.8,
+   "control": 93.7,
+   "economy": 38.6
+  },
+  "bestTalent": "TBrut",
+  "talents": [
+   "Bomb-8: Applies the \"Bomba\" passive on turn 8",
+   "Vital Chance: This card has a 10% chance to heal instead of taking damage when attacked.",
+   "Brutal: Start the game with the \"Brutal\" passive"
+  ],
+  "abilities": [
+   "Earthcleave [CD3] Deal 30 Earth damage / [Freeze]",
+   "Multiboost [CD3] Bonus (+3) in every element"
+  ],
+  "passives": []
+ },
+ {
+  "n": 102,
+  "name": "Murmurs of Black Coral",
+  "el": "water",
+  "rar": "common",
+  "hp": 500,
+  "spt": 7,
+  "tier": "B",
+  "rank": 45,
+  "score": 48.3,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 55.9,
+   "offenseSolo": 34.6,
+   "generation": 55.1,
+   "defense": 30.7,
+   "support": 76.4,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Shadow Field: Shadow bonus (+7)."
+  ],
+  "abilities": [
+   "Whisper [CD1] Heal 10 Water / Base healing increases by 5",
+   "Aquatic Breath [CD1] Deal 10 Water damage Water bonus (+1)"
+  ],
+  "passives": [
+   "Multiplier (rare): Elemental bonuses are doubled for this card's damage and heals"
+  ]
+ },
+ {
+  "n": 81,
+  "name": "Abyssal Lightbearer",
+  "el": "water",
+  "rar": "epic",
+  "hp": 600,
+  "spt": 4,
+  "tier": "B",
+  "rank": 46,
+  "score": 47.6,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 91.3,
+   "offenseSolo": 89,
+   "generation": 0,
+   "defense": 22.8,
+   "support": 0.8,
+   "control": 90.6,
+   "economy": 4.7
+  },
+  "bestTalent": "Erreur Croissante",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Hazardo [CD1] Deal [20 to +30] Water damage Random",
+   "Beacon [CD4] Deal [30 to 50] Light damage to all enemy cards / Accuracy (-10%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 36,
+  "name": "Astry",
+  "el": "light",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 10,
+  "tier": "B",
+  "rank": 47,
+  "score": 46.5,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 37,
+   "offenseSolo": 28.3,
+   "generation": 97.6,
+   "defense": 48.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "TCoeurMystere",
+  "talents": [
+   "Mystery: Start the game with the \"Mystery\" passive",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Blue Whale: Increases this card’s HP by (+200)"
+  ],
+  "abilities": [
+   "Misunderstood Genius [CD4] Bonus (+35) in a random element",
+   "Chiaroscuro [CD3] Deal 40 Shadow damage / Heal the caster 40 Light"
+  ],
+  "passives": []
+ },
+ {
+  "n": 226,
+  "name": "Apprentice Evoker",
+  "el": "water",
+  "rar": "common",
+  "hp": 800,
+  "spt": 10,
+  "tier": "B",
+  "rank": 48,
+  "score": 46.3,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 52.8,
+   "offenseSolo": 44.9,
+   "generation": 55.1,
+   "defense": 62.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Little Spell [CD3] Deal [40 to 60] Water damage"
+  ],
+  "passives": [
+   "Mystery (rare): Starts the game with a random passive",
+   "Mystery (rare): Starts the game with a random passive"
+  ]
+ },
+ {
+  "n": 103,
+  "name": "Blade of the Forest",
+  "el": "nature",
+  "rar": "common",
+  "hp": 650,
+  "spt": 5,
+  "tier": "B",
+  "rank": 49,
+  "score": 45.9,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 37.8,
+   "offenseSolo": 29.9,
+   "generation": 55.1,
+   "defense": 60.6,
+   "support": 97.6,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "TCoeurNature_C",
+  "talents": [
+   "Nature Heart: Start the game with the \"Natureheart\" passive",
+   "Extortion: Each time this card deals damage, the opponent loses 5 Spamton.",
+   "Weaken: Reduces the elemental resistances of all enemy cards by (-1%) per turn"
+  ],
+  "abilities": [
+   "Pincers [CD1] Deal 5 Nature damage",
+   "Critical Recovery [CD1] Heal 20 Nature / Critical (+10%) on critical hit"
+  ],
+  "passives": []
+ },
+ {
+  "n": 123,
+  "name": "Weaver of Words",
+  "el": "nature",
+  "rar": "common",
+  "hp": 500,
+  "spt": 3,
+  "tier": "B",
+  "rank": 50,
+  "score": 45.8,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 70.1,
+   "offenseSolo": 94.5,
+   "generation": 46.5,
+   "defense": 55.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 0.8
+  },
+  "bestTalent": "Corrosion",
+  "talents": [
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Vital Surge: At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances."
+  ],
+  "abilities": [
+   "Black Widow [CD8] Absorbs a card"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 265,
+  "name": "Aeltheria, Primordial Mother",
+  "el": "divine",
+  "rar": "divine",
+  "hp": 700,
+  "spt": 10,
+  "tier": "B",
+  "rank": 51,
+  "score": 45.4,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 43.3,
+   "offenseSolo": 81.9,
+   "generation": 92.9,
+   "defense": 31.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "TRoulette",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances."
+  ],
+  "abilities": [
+   "Elemental Breath [CD1] Deal 30 damage in its element",
+   "Cradle of Elements [CD1] Bonus (1 to 5) in its element",
+   "Mythic [CD1] Randomly changes your card's element"
+  ],
+  "passives": []
+ },
+ {
+  "n": 42,
+  "name": "Wyrmling of Lights",
+  "el": "light",
+  "rar": "epic",
+  "hp": 500,
+  "spt": 3,
+  "tier": "B",
+  "rank": 52,
+  "score": 45.4,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 66.1,
+   "offenseSolo": 66.1,
+   "generation": 55.1,
+   "defense": 3.9,
+   "support": 72.4,
+   "control": 0,
+   "economy": 0.8
+  },
+  "bestTalent": "Nouvelle vie",
+  "talents": [
+   "New Rich: Starts the game with either the Spamland or Lucky passive, chosen at random.",
+   "New Life: Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Peaceful Glow [CD1] Deal 20 Light damage / Steals (+1) Light",
+   "Thoughtful Aid [CD3] Apply Temporality"
+  ],
+  "passives": []
+ },
+ {
+  "n": 221,
+  "name": "Toad of the Stars",
+  "el": "light",
+  "rar": "common",
+  "hp": 900,
+  "spt": 6,
+  "tier": "B",
+  "rank": 53,
+  "score": 45.2,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 63,
+   "offenseSolo": 48.8,
+   "generation": 46.5,
+   "defense": 56.7,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Aquatic Field: Water bonus (+7).",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Eye for an Eye [CD2] Deal 40 Light damage"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked",
+   "Backlash (common): Takes 50% of the damage dealt to the target"
+  ]
+ },
+ {
+  "n": 60,
+  "name": "Protector of Ruins",
+  "el": "earth",
+  "rar": "common",
+  "hp": 700,
+  "spt": 6,
+  "tier": "B",
+  "rank": 54,
+  "score": 45,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 88.2,
+   "offenseSolo": 74.8,
+   "generation": 0,
+   "defense": 50.4,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Blindage F/E",
+  "talents": [
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)",
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)",
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)"
+  ],
+  "abilities": [
+   "Roly-Poly [CD1] Deal 15 Earth damage / Base damage increases by 5"
+  ],
+  "passives": []
+ },
+ {
+  "n": 116,
+  "name": "Prisoner of the Machine",
+  "el": "fire",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 3,
+  "tier": "B",
+  "rank": 55,
+  "score": 44.8,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 59.1,
+   "offenseSolo": 63,
+   "generation": 50.4,
+   "defense": 73.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 0.8
+  },
+  "bestTalent": "TPunchingBag",
+  "talents": [
+   "Paradox: This card's resistances are inverted: positive ones become negative, and vice versa.",
+   "360 Turn: Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+   "Punching Bag: Start the game with the \"Punching Bag\" passive"
+  ],
+  "abilities": [
+   "Explosion [CD1] [Cost 100 HP] / Deal 10 Fire damage / After use, this attack’s base damage increases by (+10)",
+   "Emberguard [CD3] Apply Taunt"
+  ],
+  "passives": []
+ },
+ {
+  "n": 139,
+  "name": "Mythic Horned One",
+  "el": "earth",
+  "rar": "rare",
+  "hp": 700,
+  "spt": 5,
+  "tier": "B",
+  "rank": 56,
+  "score": 44.6,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 86.6,
+   "offenseSolo": 95.3,
+   "generation": 0,
+   "defense": 59.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Souffle-8",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "360 Turn: Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+   "Breath-8: Gains the Elemental Breath attack at the start of turn 8"
+  ],
+  "abilities": [
+   "Horn 25 [CD7] The target is set to 25% of its max HP",
+   "Horn 75 [CD5] The target is set to 75% of its max HP"
+  ],
+  "passives": []
+ },
+ {
+  "n": 63,
+  "name": "Shado, Abyssal Scourge",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 800,
+  "spt": 11,
+  "tier": "B",
+  "rank": 57,
+  "score": 44.3,
+  "roles": [
+   "defense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 44.1,
+   "offenseSolo": 29.1,
+   "generation": 42.5,
+   "defense": 79.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 88.2
+  },
+  "bestTalent": "Armure des Ames",
+  "talents": [
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Soul Armor: Whenever a card on the field dies, this card's elemental resistances increase by (+10%)"
+  ],
+  "abilities": [
+   "Tenebr'heal [CD3] Deal 40 Shadow damage Shadow bonus (+1) / Vampirism"
+  ],
+  "passives": [
+   "Ancient Healing (common): At the start of each turn, the card recovers 4% of its max HP",
+   "AoE (common): Attacks and heals adjacent targets for 20% of the damage dealt"
+  ]
+ },
+ {
+  "n": 21,
+  "name": "Wandering Feline",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 550,
+  "spt": 5,
+  "tier": "B",
+  "rank": 58,
+  "score": 43.8,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 40.9,
+   "offenseSolo": 45.7,
+   "generation": 68.5,
+   "defense": 37.8,
+   "support": 0.8,
+   "control": 88.2,
+   "economy": 13.4
+  },
+  "bestTalent": "TRoulette",
+  "talents": [
+   "Cash Out: At the start of the game, gain (+25) Spamton.",
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Offensive Aim [CD2] Deal 15 Shadow damage / Eternity on critical hit",
+   "Swift Leap [CD1] Deal 5 Nature damage Nature bonus (+1) / Caster's accuracy and critical (+2%)"
+  ],
+  "passives": [
+   "Vitalheart (common): This card increases its max HP by 15 per turn"
+  ]
+ },
+ {
+  "n": 191,
+  "name": "Ameru",
+  "el": "light",
+  "rar": "rare",
+  "hp": 800,
+  "spt": 15,
+  "tier": "B",
+  "rank": 59,
+  "score": 43.4,
+  "roles": [
+   "generation",
+   "economy"
+  ],
+  "pct": {
+   "offense": 23.6,
+   "offenseSolo": 47.2,
+   "generation": 94.5,
+   "defense": 55.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 95.3
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+   "Hardening: Increases this card’s elemental resistances by (+15%).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Smoky Dream [CD3] Deal 15 Light, 15 Water and 15 Shadow damage Light bonus (+4) & Water bonus (+4) & Shadow bonus (+4)"
+  ],
+  "passives": [
+   "Smoke (rare): Enshrouds the allied field after using an attack or a heal"
+  ]
+ },
+ {
+  "n": 82,
+  "name": "Prankster Whale",
+  "el": "water",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 7,
+  "tier": "B",
+  "rank": 60,
+  "score": 43.3,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 76.4,
+   "offenseSolo": 60.6,
+   "generation": 0,
+   "defense": 66.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Blue Whale: Increases this card’s HP by (+200)",
+   "Hardening: Increases this card’s elemental resistances by (+15%).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Hydroluck [CD3] Deal 35 Water damage / Echo (50%)",
+   "Hahahahahaha [CD6] Caster's critical (+50%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 174,
+  "name": "Floral Zombie",
+  "el": "nature",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 5,
+  "tier": "B",
+  "rank": 61,
+  "score": 43.2,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 17.3,
+   "offenseSolo": 21.3,
+   "generation": 74,
+   "defense": 65.4,
+   "support": 0.8,
+   "control": 85,
+   "economy": 67.7
+  },
+  "bestTalent": "Revalorisation",
+  "talents": [
+   "Revaluation: Increases this card’s Spamton generation by (+5).",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card.",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive."
+  ],
+  "abilities": [
+   "Aquatic Curse [CD8] Deal [30 to +60] Water damage / Deal [30 to +60] Nature damage / Apply Vanish"
+  ],
+  "passives": [
+   "Waterheart (common): Water bonus (+1) per turn",
+   "Natureheart (common): Nature bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 54,
+  "name": "Intrepid Otter",
+  "el": "water",
+  "rar": "common",
+  "hp": 650,
+  "spt": 5,
+  "tier": "B",
+  "rank": 62,
+  "score": 43.1,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 70.9,
+   "offenseSolo": 49.6,
+   "generation": 0,
+   "defense": 34.6,
+   "support": 85.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Affaiblissement",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Critical: Critical bonus (+10%).",
+   "Weaken: Reduces the elemental resistances of all enemy cards by (-1%) per turn"
+  ],
+  "abilities": [
+   "Bite [CD1] Deal 6 Water damage / Critical (+3%) on all allied cards"
+  ],
+  "passives": []
+ },
+ {
+  "n": 245,
+  "name": "Radiant Shinobi",
+  "el": "light",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 6,
+  "tier": "B",
+  "rank": 63,
+  "score": 42.9,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 95.3,
+   "offenseSolo": 96.1,
+   "generation": 0,
+   "defense": 17.3,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "TAttackMulticolor",
+  "talents": [
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn",
+   "Multicolor: Gains (+1) in each element with every attack from this card",
+   "Brutal: Start the game with the \"Brutal\" passive"
+  ],
+  "abilities": [
+   "Yellow Lightning [CD5] Deal 50 Light damage to all enemy cards",
+   "Kung‑Fu [CD5] Deal 40 Earth damage / AoE"
+  ],
+  "passives": []
+ },
+ {
+  "n": 12,
+  "name": "Hibernatus",
+  "el": "water",
+  "rar": "common",
+  "hp": 750,
+  "spt": 12,
+  "tier": "C",
+  "rank": 64,
+  "score": 42.4,
+  "roles": [
+   "generation",
+   "economy"
+  ],
+  "pct": {
+   "offense": 27.6,
+   "offenseSolo": 43.3,
+   "generation": 82.7,
+   "defense": 53.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 96.1
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Multi Start: Gain (+3) in each element.",
+   "Bomb-8: Applies the \"Bomba\" passive on turn 8",
+   "Anticipation: At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card."
+  ],
+  "abilities": [
+   "Aquallo [CD2] Deal [10 to 20] Light damage / Deal [10 to 20] Water damage / Bonus (+5) in a random element",
+   "Dyke [CD3] Apply Taunt"
+  ],
+  "passives": [
+   "Lucky (common): Increases your Luck by (+0.5) per turn"
+  ]
+ },
+ {
+  "n": 39,
+  "name": "Sylvan, Protector of the Verdure",
+  "el": "nature",
+  "rar": "common",
+  "hp": 550,
+  "spt": 5,
+  "tier": "C",
+  "rank": 65,
+  "score": 42.4,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 68.5,
+   "offenseSolo": 65.4,
+   "generation": 55.1,
+   "defense": 19.7,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Incisif",
+  "talents": [
+   "Increasing Error: Each time this card attacks, a random enemy card loses 3% accuracy",
+   "360 Turn: Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn"
+  ],
+  "abilities": [
+   "Double Breath [CD4] Deal 25 Nature damage / Deal 25 Nature damage / Deal 25 Nature damage",
+   "Swift Leap [CD1] Deal 5 Nature damage Nature bonus (+1) / Caster's accuracy and critical (+2%)"
+  ],
+  "passives": [
+   "Erosion (common): Reduces the target's max HP by 50% of the damage dealt"
+  ]
+ },
+ {
+  "n": 115,
+  "name": "Aidan",
+  "el": "fire",
+  "rar": "common",
+  "hp": 750,
+  "spt": 8,
+  "tier": "C",
+  "rank": 66,
+  "score": 42.3,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 12.6,
+   "offenseSolo": 14.2,
+   "generation": 99.2,
+   "defense": 46.5,
+   "support": 0.8,
+   "control": 84.3,
+   "economy": 52
+  },
+  "bestTalent": "Focus",
+  "talents": [
+   "Counter: Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive."
+  ],
+  "abilities": [
+   "Luckster [CD1] Bonus (+10) in a random element",
+   "Pay-torch [CD3] [Cost 10 Fire] / Deal 30 damage in a random element"
+  ],
+  "passives": [
+   "Vanish (legendary): Removes the target's last passive"
+  ]
+ },
+ {
+  "n": 244,
+  "name": "Floating Poison Gas",
+  "el": "shadow",
+  "rar": "rare",
+  "hp": 450,
+  "spt": 4,
+  "tier": "C",
+  "rank": 67,
+  "score": 42.2,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 99.2,
+   "offenseSolo": 98.4,
+   "generation": 0,
+   "defense": 14.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Contre",
+  "talents": [
+   "Counter: Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances."
+  ],
+  "abilities": [
+   "Exploison [CD1] Deal 10 Shadow damage to all enemy cards"
+  ],
+  "passives": [
+   "Poison (common): Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns.",
+   "Tenacity (common): The first fatal attack leaves you with 1 HP"
+  ]
+ },
+ {
+  "n": 35,
+  "name": "Léo",
+  "el": "light",
+  "rar": "rare",
+  "hp": 800,
+  "spt": 6,
+  "tier": "C",
+  "rank": 68,
+  "score": 41,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 44.9,
+   "offenseSolo": 27.6,
+   "generation": 0,
+   "defense": 93.7,
+   "support": 0.8,
+   "control": 85.8,
+   "economy": 29.9
+  },
+  "bestTalent": "Life-8",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Life-8: The card's HP and max HP are doubled at the start of turn 8",
+   "Mimicry: Start the game with the Mimicry passive"
+  ],
+  "abilities": [
+   "Purifying Flash [CD4] Deal [20 to 60] Light damage / Deal [20 to 60] Light damage / Random enemies / Apply Eternity"
+  ],
+  "passives": [
+   "Mimicry (rare): Each time the opponent generates one or more elements, you generate 1 of the same type."
+  ]
+ },
+ {
+  "n": 92,
+  "name": "Frost & Glacier",
+  "el": "water",
+  "rar": "legendary",
+  "hp": 500,
+  "spt": 4,
+  "tier": "C",
+  "rank": 69,
+  "score": 41,
+  "roles": [
+   "offense",
+   "control"
+  ],
+  "pct": {
+   "offense": 75.6,
+   "offenseSolo": 61.4,
+   "generation": 0,
+   "defense": 16.5,
+   "support": 0.8,
+   "control": 98.4,
+   "economy": 4.7
+  },
+  "bestTalent": "Reset ultime",
+  "talents": [
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card.",
+   "Revaluation: Increases this card’s Spamton generation by (+5).",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Muddy Water [CD2] Deal 25 Water damage / Deal 25 Water damage / Random enemies"
+  ],
+  "passives": [
+   "Freeze (epic): When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage.",
+   "Erosion (common): Reduces the target's max HP by 50% of the damage dealt"
+  ]
+ },
+ {
+  "n": 238,
+  "name": "Flesh-Melding Chimera",
+  "el": "water",
+  "rar": "rare",
+  "hp": 525,
+  "spt": 5,
+  "tier": "C",
+  "rank": 70,
+  "score": 39.9,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 82.7,
+   "offenseSolo": 86.6,
+   "generation": 0,
+   "defense": 38.6,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Critique",
+  "talents": [
+   "Critical: Critical bonus (+10%).",
+   "Strike: Increases critical damage by (+1).",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Arctic Gallop [CD2] Deal 10 Water and 10 Nature damage to all enemy cards"
+  ],
+  "passives": [
+   "Vampirism (epic): Regenerates 75% of the damage dealt to the target",
+   "Mimicry (rare): Each time the opponent generates one or more elements, you generate 1 of the same type."
+  ]
+ },
+ {
+  "n": 85,
+  "name": "Blue-Stone-Eater",
+  "el": "earth",
+  "rar": "epic",
+  "hp": 500,
+  "spt": 4,
+  "tier": "C",
+  "rank": 71,
+  "score": 39.9,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 94.5,
+   "offenseSolo": 85,
+   "generation": 0,
+   "defense": 11,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "TPlumePhoenix",
+  "talents": [
+   "Inscribed: The card is immune to Vanish effects",
+   "Strike: Increases critical damage by (+1).",
+   "Phoenix Feather: 50% chance to regain the Phoenix passive once used."
+  ],
+  "abilities": [
+   "Rock-Swallower [CD3] Choice / Deal 30 Earth damage to all enemy cards / ---------- or ---------- / Deal [10 to 70] Earth damage to all enemy cards"
+  ],
+  "passives": [
+   "Phoenix (common): When destroyed, this card returns to life with 25% of its max HP.\nSingle use",
+   "Reset (epic): When you kill an ENEMY card with one of your attacks, that attack remains available"
+  ]
+ },
+ {
+  "n": 255,
+  "name": "Verdelune",
+  "el": "nature",
+  "rar": "legendary",
+  "hp": 900,
+  "spt": 5,
+  "tier": "C",
+  "rank": 72,
+  "score": 39.8,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 41.7,
+   "offenseSolo": 25.2,
+   "generation": 0,
+   "defense": 94.5,
+   "support": 80.3,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Critique",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Critical: Critical bonus (+10%).",
+   "Last Breath: Applies Temporality to all your cards when this card dies"
+  ],
+  "abilities": [
+   "Multi-Foliage [CD3] Deal 5 Nature damage Random / Deal 15 Nature damage / Deal 25 Nature damage / Deal 35 Nature damage",
+   "Truce [CD3] Heal 60 Nature / Resistance to all elements (+10)"
+  ],
+  "passives": [
+   "Temporality (legendary): Decreases cooldowns by 1"
+  ]
+ },
+ {
+  "n": 206,
+  "name": "Catimimi",
+  "el": "fire",
+  "rar": "common",
+  "hp": 500,
+  "spt": 5,
+  "tier": "C",
+  "rank": 73,
+  "score": 39.7,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 96.1,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 1.6,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Heritage",
+  "talents": [
+   "Eternalized: The card is immune to Eternity effects",
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Magic Coin: Start the game with (+2) Luck"
+  ],
+  "abilities": [
+   "Darkflight Slap [CD2] [Cost 2 Fire & 2 Shadow & 2 Nature] / Deal 15 Shadow, 15 Nature and 15 Fire damage to all enemy cards / Shadow bonus (+3) & Nature bonus (+3) & Fire bonus (+3)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 137,
+  "name": "Deer of Mournful Colors",
+  "el": "nature",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 5,
+  "tier": "C",
+  "rank": 74,
+  "score": 39.1,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 78.7,
+   "offenseSolo": 89.8,
+   "generation": 0,
+   "defense": 44.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Cash Out: At the start of the game, gain (+25) Spamton.",
+   "Multi Start: Gain (+3) in each element.",
+   "Soul Armor: Whenever a card on the field dies, this card's elemental resistances increase by (+10%)"
+  ],
+  "abilities": [
+   "Elemental Drain [CD1] Deal 6 Earth damage Random / Deal 6 Nature damage / Deal 6 Fire damage / Deal 6 Water damage / Deal 6 Light damage / Deal 6 Shadow damage / Vampirism"
+  ],
+  "passives": [
+   "Multiplier (rare): Elemental bonuses are doubled for this card's damage and heals"
+  ]
+ },
+ {
+  "n": 45,
+  "name": "Aldrin & Gorakar",
+  "el": "nature",
+  "rar": "legendary",
+  "hp": 700,
+  "spt": 4,
+  "tier": "C",
+  "rank": 75,
+  "score": 39.1,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 83.5,
+   "offenseSolo": 79.5,
+   "generation": 0,
+   "defense": 35.4,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Reset ultime",
+  "talents": [
+   "Blazing Field: Fire bonus (+7).",
+   "Eternalized: The card is immune to Eternity effects",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card."
+  ],
+  "abilities": [
+   "Waltz of Clouds [CD5] Deal 90 Nature damage / [Limited Use 1/1]",
+   "Critical Breath [CD1] Deal 7 Nature damage / Deal 7 Nature damage",
+   "Earthstamp [CD2] Deal 10 Earth damage / Deal 10 Nature damage"
+  ],
+  "passives": []
+ },
+ {
+  "n": 128,
+  "name": "Devourer of Fauna",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 700,
+  "spt": 5,
+  "tier": "C",
+  "rank": 76,
+  "score": 38.5,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 74,
+   "offenseSolo": 50.4,
+   "generation": 0,
+   "defense": 52.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Blindage O/L",
+  "talents": [
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)",
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)",
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)"
+  ],
+  "abilities": [
+   "Ball of Hatred [CD1] Deal 5 Shadow damage / Base damage increases by 5"
+  ],
+  "passives": [
+   "Vampirism (common): Regenerates 25% of the damage dealt to the target"
+  ]
+ },
+ {
+  "n": 27,
+  "name": "Nimbus Seahorse",
+  "el": "water",
+  "rar": "rare",
+  "hp": 900,
+  "spt": 4,
+  "tier": "C",
+  "rank": 77,
+  "score": 38.5,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 35.4,
+   "offenseSolo": 59.1,
+   "generation": 71.7,
+   "defense": 63.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Multi Start: Gain (+3) in each element.",
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn",
+   "Inaccuracy: At the start of the game, a random enemy card loses (-20%) accuracy."
+  ],
+  "abilities": [
+   "Supra-Dew-Ray [CD5] Deal 25 Water, 25 Light and 25 Nature damage Water bonus (+3) & Light bonus (+3) & Nature bonus (+3)"
+  ],
+  "passives": [
+   "Reset (epic): When you kill an ENEMY card with one of your attacks, that attack remains available",
+   "Brutal (rare): Ignores resistances and taunts. Destroys enemy taunts if targeted"
+  ]
+ },
+ {
+  "n": 158,
+  "name": "Feathered Rabbit",
+  "el": "nature",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 7,
+  "tier": "C",
+  "rank": 78,
+  "score": 38.3,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 64.6,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 64.6,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "One Man Army: Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5)."
+  ],
+  "abilities": [
+   "Piercing Sound [CD1] [Cost 1 Nature] / Deal 20 Nature damage / Base damage of this attack increases by (+2) after use"
+  ],
+  "passives": [
+   "Heart Resistance (common): This card increases the resistances of all allied cards (+3)",
+   "Backlash (common): Takes 50% of the damage dealt to the target"
+  ]
+ },
+ {
+  "n": 197,
+  "name": "Codex of Ancient Woes",
+  "el": "shadow",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "C",
+  "rank": 79,
+  "score": 37.7,
+  "roles": [
+   "generation",
+   "defense"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 95.3,
+   "defense": 92.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Blindage F/E",
+  "talents": [
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)",
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)",
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)"
+  ],
+  "abilities": [
+   "Dark Script [CD1] Shadow bonus (+1). Base bonus increases by 1"
+  ],
+  "passives": [
+   "Immunity (epic): The card is immune to all effects from enemy cards"
+  ]
+ },
+ {
+  "n": 198,
+  "name": "Codex of Luminous Spells",
+  "el": "light",
+  "rar": "epic",
+  "hp": 1000,
+  "spt": 10,
+  "tier": "C",
+  "rank": 80,
+  "score": 37.6,
+  "roles": [
+   "generation",
+   "defense"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 95.3,
+   "defense": 91.3,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Blindage F/E",
+  "talents": [
+   "F/W-Shield: Fire resistance (+25%)\nWater resistance (+25%)",
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)",
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)"
+  ],
+  "abilities": [
+   "Luminescent Script [CD1] Light bonus (+1). Base bonus increases by 1"
+  ],
+  "passives": [
+   "Immunity (epic): The card is immune to all effects from enemy cards"
+  ]
+ },
+ {
+  "n": 37,
+  "name": "King of the Blazing Flames",
+  "el": "fire",
+  "rar": "epic",
+  "hp": 900,
+  "spt": 7,
+  "tier": "C",
+  "rank": 81,
+  "score": 37.5,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 40.2,
+   "offenseSolo": 40.9,
+   "generation": 0,
+   "defense": 70.9,
+   "support": 81.1,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "BouleDeCrit",
+  "talents": [
+   "Counter: Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn"
+  ],
+  "abilities": [
+   "Scorching Bite [CD2] Deal 15 Fire damage / Deal 15 Earth damage / Critical of all the caster's cards (+5%)"
+  ],
+  "passives": [
+   "Phoenix (common): When destroyed, this card returns to life with 25% of its max HP.\nSingle use"
+  ]
+ },
+ {
+  "n": 243,
+  "name": "Vivy",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 9,
+  "tier": "C",
+  "rank": 82,
+  "score": 37.1,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 51.2,
+   "offenseSolo": 52,
+   "generation": 0,
+   "defense": 82.7,
+   "support": 0.8,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Terrain lumineux",
+  "talents": [
+   "Brutal: Start the game with the \"Brutal\" passive",
+   "Luminous Field: Light bonus (+7).",
+   "Blue Whale: Increases this card’s HP by (+200)"
+  ],
+  "abilities": [
+   "Wave of Darkness [CD3] Deal 40 Shadow damage / Deal [+1 to +40] Light damage / Caster's critical (+20)"
+  ],
+  "passives": [
+   "Smoke (rare): Enshrouds the allied field after using an attack or a heal"
+  ]
+ },
+ {
+  "n": 259,
+  "name": "Dragon of the Infernal City",
+  "el": "fire",
+  "rar": "common",
+  "hp": 550,
+  "spt": 10,
+  "tier": "C",
+  "rank": 83,
+  "score": 37.1,
+  "roles": [
+   "control"
+  ],
+  "pct": {
+   "offense": 25.2,
+   "offenseSolo": 33.1,
+   "generation": 55.1,
+   "defense": 22,
+   "support": 0.8,
+   "control": 98.4,
+   "economy": 67.7
+  },
+  "bestTalent": "TCoeurOmbre_C",
+  "talents": [
+   "Fire Heart: Start the game with the \"Fireheart\" passive",
+   "Shadow Heart: Start the game with the \"Shadowheart\" passive",
+   "Immunity-8: Applies the \"Immunity\" passive on turn 8"
+  ],
+  "abilities": [
+   "Draconic Duality [CD2] Choice / Deal [10 to 40] Fire damage / ---------- or ---------- / Deal [10 to 40] Shadow damage"
+  ],
+  "passives": [
+   "Freeze (epic): When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage."
+  ]
+ },
+ {
+  "n": 83,
+  "name": "Imaginary Panther",
+  "el": "nature",
+  "rar": "epic",
+  "hp": 600,
+  "spt": 4,
+  "tier": "C",
+  "rank": 84,
+  "score": 37,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 85,
+   "offenseSolo": 78,
+   "generation": 0,
+   "defense": 17.3,
+   "support": 0.8,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "TBrut",
+  "talents": [
+   "Vital Chance: This card has a 10% chance to heal instead of taking damage when attacked.",
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Brutal: Start the game with the \"Brutal\" passive"
+  ],
+  "abilities": [
+   "Crazy Speed [CD1] Deal 9 Nature damage / Echo (75%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 236,
+  "name": "Apprentice of Death",
+  "el": "fire",
+  "rar": "rare",
+  "hp": 700,
+  "spt": 6,
+  "tier": "C",
+  "rank": 85,
+  "score": 37,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 69.3,
+   "offenseSolo": 77.2,
+   "generation": 0,
+   "defense": 47.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Durcissement",
+  "talents": [
+   "Revitalization: 5% chance each turn to restore this card’s HP to maximum.",
+   "Hardening: Increases this card’s elemental resistances by (+15%).",
+   "Doomed Hour: Applies Eternity to all enemy cards when this card is killed."
+  ],
+  "abilities": [
+   "Nocturnal Burn [CD3] Deal 15 Fire and 15 Shadow damage to all enemy cards"
+  ],
+  "passives": [
+   "Graveyard (common): Increases all your elemental bonuses by (+3) when a card dies",
+   "Avenger (epic): This card recovers all its attacks whenever a card it didn't kill dies."
+  ]
+ },
+ {
+  "n": 227,
+  "name": "Polychrome Owl",
+  "el": "nature",
+  "rar": "common",
+  "hp": 500,
+  "spt": 9,
+  "tier": "C",
+  "rank": 86,
+  "score": 36.6,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 55.1,
+   "offenseSolo": 78.7,
+   "generation": 0,
+   "defense": 68.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Imprudent",
+  "talents": [
+   "360 Turn: Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Last Breath: Applies Temporality to all your cards when this card dies"
+  ],
+  "abilities": [
+   "Dance of Feathers [CD2] Deal 30 Nature damage to random cards on the field / Deal 30 Fire damage / Deal 30 Shadow damage / Deal 30 Light damage / Deal 30 Water damage / Deal 30 Earth damage / Apply Temporality to the targeted card on critical hit"
+  ],
+  "passives": []
+ },
+ {
+  "n": 204,
+  "name": "Ephial",
+  "el": "light",
+  "rar": "legendary",
+  "hp": 1500,
+  "spt": 12,
+  "tier": "C",
+  "rank": 87,
+  "score": 36.4,
+  "roles": [
+   "support",
+   "defense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 15,
+   "offenseSolo": 18.1,
+   "generation": 0,
+   "defense": 97.6,
+   "support": 93.7,
+   "control": 0,
+   "economy": 91.3
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Cavalry: Increases the max HP of all other allied cards by (+150)",
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Lucky Tox: Each Tox rarity has exactly a 25% chance to be obtained."
+  ],
+  "abilities": [
+   "Astral Tackle [CD4] Deal 20 Light damage / Deal 20 Shadow damage / Deal 20 Nature damage",
+   "Planet Heal [CD5] Heal 70 Light to all allied cards"
+  ],
+  "passives": [
+   "Reset (epic): When you kill an ENEMY card with one of your attacks, that attack remains available"
+  ]
+ },
+ {
+  "n": 64,
+  "name": "Master Thronebéur",
+  "el": "light",
+  "rar": "common",
+  "hp": 850,
+  "spt": 8,
+  "tier": "C",
+  "rank": 88,
+  "score": 36.1,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 18.9,
+   "offenseSolo": 24.4,
+   "generation": 0,
+   "defense": 63,
+   "support": 85.8,
+   "control": 85.8,
+   "economy": 52
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Multi Start: Gain (+3) in each element.",
+   "Fortune: Increases this card's Spamton generation by (+2) per turn"
+  ],
+  "abilities": [
+   "Slowing [CD4] Apply Eternity",
+   "Luminous Hammer [CD3] Deal 20 Light damage / Deal 20 Earth damage / Accuracy (+20%) on all allied cards"
+  ],
+  "passives": []
+ },
+ {
+  "n": 88,
+  "name": "Faerylia",
+  "el": "shadow",
+  "rar": "epic",
+  "hp": 600,
+  "spt": 5,
+  "tier": "C",
+  "rank": 89,
+  "score": 36,
+  "roles": [
+   "control"
+  ],
+  "pct": {
+   "offense": 34.6,
+   "offenseSolo": 31.5,
+   "generation": 52.8,
+   "defense": 21.3,
+   "support": 0.8,
+   "control": 92.9,
+   "economy": 13.4
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Revitalization: 5% chance each turn to restore this card’s HP to maximum.",
+   "Multi Start: Gain (+3) in each element.",
+   "Doomed Hour: Applies Eternity to all enemy cards when this card is killed."
+  ],
+  "abilities": [
+   "Global Aim [CD9] Apply Eternity to all enemy cards",
+   "Offensive Aim [CD2] Deal 15 Shadow damage / Eternity on critical hit",
+   "Multiboost [CD3] Bonus (+3) in every element"
+  ],
+  "passives": []
+ },
+ {
+  "n": 71,
+  "name": "Astral Healer of the Woods",
+  "el": "nature",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 11,
+  "tier": "C",
+  "rank": 90,
+  "score": 34.4,
+  "roles": [
+   "support",
+   "economy"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 55.1,
+   "defense": 45.7,
+   "support": 99.2,
+   "control": 0,
+   "economy": 94.5
+  },
+  "bestTalent": "BouleDeCrit",
+  "talents": [
+   "Legacy: Gain (+50) Spamton when this card is killed.",
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Magic Leaf [CD1] Heal 10 Nature / Critical (+2%) on all allied cards"
+  ],
+  "passives": [
+   "Natureheart (common): Nature bonus (+1) per turn",
+   "Lucky (common): Increases your Luck by (+0.5) per turn"
+  ]
+ },
+ {
+  "n": 67,
+  "name": "Logidrake, the Ignatius",
+  "el": "fire",
+  "rar": "rare",
+  "hp": 500,
+  "spt": 5,
+  "tier": "C",
+  "rank": 91,
+  "score": 34.2,
+  "roles": [
+   "offense"
+  ],
+  "pct": {
+   "offense": 77.2,
+   "offenseSolo": 67.7,
+   "generation": 0,
+   "defense": 15.7,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Nouvelle vie",
+  "talents": [
+   "Cash Out: At the start of the game, gain (+25) Spamton.",
+   "New Life: Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%)."
+  ],
+  "abilities": [
+   "Lucky-Fire [CD1] Deal 7 Fire damage / Deal 7 Fire damage / Deal 7 Fire damage / Echo (50%)"
+  ],
+  "passives": [
+   "Vampirism (rare): Regenerates 50% of the damage dealt to the target"
+  ]
+ },
+ {
+  "n": 31,
+  "name": "Raffteru",
+  "el": "earth",
+  "rar": "rare",
+  "hp": 600,
+  "spt": 5,
+  "tier": "C",
+  "rank": 92,
+  "score": 34.1,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 54.3,
+   "offenseSolo": 69.3,
+   "generation": 0,
+   "defense": 24.4,
+   "support": 78,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "TBrut",
+  "talents": [
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card.",
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn",
+   "Brutal: Start the game with the \"Brutal\" passive"
+  ],
+  "abilities": [
+   "Random Rumble [CD1] Deal 70 Earth damage / Critical (+20%) on all allied cards",
+   "Fortunate Leap [CD1] Deal 10 Nature damage / Echo (50%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 3,
+  "name": "Nature Spirit",
+  "el": "nature",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "C",
+  "rank": 93,
+  "score": 33.5,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 12.6,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Nature Heart: Start the game with the \"Natureheart\" passive",
+   "Earth Field: Earth bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Breeze Whisper [CD1] Deal 10 Nature damage Nature bonus (+1)",
+   "Windmill [CD1] Nature bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 4,
+  "name": "Earth Spirit",
+  "el": "earth",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "C",
+  "rank": 94,
+  "score": 33.4,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 11.8,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Earth Heart: Start the game with the \"Earthheart\" passive",
+   "Natural Field: Nature bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Earthen Breath [CD1] Deal 10 Earth damage Earth bonus (+1)",
+   "Rampart [CD1] Earth bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 1,
+  "name": "Fire Spirit",
+  "el": "fire",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "C",
+  "rank": 95,
+  "score": 33.1,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 10.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Terrain aquatique",
+  "talents": [
+   "Fire Heart: Start the game with the \"Fireheart\" passive",
+   "Aquatic Field: Water bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Breath of Flames [CD1] Deal 10 Fire damage Fire bonus (+1)",
+   "Blaze [CD1] Fire bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 6,
+  "name": "Light Spirit",
+  "el": "light",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "D",
+  "rank": 96,
+  "score": 32.9,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 8.7,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Terrain sombre",
+  "talents": [
+   "Light Heart: Start the game with the \"Lightheart\" passive",
+   "Shadow Field: Shadow bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Radiant Whisper [CD1] Deal 10 Light damage Light bonus (+1)",
+   "Screen [CD1] Light bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 106,
+  "name": "Thorn of Love",
+  "el": "earth",
+  "rar": "common",
+  "hp": 500,
+  "spt": 6,
+  "tier": "D",
+  "rank": 97,
+  "score": 32.5,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 26,
+   "offenseSolo": 72.4,
+   "generation": 96.9,
+   "defense": 3.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "Affaiblissement",
+  "talents": [
+   "Revaluation: Increases this card’s Spamton generation by (+5).",
+   "Magic Coin: Start the game with (+2) Luck",
+   "Weaken: Reduces the elemental resistances of all enemy cards by (-1%) per turn"
+  ],
+  "abilities": [
+   "Wisdom [CD1] Earth bonus (+2) Nature bonus (+2) Light bonus (+2)"
+  ],
+  "passives": [
+   "Reflection (epic): Reflects 75% of the damage taken back to the attacker"
+  ]
+ },
+ {
+  "n": 261,
+  "name": "Godlur",
+  "el": "earth",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 7,
+  "tier": "D",
+  "rank": 98,
+  "score": 32.5,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 39.4,
+   "offenseSolo": 22,
+   "generation": 0,
+   "defense": 92.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Incisif",
+  "talents": [
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Revaluation: Increases this card’s Spamton generation by (+5)."
+  ],
+  "abilities": [
+   "Golem Strike [CD2] Deal 25 Earth damage / Smoke"
+  ],
+  "passives": [
+   "Tenacity (common): The first fatal attack leaves you with 1 HP",
+   "Ancient Healing (common): At the start of each turn, the card recovers 4% of its max HP"
+  ]
+ },
+ {
+  "n": 101,
+  "name": "Neilla",
+  "el": "water",
+  "rar": "common",
+  "hp": 650,
+  "spt": 9,
+  "tier": "D",
+  "rank": 99,
+  "score": 32.4,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 20.5,
+   "offenseSolo": 15.7,
+   "generation": 0,
+   "defense": 80.3,
+   "support": 79.5,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Souffle-8",
+  "talents": [
+   "Inscribed: The card is immune to Vanish effects",
+   "Reducer: At the start of your first turn, a random allied card receives \"Temporality\"",
+   "Breath-8: Gains the Elemental Breath attack at the start of turn 8"
+  ],
+  "abilities": [
+   "Marine Protection [CD4] Heal 80 Water / Resistance to all elements (+15) / Apply Taunt"
+  ],
+  "passives": [
+   "Temporality (legendary): Decreases cooldowns by 1"
+  ]
+ },
+ {
+  "n": 2,
+  "name": "Water Spirit",
+  "el": "water",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "D",
+  "rank": 100,
+  "score": 32.2,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 3.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Water Heart: Start the game with the \"Waterheart\" passive",
+   "Blazing Field: Fire bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Aquatic Breath [CD1] Deal 10 Water damage Water bonus (+1)",
+   "Wave [CD1] Water bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 5,
+  "name": "Shadow Spirit",
+  "el": "shadow",
+  "rar": "common",
+  "hp": 500,
+  "spt": 10,
+  "tier": "D",
+  "rank": 101,
+  "score": 32.2,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 29.9,
+   "offenseSolo": 34.6,
+   "generation": 74,
+   "defense": 3.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Shadow Heart: Start the game with the \"Shadowheart\" passive",
+   "Luminous Field: Light bonus (+7).",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Shadow Breath [CD1] Deal 10 Shadow damage Shadow bonus (+1)",
+   "Umbral [CD1] Shadow bonus (+1)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 113,
+  "name": "Lums",
+  "el": "light",
+  "rar": "common",
+  "hp": 600,
+  "spt": 7,
+  "tier": "D",
+  "rank": 102,
+  "score": 31.3,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 15.7,
+   "offenseSolo": 19.7,
+   "generation": 55.1,
+   "defense": 27.6,
+   "support": 71.7,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "TCoeurLumiere_C",
+  "talents": [
+   "Light Heart: Start the game with the \"Lightheart\" passive",
+   "Shadow Heart: Start the game with the \"Shadowheart\" passive",
+   "Crit Sphere: Increases this card's critical chance by (+2%) each turn"
+  ],
+  "abilities": [
+   "Silver Wind [CD2] Choice / Deal 10 Light and 10 Shadow damage / ---------- or ---------- / Light bonus (+3) & Shadow bonus (+3)",
+   "Liftoff [CD4] Critical damage (+1) on all cards on the field"
+  ],
+  "passives": []
+ },
+ {
+  "n": 176,
+  "name": "Rob the Adventurer",
+  "el": "earth",
+  "rar": "common",
+  "hp": 500,
+  "spt": 9,
+  "tier": "D",
+  "rank": 103,
+  "score": 30.8,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 88.2,
+   "defense": 3.9,
+   "support": 83.5,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Evolution",
+  "talents": [
+   "Inscribed: The card is immune to Vanish effects",
+   "Doomed Hour: Applies Eternity to all enemy cards when this card is killed.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Adventure [CD1] Base damage and healing increase by 1 / Accuracy and Critical (+4%)"
+  ],
+  "passives": [
+   "Shadowheart (common): Shadow bonus (+1) per turn",
+   "Earthheart (common): Earth bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 22,
+  "name": "Glimmer of Hope",
+  "el": "light",
+  "rar": "common",
+  "hp": 900,
+  "spt": 10,
+  "tier": "D",
+  "rank": 104,
+  "score": 30.4,
+  "roles": [
+   "support",
+   "defense",
+   "economy"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 95.3,
+   "support": 92.9,
+   "control": 0,
+   "economy": 97.6
+  },
+  "bestTalent": "TRoulette",
+  "talents": [
+   "Lucky Tox: Each Tox rarity has exactly a 25% chance to be obtained.",
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive."
+  ],
+  "abilities": [
+   "Breath [CD1] Heal 20 Nature / Heal 20 Light / Resistance in a random element (+15)"
+  ],
+  "passives": [
+   "Lucky (rare): Increases your Luck by (+1) per turn"
+  ]
+ },
+ {
+  "n": 146,
+  "name": "Chatty Octopus",
+  "el": "water",
+  "rar": "epic",
+  "hp": 500,
+  "spt": 3,
+  "tier": "D",
+  "rank": 105,
+  "score": 29.8,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 74,
+   "defense": 48,
+   "support": 77.2,
+   "control": 0,
+   "economy": 0.8
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "New Life: Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Inversion: Start the game with the \"Inversion\" passive"
+  ],
+  "abilities": [
+   "Dry ink [CD1] Heal 10 Water Water bonus (+2)"
+  ],
+  "passives": [
+   "Smoke (rare): Enshrouds the allied field after using an attack or a heal"
+  ]
+ },
+ {
+  "n": 234,
+  "name": "Cloudy Rodent",
+  "el": "light",
+  "rar": "common",
+  "hp": 750,
+  "spt": 11,
+  "tier": "D",
+  "rank": 106,
+  "score": 29.4,
+  "roles": [
+   "economy"
+  ],
+  "pct": {
+   "offense": 22.8,
+   "offenseSolo": 18.9,
+   "generation": 42.5,
+   "defense": 37,
+   "support": 0.8,
+   "control": 0,
+   "economy": 88.2
+  },
+  "bestTalent": "Evolution",
+  "talents": [
+   "L-Shield: Shadow resistance (+25%)\nLight resistance (+25%)",
+   "F/E-Shield: Fire resistance (+25%)\nEarth resistance (+25%)",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Cloud Gnawer [CD3] Deal 30 Light damage Light bonus (+1)"
+  ],
+  "passives": [
+   "Taunt (rare): When this character launches an attack, all enemy attacks during the next turn must target it",
+   "Berserk (common): All your cards' damage and heals are increased by 12%"
+  ]
+ },
+ {
+  "n": 140,
+  "name": "Mouse of the Wheat",
+  "el": "earth",
+  "rar": "rare",
+  "hp": 500,
+  "spt": 10,
+  "tier": "D",
+  "rank": 107,
+  "score": 29.1,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 48.8,
+   "defense": 36.2,
+   "support": 92.1,
+   "control": 0,
+   "economy": 67.7
+  },
+  "bestTalent": "Terrain lumineux",
+  "talents": [
+   "Luminous Field: Light bonus (+7).",
+   "Bargain: Your first Tox purchase of the game is refunded.",
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\""
+  ],
+  "abilities": [
+   "Outbreak [CD3] Heal 125 Earth Earth bonus (+2)"
+  ],
+  "passives": [
+   "Vanish (legendary): Removes the target's last passive"
+  ]
+ },
+ {
+  "n": 156,
+  "name": "The Eye of the Mountains",
+  "el": "water",
+  "rar": "common",
+  "hp": 600,
+  "spt": 6,
+  "tier": "D",
+  "rank": 108,
+  "score": 28.4,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 55.1,
+   "defense": 44.9,
+   "support": 85,
+   "control": 0,
+   "economy": 29.9
+  },
+  "bestTalent": "TCoeurAcier",
+  "talents": [
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Inscribed: The card is immune to Vanish effects",
+   "Critical: Critical bonus (+10%)."
+  ],
+  "abilities": [
+   "Revitalization [CD4] Heal 50 Water / Critical damage (+1)"
+  ],
+  "passives": [
+   "Berserk (common): All your cards' damage and heals are increased by 12%",
+   "Waterheart (common): Water bonus (+1) per turn"
+  ]
+ },
+ {
+  "n": 33,
+  "name": "Nakyel",
+  "el": "shadow",
+  "rar": "rare",
+  "hp": 500,
+  "spt": 3,
+  "tier": "D",
+  "rank": 109,
+  "score": 27.9,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 42.5,
+   "offenseSolo": 20.5,
+   "generation": 0,
+   "defense": 23.6,
+   "support": 0.8,
+   "control": 89.8,
+   "economy": 0.8
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Shadow Heart: Start the game with the \"Shadowheart\" passive",
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Skinning [CD2] Deal 20 Shadow damage / Increases base damage by (+5) / Increases the caster's resistances by (+5%)"
+  ],
+  "passives": [
+   "Eternity (legendary): Increases cooldowns by 1"
+  ]
+ },
+ {
+  "n": 72,
+  "name": "Floral Giraffe",
+  "el": "nature",
+  "rar": "rare",
+  "hp": 750,
+  "spt": 7,
+  "tier": "D",
+  "rank": 110,
+  "score": 27.9,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 51.2,
+   "defense": 40.2,
+   "support": 89,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Depart multi elements",
+  "talents": [
+   "Multi Start: Gain (+3) in each element.",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)",
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances."
+  ],
+  "abilities": [
+   "Sylvan Rebirth [CD2] Apply Taunt / Accuracy and Critical (+5%) on all allied cards"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 23,
+  "name": "Artisan of Hours",
+  "el": "light",
+  "rar": "common",
+  "hp": 700,
+  "spt": 5,
+  "tier": "D",
+  "rank": 111,
+  "score": 27.4,
+  "roles": [
+   "defense",
+   "control"
+  ],
+  "pct": {
+   "offense": 14.2,
+   "offenseSolo": 15,
+   "generation": 0,
+   "defense": 85.8,
+   "support": 0.8,
+   "control": 97.6,
+   "economy": 13.4
+  },
+  "bestTalent": "Imprudent",
+  "talents": [
+   "Reckless: Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+   "Debt: Both players start with a debt of (-20) Spamton.",
+   "Resilience: While this card's HP is below 50%, its elemental resistances increase by (+25%)."
+  ],
+  "abilities": [
+   "Slowing [CD4] Apply Eternity",
+   "Flash [CD3] Deal 35 Light damage / [Freeze]"
+  ],
+  "passives": []
+ },
+ {
+  "n": 256,
+  "name": "Serpentine Heraldess",
+  "el": "earth",
+  "rar": "legendary",
+  "hp": 900,
+  "spt": 9,
+  "tier": "D",
+  "rank": 112,
+  "score": 26.9,
+  "roles": [
+   "balanced"
+  ],
+  "pct": {
+   "offense": 18.1,
+   "offenseSolo": 42.5,
+   "generation": 0,
+   "defense": 56.7,
+   "support": 0.8,
+   "control": 85.8,
+   "economy": 59.8
+  },
+  "bestTalent": "Terrain sombre",
+  "talents": [
+   "Shadow Field: Shadow bonus (+7).",
+   "Doomed Hour: Applies Eternity to all enemy cards when this card is killed.",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive."
+  ],
+  "abilities": [
+   "Eternal Constriction [CD5] Deal 30 Earth damage Random X8",
+   "Sacrifice [CD1] [Cost 7 Earth] / Fully heals itself"
+  ],
+  "passives": [
+   "Eternity (legendary): Increases cooldowns by 1"
+  ]
+ },
+ {
+  "n": 222,
+  "name": "Flower of Life",
+  "el": "light",
+  "rar": "common",
+  "hp": 600,
+  "spt": 7,
+  "tier": "D",
+  "rank": 113,
+  "score": 25.7,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 24.4,
+   "offenseSolo": 26.8,
+   "generation": 55.1,
+   "defense": 14.2,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Incisif",
+  "talents": [
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Corrupted Heart: Start the game with a random Rare Heart passive",
+   "Piercing: All your cards' critical and accuracy increase by (+1%) per turn"
+  ],
+  "abilities": [
+   "Radiant Whisper [CD1] Deal 10 Light damage Light bonus (+1)",
+   "Floral Barrier [CD1] Apply Taunt to the caster"
+  ],
+  "passives": []
+ },
+ {
+  "n": 151,
+  "name": "Minion of Flames",
+  "el": "fire",
+  "rar": "common",
+  "hp": 800,
+  "spt": 9,
+  "tier": "D",
+  "rank": 114,
+  "score": 23.9,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 71.7,
+   "support": 89.8,
+   "control": 0,
+   "economy": 59.8
+  },
+  "bestTalent": "Evolution",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Inscribed: The card is immune to Vanish effects",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP."
+  ],
+  "abilities": [
+   "Sweet Home [CD2] Heal 25 Fire Random / Heal 25 Fire / Heal 25 Fire"
+  ],
+  "passives": [
+   "AoE (common): Attacks and heals adjacent targets for 20% of the damage dealt",
+   "Berserk (common): All your cards' damage and heals are increased by 12%"
+  ]
+ },
+ {
+  "n": 262,
+  "name": "Yotaru, Leafguard",
+  "el": "nature",
+  "rar": "common",
+  "hp": 500,
+  "spt": 5,
+  "tier": "D",
+  "rank": 115,
+  "score": 23.7,
+  "roles": [
+   "support",
+   "defense"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 87.4,
+   "support": 96.1,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive."
+  ],
+  "abilities": [
+   "Protect [CD1] Apply Taunt to a random allied card",
+   "Earthguard [CD2] Breaks a Taunt to grant 100 max HP",
+   "Boostguard [CD2] Breaks a Taunt to increase base damage and healing by 3"
+  ],
+  "passives": []
+ },
+ {
+  "n": 58,
+  "name": "The Wild Carrier",
+  "el": "earth",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 7,
+  "tier": "D",
+  "rank": 116,
+  "score": 23,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 49.6,
+   "defense": 68.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)"
+  ],
+  "abilities": [
+   "Stronghold [CD4] Apply Taunt for 2 turns"
+  ],
+  "passives": [
+   "Punching Bag (common): Increases the element of the caster's card by +1 each time it is attacked"
+  ]
+ },
+ {
+  "n": 69,
+  "name": "Scorch, the Ignited Lizards",
+  "el": "water",
+  "rar": "rare",
+  "hp": 350,
+  "spt": 7,
+  "tier": "D",
+  "rank": 117,
+  "score": 22.8,
+  "roles": [
+   "generation"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 98.4,
+   "defense": 2.4,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Nouvelle vie",
+  "talents": [
+   "New Life: Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+   "Evolution: If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.\nThresholds at 75%, 50% and 25% HP.",
+   "Debt: Both players start with a debt of (-20) Spamton."
+  ],
+  "abilities": [
+   "Flameflow [CD1] Fire bonus (+3) Water bonus (+3) Earth bonus (+3)"
+  ],
+  "passives": [
+   "Ancient Healing (common): At the start of each turn, the card recovers 4% of its max HP"
+  ]
+ },
+ {
+  "n": 152,
+  "name": "Herald of Ashes",
+  "el": "fire",
+  "rar": "common",
+  "hp": 800,
+  "spt": 8,
+  "tier": "D",
+  "rank": 118,
+  "score": 22.7,
+  "roles": [
+   "economy"
+  ],
+  "pct": {
+   "offense": 21.3,
+   "offenseSolo": 23.6,
+   "generation": 0,
+   "defense": 52,
+   "support": 0.8,
+   "control": 0,
+   "economy": 90.6
+  },
+  "bestTalent": "Corrosion",
+  "talents": [
+   "Fortune: Increases this card's Spamton generation by (+2) per turn",
+   "Focus: At the start of each turn, this card has a 25% chance to gain Taunt.",
+   "Corrosion: Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances."
+  ],
+  "abilities": [
+   "Dragon's Breath [CD3] Choice / Deal 30 Fire damage / Deal 10 Nature damage / Deal 10 Nature damage / ---------- or ---------- / Fire bonus (+5) Nature bonus (+5)"
+  ],
+  "passives": [
+   "Smoke (rare): Enshrouds the allied field after using an attack or a heal",
+   "Lucky (common): Increases your Luck by (+0.5) per turn"
+  ]
+ },
+ {
+  "n": 124,
+  "name": "Horned Dune Wyrm",
+  "el": "earth",
+  "rar": "common",
+  "hp": 500,
+  "spt": 4,
+  "tier": "D",
+  "rank": 119,
+  "score": 21.5,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 29.1,
+   "offenseSolo": 33.9,
+   "generation": 0,
+   "defense": 9.4,
+   "support": 81.1,
+   "control": 0,
+   "economy": 4.7
+  },
+  "bestTalent": "Dernier souffle",
+  "talents": [
+   "Erosion: Start the game with the \"Erosion\" passive",
+   "Life-8: The card's HP and max HP are doubled at the start of turn 8",
+   "Last Breath: Applies Temporality to all your cards when this card dies"
+  ],
+  "abilities": [
+   "Scorching Bite [CD2] Deal 15 Fire damage / Deal 15 Earth damage / Critical of all the caster's cards (+5%)"
+  ],
+  "passives": [
+   "Mimicry (rare): Each time the opponent generates one or more elements, you generate 1 of the same type."
+  ]
+ },
+ {
+  "n": 180,
+  "name": "Sky Dragon",
+  "el": "light",
+  "rar": "common",
+  "hp": 700,
+  "spt": 8,
+  "tier": "D",
+  "rank": 120,
+  "score": 20.5,
+  "roles": [
+   "economy"
+  ],
+  "pct": {
+   "offense": 22,
+   "offenseSolo": 26,
+   "generation": 0,
+   "defense": 31.5,
+   "support": 0.8,
+   "control": 0,
+   "economy": 98.4
+  },
+  "bestTalent": "Fortune",
+  "talents": [
+   "Last Breath: Applies Temporality to all your cards when this card dies",
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card.",
+   "Fortune: Increases this card's Spamton generation by (+2) per turn"
+  ],
+  "abilities": [
+   "Dazzling Breath [CD4] Deal 40 Light damage",
+   "Tornado Breath [CD4] Deal 40 Nature damage"
+  ],
+  "passives": [
+   "Avenger (epic): This card recovers all its attacks whenever a card it didn't kill dies."
+  ]
+ },
+ {
+  "n": 153,
+  "name": "The Inventor",
+  "el": "fire",
+  "rar": "common",
+  "hp": 1000,
+  "spt": 5,
+  "tier": "D",
+  "rank": 121,
+  "score": 19.9,
+  "roles": [
+   "defense"
+  ],
+  "pct": {
+   "offense": 16.5,
+   "offenseSolo": 22.8,
+   "generation": 0,
+   "defense": 81.9,
+   "support": 0.8,
+   "control": 0,
+   "economy": 13.4
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Roulette: All of this card's abilities gain Echo (10%).",
+   "Vital Chance: This card has a 10% chance to heal instead of taking damage when attacked.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Materia [CD2] Bonus [-8 to +10] in every element",
+   "Rainbow [CD1] Deal 10 damage in a random element"
+  ],
+  "passives": [
+   "Multiplier (rare): Elemental bonuses are doubled for this card's damage and heals"
+  ]
+ },
+ {
+  "n": 94,
+  "name": "Zayd",
+  "el": "earth",
+  "rar": "legendary",
+  "hp": 600,
+  "spt": 1,
+  "tier": "D",
+  "rank": 122,
+  "score": 18.8,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 36.2,
+   "offenseSolo": 63.8,
+   "generation": 0,
+   "defense": 28.3,
+   "support": 0.8,
+   "control": 0,
+   "economy": 0
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Heart of Steel: Each time this card is attacked, its elemental resistances increase by (+1%).",
+   "Critical: Critical bonus (+10%)."
+  ],
+  "abilities": [
+   "World's End [CD7] Deal 50 Earth damage Random / Deal 50 Nature damage / Deal 50 Fire damage / Deal 50 Light damage / Deal 50 Shadow damage / Deal 50 Water damage",
+   "Fortress [CD3] Apply Taunt"
+  ],
+  "passives": [
+   "Revenge (rare): Once destroyed, this card deals all of its attacks to the opponent"
+  ]
+ },
+ {
+  "n": 117,
+  "name": "Keria",
+  "el": "fire",
+  "rar": "rare",
+  "hp": 550,
+  "spt": 8,
+  "tier": "D",
+  "rank": 123,
+  "score": 15.7,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 19.7,
+   "support": 91.3,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "Blindage Partagé",
+  "talents": [
+   "Shared Shield: Increases the elemental resistances of all allied cards by (+10%).",
+   "Eternalized: The card is immune to Eternity effects",
+   "Breath-8: Gains the Elemental Breath attack at the start of turn 8"
+  ],
+  "abilities": [
+   "Allied Fire [CD3] Base damage and healing increase by 3 for all allied cards",
+   "Ignition [CD2] Critical (+5%) on all allied cards"
+  ],
+  "passives": []
+ },
+ {
+  "n": 30,
+  "name": "Birth of Aldrin",
+  "el": "nature",
+  "rar": "rare",
+  "hp": 700,
+  "spt": 7,
+  "tier": "D",
+  "rank": 124,
+  "score": 15.6,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 19.7,
+   "offenseSolo": 16.5,
+   "generation": 0,
+   "defense": 33.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 38.6
+  },
+  "bestTalent": "Reset ultime",
+  "talents": [
+   "Ultimate Reset: This card restores to 100% of its max HP if its attack defeats an enemy card.",
+   "Phoenix Feather: 50% chance to regain the Phoenix passive once used.",
+   "360 Turn: Applies \"Random Metamorph\" to all your other cards when this card is killed."
+  ],
+  "abilities": [
+   "First Waltz [CD4] Deal 50 Nature damage"
+  ],
+  "passives": [
+   "Phoenix (rare): When destroyed, this card returns to life with 50% of its max HP.\nSingle use",
+   "Reset (epic): When you kill an ENEMY card with one of your attacks, that attack remains available"
+  ]
+ },
+ {
+  "n": 264,
+  "name": "Nebular Aristocrat",
+  "el": "light",
+  "rar": "common",
+  "hp": 500,
+  "spt": 3,
+  "tier": "D",
+  "rank": 125,
+  "score": 12.5,
+  "roles": [
+   "support"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 0.8,
+   "support": 87.4,
+   "control": 0,
+   "economy": 52
+  },
+  "bestTalent": "Transition",
+  "talents": [
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\"",
+   "Transition: When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+   "Eternalized: The card is immune to Eternity effects"
+  ],
+  "abilities": [
+   "Cosmic Masquerade [CD2] Choice / Accuracy (+20%) / ---------- or ---------- / Critical (+20%)"
+  ],
+  "passives": []
+ },
+ {
+  "n": 193,
+  "name": "Vladislaus",
+  "el": "fire",
+  "rar": "epic",
+  "hp": 350,
+  "spt": 4,
+  "tier": "D",
+  "rank": 126,
+  "score": 8,
+  "roles": [
+   "utility"
+  ],
+  "pct": {
+   "offense": 13.4,
+   "offenseSolo": 17.3,
+   "generation": 0,
+   "defense": 0,
+   "support": 0,
+   "control": 0,
+   "economy": 37.8
+  },
+  "bestTalent": "Vitalite des Ames",
+  "talents": [
+   "Vital Surge: At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+   "Phoenix Feather: 50% chance to regain the Phoenix passive once used.",
+   "Soul Vitality: Whenever a card on the field dies, this card's HP and max HP increase by (+300)"
+  ],
+  "abilities": [
+   "Double Influx [CD1] Deal 5 Fire damage / Deal 5 Shadow damage / Base damage increases by 5",
+   "Transfusion [CD1] Steals 100 max HP from an ally to heal itself for the same amount"
+  ],
+  "passives": [
+   "Tenacity (common): The first fatal attack leaves you with 1 HP"
+  ]
+ },
+ {
+  "n": 190,
+  "name": "Wander Blades",
+  "el": "shadow",
+  "rar": "rare",
+  "hp": 550,
+  "spt": 15,
+  "tier": "D",
+  "rank": 127,
+  "score": 7.5,
+  "roles": [
+   "economy"
+  ],
+  "pct": {
+   "offense": 0,
+   "offenseSolo": 0,
+   "generation": 0,
+   "defense": 3.1,
+   "support": 0.8,
+   "control": 0,
+   "economy": 99.2
+  },
+  "bestTalent": "Cavalerie",
+  "talents": [
+   "Bargain: Your first Tox purchase of the game is refunded.",
+   "Cavalry: Increases the max HP of all other allied cards by (+150)",
+   "Length: At the start of your first turn, a random enemy card receives \"Eternity\""
+  ],
+  "abilities": [],
+  "passives": [
+   "Graveyard (rare): Increases all your elemental bonuses by (+5) when a card dies",
+   "Heart Resistance (rare): This card increases the resistances of all allied cards (+6)",
+   "Lucky (rare): Increases your Luck by (+1) per turn"
+  ]
+ }
+]

@@ -1,0 +1,190 @@
+{
+ "requestId": 1,
+ "collection": {
+  "cards": 23,
+  "withTalents": [
+   {
+    "cards": [
+     {
+      "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "talentId": "TCoeurNature_C"
+     },
+     {
+      "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "talentId": "Frappe"
+     },
+     {
+      "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "talentId": "Blindage Partagé"
+     },
+     {
+      "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "talentId": "TCoeurAcier"
+     }
+    ],
+    "score": 9819.45868833676,
+    "ttk": 10,
+    "tier": "D",
+    "advantage": 38.04522572309331,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 10.1,
+      "deltaPct": -4.1
+     },
+     {
+      "player": 2,
+      "ttk": 9.7,
+      "deltaPct": 4.1
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "talentId": "Evolution"
+     },
+     {
+      "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+      "talentId": "Cavalerie"
+     },
+     {
+      "id": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+      "talentId": "TPunchingBag"
+     },
+     {
+      "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "talentId": "Blindage Partagé"
+     }
+    ],
+    "score": 9037.241409201208,
+    "ttk": 10.4,
+    "tier": "D",
+    "advantage": 30.135812099469224,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 10.9,
+      "deltaPct": 1.7
+     },
+     {
+      "player": 2,
+      "ttk": 11.5,
+      "deltaPct": -1.7
+     }
+    ]
+   }
+  ],
+  "noTalent": [
+   {
+    "cards": [
+     {
+      "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "talentId": null
+     },
+     {
+      "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "talentId": null
+     },
+     {
+      "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "talentId": null
+     },
+     {
+      "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "talentId": null
+     }
+    ],
+    "score": 8018.221187085179,
+    "ttk": 12.1,
+    "tier": "D",
+    "advantage": 31.101038299034812,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 12.7,
+      "deltaPct": 1.3
+     },
+     {
+      "player": 2,
+      "ttk": 13.6,
+      "deltaPct": -1.3
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "talentId": null
+     },
+     {
+      "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "talentId": null
+     },
+     {
+      "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "talentId": null
+     },
+     {
+      "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "talentId": null
+     }
+    ],
+    "score": 7165.443240942801,
+    "ttk": 13.7,
+    "tier": "D",
+    "advantage": 23.072550494194076,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 14.3,
+      "deltaPct": 3.6
+     },
+     {
+      "player": 2,
+      "ttk": 16,
+      "deltaPct": -3.6
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "talentId": null
+     },
+     {
+      "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+      "talentId": null
+     },
+     {
+      "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "talentId": null
+     },
+     {
+      "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "talentId": null
+     }
+    ],
+    "score": 6845.205838920775,
+    "ttk": 13.3,
+    "tier": "D",
+    "advantage": 20.05767178113873,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 14.7,
+      "deltaPct": 1.5
+     },
+     {
+      "player": 2,
+      "ttk": 15.9,
+      "deltaPct": -1.5
+     }
+    ]
+   }
+  ]
+ }
+}

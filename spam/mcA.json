@@ -1,0 +1,170 @@
+{
+ "res": {
+  "max1_reroll0": {
+   "x1": {
+    "mean": 9073,
+    "p10": 8602
+   },
+   "x05": {
+    "mean": 7726,
+    "p10": 6819
+   },
+   "buys": 3.04,
+   "byTurn": {
+    "2": "81%",
+    "4": "72%",
+    "6": "59%",
+    "8": "45%",
+    "10": "48%"
+   },
+   "fams": [
+    "CoeurNature:59%",
+    "CoeurEau:47%",
+    "Berserk:44%",
+    "Poison:40%",
+    "Reflect:27%",
+    "PunchingBag:20%",
+    "CoeurVital:19%"
+   ]
+  },
+  "max1_reroll1": {
+   "x1": {
+    "mean": 9307,
+    "p10": 8874
+   },
+   "x05": {
+    "mean": 8091,
+    "p10": 7222
+   },
+   "buys": 3.77,
+   "byTurn": {
+    "2": "98%",
+    "4": "89%",
+    "6": "69%",
+    "8": "64%",
+    "10": "58%"
+   },
+   "fams": [
+    "CoeurNature:74%",
+    "CoeurEau:70%",
+    "Poison:57%",
+    "Berserk:55%",
+    "Reflect:33%",
+    "CoeurVital:19%",
+    "PunchingBag:17%"
+   ]
+  },
+  "max1_reroll2": {
+   "x1": {
+    "mean": 9393,
+    "p10": 8935
+   },
+   "x05": {
+    "mean": 8197,
+    "p10": 7440
+   },
+   "buys": 4.14,
+   "byTurn": {
+    "2": "99%",
+    "4": "95%",
+    "6": "81%",
+    "8": "71%",
+    "10": "67%"
+   },
+   "fams": [
+    "CoeurNature:87%",
+    "CoeurEau:85%",
+    "Poison:65%",
+    "Berserk:59%",
+    "Reflect:36%",
+    "PunchingBag:19%",
+    "CoeurVital:19%"
+   ]
+  },
+  "robust_reroll0": {
+   "x1": {
+    "mean": 9061,
+    "p10": 8596
+   },
+   "x05": {
+    "mean": 7741,
+    "p10": 6888
+   },
+   "buys": 3.16,
+   "byTurn": {
+    "2": "81%",
+    "4": "73%",
+    "6": "63%",
+    "8": "50%",
+    "10": "49%"
+   },
+   "fams": [
+    "CoeurNature:58%",
+    "CoeurEau:46%",
+    "Berserk:43%",
+    "Poison:39%",
+    "Reflect:33%",
+    "PunchingBag:19%",
+    "CoeurVital:19%"
+   ]
+  },
+  "robust_reroll1": {
+   "x1": {
+    "mean": 9251,
+    "p10": 8812
+   },
+   "x05": {
+    "mean": 8077,
+    "p10": 7292
+   },
+   "buys": 3.92,
+   "byTurn": {
+    "2": "96%",
+    "4": "91%",
+    "6": "76%",
+    "8": "65%",
+    "10": "65%"
+   },
+   "fams": [
+    "CoeurNature:70%",
+    "CoeurEau:69%",
+    "Poison:56%",
+    "Berserk:55%",
+    "Reflect:37%",
+    "Primitive heal:19%",
+    "Inversement:19%"
+   ]
+  },
+  "robust_reroll2": {
+   "x1": {
+    "mean": 9301,
+    "p10": 8807
+   },
+   "x05": {
+    "mean": 8133,
+    "p10": 7413
+   },
+   "buys": 4.31,
+   "byTurn": {
+    "2": "99%",
+    "4": "97%",
+    "6": "87%",
+    "8": "78%",
+    "10": "70%"
+   },
+   "fams": [
+    "CoeurNature:86%",
+    "CoeurEau:80%",
+    "Poison:59%",
+    "Berserk:59%",
+    "Reflect:41%",
+    "CoeurVital:23%",
+    "Inversement:20%"
+   ]
+  }
+ },
+ "y": {
+  "y1": 8018.221187085179,
+  "y05": 6189.028663419153
+ }
+}

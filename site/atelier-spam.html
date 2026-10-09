@@ -1,0 +1,826 @@
+<title>Atelier de decks SPAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: workbench. Collection rail on the left, the deck and its analysis on the right; stacks to one column on phones. */
+:root {
+  --bg: #f2f3f7;
+  --surface: #ffffff;
+  --surface-2: #e9ebf2;
+  --ink: #151826;
+  --ink-2: #474b60;
+  --muted: #74788f;
+  --line: #d9dce7;
+  --accent: #0d7a6b;
+  --accent-ink: #ffffff;
+  --accent-soft: #d6efea;
+  --good: #0a7d0a;
+  --warn: #9a6400;
+  --bad: #c22f2f;
+  --warn-soft: #fff1d6;
+  --bad-soft: #fbe3e3;
+  --good-soft: #e0f3e0;
+  --chart-1: #2a78d6;
+  --chart-neg: #e34948;
+  --chart-mid: #c3c2b7;
+  --grid: #e3e4ec;
+  --el-fire: #eb6834;
+  --el-water: #2a78d6;
+  --el-earth: #a0521c;
+  --el-nature: #1baf7a;
+  --el-light: #c98500;
+  --el-shadow: #4a3aa7;
+  --el-divine: #d6336c;
+  --font-display: "Chakra Petch", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 10px;
+  --r-s: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1118; --surface: #171a24; --surface-2: #20242f; --ink: #eef0f7; --ink-2: #b8bccf; --muted: #8b90a8; --line: #2b3040;
+    --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --good: #3fbf3f; --warn: #f0b429; --bad: #f07070;
+    --warn-soft: #3a2e12; --bad-soft: #3a1c1c; --good-soft: #15301a; --chart-1: #3987e5; --chart-neg: #e66767; --chart-mid: #4a4a46; --grid: #262a36;
+    --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1118; --surface: #171a24; --surface-2: #20242f; --ink: #eef0f7; --ink-2: #b8bccf; --muted: #8b90a8; --line: #2b3040;
+  --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --good: #3fbf3f; --warn: #f0b429; --bad: #f07070;
+  --warn-soft: #3a2e12; --bad-soft: #3a1c1c; --good-soft: #15301a; --chart-1: #3987e5; --chart-neg: #e66767; --chart-mid: #4a4a46; --grid: #262a36;
+  --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 0 16px; padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; letter-spacing: .01em; }
+h3 { font-size: 1rem; }
+p { margin: 0; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.wrap { max-width: 1280px; margin: 0 auto; }
+
+/* Top bar */
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); margin: 0 -16px; padding: 12px 16px 0; }
+.top-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font-size: 1.35rem; letter-spacing: .02em; }
+.brand h1 b { color: var(--accent); font-weight: 700; }
+.tabs { display: flex; gap: 4px; margin-top: 10px; overflow-x: auto; }
+.tab { border: 0; background: none; padding: 8px 14px 10px; font-family: var(--font-display); font-weight: 600; font-size: .95rem; color: var(--ink-2); border-bottom: 3px solid transparent; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .count { font-family: var(--font-body); font-weight: 400; color: var(--muted); margin-left: 4px; }
+
+/* Generic */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; border-radius: var(--r-s); font-size: .9rem; line-height: 1.2; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.ghost { border-color: transparent; background: transparent; color: var(--ink-2); }
+.btn.danger { color: var(--bad); }
+.btn:disabled { opacity: .5; cursor: default; }
+.input { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 7px 10px; min-width: 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 10px; font-size: .85rem; white-space: nowrap; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; background: var(--muted); }
+.dot.fire { background: var(--el-fire); } .dot.water { background: var(--el-water); } .dot.earth { background: var(--el-earth); }
+.dot.nature { background: var(--el-nature); } .dot.light { background: var(--el-light); } .dot.shadow { background: var(--el-shadow); } .dot.divine { background: var(--el-divine); }
+.badge { display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); }
+.badge.wish { background: var(--warn-soft); color: var(--warn); }
+.badge.tier { font-family: var(--font-display); }
+.state { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; }
+.state.core { background: var(--good-soft); color: var(--good); }
+.state.swap { background: var(--warn-soft); color: var(--warn); }
+.state.keep { background: var(--surface-2); color: var(--ink-2); }
+.state.free { background: var(--accent-soft); color: var(--accent); }
+.eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.note { background: var(--surface-2); border-radius: var(--r-s); padding: 10px 12px; font-size: .88rem; color: var(--ink-2); }
+.note.warn { background: var(--warn-soft); color: var(--ink); }
+.empty { color: var(--muted); padding: 12px 0; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll-x { overflow-x: auto; min-width: 0; }
+
+/* Workbench */
+.bench { display: grid; grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+@media (max-width: 880px) { .bench { grid-template-columns: minmax(0, 1fr); } }
+.rail { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 96px); max-height: calc(100vh - 112px); display: flex; flex-direction: column; gap: 10px; }
+@media (max-width: 880px) { .rail { position: static; max-height: none; } }
+.rail .filters { display: flex; flex-wrap: wrap; gap: 6px; }
+.card-list { list-style: none; margin: 0; padding: 0; overflow-y: auto; min-height: 0; flex: 1; border-top: 1px solid var(--line); }
+@media (max-width: 880px) { .card-list { max-height: 360px; } }
+.card-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 8px 4px; }
+.card-item:hover { background: var(--surface-2); }
+.card-item[aria-pressed="true"] { background: var(--accent-soft); }
+.card-item .nm { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.card-item .meta { grid-column: 2 / 4; font-size: .8rem; color: var(--muted); }
+.card-item .act { font-size: .8rem; color: var(--accent); font-weight: 700; }
+
+.slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 1100px) { .slots { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .slots { grid-template-columns: minmax(0, 1fr); } }
+.slot { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.slot.empty-slot { border-style: dashed; background: transparent; color: var(--muted); justify-content: center; align-items: center; text-align: center; min-height: 140px; }
+.slot .head { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.slot .nm { font-family: var(--font-display); font-weight: 700; font-size: 1.02rem; line-height: 1.2; overflow-wrap: anywhere; }
+.slot .sub { font-size: .8rem; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.slot ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; font-size: .82rem; }
+.slot li b { font-weight: 700; }
+.slot .cd { color: var(--muted); }
+.x { border: 0; background: none; color: var(--muted); font-size: 1.1rem; line-height: 1; padding: 2px 6px; border-radius: 4px; }
+.x:hover { background: var(--surface-2); color: var(--ink); }
+
+.verdict { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr); gap: 16px; }
+@media (max-width: 760px) { .verdict { grid-template-columns: minmax(0, 1fr); } }
+.hero-score { display: flex; flex-direction: column; gap: 6px; }
+.hero-score .big { font-size: 3.2rem; font-weight: 700; line-height: 1; letter-spacing: -.01em; }
+.hero-score .big small { font-size: 1rem; font-weight: 400; color: var(--muted); margin-left: 6px; letter-spacing: 0; }
+.hero-score .line { font-size: .95rem; }
+.hero-score .line b { font-weight: 700; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.tile .lab { font-size: .8rem; color: var(--muted); }
+.tile .val { font-size: 1.35rem; font-weight: 700; line-height: 1.1; }
+.tile .hint { font-size: .8rem; color: var(--ink-2); }
+.meter { height: 8px; border-radius: 4px; background: var(--surface-2); position: relative; overflow: hidden; }
+.meter > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: var(--chart-1); }
+.meter.crit > i { background: var(--warn); }
+.tierbar { position: relative; height: 10px; border-radius: 5px; background: var(--surface-2); margin-top: 18px; }
+.tierbar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: var(--accent); }
+.tierbar .tk { position: absolute; top: -17px; transform: translateX(-50%); font-size: .7rem; color: var(--muted); font-weight: 700; }
+.tierbar .tk::after { content: ""; position: absolute; left: 50%; top: 15px; width: 1px; height: 12px; background: var(--muted); }
+
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
+.sec-head p { color: var(--ink-2); font-size: .9rem; max-width: 70ch; }
+.chart { width: 100%; min-width: 0; }
+.chart svg { display: block; overflow: visible; }
+.chart text { fill: var(--muted); font-family: var(--font-body); font-size: 11px; }
+.chart .lbl { fill: var(--ink-2); font-size: 12px; }
+.chart .lbl-strong { fill: var(--ink); font-size: 12px; font-weight: 700; }
+.chart .bar { fill: var(--chart-1); }
+.chart .bar.dim { fill: var(--chart-1); opacity: .35; }
+.chart .neg { fill: var(--chart-neg); }
+.chart .pos { fill: var(--chart-1); }
+.chart .grid { stroke: var(--grid); stroke-width: 1; }
+.chart .axis { stroke: var(--chart-mid); stroke-width: 1; }
+.chart .mark { stroke: var(--ink); stroke-width: 2; }
+.chart .mark-dot { fill: var(--ink); stroke: var(--surface); stroke-width: 2; }
+.chart .hit { fill: transparent; }
+.chart .hit:hover + .bar, .chart .hit:focus + .bar { opacity: .75; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 760px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.tip { position: fixed; z-index: 50; pointer-events: none; background: var(--ink); color: var(--bg); font-size: .82rem; padding: 6px 9px; border-radius: 6px; max-width: 260px; }
+
+.plan { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.turn { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.turn h3 { font-size: .9rem; display: flex; justify-content: space-between; gap: 6px; }
+.turn ol { margin: 0; padding-left: 18px; font-size: .84rem; display: flex; flex-direction: column; gap: 3px; }
+.turn li span { color: var(--muted); }
+.tips { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: .92rem; }
+
+.shop-card { border-top: 1px solid var(--line); padding: 10px 0; display: grid; grid-template-columns: minmax(140px, 200px) minmax(0, 1fr); gap: 8px 16px; }
+@media (max-width: 600px) { .shop-card { grid-template-columns: minmax(0, 1fr); } }
+.shop-lines { display: flex; flex-direction: column; gap: 6px; }
+.shop-line { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; font-size: .88rem; }
+.shop-line .cands { color: var(--ink-2); }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.steps li { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 10px; align-items: baseline; font-size: .9rem; }
+.steps .t { font-family: var(--font-display); font-weight: 700; }
+
+.swaps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.swap-col { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px; min-width: 0; }
+.swap-col ol { margin: 6px 0 0; padding-left: 18px; font-size: .86rem; display: flex; flex-direction: column; gap: 4px; }
+.delta-up { color: var(--good); font-weight: 700; }
+.delta-down { color: var(--bad); font-weight: 700; }
+.linkish { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; text-align: left; }
+.linkish:hover { text-decoration: underline; }
+.deck-names { display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.deck-names span { display: inline-flex; gap: 5px; align-items: center; white-space: nowrap; }
+.loading { padding: 40px 0; color: var(--muted); }
+.saved-item { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; border-bottom: 1px solid var(--line); padding: 10px 0; }
+.saved-item .meta { font-size: .85rem; color: var(--muted); }
+.best { font-weight: 700; color: var(--good); }
+details summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <h1>Atelier de decks <b>SPAM</b></h1>
+        <span class="muted small" id="subtitle">Chargement des données…</span>
+      </div>
+      <span class="muted small">Modèle du wiki communautaire, jeu v1.20, sans talents</span>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Vues">
+      <button class="tab" role="tab" id="tab-atelier" aria-selected="true" aria-controls="view-atelier">Atelier</button>
+      <button class="tab" role="tab" id="tab-top" aria-selected="false" aria-controls="view-top">Meilleurs decks</button>
+      <button class="tab" role="tab" id="tab-mine" aria-selected="false" aria-controls="view-mine">Mes decks <span class="count" id="saved-count"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="view-atelier" role="tabpanel" aria-labelledby="tab-atelier">
+    <div class="bench">
+      <aside class="panel rail" aria-label="Collection">
+        <div class="row" style="justify-content: space-between;">
+          <h2>Ta collection</h2>
+          <span class="muted small" id="coll-count"></span>
+        </div>
+        <input class="input" id="search" type="search" placeholder="Chercher une carte" aria-label="Chercher une carte">
+        <div class="filters" id="el-filters" role="group" aria-label="Filtrer par élément"></div>
+        <label class="row small"><input type="checkbox" id="show-wish"> Afficher les cartes à obtenir</label>
+        <ul class="card-list" id="card-list"></ul>
+      </aside>
+
+      <div class="stack" id="workbench">
+        <div class="panel stack">
+          <div class="sec-head">
+            <h2>Ton deck</h2>
+            <div class="row">
+              <input class="input" id="deck-name" type="text" placeholder="Nom du deck" aria-label="Nom du deck" maxlength="60">
+              <button class="btn primary" id="save-deck">Enregistrer</button>
+              <button class="btn ghost" id="clear-deck">Vider</button>
+            </div>
+          </div>
+          <div class="slots" id="slots"></div>
+          <p class="small muted" id="save-msg" role="status"></p>
+        </div>
+        <div id="analysis" class="stack"><p class="loading">Chargement des 31 465 decks précalculés…</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-top" role="tabpanel" aria-labelledby="tab-top" hidden>
+    <div class="panel stack" style="margin-top:16px">
+      <div class="sec-head">
+        <h2>Meilleurs decks possibles</h2>
+        <p>Tous les decks de 4 cartes de ta collection sont calculés. Filtre et ouvre-en un dans l'atelier.</p>
+      </div>
+      <div class="row">
+        <label class="row small"><input type="checkbox" id="top-wish"> Inclure les cartes à obtenir</label>
+        <label class="row small">Part des critiques max
+          <input type="range" id="top-crit" min="0" max="100" step="5" value="100" aria-describedby="top-crit-val">
+          <span id="top-crit-val" class="num">100 %</span></label>
+        <label class="row small">Doit contenir
+          <select class="input" id="top-card"><option value="">N'importe quelle carte</option></select></label>
+        <label class="row small">Trier par
+          <select class="input" id="top-sort"><option value="s1">Score</option><option value="s0">Score sans critiques</option><option value="key">Score sans sa carte clé</option><option value="worst">Pire cas (sans critiques ou sans carte clé)</option></select></label>
+        <label class="row small">Perte max si une carte tombe
+          <input type="range" id="top-loss" min="20" max="100" step="5" value="100" aria-describedby="top-loss-val">
+          <span id="top-loss-val" class="num">100 %</span></label>
+      </div>
+      <p class="small muted" id="top-summary"></p>
+      <div class="scroll-x"><table id="top-table"></table></div>
+    </div>
+  </section>
+
+  <section id="view-mine" role="tabpanel" aria-labelledby="tab-mine" hidden>
+    <div class="stack" style="margin-top:16px">
+      <div class="panel stack">
+        <div class="sec-head">
+          <h2>Decks enregistrés</h2>
+          <p id="store-note">Coche jusqu'à 4 decks pour les comparer.</p>
+        </div>
+        <div id="saved-list"><p class="empty">Chargement de tes decks…</p></div>
+      </div>
+      <div class="panel stack" id="compare-panel">
+        <div class="sec-head"><h2>Comparaison</h2><p>Les meilleures valeurs de chaque ligne sont en vert.</p></div>
+        <div id="compare"><p class="empty">Coche au moins 2 decks dans la liste pour les comparer.</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+(() => {
+'use strict';
+const EL = { fire: 'Feu', water: 'Eau', earth: 'Terre', nature: 'Nature', light: 'Lumière', shadow: 'Ombre', divine: 'Divin' };
+const ELS = ['fire', 'water', 'earth', 'nature', 'light', 'shadow'];
+const RAR = { common: 'Commune', rare: 'Rare', epic: 'Épique', legendary: 'Légendaire', divine: 'Divine' };
+const TRAR = { C: 'commune', R: 'rare', E: 'épique', L: 'légendaire' };
+const MU = {
+  'neutral': ['Adversaire neutre', '700 PV, 10 % de résistance'],
+  'fragile': ['Cartes fragiles', '550 PV, 5 % de résistance'],
+  'tank': ['Tanks', '900 PV, 15 % de résistance'],
+  'anti-fire': ['Résiste au Feu', ''], 'anti-water': ["Résiste à l'Eau", ''], 'anti-earth': ['Résiste à la Terre', ''],
+  'anti-nature': ['Résiste à la Nature', ''], 'anti-shadow': ["Résiste à l'Ombre", ''], 'anti-light': ['Résiste à la Lumière', '']
+};
+const GENERAL_RULES = [
+  'Repère les grosses capacités adverses : leur compteur de recharge est affiché sur la carte. Quand il approche de 0, concentre tes dégâts sur la carte qui va la lancer.',
+  'Contre une Provocation qui revient à chaque tour, tes attaques ciblées frappent toujours la même carte. Seules les attaques de zone et la Tox <b>Brut</b> atteignent les autres.',
+  'Ne garde pas un gros stock de Spamtons quand la boutique est ouverte : une Tox achetée tôt sert plus longtemps. Garde juste de quoi relancer.',
+  'Réserve tes emplacements libres aux Tox qui rapportent vraiment (un Cœur de l\'élément de tes attaques, Berserk, Poison) : un petit achat bloque la place.',
+  'Varie tes sources de dégâts : un deck qui repose sur une seule carte s\'effondre si l\'adversaire la retire.'
+];
+const VERDICT = { coeur: ['core', 'Importante'], remplacer: ['swap', 'Remplaçable'], garder: ['keep', 'À garder'], acheter: ['free', 'Emplacement libre'], vide: ['keep', 'Libre, rien d\'utile'] };
+const nf = new Intl.NumberFormat('fr-FR');
+const nf1 = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+const fmt = x => nf.format(Math.round(x));
+const pct1 = x => nf1.format(x) + ' %';
+const pct0 = x => nf.format(Math.round(x)) + ' %';
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+
+const S = {
+  data: null, shop: null, keyIdx: new Map(), n: 0, ownSorted: null, globBins: null, collBins: null,
+  deck: [], elFilter: 'all', showWish: false, search: '', view: 'atelier',
+  saved: [], savedReady: false, db: null, compare: new Set(), confirmDel: null
+};
+
+/* ---------- Data access ---------- */
+const keyOf = idxs => idxs.slice().sort((a, b) => a - b).map(i => i.toString(32)).join('');
+const idxOfKey = k => k.split('').map(c => parseInt(c, 32));
+const card = i => S.data.cards[i];
+const rowOf = idxs => idxs.length === 4 ? S.keyIdx.get(keyOf(idxs)) : undefined;
+const R = {
+  s1: r => S.data.decks.s1[r], s0: r => S.data.decks.s0[r], ttk: r => S.data.decks.ttk[r], p1: r => S.data.decks.p1[r] / 10,
+  m: r => S.data.decks.m.slice(r * 9, r * 9 + 9).map(x => x / 10),
+  dmg: r => S.data.decks.dmg.slice(r * 10, r * 10 + 10).map(x => x * 10),
+  plan: r => S.data.decks.plan[r], key: r => S.data.decks.k.substr(r * 4, 4),
+  L: r => S.data.decks.L.slice(r * 4, r * 4 + 4)
+};
+const owned = r => idxOfKey(R.key(r)).every(i => S.data.cards[i].own);
+const critShare = r => Math.max(0, Math.min(1, 1 - R.s0(r) / R.s1(r)));
+/* Score when the opponent takes one card (that card is lost from turn 1): worst case, average loss, and the key card. */
+function lossInfo(r) {
+  const L = R.L(r), s = R.s1(r), ids = idxOfKey(R.key(r)); let p = 0;
+  L.forEach((v, k) => { if (v < L[p]) p = k; });
+  const losses = L.map(v => Math.max(0, 1 - v / s));
+  return { worst: L[p], keyCard: ids[p], keyLoss: losses[p], avgLoss: losses.reduce((a, b) => a + b, 0) / 4, byCard: new Map(ids.map((i, k) => [i, losses[k]])) };
+}
+function globalPct(score) {
+  const a = S.data.global; let lo = 0, hi = a.length;
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (a[mid] < score) lo = mid + 1; else hi = mid; }
+  return 100 * lo / a.length;
+}
+function collRank(score) {
+  const a = S.ownSorted; let lo = 0, hi = a.length; // descending
+  while (lo < hi) { const mid = (lo + hi) >> 1; if (a[mid] > score) lo = mid + 1; else hi = mid; }
+  return lo + 1;
+}
+function tierOf(score) {
+  const m = S.data.meta; const idx = (score - m.baseline) / (m.best - m.baseline);
+  const t = m.tiers.find(([, th]) => score >= th); return { tier: t ? t[0] : 'D', idx: Math.max(0, idx) };
+}
+function oneIn(p) { const r = 100 - p; if (r <= 0) return null; return Math.max(1, Math.round(100 / r)); }
+function toxName(id) { const t = S.data.tox[id]; return t ? t[0] : id; }
+function toxLabel(id) { const t = S.data.tox[id]; return t ? `${t[0]} ${TRAR[t[1]]}` : id; }
+function famName(fam) { const k = Object.keys(S.data.tox).find(id => id.replace(/_[CREL]$/, '') === fam); return k ? toxName(k) : fam; }
+function lineName(ci, kind, id) {
+  const c = card(ci);
+  if (kind === 'a') { const a = c.ab.find(x => x[0] === id); return a ? a[1] : id; }
+  if (kind === 'p') { const p = c.pa.find(x => x[0] === id); return p ? `${p[1]} (${(RAR[p[2]] || '').toLowerCase()})` : toxLabel(id); }
+  return 'Emplacement libre';
+}
+function decodePlan(r, idxs) {
+  const ids = idxOfKey(R.key(r)); // plan positions refer to the deck in key order
+  return R.plan(r).split('.').map(t => {
+    const acts = []; for (let i = 0; i + 1 < t.length; i += 2) {
+      const pos = +t[i], code = +t[i + 1]; if (Number.isNaN(pos) || Number.isNaN(code)) continue;
+      const c = card(ids[pos]); const j = code >> 1, opt = code & 1; const a = c && c.ab[j];
+      acts.push({ c, name: a ? a[1] : '?', text: a ? a[3] : '', opt });
+    }
+    return acts;
+  });
+}
+
+/* ---------- Load ---------- */
+async function load() {
+  try {
+    const res = await fetch('data.json'); if (!res.ok) throw new Error('HTTP ' + res.status);
+    S.data = await res.json();
+  } catch (e) {
+    $('analysis').innerHTML = `<p class="note warn">Les données n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</p>`; return;
+  }
+  const d = S.data.decks; S.n = d.s1.length;
+  for (let r = 0; r < S.n; r++) S.keyIdx.set(d.k.substr(r * 4, 4), r);
+  const own = []; for (let r = 0; r < S.n; r++) if (owned(r)) own.push(d.s1[r]);
+  S.ownSorted = own.sort((a, b) => b - a);
+  S.globBins = binsOf(S.data.global); S.collBins = binsOf(own);
+  const nOwn = S.data.cards.filter(c => c.own).length;
+  $('subtitle').textContent = `${nOwn} cartes dans ta collection · ${fmt(S.ownSorted.length)} decks possibles`;
+  $('coll-count').textContent = `${nOwn} cartes + ${S.data.cards.length - nOwn} à obtenir`;
+  initFilters(); initTop();
+  const saved = store.get('spam-current-deck', null);
+  const startNames = ['Lame de la forêt', 'Chimère Brasse-chair', "L'Œil des montagnes", 'Keria'];
+  const startNums = Array.isArray(saved) && saved.length ? saved : startNames.map(n => (S.data.cards.find(c => c.name === n) || {}).n).filter(Boolean);
+  S.deck = startNums.map(n => S.data.cards.findIndex(c => c.n === n)).filter(i => i >= 0).slice(0, 4);
+  if (!saved) $('deck-name').value = 'deck chimere';
+  renderAll();
+  const lastView = store.get('spam-view', 'atelier'); if (lastView !== 'atelier') setView(lastView);
+  fetch('shop.json').then(r => r.ok ? r.json() : null).then(s => { S.shop = s; if (S.view === 'atelier') renderAnalysis(); }).catch(() => {});
+  initDb();
+}
+function binsOf(values) {
+  const size = 500, nb = 32, counts = new Array(nb).fill(0);
+  for (const v of values) counts[Math.max(0, Math.min(nb - 1, Math.floor(v / size)))]++;
+  return { size, counts, total: values.length };
+}
+
+/* ---------- Collection rail ---------- */
+function initFilters() {
+  const f = $('el-filters');
+  const opts = [['all', 'Tous']].concat(ELS.map(e => [e, EL[e]]));
+  f.innerHTML = opts.map(([k, l]) => `<button class="chip" data-el="${k}" aria-pressed="${k === 'all'}">${k !== 'all' ? `<span class="dot ${k}"></span>` : ''}${l}</button>`).join('');
+  f.addEventListener('click', e => { const b = e.target.closest('[data-el]'); if (!b) return; S.elFilter = b.dataset.el; f.querySelectorAll('[data-el]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderCollection(); });
+  $('search').addEventListener('input', e => { S.search = e.target.value.trim().toLowerCase(); renderCollection(); });
+  $('show-wish').addEventListener('change', e => { S.showWish = e.target.checked; renderCollection(); });
+}
+function renderCollection() {
+  const list = $('card-list');
+  const items = S.data.cards.map((c, i) => ({ c, i })).filter(({ c, i }) =>
+    (c.own || S.showWish || S.deck.includes(i)) && (S.elFilter === 'all' || c.el === S.elFilter) && (!S.search || c.name.toLowerCase().includes(S.search)))
+    .sort((a, b) => (b.c.own - a.c.own) || a.c.name.localeCompare(b.c.name, 'fr'));
+  if (!items.length) { list.innerHTML = '<li class="empty">Aucune carte ne correspond.</li>'; return; }
+  list.innerHTML = items.map(({ c, i }) => {
+    const inDeck = S.deck.includes(i);
+    return `<li><button class="card-item" data-i="${i}" aria-pressed="${inDeck}">
+      <span class="dot ${c.el}" title="${EL[c.el] || c.el}"></span>
+      <span class="nm">${esc(c.name)} ${c.own ? '' : '<span class="badge wish">À obtenir</span>'}</span>
+      <span class="act">${inDeck ? 'Retirer' : 'Ajouter'}</span>
+      <span class="meta">${EL[c.el] || c.el} · ${RAR[c.rar] || c.rar} · ${fmt(c.hp)} PV · ${c.spt} Spamtons/tour</span>
+    </button></li>`;
+  }).join('');
+}
+$('card-list').addEventListener('click', e => {
+  const b = e.target.closest('.card-item'); if (!b) return; const i = +b.dataset.i;
+  if (S.deck.includes(i)) S.deck = S.deck.filter(x => x !== i);
+  else if (S.deck.length >= 4) { flash('Ton deck a déjà 4 cartes : retire-en une avant d\'en ajouter.'); return; }
+  else S.deck = S.deck.concat(i);
+  deckChanged();
+});
+function flash(msg) { $('save-msg').textContent = msg; clearTimeout(flash.t); flash.t = setTimeout(() => { $('save-msg').textContent = ''; }, 5000); }
+function deckChanged() { store.set('spam-current-deck', S.deck.map(i => card(i).n)); renderCollection(); renderSlots(); renderAnalysis(); }
+
+/* ---------- Deck slots ---------- */
+function renderSlots() {
+  const html = []; const r = S.data && S.deck.length === 4 ? rowOf(S.deck) : undefined; const li = r != null ? lossInfo(r) : null;
+  for (let s = 0; s < 4; s++) {
+    const i = S.deck[s];
+    if (i == null) { html.push(`<div class="slot empty-slot">Emplacement ${s + 1}<br><span class="small">Ajoute une carte depuis ta collection</span></div>`); continue; }
+    const c = card(i); const loss = li ? li.byCard.get(i) : null;
+    html.push(`<div class="slot">
+      <div class="head"><div><div class="nm">${esc(c.name)}</div>
+        <div class="sub"><span class="dot ${c.el}"></span>${EL[c.el] || c.el} · ${RAR[c.rar] || c.rar}${c.own ? '' : ' <span class="badge wish">À obtenir</span>'}</div></div>
+        <button class="x" data-rm="${i}" aria-label="Retirer ${esc(c.name)}">×</button></div>
+      <div class="sub num">${fmt(c.hp)} PV · ${c.spt} Spamtons/tour</div>
+      ${loss != null ? `<div class="sub">${li.keyCard === i ? '<span class="state swap">Carte clé</span>' : ''}<span class="num">Si elle tombe : −${pct0(100 * loss)}</span></div>` : ''}
+      <ul>${c.ab.map(a => `<li><b>${esc(a[1])}</b> <span class="cd">· recharge ${a[2]}</span><br><span class="muted">${esc(a[3])}</span></li>`).join('')}
+      ${c.pa.map(p => `<li><b>${esc(p[1])}</b> <span class="cd">· passif ${esc((RAR[p[2]] || '').toLowerCase())}</span></li>`).join('')}</ul>
+    </div>`);
+  }
+  $('slots').innerHTML = html.join('');
+}
+$('slots').addEventListener('click', e => { const b = e.target.closest('[data-rm]'); if (!b) return; S.deck = S.deck.filter(x => x !== +b.dataset.rm); deckChanged(); });
+$('clear-deck').addEventListener('click', () => { S.deck = []; $('deck-name').value = ''; deckChanged(); });
+
+/* ---------- Analysis ---------- */
+function renderAnalysis() {
+  const box = $('analysis');
+  if (!S.data) return;
+  if (S.deck.length < 4) { box.innerHTML = completionsHtml(); bindOpenButtons(box); return; }
+  const r = rowOf(S.deck);
+  if (r == null) { box.innerHTML = '<p class="note warn">Ce deck n\'est pas dans les données précalculées.</p>'; return; }
+  box.innerHTML = [verdictHtml(r), `<div class="panel"><div class="sec-head"><h2>Où se situe ce deck</h2><p>Score de base (sans boutique) comparé à 24 000 decks tirés au hasard parmi les 127 cartes du jeu, et à tous les decks de ta collection.</p></div><div class="two"><div><h3 class="small">Tous les decks du jeu</h3><div class="chart" id="hist-global"></div></div><div><h3 class="small">Les ${fmt(S.ownSorted.length)} decks de ta collection</h3><div class="chart" id="hist-coll"></div></div></div><details style="margin-top:10px"><summary>Voir les valeurs</summary><div class="scroll-x" id="hist-table"></div></details></div>`,
+    weakHtml(r), planHtml(r), shopHtml(r), swapsHtml(r)].join('');
+  drawCharts(r);
+  bindOpenButtons(box);
+}
+function verdictHtml(r) {
+  const s1 = R.s1(r), s0 = R.s0(r), gp = globalPct(s1), one = oneIn(gp), rank = owned(r) ? collRank(s1) : null, t = tierOf(s1), cs = critShare(r), p1 = R.p1(r);
+  const m = S.data.meta, sim = S.data.sims[R.key(r)];
+  const tk = m.tiers.slice().reverse().map(([n, th]) => `<span class="tk" style="left:${Math.min(100, 100 * (th - m.baseline) / (m.best - m.baseline))}%">${n}</span>`).join('');
+  return `<div class="panel verdict">
+    <div class="hero-score">
+      <span class="eyebrow">Score du modèle</span>
+      <div class="big">${fmt(s1)}<small>points</small></div>
+      <p class="line">Mieux que <b>${pct1(gp)}</b> des decks du jeu${one ? ` (1 deck sur ${fmt(one)})` : ''}</p>
+      <p class="line">${rank ? `<b>${rank === 1 ? '1er' : fmt(rank) + 'e'}</b> sur ${fmt(S.ownSorted.length)} decks de ta collection` : 'Contient des cartes que tu n\'as pas encore'}</p>
+      <div><span class="badge tier">Tier ${t.tier}</span> <span class="small muted">indice ${pct0(100 * t.idx)} entre un deck moyen (0 %) et le meilleur deck du jeu (100 %)</span></div>
+      <div class="tierbar" aria-hidden="true"><i style="width:${Math.min(100, 100 * t.idx)}%"></i>${tk}</div>
+    </div>
+    <div class="tiles">
+      <div class="tile"><span class="lab">Si aucun critique ne tombe</span><span class="val">${fmt(s0)}</span>
+        <div class="meter crit" aria-hidden="true"><i style="width:${100 * cs}%"></i></div>
+        <span class="hint">${pct0(100 * cs)} du score vient des critiques${cs >= .3 ? ' : deck sensible au hasard' : cs <= .1 ? ' : deck très régulier' : ''}</span></div>
+      ${(() => { const li = lossInfo(r); return `<div class="tile"><span class="lab">Si l'adversaire te prend une carte</span><span class="val">${fmt(li.worst)}</span>
+        <div class="meter crit" aria-hidden="true"><i style="width:${100 * li.keyLoss}%"></i></div>
+        <span class="hint">sans ${esc(card(li.keyCard).name)} : −${pct0(100 * li.keyLoss)} · perte moyenne −${pct0(100 * li.avgLoss)}${li.keyLoss >= .6 ? ' : tout repose sur une carte' : ''}</span></div>`; })()}
+      <div class="tile"><span class="lab">Rythme</span><span class="val">~${nf1.format(R.ttk(r))} tours</span><span class="hint">pour éliminer les 4 cartes adverses (modèle)</span></div>
+      <div class="tile"><span class="lab">Ordre de jeu</span><span class="val">${p1 >= 0 ? 'Premier' : 'Second'}</span><span class="hint">${Math.abs(p1) < 1 ? 'presque aucune différence' : `+${pct1(Math.abs(p1))} en jouant ${p1 >= 0 ? 'premier' : 'second'}`}</span></div>
+      ${sim ? `<div class="tile"><span class="lab">Avec la boutique (simulée)</span><span class="val">${fmt(sim[0])}</span><span class="hint">300 parties, jusqu'à 2 relances · 10 % pires : ${fmt(sim[1])} · moitié moins de critiques : ${fmt(sim[2])}</span></div>` : ''}
+    </div>
+  </div>`;
+}
+function weakHtml(r) {
+  const m = R.m(r), ids = S.data.meta.mu; const pairs = ids.map((id, k) => [id, m[k]]).filter(([id]) => id !== 'neutral').sort((a, b) => a[1] - b[1]);
+  const worst = pairs.filter(([, v]) => v <= -3).slice(0, 3);
+  const res = S.deck.map(i => card(i)).map(c => ({ c, low: ELS.map((e, k) => [e, c.res[k]]).filter(([, v]) => v < 0) }));
+  const lows = res.filter(x => x.low.length);
+  return `<div class="panel"><div class="sec-head"><h2>Faiblesses</h2><p>Écart de score face à chaque profil d'adversaire, par rapport à un adversaire neutre (700 PV, 10 % de résistance partout).</p></div>
+    <div class="two"><div class="chart" id="mu-chart"></div>
+    <div class="stack">
+      <div><h3>À retenir</h3><p class="small" style="margin-top:6px">${worst.length ? 'Ce deck souffre surtout face à : ' + worst.map(([id, v]) => `<b>${MU[id][0].charAt(0).toLowerCase() + MU[id][0].slice(1)}</b> (${pct0(v)})`).join(', ') + '.' : 'Aucune faiblesse marquée face aux profils testés.'}</p></div>
+      <div><h3>Résistances de tes cartes</h3>${lows.length ? `<ul class="tips small" style="margin-top:6px">${lows.map(x => `<li><b>${esc(x.c.name)}</b> : ${x.low.map(([e, v]) => `${pct0(v)} en ${EL[e]}`).join(', ')}</li>`).join('')}</ul>` : `<p class="small muted" style="margin-top:6px">Aucune de tes 4 cartes n'a de résistance négative.</p>`}
+      <details><summary>Résistances détaillées</summary><div class="scroll-x"><table><thead><tr><th>Carte</th>${ELS.map(e => `<th class="n">${EL[e]}</th>`).join('')}</tr></thead><tbody>${S.deck.map(i => card(i)).map(c => `<tr><td>${esc(c.name)}</td>${c.res.map(v => `<td class="n">${v} %</td>`).join('')}</tr>`).join('')}</tbody></table></div></details>
+    </div></div></div>`;
+}
+function tipsFor(r) {
+  const tips = []; const cards = S.deck.map(card); const abs = []; cards.forEach(c => c.ab.forEach(a => abs.push({ c, id: a[0], name: a[1], cd: a[2], text: a[3] })));
+  const gens = abs.filter(a => /Bonus/.test(a.text) && !/Attaque/.test(a.text));
+  const buffs = abs.filter(a => /alliées/.test(a.text) && !/Soigne/.test(a.text));
+  const aoe = abs.filter(a => /toutes les cartes adverses/.test(a.text));
+  const taunt = abs.filter(a => /Provocation/.test(a.text));
+  const slow = abs.filter(a => a.cd >= 5 && /Attaque/.test(a.text));
+  const cost = abs.filter(a => /Co[uû]t/.test(a.text));
+  const cs = critShare(r), p1 = R.p1(r), li = lossInfo(r);
+  if (li.keyLoss >= .5) tips.push(`<b>Ta carte clé est ${esc(card(li.keyCard).name)}</b> : la perdre coûte ${pct0(100 * li.keyLoss)} du score. Protège-la (soins, Provocation d'une autre carte) et surveille les capacités adverses qui retirent une carte (absorption, exécution, dégâts en % des PV).`);
+  if (cards.some(c => c.pa.some(p => /^Mimetisme/.test(p[0])))) tips.push(`<b>Mimétisme</b> copie les éléments que l'adversaire génère : contre un deck qui génère beaucoup, garde-le, il te donne des bonus gratuits.`);
+  if (gens.length) tips.push(`Lance d'abord les générateurs (${gens.map(a => `<b>${esc(a.name)}</b>`).join(', ')}) : chaque point de bonus élémentaire ajoute 10 % aux dégâts et soins de cet élément pour toute la partie.`);
+  if (buffs.length) tips.push(`Joue les buffs d'équipe (${buffs.map(a => `<b>${esc(a.name)}</b>`).join(', ')}) avant d'attaquer : tes frappes du même tour en profitent tout de suite.`);
+  if (aoe.length) tips.push(`${aoe.map(a => `<b>${esc(a.name)}</b>`).join(', ')} touche${aoe.length > 1 ? 'nt' : ''} les 4 cartes adverses : achève d'abord une carte basse, ses dégâts se concentrent ensuite sur moins de cibles.`);
+  if (taunt.length) { const frag = cards.filter(c => c.hp <= 550).map(c => esc(c.name)); tips.push(`Garde <b>${esc(taunt[0].name)}</b> (${esc(taunt[0].c.name)}) pour protéger ${frag.length ? frag.join(', ') : 'tes cartes clés'} quand l'adversaire prépare une grosse attaque.`); }
+  if (slow.length) tips.push(`${slow.map(a => `<b>${esc(a.name)}</b> (recharge ${a.cd})`).join(', ')} revient rarement : réserve-le pour la carte adverse la plus dangereuse.`);
+  if (cost.length) tips.push(`${cost.map(a => `<b>${esc(a.name)}</b>`).join(', ')} consomme des ressources : prépare les bonus avant de le lancer.`);
+  if (cs >= .3) tips.push(`<b>${pct0(100 * cs)} du score vient des critiques.</b> En boutique, privilégie les Tox qui rapportent sans critiques (Cœurs, Berserk, Poison) pour lisser les mauvaises séries.`);
+  if (Math.abs(p1) >= 2) tips.push(`Ce deck gagne ${pct1(Math.abs(p1))} en jouant ${p1 > 0 ? 'premier' : 'second'}. Le second joueur commence avec ses recharges réduites de 2 au lieu de 1.`);
+  return tips;
+}
+function planHtml(r) {
+  const turns = decodePlan(r).slice(0, 6); const dmg = R.dmg(r);
+  return `<div class="panel"><div class="sec-head"><h2>Plan de jeu</h2><p>Ordre conseillé par le moteur du wiki pour les 6 premiers tours, quand tu joues premier.</p></div>
+    <div class="plan">${turns.map((acts, t) => `<div class="turn"><h3><span>Tour ${t + 1}</span><span class="muted small num">${fmt(dmg[t] || 0)} dégâts</span></h3>${acts.length ? `<ol>${acts.map(a => `<li>${esc(a.c.name)} : <b>${esc(a.name)}</b>${/Choix/.test(a.text) ? ` <span>(option ${a.opt + 1})</span>` : ''}</li>`).join('')}</ol>` : '<p class="small muted">Rien à lancer : recharges en cours.</p>'}</div>`).join('')}</div>
+    <div class="two" style="margin-top:16px"><div><h3>Conseils pour ce deck</h3><ul class="tips" style="margin-top:8px">${tipsFor(r).map(t => `<li>${t}</li>`).join('')}</ul></div>
+    <div><h3>Règles générales</h3><ul class="tips" style="margin-top:8px">${GENERAL_RULES.map(t => `<li>${t}</li>`).join('')}</ul></div></div></div>`;
+}
+function shopHtml(r) {
+  const rules = `<ul class="tips small" style="margin-top:8px">
+      <li>La boutique propose 3 Tox au hasard. Une Tox précise n'a qu'environ 1 chance sur 8 d'apparaître : cherche une <b>famille</b> (n'importe quelle rareté), pas une Tox exacte.</li>
+      <li>Achète tôt : une Tox commune au tour 2 sert toute la partie, une rare au tour 8 ne sert plus que quelques tours.</li>
+      <li>Rien d'utile ? Relance jusqu'à 2 fois (10 puis 15 Spamtons) tant qu'il t'en reste au moins 15, sinon passe : passer rapporte 10 Spamtons.</li>
+      <li>Ne remplace une ligne « importante » que par une Tox qui rapporte nettement plus que ce que la ligne vaut : en général une épique ou une légendaire.</li></ul>`;
+  const sh = S.shop && S.shop[R.key(r)];
+  if (!S.shop) return `<div class="panel"><div class="sec-head"><h2>Boutique</h2><p>Chargement de l'analyse de boutique…</p></div>${rules}</div>`;
+  if (!sh || sh.err) return `<div class="panel"><div class="sec-head"><h2>Boutique</h2><p>L'analyse détaillée existe pour les 1 630 meilleurs decks. Pour ce deck, applique les règles générales.</p></div>${rules}</div>`;
+  const ids = idxOfKey(R.key(r));
+  const cardsHtml = sh.lines.map(([pos, lines]) => `<div class="shop-card"><div><b>${esc(card(ids[pos]).name)}</b></div><div class="shop-lines">${lines.map(([kind, id, verdict, val, cands]) => {
+    const v = VERDICT[verdict] || ['keep', verdict];
+    const nm = kind === 'f' ? 'Emplacement libre' : lineName(ids[pos], kind, id);
+    const cs = (cands || []).filter(c => c[1] > 0).slice(0, 3);
+    return `<div class="shop-line"><span class="state ${v[0]}">${v[1]}</span><span>${kind === 'f' ? '' : esc(nm)}${val != null && kind !== 'f' ? ` <span class="muted small">(vaut ${pct1(val)} du score)</span>` : ''}</span>${cs.length && (verdict === 'remplacer' || verdict === 'acheter') ? `<span class="cands small">→ ${cs.map(c => `${esc(toxLabel(c[0]))} <b>+${pct0(c[1])}</b>`).join(' · ')}</span>` : ''}</div>`;
+  }).join('')}</div></div>`).join('');
+  const steps = sh.plan.length ? `<ol class="steps">${sh.plan.map(([turn, tox, pos, rep, gain]) => `<li><span class="t">Tour ${turn}</span><span>${esc(toxLabel(tox))} sur <b>${esc(card(ids[pos]).name)}</b>${rep ? `, à la place de ${esc(lineName(ids[pos], S.data.tox[rep] || /_[CREL]$/.test(rep) ? 'p' : 'a', rep))}` : ' (emplacement libre)'}</span><span class="${gain < 5 ? 'muted' : 'delta-up'} num">+${pct0(gain)}${gain < 5 ? ' · facultatif' : ''}</span></li>`).join('')}</ol>${sh.plan.some(p => p[4] < 5) ? '<p class="small muted" style="margin-top:6px">Un achat « facultatif » rapporte moins de 5 % : garde plutôt l\'emplacement pour une meilleure Tox.</p>' : ''}` : '<p class="small muted">Le moteur ne trouve aucun achat qui rapporte plus de 1 % : passe la boutique et garde les Spamtons.</p>';
+  return `<div class="panel"><div class="sec-head"><h2>Boutique</h2><p>Ce que chaque ligne de tes cartes vaut, et les Tox qui la remplacent le mieux.</p></div>
+    ${cardsHtml}
+    <div class="two" style="margin-top:12px"><div><h3>Plan idéal</h3><p class="small muted" style="margin:4px 0 8px">Si la boutique proposait exactement les bonnes Tox (rare en pratique).</p>${steps}</div>
+    <div><h3>Règles qui marchent avec une boutique au hasard</h3>${rules}${sh.avoid && sh.avoid.length ? `<p class="small" style="margin-top:8px"><b>À éviter :</b> ${sh.avoid.map(f => esc(famName(f))).join(', ')}.</p>` : ''}</div></div></div>`;
+}
+function swapsHtml(r) {
+  const s1 = R.s1(r); const cols = S.deck.map((out, s) => {
+    const cands = [];
+    S.data.cards.forEach((c, i) => { if (S.deck.includes(i)) return; const nd = S.deck.slice(); nd[s] = i; const rr = rowOf(nd); if (rr == null) return; cands.push({ i, rr, d: R.s1(rr) - s1 }); });
+    const ownC = cands.filter(x => card(x.i).own).sort((a, b) => b.d - a.d).slice(0, 3);
+    const wishC = cands.filter(x => !card(x.i).own).sort((a, b) => b.d - a.d).slice(0, 1).filter(x => x.d > 0);
+    return `<div class="swap-col"><span class="eyebrow">Remplacer</span><h3>${esc(card(out).name)}</h3><ol>${ownC.map(x => swapLi(x)).join('')}${wishC.map(x => swapLi(x)).join('')}</ol></div>`;
+  });
+  return `<div class="panel"><div class="sec-head"><h2>Échanges possibles</h2><p>Pour chaque carte, les meilleures remplaçantes de ta collection (et la meilleure carte à obtenir si elle fait mieux).</p></div><div class="swaps">${cols.join('')}</div></div>`;
+}
+function swapLi(x) {
+  const c = card(x.i), cs = critShare(x.rr);
+  return `<li><button class="linkish" data-open="${R.key(x.rr)}">${esc(c.name)}</button>${c.own ? '' : ' <span class="badge wish">À obtenir</span>'} <span class="${x.d >= 0 ? 'delta-up' : 'delta-down'} num">${x.d >= 0 ? '+' : '−'}${fmt(Math.abs(x.d))}</span> <span class="muted small">· ${pct0(100 * cs)} de critiques</span></li>`;
+}
+function completionsHtml() {
+  const have = S.deck; const need = 4 - have.length; const res = [];
+  if (have.length === 0) return `<div class="panel"><h2>Commence un deck</h2><p class="muted" style="margin-top:6px">Ajoute des cartes depuis ta collection, ou ouvre un deck depuis « Meilleurs decks » ou « Mes decks ».</p></div>`;
+  const chars = have.map(i => i.toString(32));
+  for (let r = 0; r < S.n && res.length < 400; r++) { const k = R.key(r); if (chars.every(ch => k.includes(ch))) res.push(r); }
+  const ownRes = res.filter(owned).slice(0, 8); const wish = res.filter(r => !owned(r)).slice(0, 3);
+  const rowHtml = r => { const add = idxOfKey(R.key(r)).filter(i => !have.includes(i)); return `<tr><td>${add.map(i => `<span class="row" style="gap:5px;display:inline-flex"><span class="dot ${card(i).el}"></span>${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('<br>')}</td><td class="n">${fmt(R.s1(r))}</td><td class="n">${pct0(100 * critShare(r))}</td><td><button class="btn" data-open="${R.key(r)}">Utiliser</button></td></tr>`; };
+  return `<div class="panel"><div class="sec-head"><h2>Compléter le deck</h2><p>Il manque ${need} carte${need > 1 ? 's' : ''}. Voici les meilleures façons de le compléter.</p></div>
+    <div class="scroll-x"><table><thead><tr><th>Cartes à ajouter</th><th class="n">Score</th><th class="n">Critiques</th><th></th></tr></thead><tbody>${ownRes.map(rowHtml).join('') || '<tr><td colspan="4" class="muted">Aucune combinaison avec tes cartes.</td></tr>'}</tbody></table></div>
+    ${wish.length ? `<h3 style="margin-top:14px">Avec une carte à obtenir</h3><div class="scroll-x"><table><tbody>${wish.map(rowHtml).join('')}</tbody></table></div>` : ''}</div>`;
+}
+function bindOpenButtons(root) {
+  root.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => openKey(b.dataset.open)));
+}
+function openKey(k, name) {
+  S.deck = idxOfKey(k); if (name != null) $('deck-name').value = name; else $('deck-name').value = '';
+  setView('atelier'); deckChanged(); window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------- Charts ---------- */
+const tip = $('tip');
+function showTip(html, x, y) { tip.innerHTML = html; tip.hidden = false; const w = tip.offsetWidth, h = tip.offsetHeight; tip.style.left = Math.min(window.innerWidth - w - 8, Math.max(8, x + 12)) + 'px'; tip.style.top = Math.max(8, y - h - 12) + 'px'; }
+function hideTip() { tip.hidden = true; }
+function bindTips(root) {
+  root.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('pointermove', e => showTip(el.dataset.tip, e.clientX, e.clientY));
+    el.addEventListener('pointerleave', hideTip);
+    el.addEventListener('focus', () => { const b = el.getBoundingClientRect(); showTip(el.dataset.tip, b.left + b.width / 2, b.top); });
+    el.addEventListener('blur', hideTip);
+  });
+}
+function histSvg(el, bins, markers) {
+  const W = Math.max(260, el.clientWidth || 300), H = 190, ml = 34, mr = 8, mt = 30, mb = 26, pw = W - ml - mr, ph = H - mt - mb;
+  const maxX = 16000, nb = maxX / bins.size, pcts = bins.counts.map(c => 100 * c / bins.total);
+  const maxY = Math.max(5, Math.ceil(Math.max(...pcts) / 5) * 5);
+  const x = v => ml + pw * Math.min(1, Math.max(0, v / maxX)), y = p => mt + ph - ph * p / maxY;
+  const bw = pw / nb; let s = `<svg width="${W}" height="${H}" role="img" aria-label="Répartition des scores">`;
+  for (let p = 0; p <= maxY; p += maxY / 5) s += `<line class="grid" x1="${ml}" x2="${W - mr}" y1="${y(p)}" y2="${y(p)}"/><text x="${ml - 6}" y="${y(p) + 4}" text-anchor="end">${p}%</text>`;
+  for (let v = 0; v <= maxX; v += 4000) s += `<text x="${x(v)}" y="${H - 8}" text-anchor="middle">${nf.format(v)}</text>`;
+  pcts.forEach((p, k) => {
+    if (k >= nb) return; const x0 = ml + k * bw, h = ph * p / maxY, bwr = Math.max(1, bw - 2);
+    const lo = k * bins.size, hi = lo + bins.size - 1;
+    s += `<rect class="hit" x="${x0}" y="${mt}" width="${bw}" height="${ph}" tabindex="0" data-tip="${nf.format(lo)} – ${nf.format(hi)} points : ${pct1(p)} des decks"/>`;
+    if (h > 0) s += `<rect class="bar" x="${x0 + 1}" y="${mt + ph - h}" width="${bwr}" height="${h}" rx="${Math.min(2, h / 2)}"/>`;
+  });
+  s += `<line class="axis" x1="${ml}" x2="${W - mr}" y1="${mt + ph}" y2="${mt + ph}"/>`;
+  markers.forEach((m, j) => { const xx = x(m.v); const ly = 12 + (j % 2) * 0; s += `<line class="mark" x1="${xx}" x2="${xx}" y1="${mt - 4}" y2="${mt + ph}"/><circle class="mark-dot" cx="${xx}" cy="${mt - 4}" r="4"/><text class="lbl-strong" x="${Math.min(W - mr, Math.max(ml, xx))}" y="${ly}" text-anchor="${xx > W * .7 ? 'end' : xx < W * .3 ? 'start' : 'middle'}">${esc(m.label)}</text>`; });
+  return s + '</svg>';
+}
+function muSvg(el, vals) {
+  const ids = S.data.meta.mu; const rows = ids.map((id, k) => ({ id, v: vals[k] }));
+  const W = Math.max(280, el.clientWidth || 320), rh = 26, ml = Math.min(160, W * .42), mr = 46, H = rows.length * rh + 24;
+  const ext = Math.max(10, Math.ceil(Math.max(...rows.map(r => Math.abs(r.v))) / 10) * 10);
+  const pw = W - ml - mr, cx = ml + pw / 2, sc = v => (pw / 2) * v / ext;
+  let s = `<svg width="${W}" height="${H}" role="img" aria-label="Écart de score par profil d'adversaire">`;
+  [-ext, 0, ext].forEach(v => { s += `<text x="${cx + sc(v)}" y="${H - 4}" text-anchor="middle">${v > 0 ? '+' : ''}${v}%</text>`; });
+  rows.forEach((r, k) => {
+    const yy = 4 + k * rh, bh = 14, w = Math.abs(sc(r.v)), x0 = r.v < 0 ? cx - w : cx;
+    s += `<text class="lbl" x="${ml - 8}" y="${yy + bh - 2}" text-anchor="end">${esc(MU[r.id][0])}</text>`;
+    if (w > 0.5) s += `<rect class="${r.v < 0 ? 'neg' : 'pos'}" x="${x0}" y="${yy}" width="${w}" height="${bh}" rx="3"/>`;
+    const lx = r.v < 0 ? cx - w - 4 : cx + w + 4;
+    s += `<text class="lbl-strong" x="${r.id === 'neutral' ? cx + 4 : lx}" y="${yy + bh - 2}" text-anchor="${r.v < 0 ? 'end' : 'start'}">${r.id === 'neutral' ? 'référence' : (r.v > 0 ? '+' : r.v < 0 ? '−' : '') + nf1.format(Math.abs(r.v)) + ' %'}</text>`;
+  });
+  s += `<line class="axis" x1="${cx}" x2="${cx}" y1="0" y2="${H - 18}"/>`;
+  return s + '</svg>';
+}
+function drawCharts(r) {
+  const s1 = R.s1(r); const mk = [{ v: s1, label: `Ce deck : ${fmt(s1)}` }];
+  const hg = $('hist-global'), hc = $('hist-coll'), mu = $('mu-chart');
+  const draw = () => {
+    if (hg) hg.innerHTML = histSvg(hg, S.globBins, mk);
+    if (hc) hc.innerHTML = histSvg(hc, S.collBins, mk);
+    if (mu) mu.innerHTML = muSvg(mu, R.m(r));
+    [hg, hc].forEach(e => e && bindTips(e));
+  };
+  draw();
+  const t = $('hist-table'); if (t) t.innerHTML = `<table><thead><tr><th>Points</th><th class="n">Tous les decks</th><th class="n">Ta collection</th></tr></thead><tbody>${S.globBins.counts.map((c, k) => (c || S.collBins.counts[k]) ? `<tr><td class="num">${nf.format(k * 500)} – ${nf.format(k * 500 + 499)}</td><td class="n">${pct1(100 * c / S.globBins.total)}</td><td class="n">${pct1(100 * S.collBins.counts[k] / S.collBins.total)}</td></tr>` : '').join('')}</tbody></table>`;
+  drawCharts.redraw = draw;
+}
+let rzT; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { if (S.view === 'atelier' && drawCharts.redraw) drawCharts.redraw(); if (S.view === 'mine') renderCompare(); }, 150); });
+
+/* ---------- Best decks view ---------- */
+function initTop() {
+  const sel = $('top-card');
+  sel.innerHTML += S.data.cards.map((c, i) => ({ c, i })).sort((a, b) => a.c.name.localeCompare(b.c.name, 'fr')).map(({ c, i }) => `<option value="${i}">${esc(c.name)}${c.own ? '' : ' (à obtenir)'}</option>`).join('');
+  ['top-wish', 'top-crit', 'top-card', 'top-sort', 'top-loss'].forEach(id => $(id).addEventListener('input', renderTop));
+}
+function renderTop() {
+  if (!S.data) return;
+  const wish = $('top-wish').checked, maxC = +$('top-crit').value / 100, need = $('top-card').value, by = $('top-sort').value, maxL = +$('top-loss').value / 100;
+  $('top-crit-val').textContent = pct0(maxC * 100); $('top-loss-val').textContent = pct0(maxL * 100);
+  const ch = need === '' ? null : (+need).toString(32); const rows = []; const li = new Map();
+  for (let r = 0; r < S.n; r++) {
+    if (!wish && !owned(r)) continue; if (ch && !R.key(r).includes(ch)) continue; if (critShare(r) > maxC + 1e-9) continue;
+    const x = lossInfo(r); if (x.keyLoss > maxL + 1e-9) continue; li.set(r, x); rows.push(r);
+  }
+  const val = { s1: r => R.s1(r), s0: r => R.s0(r), key: r => li.get(r).worst, worst: r => Math.min(R.s0(r), li.get(r).worst) }[by] || (r => R.s1(r));
+  if (by !== 's1') rows.sort((a, b) => val(b) - val(a));
+  $('top-summary').textContent = `${fmt(rows.length)} decks correspondent. Les 60 premiers sont affichés.`;
+  $('top-table').innerHTML = `<thead><tr><th class="n">#</th><th>Cartes</th><th class="n">Score</th><th class="n">Sans critiques</th><th class="n">Critiques</th><th class="n">Sans sa carte clé</th><th class="n">Tours</th><th class="n">Mieux que</th><th></th></tr></thead><tbody>${rows.slice(0, 60).map((r, k) => `<tr>
+    <td class="n">${k + 1}</td><td><div class="deck-names">${idxOfKey(R.key(r)).map(i => `<span><span class="dot ${card(i).el}"></span>${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('')}</div></td>
+    <td class="n">${fmt(R.s1(r))}</td><td class="n">${fmt(R.s0(r))}</td><td class="n">${pct0(100 * critShare(r))}</td><td class="n">${fmt(li.get(r).worst)}<br><span class="muted small">sans ${esc(card(li.get(r).keyCard).name)}</span></td><td class="n">${nf1.format(R.ttk(r))}</td><td class="n">${pct1(globalPct(R.s1(r)))}</td>
+    <td><button class="btn" data-open="${R.key(r)}">Ouvrir</button></td></tr>`).join('')}</tbody>`;
+  bindOpenButtons($('top-table'));
+}
+
+/* ---------- Saved decks ---------- */
+async function initDb() {
+  let db = null;
+  try { db = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('db') : null; } catch { db = null; }
+  S.db = db;
+  if (!db) {
+    S.saved = store.get('spam-saved-local', []); S.savedReady = true;
+    $('store-note').textContent = 'Stockage en ligne indisponible ici : tes decks sont gardés dans ce navigateur seulement. Coche jusqu\'à 4 decks pour les comparer.';
+    renderSaved(); return;
+  }
+  db.collection('decks').orderBy('createdAt', 'desc').onSnapshot(snap => {
+    S.saved = snap.docs.map(d => ({ id: d.id, ...d.data() })); S.savedReady = true; renderSaved();
+  }, err => { $('store-note').textContent = 'Impossible de lire tes decks enregistrés (' + (err && err.code) + '). Recharge la page.'; });
+}
+async function saveDeck() {
+  if (!S.data) return;
+  if (S.deck.length !== 4) { flash('Ajoute 4 cartes avant d\'enregistrer.'); return; }
+  const name = $('deck-name').value.trim() || 'Deck sans nom';
+  const body = { name, cards: S.deck.map(i => card(i).n), createdAt: Date.now() };
+  if (!S.db) { S.saved = [{ id: 'l' + Date.now(), ...body }].concat(S.saved); store.set('spam-saved-local', S.saved); renderSaved(); flash(`« ${name} » enregistré dans ce navigateur.`); return; }
+  $('save-deck').disabled = true;
+  try { await S.db.collection('decks').add(body); flash(`« ${name} » enregistré.`); }
+  catch (e) { flash(e && e.code === 'quota_exceeded' ? 'Stockage plein : supprime d\'anciens decks.' : 'Enregistrement impossible (' + (e && e.code || 'erreur') + '). Réessaie.'); }
+  finally { $('save-deck').disabled = false; }
+}
+$('save-deck').addEventListener('click', saveDeck);
+async function deleteSaved(id) {
+  if (!S.db) { S.saved = S.saved.filter(d => d.id !== id); store.set('spam-saved-local', S.saved); renderSaved(); return; }
+  try { await S.db.collection('decks').doc(id).delete(); } catch (e) { flash('Suppression impossible (' + (e && e.code) + ').'); }
+}
+function savedRow(d) {
+  const idxs = (d.cards || []).map(n => S.data.cards.findIndex(c => c.n === n));
+  if (idxs.length !== 4 || idxs.some(i => i < 0)) return null; return rowOf(idxs);
+}
+function renderSaved() {
+  $('saved-count').textContent = S.saved.length ? `(${S.saved.length})` : '';
+  if (!S.data || !S.savedReady) return;
+  const box = $('saved-list');
+  if (!S.saved.length) { box.innerHTML = '<p class="empty">Aucun deck enregistré. Construis un deck dans l\'atelier puis clique sur « Enregistrer ».</p>'; renderCompare(); return; }
+  box.innerHTML = S.saved.map(d => {
+    const r = savedRow(d); const names = (d.cards || []).map(n => { const c = S.data.cards.find(x => x.n === n); return c ? `<span><span class="dot ${c.el}"></span>${esc(c.name)}</span>` : `<span>carte n°${n}</span>`; }).join('');
+    const checked = S.compare.has(d.id);
+    return `<div class="saved-item">
+      <input type="checkbox" id="cmp-${esc(d.id)}" data-cmp="${esc(d.id)}" ${checked ? 'checked' : ''} ${r == null ? 'disabled' : ''} aria-label="Comparer ${esc(d.name)}">
+      <div><label for="cmp-${esc(d.id)}"><b>${esc(d.name)}</b></label><div class="deck-names small">${names}</div>
+      <div class="meta">${r != null ? `${fmt(R.s1(r))} points · ${pct0(100 * critShare(r))} de critiques · mieux que ${pct1(globalPct(R.s1(r)))} des decks` : 'Contient une carte hors des données calculées'}</div></div>
+      <div class="row">${r != null ? `<button class="btn" data-openid="${esc(d.id)}">Ouvrir</button>` : ''}${S.confirmDel === d.id ? `<button class="btn danger" data-delok="${esc(d.id)}">Confirmer la suppression</button><button class="btn ghost" data-delno="1">Annuler</button>` : `<button class="btn ghost danger" data-del="${esc(d.id)}">Supprimer</button>`}</div>
+    </div>`;
+  }).join('');
+  renderCompare();
+}
+$('saved-list').addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.openid) { const d = S.saved.find(x => x.id === t.dataset.openid); const r = d && savedRow(d); if (r != null) openKey(R.key(r), d.name); }
+  else if (t.dataset.del) { S.confirmDel = t.dataset.del; renderSaved(); }
+  else if (t.dataset.delok) { const id = t.dataset.delok; S.confirmDel = null; S.compare.delete(id); deleteSaved(id); renderSaved(); }
+  else if (t.dataset.delno) { S.confirmDel = null; renderSaved(); }
+});
+$('saved-list').addEventListener('change', e => {
+  const c = e.target.closest('[data-cmp]'); if (!c) return;
+  if (c.checked) { if (S.compare.size >= 4) { c.checked = false; $('store-note').textContent = 'Tu peux comparer 4 decks au maximum.'; return; } S.compare.add(c.dataset.cmp); } else S.compare.delete(c.dataset.cmp);
+  renderCompare();
+});
+function renderCompare() {
+  const box = $('compare'); if (!S.data) return;
+  const decks = S.saved.filter(d => S.compare.has(d.id)).map(d => ({ d, r: savedRow(d) })).filter(x => x.r != null);
+  if (decks.length < 2) { box.innerHTML = '<p class="empty">Coche au moins 2 decks dans la liste pour les comparer.</p>'; return; }
+  const ids = S.data.meta.mu;
+  const metrics = [
+    ['Score', x => R.s1(x.r), v => fmt(v), 'max'],
+    ['Mieux que (tous les decks)', x => globalPct(R.s1(x.r)), v => pct1(v), 'max'],
+    ['Score sans critiques', x => R.s0(x.r), v => fmt(v), 'max'],
+    ['Part des critiques', x => 100 * critShare(x.r), v => pct0(v), 'min'],
+    ['Sans sa carte clé', x => lossInfo(x.r).worst, v => fmt(v), 'max'],
+    ['Carte clé', x => lossInfo(x.r), v => `${esc(card(v.keyCard).name)} (−${pct0(100 * v.keyLoss)})`, null],
+    ['Tours pour gagner (modèle)', x => R.ttk(x.r), v => nf1.format(v), 'min'],
+    ['Avec boutique simulée', x => (S.data.sims[R.key(x.r)] || [null])[0], v => v == null ? '—' : fmt(v), 'max'],
+    ['Préférence', x => R.p1(x.r), v => `${v >= 0 ? 'premier' : 'second'} (+${pct1(Math.abs(v))})`, null]
+  ].concat(ids.filter(id => id !== 'neutral').map((id, k) => [MU[id][0], x => R.m(x.r)[ids.indexOf(id)], v => (v > 0 ? '+' : v < 0 ? '−' : '') + nf1.format(Math.abs(v)) + ' %', 'max']));
+  const head = `<thead><tr><th></th>${decks.map(x => `<th>${esc(x.d.name)}</th>`).join('')}</tr></thead>`;
+  const body = metrics.map(([lab, f, show, best]) => {
+    const vals = decks.map(f); const valid = vals.filter(v => v != null);
+    const b = best && valid.length > 1 ? (best === 'max' ? Math.max(...valid) : Math.min(...valid)) : null;
+    return `<tr><td>${esc(lab)}</td>${vals.map(v => `<td class="n ${b != null && v === b ? 'best' : ''}">${show(v)}</td>`).join('')}</tr>`;
+  }).join('');
+  box.innerHTML = `<div class="chart" id="cmp-hist"></div><div class="scroll-x" style="margin-top:12px"><table>${head}<tbody>${body}</tbody></table></div>`;
+  const el = $('cmp-hist'); el.innerHTML = histSvg(el, S.globBins, decks.map((x, k) => ({ v: R.s1(x.r), label: '' })));
+  const labels = decks.map(x => `${esc(x.d.name)} : ${fmt(R.s1(x.r))}`).join(' · ');
+  el.insertAdjacentHTML('afterbegin', `<p class="small muted" style="margin-bottom:4px">Position sur la courbe de tous les decks du jeu : ${labels}</p>`);
+  bindTips(el);
+}
+
+/* ---------- Views ---------- */
+function setView(v) {
+  S.view = v;
+  [['atelier', 'tab-atelier', 'view-atelier'], ['top', 'tab-top', 'view-top'], ['mine', 'tab-mine', 'view-mine']].forEach(([k, t, p]) => { $(t).setAttribute('aria-selected', k === v); $(p).hidden = k !== v; });
+  store.set('spam-view', v);
+  if (v === 'top') renderTop(); if (v === 'mine') renderSaved(); if (v === 'atelier' && S.data) renderAnalysis();
+}
+$('tab-atelier').addEventListener('click', () => setView('atelier'));
+$('tab-top').addEventListener('click', () => setView('top'));
+$('tab-mine').addEventListener('click', () => setView('mine'));
+function renderAll() { renderCollection(); renderSlots(); renderAnalysis(); }
+
+renderSlotsPlaceholder();
+function renderSlotsPlaceholder() { $('slots').innerHTML = [1, 2, 3, 4].map(s => `<div class="slot empty-slot">Emplacement ${s}</div>`).join(''); }
+load();
+})();
+</script>

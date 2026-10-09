@@ -1,0 +1,2814 @@
+{
+ "r": [
+  {
+   "sel": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 6523.39852419161,
+   "ttk": 14.9,
+   "matchups": [
+    "neutral:0",
+    "fragile:29",
+    "tank:-24.9",
+    "anti-fire:0",
+    "anti-water:-21.3",
+    "anti-earth:0",
+    "anti-nature:-2.7",
+    "anti-shadow:0",
+    "anti-light:0"
+   ],
+   "pos": [
+    {
+     "player": 1,
+     "ttk": 15.7,
+     "deltaPct": 6.7
+    },
+    {
+     "player": 2,
+     "ttk": 18.6,
+     "deltaPct": -6.7
+    }
+   ],
+   "dmg": [
+    33,
+    169,
+    68,
+    246,
+    102,
+    329,
+    128,
+    312,
+    145,
+    351
+   ],
+   "plan": [
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 17,
+      "gen": ""
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Vague",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 19,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 14,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 29,
+      "gen": ""
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Vague",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 117,
+      "heal": 88,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 30,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 21,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 42,
+      "gen": ""
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Vague",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 41,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 26,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 55,
+      "gen": ""
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Vague",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 162,
+      "heal": 121,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 53,
+      "heal": 0,
+      "gen": "water+1"
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 32,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ]
+   ],
+   "shop": {
+    "budget": 367,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 94,
+    "evNowPct": 9.5,
+    "evAfterPct": 0,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 61,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 126,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 245,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 304,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 367,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "Poison_C",
+      "rarity": "common",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 34,
+      "cumulativePct": 34
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurVital_R",
+      "rarity": "rare",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": null,
+      "gainPct": 5.6,
+      "cumulativePct": 39.6
+     },
+     {
+      "step": 3,
+      "turn": 6,
+      "toxId": "CoeurEau_R",
+      "rarity": "rare",
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "replacesId": null,
+      "gainPct": 3.9,
+      "cumulativePct": 43.5
+     },
+     {
+      "step": 4,
+      "turn": 8,
+      "toxId": "Berserk_E",
+      "rarity": "epic",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Mimetisme_R",
+      "gainPct": 18,
+      "cumulativePct": 61.5
+     },
+     {
+      "step": 5,
+      "turn": 10,
+      "toxId": "CoeurEau_E",
+      "rarity": "epic",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": "Primitive heal_C",
+      "gainPct": 32.5,
+      "cumulativePct": 94
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Murmure",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 19,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Souffle d'eau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 34.8,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Multiplicator_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 15.6,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 44.8,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 56
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 50.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 40
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 37.2
+         },
+         {
+          "toxId": "Poison_C",
+          "rarity": "common",
+          "gainPct": 34
+         },
+         {
+          "toxId": "Poison_R",
+          "rarity": "rare",
+          "gainPct": 34
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "remplacer",
+        "valuePct": 3.1,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 50.9
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 50.9
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 39.6
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 35.3
+         },
+         {
+          "toxId": "Poison_C",
+          "rarity": "common",
+          "gainPct": 33.7
+         },
+         {
+          "toxId": "Poison_R",
+          "rarity": "rare",
+          "gainPct": 33.7
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Souffle d'eau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 22,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Vague",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 10.9,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 56.3
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 40.4
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 37.6
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 27
+         },
+         {
+          "toxId": "Berserk_R",
+          "rarity": "rare",
+          "gainPct": 25.8
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 28.8,
+        "casts": 6,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Primitive heal_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 2.6,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 56.3
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 39.3
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 35.3
+         },
+         {
+          "toxId": "Reflect_L",
+          "rarity": "legendary",
+          "gainPct": 26.5
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 24.1
+         }
+        ]
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 56.3
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 40.4
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 37.6
+         },
+         {
+          "toxId": "Reflect_L",
+          "rarity": "legendary",
+          "gainPct": 32.8
+         },
+         {
+          "toxId": "Reflect_E",
+          "rarity": "epic",
+          "gainPct": 25.2
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurLumiere_C",
+     "CoeurTerre_C",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurLumiere_R",
+     "CoeurTerre_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "Revenge_R",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurLumiere_E",
+     "CoeurTerre_E",
+     "Metamorph_E",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurLumiere_L",
+     "CoeurTerre_L",
+     "Temporality_L"
+    ]
+   },
+   "sugg": [
+    {
+     "replaceId": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 31.47397759027775,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "withId": "2a61029e-6d9d-47f2-b2ed-68730e842ced",
+     "gain": 31.461576931764203,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "2a61029e-6d9d-47f2-b2ed-68730e842ced",
+       "talentId": null
+      },
+      {
+       "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 27.990902960944968,
+     "selection": [
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "sel": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 6210.147394912697,
+   "ttk": 16.2,
+   "matchups": [
+    "neutral:0",
+    "fragile:22.2",
+    "tank:-25.1",
+    "anti-fire:0",
+    "anti-water:-15.1",
+    "anti-earth:-10.3",
+    "anti-nature:-6.2",
+    "anti-shadow:0",
+    "anti-light:0"
+   ],
+   "pos": [
+    {
+     "player": 1,
+     "ttk": 17.4,
+     "deltaPct": 4.4
+    },
+    {
+     "player": 2,
+     "ttk": 20,
+     "deltaPct": -4.4
+    }
+   ],
+   "dmg": [
+    17,
+    200,
+    32,
+    279,
+    48,
+    341,
+    53,
+    366,
+    58,
+    350
+   ],
+   "plan": [
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 17,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 17,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 25,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 105,
+      "heal": 79,
+      "gen": ""
+     },
+     {
+      "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+      "abilityId": "Remue sol",
+      "option": 0,
+      "dmg": 71,
+      "heal": 0,
+      "gen": "earth+2"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 24,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 34,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 32,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 42,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 133,
+      "heal": 100,
+      "gen": ""
+     },
+     {
+      "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+      "abilityId": "Remue sol",
+      "option": 0,
+      "dmg": 105,
+      "heal": 0,
+      "gen": "earth+2"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 40,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ]
+   ],
+   "shop": {
+    "budget": 370,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 96.2,
+    "evNowPct": 9.1,
+    "evAfterPct": 0,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 53,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 110,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 214,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 265,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 370,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "Poison_C",
+      "rarity": "common",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 39.9,
+      "cumulativePct": 39.9
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurVital_R",
+      "rarity": "rare",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": null,
+      "gainPct": 7.3,
+      "cumulativePct": 47.3
+     },
+     {
+      "step": 3,
+      "turn": 6,
+      "toxId": "CoeurEau_R",
+      "rarity": "rare",
+      "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+      "replacesId": null,
+      "gainPct": 4.1,
+      "cumulativePct": 51.4
+     },
+     {
+      "step": 4,
+      "turn": 8,
+      "toxId": "Berserk_E",
+      "rarity": "epic",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": "Primitive heal_C",
+      "gainPct": 16.7,
+      "cumulativePct": 68.1
+     },
+     {
+      "step": 5,
+      "turn": 10,
+      "toxId": "CoeurEau_E",
+      "rarity": "epic",
+      "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+      "replacesId": "PunchingBag_C",
+      "gainPct": 28.1,
+      "cumulativePct": 96.2
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Remue sol",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 32.3,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "PunchingBag_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 54.1
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 52.6
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 47.2
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 40.7
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 31.7
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 30.9
+         }
+        ]
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 54.6
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 52.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 46.5
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 43.8
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 34.4
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 33.5
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Murmure",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 15.7,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Souffle d'eau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 24.8,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Multiplicator_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 10.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 40.3,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.5,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 54.3
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 52.4
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 46.2
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 43.4
+         },
+         {
+          "toxId": "Poison_C",
+          "rarity": "common",
+          "gainPct": 39.9
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 33
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 6.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 34.1,
+        "casts": 5,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Primitive heal_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 1.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 53.8
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 52.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 44.8
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 36.3
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 33.3
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 33.1
+         }
+        ]
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 54.6
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 52.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 46.5
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 43.8
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 34.4
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 33.5
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurLumiere_C",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurLumiere_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurLumiere_E",
+     "Metamorph_E",
+     "Vengeur_E",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurLumiere_L",
+     "Temporality_L"
+    ]
+   },
+   "sugg": [
+    {
+     "replaceId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 39.07911489841731,
+     "selection": [
+      {
+       "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+       "talentId": null
+      },
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 39.07085996512313,
+     "selection": [
+      {
+       "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 38.10576413767644,
+     "selection": [
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "sel": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 7165.443240942801,
+   "ttk": 13.7,
+   "matchups": [
+    "neutral:0",
+    "fragile:22.1",
+    "tank:-23.2",
+    "anti-fire:0",
+    "anti-water:-20",
+    "anti-earth:0",
+    "anti-nature:-3.8",
+    "anti-shadow:0",
+    "anti-light:0"
+   ],
+   "pos": [
+    {
+     "player": 1,
+     "ttk": 14.3,
+     "deltaPct": 3.6
+    },
+    {
+     "player": 2,
+     "ttk": 16,
+     "deltaPct": -3.6
+    }
+   ],
+   "dmg": [
+    17,
+    136,
+    44,
+    252,
+    68,
+    408,
+    107,
+    454,
+    142,
+    492
+   ],
+   "plan": [
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 17,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 17,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 25,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 110,
+      "heal": 83,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 26,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 36,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 44,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 50,
+      "gen": ""
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 195,
+      "heal": 146,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 57,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ]
+   ],
+   "shop": {
+    "budget": 347,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 45,
+    "evNowPct": 8.2,
+    "evAfterPct": 0,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 57,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 118,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 233,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 288,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 347,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "CoeurEau_C",
+      "rarity": "common",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": null,
+      "gainPct": 15.3,
+      "cumulativePct": 15.3
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurVital_R",
+      "rarity": "rare",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": "Primitive heal_C",
+      "gainPct": 8.3,
+      "cumulativePct": 23.6
+     },
+     {
+      "step": 3,
+      "turn": 6,
+      "toxId": "CoeurEau_R",
+      "rarity": "rare",
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "replacesId": null,
+      "gainPct": 7.6,
+      "cumulativePct": 31.2
+     },
+     {
+      "step": 4,
+      "turn": 8,
+      "toxId": "CoeurEau_E",
+      "rarity": "epic",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 13.9,
+      "cumulativePct": 45
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Murmure",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 23.5,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Souffle d'eau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 39.9,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Multiplicator_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 17.8,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 58.7,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 43.2
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 42.2
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 30.5
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 28.7
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 22.7
+         },
+         {
+          "toxId": "Berserk_R",
+          "rarity": "rare",
+          "gainPct": 21.4
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 5.2,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 38.5,
+        "casts": 6,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Primitive heal_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 1.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 43.4
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 42.4
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 30.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 26.4
+         },
+         {
+          "toxId": "Cimetiere_L",
+          "rarity": "legendary",
+          "gainPct": 25.2
+         },
+         {
+          "toxId": "Cimetiere_E",
+          "rarity": "epic",
+          "gainPct": 20.5
+         }
+        ]
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 43.5
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 42.5
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 30.8
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 23
+         },
+         {
+          "toxId": "Berserk_R",
+          "rarity": "rare",
+          "gainPct": 21.9
+         },
+         {
+          "toxId": "Reflect_L",
+          "rarity": "legendary",
+          "gainPct": 21.1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feu allié",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 34.6,
+        "casts": 3,
+        "firstTurn": 3,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Embrasement",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 14,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 43.5
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 42.5
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 30.8
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 29
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 23
+         },
+         {
+          "toxId": "Berserk_R",
+          "rarity": "rare",
+          "gainPct": 21.9
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "Aoe_C",
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurLumiere_C",
+     "CoeurTerre_C",
+     "Life Steal_C",
+     "Aoe_R",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurLumiere_R",
+     "CoeurTerre_R",
+     "Smoked_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "Revenge_R",
+     "Life Steal_R",
+     "Aoe_E",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurLumiere_E",
+     "CoeurTerre_E",
+     "Metamorph_E",
+     "Reset_E",
+     "Life Steal_E",
+     "Aoe_L",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurLumiere_L",
+     "CoeurTerre_L",
+     "Life Steal_L"
+    ]
+   },
+   "sugg": [
+    {
+     "replaceId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 24.579495744935997,
+     "selection": [
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "withId": "2a61029e-6d9d-47f2-b2ed-68730e842ced",
+     "gain": 22.739835875629506,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "2a61029e-6d9d-47f2-b2ed-68730e842ced",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 19.693523839729906,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "sel": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 6080.601425845718,
+   "ttk": 17.2,
+   "matchups": [
+    "neutral:0",
+    "fragile:28.9",
+    "tank:-20.6",
+    "anti-fire:0",
+    "anti-water:-18",
+    "anti-earth:0",
+    "anti-nature:-3.4",
+    "anti-shadow:0",
+    "anti-light:0"
+   ],
+   "pos": [
+    {
+     "player": 1,
+     "ttk": 17.7,
+     "deltaPct": 4.2
+    },
+    {
+     "player": 2,
+     "ttk": 19.7,
+     "deltaPct": -4.2
+    }
+   ],
+   "dmg": [
+    21,
+    158,
+    41,
+    224,
+    64,
+    291,
+    86,
+    356,
+    106,
+    349
+   ],
+   "plan": [
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 21,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 21,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 33,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 125,
+      "heal": 94,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 32,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 38,
+      "gen": ""
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 41,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ],
+    [
+     {
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "abilityId": "Revitalisation",
+      "option": 0,
+      "dmg": 0,
+      "heal": 153,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Murmure",
+      "option": 0,
+      "dmg": 0,
+      "heal": 50,
+      "gen": ""
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "abilityId": "Feau",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "fire+3 water+3 earth+3"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 171,
+      "heal": 128,
+      "gen": ""
+     },
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "abilityId": "Souffle d'eau",
+      "option": 0,
+      "dmg": 53,
+      "heal": 0,
+      "gen": "water+1"
+     }
+    ]
+   ],
+   "shop": {
+    "budget": 305,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 82.9,
+    "evNowPct": 11.8,
+    "evAfterPct": 0,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 53,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 110,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 171,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 236,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 305,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "Poison_C",
+      "rarity": "common",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 42.4,
+      "cumulativePct": 42.4
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurVital_R",
+      "rarity": "rare",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": null,
+      "gainPct": 4.9,
+      "cumulativePct": 47.4
+     },
+     {
+      "step": 3,
+      "turn": 6,
+      "toxId": "CoeurEau_R",
+      "rarity": "rare",
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "replacesId": "Primitive heal_C",
+      "gainPct": 4.2,
+      "cumulativePct": 51.6
+     },
+     {
+      "step": 4,
+      "turn": 8,
+      "toxId": "CoeurEau_E",
+      "rarity": "epic",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Mimetisme_R",
+      "gainPct": 17.5,
+      "cumulativePct": 69.1
+     },
+     {
+      "step": 5,
+      "turn": 10,
+      "toxId": "Berserk_E",
+      "rarity": "epic",
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "replacesId": "Berserk_C",
+      "gainPct": 13.8,
+      "cumulativePct": 82.9
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Murmure",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 13.4,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Souffle d'eau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 40.7,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Multiplicator_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 16,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 52.9,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.5,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51.3
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 50.3
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 44.2
+         },
+         {
+          "toxId": "Poison_C",
+          "rarity": "common",
+          "gainPct": 42.4
+         },
+         {
+          "toxId": "Poison_R",
+          "rarity": "rare",
+          "gainPct": 42.4
+         },
+         {
+          "toxId": "Poison_E",
+          "rarity": "epic",
+          "gainPct": 42.4
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "remplacer",
+        "valuePct": 3.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51.2
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 48.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 43.5
+         },
+         {
+          "toxId": "Poison_C",
+          "rarity": "common",
+          "gainPct": 40
+         },
+         {
+          "toxId": "Poison_R",
+          "rarity": "rare",
+          "gainPct": 40
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 36.9
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Revitalisation",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 9.8,
+        "casts": 2,
+        "firstTurn": 4,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Berserk_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 8.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 48.8
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 29.7
+         },
+         {
+          "toxId": "Berserk_R",
+          "rarity": "rare",
+          "gainPct": 13.9
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "CoeurEau_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 14.7,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 49.8
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 38.1
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 14.5
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feau",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 34.2,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Primitive heal_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 3.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51.6
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 50.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 44.6
+         },
+         {
+          "toxId": "Reflect_L",
+          "rarity": "legendary",
+          "gainPct": 39.6
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 36.8
+         },
+         {
+          "toxId": "Reflect_E",
+          "rarity": "epic",
+          "gainPct": 32.4
+         }
+        ]
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 51.6
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 50.7
+         },
+         {
+          "toxId": "Reflect_L",
+          "rarity": "legendary",
+          "gainPct": 47.7
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 44.6
+         },
+         {
+          "toxId": "Reflect_E",
+          "rarity": "epic",
+          "gainPct": 42
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 39
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "Aoe_C",
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurLumiere_C",
+     "CoeurTerre_C",
+     "Tenacite_C",
+     "Life Steal_C",
+     "Aoe_R",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurLumiere_R",
+     "CoeurTerre_R",
+     "Smoked_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "Taunt_R",
+     "Revenge_R",
+     "Life Steal_R",
+     "Aoe_E",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurLumiere_E",
+     "CoeurTerre_E",
+     "Metamorph_E",
+     "Reset_E",
+     "Life Steal_E",
+     "Vengeur_E",
+     "Aoe_L",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurLumiere_L",
+     "CoeurTerre_L",
+     "Temporality_L",
+     "Life Steal_L"
+    ]
+   },
+   "sugg": [
+    {
+     "replaceId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 45.3412772231276,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "withId": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+     "gain": 41.04807918120234,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+       "talentId": null
+      },
+      {
+       "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+       "talentId": null
+      }
+     ]
+    },
+    {
+     "replaceId": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "withId": "deeea38b-08f6-4e26-a3fd-db6b6dabffea",
+     "gain": 36.17520302008573,
+     "selection": [
+      {
+       "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+       "talentId": null
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": null
+      },
+      {
+       "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+       "talentId": null
+      },
+      {
+       "id": "deeea38b-08f6-4e26-a3fd-db6b6dabffea",
+       "talentId": null
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

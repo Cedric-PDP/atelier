@@ -1,0 +1,9 @@
+{
+  "_source": "Snapshot of the artifact database (collection `decks`) of https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE, read 2026-10-09. The live list is the database, not this file.",
+  "decks": [
+    {"id": "deck-chimere", "name": "deck chimere", "cards": [103, 238, 156, 117], "createdAt": 1791552960000},
+    {"id": "anti-critiques", "name": "Anti-critiques (Hibernatus)", "cards": [12, 238, 27, 117], "createdAt": 1791552950000},
+    {"id": "zero-critique", "name": "Zéro critique", "cards": [102, 116, 12, 69], "createdAt": 1791552940000},
+    {"id": "deck-aleera", "name": "Deck Aleera (à obtenir)", "cards": [231, 238, 156, 117], "createdAt": 1791552930000}
+  ]
+}

@@ -1,0 +1,213 @@
+SPAM guides and strategies: synergies, talents, Tox and deck building - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+Strategies
+# Learn. Improve. Share.
+Guides, synergies, and analysis to play SPAM better.
+Guides Synergies Talents Tox 01
+Elemental synergies
+### An engine, not four soloists.
+Let bonuses flow from your generators to your attackers. That’s where synergy begins.
+4 min read
+02
+Deck building
+### Four slots. One real plan.
+Give every card a purpose and turn a collection into a composition.
+5 min read
+03
+Tempo & rotations
+### The right move, at the right time.
+Read cooldowns, spot damage spikes, and prepare your windows of opportunity.
+4 min read
+04
+Talents & optimization
+### The talent that changes the game.
+One character, several roles. Choose the talent that truly serves your team.
+3 min read
+05
+Tox & economy
+### Make every Spamton count.
+Understand free slots, replacements, and the potential of Tox.
+4 min read
+06
+Understanding rankings
+### Beyond the letter S.
+Use rankings to ask better questions about your decks.
+3 min read
+Library
+## Synergies, talents & Tox
+Synergies 28 Talents 80 Tox 102
+Search…
+28 results
+S
+### The Codex engine
+Growing elemental generation rewards time. Protect your generator and pair it with attackers that use the same element.
+Codex of Ancient Woes Canine Specter Floating Poison Gas Moxilys, the Humming One
+Theoretical score 12,490 Synergy + 2,704
+Adapt in the workshop
+S
+### The Codex engine
+Growing elemental generation rewards time. Protect your generator and pair it with attackers that use the same element.
+Codex of Luminous Spells Canine Specter Abyssal Lightbearer Radiant Shinobi
+Theoretical score 10,761 Synergy + 3,427
+Adapt in the workshop
+A
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Scorch, the Ignited Lizards Water King Master Amphibian The Companion of Spirits
+Theoretical score 10,754 Synergy + 5,240
+Adapt in the workshop
+A
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Gabriel Nature King Aldrin & Gorakar Spirit of the Fauna
+Theoretical score 10,242 Synergy + 4,357
+Adapt in the workshop
+A
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Codex of Ancient Woes Shadow King Canine Specter Floating Poison Gas
+Theoretical score 9,769 Synergy + 1,009
+Adapt in the workshop
+A
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Codex of Luminous Spells Light King Canine Specter Abyssal Lightbearer
+Theoretical score 9,487 Synergy + 3,493
+Adapt in the workshop
+A
+### Cooldown acceleration
+Pair cooldown reduction with high-impact abilities. Check the simulated rotation to see when the payoff becomes available.
+Polychrome Owl Commando Gerz Gabriel Zayd
+Theoretical score 9,471 Synergy + 3,533
+Adapt in the workshop
+B
+### Turn hits into fuel
+Punching Bag generates an elemental bonus when the card is hit. Taunt can help turn incoming attacks into resources.
+Floral Giraffe Aldrin & Gorakar Spirit of the Fauna Catimimi
+Theoretical score 9,385 Synergy + 5,880
+Adapt in the workshop
+B
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Scorch, the Ignited Lizards Earth King Raffteru Master Amphibian
+Theoretical score 9,321 Synergy + 4,313
+Adapt in the workshop
+B
+### Elemental engine
+Stack generators of the same element, then convert their bonuses into damage. Each point adds 10% to damage and healing in that element.
+Scorch, the Ignited Lizards Fire King Ignea Sovereign of Flames
+Theoretical score 9,289 Synergy + 5,243
+Adapt in the workshop
+B
+### Chain reaction
+Area damage softens several targets, while Reset and Avenger reward eliminations with additional attack opportunities.
+Blue-Stone-Eater Celestial Dragosaur Floating Poison Gas Aleera, Nightmare-Eater
+Theoretical score 9,261 Synergy -4,594
+Adapt in the workshop
+B
+### Cooldown acceleration
+Pair cooldown reduction with high-impact abilities. Check the simulated rotation to see when the payoff becomes available.
+Wyrmling of Lights Commando Gerz Gabriel Zayd
+Theoretical score 9,256 Synergy + 3,697
+Adapt in the workshop
+B
+### Cooldown acceleration
+Pair cooldown reduction with high-impact abilities. Check the simulated rotation to see when the payoff becomes available.
+Neilla Commando Gerz Gabriel Zayd
+Theoretical score 9,126 Synergy + 4,062
+Adapt in the workshop
+B
+### Cooldown acceleration
+Pair cooldown reduction with high-impact abilities. Check the simulated rotation to see when the payoff becomes available.
+Verdelune Commando Gerz Gabriel Zayd
+Theoretical score 9,043 Synergy + 3,604
+Adapt in the workshop
+B
+### Breaking the wall
+Raw damage bypasses resistance and taunt. Support its modest base damage with compatible bonuses.
+Radiant Shinobi Imaginary Panther Hatchlings of Midas Yotaru, Leafguard
+Theoretical score 7,931 Synergy + 2,784
+Adapt in the workshop
+C
+### Elemental multiplier
+Multiplier strengthens the value of elemental bonuses for its holder. Pair it with generators of the elements it attacks with.
+Medusine Thorn Aidan Scorch, the Ignited Lizards Astry
+Theoretical score 7,723 Synergy + 4,689
+Adapt in the workshop
+C
+### Cooldown acceleration
+Pair cooldown reduction with high-impact abilities. Check the simulated rotation to see when the payoff becomes available.
+Nocturnal Watcher Commando Gerz Gabriel Zayd
+Theoretical score 7,067 Synergy + 1,471
+Adapt in the workshop
+C
+### Critical mass
+Permanent team critical bonuses stack over time. High critical multipliers make the most of this investment.
+Astral Healer of the Woods Ashtarae Lycaria Aleera, Nightmare-Eater Pyro
+Theoretical score 6,829 Synergy -3,753
+Adapt in the workshop
+C
+### Turn hits into fuel
+Punching Bag generates an elemental bonus when the card is hit. Taunt can help turn incoming attacks into resources.
+The Wild Carrier Raffteru Master Amphibian Serpentine Heraldess
+Theoretical score 5,789 Synergy + 755
+Adapt in the workshop
+C
+### Elemental multiplier
+Multiplier strengthens the value of elemental bonuses for its holder. Pair it with generators of the elements it attacks with.
+Murmurs of Black Coral Aidan Scorch, the Ignited Lizards Astry
+Theoretical score 5,698 Synergy + 3,582
+Adapt in the workshop
+C
+### Execution window
+Percentage-of-health attacks and execution effects offer a different way to pressure high-health cards.
+Mythic Horned One Weaver of Words Leviathan of the Skies Nocturnal Watcher
+Theoretical score 5,115 Synergy -3,503
+Adapt in the workshop
+C
+### Resource loop
+Feed costly abilities with matching generators. Compare the bonus spent with what each activation gives back.
+Aidan Scorch, the Ignited Lizards Astry Thorn of Love
+Theoretical score 4,193 Synergy + 1,712
+Adapt in the workshop
+D
+### Elemental multiplier
+Multiplier strengthens the value of elemental bonuses for its holder. Pair it with generators of the elements it attacks with.
+Deer of Mournful Colors
+Theoretical score 2,200 Synergy 0
+D
+### The delayed explosion
+Death-triggered attacks create a delayed threat. Generation and healing can support the card before its final attack.
+Zayd Astral Healer of the Woods
+Theoretical score 1,717 Synergy + 440
+D
+### Protected engine
+Immunity protects against enemy effects. A protected generator or support can keep your engine running.
+The Companion of Spirits
+Theoretical score 1,716 Synergy + 4
+D
+### Elemental multiplier
+Multiplier strengthens the value of elemental bonuses for its holder. Pair it with generators of the elements it attacks with.
+The Inventor
+Theoretical score 847 Synergy + 55
+D
+### A different role
+Inversion exchanges healing and damage. Check whether the change improves the role you need before selecting the talent.
+Chatty Octopus
+Theoretical score 739 Synergy + 534
+D
+### Protected engine
+Immunity protects against enemy effects. A protected generator or support can keep your engine running.
+Codex of Ancient Woes
+Theoretical score 411 Synergy 0
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

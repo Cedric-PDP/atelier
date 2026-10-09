@@ -1,0 +1,279 @@
+SPAM patch 1.20: changed cards and tier list impact - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+Home
+Patch notes
+Patch notes
+# What 1.20 changes
+Version published on October 7, 2026. 30 cards really change; 57 others only get reworded texts. The tier shown is our card ranking before and after the patch, with the same model.
+View the tier list
+1.19 → 1.20
+## Changed cards
+Changed cards 30
+Health raised 18
+Abilities reworked 9
+Tier moves 12
+-
+### Ashtarae Lycaria
+B
+A +31 places
+Changed Abilities Melody No. 1 Before Deal [10 to 20] Shadow damage
+Critical (+2%) on all allied cards
+After Deal [15 to 25] Shadow damage
+Critical (+2%) on all allied cards
+Changed Abilities Melody No. 2 Before Heal [10 to 20] Shadow
+Accuracy (+2%) on all allied cards
+After Heal [15 to 25] Shadow
+Accuracy (+2%) on all allied cards
+-
+### Green Guardian
+A
+A +14 places
+- HP 600 800
+-
+### Snow Warrior
+B
+B +14 places
+- HP 500 600
+-
+### Mistress of Tints
+B
+B +10 places
+- HP 500 600
+- Resistances Fire 10% 20%
+- Resistances Water 10% 20%
+- Resistances Earth 10% 20%
+- Resistances Nature 10% 20%
+- Resistances Shadow 10% 20%
+- Resistances Light 10% 20%
+-
+### Godlur
+D
+D +10 places
+- HP 700 1,000
+-
+### Aidan
+C
+C +8 places
+- HP 600 750
+-
+### Verdelune
+C
+C +8 places
+- HP 700 900
+Changed Abilities Truce Before Heal 30 Nature
+Resistance to all elements (+10)
+After Heal 60 Nature
+Resistance to all elements (+10)
+-
+### Floral Zombie
+C
+B +7 places
+- HP 800 1,000
+-
+### Pyrokinetic Sorceress
+A
+A +6 places
+- HP 700 800
+Changed Abilities Enchanted Flame Before Deal 25 Fire damage
+Deal 25 Light damage Fire resistance (-10) & Light resistance (-10)
+Stun
+After Deal 25 Fire damage
+Apply Eternity on critical hit
+Deal 25 Light damage
+Apply Eternity on critical hit
+Lowers the opponent's Fire and Light resistance by (10%)
+-
+### Prankster Whale
+C
+B +5 places
+- HP 900 1,000
+-
+### Gabriel
+A
+A +2 places
+- HP 900 1,000
+-
+### Fire King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Water King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Nature King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Earth King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Shadow King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Light King
+B
+B +2 places
+New Starting Tox Punching Bag After Increases the element of the caster's card by +1 each time it is attacked
+Replaced Talent Evolution ← Heart of Steel Before Incoming attacks increase your elemental resistances by (+1).
+After If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+-
+### Dragon of the Infernal City
+C
+C +2 places
+Replaced Starting Tox Freeze ← Stun Before Stuns the opponent. A stunned target cannot use abilities
+After When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage.
+-
+### Ignea
+S
+S +1 places
+- HP 700 750
+-
+### Squall, Emissary of Nightmares
+B
+B +1 places
+- HP 800 1,000
+-
+### Moxilys, the Humming One
+S
+S
+- HP 850 900
+-
+### Spirit of the Fauna
+S
+S
+Changed Abilities Call of the Forest Before Deal 30 Nature damage to all enemy cards Nature bonus (+2)
+After Deal 30 Nature damage to all enemy cards Nature bonus (+4)
+Changed Abilities Solar heal Before Heal 50 Light
+Stun
+After Heal 60 Light
+[Freeze]
+-
+### Gleam of the White Fox
+S
+S
+- HP 600 700
+Changed Abilities Darkaqua Before Deal 20 Water damage
+Deal 20 Shadow damage
+Stun
+After Choice
+Deal 20 Water damage
+[Freeze]
+---------- or ----------
+Deal 20 Shadow damage
+Apply Eternity
+-
+### Nocturnal Watcher
+A
+A
+- HP 700 800
+-
+### Hibernatus
+C
+C
+- HP 700 750
+-
+### The Inventor
+D
+D
+Changed Abilities Materia Before Bonus [-10 to +10] in a random element
+After Bonus [-8 to +10] in every element
+-
+### Master Amphibian
+B
+B -1 places
+- HP 650 700
+-
+### Léo
+C
+C -1 places
+- HP 600 800
+-
+### Frost & Glacier
+C
+C -3 places
+Replaced Starting Tox Freeze ← Stun Before Stuns the opponent. A stunned target cannot use abilities
+After When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage.
+-
+### Herald of Ashes
+D
+D -8 places
+Changed Abilities Dragon's Breath Before Choice
+Deal 15 Fire damage
+Deal 15 Nature damage
+Stun
+---------- or ----------
+Fire bonus (+5) Nature bonus (+5)
+After Choice
+Deal 30 Fire damage
+Deal 10 Nature damage
+Deal 10 Nature damage
+---------- or ----------
+Fire bonus (+5) Nature bonus (+5)
+### Unchanged, yet they move tier
+The card ranking is relative: when other cards change, some move without being touched.
+- Polychrome Owl D
+C
+- Raffteru D
+C
+- Light Spirit C
+D
+- Sylvan, Protector of the Verdure B
+C
+- Floating Poison Gas B
+C
+- Pyro A
+B
+- Neilla C
+D
+- Traveler of the Ridges A
+B
+- Leviathan of the Skies A
+B
+### Decks that benefit
+- Verdant Fruit Cruncher + Earth King D
+D +15.8 pts
+- Verdant Fruit Cruncher + Mistress of Tints D
+C +12.5 pts
+- Sovereign of Flames + Vladislaus D
+C +11 pts
+- Pyro + Logidrake D
+D +8.8 pts
+- Raffteru + Thorn of Love D
+D +7.6 pts
+### New passives
+- Freeze When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage.
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

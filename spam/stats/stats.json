@@ -1,0 +1,1042 @@
+{
+ "generated": "2026-10-09T12:55:24.922Z",
+ "gameVersion": "1.20",
+ "engineHash": "a8193b3d422a54a9",
+ "notes": [
+  "Scores = modèle théorique du wiki (simulation.js), SANS talent, SANS boutique Tox (evaluate optimize:false, suggestions:false, shop:false).",
+  "x1 = model_crit1.json (normal) ; x0 = model_crit0.json (toutes chances/buffs de critique à 0). critShare = 1 - s0/s1.",
+  "Les scores avec boutique simulée (ex. 9 393 pour le deck chimere) ne sont PAS comparables à ces scores de base."
+ ],
+ "global": {
+  "source": "uniform random 4-card decks among the 127 cards, no talents, no shop, seed 20261009 (mulberry32), i.i.d. draws (23969 distinct of 24000)",
+  "scores": {
+   "n": 24000,
+   "mean": 4770.9,
+   "sd": 1408.7,
+   "min": 318.4,
+   "p1": 2117.1,
+   "p5": 2787.7,
+   "p10": 3151.9,
+   "p25": 3772.7,
+   "p50": 4591.8,
+   "p75": 5600.4,
+   "p90": 6645.7,
+   "p95": 7392.6,
+   "p99": 8821.4,
+   "p99.9": 10021.7,
+   "max": 13616.1
+  },
+  "critShare": {
+   "n": 6000,
+   "mean": 0.0985,
+   "sd": 0.1086,
+   "p10": 0.0041,
+   "p25": 0.0086,
+   "median": 0.0671,
+   "p75": 0.1472,
+   "p90": 0.255,
+   "max": 0.6395,
+   "pooled": 0.0994,
+   "negative": 41
+  },
+  "critShareSample": "first 6000 decks (x0 = model_crit0)",
+  "scoresX0": {
+   "n": 6000,
+   "mean": 4315.3,
+   "sd": 1375.9,
+   "min": 815.8,
+   "p1": 1792.8,
+   "p5": 2385.7,
+   "p10": 2695.2,
+   "p25": 3358.6,
+   "p50": 4127.2,
+   "p75": 5108.9,
+   "p90": 6156.9,
+   "p95": 6875.8,
+   "p99": 8285.6,
+   "p99.9": 9323.8,
+   "max": 9887.9
+  },
+  "histogram500": [
+   {
+    "from": 0,
+    "to": 500,
+    "count": 1
+   },
+   {
+    "from": 500,
+    "to": 1000,
+    "count": 8
+   },
+   {
+    "from": 1000,
+    "to": 1500,
+    "count": 29
+   },
+   {
+    "from": 1500,
+    "to": 2000,
+    "count": 144
+   },
+   {
+    "from": 2000,
+    "to": 2500,
+    "count": 459
+   },
+   {
+    "from": 2500,
+    "to": 3000,
+    "count": 1163
+   },
+   {
+    "from": 3000,
+    "to": 3500,
+    "count": 2364
+   },
+   {
+    "from": 3500,
+    "to": 4000,
+    "count": 3426
+   },
+   {
+    "from": 4000,
+    "to": 4500,
+    "count": 3759
+   },
+   {
+    "from": 4500,
+    "to": 5000,
+    "count": 3377
+   },
+   {
+    "from": 5000,
+    "to": 5500,
+    "count": 2787
+   },
+   {
+    "from": 5500,
+    "to": 6000,
+    "count": 2251
+   },
+   {
+    "from": 6000,
+    "to": 6500,
+    "count": 1484
+   },
+   {
+    "from": 6500,
+    "to": 7000,
+    "count": 1019
+   },
+   {
+    "from": 7000,
+    "to": 7500,
+    "count": 654
+   },
+   {
+    "from": 7500,
+    "to": 8000,
+    "count": 435
+   },
+   {
+    "from": 8000,
+    "to": 8500,
+    "count": 272
+   },
+   {
+    "from": 8500,
+    "to": 9000,
+    "count": 200
+   },
+   {
+    "from": 9000,
+    "to": 9500,
+    "count": 105
+   },
+   {
+    "from": 9500,
+    "to": 10000,
+    "count": 37
+   },
+   {
+    "from": 10000,
+    "to": 10500,
+    "count": 10
+   },
+   {
+    "from": 10500,
+    "to": 11000,
+    "count": 5
+   },
+   {
+    "from": 11000,
+    "to": 11500,
+    "count": 1
+   },
+   {
+    "from": 11500,
+    "to": 12000,
+    "count": 5
+   },
+   {
+    "from": 12000,
+    "to": 12500,
+    "count": 2
+   },
+   {
+    "from": 12500,
+    "to": 13000,
+    "count": 1
+   },
+   {
+    "from": 13000,
+    "to": 13500,
+    "count": 1
+   },
+   {
+    "from": 13500,
+    "to": 14000,
+    "count": 1
+   }
+  ]
+ },
+ "collection": {
+  "source": "all_v2.json: every 4-card deck of the 26-card collection (exhaustive), no talents, no shop",
+  "scores": {
+   "n": 14950,
+   "mean": 3458.6,
+   "sd": 836.9,
+   "min": 600,
+   "p1": 1716.5,
+   "p5": 2183,
+   "p10": 2424,
+   "p25": 2877,
+   "p50": 3401,
+   "p75": 3994,
+   "p90": 4562,
+   "p95": 4913,
+   "p99": 5631,
+   "p99.9": 6531.2,
+   "max": 8018
+  },
+  "critShare": {
+   "n": 14950,
+   "mean": 0.0965,
+   "sd": 0.0877,
+   "p10": 0.0064,
+   "p25": 0.0102,
+   "median": 0.0866,
+   "p75": 0.1484,
+   "p90": 0.2106,
+   "max": 0.5874,
+   "pooled": 0.1,
+   "negative": 17
+  },
+  "scoresX0": {
+   "n": 14950,
+   "mean": 3112.6,
+   "sd": 765.6,
+   "min": 578,
+   "p1": 1538,
+   "p5": 1936.5,
+   "p10": 2172,
+   "p25": 2573,
+   "p50": 3069,
+   "p75": 3599.8,
+   "p90": 4130,
+   "p95": 4449.5,
+   "p99": 5062,
+   "p99.9": 5789.6,
+   "max": 6515
+  },
+  "histogram500": [
+   {
+    "from": 500,
+    "to": 1000,
+    "count": 5
+   },
+   {
+    "from": 1000,
+    "to": 1500,
+    "count": 53
+   },
+   {
+    "from": 1500,
+    "to": 2000,
+    "count": 352
+   },
+   {
+    "from": 2000,
+    "to": 2500,
+    "count": 1350
+   },
+   {
+    "from": 2500,
+    "to": 3000,
+    "count": 2710
+   },
+   {
+    "from": 3000,
+    "to": 3500,
+    "count": 3721
+   },
+   {
+    "from": 3500,
+    "to": 4000,
+    "count": 3045
+   },
+   {
+    "from": 4000,
+    "to": 4500,
+    "count": 2038
+   },
+   {
+    "from": 4500,
+    "to": 5000,
+    "count": 1067
+   },
+   {
+    "from": 5000,
+    "to": 5500,
+    "count": 408
+   },
+   {
+    "from": 5500,
+    "to": 6000,
+    "count": 140
+   },
+   {
+    "from": 6000,
+    "to": 6500,
+    "count": 42
+   },
+   {
+    "from": 6500,
+    "to": 7000,
+    "count": 15
+   },
+   {
+    "from": 7000,
+    "to": 7500,
+    "count": 1
+   },
+   {
+    "from": 7500,
+    "to": 8000,
+    "count": 2
+   },
+   {
+    "from": 8000,
+    "to": 8500,
+    "count": 1
+   }
+  ]
+ },
+ "tiers": {
+  "rule": "index = (score - baseline)/(best - baseline); S>=90%, A>=80%, B>=70%, C>=50%, else D",
+  "modelFields": {
+   "baseline": 6056.9,
+   "best": 15946.6,
+   "noTalent": {
+    "best": 15336.6,
+    "baseline": 4714.7
+   }
+  },
+  "pairUsedNoTalent": {
+   "best": 15336.6,
+   "baseline": 4714.7
+  },
+  "thresholds": {
+   "S": {
+    "minIndex": 90,
+    "minScore": 14274.4,
+    "globalShareAtOrAbove": 0,
+    "globalCountAtOrAbove": 0,
+    "collectionShareAtOrAbove": 0,
+    "collectionCountAtOrAbove": 0
+   },
+   "A": {
+    "minIndex": 80,
+    "minScore": 13212.2,
+    "globalShareAtOrAbove": 0.00008333333333333333,
+    "globalCountAtOrAbove": 2,
+    "collectionShareAtOrAbove": 0,
+    "collectionCountAtOrAbove": 0
+   },
+   "B": {
+    "minIndex": 70,
+    "minScore": 12150,
+    "globalShareAtOrAbove": 0.00020833333333333335,
+    "globalCountAtOrAbove": 5,
+    "collectionShareAtOrAbove": 0,
+    "collectionCountAtOrAbove": 0
+   },
+   "C": {
+    "minIndex": 50,
+    "minScore": 10025.7,
+    "globalShareAtOrAbove": 0.001,
+    "globalCountAtOrAbove": 24,
+    "collectionShareAtOrAbove": 0,
+    "collectionCountAtOrAbove": 0
+   }
+  },
+  "index0Score": 4714.7,
+  "index100Score": 15336.6,
+  "globalMeanVsBaseline": {
+   "sampleMean": 4770.9,
+   "wikiBaseline": 4714.7,
+   "sampleIndexOfMean": 0.53
+  },
+  "withTalentPairForReference": {
+   "best": 15946.6,
+   "baseline": 6056.9
+  },
+  "tierCounts_global": {
+   "S": 0,
+   "A": 2,
+   "B": 3,
+   "C": 19,
+   "D": 23976
+  },
+  "tierCounts_collection": {
+   "S": 0,
+   "A": 0,
+   "B": 0,
+   "C": 0,
+   "D": 14950
+  }
+ },
+ "bestNoTalent": {
+  "bestDecks": {
+   "method": "I.bestDecks(all 127 ids): engine beam (pairs120/triples100/quads400/finalTop8)",
+   "ms": 33296,
+   "noTalent": [
+    {
+     "score": 14593.7,
+     "tier": "S",
+     "advantage": 93.01,
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "188:Commando Gerz",
+      "204:Ephial"
+     ]
+    },
+    {
+     "score": 14233.4,
+     "tier": "A",
+     "advantage": 89.61,
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "197:Codex des Maux Ancestraux",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 14115.3,
+     "tier": "A",
+     "advantage": 88.5,
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "142:Squall, Émissaire des cauchemars",
+      "255:Verdelune"
+     ]
+    }
+   ],
+   "withTalents": [
+    {
+     "score": 15862.4,
+     "tier": "S",
+     "advantage": 99.15,
+     "cards": [
+      "136:Souverain des Chutes d'Éther [talent]",
+      "231:Aleera Mange-Cauchemars [talent]",
+      "188:Commando Gerz [talent]",
+      "153:L'Inventeur [talent]"
+     ]
+    },
+    {
+     "score": 14832.8,
+     "tier": "A",
+     "advantage": 88.74,
+     "cards": [
+      "43:Souverain des Flammes [talent]",
+      "231:Aleera Mange-Cauchemars [talent]",
+      "142:Squall, Émissaire des cauchemars [talent]",
+      "188:Commando Gerz [talent]"
+     ]
+    }
+   ]
+  },
+  "beam_def": {
+   "beam": {
+    "beamPairs": 260,
+    "beamTriples": 260,
+    "beamQuads": 120,
+    "finalTop": 40
+   },
+   "msBeam": 79866,
+   "top": [
+    {
+     "score": 14821,
+     "index": 95.15,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "127:Spectre Canin",
+      "204:Ephial"
+     ]
+    },
+    {
+     "score": 14622.9,
+     "index": 93.28,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "43:Souverain des Flammes",
+      "204:Ephial"
+     ]
+    },
+    {
+     "score": 14593.7,
+     "index": 93.01,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "188:Commando Gerz",
+      "204:Ephial"
+     ]
+    },
+    {
+     "score": 14328.5,
+     "index": 90.51,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx",
+      "204:Ephial"
+     ]
+    },
+    {
+     "score": 14319.6,
+     "index": 90.43,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "51:Sorcière Pyrokinétique",
+      "204:Ephial"
+     ]
+    }
+   ]
+  },
+  "beam_wide": {
+   "beam": {
+    "beamPairs": 800,
+    "beamTriples": 800,
+    "beamQuads": 800,
+    "finalTop": 200
+   },
+   "msBeam": 173803,
+   "top": [
+    {
+     "score": 15336.6,
+     "index": 100,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "142:Squall, Émissaire des cauchemars",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15319.5,
+     "index": 99.84,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "188:Commando Gerz",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15225.3,
+     "index": 98.95,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx",
+      "127:Spectre Canin"
+     ]
+    },
+    {
+     "score": 15180.1,
+     "index": 98.53,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx",
+      "43:Souverain des Flammes"
+     ]
+    },
+    {
+     "score": 15117.8,
+     "index": 97.94,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx",
+      "229:Maître Amphibian"
+     ]
+    }
+   ]
+  },
+  "hill": {
+   "ms": 43611,
+   "top": [
+    {
+     "score": 15336.6,
+     "index": 100,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "142:Squall, Émissaire des cauchemars",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15319.5,
+     "index": 99.84,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "188:Commando Gerz",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15225.3,
+     "index": 98.95,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "127:Spectre Canin",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15180.1,
+     "index": 98.53,
+     "tier": "S",
+     "cards": [
+      "43:Souverain des Flammes",
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "263:Paguroniyx"
+     ]
+    },
+    {
+     "score": 15117.8,
+     "index": 97.94,
+     "tier": "S",
+     "cards": [
+      "136:Souverain des Chutes d'Éther",
+      "231:Aleera Mange-Cauchemars",
+      "229:Maître Amphibian",
+      "263:Paguroniyx"
+     ]
+    }
+   ]
+  },
+  "wikiBestReproduced": {
+   "wikiNoTalentBest": 15336.6,
+   "found": 15336.6,
+   "deck": [
+    "136:Souverain des Chutes d'Éther",
+    "231:Aleera Mange-Cauchemars",
+    "142:Squall, Émissaire des cauchemars",
+    "263:Paguroniyx"
+   ],
+   "localOptimum1Swap": true
+  }
+ },
+ "decks": {
+  "deck chimere": {
+   "cards": [
+    "103:Lame de la forêt",
+    "238:Chimère Brasse-chair",
+    "156:L'Œil des montagnes",
+    "117:Keria"
+   ],
+   "inCollection": true,
+   "s1": 8018.2,
+   "s0": 4146.2,
+   "ttk": 12.1,
+   "critShare": 0.4829,
+   "allV2": {
+    "s1": 8018,
+    "s0": 4146,
+    "match": true
+   },
+   "global": {
+    "pct": 97.38,
+    "atLeast": 630,
+    "n": 24000,
+    "oneIn": 38.1,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 2.31
+   },
+   "critSharePct": {
+    "global6000": 99.28,
+    "collection": 99.85
+   },
+   "x0World": {
+    "globalPct6000": 50.67,
+    "collectionPct": 90.33,
+    "collectionRank": 1444
+   },
+   "collection": {
+    "pct": 100,
+    "rank": 1,
+    "above": 0,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 14950
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 31.1,
+    "formulaIndexNoTalentPair": 31.1,
+    "formulaTier": "D",
+    "indexIfTalentPair": 19.83,
+    "reproduces": true
+   }
+  },
+  "deck Aleera": {
+   "cards": [
+    "231:Aleera Mange-Cauchemars",
+    "238:Chimère Brasse-chair",
+    "156:L'Œil des montagnes",
+    "117:Keria"
+   ],
+   "inCollection": false,
+   "s1": 12846.8,
+   "s0": 9269.2,
+   "ttk": 6,
+   "critShare": 0.2785,
+   "allV2": null,
+   "global": {
+    "pct": 99.99,
+    "atLeast": 2,
+    "n": 24000,
+    "oneIn": 12000,
+    "oneInUpper95": null,
+    "oneIn95CI": [
+     3322,
+     99088
+    ],
+    "sdAboveMean": 5.73
+   },
+   "critSharePct": {
+    "global6000": 91.87,
+    "collection": 96.26
+   },
+   "x0World": {
+    "globalPct6000": 99.88,
+    "collectionPct": 100,
+    "collectionRank": 1
+   },
+   "collection": {
+    "pct": 100,
+    "rank": 1,
+    "above": 0,
+    "ties": 0,
+    "n": 14950,
+    "oneIn": null
+   },
+   "wiki": {
+    "evaluateTier": "B",
+    "evaluateAdvantage": 76.56,
+    "formulaIndexNoTalentPair": 76.56,
+    "formulaTier": "B",
+    "indexIfTalentPair": 68.66,
+    "reproduces": true
+   }
+  },
+  "B": {
+   "cards": [
+    "102:Murmures du Corail Noir",
+    "238:Chimère Brasse-chair",
+    "2:Esprit Eau",
+    "69:Scorch, les Lézards Ignés"
+   ],
+   "inCollection": true,
+   "s1": 6523.4,
+   "s0": 6477.6,
+   "ttk": 14.9,
+   "critShare": 0.007,
+   "allV2": {
+    "s1": 6523,
+    "s0": 6478,
+    "match": true
+   },
+   "global": {
+    "pct": 88.74,
+    "atLeast": 2703,
+    "n": 24000,
+    "oneIn": 8.9,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 1.24
+   },
+   "critSharePct": {
+    "global6000": 19.95,
+    "collection": 13.93
+   },
+   "x0World": {
+    "globalPct6000": 92.5,
+    "collectionPct": 99.99,
+    "collectionRank": 2
+   },
+   "collection": {
+    "pct": 99.89,
+    "rank": 17,
+    "above": 16,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 879.4
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 17.03,
+    "formulaIndexNoTalentPair": 17.03,
+    "formulaTier": "D",
+    "indexIfTalentPair": 4.72,
+    "reproduces": true
+   }
+  },
+  "C": {
+   "cards": [
+    "102:Murmures du Corail Noir",
+    "238:Chimère Brasse-chair",
+    "69:Scorch, les Lézards Ignés",
+    "117:Keria"
+   ],
+   "inCollection": true,
+   "s1": 7165.4,
+   "s0": 6038.9,
+   "ttk": 13.7,
+   "critShare": 0.1572,
+   "allV2": {
+    "s1": 7165,
+    "s0": 6039,
+    "match": true
+   },
+   "global": {
+    "pct": 93.8,
+    "atLeast": 1489,
+    "n": 24000,
+    "oneIn": 16.1,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 1.7
+   },
+   "critSharePct": {
+    "global6000": 77.07,
+    "collection": 77.87
+   },
+   "x0World": {
+    "globalPct6000": 88.83,
+    "collectionPct": 99.96,
+    "collectionRank": 6
+   },
+   "collection": {
+    "pct": 99.98,
+    "rank": 4,
+    "above": 3,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 3737.5
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 23.07,
+    "formulaIndexNoTalentPair": 23.07,
+    "formulaTier": "D",
+    "indexIfTalentPair": 11.21,
+    "reproduces": true
+   }
+  },
+  "H1": {
+   "cards": [
+    "12:Hibernatus",
+    "238:Chimère Brasse-chair",
+    "27:Hippocampe Nimbé",
+    "117:Keria"
+   ],
+   "inCollection": true,
+   "s1": 6989.3,
+   "s0": 6277.1,
+   "ttk": 15.2,
+   "critShare": 0.1019,
+   "allV2": {
+    "s1": 6989,
+    "s0": 6277,
+    "match": true
+   },
+   "global": {
+    "pct": 92.72,
+    "atLeast": 1747,
+    "n": 24000,
+    "oneIn": 13.7,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 1.57
+   },
+   "critSharePct": {
+    "global6000": 62.63,
+    "collection": 57.32
+   },
+   "x0World": {
+    "globalPct6000": 91.02,
+    "collectionPct": 99.98,
+    "collectionRank": 3
+   },
+   "collection": {
+    "pct": 99.96,
+    "rank": 6,
+    "above": 5,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 2491.7
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 21.41,
+    "formulaIndexNoTalentPair": 21.41,
+    "formulaTier": "D",
+    "indexIfTalentPair": 9.43,
+    "reproduces": true
+   }
+  },
+  "H2": {
+   "cards": [
+    "12:Hibernatus",
+    "238:Chimère Brasse-chair",
+    "156:L'Œil des montagnes",
+    "117:Keria"
+   ],
+   "inCollection": true,
+   "s1": 6939.4,
+   "s0": 5220.3,
+   "ttk": 15.2,
+   "critShare": 0.2477,
+   "allV2": {
+    "s1": 6939,
+    "s0": 5220,
+    "match": true
+   },
+   "global": {
+    "pct": 92.41,
+    "atLeast": 1822,
+    "n": 24000,
+    "oneIn": 13.2,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 1.54
+   },
+   "critSharePct": {
+    "global6000": 89.33,
+    "collection": 94.18
+   },
+   "x0World": {
+    "globalPct6000": 76.87,
+    "collectionPct": 99.32,
+    "collectionRank": 102
+   },
+   "collection": {
+    "pct": 99.95,
+    "rank": 8,
+    "above": 7,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 1868.8
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 20.94,
+    "formulaIndexNoTalentPair": 20.94,
+    "formulaTier": "D",
+    "indexIfTalentPair": 8.92,
+    "reproduces": true
+   }
+  },
+  "H3": {
+   "cards": [
+    "102:Murmures du Corail Noir",
+    "116:Prisonnière de la Machine",
+    "12:Hibernatus",
+    "69:Scorch, les Lézards Ignés"
+   ],
+   "inCollection": true,
+   "s1": 6529.2,
+   "s0": 6515.4,
+   "ttk": 15.1,
+   "critShare": 0.0021,
+   "allV2": {
+    "s1": 6529,
+    "s0": 6515,
+    "match": true
+   },
+   "global": {
+    "pct": 88.79,
+    "atLeast": 2690,
+    "n": 24000,
+    "oneIn": 8.9,
+    "oneInUpper95": null,
+    "oneIn95CI": null,
+    "sdAboveMean": 1.25
+   },
+   "critSharePct": {
+    "global6000": 2.8,
+    "collection": 0.2
+   },
+   "x0World": {
+    "globalPct6000": 92.75,
+    "collectionPct": 100,
+    "collectionRank": 1
+   },
+   "collection": {
+    "pct": 99.9,
+    "rank": 16,
+    "above": 15,
+    "ties": 1,
+    "n": 14950,
+    "oneIn": 934.4
+   },
+   "wiki": {
+    "evaluateTier": "D",
+    "evaluateAdvantage": 17.08,
+    "formulaIndexNoTalentPair": 17.08,
+    "formulaTier": "D",
+    "indexIfTalentPair": 4.78,
+    "reproduces": true
+   }
+  }
+ }
+}

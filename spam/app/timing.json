@@ -1,0 +1,190 @@
+{
+ "ms": {
+  "noShop": 27.85,
+  "shop": 2366.3
+ },
+ "sampleShop": 5179,
+ "samplePlan": 2584,
+ "keys": [
+  "score",
+  "ttk",
+  "dmgTotal",
+  "ehp",
+  "heal",
+  "control",
+  "spamton",
+  "income",
+  "tier",
+  "advantage",
+  "scale",
+  "dmgByTurn",
+  "matchups",
+  "positions",
+  "selection",
+  "player",
+  "plan",
+  "suggestions",
+  "baseScore",
+  "noTalent",
+  "loadout",
+  "shop"
+ ],
+ "shopKeys": [
+  "budget",
+  "openings",
+  "everyTurns",
+  "potentialPct",
+  "evNowPct",
+  "evAfterPct",
+  "slotsTotal",
+  "timeline",
+  "plan",
+  "cards",
+  "avoidIds"
+ ],
+ "planT1": [
+  {
+   "cardId": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "abilityId": "Explosion",
+   "option": 0,
+   "dmg": 10,
+   "heal": 0,
+   "gen": ""
+  }
+ ],
+ "cardsLines": {
+  "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+  "free": 0,
+  "lines": [
+   {
+    "kind": "ability",
+    "id": "Revitalisation",
+    "rarity": null,
+    "verdict": "coeur",
+    "valuePct": 5.8,
+    "casts": 2,
+    "firstTurn": 4,
+    "candidates": []
+   },
+   {
+    "kind": "passive",
+    "id": "Berserk_C",
+    "rarity": "common",
+    "verdict": "remplacer",
+    "valuePct": 10,
+    "casts": null,
+    "firstTurn": null,
+    "candidates": [
+     {
+      "toxId": "Berserk_L",
+      "rarity": "legendary",
+      "gainPct": 74.5
+     },
+     {
+      "toxId": "Berserk_E",
+      "rarity": "epic",
+      "gainPct": 25.9
+     },
+     {
+      "toxId": "Berserk_R",
+      "rarity": "rare",
+      "gainPct": 10.2
+     }
+    ]
+   },
+   {
+    "kind": "passive",
+    "id": "CoeurEau_C",
+    "rarity": "common",
+    "verdict": "remplacer",
+    "valuePct": 1.5,
+    "casts": null,
+    "firstTurn": null,
+    "candidates": [
+     {
+      "toxId": "Berserk_L",
+      "rarity": "legendary",
+      "gainPct": 66.6
+     },
+     {
+      "toxId": "Reflect_L",
+      "rarity": "legendary",
+      "gainPct": 63.7
+     },
+     {
+      "toxId": "CoeurFeu_L",
+      "rarity": "legendary",
+      "gainPct": 62.9
+     },
+     {
+      "toxId": "CoeurTerre_L",
+      "rarity": "legendary",
+      "gainPct": 60.1
+     },
+     {
+      "toxId": "CoeurLumiere_L",
+      "rarity": "legendary",
+      "gainPct": 56.2
+     },
+     {
+      "toxId": "CoeurNature_L",
+      "rarity": "legendary",
+      "gainPct": 56.2
+     }
+    ]
+   }
+  ]
+ },
+ "splan": [
+  {
+   "step": 1,
+   "turn": 2,
+   "toxId": "Reflect_C",
+   "rarity": "common",
+   "cardId": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "replacesId": "Braisegarde",
+   "gainPct": 8.9,
+   "cumulativePct": 8.9
+  },
+  {
+   "step": 2,
+   "turn": 4,
+   "toxId": "Cimetiere_R",
+   "rarity": "rare",
+   "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "replacesId": null,
+   "gainPct": 24.9,
+   "cumulativePct": 33.8
+  },
+  {
+   "step": 3,
+   "turn": 6,
+   "toxId": "Reflect_R",
+   "rarity": "rare",
+   "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "replacesId": "CoeurEau_C",
+   "gainPct": 40.4,
+   "cumulativePct": 74.1
+  },
+  {
+   "step": 4,
+   "turn": 8,
+   "toxId": "Cimetiere_E",
+   "rarity": "epic",
+   "cardId": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "replacesId": null,
+   "gainPct": 60.3,
+   "cumulativePct": 134.4
+  },
+  {
+   "step": 5,
+   "turn": 10,
+   "toxId": "Berserk_E",
+   "rarity": "epic",
+   "cardId": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "replacesId": "PunchingBag_C",
+   "gainPct": 54,
+   "cumulativePct": 188.4
+  }
+ ]
+}

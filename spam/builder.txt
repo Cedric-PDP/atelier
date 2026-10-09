@@ -1,0 +1,204 @@
+SPAM deck builder: deck workshop with simulation, talents and Tox - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+Deck workshop
+# Four cards.
+Your gameplan.
+Build your composition and explore its potential with the simulation engine.
+Prepare
+Optimize
+Analyze
+Same snapshot as the tier lists v 1.20
+Clear
+0 1
+Choose a card Slot 1 / 4
+0 2
+Choose a card Slot 2 / 4
+0 3
+Choose a card Slot 3 / 4
+0 4
+Choose a card Slot 4 / 4
+Optimize talents Play order Both First Second
+Shop Tox
+Share
+Analyze deck
+## The next synergy starts with you.
+Choose four distinct cards to run the simulation.
+0 / 4
+## My compositions
+Composition name
+Save deck Your saved compositions will appear here.
+## Shop Tox
+Drag a Tox onto an ability slot, or select it then choose the slot. An occupied slot is replaced.
+Search Tox
+All Common Rare Epic Legendary
+102 results
+- Berserk Legendary · Damage + 20.5 % Damage and healing of all your cards are increased by 100%.
+- Berserk Epic · Damage + 9.6 % Damage and healing of all your cards are increased by 50%.
+- Graveyard Legendary · Elemental bonuses + 7 % Raises all your elemental bonuses by (+12) whenever a card dies.
+- Earthheart Legendary · Elemental bonuses + 6.4 % Earth bonus (+8) each turn.
+- Fireheart Legendary · Elemental bonuses + 6.2 % Fire bonus (+8) each turn.
+- Multiplier Rare · Elemental bonuses + 6 % Elemental bonuses are doubled for this card&#x27;s damage and heals
+- AoE Legendary · Damage + 5.1 % Attacks and heals adjacent targets for 100% of the damage dealt.
+- Earthheart Epic · Elemental bonuses + 5.1 % Earth bonus (+5) each turn.
+- Fireheart Epic · Elemental bonuses + 4.3 % Fire bonus (+5) each turn.
+- Waterheart Legendary · Elemental bonuses + 4.3 % Water bonus (+8) each turn.
+- Poison Common · Damage + 4.3 % Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns.
+- Vitalheart Legendary · Survival + 4.3 % This card gains 100 max HP each turn.
+- Poison Rare · Damage + 4.3 % Deals damage equal to 3% of the target&#x27;s max HP at the start of each of its turns, for 3 turns.
+- Poison Epic · Damage + 4.3 % Deals damage equal to 6% of the target&#x27;s max HP at the start of each of its turns, for 3 turns.
+- Poison Legendary · Damage + 4.3 % Deals damage equal to 8% of the target&#x27;s max HP at the start of each of its turns, for 3 turns.
+- Natureheart Legendary · Elemental bonuses + 4.2 % Nature bonus (+8) each turn.
+- Freeze Epic · Control + 4.2 % When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent&#x27;s next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage.
+- Berserk Rare · Damage + 4.1 % All your cards&#x27; damage and heals are increased by 25%
+- Graveyard Epic · Elemental bonuses + 4 % Raises all your elemental bonuses by (+8) whenever a card dies.
+- Shadowheart Legendary · Elemental bonuses + 3.6 % Shadow bonus (+8) each turn.
+- Avenger Epic · Damage + 3.4 % This card recovers all its attacks whenever a card it didn&#x27;t kill dies.
+- AoE Epic · Damage + 3.4 % Attacks and heals adjacent targets for 80% of the damage dealt
+- Reflection Legendary · Survival + 3 % Reflects 100% of the damage taken back to the attacker.
+- Lightheart Legendary · Elemental bonuses + 3 % Light bonus (+8) each turn.
+- Waterheart Epic · Elemental bonuses + 2.9 % Water bonus (+5) each turn.
+- Vitalheart Epic · Survival + 2.8 % This card gains 60 max HP each turn.
+- Natureheart Epic · Elemental bonuses + 2.6 % Nature bonus (+5) each turn.
+- Graveyard Rare · Elemental bonuses + 2.3 % Increases all your elemental bonuses by (+5) when a card dies
+- Heart Resistance Legendary · Survival + 2.1 % This card raises the resistances of all allied cards (+15).
+- Shadowheart Epic · Elemental bonuses + 1.9 % Shadow bonus (+5) each turn.
+- Fireheart Rare · Elemental bonuses + 1.8 % Fire bonus (+2) per turn
+- Reset Epic · Damage + 1.8 % When you kill an ENEMY card with one of your attacks, that attack remains available
+- Eternity Legendary · Control + 1.7 % Increases cooldowns by 1
+- Vanish Legendary · Control + 1.6 % Removes the target&#x27;s last passive
+- Earthheart Rare · Elemental bonuses + 1.6 % Earth bonus (+2) each turn.
+- Vitalheart Rare · Survival + 1.5 % This card gains 30 max HP each turn.
+- Reflection Epic · Survival + 1.5 % Reflects 75% of the damage taken back to the attacker
+- Berserk Common · Damage + 1.4 % All your cards&#x27; damage and heals are increased by 12%
+- Lightheart Epic · Elemental bonuses + 1.4 % Light bonus (+5) each turn.
+- Optimisation Rare · Damage + 1.4 % Variable damage, healing and bonus values of this card always roll their maximum.
+- Ancient Healing Epic · Survival + 1.3 % At the start of each turn, the card recovers 14% of its max HP.
+- Ancient Healing Legendary · Survival + 1.3 % At the start of each turn, the card recovers 19% of its max HP.
+- Waterheart Rare · Elemental bonuses + 1.3 % Water bonus (+2) each turn.
+- Ancient Healing Rare · Survival + 1.2 % At the start of each turn, the card recovers 9% of its max HP.
+- AoE Rare · Damage + 1.2 % Attacks and heals adjacent targets for 40% of the damage dealt.
+- Phoenix Legendary · Survival + 1.1 % When destroyed, this card comes back to life with 100% of its max HP.
+Single use
+- Phoenix Epic · Survival + 1.1 % When destroyed, this card comes back to life with 75% of its max HP.
+Single use
+- Graveyard Common · Elemental bonuses + 1 % Increases all your elemental bonuses by (+3) when a card dies
+- Heart Resistance Epic · Survival + 1 % This card raises the resistances of all allied cards (+10).
+- Immunity Epic · Survival + 1 % The card is immune to all effects from enemy cards
+- Bomba Epic · Damage + 0.9 % Deals 500 raw damage to a random enemy card when this card dies.
+- Vampirism Legendary · Survival + 0.9 % Heals for 100% of the damage dealt to the target.
+- Reflection Rare · Survival + 0.9 % Reflects 50% of the damage taken back to the attacker.
+- Vampirism Epic · Survival + 0.9 % Regenerates 75% of the damage dealt to the target
+- Phoenix Rare · Survival + 0.9 % When destroyed, this card returns to life with 50% of its max HP.
+Single use
+- Vitalheart Common · Survival + 0.8 % This card increases its max HP by 15 per turn
+- Vampirism Rare · Survival + 0.8 % Regenerates 50% of the damage dealt to the target
+- Lucky Legendary · Economy & luck + 0.8 % Increases your Luck by (+4) each turn.
+- Earthheart Common · Elemental bonuses + 0.8 % Earth bonus (+1) per turn
+- Ancient Healing Common · Survival + 0.8 % At the start of each turn, the card recovers 4% of its max HP
+- Natureheart Rare · Elemental bonuses + 0.8 % Nature bonus (+2) each turn.
+- Shadowheart Rare · Elemental bonuses + 0.7 % Shadow bonus (+2) each turn.
+- AoE Common · Damage + 0.7 % Attacks and heals adjacent targets for 20% of the damage dealt
+- Mystery Rare · Transformation + 0.7 % Starts the game with a random passive
+- Phoenix Common · Survival + 0.7 % When destroyed, this card returns to life with 25% of its max HP.
+Single use
+- Punching Bag Rare · Elemental bonuses + 0.6 % Raises the card&#x27;s element bonus by +2 each time it is attacked.
+- Punching Bag Epic · Elemental bonuses + 0.6 % Raises the card&#x27;s element bonus by +3 each time it is attacked.
+- Punching Bag Legendary · Elemental bonuses + 0.6 % Raises the card&#x27;s element bonus by +4 each time it is attacked.
+- Punching Bag Common · Elemental bonuses + 0.6 % Increases the element of the caster&#x27;s card by +1 each time it is attacked
+- Lightheart Rare · Elemental bonuses + 0.6 % Light bonus (+2) each turn.
+- Erosion Common · Damage + 0.6 % Reduces the target&#x27;s max HP by 50% of the damage dealt
+- Erosion Epic · Damage + 0.6 % Reduces max HP by 100% of the damage dealt.
+- Vampirism Common · Survival + 0.6 % Regenerates 25% of the damage dealt to the target
+- Brutal Rare · Damage + 0.5 % Ignores resistances and taunts. Destroys enemy taunts if targeted
+- Fireheart Common · Elemental bonuses + 0.5 % Fire bonus (+1) each turn.
+- Lucky Epic · Economy & luck + 0.5 % Increases your Luck by (+2) each turn.
+- Waterheart Common · Elemental bonuses + 0.5 % Water bonus (+1) per turn
+- Reflection Common · Survival + 0.4 % Reflects 25% of the damage taken back to the attacker.
+- Heart Resistance Rare · Survival + 0.4 % This card increases the resistances of all allied cards (+6)
+- Smoke Rare · Survival + 0.4 % Enshrouds the allied field after using an attack or a heal
+- Temporality Legendary · Control + 0.4 % Decreases cooldowns by 1
+- Taunt Rare · Control + 0.4 % When this character launches an attack, all enemy attacks during the next turn must target it
+- Mimicry Rare · Elemental bonuses + 0.4 % Each time the opponent generates one or more elements, you generate 1 of the same type.
+- Natureheart Common · Elemental bonuses + 0.4 % Nature bonus (+1) per turn
+- Lucky Rare · Economy & luck + 0.3 % Increases your Luck by (+1) per turn
+- Revenge Rare · Damage + 0.3 % Once destroyed, this card deals all of its attacks to the opponent
+- Lightheart Common · Elemental bonuses + 0.3 % Light bonus (+1) per turn
+- Lucky Common · Economy & luck + 0.3 % Increases your Luck by (+0.5) per turn
+- Spamland Common · Economy & luck + 0.2 % Generates (+3) Spamtons each turn.
+- Spamland Rare · Economy & luck + 0.2 % Generates (+8) Spamtons each turn.
+- Spamland Epic · Economy & luck + 0.2 % Generates (+24) Spamtons each turn.
+- Spamland Legendary · Economy & luck + 0.2 % Generates (+48) Spamtons each turn.
+- Shield Legendary · Survival + 0.2 % The first hit taken each enemy turn is reduced by 100%.
+- Shield Epic · Survival + 0.2 % The first hit taken each enemy turn is reduced by 75%.
+- Tenacity Common · Survival + 0.2 % The first fatal attack leaves you with 1 HP
+- Shield Rare · Survival + 0.2 % The first hit taken each enemy turn is reduced by 50%.
+- Shield Common · Survival + 0.2 % The first hit taken each enemy turn is reduced by 25%.
+- Shapeshifter Epic · Transformation + 0.2 % Choose one of three random cards of the same rarity to replace this card.
+- Heart Resistance Common · Survival + 0.2 % This card increases the resistances of all allied cards (+3)
+- Shadowheart Common · Elemental bonuses + 0.1 % Shadow bonus (+1) per turn
+- Backlash Common · Damage + 0 % Takes 50% of the damage dealt to the target
+- Inversion Rare · Transformation + -1.7 % This card’s damage becomes healing, its Eternities become Temporalities, and vice versa.
+Deck workshop / Slot 1
+## Select
+a card
+Search cards
+All
+Fire
+Water
+Earth
+Nature
+Shadow
+Light
+Aether
+127 cards Sort by Highest ranked Name: A → Z Highest HP
+S
+Moxilys, the Humming One Attack S
+Spirit of the Fauna Attack S
+Lisa, the Dragonrider Attack S
+Canine Specter Attack S
+Gleam of the White Fox Attack S
+Ignea Control S
+Verdant Fruit Cruncher Attack S
+Aleera, Nightmare-Eater Attack S
+Commando Gerz Generation S
+Medusine Thorn Attack A
+Golden Boar Defense A
+Gabriel Generation A
+Sovereign of Flames Attack A
+Paguroniyx Support A
+Green Guardian Control A
+Hatchlings of Midas Support A
+Princess Meridia Generation A
+Melody of Divinities Attack A
+Nocturnal Watcher Economy A
+Sovereign of the Ether Falls Attack A
+Ashtarae Lycaria Support A
+Pyrokinetic Sorceress Defense A
+Celestial Dragosaur Control A
+Catixy Attack A
+Amber Generation A
+Blaze Generation A
+Marineflower Versatile A
+Wibs the Blazing Attack A
+Aquatic Whiteness Defense B
+Fire King Generation
+Show more cards
+# 177
+### Moxilys, the Humming One
+Common · Attack / Support / Defense
+Shadow 900 HP
+#### Why this card?
+An offensive profile to pair with the right generators.
+Add to slot 1
+Full card details
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

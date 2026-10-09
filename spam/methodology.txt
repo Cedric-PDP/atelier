@@ -1,0 +1,32 @@
+Methodology: how SPAM Helper computes its SPAM tier list - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+Understanding the scores
+# The numbers, in the open.
+SpamHelper explores card potential with a deterministic expected-value model.
+## Cards
+Card tiers are relative to the catalogue: S is the top 8%, A the top 25%, B the top 50%, and C the top 75%. The score combines attack, generation, defense, support, control, and economy. A role marks a genuine strength: a card only gets one when it ranks among the best in the catalogue on that axis. A card without a clear strength is versatile if it holds up on several axes, and utility otherwise.
+## Decks
+Decks are found through beam search, followed by talent optimization. The relative index compares their score with an average random deck and the best deck found. S ≥ 90%, A ≥ 80%, B ≥ 70%, C ≥ 50%. It is not a win rate.
+## Theoretical analysis
+A 10-turn model. The displayed gameplan and metrics are simulated against a neutral opponent (4 cards with 700 HP and 10% resistance in every element). The four enemy cards each have their own health: an area attack spreads its damage across targets instead of stacking it, and damage beyond a card’s remaining health is lost. The opponent strikes back with the cards still standing: eliminating early reduces incoming damage for the rest of the game; each of your cards has its own health and falls when it runs out, and a taunt draws the blows onto itself. No real meta can be observed: a deck’s score is the average of its scores against nine theoretical opponent profiles (neutral, fragile, tank, six decks resisting one element), each played first and second, and the gap against each profile gives its strengths and weaknesses. One active talent per card, chosen before the match; the "no talent" reading ranks the same decks for a player without duplicates. Ability order is heuristic. The Tox plan follows the deck’s Spamtons and the rarities offered as turns go by; draws remain random. Real matches can differ.
+## Official card data
+Game version : 1.20
+Card data from October 7, 2026
+Analyzed on October 9, 2026 · UTC
+Card data source
+## Contact
+For any request (data error, artwork removal, suggestion or partnership), write to contact@spamgame-wiki.com .
+## Privacy
+The site requires no account and sets no cookies of its own: favorites, comparisons and compositions stay in your browser’s local storage. Google Analytics audience measurement (pages viewed, device, approximate country) is only enabled after your consent, which you can withdraw here or through the “Cookies” link in the footer.
+Change my choice
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

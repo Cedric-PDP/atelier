@@ -1,0 +1,4248 @@
+{
+ "top": [
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 9819.45868833676,
+   "tier": "D",
+   "adv": 38.04522572309331,
+   "ttk": 10,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 8018.221187085179
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "50807128-85af-472d-b2f7-59737a9a03b4",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 9804.894825500764,
+   "tier": "D",
+   "adv": 37.8979627845209,
+   "ttk": 10,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 7625.4812084265905
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 9244.131483800498,
+   "tier": "D",
+   "adv": 32.22778733228003,
+   "ttk": 10.6,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6996.807509196354
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 9060.45782314583,
+   "tier": "D",
+   "adv": 30.370565569692015,
+   "ttk": 10.7,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 7788.51268266111
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "50807128-85af-472d-b2f7-59737a9a03b4",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 9032.057206106036,
+   "tier": "D",
+   "adv": 30.083391873424226,
+   "ttk": 10.7,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6707.129731051889
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 9019.572202491378,
+   "tier": "D",
+   "adv": 29.957149382603898,
+   "ttk": 11.6,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6306.20595203444
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 8915.185853376002,
+   "tier": "D",
+   "adv": 28.90164366336696,
+   "ttk": 10.7,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6290.562861398486
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "50807128-85af-472d-b2f7-59737a9a03b4",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8871.990869646484,
+   "tier": "D",
+   "adv": 28.46487628185369,
+   "ttk": 12.6,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6103.582289338028
+  },
+  {
+   "ids": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8859.612120016014,
+   "tier": "D",
+   "adv": 28.339708181400997,
+   "ttk": 11.9,
+   "sel": [
+    {
+     "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "talentId": "Vitalite des Ames"
+    },
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6192.864409463564
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8825.252263703758,
+   "tier": "D",
+   "adv": 27.99227745739262,
+   "ttk": 11.4,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Evolution"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6358.685757322299
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8821.944804681227,
+   "tier": "D",
+   "adv": 27.958833985674257,
+   "ttk": 11,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "Critique"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6760.718442682373
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8818.288547162172,
+   "tier": "D",
+   "adv": 27.9218636274323,
+   "ttk": 11.2,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 7165.443240942801
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "50807128-85af-472d-b2f7-59737a9a03b4",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8813.167497566666,
+   "tier": "D",
+   "adv": 27.87008197990502,
+   "ttk": 11,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6669.653269885504
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "50807128-85af-472d-b2f7-59737a9a03b4",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8812.959814778682,
+   "tier": "D",
+   "adv": 27.86798198912689,
+   "ttk": 11,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6774.788881335283
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8736.693451771509,
+   "tier": "D",
+   "adv": 27.096812358024096,
+   "ttk": 10.9,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "Critique"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6573.497784929405
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8715.376311471557,
+   "tier": "D",
+   "adv": 26.881263450575414,
+   "ttk": 10.9,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "Critique"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6952.5285934941985
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8664.63074089887,
+   "tier": "D",
+   "adv": 26.368148082336884,
+   "ttk": 11,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "noTalent": 6522.351540747384
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 8653.200046125205,
+   "tier": "D",
+   "adv": 26.252566267179034,
+   "ttk": 10.9,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6078.645156904479
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80"
+   ],
+   "score": 8388.88203539491,
+   "tier": "D",
+   "adv": 23.57990672512726,
+   "ttk": 13.3,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    }
+   ],
+   "noTalent": 6136.302251795947
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8356.730506367723,
+   "tier": "D",
+   "adv": 23.254805569104455,
+   "ttk": 13,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6493.445406263752
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8311.651510964914,
+   "tier": "D",
+   "adv": 22.798987946701253,
+   "ttk": 11.1,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6171.268578526493
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 8281.427313376995,
+   "tier": "D",
+   "adv": 22.493375060689353,
+   "ttk": 11.1,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6195.023234771149
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 8280.644464490533,
+   "tier": "D",
+   "adv": 22.48545926054919,
+   "ttk": 11.9,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6523.39852419161
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "9f744687-461b-493e-9a9a-408906fafbde",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8240.533280237662,
+   "tier": "D",
+   "adv": 22.079873810506502,
+   "ttk": 11.4,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6175.6232908470665
+  },
+  {
+   "ids": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 8067.531997922868,
+   "tier": "D",
+   "adv": 20.33056612357168,
+   "ttk": 13.4,
+   "sel": [
+    {
+     "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "talentId": "Vitalite des Ames"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6901.691291517721
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7996.750516981527,
+   "tier": "D",
+   "adv": 19.614857042999553,
+   "ttk": 12.1,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+     "talentId": "Virage360"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6133.835755095685
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7912.4534440764755,
+   "tier": "D",
+   "adv": 18.762484646414713,
+   "ttk": 13.8,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Evolution"
+    }
+   ],
+   "noTalent": 6419.439654299684
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 7891.499783804925,
+   "tier": "D",
+   "adv": 18.550611078242262,
+   "ttk": 12.9,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6102.152389926232
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7889.557204897655,
+   "tier": "D",
+   "adv": 18.530968632998523,
+   "ttk": 12.6,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+     "talentId": "Virage360"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6845.205838920775
+  },
+  {
+   "ids": [
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 7843.253638826042,
+   "tier": "D",
+   "adv": 18.062768727322794,
+   "ttk": 14.1,
+   "sel": [
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6518.044242836546
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7795.973820675876,
+   "tier": "D",
+   "adv": 17.58469741929357,
+   "ttk": 15.3,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+     "talentId": "TCoeurEau_C"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Evolution"
+    }
+   ],
+   "noTalent": 6490.094757446068
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7794.547628224944,
+   "tier": "D",
+   "adv": 17.57027643128653,
+   "ttk": 13.3,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+     "talentId": "TPunchingBag"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6259.806314190184
+  },
+  {
+   "ids": [
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "5339b369-d066-4406-9b61-795514ae6f1d",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "5721ea5f-5978-4328-8874-28abc283f6b8"
+   ],
+   "score": 7689.623877785921,
+   "tier": "D",
+   "adv": 16.509336762347907,
+   "ttk": 13.5,
+   "sel": [
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "5339b369-d066-4406-9b61-795514ae6f1d",
+     "talentId": "TCoeurFeu_C"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "noTalent": 6109.801950714302
+  },
+  {
+   "ids": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7689.047368023708,
+   "tier": "D",
+   "adv": 16.503507366489465,
+   "ttk": 14.4,
+   "sel": [
+    {
+     "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "talentId": "Vitalite des Ames"
+    },
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6210.147394912697
+  },
+  {
+   "ids": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 7600.494505752575,
+   "tier": "D",
+   "adv": 15.608102427298856,
+   "ttk": 14,
+   "sel": [
+    {
+     "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "talentId": "Vitalite des Ames"
+    },
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6117.5640664902585
+  },
+  {
+   "ids": [
+    "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+   ],
+   "score": 7592.666385728336,
+   "tier": "D",
+   "adv": 15.528948155437838,
+   "ttk": 14.7,
+   "sel": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    }
+   ],
+   "noTalent": 6101.221440833184
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7333.855064441308,
+   "tier": "D",
+   "adv": 12.91196966987177,
+   "ttk": 14.3,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6080.601425845718
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 7014.921847237199,
+   "tier": "D",
+   "adv": 9.687066819389859,
+   "ttk": 12.8,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "TRoulette"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+     "talentId": "Dernier souffle"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6173.833226633264
+  },
+  {
+   "ids": [
+    "def9a313-f174-4e62-b4b8-1086d28bd09e",
+    "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+    "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 6736.594355759877,
+   "tier": "D",
+   "adv": 6.872749989988342,
+   "ttk": 17.3,
+   "sel": [
+    {
+     "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+     "talentId": "Blindage Partagé"
+    },
+    {
+     "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+     "talentId": "Cavalerie"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Nouvelle vie"
+    }
+   ],
+   "noTalent": 6372.169718698475
+  },
+  {
+   "ids": [
+    "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+    "6598bdc6-b5f4-47a8-be11-761422965f71",
+    "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+    "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+   ],
+   "score": 6708.413687797965,
+   "tier": "D",
+   "adv": 6.587800315459172,
+   "ttk": 17.5,
+   "sel": [
+    {
+     "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+     "talentId": "Vitalite des Ames"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+     "talentId": "Dernier souffle"
+    },
+    {
+     "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+     "talentId": "Dette"
+    }
+   ],
+   "noTalent": 6077.269814973483
+  }
+ ],
+ "full": [
+  {
+   "score": 9819.45868833676,
+   "ttk": 10,
+   "dmgTotal": 2800.0000000000005,
+   "ehp": 2881.1480625469535,
+   "heal": 1115.0406250000003,
+   "control": 0,
+   "spamton": 295,
+   "income": 24,
+   "tier": "D",
+   "advantage": 38.04522572309331,
+   "scale": "talents",
+   "dmgByTurn": [
+    5,
+    144,
+    14,
+    323,
+    21,
+    572,
+    38,
+    932,
+    62,
+    1042
+   ],
+   "matchups": [
+    {
+     "id": "neutral",
+     "score": 10056.096810120014,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "fragile",
+     "score": 10062.401925137134,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2200,
+     "deltaPct": 0.1
+    },
+    {
+     "id": "tank",
+     "score": 9229.46001754232,
+     "ttk": 11.5,
+     "kills": 1,
+     "dmgTotal": 3137,
+     "deltaPct": -8.2
+    },
+    {
+     "id": "anti-fire",
+     "score": 10056.096810120014,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-water",
+     "score": 9401.391100875655,
+     "ttk": 10.3,
+     "kills": 2,
+     "dmgTotal": 2716,
+     "deltaPct": -6.5
+    },
+    {
+     "id": "anti-earth",
+     "score": 10056.096810120014,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-nature",
+     "score": 9401.391100875655,
+     "ttk": 10.3,
+     "kills": 2,
+     "dmgTotal": 2716,
+     "deltaPct": -6.5
+    },
+    {
+     "id": "anti-shadow",
+     "score": 10056.096810120014,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-light",
+     "score": 10056.096810120014,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    }
+   ],
+   "positions": [
+    {
+     "player": 1,
+     "ttk": 10.1,
+     "deltaPct": -4.1
+    },
+    {
+     "player": 2,
+     "ttk": 9.7,
+     "deltaPct": 4.1
+    }
+   ],
+   "selection": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "talentId": "TCoeurAcier"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "player": null,
+   "plan": [
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 38,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 5,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 42,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 136,
+      "heal": 102,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 8,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 48,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 14,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "abilityId": "Revitalisation",
+      "option": 0,
+      "dmg": 0,
+      "heal": 94,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 60,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 304,
+      "heal": 228,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 19,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 67,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 21,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 72,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 537,
+      "heal": 403,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 35,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 90,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 38,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "abilityId": "Revitalisation",
+      "option": 0,
+      "dmg": 0,
+      "heal": 146,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 96,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 886,
+      "heal": 664,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 46,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 105,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 62,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 124,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 1042,
+      "heal": 782,
+      "gen": ""
+     }
+    ]
+   ],
+   "suggestions": [
+    {
+     "replaceId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 20.76816929755027,
+     "selection": [
+      {
+       "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Piece magique"
+      },
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": "Blindage Partagé"
+      }
+     ]
+    },
+    {
+     "replaceId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 20.13092738319458,
+     "selection": [
+      {
+       "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Piece magique"
+      },
+      {
+       "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+       "talentId": "TCoeurAcier"
+      },
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      }
+     ]
+    }
+   ],
+   "baseScore": 9819.45868833676,
+   "noTalent": {
+    "score": 8018.221187085179,
+    "ttk": 12.1,
+    "tier": "D",
+    "advantage": 31.101038299034812
+   },
+   "loadout": [
+    {
+     "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "added": [],
+     "removed": []
+    }
+   ],
+   "shop": {
+    "budget": 295,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 12.6,
+    "evNowPct": 0.2,
+    "evAfterPct": 0.4,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 51,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 106,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 165,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 228,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 295,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "CoeurNature_C",
+      "rarity": "common",
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "replacesId": null,
+      "gainPct": 3.2,
+      "cumulativePct": 3.2
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurNature_R",
+      "rarity": "rare",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 9.4,
+      "cumulativePct": 12.6
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Pinces",
+        "rarity": null,
+        "verdict": "remplacer",
+        "valuePct": 0.8,
+        "casts": 9,
+        "firstTurn": 1,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 28.1
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 28.1
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 22.5
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 21.1
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 20.9
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 3.4
+         }
+        ]
+       },
+       {
+        "kind": "ability",
+        "id": "Soin critique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 21.4,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 28.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 28.1
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 22.6
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 21.2
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 21.1
+         },
+         {
+          "toxId": "Frozen_E",
+          "rarity": "epic",
+          "gainPct": 5.1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 65.5,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.9,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 28.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 28.1
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 22.5
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 21.1
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 21
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 3.1
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "remplacer",
+        "valuePct": 4.6,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 25.4
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 25.3
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 19.7
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 14.1
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 14
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Revitalisation",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 10.7,
+        "casts": 2,
+        "firstTurn": 4,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Berserk_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 4.8,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 25.4
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 25.3
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 22.5
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 14.1
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 13.8
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "CoeurEau_C",
+        "rarity": "common",
+        "verdict": "remplacer",
+        "valuePct": 6.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 25.3
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 13.9
+         },
+         {
+          "toxId": "CoeurEau_R",
+          "rarity": "rare",
+          "gainPct": 3.1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feu allié",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 22.6,
+        "casts": 3,
+        "firstTurn": 3,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Embrasement",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 8.7,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 28.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 28.1
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 22.6
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 21.2
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 21.1
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 4
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "Cimetiere_C",
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurLumiere_C",
+     "CoeurTerre_C",
+     "Erosion_C",
+     "Phoenix_C",
+     "Tenacite_C",
+     "Brut_R",
+     "Cimetiere_R",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurLumiere_R",
+     "CoeurTerre_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "Phoenix_R",
+     "Taunt_R",
+     "Revenge_R",
+     "Bomba_E",
+     "Cimetiere_E",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurLumiere_E",
+     "CoeurTerre_E",
+     "Erosion_E",
+     "Metamorph_E",
+     "Phoenix_E",
+     "Reset_E",
+     "Vengeur_E",
+     "Cimetiere_L",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurLumiere_L",
+     "CoeurTerre_L",
+     "Phoenix_L"
+    ]
+   }
+  },
+  {
+   "score": 9804.894825500764,
+   "ttk": 10,
+   "dmgTotal": 2800.000000000001,
+   "ehp": 2446.232462740278,
+   "heal": 1075.8751833333333,
+   "control": 0,
+   "spamton": 335,
+   "income": 28,
+   "tier": "D",
+   "advantage": 37.8979627845209,
+   "scale": "talents",
+   "dmgByTurn": [
+    19,
+    165,
+    49,
+    349,
+    76,
+    631,
+    138,
+    738,
+    274,
+    697
+   ],
+   "matchups": [
+    {
+     "id": "neutral",
+     "score": 9942.467361959101,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "fragile",
+     "score": 10575.370361959096,
+     "ttk": 9,
+     "kills": 4,
+     "dmgTotal": 2200,
+     "deltaPct": 6.4
+    },
+    {
+     "id": "tank",
+     "score": 9313.644705709097,
+     "ttk": 10.9,
+     "kills": 3,
+     "dmgTotal": 3302,
+     "deltaPct": -6.3
+    },
+    {
+     "id": "anti-fire",
+     "score": 9942.467361959101,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-water",
+     "score": 9329.056846334097,
+     "ttk": 10,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": -6.2
+    },
+    {
+     "id": "anti-earth",
+     "score": 9942.467361959101,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-nature",
+     "score": 9313.644705709097,
+     "ttk": 10.6,
+     "kills": 3,
+     "dmgTotal": 2658,
+     "deltaPct": -6.3
+    },
+    {
+     "id": "anti-shadow",
+     "score": 9942.467361959101,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-light",
+     "score": 9942.467361959101,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2800,
+     "deltaPct": 0
+    }
+   ],
+   "positions": [
+    {
+     "player": 1,
+     "ttk": 10,
+     "deltaPct": -3.5
+    },
+    {
+     "player": 2,
+     "ttk": 9.5,
+     "deltaPct": 3.5
+    }
+   ],
+   "selection": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Frappe"
+    },
+    {
+     "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Souffle-8"
+    }
+   ],
+   "player": null,
+   "plan": [
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 37,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 13,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 6,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 50,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 137,
+      "heal": 102,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 18,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 11,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 64,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 29,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 21,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 89,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 283,
+      "heal": 212,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 35,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 31,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 108,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 41,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 35,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 123,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 509,
+      "heal": 382,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 59,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 63,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 162,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 67,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 71,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 180,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 526,
+      "heal": 395,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 76,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 89,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "elemental-breath",
+      "option": 0,
+      "dmg": 47,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 204,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 122,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "SouffleDair",
+      "option": 0,
+      "dmg": 100,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "elemental-breath",
+      "option": 0,
+      "dmg": 52,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 249,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "abilityId": "Eolienne",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": "nature+1"
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 531,
+      "heal": 398,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 166,
+      "heal": 0,
+      "gen": ""
+     }
+    ]
+   ],
+   "suggestions": [
+    {
+     "replaceId": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 20.947554296972125,
+     "selection": [
+      {
+       "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Piece magique"
+      },
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": "Blindage Partagé"
+      }
+     ]
+    },
+    {
+     "replaceId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 17.391369982124,
+     "selection": [
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Critique"
+      },
+      {
+       "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": "Blindage Partagé"
+      }
+     ]
+    }
+   ],
+   "baseScore": 9804.894825500764,
+   "noTalent": {
+    "score": 7625.4812084265905,
+    "ttk": 13.6,
+    "tier": "D",
+    "advantage": 27.403583242419817
+   },
+   "loadout": [
+    {
+     "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "added": [],
+     "removed": []
+    }
+   ],
+   "shop": {
+    "budget": 335,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 23.8,
+    "evNowPct": 1.9,
+    "evAfterPct": 0.2,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 59,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 122,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 189,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 260,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 335,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "Poison_C",
+      "rarity": "common",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 7.7,
+      "cumulativePct": 7.7
+     },
+     {
+      "step": 2,
+      "turn": 4,
+      "toxId": "CoeurNature_R",
+      "rarity": "rare",
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "replacesId": null,
+      "gainPct": 10,
+      "cumulativePct": 17.7
+     },
+     {
+      "step": 3,
+      "turn": 8,
+      "toxId": "Frozen_E",
+      "rarity": "epic",
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "replacesId": null,
+      "gainPct": 4.3,
+      "cumulativePct": 22
+     },
+     {
+      "step": 4,
+      "turn": 10,
+      "toxId": "CoeurVital_E",
+      "rarity": "epic",
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "replacesId": null,
+      "gainPct": 1.8,
+      "cumulativePct": 23.8
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Pinces",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 5.2,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Soin critique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 20,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 26.9
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 26.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 18.4
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 17.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 15.6
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 12.8
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 31.6,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 0.1,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 26.9
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 26.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 18.3
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 17.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 15.6
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 12.6
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "remplacer",
+        "valuePct": 4.3,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 24.8
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 24.8
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 17.7
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 17
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 11.3
+         },
+         {
+          "toxId": "Multiplicator_R",
+          "rarity": "rare",
+          "gainPct": 7.8
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "50807128-85af-472d-b2f7-59737a9a03b4",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "SouffleDair",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 7.1,
+        "casts": 9,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Eolienne",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 5.4,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 26.9
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 26.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 18.4
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 17.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 15.6
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 12.8
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feu allié",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 17.4,
+        "casts": 3,
+        "firstTurn": 3,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Embrasement",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 6.6,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 26.9
+         },
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 26.2
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 18.4
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 17.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 15.6
+         },
+         {
+          "toxId": "CoeurEau_E",
+          "rarity": "epic",
+          "gainPct": 12.8
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "CoeurOmbre_C",
+     "CoeurLumiere_C",
+     "CoeurTerre_C",
+     "Erosion_C",
+     "Phoenix_C",
+     "Tenacite_C",
+     "Brut_R",
+     "CoeurOmbre_R",
+     "CoeurLumiere_R",
+     "CoeurTerre_R",
+     "Mimetisme_R",
+     "Optimisation_R",
+     "Phoenix_R",
+     "Taunt_R",
+     "Revenge_R",
+     "Bomba_E",
+     "CoeurOmbre_E",
+     "CoeurLumiere_E",
+     "CoeurTerre_E",
+     "Erosion_E",
+     "Metamorph_E",
+     "Phoenix_E",
+     "Vengeur_E",
+     "CoeurOmbre_L",
+     "CoeurLumiere_L",
+     "CoeurTerre_L",
+     "Phoenix_L"
+    ]
+   }
+  },
+  {
+   "score": 9244.131483800498,
+   "ttk": 10.6,
+   "dmgTotal": 2644.82,
+   "ehp": 3233.4496210826546,
+   "heal": 1038.0266250000002,
+   "control": 0,
+   "spamton": 275,
+   "income": 22,
+   "tier": "D",
+   "advantage": 32.22778733228003,
+   "scale": "talents",
+   "dmgByTurn": [
+    6,
+    143,
+    16,
+    229,
+    201,
+    410,
+    50,
+    476,
+    96,
+    1169
+   ],
+   "matchups": [
+    {
+     "id": "neutral",
+     "score": 9527.078110025988,
+     "ttk": 10.4,
+     "kills": 3,
+     "dmgTotal": 2693,
+     "deltaPct": 0
+    },
+    {
+     "id": "fragile",
+     "score": 10159.09281590834,
+     "ttk": 9.5,
+     "kills": 4,
+     "dmgTotal": 2200,
+     "deltaPct": 6.6
+    },
+    {
+     "id": "tank",
+     "score": 7808.697985025988,
+     "ttk": 14.3,
+     "kills": 1.5,
+     "dmgTotal": 2530,
+     "deltaPct": -18
+    },
+    {
+     "id": "anti-fire",
+     "score": 9527.078110025988,
+     "ttk": 10.4,
+     "kills": 3,
+     "dmgTotal": 2693,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-water",
+     "score": 9136.708973996578,
+     "ttk": 12.1,
+     "kills": 2.5,
+     "dmgTotal": 2327,
+     "deltaPct": -4.1
+    },
+    {
+     "id": "anti-earth",
+     "score": 9527.078110025988,
+     "ttk": 10.4,
+     "kills": 3,
+     "dmgTotal": 2693,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-nature",
+     "score": 8457.293029143635,
+     "ttk": 13.1,
+     "kills": 2,
+     "dmgTotal": 2143,
+     "deltaPct": -11.2
+    },
+    {
+     "id": "anti-shadow",
+     "score": 9527.078110025988,
+     "ttk": 10.4,
+     "kills": 3,
+     "dmgTotal": 2693,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-light",
+     "score": 9527.078110025988,
+     "ttk": 10.4,
+     "kills": 3,
+     "dmgTotal": 2693,
+     "deltaPct": 0
+    }
+   ],
+   "positions": [
+    {
+     "player": 1,
+     "ttk": 11.3,
+     "deltaPct": -1.1
+    },
+    {
+     "player": 2,
+     "ttk": 11.1,
+     "deltaPct": 1.1
+    }
+   ],
+   "selection": [
+    {
+     "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "talentId": "TCoeurNature_C"
+    },
+    {
+     "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "talentId": "Critique"
+    },
+    {
+     "id": "9f744687-461b-493e-9a9a-408906fafbde",
+     "talentId": "Depart multi elements"
+    },
+    {
+     "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "talentId": "Blindage Partagé"
+    }
+   ],
+   "player": null,
+   "plan": [
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 43,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 6,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 47,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 134,
+      "heal": 101,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 9,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 52,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 16,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 64,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 209,
+      "heal": 157,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 20,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 71,
+      "gen": ""
+     },
+     {
+      "cardId": "9f744687-461b-493e-9a9a-408906fafbde",
+      "abilityId": "Supra rayon humide",
+      "option": 0,
+      "dmg": 176,
+      "heal": 0,
+      "gen": "water+3 light+3 nature+3"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 25,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 86,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 368,
+      "heal": 276,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 42,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 106,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 50,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 115,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 410,
+      "heal": 307,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 66,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 128,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Feu allié",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 96,
+      "heal": 0,
+      "gen": ""
+     }
+    ],
+    [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Soin critique",
+      "option": 0,
+      "dmg": 0,
+      "heal": 153,
+      "gen": ""
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "abilityId": "Embrasement",
+      "option": 0,
+      "dmg": 0,
+      "heal": 0,
+      "gen": ""
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "abilityId": "Galop arctique",
+      "option": 0,
+      "dmg": 399,
+      "heal": 300,
+      "gen": ""
+     },
+     {
+      "cardId": "9f744687-461b-493e-9a9a-408906fafbde",
+      "abilityId": "Supra rayon humide",
+      "option": 0,
+      "dmg": 319,
+      "heal": 0,
+      "gen": "water+3 light+3 nature+3"
+     },
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "abilityId": "Pinces",
+      "option": 0,
+      "dmg": 132,
+      "heal": 0,
+      "gen": ""
+     }
+    ]
+   ],
+   "suggestions": [
+    {
+     "replaceId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 28.58503216383752,
+     "selection": [
+      {
+       "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Piece magique"
+      },
+      {
+       "id": "9f744687-461b-493e-9a9a-408906fafbde",
+       "talentId": "Depart multi elements"
+      },
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      }
+     ]
+    },
+    {
+     "replaceId": "9f744687-461b-493e-9a9a-408906fafbde",
+     "withId": "40416045-b820-4d2c-96f9-34f87d99ac25",
+     "gain": 28.284420376484075,
+     "selection": [
+      {
+       "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+       "talentId": "TCoeurNature_C"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Piece magique"
+      },
+      {
+       "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+       "talentId": "Resilience"
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": "Blindage Partagé"
+      }
+     ]
+    },
+    {
+     "replaceId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "withId": "3ec973d6-c20f-4455-82d4-92dce5d22a52",
+     "gain": 5.764621025248906,
+     "selection": [
+      {
+       "id": "3ec973d6-c20f-4455-82d4-92dce5d22a52",
+       "talentId": "Life-8"
+      },
+      {
+       "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+       "talentId": "Frappe"
+      },
+      {
+       "id": "9f744687-461b-493e-9a9a-408906fafbde",
+       "talentId": "Depart multi elements"
+      },
+      {
+       "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+       "talentId": "Blindage Partagé"
+      }
+     ]
+    }
+   ],
+   "baseScore": 9244.131483800498,
+   "noTalent": {
+    "score": 6996.807509196354,
+    "ttk": 15.3,
+    "tier": "D",
+    "advantage": 21.48492745362274
+   },
+   "loadout": [
+    {
+     "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "9f744687-461b-493e-9a9a-408906fafbde",
+     "added": [],
+     "removed": []
+    },
+    {
+     "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+     "added": [],
+     "removed": []
+    }
+   ],
+   "shop": {
+    "budget": 275,
+    "openings": 5,
+    "everyTurns": 2,
+    "potentialPct": 31.4,
+    "evNowPct": 0.4,
+    "evAfterPct": 6,
+    "slotsTotal": 12,
+    "timeline": [
+     {
+      "turn": 2,
+      "luck": 2,
+      "spamton": 47,
+      "odds": {
+       "common": 100,
+       "rare": 0,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 4,
+      "luck": 4,
+      "spamton": 98,
+      "odds": {
+       "common": 80.1,
+       "rare": 19.9,
+       "epic": 0,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 6,
+      "luck": 6,
+      "spamton": 153,
+      "odds": {
+       "common": 50.1,
+       "rare": 45,
+       "epic": 4.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 8,
+      "luck": 8,
+      "spamton": 212,
+      "odds": {
+       "common": 27.1,
+       "rare": 53,
+       "epic": 19.9,
+       "legendary": 0
+      }
+     },
+     {
+      "turn": 10,
+      "luck": 10,
+      "spamton": 275,
+      "odds": {
+       "common": 10.1,
+       "rare": 50,
+       "epic": 39.9,
+       "legendary": 0
+      }
+     }
+    ],
+    "plan": [
+     {
+      "step": 1,
+      "turn": 2,
+      "toxId": "Berserk_C",
+      "rarity": "common",
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "replacesId": null,
+      "gainPct": 2.5,
+      "cumulativePct": 2.5
+     },
+     {
+      "step": 2,
+      "turn": 8,
+      "toxId": "CoeurNature_E",
+      "rarity": "epic",
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "replacesId": "Life Steal_E",
+      "gainPct": 14.6,
+      "cumulativePct": 17.1
+     },
+     {
+      "step": 3,
+      "turn": 10,
+      "toxId": "Berserk_E",
+      "rarity": "epic",
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "replacesId": null,
+      "gainPct": 14.4,
+      "cumulativePct": 31.4
+     }
+    ],
+    "cards": [
+     {
+      "cardId": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Pinces",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 7.6,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Soin critique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 11.4,
+        "casts": 10,
+        "firstTurn": 1,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 21.6
+         },
+         {
+          "toxId": "Frozen_E",
+          "rarity": "epic",
+          "gainPct": 6
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 4.7
+         },
+         {
+          "toxId": "CoeurResistance_L",
+          "rarity": "legendary",
+          "gainPct": 3
+         },
+         {
+          "toxId": "CoeurVital_E",
+          "rarity": "epic",
+          "gainPct": 2.8
+         },
+         {
+          "toxId": "Eternity_L",
+          "rarity": "legendary",
+          "gainPct": 2.1
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "6598bdc6-b5f4-47a8-be11-761422965f71",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Galop arctique",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 42.6,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Life Steal_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 1,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 21.6
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 3.4
+         },
+         {
+          "toxId": "CoeurResistance_L",
+          "rarity": "legendary",
+          "gainPct": 2.6
+         },
+         {
+          "toxId": "Frozen_E",
+          "rarity": "epic",
+          "gainPct": 2
+         },
+         {
+          "toxId": "CoeurVital_E",
+          "rarity": "epic",
+          "gainPct": 1.6
+         },
+         {
+          "toxId": "CoeurResistance_E",
+          "rarity": "epic",
+          "gainPct": 1.2
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Mimetisme_R",
+        "rarity": "rare",
+        "verdict": "coeur",
+        "valuePct": 7.4,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": []
+       }
+      ]
+     },
+     {
+      "cardId": "9f744687-461b-493e-9a9a-408906fafbde",
+      "free": 0,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Supra rayon humide",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 21.8,
+        "casts": 2,
+        "firstTurn": 5,
+        "candidates": []
+       },
+       {
+        "kind": "passive",
+        "id": "Reset_E",
+        "rarity": "epic",
+        "verdict": "remplacer",
+        "valuePct": 3.2,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 21.6
+         },
+         {
+          "toxId": "CoeurEau_L",
+          "rarity": "legendary",
+          "gainPct": 13.1
+         },
+         {
+          "toxId": "Berserk_L",
+          "rarity": "legendary",
+          "gainPct": 12.5
+         },
+         {
+          "toxId": "CoeurNature_E",
+          "rarity": "epic",
+          "gainPct": 11.7
+         },
+         {
+          "toxId": "Berserk_E",
+          "rarity": "epic",
+          "gainPct": 7.9
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 1.7
+         }
+        ]
+       },
+       {
+        "kind": "passive",
+        "id": "Brut_R",
+        "rarity": "rare",
+        "verdict": "remplacer",
+        "valuePct": 2.3,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 17.1
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 2.5
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "cardId": "5721ea5f-5978-4328-8874-28abc283f6b8",
+      "free": 1,
+      "lines": [
+       {
+        "kind": "ability",
+        "id": "Feu allié",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 24.5,
+        "casts": 3,
+        "firstTurn": 3,
+        "candidates": []
+       },
+       {
+        "kind": "ability",
+        "id": "Embrasement",
+        "rarity": null,
+        "verdict": "coeur",
+        "valuePct": 11,
+        "casts": 5,
+        "firstTurn": 2,
+        "candidates": []
+       },
+       {
+        "kind": "free",
+        "id": null,
+        "rarity": null,
+        "verdict": "acheter",
+        "valuePct": null,
+        "casts": null,
+        "firstTurn": null,
+        "candidates": [
+         {
+          "toxId": "CoeurNature_L",
+          "rarity": "legendary",
+          "gainPct": 21.6
+         },
+         {
+          "toxId": "CoeurVital_L",
+          "rarity": "legendary",
+          "gainPct": 4.5
+         },
+         {
+          "toxId": "CoeurResistance_L",
+          "rarity": "legendary",
+          "gainPct": 3
+         },
+         {
+          "toxId": "CoeurVital_E",
+          "rarity": "epic",
+          "gainPct": 2.7
+         },
+         {
+          "toxId": "CoeurResistance_E",
+          "rarity": "epic",
+          "gainPct": 1.9
+         },
+         {
+          "toxId": "CoeurVital_R",
+          "rarity": "rare",
+          "gainPct": 1.4
+         }
+        ]
+       }
+      ]
+     }
+    ],
+    "avoidIds": [
+     "CoeurOmbre_C",
+     "CoeurFeu_C",
+     "CoeurTerre_C",
+     "Phoenix_C",
+     "Tenacite_C",
+     "CoeurOmbre_R",
+     "CoeurFeu_R",
+     "CoeurTerre_R",
+     "Inversement_R",
+     "Optimisation_R",
+     "Phoenix_R",
+     "Taunt_R",
+     "Revenge_R",
+     "Bomba_E",
+     "CoeurOmbre_E",
+     "CoeurFeu_E",
+     "CoeurTerre_E",
+     "Metamorph_E",
+     "Phoenix_E",
+     "Reset_E",
+     "Vengeur_E",
+     "CoeurOmbre_L",
+     "CoeurFeu_L",
+     "CoeurTerre_L",
+     "Phoenix_L"
+    ]
+   }
+  }
+ ]
+}

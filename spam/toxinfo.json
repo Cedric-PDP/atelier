@@ -1,0 +1,1007 @@
+{
+ "pools": {
+  "common": [
+   "Aoe_C",
+   "Berserk_C",
+   "Chance_C",
+   "Cimetiere_C",
+   "CoeurEau_C",
+   "CoeurFeu_C",
+   "CoeurLumiere_C",
+   "CoeurNature_C",
+   "CoeurOmbre_C",
+   "CoeurResistance_C",
+   "CoeurTerre_C",
+   "CoeurVital_C",
+   "Erosion_C",
+   "Life Steal_C",
+   "Phoenix_C",
+   "Poison_C",
+   "Primitive heal_C",
+   "PunchingBag_C",
+   "Reflect_C",
+   "Shield_C",
+   "Spamland_C",
+   "Tenacite_C"
+  ],
+  "rare": [
+   "Aoe_R",
+   "Berserk_R",
+   "Brut_R",
+   "Chance_R",
+   "Cimetiere_R",
+   "CoeurEau_R",
+   "CoeurFeu_R",
+   "CoeurLumiere_R",
+   "CoeurNature_R",
+   "CoeurOmbre_R",
+   "CoeurResistance_R",
+   "CoeurTerre_R",
+   "CoeurVital_R",
+   "Inversement_R",
+   "Life Steal_R",
+   "Mimetisme_R",
+   "Multiplicator_R",
+   "Mystere_R",
+   "Optimisation_R",
+   "Phoenix_R",
+   "Poison_R",
+   "Primitive heal_R",
+   "PunchingBag_R",
+   "Reflect_R",
+   "Revenge_R",
+   "Shield_R",
+   "Smoked_R",
+   "Spamland_R",
+   "Taunt_R"
+  ],
+  "epic": [
+   "Aoe_E",
+   "Berserk_E",
+   "Bomba_E",
+   "Chance_E",
+   "Cimetiere_E",
+   "CoeurEau_E",
+   "CoeurFeu_E",
+   "CoeurLumiere_E",
+   "CoeurNature_E",
+   "CoeurOmbre_E",
+   "CoeurResistance_E",
+   "CoeurTerre_E",
+   "CoeurVital_E",
+   "Erosion_E",
+   "Frozen_E",
+   "Immunity_E",
+   "Life Steal_E",
+   "Metamorph_E",
+   "Phoenix_E",
+   "Poison_E",
+   "Primitive heal_E",
+   "PunchingBag_E",
+   "Reflect_E",
+   "Reset_E",
+   "Shield_E",
+   "Spamland_E",
+   "Vengeur_E"
+  ],
+  "legendary": [
+   "Aoe_L",
+   "Berserk_L",
+   "Chance_L",
+   "Cimetiere_L",
+   "CoeurEau_L",
+   "CoeurFeu_L",
+   "CoeurLumiere_L",
+   "CoeurNature_L",
+   "CoeurOmbre_L",
+   "CoeurResistance_L",
+   "CoeurTerre_L",
+   "CoeurVital_L",
+   "Disparition_L",
+   "Eternity_L",
+   "Life Steal_L",
+   "Phoenix_L",
+   "Poison_L",
+   "Primitive heal_L",
+   "PunchingBag_L",
+   "Reflect_L",
+   "Shield_L",
+   "Spamland_L",
+   "Temporality_L"
+  ]
+ },
+ "tox": {
+  "Aoe_C": {
+   "effect": "Aoe",
+   "value": 20,
+   "element": null,
+   "rarity": "common",
+   "cost": 45
+  },
+  "Aoe_E": {
+   "effect": "Aoe",
+   "value": 80,
+   "element": null,
+   "rarity": "epic",
+   "cost": 135
+  },
+  "Aoe_L": {
+   "effect": "Aoe",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 180
+  },
+  "Aoe_R": {
+   "effect": "Aoe",
+   "value": 40,
+   "element": null,
+   "rarity": "rare",
+   "cost": 90
+  },
+  "AttackMultiColor": {
+   "effect": "AttackMultiColor",
+   "value": 1,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Aveuglement": {
+   "effect": "Aveuglement",
+   "value": 25,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Berserk_C": {
+   "effect": "Berserk",
+   "value": 12,
+   "element": null,
+   "rarity": "common",
+   "cost": 30
+  },
+  "Berserk_E": {
+   "effect": "Berserk",
+   "value": 50,
+   "element": null,
+   "rarity": "epic",
+   "cost": 100
+  },
+  "Berserk_L": {
+   "effect": "Berserk",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 180
+  },
+  "Berserk_R": {
+   "effect": "Berserk",
+   "value": 25,
+   "element": null,
+   "rarity": "rare",
+   "cost": 60
+  },
+  "Bomba_E": {
+   "effect": "Bomba",
+   "value": 500,
+   "element": null,
+   "rarity": "epic",
+   "cost": 130
+  },
+  "Brut_R": {
+   "effect": "Brut",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 65
+  },
+  "Casino": {
+   "effect": "Casino",
+   "value": 0,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "ChanceVitale": {
+   "effect": "ChanceVitale",
+   "value": 10,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Chance_C": {
+   "effect": "Chance",
+   "value": 0.5,
+   "element": null,
+   "rarity": "common",
+   "cost": 5
+  },
+  "Chance_E": {
+   "effect": "Chance",
+   "value": 2,
+   "element": null,
+   "rarity": "epic",
+   "cost": 15
+  },
+  "Chance_L": {
+   "effect": "Chance",
+   "value": 4,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 20
+  },
+  "Chance_R": {
+   "effect": "Chance",
+   "value": 1,
+   "element": null,
+   "rarity": "rare",
+   "cost": 10
+  },
+  "Changement": {
+   "effect": "Changement",
+   "value": 0,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Cimetiere_C": {
+   "effect": "Cimetierre",
+   "value": 3,
+   "element": null,
+   "rarity": "common",
+   "cost": 20
+  },
+  "Cimetiere_E": {
+   "effect": "Cimetierre",
+   "value": 8,
+   "element": null,
+   "rarity": "epic",
+   "cost": 60
+  },
+  "Cimetiere_L": {
+   "effect": "Cimetierre",
+   "value": 12,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 80
+  },
+  "Cimetiere_R": {
+   "effect": "Cimetierre",
+   "value": 5,
+   "element": null,
+   "rarity": "rare",
+   "cost": 40
+  },
+  "Coeur elementaire C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": null,
+   "rarity": "common",
+   "cost": 20
+  },
+  "CoeurCorrompu": {
+   "effect": "CoeurCorrompu",
+   "value": 50,
+   "element": null,
+   "rarity": "common",
+   "cost": 0
+  },
+  "CoeurEau_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "water",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurEau_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "water",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurEau_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "water",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurEau_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "water",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurFeu_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "fire",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurFeu_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "fire",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurFeu_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "fire",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurFeu_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "fire",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurLumiere_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "light",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurLumiere_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "light",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurLumiere_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "light",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurLumiere_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "light",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurNature_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "nature",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurNature_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "nature",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurNature_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "nature",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurNature_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "nature",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurOmbre_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "shadow",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurOmbre_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "shadow",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurOmbre_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "shadow",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurOmbre_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "shadow",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurResistance_C": {
+   "effect": "CoeurResistance",
+   "value": 3,
+   "element": null,
+   "rarity": "common",
+   "cost": 10
+  },
+  "CoeurResistance_E": {
+   "effect": "CoeurResistance",
+   "value": 10,
+   "element": null,
+   "rarity": "epic",
+   "cost": 70
+  },
+  "CoeurResistance_L": {
+   "effect": "CoeurResistance",
+   "value": 15,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurResistance_R": {
+   "effect": "CoeurResistance",
+   "value": 6,
+   "element": null,
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurTerre_C": {
+   "effect": "CoeurElement",
+   "value": 1,
+   "element": "earth",
+   "rarity": "common",
+   "cost": 15
+  },
+  "CoeurTerre_E": {
+   "effect": "CoeurElement",
+   "value": 5,
+   "element": "earth",
+   "rarity": "epic",
+   "cost": 60
+  },
+  "CoeurTerre_L": {
+   "effect": "CoeurElement",
+   "value": 8,
+   "element": "earth",
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "CoeurTerre_R": {
+   "effect": "CoeurElement",
+   "value": 2,
+   "element": "earth",
+   "rarity": "rare",
+   "cost": 30
+  },
+  "CoeurVital_C": {
+   "effect": "CoeurVital",
+   "value": 15,
+   "element": null,
+   "rarity": "common",
+   "cost": 10
+  },
+  "CoeurVital_E": {
+   "effect": "CoeurVital",
+   "value": 60,
+   "element": null,
+   "rarity": "epic",
+   "cost": 70
+  },
+  "CoeurVital_L": {
+   "effect": "CoeurVital",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 150
+  },
+  "CoeurVital_R": {
+   "effect": "CoeurVital",
+   "value": 30,
+   "element": null,
+   "rarity": "rare",
+   "cost": 30
+  },
+  "ContreCoup_C": {
+   "effect": "ContreCoup",
+   "value": 50,
+   "element": null,
+   "rarity": "common",
+   "cost": 30
+  },
+  "ContreCoup_R": {
+   "effect": "ContreCoup",
+   "value": 100,
+   "element": null,
+   "rarity": "rare",
+   "cost": 50
+  },
+  "Cœur d’acier": {
+   "effect": "CoeurAcier",
+   "value": 1,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Decouverte_E": {
+   "effect": "Decouverte",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 100
+  },
+  "Disparition_L": {
+   "effect": "Disparition",
+   "value": 0,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 180
+  },
+  "Erosion_C": {
+   "effect": "Erosion",
+   "value": 50,
+   "element": null,
+   "rarity": "common",
+   "cost": 20
+  },
+  "Erosion_E": {
+   "effect": "Erosion",
+   "value": 100,
+   "element": null,
+   "rarity": "epic",
+   "cost": 75
+  },
+  "Eternity_L": {
+   "effect": "Eternity",
+   "value": 0,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 220
+  },
+  "Frozen_E": {
+   "effect": "Frozen",
+   "value": 40,
+   "element": null,
+   "rarity": "epic",
+   "cost": 150
+  },
+  "Immunity_E": {
+   "effect": "ImunityStatus",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 90
+  },
+  "InsensibleDisparition": {
+   "effect": "InsensibleDisparition",
+   "value": 50,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "InsensinleEternite": {
+   "effect": "InsensibleEternity",
+   "value": 50,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Inversement_R": {
+   "effect": "Inversement",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 40
+  },
+  "Life Steal_C": {
+   "effect": "LifeSteal",
+   "value": 25,
+   "element": null,
+   "rarity": "common",
+   "cost": 30
+  },
+  "Life Steal_E": {
+   "effect": "LifeSteal",
+   "value": 75,
+   "element": null,
+   "rarity": "epic",
+   "cost": 110
+  },
+  "Life Steal_L": {
+   "effect": "LifeSteal",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 160
+  },
+  "Life Steal_R": {
+   "effect": "LifeSteal",
+   "value": 50,
+   "element": null,
+   "rarity": "rare",
+   "cost": 70
+  },
+  "MetamorphSimple_C": {
+   "effect": "MetamorphSimple",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 120
+  },
+  "Metamorph_E": {
+   "effect": "Metamorph",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 120
+  },
+  "Mimetisme_R": {
+   "effect": "Mimetisme",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 50
+  },
+  "Multiplicator_R": {
+   "effect": "Multiplicator",
+   "value": 2,
+   "element": null,
+   "rarity": "rare",
+   "cost": 80
+  },
+  "Mystere_R": {
+   "effect": "Mystere",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 70
+  },
+  "Optimisation_R": {
+   "effect": "Optimisation",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 40
+  },
+  "Paradoxe": {
+   "effect": "Paradoxe",
+   "value": 0,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "PetitPrix": {
+   "effect": "PetitPrix",
+   "value": 50,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Phoenix_C": {
+   "effect": "Phoenix",
+   "value": 25,
+   "element": null,
+   "rarity": "common",
+   "cost": 100
+  },
+  "Phoenix_E": {
+   "effect": "Phoenix",
+   "value": 75,
+   "element": null,
+   "rarity": "epic",
+   "cost": 200
+  },
+  "Phoenix_L": {
+   "effect": "Phoenix",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 250
+  },
+  "Phoenix_R": {
+   "effect": "Phoenix",
+   "value": 50,
+   "element": null,
+   "rarity": "rare",
+   "cost": 150
+  },
+  "PlumePhoenix": {
+   "effect": "PlumePhoenix",
+   "value": 50,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Poison_C": {
+   "effect": "Poisoned",
+   "value": 1,
+   "element": null,
+   "rarity": "common",
+   "cost": 10
+  },
+  "Poison_E": {
+   "effect": "Poisoned",
+   "value": 6,
+   "element": null,
+   "rarity": "epic",
+   "cost": 100
+  },
+  "Poison_L": {
+   "effect": "Poisoned",
+   "value": 8,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 150
+  },
+  "Poison_R": {
+   "effect": "Poisoned",
+   "value": 3,
+   "element": null,
+   "rarity": "rare",
+   "cost": 50
+  },
+  "Primitive heal_C": {
+   "effect": "SoinPrimitif",
+   "value": 4,
+   "element": null,
+   "rarity": "common",
+   "cost": 20
+  },
+  "Primitive heal_E": {
+   "effect": "SoinPrimitif",
+   "value": 14,
+   "element": null,
+   "rarity": "epic",
+   "cost": 60
+  },
+  "Primitive heal_L": {
+   "effect": "SoinPrimitif",
+   "value": 19,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 120
+  },
+  "Primitive heal_R": {
+   "effect": "SoinPrimitif",
+   "value": 9,
+   "element": null,
+   "rarity": "rare",
+   "cost": 40
+  },
+  "PunchingBag_C": {
+   "effect": "SacDeFrappe",
+   "value": 1,
+   "element": null,
+   "rarity": "common",
+   "cost": 25
+  },
+  "PunchingBag_E": {
+   "effect": "SacDeFrappe",
+   "value": 3,
+   "element": null,
+   "rarity": "epic",
+   "cost": 100
+  },
+  "PunchingBag_L": {
+   "effect": "SacDeFrappe",
+   "value": 4,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 150
+  },
+  "PunchingBag_R": {
+   "effect": "SacDeFrappe",
+   "value": 2,
+   "element": null,
+   "rarity": "rare",
+   "cost": 50
+  },
+  "Reflect_C": {
+   "effect": "Renvoie",
+   "value": 25,
+   "element": null,
+   "rarity": "common",
+   "cost": 24
+  },
+  "Reflect_E": {
+   "effect": "Renvoie",
+   "value": 75,
+   "element": null,
+   "rarity": "epic",
+   "cost": 72
+  },
+  "Reflect_L": {
+   "effect": "Renvoie",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 96
+  },
+  "Reflect_R": {
+   "effect": "Renvoie",
+   "value": 50,
+   "element": null,
+   "rarity": "rare",
+   "cost": 48
+  },
+  "Reset_E": {
+   "effect": "Reset",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 130
+  },
+  "Revenge_R": {
+   "effect": "Revanche",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 80
+  },
+  "Roulette": {
+   "effect": "Roulette",
+   "value": 10,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Shield_C": {
+   "effect": "Shield",
+   "value": 25,
+   "element": null,
+   "rarity": "common",
+   "cost": 30
+  },
+  "Shield_E": {
+   "effect": "Shield",
+   "value": 75,
+   "element": null,
+   "rarity": "epic",
+   "cost": 120
+  },
+  "Shield_L": {
+   "effect": "Shield",
+   "value": 100,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 180
+  },
+  "Shield_R": {
+   "effect": "Shield",
+   "value": 50,
+   "element": null,
+   "rarity": "rare",
+   "cost": 60
+  },
+  "Smoked_R": {
+   "effect": "Smoked",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 50
+  },
+  "Spamland_C": {
+   "effect": "SpamLand",
+   "value": 3,
+   "element": null,
+   "rarity": "common",
+   "cost": 6
+  },
+  "Spamland_E": {
+   "effect": "SpamLand",
+   "value": 24,
+   "element": null,
+   "rarity": "epic",
+   "cost": 16
+  },
+  "Spamland_L": {
+   "effect": "SpamLand",
+   "value": 48,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 24
+  },
+  "Spamland_R": {
+   "effect": "SpamLand",
+   "value": 8,
+   "element": null,
+   "rarity": "rare",
+   "cost": 10
+  },
+  "Stun_L": {
+   "effect": "Silenced",
+   "value": 0,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 200
+  },
+  "Taunt_R": {
+   "effect": "Protection",
+   "value": 0,
+   "element": null,
+   "rarity": "rare",
+   "cost": 70
+  },
+  "Temporality_L": {
+   "effect": "Temporality",
+   "value": 0,
+   "element": null,
+   "rarity": "legendary",
+   "cost": 190
+  },
+  "Tenacite_C": {
+   "effect": "Tenacite",
+   "value": 0,
+   "element": null,
+   "rarity": "common",
+   "cost": 10
+  },
+  "ToxChanceux": {
+   "effect": "ToxChanceux",
+   "value": 50,
+   "element": null,
+   "rarity": null,
+   "cost": 0
+  },
+  "Vengeur_E": {
+   "effect": "Vengeur",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 80
+  },
+  "Voleur_R": {
+   "effect": "StealTox",
+   "value": 0,
+   "element": null,
+   "rarity": "epic",
+   "cost": 70
+  }
+ },
+ "odds": {
+  "2": {
+   "common": 1,
+   "rare": 0,
+   "epic": 0,
+   "legendary": 0
+  },
+  "4": {
+   "common": 0.801,
+   "rare": 0.199,
+   "epic": 0,
+   "legendary": 0
+  },
+  "6": {
+   "common": 0.501,
+   "rare": 0.45,
+   "epic": 0.049,
+   "legendary": 0
+  },
+  "8": {
+   "common": 0.271,
+   "rare": 0.53,
+   "epic": 0.199,
+   "legendary": 0
+  },
+  "10": {
+   "common": 0.101,
+   "rare": 0.5,
+   "epic": 0.399,
+   "legendary": 0
+  },
+  "12": {
+   "common": 0.045,
+   "rare": 0.416,
+   "epic": 0.528,
+   "legendary": 0.011
+  }
+ }
+}

@@ -1,0 +1,16 @@
+# Run logs and smoke-test leftovers
+*_log_*.txt
+*_log.txt
+log_*.txt
+site/_*
+
+# Raw wiki scrapes (re-downloadable)
+spam/pages/
+spam/*.html
+spam/v2/*.html
+spam/audit/A_raw/
+spam/audit/D_raw/
+
+node_modules/
+.DS_Store
+Thumbs.db

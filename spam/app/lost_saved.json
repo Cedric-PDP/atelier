@@ -1,0 +1,104 @@
+{
+ "r": {
+  "deck chimere": {
+   "s": 8018,
+   "lost": [
+    [
+     "Lame de la forêt",
+     4792,
+     40
+    ],
+    [
+     "Chimère Brasse-chair",
+     1920,
+     76
+    ],
+    [
+     "L'Œil des montagnes",
+     4213,
+     47
+    ],
+    [
+     "Keria",
+     4314,
+     46
+    ]
+   ]
+  },
+  "Anti-critiques (Hibernatus)": {
+   "s": 6989,
+   "lost": [
+    [
+     "Hibernatus",
+     3041,
+     56
+    ],
+    [
+     "Chimère Brasse-chair",
+     2681,
+     62
+    ],
+    [
+     "Hippocampe Nimbé",
+     4389,
+     37
+    ],
+    [
+     "Keria",
+     3802,
+     46
+    ]
+   ]
+  },
+  "Zéro critique": {
+   "s": 6529,
+   "lost": [
+    [
+     "Murmures du Corail Noir",
+     2626,
+     60
+    ],
+    [
+     "Prisonnière de la Machine",
+     2961,
+     55
+    ],
+    [
+     "Hibernatus",
+     2992,
+     54
+    ],
+    [
+     "Scorch, les Lézards Ignés",
+     2417,
+     63
+    ]
+   ]
+  },
+  "Deck Aleera (à obtenir)": {
+   "s": 12847,
+   "lost": [
+    [
+     "Aleera Mange-Cauchemars",
+     4792,
+     63
+    ],
+    [
+     "Chimère Brasse-chair",
+     8884,
+     31
+    ],
+    [
+     "L'Œil des montagnes",
+     6198,
+     52
+    ],
+    [
+     "Keria",
+     8625,
+     33
+    ]
+   ]
+  }
+ }
+}

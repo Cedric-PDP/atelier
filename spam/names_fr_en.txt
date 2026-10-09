@@ -1,0 +1,127 @@
+1|Esprit Feu|Fire Spirit|fire|common|C
+2|Esprit Eau|Water Spirit|water|common|D
+3|Esprit Nature|Nature Spirit|nature|common|C
+4|Esprit Terre|Earth Spirit|earth|common|C
+5|Esprit Ombre|Shadow Spirit|shadow|common|D
+6|Esprit Lumière|Light Spirit|light|common|D
+12|Hibernatus|Hibernatus|water|common|C
+17|Croqueur de Fruits Verdoyant|Verdant Fruit Cruncher|earth|common|S
+21|Félin Errant|Wandering Feline|shadow|common|B
+22|Lueur d'Espoir|Glimmer of Hope|light|common|D
+23|Artisan des Heures|Artisan of Hours|light|common|D
+25|Amber|Amber|fire|rare|A
+26|Blaze|Blaze|fire|rare|A
+27|Hippocampe Nimbé|Nimbus Seahorse|water|rare|C
+29|Princesse Meridia|Princess Meridia|nature|rare|A
+30|Naissance d'Aldrin|Birth of Aldrin|nature|rare|D
+31|Raffteru|Raffteru|earth|rare|C
+32|Maîtresse des Teintes|Mistress of Tints|earth|rare|B
+33|Nakyel|Nakyel|shadow|rare|D
+34|Éclat du Renard Blanc|Gleam of the White Fox|shadow|rare|S
+35|Léo|Léo|light|rare|C
+36|Astry|Astry|light|rare|B
+37|Roi des Flammes Ardentes|King of the Blazing Flames|fire|epic|C
+39|Sylvan, Protecteur de la Verdure|Sylvan, Protector of the Verdure|nature|common|C
+42|Dragonnet des Lumières|Wyrmling of Lights|light|epic|B
+43|Souverain des Flammes|Sovereign of Flames|fire|legendary|A
+44|Léviathan des Cieux|Leviathan of the Skies|water|legendary|B
+45|Aldrin & Gorakar|Aldrin & Gorakar|nature|legendary|C
+47|Veilleur Nocturne|Nocturnal Watcher|shadow|legendary|A
+51|Sorcière Pyrokinétique|Pyrokinetic Sorceress|fire|common|A
+54|Loutre Intrépide|Intrepid Otter|water|common|B
+56|Lisa, la Dragonnière|Lisa, the Dragonrider|nature|common|S
+58|Le Transporteur Sauvage|The Wild Carrier|earth|common|D
+59|Guerrier des Neiges|Snow Warrior|earth|common|B
+60|Protecteur des ruines|Protector of Ruins|earth|common|B
+63|Shado, Fléau abyssal|Shado, Abyssal Scourge|shadow|common|B
+64|Maître Thronebéur|Master Thronebéur|light|common|C
+67|Logidrake, l'Ignatius|Logidrake, the Ignatius|fire|rare|C
+69|Scorch, les Lézards Ignés|Scorch, the Ignited Lizards|water|rare|D
+71|Soigneuse Astrale des Bois|Astral Healer of the Woods|nature|rare|C
+72|Girafe Florale|Floral Giraffe|nature|rare|D
+78|Gardien Vert|Green Guardian|light|rare|A
+81|Luminaire Abyssal|Abyssal Lightbearer|water|epic|B
+82|Baleine Farceuse|Prankster Whale|water|common|B
+83|Panthère imaginaire|Imaginary Panther|nature|epic|C
+85|Bleu-mange-cailloux|Blue-Stone-Eater|earth|epic|C
+86|Régent des Abysses|Regent of the Abysses|earth|epic|B
+88|Faerylia|Faerylia|shadow|epic|C
+91|Ignea|Ignea|fire|legendary|S
+92|Frost & Glacier|Frost & Glacier|water|legendary|C
+94|Zayd|Zayd|earth|legendary|D
+96|Mélodie des Divinités|Melody of Divinities|light|legendary|A
+97|Pyro|Pyro|fire|common|B
+100|Blancheur Aquatique|Aquatic Whiteness|water|common|A
+101|Neilla|Neilla|water|common|D
+102|Murmures du Corail Noir|Murmurs of Black Coral|water|common|B
+103|Lame de la forêt|Blade of the Forest|nature|common|B
+106|L'Épine d'Amour|Thorn of Love|earth|common|D
+113|Lums|Lums|light|common|D
+115|Aidan|Aidan|fire|common|C
+116|Prisonnière de la Machine|Prisoner of the Machine|fire|common|B
+117|Keria|Keria|fire|rare|D
+119|Fleurmarine|Marineflower|water|common|A
+122|Esprit de la Faune|Spirit of the Fauna|nature|common|S
+123|Tisseuse de Mots|Weaver of Words|nature|common|B
+124|Wyrm des Dunes Cornu|Horned Dune Wyrm|earth|common|D
+127|Spectre Canin|Canine Specter|shadow|common|S
+128|Dévoreur de faune|Devourer of Fauna|shadow|common|C
+134|Wibs l'Enflammé|Wibs the Blazing|fire|common|A
+136|Souverain des Chutes d'Éther|Sovereign of the Ether Falls|water|rare|A
+137|Cerf des Couleurs Funèbres|Deer of Mournful Colors|nature|rare|C
+139|Cornu mythologique|Mythic Horned One|earth|rare|B
+140|Souris des blés|Mouse of the Wheat|earth|rare|D
+142|Squall, Émissaire des cauchemars|Squall, Emissary of Nightmares|shadow|rare|B
+146|Poulpe Parleur|Chatty Octopus|water|epic|D
+151|Sbire des Flammes|Minion of Flames|fire|common|D
+152|Le Héraut des Cendres|Herald of Ashes|fire|common|D
+153|L'Inventeur|The Inventor|fire|common|D
+156|L'Œil des montagnes|The Eye of the Mountains|water|common|D
+158|Lapin-Plume|Feathered Rabbit|nature|common|C
+160|Sanglier Doré|Golden Boar|earth|common|A
+174|Zombie Floral|Floral Zombie|nature|common|B
+176|Rob l'Aventurier|Rob the Adventurer|earth|common|D
+177|Moxilys, la Fredonneuse|Moxilys, the Humming One|shadow|common|S
+178|Épine Médusine|Medusine Thorn|shadow|common|S
+180|Dragon Ciel|Sky Dragon|light|common|D
+188|Commando Gerz|Commando Gerz|earth|rare|S
+190|Lames en peine|Wander Blades|shadow|rare|D
+191|Ameru|Ameru|light|rare|B
+193|Vladislaus|Vladislaus|fire|epic|D
+195|Gabriel|Gabriel|nature|epic|A
+197|Codex des Maux Ancestraux|Codex of Ancient Woes|shadow|epic|C
+198|Codex des Sorts Lumineux|Codex of Luminous Spells|light|epic|C
+203|Ashtarae Lycaria|Ashtarae Lycaria|shadow|legendary|A
+204|Ephial|Ephial|light|legendary|C
+206|Catimimi|Catimimi|fire|common|C
+211|Dragosaure Céleste|Celestial Dragosaur|nature|common|A
+219|Catixy|Catixy|shadow|common|A
+221|Crapaud des Étoiles|Toad of the Stars|light|common|B
+222|Fleur de Vie|Flower of Life|light|common|D
+226|Apprenti Évocateur|Apprentice Evoker|water|common|B
+227|Chouette Polychrome|Polychrome Owl|nature|common|C
+229|Maître Amphibian|Master Amphibian|earth|common|B
+231|Aleera Mange-Cauchemars|Aleera, Nightmare-Eater|shadow|common|S
+233|Oisillons de Midas|Hatchlings of Midas|light|common|A
+234|Rongeur Nuageux|Cloudy Rodent|light|common|D
+236|Apprentie de la Mort|Apprentice of Death|fire|rare|C
+237|Voyageur des Crêtes|Traveler of the Ridges|water|rare|B
+238|Chimère Brasse-chair|Flesh-Melding Chimera|water|rare|C
+243|Vivy|Vivy|shadow|common|C
+244|Gazpoison Flottant|Floating Poison Gas|shadow|rare|C
+245|Shinobi Éclairant|Radiant Shinobi|light|rare|B
+247|Roi Feu|Fire King|fire|epic|B
+248|Roi Eau|Water King|water|epic|B
+249|Roi Nature|Nature King|nature|epic|B
+250|Roi Terre|Earth King|earth|epic|B
+251|Roi Ombre|Shadow King|shadow|epic|B
+252|Roi Lumière|Light King|light|epic|B
+255|Verdelune|Verdelune|nature|legendary|C
+256|Héraldesse Serpentine|Serpentine Heraldess|earth|legendary|D
+259|Dragon de la Cité Infernale|Dragon of the Infernal City|fire|common|C
+260|Le compagnon des esprits|The Companion of Spirits|water|common|B
+261|Godlur|Godlur|earth|common|D
+262|Yotaru Gardefeuille|Yotaru, Leafguard|nature|common|D
+263|Paguroniyx|Paguroniyx|shadow|common|A
+264|Aristocrate Nébulaire|Nebular Aristocrat|light|common|D
+265|Aeltheria, Mère Primordiale|Aeltheria, Primordial Mother|divine|divine|B

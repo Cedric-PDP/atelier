@@ -1,0 +1,228 @@
+{
+ "ms": 33296,
+ "best": {
+  "cards": 127,
+  "withTalents": [
+   {
+    "cards": [
+     {
+      "id": "1d3d896d-c640-4d88-a1af-059f39546c60",
+      "talentId": "Heritage"
+     },
+     {
+      "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+      "talentId": "Resilience"
+     },
+     {
+      "id": "3c38bd35-20d2-4369-971c-9216d21da76a",
+      "talentId": "Vitalite des Ames"
+     },
+     {
+      "id": "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+      "talentId": "Vitalite des Ames"
+     }
+    ],
+    "score": 15862.378953499869,
+    "ttk": 6,
+    "tier": "S",
+    "advantage": 99.14839634670281,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 6.2,
+      "deltaPct": -3.1
+     },
+     {
+      "player": 2,
+      "ttk": 5.4,
+      "deltaPct": 3.1
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "059b42d0-2de6-46b1-baab-fc61f0bb2ac3",
+      "talentId": "Blindage Partagé"
+     },
+     {
+      "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+      "talentId": "Resilience"
+     },
+     {
+      "id": "cd9beb57-00f1-412e-9c75-981ffdd56a38",
+      "talentId": "Baleine bleue"
+     },
+     {
+      "id": "3c38bd35-20d2-4369-971c-9216d21da76a",
+      "talentId": "Vitalite des Ames"
+     }
+    ],
+    "score": 14832.831518391617,
+    "ttk": 6,
+    "tier": "A",
+    "advantage": 88.7380963870655,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 7.1,
+      "deltaPct": -3.3
+     },
+     {
+      "player": 2,
+      "ttk": 6.3,
+      "deltaPct": 3.3
+     }
+    ]
+   }
+  ],
+  "noTalent": [
+   {
+    "cards": [
+     {
+      "id": "1d3d896d-c640-4d88-a1af-059f39546c60",
+      "talentId": null
+     },
+     {
+      "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+      "talentId": null
+     },
+     {
+      "id": "3c38bd35-20d2-4369-971c-9216d21da76a",
+      "talentId": null
+     },
+     {
+      "id": "869a57eb-3787-423b-b244-df864406c065",
+      "talentId": null
+     }
+    ],
+    "score": 14593.657364276625,
+    "ttk": 6,
+    "tier": "S",
+    "advantage": 93.00555799128804,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 6.7,
+      "deltaPct": -3.3
+     },
+     {
+      "player": 2,
+      "ttk": 5.9,
+      "deltaPct": 3.3
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "1d3d896d-c640-4d88-a1af-059f39546c60",
+      "talentId": null
+     },
+     {
+      "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+      "talentId": null
+     },
+     {
+      "id": "0d26bb73-4cd0-44fb-aba6-5b14d93d6249",
+      "talentId": null
+     },
+     {
+      "id": "d27faf84-0a03-4c16-b744-c555cd6f1edc",
+      "talentId": null
+     }
+    ],
+    "score": 14233.35376252437,
+    "ttk": 6,
+    "tier": "A",
+    "advantage": 89.61347557898651,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 6.7,
+      "deltaPct": -2.3
+     },
+     {
+      "player": 2,
+      "ttk": 6.2,
+      "deltaPct": 2.3
+     }
+    ]
+   },
+   {
+    "cards": [
+     {
+      "id": "1d3d896d-c640-4d88-a1af-059f39546c60",
+      "talentId": null
+     },
+     {
+      "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+      "talentId": null
+     },
+     {
+      "id": "cd9beb57-00f1-412e-9c75-981ffdd56a38",
+      "talentId": null
+     },
+     {
+      "id": "42de5a1a-f4f1-4d3a-a0b1-01a07ea9b55d",
+      "talentId": null
+     }
+    ],
+    "score": 14115.333377330637,
+    "ttk": 6,
+    "tier": "A",
+    "advantage": 88.50237130203293,
+    "positions": [
+     {
+      "player": 1,
+      "ttk": 7.1,
+      "deltaPct": -3.4
+     },
+     {
+      "player": 2,
+      "ttk": 6.3,
+      "deltaPct": 3.4
+     }
+    ]
+   }
+  ]
+ },
+ "noTalentCheck": [
+  {
+   "ids": [
+    "1d3d896d-c640-4d88-a1af-059f39546c60",
+    "40416045-b820-4d2c-96f9-34f87d99ac25",
+    "3c38bd35-20d2-4369-971c-9216d21da76a",
+    "869a57eb-3787-423b-b244-df864406c065"
+   ],
+   "s1": 14593.657364276625,
+   "s0": 9452.95068716845,
+   "tier": "S",
+   "adv": 93.00555799128804
+  },
+  {
+   "ids": [
+    "1d3d896d-c640-4d88-a1af-059f39546c60",
+    "40416045-b820-4d2c-96f9-34f87d99ac25",
+    "0d26bb73-4cd0-44fb-aba6-5b14d93d6249",
+    "d27faf84-0a03-4c16-b744-c555cd6f1edc"
+   ],
+   "s1": 14233.35376252437,
+   "s0": 9207.3204823403,
+   "tier": "A",
+   "adv": 89.61347557898651
+  },
+  {
+   "ids": [
+    "1d3d896d-c640-4d88-a1af-059f39546c60",
+    "40416045-b820-4d2c-96f9-34f87d99ac25",
+    "cd9beb57-00f1-412e-9c75-981ffdd56a38",
+    "42de5a1a-f4f1-4d3a-a0b1-01a07ea9b55d"
+   ],
+   "s1": 14115.333377330637,
+   "s0": 9253.034754778004,
+   "tier": "A",
+   "adv": 88.50237130203293
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+  "deck chimere": {
+    "cartes": ["Lame de la forêt", "Chimère Brasse-chair", "L'Œil des montagnes", "Keria"],
+    "talents": "aucun",
+    "score_modele": 8018, "part_critiques": "48%", "score_sans_critiques": 4146,
+    "boutique_simulee_2_relances": {"moyenne": 9393, "p10": 8935, "moyenne_si_moitie_critiques": 8197},
+    "ordre_tours_pairs": ["L'Œil: Revitalisation (si dispo)", "Lame: Soin critique", "Keria: Embrasement", "Chimère: Galop arctique", "Lame: Pinces"],
+    "boutique": "T2 Cœur de nature / Cœur d'eau / Poison (sur Chimère à la place de Mimétisme) ; T4-6 Cœurs rares, Berserk rare, Renvoi sur Keria ; T6-10 Cœur ou Berserk épique à la place de Pinces ; jamais Vampirisme pour commune/rare ; jusqu'à 2 relances",
+    "version_jeu": "1.20", "date": "2026-10-09"
+  }
+}

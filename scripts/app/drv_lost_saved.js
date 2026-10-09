@@ -1,0 +1,3 @@
+(()=>{const I=ht(MODELS.x1);const by=n=>MODELS.x1.cards.find(c=>c.number===n);const ev=ids=>Math.round(I.evaluate(ids.map(id=>({id,talentId:null})),{optimize:false,suggestions:false,shop:false}).score);
+const decks={'deck chimere':[103,238,156,117],'Anti-critiques (Hibernatus)':[12,238,27,117],'Zéro critique':[102,116,12,69],'Deck Aleera (à obtenir)':[231,238,156,117]};
+OUT.r={};for(const [name,nums] of Object.entries(decks)){const ids=nums.map(n=>by(n).id);const s=ev(ids);OUT.r[name]={s,lost:ids.map((id,p)=>{const x=ids.slice();x[p]='dead-card';const v=ev(x);return [by(nums[p]).name,v,Math.round(100*(1-v/s))]})}}})();
