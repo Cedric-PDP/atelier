@@ -1,0 +1,622 @@
+Tox SPAM : les 101 passifs de la boutique, raretés et gains
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Tox
+# Les Tox,
+ligne par ligne.
+Ce que chaque Tox fait, quelles cartes le portent dès le départ et ce qu’il rapporte aux decks du modèle.
+## Les raretés au fil de la partie
+Chances de chaque rareté pour un Tox proposé, à chaque ouverture de la boutique (tous les deux tours), avec la Chance de départ (+1 par tour). Tout est commun au début ; les talents et Tox de Chance font venir les raretés plus tôt.
+Commune Rare Épique Légendaire
+- T 2 100 %
+Chance 2
+- T 4 80 % 20 %
+Chance 4
+- T 6 50 % 45 %
+Chance 6
+- T 8 27 % 53 % 20 %
+Chance 8
+- T 10 50 % 40 %
+Chance 10
+- T 12 42 % 53 %
+Chance 12
+- T 14 35 % 60 %
+Chance 14
+- T 16 28 % 59 %
+Chance 16
+- T 18 21 % 55 % 25 %
+Chance 18
+- T 20 50 % 35 %
+Chance 20
+Rechercher dans les Tox / Trier par Gain moyen Gain maximal Fréquence dans les plans Rareté Nom
+Tout Commune Rare Épique Légendaire
+Toutes familles Bonus élémentaires Dégâts Survie Contrôle Économie & chance Transformation
+102 résultats · gains calculés sur les decks de la tier list, Tox posé dès le début de partie
+### Berserk
+Légendaire Dégâts
+Les dégâts et les soins de toutes vos cartes sont augmentés de 100%
+Gain moyen + 17,2 % Gain maximal + 59,1 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Berserk
+Épique Dégâts
+Les dégâts et les soins de toutes vos cartes sont augmentés de 50%
+Gain moyen + 7,8 % Gain maximal + 44,3 % Dans les plans d’achat 20 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent B Aleera Mange-Cauchemars + Paguroniyx C Maîtresse des Teintes + Apprentie de la Mort C Le compagnon des esprits + Esprit Eau
+### Cimetière
+Légendaire Bonus élémentaires Glossaire officiel
+Augmente tous vos bonus élémentaires de (+12) lorsqu'une carte meurt
+Gain moyen + 6 % Gain maximal + 35,8 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de nature
+Légendaire Bonus élémentaires
+Bonus Nature (+8) par tour de jeu
+Gain moyen + 4,6 % Gain maximal + 56,7 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de terre
+Légendaire Bonus élémentaires
+Bonus Terre (+8) par tour de jeu
+Gain moyen + 4,3 % Gain maximal + 45,5 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Multiplicateur
+Rare Bonus élémentaires
+Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+Gain moyen + 3,8 % Gain maximal + 36,5 % Dans les plans d’achat 10 % Probable dès le tour 4
+Cartes qui l’ont au départ Épine Médusine Murmures du Corail Noir Cerf des Couleurs Funèbres L'Inventeur
+Decks qui le ciblent B Souverain des Chutes d'Éther + Maître Amphibian C Maître Amphibian + Rob l'Aventurier C Pyro + Wibs l'Enflammé
+### Cimetière
+Épique Bonus élémentaires Glossaire officiel
+Augmente tous vos bonus élémentaires de (+8) lorsqu'une carte meurt
+Gain moyen + 3,7 % Gain maximal + 42,6 % Dans les plans d’achat 2 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Épine Médusine + Le compagnon des esprits D Commando Gerz + Zayd D Zombie Floral + Princesse Meridia
+### Cœur de feu
+Légendaire Bonus élémentaires
+Bonus Feu (+8) par tour de jeu
+Gain moyen + 3,7 % Gain maximal + 59,1 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### AoE
+Légendaire Dégâts Glossaire officiel
+Attaque et soigne les cibles adjacentes à hauteur de 100% des dégâts infligés
+Gain moyen + 3,7 % Gain maximal + 29,8 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur d'eau
+Légendaire Bonus élémentaires
+Bonus Eau (+8) par tour de jeu
+Gain moyen + 3,5 % Gain maximal + 33,5 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Gel
+Épique Contrôle
+Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+Gain moyen + 3,4 % Gain maximal + 16,7 % Dans les plans d’achat 5 % Probable dès le tour 8
+Cartes qui l’ont au départ Dragon de la Cité Infernale Frost & Glacier
+Decks qui le ciblent C Aleera Mange-Cauchemars + Catixy C Catimimi + Girafe Florale C Catimimi + Faerylia
+### Vengeur
+Épique Dégâts
+Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+Gain moyen + 3,3 % Gain maximal + 56,5 % Dans les plans d’achat 3 % Probable dès le tour 8
+Cartes qui l’ont au départ Dragon Ciel Apprentie de la Mort
+Decks qui le ciblent C Dragon Ciel + L'Épine d'Amour C Luminaire Abyssal + Aristocrate Nébulaire C Commando Gerz + Shinobi Éclairant
+### Cœur de terre
+Épique Bonus élémentaires
+Bonus Terre (+5) par tour de jeu
+Gain moyen + 3,2 % Gain maximal + 36,5 % Dans les plans d’achat 5 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Commando Gerz + Bleu-mange-cailloux D Bleu-mange-cailloux + Rob l'Aventurier D Sanglier Doré + Roi Terre
+### Cœur vital
+Légendaire Survie
+Cette carte augmente ses PV max de 100 chaque tour
+Gain moyen + 3,1 % Gain maximal + 18,5 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### AoE
+Épique Dégâts Glossaire officiel
+Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés
+Gain moyen + 3 % Gain maximal + 29,6 % Dans les plans d’achat 1 % Probable dès le tour 8
+Cartes qui l’ont au départ Voyageur des Crêtes
+Decks qui le ciblent D Croqueur de Fruits Verdoyant + Sanglier Doré D Oisillons de Midas + Mélodie des Divinités
+### Cœur de nature
+Épique Bonus élémentaires
+Bonus Nature (+5) par tour de jeu
+Gain moyen + 2,8 % Gain maximal + 42,6 % Dans les plans d’achat 5 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Esprit de la Faune + L'Épine d'Amour C Dragon Ciel + L'Épine d'Amour C Zombie Floral + Gabriel
+### Berserk
+Rare Dégâts
+Les dégâts et les soins de toutes vos cartes sont augmentés de 25%
+Gain moyen + 2,8 % Gain maximal + 36,5 % Dans les plans d’achat 18 % Probable dès le tour 4
+Cartes qui l’ont au départ Commando Gerz
+Decks qui le ciblent S Aleera Mange-Cauchemars + Maître Amphibian A Aleera Mange-Cauchemars + Souverain des Chutes d'Éther A Aleera Mange-Cauchemars + Apprentie de la Mort
+### Cœur de lumière
+Légendaire Bonus élémentaires
+Bonus Lumière (+8) par tour de jeu
+Gain moyen + 2,6 % Gain maximal + 70,8 % Dans les plans d’achat 1 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Shinobi Éclairant + L'Épine d'Amour
+### Cœur d'ombre
+Légendaire Bonus élémentaires
+Bonus Ombre (+8) par tour de jeu
+Gain moyen + 2,6 % Gain maximal + 44 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Poison
+Rare Dégâts
+Inflige des dégâts égaux à 3% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+Gain moyen + 2,6 % Gain maximal + 29,6 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Wibs l'Enflammé + Logidrake D Pyro + Wibs l'Enflammé
+### Poison
+Épique Dégâts
+Inflige des dégâts égaux à 6% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+Gain moyen + 2,6 % Gain maximal + 29,6 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Poison
+Légendaire Dégâts
+Inflige des dégâts égaux à 8% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+Gain moyen + 2,6 % Gain maximal + 29,6 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Poison
+Commune Dégâts
+Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+Gain moyen + 2,6 % Gain maximal + 29,6 % Dans les plans d’achat 20 % Probable dès le tour 2
+Cartes qui l’ont au départ Wibs l'Enflammé Gazpoison Flottant
+Decks qui le ciblent S Aleera Mange-Cauchemars + Maître Amphibian B Apprentie de la Mort + Scorch B Maître Amphibian + Rob l'Aventurier
+### Cœur de feu
+Épique Bonus élémentaires
+Bonus Feu (+5) par tour de jeu
+Gain moyen + 2,5 % Gain maximal + 58,9 % Dans les plans d’achat 5 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Maîtresse des Teintes + Apprentie de la Mort C Souverain des Flammes + Wibs l'Enflammé C Pyro + Wibs l'Enflammé
+### Renvoi
+Légendaire Survie Glossaire officiel
+Renvoie 100% des dégâts subis à l'attaquant
+Gain moyen + 2,4 % Gain maximal + 29,7 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur d'eau
+Épique Bonus élémentaires
+Bonus Eau (+5) par tour de jeu
+Gain moyen + 2 % Gain maximal + 27,6 % Dans les plans d’achat 4 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Maître Amphibian + Rob l'Aventurier C Souverain des Chutes d'Éther + Maître Amphibian C Zombie Floral + Souverain des Chutes d'Éther
+### Reset
+Épique Dégâts
+Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+Gain moyen + 2 % Gain maximal + 25,3 % Dans les plans d’achat 1 % Probable dès le tour 8
+Cartes qui l’ont au départ Dragosaure Céleste Bleu-mange-cailloux Hippocampe Nimbé Ephial
+Decks qui le ciblent D Zombie Floral + Gabriel
+### Cœur vital
+Épique Survie
+Cette carte augmente ses PV max de 60 chaque tour
+Gain moyen + 2 % Gain maximal + 17 % Dans les plans d’achat 6 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Cerf des Couleurs Funèbres + L'Épine d'Amour C Esprit de la Faune + L'Épine d'Amour C Rongeur Nuageux + Mélodie des Divinités
+### Cimetière
+Rare Bonus élémentaires Glossaire officiel
+Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+Gain moyen + 1,9 % Gain maximal + 24,6 % Dans les plans d’achat 5 % Probable dès le tour 4
+Cartes qui l’ont au départ Naissance d'Aldrin Lames en peine
+Decks qui le ciblent C Raffteru + L'Épine d'Amour C Mélodie des Divinités + Chouette Polychrome C Dragon Ciel + L'Épine d'Amour
+### Phénix
+Légendaire Survie Glossaire officiel
+Lorsqu’elle est détruite, cette carte revient à la vie avec 100% de ses PV max.
+Usage unique
+Gain moyen + 1,4 % Gain maximal + 18,2 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Éternité
+Légendaire Contrôle Glossaire officiel
+Augmente les temps de recharge de 1
+Gain moyen + 1,4 % Gain maximal + 12,6 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Nakyel Héraldesse Serpentine
+### Phénix
+Épique Survie Glossaire officiel
+Lorsqu’elle est détruite, cette carte revient à la vie avec 75% de ses PV max.
+Usage unique
+Gain moyen + 1,4 % Gain maximal + 17,3 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Phénix
+Rare Survie Glossaire officiel
+Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max.
+Usage unique
+Gain moyen + 1,4 % Gain maximal + 16,4 % Dans les plans d’achat 5 % Probable dès le tour 4
+Cartes qui l’ont au départ Naissance d'Aldrin
+Decks qui le ciblent C Esprit de la Faune + L'Épine d'Amour C Dragon Ciel + L'Épine d'Amour C Luminaire Abyssal + Aristocrate Nébulaire
+### Disparition
+Légendaire Contrôle Glossaire officiel
+Supprime le dernier passif de la cible
+Gain moyen + 1,3 % Gain maximal + 12,6 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Lisa, la Dragonnière Aidan Souris des blés
+### Optimisation
+Rare Dégâts
+Les valeurs variables des dégâts, des soins et des bonus de cette carte sont toujours au maximum
+Gain moyen + 1,3 % Gain maximal + 36,5 % Dans les plans d’achat 3 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Le compagnon des esprits + Esprit Eau C Épine Médusine + Le compagnon des esprits D Bleu-mange-cailloux + Esprit Terre
+### Renvoi
+Épique Survie Glossaire officiel
+Renvoie 75% des dégâts subis à l'attaquant
+Gain moyen + 1,3 % Gain maximal + 29,8 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ L'Épine d'Amour
+### AoE
+Rare Dégâts Glossaire officiel
+Attaque et soigne les cibles adjacentes à hauteur de 40% des dégâts infligés
+Gain moyen + 1,2 % Gain maximal + 29,6 % Dans les plans d’achat 2 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Rongeur Nuageux + Mélodie des Divinités D Commando Gerz + Mélodie des Divinités D Dragon Ciel + L'Épine d'Amour
+### Cœur d'ombre
+Épique Bonus élémentaires
+Bonus Ombre (+5) par tour de jeu
+Gain moyen + 1,2 % Gain maximal + 29,4 % Dans les plans d’achat 2 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Wibs l'Enflammé + Apprentie de la Mort C Wibs l'Enflammé + Apprentie de la Mort D Spectre Canin + Maîtresse des Teintes
+### Cimetière
+Commune Bonus élémentaires Glossaire officiel
+Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt
+Gain moyen + 1,2 % Gain maximal + 42,4 % Dans les plans d’achat 6 % Probable dès le tour 2
+Cartes qui l’ont au départ Apprentie de la Mort
+Decks qui le ciblent C Souverain des Flammes + Apprentie de la Mort C Cerf des Couleurs Funèbres + L'Épine d'Amour C Wibs l'Enflammé + Apprentie de la Mort
+### Phénix
+Commune Survie Glossaire officiel
+Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+Gain moyen + 1,2 % Gain maximal + 15,3 % Dans les plans d’achat 7 % Probable dès le tour 2
+Cartes qui l’ont au départ Bleu-mange-cailloux Roi des Flammes Ardentes
+Decks qui le ciblent C Dragon Ciel + Aristocrate Nébulaire C Wibs l'Enflammé + Apprentie de la Mort C Mélodie des Divinités + Chouette Polychrome
+### Bomba
+Épique Dégâts Glossaire officiel
+Inflige 500 dégâts bruts à une carte adverse aléatoire quand cette carte meurt
+Gain moyen + 1,1 % Gain maximal + 21,6 % Dans les plans d’achat 1 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Maîtresse des Teintes + Apprentie de la Mort D Dragon Ciel + Rongeur Nuageux
+### Cœur de feu
+Rare Bonus élémentaires
+Bonus Feu (+2) par tour de jeu
+Gain moyen + 1 % Gain maximal + 43,9 % Dans les plans d’achat 2 % Probable dès le tour 4
+Cartes qui l’ont au départ Wibs l'Enflammé
+Decks qui le ciblent D Wibs l'Enflammé + Apprentie de la Mort D Pyro + Apprentie de la Mort D Wibs l'Enflammé + Logidrake
+### Cœur de terre
+Rare Bonus élémentaires
+Bonus Terre (+2) par tour de jeu
+Gain moyen + 0,9 % Gain maximal + 36,5 % Dans les plans d’achat 3 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux C L'Épine d'Amour + Rob l'Aventurier D Croqueur de Fruits Verdoyant + Sanglier Doré
+### Immunité
+Épique Survie Glossaire officiel
+La carte est immunisée contre tous les effets des cartes adverses
+Gain moyen + 0,9 % Gain maximal + 12,9 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Le compagnon des esprits Voyageur des Crêtes Codex des Maux Ancestraux Codex des Sorts Lumineux
+### Berserk
+Commune Dégâts
+Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+Gain moyen + 0,9 % Gain maximal + 29,6 % Dans les plans d’achat 17 % Probable dès le tour 2
+Cartes qui l’ont au départ Squall, Émissaire des cauchemars Rongeur Nuageux L'Œil des montagnes Sbire des Flammes
+Decks qui le ciblent A Spectre Canin + Aleera Mange-Cauchemars B Aleera Mange-Cauchemars + Paguroniyx C Aleera Mange-Cauchemars + Catixy
+### Cœur vital
+Rare Survie
+Cette carte augmente ses PV max de 30 chaque tour
+Gain moyen + 0,9 % Gain maximal + 15 % Dans les plans d’achat 15 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent A Aleera Mange-Cauchemars + Commando Gerz A Aleera Mange-Cauchemars + Paguroniyx A Aleera Mange-Cauchemars + Paguroniyx
+### Soin primitif
+Légendaire Survie
+Au début de chaque tour, la carte récupère 19% de ses PV max
+Gain moyen + 0,8 % Gain maximal + 18,3 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Soin primitif
+Épique Survie
+Au début de chaque tour, la carte récupère 14% de ses PV max
+Gain moyen + 0,8 % Gain maximal + 18,1 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Soin primitif
+Rare Survie
+Au début de chaque tour, la carte récupère 9% de ses PV max
+Gain moyen + 0,8 % Gain maximal + 16,9 % Dans les plans d’achat 3 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Zombie Floral + Souverain des Chutes d'Éther C Catimimi + Girafe Florale D Spectre Canin + Maîtresse des Teintes
+### Chanceur
+Légendaire Économie & chance Glossaire officiel
+Augmente votre Chance de (+4) chaque tour
+Gain moyen + 0,7 % Gain maximal + 12,9 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Mystère
+Rare Transformation
+Commence la partie avec un passif aléatoire
+Gain moyen + 0,7 % Gain maximal + 15,1 % Dans les plans d’achat 7 % Probable dès le tour 4
+Cartes qui l’ont au départ Paguroniyx Apprenti Évocateur
+Decks qui le ciblent C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux C Épine Médusine + Scorch
+### Cœur de lumière
+Épique Bonus élémentaires
+Bonus Lumière (+5) par tour de jeu
+Gain moyen + 0,7 % Gain maximal + 23,2 % Dans les plans d’achat 4 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Commando Gerz + Shinobi Éclairant D Shinobi Éclairant + L'Épine d'Amour D Commando Gerz + Rongeur Nuageux
+### AoE
+Commune Dégâts Glossaire officiel
+Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+Gain moyen + 0,7 % Gain maximal + 15,2 % Dans les plans d’achat 2 % Probable dès le tour 2
+Cartes qui l’ont au départ Shado, Fléau abyssal Sbire des Flammes
+Decks qui le ciblent C Croqueur de Fruits Verdoyant + Commando Gerz D Gabriel + Esprit Nature D Wibs l'Enflammé + Logidrake
+### Érosion
+Commune Dégâts Glossaire officiel
+Réduit les PV max à hauteur de 50% des dégâts infligés
+Gain moyen + 0,7 % Gain maximal + 19,1 % Dans les plans d’achat 0 % Probable dès le tour 2
+Cartes qui l’ont au départ Maître Amphibian Sylvan, Protecteur de la Verdure Frost & Glacier
+### Érosion
+Épique Dégâts Glossaire officiel
+Réduit les PV max à hauteur de 100% des dégâts infligés
+Gain moyen + 0,7 % Gain maximal + 19,1 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de nature
+Rare Bonus élémentaires
+Bonus Nature (+2) par tour de jeu
+Gain moyen + 0,6 % Gain maximal + 28,1 % Dans les plans d’achat 3 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Dragon Ciel + L'Épine d'Amour D Maîtresse des Teintes + Cerf des Couleurs Funèbres D Catimimi + Girafe Florale
+### Cœur d'eau
+Rare Bonus élémentaires
+Bonus Eau (+2) par tour de jeu
+Gain moyen + 0,6 % Gain maximal + 12,5 % Dans les plans d’achat 3 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent B Souverain des Chutes d'Éther + Maître Amphibian C Souverain des Chutes d'Éther + Maître Amphibian C Souverain des Chutes d'Éther + Maître Amphibian
+### Renvoi
+Rare Survie Glossaire officiel
+Renvoie 50% des dégâts subis à l'attaquant
+Gain moyen + 0,6 % Gain maximal + 29,6 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Zombie Floral + Dragon Ciel D Shinobi Éclairant + Lueur d'Espoir
+### Sac de frappe
+Commune Bonus élémentaires
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+Gain moyen + 0,6 % Gain maximal + 15 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Aleera Mange-Cauchemars Sanglier Doré Roi Feu Roi Eau Roi Nature Roi Terre Roi Lumière Roi Ombre Tisseuse de Mots Crapaud des Étoiles Girafe Florale Le Transporteur Sauvage
+Decks qui le ciblent C Dragon Ciel + Princesse Meridia
+### Sac de frappe
+Rare Bonus élémentaires
+Augmente de +2 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Gain moyen + 0,6 % Gain maximal + 15 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+### Sac de frappe
+Épique Bonus élémentaires
+Augmente de +3 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Gain moyen + 0,6 % Gain maximal + 15 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Sac de frappe
+Légendaire Bonus élémentaires
+Augmente de +4 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Gain moyen + 0,6 % Gain maximal + 15 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Brut
+Rare Dégâts
+Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé
+Gain moyen + 0,6 % Gain maximal + 19,1 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Hippocampe Nimbé
+### Renvoi
+Commune Survie Glossaire officiel
+Renvoie 25% des dégâts subis à l'attaquant
+Gain moyen + 0,6 % Gain maximal + 29,6 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Luminaire Abyssal + Aristocrate Nébulaire D Spectre Canin + Oisillons de Midas
+### Vampirisme
+Légendaire Survie Glossaire officiel
+Régénère 100% des dégâts infligés à la cible
+Gain moyen + 0,5 % Gain maximal + 17,8 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Vampirisme
+Épique Survie Glossaire officiel
+Régénère 75% des dégâts infligés à la cible
+Gain moyen + 0,5 % Gain maximal + 17,4 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Chimère Brasse-chair
+### Chanceur
+Épique Économie & chance Glossaire officiel
+Augmente votre Chance de (+2) chaque tour
+Gain moyen + 0,5 % Gain maximal + 12,6 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de terre
+Commune Bonus élémentaires
+Bonus Terre (+1) par tour de jeu
+Gain moyen + 0,4 % Gain maximal + 36,3 % Dans les plans d’achat 3 % Probable dès le tour 2
+Cartes qui l’ont au départ Croqueur de Fruits Verdoyant Rob l'Aventurier
+Decks qui le ciblent C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux C Croqueur de Fruits Verdoyant + Commando Gerz D Bleu-mange-cailloux + Raffteru
+### Temporalité
+Légendaire Contrôle Glossaire officiel
+Diminue les temps de recharge de 1
+Gain moyen + 0,4 % Gain maximal + 13,6 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Verdelune Neilla
+### Fumée
+Rare Survie Glossaire officiel
+Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+Gain moyen + 0,4 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Ameru Vivy Poulpe Parleur Le Héraut des Cendres
+### Chanceur
+Rare Économie & chance Glossaire officiel
+Augmente votre Chance de (+1) chaque tour
+Gain moyen + 0,3 % Gain maximal + 12,4 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Lueur d'Espoir Lames en peine
+### Revanche
+Rare Dégâts
+Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire
+Gain moyen + 0,3 % Gain maximal + 12,5 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Zayd
+Decks qui le ciblent D Commando Gerz + Rongeur Nuageux D Commando Gerz + Protecteur des ruines
+### Vampirisme
+Rare Survie Glossaire officiel
+Régénère 50% des dégâts infligés à la cible
+Gain moyen + 0,3 % Gain maximal + 16,9 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Logidrake, l'Ignatius
+### Chanceur
+Commune Économie & chance Glossaire officiel
+Augmente votre Chance de (+0,5) chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Hibernatus Soigneuse Astrale des Bois Le Héraut des Cendres
+Decks qui le ciblent A Aleera Mange-Cauchemars + Maître Amphibian
+### Spamland
+Commune Économie & chance Glossaire officiel
+Génère (+3) Spamtons chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 2
+Cartes qui l’ont au départ Boutique uniquement
+### Spamland
+Rare Économie & chance Glossaire officiel
+Génère (+8) Spamtons chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+### Spamland
+Épique Économie & chance Glossaire officiel
+Génère (+24) Spamtons chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Spamland
+Légendaire Économie & chance Glossaire officiel
+Génère (+48) Spamtons chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Vampirisme
+Commune Survie Glossaire officiel
+Régénère 25% des dégâts infligés à la cible
+Gain moyen + 0,2 % Gain maximal + 15,2 % Dans les plans d’achat 3 % Probable dès le tour 2
+Cartes qui l’ont au départ Dévoreur de faune
+Decks qui le ciblent C Mélodie des Divinités + Chouette Polychrome D Luminaire Abyssal + Rongeur Nuageux D Croqueur de Fruits Verdoyant + Sanglier Doré
+### Cœur vital
+Commune Survie
+Cette carte augmente ses PV max de 15 chaque tour
+Gain moyen + 0,2 % Gain maximal + 12,7 % Dans les plans d’achat 3 % Probable dès le tour 2
+Cartes qui l’ont au départ Félin Errant
+Decks qui le ciblent B Aleera Mange-Cauchemars + Apprentie de la Mort D Shinobi Éclairant + Codex des Sorts Lumineux D Faerylia + Vladislaus
+### Ténacité
+Commune Survie
+La première attaque fatale vous laisse à 1 PV
+Gain moyen + 0,2 % Gain maximal + 15 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Gazpoison Flottant Godlur Vladislaus
+Decks qui le ciblent D Spectre Canin + Rongeur Nuageux
+### Métamorphe
+Épique Transformation
+Choisissez une carte parmi trois de la même rareté pour remplacer cette carte
+Gain moyen + 0,2 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de feu
+Commune Bonus élémentaires
+Bonus Feu (+1) par tour de jeu
+Gain moyen + 0,2 % Gain maximal + 29,5 % Dans les plans d’achat 2 % Probable dès le tour 2
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Maîtresse des Teintes + Apprentie de la Mort C Souverain des Flammes + Wibs l'Enflammé D Dragon Ciel + Cerf des Couleurs Funèbres
+### Cœur d'ombre
+Rare Bonus élémentaires
+Bonus Ombre (+2) par tour de jeu
+Gain moyen + 0,1 % Gain maximal + 15 % Dans les plans d’achat 2 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Dragon Ciel + Aristocrate Nébulaire C Maîtresse des Teintes + Apprentie de la Mort D Spectre Canin + Commando Gerz
+### Soin primitif
+Commune Survie
+Au début de chaque tour, la carte récupère 4% de ses PV max
+Gain moyen + 0,1 % Gain maximal + 15,1 % Dans les plans d’achat 6 % Probable dès le tour 2
+Cartes qui l’ont au départ Régent des Abysses Shado, Fléau abyssal Godlur Scorch, les Lézards Ignés
+Decks qui le ciblent C Zombie Floral + Souverain des Chutes d'Éther C Dragon Ciel + Aldrin & Gorakar C Raffteru + L'Épine d'Amour
+### Provocation
+Rare Contrôle Glossaire officiel
+Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler
+Gain moyen + 0,1 % Gain maximal + 12,1 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Rongeur Nuageux
+Decks qui le ciblent C Wibs l'Enflammé + Apprentie de la Mort C Shinobi Éclairant + Wyrm des Dunes Cornu
+### Cœur résistance
+Rare Survie
+Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6).
+Gain moyen + 0,1 % Gain maximal + 15,5 % Dans les plans d’achat 10 % Probable dès le tour 4
+Cartes qui l’ont au départ Lames en peine
+Decks qui le ciblent C Raffteru + L'Épine d'Amour C Dragon Ciel + Princesse Meridia C Zombie Floral + Princesse Meridia
+### Cœur résistance
+Commune Survie
+Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3).
+Gain moyen + 0 % Gain maximal + 15,1 % Dans les plans d’achat 4 % Probable dès le tour 2
+Cartes qui l’ont au départ Lapin-Plume
+Decks qui le ciblent A Aleera Mange-Cauchemars + Commando Gerz A Aleera Mange-Cauchemars + Paguroniyx C Dragon Ciel + Aristocrate Nébulaire
+### Bouclier
+Rare Survie
+Le premier coup reçu à chaque tour adverse est réduit de 50%
+Gain moyen + 0 % Gain maximal + 14,8 % Dans les plans d’achat 0 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+### Bouclier
+Commune Survie
+Le premier coup reçu à chaque tour adverse est réduit de 25%
+Gain moyen + 0 % Gain maximal + 12,3 % Dans les plans d’achat 0 % Probable dès le tour 2
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur de nature
+Commune Bonus élémentaires
+Bonus Nature (+1) par tour de jeu
+Gain moyen + 0 % Gain maximal + 14 % Dans les plans d’achat 2 % Probable dès le tour 2
+Cartes qui l’ont au départ Zombie Floral Soigneuse Astrale des Bois
+Decks qui le ciblent D Zombie Floral + Dragon Ciel D Zombie Floral + Dragon Ciel D Esprit de la Faune + L'Épine d'Amour
+### Bouclier
+Légendaire Survie
+Le premier coup reçu à chaque tour adverse est réduit de 100%
+Gain moyen + 0 % Gain maximal + 14,9 % Dans les plans d’achat 0 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+### Contrecoup
+Commune Dégâts Hors boutique
+Subit 50% des dégâts infligés à la cible
+Gain moyen + 0 % Gain maximal + 0 % Dans les plans d’achat 0 %
+Cartes qui l’ont au départ Crapaud des Étoiles Lapin-Plume
+### Bouclier
+Épique Survie
+Le premier coup reçu à chaque tour adverse est réduit de 75%
+Gain moyen + 0 % Gain maximal + 14,9 % Dans les plans d’achat 0 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+### Cœur d'eau
+Commune Bonus élémentaires
+Bonus Eau (+1) par tour de jeu
+Gain moyen + 0 % Gain maximal + 12,3 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Zombie Floral Léviathan des Cieux L'Œil des montagnes
+Decks qui le ciblent C Zombie Floral + Princesse Meridia
+### Cœur d'ombre
+Commune Bonus élémentaires
+Bonus Ombre (+1) par tour de jeu
+Gain moyen + 0 % Gain maximal + 12,5 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Spectre Canin Aleera Mange-Cauchemars Rob l'Aventurier
+Decks qui le ciblent B Pyro + Scorch C Spectre Canin + Maîtresse des Teintes
+### Cœur résistance
+Légendaire Survie
+Cette carte augmente les résistances de toutes les cartes alliées (+15)
+Gain moyen + 0 % Gain maximal + 18,5 % Dans les plans d’achat 1 % Probable dès le tour 16
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Shinobi Éclairant + Lueur d'Espoir
+### Mimétisme
+Rare Bonus élémentaires
+Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+Gain moyen + -0,1 % Gain maximal + 15 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Léo Chimère Brasse-chair Wyrm des Dunes Cornu
+Decks qui le ciblent D Catimimi + Aidan
+### Cœur de lumière
+Commune Bonus élémentaires
+Bonus Lumière (+1) par tour de jeu
+Gain moyen + -0,4 % Gain maximal + 28,3 % Dans les plans d’achat 1 % Probable dès le tour 2
+Cartes qui l’ont au départ Spectre Canin
+Decks qui le ciblent D Oisillons de Midas + Mélodie des Divinités D Rongeur Nuageux + Codex des Sorts Lumineux
+### Cœur résistance
+Épique Survie
+Cette carte augmente les résistances de toutes les cartes alliées (+10)
+Gain moyen + -0,4 % Gain maximal + 16 % Dans les plans d’achat 3 % Probable dès le tour 8
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Commando Gerz + Mélodie des Divinités D Shinobi Éclairant + Lueur d'Espoir D Sanglier Doré + Rob l'Aventurier
+### Cœur de lumière
+Rare Bonus élémentaires
+Bonus Lumière (+2) par tour de jeu
+Gain moyen + -0,8 % Gain maximal + 14,4 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent D Commando Gerz + Rongeur Nuageux
+### Inversement
+Rare Transformation
+Les dégâts de cette carte deviennent des soins, ses Éternités des Temporalités, et inversement.
+Gain moyen + -1,4 % Gain maximal + 9,9 % Dans les plans d’achat 1 % Probable dès le tour 4
+Cartes qui l’ont au départ Boutique uniquement
+Decks qui le ciblent C Dragon Ciel + Aristocrate Nébulaire C Maître Amphibian + Scorch D Maître Amphibian + Aidan
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,144 @@
+Prisoner of the Machine: SPAM Fire common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Prisoner of the Machine B View the full card
+Prisoner of the Machine
+1 Explosion
+3 Emberguard
+1000/1000
+3
+Standard
+Prisoner of the Machine
+1 Explosion
+3 Emberguard
+1000/1000
+3
+Elemental
+Prisoner of the Machine
+1 Explosion
+3 Emberguard
+1000/1000
+3
+FA
+Prisoner of the Machine
+1 Explosion
+3 Emberguard
+1000/1000
+3
+## Prisoner of the Machine
+B Fire · Common · Standard
+1,000 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Paradox This card's resistances are inverted: positive ones become negative, and vice versa.
+- Talent 2 360 Turn Applies "Random Metamorph" to all your other cards when this card is killed.
+- Talent 3 Punching Bag Start the game with the "Punching Bag" passive
+Recommended
+Three ability slots
+- Explosion ability · Cooldown 1 [Cost 100 HP]
+Deal 10 Fire damage
+After use, this attack’s base damage increases by (+10)
+1
+- Emberguard ability · Cooldown 3 Apply Taunt
+3
+- Free slot Open to a shop Tox
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Fire Common #116
+# Prisoner of the Machine
+Versatile
+1,000 Health points
+3 Spamtons / turn
+#40 Rank / 127
+C No talent · #73
+Attack
+58
+Generation
+50
+Defense
+75
+Support
+1
+Control
+0
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Paradox 2 360 Turn 3 Punching Bag
+Build with this card 3 decks
+Share
+### Abilities
+#### Explosion
+1 turn
+[Cost 100 HP]
+Deal 10 Fire damage
+After use, this attack’s base damage increases by (+10)
+Accuracy 100% Critical 1%
+#### Emberguard
+3 turns
+Apply Taunt
+Accuracy 100% Critical 0%
+### Talents
+#### Paradox
+This card's resistances are inverted: positive ones become negative, and vice versa.
+Δ -25.4 · Theoretical score
+#### 360 Turn
+Applies "Random Metamorph" to all your other cards when this card is killed.
+Δ -160.8 · Theoretical score
+#### Punching Bag
+Recommended
+Start the game with the "Punching Bag" passive
+Δ 247 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+D Accessible
+Midrange ·
+### Wibs the Blazing + Apprentice of Death
+39 % Relative index 10.8 turns Estimated elimination 19 / turn Spamtons
+D Accessible
+Midrange ·
+### Pyro + Apprentice of Death
+35.3 % Relative index 9 turns Estimated elimination 20 / turn Spamtons
+The other decks (1)
+- D Wibs the Blazing + Apprentice of Death with Pyro · Prisoner of the Machine Accessible · 36.8%
+### Resistances
+25% Fire
+-50% Water
+25% Earth
+25% Nature
+25% Shadow
+25% Light
+Artificial Creature · Nordvinter
+### Beyond the card
+Many accounts mention the peoples of old, including an ancestral species of small humanoids with feline features. Now extinct, we keep their courage and sacrifice in memory. In the fight against the Eternals, all the Oniyx communities created an entity of controlled chaos: the Prisoner of the Machine. Struck by such a weapon, an Eternal is sealed within the sphere. Made essentially of magic, a prisoner is kept in a state of deep sleep. Its regenerative capacity becomes an inexhaustible source of energy — still powering the autonomy of the Oniyx factories, trapped in the ice of the Crystal Lands.
+## Better together
+The most promising partners according to the model.
+D # 140 Earth
+Rare · Support
+### Mouse of the Wheat
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

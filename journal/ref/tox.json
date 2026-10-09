@@ -1,0 +1,608 @@
+{
+ "Aoe_C": {
+  "name": "AoE",
+  "rar": "C",
+  "cost": 45,
+  "text": "Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés"
+ },
+ "Berserk_C": {
+  "name": "Berserk",
+  "rar": "C",
+  "cost": 30,
+  "text": "Les dégâts et les soins de toutes vos cartes sont augmentés de 12%"
+ },
+ "Chance_C": {
+  "name": "Chanceur",
+  "rar": "C",
+  "cost": 5,
+  "text": "Augmente votre Chance de (+0,5) chaque tour"
+ },
+ "Cimetiere_C": {
+  "name": "Cimetière",
+  "rar": "C",
+  "cost": 20,
+  "text": "Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt"
+ },
+ "CoeurEau_C": {
+  "name": "Cœur d'eau",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Eau (+1) par tour de jeu"
+ },
+ "CoeurFeu_C": {
+  "name": "Cœur de feu",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Feu (+1) par tour de jeu"
+ },
+ "CoeurLumiere_C": {
+  "name": "Cœur de lumière",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Lumière (+1) par tour de jeu"
+ },
+ "CoeurNature_C": {
+  "name": "Cœur de nature",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Nature (+1) par tour de jeu"
+ },
+ "CoeurOmbre_C": {
+  "name": "Cœur d'ombre",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Ombre (+1) par tour de jeu"
+ },
+ "CoeurResistance_C": {
+  "name": "Cœur résistance",
+  "rar": "C",
+  "cost": 10,
+  "text": "Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3)."
+ },
+ "CoeurTerre_C": {
+  "name": "Cœur de terre",
+  "rar": "C",
+  "cost": 15,
+  "text": "Bonus Terre (+1) par tour de jeu"
+ },
+ "CoeurVital_C": {
+  "name": "Cœur vital",
+  "rar": "C",
+  "cost": 10,
+  "text": "Cette carte augmente ses PV max de 15 chaque tour"
+ },
+ "Erosion_C": {
+  "name": "Érosion",
+  "rar": "C",
+  "cost": 20,
+  "text": "Réduit les PV max à hauteur de 50% des dégâts infligés"
+ },
+ "Life Steal_C": {
+  "name": "Vampirisme",
+  "rar": "C",
+  "cost": 30,
+  "text": "Régénère 25% des dégâts infligés à la cible"
+ },
+ "Phoenix_C": {
+  "name": "Phénix",
+  "rar": "C",
+  "cost": 100,
+  "text": "Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max."
+ },
+ "Poison_C": {
+  "name": "Poison",
+  "rar": "C",
+  "cost": 10,
+  "text": "Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours."
+ },
+ "Primitive heal_C": {
+  "name": "Soin primitif",
+  "rar": "C",
+  "cost": 20,
+  "text": "Au début de chaque tour, la carte récupère 4% de ses PV max"
+ },
+ "PunchingBag_C": {
+  "name": "Sac de frappe",
+  "rar": "C",
+  "cost": 25,
+  "text": "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+ },
+ "Reflect_C": {
+  "name": "Renvoi",
+  "rar": "C",
+  "cost": 24,
+  "text": "Renvoie 25% des dégâts subis à l'attaquant"
+ },
+ "Shield_C": {
+  "name": "Bouclier",
+  "rar": "C",
+  "cost": 30,
+  "text": "Le premier coup reçu à chaque tour adverse est réduit de 25%"
+ },
+ "Spamland_C": {
+  "name": "Spamland",
+  "rar": "C",
+  "cost": 6,
+  "text": "Génère (+3) Spamtons chaque tour"
+ },
+ "Tenacite_C": {
+  "name": "Ténacité",
+  "rar": "C",
+  "cost": 10,
+  "text": "La première attaque fatale vous laisse à 1 PV"
+ },
+ "Aoe_R": {
+  "name": "AoE",
+  "rar": "R",
+  "cost": 90,
+  "text": "Attaque et soigne les cibles adjacentes à hauteur de 40% des dégâts infligés"
+ },
+ "Berserk_R": {
+  "name": "Berserk",
+  "rar": "R",
+  "cost": 60,
+  "text": "Les dégâts et les soins de toutes vos cartes sont augmentés de 25%"
+ },
+ "Brut_R": {
+  "name": "Brut",
+  "rar": "R",
+  "cost": 65,
+  "text": "Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé"
+ },
+ "Chance_R": {
+  "name": "Chanceur",
+  "rar": "R",
+  "cost": 10,
+  "text": "Augmente votre Chance de (+1) chaque tour"
+ },
+ "Cimetiere_R": {
+  "name": "Cimetière",
+  "rar": "R",
+  "cost": 40,
+  "text": "Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt"
+ },
+ "CoeurEau_R": {
+  "name": "Cœur d'eau",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Eau (+2) par tour de jeu"
+ },
+ "CoeurFeu_R": {
+  "name": "Cœur de feu",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Feu (+2) par tour de jeu"
+ },
+ "CoeurLumiere_R": {
+  "name": "Cœur de lumière",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Lumière (+2) par tour de jeu"
+ },
+ "CoeurNature_R": {
+  "name": "Cœur de nature",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Nature (+2) par tour de jeu"
+ },
+ "CoeurOmbre_R": {
+  "name": "Cœur d'ombre",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Ombre (+2) par tour de jeu"
+ },
+ "CoeurResistance_R": {
+  "name": "Cœur résistance",
+  "rar": "R",
+  "cost": 30,
+  "text": "Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6)."
+ },
+ "CoeurTerre_R": {
+  "name": "Cœur de terre",
+  "rar": "R",
+  "cost": 30,
+  "text": "Bonus Terre (+2) par tour de jeu"
+ },
+ "CoeurVital_R": {
+  "name": "Cœur vital",
+  "rar": "R",
+  "cost": 30,
+  "text": "Cette carte augmente ses PV max de 30 chaque tour"
+ },
+ "Inversement_R": {
+  "name": "Inversement",
+  "rar": "R",
+  "cost": 40,
+  "text": "Les dégâts de cette carte deviennent des soins, ses Éternités des Temporalités, et inversement."
+ },
+ "Life Steal_R": {
+  "name": "Vampirisme",
+  "rar": "R",
+  "cost": 70,
+  "text": "Régénère 50% des dégâts infligés à la cible"
+ },
+ "Mimetisme_R": {
+  "name": "Mimétisme",
+  "rar": "R",
+  "cost": 50,
+  "text": "Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type."
+ },
+ "Multiplicator_R": {
+  "name": "Multiplicateur",
+  "rar": "R",
+  "cost": 80,
+  "text": "Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte"
+ },
+ "Mystere_R": {
+  "name": "Mystère",
+  "rar": "R",
+  "cost": 70,
+  "text": "Commence la partie avec un passif aléatoire"
+ },
+ "Optimisation_R": {
+  "name": "Optimisation",
+  "rar": "R",
+  "cost": 40,
+  "text": "Les valeurs variables des dégâts, des soins et des bonus de cette carte sont toujours au maximum"
+ },
+ "Phoenix_R": {
+  "name": "Phénix",
+  "rar": "R",
+  "cost": 150,
+  "text": "Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max."
+ },
+ "Poison_R": {
+  "name": "Poison",
+  "rar": "R",
+  "cost": 50,
+  "text": "Inflige des dégâts égaux à 3% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ },
+ "Primitive heal_R": {
+  "name": "Soin primitif",
+  "rar": "R",
+  "cost": 40,
+  "text": "Au début de chaque tour, la carte récupère 9% de ses PV max"
+ },
+ "PunchingBag_R": {
+  "name": "Sac de frappe",
+  "rar": "R",
+  "cost": 50,
+  "text": "Augmente de +2 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ },
+ "Reflect_R": {
+  "name": "Renvoi",
+  "rar": "R",
+  "cost": 48,
+  "text": "Renvoie 50% des dégâts subis à l'attaquant"
+ },
+ "Revenge_R": {
+  "name": "Revanche",
+  "rar": "R",
+  "cost": 80,
+  "text": "Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire"
+ },
+ "Shield_R": {
+  "name": "Bouclier",
+  "rar": "R",
+  "cost": 60,
+  "text": "Le premier coup reçu à chaque tour adverse est réduit de 50%"
+ },
+ "Smoked_R": {
+  "name": "Fumée",
+  "rar": "R",
+  "cost": 50,
+  "text": "Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin"
+ },
+ "Spamland_R": {
+  "name": "Spamland",
+  "rar": "R",
+  "cost": 10,
+  "text": "Génère (+8) Spamtons chaque tour"
+ },
+ "Taunt_R": {
+  "name": "Provocation",
+  "rar": "R",
+  "cost": 70,
+  "text": "Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler"
+ },
+ "Aoe_E": {
+  "name": "AoE",
+  "rar": "E",
+  "cost": 135,
+  "text": "Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés"
+ },
+ "Berserk_E": {
+  "name": "Berserk",
+  "rar": "E",
+  "cost": 100,
+  "text": "Les dégâts et les soins de toutes vos cartes sont augmentés de 50%"
+ },
+ "Bomba_E": {
+  "name": "Bomba",
+  "rar": "E",
+  "cost": 130,
+  "text": "Inflige 500 dégâts bruts à une carte adverse aléatoire quand cette carte meurt"
+ },
+ "Chance_E": {
+  "name": "Chanceur",
+  "rar": "E",
+  "cost": 15,
+  "text": "Augmente votre Chance de (+2) chaque tour"
+ },
+ "Cimetiere_E": {
+  "name": "Cimetière",
+  "rar": "E",
+  "cost": 60,
+  "text": "Augmente tous vos bonus élémentaires de (+8) lorsqu'une carte meurt"
+ },
+ "CoeurEau_E": {
+  "name": "Cœur d'eau",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Eau (+5) par tour de jeu"
+ },
+ "CoeurFeu_E": {
+  "name": "Cœur de feu",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Feu (+5) par tour de jeu"
+ },
+ "CoeurLumiere_E": {
+  "name": "Cœur de lumière",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Lumière (+5) par tour de jeu"
+ },
+ "CoeurNature_E": {
+  "name": "Cœur de nature",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Nature (+5) par tour de jeu"
+ },
+ "CoeurOmbre_E": {
+  "name": "Cœur d'ombre",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Ombre (+5) par tour de jeu"
+ },
+ "CoeurResistance_E": {
+  "name": "Cœur résistance",
+  "rar": "E",
+  "cost": 70,
+  "text": "Cette carte augmente les résistances de toutes les cartes alliées (+10)"
+ },
+ "CoeurTerre_E": {
+  "name": "Cœur de terre",
+  "rar": "E",
+  "cost": 60,
+  "text": "Bonus Terre (+5) par tour de jeu"
+ },
+ "CoeurVital_E": {
+  "name": "Cœur vital",
+  "rar": "E",
+  "cost": 70,
+  "text": "Cette carte augmente ses PV max de 60 chaque tour"
+ },
+ "Erosion_E": {
+  "name": "Érosion",
+  "rar": "E",
+  "cost": 75,
+  "text": "Réduit les PV max à hauteur de 100% des dégâts infligés"
+ },
+ "Frozen_E": {
+  "name": "Gel",
+  "rar": "E",
+  "cost": 150,
+  "text": "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts."
+ },
+ "Immunity_E": {
+  "name": "Immunité",
+  "rar": "E",
+  "cost": 90,
+  "text": "La carte est immunisée contre tous les effets des cartes adverses"
+ },
+ "Life Steal_E": {
+  "name": "Vampirisme",
+  "rar": "E",
+  "cost": 110,
+  "text": "Régénère 75% des dégâts infligés à la cible"
+ },
+ "Metamorph_E": {
+  "name": "Métamorphe",
+  "rar": "E",
+  "cost": 120,
+  "text": "Choisissez une carte parmi trois de la même rareté pour remplacer cette carte"
+ },
+ "Phoenix_E": {
+  "name": "Phénix",
+  "rar": "E",
+  "cost": 200,
+  "text": "Lorsqu’elle est détruite, cette carte revient à la vie avec 75% de ses PV max."
+ },
+ "Poison_E": {
+  "name": "Poison",
+  "rar": "E",
+  "cost": 100,
+  "text": "Inflige des dégâts égaux à 6% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ },
+ "Primitive heal_E": {
+  "name": "Soin primitif",
+  "rar": "E",
+  "cost": 60,
+  "text": "Au début de chaque tour, la carte récupère 14% de ses PV max"
+ },
+ "PunchingBag_E": {
+  "name": "Sac de frappe",
+  "rar": "E",
+  "cost": 100,
+  "text": "Augmente de +3 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ },
+ "Reflect_E": {
+  "name": "Renvoi",
+  "rar": "E",
+  "cost": 72,
+  "text": "Renvoie 75% des dégâts subis à l'attaquant"
+ },
+ "Reset_E": {
+  "name": "Reset",
+  "rar": "E",
+  "cost": 130,
+  "text": "Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible"
+ },
+ "Shield_E": {
+  "name": "Bouclier",
+  "rar": "E",
+  "cost": 120,
+  "text": "Le premier coup reçu à chaque tour adverse est réduit de 75%"
+ },
+ "Spamland_E": {
+  "name": "Spamland",
+  "rar": "E",
+  "cost": 16,
+  "text": "Génère (+24) Spamtons chaque tour"
+ },
+ "Vengeur_E": {
+  "name": "Vengeur",
+  "rar": "E",
+  "cost": 80,
+  "text": "Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt."
+ },
+ "Aoe_L": {
+  "name": "AoE",
+  "rar": "L",
+  "cost": 180,
+  "text": "Attaque et soigne les cibles adjacentes à hauteur de 100% des dégâts infligés"
+ },
+ "Berserk_L": {
+  "name": "Berserk",
+  "rar": "L",
+  "cost": 180,
+  "text": "Les dégâts et les soins de toutes vos cartes sont augmentés de 100%"
+ },
+ "Chance_L": {
+  "name": "Chanceur",
+  "rar": "L",
+  "cost": 20,
+  "text": "Augmente votre Chance de (+4) chaque tour"
+ },
+ "Cimetiere_L": {
+  "name": "Cimetière",
+  "rar": "L",
+  "cost": 80,
+  "text": "Augmente tous vos bonus élémentaires de (+12) lorsqu'une carte meurt"
+ },
+ "CoeurEau_L": {
+  "name": "Cœur d'eau",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Eau (+8) par tour de jeu"
+ },
+ "CoeurFeu_L": {
+  "name": "Cœur de feu",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Feu (+8) par tour de jeu"
+ },
+ "CoeurLumiere_L": {
+  "name": "Cœur de lumière",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Lumière (+8) par tour de jeu"
+ },
+ "CoeurNature_L": {
+  "name": "Cœur de nature",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Nature (+8) par tour de jeu"
+ },
+ "CoeurOmbre_L": {
+  "name": "Cœur d'ombre",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Ombre (+8) par tour de jeu"
+ },
+ "CoeurResistance_L": {
+  "name": "Cœur résistance",
+  "rar": "L",
+  "cost": 120,
+  "text": "Cette carte augmente les résistances de toutes les cartes alliées (+15)"
+ },
+ "CoeurTerre_L": {
+  "name": "Cœur de terre",
+  "rar": "L",
+  "cost": 120,
+  "text": "Bonus Terre (+8) par tour de jeu"
+ },
+ "CoeurVital_L": {
+  "name": "Cœur vital",
+  "rar": "L",
+  "cost": 150,
+  "text": "Cette carte augmente ses PV max de 100 chaque tour"
+ },
+ "Disparition_L": {
+  "name": "Disparition",
+  "rar": "L",
+  "cost": 180,
+  "text": "Supprime le dernier passif de la cible"
+ },
+ "Eternity_L": {
+  "name": "Éternité",
+  "rar": "L",
+  "cost": 220,
+  "text": "Augmente les temps de recharge de 1"
+ },
+ "Life Steal_L": {
+  "name": "Vampirisme",
+  "rar": "L",
+  "cost": 160,
+  "text": "Régénère 100% des dégâts infligés à la cible"
+ },
+ "Phoenix_L": {
+  "name": "Phénix",
+  "rar": "L",
+  "cost": 250,
+  "text": "Lorsqu’elle est détruite, cette carte revient à la vie avec 100% de ses PV max."
+ },
+ "Poison_L": {
+  "name": "Poison",
+  "rar": "L",
+  "cost": 150,
+  "text": "Inflige des dégâts égaux à 8% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ },
+ "Primitive heal_L": {
+  "name": "Soin primitif",
+  "rar": "L",
+  "cost": 120,
+  "text": "Au début de chaque tour, la carte récupère 19% de ses PV max"
+ },
+ "PunchingBag_L": {
+  "name": "Sac de frappe",
+  "rar": "L",
+  "cost": 150,
+  "text": "Augmente de +4 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ },
+ "Reflect_L": {
+  "name": "Renvoi",
+  "rar": "L",
+  "cost": 96,
+  "text": "Renvoie 100% des dégâts subis à l'attaquant"
+ },
+ "Shield_L": {
+  "name": "Bouclier",
+  "rar": "L",
+  "cost": 180,
+  "text": "Le premier coup reçu à chaque tour adverse est réduit de 100%"
+ },
+ "Spamland_L": {
+  "name": "Spamland",
+  "rar": "L",
+  "cost": 24,
+  "text": "Génère (+48) Spamtons chaque tour"
+ },
+ "Temporality_L": {
+  "name": "Temporalité",
+  "rar": "L",
+  "cost": 190,
+  "text": "Diminue les temps de recharge de 1"
+ }
+}

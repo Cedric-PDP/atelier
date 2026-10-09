@@ -1,0 +1,146 @@
+Catimimi : carte SPAM Feu commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Catimimi B Voir la carte en grand
+Catimimi
+2 Claque sombrevol
+500/500
+5
+Standard
+Catimimi
+2 Claque sombrevol
+500/500
+5
+Élémentaire
+Catimimi
+2 Claque sombrevol
+500/500
+5
+FA
+Catimimi
+2 Claque sombrevol
+500/500
+5
+## Catimimi
+B Feu · Commune · Standard
+500 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Éternisé La carte est insensible aux Éternités.
+- Talent 2 Héritage Bonus (+50) Spamton quand cette carte est tuée.
+Conseillé
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Claque sombrevol compétence · Recharge 2 [Coût 2 Feu & 2 Ombre & 2 Nature]
+Cible toutes les cartes adverses
+Attaque 15 Ombre 15 Nature 15 Feu
+Bonus Ombre (+3) Nature (+3) Feu (+3)
+2
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Feu Commune #206
+# Catimimi
+Attaque Économie
+500 Points de vie
+5 Spamtons / tour
+#50 Classement / 127
+B Sans talent · #52
+Attaque
+96
+Génération
+0
+Défense
+2
+Soutien
+1
+Contrôle
+0
+Économie
+95
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Éternisé 2 Héritage 3 Pièce magique
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Claque sombrevol
+2 tours
+[Coût 2 Feu & 2 Ombre & 2 Nature]
+Cible toutes les cartes adverses
+Attaque 15 Ombre 15 Nature 15 Feu
+Bonus Ombre (+3) Nature (+3) Feu (+3)
+Précision 100% Critique 1%
+### Talents
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+#### Héritage
+Conseillé
+Bonus (+50) Spamton quand cette carte est tuée.
+Δ 15 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Scorch
+73 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Midrange ·
+### Catimimi + Girafe Florale
+57,2 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Catimimi + Faerylia
+57,1 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Catimimi + Aidan
+44,5 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+Les autres decks (2)
+- D Catimimi + Girafe Florale avec Zombie Floral · Soigneuse Astrale des Bois Intermédiaire · 44,7%
+- D Catimimi + Aidan avec Yotaru Gardefeuille · Chimère Brasse-chair Accessible · 39,6%
+### Résistances
+0% Feu
+-22% Eau
+0% Terre
+-22% Nature
+0% Ombre
+0% Lumière
+Grand Lion · Lumethia
+### Derrière la carte
+Les chaînes de Drako’vish s’étendent au nord de Lumethia et forment une frontière avec Hadeïr, terre des Grands Lions. Cette région a subi une forte corruption par le Feu. Pour les créatures touchées, il ne reste souvent qu’un seul espoir : le Saule ardent du bois Détwin. Catimimi comptait parmi les jeunes lions infectés. Sauvé de justesse par le Saule, il raconte souvent comment son roi l’a conduit jusqu’au bois. Catimimi fut témoin de la fin du conflit entre ses congénères. Il est aujourd’hui chargé de protéger Léo.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 072 Nature
+Rare · Soutien
+### Girafe Florale
+750 PV
+C # 012 Eau
+Commune · Génération
+### Hibernatus
+750 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

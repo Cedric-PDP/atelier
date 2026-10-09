@@ -1,0 +1,60 @@
+Le bon coup, au bon tour : guide SPAM
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Stratégies Tempo & rotations Tempo & rotations
+# Le bon coup, au bon tour.
+Lis les recharges, repère tes pics de dégâts et prépare tes fenêtres d’action.
+4 min de lecture Partager
+Illustration par Nenaosu
+01
+## Lis la chronologie avant le total.
+Deux decks peuvent infliger le même total de dégâts à des rythmes très différents. Ouvre les tours de la fiche pour voir quelles compétences sont prêtes, quand les bonus arrivent et où se trouve le pic d’attaque. Le temps d’élimination estimé aide à résumer cette différence.
+02
+## Accélère ce qui mérite de l’être.
+La réduction de recharge a surtout de l’intérêt si elle débloque une compétence décisive. Associe-la à une attaque ou un soutien dont tu peux exploiter l’arrivée plus tôt. L’ordre du simulateur est heuristique : il collecte les compétences prêtes au début de la phase d’action, ce qui limite les enchaînements représentés dans un même tour.
+03
+## Ne confonds pas pic et régularité.
+Une grosse attaque tardive peut gonfler une courbe sans améliorer ton ouverture. Vérifie les premiers tours et la contribution de chaque carte. Les barres montrent les dégâts bruts, surdégâts inclus ; le total utile est plafonné aux PV adverses. La simulation s’arrête après l’élimination des quatre cartes adverses.
+Comprendre les scores
+## À explorer avec ce guide
+S # 174 Nature
+Commune · Attaque
+### Zombie Floral
+850 PV
+S # 188 Terre
+Rare · Génération
+### Commando Gerz
+1200 PV
+A # 195 Nature
+Épique · Génération
+### Gabriel
+1000 PV
+## Passer à la pratique
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+98,1 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+94,6 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

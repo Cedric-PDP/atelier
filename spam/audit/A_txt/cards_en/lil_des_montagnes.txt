@@ -1,0 +1,151 @@
+The Eye of the Mountains: SPAM Water common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards The Eye of the Mountains D View the full card
+The Eye of the Mountains
+4 Revitalization
+Berserk
+Waterheart
+600/600
+6
+Standard
+The Eye of the Mountains
+4 Revitalization
+Berserk
+Waterheart
+600/600
+6
+Elemental
+The Eye of the Mountains
+4 Revitalization
+Berserk
+Waterheart
+600/600
+6
+FA
+The Eye of the Mountains
+4 Revitalization
+Berserk
+Waterheart
+600/600
+6
+## The Eye of the Mountains
+D Water · Common · Standard
+600 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Heart of Steel Each time this card is attacked, its elemental resistances increase by (+1%).
+Recommended
+- Talent 2 Inscribed The card is immune to Vanish effects
+- Talent 3 Critical Critical bonus (+10%).
+Three ability slots
+- Revitalization ability · Cooldown 4 Heal 50 Water
+Critical damage (+1)
+4
+- Berserk tox · Common All your cards' damage and heals are increased by 12%
+- Waterheart tox · Common Water bonus (+1) per turn
+Illustration by Simdof
+Full card details
+Illustration by Simdof
+Water Common #156
+# The Eye of the Mountains
+Versatile
+600 Health points
+6 Spamtons / turn
+#111 Rank / 127
+D No talent · #106
+Attack
+0
+Generation
+57
+Defense
+47
+Support
+84
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Heart of Steel 2 Inscribed 3 Critical
+Build with this card 6 decks
+Share
+### Abilities
+#### Revitalization
+4 turns
+Heal 50 Water
+Critical damage (+1)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Berserk
+Common
+All your cards' damage and heals are increased by 12%
+#### Waterheart
+Common
+Water bonus (+1) per turn
+### Talents
+#### Heart of Steel
+Recommended
+Each time this card is attacked, its elemental resistances increase by (+1%).
+Δ 12.3 · Theoretical score
+#### Inscribed
+The card is immune to Vanish effects
+Δ 7 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ 5.5 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Sovereign of the Ether Falls + Master Amphibian
+77.9 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Floral Zombie + Sovereign of the Ether Falls
+63.8 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+The other decks (4)
+- C Sovereign of the Ether Falls + Master Amphibian with Aidan · The Eye of the Mountains Accessible · 68.6%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Princess Meridia Intermediate · 61.8%
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · The Eye of the Mountains Advanced collection · 59.1%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Snow Warrior Accessible · 59%
+### Resistances
+10% Fire
+12% Water
+11% Earth
+10% Nature
+10% Shadow
+12% Light
+Eternal · Emeldarion
+### Beyond the card
+Eternals devoted to the preservation of the Surface appeared after certain catastrophes. Their purpose is to keep the mistakes that were made from happening again. Protector of the ruins of a gigantic worksite of the past, the one they call the Eye of the Mountains can be observed not far from the Ether Falls, southwest of Emeldarion, or northwest of Shal'Zaar. Some pilgrims who have glimpsed it see a good omen in it. Others who have faced it are no longer here to tell of it.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 082 Water
+Common · Versatile
+### Prankster Whale
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

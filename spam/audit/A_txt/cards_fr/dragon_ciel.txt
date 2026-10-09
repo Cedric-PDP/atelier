@@ -1,0 +1,194 @@
+Dragon Ciel : carte SPAM Lumière commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Dragon Ciel A Voir la carte en grand
+Dragon Ciel
+4 Souffle éblouissant
+4 Appel de la forêt
+Vengeur
+700/700
+8
+Standard
+Dragon Ciel
+4 Souffle éblouissant
+4 Appel de la forêt
+Vengeur
+700/700
+8
+Élémentaire
+Dragon Ciel
+4 Souffle éblouissant
+4 Appel de la forêt
+Vengeur
+700/700
+8
+FA
+Dragon Ciel
+4 Souffle éblouissant
+4 Appel de la forêt
+Vengeur
+700/700
+8
+## Dragon Ciel
+A Lumière · Commune · Standard
+700 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Dernier souffle Applique Temporalité à toutes vos cartes quand celle-ci meurt
+- Talent 2 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+- Talent 3 Fortune Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+Conseillé
+Trois champs de compétence
+- Souffle éblouissant compétence · Recharge 4 Attaque 40 Lumière
+4
+- Appel de la forêt compétence · Recharge 4 Attaque toutes les cartes adverses 30 Nature
+Bonus Nature (+4)
+4
+- Vengeur tox · Épique Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Lumière Commune #180
+# Dragon Ciel
+Attaque Économie
+700 Points de vie
+8 Spamtons / tour
+#18 Classement / 127
+A Sans talent · #18
+Attaque
+78
+Génération
+53
+Défense
+32
+Soutien
+1
+Contrôle
+0
+Économie
+98
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Dernier souffle 2 Reset ultime 3 Fortune
+Jouer cette carte 35 decks
+Partager
+### Compétences
+#### Souffle éblouissant
+4 tours
+Attaque 40 Lumière
+Précision 100% Critique 1%
+#### Appel de la forêt
+4 tours
+Attaque toutes les cartes adverses 30 Nature
+Bonus Nature (+4)
+Précision 100% Critique 1%
+### Tox de départ
+#### Vengeur
+Épique
+Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+### Talents
+#### Dernier souffle
+Applique Temporalité à toutes vos cartes quand celle-ci meurt
+Δ 0 · Score théorique
+#### Reset ultime
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 6,2 · Score théorique
+#### Fortune
+Conseillé
+Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+Δ 31,1 · Score théorique
+## Ses meilleurs decks
+35 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Aggro / burst ·
+### Dragon Ciel + Aldrin & Gorakar
+60,5 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Aggro / burst ·
+### Raffteru + L'Épine d'Amour
+58 % Indice relatif 7 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+57,9 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+56,8 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Lame de la forêt
+56,7 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Aggro / burst ·
+### Dragon Ciel + Aristocrate Nébulaire
+55,7 % Indice relatif 7 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (29)
+- C Esprit de la Faune + L'Épine d'Amour avec Dragon Ciel · Princesse Meridia Accessible · 55,2%
+- C Lisa + Lame de la forêt avec Dragon Ciel · L'Épine d'Amour Accessible · 55%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Squall Accessible · 54,9%
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Lisa Intermédiaire · 54,6%
+- C Esprit de la Faune + L'Épine d'Amour avec Dragon Ciel · Maîtresse des Teintes Accessible · 54,3%
+- C Dragon Ciel + Princesse Meridia avec Zombie Floral · Lame de la forêt Accessible · 53,3%
+- C Dragon Ciel + L'Épine d'Amour avec Lame de la forêt · Esprit Nature Accessible · 52,8%
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Maîtresse des Teintes Intermédiaire · 52,7%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Faerylia Intermédiaire · 52,5%
+- C Dragon Ciel + Cerf des Couleurs Funèbres avec L'Épine d'Amour · Naissance d'Aldrin Intermédiaire · 52,5%
+- C Dragon Ciel + L'Épine d'Amour avec Aldrin & Gorakar · Esprit de la Faune Collection avancée · 52,4%
+- C Cerf des Couleurs Funèbres + L'Épine d'Amour avec Dragon Ciel · Lisa Accessible · 52,3%
+- C Dragon Ciel + L'Épine d'Amour avec Gabriel · Panthère imaginaire Collection avancée · 51,2%
+- C Esprit de la Faune + Zombie Floral avec Dragon Ciel · Aidan Accessible · 50,7%
+- C Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Dragon Ciel Accessible · 50,3%
+- D Gabriel + Esprit Nature avec Panthère imaginaire · Dragon Ciel Collection avancée · 50%
+- D Zombie Floral + Dragon Ciel avec Soigneuse Astrale des Bois · Esprit de la Faune Accessible · 49,7%
+- D Zombie Floral + Dragon Ciel avec Soigneuse Astrale des Bois · Princesse Meridia Intermédiaire · 49,6%
+- D Dragon Ciel + Rongeur Nuageux avec Commando Gerz · Chouette Polychrome Accessible · 49,5%
+- D Dragon Ciel + Cerf des Couleurs Funèbres avec Faerylia · Aidan Intermédiaire · 49,5%
+- D Zombie Floral + Chimère Brasse-chair avec Princesse Meridia · Dragon Ciel Intermédiaire · 48,8%
+- D Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Princesse Meridia Intermédiaire · 48,3%
+- D Zombie Floral + Chimère Brasse-chair avec Dragon Ciel · L'Épine d'Amour Accessible · 47,7%
+- D Esprit de la Faune + L'Épine d'Amour avec Verdelune · Dragon Ciel Collection avancée · 46,6%
+- D Dragon Ciel + Rongeur Nuageux avec Chouette Polychrome · L'Épine d'Amour Accessible · 44,4%
+- D L'Épine d'Amour + Aristocrate Nébulaire avec Dragon Ciel · Shinobi Éclairant Accessible · 42,9%
+- D Aldrin & Gorakar + L'Épine d'Amour avec Dragon Ciel · Guerrier des Neiges Collection avancée · 42%
+- D Dragon Ciel + Esprit Nature avec Verdelune · Esprit de la Faune Collection avancée · 36%
+- D Gabriel + Dragon Ciel avec Verdelune · Lame de la forêt Collection avancée · 32,7%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Art · Aelther
+### Derrière la carte
+Accomplir le grand pèlerinage jusqu’au sommet du Mont Céleste est désormais la norme. Chaque pèlerin qui réussit l’ascension est accueilli, par-delà les nuages, par un Éternel qui reconnaît ses efforts et le récompense. Quelques rares personnes affirment avoir rencontré la Calamité de Lumière, le Dragon Ciel. La bénédiction qu’elles ont reçue suffit à attester la véracité de leur récit. Cette possibilité a inspiré la création d’une vaste fresque au sol à Abondance.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 003 Nature
+Commune · Polyvalent
+### Esprit Nature
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

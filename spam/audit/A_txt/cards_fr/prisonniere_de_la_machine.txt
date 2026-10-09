@@ -1,0 +1,144 @@
+Prisonnière de la Machine : carte SPAM Feu commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Prisonnière de la Machine B Voir la carte en grand
+Prisonnière de la Machine
+1 Explosion
+3 Braisegarde
+1000/1000
+3
+Standard
+Prisonnière de la Machine
+1 Explosion
+3 Braisegarde
+1000/1000
+3
+Élémentaire
+Prisonnière de la Machine
+1 Explosion
+3 Braisegarde
+1000/1000
+3
+FA
+Prisonnière de la Machine
+1 Explosion
+3 Braisegarde
+1000/1000
+3
+## Prisonnière de la Machine
+B Feu · Commune · Standard
+1 000 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Paradoxe Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+- Talent 2 Virage 360 Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+- Talent 3 Sac de frappe Commence la partie avec le passif "Sac de frappe"
+Conseillé
+Trois champs de compétence
+- Explosion compétence · Recharge 1 [Coût 100 PV]
+Attaque 10 Feu
+Après utilisation, les dégâts de base de cette attaque augmentent de (+10)
+1
+- Braisegarde compétence · Recharge 3 Applique Provocation
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Feu Commune #116
+# Prisonnière de la Machine
+Polyvalent
+1 000 Points de vie
+3 Spamtons / tour
+#40 Classement / 127
+C Sans talent · #73
+Attaque
+58
+Génération
+50
+Défense
+75
+Soutien
+1
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Paradoxe 2 Virage 360 3 Sac de frappe
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Explosion
+1 tour
+[Coût 100 PV]
+Attaque 10 Feu
+Après utilisation, les dégâts de base de cette attaque augmentent de (+10)
+Précision 100% Critique 1%
+#### Braisegarde
+3 tours
+Applique Provocation
+Précision 100% Critique 0%
+### Talents
+#### Paradoxe
+Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+Δ -25,4 · Score théorique
+#### Virage 360
+Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+Δ -160,8 · Score théorique
+#### Sac de frappe
+Conseillé
+Commence la partie avec le passif "Sac de frappe"
+Δ 247 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Accessible
+Midrange ·
+### Wibs l'Enflammé + Apprentie de la Mort
+39 % Indice relatif 10,8 tours Élimination estimée 19 / tour Spamtons
+D Accessible
+Midrange ·
+### Pyro + Apprentie de la Mort
+35,3 % Indice relatif 9 tours Élimination estimée 20 / tour Spamtons
+Les autres decks (1)
+- D Wibs l'Enflammé + Apprentie de la Mort avec Pyro · Prisonnière de la Machine Accessible · 36,8%
+### Résistances
+25% Feu
+-50% Eau
+25% Terre
+25% Nature
+25% Ombre
+25% Lumière
+Créature artificielle · Nordvinter
+### Derrière la carte
+Il existe de nombreuses références aux peuples de l’ancien temps, parmi lesquels figurait une espèce ancestrale de petits humanoïdes aux traits félins. Aujourd’hui disparue, elle reste célèbre pour son courage et son sacrifice. Dans la lutte contre les Éternels, toutes les communautés Oniyx unirent leurs forces pour créer une entité de chaos contrôlé : la Prisonnière de la Machine. Lorsqu’un Éternel est frappé par cette arme, il se retrouve scellé dans une sphère. Constitué principalement de magie, le prisonnier est maintenu dans un sommeil profond tandis que sa capacité de régénération devient une source d’énergie inépuisable. Elle alimente encore les usines Oniyx prisonnières des glaces des Contrées de Cristal.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 140 Terre
+Rare · Soutien
+### Souris des blés
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

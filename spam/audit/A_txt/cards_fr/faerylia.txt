@@ -1,0 +1,169 @@
+Faerylia : carte SPAM Ombre épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Faerylia C Voir la carte en grand
+Faerylia
+9 Visée globale
+2 Visée offensive
+3 Multiboost
+600/600
+5
+Standard
+Faerylia
+9 Visée globale
+2 Visée offensive
+3 Multiboost
+600/600
+5
+Élémentaire
+Faerylia
+9 Visée globale
+2 Visée offensive
+3 Multiboost
+600/600
+5
+FA
+Faerylia
+9 Visée globale
+2 Visée offensive
+3 Multiboost
+600/600
+5
+## Faerylia
+C Ombre · Épique · Standard
+600 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Revitalisation 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+- Talent 2 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 3 Heure Funeste Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Trois champs de compétence
+- Visée globale compétence · Recharge 9 Cible toutes les cartes adverses
+Applique Éternité
+9
+- Visée offensive compétence · Recharge 2 Attaque 15 Ombre
+Éternité en cas de coup critique
+2
+- Multiboost compétence · Recharge 3 Bonus de chaque élément (+3)
+3
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Ombre Épique #088
+# Faerylia
+Contrôle
+600 Points de vie
+5 Spamtons / tour
+#92 Classement / 127
+C Sans talent · #91
+Attaque
+31
+Génération
+54
+Défense
+23
+Soutien
+1
+Contrôle
+93
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Revitalisation 2 Départ multi 3 Heure Funeste
+Jouer cette carte 7 decks
+Partager
+### Compétences
+#### Visée globale
+9 tours
+Cible toutes les cartes adverses
+Applique Éternité
+Précision 100% Critique 0%
+#### Visée offensive
+2 tours
+Attaque 15 Ombre
+Éternité en cas de coup critique
+Précision 100% Critique 50%
+#### Multiboost
+3 tours
+Bonus de chaque élément (+3)
+Précision 100% Critique 0%
+### Talents
+#### Revitalisation
+5 % de chance par tour de jeu de restaurer ses PV au maximum.
+Δ 13,8 · Score théorique
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 564,9 · Score théorique
+#### Heure Funeste
+Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Δ 40 · Score théorique
+## Ses meilleurs decks
+7 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Catimimi + Faerylia
+57,1 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Wibs l'Enflammé + Apprentie de la Mort
+53,5 % Indice relatif 8 tours Élimination estimée 20 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### Dragon Ciel + Aristocrate Nébulaire
+52,5 % Indice relatif 7 tours Élimination estimée 22 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Cerf des Couleurs Funèbres
+49,5 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Bleu-mange-cailloux + L'Épine d'Amour
+48,4 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Faerylia + Vladislaus
+46,3 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (1)
+- D Commando Gerz + Zayd avec Faerylia · Chouette Polychrome Collection avancée · 44,4%
+### Résistances
+10% Feu
+15% Eau
+15% Terre
+15% Nature
+15% Ombre
+-21% Lumière
+Eltherien · Hadeïr
+### Derrière la carte
+Faerylia était connue comme la personne la plus cultivée et la plus érudite de Shal’Zaar. Vassale du Roi de la Terre, elle maîtrisait la magie et les écrits comme personne. Elle parvint, seule, à décrypter le Codex Primordial. Le temps révéla toutefois qu’elle n’en dévoilait qu’une faible part du véritable contenu. Elle expliqua précisément comment sceller les Divinités, depuis la forge des armes runiques jusqu’à la construction du portail. Après avoir tenté de s’approprier des pouvoirs proches de ceux des Divinités, elle fut punie par la destruction de sa terre natale. La Tisseuse du Chaos est aujourd’hui la sorcière la plus recherchée.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

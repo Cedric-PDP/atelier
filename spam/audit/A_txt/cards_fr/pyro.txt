@@ -1,0 +1,153 @@
+Pyro : carte SPAM Feu commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Pyro A Voir la carte en grand
+Pyro
+1 Incendie
+500/500
+4
+Standard
+Pyro
+1 Incendie
+500/500
+4
+Élémentaire
+Pyro
+1 Incendie
+500/500
+4
+FA
+Pyro
+1 Incendie
+500/500
+4
+## Pyro
+A Feu · Commune · Standard
+500 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+Conseillé
+- Talent 2 Éternisé La carte est insensible aux Éternités.
+- Talent 3 Plume de Phénix 50 % de chance de récupérer le passif Phénix une fois utilisé.
+Trois champs de compétence
+- Incendie compétence · Recharge 1 Cible toutes les cartes adverses
+Attaque 5 Feu
+Bonus Feu (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Feu Commune #097
+# Pyro
+Attaque
+500 Points de vie
+4 Spamtons / tour
+#21 Classement / 127
+A Sans talent · #30
+Attaque
+98
+Génération
+57
+Défense
+4
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Boule de Crit 2 Éternisé 3 Plume de Phénix
+Jouer cette carte 9 decks
+Partager
+### Compétences
+#### Incendie
+1 tour
+Cible toutes les cartes adverses
+Attaque 5 Feu
+Bonus Feu (+1)
+Précision 100% Critique 50%
+### Talents
+#### Boule de Crit
+Conseillé
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 38,4 · Score théorique
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+#### Plume de Phénix
+50 % de chance de récupérer le passif Phénix une fois utilisé.
+Δ 0 · Score théorique
+## Ses meilleurs decks
+9 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Pyro + Scorch
+73,3 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### Wibs l'Enflammé + Apprentie de la Mort
+63,3 % Indice relatif 7 tours Élimination estimée 22 / tour Spamtons
+C Collection avancée
+Aggro / burst ·
+### Souverain des Flammes + Scorch
+60,9 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Pyro + Wibs l'Enflammé
+53,8 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Pyro + Logidrake
+51,9 % Indice relatif 8 tours Élimination estimée 22 / tour Spamtons
+D Accessible
+Midrange ·
+### Pyro + Apprentie de la Mort
+35,3 % Indice relatif 9 tours Élimination estimée 20 / tour Spamtons
+Les autres decks (3)
+- D Wibs l'Enflammé + Apprentie de la Mort avec Pyro · Prisonnière de la Machine Accessible · 36,8%
+- D Wibs l'Enflammé + Logidrake avec Pyro · L'Inventeur Accessible · 34,8%
+- D Pyro + Wibs l'Enflammé avec Logidrake · Sbire des Flammes Accessible · 26%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Eltherien · Hadeïr
+### Derrière la carte
+Alors que la corruption s’étendait entre les murs de Logaïr, Pyro, le plus grand aviateur de son temps et fidèle vassal du Roi du Feu, organisa l’évacuation des civils non infectés. Les livres d’histoire racontent ses derniers instants, qui font aujourd’hui de lui l’une des grandes figures salvatrices de Dragheïr. Tandis que commençait sa douloureuse transformation abyssale, il scella les portes de la Cité des Forges derrière les derniers évacués. Désormais maudit aux côtés de son Roi, Pyro habite toujours, sous la redoutable forme d’un phénix, la ville rebaptisée Cité Infernale.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 262 Nature
+Commune · Soutien
+### Yotaru Gardefeuille
+500 PV
+A # 233 Lumière
+Commune · Soutien
+### Oisillons de Midas
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

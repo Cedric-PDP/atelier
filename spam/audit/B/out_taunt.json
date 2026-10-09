@@ -1,0 +1,40 @@
+{
+ "taunt": {
+  "anticrit": {
+   "x1_dur1(engine)": {
+    "J": 6989,
+    "deaths": 0
+   },
+   "x1_dur2": {
+    "J": 6586,
+    "deaths": 1
+   },
+   "x1.5_dur1(engine)": {
+    "J": 3890,
+    "deaths": 3
+   },
+   "x1.5_dur2": {
+    "J": 6073,
+    "deaths": 2
+   }
+  },
+  "zerocrit": {
+   "x1_dur1(engine)": {
+    "J": 6529,
+    "deaths": 1.2
+   },
+   "x1_dur2": {
+    "J": 7595,
+    "deaths": 0.2
+   },
+   "x1.5_dur1(engine)": {
+    "J": 4338,
+    "deaths": 3.4
+   },
+   "x1.5_dur2": {
+    "J": 4939,
+    "deaths": 2.6
+   }
+  }
+ }
+}

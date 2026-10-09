@@ -1,0 +1,163 @@
+Sanglier Doré : carte SPAM Terre commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Sanglier Doré A Voir la carte en grand
+Sanglier Doré
+2 Remue-sol
+Sac de frappe
+900/900
+6
+Standard
+Sanglier Doré
+2 Remue-sol
+Sac de frappe
+900/900
+6
+Élémentaire
+Sanglier Doré
+2 Remue-sol
+Sac de frappe
+900/900
+6
+FA
+Sanglier Doré
+2 Remue-sol
+Sac de frappe
+900/900
+6
+## Sanglier Doré
+A Terre · Commune · Standard
+900 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Baleine bleue Augmente les PV de cette carte de (+200).
+- Talent 2 Sursaut Vital Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Remue-sol compétence · Recharge 2 Cible aléatoirement une carte adverse
+Attaque 40 Terre
+Augmente ses PV max de 40 Terre
+Bonus Terre (+2)
+2
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Terre Commune #160
+# Sanglier Doré
+Défense
+900 Points de vie
+6 Spamtons / tour
+#12 Classement / 127
+S Sans talent · #8
+Attaque
+69
+Génération
+69
+Défense
+84
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Baleine bleue 2 Sursaut Vital 3 Vitalité des Âmes
+Jouer cette carte 9 decks
+Partager
+### Compétences
+#### Remue-sol
+2 tours
+Cible aléatoirement une carte adverse
+Attaque 40 Terre
+Augmente ses PV max de 40 Terre
+Bonus Terre (+2)
+Précision 100% Critique 1%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+### Talents
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ 78,7 · Score théorique
+#### Sursaut Vital
+Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+Δ 0 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 452,2 · Score théorique
+## Ses meilleurs decks
+9 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Commando Gerz
+60,8 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Roi Terre + Bleu-mange-cailloux
+57,1 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Bleu-mange-cailloux + Scorch
+53,1 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Sanglier Doré + Roi Terre
+47,8 % Indice relatif 9 tours Élimination estimée 31 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Sanglier Doré
+46,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Sanglier Doré + Rob l'Aventurier
+44,7 % Indice relatif 9 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (3)
+- D Commando Gerz + Sanglier Doré avec Maître Amphibian · Croqueur de Fruits Verdoyant Accessible · 43,8%
+- D Roi Terre + Bleu-mange-cailloux avec Sanglier Doré · Protecteur des ruines Collection avancée · 37,1%
+- D Commando Gerz + Zayd avec Protecteur des ruines · Sanglier Doré Collection avancée · 33,6%
+### Résistances
+11% Feu
+11% Eau
+11% Terre
+11% Nature
+11% Ombre
+11% Lumière
+Créature · Aelther
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Le Sanglier Doré appartient à la faune des forêts d’Aelther. On le rencontre surtout au pied du Mont Céleste, où il se nourrit d’or et de racines. Ce régime renforce son ossature, riche en ce métal, et le rend dangereux à provoquer. Les pèlerins ont pour règle de se nourrir exclusivement de Chenilles mielleuses afin de préserver les espèces du continent du braconnage.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 017 Terre
+Commune · Attaque
+### Croqueur de Fruits Verdoyant
+650 PV
+C # 085 Terre
+Épique · Attaque
+### Bleu-mange-cailloux
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

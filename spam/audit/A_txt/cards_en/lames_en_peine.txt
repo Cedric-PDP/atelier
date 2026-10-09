@@ -1,0 +1,131 @@
+Wander Blades: SPAM Shadow rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Wander Blades D View the full card
+Wander Blades
+Graveyard
+Heart Resistance
+Lucky
+550/550
+15
+Standard
+Wander Blades
+Graveyard
+Heart Resistance
+Lucky
+550/550
+15
+Elemental
+Wander Blades
+Graveyard
+Heart Resistance
+Lucky
+550/550
+15
+FA
+Wander Blades
+Graveyard
+Heart Resistance
+Lucky
+550/550
+15
+## Wander Blades
+D Shadow · Rare · Standard
+550 HP 15 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Bargain Your first Tox purchase of the game is refunded.
+- Talent 2 Cavalry Increases the max HP of all other allied cards by (+150)
+Recommended
+- Talent 3 Length At the start of your first turn, a random enemy card receives "Eternity"
+Three ability slots
+- Graveyard tox · Rare Increases all your elemental bonuses by (+5) when a card dies
+- Heart Resistance tox · Rare At the start of each of your turns, this card increases the resistances of all allied cards (+6).
+- Lucky tox · Rare Increases your Luck by (+1) per turn
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Shadow Rare #190
+# Wander Blades
+Economy
+550 Health points
+15 Spamtons / turn
+#127 Rank / 127
+D No talent · #127
+Attack
+0
+Generation
+0
+Defense
+3
+Support
+1
+Control
+0
+Economy
+99
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Bargain 2 Cavalry 3 Length
+Build with this card
+Share
+### Abilities
+### Starting Tox
+#### Graveyard
+Rare
+Increases all your elemental bonuses by (+5) when a card dies
+#### Heart Resistance
+Rare
+At the start of each of your turns, this card increases the resistances of all allied cards (+6).
+#### Lucky
+Rare
+Increases your Luck by (+1) per turn
+### Talents
+#### Bargain
+Your first Tox purchase of the game is refunded.
+Δ 18 · Theoretical score
+#### Cavalry
+Recommended
+Increases the max HP of all other allied cards by (+150)
+Δ 714.1 · Theoretical score
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+### Resistances
+-10% Fire
+-10% Water
+-10% Earth
+-10% Nature
+-10% Shadow
+-30% Light
+Art · Abyss
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Wander Blades is a painting depicting a confrontation with the Calamity of Shadow. In it, the Nightmare Reaper stands against the creature in Azeel’s Cemetery of the Void. Displayed in churches throughout the world, the work exalts duty and self-sacrifice in service of the common good.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

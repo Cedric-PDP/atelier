@@ -1,0 +1,142 @@
+Traveler of the Ridges: SPAM Water rare card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Traveler of the Ridges B View the full card
+Traveler of the Ridges
+5 End of the Journey
+Immunity
+AoE
+1000/1000
+9
+Standard
+Traveler of the Ridges
+5 End of the Journey
+Immunity
+AoE
+1000/1000
+9
+Elemental
+Traveler of the Ridges
+5 End of the Journey
+Immunity
+AoE
+1000/1000
+9
+FA
+Traveler of the Ridges
+5 End of the Journey
+Immunity
+AoE
+1000/1000
+9
+## Traveler of the Ridges
+B Water · Rare · Standard
+1,000 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Revitalization 5% chance each turn to restore this card’s HP to maximum.
+- Talent 2 Heart of Steel Each time this card is attacked, its elemental resistances increase by (+1%).
+Recommended
+- Talent 3 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Three ability slots
+- End of the Journey ability · Cooldown 5 Deal 65 Water damage
+Fully heals itself
+5
+- Immunity tox · Epic The card is immune to all effects from enemy cards
+- AoE tox · Epic Attacks and heals adjacent targets for 80% of the damage dealt
+Illustration by Saki
+Full card details
+Illustration by Saki
+Water Rare #237
+# Traveler of the Ridges
+Attack Defense
+1,000 Health points
+9 Spamtons / turn
+#36 Rank / 127
+A No talent · #19
+Attack
+79
+Generation
+0
+Defense
+97
+Support
+1
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Revitalization 2 Heart of Steel 3 Resilience
+Build with this card 1 deck
+Share
+### Abilities
+#### End of the Journey
+5 turns
+Deal 65 Water damage
+Fully heals itself
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Immunity
+Epic
+The card is immune to all effects from enemy cards
+#### AoE
+Epic
+Attacks and heals adjacent targets for 80% of the damage dealt
+### Talents
+#### Revitalization
+5% chance each turn to restore this card’s HP to maximum.
+Δ 0 · Theoretical score
+#### Heart of Steel
+Recommended
+Each time this card is attacked, its elemental resistances increase by (+1%).
+Δ 20.5 · Theoretical score
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+D Advanced collection
+Midrange ·
+### Water King + Traveler of the Ridges
+33.8 % Relative index 12 turns Estimated elimination 31 / turn Spamtons
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eltherien · Nordvinter
+### Beyond the card
+In the Crystal Lands east of Nordvinter, humanoids accompanied by wolves have been spotted on multiple occasions. These travelers of the icy peaks seem to be scouting the frozen zone. They have already attacked several worksites aiming to free the Oniyx technologies from the ice. Since then, no one dares try again, on pain of reprisals. They seem peaceful toward the youths of Nordvinter searching for their Dhöggeïr. Nothing is known of their origin. Their esoteric equipment suggests they come from Emeldarion.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+B # 248 Water
+Epic · Generation
+### Water King
+1000 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

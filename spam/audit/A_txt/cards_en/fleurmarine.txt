@@ -1,0 +1,140 @@
+Marineflower: SPAM Water common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Marineflower A View the full card
+Marineflower
+1 Whistling fin
+2 Seabed
+600/600
+6
+Standard
+Marineflower
+1 Whistling fin
+2 Seabed
+600/600
+6
+Elemental
+Marineflower
+1 Whistling fin
+2 Seabed
+600/600
+6
+FA
+Marineflower
+1 Whistling fin
+2 Seabed
+600/600
+6
+## Marineflower
+A Water · Common · Standard
+600 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+Recommended
+- Talent 2 Critical Critical bonus (+10%).
+- Talent 3 Increasing Error Each time this card attacks, a random enemy card loses 3% accuracy
+Three ability slots
+- Whistling fin ability · Cooldown 1 Deal 10 Water damage
++ Water bonus (+2) on critical hit
+Deal 10 Nature damage
++ Nature bonus (+2) on critical hit
+1
+- Seabed ability · Cooldown 2 Accuracy (+12%)
+2
+- Free slot Open to a shop Tox
+Illustration by Krackdur
+Full card details
+Illustration by Krackdur
+Water Common #119
+# Marineflower
+Versatile
+600 Health points
+6 Spamtons / turn
+#24 Rank / 127
+B No talent · #34
+Attack
+60
+Generation
+73
+Defense
+19
+Support
+74
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Piercing 2 Critical 3 Increasing Error
+Build with this card 1 deck
+Share
+### Abilities
+#### Whistling fin
+1 turn
+Deal 10 Water damage
++ Water bonus (+2) on critical hit
+Deal 10 Nature damage
++ Nature bonus (+2) on critical hit
+Accuracy 50% Critical 50%
+#### Seabed
+2 turns
+Accuracy (+12%)
+Accuracy 100% Critical 0%
+### Talents
+#### Piercing
+Recommended
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 198.2 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ 13.3 · Theoretical score
+#### Increasing Error
+Each time this card attacks, a random enemy card loses 3% accuracy
+Δ 22.6 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+C Accessible
+Aggro / burst ·
+### Raffteru + Thorn of Love
+58 % Relative index 7 turns Estimated elimination 25 / turn Spamtons
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Creature · Lumethia
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. Along the western coasts of Lumethia, one can see clusters of algae coming from the Ocean of the Depths. These beaches are off-limits because of very aggressive Marineflowers that may have settled there. These sea eels are quite feared by fishermen. However, they are a delicacy, a specialty of the ports of Lumethia.
+## Better together
+The most promising partners according to the model.
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+B # 229 Earth
+Common · Attack
+### Master Amphibian
+700 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

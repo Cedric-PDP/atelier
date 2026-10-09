@@ -1,0 +1,147 @@
+Catixy : carte SPAM Ombre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Catixy B Voir la carte en grand
+Catixy
+1 Miaulement
+2 Charme Sinistre
+600/600
+5
+Standard
+Catixy
+1 Miaulement
+2 Charme Sinistre
+600/600
+5
+Élémentaire
+Catixy
+1 Miaulement
+2 Charme Sinistre
+600/600
+5
+FA
+Catixy
+1 Miaulement
+2 Charme Sinistre
+600/600
+5
+## Catixy
+B Ombre · Commune · Standard
+600 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Racket Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+- Talent 2 Critique Bonus critique (+10 %)
+Conseillé
+- Talent 3 Inversement Commence la partie avec le passif "Inversement"
+Trois champs de compétence
+- Miaulement compétence · Recharge 1 Attaque [4 à 16] Ombre
+Critique du lanceur (+5%)
+1
+- Charme Sinistre compétence · Recharge 2 Critique (+25%) aléatoirement sur une carte alliée
+2
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Ombre Commune #219
+# Catixy
+Attaque Soutien
+600 Points de vie
+5 Spamtons / tour
+#42 Classement / 127
+B Sans talent · #36
+Attaque
+83
+Génération
+0
+Défense
+30
+Soutien
+91
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Racket 2 Critique 3 Inversement
+Jouer cette carte 5 decks
+Partager
+### Compétences
+#### Miaulement
+1 tour
+Attaque [4 à 16] Ombre
+Critique du lanceur (+5%)
+Précision 100% Critique 25%
+#### Charme Sinistre
+2 tours
+Critique (+25%) aléatoirement sur une carte alliée
+Précision 100% Critique 0%
+### Talents
+#### Racket
+Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+Δ 10,8 · Score théorique
+#### Critique
+Conseillé
+Bonus critique (+10 %)
+Δ 50,6 · Score théorique
+#### Inversement
+Commence la partie avec le passif "Inversement"
+Δ -260,4 · Score théorique
+## Ses meilleurs decks
+5 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Commando Gerz
+89,4 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+88 % Indice relatif 6 tours Élimination estimée 24 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Catixy
+87,9 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+Les autres decks (2)
+- A Aleera Mange-Cauchemars + Catixy avec Squall · Codex des Maux Ancestraux Intermédiaire · 83,6%
+- C Aleera Mange-Cauchemars + Catixy avec Commando Gerz · Gardien Vert Intermédiaire · 67,1%
+### Résistances
+5% Feu
+25% Eau
+5% Terre
+25% Nature
+5% Ombre
+25% Lumière
+Esprit · Abysses
+### Derrière la carte
+Depuis le début des pèlerinages, un chat semblable aux Panthères Imaginaires apparaît dans les rêves des Eltheriens. Il indique toujours l’emplacement du grand sage de la Pierre Sacrée, faisant du sud de Lumethia le point de départ de tout pèlerinage. Au début de ces rêves prémonitoires, personne ne comprenait clairement le message. Le félin apparaissait alors physiquement devant ceux qui ignoraient l’appel. Sa présence est en réalité une injonction plutôt qu’un avertissement : le pèlerinage doit être entrepris. Après avoir entendu les Eltheriens parler de ce chat, les Olforgeurs proposèrent de l’appeler Catixy, en hommage à leurs confrères Oniyx disparus depuis des temps immémoriaux.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

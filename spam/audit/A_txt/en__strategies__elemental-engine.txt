@@ -1,0 +1,60 @@
+An engine, not four soloists: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Elemental synergies Elemental synergies
+# An engine, not four soloists.
+Let bonuses flow from your generators to your attackers. That’s where synergy begins.
+4 min read Share
+Illustration by Atto
+01
+## Start with your attacks.
+Look at the elements used by your main attacker’s abilities. The card’s own element doesn’t always tell the whole story: some cards attack with several elements. Then choose generators that actually fuel those abilities.
+02
+## Generate before converting.
+In the model, each bonus point adds 10% to damage and healing in its element. Bonuses belong to the player and persist. Small, repeated generation can therefore support several cards at once. Watch the gameplan: bonuses available before an attack matter more than those earned right after it.
+03
+## Keep a win condition.
+Four good generators don’t necessarily make a good deck. You need a card that converts their investment quickly enough. Compare the damage curve and estimated elimination time, then try a replacement in the workshop. The best improvement can come from a lower-ranked individual card.
+Understanding the scores
+## Explore with this guide
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 174 Nature
+Common · Attack
+### Floral Zombie
+850 HP
+S # 056 Nature
+Common · Attack
+### Lisa, the Dragonrider
+800 HP
+## Put it into practice
+C Accessible
+Elemental ramp ·
+### Floral Zombie + Sovereign of the Ether Falls
+63.8 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+C Intermediate
+Elemental ramp ·
+### Floral Zombie + Sovereign of the Ether Falls
+61.8 % Relative index 8 turns Estimated elimination 23 / turn Spamtons
+C Intermediate
+Elemental ramp ·
+### Verdant Fruit Cruncher + Commando Gerz
+60.8 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

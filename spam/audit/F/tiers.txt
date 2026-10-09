@@ -1,0 +1,444 @@
+Spam Game tier list v1.20: best SPAM cards and decks - - - - - - - - - Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop
+FR
+Create a deck
+SPAM v 1.20 / Tier lists
+# Deck
+tier list
+The best compositions found by the engine. Four cards. One real gameplan.
+The meta,
+in practice.
+Analyzed on October 9, 2026 127 cards analyzed
+Decks Cards
+Tier Tier : All S A B C D Playstyle Playstyle : All Aggro / burst Elemental ramp Control Critical Midrange Element Element : All Fire Water Earth Nature Shadow Light Aether Elemental axis Elemental axis : All Fire Water Earth Nature Shadow Light
+Search for a deck or card…
+With talents No talent
+All Accessible Intermediate Advanced collection
+A diverse global selection of compositions across all rarities.
+40 decks
+Understanding the scores
+0% = average random deck. 100% = best deck found. This score is not a win rate.
+S Top performers 3 decks ≥ 90%
+01
+### Aleera + Sovereign of the Ether Falls
+100 %
+15,947 Theoretical score
+6 turns · estimated elimination
+6,083 Effective HP
+21 Spamtons / turn
+Elemental axes : Shadow .
+Aggro / burst Advanced collection
+View deck
+2 more decks · Tier S
+02
+### Aleera + Ephial
+96.1 %
+15,560 Theoretical score
+6 turns · estimated elimination
+6,439 Effective HP
+29 Spamtons / turn
+Elemental axes : Shadow .
+Aggro / burst Advanced collection Healing
+View deck
+03
+### Aleera + Commando Gerz
+91.2 %
+15,072 Theoretical score
+6 turns · estimated elimination
+5,783 Effective HP
+20 Spamtons / turn
+Elemental axes : Shadow .
+Aggro / burst Accessible
+View deck
+A Strong choices 3 decks 80–90%
+04
+### Aleera + Ameru
+89.3 %
+14,885 Theoretical score
+6 turns · estimated elimination
+6,168 Effective HP
+32 Spamtons / turn
+Elemental axes : Shadow .
+Aggro / burst Intermediate
+View deck
+2 more decks · Tier A
+05
+### Squall + Mistress of Tints
+81.1 %
+14,075 Theoretical score
+6 turns · estimated elimination
+4,314 Effective HP
+30 Spamtons / turn
+Elemental axes : Shadow / Light .
+Aggro / burst Intermediate
+View deck
+06
+### Sovereign of the Ether Falls + Master Amphibian
+80.4 %
+14,010 Theoretical score
+6 turns · estimated elimination
+3,125 Effective HP
+22 Spamtons / turn
+Elemental axes : Water / Earth .
+Aggro / burst Intermediate Healing
+View deck
+B Build around 1 decks 70–80%
+07
+### Master Amphibian + Rob the Adventurer
+75.3 %
+13,504 Theoretical score
+7 turns · estimated elimination
+5,376 Effective HP
+24 Spamtons / turn
+Elemental axes : Earth / Water .
+Aggro / burst Intermediate Healing
+View deck
+C Situational 26 decks 50–70%
+08
+### Verdant Fruit Cruncher + Blue-Stone-Eater
+63.5 %
+12,339 Theoretical score
+7 turns · estimated elimination
+4,839 Effective HP
+29 Spamtons / turn
+Elemental axes : Earth .
+Aggro / burst Intermediate
+View deck
+25 more decks · Tier C
+09
+### Pyro + Scorch
+61.7 %
+12,155 Theoretical score
+8 turns · estimated elimination
+3,358 Effective HP
+26 Spamtons / turn
+Elemental axes : Fire .
+Elemental ramp Advanced collection Healing
+View deck
+10
+### Earth King + Blue-Stone-Eater
+59.8 %
+11,968 Theoretical score
+9 turns · estimated elimination
+8,215 Effective HP
+24 Spamtons / turn
+Elemental axes : Earth .
+Elemental ramp Advanced collection
+View deck
+11
+### Medusine Thorn + The Companion of Spirits
+59 %
+11,890 Theoretical score
+8 turns · estimated elimination
+4,021 Effective HP
+32 Spamtons / turn
+Elemental axes : Water .
+Midrange Accessible Healing
+View deck
+12
+### Ashtarae Lycaria + Floating Poison Gas
+58 %
+11,796 Theoretical score
+8 turns · estimated elimination
+4,722 Effective HP
+27 Spamtons / turn
+Elemental axes : Shadow .
+Midrange Advanced collection Healing
+View deck
+13
+### Mistress of Tints + Catimimi
+57.3 %
+11,723 Theoretical score
+8 turns · estimated elimination
+2,448 Effective HP
+28 Spamtons / turn
+Elemental axes : Fire / Shadow / Nature .
+Elemental ramp Intermediate Healing
+View deck
+14
+### Medusine Thorn + Scorch
+57.1 %
+11,708 Theoretical score
+8 turns · estimated elimination
+3,167 Effective HP
+26 Spamtons / turn
+Elemental axes : Water / Fire / Earth .
+Elemental ramp Accessible Healing
+View deck
+15
+### Mistress of Tints + Deer of Mournful Colors
+57.1 %
+11,707 Theoretical score
+9 turns · estimated elimination
+4,885 Effective HP
+27 Spamtons / turn
+Elemental axes : Nature / Water / Fire / Earth / Shadow / Light .
+Midrange Intermediate Healing
+View deck
+16
+### Sovereign of the Ether Falls + The Companion of Spirits
+56.5 %
+11,648 Theoretical score
+8 turns · estimated elimination
+3,258 Effective HP
+26 Spamtons / turn
+Elemental axes : Water .
+Midrange Accessible Healing
+View deck
+17
+### Wibs the Blazing + Pyro
+56.5 %
+11,641 Theoretical score
+8 turns · estimated elimination
+3,199 Effective HP
+27 Spamtons / turn
+Elemental axes : Fire .
+Elemental ramp Accessible
+View deck
+18
+### Verdant Fruit Cruncher + Mistress of Tints
+56.4 %
+11,637 Theoretical score
+9 turns · estimated elimination
+5,563 Effective HP
+31 Spamtons / turn
+Elemental axes : Earth .
+Midrange Intermediate
+View deck
+19
+### Thorn of Love + Rob the Adventurer
+56 %
+11,593 Theoretical score
+7 turns · estimated elimination
+2,795 Effective HP
+23 Spamtons / turn
+Elemental axes : Earth .
+Aggro / burst Intermediate
+View deck
+20
+### Catimimi + Yotaru
+55.2 %
+11,512 Theoretical score
+9 turns · estimated elimination
+3,070 Effective HP
+20 Spamtons / turn
+Elemental axes : Shadow / Fire / Nature .
+Midrange Intermediate Healing
+View deck
+21
+### The Companion of Spirits + Scorch
+54.8 %
+11,480 Theoretical score
+9 turns · estimated elimination
+5,974 Effective HP
+24 Spamtons / turn
+Elemental axes : Water .
+Elemental ramp Advanced collection Healing
+View deck
+22
+### Abyssal Lightbearer + Nebular Aristocrat
+54.7 %
+11,463 Theoretical score
+8 turns · estimated elimination
+2,920 Effective HP
+24 Spamtons / turn
+Elemental axes : Light .
+Elemental ramp Advanced collection
+View deck
+23
+### Master Amphibian + Aidan
+54.4 %
+11,437 Theoretical score
+8 turns · estimated elimination
+3,533 Effective HP
+23 Spamtons / turn
+Elemental axes : Water / Earth .
+Elemental ramp Accessible
+View deck
+24
+### Commando Gerz + Blue-Stone-Eater
+52.7 %
+11,270 Theoretical score
+9 turns · estimated elimination
+5,370 Effective HP
+21 Spamtons / turn
+Elemental axes : Earth .
+Elemental ramp Advanced collection Healing
+View deck
+25
+### Hatchlings of Midas + Melody of Divinities
+52.5 %
+11,246 Theoretical score
+9 turns · estimated elimination
+4,823 Effective HP
+21 Spamtons / turn
+Elemental axes : Light .
+Elemental ramp Advanced collection Healing
+View deck
+26
+### Radiant Shinobi + Horned Dune Wyrm
+52.5 %
+11,245 Theoretical score
+9 turns · estimated elimination
+5,264 Effective HP
+20 Spamtons / turn
+Elemental axes : Earth / Light .
+Midrange Intermediate Healing
+View deck
+27
+### Radiant Shinobi + Nebular Aristocrat
+52.3 %
+11,227 Theoretical score
+10 turns · estimated elimination
+7,205 Effective HP
+19 Spamtons / turn
+Elemental axes : Light / Earth .
+Midrange Intermediate
+View deck
+28
+### Sovereign of Flames + Wibs the Blazing
+52.2 %
+11,216 Theoretical score
+9 turns · estimated elimination
+4,862 Effective HP
+28 Spamtons / turn
+Elemental axes : Fire .
+Critical Advanced collection
+View deck
+29
+### Radiant Shinobi + Glimmer of Hope
+51.9 %
+11,193 Theoretical score
+10 turns · estimated elimination
+6,453 Effective HP
+30 Spamtons / turn
+Elemental axes : Light .
+Elemental ramp Intermediate Healing
+View deck
+30
+### Leviathan of the Skies + The Companion of Spirits
+51.6 %
+11,162 Theoretical score
+9 turns · estimated elimination
+4,686 Effective HP
+30 Spamtons / turn
+Elemental axes : Water .
+Midrange Advanced collection Healing
+View deck
+31
+### Blue-Stone-Eater + Thorn of Love
+51 %
+11,105 Theoretical score
+9 turns · estimated elimination
+4,739 Effective HP
+24 Spamtons / turn
+Elemental axes : Earth .
+Elemental ramp Advanced collection
+View deck
+32
+### Sovereign of Flames + Vladislaus
+50.3 %
+11,032 Theoretical score
+9 turns · estimated elimination
+4,722 Effective HP
+26 Spamtons / turn
+Elemental axes : Fire / Shadow .
+Midrange Advanced collection Healing
+View deck
+33
+### Verdant Fruit Cruncher + Thorn of Love
+50 %
+11,004 Theoretical score
+9 turns · estimated elimination
+4,981 Effective HP
+29 Spamtons / turn
+Elemental axes : Earth .
+Elemental ramp Accessible
+View deck
+D Experiment with 7 decks < 50%
+34
+### Golden Boar + Rob the Adventurer
+49.6 %
+10,961 Theoretical score
+9 turns · estimated elimination
+5,256 Effective HP
+30 Spamtons / turn
+Elemental axes : Earth .
+Elemental ramp Accessible
+View deck
+6 more decks · Tier D
+35
+### Wibs the Blazing + Logidrake
+49 %
+10,906 Theoretical score
+9 turns · estimated elimination
+2,782 Effective HP
+28 Spamtons / turn
+Elemental axes : Fire .
+Midrange Intermediate Healing
+View deck
+36
+### Pyro + Faerylia
+48.7 %
+10,868 Theoretical score
+8 turns · estimated elimination
+2,014 Effective HP
+21 Spamtons / turn
+Elemental axes : Fire / Shadow / Nature .
+Elemental ramp Intermediate Healing
+View deck
+37
+### Canine Specter + Nebular Aristocrat
+48.5 %
+10,855 Theoretical score
+10 turns · estimated elimination
+5,474 Effective HP
+21 Spamtons / turn
+Elemental axes : Light / Shadow .
+Elemental ramp Accessible
+View deck
+38
+### Pyro + Logidrake
+48.4 %
+10,843 Theoretical score
+9 turns · estimated elimination
+2,716 Effective HP
+27 Spamtons / turn
+Elemental axes : Fire .
+Midrange Intermediate Healing
+View deck
+39
+### Raffteru + Thorn of Love
+48.3 %
+10,836 Theoretical score
+8 turns · estimated elimination
+2,757 Effective HP
+25 Spamtons / turn
+Elemental axes : Nature / Earth / Light .
+Elemental ramp Accessible Healing
+View deck
+40
+### Verdant Fruit Cruncher + Earth King
+47.3 %
+10,739 Theoretical score
+9 turns · estimated elimination
+3,040 Effective HP
+32 Spamtons / turn
+Elemental axes : Earth .
+Midrange Advanced collection
+View deck
+## SPAM tier list: frequently asked questions
+What is the best SPAM card? In version 1.20, Moxilys, the Humming One tops the card tier list (tier S), ahead of Spirit of the Fauna and Lisa, the Dragonrider. The ranking combines attack, generation, defense, support, control and economy in one simulation model.
+What is the best SPAM deck? Aleera + Sovereign of the Ether Falls (Aleera, Nightmare-Eater, Sovereign of the Ether Falls, Commando Gerz, Sovereign of Flames) is the best deck found by the engine for version 1.20, with an estimated elimination in 6 turns. Every deck in the tier list has its own page: composition, recommended talents, gameplan, Tox targets and opponent profiles.
+How is the SPAM tier list computed? Every card and deck is simulated over 10 turns, with one active talent per card, against theoretical opponent profiles. Card tiers are relative to the catalogue (S = top 8%); deck tiers compare the score with the average random deck and the best deck found. It is not a win rate: the Methodology page details the assumptions.
+How often is the tier list updated? With every new version of the official Spamdex: card data is checked daily and the tier list is recomputed automatically as soon as a change appears. Current version: 1.20, analysis of October 9, 2026.
+Understanding the scores
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game
+Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.20
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

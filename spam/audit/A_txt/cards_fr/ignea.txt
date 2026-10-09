@@ -1,0 +1,138 @@
+Ignea : carte SPAM Feu légendaire, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Ignea S Voir la carte en grand
+Ignea
+4 Incandescence
+3 Silenfeu
+750/750
+10
+Standard
+Ignea
+4 Incandescence
+3 Silenfeu
+750/750
+10
+Élémentaire
+Ignea
+4 Incandescence
+3 Silenfeu
+750/750
+10
+FA
+Ignea
+4 Incandescence
+3 Silenfeu
+750/750
+10
+## Ignea
+S Feu · Légendaire · Standard
+750 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Baleine bleue Augmente les PV de cette carte de (+200).
+Conseillé
+- Talent 2 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 3 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Trois champs de compétence
+- Incandescence compétence · Recharge 4 Cible aléatoirement une carte adverse
+Attaque 120 Feu
+Bonus Feu (+2)
+4
+- Silenfeu compétence · Recharge 3 Applique Gel
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Feu Légendaire #091
+# Ignea
+Contrôle
+750 Points de vie
+10 Spamtons / tour
+#8 Classement / 127
+S Sans talent · #10
+Attaque
+72
+Génération
+45
+Défense
+63
+Soutien
+1
+Contrôle
+94
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Baleine bleue 2 Imprudent 3 Reset ultime
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Incandescence
+4 tours
+Cible aléatoirement une carte adverse
+Attaque 120 Feu
+Bonus Feu (+2)
+Précision 100% Critique 1%
+#### Silenfeu
+3 tours
+Applique Gel
+Précision 100% Critique 1%
+### Talents
+#### Baleine bleue
+Conseillé
+Augmente les PV de cette carte de (+200).
+Δ 73,7 · Score théorique
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -126 · Score théorique
+#### Reset ultime
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 10,3 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Collection avancée
+Midrange ·
+### Apprentie de la Mort + Guerrier des Neiges
+36,2 % Indice relatif 9 tours Élimination estimée 31 / tour Spamtons
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Eltherien · Vaeloria
+### Derrière la carte
+Alors que Vaeloria peinait à se remettre de la disparition du Roi de la Nature, le clan de brigands Sengo faisait régner la terreur dans le nord-ouest. Ignea vivait paisiblement avec sa famille nomade jusqu’au jour où, cachée pour échapper au danger, elle vit les brigands massacrer tous ses proches. Elle consacra alors sa vie à la vengeance, à l’entraînement et au combat. En traquant le chef du clan, elle libéra plusieurs villages et obtint enfin le duel à mort qu’elle convoitait. Malgré les innombrables stratagèmes de son adversaire, elle l’emporta, prit la tête du clan, puis le transforma en l’actuelle guilde des aventuriers de Vaeloria.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

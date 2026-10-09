@@ -1,0 +1,232 @@
+{
+ "res": [
+  {
+   "score": 8018.221187085179,
+   "ttk": 12.1,
+   "matchups": [
+    {
+     "id": "neutral",
+     "score": 8368.509631529623,
+     "ttk": 12.6,
+     "kills": 1,
+     "dmgTotal": 2238,
+     "deltaPct": 0
+    },
+    {
+     "id": "fragile",
+     "score": 9183.414381529623,
+     "ttk": 10.1,
+     "kills": 3.5,
+     "dmgTotal": 2181,
+     "deltaPct": 9.7
+    },
+    {
+     "id": "tank",
+     "score": 6396.031881529622,
+     "ttk": 16.8,
+     "kills": 0,
+     "dmgTotal": 2142,
+     "deltaPct": -23.6
+    },
+    {
+     "id": "anti-fire",
+     "score": 8368.509631529623,
+     "ttk": 12.6,
+     "kills": 1,
+     "dmgTotal": 2238,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-water",
+     "score": 7247.134881529623,
+     "ttk": 14.7,
+     "kills": 0,
+     "dmgTotal": 1914,
+     "deltaPct": -13.4
+    },
+    {
+     "id": "anti-earth",
+     "score": 8368.509631529623,
+     "ttk": 12.6,
+     "kills": 1,
+     "dmgTotal": 2238,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-nature",
+     "score": 7494.861381529623,
+     "ttk": 14.1,
+     "kills": 0,
+     "dmgTotal": 1990,
+     "deltaPct": -10.4
+    },
+    {
+     "id": "anti-shadow",
+     "score": 8368.509631529623,
+     "ttk": 12.6,
+     "kills": 1,
+     "dmgTotal": 2238,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-light",
+     "score": 8368.509631529623,
+     "ttk": 12.6,
+     "kills": 1,
+     "dmgTotal": 2238,
+     "deltaPct": 0
+    }
+   ],
+   "dmgByTurn": [
+    5,
+    117,
+    12,
+    234,
+    14,
+    384,
+    23,
+    612,
+    35,
+    920
+   ],
+   "keys": [
+    "score",
+    "ttk",
+    "dmgTotal",
+    "ehp",
+    "heal",
+    "control",
+    "spamton",
+    "income",
+    "tier",
+    "advantage",
+    "scale",
+    "dmgByTurn",
+    "matchups",
+    "positions",
+    "selection",
+    "player",
+    "plan",
+    "suggestions",
+    "baseScore",
+    "noTalent",
+    "loadout",
+    "shop"
+   ]
+  },
+  {
+   "score": 6077.269814973483,
+   "ttk": 17.9,
+   "matchups": [
+    {
+     "id": "neutral",
+     "score": 6130.214204238946,
+     "ttk": 18.5,
+     "kills": 1,
+     "dmgTotal": 1518,
+     "deltaPct": 0
+    },
+    {
+     "id": "fragile",
+     "score": 7941.405275411193,
+     "ttk": 14.2,
+     "kills": 2,
+     "dmgTotal": 1552,
+     "deltaPct": 29.5
+    },
+    {
+     "id": "tank",
+     "score": 4819.311756870525,
+     "ttk": 24.1,
+     "kills": 1,
+     "dmgTotal": 1503,
+     "deltaPct": -21.4
+    },
+    {
+     "id": "anti-fire",
+     "score": 6132.618891738945,
+     "ttk": 18.5,
+     "kills": 1,
+     "dmgTotal": 1518,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-water",
+     "score": 5823.595010159997,
+     "ttk": 19.5,
+     "kills": 1,
+     "dmgTotal": 1438,
+     "deltaPct": -5
+    },
+    {
+     "id": "anti-earth",
+     "score": 5627.630766738945,
+     "ttk": 20.4,
+     "kills": 1,
+     "dmgTotal": 1377,
+     "deltaPct": -8.2
+    },
+    {
+     "id": "anti-nature",
+     "score": 5956.640309867599,
+     "ttk": 19,
+     "kills": 1,
+     "dmgTotal": 1473,
+     "deltaPct": -2.8
+    },
+    {
+     "id": "anti-shadow",
+     "score": 6132.006059867599,
+     "ttk": 18.5,
+     "kills": 1,
+     "dmgTotal": 1518,
+     "deltaPct": 0
+    },
+    {
+     "id": "anti-light",
+     "score": 6132.006059867599,
+     "ttk": 18.5,
+     "kills": 1,
+     "dmgTotal": 1518,
+     "deltaPct": 0
+    }
+   ],
+   "dmgByTurn": [
+    0,
+    339,
+    0,
+    445,
+    0,
+    446,
+    0,
+    231,
+    0,
+    249
+   ],
+   "keys": [
+    "score",
+    "ttk",
+    "dmgTotal",
+    "ehp",
+    "heal",
+    "control",
+    "spamton",
+    "income",
+    "tier",
+    "advantage",
+    "scale",
+    "dmgByTurn",
+    "matchups",
+    "positions",
+    "selection",
+    "player",
+    "plan",
+    "suggestions",
+    "baseScore",
+    "noTalent",
+    "loadout",
+    "shop"
+   ]
+  }
+ ]
+}

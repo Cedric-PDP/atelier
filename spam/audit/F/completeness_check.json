@@ -1,0 +1,55 @@
+{
+ "best-one": {
+  "sampled": 40000,
+  "distinct": 39928,
+  "thr1000": 14766.278290895061,
+  "thr4000": 14311.668099425768,
+  "above1000": 4,
+  "above4000": 13,
+  "missingFromBeam": 0,
+  "expectedAbove4000IfUniform": 15.1,
+  "meanQuick": 5965.614957683292,
+  "maxQuick": 14990.424647127944
+ },
+ "none": {
+  "sampled": 40000,
+  "distinct": 39916,
+  "thr1000": 14240.149738269338,
+  "thr4000": 11802.171661670001,
+  "above1000": 3,
+  "above4000": 19,
+  "missingFromBeam": 0,
+  "expectedAbove4000IfUniform": 15.1,
+  "meanQuick": 4861.757420454245,
+  "maxQuick": 14524.016143691893
+ },
+ "rankStability": {
+  "best-one": {
+   "Xtop1000_quickRank_p50": 1167,
+   "p90": 3245,
+   "p99": 3943,
+   "max": 3999,
+   "fromQuickRankAbove3000": 129,
+   "X1": 16134.060724414121,
+   "X1000": 14569.303598302246,
+   "X4000": 9319.307714001912
+  },
+  "none": {
+   "Xtop1000_quickRank_p50": 553,
+   "p90": 1077,
+   "p99": 1928,
+   "max": 3309,
+   "fromQuickRankAbove3000": 3,
+   "X1": 15336.64876009756,
+   "X1000": 12867.239728539626,
+   "X4000": 8055.313622452207
+  },
+  "Te": {
+   "Tetop1000_XRank_p90": 1174,
+   "max": 1499,
+   "fromXRankAbove1200": 87,
+   "Te1": 15946.583341408666,
+   "Te1000": 14416.621584806671
+  }
+ }
+}

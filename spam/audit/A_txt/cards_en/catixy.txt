@@ -1,0 +1,147 @@
+Catixy: SPAM Shadow common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Catixy B View the full card
+Catixy
+1 Mewling
+2 Sinister Charm
+600/600
+5
+Standard
+Catixy
+1 Mewling
+2 Sinister Charm
+600/600
+5
+Elemental
+Catixy
+1 Mewling
+2 Sinister Charm
+600/600
+5
+FA
+Catixy
+1 Mewling
+2 Sinister Charm
+600/600
+5
+## Catixy
+B Shadow · Common · Standard
+600 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Extortion Each time this card deals damage, the opponent loses 5 Spamton.
+- Talent 2 Critical Critical bonus (+10%).
+Recommended
+- Talent 3 Inversion Start the game with the "Inversion" passive
+Three ability slots
+- Mewling ability · Cooldown 1 Deal [4 to 16] Shadow damage
+Caster's critical (+5%)
+1
+- Sinister Charm ability · Cooldown 2 Critical (+25%) on a random allied card
+2
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Shadow Common #219
+# Catixy
+Attack Support
+600 Health points
+5 Spamtons / turn
+#42 Rank / 127
+B No talent · #36
+Attack
+83
+Generation
+0
+Defense
+30
+Support
+91
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Extortion 2 Critical 3 Inversion
+Build with this card 5 decks
+Share
+### Abilities
+#### Mewling
+1 turn
+Deal [4 to 16] Shadow damage
+Caster's critical (+5%)
+Accuracy 100% Critical 25%
+#### Sinister Charm
+2 turns
+Critical (+25%) on a random allied card
+Accuracy 100% Critical 0%
+### Talents
+#### Extortion
+Each time this card deals damage, the opponent loses 5 Spamton.
+Δ 10.8 · Theoretical score
+#### Critical
+Recommended
+Critical bonus (+10%).
+Δ 50.6 · Theoretical score
+#### Inversion
+Start the game with the "Inversion" passive
+Δ -260.4 · Theoretical score
+## Its best decks
+5 ranked decks play this card, from best to worst.
+All decks
+A Accessible
+Aggro / burst ·
+### Aleera + Commando Gerz
+89.4 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera + Apprentice of Death
+88 % Relative index 6 turns Estimated elimination 24 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Catixy
+87.9 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+The other decks (2)
+- A Aleera + Catixy with Squall · Codex of Ancient Woes Intermediate · 83.6%
+- C Aleera + Catixy with Commando Gerz · Green Guardian Intermediate · 67.1%
+### Resistances
+5% Fire
+25% Water
+5% Earth
+25% Nature
+5% Shadow
+25% Light
+Spirit · Abyss
+### Beyond the card
+Since the beginning of the pilgrimages, a cat similar to the imaginary panthers appears in the dreams of the Eltherians. It always indicates the location of the great sage of the sacred stone. The south of Lumethia is thus the starting point of every pilgrimage. At the start of these premonitory dreams, no one clearly understood the message. This feline appeared physically before those who ignored the call. It is in fact a request before it is a warning: the pilgrimage must be undertaken. The Olforgeurs, having heard the Eltherians speak of this cat, proposed to call it Catixy — a tribute to their Oniyx colleagues, gone since time immemorial.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

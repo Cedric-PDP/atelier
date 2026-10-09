@@ -1,0 +1,19 @@
+U n 120 mean size 26.9 min 18 max 36
+V n 40 mean size 64.4 min 53 max 72
+15:14:40 done colV_3 255.3s
+15:15:06 done colV_6 283.1s
+15:15:14 done colV_7 291.6s
+15:15:14 done colV_2 289.2s
+15:15:33 done colV_5 310.0s
+15:15:47 done colV_4 323.5s
+15:20:11 done colV_1 331.3s
+15:24:22 done colV_0 555.9s
+15:24:41 done colU_4 566.3s
+15:25:53 done colU_2 605.9s
+15:26:29 done rnd2_best-one 108.4s
+15:27:35 done colU_5 741.3s
+15:27:42 done rnd2_none 109.3s
+15:28:34 done colU_1 502.8s
+15:28:56 done colU_3 803.2s
+15:34:13 done colU_0 591.4s
+ALL DONE 1430s

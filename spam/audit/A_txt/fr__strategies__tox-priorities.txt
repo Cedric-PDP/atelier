@@ -1,0 +1,60 @@
+Chaque Spamton compte : guide SPAM
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Stratégies Tox & économie Tox & économie
+# Chaque Spamton compte.
+Comprends les lignes libres, les remplacements et le potentiel des Tox.
+4 min de lecture Partager
+Illustration par Atto
+01
+## Observe les lignes disponibles.
+Les compétences et les passifs occupent les trois lignes d’une carte, et un Tox peut prendre la place de l’une ou de l’autre. Les fiches de deck disent ce que vaut chaque ligne, laquelle garder, laquelle sacrifier et où poser le Tox. Un Tox intéressant n’a de valeur que si tu peux le placer sur un porteur compatible.
+02
+## Lis le gain net.
+Lorsqu’un Tox remplace un passif, le moteur tient compte de la valeur perdue. Une proposition de remplacement correspond donc à une amélioration nette estimée du score du deck. Le plan hiérarchise les options, mais dépend des tirages que tu obtiens réellement.
+03
+## Sépare le potentiel du budget.
+Le potentiel simule des Tox équipés dès le début du combat ; le plan, lui, suit la partie : un achat par ouverture de boutique, dans la limite des Spamtons que le deck a générés, et seulement parmi les raretés que la boutique propose à ce moment-là — tout est commun au tour 2, les épiques arrivent vers le tour 6, les légendaires bien plus tard. Les tirages restent aléatoires : priorise les premières améliorations accessibles plutôt que de viser automatiquement tout le plan.
+Comprendre les scores
+## À explorer avec ce guide
+S # 177 Ombre
+Commune · Attaque
+### Moxilys, la Fredonneuse
+900 PV
+S # 122 Nature
+Commune · Attaque
+### Esprit de la Faune
+800 PV
+S # 056 Nature
+Commune · Attaque
+### Lisa, la Dragonnière
+800 PV
+## Passer à la pratique
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+98,1 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+94,6 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

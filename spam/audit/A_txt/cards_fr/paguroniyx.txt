@@ -1,0 +1,156 @@
+Paguroniyx : carte SPAM Ombre commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Paguroniyx A Voir la carte en grand
+Paguroniyx
+4 Terrier
+2 Cisaille vénéneuse
+Mystère
+850/850
+8
+Standard
+Paguroniyx
+4 Terrier
+2 Cisaille vénéneuse
+Mystère
+850/850
+8
+Élémentaire
+Paguroniyx
+4 Terrier
+2 Cisaille vénéneuse
+Mystère
+850/850
+8
+FA
+Paguroniyx
+4 Terrier
+2 Cisaille vénéneuse
+Mystère
+850/850
+8
+## Paguroniyx
+A Ombre · Commune · Standard
+850 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Départ multi Bonus (+3) dans chaque élément.
+- Talent 2 Anticipation Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Terrier compétence · Recharge 4 Augmente les PV max de toutes les cartes alliées de 100
+4
+- Cisaille vénéneuse compétence · Recharge 2 Attaque 30 Ombre
+2
+- Mystère tox · Rare Commence la partie avec un passif aléatoire
+Illustration par Luga
+Fiche complète
+Illustration par Luga
+Ombre Commune #263
+# Paguroniyx
+Soutien Défense
+850 Points de vie
+8 Spamtons / tour
+#22 Classement / 127
+A Sans talent · #17
+Attaque
+42
+Génération
+47
+Défense
+82
+Soutien
+95
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Départ multi 2 Anticipation 3 Vitalité des Âmes
+Jouer cette carte 8 decks
+Partager
+### Compétences
+#### Terrier
+4 tours
+Augmente les PV max de toutes les cartes alliées de 100
+Précision 100% Critique 0%
+#### Cisaille vénéneuse
+2 tours
+Attaque 30 Ombre
+Précision 100% Critique 1%
+### Tox de départ
+#### Mystère
+Rare
+Commence la partie avec un passif aléatoire
+### Talents
+#### Départ multi
+Bonus (+3) dans chaque élément.
+Δ 338,9 · Score théorique
+#### Anticipation
+Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+Δ 17,7 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 342,4 · Score théorique
+## Ses meilleurs decks
+8 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+93,4 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Paguroniyx
+89,1 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+88,4 % Indice relatif 6 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (5)
+- A Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec Squall · Paguroniyx Intermédiaire · 89,2%
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Catixy · Paguroniyx Accessible · 88%
+- A Aleera Mange-Cauchemars + Paguroniyx avec Souverain des Chutes d'Éther · Souverain des Flammes Collection avancée · 86,2%
+- A Aleera Mange-Cauchemars + Paguroniyx avec Souverain des Chutes d'Éther · Zombie Floral Accessible · 85,1%
+- B Aleera Mange-Cauchemars + Paguroniyx avec Commando Gerz · Wyrm des Dunes Cornu Accessible · 71,4%
+### Résistances
+24% Feu
+24% Eau
+-20% Terre
+24% Nature
+15% Ombre
+-19% Lumière
+Créature artificielle · Abysses
+### Derrière la carte
+Selon de nombreux récits historiques, la guerre entre les espèces magiques supérieures et les Éternels faisait rage. Équipés de leurs meilleures armes, mêlant magie élémentaire et technologies de destruction massive, les Oniyx gagnèrent le temps nécessaire pour permettre le scellement des Divinités. Leur machine la plus redoutable, Paguroniyx, était pilotée par l’Inventeur. Nul ne sait où elle se trouve aujourd’hui. Est-elle prisonnière des glaces des Contrées de Cristal ou a-t-elle sombré dans les profondeurs de l’océan ?
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

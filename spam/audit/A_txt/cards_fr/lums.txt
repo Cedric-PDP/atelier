@@ -1,0 +1,144 @@
+Lums : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Lums D Voir la carte en grand
+Lums
+2 Vent argenté
+4 Envol
+600/600
+7
+Standard
+Lums
+2 Vent argenté
+4 Envol
+600/600
+7
+Élémentaire
+Lums
+2 Vent argenté
+4 Envol
+600/600
+7
+FA
+Lums
+2 Vent argenté
+4 Envol
+600/600
+7
+## Lums
+D Lumière · Commune · Standard
+600 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur LUMIÈRE Commence la partie avec le passif Cœur de lumière
+Conseillé
+- Talent 2 Cœur OMBRE Commence la partie avec le passif "Cœur d'ombre"
+- Talent 3 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+Trois champs de compétence
+- Vent argenté compétence · Recharge 2 Choix
+Attaque 10 Lumière 10 Ombre
+---------- ou ----------
+Bonus Lumière (+3) Bonus Ombre (+3)
+2
+- Envol compétence · Recharge 4 Cible toutes les cartes du terrain
+Dégâts critiques (+1)
+4
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Yoru Flush
+Fiche complète
+Illustration par Yoru Flush
+Lumière Commune #113
+# Lums
+Polyvalent
+600 Points de vie
+7 Spamtons / tour
+#100 Classement / 127
+D Sans talent · #121
+Attaque
+15
+Génération
+57
+Défense
+29
+Soutien
+72
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur LUMIÈRE 2 Cœur OMBRE 3 Boule de Crit
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Vent argenté
+2 tours
+Choix
+Attaque 10 Lumière 10 Ombre
+---------- ou ----------
+Bonus Lumière (+3) Bonus Ombre (+3)
+Précision 100% Critique 1%
+#### Envol
+4 tours
+Cible toutes les cartes du terrain
+Dégâts critiques (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur LUMIÈRE
+Conseillé
+Commence la partie avec le passif Cœur de lumière
+Δ 299,3 · Score théorique
+#### Cœur OMBRE
+Commence la partie avec le passif "Cœur d'ombre"
+Δ 267,7 · Score théorique
+#### Boule de Crit
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 262,9 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Luminaire Abyssal + Aristocrate Nébulaire
+53,9 % Indice relatif 9 tours Élimination estimée 18 / tour Spamtons
+Les autres decks (1)
+- C Luminaire Abyssal + Aristocrate Nébulaire avec Codex des Sorts Lumineux · Lums Collection avancée · 52%
+### Résistances
+7% Feu
+7% Eau
+7% Terre
+25% Nature
+25% Ombre
+7% Lumière
+Eltherien · Emeldarion
+### Derrière la carte
+Lums est une chanteuse renommée d’Abondance. Ses spectacles s’inspirent de ses deux personnalités et de sa fascination pour la Mer Étoilée ; les étoiles et la mer sont ses thèmes favoris. Elle a fait ses débuts au bar Katrobu, qui a également accueilli la Maîtresse des Teintes. Les deux artistes s’apprécient comme des sœurs malgré leurs différends. La prochaine tournée de la chanteuse, « Thalassophobia », est un spectacle de son et de lumière. Sur plusieurs chansons, elle sera exceptionnellement accompagnée par l’art de la Maîtresse des Teintes. Cette tournée semble annoncer un événement majeur dans la carrière de l’une d’elles.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

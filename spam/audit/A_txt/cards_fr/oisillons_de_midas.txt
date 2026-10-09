@@ -1,0 +1,152 @@
+Oisillons de Midas : carte SPAM Lumière commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Oisillons de Midas A Voir la carte en grand
+Oisillons de Midas
+2 Piou-piou-piou
+2 Quintuor
+500/500
+8
+Standard
+Oisillons de Midas
+2 Piou-piou-piou
+2 Quintuor
+500/500
+8
+Élémentaire
+Oisillons de Midas
+2 Piou-piou-piou
+2 Quintuor
+500/500
+8
+FA
+Oisillons de Midas
+2 Piou-piou-piou
+2 Quintuor
+500/500
+8
+## Oisillons de Midas
+A Lumière · Commune · Standard
+500 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Souffle-8 Récupère l'attaque Souffle élémentaire au début du tour 8
+Conseillé
+- Talent 2 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 3 Paradoxe Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+Trois champs de compétence
+- Piou-piou-piou compétence · Recharge 2 Soigne 10 Lumière
+Soigne 10 Lumière
+Soigne 10 Lumière
+Soigne 10 Lumière
+Bonus Lumière (+3)
+2
+- Quintuor compétence · Recharge 2 Les valeurs de base des soins et des dégâts augmentent de 2
+2
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Manayel
+Fiche complète
+Illustration par Manayel
+Lumière Commune #233
+# Oisillons de Midas
+Soutien
+500 Points de vie
+8 Spamtons / tour
+#15 Classement / 127
+C Sans talent · #83
+Attaque
+52
+Génération
+69
+Défense
+44
+Soutien
+97
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Souffle-8 2 Imprudent 3 Paradoxe
+Jouer cette carte 4 decks
+Partager
+### Compétences
+#### Piou-piou-piou
+2 tours
+Soigne 10 Lumière
+Soigne 10 Lumière
+Soigne 10 Lumière
+Soigne 10 Lumière
+Bonus Lumière (+3)
+Précision 100% Critique 1%
+#### Quintuor
+2 tours
+Les valeurs de base des soins et des dégâts augmentent de 2
+Précision 100% Critique 0%
+### Talents
+#### Souffle-8
+Conseillé
+Récupère l'attaque Souffle élémentaire au début du tour 8
+Δ 6,9 · Score théorique
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -716,8 · Score théorique
+#### Paradoxe
+Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+Δ -81,4 · Score théorique
+## Ses meilleurs decks
+4 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Collection avancée
+Rampe élémentaire ·
+### Commando Gerz + Mélodie des Divinités
+49,8 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Oisillons de Midas + Mélodie des Divinités
+41,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Spectre Canin + Oisillons de Midas
+35,1 % Indice relatif 10,2 tours Élimination estimée 29 / tour Spamtons
+Les autres decks (1)
+- D Oisillons de Midas + Mélodie des Divinités avec Codex des Sorts Lumineux · Léo Collection avancée · 36,3%
+### Résistances
+-10% Feu
+-19% Eau
+14% Terre
+13% Nature
+14% Ombre
+15% Lumière
+Créature · Aelther
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Les Oisillons de Midas seraient les rejetons des Lueurs d’Espoir, mais les strictes restrictions d’Aelther rendent cette filiation difficile à démontrer : la faune et la flore y sont peu accessibles aux observateurs. Leurs nids sont perchés au sommet des arbres les plus hauts. Les oisillons ne deviennent visibles que pendant l’ascension du Mont Céleste, lorsque les pèlerins atteignent la hauteur de leur cime.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 096 Lumière
+Légendaire · Attaque
+### Mélodie des Divinités
+550 PV
+A # 097 Feu
+Commune · Attaque
+### Pyro
+500 PV
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

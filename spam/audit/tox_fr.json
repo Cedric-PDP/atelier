@@ -1,0 +1,608 @@
+{
+ "Aoe_C": [
+  "AoE",
+  "C",
+  45,
+  "Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés"
+ ],
+ "Berserk_C": [
+  "Berserk",
+  "C",
+  30,
+  "Les dégâts et les soins de toutes vos cartes sont augmentés de 12%"
+ ],
+ "Chance_C": [
+  "Chanceur",
+  "C",
+  5,
+  "Augmente votre Chance de (+0,5) chaque tour"
+ ],
+ "Cimetiere_C": [
+  "Cimetière",
+  "C",
+  20,
+  "Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt"
+ ],
+ "CoeurEau_C": [
+  "Cœur d'eau",
+  "C",
+  15,
+  "Bonus Eau (+1) par tour de jeu"
+ ],
+ "CoeurFeu_C": [
+  "Cœur de feu",
+  "C",
+  15,
+  "Bonus Feu (+1) par tour de jeu"
+ ],
+ "CoeurLumiere_C": [
+  "Cœur de lumière",
+  "C",
+  15,
+  "Bonus Lumière (+1) par tour de jeu"
+ ],
+ "CoeurNature_C": [
+  "Cœur de nature",
+  "C",
+  15,
+  "Bonus Nature (+1) par tour de jeu"
+ ],
+ "CoeurOmbre_C": [
+  "Cœur d'ombre",
+  "C",
+  15,
+  "Bonus Ombre (+1) par tour de jeu"
+ ],
+ "CoeurResistance_C": [
+  "Cœur résistance",
+  "C",
+  10,
+  "Cette carte augmente les résistances de toutes les cartes alliées (+3)"
+ ],
+ "CoeurTerre_C": [
+  "Cœur de terre",
+  "C",
+  15,
+  "Bonus Terre (+1) par tour de jeu"
+ ],
+ "CoeurVital_C": [
+  "Cœur vital",
+  "C",
+  10,
+  "Cette carte augmente ses PV max de 15 chaque tour"
+ ],
+ "Erosion_C": [
+  "Érosion",
+  "C",
+  20,
+  "Réduit les PV max à hauteur de 50% des dégâts infligés"
+ ],
+ "Life Steal_C": [
+  "Vampirisme",
+  "C",
+  30,
+  "Régénère 25% des dégâts infligés à la cible"
+ ],
+ "Phoenix_C": [
+  "Phénix",
+  "C",
+  100,
+  "Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max."
+ ],
+ "Poison_C": [
+  "Poison",
+  "C",
+  10,
+  "Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours."
+ ],
+ "Primitive heal_C": [
+  "Soin primitif",
+  "C",
+  20,
+  "Au début de chaque tour, la carte récupère 4% de ses PV max"
+ ],
+ "PunchingBag_C": [
+  "Sac de frappe",
+  "C",
+  25,
+  "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ ],
+ "Reflect_C": [
+  "Renvoi",
+  "C",
+  24,
+  "Renvoie 25% des dégâts subis à l'attaquant"
+ ],
+ "Shield_C": [
+  "Bouclier",
+  "C",
+  30,
+  "Le premier coup reçu à chaque tour adverse est réduit de 25%"
+ ],
+ "Spamland_C": [
+  "Spamland",
+  "C",
+  6,
+  "Génère (+3) Spamtons chaque tour"
+ ],
+ "Tenacite_C": [
+  "Ténacité",
+  "C",
+  10,
+  "La première attaque fatale vous laisse à 1 PV"
+ ],
+ "Aoe_R": [
+  "AoE",
+  "R",
+  90,
+  "Attaque et soigne les cibles adjacentes à hauteur de 40% des dégâts infligés"
+ ],
+ "Berserk_R": [
+  "Berserk",
+  "R",
+  60,
+  "Les dégâts et les soins de toutes vos cartes sont augmentés de 25%"
+ ],
+ "Brut_R": [
+  "Brut",
+  "R",
+  65,
+  "Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé"
+ ],
+ "Chance_R": [
+  "Chanceur",
+  "R",
+  10,
+  "Augmente votre Chance de (+1) chaque tour"
+ ],
+ "Cimetiere_R": [
+  "Cimetière",
+  "R",
+  40,
+  "Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt"
+ ],
+ "CoeurEau_R": [
+  "Cœur d'eau",
+  "R",
+  30,
+  "Bonus Eau (+2) par tour de jeu"
+ ],
+ "CoeurFeu_R": [
+  "Cœur de feu",
+  "R",
+  30,
+  "Bonus Feu (+2) par tour de jeu"
+ ],
+ "CoeurLumiere_R": [
+  "Cœur de lumière",
+  "R",
+  30,
+  "Bonus Lumière (+2) par tour de jeu"
+ ],
+ "CoeurNature_R": [
+  "Cœur de nature",
+  "R",
+  30,
+  "Bonus Nature (+2) par tour de jeu"
+ ],
+ "CoeurOmbre_R": [
+  "Cœur d'ombre",
+  "R",
+  30,
+  "Bonus Ombre (+2) par tour de jeu"
+ ],
+ "CoeurResistance_R": [
+  "Cœur résistance",
+  "R",
+  30,
+  "Cette carte augmente les résistances de toutes les cartes alliées (+6)"
+ ],
+ "CoeurTerre_R": [
+  "Cœur de terre",
+  "R",
+  30,
+  "Bonus Terre (+2) par tour de jeu"
+ ],
+ "CoeurVital_R": [
+  "Cœur vital",
+  "R",
+  30,
+  "Cette carte augmente ses PV max de 30 chaque tour"
+ ],
+ "Inversement_R": [
+  "Inversement",
+  "R",
+  40,
+  "Les dégâts de cette carte deviennent des soins, ses Éternités des Temporalités, et inversement."
+ ],
+ "Life Steal_R": [
+  "Vampirisme",
+  "R",
+  70,
+  "Régénère 50% des dégâts infligés à la cible"
+ ],
+ "Mimetisme_R": [
+  "Mimétisme",
+  "R",
+  50,
+  "Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type."
+ ],
+ "Multiplicator_R": [
+  "Multiplicateur",
+  "R",
+  80,
+  "Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte"
+ ],
+ "Mystere_R": [
+  "Mystère",
+  "R",
+  70,
+  "Commence la partie avec un passif aléatoire"
+ ],
+ "Optimisation_R": [
+  "Optimisation",
+  "R",
+  40,
+  "Les valeurs variables des dégâts, des soins et des bonus de cette carte sont toujours au maximum"
+ ],
+ "Phoenix_R": [
+  "Phénix",
+  "R",
+  150,
+  "Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max."
+ ],
+ "Poison_R": [
+  "Poison",
+  "R",
+  50,
+  "Inflige des dégâts égaux à 3% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ ],
+ "Primitive heal_R": [
+  "Soin primitif",
+  "R",
+  40,
+  "Au début de chaque tour, la carte récupère 9% de ses PV max"
+ ],
+ "PunchingBag_R": [
+  "Sac de frappe",
+  "R",
+  50,
+  "Augmente de +2 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ ],
+ "Reflect_R": [
+  "Renvoi",
+  "R",
+  48,
+  "Renvoie 50% des dégâts subis à l'attaquant"
+ ],
+ "Revenge_R": [
+  "Revanche",
+  "R",
+  80,
+  "Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire"
+ ],
+ "Shield_R": [
+  "Bouclier",
+  "R",
+  60,
+  "Le premier coup reçu à chaque tour adverse est réduit de 50%"
+ ],
+ "Smoked_R": [
+  "Fumée",
+  "R",
+  50,
+  "Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin"
+ ],
+ "Spamland_R": [
+  "Spamland",
+  "R",
+  10,
+  "Génère (+8) Spamtons chaque tour"
+ ],
+ "Taunt_R": [
+  "Provocation",
+  "R",
+  70,
+  "Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler"
+ ],
+ "Aoe_E": [
+  "AoE",
+  "E",
+  135,
+  "Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés"
+ ],
+ "Berserk_E": [
+  "Berserk",
+  "E",
+  100,
+  "Les dégâts et les soins de toutes vos cartes sont augmentés de 50%"
+ ],
+ "Bomba_E": [
+  "Bomba",
+  "E",
+  130,
+  "Inflige 500 dégâts bruts à une carte adverse aléatoire quand cette carte meurt"
+ ],
+ "Chance_E": [
+  "Chanceur",
+  "E",
+  15,
+  "Augmente votre Chance de (+2) chaque tour"
+ ],
+ "Cimetiere_E": [
+  "Cimetière",
+  "E",
+  60,
+  "Augmente tous vos bonus élémentaires de (+8) lorsqu'une carte meurt"
+ ],
+ "CoeurEau_E": [
+  "Cœur d'eau",
+  "E",
+  60,
+  "Bonus Eau (+5) par tour de jeu"
+ ],
+ "CoeurFeu_E": [
+  "Cœur de feu",
+  "E",
+  60,
+  "Bonus Feu (+5) par tour de jeu"
+ ],
+ "CoeurLumiere_E": [
+  "Cœur de lumière",
+  "E",
+  60,
+  "Bonus Lumière (+5) par tour de jeu"
+ ],
+ "CoeurNature_E": [
+  "Cœur de nature",
+  "E",
+  60,
+  "Bonus Nature (+5) par tour de jeu"
+ ],
+ "CoeurOmbre_E": [
+  "Cœur d'ombre",
+  "E",
+  60,
+  "Bonus Ombre (+5) par tour de jeu"
+ ],
+ "CoeurResistance_E": [
+  "Cœur résistance",
+  "E",
+  70,
+  "Cette carte augmente les résistances de toutes les cartes alliées (+10)"
+ ],
+ "CoeurTerre_E": [
+  "Cœur de terre",
+  "E",
+  60,
+  "Bonus Terre (+5) par tour de jeu"
+ ],
+ "CoeurVital_E": [
+  "Cœur vital",
+  "E",
+  70,
+  "Cette carte augmente ses PV max de 60 chaque tour"
+ ],
+ "Erosion_E": [
+  "Érosion",
+  "E",
+  75,
+  "Réduit les PV max à hauteur de 100% des dégâts infligés"
+ ],
+ "Frozen_E": [
+  "Gel",
+  "E",
+  150,
+  "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts."
+ ],
+ "Immunity_E": [
+  "Immunité",
+  "E",
+  90,
+  "La carte est immunisée contre tous les effets des cartes adverses"
+ ],
+ "Life Steal_E": [
+  "Vampirisme",
+  "E",
+  110,
+  "Régénère 75% des dégâts infligés à la cible"
+ ],
+ "Metamorph_E": [
+  "Métamorphe",
+  "E",
+  120,
+  "Choisissez une carte parmi trois de la même rareté pour remplacer cette carte"
+ ],
+ "Phoenix_E": [
+  "Phénix",
+  "E",
+  200,
+  "Lorsqu’elle est détruite, cette carte revient à la vie avec 75% de ses PV max."
+ ],
+ "Poison_E": [
+  "Poison",
+  "E",
+  100,
+  "Inflige des dégâts égaux à 6% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ ],
+ "Primitive heal_E": [
+  "Soin primitif",
+  "E",
+  60,
+  "Au début de chaque tour, la carte récupère 14% de ses PV max"
+ ],
+ "PunchingBag_E": [
+  "Sac de frappe",
+  "E",
+  100,
+  "Augmente de +3 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ ],
+ "Reflect_E": [
+  "Renvoi",
+  "E",
+  72,
+  "Renvoie 75% des dégâts subis à l'attaquant"
+ ],
+ "Reset_E": [
+  "Reset",
+  "E",
+  130,
+  "Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible"
+ ],
+ "Shield_E": [
+  "Bouclier",
+  "E",
+  120,
+  "Le premier coup reçu à chaque tour adverse est réduit de 75%"
+ ],
+ "Spamland_E": [
+  "Spamland",
+  "E",
+  16,
+  "Génère (+24) Spamtons chaque tour"
+ ],
+ "Vengeur_E": [
+  "Vengeur",
+  "E",
+  80,
+  "Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt."
+ ],
+ "Aoe_L": [
+  "AoE",
+  "L",
+  180,
+  "Attaque et soigne les cibles adjacentes à hauteur de 100% des dégâts infligés"
+ ],
+ "Berserk_L": [
+  "Berserk",
+  "L",
+  180,
+  "Les dégâts et les soins de toutes vos cartes sont augmentés de 100%"
+ ],
+ "Chance_L": [
+  "Chanceur",
+  "L",
+  20,
+  "Augmente votre Chance de (+4) chaque tour"
+ ],
+ "Cimetiere_L": [
+  "Cimetière",
+  "L",
+  80,
+  "Augmente tous vos bonus élémentaires de (+12) lorsqu'une carte meurt"
+ ],
+ "CoeurEau_L": [
+  "Cœur d'eau",
+  "L",
+  120,
+  "Bonus Eau (+8) par tour de jeu"
+ ],
+ "CoeurFeu_L": [
+  "Cœur de feu",
+  "L",
+  120,
+  "Bonus Feu (+8) par tour de jeu"
+ ],
+ "CoeurLumiere_L": [
+  "Cœur de lumière",
+  "L",
+  120,
+  "Bonus Lumière (+8) par tour de jeu"
+ ],
+ "CoeurNature_L": [
+  "Cœur de nature",
+  "L",
+  120,
+  "Bonus Nature (+8) par tour de jeu"
+ ],
+ "CoeurOmbre_L": [
+  "Cœur d'ombre",
+  "L",
+  120,
+  "Bonus Ombre (+8) par tour de jeu"
+ ],
+ "CoeurResistance_L": [
+  "Cœur résistance",
+  "L",
+  120,
+  "Cette carte augmente les résistances de toutes les cartes alliées (+15)"
+ ],
+ "CoeurTerre_L": [
+  "Cœur de terre",
+  "L",
+  120,
+  "Bonus Terre (+8) par tour de jeu"
+ ],
+ "CoeurVital_L": [
+  "Cœur vital",
+  "L",
+  150,
+  "Cette carte augmente ses PV max de 100 chaque tour"
+ ],
+ "Disparition_L": [
+  "Disparition",
+  "L",
+  180,
+  "Supprime le dernier passif de la cible"
+ ],
+ "Eternity_L": [
+  "Éternité",
+  "L",
+  220,
+  "Augmente les temps de recharge de 1"
+ ],
+ "Life Steal_L": [
+  "Vampirisme",
+  "L",
+  160,
+  "Régénère 100% des dégâts infligés à la cible"
+ ],
+ "Phoenix_L": [
+  "Phénix",
+  "L",
+  250,
+  "Lorsqu’elle est détruite, cette carte revient à la vie avec 100% de ses PV max."
+ ],
+ "Poison_L": [
+  "Poison",
+  "L",
+  150,
+  "Inflige des dégâts égaux à 8% des PV max de la cible au début de chacun de ses tours, pendant 3 tours"
+ ],
+ "Primitive heal_L": [
+  "Soin primitif",
+  "L",
+  120,
+  "Au début de chaque tour, la carte récupère 19% de ses PV max"
+ ],
+ "PunchingBag_L": [
+  "Sac de frappe",
+  "L",
+  150,
+  "Augmente de +4 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque"
+ ],
+ "Reflect_L": [
+  "Renvoi",
+  "L",
+  96,
+  "Renvoie 100% des dégâts subis à l'attaquant"
+ ],
+ "Shield_L": [
+  "Bouclier",
+  "L",
+  180,
+  "Le premier coup reçu à chaque tour adverse est réduit de 100%"
+ ],
+ "Spamland_L": [
+  "Spamland",
+  "L",
+  24,
+  "Génère (+48) Spamtons chaque tour"
+ ],
+ "Temporality_L": [
+  "Temporalité",
+  "L",
+  190,
+  "Diminue les temps de recharge de 1"
+ ]
+}

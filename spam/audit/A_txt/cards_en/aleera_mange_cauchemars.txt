@@ -1,0 +1,187 @@
+Aleera, Nightmare-Eater: SPAM Shadow common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Aleera, Nightmare-Eater S View the full card
+Aleera, Nightmare-Eater
+2 Word-Chew
+Punching Bag
+Shadowheart
+500/500
+5
+Standard
+Aleera, Nightmare-Eater
+2 Word-Chew
+Punching Bag
+Shadowheart
+500/500
+5
+Elemental
+Aleera, Nightmare-Eater
+2 Word-Chew
+Punching Bag
+Shadowheart
+500/500
+5
+FA
+Aleera, Nightmare-Eater
+2 Word-Chew
+Punching Bag
+Shadowheart
+500/500
+5
+## Aleera, Nightmare-Eater
+S Shadow · Common · Standard
+500 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 F/W-Shield Fire resistance (+25%)
+Water resistance (+25%)
+- Talent 2 L-Shield Shadow resistance (+25%)
+Light resistance (+25%)
+- Talent 3 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Recommended
+Three ability slots
+- Word-Chew ability · Cooldown 2 Deal 5 Shadow damage to all enemy cards + 50% of the caster's missing HP
+2
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Shadowheart tox · Common Shadow bonus (+1) per turn
+Illustration by Trinity
+Full card details
+Illustration by Trinity
+Shadow Common #231
+# Aleera, Nightmare-Eater
+Attack
+500 Health points
+5 Spamtons / turn
+#9 Rank / 127
+A No talent · #12
+Attack
+98
+Generation
+69
+Defense
+32
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 F/W-Shield 2 L-Shield 3 Resilience
+Build with this card 28 decks
+Share
+### Abilities
+#### Word-Chew
+2 turns
+Deal 5 Shadow damage to all enemy cards + 50% of the caster's missing HP
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+#### Shadowheart
+Common
+Shadow bonus (+1) per turn
+### Talents
+#### F/W-Shield
+Fire resistance (+25%)
+Water resistance (+25%)
+Δ 25.8 · Theoretical score
+#### L-Shield
+Shadow resistance (+25%)
+Light resistance (+25%)
+Δ 25.8 · Theoretical score
+#### Resilience
+Recommended
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 753.5 · Theoretical score
+## Its best decks
+28 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Master Amphibian
+92.5 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Canine Specter + Aleera
+92.1 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of Flames
+91.2 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Ephial
+90.7 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera + Commando Gerz
+89.4 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+The other decks (22)
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Commando Gerz Intermediate · 98.1%
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Master Amphibian Accessible · 94.6%
+- S Aleera + Sovereign of the Ether Falls with Paguroniyx · Canine Specter Accessible · 93.4%
+- A Canine Specter + Aleera with Sovereign of the Ether Falls · Ephial Advanced collection · 89.9%
+- A Aleera + Sovereign of the Ether Falls with Squall · Paguroniyx Intermediate · 89.2%
+- A Aleera + Apprentice of Death with Squall · The Inventor Intermediate · 89.1%
+- A Aleera + Paguroniyx with Apprentice of Death · Commando Gerz Intermediate · 89.1%
+- A Aleera + Apprentice of Death with Paguroniyx · Squall Intermediate · 88.4%
+- A Aleera + Apprentice of Death with Catixy · Paguroniyx Accessible · 88%
+- A Aleera + Catixy with Squall · Commando Gerz Intermediate · 87.9%
+- A Aleera + Commando Gerz with Sovereign of the Ether Falls · The Wild Carrier Intermediate · 87.9%
+- A Aleera + Paguroniyx with Sovereign of the Ether Falls · Sovereign of Flames Advanced collection · 86.2%
+- A Aleera + Master Amphibian with Sovereign of the Ether Falls · The Wild Carrier Accessible · 85.3%
+- A Aleera + Paguroniyx with Sovereign of the Ether Falls · Floral Zombie Accessible · 85.1%
+- A Aleera + Catixy with Squall · Codex of Ancient Woes Intermediate · 83.6%
+- A Aleera + Sovereign of the Ether Falls with Ashtarae Lycaria · Apprentice of Death Advanced collection · 82.3%
+- B Aleera + Squall with Shado · Canine Specter Accessible · 78.5%
+- B Apprentice of Death + Codex of Ancient Woes with Aleera · Moxilys Intermediate · 78.1%
+- B Aleera + Apprentice of Death with Sovereign of Flames · Blade of the Forest Advanced collection · 73.2%
+- B Aleera + Paguroniyx with Commando Gerz · Horned Dune Wyrm Accessible · 71.4%
+- B Aleera + Codex of Ancient Woes with Gleam of the White Fox · Canine Specter Intermediate · 71.2%
+- C Aleera + Catixy with Commando Gerz · Green Guardian Intermediate · 67.1%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Spirit · Abyss
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Some corrupted souls nevertheless retain their memories and exploit dream rifts to possess living creatures. Nightmare-Eaters evade the Nightmare Reaper by posing as friends to their prey. Once possession is complete, they mutate their victim until they have seized total control. This scourge is so notorious in Nyevielh that the tale of Aleera, the corrupted little girl, has spread to every household.
+## Better together
+The most promising partners according to the model.
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+B # 219 Shadow
+Common · Attack
+### Catixy
+600 HP
+D # 262 Nature
+Common · Support
+### Yotaru, Leafguard
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

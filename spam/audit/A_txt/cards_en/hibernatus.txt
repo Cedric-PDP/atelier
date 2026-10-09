@@ -1,0 +1,139 @@
+Hibernatus: SPAM Water common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Hibernatus C View the full card
+Hibernatus
+2 Aquallo
+3 Dyke
+Lucky
+750/750
+12
+Standard
+Hibernatus
+2 Aquallo
+3 Dyke
+Lucky
+750/750
+12
+Elemental
+Hibernatus
+2 Aquallo
+3 Dyke
+Lucky
+750/750
+12
+FA
+Hibernatus
+2 Aquallo
+3 Dyke
+Lucky
+750/750
+12
+## Hibernatus
+C Water · Common · Standard
+750 HP 12 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Multi Start Gain (+3) in each element.
+Recommended
+- Talent 2 Bomb-8 Applies the "Bomba" passive on turn 8
+- Talent 3 Anticipation At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.
+Three ability slots
+- Aquallo ability · Cooldown 2 Deal [10 to 20] Light damage
+Deal [10 to 20] Water damage
+Bonus (+5) in a random element
+2
+- Dyke ability · Cooldown 3 Apply Taunt
+3
+- Lucky tox · Common Increases your Luck by (+0.5) per turn
+Illustration by Atto
+Full card details
+Illustration by Atto
+Water Common #012
+# Hibernatus
+Generation Economy
+750 Health points
+12 Spamtons / turn
+#71 Rank / 127
+B No talent · #63
+Attack
+23
+Generation
+81
+Defense
+55
+Support
+1
+Control
+0
+Economy
+96
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Multi Start 2 Bomb-8 3 Anticipation
+Build with this card
+Share
+### Abilities
+#### Aquallo
+2 turns
+Deal [10 to 20] Light damage
+Deal [10 to 20] Water damage
+Bonus (+5) in a random element
+Accuracy 100% Critical 1%
+#### Dyke
+3 turns
+Apply Taunt
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Lucky
+Common
+Increases your Luck by (+0.5) per turn
+### Talents
+#### Multi Start
+Recommended
+Gain (+3) in each element.
+Δ 305.7 · Theoretical score
+#### Bomb-8
+Applies the "Bomba" passive on turn 8
+Δ 0 · Theoretical score
+#### Anticipation
+At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.
+Δ 14.1 · Theoretical score
+### Resistances
+12% Fire
+14% Water
+20% Earth
+21% Nature
+20% Shadow
+20% Light
+Natus · Nordvinter
+### Beyond the card
+The Natus are a new tribal species made up of few individuals. They are very attached to their territory and seem to cultivate their own beliefs. Their superior intellect sets them apart from mere animals. In the Monts Nomades of Nordvinter, or in the scorching desert of Shal'Zaar, one can find very different ones and their villages. The Hibernatus of Nordvinter sometimes welcome freezing adventurers in exchange for stories.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

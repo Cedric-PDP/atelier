@@ -1,0 +1,137 @@
+Murmurs of Black Coral: SPAM Water common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Murmurs of Black Coral B View the full card
+Murmurs of Black Coral
+1 Whisper
+1 Aquatic Breath
+Multiplier
+400/400
+2
+Standard
+Murmurs of Black Coral
+1 Whisper
+1 Aquatic Breath
+Multiplier
+400/400
+2
+Elemental
+Murmurs of Black Coral
+1 Whisper
+1 Aquatic Breath
+Multiplier
+400/400
+2
+FA
+Murmurs of Black Coral
+1 Whisper
+1 Aquatic Breath
+Multiplier
+400/400
+2
+## Murmurs of Black Coral
+B Water · Common · Standard
+400 HP 2 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+- Talent 2 Roulette All of this card's abilities gain Echo (10%).
+- Talent 3 Shadow Field Shadow bonus (+7).
+Recommended
+Three ability slots
+- Whisper ability · Cooldown 1 Heal 10 Water
+Base healing increases by 3
+1
+- Aquatic Breath ability · Cooldown 1 Deal 10 Water damage Water bonus (+1)
+1
+- Multiplier tox · Rare Elemental bonuses are doubled for this card's damage and heals
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Water Common #102
+# Murmurs of Black Coral
+Versatile
+400 Health points
+2 Spamtons / turn
+#62 Rank / 127
+B No talent · #49
+Attack
+54
+Generation
+57
+Defense
+12
+Support
+76
+Control
+0
+Economy
+1
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shared Shield 2 Roulette 3 Shadow Field
+Build with this card
+Share
+### Abilities
+#### Whisper
+1 turn
+Heal 10 Water
+Base healing increases by 3
+Accuracy 100% Critical 1%
+#### Aquatic Breath
+1 turn
+Deal 10 Water damage Water bonus (+1)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Multiplier
+Rare
+Elemental bonuses are doubled for this card's damage and heals
+### Talents
+#### Shared Shield
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 254.7 · Theoretical score
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ 23.1 · Theoretical score
+#### Shadow Field
+Recommended
+Shadow bonus (+7).
+Δ 456.4 · Theoretical score
+### Resistances
+10% Fire
+5% Water
+0% Earth
+7% Nature
+7% Shadow
+0% Light
+Nightmare · Nordvinter
+### Beyond the card
+The many deposits of Poison Gas in the Blazing Sea turned its depths black as oil. Without the introduction of Scorch to Dragheïr, the pollution would have spread and rendered the forge unusable. During their pilgrimages, young people from Nordvinter sometimes encounter a mound of putrid flesh and rock soaked in a viscous substance. These many-polyped creatures cannot move. Mindless and carried by the winds, they pose no direct threat to the city. Abyssal Galleys nevertheless represent a grave danger to anyone crossing the Blazing Sea.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 002 Water
+Common · Generation
+### Water Spirit
+500 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

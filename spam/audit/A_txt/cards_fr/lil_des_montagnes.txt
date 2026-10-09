@@ -1,0 +1,151 @@
+L'Œil des montagnes : carte SPAM Eau commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes L'Œil des montagnes D Voir la carte en grand
+L'Œil des montagnes
+4 Revitalisation
+Berserk
+Cœur d'eau
+600/600
+6
+Standard
+L'Œil des montagnes
+4 Revitalisation
+Berserk
+Cœur d'eau
+600/600
+6
+Élémentaire
+L'Œil des montagnes
+4 Revitalisation
+Berserk
+Cœur d'eau
+600/600
+6
+FA
+L'Œil des montagnes
+4 Revitalisation
+Berserk
+Cœur d'eau
+600/600
+6
+## L'Œil des montagnes
+D Eau · Commune · Standard
+600 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Conseillé
+- Talent 2 Inscrit La carte est insensible aux Disparitions.
+- Talent 3 Critique Bonus critique (+10 %)
+Trois champs de compétence
+- Revitalisation compétence · Recharge 4 Soigne 50 Eau
+Dégâts critiques (+1)
+4
+- Berserk tox · Commune Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+- Cœur d'eau tox · Commune Bonus Eau (+1) par tour de jeu
+Illustration par Simdof
+Fiche complète
+Illustration par Simdof
+Eau Commune #156
+# L'Œil des montagnes
+Polyvalent
+600 Points de vie
+6 Spamtons / tour
+#111 Classement / 127
+D Sans talent · #106
+Attaque
+0
+Génération
+57
+Défense
+47
+Soutien
+84
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur d’acier 2 Inscrit 3 Critique
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Revitalisation
+4 tours
+Soigne 50 Eau
+Dégâts critiques (+1)
+Précision 100% Critique 1%
+### Tox de départ
+#### Berserk
+Commune
+Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+#### Cœur d'eau
+Commune
+Bonus Eau (+1) par tour de jeu
+### Talents
+#### Cœur d’acier
+Conseillé
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 12,3 · Score théorique
+#### Inscrit
+La carte est insensible aux Disparitions.
+Δ 7 · Score théorique
+#### Critique
+Bonus critique (+10 %)
+Δ 5,5 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Souverain des Chutes d'Éther + Maître Amphibian
+77,9 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+63,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+Les autres decks (4)
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Aidan · L'Œil des montagnes Accessible · 68,6%
+- C Zombie Floral + Souverain des Chutes d'Éther avec L'Œil des montagnes · Princesse Meridia Intermédiaire · 61,8%
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Léviathan des Cieux · L'Œil des montagnes Collection avancée · 59,1%
+- C Zombie Floral + Souverain des Chutes d'Éther avec L'Œil des montagnes · Guerrier des Neiges Accessible · 59%
+### Résistances
+10% Feu
+12% Eau
+11% Terre
+10% Nature
+10% Ombre
+12% Lumière
+Éternel · Emeldarion
+### Derrière la carte
+Des Éternels voués à la préservation de la Surface sont apparus après certaines catastrophes. Leur objectif est d’éviter que ne se répètent les erreurs commises. Protecteur des ruines d’un gigantesque chantier du passé, celui que l’on nomme l’Œil des montagnes peut être observé non loin des Chutes d’Éther, au sud-ouest d’Emeldarion, ou au nord-ouest de Shal’Zaar. Certains pèlerins qui l’ont aperçu y voient un bon présage. D’autres, qui l’ont affronté, ne sont plus là pour témoigner.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 082 Eau
+Commune · Polyvalent
+### Baleine Farceuse
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

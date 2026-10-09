@@ -1,0 +1,331 @@
+{
+ "all": [
+  {
+   "name": "SET_nat_p0",
+   "stress": {
+    "sethp": {
+     "turn": "nat",
+     "target": 0
+    }
+   }
+  },
+  {
+   "name": "SET_nat_p1",
+   "stress": {
+    "sethp": {
+     "turn": "nat",
+     "target": 1
+    }
+   }
+  },
+  {
+   "name": "SET_nat_p2",
+   "stress": {
+    "sethp": {
+     "turn": "nat",
+     "target": 2
+    }
+   }
+  },
+  {
+   "name": "SET_nat_p3",
+   "stress": {
+    "sethp": {
+     "turn": "nat",
+     "target": 3
+    }
+   }
+  },
+  {
+   "name": "CDR_all_nat",
+   "stress": {
+    "cdreset": {
+     "turns": "nat",
+     "target": "all"
+    }
+   }
+  }
+ ],
+ "named": [
+  {
+   "name": "ABS_nat_rm_p0",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 0,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_focus_p0",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 0,
+     "absorber": "focus"
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_keep_p0",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 0,
+     "keepProfile": true
+    }
+   }
+  },
+  {
+   "name": "ABS_T2_rm_p0",
+   "stress": {
+    "absorb": {
+     "turn": 2,
+     "pos": 0,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T4_rm_p0",
+   "stress": {
+    "absorb": {
+     "turn": 4,
+     "pos": 0,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T6_rm_p0",
+   "stress": {
+    "absorb": {
+     "turn": 6,
+     "pos": 0,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T8_rm_p0",
+   "stress": {
+    "absorb": {
+     "turn": 8,
+     "pos": 0,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_rm_p1",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 1,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_focus_p1",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 1,
+     "absorber": "focus"
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_keep_p1",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 1,
+     "keepProfile": true
+    }
+   }
+  },
+  {
+   "name": "ABS_T2_rm_p1",
+   "stress": {
+    "absorb": {
+     "turn": 2,
+     "pos": 1,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T4_rm_p1",
+   "stress": {
+    "absorb": {
+     "turn": 4,
+     "pos": 1,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T6_rm_p1",
+   "stress": {
+    "absorb": {
+     "turn": 6,
+     "pos": 1,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T8_rm_p1",
+   "stress": {
+    "absorb": {
+     "turn": 8,
+     "pos": 1,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_rm_p2",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 2,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_focus_p2",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 2,
+     "absorber": "focus"
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_keep_p2",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 2,
+     "keepProfile": true
+    }
+   }
+  },
+  {
+   "name": "ABS_T2_rm_p2",
+   "stress": {
+    "absorb": {
+     "turn": 2,
+     "pos": 2,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T4_rm_p2",
+   "stress": {
+    "absorb": {
+     "turn": 4,
+     "pos": 2,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T6_rm_p2",
+   "stress": {
+    "absorb": {
+     "turn": 6,
+     "pos": 2,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T8_rm_p2",
+   "stress": {
+    "absorb": {
+     "turn": 8,
+     "pos": 2,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_rm_p3",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 3,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_focus_p3",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 3,
+     "absorber": "focus"
+    }
+   }
+  },
+  {
+   "name": "ABS_nat_keep_p3",
+   "stress": {
+    "absorb": {
+     "turn": "nat",
+     "pos": 3,
+     "keepProfile": true
+    }
+   }
+  },
+  {
+   "name": "ABS_T2_rm_p3",
+   "stress": {
+    "absorb": {
+     "turn": 2,
+     "pos": 3,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T4_rm_p3",
+   "stress": {
+    "absorb": {
+     "turn": 4,
+     "pos": 3,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T6_rm_p3",
+   "stress": {
+    "absorb": {
+     "turn": 6,
+     "pos": 3,
+     "gain": false
+    }
+   }
+  },
+  {
+   "name": "ABS_T8_rm_p3",
+   "stress": {
+    "absorb": {
+     "turn": 8,
+     "pos": 3,
+     "gain": false
+    }
+   }
+  }
+ ]
+}

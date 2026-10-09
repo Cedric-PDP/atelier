@@ -1,0 +1,159 @@
+Lame de la forêt : carte SPAM Nature commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Lame de la forêt B Voir la carte en grand
+Lame de la forêt
+1 Pinces
+1 Soin critique
+650/650
+5
+Standard
+Lame de la forêt
+1 Pinces
+1 Soin critique
+650/650
+5
+Élémentaire
+Lame de la forêt
+1 Pinces
+1 Soin critique
+650/650
+5
+FA
+Lame de la forêt
+1 Pinces
+1 Soin critique
+650/650
+5
+## Lame de la forêt
+B Nature · Commune · Standard
+650 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur NATURE Commence la partie avec le passif Cœur de nature
+Conseillé
+- Talent 2 Racket Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+- Talent 3 Affaiblissement Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Trois champs de compétence
+- Pinces compétence · Recharge 1 Attaque 5 Nature
+1
+- Soin critique compétence · Recharge 1 Soigne 20 Nature
+Critique (+10%) en cas de coup critique
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Nature Commune #103
+# Lame de la forêt
+Soutien
+650 Points de vie
+5 Spamtons / tour
+#49 Classement / 127
+D Sans talent · #103
+Attaque
+35
+Génération
+57
+Défense
+65
+Soutien
+98
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur NATURE 2 Racket 3 Affaiblissement
+Jouer cette carte 8 decks
+Partager
+### Compétences
+#### Pinces
+1 tour
+Attaque 5 Nature
+Précision 100% Critique 1%
+#### Soin critique
+1 tour
+Soigne 20 Nature
+Critique (+10%) en cas de coup critique
+Précision 100% Critique 50%
+### Talents
+#### Cœur NATURE
+Conseillé
+Commence la partie avec le passif Cœur de nature
+Δ 328,8 · Score théorique
+#### Racket
+Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+Δ 12,1 · Score théorique
+#### Affaiblissement
+Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Δ 167,2 · Score théorique
+## Ses meilleurs decks
+8 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+73,2 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+56,8 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Lame de la forêt
+56,7 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Lisa + Lame de la forêt
+55 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + Princesse Meridia
+53,3 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Zombie Floral + Gabriel
+35,4 % Indice relatif 10,9 tours Élimination estimée 29 / tour Spamtons
+Les autres decks (2)
+- C Dragon Ciel + L'Épine d'Amour avec Lame de la forêt · Esprit Nature Accessible · 52,8%
+- D Gabriel + Dragon Ciel avec Verdelune · Lame de la forêt Collection avancée · 32,7%
+### Résistances
+7% Feu
+8% Eau
+9% Terre
+10% Nature
+11% Ombre
+12% Lumière
+Nymphe · Îles Esseulées
+### Derrière la carte
+Les Lames de la Forêt formaient un peuple de Nymphes qui protégeait les bois pixarch. Souvent gardiennes d’un arbre unique ou d’une clairière, elles appréciaient les plaisirs simples de la vie et adoraient les farces. Elles étaient également de redoutables guerrières. Aujourd’hui, nul ne sait si ce peuple existe encore. On suppose que les Lames résident au cœur des Îles Esseulées. La poursuite des recherches permettra peut-être de découvrir si leur espèce compte encore des survivantes.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

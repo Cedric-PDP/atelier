@@ -1,0 +1,173 @@
+Scorch, les Lézards Ignés : carte SPAM Eau rare, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Scorch, les Lézards Ignés D Voir la carte en grand
+Scorch, les Lézards Ignés
+1 Feau
+Soin primitif
+350/350
+7
+Standard
+Scorch, les Lézards Ignés
+1 Feau
+Soin primitif
+350/350
+7
+Élémentaire
+Scorch, les Lézards Ignés
+1 Feau
+Soin primitif
+350/350
+7
+FA
+Scorch, les Lézards Ignés
+1 Feau
+Soin primitif
+350/350
+7
+## Scorch, les Lézards Ignés
+D Eau · Rare · Standard
+350 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Nouvelle vie Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+Conseillé
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Dette Les deux joueurs commencent avec une dette de (-20) Spamton.
+Trois champs de compétence
+- Feau compétence · Recharge 1 Bonus Feu (+3)
+Bonus Eau (+3)
+Bonus Terre (+3)
+1
+- Soin primitif tox · Commune Au début de chaque tour, la carte récupère 4% de ses PV max
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Eau Rare #069
+# Scorch, les Lézards Ignés
+Génération
+350 Points de vie
+7 Spamtons / tour
+#120 Classement / 127
+D Sans talent · #119
+Attaque
+0
+Génération
+98
+Défense
+2
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Nouvelle vie 2 Évolution 3 Dette
+Jouer cette carte 19 decks
+Partager
+### Compétences
+#### Feau
+1 tour
+Bonus Feu (+3)
+Bonus Eau (+3)
+Bonus Terre (+3)
+Précision 100% Critique 0%
+### Tox de départ
+#### Soin primitif
+Commune
+Au début de chaque tour, la carte récupère 4% de ses PV max
+### Talents
+#### Nouvelle vie
+Conseillé
+Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+Δ 104,8 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 4,6 · Score théorique
+#### Dette
+Les deux joueurs commencent avec une dette de (-20) Spamton.
+Δ 0 · Score théorique
+## Ses meilleurs decks
+19 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Souverain des Chutes d'Éther + Maître Amphibian
+77,9 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Pyro + Scorch
+73,3 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Scorch
+73 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Maître Amphibian + Rob l'Aventurier
+72,7 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### Wibs l'Enflammé + Apprentie de la Mort
+63,3 % Indice relatif 7 tours Élimination estimée 22 / tour Spamtons
+C Collection avancée
+Aggro / burst ·
+### Souverain des Flammes + Scorch
+60,9 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+Les autres decks (13)
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Léviathan des Cieux · Scorch Collection avancée · 61,1%
+- C Souverain des Flammes + Apprentie de la Mort avec Wibs l'Enflammé · Scorch Collection avancée · 58,7%
+- C Maître Amphibian + Rob l'Aventurier avec Scorch · Aidan Accessible · 58,5%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Squall · Scorch Intermédiaire · 57,7%
+- C Épine Médusine + Scorch avec Maître Amphibian · Le compagnon des esprits Accessible · 54,5%
+- C Le compagnon des esprits + Esprit Eau avec Léviathan des Cieux · Scorch Collection avancée · 53,1%
+- C Bleu-mange-cailloux + Scorch avec Sanglier Doré · Commando Gerz Intermédiaire · 53,1%
+- C Le compagnon des esprits + Scorch avec Léviathan des Cieux · Princesse Meridia Collection avancée · 51,5%
+- C Épine Médusine + Le compagnon des esprits avec Léviathan des Cieux · Scorch Collection avancée · 51,1%
+- C Maître Amphibian + Scorch avec Rob l'Aventurier · Croqueur de Fruits Verdoyant Accessible · 50,9%
+- C Maître Amphibian + Rob l'Aventurier avec Zayd · Scorch Collection avancée · 50,7%
+- C Commando Gerz + Bleu-mange-cailloux avec Régent des Abysses · Scorch Collection avancée · 50,1%
+- D Maître Amphibian + Scorch avec Frost & Glacier · Épine Médusine Collection avancée · 32,4%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Emeldarion
+### Derrière la carte
+De nos jours, dans les contrées sauvages du nord d’Emeldarion, vit un peuple chaman dirigé par la sage Keria. Ses membres cultivent des plantes et élèvent des animaux, tous affiliés à l’élément du Feu et nourris par lui. Les Scorch sont de petits lézards ignés qui contribuent à préserver l’écosystème aquatique. Ils se nourrissent des polluants présents dans l’eau, qu’ils soient minéraux ou végétaux. Ils les assèchent dans leur grande bouche, puis les brûlent dans leur estomac. Cette digestion particulière peut provoquer des rots enflammés.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+B # 260 Eau
+Commune · Attaque
+### Le compagnon des esprits
+600 PV
+B # 229 Terre
+Commune · Attaque
+### Maître Amphibian
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

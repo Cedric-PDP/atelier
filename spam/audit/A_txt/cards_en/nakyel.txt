@@ -1,0 +1,130 @@
+Nakyel: SPAM Shadow rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Nakyel D View the full card
+Nakyel
+2 Skinning
+Eternity
+500/500
+3
+Standard
+Nakyel
+2 Skinning
+Eternity
+500/500
+3
+Elemental
+Nakyel
+2 Skinning
+Eternity
+500/500
+3
+FA
+Nakyel
+2 Skinning
+Eternity
+500/500
+3
+## Nakyel
+D Shadow · Rare · Standard
+500 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shadow Heart Start the game with the "Shadowheart" passive
+- Talent 2 Length At the start of your first turn, a random enemy card receives "Eternity"
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Skinning ability · Cooldown 2 Deal 20 Shadow damage
+Increases base damage by (+5)
+Increases the caster's resistances by (+5%)
+2
+- Eternity tox · Legendary Increases cooldowns by 1
+- Free slot Open to a shop Tox
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Shadow Rare #033
+# Nakyel
+Utility
+500 Health points
+3 Spamtons / turn
+#113 Rank / 127
+D No talent · #107
+Attack
+39
+Generation
+0
+Defense
+25
+Support
+1
+Control
+91
+Economy
+2
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shadow Heart 2 Length 3 Soul Vitality
+Build with this card
+Share
+### Abilities
+#### Skinning
+2 turns
+Deal 20 Shadow damage
+Increases base damage by (+5)
+Increases the caster's resistances by (+5%)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Eternity
+Legendary
+Increases cooldowns by 1
+### Talents
+#### Shadow Heart
+Start the game with the "Shadowheart" passive
+Δ 32.3 · Theoretical score
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 299.1 · Theoretical score
+### Resistances
+0% Fire
+0% Water
+0% Earth
+0% Nature
+0% Shadow
+0% Light
+Nightmare · Abyss
+### Beyond the card
+Abyssal monsters have an indescribably horrific form. These demonic creatures were encountered during the Oniyx expedition — a horrifying venture into the depths of the temple of Zaar'Phahl in Shal'Zaar. The group's progress through the Abyss was grueling. Some members saw their belongings and provisions stolen — resources essential to their survival. At laughter that seemed to come from every direction, the invisible creature reveled in the situation; some scattered belongings, however, seemed to leave it uninterested. The journey grew ever more horrifying as hunger increased. Some began to eat what they never should have, continuing to feed the morbid curiosity of their stalker. The story of the Nakyel is told in Shal'Zaar to remind that curiosity is a nasty flaw.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,139 @@
+Murmures du Corail Noir : carte SPAM Eau commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Murmures du Corail Noir B Voir la carte en grand
+Murmures du Corail Noir
+1 Murmure
+1 Souffle d'eau
+Multiplicateur
+400/400
+2
+Standard
+Murmures du Corail Noir
+1 Murmure
+1 Souffle d'eau
+Multiplicateur
+400/400
+2
+Élémentaire
+Murmures du Corail Noir
+1 Murmure
+1 Souffle d'eau
+Multiplicateur
+400/400
+2
+FA
+Murmures du Corail Noir
+1 Murmure
+1 Souffle d'eau
+Multiplicateur
+400/400
+2
+## Murmures du Corail Noir
+B Eau · Commune · Standard
+400 PV 2 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+- Talent 2 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+- Talent 3 Terrain sombre Bonus (+7) Ombre.
+Conseillé
+Trois champs de compétence
+- Murmure compétence · Recharge 1 Soigne 10 Eau
+La valeur de base du soin augmente de 3
+1
+- Souffle d'eau compétence · Recharge 1 Attaque 10 Eau
+Bonus Eau (+1)
+1
+- Multiplicateur tox · Rare Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Eau Commune #102
+# Murmures du Corail Noir
+Polyvalent
+400 Points de vie
+2 Spamtons / tour
+#62 Classement / 127
+B Sans talent · #49
+Attaque
+54
+Génération
+57
+Défense
+12
+Soutien
+76
+Contrôle
+0
+Économie
+1
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage Partagé 2 Roulette 3 Terrain sombre
+Jouer cette carte
+Partager
+### Compétences
+#### Murmure
+1 tour
+Soigne 10 Eau
+La valeur de base du soin augmente de 3
+Précision 100% Critique 1%
+#### Souffle d'eau
+1 tour
+Attaque 10 Eau
+Bonus Eau (+1)
+Précision 100% Critique 1%
+### Tox de départ
+#### Multiplicateur
+Rare
+Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+### Talents
+#### Blindage Partagé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 254,7 · Score théorique
+#### Roulette
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 23,1 · Score théorique
+#### Terrain sombre
+Conseillé
+Bonus (+7) Ombre.
+Δ 456,4 · Score théorique
+### Résistances
+10% Feu
+5% Eau
+0% Terre
+7% Nature
+7% Ombre
+0% Lumière
+Cauchemar · Nordvinter
+### Derrière la carte
+Les nombreux dépôts de Gazpoison dans la Mer Embrasée donnèrent à ses fonds une couleur noire comme le pétrole. Sans l’importation de Scorch à Dragheïr, la pollution se serait propagée et aurait rendu la forge inutilisable. Il arrive que les jeunes de Nordvinter, pendant leur pèlerinage, découvrent un monticule de chair putride et de roche imprégné d’une substance visqueuse. Ces créatures aux multiples polypes sont incapables de se mouvoir. Dépourvues de volonté et portées par les vents, elles ne menacent pas directement la ville. Les Galères Abyssales représentent toutefois un grave danger pour la traversée de la Mer Embrasée.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 002 Eau
+Commune · Génération
+### Esprit Eau
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

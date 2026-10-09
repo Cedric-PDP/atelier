@@ -1,0 +1,148 @@
+Toad of the Stars: SPAM Light common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Toad of the Stars B View the full card
+Toad of the Stars
+2 Eye for an Eye
+Punching Bag
+Backlash
+900/900
+6
+Standard
+Toad of the Stars
+2 Eye for an Eye
+Punching Bag
+Backlash
+900/900
+6
+Elemental
+Toad of the Stars
+2 Eye for an Eye
+Punching Bag
+Backlash
+900/900
+6
+FA
+Toad of the Stars
+2 Eye for an Eye
+Punching Bag
+Backlash
+900/900
+6
+## Toad of the Stars
+B Light · Common · Standard
+900 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Aquatic Field Water bonus (+7).
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Eye for an Eye ability · Cooldown 2 Deal 40 Light damage
+2
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Backlash tox · Common Takes 50% of the damage dealt to the target
+Illustration by Saki
+Full card details
+Illustration by Saki
+Light Common #221
+# Toad of the Stars
+Versatile
+900 Health points
+6 Spamtons / turn
+#55 Rank / 127
+B No talent · #45
+Attack
+61
+Generation
+47
+Defense
+59
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Aquatic Field 2 Evolution 3 Soul Vitality
+Build with this card 3 decks
+Share
+### Abilities
+#### Eye for an Eye
+2 turns
+Deal 40 Light damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+#### Backlash
+Common
+Takes 50% of the damage dealt to the target
+### Talents
+#### Aquatic Field
+Water bonus (+7).
+Δ 272.9 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 368.4 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+D Accessible
+Midrange ·
+### Commando Gerz + Cloudy Rodent
+45.3 % Relative index 10 turns Estimated elimination 29 / turn Spamtons
+D Accessible
+Midrange ·
+### Canine Specter + Commando Gerz
+38.3 % Relative index 10.5 turns Estimated elimination 20 / turn Spamtons
+The other decks (1)
+- D Commando Gerz + Cloudy Rodent with Toad of the Stars · Green Guardian Intermediate · 38.2%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Nightmare · Nyevielh
+### Beyond the card
+After the single continent cracked apart, a gigantic inner sea formed, dotted with many islands. Some are held aloft by an unknown force above the Nimbus Sea. Others are true islands, made inaccessible by the presence of Abyssals. The Toad of the Stars is one of these monsters. With a single echoing croak, entire crews of sailors fall asleep. Those least fit to fight in the dream world are devoured. At the risk of becoming a fly at a giant toad's dinner, Nyevielh has been made inaccessible because of the danger of Toad of the Stars appearing.
+## Better together
+The most promising partners according to the model.
+C # 198 Light
+Epic · Generation
+### Codex of Luminous Spells
+1000 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,152 @@
+Melody of Divinities: SPAM Light legendary card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Melody of Divinities C View the full card
+Melody of Divinities
+2 Celestial Arrows
+10 Divine Judgment
+550/550
+3
+Standard
+Melody of Divinities
+2 Celestial Arrows
+10 Divine Judgment
+550/550
+3
+Elemental
+Melody of Divinities
+2 Celestial Arrows
+10 Divine Judgment
+550/550
+3
+FA
+Melody of Divinities
+2 Celestial Arrows
+10 Divine Judgment
+550/550
+3
+## Melody of Divinities
+C Light · Legendary · Standard
+550 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Legacy Gain (+50) Spamton when this card is killed.
+- Talent 2 Corrupted Heart Start the game with a random Rare Heart passive
+- Talent 3 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Recommended
+Three ability slots
+- Celestial Arrows ability · Cooldown 2 Deal 3 Light damage Random X18
+2
+- Divine Judgment ability · Cooldown 10 The opponent's Spamtons drop to 0
+10
+- Free slot Open to a shop Tox
+Illustration by Saki
+Full card details
+Illustration by Saki
+Light Legendary #096
+# Melody of Divinities
+Attack Economy
+550 Health points
+3 Spamtons / turn
+#77 Rank / 127
+C No talent · #68
+Attack
+76
+Generation
+0
+Defense
+15
+Support
+1
+Control
+0
+Economy
+93
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Legacy 2 Corrupted Heart 3 One Man Army
+Build with this card 6 decks
+Share
+### Abilities
+#### Celestial Arrows
+2 turns
+Deal 3 Light damage Random X18
+Accuracy 100% Critical 25%
+#### Divine Judgment
+10 turns
+The opponent's Spamtons drop to 0
+Accuracy 100% Critical 0%
+### Talents
+#### Legacy
+Gain (+50) Spamton when this card is killed.
+Δ 10 · Theoretical score
+#### Corrupted Heart
+Start the game with a random Rare Heart passive
+Δ 232.6 · Theoretical score
+#### One Man Army
+Recommended
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 324.9 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Elemental ramp ·
+### Melody of Divinities + Polychrome Owl
+53.9 % Relative index 9 turns Estimated elimination 26 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Cloudy Rodent + Melody of Divinities
+51.5 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Commando Gerz + Melody of Divinities
+49.8 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Cloudy Rodent + Codex of Luminous Spells
+46.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Hatchlings of Midas + Melody of Divinities
+41.5 % Relative index 10 turns Estimated elimination 31 / turn Spamtons
+The other decks (1)
+- D Hatchlings of Midas + Melody of Divinities with Codex of Luminous Spells · Léo Advanced collection · 36.3%
+### Resistances
+8% Fire
+8% Water
+8% Earth
+8% Nature
+8% Shadow
+8% Light
+Art · Unknown
+### Beyond the card
+Elther would not exist without the Deities; all life is the product of divine creation. The creators each have their own works and doctrines. The runic language used by these supreme beings is an incomprehensible score. Only the appearance of certain runes remains accessible to the inhabitants of the Surface. The Melody of Divinities is a religious chant that has crossed the ages. The work gives thanks to the divine. The chant's incomprehensible psalms are studied to better understand the text.
+## Better together
+The most promising partners according to the model.
+A # 233 Light
+Common · Support
+### Hatchlings of Midas
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 262 Nature
+Common · Support
+### Yotaru, Leafguard
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

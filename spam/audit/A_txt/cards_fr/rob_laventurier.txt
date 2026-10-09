@@ -1,0 +1,173 @@
+Rob l'Aventurier : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Rob l'Aventurier D Voir la carte en grand
+Rob l'Aventurier
+1 Aventure
+Cœur d'ombre
+Cœur de terre
+500/500
+9
+Standard
+Rob l'Aventurier
+1 Aventure
+Cœur d'ombre
+Cœur de terre
+500/500
+9
+Élémentaire
+Rob l'Aventurier
+1 Aventure
+Cœur d'ombre
+Cœur de terre
+500/500
+9
+FA
+Rob l'Aventurier
+1 Aventure
+Cœur d'ombre
+Cœur de terre
+500/500
+9
+## Rob l'Aventurier
+D Terre · Commune · Standard
+500 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Inscrit La carte est insensible aux Disparitions.
+- Talent 2 Heure Funeste Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Conseillé
+Trois champs de compétence
+- Aventure compétence · Recharge 1 Les valeurs de base des soins et des dégâts augmentent de 1
+Précision et Critique (+4%)
+1
+- Cœur d'ombre tox · Commune Bonus Ombre (+1) par tour de jeu
+- Cœur de terre tox · Commune Bonus Terre (+1) par tour de jeu
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Terre Commune #176
+# Rob l'Aventurier
+Génération
+500 Points de vie
+9 Spamtons / tour
+#107 Classement / 127
+D Sans talent · #108
+Attaque
+0
+Génération
+87
+Défense
+4
+Soutien
+82
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Inscrit 2 Heure Funeste 3 Évolution
+Jouer cette carte 14 decks
+Partager
+### Compétences
+#### Aventure
+1 tour
+Les valeurs de base des soins et des dégâts augmentent de 1
+Précision et Critique (+4%)
+Précision 100% Critique 0%
+### Tox de départ
+#### Cœur d'ombre
+Commune
+Bonus Ombre (+1) par tour de jeu
+#### Cœur de terre
+Commune
+Bonus Terre (+1) par tour de jeu
+### Talents
+#### Inscrit
+La carte est insensible aux Disparitions.
+Δ 7 · Score théorique
+#### Heure Funeste
+Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Δ 66,7 · Score théorique
+#### Évolution
+Conseillé
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 445 · Score théorique
+## Ses meilleurs decks
+14 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Maître Amphibian + Rob l'Aventurier
+72,7 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Bleu-mange-cailloux + L'Épine d'Amour
+71,9 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### L'Épine d'Amour + Rob l'Aventurier
+53,4 % Indice relatif 7 tours Élimination estimée 23 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Commando Gerz + Bleu-mange-cailloux
+53,1 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Maître Amphibian + Scorch
+50,9 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Bleu-mange-cailloux + Rob l'Aventurier
+48,9 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+Les autres decks (8)
+- C Maître Amphibian + Rob l'Aventurier avec Commando Gerz · Aidan Accessible · 59,3%
+- C Maître Amphibian + Rob l'Aventurier avec Scorch · Aidan Accessible · 58,5%
+- C Maître Amphibian + Rob l'Aventurier avec Zayd · Scorch Collection avancée · 50,7%
+- D Maître Amphibian + Aidan avec Maîtresse des Teintes · Rob l'Aventurier Accessible · 47,6%
+- D Sanglier Doré + Rob l'Aventurier avec Maître Amphibian · Bleu-mange-cailloux Intermédiaire · 44,7%
+- D Bleu-mange-cailloux + Raffteru avec Rob l'Aventurier · Aidan Intermédiaire · 44,6%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Régent des Abysses · Rob l'Aventurier Collection avancée · 44%
+- D Croqueur de Fruits Verdoyant + Maître Amphibian avec Rob l'Aventurier · L'Épine d'Amour Accessible · 39,6%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Tokscyth · Lumethia
+### Derrière la carte
+Tous les Tokscyth ne sont pas alchimistes. Certains sont davantage attirés par l’aventure et contribuent grandement aux recherches de leurs congénères. Leurs connaissances des plantes, des minerais et des champignons ont permis de développer les TOX, des substances aux effets aléatoires qui ne sont pas toujours sans conséquences. Les aventuriers de cette espèce sont de petits casse-cou originaires de Hadeïr. Ils bravent monts et marées dans l’espoir de trouver les meilleurs composants pour leurs créations.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 229 Terre
+Commune · Attaque
+### Maître Amphibian
+700 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+C # 096 Lumière
+Légendaire · Attaque
+### Mélodie des Divinités
+550 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,144 @@
+Dragonnet des Lumières : carte SPAM Lumière épique, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Dragonnet des Lumières B Voir la carte en grand
+Dragonnet des Lumières
+1 Éclat paisible
+3 Aide pensive
+500/500
+3
+Standard
+Dragonnet des Lumières
+1 Éclat paisible
+3 Aide pensive
+500/500
+3
+Élémentaire
+Dragonnet des Lumières
+1 Éclat paisible
+3 Aide pensive
+500/500
+3
+FA
+Dragonnet des Lumières
+1 Éclat paisible
+3 Aide pensive
+500/500
+3
+## Dragonnet des Lumières
+B Lumière · Épique · Standard
+500 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Nouveau riche Commence la partie avec, au hasard, le passif Spamland ou Chanceur.
+- Talent 2 Nouvelle vie Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+Conseillé
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Éclat paisible compétence · Recharge 1 Attaque 20 Lumière
+Vole (+1) Lumière
+1
+- Aide pensive compétence · Recharge 3 Applique Temporalité
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Lumière Épique #042
+# Dragonnet des Lumières
+Polyvalent
+500 Points de vie
+3 Spamtons / tour
+#53 Classement / 127
+B Sans talent · #48
+Attaque
+64
+Génération
+57
+Défense
+4
+Soutien
+72
+Contrôle
+0
+Économie
+2
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Nouveau riche 2 Nouvelle vie 3 Pièce magique
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Éclat paisible
+1 tour
+Attaque 20 Lumière
+Vole (+1) Lumière
+Précision 100% Critique 1%
+#### Aide pensive
+3 tours
+Applique Temporalité
+Précision 100% Critique 0%
+### Talents
+#### Nouveau riche
+Commence la partie avec, au hasard, le passif Spamland ou Chanceur.
+Δ 5,4 · Score théorique
+#### Nouvelle vie
+Conseillé
+Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+Δ 204,6 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Collection avancée
+Rampe élémentaire ·
+### Commando Gerz + Mélodie des Divinités
+49,8 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Commando Gerz + Shinobi Éclairant
+49,7 % Indice relatif 9 tours Élimination estimée 16 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Shinobi Éclairant + Codex des Sorts Lumineux
+47,9 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Dhöggeïr · Aelther
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, que le cauchemar purifie. Des agents Éternels occupent les Abysses pour maintenir stable leur état fluctuant. Le Dragonnet des Lumières est chargé de façonner le contenu des rêves du monde onirique. Il assure les échanges entre le corps et le subconscient des Éveillés. Ce procédé complexe permettrait de créer de nouvelles âmes, mais certains défauts laissent penser qu’il n’accomplit pas toujours correctement sa tâche.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+B # 081 Eau
+Épique · Attaque
+### Luminaire Abyssal
+600 PV
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

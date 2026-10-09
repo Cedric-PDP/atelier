@@ -1,0 +1,160 @@
+Radiant Shinobi: SPAM Light rare card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Radiant Shinobi B View the full card
+Radiant Shinobi
+5 Yellow Lightning
+5 Kung‑Fu
+600/600
+6
+Standard
+Radiant Shinobi
+5 Yellow Lightning
+5 Kung‑Fu
+600/600
+6
+Elemental
+Radiant Shinobi
+5 Yellow Lightning
+5 Kung‑Fu
+600/600
+6
+FA
+Radiant Shinobi
+5 Yellow Lightning
+5 Kung‑Fu
+600/600
+6
+## Radiant Shinobi
+B Light · Rare · Standard
+600 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Crit Sphere Increases this card's critical chance by (+2%) each turn
+- Talent 2 Multicolor Gains (+1) in each element with every attack from this card
+Recommended
+- Talent 3 Brutal Start the game with the "Brutal" passive
+Three ability slots
+- Yellow Lightning ability · Cooldown 5 Deal 50 Light damage to all enemy cards
+5
+- Kung‑Fu ability · Cooldown 5 Deal 40 Earth damage
+AoE
+5
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Light Rare #245
+# Radiant Shinobi
+Attack
+600 Health points
+6 Spamtons / turn
+#59 Rank / 127
+B No talent · #55
+Attack
+95
+Generation
+0
+Defense
+19
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Crit Sphere 2 Multicolor 3 Brutal
+Build with this card 9 decks
+Share
+### Abilities
+#### Yellow Lightning
+5 turns
+Deal 50 Light damage to all enemy cards
+Accuracy 100% Critical 1%
+#### Kung‑Fu
+5 turns
+Deal 40 Earth damage
+AoE
+Accuracy 100% Critical 25%
+### Talents
+#### Crit Sphere
+Increases this card's critical chance by (+2%) each turn
+Δ 64.1 · Theoretical score
+#### Multicolor
+Recommended
+Gains (+1) in each element with every attack from this card
+Δ 191 · Theoretical score
+#### Brutal
+Start the game with the "Brutal" passive
+Δ 39 · Theoretical score
+## Its best decks
+9 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Commando Gerz + Radiant Shinobi
+51.8 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+C Intermediate
+Midrange ·
+### Radiant Shinobi + Horned Dune Wyrm
+50.7 % Relative index 9 turns Estimated elimination 20 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Radiant Shinobi + Glimmer of Hope
+49.2 % Relative index 10 turns Estimated elimination 30 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Radiant Shinobi + Codex of Luminous Spells
+47.9 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Radiant Shinobi + Thorn of Love
+46.8 % Relative index 10 turns Estimated elimination 33 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Thorn of Love + Nebular Aristocrat
+42.9 % Relative index 10 turns Estimated elimination 23 / turn Spamtons
+The other decks (3)
+- D Commando Gerz + Radiant Shinobi with Nebular Aristocrat · Wyrmling of Lights Intermediate · 49.7%
+- D Radiant Shinobi + Thorn of Love with Light King · Glimmer of Hope Intermediate · 39%
+- D Cloudy Rodent + Codex of Luminous Spells with Radiant Shinobi · Green Guardian Intermediate · 32%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eltherien · Emeldarion
+### Beyond the card
+East of Emeldarion lives a very territorial martial tribe. The little we know of them are strong wolf motifs. Lightning seems to strike their region constantly. Researchers believe the Light King and his descendants may have settled there. The theory has never been confirmed. A spatial rift always opens before anyone who crosses the line of the canine totems. Vivy always appears first, followed by her Radiant Shinobi — a masked and visibly overtrained battalion.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 264 Light
+Common · Support
+### Nebular Aristocrat
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

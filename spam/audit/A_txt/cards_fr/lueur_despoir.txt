@@ -1,0 +1,141 @@
+Lueur d'Espoir : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Lueur d'Espoir D Voir la carte en grand
+Lueur d'Espoir
+1 Respiration
+Chanceur
+900/900
+10
+Standard
+Lueur d'Espoir
+1 Respiration
+Chanceur
+900/900
+10
+Élémentaire
+Lueur d'Espoir
+1 Respiration
+Chanceur
+900/900
+10
+FA
+Lueur d'Espoir
+1 Respiration
+Chanceur
+900/900
+10
+## Lueur d'Espoir
+D Lumière · Commune · Standard
+900 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Tox chanceux Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Conseillé
+- Talent 2 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+- Talent 3 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Trois champs de compétence
+- Respiration compétence · Recharge 1 Soigne 20 Nature
+Soigne 20 Lumière
+Résistance d'un élément aléatoire (+15)
+1
+- Chanceur tox · Rare Augmente votre Chance de (+1) chaque tour
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Deirdre
+Fiche complète
+Illustration par Deirdre
+Lumière Commune #022
+# Lueur d'Espoir
+Soutien Défense Économie
+900 Points de vie
+10 Spamtons / tour
+#106 Classement / 127
+D Sans talent · #102
+Attaque
+0
+Génération
+0
+Défense
+96
+Soutien
+91
+Contrôle
+0
+Économie
+98
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Tox chanceux 2 Roulette 3 Transition
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Respiration
+1 tour
+Soigne 20 Nature
+Soigne 20 Lumière
+Résistance d'un élément aléatoire (+15)
+Précision 100% Critique 1%
+### Tox de départ
+#### Chanceur
+Rare
+Augmente votre Chance de (+1) chaque tour
+### Talents
+#### Tox chanceux
+Conseillé
+Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Δ 10 · Score théorique
+#### Roulette
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ -18 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Intermédiaire
+Rampe élémentaire ·
+### Shinobi Éclairant + Lueur d'Espoir
+49,2 % Indice relatif 10 tours Élimination estimée 30 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Shinobi Éclairant + L'Épine d'Amour
+39 % Indice relatif 10 tours Élimination estimée 37 / tour Spamtons
+### Résistances
+15% Feu
+11% Eau
+9% Terre
+9% Nature
+9% Ombre
+9% Lumière
+Créature · Nyevielh
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Les Lueurs d’Espoir sont les seules créatures neutres de la forêt de Nyevielh. Elles indiqueraient le chemin qui mène au manoir de Vladislaus, et leur présence signale également qu’aucun monstre abyssal ne se trouve à proximité. Dans cette forêt, inutile de s’interroger : si le moindre protocole a été laissé à l’intention des malheureux qui osent y pénétrer, mieux vaut en respecter les indications.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+D # 227 Nature
+Commune · Économie
+### Chouette Polychrome
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

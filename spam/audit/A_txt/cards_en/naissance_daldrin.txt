@@ -1,0 +1,142 @@
+Birth of Aldrin: SPAM Nature rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Birth of Aldrin D View the full card
+Birth of Aldrin
+4 First Waltz
+Phoenix
+Graveyard
+700/700
+7
+Standard
+Birth of Aldrin
+4 First Waltz
+Phoenix
+Graveyard
+700/700
+7
+Elemental
+Birth of Aldrin
+4 First Waltz
+Phoenix
+Graveyard
+700/700
+7
+FA
+Birth of Aldrin
+4 First Waltz
+Phoenix
+Graveyard
+700/700
+7
+## Birth of Aldrin
+D Nature · Rare · Standard
+700 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+Recommended
+- Talent 2 Phoenix Feather 50% chance to regain the Phoenix passive once used.
+- Talent 3 360 Turn Applies "Random Metamorph" to all your other cards when this card is killed.
+Three ability slots
+- First Waltz ability · Cooldown 4 Deal 50 Nature damage
+4
+- Phoenix tox · Rare When destroyed, this card returns to life with 50% of its max HP.
+Single use
+- Graveyard tox · Rare Increases all your elemental bonuses by (+5) when a card dies
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Nature Rare #030
+# Birth of Aldrin
+Utility
+700 Health points
+7 Spamtons / turn
+#124 Rank / 127
+D No talent · #123
+Attack
+17
+Generation
+0
+Defense
+34
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Ultimate Reset 2 Phoenix Feather 3 360 Turn
+Build with this card 1 deck
+Share
+### Abilities
+#### First Waltz
+4 turns
+Deal 50 Nature damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Phoenix
+Rare
+When destroyed, this card returns to life with 50% of its max HP.
+Single use
+#### Graveyard
+Rare
+Increases all your elemental bonuses by (+5) when a card dies
+### Talents
+#### Ultimate Reset
+Recommended
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 7.3 · Theoretical score
+#### Phoenix Feather
+50% chance to regain the Phoenix passive once used.
+Δ 0 · Theoretical score
+#### 360 Turn
+Applies "Random Metamorph" to all your other cards when this card is killed.
+Δ 0 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+C Intermediate
+Midrange ·
+### Sky Dragon + Deer of Mournful Colors
+52.5 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+### Resistances
+6% Fire
+6% Water
+5% Earth
+5% Nature
+6% Shadow
+5% Light
+Dhöggeïr · Vaeloria
+### Beyond the card
+Since time immemorial, the Dhöggeïr are born from great eggs high up in the mountains. These legendary creatures are the arbiters of the battles between Eternals, protecting the Surface. Aldrin and Emeraldoth are the firstborn. They have often disagreed, though brothers from the same egg. As the single continent found itself fragmented, the two protected the living with the full extent of their powers. Southern Vaeloria was renamed Emeldarion in their honor. Aldrin is said to have found rest on the Lonely Isles, and his brother in the Marais'Cage of Emeldarion.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

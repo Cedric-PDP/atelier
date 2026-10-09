@@ -1,0 +1,140 @@
+Moxilys, la Fredonneuse : carte SPAM Ombre commune, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Moxilys, la Fredonneuse S Voir la carte en grand
+Moxilys, la Fredonneuse
+2 Duombre
+1 Régénair
+900/900
+9
+Standard
+Moxilys, la Fredonneuse
+2 Duombre
+1 Régénair
+900/900
+9
+Élémentaire
+Moxilys, la Fredonneuse
+2 Duombre
+1 Régénair
+900/900
+9
+FA
+Moxilys, la Fredonneuse
+2 Duombre
+1 Régénair
+900/900
+9
+## Moxilys, la Fredonneuse
+S Ombre · Commune · Standard
+900 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 2 Life-8 Les PV et PV max de la carte sont doublés au début du tour 8
+Conseillé
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Duombre compétence · Recharge 2 Cible toutes les cartes adverses
+Attaque 15 Ombre
+Bonus Ombre (+2)
+2
+- Régénair compétence · Recharge 1 Cible aléatoirement les cartes alliées
+Soigne 10 Nature X4
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Ombre Commune #177
+# Moxilys, la Fredonneuse
+Attaque Soutien Défense
+900 Points de vie
+9 Spamtons / tour
+#1 Classement / 127
+S Sans talent · #1
+Attaque
+88
+Génération
+57
+Défense
+99
+Soutien
+87
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Résilience 2 Life-8 3 Pièce magique
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Duombre
+2 tours
+Cible toutes les cartes adverses
+Attaque 15 Ombre
+Bonus Ombre (+2)
+Précision 100% Critique 1%
+#### Régénair
+1 tour
+Cible aléatoirement les cartes alliées
+Soigne 10 Nature X4
+Précision 100% Critique 1%
+### Talents
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 0 · Score théorique
+#### Life-8
+Conseillé
+Les PV et PV max de la carte sont doublés au début du tour 8
+Δ 339,3 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Codex des Maux Ancestraux
+78,1 % Indice relatif 6 tours Élimination estimée 30 / tour Spamtons
+### Résistances
+10% Feu
+9% Eau
+8% Terre
+7% Nature
+6% Ombre
+5% Lumière
+Créature · Azeel
+### Derrière la carte
+Dans la région d’Azeel, dont les bois s’étendent au nord-ouest de Vaeloria, vivent des créatures non agressives dont le seul objectif semble être de faire peur. Le Bouha est ainsi devenu un lieu touristique réputé pour ses tests de courage. Ces épreuves sont orchestrées par les Complices de la Forêt, parmi lesquels se distingue l’imposante Alphilane Moxilys. Chaque visiteur suit un parcours personnalisé au cœur des bois. Nul ne connaît la raison de la gratuité de ce service, secret bien gardé derrière des mélodies fredonnées sans paroles. Moxilys est une figure emblématique du village d’Alween et accompagne en chanson ceux qui osent relever le défi.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

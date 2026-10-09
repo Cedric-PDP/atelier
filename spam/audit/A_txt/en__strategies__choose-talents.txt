@@ -1,0 +1,60 @@
+The talent that changes the game: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Talents & optimization Talents & optimization
+# The talent that changes the game.
+One character, several roles. Choose the talent that truly serves your team.
+3 min read Share
+Illustration by Nao
+01
+## Every recommendation has context.
+A card page recommends the talent that adds the most, on average, to six reference teams. A deck page optimizes the talents of all four cards together. The two recommendations can differ without contradicting each other: they answer different questions.
+02
+## Compare the team benefit.
+A generation or support talent may give more to its partners than to its holder. In the workshop, use optimization to test every combination across the four cards, then manually try alternatives that interest you. The model uses one active talent per card.
+03
+## Check the sample size.
+The library ranks talents by average gain across the cards that have them. Some talents exist on only one card. Check their sample size and effect text before generalizing the ranking to another composition.
+Understanding the scores
+## Explore with this guide
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 122 Nature
+Common · Attack
+### Spirit of the Fauna
+800 HP
+A # 178 Shadow
+Common · Attack
+### Medusine Thorn
+800 HP
+## Put it into practice
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,2437 @@
+{
+ "res": {
+  "mode": "incident",
+  "incident": {
+   "103-117-156-238": {
+    "label": "chimere",
+    "nums": [
+     103,
+     238,
+     156,
+     117
+    ],
+    "plain": {
+     "J": 9008,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9111,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8904,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 9121,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9111,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9131,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 5515,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4460,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6570,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Lame de la forêt": {
+       "J": 8810,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5515,
+       "wins": 0
+      },
+      "L'Œil des montagnes": {
+       "J": 8633,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 9032,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 5563,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4505,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6621,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Lame de la forêt": {
+       "J": 8694,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5563,
+       "wins": 0
+      },
+      "L'Œil des montagnes": {
+       "J": 8552,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8882,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "3-103-117-238": {
+    "label": "robA",
+    "nums": [
+     3,
+     103,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 8000,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8046,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7954,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 8195,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8408,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7982,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Esprit Nature",
+     "J": 8000,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8046,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7954,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Esprit Nature": {
+       "J": 8000,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 8000,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8000,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 8000,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 6507,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6006,
+       "o": "W",
+       "kill": 18,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7008,
+       "o": "W",
+       "kill": 18,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Esprit Nature": {
+       "J": 8102,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 6917,
+       "wins": 0
+      },
+      "Keria": {
+       "J": 7768,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 6507,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "12-27-117-238": {
+    "label": "anticrit",
+    "nums": [
+     12,
+     238,
+     27,
+     117
+    ],
+    "plain": {
+     "J": 7362,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7470,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7254,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 8491,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8353,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8629,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 6134,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5014,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7254,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Hibernatus": {
+       "J": 7036,
+       "wins": 1
+      },
+      "Chimère Brasse-chair": {
+       "J": 6134,
+       "wins": 1
+      },
+      "Hippocampe Nimbé": {
+       "J": 6926,
+       "wins": 1
+      },
+      "Keria": {
+       "J": 7063,
+       "wins": 1
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 6007,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5305,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6709,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Hibernatus": {
+       "J": 6568,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 6007,
+       "wins": 0
+      },
+      "Hippocampe Nimbé": {
+       "J": 6399,
+       "wins": 0
+      },
+      "Keria": {
+       "J": 7135,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "12-69-102-116": {
+    "label": "zerocrit",
+    "nums": [
+     102,
+     116,
+     12,
+     69
+    ],
+    "plain": {
+     "J": 6963,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7165,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6760,
+       "o": "L",
+       "kill": null,
+       "wipe": 12,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 6873,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7182,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6563,
+       "o": "L",
+       "kill": null,
+       "wipe": 12,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Murmures du Corail Noir",
+     "J": 6963,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7165,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6760,
+       "o": "L",
+       "kill": null,
+       "wipe": 12,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Murmures du Corail Noir": {
+       "J": 6963,
+       "wins": 0
+      },
+      "Prisonnière de la Machine": {
+       "J": 6963,
+       "wins": 0
+      },
+      "Hibernatus": {
+       "J": 6963,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 6963,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Murmures du Corail Noir",
+     "J": 6873,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7182,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6563,
+       "o": "L",
+       "kill": null,
+       "wipe": 12,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Murmures du Corail Noir": {
+       "J": 6873,
+       "wins": 0
+      },
+      "Prisonnière de la Machine": {
+       "J": 6873,
+       "wins": 0
+      },
+      "Hibernatus": {
+       "J": 6873,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 6873,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "69-160-227-238": {
+    "label": "robB",
+    "nums": [
+     69,
+     160,
+     227,
+     238
+    ],
+    "plain": {
+     "J": 6573,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7068,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6077,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 6295,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6584,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6006,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Scorch, les Lézards Ignés",
+     "J": 6573,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7068,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6077,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 6573,
+       "wins": 0
+      },
+      "Sanglier Doré": {
+       "J": 6573,
+       "wins": 0
+      },
+      "Chouette Polychrome": {
+       "J": 6573,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 6573,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Sanglier Doré",
+     "J": 5632,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5944,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 5319,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 6295,
+       "wins": 0
+      },
+      "Sanglier Doré": {
+       "J": 5632,
+       "wins": 0
+      },
+      "Chouette Polychrome": {
+       "J": 6295,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 6201,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "69-102-117-238": {
+    "label": "r3",
+    "nums": [
+     69,
+     102,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 7626,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8149,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7103,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 7709,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8150,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7267,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Scorch, les Lézards Ignés",
+     "J": 7626,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8149,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7103,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 7626,
+       "wins": 1
+      },
+      "Murmures du Corail Noir": {
+       "J": 7626,
+       "wins": 1
+      },
+      "Keria": {
+       "J": 7626,
+       "wins": 1
+      },
+      "Chimère Brasse-chair": {
+       "J": 7626,
+       "wins": 1
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 6099,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6316,
+       "o": "W",
+       "kill": 17,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 5882,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 7709,
+       "wins": 1
+      },
+      "Murmures du Corail Noir": {
+       "J": 6821,
+       "wins": 0
+      },
+      "Keria": {
+       "J": 7414,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 6099,
+       "wins": 1
+      }
+     }
+    }
+   },
+   "2-69-102-238": {
+    "label": "r4",
+    "nums": [
+     2,
+     69,
+     102,
+     238
+    ],
+    "plain": {
+     "J": 7463,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7983,
+       "o": "L",
+       "kill": null,
+       "wipe": 18,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6942,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 7532,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8147,
+       "o": "L",
+       "kill": null,
+       "wipe": 18,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6917,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Esprit Eau",
+     "J": 7463,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7983,
+       "o": "L",
+       "kill": null,
+       "wipe": 18,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6942,
+       "o": "L",
+       "kill": null,
+       "wipe": 13,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Esprit Eau": {
+       "J": 7463,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 7463,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 7463,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 7463,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 6440,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6726,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6154,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Esprit Eau": {
+       "J": 6948,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 7532,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 6764,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 6440,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "69-102-156-227": {
+    "label": "e2b",
+    "nums": [
+     69,
+     102,
+     156,
+     227
+    ],
+    "plain": {
+     "J": 5977,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6964,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 4990,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 6941,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7286,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6596,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Scorch, les Lézards Ignés",
+     "J": 5977,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6964,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 4990,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 5977,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 5977,
+       "wins": 0
+      },
+      "L'Œil des montagnes": {
+       "J": 5977,
+       "wins": 0
+      },
+      "Chouette Polychrome": {
+       "J": 5977,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Scorch, les Lézards Ignés",
+     "J": 6941,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7286,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 6596,
+       "o": "L",
+       "kill": null,
+       "wipe": 9,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Scorch, les Lézards Ignés": {
+       "J": 6941,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 6941,
+       "wins": 0
+      },
+      "L'Œil des montagnes": {
+       "J": 6941,
+       "wins": 0
+      },
+      "Chouette Polychrome": {
+       "J": 6941,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "3-103-156-238": {
+    "label": "e1b",
+    "nums": [
+     3,
+     103,
+     156,
+     238
+    ],
+    "plain": {
+     "J": 7462,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7759,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7164,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 7752,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7939,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7564,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 5088,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4548,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 5627,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Esprit Nature": {
+       "J": 7458,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 7032,
+       "wins": 2
+      },
+      "L'Œil des montagnes": {
+       "J": 7261,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5088,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 5176,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4636,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 5715,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Esprit Nature": {
+       "J": 7416,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 6964,
+       "wins": 2
+      },
+      "L'Œil des montagnes": {
+       "J": 7108,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5176,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "12-103-117-238": {
+    "label": "e1c",
+    "nums": [
+     12,
+     103,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 7080,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6898,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7262,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 7159,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7007,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7311,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 5999,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4735,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7262,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Hibernatus": {
+       "J": 6845,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 6876,
+       "wins": 1
+      },
+      "Keria": {
+       "J": 7016,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5999,
+       "wins": 1
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 5384,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4661,
+       "o": "W",
+       "kill": 29,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6107,
+       "o": "W",
+       "kill": 20,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Hibernatus": {
+       "J": 6545,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 6498,
+       "wins": 0
+      },
+      "Keria": {
+       "J": 6683,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5384,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "2-69-82-102": {
+    "label": "nochim",
+    "nums": [
+     2,
+     69,
+     82,
+     102
+    ],
+    "plain": {
+     "J": 7086,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8801,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 5370,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 5784,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5707,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 5860,
+       "o": "W",
+       "kill": 17,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Esprit Eau",
+     "J": 7086,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8801,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 5370,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Esprit Eau": {
+       "J": 7086,
+       "wins": 1
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 7086,
+       "wins": 1
+      },
+      "Baleine Farceuse": {
+       "J": 7086,
+       "wins": 1
+      },
+      "Murmures du Corail Noir": {
+       "J": 7086,
+       "wins": 1
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Baleine Farceuse",
+     "J": 5092,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5061,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 5123,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Esprit Eau": {
+       "J": 6554,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 5784,
+       "wins": 2
+      },
+      "Baleine Farceuse": {
+       "J": 5092,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 6628,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "27-117-156-238": {
+    "label": "hip",
+    "nums": [
+     27,
+     117,
+     156,
+     238
+    ],
+    "plain": {
+     "J": 9010,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8926,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9093,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 7943,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 7871,
+       "o": "W",
+       "kill": 14,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8015,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 5680,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 4889,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6470,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Hippocampe Nimbé": {
+       "J": 7349,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8699,
+       "wins": 2
+      },
+      "L'Œil des montagnes": {
+       "J": 8808,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 5680,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 6475,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5823,
+       "o": "W",
+       "kill": 25,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7127,
+       "o": "W",
+       "kill": 24,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Hippocampe Nimbé": {
+       "J": 7349,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8137,
+       "wins": 2
+      },
+      "L'Œil des montagnes": {
+       "J": 8315,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 6475,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "103-117-180-238": {
+    "label": "dc1",
+    "nums": [
+     180,
+     103,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 8731,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8256,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9206,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 9825,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9132,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 10517,
+       "o": "W",
+       "kill": 9,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 7742,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6277,
+       "o": "W",
+       "kill": 17,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 9206,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8050,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 9019,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8740,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 7742,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Dragon Ciel",
+     "J": 7875,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6958,
+       "o": "W",
+       "kill": 19,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 8792,
+       "o": "W",
+       "kill": 15,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 7875,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 8857,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 9061,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 8327,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "3-117-180-238": {
+    "label": "dc2",
+    "nums": [
+     180,
+     3,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 8807,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8810,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8803,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 9498,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8860,
+       "o": "W",
+       "kill": 10,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 10135,
+       "o": "W",
+       "kill": 9,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Dragon Ciel",
+     "J": 8807,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8810,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8803,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8807,
+       "wins": 2
+      },
+      "Esprit Nature": {
+       "J": 8807,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8807,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 8807,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Dragon Ciel",
+     "J": 8368,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8442,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 8294,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8368,
+       "wins": 0
+      },
+      "Esprit Nature": {
+       "J": 9498,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8749,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 8490,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "69-102-180-238": {
+    "label": "dc3",
+    "nums": [
+     180,
+     69,
+     102,
+     238
+    ],
+    "plain": {
+     "J": 8706,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8654,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8758,
+       "o": "L",
+       "kill": null,
+       "wipe": 15,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 8085,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8632,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 7538,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Dragon Ciel",
+     "J": 8706,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8654,
+       "o": "L",
+       "kill": null,
+       "wipe": 14,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8758,
+       "o": "L",
+       "kill": null,
+       "wipe": 15,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8706,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 8706,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 8706,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 8706,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Dragon Ciel",
+     "J": 6591,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6780,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 6402,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 6591,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 8085,
+       "wins": 0
+      },
+      "Murmures du Corail Noir": {
+       "J": 7612,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 7109,
+       "wins": 0
+      }
+     }
+    }
+   },
+   "117-156-180-238": {
+    "label": "dc4",
+    "nums": [
+     180,
+     238,
+     156,
+     117
+    ],
+    "plain": {
+     "J": 9046,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9001,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9091,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 9090,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9084,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9095,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 7479,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5867,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 9091,
+       "o": "W",
+       "kill": 11,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8386,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 7479,
+       "wins": 1
+      },
+      "L'Œil des montagnes": {
+       "J": 8981,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8944,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 7422,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5959,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 8885,
+       "o": "W",
+       "kill": 21,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 8313,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 7422,
+       "wins": 1
+      },
+      "L'Œil des montagnes": {
+       "J": 8821,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8861,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "3-103-180-238": {
+    "label": "dc5",
+    "nums": [
+     180,
+     3,
+     103,
+     238
+    ],
+    "plain": {
+     "J": 9090,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9077,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9103,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 9092,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 9081,
+       "o": "W",
+       "kill": 13,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 9103,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Dragon Ciel",
+     "J": 7540,
+     "wins": 1,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 5977,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 9103,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 7540,
+       "wins": 1
+      },
+      "Esprit Nature": {
+       "J": 8690,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 8926,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 8983,
+       "wins": 2
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Dragon Ciel",
+     "J": 6881,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6074,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7688,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 6881,
+       "wins": 0
+      },
+      "Esprit Nature": {
+       "J": 8458,
+       "wins": 2
+      },
+      "Lame de la forêt": {
+       "J": 8759,
+       "wins": 1
+      },
+      "Chimère Brasse-chair": {
+       "J": 8876,
+       "wins": 2
+      }
+     }
+    }
+   },
+   "69-117-180-238": {
+    "label": "dc6",
+    "nums": [
+     180,
+     69,
+     117,
+     238
+    ],
+    "plain": {
+     "J": 8821,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8825,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8816,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "tauntOnly": {
+     "J": 8826,
+     "wins": 2,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 8830,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      },
+      {
+       "p": 2,
+       "J": 8821,
+       "o": "W",
+       "kill": 12,
+       "wipe": null,
+       "absorbed": false
+      }
+     ]
+    },
+    "absorbOnly": {
+     "target": "Chimère Brasse-chair",
+     "J": 7312,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6763,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7860,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 7455,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 8821,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8762,
+       "wins": 2
+      },
+      "Chimère Brasse-chair": {
+       "J": 7312,
+       "wins": 0
+      }
+     }
+    },
+    "tauntAbsorb": {
+     "target": "Chimère Brasse-chair",
+     "J": 7431,
+     "wins": 0,
+     "byOrder": [
+      {
+       "p": 1,
+       "J": 6920,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      },
+      {
+       "p": 2,
+       "J": 7942,
+       "o": "T",
+       "kill": null,
+       "wipe": null,
+       "absorbed": true
+      }
+     ],
+     "perTarget": {
+      "Dragon Ciel": {
+       "J": 7613,
+       "wins": 0
+      },
+      "Scorch, les Lézards Ignés": {
+       "J": 8826,
+       "wins": 2
+      },
+      "Keria": {
+       "J": 8742,
+       "wins": 0
+      },
+      "Chimère Brasse-chair": {
+       "J": 7431,
+       "wins": 0
+      }
+     }
+    }
+   }
+  }
+ }
+}

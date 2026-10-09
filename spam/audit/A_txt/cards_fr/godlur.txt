@@ -1,0 +1,137 @@
+Godlur : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Godlur D Voir la carte en grand
+Godlur
+2 Frappe golémique
+Ténacité
+Soin primitif
+1000/1000
+7
+Standard
+Godlur
+2 Frappe golémique
+Ténacité
+Soin primitif
+1000/1000
+7
+Élémentaire
+Godlur
+2 Frappe golémique
+Ténacité
+Soin primitif
+1000/1000
+7
+FA
+Godlur
+2 Frappe golémique
+Ténacité
+Soin primitif
+1000/1000
+7
+## Godlur
+D Terre · Commune · Standard
+1 000 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Conseillé
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Revalorisation Augmente la génération de Spamton de cette carte de (+5)
+Trois champs de compétence
+- Frappe golémique compétence · Recharge 2 Attaque 25 Terre
+Fumée
+2
+- Ténacité tox · Commune La première attaque fatale vous laisse à 1 PV
+- Soin primitif tox · Commune Au début de chaque tour, la carte récupère 4% de ses PV max
+Illustration par SAN
+Fiche complète
+Illustration par SAN
+Terre Commune #261
+# Godlur
+Défense
+1 000 Points de vie
+7 Spamtons / tour
+#103 Classement / 127
+D Sans talent · #110
+Attaque
+36
+Génération
+0
+Défense
+93
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Incisif 2 Évolution 3 Revalorisation
+Jouer cette carte
+Partager
+### Compétences
+#### Frappe golémique
+2 tours
+Attaque 25 Terre
+Fumée
+Précision 100% Critique 1%
+### Tox de départ
+#### Ténacité
+Commune
+La première attaque fatale vous laisse à 1 PV
+#### Soin primitif
+Commune
+Au début de chaque tour, la carte récupère 4% de ses PV max
+### Talents
+#### Incisif
+Conseillé
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 651,4 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0 · Score théorique
+#### Revalorisation
+Augmente la génération de Spamton de cette carte de (+5)
+Δ 15 · Score théorique
+### Résistances
+17% Feu
+17% Eau
+17% Terre
+17% Nature
+17% Ombre
+17% Lumière
+Créature artificielle · Emeldarion
+### Derrière la carte
+Godlur fut la première créature artificielle conçue par Gabriel et Lumisaros. Il protégeait la capitale pixarch contre les Éternels les plus belliqueux. Ce puissant golem, capable d’utiliser la photosynthèse pour recharger ses orbes Oniyx intégrés, pouvait fonctionner de jour comme de nuit. Beaucoup le décrivaient comme indestructible. Est-il encore en activité quelque part ? Agit-il toujours au centre des Îles Esseulées ?
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

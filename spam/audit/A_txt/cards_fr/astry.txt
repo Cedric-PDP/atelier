@@ -1,0 +1,148 @@
+Astry : carte SPAM Lumière rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Astry B Voir la carte en grand
+Astry
+4 Génie incompris
+3 Clair-obscur
+600/600
+10
+Standard
+Astry
+4 Génie incompris
+3 Clair-obscur
+600/600
+10
+Élémentaire
+Astry
+4 Génie incompris
+3 Clair-obscur
+600/600
+10
+FA
+Astry
+4 Génie incompris
+3 Clair-obscur
+600/600
+10
+## Astry
+B Lumière · Rare · Standard
+600 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Mystère Commence la partie avec le passif "Mystère"
+Conseillé
+- Talent 2 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 3 Baleine bleue Augmente les PV de cette carte de (+200).
+Trois champs de compétence
+- Génie incompris compétence · Recharge 4 Bonus (+35) dans un élément aléatoire
+4
+- Clair-obscur compétence · Recharge 3 Attaque 40 Ombre
+Se soigne 40 Lumière
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Daerun
+Fiche complète
+Illustration par Daerun
+Lumière Rare #036
+# Astry
+Génération
+600 Points de vie
+10 Spamtons / tour
+#51 Classement / 127
+B Sans talent · #46
+Attaque
+34
+Génération
+98
+Défense
+50
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Mystère 2 Imprudent 3 Baleine bleue
+Jouer cette carte 4 decks
+Partager
+### Compétences
+#### Génie incompris
+4 tours
+Bonus (+35) dans un élément aléatoire
+Précision 100% Critique 0%
+#### Clair-obscur
+3 tours
+Attaque 40 Ombre
+Se soigne 40 Lumière
+Précision 100% Critique 1%
+### Talents
+#### Mystère
+Conseillé
+Commence la partie avec le passif "Mystère"
+Δ 25,2 · Score théorique
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -97,8 · Score théorique
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ -114,2 · Score théorique
+## Ses meilleurs decks
+4 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Aggro / burst ·
+### Dragon Ciel + Aristocrate Nébulaire
+55,7 % Indice relatif 7 tours Élimination estimée 27 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Mélodie des Divinités + Chouette Polychrome
+53,9 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Luminaire Abyssal + Astry
+44 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Apprentie de la Mort + Astry
+38,4 % Indice relatif 9 tours Élimination estimée 29 / tour Spamtons
+### Résistances
+8% Feu
+7% Eau
+8% Terre
+9% Nature
+7% Ombre
+10% Lumière
+Eltherien · Aelther
+### Derrière la carte
+Rares sont les déplacements spatio-temporels dont nous pouvons témoigner. Le jeune Astry crée des failles semblables à celles de Vivy. Il apparaît seul sur les plages d’Aelther, loin des sentiers empruntés par les pèlerins. Nous avons eu la chance de l’entendre prononcer son prénom alors qu’il se parlait à lui-même. Il semble demeurer près des côtes occidentales, où il affronte les monstres abyssaux qui émergent de la Mer Étoilée. Ses pouvoirs surnaturels et ses combats spectaculaires laissent les témoins sans voix. Son jeune âge apparent et ses facultés soulèvent bien des questions sur son origine. Personne n’ose le déranger, conformément aux directives imposées sur le continent d’Aelther.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+B # 081 Eau
+Épique · Attaque
+### Luminaire Abyssal
+600 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

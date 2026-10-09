@@ -1,0 +1,151 @@
+Pyro: SPAM Fire common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Pyro A View the full card
+Pyro
+1 Conflagration
+500/500
+4
+Standard
+Pyro
+1 Conflagration
+500/500
+4
+Elemental
+Pyro
+1 Conflagration
+500/500
+4
+FA
+Pyro
+1 Conflagration
+500/500
+4
+## Pyro
+A Fire · Common · Standard
+500 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Crit Sphere Increases this card's critical chance by (+2%) each turn
+Recommended
+- Talent 2 Eternalized The card is immune to Eternity effects
+- Talent 3 Phoenix Feather 50% chance to regain the Phoenix passive once used.
+Three ability slots
+- Conflagration ability · Cooldown 1 Deal 5 Fire damage to all enemy cards
+Fire bonus (+1)
+1
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Fire Common #097
+# Pyro
+Attack
+500 Health points
+4 Spamtons / turn
+#21 Rank / 127
+A No talent · #30
+Attack
+98
+Generation
+57
+Defense
+4
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Crit Sphere 2 Eternalized 3 Phoenix Feather
+Build with this card 9 decks
+Share
+### Abilities
+#### Conflagration
+1 turn
+Deal 5 Fire damage to all enemy cards
+Fire bonus (+1)
+Accuracy 100% Critical 50%
+### Talents
+#### Crit Sphere
+Recommended
+Increases this card's critical chance by (+2%) each turn
+Δ 38.4 · Theoretical score
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Phoenix Feather
+50% chance to regain the Phoenix passive once used.
+Δ 0 · Theoretical score
+## Its best decks
+9 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Pyro + Scorch
+73.3 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+C Intermediate
+Aggro / burst ·
+### Wibs the Blazing + Apprentice of Death
+63.3 % Relative index 7 turns Estimated elimination 22 / turn Spamtons
+C Advanced collection
+Aggro / burst ·
+### Sovereign of Flames + Scorch
+60.9 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Pyro + Wibs the Blazing
+53.8 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Pyro + Logidrake
+51.9 % Relative index 8 turns Estimated elimination 22 / turn Spamtons
+D Accessible
+Midrange ·
+### Pyro + Apprentice of Death
+35.3 % Relative index 9 turns Estimated elimination 20 / turn Spamtons
+The other decks (3)
+- D Wibs the Blazing + Apprentice of Death with Pyro · Prisoner of the Machine Accessible · 36.8%
+- D Wibs the Blazing + Logidrake with Pyro · The Inventor Accessible · 34.8%
+- D Pyro + Wibs the Blazing with Logidrake · Minion of Flames Accessible · 26%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eltherien · Hadeïr
+### Beyond the card
+As the corruption spread within the walls of the city of Logaïr, Pyro, the greatest aviator of his time and loyal vassal of the Fire King, saw to the evacuation of the uninfected civilians. The history books tell of those final moments, which today make him one of the great saving figures within Dragheïr. As he began his painful abyssal transformation, he sealed the gates of the city of the forges before him. Cursed today alongside his King, Pyro, in the fearsome form of a phoenix, still dwells in the city now renamed the infernal city.
+## Better together
+The most promising partners according to the model.
+D # 262 Nature
+Common · Support
+### Yotaru, Leafguard
+500 HP
+A # 233 Light
+Common · Support
+### Hatchlings of Midas
+500 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

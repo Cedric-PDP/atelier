@@ -1,0 +1,185 @@
+Apprentice of Death: SPAM Fire rare card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Apprentice of Death B View the full card
+Apprentice of Death
+3 Nocturnal Burn
+Graveyard
+Avenger
+700/700
+6
+Standard
+Apprentice of Death
+3 Nocturnal Burn
+Graveyard
+Avenger
+700/700
+6
+Elemental
+Apprentice of Death
+3 Nocturnal Burn
+Graveyard
+Avenger
+700/700
+6
+FA
+Apprentice of Death
+3 Nocturnal Burn
+Graveyard
+Avenger
+700/700
+6
+## Apprentice of Death
+B Fire · Rare · Standard
+700 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Revitalization 5% chance each turn to restore this card’s HP to maximum.
+- Talent 2 Hardening Increases this card’s elemental resistances by (+15%).
+Recommended
+- Talent 3 Doomed Hour Applies Eternity to all enemy cards when this card is killed.
+Three ability slots
+- Nocturnal Burn ability · Cooldown 3 Deal 25 Fire and 25 Shadow damage to all enemy cards
+3
+- Graveyard tox · Common Increases all your elemental bonuses by (+3) when a card dies
+- Avenger tox · Epic This card recovers all its attacks whenever a card it didn't kill dies.
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Fire Rare #236
+# Apprentice of Death
+Attack
+700 Health points
+6 Spamtons / turn
+#46 Rank / 127
+B No talent · #50
+Attack
+92
+Generation
+0
+Defense
+48
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Revitalization 2 Hardening 3 Doomed Hour
+Build with this card 30 decks
+Share
+### Abilities
+#### Nocturnal Burn
+3 turns
+Deal 25 Fire and 25 Shadow damage to all enemy cards
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Graveyard
+Common
+Increases all your elemental bonuses by (+3) when a card dies
+#### Avenger
+Epic
+This card recovers all its attacks whenever a card it didn't kill dies.
+### Talents
+#### Revitalization
+5% chance each turn to restore this card’s HP to maximum.
+Δ 11.4 · Theoretical score
+#### Hardening
+Recommended
+Increases this card’s elemental resistances by (+15%).
+Δ 68.7 · Theoretical score
+#### Doomed Hour
+Applies Eternity to all enemy cards when this card is killed.
+Δ 0 · Theoretical score
+## Its best decks
+30 ranked decks play this card, from best to worst.
+All decks
+S Intermediate
+Aggro / burst ·
+### Canine Specter + Aleera
+92.1 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of Flames
+91.2 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Apprentice of Death
+89.1 % Relative index 6 turns Estimated elimination 24 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Paguroniyx
+89.1 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+A Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+82.3 % Relative index 6 turns Estimated elimination 20 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Apprentice of Death + Codex of Ancient Woes
+78.1 % Relative index 6 turns Estimated elimination 30 / turn Spamtons
+The other decks (24)
+- A Aleera + Apprentice of Death with Paguroniyx · Squall Intermediate · 88.4%
+- A Aleera + Apprentice of Death with Catixy · Paguroniyx Accessible · 88%
+- B Pyro + Scorch with Keria · Apprentice of Death Intermediate · 73.3%
+- B Aleera + Apprentice of Death with Sovereign of Flames · Blade of the Forest Advanced collection · 73.2%
+- B Apprentice of Death + Scorch with Mistress of Tints · Catimimi Intermediate · 73%
+- C Mistress of Tints + The Inventor with Sovereign of Flames · Apprentice of Death Advanced collection · 65.5%
+- C Wibs the Blazing + Apprentice of Death with Pyro · Scorch Intermediate · 63.3%
+- C Sovereign of Flames + Scorch with Apprentice of Death · Pyro Advanced collection · 60.9%
+- C Mistress of Tints + Apprentice of Death with Sovereign of Flames · Squall Advanced collection · 60.5%
+- C Sovereign of Flames + Apprentice of Death with Wibs the Blazing · Scorch Advanced collection · 58.7%
+- C Wibs the Blazing + Apprentice of Death with Squall · Scorch Intermediate · 57.7%
+- C Mistress of Tints + Apprentice of Death with The Inventor · King of the Blazing Flames Intermediate · 56.7%
+- C Wibs the Blazing + Apprentice of Death with Keria · The Inventor Intermediate · 54.8%
+- C Sovereign of Flames + Wibs the Blazing with Apprentice of Death · Keria Advanced collection · 54.6%
+- C Wibs the Blazing + Apprentice of Death with Faerylia · Vladislaus Advanced collection · 53.5%
+- C Mistress of Tints + Apprentice of Death with Fire King · Vladislaus Advanced collection · 50.5%
+- D Sovereign of Flames + Wibs the Blazing with Apprentice of Death · Pyrokinetic Sorceress Advanced collection · 45.7%
+- D Apprentice of Death + The Inventor with Snow Warrior · Dragon of the Infernal City Accessible · 39.5%
+- D Wibs the Blazing + Apprentice of Death with Prisoner of the Machine · The Inventor Accessible · 39%
+- D Apprentice of Death + Astry with The Inventor · Squall Intermediate · 38.4%
+- D Apprentice of Death + The Inventor with Snow Warrior · Aidan Accessible · 37.8%
+- D Wibs the Blazing + Apprentice of Death with Pyro · Prisoner of the Machine Accessible · 36.8%
+- D Apprentice of Death + Snow Warrior with Ignea · Squall Advanced collection · 36.2%
+- D Pyro + Apprentice of Death with Snow Warrior · Prisoner of the Machine Accessible · 35.3%
+### Resistances
+7% Fire
+-18% Water
+17% Earth
+18% Nature
+17% Shadow
+-17% Light
+Eternal · Abyss
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Eternal agents patrol the Abyss with a divine task of macabre cleansing. The one called Nightmare Reaper regulates the overpopulation of nightmares that cannot find inner peace, cutting short their very existence, which is harmful to the cycle imposed by the divinities.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+C # 088 Shadow
+Epic · Control
+### Faerylia
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

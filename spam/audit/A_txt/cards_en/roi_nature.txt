@@ -1,0 +1,154 @@
+Nature King: SPAM Nature epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Nature King B View the full card
+Nature King
+5 Blade-N
+5 Floral Choice
+Punching Bag
+1000/1000
+10
+Standard
+Nature King
+5 Blade-N
+5 Floral Choice
+Punching Bag
+1000/1000
+10
+Elemental
+Nature King
+5 Blade-N
+5 Floral Choice
+Punching Bag
+1000/1000
+10
+FA
+Nature King
+5 Blade-N
+5 Floral Choice
+Punching Bag
+1000/1000
+10
+## Nature King
+B Nature · Epic · Standard
+1,000 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+Recommended
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+Three ability slots
+- Blade-N ability · Cooldown 5 Deal [40 to 60] Nature damage
+5
+- Floral Choice ability · Cooldown 5 Choice
+Nature bonus [1 to 20]
+---------- or ----------
+Nature bonus [5 to 15]
+---------- or ----------
+Nature bonus [8 to 12]
+5
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Nature Epic #249
+# Nature King
+Generation Defense
+1,000 Health points
+10 Spamtons / turn
+#31 Rank / 127
+A No talent · #22
+Attack
+45
+Generation
+82
+Defense
+76
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Focus 2 Evolution 3 Ultimate Reset
+Build with this card 1 deck
+Share
+### Abilities
+#### Blade-N
+5 turns
+Deal [40 to 60] Nature damage
+Accuracy 100% Critical 1%
+#### Floral Choice
+5 turns
+Choice
+Nature bonus [1 to 20]
+---------- or ----------
+Nature bonus [5 to 15]
+---------- or ----------
+Nature bonus [8 to 12]
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Focus
+Recommended
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 349 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Ultimate Reset
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 17.3 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+D Advanced collection
+Elemental ramp ·
+### Floral Zombie + Gabriel
+35.4 % Relative index 10.9 turns Estimated elimination 29 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Pixarch · Vaeloria
+### Beyond the card
+Being the King of an element is an honorary title. It signifies a high responsibility in the elemental balance. The Kings had their heirs equipped with a runic weapon. However, the only King without an heir is the King of Nature. This Pixarch, his wings mysteriously torn off, bound himself to the weapon. In keeping with the texts of the Primordial Codex according to Faerylia, these weapons would make it possible to seal the Deities and win freedom. He reigned over Vaeloria for centuries. When the disease of Fanure appeared, he gave his life creating the Meridia.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+C # 045 Nature
+Legendary · Attack
+### Aldrin & Gorakar
+700 HP
+S # 174 Nature
+Common · Attack
+### Floral Zombie
+850 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,139 @@
+Héraldesse Serpentine : carte SPAM Terre légendaire, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Héraldesse Serpentine D Voir la carte en grand
+Héraldesse Serpentine
+5 Constriction Éternelle
+1 Sacrifice
+Éternité
+900/900
+9
+Standard
+Héraldesse Serpentine
+5 Constriction Éternelle
+1 Sacrifice
+Éternité
+900/900
+9
+Élémentaire
+Héraldesse Serpentine
+5 Constriction Éternelle
+1 Sacrifice
+Éternité
+900/900
+9
+FA
+Héraldesse Serpentine
+5 Constriction Éternelle
+1 Sacrifice
+Éternité
+900/900
+9
+## Héraldesse Serpentine
+D Terre · Légendaire · Standard
+900 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Terrain sombre Bonus (+7) Ombre.
+Conseillé
+- Talent 2 Heure Funeste Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+- Talent 3 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Trois champs de compétence
+- Constriction Éternelle compétence · Recharge 5 Cible aléatoirement les cartes adverses
+Attaque 30 Terre X8
+5
+- Sacrifice compétence · Recharge 1 [Coût 7 Terre]
+Se soigne totalement
+1
+- Éternité tox · Légendaire Augmente les temps de recharge de 1
+Illustration par Euphy
+Fiche complète
+Illustration par Euphy
+Terre Légendaire #256
+# Héraldesse Serpentine
+Polyvalent
+900 Points de vie
+9 Spamtons / tour
+#114 Classement / 127
+D Sans talent · #109
+Attaque
+16
+Génération
+0
+Défense
+59
+Soutien
+1
+Contrôle
+85
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Terrain sombre 2 Heure Funeste 3 Transition
+Jouer cette carte
+Partager
+### Compétences
+#### Constriction Éternelle
+5 tours
+Cible aléatoirement les cartes adverses
+Attaque 30 Terre X8
+Précision 50% Critique 1%
+#### Sacrifice
+1 tour
+[Coût 7 Terre]
+Se soigne totalement
+Précision 100% Critique 0%
+### Tox de départ
+#### Éternité
+Légendaire
+Augmente les temps de recharge de 1
+### Talents
+#### Terrain sombre
+Conseillé
+Bonus (+7) Ombre.
+Δ 499,5 · Score théorique
+#### Heure Funeste
+Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Δ 0 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Eltherien · Shal'Zaar
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Shal’Zaar, dans un village de chasseurs de monstres, une jeune fille est capable de communiquer par la pensée. Dès qu’elle établit un lien, ses yeux semblent s’injecter d’un liquide violacé. Grâce à son pouvoir, elle dressa certaines des créatures les plus terrifiantes de la jungle de Presolda. Serpents tropicaux et autres dinosaures assistent désormais les chasseurs de monstres. Pour toutes ses prouesses, elle reçut le titre de Héraldesse, celui d’une envoyée divine rappelant la régente disparue.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

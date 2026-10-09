@@ -1,0 +1,141 @@
+Sylvan, Protector of the Verdure: SPAM Nature common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Sylvan, Protector of the Verdure C View the full card
+Sylvan, Protector of the Verdure
+4 Double Breath
+1 Swift Leap
+Erosion
+550/550
+5
+Standard
+Sylvan, Protector of the Verdure
+4 Double Breath
+1 Swift Leap
+Erosion
+550/550
+5
+Elemental
+Sylvan, Protector of the Verdure
+4 Double Breath
+1 Swift Leap
+Erosion
+550/550
+5
+FA
+Sylvan, Protector of the Verdure
+4 Double Breath
+1 Swift Leap
+Erosion
+550/550
+5
+## Sylvan, Protector of the Verdure
+C Nature · Common · Standard
+550 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Increasing Error Each time this card attacks, a random enemy card loses 3% accuracy
+- Talent 2 360 Turn Applies "Random Metamorph" to all your other cards when this card is killed.
+- Talent 3 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+Recommended
+Three ability slots
+- Double Breath ability · Cooldown 4 Deal 25 Nature damage
+Deal 25 Nature damage
+Deal 25 Nature damage
+4
+- Swift Leap ability · Cooldown 1 Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%)
+1
+- Erosion tox · Common Reduces the target's max HP by 50% of the damage dealt
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Common #039
+# Sylvan, Protector of the Verdure
+Versatile
+550 Health points
+5 Spamtons / turn
+#69 Rank / 127
+C No talent · #65
+Attack
+66
+Generation
+57
+Defense
+21
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Increasing Error 2 360 Turn 3 Piercing
+Build with this card
+Share
+### Abilities
+#### Double Breath
+4 turns
+Deal 25 Nature damage
+Deal 25 Nature damage
+Deal 25 Nature damage
+Accuracy 50% Critical 1%
+#### Swift Leap
+1 turn
+Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Erosion
+Common
+Reduces the target's max HP by 50% of the damage dealt
+### Talents
+#### Increasing Error
+Each time this card attacks, a random enemy card loses 3% accuracy
+Δ 28.8 · Theoretical score
+#### 360 Turn
+Applies "Random Metamorph" to all your other cards when this card is killed.
+Δ -302.3 · Theoretical score
+#### Piercing
+Recommended
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 411.9 · Theoretical score
+### Resistances
+15% Fire
+15% Water
+15% Earth
+15% Nature
+15% Shadow
+15% Light
+Great Lion · Lumethia
+### Beyond the card
+The Drako’vish ranges stretch across northern Lumethia, forming a border with Vaeloria, land of the Great Lions. During a journey devoted to his research, Sylvan took in an abandoned child named Leo. When he learned that a bloody war had broken out between his childhood friends, Catimimi urged him to intervene and end the fighting. Sylvan brought about the long-awaited truce, but suffered mortal wounds in the process. With his final words, he asked that Leo be cared for. His sacrifice ended the war.
+## Better together
+The most promising partners according to the model.
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

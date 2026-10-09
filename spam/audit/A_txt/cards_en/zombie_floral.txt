@@ -1,0 +1,182 @@
+Floral Zombie: SPAM Nature common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Floral Zombie S View the full card
+Floral Zombie
+8 Aquatic Curse
+Waterheart
+Natureheart
+850/850
+5
+Standard
+Floral Zombie
+8 Aquatic Curse
+Waterheart
+Natureheart
+850/850
+5
+Elemental
+Floral Zombie
+8 Aquatic Curse
+Waterheart
+Natureheart
+850/850
+5
+FA
+Floral Zombie
+8 Aquatic Curse
+Waterheart
+Natureheart
+850/850
+5
+## Floral Zombie
+S Nature · Common · Standard
+850 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Revaluation Increases this card’s Spamton generation by (+5).
+Recommended
+- Talent 2 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+- Talent 3 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Three ability slots
+- Aquatic Curse ability · Cooldown 8 Deal [30 to 60] Water damage to all enemy cards
+Apply Vanish
+Deal [30 to 60] Nature damage to all enemy cards
+Apply Vanish
+8
+- Waterheart tox · Common Water bonus (+1) per turn
+- Natureheart tox · Common Nature bonus (+1) per turn
+Illustration by Krackdur
+Full card details
+Illustration by Krackdur
+Nature Common #174
+# Floral Zombie
+Attack
+850 Health points
+5 Spamtons / turn
+#3 Rank / 127
+S No talent · #3
+Attack
+89
+Generation
+74
+Defense
+51
+Support
+1
+Control
+87
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Revaluation 2 Ultimate Reset 3 Transition
+Build with this card 21 decks
+Share
+### Abilities
+#### Aquatic Curse
+8 turns
+Deal [30 to 60] Water damage to all enemy cards
+Apply Vanish
+Deal [30 to 60] Nature damage to all enemy cards
+Apply Vanish
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Waterheart
+Common
+Water bonus (+1) per turn
+#### Natureheart
+Common
+Nature bonus (+1) per turn
+### Talents
+#### Revaluation
+Recommended
+Increases this card’s Spamton generation by (+5).
+Δ 14.5 · Theoretical score
+#### Ultimate Reset
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 7.3 · Theoretical score
+#### Transition
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 0 · Theoretical score
+## Its best decks
+21 ranked decks play this card, from best to worst.
+All decks
+A Accessible
+Aggro / burst ·
+### Aleera + Paguroniyx
+85.1 % Relative index 6 turns Estimated elimination 28 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Floral Zombie + Sovereign of the Ether Falls
+63.8 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+C Accessible
+Midrange ·
+### Catimimi + Floral Giraffe
+57.2 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Catimimi + Faerylia
+57.1 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Sky Dragon + Princess Meridia
+53.3 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+C Intermediate
+Midrange ·
+### Floral Zombie + Princess Meridia
+52.9 % Relative index 8 turns Estimated elimination 30 / turn Spamtons
+The other decks (15)
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Princess Meridia Intermediate · 61.8%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Snow Warrior Accessible · 59%
+- C Spirit of the Fauna + Floral Zombie with Sky Dragon · Aidan Accessible · 50.7%
+- C Floral Zombie + Gabriel with Celestial Dragosaur · Spirit of the Fauna Intermediate · 50.2%
+- D Floral Zombie + Sky Dragon with Astral Healer of the Woods · Spirit of the Fauna Accessible · 49.7%
+- D Floral Zombie + Sky Dragon with Astral Healer of the Woods · Princess Meridia Intermediate · 49.6%
+- D Floral Zombie + Flesh-Melding Chimera with Princess Meridia · Sky Dragon Intermediate · 48.8%
+- D Floral Zombie + Flesh-Melding Chimera with Sky Dragon · Thorn of Love Accessible · 47.7%
+- D Floral Zombie + Aidan with Master Amphibian · Flesh-Melding Chimera Accessible · 46.3%
+- D Catimimi + Floral Giraffe with Floral Zombie · Astral Healer of the Woods Intermediate · 44.7%
+- D Catimimi + Aidan with Yotaru · Floral Zombie Accessible · 44.5%
+- D Floral Zombie + Princess Meridia with Spirit of the Fauna · Gabriel Intermediate · 42.4%
+- D Floral Zombie + Princess Meridia with Leviathan of the Skies · Medusine Thorn Advanced collection · 36.6%
+- D Floral Zombie + Gabriel with Nature King · Blade of the Forest Advanced collection · 35.4%
+- D Floral Zombie + Master Amphibian with Frost & Glacier · Princess Meridia Advanced collection · 31.8%
+### Resistances
+4% Fire
+6% Water
+4% Earth
+4% Nature
+1% Shadow
+5% Light
+Nightmare · Lonely Isles
+### Beyond the card
+Long ago, Gabriel and Lumisaros built a mysterious tree within the Pixarch capital. The tree could reclaim surplus elemactive energy to cleanse the environment. Today, the ruins are fragmented into a flying archipelago above the Nimbus Sea. These Lonely Isles are a dream expedition for researchers. The tree is theorized to be responsible for the appearance of Floral Zombies — humanoid in form and in a vegetative state. They fall a few at a time from the heights of the islands and are washed onto the coasts of Vaeloria. They are weak abyssal monsters and an excellent subject of study.
+## Better together
+The most promising partners according to the model.
+A # 029 Nature
+Rare · Generation
+### Princess Meridia
+750 HP
+D # 264 Light
+Common · Support
+### Nebular Aristocrat
+500 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

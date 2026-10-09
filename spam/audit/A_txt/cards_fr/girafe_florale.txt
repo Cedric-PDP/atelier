@@ -1,0 +1,139 @@
+Girafe Florale : carte SPAM Nature rare, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Girafe Florale D Voir la carte en grand
+Girafe Florale
+2 Renaissance Sylvatique
+Sac de frappe
+750/750
+7
+Standard
+Girafe Florale
+2 Renaissance Sylvatique
+Sac de frappe
+750/750
+7
+Élémentaire
+Girafe Florale
+2 Renaissance Sylvatique
+Sac de frappe
+750/750
+7
+FA
+Girafe Florale
+2 Renaissance Sylvatique
+Sac de frappe
+750/750
+7
+## Girafe Florale
+D Nature · Rare · Standard
+750 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 2 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+- Talent 3 Corrosion Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Trois champs de compétence
+- Renaissance Sylvatique compétence · Recharge 2 Applique Provocation
+Cible toutes les cartes alliées
+Précision et Critique (+5%)
+2
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Nature Rare #072
+# Girafe Florale
+Soutien
+750 Points de vie
+7 Spamtons / tour
+#112 Classement / 127
+D Sans talent · #104
+Attaque
+0
+Génération
+52
+Défense
+41
+Soutien
+89
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Départ multi 2 Cavalerie 3 Corrosion
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Renaissance Sylvatique
+2 tours
+Applique Provocation
+Cible toutes les cartes alliées
+Précision et Critique (+5%)
+Précision 100% Critique 0%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+### Talents
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 375,9 · Score théorique
+#### Cavalerie
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 231,3 · Score théorique
+#### Corrosion
+Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Δ 112,7 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Catimimi + Girafe Florale
+57,2 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (1)
+- D Catimimi + Girafe Florale avec Zombie Floral · Soigneuse Astrale des Bois Intermédiaire · 44,7%
+### Résistances
+8% Feu
+9% Eau
+7% Terre
+7% Nature
+8% Ombre
+8% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. La Girafe Florale est la monture favorite des pèlerins. Sur sa robe, ils peuvent faire pousser des récoltes en quelques jours. En Vaeloria, ce noble animal offre ainsi un potager mobile disponible en toutes circonstances ; toute famille digne de ce nom possède sa propre Girafe Florale.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

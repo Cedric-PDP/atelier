@@ -1,0 +1,134 @@
+Moxilys, the Humming One: SPAM Shadow common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Moxilys, the Humming One S View the full card
+Moxilys, the Humming One
+2 Doubleshadow
+1 Regenair
+900/900
+9
+Standard
+Moxilys, the Humming One
+2 Doubleshadow
+1 Regenair
+900/900
+9
+Elemental
+Moxilys, the Humming One
+2 Doubleshadow
+1 Regenair
+900/900
+9
+FA
+Moxilys, the Humming One
+2 Doubleshadow
+1 Regenair
+900/900
+9
+## Moxilys, the Humming One
+S Shadow · Common · Standard
+900 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+- Talent 2 Life-8 The card's HP and max HP are doubled at the start of turn 8
+Recommended
+- Talent 3 Magic Coin Start the game with (+2) Luck
+Three ability slots
+- Doubleshadow ability · Cooldown 2 Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)
+2
+- Regenair ability · Cooldown 1 Heal 10 Nature Random X4
+1
+- Free slot Open to a shop Tox
+Illustration by Nao
+Full card details
+Illustration by Nao
+Shadow Common #177
+# Moxilys, the Humming One
+Attack Support Defense
+900 Health points
+9 Spamtons / turn
+#1 Rank / 127
+S No talent · #1
+Attack
+88
+Generation
+57
+Defense
+99
+Support
+87
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Resilience 2 Life-8 3 Magic Coin
+Build with this card 1 deck
+Share
+### Abilities
+#### Doubleshadow
+2 turns
+Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)
+Accuracy 100% Critical 1%
+#### Regenair
+1 turn
+Heal 10 Nature Random X4
+Accuracy 100% Critical 1%
+### Talents
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+#### Life-8
+Recommended
+The card's HP and max HP are doubled at the start of turn 8
+Δ 339.3 · Theoretical score
+#### Magic Coin
+Start the game with (+2) Luck
+Δ 4 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+B Intermediate
+Aggro / burst ·
+### Apprentice of Death + Codex of Ancient Woes
+78.1 % Relative index 6 turns Estimated elimination 30 / turn Spamtons
+### Resistances
+10% Fire
+9% Water
+8% Earth
+7% Nature
+6% Shadow
+5% Light
+Creature · Azeel
+### Beyond the card
+The woods of Azeel stretch northwest of Vaeloria and are home to non-aggressive creatures whose sole purpose seems to be frightening visitors. Bouha has therefore become a tourist destination famed for its tests of courage. These trials are staged by the Forest Accomplices, the most imposing of whom is the Alphilan Moxilys. Each visitor follows a personalized route through the woods. No one knows why the service is free, a secret concealed behind wordless humming. Moxilys is an emblematic figure in the village of Alween and accompanies every brave challenger with a song.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

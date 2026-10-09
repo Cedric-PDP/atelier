@@ -1,0 +1,66 @@
+{
+ "decks": 88,
+ "maxAbsDiff": {
+  "evaluate": 0,
+  "Z": 0,
+  "loopBase": 0,
+  "loopDps15": 0,
+  "loopDps2": 0,
+  "loopVsZvsEval": 0,
+  "emptyVsOff": 0,
+  "check121_s1": 0,
+  "check121_x15": 0,
+  "check121_x2": 0
+ },
+ "dpsRestored": [
+  true,
+  true
+ ],
+ "crosscheckT1": {
+  "n": 72,
+  "within0_5": 44,
+  "within5": 55,
+  "maxAbs": 867.4,
+  "largest": [
+   {
+    "deck": "dc2",
+    "card": "Chimère Brasse-chair",
+    "deadCard": 4784.8,
+    "absorbT1": 5652.2,
+    "diff": 867.4
+   },
+   {
+    "deck": "dc5",
+    "card": "Chimère Brasse-chair",
+    "deadCard": 5955.4,
+    "absorbT1": 6805.7,
+    "diff": 850.3
+   },
+   {
+    "deck": "dc1",
+    "card": "Keria",
+    "deadCard": 5696.9,
+    "absorbT1": 6412,
+    "diff": 715.1
+   },
+   {
+    "deck": "dc5",
+    "card": "Esprit Nature",
+    "deadCard": 5696.9,
+    "absorbT1": 6412,
+    "diff": 715.1
+   },
+   {
+    "deck": "dc2",
+    "card": "Keria",
+    "deadCard": 5799.1,
+    "absorbT1": 6508.6,
+    "diff": 709.5
+   }
+  ]
+ },
+ "wallMs": {
+  "orig": 34250,
+  "stress": 34938
+ }
+}

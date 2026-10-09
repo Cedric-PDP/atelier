@@ -1,0 +1,143 @@
+Félin Errant : carte SPAM Ombre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Félin Errant B Voir la carte en grand
+Félin Errant
+2 Visée offensive
+1 Bond-rapide
+Cœur vital
+550/550
+5
+Standard
+Félin Errant
+2 Visée offensive
+1 Bond-rapide
+Cœur vital
+550/550
+5
+Élémentaire
+Félin Errant
+2 Visée offensive
+1 Bond-rapide
+Cœur vital
+550/550
+5
+FA
+Félin Errant
+2 Visée offensive
+1 Bond-rapide
+Cœur vital
+550/550
+5
+## Félin Errant
+B Ombre · Commune · Standard
+550 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 À la caisse Au début de la partie, gagnez (+25) Spamton.
+- Talent 2 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+Conseillé
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Trois champs de compétence
+- Visée offensive compétence · Recharge 2 Attaque 15 Ombre
+Éternité en cas de coup critique
+2
+- Bond-rapide compétence · Recharge 1 Attaque 5 Nature
+Bonus Nature (+1)
+Précision et Critique (+2%) pour le lanceur
+1
+- Cœur vital tox · Commune Cette carte augmente ses PV max de 15 chaque tour
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Ombre Commune #021
+# Félin Errant
+Polyvalent
+550 Points de vie
+5 Spamtons / tour
+#61 Classement / 127
+C Sans talent · #67
+Attaque
+38
+Génération
+68
+Défense
+39
+Soutien
+1
+Contrôle
+88
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 À la caisse 2 Roulette 3 Évolution
+Jouer cette carte
+Partager
+### Compétences
+#### Visée offensive
+2 tours
+Attaque 15 Ombre
+Éternité en cas de coup critique
+Précision 100% Critique 50%
+#### Bond-rapide
+1 tour
+Attaque 5 Nature
+Bonus Nature (+1)
+Précision et Critique (+2%) pour le lanceur
+Précision 100% Critique 1%
+### Tox de départ
+#### Cœur vital
+Commune
+Cette carte augmente ses PV max de 15 chaque tour
+### Talents
+#### À la caisse
+Au début de la partie, gagnez (+25) Spamton.
+Δ 7,5 · Score théorique
+#### Roulette
+Conseillé
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 48 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 15,4 · Score théorique
+### Résistances
+8% Feu
+39% Eau
+6% Terre
+7% Nature
+7% Ombre
+7% Lumière
+Anthropomorphe · Emeldarion
+### Derrière la carte
+La capitale économique d’Emeldarion, Abondance, est aussi riche en ressources naturelles qu’en ressources culturelles. On peut y observer toute la diversité de sa population. Choisir de vivre dans cette ville segmentée n’est cependant pas aisé. Souvent mal informés, ses habitants finissent par chercher de l’aide. La zone est contrôlée par plusieurs entreprises, dont les plus prospères siègent au conseil qui dirige la ville. Des clans comme le Félin Errant se forment dans l’espoir d’accéder au pouvoir. Celui-ci accueille les Anthropomorphes, les informe et les loge.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

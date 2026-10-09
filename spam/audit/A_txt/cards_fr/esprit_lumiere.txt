@@ -1,0 +1,136 @@
+Esprit Lumière : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Esprit Lumière D Voir la carte en grand
+Esprit Lumière
+1 Souffle de lumière
+1 Écran
+500/500
+10
+Standard
+Esprit Lumière
+1 Souffle de lumière
+1 Écran
+500/500
+10
+Élémentaire
+Esprit Lumière
+1 Souffle de lumière
+1 Écran
+500/500
+10
+FA
+Esprit Lumière
+1 Souffle de lumière
+1 Écran
+500/500
+10
+## Esprit Lumière
+D Lumière · Commune · Standard
+500 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur LUMIÈRE Commence la partie avec le passif Cœur de lumière
+- Talent 2 Terrain sombre Bonus (+7) Ombre.
+Conseillé
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Trois champs de compétence
+- Souffle de lumière compétence · Recharge 1 Attaque 10 Lumière
+Bonus Lumière (+1)
+1
+- Écran compétence · Recharge 1 Bonus Lumière (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Lumière Commune #006
+# Esprit Lumière
+Polyvalent
+500 Points de vie
+10 Spamtons / tour
+#104 Classement / 127
+C Sans talent · #94
+Attaque
+26
+Génération
+74
+Défense
+9
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur LUMIÈRE 2 Terrain sombre 3 Cavalerie
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Souffle de lumière
+1 tour
+Attaque 10 Lumière
+Bonus Lumière (+1)
+Précision 100% Critique 1%
+#### Écran
+1 tour
+Bonus Lumière (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur LUMIÈRE
+Commence la partie avec le passif Cœur de lumière
+Δ 125,2 · Score théorique
+#### Terrain sombre
+Conseillé
+Bonus (+7) Ombre.
+Δ 447,9 · Score théorique
+#### Cavalerie
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 271,8 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Intermédiaire
+Rampe élémentaire ·
+### Spectre Canin + Esprit Lumière
+35,3 % Indice relatif 9 tours Élimination estimée 29 / tour Spamtons
+### Résistances
+11% Feu
+9% Eau
+7% Terre
+5% Nature
+3% Ombre
+1% Lumière
+Esprit · Aelther
+### Derrière la carte
+Alors que le continent unique vient de se fracturer, l’Esprit de la Lumière passe des journées entières à guider les pèlerins jusqu’au Mont Céleste d’Aelther. Sa sociabilité en fait une parfaite mascotte. Avant la grande ascension, sur les sentiers et dans les villages d’Okaemi, les pèlerins sont toujours ravis de prendre soin de lui. On le voit parfois intimider ceux qui enfreignent les règles du continent.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

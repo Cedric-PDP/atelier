@@ -1,0 +1,145 @@
+Lisa, la Dragonnière : carte SPAM Nature commune, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Lisa, la Dragonnière S Voir la carte en grand
+Lisa, la Dragonnière
+2 Courant aléatoire
+Disparition
+800/800
+7
+Standard
+Lisa, la Dragonnière
+2 Courant aléatoire
+Disparition
+800/800
+7
+Élémentaire
+Lisa, la Dragonnière
+2 Courant aléatoire
+Disparition
+800/800
+7
+FA
+Lisa, la Dragonnière
+2 Courant aléatoire
+Disparition
+800/800
+7
+## Lisa, la Dragonnière
+S Nature · Commune · Standard
+800 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+- Talent 2 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+- Talent 3 AOE Rare Commence la partie avec le passif "AoE"
+Conseillé
+Trois champs de compétence
+- Courant aléatoire compétence · Recharge 2 Cible aléatoirement une carte adverse
+Attaque [30 à 50] Nature
+Bonus Nature (+2)
+2
+- Disparition tox · Légendaire Supprime le dernier passif de la cible
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par SAN
+Fiche complète
+Illustration par SAN
+Nature Commune #056
+# Lisa, la Dragonnière
+Attaque
+800 Points de vie
+7 Spamtons / tour
+#4 Classement / 127
+S Sans talent · #9
+Attaque
+90
+Génération
+57
+Défense
+52
+Soutien
+1
+Contrôle
+90
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Erreur Croissante 2 Transition 3 AOE Rare
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Courant aléatoire
+2 tours
+Cible aléatoirement une carte adverse
+Attaque [30 à 50] Nature
+Bonus Nature (+2)
+Précision 100% Critique 1%
+### Tox de départ
+#### Disparition
+Légendaire
+Supprime le dernier passif de la cible
+### Talents
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 14,4 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+#### AOE Rare
+Conseillé
+Commence la partie avec le passif "AoE"
+Δ 377,9 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Rampe élémentaire ·
+### Lisa + Lame de la forêt
+55 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Dragon Ciel + L'Épine d'Amour
+54,6 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+C Accessible
+Midrange ·
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+52,3 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Créature · Nordvinter
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Dragheïr, les bas-fonds voient de nombreux orphelins de guerre lutter pour survivre. Cette atroce méritocratie militaire, imposée dès le plus jeune âge, façonna Lisa. Enfant, elle fit preuve d’aptitudes au combat sans égales et d’une parfaite maîtrise de la langue dhöggeïr. Impressionnée par ses prouesses, une famille noble, celle de Pyra, décida de l’adopter. Ses études furent financées, et elle devint présidente du conseil de l’académie militaire.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+A # 195 Nature
+Épique · Génération
+### Gabriel
+1000 PV
+A # 029 Nature
+Rare · Génération
+### Princesse Meridia
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

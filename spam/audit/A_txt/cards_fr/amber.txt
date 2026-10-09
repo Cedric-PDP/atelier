@@ -1,0 +1,144 @@
+Amber : carte SPAM Feu rare, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Amber A Voir la carte en grand
+Amber
+3 Feu humide
+3 Eau-brûlante
+750/750
+10
+Standard
+Amber
+3 Feu humide
+3 Eau-brûlante
+750/750
+10
+Élémentaire
+Amber
+3 Feu humide
+3 Eau-brûlante
+750/750
+10
+FA
+Amber
+3 Feu humide
+3 Eau-brûlante
+750/750
+10
+## Amber
+A Feu · Rare · Standard
+750 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+Conseillé
+- Talent 2 Inversement Commence la partie avec le passif "Inversement"
+- Talent 3 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+Trois champs de compétence
+- Feu humide compétence · Recharge 3 Attaque 10 Feu
+Attaque 20 Eau
+Bonus Eau (+4)
+3
+- Eau-brûlante compétence · Recharge 3 Attaque 10 Eau
+Attaque 20 Feu
+Bonus Feu (+4)
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Feu Rare #025
+# Amber
+Génération
+750 Points de vie
+10 Spamtons / tour
+#27 Classement / 127
+B Sans talent · #43
+Attaque
+55
+Génération
+87
+Défense
+43
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Roulette 2 Inversement 3 Blindage F/E
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Feu humide
+3 tours
+Attaque 10 Feu
+Attaque 20 Eau
+Bonus Eau (+4)
+Précision 100% Critique 1%
+#### Eau-brûlante
+3 tours
+Attaque 10 Eau
+Attaque 20 Feu
+Bonus Feu (+4)
+Précision 100% Critique 1%
+### Talents
+#### Roulette
+Conseillé
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 87,5 · Score théorique
+#### Inversement
+Commence la partie avec le passif "Inversement"
+Δ -414,2 · Score théorique
+#### Blindage F/E
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 29,1 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Collection avancée
+Midrange ·
+### Épine Médusine + Le compagnon des esprits
+51,7 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+### Résistances
+13% Feu
+13% Eau
+7% Terre
+7% Nature
+7% Ombre
+7% Lumière
+Art · Nordvinter
+### Derrière la carte
+La grande cité-forteresse militaire de Dragheïr est à la fois un barrage entre l’océan et la Mer Embrasée, un lieu d’échange entre Eltheriens et Dhöggeïrs, et une ville riche en symboles, dotée d’une noble culture martiale. Amber est l’un de ces symboles : une figure guerrière féminine qui maîtrise l’Eau et le Feu et incarne l’alliance entre Hadeïr et Nordvinter. La légende raconte qu’un jour, deux héros que tout oppose libéreront Hadeïr des flammes. Ils purifieront le Mont Vulcain et délivreront la mère des Dhöggeïrs. Amber est une figure charismatique et combative.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+C # 027 Eau
+Rare · Polyvalent
+### Hippocampe Nimbé
+900 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

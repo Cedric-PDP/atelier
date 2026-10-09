@@ -1,0 +1,161 @@
+Guerrier des Neiges : carte SPAM Terre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Guerrier des Neiges B Voir la carte en grand
+Guerrier des Neiges
+3 Tranche-sol
+3 Multiboost
+600/600
+7
+Standard
+Guerrier des Neiges
+3 Tranche-sol
+3 Multiboost
+600/600
+7
+Élémentaire
+Guerrier des Neiges
+3 Tranche-sol
+3 Multiboost
+600/600
+7
+FA
+Guerrier des Neiges
+3 Tranche-sol
+3 Multiboost
+600/600
+7
+## Guerrier des Neiges
+B Terre · Commune · Standard
+600 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Bombe-8 Applique le passif "Bomba" au tour 8
+Conseillé
+- Talent 2 Chance Vitale Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+- Talent 3 Brut Commence la partie avec le passif "Brut"
+Trois champs de compétence
+- Tranche-sol compétence · Recharge 3 Attaque 30 Terre
+Gel
+3
+- Multiboost compétence · Recharge 3 Bonus de chaque élément (+3)
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Terre Commune #059
+# Guerrier des Neiges
+Contrôle
+600 Points de vie
+7 Spamtons / tour
+#47 Classement / 127
+B Sans talent · #38
+Attaque
+53
+Génération
+54
+Défense
+26
+Soutien
+1
+Contrôle
+94
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Bombe-8 2 Chance Vitale 3 Brut
+Jouer cette carte 10 decks
+Partager
+### Compétences
+#### Tranche-sol
+3 tours
+Attaque 30 Terre
+Gel
+Précision 100% Critique 25%
+#### Multiboost
+3 tours
+Bonus de chaque élément (+3)
+Précision 100% Critique 0%
+### Talents
+#### Bombe-8
+Conseillé
+Applique le passif "Bomba" au tour 8
+Δ 376,5 · Score théorique
+#### Chance Vitale
+Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+Δ 18,8 · Score théorique
+#### Brut
+Commence la partie avec le passif "Brut"
+Δ 11 · Score théorique
+## Ses meilleurs decks
+10 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Zombie Floral + Souverain des Chutes d'Éther
+59 % Indice relatif 8 tours Élimination estimée 23 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Bleu-mange-cailloux + Rob l'Aventurier
+48,9 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Croqueur de Fruits Verdoyant + Roi Terre
+44 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+D Accessible
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+42,8 % Indice relatif 10 tours Élimination estimée 29 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Aldrin & Gorakar + L'Épine d'Amour
+42 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+D Accessible
+Midrange ·
+### Apprentie de la Mort + L'Inventeur
+39,5 % Indice relatif 10,9 tours Élimination estimée 28 / tour Spamtons
+Les autres decks (4)
+- D Apprentie de la Mort + L'Inventeur avec Guerrier des Neiges · Aidan Accessible · 37,8%
+- D Apprentie de la Mort + Guerrier des Neiges avec Ignea · Squall Collection avancée · 36,2%
+- D Pyro + Apprentie de la Mort avec Guerrier des Neiges · Prisonnière de la Machine Accessible · 35,3%
+- D Commando Gerz + Protecteur des ruines avec Guerrier des Neiges · Aidan Accessible · 33%
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Eltherien · Nordvinter
+### Derrière la carte
+À la disparition du Roi du Feu, les peuples de Nordvinter se sont fortement militarisés afin de soutenir Hadeïr. Les Guerriers des Neiges tirent parti des conditions extrêmes — le froid du continent et la chaleur de la mer intérieure — pour se forger un physique de combat sans égal parmi la population eltherienne. Ils sont la fierté de Dragheïr et les dignes héritiers de l’ancienne meute du Roi de la Lumière.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+B # 219 Ombre
+Commune · Attaque
+### Catixy
+600 PV
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,141 @@
+Protector of Ruins: SPAM Earth common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Protector of Ruins B View the full card
+Protector of Ruins
+1 Roly-Poly
+700/700
+6
+Standard
+Protector of Ruins
+1 Roly-Poly
+700/700
+6
+Elemental
+Protector of Ruins
+1 Roly-Poly
+700/700
+6
+FA
+Protector of Ruins
+1 Roly-Poly
+700/700
+6
+## Protector of Ruins
+B Earth · Common · Standard
+700 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 F/W-Shield Fire resistance (+25%)
+Water resistance (+25%)
+Recommended
+- Talent 2 F/E-Shield Fire resistance (+25%)
+Earth resistance (+25%)
+- Talent 3 L-Shield Shadow resistance (+25%)
+Light resistance (+25%)
+Three ability slots
+- Roly-Poly ability · Cooldown 1 Deal 15 Earth damage
+Base damage increases by 5
+1
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Saki
+Full card details
+Illustration by Saki
+Earth Common #060
+# Protector of Ruins
+Attack
+700 Health points
+6 Spamtons / turn
+#54 Rank / 127
+B No talent · #51
+Attack
+87
+Generation
+0
+Defense
+53
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 F/W-Shield 2 F/E-Shield 3 L-Shield
+Build with this card 3 decks
+Share
+### Abilities
+#### Roly-Poly
+1 turn
+Deal 15 Earth damage
+Base damage increases by 5
+Accuracy 100% Critical 1%
+### Talents
+#### F/W-Shield
+Recommended
+Fire resistance (+25%)
+Water resistance (+25%)
+Δ 51.4 · Theoretical score
+#### F/E-Shield
+Fire resistance (+25%)
+Earth resistance (+25%)
+Δ 51.4 · Theoretical score
+#### L-Shield
+Shadow resistance (+25%)
+Light resistance (+25%)
+Δ 51.4 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+D Advanced collection
+Midrange ·
+### Earth King + Blue-Stone-Eater
+37.1 % Relative index 10 turns Estimated elimination 26 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Commando Gerz + Zayd
+33.6 % Relative index 11 turns Estimated elimination 17 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Commando Gerz + Protector of Ruins
+33 % Relative index 10.9 turns Estimated elimination 25 / turn Spamtons
+### Resistances
+15% Fire
+10% Water
+15% Earth
+15% Nature
+12% Shadow
+12% Light
+Artificial Creature · Shal'Zaar
+### Beyond the card
+Abyssal monsters have an indescribably horrific form. These demonic creatures were encountered during the Oniyx expedition — a horrifying venture into the depths of the temple of Zaar'Phahl in Shal'Zaar. Once the group's descent into the Abyss was over, the survivors hurried to seal off the temple's excavation site. A massive fortification was set up so no Abyssal could get out. An artificial Oniyx creature was built alongside it — a powerful, immense creation that now guards nothing but ruins.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

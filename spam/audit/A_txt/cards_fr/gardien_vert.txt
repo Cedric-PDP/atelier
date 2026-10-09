@@ -1,0 +1,152 @@
+Gardien Vert : carte SPAM Lumière rare, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Gardien Vert A Voir la carte en grand
+Gardien Vert
+5 Rayonnement
+5 Soin multiple
+800/800
+10
+Standard
+Gardien Vert
+5 Rayonnement
+5 Soin multiple
+800/800
+10
+Élémentaire
+Gardien Vert
+5 Rayonnement
+5 Soin multiple
+800/800
+10
+FA
+Gardien Vert
+5 Rayonnement
+5 Soin multiple
+800/800
+10
+## Gardien Vert
+A Lumière · Rare · Standard
+800 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 13e mois La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+- Talent 2 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+- Talent 3 AOE Commence la partie avec le passif "AoE"
+Conseillé
+Trois champs de compétence
+- Rayonnement compétence · Recharge 5 Attaque 80 Lumière
+Les temps de recharge des compétences sont remis au maximum
+5
+- Soin multiple compétence · Recharge 5 Soigne 40 Lumière à toutes les cartes alliées
+5
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Lumière Rare #078
+# Gardien Vert
+Contrôle
+800 Points de vie
+10 Spamtons / tour
+#16 Classement / 127
+A Sans talent · #27
+Attaque
+61
+Génération
+0
+Défense
+61
+Soutien
+83
+Contrôle
+97
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 13e mois 2 Cœur d’acier 3 AOE
+Jouer cette carte 5 decks
+Partager
+### Compétences
+#### Rayonnement
+5 tours
+Attaque 80 Lumière
+Les temps de recharge des compétences sont remis au maximum
+Précision 100% Critique 1%
+#### Soin multiple
+5 tours
+Soigne 40 Lumière à toutes les cartes alliées
+Précision 100% Critique 1%
+### Talents
+#### 13e mois
+La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+Δ 30 · Score théorique
+#### Cœur d’acier
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 18,7 · Score théorique
+#### AOE
+Conseillé
+Commence la partie avec le passif "AoE"
+Δ 100,9 · Score théorique
+## Ses meilleurs decks
+5 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Aleera Mange-Cauchemars + Catixy
+67,1 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Oisillons de Midas + Mélodie des Divinités
+41,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Commando Gerz + L'Épine d'Amour
+40,7 % Indice relatif 10 tours Élimination estimée 36 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+38,2 % Indice relatif 11 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Rongeur Nuageux + Codex des Sorts Lumineux
+32 % Indice relatif 10 tours Élimination estimée 37 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Créature · Lumethia
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Le Gardien Vert est un lézard profondément attaché à son arbre de vie. Jeune, il quitte le nid pour choisir un arbuste qu’il protégera toute sa vie. Il se nourrit de sa sève, ainsi que des plantes et des insectes envahissants. Il aide l’arbre à bourgeonner et à étendre ses racines. Originaire de Lumethia, le Gardien Vert a également été introduit en Vaeloria et en Emeldarion.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 198 Lumière
+Épique · Génération
+### Codex des Sorts Lumineux
+1000 PV
+B # 252 Lumière
+Épique · Génération
+### Roi Lumière
+1000 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

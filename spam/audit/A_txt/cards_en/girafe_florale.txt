@@ -1,0 +1,137 @@
+Floral Giraffe: SPAM Nature rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Floral Giraffe D View the full card
+Floral Giraffe
+2 Sylvan Rebirth
+Punching Bag
+750/750
+7
+Standard
+Floral Giraffe
+2 Sylvan Rebirth
+Punching Bag
+750/750
+7
+Elemental
+Floral Giraffe
+2 Sylvan Rebirth
+Punching Bag
+750/750
+7
+FA
+Floral Giraffe
+2 Sylvan Rebirth
+Punching Bag
+750/750
+7
+## Floral Giraffe
+D Nature · Rare · Standard
+750 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Multi Start Gain (+3) in each element.
+Recommended
+- Talent 2 Cavalry Increases the max HP of all other allied cards by (+150)
+- Talent 3 Corrosion Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Three ability slots
+- Sylvan Rebirth ability · Cooldown 2 Apply Taunt
+Accuracy and Critical (+5%) on all allied cards
+2
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Free slot Open to a shop Tox
+Illustration by Saki
+Full card details
+Illustration by Saki
+Nature Rare #072
+# Floral Giraffe
+Support
+750 Health points
+7 Spamtons / turn
+#112 Rank / 127
+D No talent · #104
+Attack
+0
+Generation
+52
+Defense
+41
+Support
+89
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Multi Start 2 Cavalry 3 Corrosion
+Build with this card 2 decks
+Share
+### Abilities
+#### Sylvan Rebirth
+2 turns
+Apply Taunt
+Accuracy and Critical (+5%) on all allied cards
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Multi Start
+Recommended
+Gain (+3) in each element.
+Δ 375.9 · Theoretical score
+#### Cavalry
+Increases the max HP of all other allied cards by (+150)
+Δ 231.3 · Theoretical score
+#### Corrosion
+Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Δ 112.7 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Midrange ·
+### Catimimi + Floral Giraffe
+57.2 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+The other decks (1)
+- D Catimimi + Floral Giraffe with Floral Zombie · Astral Healer of the Woods Intermediate · 44.7%
+### Resistances
+8% Fire
+9% Water
+7% Earth
+7% Nature
+8% Shadow
+8% Light
+Creature · Vaeloria
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Floral Giraffe is the pilgrims' favorite mount. They can grow crops on their Giraffe's coat within a few days. In Vaeloria, this noble animal provides a mobile vegetable garden available in all circumstances — any family worthy of the name owns its own Floral Giraffe.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

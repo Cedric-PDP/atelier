@@ -1,0 +1,141 @@
+King of the Blazing Flames: SPAM Fire epic card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards King of the Blazing Flames C View the full card
+King of the Blazing Flames
+2 Scorching Bite
+Phoenix
+900/900
+7
+Standard
+King of the Blazing Flames
+2 Scorching Bite
+Phoenix
+900/900
+7
+Elemental
+King of the Blazing Flames
+2 Scorching Bite
+Phoenix
+900/900
+7
+FA
+King of the Blazing Flames
+2 Scorching Bite
+Phoenix
+900/900
+7
+## King of the Blazing Flames
+C Fire · Epic · Standard
+900 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Counter Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Crit Sphere Increases this card's critical chance by (+2%) each turn
+Recommended
+Three ability slots
+- Scorching Bite ability · Cooldown 2 Deal 15 Fire damage
+Deal 15 Earth damage
+Critical of all the caster's cards (+7%)
+2
+- Phoenix tox · Common When destroyed, this card returns to life with 25% of its max HP.
+Single use
+- Free slot Open to a shop Tox
+Illustration by Krackdur
+Full card details
+Illustration by Krackdur
+Fire Epic #037
+# King of the Blazing Flames
+Support
+900 Health points
+7 Spamtons / turn
+#81 Rank / 127
+C No talent · #81
+Attack
+40
+Generation
+0
+Defense
+72
+Support
+87
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Counter 2 Evolution 3 Crit Sphere
+Build with this card 1 deck
+Share
+### Abilities
+#### Scorching Bite
+2 turns
+Deal 15 Fire damage
+Deal 15 Earth damage
+Critical of all the caster's cards (+7%)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Phoenix
+Common
+When destroyed, this card returns to life with 25% of its max HP.
+Single use
+### Talents
+#### Counter
+Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.
+Δ 0 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Crit Sphere
+Recommended
+Increases this card's critical chance by (+2%) each turn
+Δ 31 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+C Intermediate
+Midrange ·
+### Mistress of Tints + Apprentice of Death
+56.7 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+### Resistances
+20% Fire
+21% Water
+19% Earth
+16% Nature
+20% Shadow
+20% Light
+Great Lion · Lumethia
+### Beyond the card
+The Drako’vish ranges stretch across northern Lumethia, forming a border with Vaeloria, land of the Great Lions. Faced with a powerful wave of Fire corruption, the King of the Blazing Flames and his clan were forced to seek new lands. He had no choice but to move his subjects onto Aurora’s territory. His body, corrupted by Fire, took on the appearance of an Eltherian. Aurora denied him any land, igniting a violent war. The two clans fought for days in the savanna of northern Lumethia. The conflict ended with the tragic death of Sylvan, a friend to both sides.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

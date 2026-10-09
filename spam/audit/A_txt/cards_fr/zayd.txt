@@ -1,0 +1,160 @@
+Zayd : carte SPAM Terre légendaire, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Zayd D Voir la carte en grand
+Zayd
+7 Fin du monde
+3 Forteresse
+Revanche
+600/600
+1
+Standard
+Zayd
+7 Fin du monde
+3 Forteresse
+Revanche
+600/600
+1
+Élémentaire
+Zayd
+7 Fin du monde
+3 Forteresse
+Revanche
+600/600
+1
+FA
+Zayd
+7 Fin du monde
+3 Forteresse
+Revanche
+600/600
+1
+## Zayd
+D Terre · Légendaire · Standard
+600 PV 1 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Conseillé
+- Talent 2 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+- Talent 3 Critique Bonus critique (+10 %)
+Trois champs de compétence
+- Fin du monde compétence · Recharge 7 Cible aléatoirement les cartes adverses
+Attaque 50 Terre
+Attaque 50 Nature
+Attaque 50 Feu
+Attaque 50 Lumière
+Attaque 50 Ombre
+Attaque 50 Eau
+7
+- Forteresse compétence · Recharge 3 Applique Provocation
+3
+- Revanche tox · Rare Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire
+Illustration par Daerun
+Fiche complète
+Illustration par Daerun
+Terre Légendaire #094
+# Zayd
+Utilitaire
+600 Points de vie
+1 Spamtons / tour
+#122 Classement / 127
+D Sans talent · #122
+Attaque
+32
+Génération
+0
+Défense
+30
+Soutien
+1
+Contrôle
+0
+Économie
+0
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage Partagé 2 Cœur d’acier 3 Critique
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Fin du monde
+7 tours
+Cible aléatoirement les cartes adverses
+Attaque 50 Terre
+Attaque 50 Nature
+Attaque 50 Feu
+Attaque 50 Lumière
+Attaque 50 Ombre
+Attaque 50 Eau
+Précision 100% Critique 1%
+#### Forteresse
+3 tours
+Applique Provocation
+Précision 100% Critique 0%
+### Tox de départ
+#### Revanche
+Rare
+Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire
+### Talents
+#### Blindage Partagé
+Conseillé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 127 · Score théorique
+#### Cœur d’acier
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 11,8 · Score théorique
+#### Critique
+Bonus critique (+10 %)
+Δ 3 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Rampe élémentaire ·
+### Maître Amphibian + Rob l'Aventurier
+50,7 % Indice relatif 8 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Commando Gerz + Zayd
+44,4 % Indice relatif 9 tours Élimination estimée 19 / tour Spamtons
+Les autres decks (1)
+- D Commando Gerz + Zayd avec Protecteur des ruines · Sanglier Doré Collection avancée · 33,6%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Eltherien · Shal'Zaar
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Shal’Zaar, au milieu des dunes, les tribus de chasseurs préparent leurs traques. Pour défendre les enfants et les non-combattants, les adolescents les plus doués sont entraînés jour et nuit. Parmi eux se trouve Zayd, un guerrier dont la force défie les lois de la physique. Le jeune homme peut multiplier sa densité musculaire, mais cette aptitude lui coûte énormément d’énergie et l’oblige à manger en grande quantité. Il est donc chargé de préparer lui-même ses repas. Lorsqu’il atteignit l’âge adulte, une figure importante du désert vint le chercher pour en faire son disciple.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 032 Terre
+Rare · Polyvalent
+### Maîtresse des Teintes
+600 PV
+B # 265 Éther
+Divine · Génération
+### Aeltheria, Mère Primordiale
+700 PV
+S # 188 Terre
+Rare · Génération
+### Commando Gerz
+1200 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

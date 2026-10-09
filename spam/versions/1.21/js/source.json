@@ -1,0 +1,12 @@
+{
+ "version": "1.21",
+ "engineHash": "36e2c03d5b7bf4a1",
+ "model": "/data/model-edeb0ebc315cfd15.json",
+ "simulation": "/_astro/simulation-KlJhEEqL.js",
+ "fetched": "2026-10-09T15:03:56.533Z",
+ "noTalent": {
+  "best": 15327.5,
+  "baseline": 4865
+ },
+ "cards": 127
+}

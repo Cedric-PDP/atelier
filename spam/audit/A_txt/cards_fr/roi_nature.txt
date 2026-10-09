@@ -1,0 +1,154 @@
+Roi Nature : carte SPAM Nature épique, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Roi Nature B Voir la carte en grand
+Roi Nature
+5 Lame-N
+5 Choix Floral
+Sac de frappe
+1000/1000
+10
+Standard
+Roi Nature
+5 Lame-N
+5 Choix Floral
+Sac de frappe
+1000/1000
+10
+Élémentaire
+Roi Nature
+5 Lame-N
+5 Choix Floral
+Sac de frappe
+1000/1000
+10
+FA
+Roi Nature
+5 Lame-N
+5 Choix Floral
+Sac de frappe
+1000/1000
+10
+## Roi Nature
+B Nature · Épique · Standard
+1 000 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Conseillé
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Trois champs de compétence
+- Lame-N compétence · Recharge 5 Attaque [40 à 60] Nature
+5
+- Choix Floral compétence · Recharge 5 Choix
+Bonus Nature [1 à 20]
+---------- ou ----------
+Bonus Nature [5 à 15]
+---------- ou ----------
+Bonus Nature [8 à 12]
+5
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Nature Épique #249
+# Roi Nature
+Génération Défense
+1 000 Points de vie
+10 Spamtons / tour
+#31 Classement / 127
+A Sans talent · #22
+Attaque
+45
+Génération
+82
+Défense
+76
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Focus 2 Évolution 3 Reset ultime
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Lame-N
+5 tours
+Attaque [40 à 60] Nature
+Précision 100% Critique 1%
+#### Choix Floral
+5 tours
+Choix
+Bonus Nature [1 à 20]
+---------- ou ----------
+Bonus Nature [5 à 15]
+---------- ou ----------
+Bonus Nature [8 à 12]
+Précision 100% Critique 0%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+### Talents
+#### Focus
+Conseillé
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 349 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0 · Score théorique
+#### Reset ultime
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 17,3 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Collection avancée
+Rampe élémentaire ·
+### Zombie Floral + Gabriel
+35,4 % Indice relatif 10,9 tours Élimination estimée 29 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Pixarch · Vaeloria
+### Derrière la carte
+Être Roi d’un élément est un titre honorifique qui implique une immense responsabilité dans le maintien de l’équilibre élémentaire. Les Rois firent équiper leurs héritiers d’une arme runique. Le Roi de la Nature fut toutefois le seul à n’avoir aucun héritier. Ce Pixarch, dont les ailes avaient été mystérieusement arrachées, se lia lui-même à l’arme. Selon l’interprétation du Codex Primordial donnée par Faerylia, ces armes devaient permettre de sceller les Divinités et de conquérir la liberté. Il régna sur Vaeloria pendant des siècles. Lorsque la maladie de Fanure apparut, il donna sa vie pour créer Meridia.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+C # 045 Nature
+Légendaire · Attaque
+### Aldrin & Gorakar
+700 PV
+S # 174 Nature
+Commune · Attaque
+### Zombie Floral
+850 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

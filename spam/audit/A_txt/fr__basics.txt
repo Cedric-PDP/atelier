@@ -1,0 +1,137 @@
+Comment jouer à SPAM : règles, mécaniques et fondamentaux
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Fondamentaux Fondamentaux
+# Les règles, sans détour.
+Comment fonctionne SPAM : les mécaniques qui décident réellement d’une partie, et ce que les données disent de chaque carte.
+Stratégies Construire un deck
+4 règles
+## Les bases
+### Chaque point de bonus élémentaire vaut +10 % pour toute la partie
+Dégâts et soins = base × (1 + bonus × 0,1). Le bonus appartient au joueur et ne redescend jamais, sauf par un Coût : générer tôt paie sur tous les coups suivants. Un deck qui concentre un ou deux éléments transforme chaque « +1 » en gain pour trois ou quatre cartes au lieu d’une seule.
+### Ordre d’activation : génération, puis buffs, puis attaques
+Dans un même tour, lancez d’abord les compétences qui donnent des bonus (Flambée, Multiboost, Cœur…) puis les attaques : elles profitent immédiatement du nouveau multiplicateur. Même chose pour les buffs de critique, de précision et de dégâts de base.
+### Comprendre les recharges
+Une recharge de n veut dire « utilisable tous les n tours ». Le premier joueur commence avec toutes ses recharges réduites de 1, le second de 2 : en second, vos compétences à recharge 2 sont prêtes dès le tour 1. Réduisez vos recharges avec Temporalité, allongez celles de l’adversaire avec Éternité ; Purge annule un allongement.
+### Les dégâts de base comptent à chaque coup
+Un bonus de « dégâts de base (+5) » s’ajoute à chaque coup avant le multiplicateur élémentaire : une attaque en dix-huit coups de 3 points en profite dix-huit fois. Cœurs, Cimetière, Sac de frappe et One man army transforment donc les compétences à rafale en vraies menaces, bien plus qu’une frappe unique.
+4 règles
+## Au combat
+### Le critique d’équipe se cumule sans limite
+Les « Critique (+x %) sur toutes les cartes alliées » sont permanents : après quelques lancers, toute l’équipe critique presque à coup sûr, pour au moins le double des dégâts. Les compétences à multiplicateur ×3 à ×6 deviennent alors de vrais canons.
+### Résistances : visez la faille
+Les résistances réduisent les dégâts en pourcentage, élément par élément, et peuvent être négatives. Frappez une carte dans l’élément où elle est à −20 ou −50 : ce sont 20 à 50 % de dégâts gratuits. Brut ignore résistances et provocations.
+### Les éliminations déclenchent des cascades
+Reset garde l’attaque disponible après une élimination, Vengeur récupère toutes ses attaques quand une carte meurt, Cimetière augmente tous vos bonus, Vitalité des Âmes donne des PV, One man army des dégâts de base. Finissez une carte adverse basse avant de lancer vos autres attaques : tout s’enchaîne dans le même tour.
+### Les compétences à Coût consomment vos bonus
+Un « [Coût 10 FEU] » retire dix points de bonus Feu au lancer. Prévoyez des générateurs pour amorcer la pompe, et vérifiez que la compétence rapporte plus qu’elle ne coûte : un bonus passé sous zéro ne réduit pas vos dégâts, mais il faudra le remonter avant d’en profiter à nouveau.
+4 règles
+## Défense et contrôle
+### La provocation force les ciblages adverses, pas les vôtres
+Un provocateur avec beaucoup de PV protège vos générateurs fragiles. Sac de frappe donne un point d’élément par attaque subie, Renvoi rend une part des dégâts, Cœur d’acier monte les résistances à chaque coup : chaque coup encaissé devient un avantage.
+### Étourdissement et Éternité gagnent des tours entiers
+Une carte étourdie ne lance rien pendant la durée de l’effet ; Éternité allonge d’un tour toutes les recharges de la cible. Appliquez-les sur la carte adverse la plus dangereuse juste avant que sa grosse compétence ne soit prête : comptez ses recharges.
+### Gel : un tour perdu, à ne pas briser trop tôt
+Une carte gelée ne peut rien faire jusqu’à la fin du prochain tour adverse. Mais tout dégât, soin ou Tox posé sur elle brise la glace : elle encaisse quarante dégâts et redevient libre. Gelez donc une cible avec votre dernier coup du tour, pas le premier, et ne soignez pas une alliée gelée par erreur.
+### Disparition retire le dernier passif
+Les passifs sont ordonnés et Disparition supprime le dernier de la liste, souvent le Tox acheté le plus récemment. Achetez vos Tox les plus précieux en premier, ou gardez un passif de moindre valeur en dernière position. Inscrit rend insensible aux Disparitions.
+4 règles
+## Économie et boutique
+### Spamtons et boutique de Tox
+À chaque tour, vous gagnez les Spamtons de vos cartes vivantes (valeur en haut à droite) plus le numéro du tour, et chaque carte perdue en rend cinquante. La boutique s’ouvre aux tours pairs, propose trois Tox et se ferme après un achat : relancer coûte dix Spamtons, puis cinq de plus à chaque fois ; passer en rapporte dix. Petit prix rembourse le premier achat.
+### La boutique suit votre Chance
+Votre Chance monte d’un point à chaque tour, et c’est elle qui décide des raretés proposées : au tour 2 la boutique n’offre que des Tox communs, les rares arrivent vers le tour 4, les épiques vers le tour 6, les légendaires bien plus tard. Chanceur et Pièce magique avancent ce calendrier ; Tox chanceux l’ignore et égalise les quatre raretés à 25 % chacune.
+### Achetez pour la bonne carte, sur la bonne ligne
+Une carte a trois champs, compétences et Tox confondus. Un Tox se pose sur un champ libre, ou à la place d’une compétence ou d’un passif que vous sacrifiez : les fiches de deck disent quelle ligne vaut le moins. Visez les Tox qui changent la carte plutôt qu’un passif de survie sur une carte qui ne prend jamais de coups.
+### Boutique : savoir s’arrêter
+Chaque fiche de deck donne l’espérance d’une ouverture de boutique avant et après le plan conseillé. Quand elle passe sous un pour cent de score, ou quand chaque ligne restante vaut plus que ce qu’un Tox apporterait, passez : dix Spamtons valent mieux qu’un Tox inutile, qui occupe un champ et sert de cible à Disparition.
+2 règles
+## Talents
+### Les talents à condition de tour
+Souffle-8, Life-8, Bombe-8 et Immunité-8 ne font rien avant le tour 8. Sur un deck agressif ils sont inutiles ; sur un deck de contrôle ou de résistance, ce sont d’excellents plans de repli : PV doublés, immunité, ou une attaque à recharge 1 offerte.
+### Évitez le métamorphe aléatoire sur une carte clé
+Métamorphe aléatoire remplace la carte par une autre de même rareté : les cinq cents PV d’Imprudent ne valent rien si votre générateur devient une carte hors de vos éléments. Transition, qui transforme la carte à sa mort, reste en revanche une seconde vie correcte.
+Palmarès
+## Ce que disent les données
+Calculé sur les 127 cartes officielles, mis à jour à chaque version du jeu.
+### Les meilleurs générateurs élémentaires
+Bonus produits par tour, dans leurs éléments principaux.
+- Aidan Chaque élément +1,7
+- Scorch, les Lézards Ignés Feu +3 · Eau +3 · Terre +3
+- Astry Lumière +1,7 · Feu +1,2 · Eau +1,2 · Terre +1,2 · Nature +1,2 · Ombre +1,2
+- L'Épine d'Amour Terre +2 · Nature +2 · Lumière +2
+- Codex des Maux Ancestraux Ombre +5,5
+- Codex des Sorts Lumineux Lumière +5,5
+### Les plus grosses compétences
+Dégâts de base et recharge : ce sont elles qu’il faut accélérer avec Temporalité.
+- Zombie Floral Malédiction aquatique · 90 · Recharge 8
+- Aldrin & Gorakar Valse des nuages · 90 · Recharge 5
+- Ignea Incandescence · 120 · Recharge 4
+- Maîtresse des Teintes Chaos élémentaire · 90 · Recharge 3
+- Blancheur Aquatique Avaleau · 100 · Recharge 5
+- Commando Gerz Dernier plaisir · 200 · Recharge 10
+- Gardien Vert Rayonnement · 80 · Recharge 5
+- Chouette Polychrome Danse des plumes · 180 · Recharge 2
+### Les cartes à faiblesse élémentaire
+Résistances négatives : autant de dégâts gratuits pour qui frappe dans le bon élément.
+- Prisonnière de la Machine Eau -50%
+- Léo Ombre -38%
+- Lames en peine Feu -10% · Eau -10% · Terre -10%
+- Catimimi Eau -22% · Nature -22%
+- Veilleur Nocturne Lumière -21%
+- Tisseuse de Mots Eau -21%
+- Faerylia Lumière -21%
+- Paguroniyx Terre -20% · Lumière -19%
+### Les meilleures rentes en Spamtons
+Spamtons générés par tour : de quoi acheter des Tox plus tôt.
+- Ameru 15 / tour
+- Lames en peine 15 / tour
+- Dragosaure Céleste 12 / tour
+- Hibernatus 12 / tour
+- Ephial 12 / tour
+- Croqueur de Fruits Verdoyant 11 / tour
+- Shado, Fléau abyssal 11 / tour
+- Rongeur Nuageux 11 / tour
+### Les provocateurs solides
+Points de vie et résistance moyenne : ils encaissent à la place de vos générateurs.
+- Prisonnière de la Machine 1 000 PV · 13%
+- Le Transporteur Sauvage 1 000 PV · 10%
+### Les accélérateurs de recharge
+Temporalité : vos grosses compétences reviennent plus tôt.
+- Veilleur Nocturne
+- Dragonnet des Lumières
+- Verdelune
+- Neilla
+- Chouette Polychrome
+## Et ensuite ?
+Les guides détaillent la construction de deck, le tempo et les priorités Tox.
+Toutes les stratégies
+S # 177 Ombre
+Commune · Attaque
+### Moxilys, la Fredonneuse
+900 PV
+S # 122 Nature
+Commune · Attaque
+### Esprit de la Faune
+800 PV
+S # 174 Nature
+Commune · Attaque
+### Zombie Floral
+850 PV
+Ces règles sont déduites des mécaniques du jeu et des données officielles. Comprendre les scores
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

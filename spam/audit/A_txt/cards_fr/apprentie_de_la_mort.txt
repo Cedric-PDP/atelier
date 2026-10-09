@@ -1,0 +1,187 @@
+Apprentie de la Mort : carte SPAM Feu rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Apprentie de la Mort B Voir la carte en grand
+Apprentie de la Mort
+3 Brûlure Nocturne
+Cimetière
+Vengeur
+700/700
+6
+Standard
+Apprentie de la Mort
+3 Brûlure Nocturne
+Cimetière
+Vengeur
+700/700
+6
+Élémentaire
+Apprentie de la Mort
+3 Brûlure Nocturne
+Cimetière
+Vengeur
+700/700
+6
+FA
+Apprentie de la Mort
+3 Brûlure Nocturne
+Cimetière
+Vengeur
+700/700
+6
+## Apprentie de la Mort
+B Feu · Rare · Standard
+700 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Revitalisation 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+- Talent 2 Durcissement Augmente les résistances élémentaires de la carte de (+15 %).
+Conseillé
+- Talent 3 Heure Funeste Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Trois champs de compétence
+- Brûlure Nocturne compétence · Recharge 3 Cible toutes les cartes adverses
+Attaque 25 Feu et 25 Ombre
+3
+- Cimetière tox · Commune Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt
+- Vengeur tox · Épique Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Feu Rare #236
+# Apprentie de la Mort
+Attaque
+700 Points de vie
+6 Spamtons / tour
+#46 Classement / 127
+B Sans talent · #50
+Attaque
+92
+Génération
+0
+Défense
+48
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Revitalisation 2 Durcissement 3 Heure Funeste
+Jouer cette carte 30 decks
+Partager
+### Compétences
+#### Brûlure Nocturne
+3 tours
+Cible toutes les cartes adverses
+Attaque 25 Feu et 25 Ombre
+Précision 100% Critique 1%
+### Tox de départ
+#### Cimetière
+Commune
+Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt
+#### Vengeur
+Épique
+Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+### Talents
+#### Revitalisation
+5 % de chance par tour de jeu de restaurer ses PV au maximum.
+Δ 11,4 · Score théorique
+#### Durcissement
+Conseillé
+Augmente les résistances élémentaires de la carte de (+15 %).
+Δ 68,7 · Score théorique
+#### Heure Funeste
+Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+Δ 0 · Score théorique
+## Ses meilleurs decks
+30 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Intermédiaire
+Aggro / burst ·
+### Spectre Canin + Aleera Mange-Cauchemars
+92,1 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Flammes
+91,2 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+89,1 % Indice relatif 6 tours Élimination estimée 24 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Paguroniyx
+89,1 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+A Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+82,3 % Indice relatif 6 tours Élimination estimée 20 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Codex des Maux Ancestraux
+78,1 % Indice relatif 6 tours Élimination estimée 30 / tour Spamtons
+Les autres decks (24)
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Paguroniyx · Squall Intermédiaire · 88,4%
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Catixy · Paguroniyx Accessible · 88%
+- B Pyro + Scorch avec Keria · Apprentie de la Mort Intermédiaire · 73,3%
+- B Aleera Mange-Cauchemars + Apprentie de la Mort avec Souverain des Flammes · Lame de la forêt Collection avancée · 73,2%
+- B Apprentie de la Mort + Scorch avec Maîtresse des Teintes · Catimimi Intermédiaire · 73%
+- C Maîtresse des Teintes + L'Inventeur avec Souverain des Flammes · Apprentie de la Mort Collection avancée · 65,5%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Pyro · Scorch Intermédiaire · 63,3%
+- C Souverain des Flammes + Scorch avec Apprentie de la Mort · Pyro Collection avancée · 60,9%
+- C Maîtresse des Teintes + Apprentie de la Mort avec Souverain des Flammes · Squall Collection avancée · 60,5%
+- C Souverain des Flammes + Apprentie de la Mort avec Wibs l'Enflammé · Scorch Collection avancée · 58,7%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Squall · Scorch Intermédiaire · 57,7%
+- C Maîtresse des Teintes + Apprentie de la Mort avec L'Inventeur · Roi des Flammes Ardentes Intermédiaire · 56,7%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Keria · L'Inventeur Intermédiaire · 54,8%
+- C Souverain des Flammes + Wibs l'Enflammé avec Apprentie de la Mort · Keria Collection avancée · 54,6%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Faerylia · Vladislaus Collection avancée · 53,5%
+- C Maîtresse des Teintes + Apprentie de la Mort avec Roi Feu · Vladislaus Collection avancée · 50,5%
+- D Souverain des Flammes + Wibs l'Enflammé avec Apprentie de la Mort · Sorcière Pyrokinétique Collection avancée · 45,7%
+- D Apprentie de la Mort + L'Inventeur avec Guerrier des Neiges · Dragon de la Cité Infernale Accessible · 39,5%
+- D Wibs l'Enflammé + Apprentie de la Mort avec Prisonnière de la Machine · L'Inventeur Accessible · 39%
+- D Apprentie de la Mort + Astry avec L'Inventeur · Squall Intermédiaire · 38,4%
+- D Apprentie de la Mort + L'Inventeur avec Guerrier des Neiges · Aidan Accessible · 37,8%
+- D Wibs l'Enflammé + Apprentie de la Mort avec Pyro · Prisonnière de la Machine Accessible · 36,8%
+- D Apprentie de la Mort + Guerrier des Neiges avec Ignea · Squall Collection avancée · 36,2%
+- D Pyro + Apprentie de la Mort avec Guerrier des Neiges · Prisonnière de la Machine Accessible · 35,3%
+### Résistances
+7% Feu
+-18% Eau
+17% Terre
+18% Nature
+17% Ombre
+-17% Lumière
+Éternel · Abysses
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, que le cauchemar purifie. Des agents Éternels occupent les Abysses et accomplissent une mission divine de nettoyage macabre. Celle que l’on nomme la Faucheuse de cauchemars régule la surpopulation des cauchemars qui ne trouvent pas la paix intérieure, mettant un terme à leur existence lorsqu’elle menace le cycle imposé par les Divinités.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+C # 088 Ombre
+Épique · Contrôle
+### Faerylia
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

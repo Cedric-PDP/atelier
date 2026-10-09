@@ -1,0 +1,159 @@
+Cerf des Couleurs Funèbres : carte SPAM Nature rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Cerf des Couleurs Funèbres C Voir la carte en grand
+Cerf des Couleurs Funèbres
+1 Drain élémentaire
+Multiplicateur
+600/600
+5
+Standard
+Cerf des Couleurs Funèbres
+1 Drain élémentaire
+Multiplicateur
+600/600
+5
+Élémentaire
+Cerf des Couleurs Funèbres
+1 Drain élémentaire
+Multiplicateur
+600/600
+5
+FA
+Cerf des Couleurs Funèbres
+1 Drain élémentaire
+Multiplicateur
+600/600
+5
+## Cerf des Couleurs Funèbres
+C Nature · Rare · Standard
+600 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 À la caisse Au début de la partie, gagnez (+25) Spamton.
+- Talent 2 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 3 Armure des Âmes Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Trois champs de compétence
+- Drain élémentaire compétence · Recharge 1 Cible aléatoirement les cartes adverses
+Attaque 6 Terre
+Attaque 6 Nature
+Attaque 6 Feu
+Attaque 6 Eau
+Attaque 6 Lumière
+Attaque 6 Ombre
+Vampirisme
+1
+- Multiplicateur tox · Rare Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Nature Rare #137
+# Cerf des Couleurs Funèbres
+Attaque
+600 Points de vie
+5 Spamtons / tour
+#80 Classement / 127
+D Sans talent · #98
+Attaque
+76
+Génération
+0
+Défense
+46
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 À la caisse 2 Départ multi 3 Armure des Âmes
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Drain élémentaire
+1 tour
+Cible aléatoirement les cartes adverses
+Attaque 6 Terre
+Attaque 6 Nature
+Attaque 6 Feu
+Attaque 6 Eau
+Attaque 6 Lumière
+Attaque 6 Ombre
+Vampirisme
+Précision 100% Critique 1%
+### Tox de départ
+#### Multiplicateur
+Rare
+Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+### Talents
+#### À la caisse
+Au début de la partie, gagnez (+25) Spamton.
+Δ 7,5 · Score théorique
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 1 043,2 · Score théorique
+#### Armure des Âmes
+Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Δ 138,2 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+57,9 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Dragon Ciel + Cerf des Couleurs Funèbres
+52,5 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Maîtresse des Teintes + Cerf des Couleurs Funèbres
+49,3 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (3)
+- C Cerf des Couleurs Funèbres + L'Épine d'Amour avec Dragon Ciel · Lisa Accessible · 52,3%
+- D Dragon Ciel + Cerf des Couleurs Funèbres avec Faerylia · Aidan Intermédiaire · 49,5%
+- D Cerf des Couleurs Funèbres + L'Épine d'Amour avec Verdelune · Maîtresse des Teintes Collection avancée · 46,3%
+### Résistances
+9% Feu
+9% Eau
+9% Terre
+9% Nature
+9% Ombre
+9% Lumière
+Éternel · Nyevielh
+### Derrière la carte
+Dans l’effroyable Forêt Rêveuse de Nyevielh se trouve un Éternel corrompu par la puissance abyssale libérée lors de la fracture de la Mer Étoilée. Lorsque votre vision se pare de couleurs, que l’eau de la rivière vous paraît potable, l’herbe confortable et l’air respirable, fuyez ! Votre vie en dépend. Dans cette forêt, inutile de s’interroger : si le moindre protocole a été laissé à l’intention des malheureux qui osent y pénétrer, respectez-en les indications.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,168 @@
+L'Inventeur : carte SPAM Feu commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes L'Inventeur C Voir la carte en grand
+L'Inventeur
+2 Materia
+1 Arc-en-ciel
+Multiplicateur
+1000/1000
+5
+Standard
+L'Inventeur
+2 Materia
+1 Arc-en-ciel
+Multiplicateur
+1000/1000
+5
+Élémentaire
+L'Inventeur
+2 Materia
+1 Arc-en-ciel
+Multiplicateur
+1000/1000
+5
+FA
+L'Inventeur
+2 Materia
+1 Arc-en-ciel
+Multiplicateur
+1000/1000
+5
+## L'Inventeur
+C Feu · Commune · Standard
+1 000 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+- Talent 2 Chance Vitale Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Materia compétence · Recharge 2 Bonus [-5 à +8] dans chaque élément
+2
+- Arc-en-ciel compétence · Recharge 1 Attaque 10 dans un élément aléatoire
+1
+- Multiplicateur tox · Rare Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Feu Commune #153
+# L'Inventeur
+Défense
+1 000 Points de vie
+5 Spamtons / tour
+#95 Classement / 127
+C Sans talent · #88
+Attaque
+22
+Génération
+51
+Défense
+83
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Roulette 2 Chance Vitale 3 Vitalité des Âmes
+Jouer cette carte 11 decks
+Partager
+### Compétences
+#### Materia
+2 tours
+Bonus [-5 à +8] dans chaque élément
+Précision 100% Critique 0%
+#### Arc-en-ciel
+1 tour
+Attaque 10 dans un élément aléatoire
+Précision 100% Critique 50%
+### Tox de départ
+#### Multiplicateur
+Rare
+Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+### Talents
+#### Roulette
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 96 · Score théorique
+#### Chance Vitale
+Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+Δ 5,9 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 484,9 · Score théorique
+## Ses meilleurs decks
+11 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+98,1 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+89,1 % Indice relatif 6 tours Élimination estimée 24 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + L'Inventeur
+65,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+56,7 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Wibs l'Enflammé + Apprentie de la Mort
+54,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Accessible
+Midrange ·
+### Apprentie de la Mort + L'Inventeur
+39,5 % Indice relatif 10,9 tours Élimination estimée 28 / tour Spamtons
+Les autres decks (5)
+- S Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec L'Inventeur · Maître Amphibian Accessible · 94,6%
+- D Wibs l'Enflammé + Apprentie de la Mort avec Prisonnière de la Machine · L'Inventeur Accessible · 39%
+- D Apprentie de la Mort + Astry avec L'Inventeur · Squall Intermédiaire · 38,4%
+- D Apprentie de la Mort + L'Inventeur avec Guerrier des Neiges · Aidan Accessible · 37,8%
+- D Wibs l'Enflammé + Logidrake avec Pyro · L'Inventeur Accessible · 34,8%
+### Résistances
+17% Feu
+16% Eau
+16% Terre
+18% Nature
+17% Ombre
+18% Lumière
+Oniyx · Nordvinter
+### Derrière la carte
+L’espèce ancestrale des Oniyx était dirigée par un grand chef surnommé l’Inventeur. Son peuple disparut après s’être rebellé contre les Divinités. Les écrits de Lumethia perpétuent le souvenir de son courage et de ses nombreux sacrifices. Aidé de son second, Lumisaros, l’Inventeur conçut les orbes magiques qui portent le nom de son espèce. Ils sont encore utilisés aujourd’hui, mais nul ne sait plus les fabriquer ; ils sont donc traités avec le plus grand soin. Il créa également de nombreuses armes et défenses contre la folie divine de l’ancien temps. Ses créations sont aujourd’hui prisonnières des Contrées de Cristal, à l’est de Nordvinter.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

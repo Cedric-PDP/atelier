@@ -1,0 +1,120 @@
+Intrepid Otter: SPAM Water common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Intrepid Otter C View the full card
+Intrepid Otter
+1 Bite
+650/650
+5
+Standard
+Intrepid Otter
+1 Bite
+650/650
+5
+Elemental
+Intrepid Otter
+1 Bite
+650/650
+5
+FA
+Intrepid Otter
+1 Bite
+650/650
+5
+## Intrepid Otter
+C Water · Common · Standard
+650 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Roulette All of this card's abilities gain Echo (10%).
+- Talent 2 Critical Critical bonus (+10%).
+- Talent 3 Weaken Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Recommended
+Three ability slots
+- Bite ability · Cooldown 1 Deal 6 Water damage
+Critical (+3%) on all allied cards
+1
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Water Common #054
+# Intrepid Otter
+Versatile
+650 Health points
+5 Spamtons / turn
+#68 Rank / 127
+B No talent · #59
+Attack
+69
+Generation
+0
+Defense
+36
+Support
+84
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Roulette 2 Critical 3 Weaken
+Build with this card
+Share
+### Abilities
+#### Bite
+1 turn
+Deal 6 Water damage
+Critical (+3%) on all allied cards
+Accuracy 100% Critical 50%
+### Talents
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ 23 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ 73.1 · Theoretical score
+#### Weaken
+Recommended
+Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Δ 149.5 · Theoretical score
+### Resistances
+12% Fire
+13% Water
+14% Earth
+15% Nature
+14% Shadow
+13% Light
+Creature · Emeldarion
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. North of Emeldarion, you can see these otters come down from the Crystal Lands, passing through Abondance before swimming back up the waterway to start their mad descent all over again. You can even see them, sometimes, clinging to orbs they bring up from the seabed — a strange behavior the Alphilans keep secret.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

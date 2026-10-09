@@ -1,0 +1,164 @@
+Régent des Abysses : carte SPAM Terre épique, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Régent des Abysses B Voir la carte en grand
+Régent des Abysses
+2 Tremblement
+5 Avalement
+Soin primitif
+1000/1000
+6
+Standard
+Régent des Abysses
+2 Tremblement
+5 Avalement
+Soin primitif
+1000/1000
+6
+Élémentaire
+Régent des Abysses
+2 Tremblement
+5 Avalement
+Soin primitif
+1000/1000
+6
+FA
+Régent des Abysses
+2 Tremblement
+5 Avalement
+Soin primitif
+1000/1000
+6
+## Régent des Abysses
+B Terre · Épique · Standard
+1 000 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Conseillé
+- Talent 2 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 3 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Trois champs de compétence
+- Tremblement compétence · Recharge 2 Attaque 15 Terre
+Attaque 15 Ombre
+Bonus Terre (+3)
+Bonus Ombre (+3)
+2
+- Avalement compétence · Recharge 5 Absorbe une carte alliée
+5
+- Soin primitif tox · Commune Au début de chaque tour, la carte récupère 4% de ses PV max
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Terre Épique #086
+# Régent des Abysses
+Génération Défense
+1 000 Points de vie
+6 Spamtons / tour
+#41 Classement / 127
+B Sans talent · #33
+Attaque
+35
+Génération
+89
+Défense
+91
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Focus 2 Résilience 3 One man army
+Jouer cette carte 5 decks
+Partager
+### Compétences
+#### Tremblement
+2 tours
+Attaque 15 Terre
+Attaque 15 Ombre
+Bonus Terre (+3)
+Bonus Ombre (+3)
+Précision 100% Critique 1%
+#### Avalement
+5 tours
+Absorbe une carte alliée
+Précision 100% Critique 0%
+### Tox de départ
+#### Soin primitif
+Commune
+Au début de chaque tour, la carte récupère 4% de ses PV max
+### Talents
+#### Focus
+Conseillé
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 171,6 · Score théorique
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 0 · Score théorique
+#### One man army
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 98,7 · Score théorique
+## Ses meilleurs decks
+5 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Bleu-mange-cailloux
+56,3 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Shinobi Éclairant + Wyrm des Dunes Cornu
+50,7 % Indice relatif 9 tours Élimination estimée 20 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Commando Gerz + Bleu-mange-cailloux
+50,1 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Bleu-mange-cailloux + L'Épine d'Amour
+44 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Bleu-mange-cailloux + Esprit Terre
+42,2 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Logidrake · Shal'Zaar
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, tandis que le cauchemar les débarrasse de leurs regrets. Ce système n’est pas du goût de toutes les créatures. Le Régent des Abysses est un puissant membre de la famille des Logidrakes, abominations serpentines capables de contrôler des hordes d’Abyssaux. Ces créatures sévissent aux quatre coins du monde avec une coordination inquiétante. Celui-ci a été repéré au sud de Shal’Zaar et semble être responsable des Abyssaux remontés à la Surface.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

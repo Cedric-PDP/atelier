@@ -1,0 +1,6392 @@
+{
+ "cards": [
+  {
+   "id": "3ec973d6-c20f-4455-82d4-92dce5d22a52",
+   "slug": "moxilys_la_fredonneuse",
+   "number": 177,
+   "name": "Moxilys, la Fredonneuse",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 900,
+   "spamton": 9,
+   "tier": "S",
+   "rank": 1,
+   "overall": 74.3,
+   "pct": {
+    "offense": 88.2,
+    "offenseSolo": 81.9,
+    "generation": 56.7,
+    "defense": 99.2,
+    "support": 86.6,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "offense",
+    "support",
+    "defense"
+   ],
+   "bestTalent": "Life-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/moxilys_la_fredonneuse.a86773bd.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/moxilys_la_fredonneuse.a86773bd.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 1
+    },
+    {
+     "id": "Life-8",
+     "name": "Life-8",
+     "text": "Les PV et PV max de la carte sont doublés au début du tour 8",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Moxilys, la Fredonneuse Duombre Cible toutes les cartes adverses\nAttaque 15 Ombre\nBonus Ombre (+2) Régénair Cible aléatoirement les cartes alliées\nSoigne 10 Nature X4 Résilience Life-8 Pièce magique"
+  },
+  {
+   "id": "d2e2e893-6688-4a1a-9d92-1d239e8d0a75",
+   "slug": "esprit_de_la_faune",
+   "number": 122,
+   "name": "Esprit de la Faune",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 8,
+   "tier": "S",
+   "rank": 2,
+   "overall": 71.4,
+   "pct": {
+    "offense": 79.5,
+    "offenseSolo": 77.2,
+    "generation": 52.8,
+    "defense": 69.3,
+    "support": 74.8,
+    "control": 93.7,
+    "economy": 52
+   },
+   "roles": [
+    "offense",
+    "control"
+   ],
+   "bestTalent": "TErosion",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_de_la_faune.3dc01663.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_de_la_faune.3dc01663.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Immunite-8",
+     "name": "Immunité-8",
+     "text": "Applique le passif \"Immunité\" au tour 8",
+     "slot": 2
+    },
+    {
+     "id": "TErosion",
+     "name": "Érosion",
+     "text": "Commence la partie avec le passif \"Érosion\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit de la Faune Appel de la forêt Attaque toutes les cartes adverses 30 Nature\nBonus Nature (+4) Soin soleil Soigne 60 Lumière\nGel Longueur Immunité-8 Érosion"
+  },
+  {
+   "id": "a0ce442e-65ac-4e50-86d3-52de3b81be35",
+   "slug": "zombie_floral",
+   "number": 174,
+   "name": "Zombie Floral",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 850,
+   "spamton": 5,
+   "tier": "S",
+   "rank": 3,
+   "overall": 69.8,
+   "pct": {
+    "offense": 89,
+    "offenseSolo": 88.2,
+    "generation": 74,
+    "defense": 51.2,
+    "support": 0.8,
+    "control": 87.4,
+    "economy": 66.1
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Revalorisation",
+   "image": "https://spamgame.com/data/img/illustrations/512/zombie_floral.38c97fb5.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/zombie_floral.38c97fb5.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Revalorisation",
+     "name": "Revalorisation",
+     "text": "Augmente la génération de Spamton de cette carte de (+5)",
+     "slot": 1
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 2
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 3
+    }
+   ],
+   "searchText": "Zombie Floral Malédiction aquatique Attaque [30 à 60] Eau sur toutes les cartes adverses\nApplique Disparition\nAttaque [30 à 60] Nature sur toutes les cartes adverses\nApplique Disparition Revalorisation Reset ultime Transition Cœur d'eau Cœur de nature"
+  },
+  {
+   "id": "6268c16b-5c7c-41d1-8e0b-b437823a1cbf",
+   "slug": "lisa_la_dragonniere",
+   "number": 56,
+   "name": "Lisa, la Dragonnière",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 7,
+   "tier": "S",
+   "rank": 4,
+   "overall": 65.1,
+   "pct": {
+    "offense": 89.8,
+    "offenseSolo": 83.5,
+    "generation": 56.7,
+    "defense": 52,
+    "support": 0.8,
+    "control": 89.8,
+    "economy": 39.4
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "TAoe_R",
+   "image": "https://spamgame.com/data/img/illustrations/512/lisa_la_dragonniere.146ffff3.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lisa_la_dragonniere.146ffff3.webp",
+   "artist": "SAN",
+   "talents": [
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 1
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 2
+    },
+    {
+     "id": "TAoe_R",
+     "name": "AOE Rare",
+     "text": "Commence la partie avec le passif \"AoE\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lisa, la Dragonnière Courant aléatoire Cible aléatoirement une carte adverse\nAttaque [30 à 50] Nature\nBonus Nature (+2) Erreur Croissante Transition AOE Rare Disparition"
+  },
+  {
+   "id": "b42ca72a-df32-43af-b23d-5256525d1665",
+   "slug": "spectre_canin",
+   "number": 127,
+   "name": "Spectre Canin",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 7,
+   "tier": "S",
+   "rank": 5,
+   "overall": 62.8,
+   "pct": {
+    "offense": 87.4,
+    "offenseSolo": 91.3,
+    "generation": 74,
+    "defense": 67.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "OneManArmy",
+   "image": "https://spamgame.com/data/img/illustrations/512/spectre_canin.5d41a144.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/spectre_canin.5d41a144.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 1
+    },
+    {
+     "id": "Durcissement",
+     "name": "Durcissement",
+     "text": "Augmente les résistances élémentaires de la carte de (+15 %).",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Spectre Canin Bim-boum Cible toutes les cartes adverses\nAttaque 20 Ombre et 20 Lumière Éternisé Durcissement One man army Cœur d'ombre Cœur de lumière"
+  },
+  {
+   "id": "4a824945-4f06-4288-9f82-0b048f02f71b",
+   "slug": "eclat_du_renard_blanc",
+   "number": 34,
+   "name": "Éclat du Renard Blanc",
+   "element": "shadow",
+   "rarity": "rare",
+   "hp": 700,
+   "spamton": 5,
+   "tier": "S",
+   "rank": 6,
+   "overall": 62.5,
+   "pct": {
+    "offense": 91.3,
+    "offenseSolo": 86.6,
+    "generation": 56.7,
+    "defense": 41.7,
+    "support": 0.8,
+    "control": 91.3,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense",
+    "control"
+   ],
+   "bestTalent": "Critique",
+   "image": "https://spamgame.com/data/img/illustrations/512/eclat_du_renard_blanc.1f083ad8.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/eclat_du_renard_blanc.1f083ad8.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Frappe",
+     "name": "Frappe",
+     "text": "Augmente les dégâts critiques de (+1).",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Éclat du Renard Blanc Duombre Cible toutes les cartes adverses\nAttaque 15 Ombre\nBonus Ombre (+2) Aqua-sombre Choix\nAttaque 20 Eau\nGel\n---------- ou ----------\nAttaque 20 Ombre\nApplique Éternité Frappe Critique Imprudent"
+  },
+  {
+   "id": "a2426557-7553-496e-9e48-7b397cf1e77d",
+   "slug": "croqueur_de_fruits_verdoyant",
+   "number": 17,
+   "name": "Croqueur de Fruits Verdoyant",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 650,
+   "spamton": 11,
+   "tier": "S",
+   "rank": 7,
+   "overall": 60.5,
+   "pct": {
+    "offense": 96.9,
+    "offenseSolo": 96.9,
+    "generation": 56.7,
+    "defense": 28.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 87.4
+   },
+   "roles": [
+    "offense",
+    "economy"
+   ],
+   "bestTalent": "TAoe_E",
+   "image": "https://spamgame.com/data/img/illustrations/512/croqueur_de_fruits_verdoyant.4325d46b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/croqueur_de_fruits_verdoyant.4325d46b.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "TAoe_E",
+     "name": "AOE Épique",
+     "text": "Commence la partie avec le passif \"AoE\"",
+     "slot": 1
+    },
+    {
+     "id": "TToxChanceux",
+     "name": "Tox chanceux",
+     "text": "Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.",
+     "slot": 2
+    },
+    {
+     "id": "Souffle-8",
+     "name": "Souffle-8",
+     "text": "Récupère l'attaque Souffle élémentaire au début du tour 8",
+     "slot": 3
+    }
+   ],
+   "searchText": "Croqueur de Fruits Verdoyant Dévalement Cible aléatoirement une carte adverse\nAttaque [20 à 30] Terre AOE Épique Tox chanceux Souffle-8 Cœur de terre"
+  },
+  {
+   "id": "ebeb284d-bdea-4c2d-b724-9018df6c9d71",
+   "slug": "ignea",
+   "number": 91,
+   "name": "Ignea",
+   "element": "fire",
+   "rarity": "legendary",
+   "hp": 750,
+   "spamton": 10,
+   "tier": "S",
+   "rank": 8,
+   "overall": 59.3,
+   "pct": {
+    "offense": 71.7,
+    "offenseSolo": 64.6,
+    "generation": 44.9,
+    "defense": 63,
+    "support": 0.8,
+    "control": 93.7,
+    "economy": 66.1
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "Baleine bleue",
+   "image": "https://spamgame.com/data/img/illustrations/512/ignea.e6c9d817.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/ignea.e6c9d817.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 1
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Ignea Incandescence Cible aléatoirement une carte adverse\nAttaque 120 Feu\nBonus Feu (+2) Silenfeu Applique Gel Baleine bleue Imprudent Reset ultime"
+  },
+  {
+   "id": "40416045-b820-4d2c-96f9-34f87d99ac25",
+   "slug": "aleera_mange_cauchemars",
+   "number": 231,
+   "name": "Aleera Mange-Cauchemars",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 5,
+   "tier": "S",
+   "rank": 9,
+   "overall": 59,
+   "pct": {
+    "offense": 98.4,
+    "offenseSolo": 99.2,
+    "generation": 69.3,
+    "defense": 31.5,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Resilience",
+   "image": "https://spamgame.com/data/img/illustrations/512/aleera_mange_cauchemars.9c42f2af.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/aleera_mange_cauchemars.9c42f2af.webp",
+   "artist": "Trinity ",
+   "talents": [
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Aleera Mange-Cauchemars Mâche-mot Cible toutes les cartes adverses\nAttaque 5 Ombre + 50 % des PV manquants du lanceur Blindage F/E Blindage O/L Résilience Sac de frappe Cœur d'ombre"
+  },
+  {
+   "id": "3c38bd35-20d2-4369-971c-9216d21da76a",
+   "slug": "commando_gerz",
+   "number": 188,
+   "name": "Commando Gerz",
+   "element": "earth",
+   "rarity": "rare",
+   "hp": 1200,
+   "spamton": 4,
+   "tier": "S",
+   "rank": 10,
+   "overall": 57.4,
+   "pct": {
+    "offense": 64.6,
+    "offenseSolo": 85,
+    "generation": 89,
+    "defense": 89,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/commando_gerz.8fe559a6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/commando_gerz.8fe559a6.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Imprecision",
+     "name": "Imprécision",
+     "text": "Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Commando Gerz Cigarillos Bonus Terre (+3)\nBonus Lumière (+3) Dernier plaisir Cible aléatoirement les cartes adverses\nAttaque 100 Terre\nAttaque 100 Lumière Imprécision Cœur d’acier Vitalité des Âmes Berserk"
+  },
+  {
+   "id": "cb80482d-48d0-48e8-8149-6b99107a3a55",
+   "slug": "epine_medusine",
+   "number": 178,
+   "name": "Épine Médusine",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 10,
+   "tier": "A",
+   "rank": 11,
+   "overall": 57,
+   "pct": {
+    "offense": 84.3,
+    "offenseSolo": 79.5,
+    "generation": 0,
+    "defense": 74,
+    "support": 75.6,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Terrain aquatique",
+   "image": "https://spamgame.com/data/img/illustrations/512/epine_medusine.35350591.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/epine_medusine.35350591.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Terrain aquatique",
+     "name": "Terrain aquatique",
+     "text": "Bonus (+7) Eau.",
+     "slot": 1
+    },
+    {
+     "id": "Terrain enflamée",
+     "name": "Terrain enflammé",
+     "text": "Bonus (+7) Feu.",
+     "slot": 2
+    },
+    {
+     "id": "Affaiblissement",
+     "name": "Affaiblissement",
+     "text": "Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Épine Médusine Toxine enflammée Attaque [1 à 35] Eau\nSoigne [1 à 35] Feu Terrain aquatique Terrain enflammé Affaiblissement Multiplicateur"
+  },
+  {
+   "id": "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "slug": "sanglier_dore",
+   "number": 160,
+   "name": "Sanglier Doré",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 900,
+   "spamton": 6,
+   "tier": "A",
+   "rank": 12,
+   "overall": 56.4,
+   "pct": {
+    "offense": 69.3,
+    "offenseSolo": 74,
+    "generation": 69.3,
+    "defense": 84.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/sanglier_dore.10896274.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/sanglier_dore.10896274.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 1
+    },
+    {
+     "id": "SursautVital",
+     "name": "Sursaut Vital",
+     "text": "Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Sanglier Doré Remue-sol Cible aléatoirement une carte adverse\nAttaque 40 Terre\nAugmente ses PV max de 40 Terre\nBonus Terre (+2) Baleine bleue Sursaut Vital Vitalité des Âmes Sac de frappe"
+  },
+  {
+   "id": "059b42d0-2de6-46b1-baab-fc61f0bb2ac3",
+   "slug": "souverain_des_flammes",
+   "number": 43,
+   "name": "Souverain des Flammes",
+   "element": "fire",
+   "rarity": "legendary",
+   "hp": 900,
+   "spamton": 7,
+   "tier": "A",
+   "rank": 13,
+   "overall": 56.2,
+   "pct": {
+    "offense": 80.3,
+    "offenseSolo": 66.1,
+    "generation": 0,
+    "defense": 88.2,
+    "support": 81.1,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "offense",
+    "defense"
+   ],
+   "bestTalent": "Blindage Partagé",
+   "image": "https://spamgame.com/data/img/illustrations/512/souverain_des_flammes.7cebbce9.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/souverain_des_flammes.7cebbce9.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 2
+    },
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Souverain des Flammes Braise chaude Attaque 10 Feu\nRésistance Feu (+3) Chaleur divine Cible toutes les cartes adverses\nAttaque 20 Feu Embrasement Cible toutes les cartes alliées\nCritique (+5%) Critique Éternisé Blindage Partagé"
+  },
+  {
+   "id": "87ed2393-4bad-4243-ae7f-4c9c0681717d",
+   "slug": "gabriel",
+   "number": 195,
+   "name": "Gabriel",
+   "element": "nature",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 9,
+   "tier": "A",
+   "rank": 14,
+   "overall": 56.2,
+   "pct": {
+    "offense": 59.1,
+    "offenseSolo": 68.5,
+    "generation": 89,
+    "defense": 70.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/gabriel.3d111460.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/gabriel.3d111460.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Terrain terrestre",
+     "name": "Terrain terrestre",
+     "text": "Bonus (+7) Terre.",
+     "slot": 1
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 2
+    },
+    {
+     "id": "TToxChanceux",
+     "name": "Tox chanceux",
+     "text": "Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Gabriel Cocon Attaque 20 Nature\nBonus Nature (+5)\n[Usage Limité 1/1] Chenille Attaque 40 Nature\nBonus Nature (+10)\n[Usage Limité 1/1] Papillon Attaque 60 Nature\nBonus Nature (+15)\n[Usage Limité 1/1] Terrain terrestre Vitalité des Âmes Tox chanceux"
+  },
+  {
+   "id": "3ab7c7fa-a2ec-4e5f-af7e-2a5163fd463a",
+   "slug": "oisillons_de_midas",
+   "number": 233,
+   "name": "Oisillons de Midas",
+   "element": "light",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 8,
+   "tier": "A",
+   "rank": 15,
+   "overall": 54.6,
+   "pct": {
+    "offense": 52,
+    "offenseSolo": 40.9,
+    "generation": 69.3,
+    "defense": 44.1,
+    "support": 96.9,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Souffle-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/oisillons_de_midas.917bd32b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/oisillons_de_midas.917bd32b.webp",
+   "artist": "Manayel",
+   "talents": [
+    {
+     "id": "Souffle-8",
+     "name": "Souffle-8",
+     "text": "Récupère l'attaque Souffle élémentaire au début du tour 8",
+     "slot": 1
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 2
+    },
+    {
+     "id": "Paradoxe",
+     "name": "Paradoxe",
+     "text": "Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Oisillons de Midas Piou-piou-piou Soigne 10 Lumière\nSoigne 10 Lumière\nSoigne 10 Lumière\nSoigne 10 Lumière\nBonus Lumière (+3) Quintuor Les valeurs de base des soins et des dégâts augmentent de 2 Souffle-8 Imprudent Paradoxe"
+  },
+  {
+   "id": "1225d137-e616-4032-af84-bca403fec435",
+   "slug": "gardien_vert",
+   "number": 78,
+   "name": "Gardien Vert",
+   "element": "light",
+   "rarity": "rare",
+   "hp": 800,
+   "spamton": 10,
+   "tier": "A",
+   "rank": 16,
+   "overall": 54.4,
+   "pct": {
+    "offense": 61.4,
+    "offenseSolo": 29.9,
+    "generation": 0,
+    "defense": 61.4,
+    "support": 82.7,
+    "control": 96.9,
+    "economy": 66.1
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "TAoe_C",
+   "image": "https://spamgame.com/data/img/illustrations/512/gardien_vert.30bfdf97.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/gardien_vert.30bfdf97.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "13eme mois",
+     "name": "13e mois",
+     "text": "La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 2
+    },
+    {
+     "id": "TAoe_C",
+     "name": "AOE",
+     "text": "Commence la partie avec le passif \"AoE\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Gardien Vert Rayonnement Attaque 80 Lumière\nLes temps de recharge des compétences sont remis au maximum Soin multiple Soigne 40 Lumière à toutes les cartes alliées 13e mois Cœur d’acier AOE"
+  },
+  {
+   "id": "79a2593a-6638-463e-b4c5-456ebfb92a14",
+   "slug": "veilleur_nocturne",
+   "number": 47,
+   "name": "Veilleur Nocturne",
+   "element": "shadow",
+   "rarity": "legendary",
+   "hp": 800,
+   "spamton": 7,
+   "tier": "A",
+   "rank": 17,
+   "overall": 54.2,
+   "pct": {
+    "offense": 57.5,
+    "offenseSolo": 51.2,
+    "generation": 43.3,
+    "defense": 55.9,
+    "support": 78,
+    "control": 0,
+    "economy": 90.6
+   },
+   "roles": [
+    "economy"
+   ],
+   "bestTalent": "Revalorisation",
+   "image": "https://spamgame.com/data/img/illustrations/512/veilleur_nocturne.70872eb1.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/veilleur_nocturne.70872eb1.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 1
+    },
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Revalorisation",
+     "name": "Revalorisation",
+     "text": "Augmente la génération de Spamton de cette carte de (+5)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Veilleur Nocturne Nuit finale Cible toutes les cartes alliées\nApplique Temporalité x (+3) Tranche-ombre Attaque [10 à 30] Ombre\nAttaque [10 à 30] Nature Tenebr'eal Attaque 40 Ombre\nBonus Ombre (+1)\nVampirisme Imprudent Héritage Revalorisation"
+  },
+  {
+   "id": "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "slug": "dragon_ciel",
+   "number": 180,
+   "name": "Dragon Ciel",
+   "element": "light",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 8,
+   "tier": "A",
+   "rank": 18,
+   "overall": 53.5,
+   "pct": {
+    "offense": 78,
+    "offenseSolo": 80.3,
+    "generation": 52.8,
+    "defense": 32.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 97.6
+   },
+   "roles": [
+    "offense",
+    "economy"
+   ],
+   "bestTalent": "Fortune",
+   "image": "https://spamgame.com/data/img/illustrations/512/dragon_ciel.4ce53e42.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/dragon_ciel.4ce53e42.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Dernier souffle",
+     "name": "Dernier souffle",
+     "text": "Applique Temporalité à toutes vos cartes quand celle-ci meurt",
+     "slot": 1
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 2
+    },
+    {
+     "id": "Fortune",
+     "name": "Fortune",
+     "text": "Augmente la génération de Spamton de cette carte de (+2) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Dragon Ciel Souffle éblouissant Attaque 40 Lumière Appel de la forêt Attaque toutes les cartes adverses 30 Nature\nBonus Nature (+4) Dernier souffle Reset ultime Fortune Vengeur"
+  },
+  {
+   "id": "5103c8e0-1326-4bc0-9b2f-05f5daf76b4a",
+   "slug": "princesse_meridia",
+   "number": 29,
+   "name": "Princesse Meridia",
+   "element": "nature",
+   "rarity": "rare",
+   "hp": 750,
+   "spamton": 7,
+   "tier": "A",
+   "rank": 19,
+   "overall": 53.3,
+   "pct": {
+    "offense": 24.4,
+    "offenseSolo": 27.6,
+    "generation": 93.7,
+    "defense": 97.6,
+    "support": 0.8,
+    "control": 91.3,
+    "economy": 39.4
+   },
+   "roles": [
+    "generation",
+    "defense",
+    "control"
+   ],
+   "bestTalent": "Life-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/princesse_meridia.be7e2b80.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/princesse_meridia.be7e2b80.webp",
+   "artist": "Trinity ",
+   "talents": [
+    {
+     "id": "Life-8",
+     "name": "Life-8",
+     "text": "Les PV et PV max de la carte sont doublés au début du tour 8",
+     "slot": 1
+    },
+    {
+     "id": "Frappe",
+     "name": "Frappe",
+     "text": "Augmente les dégâts critiques de (+1).",
+     "slot": 2
+    },
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Princesse Meridia Vent critique Attaque 40 Nature\nGel Volupté Bonus Eau (+2 à +5)\nBonus Nature (+2 à +5) Life-8 Frappe Longueur"
+  },
+  {
+   "id": "1d3d896d-c640-4d88-a1af-059f39546c60",
+   "slug": "souverain_des_chutes_dether",
+   "number": 136,
+   "name": "Souverain des Chutes d'Éther",
+   "element": "water",
+   "rarity": "rare",
+   "hp": 800,
+   "spamton": 5,
+   "tier": "A",
+   "rank": 20,
+   "overall": 52.8,
+   "pct": {
+    "offense": 85.8,
+    "offenseSolo": 67.7,
+    "generation": 0,
+    "defense": 53.5,
+    "support": 94.5,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense",
+    "support"
+   ],
+   "bestTalent": "Incisif",
+   "image": "https://spamgame.com/data/img/illustrations/512/souverain_des_chutes_dether.c44e5f5d.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/souverain_des_chutes_dether.c44e5f5d.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 1
+    },
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 2
+    },
+    {
+     "id": "Dernier souffle",
+     "name": "Dernier souffle",
+     "text": "Applique Temporalité à toutes vos cartes quand celle-ci meurt",
+     "slot": 3
+    }
+   ],
+   "searchText": "Souverain des Chutes d'Éther Laser glacial Attaque 10 Eau Chute critique Critique (+10%) Chute précise Précision (+10%) Héritage Incisif Dernier souffle"
+  },
+  {
+   "id": "ea7ee071-9031-496c-9e3c-a45659f8402f",
+   "slug": "pyro",
+   "number": 97,
+   "name": "Pyro",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 4,
+   "tier": "A",
+   "rank": 21,
+   "overall": 51.4,
+   "pct": {
+    "offense": 97.6,
+    "offenseSolo": 97.6,
+    "generation": 56.7,
+    "defense": 3.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "BouleDeCrit",
+   "image": "https://spamgame.com/data/img/illustrations/512/pyro.b8f44cc2.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/pyro.b8f44cc2.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 2
+    },
+    {
+     "id": "TPlumePhoenix",
+     "name": "Plume de Phénix",
+     "text": "50 % de chance de récupérer le passif Phénix une fois utilisé.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Pyro Incendie Cible toutes les cartes adverses\nAttaque 5 Feu\nBonus Feu (+1) Boule de Crit Éternisé Plume de Phénix"
+  },
+  {
+   "id": "d27faf84-0a03-4c16-b744-c555cd6f1edc",
+   "slug": "paguroniyx",
+   "number": 263,
+   "name": "Paguroniyx",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 850,
+   "spamton": 8,
+   "tier": "A",
+   "rank": 22,
+   "overall": 51.4,
+   "pct": {
+    "offense": 41.7,
+    "offenseSolo": 28.3,
+    "generation": 46.5,
+    "defense": 81.9,
+    "support": 94.5,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "support",
+    "defense"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/paguroniyx.d2fa7982.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/paguroniyx.d2fa7982.webp",
+   "artist": "Luga",
+   "talents": [
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 1
+    },
+    {
+     "id": "Anticipation",
+     "name": "Anticipation",
+     "text": "Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Paguroniyx Terrier Augmente les PV max de toutes les cartes alliées de 100 Cisaille vénéneuse Attaque 30 Ombre Départ multi Anticipation Vitalité des Âmes Mystère"
+  },
+  {
+   "id": "503c6c18-e7d4-4f41-bdbb-24225bc245a6",
+   "slug": "dragosaure_celeste",
+   "number": 211,
+   "name": "Dragosaure Céleste",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 12,
+   "tier": "A",
+   "rank": 23,
+   "overall": 51,
+   "pct": {
+    "offense": 70.1,
+    "offenseSolo": 49.6,
+    "generation": 0,
+    "defense": 60.6,
+    "support": 0.8,
+    "control": 93.7,
+    "economy": 90.6
+   },
+   "roles": [
+    "control",
+    "economy"
+   ],
+   "bestTalent": "TAoe_R",
+   "image": "https://spamgame.com/data/img/illustrations/512/dragosaure_celeste.05f33a69.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/dragosaure_celeste.05f33a69.webp",
+   "artist": "Mr.Kelbi",
+   "talents": [
+    {
+     "id": "TAoe_R",
+     "name": "AOE Rare",
+     "text": "Commence la partie avec le passif \"AoE\"",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "Armure des Ames",
+     "name": "Armure des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Dragosaure Céleste Hurle frappe Choix\nAttaque [10 à 100] Nature\nGel\n---------- ou ----------\nAttaque [45 à 65] Terre\nGel AOE Rare Critique Armure des Âmes Reset"
+  },
+  {
+   "id": "ff376ac5-a73d-4fd4-91ca-cb95008ac858",
+   "slug": "fleurmarine",
+   "number": 119,
+   "name": "Fleurmarine",
+   "element": "water",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 6,
+   "tier": "A",
+   "rank": 24,
+   "overall": 51,
+   "pct": {
+    "offense": 59.8,
+    "offenseSolo": 74.8,
+    "generation": 73.2,
+    "defense": 18.9,
+    "support": 74,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Incisif",
+   "image": "https://spamgame.com/data/img/illustrations/512/fleurmarine.a713de95.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/fleurmarine.a713de95.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Fleurmarine Nageoire sifflante Attaque 10 Eau\n+ Bonus Eau (+2) en cas de coup critique\nAttaque 10 Nature\n+ Bonus Nature (+2) en cas de coup critique Fond marin Précision (+12%) Incisif Critique Erreur Croissante"
+  },
+  {
+   "id": "9abdea22-067e-4f64-ad7d-5cab517dd501",
+   "slug": "wibs_lenflamme",
+   "number": 134,
+   "name": "Wibs l'Enflammé",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 550,
+   "spamton": 5,
+   "tier": "A",
+   "rank": 25,
+   "overall": 50.9,
+   "pct": {
+    "offense": 77.2,
+    "offenseSolo": 92.1,
+    "generation": 74,
+    "defense": 27.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Blindage N/T",
+   "image": "https://spamgame.com/data/img/illustrations/512/wibs_lenflamme.5499619f.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/wibs_lenflamme.5499619f.webp",
+   "artist": "Mr.Kelbi",
+   "talents": [
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Frappe",
+     "name": "Frappe",
+     "text": "Augmente les dégâts critiques de (+1).",
+     "slot": 2
+    },
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Wibs l'Enflammé Ecou-lave Attaque 5 Feu\nAttaque 5 Feu Blindage N/T Frappe Erreur Croissante Cœur de feu Poison"
+  },
+  {
+   "id": "dbfb491f-c64a-4bcf-8b9b-d7b2f3cc6a8b",
+   "slug": "blancheur_aquatique",
+   "number": 100,
+   "name": "Blancheur Aquatique",
+   "element": "water",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 7,
+   "tier": "A",
+   "rank": 26,
+   "overall": 50.7,
+   "pct": {
+    "offense": 65.4,
+    "offenseSolo": 43.3,
+    "generation": 44.9,
+    "defense": 85,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Blindage N/T",
+   "image": "https://spamgame.com/data/img/illustrations/512/blancheur_aquatique.d56b6500.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/blancheur_aquatique.d56b6500.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Blancheur Aquatique Avaleau Attaque 100 Eau\nSe soigne (+100) Eau\nBonus Eau (+2) Blindage N/T Blindage F/E Blindage O/L"
+  },
+  {
+   "id": "cfb8cb44-3db4-4939-99a0-5db5c4ff7f70",
+   "slug": "amber",
+   "number": 25,
+   "name": "Amber",
+   "element": "fire",
+   "rarity": "rare",
+   "hp": 750,
+   "spamton": 10,
+   "tier": "A",
+   "rank": 27,
+   "overall": 50.6,
+   "pct": {
+    "offense": 55.1,
+    "offenseSolo": 70.1,
+    "generation": 87.4,
+    "defense": 42.5,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TRoulette",
+   "image": "https://spamgame.com/data/img/illustrations/512/amber.de9d327a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/amber.de9d327a.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "TInversement",
+     "name": "Inversement",
+     "text": "Commence la partie avec le passif \"Inversement\"",
+     "slot": 2
+    },
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Amber Feu humide Attaque 10 Feu\nAttaque 20 Eau\nBonus Eau (+4) Eau-brûlante Attaque 10 Eau\nAttaque 20 Feu\nBonus Feu (+4) Roulette Inversement Blindage F/E"
+  },
+  {
+   "id": "452329d4-dfa0-45b1-bf53-8f5fdb6adae4",
+   "slug": "blaze",
+   "number": 26,
+   "name": "Blaze",
+   "element": "fire",
+   "rarity": "rare",
+   "hp": 750,
+   "spamton": 10,
+   "tier": "A",
+   "rank": 28,
+   "overall": 50.6,
+   "pct": {
+    "offense": 55.1,
+    "offenseSolo": 70.1,
+    "generation": 87.4,
+    "defense": 42.5,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TRoulette",
+   "image": "https://spamgame.com/data/img/illustrations/512/blaze.1a54fda2.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/blaze.1a54fda2.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "TInversement",
+     "name": "Inversement",
+     "text": "Commence la partie avec le passif \"Inversement\"",
+     "slot": 2
+    },
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Blaze Feu humide Attaque 10 Feu\nAttaque 20 Eau\nBonus Eau (+4) Eau-brûlante Attaque 10 Eau\nAttaque 20 Feu\nBonus Feu (+4) Roulette Inversement Blindage F/E"
+  },
+  {
+   "id": "4a5293bd-6d6e-4f85-a2d2-b0ac2751f858",
+   "slug": "roi_feu",
+   "number": 247,
+   "name": "Roi Feu",
+   "element": "fire",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 29,
+   "overall": 50.5,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 76.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_feu.8f39d3cf.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_feu.8f39d3cf.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Feu Lame-F Attaque [40 à 60] Feu Choix brûlant Choix\nBonus Feu [1 à 20]\n---------- ou ----------\nBonus Feu [5 à 15]\n---------- ou ----------\nBonus Feu [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "f64333ca-91f3-4d82-b0f9-4bd69602fd73",
+   "slug": "roi_eau",
+   "number": 248,
+   "name": "Roi Eau",
+   "element": "water",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 30,
+   "overall": 50.5,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 76.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_eau.07c46e90.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_eau.07c46e90.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Eau Lame-E Attaque [40 à 60] Eau Choix Aqueux Choix\nBonus Eau [1 à 20]\n---------- ou ----------\nBonus Eau [5 à 15]\n---------- ou ----------\nBonus Eau [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "3276480e-195f-49f0-a51c-32397178414d",
+   "slug": "roi_nature",
+   "number": 249,
+   "name": "Roi Nature",
+   "element": "nature",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 31,
+   "overall": 50.5,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 76.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_nature.cfadb92b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_nature.cfadb92b.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Nature Lame-N Attaque [40 à 60] Nature Choix Floral Choix\nBonus Nature [1 à 20]\n---------- ou ----------\nBonus Nature [5 à 15]\n---------- ou ----------\nBonus Nature [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "ad7cadc1-6fd2-486d-80b1-43f83f9c2135",
+   "slug": "roi_terre",
+   "number": 250,
+   "name": "Roi Terre",
+   "element": "earth",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 32,
+   "overall": 50.5,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 76.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_terre.ac3b66a2.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_terre.ac3b66a2.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Terre Lame-T Attaque [40 à 60] Terre Choix Terrestre Choix\nBonus Terre [1 à 20]\n---------- ou ----------\nBonus Terre [5 à 15]\n---------- ou ----------\nBonus Terre [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "8dee3d24-da8d-4cbb-9bf9-0cb9040d3481",
+   "slug": "roi_lumiere",
+   "number": 252,
+   "name": "Roi Lumière",
+   "element": "light",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 33,
+   "overall": 50.5,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 76.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_lumiere.f448702b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_lumiere.f448702b.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Lumière Lame-L Attaque [40 à 60] Lumière Choix Solaire Choix\nBonus Lumière [1 à 20]\n---------- ou ----------\nBonus Lumière [5 à 15]\n---------- ou ----------\nBonus Lumière [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "a1fc5c55-684a-40df-9476-d6e40a5731fb",
+   "slug": "leviathan_des_cieux",
+   "number": 44,
+   "name": "Léviathan des Cieux",
+   "element": "water",
+   "rarity": "legendary",
+   "hp": 1000,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 34,
+   "overall": 50.5,
+   "pct": {
+    "offense": 63,
+    "offenseSolo": 90.6,
+    "generation": 56.7,
+    "defense": 85.8,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/leviathan_des_cieux.fd29d261.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/leviathan_des_cieux.fd29d261.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 1
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Léviathan des Cieux Écras'eau Attaque 30% des PV max de la cible Ultime repos Se soigne 50% de ses PV max Baleine bleue Vitalité des Âmes Évolution Cœur d'eau"
+  },
+  {
+   "id": "2a61029e-6d9d-47f2-b2ed-68730e842ced",
+   "slug": "le_compagnon_des_esprits",
+   "number": 260,
+   "name": "Le compagnon des esprits",
+   "element": "water",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 35,
+   "overall": 50.4,
+   "pct": {
+    "offense": 93.7,
+    "offenseSolo": 81.1,
+    "generation": 0,
+    "defense": 40.2,
+    "support": 0.8,
+    "control": 0,
+    "economy": 96.9
+   },
+   "roles": [
+    "offense",
+    "economy"
+   ],
+   "bestTalent": "OneManArmy",
+   "image": "https://spamgame.com/data/img/illustrations/512/le_compagnon_des_esprits.92c77998.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/le_compagnon_des_esprits.92c77998.webp",
+   "artist": "Amytis",
+   "talents": [
+    {
+     "id": "Contre",
+     "name": "Contre",
+     "text": "Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.",
+     "slot": 1
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Le compagnon des esprits Petite vague Attaque 10 Eau\nAugmente sa génération de Spamtons de (+1)\nEcho (50%) Hasardo Cible aléatoirement une carte adverse\nAttaque [20 à +30] Eau Contre One man army Pièce magique Immunité"
+  },
+  {
+   "id": "c80116eb-c9cf-432a-a1a2-da4d8381e339",
+   "slug": "voyageur_des_cretes",
+   "number": 237,
+   "name": "Voyageur des Crêtes",
+   "element": "water",
+   "rarity": "rare",
+   "hp": 1000,
+   "spamton": 9,
+   "tier": "B",
+   "rank": 36,
+   "overall": 50.3,
+   "pct": {
+    "offense": 78.7,
+    "offenseSolo": 56.7,
+    "generation": 0,
+    "defense": 96.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "offense",
+    "defense"
+   ],
+   "bestTalent": "TCoeurAcier",
+   "image": "https://spamgame.com/data/img/illustrations/512/voyageur_des_cretes.0b4213d6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/voyageur_des_cretes.0b4213d6.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "TRevitalisation",
+     "name": "Revitalisation",
+     "text": "5 % de chance par tour de jeu de restaurer ses PV au maximum.",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 2
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Voyageur des Crêtes Fin du périple Attaque 65 Eau\nSe soigne totalement Revitalisation Cœur d’acier Résilience Immunité AoE"
+  },
+  {
+   "id": "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f",
+   "slug": "roi_ombre",
+   "number": 251,
+   "name": "Roi Ombre",
+   "element": "shadow",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 37,
+   "overall": 49.6,
+   "pct": {
+    "offense": 44.9,
+    "offenseSolo": 52,
+    "generation": 81.9,
+    "defense": 70.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Reset ultime",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_ombre.eca8b03a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_ombre.eca8b03a.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi Ombre Lame-O Attaque [40 à 60] Ombre Choix sombre Choix\nBonus Ombre [1 à 20]\n---------- ou ----------\nBonus Ombre [5 à 15]\n---------- ou ----------\nBonus Ombre [8 à 12] Focus Évolution Reset ultime Sac de frappe"
+  },
+  {
+   "id": "cd9beb57-00f1-412e-9c75-981ffdd56a38",
+   "slug": "squall_emissaire_des_cauchemars",
+   "number": 142,
+   "name": "Squall, Émissaire des cauchemars",
+   "element": "shadow",
+   "rarity": "rare",
+   "hp": 1000,
+   "spamton": 8,
+   "tier": "B",
+   "rank": 38,
+   "overall": 49.1,
+   "pct": {
+    "offense": 44.1,
+    "offenseSolo": 62.2,
+    "generation": 71.7,
+    "defense": 89.8,
+    "support": 0.8,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "OneManArmy",
+   "image": "https://spamgame.com/data/img/illustrations/512/squall_emissaire_des_cauchemars.2d99227d.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/squall_emissaire_des_cauchemars.2d99227d.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 1
+    },
+    {
+     "id": "Contre",
+     "name": "Contre",
+     "text": "Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Squall, Émissaire des cauchemars Flammes Cosmiques Attaque 15 Feu\nAttaque 20 Ombre\nBonus Feu (+3) Lumière cosmique Attaque 15 Lumière\nAttaque 20 Ombre\nBonus Lumière (+3) Baleine bleue Contre One man army Berserk"
+  },
+  {
+   "id": "9e974935-3da9-4acf-9507-a79cbd80bfb2",
+   "slug": "maitre_amphibian",
+   "number": 229,
+   "name": "Maître Amphibian",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 4,
+   "tier": "B",
+   "rank": 39,
+   "overall": 48.9,
+   "pct": {
+    "offense": 92.9,
+    "offenseSolo": 92.9,
+    "generation": 0,
+    "defense": 75.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense",
+    "defense"
+   ],
+   "bestTalent": "Durcissement",
+   "image": "https://spamgame.com/data/img/illustrations/512/maitre_amphibian.1508b175.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/maitre_amphibian.1508b175.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Durcissement",
+     "name": "Durcissement",
+     "text": "Augmente les résistances élémentaires de la carte de (+15 %).",
+     "slot": 2
+    },
+    {
+     "id": "13eme mois",
+     "name": "13e mois",
+     "text": "La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Maître Amphibian Miasmes de la Sagesse Cible toutes les cartes adverses\nAttaque 15 Terre 15 Eau Longueur Durcissement 13e mois Érosion"
+  },
+  {
+   "id": "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "slug": "prisonniere_de_la_machine",
+   "number": 116,
+   "name": "Prisonnière de la Machine",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 3,
+   "tier": "B",
+   "rank": 40,
+   "overall": 48.3,
+   "pct": {
+    "offense": 58.3,
+    "offenseSolo": 60.6,
+    "generation": 50.4,
+    "defense": 74.8,
+    "support": 0.8,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "TPunchingBag",
+   "image": "https://spamgame.com/data/img/illustrations/512/prisonniere_de_la_machine.454e35a5.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/prisonniere_de_la_machine.454e35a5.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Paradoxe",
+     "name": "Paradoxe",
+     "text": "Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.",
+     "slot": 1
+    },
+    {
+     "id": "Virage360",
+     "name": "Virage 360",
+     "text": "Applique \"Métamorphe aléatoire\" à toutes vos autres cartes quand celle-ci est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "TPunchingBag",
+     "name": "Sac de frappe",
+     "text": "Commence la partie avec le passif \"Sac de frappe\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Prisonnière de la Machine Explosion [Coût 100 PV]\nAttaque 10 Feu\nAprès utilisation, les dégâts de base de cette attaque augmentent de (+10) Braisegarde Applique Provocation Paradoxe Virage 360 Sac de frappe"
+  },
+  {
+   "id": "cc7dcf5c-d005-4eef-b70f-1773aaf8d6cf",
+   "slug": "regent_des_abysses",
+   "number": 86,
+   "name": "Régent des Abysses",
+   "element": "earth",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 6,
+   "tier": "B",
+   "rank": 41,
+   "overall": 47.8,
+   "pct": {
+    "offense": 35.4,
+    "offenseSolo": 59.8,
+    "generation": 89,
+    "defense": 90.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/regent_des_abysses.dcede5f0.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/regent_des_abysses.dcede5f0.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Régent des Abysses Tremblement Attaque 15 Terre\nAttaque 15 Ombre\nBonus Terre (+3)\nBonus Ombre (+3) Avalement Absorbe une carte alliée Focus Résilience One man army Soin primitif"
+  },
+  {
+   "id": "4b2ece95-feb4-410c-a53d-9a1e3b0a7a24",
+   "slug": "catixy",
+   "number": 219,
+   "name": "Catixy",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 42,
+   "overall": 47.7,
+   "pct": {
+    "offense": 82.7,
+    "offenseSolo": 71.7,
+    "generation": 0,
+    "defense": 29.9,
+    "support": 91.3,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense",
+    "support"
+   ],
+   "bestTalent": "Critique",
+   "image": "https://spamgame.com/data/img/illustrations/512/catixy.5ff040b9.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/catixy.5ff040b9.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Racket",
+     "name": "Racket",
+     "text": "Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "TInversement",
+     "name": "Inversement",
+     "text": "Commence la partie avec le passif \"Inversement\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Catixy Miaulement Attaque [4 à 16] Ombre\nCritique du lanceur (+5%) Charme Sinistre Critique (+25%) aléatoirement sur une carte alliée Racket Critique Inversement"
+  },
+  {
+   "id": "3849cd2f-584d-4567-bdba-93be2228b0c6",
+   "slug": "maitresse_des_teintes",
+   "number": 32,
+   "name": "Maîtresse des Teintes",
+   "element": "earth",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 43,
+   "overall": 47.7,
+   "pct": {
+    "offense": 66.9,
+    "offenseSolo": 85.8,
+    "generation": 54.3,
+    "defense": 35.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Incisif",
+   "image": "https://spamgame.com/data/img/illustrations/512/maitresse_des_teintes.89a5f543.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/maitresse_des_teintes.89a5f543.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 2
+    },
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 3
+    }
+   ],
+   "searchText": "Maîtresse des Teintes Chaos élémentaire Cible aléatoirement les cartes adverses\nAttaque 15 Nature\n15 Terre\n15 Feu\n15 Lumière\n15 Ombre\n15 Eau Multiboost Bonus de chaque élément (+3) Départ multi Cœur d’acier Incisif"
+  },
+  {
+   "id": "eea4ef85-d826-4d68-854c-aef6d6809d52",
+   "slug": "luminaire_abyssal",
+   "number": 81,
+   "name": "Luminaire Abyssal",
+   "element": "water",
+   "rarity": "epic",
+   "hp": 600,
+   "spamton": 4,
+   "tier": "B",
+   "rank": 44,
+   "overall": 47.4,
+   "pct": {
+    "offense": 90.6,
+    "offenseSolo": 87.4,
+    "generation": 0,
+    "defense": 24.4,
+    "support": 0.8,
+    "control": 89,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "OneManArmy",
+   "image": "https://spamgame.com/data/img/illustrations/512/luminaire_abyssal.eaf2c38e.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/luminaire_abyssal.eaf2c38e.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Luminaire Abyssal Hasardo Cible aléatoirement une carte adverse\nAttaque [20 à +30] Eau Phare Cible toutes les cartes adverses\nAttaque [30 à 50] Lumière\nPrécision (-10%) Roulette Erreur Croissante One man army"
+  },
+  {
+   "id": "bb1c5e43-015e-4608-8c31-cc7c9d991690",
+   "slug": "ashtarae_lycaria",
+   "number": 203,
+   "name": "Ashtarae Lycaria",
+   "element": "shadow",
+   "rarity": "legendary",
+   "hp": 700,
+   "spamton": 4,
+   "tier": "B",
+   "rank": 45,
+   "overall": 47.1,
+   "pct": {
+    "offense": 56.7,
+    "offenseSolo": 37.8,
+    "generation": 0,
+    "defense": 95.3,
+    "support": 98.4,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "support",
+    "defense"
+   ],
+   "bestTalent": "Life-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/ashtarae_lycaria.685c8768.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/ashtarae_lycaria.685c8768.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 1
+    },
+    {
+     "id": "Life-8",
+     "name": "Life-8",
+     "text": "Les PV et PV max de la carte sont doublés au début du tour 8",
+     "slot": 2
+    },
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Ashtarae Lycaria Mélodie n°1 Attaque [15 à 25] Ombre\nCritique (+2%) sur toutes les cartes alliées Mélodie n°2 Soigne [15 à 25] Ombre\nPrécision (+2%) sur toutes les cartes alliées Résurrection [Coût 5 Ombre]\nRessuscite le dernier allié détruit avec la moitié de ses PV max Cœur d’acier Life-8 Erreur Croissante"
+  },
+  {
+   "id": "0c8c383b-2207-4d18-b378-4f2a3795a58e",
+   "slug": "apprentie_de_la_mort",
+   "number": 236,
+   "name": "Apprentie de la Mort",
+   "element": "fire",
+   "rarity": "rare",
+   "hp": 700,
+   "spamton": 6,
+   "tier": "B",
+   "rank": 46,
+   "overall": 46.3,
+   "pct": {
+    "offense": 92.1,
+    "offenseSolo": 89.8,
+    "generation": 0,
+    "defense": 48,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Durcissement",
+   "image": "https://spamgame.com/data/img/illustrations/512/apprentie_de_la_mort.f6c9b6dd.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/apprentie_de_la_mort.f6c9b6dd.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TRevitalisation",
+     "name": "Revitalisation",
+     "text": "5 % de chance par tour de jeu de restaurer ses PV au maximum.",
+     "slot": 1
+    },
+    {
+     "id": "Durcissement",
+     "name": "Durcissement",
+     "text": "Augmente les résistances élémentaires de la carte de (+15 %).",
+     "slot": 2
+    },
+    {
+     "id": "Heure funeste",
+     "name": "Heure Funeste",
+     "text": "Applique Éternité à toutes les cartes adverses quand cette carte est tuée.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Apprentie de la Mort Brûlure Nocturne Cible toutes les cartes adverses\nAttaque 25 Feu et 25 Ombre Revitalisation Durcissement Heure Funeste Cimetière Vengeur"
+  },
+  {
+   "id": "0b940993-1523-46b8-ac0b-cde93989e01f",
+   "slug": "guerrier_des_neiges",
+   "number": 59,
+   "name": "Guerrier des Neiges",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 7,
+   "tier": "B",
+   "rank": 47,
+   "overall": 46.2,
+   "pct": {
+    "offense": 52.8,
+    "offenseSolo": 44.9,
+    "generation": 54.3,
+    "defense": 26,
+    "support": 0.8,
+    "control": 93.7,
+    "economy": 39.4
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "Bombe-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/guerrier_des_neiges.ba6497dc.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/guerrier_des_neiges.ba6497dc.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Bombe-8",
+     "name": "Bombe-8",
+     "text": "Applique le passif \"Bomba\" au tour 8",
+     "slot": 1
+    },
+    {
+     "id": "TChanceVitale",
+     "name": "Chance Vitale",
+     "text": "Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.",
+     "slot": 2
+    },
+    {
+     "id": "TBrut",
+     "name": "Brut",
+     "text": "Commence la partie avec le passif \"Brut\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Guerrier des Neiges Tranche-sol Attaque 30 Terre\nGel Multiboost Bonus de chaque élément (+3) Bombe-8 Chance Vitale Brut"
+  },
+  {
+   "id": "dd59d65a-3c14-49a1-898e-afb8dd01618f",
+   "slug": "apprenti_evocateur",
+   "number": 226,
+   "name": "Apprenti Évocateur",
+   "element": "water",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 48,
+   "overall": 45.9,
+   "pct": {
+    "offense": 50.4,
+    "offenseSolo": 41.7,
+    "generation": 56.7,
+    "defense": 64.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/apprenti_evocateur.3dc8db26.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/apprenti_evocateur.3dc8db26.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 1
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Apprenti Évocateur Petit sortilège Attaque [40 à 60] Eau Résilience Imprudent Vitalité des Âmes Mystère Mystère"
+  },
+  {
+   "id": "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "slug": "lame_de_la_foret",
+   "number": 103,
+   "name": "Lame de la forêt",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 650,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 49,
+   "overall": 45.8,
+   "pct": {
+    "offense": 34.6,
+    "offenseSolo": 26.8,
+    "generation": 56.7,
+    "defense": 65.4,
+    "support": 97.6,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "TCoeurNature_C",
+   "image": "https://spamgame.com/data/img/illustrations/512/lame_de_la_foret.69132874.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lame_de_la_foret.69132874.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "TCoeurNature_C",
+     "name": "Cœur NATURE",
+     "text": "Commence la partie avec le passif Cœur de nature",
+     "slot": 1
+    },
+    {
+     "id": "Racket",
+     "name": "Racket",
+     "text": "Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.",
+     "slot": 2
+    },
+    {
+     "id": "Affaiblissement",
+     "name": "Affaiblissement",
+     "text": "Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lame de la forêt Pinces Attaque 5 Nature Soin critique Soigne 20 Nature\nCritique (+10%) en cas de coup critique Cœur NATURE Racket Affaiblissement"
+  },
+  {
+   "id": "3a5a43c0-a9cf-42cc-a011-b022dd00a6bf",
+   "slug": "catimimi",
+   "number": 206,
+   "name": "Catimimi",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 50,
+   "overall": 45.4,
+   "pct": {
+    "offense": 96.1,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 1.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 94.5
+   },
+   "roles": [
+    "offense",
+    "economy"
+   ],
+   "bestTalent": "Heritage",
+   "image": "https://spamgame.com/data/img/illustrations/512/catimimi.578df902.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/catimimi.578df902.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 1
+    },
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Catimimi Claque sombrevol [Coût 2 Feu & 2 Ombre & 2 Nature]\nCible toutes les cartes adverses\nAttaque 15 Ombre 15 Nature 15 Feu\nBonus Ombre (+3) Nature (+3) Feu (+3) Éternisé Héritage Pièce magique"
+  },
+  {
+   "id": "8d69f6e4-0e59-4522-8fe0-b75474140597",
+   "slug": "astry",
+   "number": 36,
+   "name": "Astry",
+   "element": "light",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 51,
+   "overall": 45.2,
+   "pct": {
+    "offense": 33.9,
+    "offenseSolo": 25.2,
+    "generation": 97.6,
+    "defense": 49.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TCoeurMystere",
+   "image": "https://spamgame.com/data/img/illustrations/512/astry.b311234b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/astry.b311234b.webp",
+   "artist": "Daerun",
+   "talents": [
+    {
+     "id": "TCoeurMystere",
+     "name": "Mystère",
+     "text": "Commence la partie avec le passif \"Mystère\"",
+     "slot": 1
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 2
+    },
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Astry Génie incompris Bonus (+35) dans un élément aléatoire Clair-obscur Attaque 40 Ombre\nSe soigne 40 Lumière Mystère Imprudent Baleine bleue"
+  },
+  {
+   "id": "75491473-57fa-4b8f-aced-9d61d0404e65",
+   "slug": "tisseuse_de_mots",
+   "number": 123,
+   "name": "Tisseuse de Mots",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 2,
+   "tier": "B",
+   "rank": 52,
+   "overall": 45.1,
+   "pct": {
+    "offense": 67.7,
+    "offenseSolo": 94.5,
+    "generation": 46.5,
+    "defense": 57.5,
+    "support": 0.8,
+    "control": 0,
+    "economy": 0.8
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Corrosion",
+   "image": "https://spamgame.com/data/img/illustrations/512/tisseuse_de_mots.d2bcb5b5.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/tisseuse_de_mots.d2bcb5b5.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 1
+    },
+    {
+     "id": "SursautVital",
+     "name": "Sursaut Vital",
+     "text": "Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.",
+     "slot": 2
+    },
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Tisseuse de Mots Veuve noire Absorbe une carte Héritage Sursaut Vital Corrosion Sac de frappe"
+  },
+  {
+   "id": "3deb9668-785f-426a-85db-98f2e995b367",
+   "slug": "dragonnet_des_lumieres",
+   "number": 42,
+   "name": "Dragonnet des Lumières",
+   "element": "light",
+   "rarity": "epic",
+   "hp": 500,
+   "spamton": 3,
+   "tier": "B",
+   "rank": 53,
+   "overall": 44.9,
+   "pct": {
+    "offense": 63.8,
+    "offenseSolo": 63.8,
+    "generation": 56.7,
+    "defense": 3.9,
+    "support": 72.4,
+    "control": 0,
+    "economy": 2.4
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Nouvelle vie",
+   "image": "https://spamgame.com/data/img/illustrations/512/dragonnet_des_lumieres.f07dba03.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/dragonnet_des_lumieres.f07dba03.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Nouveau riche",
+     "name": "Nouveau riche",
+     "text": "Commence la partie avec, au hasard, le passif Spamland ou Chanceur.",
+     "slot": 1
+    },
+    {
+     "id": "Nouvelle vie",
+     "name": "Nouvelle vie",
+     "text": "Commence la partie avec, au hasard, le passif Phénix ou Cimetière.",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Dragonnet des Lumières Éclat paisible Attaque 20 Lumière\nVole (+1) Lumière Aide pensive Applique Temporalité Nouveau riche Nouvelle vie Pièce magique"
+  },
+  {
+   "id": "8527b5c1-d773-4c53-9719-17a0f46c106e",
+   "slug": "protecteur_des_ruines",
+   "number": 60,
+   "name": "Protecteur des ruines",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 6,
+   "tier": "B",
+   "rank": 54,
+   "overall": 44.8,
+   "pct": {
+    "offense": 86.6,
+    "offenseSolo": 73.2,
+    "generation": 0,
+    "defense": 52.8,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Blindage F/E",
+   "image": "https://spamgame.com/data/img/illustrations/512/protecteur_des_ruines.8460e491.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/protecteur_des_ruines.8460e491.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Protecteur des ruines Roulé-boulé Attaque 15 Terre\nLa valeur de base de dégâts augmente de 5 Blindage F/E Blindage N/T Blindage O/L"
+  },
+  {
+   "id": "a285ecdc-1309-43c6-a625-1ea752b7b735",
+   "slug": "crapaud_des_etoiles",
+   "number": 221,
+   "name": "Crapaud des Étoiles",
+   "element": "light",
+   "rarity": "common",
+   "hp": 900,
+   "spamton": 6,
+   "tier": "B",
+   "rank": 55,
+   "overall": 44.6,
+   "pct": {
+    "offense": 60.6,
+    "offenseSolo": 45.7,
+    "generation": 46.5,
+    "defense": 59.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/crapaud_des_etoiles.a20547e9.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/crapaud_des_etoiles.a20547e9.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Terrain aquatique",
+     "name": "Terrain aquatique",
+     "text": "Bonus (+7) Eau.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Crapaud des Étoiles Œil pour œil Attaque 40 Lumière Terrain aquatique Évolution Vitalité des Âmes Sac de frappe Contrecoup"
+  },
+  {
+   "id": "5d73ecb4-6f4e-43ab-9a56-e315e16d94c2",
+   "slug": "aeltheria_mere_primordiale",
+   "number": 265,
+   "name": "Aeltheria, Mère Primordiale",
+   "element": "divine",
+   "rarity": "divine",
+   "hp": 700,
+   "spamton": 10,
+   "tier": "B",
+   "rank": 56,
+   "overall": 44.5,
+   "pct": {
+    "offense": 40.9,
+    "offenseSolo": 78.7,
+    "generation": 92.9,
+    "defense": 32.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TRoulette",
+   "image": "https://spamgame.com/data/img/illustrations/512/aeltheria_mere_primordiale.112347fd.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/aeltheria_mere_primordiale.112347fd.webp",
+   "artist": "White_arts",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 2
+    },
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Aeltheria, Mère Primordiale Souffle élémentaire Attaque 30 dans son élément Berceau des Éléments Bonus (1 à 5) dans son élément Mythique Change aléatoirement l'élément de votre carte Roulette Résilience Corrosion"
+  },
+  {
+   "id": "bc7677aa-269b-4a01-9f2a-0d6dca2dd2f4",
+   "slug": "cornu_mythologique",
+   "number": 139,
+   "name": "Cornu mythologique",
+   "element": "earth",
+   "rarity": "rare",
+   "hp": 700,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 57,
+   "overall": 44.4,
+   "pct": {
+    "offense": 85,
+    "offenseSolo": 95.3,
+    "generation": 0,
+    "defense": 62.2,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Souffle-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/cornu_mythologique.6a627d3b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/cornu_mythologique.6a627d3b.webp",
+   "artist": "Euphy",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "Virage360",
+     "name": "Virage 360",
+     "text": "Applique \"Métamorphe aléatoire\" à toutes vos autres cartes quand celle-ci est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Souffle-8",
+     "name": "Souffle-8",
+     "text": "Récupère l'attaque Souffle élémentaire au début du tour 8",
+     "slot": 3
+    }
+   ],
+   "searchText": "Cornu mythologique Corne 25 La cible se retrouve à 25% de ses PV max Corne 75 La cible se retrouve à 75% de ses PV max Roulette Virage 360 Souffle-8"
+  },
+  {
+   "id": "d96ac331-6616-477c-91a6-ed402bede40d",
+   "slug": "shado_fleau_abyssal",
+   "number": 63,
+   "name": "Shado, Fléau abyssal",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 11,
+   "tier": "B",
+   "rank": 58,
+   "overall": 43.9,
+   "pct": {
+    "offense": 42.5,
+    "offenseSolo": 26,
+    "generation": 43.3,
+    "defense": 80.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 87.4
+   },
+   "roles": [
+    "defense",
+    "economy"
+   ],
+   "bestTalent": "Armure des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/shado_fleau_abyssal.9b8e75c3.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/shado_fleau_abyssal.9b8e75c3.webp",
+   "artist": "quetrax",
+   "talents": [
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Armure des Ames",
+     "name": "Armure des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Shado, Fléau abyssal Tenebr'eal Attaque 40 Ombre\nBonus Ombre (+1)\nVampirisme Résilience Évolution Armure des Âmes Soin primitif AoE"
+  },
+  {
+   "id": "6867b532-6cc0-4b13-bc71-ec8e864a3951",
+   "slug": "shinobi_eclairant",
+   "number": 245,
+   "name": "Shinobi Éclairant",
+   "element": "light",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 6,
+   "tier": "B",
+   "rank": 59,
+   "overall": 43.2,
+   "pct": {
+    "offense": 95.3,
+    "offenseSolo": 96.1,
+    "generation": 0,
+    "defense": 18.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "TAttackMulticolor",
+   "image": "https://spamgame.com/data/img/illustrations/512/shinobi_eclairant.6024e210.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/shinobi_eclairant.6024e210.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 1
+    },
+    {
+     "id": "TAttackMulticolor",
+     "name": "Multicolore",
+     "text": "Bonus (+1) dans tous les éléments à chaque attaque de cette carte",
+     "slot": 2
+    },
+    {
+     "id": "TBrut",
+     "name": "Brut",
+     "text": "Commence la partie avec le passif \"Brut\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Shinobi Éclairant Éclair jaune Attaque 50 Lumière à toutes les cartes adverses Kung‑Fu Attaque 40 Terre\nAoE Boule de Crit Multicolore Brut"
+  },
+  {
+   "id": "5bcae05c-1336-4123-99cc-f38f384f7649",
+   "slug": "sorciere_pyrokinetique",
+   "number": 51,
+   "name": "Sorcière Pyrokinétique",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 8,
+   "tier": "B",
+   "rank": 60,
+   "overall": 42.6,
+   "pct": {
+    "offense": 29.9,
+    "offenseSolo": 31.5,
+    "generation": 0,
+    "defense": 86.6,
+    "support": 72.4,
+    "control": 84.3,
+    "economy": 52
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Affaiblissement",
+   "image": "https://spamgame.com/data/img/illustrations/512/sorciere_pyrokinetique.79404e1e.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/sorciere_pyrokinetique.79404e1e.webp",
+   "artist": "Euphy",
+   "talents": [
+    {
+     "id": "TCoeurLumiere_C",
+     "name": "Cœur LUMIÈRE",
+     "text": "Commence la partie avec le passif Cœur de lumière",
+     "slot": 1
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 2
+    },
+    {
+     "id": "Affaiblissement",
+     "name": "Affaiblissement",
+     "text": "Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Sorcière Pyrokinétique Flamme magique Attaque 25 Feu\nApplique Éternité en cas de critique\nAttaque 25 Lumière\nApplique Éternité en cas de critique\nBaisse la résistance Feu et Lumière de l'adversaire de (10%) Voile solide Résistance à tous les éléments (+3) Cœur LUMIÈRE Résilience Affaiblissement"
+  },
+  {
+   "id": "76c6f472-8884-401e-8215-939e2d42417a",
+   "slug": "felin_errant",
+   "number": 21,
+   "name": "Félin Errant",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 550,
+   "spamton": 5,
+   "tier": "B",
+   "rank": 61,
+   "overall": 42.6,
+   "pct": {
+    "offense": 37.8,
+    "offenseSolo": 42.5,
+    "generation": 67.7,
+    "defense": 38.6,
+    "support": 0.8,
+    "control": 88.2,
+    "economy": 14.2
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "TRoulette",
+   "image": "https://spamgame.com/data/img/illustrations/512/felin_errant.baa842d1.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/felin_errant.baa842d1.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "A la caisse",
+     "name": "À la caisse",
+     "text": "Au début de la partie, gagnez (+25) Spamton.",
+     "slot": 1
+    },
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Félin Errant Visée offensive Attaque 15 Ombre\nÉternité en cas de coup critique Bond-rapide Attaque 5 Nature\nBonus Nature (+1)\nPrécision et Critique (+2%) pour le lanceur À la caisse Roulette Évolution Cœur vital"
+  },
+  {
+   "id": "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "slug": "murmures_du_corail_noir",
+   "number": 102,
+   "name": "Murmures du Corail Noir",
+   "element": "water",
+   "rarity": "common",
+   "hp": 400,
+   "spamton": 2,
+   "tier": "B",
+   "rank": 62,
+   "overall": 42.5,
+   "pct": {
+    "offense": 54.3,
+    "offenseSolo": 32.3,
+    "generation": 56.7,
+    "defense": 11.8,
+    "support": 76.4,
+    "control": 0,
+    "economy": 0.8
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Terrain sombre",
+   "image": "https://spamgame.com/data/img/illustrations/512/murmures_du_corail_noir.3aae066f.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/murmures_du_corail_noir.3aae066f.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 2
+    },
+    {
+     "id": "Terrain sombre",
+     "name": "Terrain sombre",
+     "text": "Bonus (+7) Ombre.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Murmures du Corail Noir Murmure Soigne 10 Eau\nLa valeur de base du soin augmente de 3 Souffle d'eau Attaque 10 Eau\nBonus Eau (+1) Blindage Partagé Roulette Terrain sombre Multiplicateur"
+  },
+  {
+   "id": "deeea38b-08f6-4e26-a3fd-db6b6dabffea",
+   "slug": "gazpoison_flottant",
+   "number": 244,
+   "name": "Gazpoison Flottant",
+   "element": "shadow",
+   "rarity": "rare",
+   "hp": 450,
+   "spamton": 4,
+   "tier": "B",
+   "rank": 63,
+   "overall": 42.5,
+   "pct": {
+    "offense": 99.2,
+    "offenseSolo": 98.4,
+    "generation": 0,
+    "defense": 15.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Evolution",
+   "image": "https://spamgame.com/data/img/illustrations/512/gazpoison_flottant.6f7efde6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/gazpoison_flottant.6f7efde6.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Contre",
+     "name": "Contre",
+     "text": "Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Gazpoison Flottant Exploison Cible toutes les cartes adverses\nAttaque 10 Ombre Contre Évolution Corrosion Poison Ténacité"
+  },
+  {
+   "id": "fa2a014d-b3d7-4b3a-a4be-16de84ca9a1a",
+   "slug": "aidan",
+   "number": 115,
+   "name": "Aidan",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 750,
+   "spamton": 8,
+   "tier": "C",
+   "rank": 64,
+   "overall": 42.3,
+   "pct": {
+    "offense": 12.6,
+    "offenseSolo": 14.2,
+    "generation": 99.2,
+    "defense": 47.2,
+    "support": 0.8,
+    "control": 82.7,
+    "economy": 52
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/aidan.8a841967.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/aidan.8a841967.webp",
+   "artist": "Daerun",
+   "talents": [
+    {
+     "id": "Contre",
+     "name": "Contre",
+     "text": "Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.",
+     "slot": 1
+    },
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 2
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 3
+    }
+   ],
+   "searchText": "Aidan Chanceur Bonus (+10) dans un élément aléatoire Paie-torche [Coût 10 Feu]\nAttaque 30 dans un élément aléatoire Contre Focus Transition Disparition"
+  },
+  {
+   "id": "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "slug": "baleine_farceuse",
+   "number": 82,
+   "name": "Baleine Farceuse",
+   "element": "water",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 7,
+   "tier": "C",
+   "rank": 65,
+   "overall": 42.3,
+   "pct": {
+    "offense": 73.2,
+    "offenseSolo": 58.3,
+    "generation": 0,
+    "defense": 67.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/baleine_farceuse.feb9d19e.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/baleine_farceuse.feb9d19e.webp",
+   "artist": "le_yack_albinos",
+   "talents": [
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 1
+    },
+    {
+     "id": "Durcissement",
+     "name": "Durcissement",
+     "text": "Augmente les résistances élémentaires de la carte de (+15 %).",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Baleine Farceuse Hydrochance Attaque 35 Eau\nEcho (50%) Ohohohohohoh Critique du lanceur (+50%) Baleine bleue Durcissement Cavalerie"
+  },
+  {
+   "id": "e5e2047f-5273-43a1-8df3-e388fbf3cccf",
+   "slug": "ameru",
+   "number": 191,
+   "name": "Ameru",
+   "element": "light",
+   "rarity": "rare",
+   "hp": 800,
+   "spamton": 15,
+   "tier": "C",
+   "rank": 66,
+   "overall": 42.3,
+   "pct": {
+    "offense": 20.5,
+    "offenseSolo": 44.1,
+    "generation": 94.5,
+    "defense": 56.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 94.5
+   },
+   "roles": [
+    "generation",
+    "economy"
+   ],
+   "bestTalent": "Corrosion",
+   "image": "https://spamgame.com/data/img/illustrations/512/ameru.e4c5b805.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/ameru.e4c5b805.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 1
+    },
+    {
+     "id": "Durcissement",
+     "name": "Durcissement",
+     "text": "Augmente les résistances élémentaires de la carte de (+15 %).",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Ameru Rêve enfumé Attaque 15 Lumière 15 Eau 15 Ombre\nBonus Lumière (+4) Eau (+4) Ombre (+4) Corrosion Durcissement Cavalerie Fumée"
+  },
+  {
+   "id": "5339b369-d066-4406-9b61-795514ae6f1d",
+   "slug": "dragon_de_la_cite_infernale",
+   "number": 259,
+   "name": "Dragon de la Cité Infernale",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 550,
+   "spamton": 10,
+   "tier": "C",
+   "rank": 67,
+   "overall": 42.3,
+   "pct": {
+    "offense": 37,
+    "offenseSolo": 30.7,
+    "generation": 56.7,
+    "defense": 23.6,
+    "support": 0.8,
+    "control": 98.4,
+    "economy": 66.1
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "TCoeurFeu_C",
+   "image": "https://spamgame.com/data/img/illustrations/512/dragon_de_la_cite_infernale.d89c805a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/dragon_de_la_cite_infernale.d89c805a.webp",
+   "artist": "Takoo",
+   "talents": [
+    {
+     "id": "TCoeurFeu_C",
+     "name": "Cœur FEU",
+     "text": "Commence la partie avec le passif \"Cœur de feu\"",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurOmbre_C",
+     "name": "Cœur OMBRE",
+     "text": "Commence la partie avec le passif \"Cœur d'ombre\"",
+     "slot": 2
+    },
+    {
+     "id": "Immunite-8",
+     "name": "Immunité-8",
+     "text": "Applique le passif \"Immunité\" au tour 8",
+     "slot": 3
+    }
+   ],
+   "searchText": "Dragon de la Cité Infernale Dualité Draconique Choix\nAttaque [10 à 40] Feu\n---------- ou ----------\nAttaque [10 à 40] Ombre Cœur FEU Cœur OMBRE Immunité-8 Gel"
+  },
+  {
+   "id": "1fc68f13-0a96-47ec-993d-f6325018369d",
+   "slug": "loutre_intrepide",
+   "number": 54,
+   "name": "Loutre Intrépide",
+   "element": "water",
+   "rarity": "common",
+   "hp": 650,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 68,
+   "overall": 42.3,
+   "pct": {
+    "offense": 68.5,
+    "offenseSolo": 48,
+    "generation": 0,
+    "defense": 36.2,
+    "support": 84.3,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Affaiblissement",
+   "image": "https://spamgame.com/data/img/illustrations/512/loutre_intrepide.e92fe16a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/loutre_intrepide.e92fe16a.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "Affaiblissement",
+     "name": "Affaiblissement",
+     "text": "Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Loutre Intrépide Morsure Attaque 6 Eau\nCritique (+3%) sur toutes les cartes alliées Roulette Critique Affaiblissement"
+  },
+  {
+   "id": "c4e02868-1e54-4c1c-916f-89a7d95260eb",
+   "slug": "sylvan_protecteur_de_la_verdure",
+   "number": 39,
+   "name": "Sylvan, Protecteur de la Verdure",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 550,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 69,
+   "overall": 42.1,
+   "pct": {
+    "offense": 66.1,
+    "offenseSolo": 63,
+    "generation": 56.7,
+    "defense": 21.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Incisif",
+   "image": "https://spamgame.com/data/img/illustrations/512/sylvan_protecteur_de_la_verdure.6ead8996.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/sylvan_protecteur_de_la_verdure.6ead8996.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Erreur Croissante",
+     "name": "Erreur Croissante",
+     "text": "-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.",
+     "slot": 1
+    },
+    {
+     "id": "Virage360",
+     "name": "Virage 360",
+     "text": "Applique \"Métamorphe aléatoire\" à toutes vos autres cartes quand celle-ci est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 3
+    }
+   ],
+   "searchText": "Sylvan, Protecteur de la Verdure Double souffle Attaque 25 Nature\nAttaque 25 Nature\nAttaque 25 Nature Bond-rapide Attaque 5 Nature\nBonus Nature (+1)\nPrécision et Critique (+2%) pour le lanceur Erreur Croissante Virage 360 Incisif Érosion"
+  },
+  {
+   "id": "859c2ea9-cd61-4543-948c-0376d90b0f84",
+   "slug": "rongeur_nuageux",
+   "number": 234,
+   "name": "Rongeur Nuageux",
+   "element": "light",
+   "rarity": "common",
+   "hp": 650,
+   "spamton": 11,
+   "tier": "C",
+   "rank": 70,
+   "overall": 41,
+   "pct": {
+    "offense": 74,
+    "offenseSolo": 93.7,
+    "generation": 0,
+    "defense": 34.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 87.4
+   },
+   "roles": [
+    "economy"
+   ],
+   "bestTalent": "Blindage O/L",
+   "image": "https://spamgame.com/data/img/illustrations/512/rongeur_nuageux.561f2bc3.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/rongeur_nuageux.561f2bc3.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Rongeur Nuageux Foudre Attaque 30 Lumière + 50 % des PV manquants du lanceur Blindage O/L Blindage N/T Évolution Provocation Berserk"
+  },
+  {
+   "id": "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "slug": "hibernatus",
+   "number": 12,
+   "name": "Hibernatus",
+   "element": "water",
+   "rarity": "common",
+   "hp": 750,
+   "spamton": 12,
+   "tier": "C",
+   "rank": 71,
+   "overall": 40.4,
+   "pct": {
+    "offense": 22.8,
+    "offenseSolo": 40.2,
+    "generation": 81.1,
+    "defense": 55.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 96.1
+   },
+   "roles": [
+    "generation",
+    "economy"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/hibernatus.7df9829c.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/hibernatus.7df9829c.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 1
+    },
+    {
+     "id": "Bombe-8",
+     "name": "Bombe-8",
+     "text": "Applique le passif \"Bomba\" au tour 8",
+     "slot": 2
+    },
+    {
+     "id": "Anticipation",
+     "name": "Anticipation",
+     "text": "Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Hibernatus Haleau Attaque [10 à 20] Lumière\nAttaque [10 à 20] Eau\nBonus (+5) dans un élément aléatoire Digue Applique Provocation Départ multi Bombe-8 Anticipation Chanceur"
+  },
+  {
+   "id": "e6ff90c2-0ecc-4def-ad52-e0d6da62d982",
+   "slug": "leo",
+   "number": 35,
+   "name": "Léo",
+   "element": "light",
+   "rarity": "rare",
+   "hp": 800,
+   "spamton": 6,
+   "tier": "C",
+   "rank": 72,
+   "overall": 40.4,
+   "pct": {
+    "offense": 43.3,
+    "offenseSolo": 24.4,
+    "generation": 0,
+    "defense": 93.7,
+    "support": 0.8,
+    "control": 85,
+    "economy": 30.7
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Life-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/leo.cd275177.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/leo.cd275177.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Life-8",
+     "name": "Life-8",
+     "text": "Les PV et PV max de la carte sont doublés au début du tour 8",
+     "slot": 2
+    },
+    {
+     "id": "TMimetisme",
+     "name": "Mimétisme",
+     "text": "Commence la partie avec le passif Mimétisme",
+     "slot": 3
+    }
+   ],
+   "searchText": "Léo Éclair purificateur Attaque [20 à 60] Lumière\nAttaque [20 à 60] Lumière\nEnnemis aléatoires\nApplique Éternité Longueur Life-8 Mimétisme Mimétisme"
+  },
+  {
+   "id": "f5a09cd7-5e6e-4196-907b-07408c3106b8",
+   "slug": "bleu_mange_cailloux",
+   "number": 85,
+   "name": "Bleu-mange-cailloux",
+   "element": "earth",
+   "rarity": "epic",
+   "hp": 500,
+   "spamton": 4,
+   "tier": "C",
+   "rank": 73,
+   "overall": 40.1,
+   "pct": {
+    "offense": 94.5,
+    "offenseSolo": 82.7,
+    "generation": 0,
+    "defense": 12.6,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "TPlumePhoenix",
+   "image": "https://spamgame.com/data/img/illustrations/512/bleu_mange_cailloux.362f1089.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/bleu_mange_cailloux.362f1089.webp",
+   "artist": "ElisaMalan",
+   "talents": [
+    {
+     "id": "TInsensibleDisparition",
+     "name": "Inscrit",
+     "text": "La carte est insensible aux Disparitions.",
+     "slot": 1
+    },
+    {
+     "id": "Frappe",
+     "name": "Frappe",
+     "text": "Augmente les dégâts critiques de (+1).",
+     "slot": 2
+    },
+    {
+     "id": "TPlumePhoenix",
+     "name": "Plume de Phénix",
+     "text": "50 % de chance de récupérer le passif Phénix une fois utilisé.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Bleu-mange-cailloux Gobe-pierre Choix\nCible toutes les cartes adverses\nAttaque 30 Terre\n---------- ou ----------\nCible toutes les cartes adverses\nAttaque [10 à 70] Terre Inscrit Frappe Plume de Phénix Phénix Reset"
+  },
+  {
+   "id": "2ad9be05-3675-4cae-9f32-29170808c3e6",
+   "slug": "frost_glacier",
+   "number": 92,
+   "name": "Frost & Glacier",
+   "element": "water",
+   "rarity": "legendary",
+   "hp": 500,
+   "spamton": 4,
+   "tier": "C",
+   "rank": 74,
+   "overall": 40,
+   "pct": {
+    "offense": 72.4,
+    "offenseSolo": 59.1,
+    "generation": 0,
+    "defense": 18.1,
+    "support": 0.8,
+    "control": 98.4,
+    "economy": 4.7
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "Reset ultime",
+   "image": "https://spamgame.com/data/img/illustrations/512/frost_glacier.e01251fd.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/frost_glacier.e01251fd.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 1
+    },
+    {
+     "id": "Revalorisation",
+     "name": "Revalorisation",
+     "text": "Augmente la génération de Spamton de cette carte de (+5)",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Frost & Glacier Eau trouble Attaque 25 Eau\nAttaque 25 Eau\nEnnemis aléatoires Reset ultime Revalorisation Pièce magique Gel Érosion"
+  },
+  {
+   "id": "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "slug": "chimere_brasse_chair",
+   "number": 238,
+   "name": "Chimère Brasse-chair",
+   "element": "water",
+   "rarity": "rare",
+   "hp": 525,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 75,
+   "overall": 39.4,
+   "pct": {
+    "offense": 81.1,
+    "offenseSolo": 84.3,
+    "generation": 0,
+    "defense": 39.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Critique",
+   "image": "https://spamgame.com/data/img/illustrations/512/chimere_brasse_chair.acacd0df.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/chimere_brasse_chair.acacd0df.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "Frappe",
+     "name": "Frappe",
+     "text": "Augmente les dégâts critiques de (+1).",
+     "slot": 2
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 3
+    }
+   ],
+   "searchText": "Chimère Brasse-chair Galop arctique Cible toutes les cartes adverses\nAttaque 10 Eau 10 Nature Critique Frappe Pièce magique Vampirisme Mimétisme"
+  },
+  {
+   "id": "42de5a1a-f4f1-4d3a-a0b1-01a07ea9b55d",
+   "slug": "verdelune",
+   "number": 255,
+   "name": "Verdelune",
+   "element": "nature",
+   "rarity": "legendary",
+   "hp": 900,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 76,
+   "overall": 39.3,
+   "pct": {
+    "offense": 23.6,
+    "offenseSolo": 19.7,
+    "generation": 0,
+    "defense": 94.5,
+    "support": 80.3,
+    "control": 83.5,
+    "economy": 14.2
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Longueur",
+   "image": "https://spamgame.com/data/img/illustrations/512/verdelune.5607e9a8.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/verdelune.5607e9a8.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "Dernier souffle",
+     "name": "Dernier souffle",
+     "text": "Applique Temporalité à toutes vos cartes quand celle-ci meurt",
+     "slot": 3
+    }
+   ],
+   "searchText": "Verdelune Multi feuillage Cible aléatoirement les cartes adverses\nAttaque 5 Nature\nAttaque 15 Nature\nAttaque 25 Nature\nAttaque 35 Nature Trêve Soigne 60 Nature\nRésistance à tous les éléments (+10) Longueur Critique Dernier souffle Temporalité"
+  },
+  {
+   "id": "a1466fba-ebbf-4017-b3ad-771b2df09a15",
+   "slug": "melodie_des_divinites",
+   "number": 96,
+   "name": "Mélodie des Divinités",
+   "element": "light",
+   "rarity": "legendary",
+   "hp": 550,
+   "spamton": 3,
+   "tier": "C",
+   "rank": 77,
+   "overall": 39.1,
+   "pct": {
+    "offense": 75.6,
+    "offenseSolo": 69.3,
+    "generation": 0,
+    "defense": 15,
+    "support": 0.8,
+    "control": 0,
+    "economy": 92.9
+   },
+   "roles": [
+    "offense",
+    "economy"
+   ],
+   "bestTalent": "OneManArmy",
+   "image": "https://spamgame.com/data/img/illustrations/512/melodie_des_divinites.6b323b59.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/melodie_des_divinites.6b323b59.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurCorrompu",
+     "name": "Cœur Corrompu",
+     "text": "Commence la partie avec un passif Cœur rare aléatoire",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Mélodie des Divinités Flèches célestes Cible aléatoirement les cartes adverses\nAttaque 3 Lumière X18 Jugement divin Les Spamtons de l'adversaire tombent à 0 Héritage Cœur Corrompu One man army"
+  },
+  {
+   "id": "1a638c99-8a8f-4d14-b3a2-3d53a7d80553",
+   "slug": "aldrin_gorakar",
+   "number": 45,
+   "name": "Aldrin & Gorakar",
+   "element": "nature",
+   "rarity": "legendary",
+   "hp": 700,
+   "spamton": 4,
+   "tier": "C",
+   "rank": 78,
+   "overall": 38.7,
+   "pct": {
+    "offense": 81.9,
+    "offenseSolo": 76.4,
+    "generation": 0,
+    "defense": 37,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Reset ultime",
+   "image": "https://spamgame.com/data/img/illustrations/512/aldrin_gorakar.35cd8e1d.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/aldrin_gorakar.35cd8e1d.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Terrain enflamée",
+     "name": "Terrain enflammé",
+     "text": "Bonus (+7) Feu.",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 2
+    },
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Aldrin & Gorakar Valse des nuages Attaque 90 Nature\n[Usage Limité 1/1] Souffle critique Attaque 7 Nature\nAttaque 7 Nature Piétinement Attaque 10 Terre\nAttaque 10 Nature Terrain enflammé Éternisé Reset ultime"
+  },
+  {
+   "id": "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "slug": "esprit_eau",
+   "number": 2,
+   "name": "Esprit Eau",
+   "element": "water",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "C",
+   "rank": 79,
+   "overall": 38.5,
+   "pct": {
+    "offense": 38.6,
+    "offenseSolo": 47.2,
+    "generation": 89,
+    "defense": 3.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TCoeurEau_C",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_eau.dc059585.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_eau.dc059585.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurEau_C",
+     "name": "Cœur EAU",
+     "text": "Commence la partie avec le passif Cœur d'eau",
+     "slot": 1
+    },
+    {
+     "id": "Terrain enflamée",
+     "name": "Terrain enflammé",
+     "text": "Bonus (+7) Feu.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Eau Souffle d'eau Attaque 10 Eau\nBonus Eau (+1) Vague Bonus Eau (+1) Cœur EAU Terrain enflammé Cavalerie"
+  },
+  {
+   "id": "d2dedd4a-2fa0-48e8-bec6-e16d9749a419",
+   "slug": "cerf_des_couleurs_funebres",
+   "number": 137,
+   "name": "Cerf des Couleurs Funèbres",
+   "element": "nature",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 80,
+   "overall": 38.5,
+   "pct": {
+    "offense": 76.4,
+    "offenseSolo": 89,
+    "generation": 0,
+    "defense": 45.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/cerf_des_couleurs_funebres.59e49e1a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/cerf_des_couleurs_funebres.59e49e1a.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "A la caisse",
+     "name": "À la caisse",
+     "text": "Au début de la partie, gagnez (+25) Spamton.",
+     "slot": 1
+    },
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 2
+    },
+    {
+     "id": "Armure des Ames",
+     "name": "Armure des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Cerf des Couleurs Funèbres Drain élémentaire Cible aléatoirement les cartes adverses\nAttaque 6 Terre\nAttaque 6 Nature\nAttaque 6 Feu\nAttaque 6 Eau\nAttaque 6 Lumière\nAttaque 6 Ombre\nVampirisme À la caisse Départ multi Armure des Âmes Multiplicateur"
+  },
+  {
+   "id": "fb650a65-aee6-4028-9e0f-2ab8796bf5e6",
+   "slug": "roi_des_flammes_ardentes",
+   "number": 37,
+   "name": "Roi des Flammes Ardentes",
+   "element": "fire",
+   "rarity": "epic",
+   "hp": 900,
+   "spamton": 7,
+   "tier": "C",
+   "rank": 81,
+   "overall": 38.4,
+   "pct": {
+    "offense": 40.2,
+    "offenseSolo": 39.4,
+    "generation": 0,
+    "defense": 72.4,
+    "support": 87.4,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "BouleDeCrit",
+   "image": "https://spamgame.com/data/img/illustrations/512/roi_des_flammes_ardentes.48b49dec.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/roi_des_flammes_ardentes.48b49dec.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Contre",
+     "name": "Contre",
+     "text": "Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 3
+    }
+   ],
+   "searchText": "Roi des Flammes Ardentes Morsure brûlante Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+7%) Contre Évolution Boule de Crit Phénix"
+  },
+  {
+   "id": "0d26bb73-4cd0-44fb-aba6-5b14d93d6249",
+   "slug": "codex_des_maux_ancestraux",
+   "number": 197,
+   "name": "Codex des Maux Ancestraux",
+   "element": "shadow",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "C",
+   "rank": 82,
+   "overall": 37.6,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 95.3,
+    "defense": 92.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Blindage F/E",
+   "image": "https://spamgame.com/data/img/illustrations/512/codex_des_maux_ancestraux.1ea08aa8.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/codex_des_maux_ancestraux.1ea08aa8.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Codex des Maux Ancestraux Écrit sombre Bonus Ombre (+1). La valeur de base du bonus augmente de 1 Blindage F/E Blindage O/L Blindage N/T Immunité"
+  },
+  {
+   "id": "f16bc1f8-5cea-4acf-9e2a-0614062cb9b8",
+   "slug": "devoreur_de_faune",
+   "number": 128,
+   "name": "Dévoreur de faune",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 83,
+   "overall": 37.6,
+   "pct": {
+    "offense": 70.9,
+    "offenseSolo": 48.8,
+    "generation": 0,
+    "defense": 54.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Blindage O/L",
+   "image": "https://spamgame.com/data/img/illustrations/512/devoreur_de_faune.3c9051ea.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/devoreur_de_faune.3c9051ea.webp",
+   "artist": "Krisakx",
+   "talents": [
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Dévoreur de faune Boule de haine Attaque 5 Ombre\nLa valeur de base de dégâts augmente de 5 Blindage O/L Blindage N/T Blindage F/E Vampirisme"
+  },
+  {
+   "id": "829ed494-abd6-4089-8468-2f63ab6536b2",
+   "slug": "codex_des_sorts_lumineux",
+   "number": 198,
+   "name": "Codex des Sorts Lumineux",
+   "element": "light",
+   "rarity": "epic",
+   "hp": 1000,
+   "spamton": 10,
+   "tier": "C",
+   "rank": 84,
+   "overall": 37.5,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 95.3,
+    "defense": 91.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "generation",
+    "defense"
+   ],
+   "bestTalent": "Blindage F/E",
+   "image": "https://spamgame.com/data/img/illustrations/512/codex_des_sorts_lumineux.4f3112eb.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/codex_des_sorts_lumineux.4f3112eb.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Blindage F/E",
+     "name": "Blindage F/E",
+     "text": "Résistance feu (+25 %)\nRésistance eau (+25 %)",
+     "slot": 1
+    },
+    {
+     "id": "Blindage O/L",
+     "name": "Blindage O/L",
+     "text": "Résistance ombre (+25 %)\nRésistance lumière (+25 %)",
+     "slot": 2
+    },
+    {
+     "id": "Blindage N/T",
+     "name": "Blindage N/T",
+     "text": "Résistance nature (+25 %)\nRésistance terre (+25 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Codex des Sorts Lumineux Écrit luminescent Bonus Lumière (+1). La valeur de base du bonus augmente de 1 Blindage F/E Blindage O/L Blindage N/T Immunité"
+  },
+  {
+   "id": "9f744687-461b-493e-9a9a-408906fafbde",
+   "slug": "hippocampe_nimbe",
+   "number": 27,
+   "name": "Hippocampe Nimbé",
+   "element": "water",
+   "rarity": "rare",
+   "hp": 900,
+   "spamton": 4,
+   "tier": "C",
+   "rank": 85,
+   "overall": 37.4,
+   "pct": {
+    "offense": 31.5,
+    "offenseSolo": 57.5,
+    "generation": 71.7,
+    "defense": 66.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/hippocampe_nimbe.72edd1b2.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/hippocampe_nimbe.72edd1b2.webp",
+   "artist": "ElisaMalan",
+   "talents": [
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 1
+    },
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 2
+    },
+    {
+     "id": "Imprecision",
+     "name": "Imprécision",
+     "text": "Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Hippocampe Nimbé Supra-rayon-humide Attaque 25 Eau 25 Lumière 25 Nature\nBonus Eau (+3) Lumière (+3) Nature (+3) Départ multi Incisif Imprécision Reset Brut"
+  },
+  {
+   "id": "f9508ebf-29e6-4ff6-a806-9573bb36bbbf",
+   "slug": "soigneuse_astrale_des_bois",
+   "number": 71,
+   "name": "Soigneuse Astrale des Bois",
+   "element": "nature",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 11,
+   "tier": "C",
+   "rank": 86,
+   "overall": 36.9,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 68.5,
+    "defense": 44.9,
+    "support": 99.2,
+    "control": 0,
+    "economy": 93.7
+   },
+   "roles": [
+    "support",
+    "economy"
+   ],
+   "bestTalent": "Evolution",
+   "image": "https://spamgame.com/data/img/illustrations/512/soigneuse_astrale_des_bois.aa1faea9.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/soigneuse_astrale_des_bois.aa1faea9.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "Heritage",
+     "name": "Héritage",
+     "text": "Bonus (+50) Spamton quand cette carte est tuée.",
+     "slot": 1
+    },
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Soigneuse Astrale des Bois Feuille magique Soigne 10 Nature\nCritique (+2%) sur toutes les cartes alliées Héritage Boule de Crit Évolution Cœur de nature Chanceur"
+  },
+  {
+   "id": "550286a1-0d0c-445a-8bd4-f213d0f31506",
+   "slug": "panthere_imaginaire",
+   "number": 83,
+   "name": "Panthère imaginaire",
+   "element": "nature",
+   "rarity": "epic",
+   "hp": 600,
+   "spamton": 4,
+   "tier": "C",
+   "rank": 87,
+   "overall": 36.6,
+   "pct": {
+    "offense": 83.5,
+    "offenseSolo": 75.6,
+    "generation": 0,
+    "defense": 18.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "offense"
+   ],
+   "bestTalent": "TBrut",
+   "image": "https://spamgame.com/data/img/illustrations/512/panthere_imaginaire.6931573c.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/panthere_imaginaire.6931573c.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "TChanceVitale",
+     "name": "Chance Vitale",
+     "text": "Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.",
+     "slot": 1
+    },
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 2
+    },
+    {
+     "id": "TBrut",
+     "name": "Brut",
+     "text": "Commence la partie avec le passif \"Brut\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Panthère imaginaire Vitesse folle Attaque 9 Nature\nEcho (75%) Chance Vitale Roulette Brut"
+  },
+  {
+   "id": "4b5c9594-0497-4d5f-9631-e413c3a89483",
+   "slug": "vivy",
+   "number": 243,
+   "name": "Vivy",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 9,
+   "tier": "C",
+   "rank": 88,
+   "overall": 36.6,
+   "pct": {
+    "offense": 49.6,
+    "offenseSolo": 50.4,
+    "generation": 0,
+    "defense": 83.5,
+    "support": 0.8,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Terrain lumineux",
+   "image": "https://spamgame.com/data/img/illustrations/512/vivy.16a39c21.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/vivy.16a39c21.webp",
+   "artist": "Mr Wolf",
+   "talents": [
+    {
+     "id": "TBrut",
+     "name": "Brut",
+     "text": "Commence la partie avec le passif \"Brut\"",
+     "slot": 1
+    },
+    {
+     "id": "Terrain lumineux",
+     "name": "Terrain lumineux",
+     "text": "Bonus (+7) Lumière.",
+     "slot": 2
+    },
+    {
+     "id": "Baleine bleue",
+     "name": "Baleine bleue",
+     "text": "Augmente les PV de cette carte de (+200).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Vivy Onde de Ténèbres Attaque 40 Ombre\nAttaque [+1 à +40] Lumière\nCritique du lanceur (+20) Brut Terrain lumineux Baleine bleue Fumée"
+  },
+  {
+   "id": "869a57eb-3787-423b-b244-df864406c065",
+   "slug": "ephial",
+   "number": 204,
+   "name": "Ephial",
+   "element": "light",
+   "rarity": "legendary",
+   "hp": 1500,
+   "spamton": 12,
+   "tier": "C",
+   "rank": 89,
+   "overall": 36.1,
+   "pct": {
+    "offense": 14.2,
+    "offenseSolo": 18.1,
+    "generation": 0,
+    "defense": 98.4,
+    "support": 93.7,
+    "control": 0,
+    "economy": 90.6
+   },
+   "roles": [
+    "support",
+    "defense",
+    "economy"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/ephial.7e2bf7b4.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/ephial.7e2bf7b4.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 1
+    },
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 2
+    },
+    {
+     "id": "TToxChanceux",
+     "name": "Tox chanceux",
+     "text": "Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Ephial Plaquage astral Attaque 20 Lumière\nAttaque 20 Ombre\nAttaque 20 Nature Planète Soin Soigne 70 Lumière à toutes les cartes alliées Cavalerie Focus Tox chanceux Reset"
+  },
+  {
+   "id": "7193739b-4135-4bd6-b002-f1c4112ee7c5",
+   "slug": "maitre_thronebeur",
+   "number": 64,
+   "name": "Maître Thronebéur",
+   "element": "light",
+   "rarity": "common",
+   "hp": 850,
+   "spamton": 8,
+   "tier": "C",
+   "rank": 90,
+   "overall": 35.4,
+   "pct": {
+    "offense": 16.5,
+    "offenseSolo": 22.8,
+    "generation": 0,
+    "defense": 66.1,
+    "support": 84.3,
+    "control": 85,
+    "economy": 52
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/maitre_thronebeur.078bf32b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/maitre_thronebeur.078bf32b.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 2
+    },
+    {
+     "id": "Fortune",
+     "name": "Fortune",
+     "text": "Augmente la génération de Spamton de cette carte de (+2) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "Maître Thronebéur Ralentissement Applique Éternité Marteau-lumineux Attaque 20 Lumière\nAttaque 20 Terre\nPrécision (+20%) sur toutes les cartes alliées Longueur Départ multi Fortune"
+  },
+  {
+   "id": "d9b48eed-dd89-43a2-8da3-9aa466059a45",
+   "slug": "lapin_plume",
+   "number": 158,
+   "name": "Lapin-Plume",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 850,
+   "spamton": 7,
+   "tier": "C",
+   "rank": 91,
+   "overall": 35.3,
+   "pct": {
+    "offense": 62.2,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 50.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/lapin_plume.8923f885.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lapin_plume.8923f885.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "OneManArmy",
+     "name": "One man army",
+     "text": "Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lapin-Plume Son perçant [Coût 1 Nature]\nAttaque 20 Nature\nLes dégâts de base de cette attaque augmentent de (+2) après utilisation Vitalité des Âmes Évolution One man army Cœur résistance Contrecoup"
+  },
+  {
+   "id": "39ab2a20-a3a0-47d4-b297-2ec0dc7ce0d1",
+   "slug": "faerylia",
+   "number": 88,
+   "name": "Faerylia",
+   "element": "shadow",
+   "rarity": "epic",
+   "hp": 600,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 92,
+   "overall": 35.1,
+   "pct": {
+    "offense": 30.7,
+    "offenseSolo": 29.1,
+    "generation": 54.3,
+    "defense": 22.8,
+    "support": 0.8,
+    "control": 92.9,
+    "economy": 14.2
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/faerylia.b1919f39.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/faerylia.b1919f39.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TRevitalisation",
+     "name": "Revitalisation",
+     "text": "5 % de chance par tour de jeu de restaurer ses PV au maximum.",
+     "slot": 1
+    },
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 2
+    },
+    {
+     "id": "Heure funeste",
+     "name": "Heure Funeste",
+     "text": "Applique Éternité à toutes les cartes adverses quand cette carte est tuée.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Faerylia Visée globale Cible toutes les cartes adverses\nApplique Éternité Visée offensive Attaque 15 Ombre\nÉternité en cas de coup critique Multiboost Bonus de chaque élément (+3) Revitalisation Départ multi Heure Funeste"
+  },
+  {
+   "id": "98876320-2c8e-4ddc-b7df-4d4b1fda7917",
+   "slug": "logidrake_lignatus",
+   "number": 67,
+   "name": "Logidrake, l'Ignatius",
+   "element": "fire",
+   "rarity": "rare",
+   "hp": 500,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 93,
+   "overall": 33.6,
+   "pct": {
+    "offense": 74.8,
+    "offenseSolo": 65.4,
+    "generation": 0,
+    "defense": 17.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Nouvelle vie",
+   "image": "https://spamgame.com/data/img/illustrations/512/logidrake_lignatus.b19b98d6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/logidrake_lignatus.b19b98d6.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "A la caisse",
+     "name": "À la caisse",
+     "text": "Au début de la partie, gagnez (+25) Spamton.",
+     "slot": 1
+    },
+    {
+     "id": "Nouvelle vie",
+     "name": "Nouvelle vie",
+     "text": "Commence la partie avec, au hasard, le passif Phénix ou Cimetière.",
+     "slot": 2
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Logidrake, l'Ignatius Lucky-Fire Attaque 7 Feu\nAttaque 7 Feu\nAttaque 7 Feu\nEcho (50%) À la caisse Nouvelle vie Cœur d’acier Vampirisme"
+  },
+  {
+   "id": "d25f1db4-4f3d-484b-b6dc-179149394f61",
+   "slug": "raffteru",
+   "number": 31,
+   "name": "Raffteru",
+   "element": "earth",
+   "rarity": "rare",
+   "hp": 600,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 94,
+   "overall": 33.2,
+   "pct": {
+    "offense": 51.2,
+    "offenseSolo": 66.9,
+    "generation": 0,
+    "defense": 26,
+    "support": 78,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "BouleDeCrit",
+   "image": "https://spamgame.com/data/img/illustrations/512/raffteru.613b3c5a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/raffteru.613b3c5a.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 1
+    },
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 2
+    },
+    {
+     "id": "TBrut",
+     "name": "Brut",
+     "text": "Commence la partie avec le passif \"Brut\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Raffteru Secousse aléatoire Attaque 70 Terre\nCritique (+20%) sur toutes les cartes alliées Bond-chanceux Attaque 10 Nature\nEcho (50%) Reset ultime Boule de Crit Brut"
+  },
+  {
+   "id": "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "slug": "linventeur",
+   "number": 153,
+   "name": "L'Inventeur",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 5,
+   "tier": "C",
+   "rank": 95,
+   "overall": 32.5,
+   "pct": {
+    "offense": 22,
+    "offenseSolo": 46.5,
+    "generation": 51.2,
+    "defense": 82.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/linventeur.62308d96.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/linventeur.62308d96.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 1
+    },
+    {
+     "id": "TChanceVitale",
+     "name": "Chance Vitale",
+     "text": "Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "L'Inventeur Materia Bonus [-5 à +8] dans chaque élément Arc-en-ciel Attaque 10 dans un élément aléatoire Roulette Chance Vitale Vitalité des Âmes Multiplicateur"
+  },
+  {
+   "id": "ebeacfd6-0436-4d76-b45b-a6bba75b7e3a",
+   "slug": "lepine_damour",
+   "number": 106,
+   "name": "L'Épine d'Amour",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 6,
+   "tier": "D",
+   "rank": 96,
+   "overall": 32.3,
+   "pct": {
+    "offense": 25.2,
+    "offenseSolo": 72.4,
+    "generation": 96.9,
+    "defense": 3.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Affaiblissement",
+   "image": "https://spamgame.com/data/img/illustrations/512/lepine_damour.faf269ac.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lepine_damour.faf269ac.webp",
+   "artist": "Krackdur",
+   "talents": [
+    {
+     "id": "Revalorisation",
+     "name": "Revalorisation",
+     "text": "Augmente la génération de Spamton de cette carte de (+5)",
+     "slot": 1
+    },
+    {
+     "id": "Piece magique",
+     "name": "Pièce magique",
+     "text": "Commencez la partie avec (+2) en Chance",
+     "slot": 2
+    },
+    {
+     "id": "Affaiblissement",
+     "name": "Affaiblissement",
+     "text": "Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu",
+     "slot": 3
+    }
+   ],
+   "searchText": "L'Épine d'Amour Sagesse Bonus Terre (+2)\nBonus Nature (+2)\nBonus Lumière (+2) Revalorisation Pièce magique Affaiblissement Renvoi"
+  },
+  {
+   "id": "94bf1adf-d9eb-4288-ad67-50939efa3f12",
+   "slug": "neilla",
+   "number": 101,
+   "name": "Neilla",
+   "element": "water",
+   "rarity": "common",
+   "hp": 650,
+   "spamton": 9,
+   "tier": "D",
+   "rank": 97,
+   "overall": 32.2,
+   "pct": {
+    "offense": 19.7,
+    "offenseSolo": 15,
+    "generation": 0,
+    "defense": 81.1,
+    "support": 79.5,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Souffle-8",
+   "image": "https://spamgame.com/data/img/illustrations/512/neilla.e5ad5a67.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/neilla.e5ad5a67.webp",
+   "artist": "SAN",
+   "talents": [
+    {
+     "id": "TInsensibleDisparition",
+     "name": "Inscrit",
+     "text": "La carte est insensible aux Disparitions.",
+     "slot": 1
+    },
+    {
+     "id": "Reducteur",
+     "name": "Réducteur",
+     "text": "Au début de votre premier tour, une carte alliée aléatoire reçoit \"Temporalité\"",
+     "slot": 2
+    },
+    {
+     "id": "Souffle-8",
+     "name": "Souffle-8",
+     "text": "Récupère l'attaque Souffle élémentaire au début du tour 8",
+     "slot": 3
+    }
+   ],
+   "searchText": "Neilla Protection marine Soigne 80 Eau\nRésistance à tous les éléments (+15)\nApplique Provocation Inscrit Réducteur Souffle-8 Temporalité"
+  },
+  {
+   "id": "50807128-85af-472d-b2f7-59737a9a03b4",
+   "slug": "esprit_nature",
+   "number": 3,
+   "name": "Esprit Nature",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 98,
+   "overall": 32,
+   "pct": {
+    "offense": 26,
+    "offenseSolo": 32.3,
+    "generation": 74,
+    "defense": 14.2,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Terrain terrestre",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_nature.40fb9c03.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_nature.40fb9c03.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurNature_C",
+     "name": "Cœur NATURE",
+     "text": "Commence la partie avec le passif Cœur de nature",
+     "slot": 1
+    },
+    {
+     "id": "Terrain terrestre",
+     "name": "Terrain terrestre",
+     "text": "Bonus (+7) Terre.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Nature Souffle d'air Attaque 10 Nature\nBonus Nature (+1) Éolienne Bonus Nature (+1) Cœur NATURE Terrain terrestre Cavalerie"
+  },
+  {
+   "id": "b95d5704-625c-44f1-8425-de843adcca56",
+   "slug": "esprit_terre",
+   "number": 4,
+   "name": "Esprit Terre",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 99,
+   "overall": 31.9,
+   "pct": {
+    "offense": 26,
+    "offenseSolo": 32.3,
+    "generation": 74,
+    "defense": 13.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_terre.821d5fd6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_terre.821d5fd6.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurTerre_C",
+     "name": "Cœur TERRE",
+     "text": "Commence la partie avec le passif Cœur de terre",
+     "slot": 1
+    },
+    {
+     "id": "Terrain naturel",
+     "name": "Terrain naturel",
+     "text": "Bonus (+7) Nature.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Terre Souffle de terre Attaque 10 Terre\nBonus Terre (+1) Rempart Bonus Terre (+1) Cœur TERRE Terrain naturel Cavalerie"
+  },
+  {
+   "id": "3cceeacc-0e78-48b0-9b18-7d677b09e3bd",
+   "slug": "lums",
+   "number": 113,
+   "name": "Lums",
+   "element": "light",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 100,
+   "overall": 31.6,
+   "pct": {
+    "offense": 15,
+    "offenseSolo": 18.9,
+    "generation": 56.7,
+    "defense": 29.1,
+    "support": 71.7,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "TCoeurLumiere_C",
+   "image": "https://spamgame.com/data/img/illustrations/512/lums.07a124ff.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lums.07a124ff.webp",
+   "artist": "Yoru Flush",
+   "talents": [
+    {
+     "id": "TCoeurLumiere_C",
+     "name": "Cœur LUMIÈRE",
+     "text": "Commence la partie avec le passif Cœur de lumière",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurOmbre_C",
+     "name": "Cœur OMBRE",
+     "text": "Commence la partie avec le passif \"Cœur d'ombre\"",
+     "slot": 2
+    },
+    {
+     "id": "BouleDeCrit",
+     "name": "Boule de Crit",
+     "text": "Augmente les critiques de cette carte de (+2 %) à chaque tour",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lums Vent argenté Choix\nAttaque 10 Lumière 10 Ombre\n---------- ou ----------\nBonus Lumière (+3) Bonus Ombre (+3) Envol Cible toutes les cartes du terrain\nDégâts critiques (+1) Cœur LUMIÈRE Cœur OMBRE Boule de Crit"
+  },
+  {
+   "id": "9a5c316d-6a42-4353-8f1a-5c3dc7703538",
+   "slug": "fleur_de_vie",
+   "number": 222,
+   "name": "Fleur de Vie",
+   "element": "light",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 101,
+   "overall": 31.5,
+   "pct": {
+    "offense": 21.3,
+    "offenseSolo": 23.6,
+    "generation": 89,
+    "defense": 15.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "TCoeurCorrompu",
+   "image": "https://spamgame.com/data/img/illustrations/512/fleur_de_vie.2001169a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/fleur_de_vie.2001169a.webp",
+   "artist": "Krisakx",
+   "talents": [
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurCorrompu",
+     "name": "Cœur Corrompu",
+     "text": "Commence la partie avec un passif Cœur rare aléatoire",
+     "slot": 2
+    },
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 3
+    }
+   ],
+   "searchText": "Fleur de Vie Souffle de lumière Attaque 10 Lumière\nBonus Lumière (+1) Barrière Florale Applique Provocation au lanceur Blindage Partagé Cœur Corrompu Incisif"
+  },
+  {
+   "id": "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "slug": "esprit_feu",
+   "number": 1,
+   "name": "Esprit Feu",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 102,
+   "overall": 31.4,
+   "pct": {
+    "offense": 26,
+    "offenseSolo": 32.3,
+    "generation": 74,
+    "defense": 10.2,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Terrain aquatique",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_feu.6e135e24.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_feu.6e135e24.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurFeu_C",
+     "name": "Cœur FEU",
+     "text": "Commence la partie avec le passif \"Cœur de feu\"",
+     "slot": 1
+    },
+    {
+     "id": "Terrain aquatique",
+     "name": "Terrain aquatique",
+     "text": "Bonus (+7) Eau.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Feu Souffle de feu Attaque 10 Feu\nBonus Feu (+1) Flambée Bonus Feu (+1) Cœur FEU Terrain aquatique Cavalerie"
+  },
+  {
+   "id": "cee0dcfd-25c1-48db-8395-08a13b1de404",
+   "slug": "godlur",
+   "number": 261,
+   "name": "Godlur",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 103,
+   "overall": 31.3,
+   "pct": {
+    "offense": 36.2,
+    "offenseSolo": 22,
+    "generation": 0,
+    "defense": 92.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "defense"
+   ],
+   "bestTalent": "Incisif",
+   "image": "https://spamgame.com/data/img/illustrations/512/godlur.e6f1c9c6.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/godlur.e6f1c9c6.webp",
+   "artist": "SAN",
+   "talents": [
+    {
+     "id": "Incisif",
+     "name": "Incisif",
+     "text": "Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Revalorisation",
+     "name": "Revalorisation",
+     "text": "Augmente la génération de Spamton de cette carte de (+5)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Godlur Frappe golémique Attaque 25 Terre\nFumée Incisif Évolution Revalorisation Ténacité Soin primitif"
+  },
+  {
+   "id": "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "slug": "esprit_lumiere",
+   "number": 6,
+   "name": "Esprit Lumière",
+   "element": "light",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 104,
+   "overall": 31.2,
+   "pct": {
+    "offense": 26,
+    "offenseSolo": 32.3,
+    "generation": 74,
+    "defense": 8.7,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Terrain sombre",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_lumiere.29b4f074.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_lumiere.29b4f074.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurLumiere_C",
+     "name": "Cœur LUMIÈRE",
+     "text": "Commence la partie avec le passif Cœur de lumière",
+     "slot": 1
+    },
+    {
+     "id": "Terrain sombre",
+     "name": "Terrain sombre",
+     "text": "Bonus (+7) Ombre.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Lumière Souffle de lumière Attaque 10 Lumière\nBonus Lumière (+1) Écran Bonus Lumière (+1) Cœur LUMIÈRE Terrain sombre Cavalerie"
+  },
+  {
+   "id": "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "slug": "esprit_ombre",
+   "number": 5,
+   "name": "Esprit Ombre",
+   "element": "shadow",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 105,
+   "overall": 30.5,
+   "pct": {
+    "offense": 26,
+    "offenseSolo": 32.3,
+    "generation": 74,
+    "defense": 3.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/esprit_ombre.2206425d.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/esprit_ombre.2206425d.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "TCoeurOmbre_C",
+     "name": "Cœur OMBRE",
+     "text": "Commence la partie avec le passif \"Cœur d'ombre\"",
+     "slot": 1
+    },
+    {
+     "id": "Terrain lumineux",
+     "name": "Terrain lumineux",
+     "text": "Bonus (+7) Lumière.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Esprit Ombre Souffle d'ombre Attaque 10 Ombre\nBonus Ombre (+1) Obscur Bonus Ombre (+1) Cœur OMBRE Terrain lumineux Cavalerie"
+  },
+  {
+   "id": "d6eb06bb-07e9-4306-94d0-06c3e09c5786",
+   "slug": "lueur_despoir",
+   "number": 22,
+   "name": "Lueur d'Espoir",
+   "element": "light",
+   "rarity": "common",
+   "hp": 900,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 106,
+   "overall": 30.4,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 96.1,
+    "support": 90.6,
+    "control": 0,
+    "economy": 98.4
+   },
+   "roles": [
+    "support",
+    "defense",
+    "economy"
+   ],
+   "bestTalent": "TToxChanceux",
+   "image": "https://spamgame.com/data/img/illustrations/512/lueur_despoir.42a27a50.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lueur_despoir.42a27a50.webp",
+   "artist": "Deirdre",
+   "talents": [
+    {
+     "id": "TToxChanceux",
+     "name": "Tox chanceux",
+     "text": "Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.",
+     "slot": 1
+    },
+    {
+     "id": "TRoulette",
+     "name": "Roulette",
+     "text": "Toutes les compétences de cette carte gagnent Écho (10 %).",
+     "slot": 2
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lueur d'Espoir Respiration Soigne 20 Nature\nSoigne 20 Lumière\nRésistance d'un élément aléatoire (+15) Tox chanceux Roulette Transition Chanceur"
+  },
+  {
+   "id": "88797a70-6bd8-4e3b-adbf-a45fe4153d78",
+   "slug": "rob_laventurier",
+   "number": 176,
+   "name": "Rob l'Aventurier",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 9,
+   "tier": "D",
+   "rank": 107,
+   "overall": 30.3,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 86.6,
+    "defense": 3.9,
+    "support": 81.9,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Evolution",
+   "image": "https://spamgame.com/data/img/illustrations/512/rob_laventurier.e75eec41.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/rob_laventurier.e75eec41.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "TInsensibleDisparition",
+     "name": "Inscrit",
+     "text": "La carte est insensible aux Disparitions.",
+     "slot": 1
+    },
+    {
+     "id": "Heure funeste",
+     "name": "Heure Funeste",
+     "text": "Applique Éternité à toutes les cartes adverses quand cette carte est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Rob l'Aventurier Aventure Les valeurs de base des soins et des dégâts augmentent de 1\nPrécision et Critique (+4%) Inscrit Heure Funeste Évolution Cœur d'ombre Cœur de terre"
+  },
+  {
+   "id": "65eebf29-0d96-4c4b-a82c-c546199d0f52",
+   "slug": "poulpe_parleur",
+   "number": 146,
+   "name": "Poulpe Parleur",
+   "element": "water",
+   "rarity": "epic",
+   "hp": 500,
+   "spamton": 3,
+   "tier": "D",
+   "rank": 108,
+   "overall": 30,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 74,
+    "defense": 48.8,
+    "support": 77.2,
+    "control": 0,
+    "economy": 2.4
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Blindage Partagé",
+   "image": "https://spamgame.com/data/img/illustrations/512/poulpe_parleur.ac32d7aa.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/poulpe_parleur.ac32d7aa.webp",
+   "artist": "le_yack_albinos",
+   "talents": [
+    {
+     "id": "Nouvelle vie",
+     "name": "Nouvelle vie",
+     "text": "Commence la partie avec, au hasard, le passif Phénix ou Cimetière.",
+     "slot": 1
+    },
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 2
+    },
+    {
+     "id": "TInversement",
+     "name": "Inversement",
+     "text": "Commence la partie avec le passif \"Inversement\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Poulpe Parleur Encre sèche Soigne 10 Eau\nBonus Eau (+2) Nouvelle vie Blindage Partagé Inversement Fumée"
+  },
+  {
+   "id": "a0891171-0340-4b1d-b8a2-49316f8c94e5",
+   "slug": "souris_des_bles",
+   "number": 140,
+   "name": "Souris des blés",
+   "element": "earth",
+   "rarity": "rare",
+   "hp": 500,
+   "spamton": 10,
+   "tier": "D",
+   "rank": 109,
+   "overall": 29.4,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 48.8,
+    "defense": 37.8,
+    "support": 92.9,
+    "control": 0,
+    "economy": 66.1
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Terrain lumineux",
+   "image": "https://spamgame.com/data/img/illustrations/512/souris_des_bles.7705ea7d.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/souris_des_bles.7705ea7d.webp",
+   "artist": "Simdof",
+   "talents": [
+    {
+     "id": "Terrain lumineux",
+     "name": "Terrain lumineux",
+     "text": "Bonus (+7) Lumière.",
+     "slot": 1
+    },
+    {
+     "id": "TPetitPrix",
+     "name": "Petit prix",
+     "text": "Votre premier achat de Tox de la partie est remboursé.",
+     "slot": 2
+    },
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Souris des blés Épidémie Soigne 125 Terre\nBonus Terre (+2) Terrain lumineux Petit prix Longueur Disparition"
+  },
+  {
+   "id": "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "slug": "chouette_polychrome",
+   "number": 227,
+   "name": "Chouette Polychrome",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 9,
+   "tier": "D",
+   "rank": 110,
+   "overall": 29.1,
+   "pct": {
+    "offense": 53.5,
+    "offenseSolo": 78,
+    "generation": 0,
+    "defense": 10.2,
+    "support": 0.8,
+    "control": 0,
+    "economy": 86.6
+   },
+   "roles": [
+    "economy"
+   ],
+   "bestTalent": "Dernier souffle",
+   "image": "https://spamgame.com/data/img/illustrations/512/chouette_polychrome.b004d4a2.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/chouette_polychrome.b004d4a2.webp",
+   "artist": "Embers",
+   "talents": [
+    {
+     "id": "Virage360",
+     "name": "Virage 360",
+     "text": "Applique \"Métamorphe aléatoire\" à toutes vos autres cartes quand celle-ci est tuée.",
+     "slot": 1
+    },
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 2
+    },
+    {
+     "id": "Dernier souffle",
+     "name": "Dernier souffle",
+     "text": "Applique Temporalité à toutes vos cartes quand celle-ci meurt",
+     "slot": 3
+    }
+   ],
+   "searchText": "Chouette Polychrome Danse des plumes Cible aléatoirement les cartes du terrain\nAttaque 30 Nature\nAttaque 30 Feu\nAttaque 30 Ombre\nAttaque 30 Lumière\nAttaque 30 Eau\nAttaque 30 Terre\nApplique Temporalité à la carte ciblée en cas de coup critique Virage 360 Imprudent Dernier souffle"
+  },
+  {
+   "id": "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "slug": "lil_des_montagnes",
+   "number": 156,
+   "name": "L'Œil des montagnes",
+   "element": "water",
+   "rarity": "common",
+   "hp": 600,
+   "spamton": 6,
+   "tier": "D",
+   "rank": 111,
+   "overall": 28.8,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 56.7,
+    "defense": 46.5,
+    "support": 83.5,
+    "control": 0,
+    "economy": 30.7
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "TCoeurAcier",
+   "image": "https://spamgame.com/data/img/illustrations/512/lil_des_montagnes.b7257dd5.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lil_des_montagnes.b7257dd5.webp",
+   "artist": "Simdof",
+   "talents": [
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleDisparition",
+     "name": "Inscrit",
+     "text": "La carte est insensible aux Disparitions.",
+     "slot": 2
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "L'Œil des montagnes Revitalisation Soigne 50 Eau\nDégâts critiques (+1) Cœur d’acier Inscrit Critique Berserk Cœur d'eau"
+  },
+  {
+   "id": "a6fd8277-3861-41f1-94c2-d5430a8eb994",
+   "slug": "girafe_florale",
+   "number": 72,
+   "name": "Girafe Florale",
+   "element": "nature",
+   "rarity": "rare",
+   "hp": 750,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 112,
+   "overall": 28.2,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 52,
+    "defense": 40.9,
+    "support": 89,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Depart multi elements",
+   "image": "https://spamgame.com/data/img/illustrations/512/girafe_florale.ad843cc8.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/girafe_florale.ad843cc8.webp",
+   "artist": "Saki",
+   "talents": [
+    {
+     "id": "Depart multi elements",
+     "name": "Départ multi",
+     "text": "Bonus (+3) dans chaque élément.",
+     "slot": 1
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 2
+    },
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Girafe Florale Renaissance Sylvatique Applique Provocation\nCible toutes les cartes alliées\nPrécision et Critique (+5%) Départ multi Cavalerie Corrosion Sac de frappe"
+  },
+  {
+   "id": "f7bf18f9-1ff8-4ad5-b6f0-a32c285d0ffa",
+   "slug": "nakyel",
+   "number": 33,
+   "name": "Nakyel",
+   "element": "shadow",
+   "rarity": "rare",
+   "hp": 500,
+   "spamton": 3,
+   "tier": "D",
+   "rank": 113,
+   "overall": 27,
+   "pct": {
+    "offense": 39.4,
+    "offenseSolo": 20.5,
+    "generation": 0,
+    "defense": 25.2,
+    "support": 0.8,
+    "control": 90.6,
+    "economy": 2.4
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/nakyel.1a12c2a7.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/nakyel.1a12c2a7.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "TCoeurOmbre_C",
+     "name": "Cœur OMBRE",
+     "text": "Commence la partie avec le passif \"Cœur d'ombre\"",
+     "slot": 1
+    },
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Nakyel Écorchage Attaque 20 Ombre\nAugmente les dégâts de base de (+5)\nAugmente les résistances du lanceur de (+5%) Cœur OMBRE Longueur Vitalité des Âmes Éternité"
+  },
+  {
+   "id": "d25e0956-ef6b-467f-b928-85aed6c09631",
+   "slug": "heraldesse_serpentine",
+   "number": 256,
+   "name": "Héraldesse Serpentine",
+   "element": "earth",
+   "rarity": "legendary",
+   "hp": 900,
+   "spamton": 9,
+   "tier": "D",
+   "rank": 114,
+   "overall": 26.2,
+   "pct": {
+    "offense": 15.7,
+    "offenseSolo": 38.6,
+    "generation": 0,
+    "defense": 59.1,
+    "support": 0.8,
+    "control": 85,
+    "economy": 59.8
+   },
+   "roles": [
+    "balanced"
+   ],
+   "bestTalent": "Terrain sombre",
+   "image": "https://spamgame.com/data/img/illustrations/512/heraldesse_serpentine.9c60726c.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/heraldesse_serpentine.9c60726c.webp",
+   "artist": "Euphy",
+   "talents": [
+    {
+     "id": "Terrain sombre",
+     "name": "Terrain sombre",
+     "text": "Bonus (+7) Ombre.",
+     "slot": 1
+    },
+    {
+     "id": "Heure funeste",
+     "name": "Heure Funeste",
+     "text": "Applique Éternité à toutes les cartes adverses quand cette carte est tuée.",
+     "slot": 2
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 3
+    }
+   ],
+   "searchText": "Héraldesse Serpentine Constriction Éternelle Cible aléatoirement les cartes adverses\nAttaque 30 Terre X8 Sacrifice [Coût 7 Terre]\nSe soigne totalement Terrain sombre Heure Funeste Transition Éternité"
+  },
+  {
+   "id": "712412b0-da9a-4a54-9d25-38752d26d295",
+   "slug": "artisan_des_heures",
+   "number": 23,
+   "name": "Artisan des Heures",
+   "element": "light",
+   "rarity": "common",
+   "hp": 700,
+   "spamton": 5,
+   "tier": "D",
+   "rank": 115,
+   "overall": 25.9,
+   "pct": {
+    "offense": 18.9,
+    "offenseSolo": 16.5,
+    "generation": 0,
+    "defense": 63,
+    "support": 0.8,
+    "control": 97.6,
+    "economy": 14.2
+   },
+   "roles": [
+    "control"
+   ],
+   "bestTalent": "Resilience",
+   "image": "https://spamgame.com/data/img/illustrations/512/artisan_des_heures.d618ca14.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/artisan_des_heures.d618ca14.webp",
+   "artist": "Mr.Kelbi",
+   "talents": [
+    {
+     "id": "Imprudent",
+     "name": "Imprudent",
+     "text": "Applique immédiatement \"Métamorphe aléatoire\" à cette carte puis confère un bonus de (+500) PV.",
+     "slot": 1
+    },
+    {
+     "id": "Dette",
+     "name": "Dette",
+     "text": "Les deux joueurs commencent avec une dette de (-20) Spamton.",
+     "slot": 2
+    },
+    {
+     "id": "Resilience",
+     "name": "Résilience",
+     "text": "Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Artisan des Heures Ralentissement Applique Éternité Flash Attaque 35 Lumière\nGel Imprudent Dette Résilience"
+  },
+  {
+   "id": "32c55614-f280-4ee5-8337-ce3b4a968081",
+   "slug": "sbire_des_flammes",
+   "number": 151,
+   "name": "Sbire des Flammes",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 9,
+   "tier": "D",
+   "rank": 116,
+   "overall": 24.1,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 73.2,
+    "support": 89.8,
+    "control": 0,
+    "economy": 59.8
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Evolution",
+   "image": "https://spamgame.com/data/img/illustrations/512/sbire_des_flammes.e9547b8e.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/sbire_des_flammes.e9547b8e.webp",
+   "artist": "Krisakx",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleDisparition",
+     "name": "Inscrit",
+     "text": "La carte est insensible aux Disparitions.",
+     "slot": 2
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Sbire des Flammes Doux foyer Cible aléatoirement les cartes alliées\nSoigne 25 Feu\nSoigne 25 Feu\nSoigne 25 Feu Longueur Inscrit Évolution AoE Berserk"
+  },
+  {
+   "id": "62ed2d52-a487-4e73-a1ba-b3b178b8456b",
+   "slug": "wyrm_des_dunes_cornu",
+   "number": 124,
+   "name": "Wyrm des Dunes Cornu",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 4,
+   "tier": "D",
+   "rank": 117,
+   "overall": 23.7,
+   "pct": {
+    "offense": 33.1,
+    "offenseSolo": 37,
+    "generation": 0,
+    "defense": 9.4,
+    "support": 87.4,
+    "control": 0,
+    "economy": 4.7
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Dernier souffle",
+   "image": "https://spamgame.com/data/img/illustrations/512/wyrm_des_dunes_cornu.0bf7935a.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/wyrm_des_dunes_cornu.0bf7935a.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "TErosion",
+     "name": "Érosion",
+     "text": "Commence la partie avec le passif \"Érosion\"",
+     "slot": 1
+    },
+    {
+     "id": "Life-8",
+     "name": "Life-8",
+     "text": "Les PV et PV max de la carte sont doublés au début du tour 8",
+     "slot": 2
+    },
+    {
+     "id": "Dernier souffle",
+     "name": "Dernier souffle",
+     "text": "Applique Temporalité à toutes vos cartes quand celle-ci meurt",
+     "slot": 3
+    }
+   ],
+   "searchText": "Wyrm des Dunes Cornu Morsure brûlante Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+7%) Érosion Life-8 Dernier souffle Mimétisme"
+  },
+  {
+   "id": "fb773994-b10e-49e6-ad9b-24a05f967f1d",
+   "slug": "yotaru_gardefeuille",
+   "number": 262,
+   "name": "Yotaru Gardefeuille",
+   "element": "nature",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 5,
+   "tier": "D",
+   "rank": 118,
+   "overall": 23.7,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 87.4,
+    "support": 96.1,
+    "control": 0,
+    "economy": 14.2
+   },
+   "roles": [
+    "support",
+    "defense"
+   ],
+   "bestTalent": "Blindage Partagé",
+   "image": "https://spamgame.com/data/img/illustrations/512/yotaru_gardefeuille.efc7c792.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/yotaru_gardefeuille.efc7c792.webp",
+   "artist": "Atto",
+   "talents": [
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 2
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 3
+    }
+   ],
+   "searchText": "Yotaru Gardefeuille Protect Applique Provocation aléatoirement à une carte alliée Protect-terre Brise une Provocation pour donner 100 PV max Protect-boost Brise une Provocation pour augmenter les dégâts et soins de base de 3 Blindage Partagé Focus Transition"
+  },
+  {
+   "id": "aafd7b70-a6e4-490f-8685-2f600041bfb2",
+   "slug": "le_transporteur_sauvage",
+   "number": 58,
+   "name": "Le Transporteur Sauvage",
+   "element": "earth",
+   "rarity": "common",
+   "hp": 1000,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 119,
+   "overall": 23.3,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 49.6,
+    "defense": 70.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/le_transporteur_sauvage.a0ac1ef8.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/le_transporteur_sauvage.a0ac1ef8.webp",
+   "artist": "Simdof",
+   "talents": [
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 3
+    }
+   ],
+   "searchText": "Le Transporteur Sauvage Fort Applique Provocation pendant 2 tours Focus Évolution Cavalerie Sac de frappe"
+  },
+  {
+   "id": "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "slug": "scorch_les_lezards_ignes",
+   "number": 69,
+   "name": "Scorch, les Lézards Ignés",
+   "element": "water",
+   "rarity": "rare",
+   "hp": 350,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 120,
+   "overall": 22.9,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 98.4,
+    "defense": 2.4,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "generation"
+   ],
+   "bestTalent": "Nouvelle vie",
+   "image": "https://spamgame.com/data/img/illustrations/512/scorch_les_lezards_ignes.dc836592.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/scorch_les_lezards_ignes.dc836592.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Nouvelle vie",
+     "name": "Nouvelle vie",
+     "text": "Commence la partie avec, au hasard, le passif Phénix ou Cimetière.",
+     "slot": 1
+    },
+    {
+     "id": "Evolution",
+     "name": "Évolution",
+     "text": "Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.\nPaliers à 75 %, 50 % et 25 % des PV.",
+     "slot": 2
+    },
+    {
+     "id": "Dette",
+     "name": "Dette",
+     "text": "Les deux joueurs commencent avec une dette de (-20) Spamton.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Scorch, les Lézards Ignés Feau Bonus Feu (+3)\nBonus Eau (+3)\nBonus Terre (+3) Nouvelle vie Évolution Dette Soin primitif"
+  },
+  {
+   "id": "fbcaf4b0-d038-4686-97f9-fa1f75d031b6",
+   "slug": "le_heraut_des_cendres",
+   "number": 152,
+   "name": "Le Héraut des Cendres",
+   "element": "fire",
+   "rarity": "common",
+   "hp": 800,
+   "spamton": 8,
+   "tier": "D",
+   "rank": 121,
+   "overall": 22.3,
+   "pct": {
+    "offense": 18.1,
+    "offenseSolo": 21.3,
+    "generation": 0,
+    "defense": 58.3,
+    "support": 0.8,
+    "control": 0,
+    "economy": 89.8
+   },
+   "roles": [
+    "economy"
+   ],
+   "bestTalent": "Focus",
+   "image": "https://spamgame.com/data/img/illustrations/512/le_heraut_des_cendres.71f11d68.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/le_heraut_des_cendres.71f11d68.webp",
+   "artist": "Lune Rouge",
+   "talents": [
+    {
+     "id": "Fortune",
+     "name": "Fortune",
+     "text": "Augmente la génération de Spamton de cette carte de (+2) par tour de jeu",
+     "slot": 1
+    },
+    {
+     "id": "Focus",
+     "name": "Focus",
+     "text": "Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.",
+     "slot": 2
+    },
+    {
+     "id": "Corrosion",
+     "name": "Corrosion",
+     "text": "Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Le Héraut des Cendres Souffle du dragon Choix\nAttaque 30 Feu\nAttaque 10 Nature\nAttaque 10 Nature\n---------- ou ----------\nBonus Feu (+5)\nBonus Nature (+5) Fortune Focus Corrosion Fumée Chanceur"
+  },
+  {
+   "id": "22b6234f-caa2-49d3-aea6-d5574a931129",
+   "slug": "zayd",
+   "number": 94,
+   "name": "Zayd",
+   "element": "earth",
+   "rarity": "legendary",
+   "hp": 600,
+   "spamton": 1,
+   "tier": "D",
+   "rank": 122,
+   "overall": 17.5,
+   "pct": {
+    "offense": 32.3,
+    "offenseSolo": 61.4,
+    "generation": 0,
+    "defense": 29.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 0
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Blindage Partagé",
+   "image": "https://spamgame.com/data/img/illustrations/512/zayd.06f2cbc5.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/zayd.06f2cbc5.webp",
+   "artist": "Daerun",
+   "talents": [
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "TCoeurAcier",
+     "name": "Cœur d’acier",
+     "text": "Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).",
+     "slot": 2
+    },
+    {
+     "id": "Critique",
+     "name": "Critique",
+     "text": "Bonus critique (+10 %)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Zayd Fin du monde Cible aléatoirement les cartes adverses\nAttaque 50 Terre\nAttaque 50 Nature\nAttaque 50 Feu\nAttaque 50 Lumière\nAttaque 50 Ombre\nAttaque 50 Eau Forteresse Applique Provocation Blindage Partagé Cœur d’acier Critique Revanche"
+  },
+  {
+   "id": "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "slug": "keria",
+   "number": 117,
+   "name": "Keria",
+   "element": "fire",
+   "rarity": "rare",
+   "hp": 550,
+   "spamton": 8,
+   "tier": "D",
+   "rank": 123,
+   "overall": 16,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 21.3,
+    "support": 92.1,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Blindage Partagé",
+   "image": "https://spamgame.com/data/img/illustrations/512/keria.f78f9b77.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/keria.f78f9b77.webp",
+   "artist": "Daerun",
+   "talents": [
+    {
+     "id": "Blindage Partagé",
+     "name": "Blindage Partagé",
+     "text": "Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)",
+     "slot": 1
+    },
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 2
+    },
+    {
+     "id": "Souffle-8",
+     "name": "Souffle-8",
+     "text": "Récupère l'attaque Souffle élémentaire au début du tour 8",
+     "slot": 3
+    }
+   ],
+   "searchText": "Keria Feu allié Cible toutes les cartes alliées\nLes valeurs de base des soins et des dégâts augmentent de 3 Embrasement Cible toutes les cartes alliées\nCritique (+5%) Blindage Partagé Éternisé Souffle-8"
+  },
+  {
+   "id": "f57456c7-c2ed-458c-9417-13a9bbb4aec8",
+   "slug": "naissance_daldrin",
+   "number": 30,
+   "name": "Naissance d'Aldrin",
+   "element": "nature",
+   "rarity": "rare",
+   "hp": 700,
+   "spamton": 7,
+   "tier": "D",
+   "rank": 124,
+   "overall": 14.8,
+   "pct": {
+    "offense": 17.3,
+    "offenseSolo": 15.7,
+    "generation": 0,
+    "defense": 33.9,
+    "support": 0.8,
+    "control": 0,
+    "economy": 39.4
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Reset ultime",
+   "image": "https://spamgame.com/data/img/illustrations/512/naissance_daldrin.8e44d634.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/naissance_daldrin.8e44d634.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "Reset ultime",
+     "name": "Reset ultime",
+     "text": "La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.",
+     "slot": 1
+    },
+    {
+     "id": "TPlumePhoenix",
+     "name": "Plume de Phénix",
+     "text": "50 % de chance de récupérer le passif Phénix une fois utilisé.",
+     "slot": 2
+    },
+    {
+     "id": "Virage360",
+     "name": "Virage 360",
+     "text": "Applique \"Métamorphe aléatoire\" à toutes vos autres cartes quand celle-ci est tuée.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Naissance d'Aldrin Première valse Attaque 50 Nature Reset ultime Plume de Phénix Virage 360 Phénix Cimetière"
+  },
+  {
+   "id": "5879fb5c-66c9-4ec0-ab27-2ccc8ff16ff3",
+   "slug": "aristocrate_nebulaire",
+   "number": 264,
+   "name": "Aristocrate Nébulaire",
+   "element": "light",
+   "rarity": "common",
+   "hp": 500,
+   "spamton": 3,
+   "tier": "D",
+   "rank": 125,
+   "overall": 12.3,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 0.8,
+    "support": 85.8,
+    "control": 0,
+    "economy": 52
+   },
+   "roles": [
+    "support"
+   ],
+   "bestTalent": "Transition",
+   "image": "https://spamgame.com/data/img/illustrations/512/aristocrate_nebulaire.929a3edd.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/aristocrate_nebulaire.929a3edd.webp",
+   "artist": "Luga",
+   "talents": [
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 1
+    },
+    {
+     "id": "Transition",
+     "name": "Transition",
+     "text": "Quand cette carte est tuée définitivement, elle revient à la vie avec le passif \"Métamorphe aléatoire\".",
+     "slot": 2
+    },
+    {
+     "id": "TInsensibleEternite",
+     "name": "Éternisé",
+     "text": "La carte est insensible aux Éternités.",
+     "slot": 3
+    }
+   ],
+   "searchText": "Aristocrate Nébulaire Mascarade cosmique Choix\nPrécision (+20%)\n---------- ou ----------\nCritique (+20%) Longueur Transition Éternisé"
+  },
+  {
+   "id": "d882bc22-d395-4099-8d54-3da757fee982",
+   "slug": "vladislaus",
+   "number": 193,
+   "name": "Vladislaus",
+   "element": "fire",
+   "rarity": "epic",
+   "hp": 350,
+   "spamton": 4,
+   "tier": "D",
+   "rank": 126,
+   "overall": 8.1,
+   "pct": {
+    "offense": 13.4,
+    "offenseSolo": 17.3,
+    "generation": 0,
+    "defense": 0,
+    "support": 0,
+    "control": 0,
+    "economy": 38.6
+   },
+   "roles": [
+    "utility"
+   ],
+   "bestTalent": "Vitalite des Ames",
+   "image": "https://spamgame.com/data/img/illustrations/512/vladislaus.d69d60a3.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/vladislaus.d69d60a3.webp",
+   "artist": "Nao",
+   "talents": [
+    {
+     "id": "SursautVital",
+     "name": "Sursaut Vital",
+     "text": "Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.",
+     "slot": 1
+    },
+    {
+     "id": "TPlumePhoenix",
+     "name": "Plume de Phénix",
+     "text": "50 % de chance de récupérer le passif Phénix une fois utilisé.",
+     "slot": 2
+    },
+    {
+     "id": "Vitalite des Ames",
+     "name": "Vitalité des Âmes",
+     "text": "Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)",
+     "slot": 3
+    }
+   ],
+   "searchText": "Vladislaus Double-afflux Attaque 5 Feu\nAttaque 5 Ombre\nLa valeur de base de dégâts augmente de 5 Transfusion Vole 100 PV max à un allié pour se soigner du même montant Sursaut Vital Plume de Phénix Vitalité des Âmes Ténacité"
+  },
+  {
+   "id": "9e9dfca9-0e53-496f-b471-f7c1ae152b80",
+   "slug": "lames_en_peine",
+   "number": 190,
+   "name": "Lames en peine",
+   "element": "shadow",
+   "rarity": "rare",
+   "hp": 550,
+   "spamton": 15,
+   "tier": "D",
+   "rank": 127,
+   "overall": 7.5,
+   "pct": {
+    "offense": 0,
+    "offenseSolo": 0,
+    "generation": 0,
+    "defense": 3.1,
+    "support": 0.8,
+    "control": 0,
+    "economy": 99.2
+   },
+   "roles": [
+    "economy"
+   ],
+   "bestTalent": "Cavalerie",
+   "image": "https://spamgame.com/data/img/illustrations/512/lames_en_peine.cb70ac1b.webp",
+   "thumbnail": "https://spamgame.com/data/img/illustrations/128/lames_en_peine.cb70ac1b.webp",
+   "artist": "Nenaosu",
+   "talents": [
+    {
+     "id": "TPetitPrix",
+     "name": "Petit prix",
+     "text": "Votre premier achat de Tox de la partie est remboursé.",
+     "slot": 1
+    },
+    {
+     "id": "Cavalerie",
+     "name": "Cavalerie",
+     "text": "Augmente les PV max de toutes les autres cartes alliées de (+150).",
+     "slot": 2
+    },
+    {
+     "id": "Longueur",
+     "name": "Longueur",
+     "text": "Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\"",
+     "slot": 3
+    }
+   ],
+   "searchText": "Lames en peine Petit prix Cavalerie Longueur Cimetière Cœur résistance Chanceur"
+  }
+ ],
+ "lang": "fr"
+}

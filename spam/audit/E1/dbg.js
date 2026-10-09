@@ -1,0 +1,17 @@
+const fs=require('fs'),vm=require('vm'),path=require('path');
+const SP=path.resolve(__dirname,'../../..');
+const model=JSON.parse(fs.readFileSync(SP+'/spam/js/model.json','utf8'));
+const ctx=vm.createContext({self:{postMessage(){}},console,Date});
+vm.runInContext(fs.readFileSync(__dirname+'/engine_stress.js','utf8'),ctx);
+ctx.__model=model;
+const byNum=new Map(model.cards.map(c=>[c.number,c]));
+const run=vm.runInContext('(ids,pl,prof)=>{const rows=pt(ids.map(id=>({id,talentId:null})),__model.cards);const r=q(rows,{opponent:d.find(x=>x.id===prof),player:pl});return {J:J(r),r}}',ctx);
+const deck=process.argv[2].split(',').map(Number), pl=+(process.argv[3]||1), prof=process.argv[4]||'neutral';
+const ids=deck.map(n=>byNum.get(n).id);
+const S=JSON.parse(process.argv[5]||'null');
+ctx.STRESS=S?Object.assign({on:true},S):undefined;
+const {J,r}=run(ids,pl,prof);
+console.log('STRESS',JSON.stringify(S),'J',J.toFixed(1),'offense',r.offense.toFixed(0),'ttk',r.ttk,'frz',r.frzCount,'dmgTotal',r.dmgTotal.toFixed(0),'kills',r.kills,'ownDeaths',r.ownDeaths,'reflTaken',r.reflTaken.toFixed(0),'ehpLeft',r.ehpLeft.toFixed(0),'hpLeft',r.hpLeft.toFixed(0));
+console.log('dmgByTurn',r.dmgByTurn.join(' '));
+r.plan.forEach((p,i)=>console.log('T'+(i+1),p.map(x=>x.card.split(' ')[0]+':'+x.ability+'('+x.dmg+'/'+x.heal+')').join(' | ')));
+console.log('events',r.events.map(e=>'T'+e.turn+':'+e.type+':'+(e.card||'').split(' ')[0]+(e.v!=null?'('+e.v+'@'+e.hpBefore+')':'')).join(' '));

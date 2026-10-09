@@ -1,0 +1,106 @@
+97 {
+  talent: 53,
+  nombre: 2,
+  'aléatoire': 1,
+  cible: 15,
+  'durée': 9,
+  'texte 1.21': 16,
+  'effet manquant': 1
+}
+#12 Hibernatus | TAL Bombe-8 | talent | passif donné « Bombe-8 » (epic) — texte interne « Inflige 500 dégâts bruts » vs texte affiché « Applique le passif "Bomba" au tour 8 »
+#17 Croqueur de Fruits Verdoyant | TAL AOE Épique | talent | passif donné « AOE Épique » (epic) — texte interne « à hauteur de 80% des dégâts » vs texte affiché « Commence la partie avec le passif "AoE" »
+#22 Lueur d'Espoir | Respiration | nombre | texte « Soigne 20 Nature | Soigne 20 Lumière | Résistance d'un élément aléatoire (+15) » contient 15 absent(s) des champs structurés
+#22 Lueur d'Espoir | Respiration | aléatoire | texte « Soigne 20 Nature | Soigne 20 Lumière | Résistance d'un élément aléatoire (+15) » dit « aléatoire » mais aucun champ aléatoire (cible ally, effets [{"type":"res","scope":"ally","value":2.5,"elements":"all"}])
+#23 Artisan des Heures | Ralentissement | cible | cible « none » pour un effet ciblé ["eternity"] (texte « Applique Éternité ») : qui est visé n'est pas encodé
+#23 Artisan des Heures | Flash | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["freeze"]) — durée de quoi ? (texte « Attaque 35 Lumière | Gel »)
+#25 Amber | TAL Inversement | talent | passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif "Inversement" »
+#26 Blaze | TAL Inversement | talent | passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif "Inversement" »
+#29 Princesse Meridia | Vent critique | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["freeze"]) — durée de quoi ? (texte « Attaque 40 Nature | Gel »)
+#29 Princesse Meridia | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#31 Raffteru | Secousse aléatoire | cible | cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 70 Terre | Critique (+20%) sur toutes les cartes alliées »)
+#31 Raffteru | TAL Brut | talent | passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif "Brut" »
+#33 Nakyel | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#35 Léo | Éclair purificateur | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["eternity"]) — durée de quoi ? (texte « Attaque [20 à 60] Lumière | Attaque [20 à 60] Lumière | Ennemis aléatoires | Applique Éternité »)
+#35 Léo | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#35 Léo | TAL Mimétisme | talent | passif donné « Mimétisme » (rare) — texte interne « Mimétisme » vs texte affiché « Commence la partie avec le passif Mimétisme »
+#36 Astry | TAL Mystère | talent | passif donné « Mystère » (rare) — texte interne « Mystère » vs texte affiché « Commence la partie avec le passif "Mystère" »
+#42 Dragonnet des Lumières | TAL Nouveau riche | talent | passif donné « Nouveau riche » (common) — texte interne « Génère (+3) Spamtons chaque tour » vs texte affiché « Commence la partie avec, au hasard, le passif Spamland ou Chanceur. » ; alternative Chance_C
+#42 Dragonnet des Lumières | TAL Nouvelle vie | talent | passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C
+#51 Sorcière Pyrokinétique | Flamme magique | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["eternity","eternity","res"]) — durée de quoi ? (texte « Attaque 25 Feu | Applique Éternité en cas de critique | Attaque 25 Lumière | Applique Éternité en cas de critique | Baisse la résistance Feu et Lumière de l'adversaire de (10%) »)
+#54 Loutre Intrépide | Morsure | cible | cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 6 Eau | Critique (+3%) sur toutes les cartes alliées »)
+#56 Lisa, la Dragonnière | TAL AOE Rare | talent | passif donné « AOE Rare » (rare) — texte interne « à hauteur de 40% des dégâts » vs texte affiché « Commence la partie avec le passif "AoE" »
+#58 Le Transporteur Sauvage | Fort | durée | texte « Applique Provocation pendant 2 tours » (durée 2) vs ability.duration=4, effet.duration=2
+#58 Le Transporteur Sauvage | Fort | durée | ability.duration=4 ≠ effet taunt.duration=2 (texte « Applique Provocation pendant 2 tours »)
+#58 Le Transporteur Sauvage | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#59 Guerrier des Neiges | TAL Bombe-8 | talent | passif donné « Bombe-8 » (epic) — texte interne « Inflige 500 dégâts bruts » vs texte affiché « Applique le passif "Bomba" au tour 8 »
+#59 Guerrier des Neiges | TAL Brut | talent | passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif "Brut" »
+#64 Maître Thronebéur | Ralentissement | cible | cible « none » pour un effet ciblé ["eternity"] (texte « Applique Éternité ») : qui est visé n'est pas encodé
+#64 Maître Thronebéur | Marteau-lumineux | cible | cible allAllies avec des dégâts (2 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 20 Lumière | Attaque 20 Terre | Précision (+20%) sur toutes les cartes alliées »)
+#64 Maître Thronebéur | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#67 Logidrake, l'Ignatius | TAL Nouvelle vie | talent | passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C
+#69 Scorch, les Lézards Ignés | TAL Nouvelle vie | talent | passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C
+#72 Girafe Florale | Renaissance Sylvatique | cible | Provocation portée « ally » mais cible « allAllies » : un allié ou toute l'équipe ? (texte « Applique Provocation | Cible toutes les cartes alliées | Précision et Critique (+5%) »)
+#72 Girafe Florale | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#78 Gardien Vert | TAL AOE | talent | passif donné « AOE » (common) — texte interne « à hauteur de 20% des dégâts » vs texte affiché « Commence la partie avec le passif "AoE" »
+#83 Panthère imaginaire | TAL Brut | talent | passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif "Brut" »
+#86 Régent des Abysses | Avalement | cible | cible « none » pour un effet ciblé ["absorbAlly"] (texte « Absorbe une carte alliée ») : qui est visé n'est pas encodé
+#88 Faerylia | TAL Heure Funeste | talent | paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »
+#91 Ignea | Silenfeu | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["freeze"]) — durée de quoi ? (texte « Applique Gel »)
+#91 Ignea | Silenfeu | cible | cible « none » pour un effet ciblé ["freeze"] (texte « Applique Gel ») : qui est visé n'est pas encodé
+#92 Frost & Glacier | PAS Gel | texte 1.21 | « Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts. » → « Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts. » (champs: {"type":"freezeOnHit","value":60})
+#101 Neilla | TAL Réducteur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte alliée aléatoire reçoit "Temporalité" »
+#116 Prisonnière de la Machine | TAL Sac de frappe | talent | passif donné « Sac de frappe » (common) — texte interne « Sac de frappe » vs texte affiché « Commence la partie avec le passif "Sac de frappe" »
+#122 Esprit de la Faune | Soin soleil | durée | ability.duration=2 mais aucun effet n'a de durée (effets ["freeze"]) — durée de quoi ? (texte « Soigne 60 Lumière | Gel »)
+#122 Esprit de la Faune | Soin soleil | cible | Gel sur un ALLIÉ (cible ally) — le lanceur gèle la carte qu'il soigne ? (texte « Soigne 60 Lumière | Gel »)
+#122 Esprit de la Faune | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#122 Esprit de la Faune | TAL Immunité-8 | talent | passif donné « Immunité-8 » (epic) — texte interne « immunisée » vs texte affiché « Applique le passif "Immunité" au tour 8 »
+#122 Esprit de la Faune | TAL Erosion | talent | passif donné « Erosion » (common) — texte interne « Réduit les PV max à hauteur de 50% » vs texte affiché « Commence la partie avec le passif "Érosion" »
+#123 Tisseuse de Mots | Veuve noire | cible | cible « none » pour un effet ciblé ["absorbAny"] (texte « Absorbe une carte ») : qui est visé n'est pas encodé
+#123 Tisseuse de Mots | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#123 Tisseuse de Mots | TAL Sursaut Vital | talent | paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »
+#124 Wyrm des Dunes Cornu | TAL Erosion | talent | passif donné « Erosion » (common) — texte interne « Réduit les PV max à hauteur de 50% » vs texte affiché « Commence la partie avec le passif "Érosion" »
+#124 Wyrm des Dunes Cornu | TAL Dernier souffle | talent | paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »
+#136 Souverain des Chutes d'Éther | TAL Dernier souffle | talent | paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »
+#139 Cornu mythologique | Corne 25 | cible | cible « none » pour un effet ciblé ["setHpPct"] (texte « La cible se retrouve à 25% de ses PV max ») : qui est visé n'est pas encodé
+#139 Cornu mythologique | Corne 75 | cible | cible « none » pour un effet ciblé ["setHpPct"] (texte « La cible se retrouve à 75% de ses PV max ») : qui est visé n'est pas encodé
+#140 Souris des blés | TAL Petit prix | talent | paramètre value=60 absent du texte « Votre premier achat de Tox de la partie est remboursé. »
+#140 Souris des blés | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#146 Poulpe Parleur | TAL Nouvelle vie | talent | passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C
+#146 Poulpe Parleur | TAL Inversement | talent | passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif "Inversement" »
+#151 Sbire des Flammes | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#153 L'Inventeur | Materia | nombre | texte « Bonus [-8 à +10] dans chaque élément » contient 8, 10 absent(s) des champs structurés
+#153 L'Inventeur | Materia | effet manquant | texte « Bonus [-8 à +10] dans chaque élément » annonce un Bonus mais gen=[]
+#158 Lapin-Plume | PAS Cœur résistance | texte 1.21 | « Cette carte augmente les résistances de toutes les cartes alliées (+3) » → « Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3). » (champs: {"type":"teamRes","value":3})
+#160 Sanglier Doré | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#160 Sanglier Doré | TAL Sursaut Vital | talent | paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »
+#176 Rob l'Aventurier | TAL Heure Funeste | talent | paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »
+#180 Dragon Ciel | TAL Dernier souffle | talent | paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »
+#190 Lames en peine | PAS Cœur résistance | texte 1.21 | « Cette carte augmente les résistances de toutes les cartes alliées (+6) » → « Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6). » (champs: {"type":"teamRes","value":6})
+#190 Lames en peine | TAL Petit prix | talent | paramètre value=60 absent du texte « Votre premier achat de Tox de la partie est remboursé. »
+#190 Lames en peine | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#193 Vladislaus | TAL Sursaut Vital | talent | paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »
+#203 Ashtarae Lycaria | Mélodie n°1 | cible | cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque [15 à 25] Ombre | Critique (+2%) sur toutes les cartes alliées »)
+#211 Dragosaure Céleste | TAL AOE Rare | talent | passif donné « AOE Rare » (rare) — texte interne « à hauteur de 40% des dégâts » vs texte affiché « Commence la partie avec le passif "AoE" »
+#219 Catixy | TAL Inversement | talent | passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif "Inversement" »
+#221 Crapaud des Étoiles | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#222 Fleur de Vie | Barrière Florale | durée | ability.duration=0 ≠ effet taunt.duration=2 (texte « Applique Provocation au lanceur »)
+#227 Chouette Polychrome | TAL Dernier souffle | talent | paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »
+#229 Maître Amphibian | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#231 Aleera Mange-Cauchemars | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#236 Apprentie de la Mort | TAL Heure Funeste | talent | paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »
+#243 Vivy | TAL Brut | talent | passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif "Brut" »
+#245 Shinobi Éclairant | TAL Brut | talent | passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif "Brut" »
+#247 Roi Feu | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#248 Roi Eau | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#249 Roi Nature | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#250 Roi Terre | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#251 Roi Ombre | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#252 Roi Lumière | PAS Sac de frappe | texte 1.21 | « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (champs: {"type":"punchingBag"})
+#255 Verdelune | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »
+#255 Verdelune | TAL Dernier souffle | talent | paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »
+#256 Héraldesse Serpentine | TAL Heure Funeste | talent | paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »
+#259 Dragon de la Cité Infernale | PAS Gel | texte 1.21 | « Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts. » → « Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts. » (champs: {"type":"freezeOnHit","value":60})
+#259 Dragon de la Cité Infernale | TAL Immunité-8 | talent | passif donné « Immunité-8 » (epic) — texte interne « immunisée » vs texte affiché « Applique le passif "Immunité" au tour 8 »
+#262 Yotaru Gardefeuille | Protect-terre | cible | cible « none » pour un effet ciblé ["breakTaunt","hpMax"] (texte « Brise une Provocation pour donner 100 PV max ») : qui est visé n'est pas encodé
+#262 Yotaru Gardefeuille | Protect-boost | cible | cible « none » pour un effet ciblé ["breakTaunt","base"] (texte « Brise une Provocation pour augmenter les dégâts et soins de base de 3 ») : qui est visé n'est pas encodé
+#264 Aristocrate Nébulaire | TAL Longueur | talent | paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité" »

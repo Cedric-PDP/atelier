@@ -1,0 +1,153 @@
+Yotaru Gardefeuille : carte SPAM Nature commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Yotaru Gardefeuille D Voir la carte en grand
+Yotaru Gardefeuille
+1 Protect
+2 Protect-terre
+2 Protect-boost
+500/500
+5
+Standard
+Yotaru Gardefeuille
+1 Protect
+2 Protect-terre
+2 Protect-boost
+500/500
+5
+Élémentaire
+Yotaru Gardefeuille
+1 Protect
+2 Protect-terre
+2 Protect-boost
+500/500
+5
+FA
+Yotaru Gardefeuille
+1 Protect
+2 Protect-terre
+2 Protect-boost
+500/500
+5
+## Yotaru Gardefeuille
+D Nature · Commune · Standard
+500 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Conseillé
+- Talent 2 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+- Talent 3 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Trois champs de compétence
+- Protect compétence · Recharge 1 Applique Provocation aléatoirement à une carte alliée
+1
+- Protect-terre compétence · Recharge 2 Brise une Provocation pour donner 100 PV max
+2
+- Protect-boost compétence · Recharge 2 Brise une Provocation pour augmenter les dégâts et soins de base de 3
+2
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Nature Commune #262
+# Yotaru Gardefeuille
+Soutien Défense
+500 Points de vie
+5 Spamtons / tour
+#118 Classement / 127
+D Sans talent · #117
+Attaque
+0
+Génération
+0
+Défense
+87
+Soutien
+96
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage Partagé 2 Focus 3 Transition
+Jouer cette carte 4 decks
+Partager
+### Compétences
+#### Protect
+1 tour
+Applique Provocation aléatoirement à une carte alliée
+Précision 100% Critique 0%
+#### Protect-terre
+2 tours
+Brise une Provocation pour donner 100 PV max
+Précision 100% Critique 0%
+#### Protect-boost
+2 tours
+Brise une Provocation pour augmenter les dégâts et soins de base de 3
+Précision 100% Critique 0%
+### Talents
+#### Blindage Partagé
+Conseillé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 178,7 · Score théorique
+#### Focus
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ -4,7 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+## Ses meilleurs decks
+4 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Catimimi + Girafe Florale
+57,2 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Catimimi + Faerylia
+57,1 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Catimimi + Aidan
+44,5 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+Les autres decks (1)
+- D Catimimi + Aidan avec Yotaru Gardefeuille · Chimère Brasse-chair Accessible · 39,6%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Nymphe · Emeldarion
+### Derrière la carte
+Sir Gardefeuille est une Nymphe au service du Dhöggeïr Emeraldoth. Ce dernier étant peu éloquent, Yotaru lui servait de messager et d’interprète. Courageux et avenant, il sacrifia beaucoup de sa personne pour répondre aux besoins de son ami lézard. Aujourd’hui, dans le Marais’Cage au sud d’Emeldarion, il veille à ce que les pèlerins respectent les règles de la zone : nul ne doit quitter la route ni poser pied à terre. Guidés par une telle légende vivante, les pèlerins s’y conforment volontiers.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 097 Feu
+Commune · Attaque
+### Pyro
+500 PV
+C # 096 Lumière
+Légendaire · Attaque
+### Mélodie des Divinités
+550 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

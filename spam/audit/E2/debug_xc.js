@@ -1,0 +1,23 @@
+// Debug: compare one match, dead-card replica vs absorb-at-T1 removal, field by field.
+const fs = require('fs'), vm = require('vm'), path = require('path');
+const SPAM = path.join(__dirname, '..', '..');
+const [nums, pos, profId, player] = [process.argv[2].split(',').map(Number), +process.argv[3], process.argv[4] || 'neutral', +(process.argv[5] || 2)];
+const model = JSON.parse(fs.readFileSync(path.join(SPAM, 'js', 'model_dead.json'), 'utf8'));
+const ctx = vm.createContext({ self: { postMessage() {} }, console, Date, MODELS: { x1: model }, OUT: {} });
+vm.runInContext(fs.readFileSync(path.join(__dirname, 'engine_stress.js'), 'utf8'), ctx);
+ctx.ARGS = { ids: nums.map(n => model.cards.find(c => c.number === n).id), pos, profId, player };
+vm.runInContext(`(()=>{const M=MODELS.x1;const prof=d.find(p=>p.id===ARGS.profId);
+ const ids=ARGS.ids;const deadIds=ids.slice();deadIds[ARGS.pos]='dead-card';
+ globalThis.STRESS=null;const A=q(pt(deadIds.map(id=>({id,talentId:null})),M.cards),{opponent:prof,player:ARGS.player});
+ globalThis.STRESS={absorb:{turn:1,pos:ARGS.pos,at:'start',gain:false,bounty:true}};const B=q(pt(ids.map(id=>({id,talentId:null})),M.cards),{opponent:prof,player:ARGS.player});
+ globalThis.STRESS=null;
+ const keys=['offense','dmgTotal','ttk','pressureTaken','ownDeaths','hpLeft','ehpLeft','defenseCredits','control','economy','spamton','heal','kills','casts','teamCrit'];
+ OUT.cmp=keys.map(k=>[k,A[k],B[k]]);OUT.J=[J(A),J(B)];OUT.dmg=[A.dmgByTurn,B.dmgByTurn];
+ OUT.events=[A.events,B.events];OUT.plan=[A.plan.map(t=>t.map(x=>x.card+':'+x.ability+':'+x.dmg+':'+x.heal).join(' ; ')),B.plan.map(t=>t.map(x=>x.card+':'+x.ability+':'+x.dmg+':'+x.heal).join(' ; '))];})();`, ctx);
+const O = ctx.OUT;
+console.log('J', O.J);
+for (const [k, a, b] of O.cmp) if (JSON.stringify(a) !== JSON.stringify(b)) console.log('DIFF', k, a, b);
+console.log('dmg', JSON.stringify(O.dmg[0]), '\n   ', JSON.stringify(O.dmg[1]));
+for (let t = 0; t < 10; t++) if (O.plan[0][t] !== O.plan[1][t]) console.log('T' + (t + 1), '\n  dead:', O.plan[0][t], '\n  abs :', O.plan[1][t]);
+console.log('events dead', JSON.stringify(O.events[0]));
+console.log('events abs ', JSON.stringify(O.events[1]));

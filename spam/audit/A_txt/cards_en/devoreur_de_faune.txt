@@ -1,0 +1,134 @@
+Devourer of Fauna: SPAM Shadow common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Devourer of Fauna C View the full card
+Devourer of Fauna
+1 Ball of Hatred
+Vampirism
+700/700
+5
+Standard
+Devourer of Fauna
+1 Ball of Hatred
+Vampirism
+700/700
+5
+Elemental
+Devourer of Fauna
+1 Ball of Hatred
+Vampirism
+700/700
+5
+FA
+Devourer of Fauna
+1 Ball of Hatred
+Vampirism
+700/700
+5
+## Devourer of Fauna
+C Shadow · Common · Standard
+700 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 L-Shield Shadow resistance (+25%)
+Light resistance (+25%)
+Recommended
+- Talent 2 F/E-Shield Fire resistance (+25%)
+Earth resistance (+25%)
+- Talent 3 F/W-Shield Fire resistance (+25%)
+Water resistance (+25%)
+Three ability slots
+- Ball of Hatred ability · Cooldown 1 Deal 5 Shadow damage
+Base damage increases by 5
+1
+- Vampirism tox · Common Regenerates 25% of the damage dealt to the target
+- Free slot Open to a shop Tox
+Illustration by Krisakx
+Full card details
+Illustration by Krisakx
+Shadow Common #128
+# Devourer of Fauna
+Versatile
+700 Health points
+5 Spamtons / turn
+#83 Rank / 127
+C No talent · #75
+Attack
+71
+Generation
+0
+Defense
+54
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 L-Shield 2 F/E-Shield 3 F/W-Shield
+Build with this card
+Share
+### Abilities
+#### Ball of Hatred
+1 turn
+Deal 5 Shadow damage
+Base damage increases by 5
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Vampirism
+Common
+Regenerates 25% of the damage dealt to the target
+### Talents
+#### L-Shield
+Recommended
+Shadow resistance (+25%)
+Light resistance (+25%)
+Δ 28.7 · Theoretical score
+#### F/E-Shield
+Fire resistance (+25%)
+Earth resistance (+25%)
+Δ 28.7 · Theoretical score
+#### F/W-Shield
+Fire resistance (+25%)
+Water resistance (+25%)
+Δ 28.7 · Theoretical score
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Nightmare · Nyevielh
+### Beyond the card
+Nyevielh’s dreadful Dreaming Forest is home to nightmarish mutations of the local fauna, spawned by the abyssal power released when the Starry Sea fractured. Beware of large bushes: Devourers of Fauna may be hiding within, waiting to ambush their prey. Do not stop to question this forest: if any protocol has been left for the unfortunate souls who dare enter, follow its instructions.
+## Better together
+The most promising partners according to the model.
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+B # 251 Shadow
+Epic · Generation
+### Shadow King
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,179 @@
+Guides et stratégies SPAM : synergies, talents, Tox et construction de deck Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks
+EN
+Créer un deck
+Stratégies
+Apprends. Progresse. Partage.
+Guides, synergies et analyses pour mieux jouer à SPAM.
+Guides Synergies Talents Tox 01
+Synergies élémentaires Un moteur, pas quatre solistes.
+Fais circuler les bonus entre tes générateurs et tes attaquants. C’est là que la synergie commence.
+4 min de lecture
+02
+Construction de deck Quatre places. Un vrai plan.
+Donne un rôle à chaque carte et transforme une collection en composition.
+5 min de lecture
+03
+Tempo & rotations Le bon coup, au bon tour.
+Lis les recharges, repère tes pics de dégâts et prépare tes fenêtres d’action.
+4 min de lecture
+04
+Talents & optimisation Le talent qui change la donne.
+Un même personnage, plusieurs rôles. Choisis le talent qui sert vraiment ton équipe.
+3 min de lecture
+05
+Tox & économie Chaque Spamton compte.
+Comprends les lignes libres, les remplacements et le potentiel des Tox.
+4 min de lecture
+06
+Comprendre les classements Au-delà de la lettre S.
+Utilise les classements pour poser de meilleures questions à tes decks.
+3 min de lecture
+Bibliothèque
+Synergies, talents & Tox
+Synergies 28 Talents 80 Tox 102
+Rechercher…
+28 résultats
+S Codex triangulaire
+Écrit sombre/luminescent génère +1, +2, +3, +4… par tour (croissance) : +55 de bonus en 10 tours, à l’abri derrière Immunité. À coupler avec des frappeurs du même élément.
+Codex des Maux Ancestraux Spectre Canin Gazpoison Flottant Apprentie de la Mort
+Score théorique 13 413 Synergie + 3 112
+Adapter dans l’atelier
+S Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Esprit Eau Scorch, les Lézards Ignés Maître Amphibian Le compagnon des esprits
+Score théorique 11 804 Synergie + 6 572
+Adapter dans l’atelier
+A Reset / Vengeur + AoE
+Reset garde l’attaque disponible après un kill, Vengeur récupère toutes ses attaques quand une carte meurt : avec des AoE qui finissent plusieurs cibles, on enchaîne dans le même tour.
+Bleu-mange-cailloux Apprentie de la Mort Gazpoison Flottant Aleera Mange-Cauchemars
+Score théorique 11 531 Synergie -3 976
+Adapter dans l’atelier
+A Codex triangulaire
+Écrit sombre/luminescent génère +1, +2, +3, +4… par tour (croissance) : +55 de bonus en 10 tours, à l’abri derrière Immunité. À coupler avec des frappeurs du même élément.
+Codex des Sorts Lumineux Spectre Canin Luminaire Abyssal Shinobi Éclairant
+Score théorique 10 743 Synergie + 3 470
+Adapter dans l’atelier
+A Nuit finale & nukes
+Temporalité de groupe (−1 à −3 CD sur toutes vos cartes) débloque les compétences à long CD (Fin du monde, Dernier plaisir, Jugement divin, Résurrection…) bien plus tôt.
+Verdelune Zombie Floral Commando Gerz Gabriel
+Score théorique 10 576 Synergie + 4 067
+Adapter dans l’atelier
+A Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Gabriel Roi Nature Aldrin & Gorakar Esprit de la Faune
+Score théorique 10 233 Synergie + 4 373
+Adapter dans l’atelier
+A Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Codex des Maux Ancestraux Roi Ombre Spectre Canin Gazpoison Flottant
+Score théorique 9 764 Synergie + 486
+Adapter dans l’atelier
+B Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Scorch, les Lézards Ignés Roi Feu Apprentie de la Mort Ignea
+Score théorique 9 529 Synergie + 4 710
+Adapter dans l’atelier
+B Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Codex des Sorts Lumineux Roi Lumière Spectre Canin Luminaire Abyssal
+Score théorique 9 464 Synergie + 3 531
+Adapter dans l’atelier
+B Rampe mono-élément
+Plusieurs générateurs du même élément + un ou deux gros convertisseurs. Chaque point de bonus = +10 % sur toutes les attaques de cet élément, pour toute la partie.
+Scorch, les Lézards Ignés Roi Terre Raffteru Maître Amphibian
+Score théorique 9 313 Synergie + 4 348
+Adapter dans l’atelier
+B Nuit finale & nukes
+Temporalité de groupe (−1 à −3 CD sur toutes vos cartes) débloque les compétences à long CD (Fin du monde, Dernier plaisir, Jugement divin, Résurrection…) bien plus tôt.
+Chouette Polychrome Zombie Floral Commando Gerz Gabriel
+Score théorique 8 875 Synergie + 1 773
+Adapter dans l’atelier
+B Sac de frappe provocateur
+Sac de frappe donne +1 dans l’élément de la carte à chaque attaque subie : sur un provocateur, chaque coup adverse alimente votre rampe.
+Girafe Florale Aldrin & Gorakar Esprit de la Faune Dragon Ciel
+Score théorique 8 742 Synergie + 3 612
+Adapter dans l’atelier
+B Nuit finale & nukes
+Temporalité de groupe (−1 à −3 CD sur toutes vos cartes) débloque les compétences à long CD (Fin du monde, Dernier plaisir, Jugement divin, Résurrection…) bien plus tôt.
+Neilla Zombie Floral Commando Gerz Gabriel
+Score théorique 8 530 Synergie + 2 334
+Adapter dans l’atelier
+B Nuit finale & nukes
+Temporalité de groupe (−1 à −3 CD sur toutes vos cartes) débloque les compétences à long CD (Fin du monde, Dernier plaisir, Jugement divin, Résurrection…) bien plus tôt.
+Veilleur Nocturne Zombie Floral Commando Gerz Gabriel
+Score théorique 8 153 Synergie + 1 424
+Adapter dans l’atelier
+B Nuit finale & nukes
+Temporalité de groupe (−1 à −3 CD sur toutes vos cartes) débloque les compétences à long CD (Fin du monde, Dernier plaisir, Jugement divin, Résurrection…) bien plus tôt.
+Dragonnet des Lumières Zombie Floral Commando Gerz Gabriel
+Score théorique 8 057 Synergie + 1 364
+Adapter dans l’atelier
+C Brut contre les murs
+Brut ignore résistances ET provocations : la réponse aux decks tank / Blindage / Cœur d’acier. À jouer avec un booster de base ou d’élément pour compenser les dégâts bruts modestes.
+Shinobi Éclairant Panthère imaginaire Oisillons de Midas Yotaru Gardefeuille
+Score théorique 7 909 Synergie + 2 783
+Adapter dans l’atelier
+C Multiplicateur
+Le passif Multiplicateur double les bonus élémentaires pour les attaques de la carte : avec de gros générateurs derrière, ses coups deviennent les plus rentables du deck.
+Épine Médusine Aidan Scorch, les Lézards Ignés Astry
+Score théorique 7 716 Synergie + 4 708
+Adapter dans l’atelier
+C Escalade critique
+Les bonus de critique d’équipe sont permanents et se cumulent : en quelques tours toute l’équipe critique à 100 %. Les cartes à multiplicateur ×3–×6 explosent.
+Soigneuse Astrale des Bois Ashtarae Lycaria Aleera Mange-Cauchemars Pyro
+Score théorique 6 150 Synergie -4 359
+Adapter dans l’atelier
+C Sac de frappe provocateur
+Sac de frappe donne +1 dans l’élément de la carte à chaque attaque subie : sur un provocateur, chaque coup adverse alimente votre rampe.
+Le Transporteur Sauvage Raffteru Maître Amphibian Héraldesse Serpentine
+Score théorique 5 750 Synergie + 760
+Adapter dans l’atelier
+C Multiplicateur
+Le passif Multiplicateur double les bonus élémentaires pour les attaques de la carte : avec de gros générateurs derrière, ses coups deviennent les plus rentables du deck.
+Murmures du Corail Noir Aidan Scorch, les Lézards Ignés Astry
+Score théorique 5 624 Synergie + 3 616
+Adapter dans l’atelier
+C Exécutions
+Absorbe (tue la cible), Corne 25 (met la cible à 25 %) et les dégâts en % des PV max ignorent les gros totaux de PV : parfaits contre Ephial (1500 PV) ou Commando Gerz (1200).
+Cornu mythologique Tisseuse de Mots Léviathan des Cieux Veilleur Nocturne
+Score théorique 5 110 Synergie -3 488
+Adapter dans l’atelier
+C Boucle à coût
+Une compétence à Coût qui génère plus qu’elle ne consomme (ex. Catimimi : −2/−2/−2 → +3/+3/+3 en AoE) tourne indéfiniment si des générateurs amorcent la pompe.
+Aidan Scorch, les Lézards Ignés Astry L'Épine d'Amour
+Score théorique 4 203 Synergie + 1 700
+Adapter dans l’atelier
+D Multiplicateur
+Le passif Multiplicateur double les bonus élémentaires pour les attaques de la carte : avec de gros générateurs derrière, ses coups deviennent les plus rentables du deck.
+Cerf des Couleurs Funèbres
+Score théorique 2 194 Synergie 0
+D Rampe immunisée
+Immunité bloque tous les effets adverses (Étourdissement, Éternité, Disparition, Érosion…) : la carte idéale pour porter la génération ou les buffs permanents.
+Le compagnon des esprits
+Score théorique 1 710 Synergie + 4
+D Bombe à retardement
+Revanche (inflige toutes ses attaques à la mort) sur une carte qui provoque : l’adversaire est forcé de la tuer et prend l’explosion. Cavalerie/Blindage prolongent la mèche.
+Zayd Soigneuse Astrale des Bois
+Score théorique 1 707 Synergie + 446
+D Multiplicateur
+Le passif Multiplicateur double les bonus élémentaires pour les attaques de la carte : avec de gros générateurs derrière, ses coups deviennent les plus rentables du deck.
+L'Inventeur
+Score théorique 1 268 Synergie + 136
+D Inversement (soigneur → frappeur)
+Inversement transforme les soins en dégâts et inversement. Sur une carte qui soigne, c’est une nouvelle attaque ; sur une attaquante, c’est un piège.
+Poulpe Parleur
+Score théorique 732 Synergie + 534
+D Rampe immunisée
+Immunité bloque tous les effets adverses (Étourdissement, Éternité, Disparition, Érosion…) : la carte idéale pour porter la génération ou les buffs permanents.
+Codex des Maux Ancestraux
+Score théorique 405 Synergie 0
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu
+Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

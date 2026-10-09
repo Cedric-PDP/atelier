@@ -1,0 +1,168 @@
+Ephial: SPAM Light legendary card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Ephial C View the full card
+Ephial
+4 Astral Tackle
+5 Planet Heal
+Reset
+1500/1500
+12
+Standard
+Ephial
+4 Astral Tackle
+5 Planet Heal
+Reset
+1500/1500
+12
+Elemental
+Ephial
+4 Astral Tackle
+5 Planet Heal
+Reset
+1500/1500
+12
+FA
+Ephial
+4 Astral Tackle
+5 Planet Heal
+Reset
+1500/1500
+12
+## Ephial
+C Light · Legendary · Standard
+1,500 HP 12 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Cavalry Increases the max HP of all other allied cards by (+150)
+Recommended
+- Talent 2 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+- Talent 3 Lucky Tox Each Tox rarity has exactly a 25% chance to be obtained.
+Three ability slots
+- Astral Tackle ability · Cooldown 4 Deal 20 Light damage
+Deal 20 Shadow damage
+Deal 20 Nature damage
+4
+- Planet Heal ability · Cooldown 5 Heal 70 Light to all allied cards
+5
+- Reset tox · Epic When you kill an ENEMY card with one of your attacks, that attack remains available
+Illustration by Embers
+Full card details
+Illustration by Embers
+Light Legendary #204
+# Ephial
+Support Defense Economy
+1,500 Health points
+12 Spamtons / turn
+#89 Rank / 127
+C No talent · #77
+Attack
+14
+Generation
+0
+Defense
+98
+Support
+94
+Control
+0
+Economy
+91
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Cavalry 2 Focus 3 Lucky Tox
+Build with this card 7 decks
+Share
+### Abilities
+#### Astral Tackle
+4 turns
+Deal 20 Light damage
+Deal 20 Shadow damage
+Deal 20 Nature damage
+Accuracy 100% Critical 1%
+#### Planet Heal
+5 turns
+Heal 70 Light to all allied cards
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Reset
+Epic
+When you kill an ENEMY card with one of your attacks, that attack remains available
+### Talents
+#### Cavalry
+Recommended
+Increases the max HP of all other allied cards by (+150)
+Δ 414.7 · Theoretical score
+#### Focus
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 253.6 · Theoretical score
+#### Lucky Tox
+Each Tox rarity has exactly a 25% chance to be obtained.
+Δ 10 · Theoretical score
+## Its best decks
+7 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Master Amphibian
+92.5 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Ephial
+90.7 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+A Advanced collection
+Aggro / burst ·
+### Canine Specter + Aleera
+89.9 % Relative index 6 turns Estimated elimination 29 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Radiant Shinobi + Thorn of Love
+46.8 % Relative index 10 turns Estimated elimination 33 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Canine Specter + Cloudy Rodent
+44.8 % Relative index 10 turns Estimated elimination 34 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Canine Specter + Mistress of Tints
+35.9 % Relative index 11.9 turns Estimated elimination 35 / turn Spamtons
+The other decks (1)
+- D Abyssal Lightbearer + Codex of Luminous Spells with Cloudy Rodent · Ephial Advanced collection · 35.7%
+### Resistances
+20% Fire
+20% Water
+20% Earth
+20% Nature
+20% Shadow
+20% Light
+Art · Emeldarion
+### Beyond the card
+Abondance hosts great many paintings. Among them is the astral whale Ephial. The painting on the ground is the subject of debate. The Mistress of Tints uses the whole city as her blank canvas, drawing many visitors. Ephial is her most striking painting. Some think it's a depiction of the pilgrimage — pilgrims identify with it in their quest for their Eternal at the Celestial Mount. Others think it's linked to the flying creature southwest of Emeldarion. The Mistress of Tints, for her part, stays discreet about the origin of her ideas.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

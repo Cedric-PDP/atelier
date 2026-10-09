@@ -1,0 +1,150 @@
+Hatchlings of Midas: SPAM Light common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Hatchlings of Midas A View the full card
+Hatchlings of Midas
+2 Chirp-chirp-chirp
+2 Quintet
+500/500
+8
+Standard
+Hatchlings of Midas
+2 Chirp-chirp-chirp
+2 Quintet
+500/500
+8
+Elemental
+Hatchlings of Midas
+2 Chirp-chirp-chirp
+2 Quintet
+500/500
+8
+FA
+Hatchlings of Midas
+2 Chirp-chirp-chirp
+2 Quintet
+500/500
+8
+## Hatchlings of Midas
+A Light · Common · Standard
+500 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Breath-8 Gains the Elemental Breath attack at the start of turn 8
+Recommended
+- Talent 2 Reckless Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+- Talent 3 Paradox This card's resistances are inverted: positive ones become negative, and vice versa.
+Three ability slots
+- Chirp-chirp-chirp ability · Cooldown 2 Heal 10 Light
+Heal 10 Light
+Heal 10 Light
+Heal 10 Light Light bonus (+3)
+2
+- Quintet ability · Cooldown 2 Base damage and healing increase by 2
+2
+- Free slot Open to a shop Tox
+Illustration by Manayel
+Full card details
+Illustration by Manayel
+Light Common #233
+# Hatchlings of Midas
+Support
+500 Health points
+8 Spamtons / turn
+#15 Rank / 127
+C No talent · #83
+Attack
+52
+Generation
+69
+Defense
+44
+Support
+97
+Control
+0
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Breath-8 2 Reckless 3 Paradox
+Build with this card 4 decks
+Share
+### Abilities
+#### Chirp-chirp-chirp
+2 turns
+Heal 10 Light
+Heal 10 Light
+Heal 10 Light
+Heal 10 Light Light bonus (+3)
+Accuracy 100% Critical 1%
+#### Quintet
+2 turns
+Base damage and healing increase by 2
+Accuracy 100% Critical 0%
+### Talents
+#### Breath-8
+Recommended
+Gains the Elemental Breath attack at the start of turn 8
+Δ 6.9 · Theoretical score
+#### Reckless
+Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+Δ -716.8 · Theoretical score
+#### Paradox
+This card's resistances are inverted: positive ones become negative, and vice versa.
+Δ -81.4 · Theoretical score
+## Its best decks
+4 ranked decks play this card, from best to worst.
+All decks
+D Advanced collection
+Elemental ramp ·
+### Commando Gerz + Melody of Divinities
+49.8 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Hatchlings of Midas + Melody of Divinities
+41.5 % Relative index 10 turns Estimated elimination 31 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Canine Specter + Hatchlings of Midas
+35.1 % Relative index 10.2 turns Estimated elimination 29 / turn Spamtons
+The other decks (1)
+- D Hatchlings of Midas + Melody of Divinities with Codex of Luminous Spells · Léo Advanced collection · 36.3%
+### Resistances
+-10% Fire
+-19% Water
+14% Earth
+13% Nature
+14% Shadow
+15% Light
+Creature · Aelther
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Hatchlings of Midas are said to be the offspring of the Glimmers of Hope. It hasn't yet been proven, due to the difficulty of Aelther's restrictions — its fauna and flora are hard to observe. Their nest is perched high, at the height of the tallest trees. They only become visible during the ascent of the Celestial Mount, when the summit comes to eye level.
+## Better together
+The most promising partners according to the model.
+C # 096 Light
+Legendary · Attack
+### Melody of Divinities
+550 HP
+A # 097 Fire
+Common · Attack
+### Pyro
+500 HP
+B # 245 Light
+Rare · Attack
+### Radiant Shinobi
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

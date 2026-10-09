@@ -1,0 +1,164 @@
+Codex des Sorts Lumineux : carte SPAM Lumière épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Codex des Sorts Lumineux C Voir la carte en grand
+Codex des Sorts Lumineux
+1 Écrit luminescent
+Immunité
+1000/1000
+10
+Standard
+Codex des Sorts Lumineux
+1 Écrit luminescent
+Immunité
+1000/1000
+10
+Élémentaire
+Codex des Sorts Lumineux
+1 Écrit luminescent
+Immunité
+1000/1000
+10
+FA
+Codex des Sorts Lumineux
+1 Écrit luminescent
+Immunité
+1000/1000
+10
+## Codex des Sorts Lumineux
+C Lumière · Épique · Standard
+1 000 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+Conseillé
+- Talent 2 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+- Talent 3 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+Trois champs de compétence
+- Écrit luminescent compétence · Recharge 1 Bonus Lumière (+1). La valeur de base du bonus augmente de 1
+1
+- Immunité tox · Épique La carte est immunisée contre tous les effets des cartes adverses
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Lumière Épique #198
+# Codex des Sorts Lumineux
+Génération Défense
+1 000 Points de vie
+10 Spamtons / tour
+#84 Classement / 127
+C Sans talent · #76
+Attaque
+0
+Génération
+95
+Défense
+91
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage F/E 2 Blindage O/L 3 Blindage N/T
+Jouer cette carte 10 decks
+Partager
+### Compétences
+#### Écrit luminescent
+1 tour
+Bonus Lumière (+1). La valeur de base du bonus augmente de 1
+Précision 100% Critique 0%
+### Tox de départ
+#### Immunité
+Épique
+La carte est immunisée contre tous les effets des cartes adverses
+### Talents
+#### Blindage F/E
+Conseillé
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 35,4 · Score théorique
+#### Blindage O/L
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 35,4 · Score théorique
+#### Blindage N/T
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 35,4 · Score théorique
+## Ses meilleurs decks
+10 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Rampe élémentaire ·
+### Luminaire Abyssal + Aristocrate Nébulaire
+52 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Shinobi Éclairant + Lueur d'Espoir
+49,2 % Indice relatif 10 tours Élimination estimée 30 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Codex des Sorts Lumineux + Aristocrate Nébulaire
+48,6 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Shinobi Éclairant + Codex des Sorts Lumineux
+47,9 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Rongeur Nuageux + Codex des Sorts Lumineux
+46,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Oisillons de Midas + Mélodie des Divinités
+41,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+Les autres decks (4)
+- D Oisillons de Midas + Mélodie des Divinités avec Codex des Sorts Lumineux · Léo Collection avancée · 36,3%
+- D Luminaire Abyssal + Codex des Sorts Lumineux avec Rongeur Nuageux · Ephial Collection avancée · 35,7%
+- D Spectre Canin + Oisillons de Midas avec Commando Gerz · Codex des Sorts Lumineux Intermédiaire · 35,1%
+- D Rongeur Nuageux + Codex des Sorts Lumineux avec Shinobi Éclairant · Gardien Vert Intermédiaire · 32%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Art · Emeldarion
+### Derrière la carte
+Abondance accueille un grand nombre de peintures. Parmi elles figure le Codex des Sorts Lumineux, fraîchement peint. Les Rois qui scellèrent les Divinités furent longtemps tenus pour responsables d’une malédiction ayant contribué à libérer les Abysses. Cet événement donna son nom à la période funeste de la Malédiction des Rois. Nous savons aujourd’hui qu’ils ne furent en réalité que les acteurs tragiques d’un jeu qui les dépassait. Cette peinture bienveillante est une réinterprétation du Codex des Maux Ancestraux réalisée par la Maîtresse des Teintes. Selon elle, il faut rendre hommage aux héros oubliés.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 081 Eau
+Épique · Attaque
+### Luminaire Abyssal
+600 PV
+A # 078 Lumière
+Rare · Contrôle
+### Gardien Vert
+800 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

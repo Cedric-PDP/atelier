@@ -1,0 +1,144 @@
+Gleam of the White Fox: SPAM Shadow rare card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Gleam of the White Fox S View the full card
+Gleam of the White Fox
+2 Doubleshadow
+4 Darkaqua
+700/700
+5
+Standard
+Gleam of the White Fox
+2 Doubleshadow
+4 Darkaqua
+700/700
+5
+Elemental
+Gleam of the White Fox
+2 Doubleshadow
+4 Darkaqua
+700/700
+5
+FA
+Gleam of the White Fox
+2 Doubleshadow
+4 Darkaqua
+700/700
+5
+## Gleam of the White Fox
+S Shadow · Rare · Standard
+700 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Strike Increases critical damage by (+1).
+- Talent 2 Critical Critical bonus (+10%).
+Recommended
+- Talent 3 Reckless Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+Three ability slots
+- Doubleshadow ability · Cooldown 2 Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)
+2
+- Darkaqua ability · Cooldown 4 Choice
+Deal 20 Water damage
+[Freeze]
+---------- or ----------
+Deal 20 Shadow damage
+Apply Eternity
+4
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Shadow Rare #034
+# Gleam of the White Fox
+Attack Control
+700 Health points
+5 Spamtons / turn
+#6 Rank / 127
+S No talent · #5
+Attack
+91
+Generation
+57
+Defense
+42
+Support
+1
+Control
+91
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Strike 2 Critical 3 Reckless
+Build with this card 1 deck
+Share
+### Abilities
+#### Doubleshadow
+2 turns
+Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)
+Accuracy 100% Critical 1%
+#### Darkaqua
+4 turns
+Choice
+Deal 20 Water damage
+[Freeze]
+---------- or ----------
+Deal 20 Shadow damage
+Apply Eternity
+Accuracy 100% Critical 1%
+### Talents
+#### Strike
+Increases critical damage by (+1).
+Δ 6.4 · Theoretical score
+#### Critical
+Recommended
+Critical bonus (+10%).
+Δ 63.1 · Theoretical score
+#### Reckless
+Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+Δ -327.4 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+B Intermediate
+Aggro / burst ·
+### Aleera + Codex of Ancient Woes
+71.2 % Relative index 6 turns Estimated elimination 27 / turn Spamtons
+### Resistances
+15% Fire
+15% Water
+15% Earth
+15% Nature
+15% Shadow
+15% Light
+Creature · Nyevielh
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The masked Foxes, faithful to the King of Shadow, have settled in the mountains east of Nyevielh. These trained creatures wear a mask as a sign of loyalty. They face the abyssals prowling around their territory. This region is too cold for many Eltherians to live there. But the canine guardians of the Gleam of the White Fox ensure their safety.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+B # 251 Shadow
+Epic · Generation
+### Shadow King
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,157 @@
+Nebular Aristocrat: SPAM Light common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Nebular Aristocrat D View the full card
+Nebular Aristocrat
+2 Cosmic Masquerade
+500/500
+3
+Standard
+Nebular Aristocrat
+2 Cosmic Masquerade
+500/500
+3
+Elemental
+Nebular Aristocrat
+2 Cosmic Masquerade
+500/500
+3
+FA
+Nebular Aristocrat
+2 Cosmic Masquerade
+500/500
+3
+## Nebular Aristocrat
+D Light · Common · Standard
+500 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Length At the start of your first turn, a random enemy card receives "Eternity"
+- Talent 2 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Recommended
+- Talent 3 Eternalized The card is immune to Eternity effects
+Three ability slots
+- Cosmic Masquerade ability · Cooldown 2 Choice
+Accuracy (+20%)
+---------- or ----------
+Critical (+20%)
+2
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Luga
+Full card details
+Illustration by Luga
+Light Common #264
+# Nebular Aristocrat
+Support
+500 Health points
+3 Spamtons / turn
+#125 Rank / 127
+D No talent · #125
+Attack
+0
+Generation
+0
+Defense
+1
+Support
+86
+Control
+0
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Length 2 Transition 3 Eternalized
+Build with this card 11 decks
+Share
+### Abilities
+#### Cosmic Masquerade
+2 turns
+Choice
+Accuracy (+20%)
+---------- or ----------
+Critical (+20%)
+Accuracy 100% Critical 0%
+### Talents
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Transition
+Recommended
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 432.4 · Theoretical score
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+## Its best decks
+11 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Aggro / burst ·
+### Sky Dragon + Nebular Aristocrat
+55.7 % Relative index 7 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Abyssal Lightbearer + Nebular Aristocrat
+53.9 % Relative index 9 turns Estimated elimination 18 / turn Spamtons
+C Intermediate
+Midrange ·
+### Commando Gerz + Radiant Shinobi
+51.8 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Codex of Luminous Spells + Nebular Aristocrat
+48.6 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Radiant Shinobi + Codex of Luminous Spells
+47.9 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Thorn of Love + Nebular Aristocrat
+42.9 % Relative index 10 turns Estimated elimination 23 / turn Spamtons
+The other decks (5)
+- C Sky Dragon + Nebular Aristocrat with Thorn of Love · Squall Accessible · 54.9%
+- C Sky Dragon + Nebular Aristocrat with Thorn of Love · Faerylia Intermediate · 52.5%
+- C Abyssal Lightbearer + Nebular Aristocrat with Codex of Luminous Spells · Lums Advanced collection · 52%
+- D Commando Gerz + Radiant Shinobi with Nebular Aristocrat · Wyrmling of Lights Intermediate · 49.7%
+- D Canine Specter + Commando Gerz with Nebular Aristocrat · Toad of the Stars Accessible · 38.3%
+### Resistances
+-20% Fire
+-20% Water
+-20% Earth
+-20% Nature
+-20% Shadow
+-20% Light
+Eternal · Abyss
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Eternal agents patrol the Abyss to keep their shifting state stable. The one called Nebular Aristocrat mends the dream-rifts between the two worlds. With perfect mastery of the divine runes, she weaves the border between worlds.
+## Better together
+The most promising partners according to the model.
+B # 245 Light
+Rare · Attack
+### Radiant Shinobi
+600 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

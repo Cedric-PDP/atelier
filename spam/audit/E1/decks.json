@@ -1,0 +1,7226 @@
+[
+ {
+  "label": "deck chimere",
+  "nums": [
+   103,
+   238,
+   156,
+   117
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Chimère Brasse-chair",
+   "L'Œil des montagnes",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 8018,
+  "rank": 1
+ },
+ {
+  "label": "anti-critiques",
+  "nums": [
+   12,
+   238,
+   27,
+   117
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Hibernatus",
+   "Chimère Brasse-chair",
+   "Hippocampe Nimbé",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 6989,
+  "rank": 6
+ },
+ {
+  "label": "zéro critique",
+  "nums": [
+   102,
+   116,
+   12,
+   69
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine",
+   "Hibernatus",
+   "Scorch, les Lézards Ignés"
+  ],
+  "owned": true,
+  "siteScore": 6529,
+  "rank": 16
+ },
+ {
+  "label": "deck aleera",
+  "nums": [
+   231,
+   238,
+   156,
+   117
+  ],
+  "ids": [
+   "40416045-b820-4d2c-96f9-34f87d99ac25",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Aleera Mange-Cauchemars",
+   "Chimère Brasse-chair",
+   "L'Œil des montagnes",
+   "Keria"
+  ],
+  "owned": false,
+  "siteScore": 12847,
+  "rank": null
+ },
+ {
+  "label": "robuste A [3,103,117,238]",
+  "nums": [
+   3,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 7625,
+  "rank": 3
+ },
+ {
+  "label": "robuste B [69,160,227,238]",
+  "nums": [
+   69,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6077,
+  "rank": 52
+ },
+ {
+  "label": "top#2",
+  "nums": [
+   27,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 7789,
+  "rank": 2
+ },
+ {
+  "label": "top#4",
+  "nums": [
+   69,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 7165,
+  "rank": 4
+ },
+ {
+  "label": "top#5",
+  "nums": [
+   27,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6997,
+  "rank": 5
+ },
+ {
+  "label": "top#7",
+  "nums": [
+   102,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6953,
+  "rank": 7
+ },
+ {
+  "label": "top#8",
+  "nums": [
+   12,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6939,
+  "rank": 8
+ },
+ {
+  "label": "top#9",
+  "nums": [
+   117,
+   156,
+   160,
+   238
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6902,
+  "rank": 9
+ },
+ {
+  "label": "top#10",
+  "nums": [
+   69,
+   102,
+   156,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 6845,
+  "rank": 10
+ },
+ {
+  "label": "top#11",
+  "nums": [
+   3,
+   27,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6775,
+  "rank": 11
+ },
+ {
+  "label": "top#12",
+  "nums": [
+   2,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6761,
+  "rank": 12
+ },
+ {
+  "label": "top#13",
+  "nums": [
+   3,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6707,
+  "rank": 13
+ },
+ {
+  "label": "top#14",
+  "nums": [
+   3,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6670,
+  "rank": 14
+ },
+ {
+  "label": "top#15",
+  "nums": [
+   69,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6573,
+  "rank": 15
+ },
+ {
+  "label": "top#17",
+  "nums": [
+   2,
+   69,
+   102,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6523,
+  "rank": 17
+ },
+ {
+  "label": "top#18",
+  "nums": [
+   2,
+   27,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hippocampe Nimbé",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6522,
+  "rank": 18
+ },
+ {
+  "label": "top#19",
+  "nums": [
+   82,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6518,
+  "rank": 19
+ },
+ {
+  "label": "top#20",
+  "nums": [
+   2,
+   102,
+   117,
+   156
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "Keria",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 6493,
+  "rank": 20
+ },
+ {
+  "label": "top#21",
+  "nums": [
+   2,
+   69,
+   82,
+   102
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 6490,
+  "rank": 21
+ },
+ {
+  "label": "top#22",
+  "nums": [
+   117,
+   156,
+   238,
+   251
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 6484,
+  "rank": 22
+ },
+ {
+  "label": "top#23",
+  "nums": [
+   69,
+   82,
+   102,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6419,
+  "rank": 23
+ },
+ {
+  "label": "top#24",
+  "nums": [
+   12,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6399,
+  "rank": 24
+ },
+ {
+  "label": "top#25",
+  "nums": [
+   69,
+   82,
+   102,
+   156
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 6372,
+  "rank": 25
+ },
+ {
+  "label": "top#26",
+  "nums": [
+   2,
+   69,
+   102,
+   117
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 6359,
+  "rank": 26
+ },
+ {
+  "label": "top#27",
+  "nums": [
+   2,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6306,
+  "rank": 27
+ },
+ {
+  "label": "top#28",
+  "nums": [
+   27,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6291,
+  "rank": 28
+ },
+ {
+  "label": "top#29",
+  "nums": [
+   2,
+   12,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6269,
+  "rank": 29
+ },
+ {
+  "label": "top#30",
+  "nums": [
+   69,
+   102,
+   116,
+   156
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 6260,
+  "rank": 30
+ },
+ {
+  "label": "top#31",
+  "nums": [
+   12,
+   69,
+   102,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6232,
+  "rank": 31
+ },
+ {
+  "label": "top#32",
+  "nums": [
+   12,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6218,
+  "rank": 32
+ },
+ {
+  "label": "top#33",
+  "nums": [
+   69,
+   102,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6210,
+  "rank": 33
+ },
+ {
+  "label": "top#34",
+  "nums": [
+   69,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6195,
+  "rank": 34
+ },
+ {
+  "label": "top#35",
+  "nums": [
+   103,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6193,
+  "rank": 35
+ },
+ {
+  "label": "top#36",
+  "nums": [
+   27,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6176,
+  "rank": 36
+ },
+ {
+  "label": "top#37",
+  "nums": [
+   69,
+   102,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6174,
+  "rank": 37
+ },
+ {
+  "label": "top#38",
+  "nums": [
+   27,
+   69,
+   117,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6171,
+  "rank": 38
+ },
+ {
+  "label": "top#39",
+  "nums": [
+   12,
+   69,
+   82,
+   102
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 6163,
+  "rank": 39
+ },
+ {
+  "label": "top#40",
+  "nums": [
+   117,
+   153,
+   156,
+   238
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Keria",
+   "L'Inventeur",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6141,
+  "rank": 40
+ },
+ {
+  "label": "top#41",
+  "nums": [
+   2,
+   82,
+   102,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6136,
+  "rank": 41
+ },
+ {
+  "label": "top#42",
+  "nums": [
+   2,
+   69,
+   102,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 6134,
+  "rank": 42
+ },
+ {
+  "label": "top#43",
+  "nums": [
+   103,
+   156,
+   160,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6118,
+  "rank": 43
+ },
+ {
+  "label": "top#44",
+  "nums": [
+   2,
+   12,
+   102,
+   117
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 6115,
+  "rank": 44
+ },
+ {
+  "label": "top#45",
+  "nums": [
+   117,
+   156,
+   238,
+   259
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "5339b369-d066-4406-9b61-795514ae6f1d"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair",
+   "Dragon de la Cité Infernale"
+  ],
+  "owned": true,
+  "siteScore": 6110,
+  "rank": 45
+ },
+ {
+  "label": "top#46",
+  "nums": [
+   3,
+   27,
+   103,
+   117
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 6104,
+  "rank": 46
+ },
+ {
+  "label": "top#47",
+  "nums": [
+   102,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6102,
+  "rank": 47
+ },
+ {
+  "label": "top#48",
+  "nums": [
+   12,
+   102,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6102,
+  "rank": 48
+ },
+ {
+  "label": "top#49",
+  "nums": [
+   82,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6101,
+  "rank": 49
+ },
+ {
+  "label": "top#50",
+  "nums": [
+   69,
+   102,
+   156,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6081,
+  "rank": 50
+ },
+ {
+  "label": "top#51",
+  "nums": [
+   2,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6079,
+  "rank": 51
+ },
+ {
+  "label": "top#53",
+  "nums": [
+   2,
+   82,
+   102,
+   156
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 6071,
+  "rank": 53
+ },
+ {
+  "label": "top#54",
+  "nums": [
+   69,
+   82,
+   102,
+   160
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 6066,
+  "rank": 54
+ },
+ {
+  "label": "top#55",
+  "nums": [
+   12,
+   117,
+   153,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6052,
+  "rank": 55
+ },
+ {
+  "label": "top#56",
+  "nums": [
+   3,
+   12,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hibernatus",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6047,
+  "rank": 56
+ },
+ {
+  "label": "top#57",
+  "nums": [
+   2,
+   12,
+   102,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6045,
+  "rank": 57
+ },
+ {
+  "label": "top#58",
+  "nums": [
+   12,
+   69,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6040,
+  "rank": 58
+ },
+ {
+  "label": "top#59",
+  "nums": [
+   3,
+   27,
+   103,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6015,
+  "rank": 59
+ },
+ {
+  "label": "top#60",
+  "nums": [
+   27,
+   116,
+   117,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Prisonnière de la Machine",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 6006,
+  "rank": 60
+ },
+ {
+  "label": "top#61",
+  "nums": [
+   117,
+   156,
+   238,
+   243
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 6001,
+  "rank": 61
+ },
+ {
+  "label": "top#62",
+  "nums": [
+   117,
+   156,
+   180,
+   238
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5995,
+  "rank": 62
+ },
+ {
+  "label": "top#63",
+  "nums": [
+   12,
+   69,
+   117,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5988,
+  "rank": 63
+ },
+ {
+  "label": "top#64",
+  "nums": [
+   2,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5986,
+  "rank": 64
+ },
+ {
+  "label": "top#65",
+  "nums": [
+   12,
+   103,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5978,
+  "rank": 65
+ },
+ {
+  "label": "top#66",
+  "nums": [
+   2,
+   82,
+   156,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5965,
+  "rank": 66
+ },
+ {
+  "label": "top#67",
+  "nums": [
+   3,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5951,
+  "rank": 67
+ },
+ {
+  "label": "top#68",
+  "nums": [
+   12,
+   82,
+   117,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5947,
+  "rank": 68
+ },
+ {
+  "label": "top#69",
+  "nums": [
+   2,
+   102,
+   156,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5943,
+  "rank": 69
+ },
+ {
+  "label": "top#70",
+  "nums": [
+   12,
+   117,
+   238,
+   243
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5942,
+  "rank": 70
+ },
+ {
+  "label": "top#71",
+  "nums": [
+   69,
+   82,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5940,
+  "rank": 71
+ },
+ {
+  "label": "top#72",
+  "nums": [
+   12,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5939,
+  "rank": 72
+ },
+ {
+  "label": "top#73",
+  "nums": [
+   12,
+   27,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5937,
+  "rank": 73
+ },
+ {
+  "label": "top#74",
+  "nums": [
+   69,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5934,
+  "rank": 74
+ },
+ {
+  "label": "top#75",
+  "nums": [
+   102,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5923,
+  "rank": 75
+ },
+ {
+  "label": "top#76",
+  "nums": [
+   2,
+   12,
+   82,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5923,
+  "rank": 76
+ },
+ {
+  "label": "top#77",
+  "nums": [
+   2,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5921,
+  "rank": 77
+ },
+ {
+  "label": "top#78",
+  "nums": [
+   69,
+   82,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5917,
+  "rank": 78
+ },
+ {
+  "label": "top#79",
+  "nums": [
+   116,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Prisonnière de la Machine",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5904,
+  "rank": 79
+ },
+ {
+  "label": "top#80",
+  "nums": [
+   69,
+   82,
+   102,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5894,
+  "rank": 80
+ },
+ {
+  "label": "top#81",
+  "nums": [
+   12,
+   103,
+   116,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Lame de la forêt",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5894,
+  "rank": 81
+ },
+ {
+  "label": "top#82",
+  "nums": [
+   12,
+   69,
+   102,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5885,
+  "rank": 82
+ },
+ {
+  "label": "top#83",
+  "nums": [
+   69,
+   102,
+   116,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5875,
+  "rank": 83
+ },
+ {
+  "label": "top#84",
+  "nums": [
+   12,
+   117,
+   238,
+   251
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5870,
+  "rank": 84
+ },
+ {
+  "label": "top#85",
+  "nums": [
+   2,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5851,
+  "rank": 85
+ },
+ {
+  "label": "top#86",
+  "nums": [
+   2,
+   69,
+   82,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5849,
+  "rank": 86
+ },
+ {
+  "label": "top#87",
+  "nums": [
+   69,
+   82,
+   102,
+   117
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5845,
+  "rank": 87
+ },
+ {
+  "label": "top#88",
+  "nums": [
+   82,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5844,
+  "rank": 88
+ },
+ {
+  "label": "top#89",
+  "nums": [
+   2,
+   12,
+   82,
+   102
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 5843,
+  "rank": 89
+ },
+ {
+  "label": "top#90",
+  "nums": [
+   2,
+   102,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5837,
+  "rank": 90
+ },
+ {
+  "label": "top#91",
+  "nums": [
+   2,
+   3,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Esprit Nature",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5835,
+  "rank": 91
+ },
+ {
+  "label": "top#92",
+  "nums": [
+   3,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5832,
+  "rank": 92
+ },
+ {
+  "label": "top#93",
+  "nums": [
+   2,
+   12,
+   27,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5831,
+  "rank": 93
+ },
+ {
+  "label": "top#94",
+  "nums": [
+   12,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5831,
+  "rank": 94
+ },
+ {
+  "label": "top#95",
+  "nums": [
+   12,
+   69,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5829,
+  "rank": 95
+ },
+ {
+  "label": "top#96",
+  "nums": [
+   3,
+   103,
+   117,
+   160
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5823,
+  "rank": 96
+ },
+ {
+  "label": "top#97",
+  "nums": [
+   102,
+   103,
+   117,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5821,
+  "rank": 97
+ },
+ {
+  "label": "top#98",
+  "nums": [
+   27,
+   69,
+   102,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5820,
+  "rank": 98
+ },
+ {
+  "label": "top#99",
+  "nums": [
+   27,
+   69,
+   82,
+   156
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5814,
+  "rank": 99
+ },
+ {
+  "label": "top#100",
+  "nums": [
+   2,
+   69,
+   82,
+   156
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5810,
+  "rank": 100
+ },
+ {
+  "label": "top#101",
+  "nums": [
+   12,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5796,
+  "rank": 101
+ },
+ {
+  "label": "top#102",
+  "nums": [
+   27,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5792,
+  "rank": 102
+ },
+ {
+  "label": "top#103",
+  "nums": [
+   69,
+   102,
+   103,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5790,
+  "rank": 103
+ },
+ {
+  "label": "top#104",
+  "nums": [
+   69,
+   82,
+   160,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5789,
+  "rank": 104
+ },
+ {
+  "label": "top#105",
+  "nums": [
+   103,
+   117,
+   238,
+   251
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5780,
+  "rank": 105
+ },
+ {
+  "label": "top#106",
+  "nums": [
+   3,
+   117,
+   180,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5778,
+  "rank": 106
+ },
+ {
+  "label": "top#107",
+  "nums": [
+   2,
+   82,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5767,
+  "rank": 107
+ },
+ {
+  "label": "top#108",
+  "nums": [
+   2,
+   82,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5764,
+  "rank": 108
+ },
+ {
+  "label": "top#109",
+  "nums": [
+   69,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5764,
+  "rank": 109
+ },
+ {
+  "label": "top#110",
+  "nums": [
+   69,
+   82,
+   117,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5749,
+  "rank": 110
+ },
+ {
+  "label": "top#111",
+  "nums": [
+   12,
+   69,
+   82,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5740,
+  "rank": 111
+ },
+ {
+  "label": "top#112",
+  "nums": [
+   12,
+   27,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5737,
+  "rank": 112
+ },
+ {
+  "label": "top#113",
+  "nums": [
+   12,
+   69,
+   160,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5736,
+  "rank": 113
+ },
+ {
+  "label": "top#114",
+  "nums": [
+   69,
+   102,
+   160,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5736,
+  "rank": 114
+ },
+ {
+  "label": "top#115",
+  "nums": [
+   103,
+   117,
+   238,
+   243
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5730,
+  "rank": 115
+ },
+ {
+  "label": "top#116",
+  "nums": [
+   2,
+   69,
+   117,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5727,
+  "rank": 116
+ },
+ {
+  "label": "top#117",
+  "nums": [
+   69,
+   82,
+   102,
+   116
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine"
+  ],
+  "owned": true,
+  "siteScore": 5727,
+  "rank": 117
+ },
+ {
+  "label": "top#118",
+  "nums": [
+   3,
+   12,
+   27,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5721,
+  "rank": 118
+ },
+ {
+  "label": "top#119",
+  "nums": [
+   2,
+   82,
+   156,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5713,
+  "rank": 119
+ },
+ {
+  "label": "top#120",
+  "nums": [
+   103,
+   116,
+   156,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Prisonnière de la Machine",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5711,
+  "rank": 120
+ },
+ {
+  "label": "top#121",
+  "nums": [
+   4,
+   69,
+   160,
+   227
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5707,
+  "rank": 121
+ },
+ {
+  "label": "top#122",
+  "nums": [
+   27,
+   69,
+   82,
+   102
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 5707,
+  "rank": 122
+ },
+ {
+  "label": "top#123",
+  "nums": [
+   103,
+   156,
+   238,
+   251
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5706,
+  "rank": 123
+ },
+ {
+  "label": "top#124",
+  "nums": [
+   12,
+   69,
+   82,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5702,
+  "rank": 124
+ },
+ {
+  "label": "top#125",
+  "nums": [
+   3,
+   69,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5702,
+  "rank": 125
+ },
+ {
+  "label": "top#126",
+  "nums": [
+   12,
+   116,
+   117,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Prisonnière de la Machine",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5702,
+  "rank": 126
+ },
+ {
+  "label": "top#127",
+  "nums": [
+   69,
+   116,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5694,
+  "rank": 127
+ },
+ {
+  "label": "top#128",
+  "nums": [
+   12,
+   27,
+   82,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Baleine Farceuse",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5693,
+  "rank": 128
+ },
+ {
+  "label": "top#129",
+  "nums": [
+   12,
+   27,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5693,
+  "rank": 129
+ },
+ {
+  "label": "top#130",
+  "nums": [
+   2,
+   12,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5692,
+  "rank": 130
+ },
+ {
+  "label": "top#131",
+  "nums": [
+   2,
+   69,
+   102,
+   160
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5691,
+  "rank": 131
+ },
+ {
+  "label": "top#132",
+  "nums": [
+   6,
+   27,
+   117,
+   238
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "Hippocampe Nimbé",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5686,
+  "rank": 132
+ },
+ {
+  "label": "top#133",
+  "nums": [
+   103,
+   117,
+   153,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5685,
+  "rank": 133
+ },
+ {
+  "label": "top#134",
+  "nums": [
+   4,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5682,
+  "rank": 134
+ },
+ {
+  "label": "top#135",
+  "nums": [
+   3,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5680,
+  "rank": 135
+ },
+ {
+  "label": "top#136",
+  "nums": [
+   2,
+   27,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hippocampe Nimbé",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5679,
+  "rank": 136
+ },
+ {
+  "label": "top#137",
+  "nums": [
+   69,
+   82,
+   116,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5676,
+  "rank": 137
+ },
+ {
+  "label": "top#138",
+  "nums": [
+   69,
+   116,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5671,
+  "rank": 138
+ },
+ {
+  "label": "top#139",
+  "nums": [
+   2,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5664,
+  "rank": 139
+ },
+ {
+  "label": "top#140",
+  "nums": [
+   69,
+   116,
+   160,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5663,
+  "rank": 140
+ },
+ {
+  "label": "top#141",
+  "nums": [
+   12,
+   102,
+   156,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5661,
+  "rank": 141
+ },
+ {
+  "label": "top#142",
+  "nums": [
+   12,
+   117,
+   238,
+   259
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "5339b369-d066-4406-9b61-795514ae6f1d"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Dragon de la Cité Infernale"
+  ],
+  "owned": true,
+  "siteScore": 5651,
+  "rank": 142
+ },
+ {
+  "label": "top#143",
+  "nums": [
+   69,
+   82,
+   156,
+   160
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "L'Œil des montagnes",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5650,
+  "rank": 143
+ },
+ {
+  "label": "top#144",
+  "nums": [
+   12,
+   27,
+   153,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5648,
+  "rank": 144
+ },
+ {
+  "label": "top#145",
+  "nums": [
+   12,
+   102,
+   160,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5644,
+  "rank": 145
+ },
+ {
+  "label": "top#146",
+  "nums": [
+   30,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "f57456c7-c2ed-458c-9417-13a9bbb4aec8",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Naissance d'Aldrin",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5643,
+  "rank": 146
+ },
+ {
+  "label": "top#147",
+  "nums": [
+   1,
+   12,
+   227,
+   238
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Feu",
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5643,
+  "rank": 147
+ },
+ {
+  "label": "top#148",
+  "nums": [
+   3,
+   117,
+   153,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5642,
+  "rank": 148
+ },
+ {
+  "label": "top#149",
+  "nums": [
+   2,
+   69,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5640,
+  "rank": 149
+ },
+ {
+  "label": "top#150",
+  "nums": [
+   2,
+   82,
+   102,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5632,
+  "rank": 150
+ },
+ {
+  "label": "top#151",
+  "nums": [
+   2,
+   12,
+   69,
+   102
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 5630,
+  "rank": 151
+ },
+ {
+  "label": "top#152",
+  "nums": [
+   2,
+   27,
+   102,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hippocampe Nimbé",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5627,
+  "rank": 152
+ },
+ {
+  "label": "top#153",
+  "nums": [
+   3,
+   82,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Baleine Farceuse",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5620,
+  "rank": 153
+ },
+ {
+  "label": "top#154",
+  "nums": [
+   12,
+   69,
+   102,
+   160
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5619,
+  "rank": 154
+ },
+ {
+  "label": "top#155",
+  "nums": [
+   2,
+   102,
+   103,
+   117
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5611,
+  "rank": 155
+ },
+ {
+  "label": "top#156",
+  "nums": [
+   2,
+   12,
+   102,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5598,
+  "rank": 156
+ },
+ {
+  "label": "top#157",
+  "nums": [
+   3,
+   12,
+   227,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5596,
+  "rank": 157
+ },
+ {
+  "label": "top#158",
+  "nums": [
+   102,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5595,
+  "rank": 158
+ },
+ {
+  "label": "top#159",
+  "nums": [
+   3,
+   12,
+   103,
+   117
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hibernatus",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5594,
+  "rank": 159
+ },
+ {
+  "label": "top#160",
+  "nums": [
+   12,
+   27,
+   238,
+   243
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5593,
+  "rank": 160
+ },
+ {
+  "label": "top#161",
+  "nums": [
+   4,
+   12,
+   160,
+   227
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5591,
+  "rank": 161
+ },
+ {
+  "label": "top#162",
+  "nums": [
+   12,
+   82,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5589,
+  "rank": 162
+ },
+ {
+  "label": "top#163",
+  "nums": [
+   3,
+   103,
+   227,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5589,
+  "rank": 163
+ },
+ {
+  "label": "top#164",
+  "nums": [
+   69,
+   82,
+   116,
+   160
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Prisonnière de la Machine",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5587,
+  "rank": 164
+ },
+ {
+  "label": "top#165",
+  "nums": [
+   3,
+   103,
+   117,
+   227
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5585,
+  "rank": 165
+ },
+ {
+  "label": "top#166",
+  "nums": [
+   12,
+   27,
+   102,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5584,
+  "rank": 166
+ },
+ {
+  "label": "top#167",
+  "nums": [
+   103,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5582,
+  "rank": 167
+ },
+ {
+  "label": "top#168",
+  "nums": [
+   12,
+   27,
+   180,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5581,
+  "rank": 168
+ },
+ {
+  "label": "top#169",
+  "nums": [
+   103,
+   156,
+   238,
+   243
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5578,
+  "rank": 169
+ },
+ {
+  "label": "top#170",
+  "nums": [
+   12,
+   117,
+   180,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Keria",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5576,
+  "rank": 170
+ },
+ {
+  "label": "top#171",
+  "nums": [
+   3,
+   117,
+   238,
+   251
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5575,
+  "rank": 171
+ },
+ {
+  "label": "top#172",
+  "nums": [
+   3,
+   103,
+   160,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5574,
+  "rank": 172
+ },
+ {
+  "label": "top#173",
+  "nums": [
+   69,
+   82,
+   156,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5571,
+  "rank": 173
+ },
+ {
+  "label": "top#174",
+  "nums": [
+   12,
+   27,
+   69,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5571,
+  "rank": 174
+ },
+ {
+  "label": "top#175",
+  "nums": [
+   69,
+   156,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "L'Œil des montagnes",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5570,
+  "rank": 175
+ },
+ {
+  "label": "top#176",
+  "nums": [
+   12,
+   102,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5563,
+  "rank": 176
+ },
+ {
+  "label": "top#177",
+  "nums": [
+   3,
+   103,
+   117,
+   180
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "Dragon Ciel"
+  ],
+  "owned": true,
+  "siteScore": 5562,
+  "rank": 177
+ },
+ {
+  "label": "top#178",
+  "nums": [
+   6,
+   12,
+   160,
+   227
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5560,
+  "rank": 178
+ },
+ {
+  "label": "top#179",
+  "nums": [
+   27,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5558,
+  "rank": 179
+ },
+ {
+  "label": "top#180",
+  "nums": [
+   3,
+   12,
+   103,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hibernatus",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5557,
+  "rank": 180
+ },
+ {
+  "label": "top#181",
+  "nums": [
+   27,
+   69,
+   160,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5556,
+  "rank": 181
+ },
+ {
+  "label": "top#182",
+  "nums": [
+   12,
+   82,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5549,
+  "rank": 182
+ },
+ {
+  "label": "top#183",
+  "nums": [
+   1,
+   12,
+   160,
+   227
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Feu",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5539,
+  "rank": 183
+ },
+ {
+  "label": "top#184",
+  "nums": [
+   2,
+   12,
+   160,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5539,
+  "rank": 184
+ },
+ {
+  "label": "top#185",
+  "nums": [
+   69,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5538,
+  "rank": 185
+ },
+ {
+  "label": "top#186",
+  "nums": [
+   12,
+   116,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Prisonnière de la Machine",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5534,
+  "rank": 186
+ },
+ {
+  "label": "top#187",
+  "nums": [
+   27,
+   69,
+   227,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5533,
+  "rank": 187
+ },
+ {
+  "label": "top#188",
+  "nums": [
+   2,
+   12,
+   82,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5531,
+  "rank": 188
+ },
+ {
+  "label": "top#189",
+  "nums": [
+   69,
+   82,
+   102,
+   103
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Lame de la forêt"
+  ],
+  "owned": true,
+  "siteScore": 5530,
+  "rank": 189
+ },
+ {
+  "label": "top#190",
+  "nums": [
+   3,
+   103,
+   180,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5524,
+  "rank": 190
+ },
+ {
+  "label": "top#191",
+  "nums": [
+   2,
+   12,
+   69,
+   82
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse"
+  ],
+  "owned": true,
+  "siteScore": 5523,
+  "rank": 191
+ },
+ {
+  "label": "top#192",
+  "nums": [
+   12,
+   69,
+   82,
+   160
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5521,
+  "rank": 192
+ },
+ {
+  "label": "top#193",
+  "nums": [
+   69,
+   103,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Lame de la forêt",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5520,
+  "rank": 193
+ },
+ {
+  "label": "top#194",
+  "nums": [
+   2,
+   82,
+   160,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5512,
+  "rank": 194
+ },
+ {
+  "label": "top#195",
+  "nums": [
+   4,
+   69,
+   160,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5512,
+  "rank": 195
+ },
+ {
+  "label": "top#196",
+  "nums": [
+   2,
+   12,
+   69,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5510,
+  "rank": 196
+ },
+ {
+  "label": "top#197",
+  "nums": [
+   102,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5509,
+  "rank": 197
+ },
+ {
+  "label": "top#198",
+  "nums": [
+   2,
+   12,
+   160,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5508,
+  "rank": 198
+ },
+ {
+  "label": "top#199",
+  "nums": [
+   3,
+   69,
+   102,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5505,
+  "rank": 199
+ },
+ {
+  "label": "top#200",
+  "nums": [
+   3,
+   117,
+   238,
+   243
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5502,
+  "rank": 200
+ },
+ {
+  "label": "top#201",
+  "nums": [
+   12,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5501,
+  "rank": 201
+ },
+ {
+  "label": "top#202",
+  "nums": [
+   69,
+   102,
+   117,
+   160
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5496,
+  "rank": 202
+ },
+ {
+  "label": "top#203",
+  "nums": [
+   1,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Feu",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5495,
+  "rank": 203
+ },
+ {
+  "label": "top#204",
+  "nums": [
+   69,
+   102,
+   153,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5492,
+  "rank": 204
+ },
+ {
+  "label": "top#205",
+  "nums": [
+   2,
+   3,
+   103,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5491,
+  "rank": 205
+ },
+ {
+  "label": "top#206",
+  "nums": [
+   69,
+   116,
+   117,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5489,
+  "rank": 206
+ },
+ {
+  "label": "top#207",
+  "nums": [
+   69,
+   82,
+   116,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Prisonnière de la Machine",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5487,
+  "rank": 207
+ },
+ {
+  "label": "top#208",
+  "nums": [
+   12,
+   69,
+   116,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5487,
+  "rank": 208
+ },
+ {
+  "label": "top#209",
+  "nums": [
+   6,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5486,
+  "rank": 209
+ },
+ {
+  "label": "top#210",
+  "nums": [
+   5,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5484,
+  "rank": 210
+ },
+ {
+  "label": "top#211",
+  "nums": [
+   12,
+   227,
+   238,
+   251
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5477,
+  "rank": 211
+ },
+ {
+  "label": "top#212",
+  "nums": [
+   2,
+   12,
+   82,
+   156
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Baleine Farceuse",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5476,
+  "rank": 212
+ },
+ {
+  "label": "top#213",
+  "nums": [
+   2,
+   69,
+   82,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5472,
+  "rank": 213
+ },
+ {
+  "label": "top#214",
+  "nums": [
+   103,
+   117,
+   238,
+   259
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "5339b369-d066-4406-9b61-795514ae6f1d"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Dragon de la Cité Infernale"
+  ],
+  "owned": true,
+  "siteScore": 5469,
+  "rank": 214
+ },
+ {
+  "label": "top#215",
+  "nums": [
+   117,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Keria",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5468,
+  "rank": 215
+ },
+ {
+  "label": "top#216",
+  "nums": [
+   27,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5467,
+  "rank": 216
+ },
+ {
+  "label": "top#217",
+  "nums": [
+   3,
+   27,
+   227,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5460,
+  "rank": 217
+ },
+ {
+  "label": "top#218",
+  "nums": [
+   12,
+   82,
+   102,
+   156
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5456,
+  "rank": 218
+ },
+ {
+  "label": "top#219",
+  "nums": [
+   2,
+   69,
+   82,
+   160
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5455,
+  "rank": 219
+ },
+ {
+  "label": "top#220",
+  "nums": [
+   12,
+   82,
+   227,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5441,
+  "rank": 220
+ },
+ {
+  "label": "top#221",
+  "nums": [
+   69,
+   82,
+   102,
+   153
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "L'Inventeur"
+  ],
+  "owned": true,
+  "siteScore": 5441,
+  "rank": 221
+ },
+ {
+  "label": "top#222",
+  "nums": [
+   2,
+   27,
+   156,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hippocampe Nimbé",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5440,
+  "rank": 222
+ },
+ {
+  "label": "top#223",
+  "nums": [
+   12,
+   27,
+   102,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5440,
+  "rank": 223
+ },
+ {
+  "label": "top#224",
+  "nums": [
+   3,
+   117,
+   158,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "d9b48eed-dd89-43a2-8da3-9aa466059a45",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Keria",
+   "Lapin-Plume",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5439,
+  "rank": 224
+ },
+ {
+  "label": "top#225",
+  "nums": [
+   2,
+   117,
+   227,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Keria",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5436,
+  "rank": 225
+ },
+ {
+  "label": "top#226",
+  "nums": [
+   69,
+   102,
+   117,
+   156
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5433,
+  "rank": 226
+ },
+ {
+  "label": "top#227",
+  "nums": [
+   1,
+   4,
+   160,
+   227
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Feu",
+   "Esprit Terre",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5430,
+  "rank": 227
+ },
+ {
+  "label": "top#228",
+  "nums": [
+   4,
+   5,
+   160,
+   227
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Esprit Ombre",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5428,
+  "rank": 228
+ },
+ {
+  "label": "top#229",
+  "nums": [
+   4,
+   6,
+   160,
+   227
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Esprit Lumière",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5428,
+  "rank": 229
+ },
+ {
+  "label": "top#230",
+  "nums": [
+   69,
+   102,
+   103,
+   116
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Prisonnière de la Machine"
+  ],
+  "owned": true,
+  "siteScore": 5428,
+  "rank": 230
+ },
+ {
+  "label": "top#231",
+  "nums": [
+   2,
+   4,
+   160,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Esprit Terre",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5428,
+  "rank": 231
+ },
+ {
+  "label": "top#232",
+  "nums": [
+   3,
+   103,
+   117,
+   251
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5426,
+  "rank": 232
+ },
+ {
+  "label": "top#233",
+  "nums": [
+   116,
+   117,
+   160,
+   238
+  ],
+  "ids": [
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Prisonnière de la Machine",
+   "Keria",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5425,
+  "rank": 233
+ },
+ {
+  "label": "top#234",
+  "nums": [
+   3,
+   82,
+   103,
+   117
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Baleine Farceuse",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5425,
+  "rank": 234
+ },
+ {
+  "label": "top#235",
+  "nums": [
+   12,
+   156,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "L'Œil des montagnes",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5421,
+  "rank": 235
+ },
+ {
+  "label": "top#236",
+  "nums": [
+   3,
+   27,
+   156,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5420,
+  "rank": 236
+ },
+ {
+  "label": "top#237",
+  "nums": [
+   12,
+   27,
+   116,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5420,
+  "rank": 237
+ },
+ {
+  "label": "top#238",
+  "nums": [
+   82,
+   102,
+   227,
+   238
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5420,
+  "rank": 238
+ },
+ {
+  "label": "top#239",
+  "nums": [
+   3,
+   27,
+   160,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5418,
+  "rank": 239
+ },
+ {
+  "label": "top#240",
+  "nums": [
+   82,
+   102,
+   117,
+   238
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5414,
+  "rank": 240
+ },
+ {
+  "label": "top#241",
+  "nums": [
+   3,
+   102,
+   103,
+   117
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5408,
+  "rank": 241
+ },
+ {
+  "label": "top#242",
+  "nums": [
+   69,
+   102,
+   103,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5408,
+  "rank": 242
+ },
+ {
+  "label": "top#243",
+  "nums": [
+   12,
+   69,
+   102,
+   117
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5406,
+  "rank": 243
+ },
+ {
+  "label": "top#244",
+  "nums": [
+   3,
+   4,
+   117,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Esprit Terre",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5404,
+  "rank": 244
+ },
+ {
+  "label": "top#245",
+  "nums": [
+   12,
+   227,
+   238,
+   243
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483"
+  ],
+  "names": [
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair",
+   "Vivy"
+  ],
+  "owned": true,
+  "siteScore": 5404,
+  "rank": 245
+ },
+ {
+  "label": "top#246",
+  "nums": [
+   6,
+   12,
+   227,
+   238
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5402,
+  "rank": 246
+ },
+ {
+  "label": "top#247",
+  "nums": [
+   69,
+   82,
+   103,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5402,
+  "rank": 247
+ },
+ {
+  "label": "top#248",
+  "nums": [
+   3,
+   69,
+   160,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5399,
+  "rank": 248
+ },
+ {
+  "label": "top#249",
+  "nums": [
+   12,
+   116,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Prisonnière de la Machine",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5398,
+  "rank": 249
+ },
+ {
+  "label": "top#250",
+  "nums": [
+   12,
+   69,
+   82,
+   156
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "L'Œil des montagnes"
+  ],
+  "owned": true,
+  "siteScore": 5396,
+  "rank": 250
+ },
+ {
+  "label": "top#251",
+  "nums": [
+   5,
+   12,
+   227,
+   251
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "Hibernatus",
+   "Chouette Polychrome",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5394,
+  "rank": 251
+ },
+ {
+  "label": "top#252",
+  "nums": [
+   69,
+   102,
+   117,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Keria",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5394,
+  "rank": 252
+ },
+ {
+  "label": "top#253",
+  "nums": [
+   4,
+   69,
+   102,
+   160
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5393,
+  "rank": 253
+ },
+ {
+  "label": "top#254",
+  "nums": [
+   69,
+   153,
+   160,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "L'Inventeur",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5392,
+  "rank": 254
+ },
+ {
+  "label": "top#255",
+  "nums": [
+   1,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Feu",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5391,
+  "rank": 255
+ },
+ {
+  "label": "top#256",
+  "nums": [
+   2,
+   117,
+   153,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Keria",
+   "L'Inventeur",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5390,
+  "rank": 256
+ },
+ {
+  "label": "top#257",
+  "nums": [
+   4,
+   102,
+   160,
+   227
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5389,
+  "rank": 257
+ },
+ {
+  "label": "top#258",
+  "nums": [
+   12,
+   102,
+   227,
+   251
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Hibernatus",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5385,
+  "rank": 258
+ },
+ {
+  "label": "top#259",
+  "nums": [
+   6,
+   12,
+   27,
+   238
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5385,
+  "rank": 259
+ },
+ {
+  "label": "top#260",
+  "nums": [
+   2,
+   102,
+   156,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5384,
+  "rank": 260
+ },
+ {
+  "label": "top#261",
+  "nums": [
+   3,
+   69,
+   103,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Scorch, les Lézards Ignés",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5382,
+  "rank": 261
+ },
+ {
+  "label": "top#262",
+  "nums": [
+   27,
+   69,
+   116,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5382,
+  "rank": 262
+ },
+ {
+  "label": "top#263",
+  "nums": [
+   5,
+   12,
+   160,
+   227
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5381,
+  "rank": 263
+ },
+ {
+  "label": "top#264",
+  "nums": [
+   2,
+   69,
+   160,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Scorch, les Lézards Ignés",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5378,
+  "rank": 264
+ },
+ {
+  "label": "top#265",
+  "nums": [
+   82,
+   102,
+   156,
+   227
+  ],
+  "ids": [
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5378,
+  "rank": 265
+ },
+ {
+  "label": "top#266",
+  "nums": [
+   4,
+   12,
+   160,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Hibernatus",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5377,
+  "rank": 266
+ },
+ {
+  "label": "top#267",
+  "nums": [
+   117,
+   156,
+   227,
+   238
+  ],
+  "ids": [
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Keria",
+   "L'Œil des montagnes",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5375,
+  "rank": 267
+ },
+ {
+  "label": "top#268",
+  "nums": [
+   69,
+   102,
+   116,
+   160
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5375,
+  "rank": 268
+ },
+ {
+  "label": "top#269",
+  "nums": [
+   27,
+   69,
+   82,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5373,
+  "rank": 269
+ },
+ {
+  "label": "top#270",
+  "nums": [
+   5,
+   227,
+   243,
+   251
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "4b5c9594-0497-4d5f-9631-e413c3a89483",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "Chouette Polychrome",
+   "Vivy",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5371,
+  "rank": 270
+ },
+ {
+  "label": "top#271",
+  "nums": [
+   2,
+   3,
+   27,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Esprit Nature",
+   "Hippocampe Nimbé",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5370,
+  "rank": 271
+ },
+ {
+  "label": "top#272",
+  "nums": [
+   4,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5370,
+  "rank": 272
+ },
+ {
+  "label": "top#273",
+  "nums": [
+   12,
+   27,
+   103,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Hippocampe Nimbé",
+   "Lame de la forêt",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5367,
+  "rank": 273
+ },
+ {
+  "label": "top#274",
+  "nums": [
+   3,
+   103,
+   117,
+   153
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Lame de la forêt",
+   "Keria",
+   "L'Inventeur"
+  ],
+  "owned": true,
+  "siteScore": 5365,
+  "rank": 274
+ },
+ {
+  "label": "top#275",
+  "nums": [
+   2,
+   102,
+   160,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Murmures du Corail Noir",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5364,
+  "rank": 275
+ },
+ {
+  "label": "top#276",
+  "nums": [
+   12,
+   82,
+   102,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5363,
+  "rank": 276
+ },
+ {
+  "label": "top#277",
+  "nums": [
+   4,
+   69,
+   116,
+   160
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Scorch, les Lézards Ignés",
+   "Prisonnière de la Machine",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5361,
+  "rank": 277
+ },
+ {
+  "label": "top#278",
+  "nums": [
+   2,
+   12,
+   69,
+   227
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5359,
+  "rank": 278
+ },
+ {
+  "label": "top#279",
+  "nums": [
+   12,
+   153,
+   156,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "L'Inventeur",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5359,
+  "rank": 279
+ },
+ {
+  "label": "top#280",
+  "nums": [
+   69,
+   102,
+   116,
+   227
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "feb27db8-e8a5-4ff3-8c30-fc76927965ee",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir",
+   "Prisonnière de la Machine",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5359,
+  "rank": 280
+ },
+ {
+  "label": "top#281",
+  "nums": [
+   4,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5359,
+  "rank": 281
+ },
+ {
+  "label": "top#282",
+  "nums": [
+   102,
+   103,
+   156,
+   227
+  ],
+  "ids": [
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Murmures du Corail Noir",
+   "Lame de la forêt",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5358,
+  "rank": 282
+ },
+ {
+  "label": "top#283",
+  "nums": [
+   4,
+   69,
+   82,
+   160
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Scorch, les Lézards Ignés",
+   "Baleine Farceuse",
+   "Sanglier Doré"
+  ],
+  "owned": true,
+  "siteScore": 5356,
+  "rank": 283
+ },
+ {
+  "label": "top#284",
+  "nums": [
+   1,
+   117,
+   156,
+   238
+  ],
+  "ids": [
+   "18bca5cf-7aa1-421c-85ec-4ed0b6a8ca70",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Feu",
+   "Keria",
+   "L'Œil des montagnes",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5355,
+  "rank": 284
+ },
+ {
+  "label": "top#285",
+  "nums": [
+   5,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5352,
+  "rank": 285
+ },
+ {
+  "label": "top#286",
+  "nums": [
+   6,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "2a1ead5f-4012-4705-a289-29f080f159dd",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Lumière",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5352,
+  "rank": 286
+ },
+ {
+  "label": "top#287",
+  "nums": [
+   27,
+   102,
+   227,
+   238
+  ],
+  "ids": [
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hippocampe Nimbé",
+   "Murmures du Corail Noir",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5352,
+  "rank": 287
+ },
+ {
+  "label": "top#288",
+  "nums": [
+   5,
+   160,
+   227,
+   251
+  ],
+  "ids": [
+   "9c93fa79-43e5-4b2b-888d-386de286fd2c",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Ombre",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5351,
+  "rank": 288
+ },
+ {
+  "label": "top#289",
+  "nums": [
+   2,
+   82,
+   160,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Baleine Farceuse",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5350,
+  "rank": 289
+ },
+ {
+  "label": "top#290",
+  "nums": [
+   12,
+   103,
+   160,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Lame de la forêt",
+   "Sanglier Doré",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5348,
+  "rank": 290
+ },
+ {
+  "label": "top#291",
+  "nums": [
+   3,
+   160,
+   227,
+   238
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "76ecb89a-1b3d-4683-b076-5ea3fc20f91a",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Sanglier Doré",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5348,
+  "rank": 291
+ },
+ {
+  "label": "top#292",
+  "nums": [
+   2,
+   3,
+   12,
+   238
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Esprit Nature",
+   "Hibernatus",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5346,
+  "rank": 292
+ },
+ {
+  "label": "top#293",
+  "nums": [
+   3,
+   4,
+   103,
+   117
+  ],
+  "ids": [
+   "50807128-85af-472d-b2f7-59737a9a03b4",
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8"
+  ],
+  "names": [
+   "Esprit Nature",
+   "Esprit Terre",
+   "Lame de la forêt",
+   "Keria"
+  ],
+  "owned": true,
+  "siteScore": 5344,
+  "rank": 293
+ },
+ {
+  "label": "top#294",
+  "nums": [
+   12,
+   82,
+   102,
+   238
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "2d03ec53-9ab2-46c7-a2e9-7aa6e264d97e",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Hibernatus",
+   "Baleine Farceuse",
+   "Murmures du Corail Noir",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5343,
+  "rank": 294
+ },
+ {
+  "label": "top#295",
+  "nums": [
+   12,
+   69,
+   156,
+   227
+  ],
+  "ids": [
+   "6428d28c-4897-46e4-bcc5-5165484fda2b",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "3c5cc4d2-1692-4da7-81ae-eb853c91327f",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b"
+  ],
+  "names": [
+   "Hibernatus",
+   "Scorch, les Lézards Ignés",
+   "L'Œil des montagnes",
+   "Chouette Polychrome"
+  ],
+  "owned": true,
+  "siteScore": 5334,
+  "rank": 295
+ },
+ {
+  "label": "top#296",
+  "nums": [
+   2,
+   27,
+   69,
+   102
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "def9a313-f174-4e62-b4b8-1086d28bd09e"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Hippocampe Nimbé",
+   "Scorch, les Lézards Ignés",
+   "Murmures du Corail Noir"
+  ],
+  "owned": true,
+  "siteScore": 5334,
+  "rank": 296
+ },
+ {
+  "label": "top#297",
+  "nums": [
+   69,
+   153,
+   227,
+   238
+  ],
+  "ids": [
+   "e030e28b-0ba3-4c9e-932b-d7c333cadf26",
+   "73b0f0c5-6f48-44e2-a789-678b4f0d2dde",
+   "4dc96cb5-d342-4ef6-8808-fcc79c63690b",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Scorch, les Lézards Ignés",
+   "L'Inventeur",
+   "Chouette Polychrome",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5333,
+  "rank": 297
+ },
+ {
+  "label": "top#298",
+  "nums": [
+   2,
+   117,
+   238,
+   251
+  ],
+  "ids": [
+   "edfb6bd4-3ac4-420c-bb25-91c9005dea80",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71",
+   "2bb3b47f-7ac9-4a86-9ec9-7db626b6b56f"
+  ],
+  "names": [
+   "Esprit Eau",
+   "Keria",
+   "Chimère Brasse-chair",
+   "Roi Ombre"
+  ],
+  "owned": true,
+  "siteScore": 5332,
+  "rank": 298
+ },
+ {
+  "label": "top#299",
+  "nums": [
+   103,
+   117,
+   180,
+   238
+  ],
+  "ids": [
+   "f55c5b0a-9493-4e19-b3fe-5eac4c281a1f",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "977ee5ba-0054-418b-b9f6-d99946f4272c",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Lame de la forêt",
+   "Keria",
+   "Dragon Ciel",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5332,
+  "rank": 299
+ },
+ {
+  "label": "top#300",
+  "nums": [
+   4,
+   27,
+   117,
+   238
+  ],
+  "ids": [
+   "b95d5704-625c-44f1-8425-de843adcca56",
+   "9f744687-461b-493e-9a9a-408906fafbde",
+   "5721ea5f-5978-4328-8874-28abc283f6b8",
+   "6598bdc6-b5f4-47a8-be11-761422965f71"
+  ],
+  "names": [
+   "Esprit Terre",
+   "Hippocampe Nimbé",
+   "Keria",
+   "Chimère Brasse-chair"
+  ],
+  "owned": true,
+  "siteScore": 5331,
+  "rank": 300
+ }
+]

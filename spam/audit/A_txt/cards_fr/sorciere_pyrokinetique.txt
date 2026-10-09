@@ -1,0 +1,148 @@
+Sorcière Pyrokinétique : carte SPAM Feu commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Sorcière Pyrokinétique B Voir la carte en grand
+Sorcière Pyrokinétique
+3 Flamme magique
+1 Voile solide
+800/800
+8
+Standard
+Sorcière Pyrokinétique
+3 Flamme magique
+1 Voile solide
+800/800
+8
+Élémentaire
+Sorcière Pyrokinétique
+3 Flamme magique
+1 Voile solide
+800/800
+8
+FA
+Sorcière Pyrokinétique
+3 Flamme magique
+1 Voile solide
+800/800
+8
+## Sorcière Pyrokinétique
+B Feu · Commune · Standard
+800 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur LUMIÈRE Commence la partie avec le passif Cœur de lumière
+- Talent 2 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 3 Affaiblissement Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Conseillé
+Trois champs de compétence
+- Flamme magique compétence · Recharge 3 Attaque 25 Feu
+Applique Éternité en cas de critique
+Attaque 25 Lumière
+Applique Éternité en cas de critique
+Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+3
+- Voile solide compétence · Recharge 1 Résistance à tous les éléments (+3)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Euphy
+Fiche complète
+Illustration par Euphy
+Feu Commune #051
+# Sorcière Pyrokinétique
+Défense
+800 Points de vie
+8 Spamtons / tour
+#60 Classement / 127
+B Sans talent · #57
+Attaque
+30
+Génération
+0
+Défense
+87
+Soutien
+72
+Contrôle
+84
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur LUMIÈRE 2 Résilience 3 Affaiblissement
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Flamme magique
+3 tours
+Attaque 25 Feu
+Applique Éternité en cas de critique
+Attaque 25 Lumière
+Applique Éternité en cas de critique
+Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+Précision 100% Critique 20%
+#### Voile solide
+1 tour
+Résistance à tous les éléments (+3)
+Précision 100% Critique 0%
+### Talents
+#### Cœur LUMIÈRE
+Commence la partie avec le passif Cœur de lumière
+Δ 111,6 · Score théorique
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 0 · Score théorique
+#### Affaiblissement
+Conseillé
+Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Δ 140,7 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Collection avancée
+Midrange ·
+### Souverain des Flammes + Wibs l'Enflammé
+45,7 % Indice relatif 10 tours Élimination estimée 26 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+45,4 % Indice relatif 10 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (1)
+- D Commando Gerz + Rongeur Nuageux avec Sorcière Pyrokinétique · Crapaud des Étoiles Accessible · 45,3%
+### Résistances
+5% Feu
+10% Eau
+5% Terre
+5% Nature
+10% Ombre
+5% Lumière
+Eltherien · Emeldarion
+### Derrière la carte
+De nos jours, dans les contrées sauvages du nord d’Emeldarion, vit un peuple chaman dirigé par la sage Keria. Ce peuple cultive des plantes et élève des animaux, tous affiliés à l’élément du Feu et nourris par lui. De nombreux stages de formation de l’académie militaire de Dragheïr sont organisés dans cette région. La Sorcière Pyrokinétique, directrice de cette prestigieuse école, cherchait un moyen d’entraîner ses élèves à affronter la corruption du Feu. Elle conclut alors un accord avec Keria.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

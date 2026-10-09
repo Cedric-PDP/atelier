@@ -1,0 +1,148 @@
+Crapaud des Étoiles : carte SPAM Lumière commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Crapaud des Étoiles B Voir la carte en grand
+Crapaud des Étoiles
+2 Œil pour œil
+Sac de frappe
+Contrecoup
+900/900
+6
+Standard
+Crapaud des Étoiles
+2 Œil pour œil
+Sac de frappe
+Contrecoup
+900/900
+6
+Élémentaire
+Crapaud des Étoiles
+2 Œil pour œil
+Sac de frappe
+Contrecoup
+900/900
+6
+FA
+Crapaud des Étoiles
+2 Œil pour œil
+Sac de frappe
+Contrecoup
+900/900
+6
+## Crapaud des Étoiles
+B Lumière · Commune · Standard
+900 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Terrain aquatique Bonus (+7) Eau.
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Œil pour œil compétence · Recharge 2 Attaque 40 Lumière
+2
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Contrecoup tox · Commune Subit 50% des dégâts infligés à la cible
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Lumière Commune #221
+# Crapaud des Étoiles
+Polyvalent
+900 Points de vie
+6 Spamtons / tour
+#55 Classement / 127
+B Sans talent · #45
+Attaque
+61
+Génération
+47
+Défense
+59
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Terrain aquatique 2 Évolution 3 Vitalité des Âmes
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Œil pour œil
+2 tours
+Attaque 40 Lumière
+Précision 100% Critique 1%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+#### Contrecoup
+Commune
+Subit 50% des dégâts infligés à la cible
+### Talents
+#### Terrain aquatique
+Bonus (+7) Eau.
+Δ 272,9 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 368,4 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Accessible
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+45,3 % Indice relatif 10 tours Élimination estimée 29 / tour Spamtons
+D Accessible
+Midrange ·
+### Spectre Canin + Commando Gerz
+38,3 % Indice relatif 10,5 tours Élimination estimée 20 / tour Spamtons
+Les autres decks (1)
+- D Commando Gerz + Rongeur Nuageux avec Crapaud des Étoiles · Gardien Vert Intermédiaire · 38,2%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Cauchemar · Nyevielh
+### Derrière la carte
+Après la fracture du continent unique, une gigantesque mer intérieure se forma, parsemée de multiples îles. Certaines demeurent suspendues au-dessus de la Mer Nimbée par une force inconnue ; d’autres sont de véritables îles rendues inaccessibles par la présence d’Abyssaux. Le Crapaud des Étoiles est l’un de ces monstres. Un seul de ses croassements, répercuté par l’écho, suffit à endormir tous les marins. Ceux qui sont les moins aptes à combattre dans le monde onirique se font dévorer. En raison du risque de finir comme une mouche au dîner d’un batracien géant, Nyevielh demeure inaccessible dès que des Crapauds des Étoiles sont signalés.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 198 Lumière
+Épique · Génération
+### Codex des Sorts Lumineux
+1000 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

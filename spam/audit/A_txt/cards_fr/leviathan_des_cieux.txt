@@ -1,0 +1,168 @@
+Léviathan des Cieux : carte SPAM Eau légendaire, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Léviathan des Cieux B Voir la carte en grand
+Léviathan des Cieux
+3 Écras'eau
+6 Ultime repos
+Cœur d'eau
+1000/1000
+5
+Standard
+Léviathan des Cieux
+3 Écras'eau
+6 Ultime repos
+Cœur d'eau
+1000/1000
+5
+Élémentaire
+Léviathan des Cieux
+3 Écras'eau
+6 Ultime repos
+Cœur d'eau
+1000/1000
+5
+FA
+Léviathan des Cieux
+3 Écras'eau
+6 Ultime repos
+Cœur d'eau
+1000/1000
+5
+## Léviathan des Cieux
+B Eau · Légendaire · Standard
+1 000 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Baleine bleue Augmente les PV de cette carte de (+200).
+- Talent 2 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Trois champs de compétence
+- Écras'eau compétence · Recharge 3 Attaque 30% des PV max de la cible
+3
+- Ultime repos compétence · Recharge 6 Se soigne 50% de ses PV max
+6
+- Cœur d'eau tox · Commune Bonus Eau (+1) par tour de jeu
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Eau Légendaire #044
+# Léviathan des Cieux
+Défense
+1 000 Points de vie
+5 Spamtons / tour
+#34 Classement / 127
+A Sans talent · #26
+Attaque
+63
+Génération
+57
+Défense
+86
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Baleine bleue 2 Vitalité des Âmes 3 Évolution
+Jouer cette carte 9 decks
+Partager
+### Compétences
+#### Écras'eau
+3 tours
+Attaque 30% des PV max de la cible
+Précision 100% Critique 0%
+#### Ultime repos
+6 tours
+Se soigne 50% de ses PV max
+Précision 100% Critique 0%
+### Tox de départ
+#### Cœur d'eau
+Commune
+Bonus Eau (+1) par tour de jeu
+### Talents
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ 77,8 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 447,2 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 29,2 · Score théorique
+## Ses meilleurs decks
+9 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Souverain des Chutes d'Éther + Maître Amphibian
+61,1 % Indice relatif 8 tours Élimination estimée 21 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Le compagnon des esprits + Esprit Eau
+53,1 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Épine Médusine + Le compagnon des esprits
+51,7 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Le compagnon des esprits + Scorch
+51,5 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Zombie Floral + Princesse Meridia
+36,6 % Indice relatif 11,6 tours Élimination estimée 32 / tour Spamtons
+Les autres decks (3)
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Léviathan des Cieux · L'Œil des montagnes Collection avancée · 59,1%
+- C Épine Médusine + Le compagnon des esprits avec Léviathan des Cieux · Scorch Collection avancée · 51,1%
+- D Roi Eau + Voyageur des Crêtes avec Léviathan des Cieux · Blancheur Aquatique Collection avancée · 33,8%
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Éternel · Abysses
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, que le cauchemar purifie. Des agents Éternels occupent les Abysses pour maintenir stable leur état fluctuant. Le Léviathan des Cieux est l’un d’eux. Dans son sillage, il tisse les bulles formées par les rêves de chaque individu. S’il venait un jour à s’arrêter ou à disparaître, les Éveillés seraient condamnés à ne plus connaître que les cauchemars dans leur sommeil.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 260 Eau
+Commune · Attaque
+### Le compagnon des esprits
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

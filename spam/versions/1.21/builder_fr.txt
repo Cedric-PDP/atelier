@@ -1,0 +1,204 @@
+Deck builder SPAM : atelier de decks avec simulation, talents et Tox - - - - - - - - - Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks
+EN
+Créer un deck
+Atelier de decks
+# Quatre cartes.
+Ton gameplan.
+Assemble ta composition et explore son potentiel avec le moteur de simulation.
+Prépare
+Optimise
+Analyse
+Même snapshot que les tier lists v 1.21
+Vider
+0 1
+Choisir une carte Emplacement 1 / 4
+0 2
+Choisir une carte Emplacement 2 / 4
+0 3
+Choisir une carte Emplacement 3 / 4
+0 4
+Choisir une carte Emplacement 4 / 4
+Optimiser les talents Ordre de jeu Les deux En premier En second
+Tox de la boutique
+Partager
+Analyser le deck
+## La prochaine synergie commence avec toi.
+Choisis quatre cartes distinctes pour lancer la simulation.
+0 / 4
+## Mes compositions
+Nom de la composition
+Enregistrer Tes compositions enregistrées apparaîtront ici.
+## Tox de la boutique
+Glisse un Tox sur un champ de compétence, ou sélectionne-le puis choisis le champ. Un champ occupé est remplacé.
+Rechercher dans les Tox
+Tout Commune Rare Épique Légendaire
+102 résultats
+- Berserk Légendaire · Dégâts + 17,2 % Les dégâts et les soins de toutes vos cartes sont augmentés de 100%
+- Berserk Épique · Dégâts + 7,8 % Les dégâts et les soins de toutes vos cartes sont augmentés de 50%
+- Cimetière Légendaire · Bonus élémentaires + 6 % Augmente tous vos bonus élémentaires de (+12) lorsqu&#x27;une carte meurt
+- Cœur de nature Légendaire · Bonus élémentaires + 4,6 % Bonus Nature (+8) par tour de jeu
+- Cœur de terre Légendaire · Bonus élémentaires + 4,3 % Bonus Terre (+8) par tour de jeu
+- Multiplicateur Rare · Bonus élémentaires + 3,8 % Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+- Cimetière Épique · Bonus élémentaires + 3,7 % Augmente tous vos bonus élémentaires de (+8) lorsqu&#x27;une carte meurt
+- Cœur de feu Légendaire · Bonus élémentaires + 3,7 % Bonus Feu (+8) par tour de jeu
+- AoE Légendaire · Dégâts + 3,7 % Attaque et soigne les cibles adjacentes à hauteur de 100% des dégâts infligés
+- Cœur d&#x27;eau Légendaire · Bonus élémentaires + 3,5 % Bonus Eau (+8) par tour de jeu
+- Gel Épique · Contrôle + 3,4 % Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu&#x27;à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+- Vengeur Épique · Dégâts + 3,3 % Cette carte récupère toutes ses attaques chaque fois qu&#x27;une carte qu&#x27;elle n&#x27;a pas tuée meurt.
+- Cœur de terre Épique · Bonus élémentaires + 3,2 % Bonus Terre (+5) par tour de jeu
+- Cœur vital Légendaire · Survie + 3,1 % Cette carte augmente ses PV max de 100 chaque tour
+- AoE Épique · Dégâts + 3 % Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés
+- Cœur de nature Épique · Bonus élémentaires + 2,8 % Bonus Nature (+5) par tour de jeu
+- Berserk Rare · Dégâts + 2,8 % Les dégâts et les soins de toutes vos cartes sont augmentés de 25%
+- Cœur de lumière Légendaire · Bonus élémentaires + 2,6 % Bonus Lumière (+8) par tour de jeu
+- Cœur d&#x27;ombre Légendaire · Bonus élémentaires + 2,6 % Bonus Ombre (+8) par tour de jeu
+- Poison Rare · Dégâts + 2,6 % Inflige des dégâts égaux à 3% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+- Poison Épique · Dégâts + 2,6 % Inflige des dégâts égaux à 6% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+- Poison Légendaire · Dégâts + 2,6 % Inflige des dégâts égaux à 8% des PV max de la cible au début de chacun de ses tours, pendant 3 tours
+- Poison Commune · Dégâts + 2,6 % Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+- Cœur de feu Épique · Bonus élémentaires + 2,5 % Bonus Feu (+5) par tour de jeu
+- Renvoi Légendaire · Survie + 2,4 % Renvoie 100% des dégâts subis à l&#x27;attaquant
+- Cœur d&#x27;eau Épique · Bonus élémentaires + 2 % Bonus Eau (+5) par tour de jeu
+- Reset Épique · Dégâts + 2 % Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+- Cœur vital Épique · Survie + 2 % Cette carte augmente ses PV max de 60 chaque tour
+- Cimetière Rare · Bonus élémentaires + 1,9 % Augmente tous vos bonus élémentaires de (+5) lorsqu&#x27;une carte meurt
+- Phénix Légendaire · Survie + 1,4 % Lorsqu’elle est détruite, cette carte revient à la vie avec 100% de ses PV max.
+Usage unique
+- Éternité Légendaire · Contrôle + 1,4 % Augmente les temps de recharge de 1
+- Phénix Épique · Survie + 1,4 % Lorsqu’elle est détruite, cette carte revient à la vie avec 75% de ses PV max.
+Usage unique
+- Phénix Rare · Survie + 1,4 % Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max.
+Usage unique
+- Disparition Légendaire · Contrôle + 1,3 % Supprime le dernier passif de la cible
+- Optimisation Rare · Dégâts + 1,3 % Les valeurs variables des dégâts, des soins et des bonus de cette carte sont toujours au maximum
+- Renvoi Épique · Survie + 1,3 % Renvoie 75% des dégâts subis à l&#x27;attaquant
+- AoE Rare · Dégâts + 1,2 % Attaque et soigne les cibles adjacentes à hauteur de 40% des dégâts infligés
+- Cœur d&#x27;ombre Épique · Bonus élémentaires + 1,2 % Bonus Ombre (+5) par tour de jeu
+- Cimetière Commune · Bonus élémentaires + 1,2 % Augmente tous vos bonus élémentaires de (+3) lorsqu&#x27;une carte meurt
+- Phénix Commune · Survie + 1,2 % Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+- Bomba Épique · Dégâts + 1,1 % Inflige 500 dégâts bruts à une carte adverse aléatoire quand cette carte meurt
+- Cœur de feu Rare · Bonus élémentaires + 1 % Bonus Feu (+2) par tour de jeu
+- Cœur de terre Rare · Bonus élémentaires + 0,9 % Bonus Terre (+2) par tour de jeu
+- Immunité Épique · Survie + 0,9 % La carte est immunisée contre tous les effets des cartes adverses
+- Berserk Commune · Dégâts + 0,9 % Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+- Cœur vital Rare · Survie + 0,9 % Cette carte augmente ses PV max de 30 chaque tour
+- Soin primitif Légendaire · Survie + 0,8 % Au début de chaque tour, la carte récupère 19% de ses PV max
+- Soin primitif Épique · Survie + 0,8 % Au début de chaque tour, la carte récupère 14% de ses PV max
+- Soin primitif Rare · Survie + 0,8 % Au début de chaque tour, la carte récupère 9% de ses PV max
+- Chanceur Légendaire · Économie & chance + 0,7 % Augmente votre Chance de (+4) chaque tour
+- Mystère Rare · Transformation + 0,7 % Commence la partie avec un passif aléatoire
+- Cœur de lumière Épique · Bonus élémentaires + 0,7 % Bonus Lumière (+5) par tour de jeu
+- AoE Commune · Dégâts + 0,7 % Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+- Érosion Commune · Dégâts + 0,7 % Réduit les PV max à hauteur de 50% des dégâts infligés
+- Érosion Épique · Dégâts + 0,7 % Réduit les PV max à hauteur de 100% des dégâts infligés
+- Cœur de nature Rare · Bonus élémentaires + 0,6 % Bonus Nature (+2) par tour de jeu
+- Cœur d&#x27;eau Rare · Bonus élémentaires + 0,6 % Bonus Eau (+2) par tour de jeu
+- Renvoi Rare · Survie + 0,6 % Renvoie 50% des dégâts subis à l&#x27;attaquant
+- Sac de frappe Commune · Bonus élémentaires + 0,6 % Augmente de +1 l&#x27;élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Sac de frappe Rare · Bonus élémentaires + 0,6 % Augmente de +2 l&#x27;élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+- Sac de frappe Épique · Bonus élémentaires + 0,6 % Augmente de +3 l&#x27;élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+- Sac de frappe Légendaire · Bonus élémentaires + 0,6 % Augmente de +4 l&#x27;élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+- Brut Rare · Dégâts + 0,6 % Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé
+- Renvoi Commune · Survie + 0,6 % Renvoie 25% des dégâts subis à l&#x27;attaquant
+- Vampirisme Légendaire · Survie + 0,5 % Régénère 100% des dégâts infligés à la cible
+- Vampirisme Épique · Survie + 0,5 % Régénère 75% des dégâts infligés à la cible
+- Chanceur Épique · Économie & chance + 0,5 % Augmente votre Chance de (+2) chaque tour
+- Cœur de terre Commune · Bonus élémentaires + 0,4 % Bonus Terre (+1) par tour de jeu
+- Temporalité Légendaire · Contrôle + 0,4 % Diminue les temps de recharge de 1
+- Fumée Rare · Survie + 0,4 % Enfume le terrain allié après l&#x27;utilisation d&#x27;une attaque ou d&#x27;un soin
+- Chanceur Rare · Économie & chance + 0,3 % Augmente votre Chance de (+1) chaque tour
+- Revanche Rare · Dégâts + 0,3 % Une fois détruite, cette carte inflige l&#x27;entièreté de ses attaques à l&#x27;adversaire
+- Vampirisme Rare · Survie + 0,3 % Régénère 50% des dégâts infligés à la cible
+- Chanceur Commune · Économie & chance + 0,2 % Augmente votre Chance de (+0,5) chaque tour
+- Spamland Commune · Économie & chance + 0,2 % Génère (+3) Spamtons chaque tour
+- Spamland Rare · Économie & chance + 0,2 % Génère (+8) Spamtons chaque tour
+- Spamland Épique · Économie & chance + 0,2 % Génère (+24) Spamtons chaque tour
+- Spamland Légendaire · Économie & chance + 0,2 % Génère (+48) Spamtons chaque tour
+- Vampirisme Commune · Survie + 0,2 % Régénère 25% des dégâts infligés à la cible
+- Cœur vital Commune · Survie + 0,2 % Cette carte augmente ses PV max de 15 chaque tour
+- Ténacité Commune · Survie + 0,2 % La première attaque fatale vous laisse à 1 PV
+- Métamorphe Épique · Transformation + 0,2 % Choisissez une carte parmi trois de la même rareté pour remplacer cette carte
+- Cœur de feu Commune · Bonus élémentaires + 0,2 % Bonus Feu (+1) par tour de jeu
+- Cœur d&#x27;ombre Rare · Bonus élémentaires + 0,1 % Bonus Ombre (+2) par tour de jeu
+- Soin primitif Commune · Survie + 0,1 % Au début de chaque tour, la carte récupère 4% de ses PV max
+- Provocation Rare · Contrôle + 0,1 % Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler
+- Cœur résistance Rare · Survie + 0,1 % Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6).
+- Cœur résistance Commune · Survie + 0 % Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3).
+- Bouclier Rare · Survie + 0 % Le premier coup reçu à chaque tour adverse est réduit de 50%
+- Bouclier Commune · Survie + 0 % Le premier coup reçu à chaque tour adverse est réduit de 25%
+- Cœur de nature Commune · Bonus élémentaires + 0 % Bonus Nature (+1) par tour de jeu
+- Bouclier Légendaire · Survie + 0 % Le premier coup reçu à chaque tour adverse est réduit de 100%
+- Contrecoup Commune · Dégâts + 0 % Subit 50% des dégâts infligés à la cible
+- Bouclier Épique · Survie + 0 % Le premier coup reçu à chaque tour adverse est réduit de 75%
+- Cœur d&#x27;eau Commune · Bonus élémentaires + 0 % Bonus Eau (+1) par tour de jeu
+- Cœur d&#x27;ombre Commune · Bonus élémentaires + 0 % Bonus Ombre (+1) par tour de jeu
+- Cœur résistance Légendaire · Survie + 0 % Cette carte augmente les résistances de toutes les cartes alliées (+15)
+- Mimétisme Rare · Bonus élémentaires + -0,1 % Chaque fois que l&#x27;adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+- Cœur de lumière Commune · Bonus élémentaires + -0,4 % Bonus Lumière (+1) par tour de jeu
+- Cœur résistance Épique · Survie + -0,4 % Cette carte augmente les résistances de toutes les cartes alliées (+10)
+- Cœur de lumière Rare · Bonus élémentaires + -0,8 % Bonus Lumière (+2) par tour de jeu
+- Inversement Rare · Transformation + -1,4 % Les dégâts de cette carte deviennent des soins, ses Éternités des Temporalités, et inversement.
+Atelier de decks / Emplacement 1
+## Sélectionner
+une carte
+Rechercher dans les cartes
+Tout
+Feu
+Eau
+Terre
+Nature
+Ombre
+Lumière
+Éther
+127 cartes Trier par Meilleur classement Nom : A → Z Plus de PV
+S
+Moxilys, la Fredonneuse Attaque S
+Esprit de la Faune Attaque S
+Zombie Floral Attaque S
+Lisa, la Dragonnière Attaque S
+Spectre Canin Attaque S
+Éclat du Renard Blanc Attaque S
+Croqueur de Fruits Verdoyant Attaque S
+Ignea Contrôle S
+Aleera Mange-Cauchemars Attaque S
+Commando Gerz Génération A
+Épine Médusine Attaque A
+Sanglier Doré Défense A
+Souverain des Flammes Attaque A
+Gabriel Génération A
+Oisillons de Midas Soutien A
+Gardien Vert Contrôle A
+Veilleur Nocturne Économie A
+Dragon Ciel Attaque A
+Princesse Meridia Génération A
+Souverain des Chutes d&#x27;Éther Attaque A
+Pyro Attaque A
+Paguroniyx Soutien A
+Dragosaure Céleste Contrôle A
+Fleurmarine Polyvalent A
+Wibs l&#x27;Enflammé Attaque A
+Blancheur Aquatique Défense A
+Amber Génération A
+Blaze Génération B
+Roi Feu Génération B
+Roi Eau Génération
+Afficher plus de cartes
+# 177
+### Moxilys, la Fredonneuse
+Commune · Attaque / Soutien / Défense
+Ombre 900 PV
+#### Pourquoi cette carte ?
+Un profil offensif à associer aux bons générateurs.
+Ajouter à l’emplacement 1
+Fiche complète
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu
+Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

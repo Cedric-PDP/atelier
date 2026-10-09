@@ -1,0 +1,157 @@
+Aristocrate Nébulaire : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Aristocrate Nébulaire D Voir la carte en grand
+Aristocrate Nébulaire
+2 Mascarade cosmique
+500/500
+3
+Standard
+Aristocrate Nébulaire
+2 Mascarade cosmique
+500/500
+3
+Élémentaire
+Aristocrate Nébulaire
+2 Mascarade cosmique
+500/500
+3
+FA
+Aristocrate Nébulaire
+2 Mascarade cosmique
+500/500
+3
+## Aristocrate Nébulaire
+D Lumière · Commune · Standard
+500 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+- Talent 2 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Conseillé
+- Talent 3 Éternisé La carte est insensible aux Éternités.
+Trois champs de compétence
+- Mascarade cosmique compétence · Recharge 2 Choix
+Précision (+20%)
+---------- ou ----------
+Critique (+20%)
+2
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Luga
+Fiche complète
+Illustration par Luga
+Lumière Commune #264
+# Aristocrate Nébulaire
+Soutien
+500 Points de vie
+3 Spamtons / tour
+#125 Classement / 127
+D Sans talent · #125
+Attaque
+0
+Génération
+0
+Défense
+1
+Soutien
+86
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Longueur 2 Transition 3 Éternisé
+Jouer cette carte 11 decks
+Partager
+### Compétences
+#### Mascarade cosmique
+2 tours
+Choix
+Précision (+20%)
+---------- ou ----------
+Critique (+20%)
+Précision 100% Critique 0%
+### Talents
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+#### Transition
+Conseillé
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 432,4 · Score théorique
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+## Ses meilleurs decks
+11 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Aggro / burst ·
+### Dragon Ciel + Aristocrate Nébulaire
+55,7 % Indice relatif 7 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Luminaire Abyssal + Aristocrate Nébulaire
+53,9 % Indice relatif 9 tours Élimination estimée 18 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Commando Gerz + Shinobi Éclairant
+51,8 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Codex des Sorts Lumineux + Aristocrate Nébulaire
+48,6 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Shinobi Éclairant + Codex des Sorts Lumineux
+47,9 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### L'Épine d'Amour + Aristocrate Nébulaire
+42,9 % Indice relatif 10 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (5)
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Squall Accessible · 54,9%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Faerylia Intermédiaire · 52,5%
+- C Luminaire Abyssal + Aristocrate Nébulaire avec Codex des Sorts Lumineux · Lums Collection avancée · 52%
+- D Commando Gerz + Shinobi Éclairant avec Aristocrate Nébulaire · Dragonnet des Lumières Intermédiaire · 49,7%
+- D Spectre Canin + Commando Gerz avec Aristocrate Nébulaire · Crapaud des Étoiles Accessible · 38,3%
+### Résistances
+-20% Feu
+-20% Eau
+-20% Terre
+-20% Nature
+-20% Ombre
+-20% Lumière
+Éternel · Abysses
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, que le cauchemar purifie. Des agents Éternels occupent les Abysses pour maintenir stable leur état fluctuant. Celle que l’on nomme l’Aristocrate Nébulaire colmate les failles oniriques entre les deux mondes. Grâce à sa maîtrise parfaite des runes divines, elle tisse la frontière qui les sépare.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,142 @@
+Raffteru: SPAM Earth rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Raffteru C View the full card
+Raffteru
+1 Random Rumble
+1 Fortunate Leap
+600/600
+5
+Standard
+Raffteru
+1 Random Rumble
+1 Fortunate Leap
+600/600
+5
+Elemental
+Raffteru
+1 Random Rumble
+1 Fortunate Leap
+600/600
+5
+FA
+Raffteru
+1 Random Rumble
+1 Fortunate Leap
+600/600
+5
+## Raffteru
+C Earth · Rare · Standard
+600 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+- Talent 2 Crit Sphere Increases this card's critical chance by (+2%) each turn
+Recommended
+- Talent 3 Brutal Start the game with the "Brutal" passive
+Three ability slots
+- Random Rumble ability · Cooldown 1 Deal 70 Earth damage
+Critical (+20%) on all allied cards
+1
+- Fortunate Leap ability · Cooldown 1 Deal 10 Nature damage
+Echo (50%)
+1
+- Free slot Open to a shop Tox
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Earth Rare #031
+# Raffteru
+Versatile
+600 Health points
+5 Spamtons / turn
+#94 Rank / 127
+D No talent · #99
+Attack
+51
+Generation
+0
+Defense
+26
+Support
+78
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Ultimate Reset 2 Crit Sphere 3 Brutal
+Build with this card 2 decks
+Share
+### Abilities
+#### Random Rumble
+1 turn
+Deal 70 Earth damage
+Critical (+20%) on all allied cards
+Accuracy 10% Critical 1%
+#### Fortunate Leap
+1 turn
+Deal 10 Nature damage
+Echo (50%)
+Accuracy 100% Critical 1%
+### Talents
+#### Ultimate Reset
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 5.1 · Theoretical score
+#### Crit Sphere
+Recommended
+Increases this card's critical chance by (+2%) each turn
+Δ 28.8 · Theoretical score
+#### Brutal
+Start the game with the "Brutal" passive
+Δ 24.9 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Aggro / burst ·
+### Raffteru + Thorn of Love
+58 % Relative index 7 turns Estimated elimination 25 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Blue-Stone-Eater + Raffteru
+44.6 % Relative index 9 turns Estimated elimination 26 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Disease · Abyss
+### Beyond the card
+Abyssal monsters have an indescribably horrific form. These demonic creatures were encountered during the Oniyx expedition — a horrifying venture into the depths of the temple of Zaar'Phahl in Shal'Zaar. The group's progress through the Abyss was grueling. Some members saw bright red eyes appear on their skin. No one knows what could have caused this phenomenon; perhaps a contamination. Consumed by murderous urges, they became dangerous, hyperactive zombies. This plague was named "Raffteru", the boundary of the abyss — the law that governs the corruption of the living in these lands and forbids their existence.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

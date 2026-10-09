@@ -1,0 +1,130 @@
+Vivy: SPAM Shadow common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Vivy C View the full card
+Vivy
+3 Wave of Darkness
+Smoke
+1000/1000
+9
+Standard
+Vivy
+3 Wave of Darkness
+Smoke
+1000/1000
+9
+Elemental
+Vivy
+3 Wave of Darkness
+Smoke
+1000/1000
+9
+FA
+Vivy
+3 Wave of Darkness
+Smoke
+1000/1000
+9
+## Vivy
+C Shadow · Common · Standard
+1,000 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Brutal Start the game with the "Brutal" passive
+- Talent 2 Luminous Field Light bonus (+7).
+Recommended
+- Talent 3 Blue Whale Increases this card’s HP by (+200)
+Three ability slots
+- Wave of Darkness ability · Cooldown 3 Deal 40 Shadow damage
+Deal [+1 to +40] Light damage
+Caster's critical (+20)
+3
+- Smoke tox · Rare Enshrouds the allied field after using an attack or a heal
+- Free slot Open to a shop Tox
+Illustration by Mr Wolf
+Full card details
+Illustration by Mr Wolf
+Shadow Common #243
+# Vivy
+Defense
+1,000 Health points
+9 Spamtons / turn
+#88 Rank / 127
+C No talent · #90
+Attack
+50
+Generation
+0
+Defense
+84
+Support
+1
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Brutal 2 Luminous Field 3 Blue Whale
+Build with this card
+Share
+### Abilities
+#### Wave of Darkness
+3 turns
+Deal 40 Shadow damage
+Deal [+1 to +40] Light damage
+Caster's critical (+20)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Smoke
+Rare
+Enshrouds the allied field after using an attack or a heal
+### Talents
+#### Brutal
+Start the game with the "Brutal" passive
+Δ 28.5 · Theoretical score
+#### Luminous Field
+Recommended
+Light bonus (+7).
+Δ 166.1 · Theoretical score
+#### Blue Whale
+Increases this card’s HP by (+200)
+Δ 83.2 · Theoretical score
+### Resistances
+9% Fire
+9% Water
+9% Earth
+50% Nature
+9% Shadow
+9% Light
+Eltherien · Aelther
+### Beyond the card
+East of Emeldarion lives a very territorial martial tribe. The little we know of them are strong wolf motifs. Lightning seems to strike their region constantly. Researchers believe the Light King and his descendants may have settled there. The theory has never been confirmed. A spatial rift always opens before anyone who crosses the line of the canine totems. Vivy always appears first. Followed by her Shinobi, she threatens to attack anyone who would go further into the lands of the Pack.
+## Better together
+The most promising partners according to the model.
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

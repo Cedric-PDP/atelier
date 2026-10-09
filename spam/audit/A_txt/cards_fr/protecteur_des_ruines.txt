@@ -1,0 +1,141 @@
+Protecteur des ruines : carte SPAM Terre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Protecteur des ruines B Voir la carte en grand
+Protecteur des ruines
+1 Roulé-boulé
+700/700
+6
+Standard
+Protecteur des ruines
+1 Roulé-boulé
+700/700
+6
+Élémentaire
+Protecteur des ruines
+1 Roulé-boulé
+700/700
+6
+FA
+Protecteur des ruines
+1 Roulé-boulé
+700/700
+6
+## Protecteur des ruines
+B Terre · Commune · Standard
+700 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+Conseillé
+- Talent 2 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+- Talent 3 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Trois champs de compétence
+- Roulé-boulé compétence · Recharge 1 Attaque 15 Terre
+La valeur de base de dégâts augmente de 5
+1
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Terre Commune #060
+# Protecteur des ruines
+Attaque
+700 Points de vie
+6 Spamtons / tour
+#54 Classement / 127
+B Sans talent · #51
+Attaque
+87
+Génération
+0
+Défense
+53
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage F/E 2 Blindage N/T 3 Blindage O/L
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Roulé-boulé
+1 tour
+Attaque 15 Terre
+La valeur de base de dégâts augmente de 5
+Précision 100% Critique 1%
+### Talents
+#### Blindage F/E
+Conseillé
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 51,4 · Score théorique
+#### Blindage N/T
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 51,4 · Score théorique
+#### Blindage O/L
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 51,4 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Collection avancée
+Midrange ·
+### Roi Terre + Bleu-mange-cailloux
+37,1 % Indice relatif 10 tours Élimination estimée 26 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Commando Gerz + Zayd
+33,6 % Indice relatif 11 tours Élimination estimée 17 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Commando Gerz + Protecteur des ruines
+33 % Indice relatif 10,9 tours Élimination estimée 25 / tour Spamtons
+### Résistances
+15% Feu
+10% Eau
+15% Terre
+15% Nature
+12% Ombre
+12% Lumière
+Créature artificielle · Shal'Zaar
+### Derrière la carte
+Les monstres abyssaux ont une forme horrifique indescriptible. Ces créatures démoniaques furent rencontrées lors de l’expédition Oniyx, une aventure terrifiante dans les profondeurs du temple de Zaar’Phahl, en Shal’Zaar. À l’issue de leur progression dans les Abysses, les survivants se hâtèrent de faire sceller le site d’excavation. Une fortification massive fut érigée afin qu’aucun Abyssal ne puisse en sortir. En parallèle, les Oniyx construisirent une immense et puissante créature artificielle qui ne protège désormais plus que des ruines.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

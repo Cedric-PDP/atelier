@@ -1,0 +1,49 @@
+{
+ "dead": {
+  "chimere": {
+   "dps_x1": 8018,
+   "dps_x1.5": 6952,
+   "dps_x2": 1948,
+   "absorb_Lame de la forêt": 7188,
+   "absorb_Chimère Brasse-chair": 4602,
+   "absorb_L'Œil des montagnes": 7393,
+   "absorb_Keria": 7387
+  },
+  "anticrit": {
+   "dps_x1": 6989,
+   "dps_x1.5": 3890,
+   "dps_x2": 3140,
+   "absorb_Hibernatus": 6090,
+   "absorb_Chimère Brasse-chair": 5703,
+   "absorb_Hippocampe Nimbé": 5493,
+   "absorb_Keria": 6467
+  },
+  "zerocrit": {
+   "dps_x1": 6529,
+   "dps_x1.5": 4338,
+   "dps_x2": 3312,
+   "absorb_Murmures du Corail Noir": 4889,
+   "absorb_Prisonnière de la Machine": 4814,
+   "absorb_Hibernatus": 5584,
+   "absorb_Scorch, les Lézards Ignés": 6529
+  },
+  "alt1": {
+   "dps_x1": 7625,
+   "dps_x1.5": 5681,
+   "dps_x2": 4094,
+   "absorb_Esprit Nature": 6795,
+   "absorb_Lame de la forêt": 6005,
+   "absorb_Keria": 6985,
+   "absorb_Chimère Brasse-chair": 5962
+  },
+  "alt2": {
+   "dps_x1": 6077,
+   "dps_x1.5": 4421,
+   "dps_x2": 3651,
+   "absorb_Scorch, les Lézards Ignés": 6077,
+   "absorb_Sanglier Doré": 5135,
+   "absorb_Chouette Polychrome": 6076,
+   "absorb_Chimère Brasse-chair": 5436
+  }
+ }
+}

@@ -1,0 +1,177 @@
+Sovereign of the Ether Falls: SPAM Water rare card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Sovereign of the Ether Falls A View the full card
+Sovereign of the Ether Falls
+1 Glacial Laser
+1 Critical Fall
+1 Precise Fall
+800/800
+5
+Standard
+Sovereign of the Ether Falls
+1 Glacial Laser
+1 Critical Fall
+1 Precise Fall
+800/800
+5
+Elemental
+Sovereign of the Ether Falls
+1 Glacial Laser
+1 Critical Fall
+1 Precise Fall
+800/800
+5
+FA
+Sovereign of the Ether Falls
+1 Glacial Laser
+1 Critical Fall
+1 Precise Fall
+800/800
+5
+## Sovereign of the Ether Falls
+A Water · Rare · Standard
+800 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Legacy Gain (+50) Spamton when this card is killed.
+- Talent 2 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+Recommended
+- Talent 3 Last Breath Applies Temporality to all your cards when this card dies
+Three ability slots
+- Glacial Laser ability · Cooldown 1 Deal 10 Water damage
+1
+- Critical Fall ability · Cooldown 1 Critical (+10%)
+1
+- Precise Fall ability · Cooldown 1 Accuracy (+10%)
+1
+Illustration by Embers
+Full card details
+Illustration by Embers
+Water Rare #136
+# Sovereign of the Ether Falls
+Attack Support
+800 Health points
+5 Spamtons / turn
+#20 Rank / 127
+A No talent · #14
+Attack
+86
+Generation
+0
+Defense
+54
+Support
+95
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Legacy 2 Piercing 3 Last Breath
+Build with this card 19 decks
+Share
+### Abilities
+#### Glacial Laser
+1 turn
+Deal 10 Water damage
+Accuracy 33% Critical 1%
+#### Critical Fall
+1 turn
+Critical (+10%)
+Accuracy 33% Critical 0%
+#### Precise Fall
+1 turn
+Accuracy (+10%)
+Accuracy 33% Critical 0%
+### Talents
+#### Legacy
+Gain (+50) Spamton when this card is killed.
+Δ 0 · Theoretical score
+#### Piercing
+Recommended
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 33.4 · Theoretical score
+#### Last Breath
+Applies Temporality to all your cards when this card dies
+Δ 0 · Theoretical score
+## Its best decks
+19 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Master Amphibian
+92.5 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+A Advanced collection
+Aggro / burst ·
+### Canine Specter + Aleera
+89.9 % Relative index 6 turns Estimated elimination 29 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Commando Gerz
+87.9 % Relative index 6 turns Estimated elimination 21 / turn Spamtons
+A Advanced collection
+Aggro / burst ·
+### Aleera + Paguroniyx
+86.2 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Sovereign of the Ether Falls + Master Amphibian
+77.9 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+The other decks (13)
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Commando Gerz Intermediate · 98.1%
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Master Amphibian Accessible · 94.6%
+- S Aleera + Sovereign of the Ether Falls with Paguroniyx · Canine Specter Accessible · 93.4%
+- A Aleera + Sovereign of the Ether Falls with Squall · Paguroniyx Intermediate · 89.2%
+- A Aleera + Master Amphibian with Sovereign of the Ether Falls · The Wild Carrier Accessible · 85.3%
+- A Aleera + Paguroniyx with Sovereign of the Ether Falls · Floral Zombie Accessible · 85.1%
+- A Aleera + Sovereign of the Ether Falls with Ashtarae Lycaria · Apprentice of Death Advanced collection · 82.3%
+- C Sovereign of the Ether Falls + Master Amphibian with Aidan · The Eye of the Mountains Accessible · 68.6%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Aidan Accessible · 63.8%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Princess Meridia Intermediate · 61.8%
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · Scorch Advanced collection · 61.1%
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · The Eye of the Mountains Advanced collection · 59.1%
+- C Floral Zombie + Sovereign of the Ether Falls with The Eye of the Mountains · Snow Warrior Accessible · 59%
+### Resistances
+10% Fire
+11% Water
+10% Earth
+11% Nature
+10% Shadow
+11% Light
+Calamity · Abyss
+### Beyond the card
+The world’s creators have no form that can be described; they are likely divine instruments. Their apocalyptic appearances throughout history nevertheless earned them the name Calamities. Once their work—creative and destructive in equal measure—was complete, the Calamities withdrew into the Abyss. There they lie dormant, separating the material world from the realm of dreams. The Sovereign of the Ether Falls is a gigantic serpentine creature. Bursting from the waters of the Abyss, it shattered the single continent into countless fragments. This event is known as the Great Cataclysm.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+B # 229 Earth
+Common · Attack
+### Master Amphibian
+700 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

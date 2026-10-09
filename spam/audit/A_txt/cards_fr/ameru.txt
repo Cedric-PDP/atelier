@@ -1,0 +1,128 @@
+Ameru : carte SPAM Lumière rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Ameru C Voir la carte en grand
+Ameru
+3 Rêve enfumé
+Fumée
+800/800
+15
+Standard
+Ameru
+3 Rêve enfumé
+Fumée
+800/800
+15
+Élémentaire
+Ameru
+3 Rêve enfumé
+Fumée
+800/800
+15
+FA
+Ameru
+3 Rêve enfumé
+Fumée
+800/800
+15
+## Ameru
+C Lumière · Rare · Standard
+800 PV 15 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Corrosion Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Conseillé
+- Talent 2 Durcissement Augmente les résistances élémentaires de la carte de (+15 %).
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Trois champs de compétence
+- Rêve enfumé compétence · Recharge 3 Attaque 15 Lumière 15 Eau 15 Ombre
+Bonus Lumière (+4) Eau (+4) Ombre (+4)
+3
+- Fumée tox · Rare Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Lumière Rare #191
+# Ameru
+Génération Économie
+800 Points de vie
+15 Spamtons / tour
+#66 Classement / 127
+B Sans talent · #54
+Attaque
+21
+Génération
+95
+Défense
+57
+Soutien
+1
+Contrôle
+0
+Économie
+95
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Corrosion 2 Durcissement 3 Cavalerie
+Jouer cette carte
+Partager
+### Compétences
+#### Rêve enfumé
+3 tours
+Attaque 15 Lumière 15 Eau 15 Ombre
+Bonus Lumière (+4) Eau (+4) Ombre (+4)
+Précision 100% Critique 1%
+### Tox de départ
+#### Fumée
+Rare
+Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+### Talents
+#### Corrosion
+Conseillé
+Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Δ 495,9 · Score théorique
+#### Durcissement
+Augmente les résistances élémentaires de la carte de (+15 %).
+Δ 62,2 · Score théorique
+#### Cavalerie
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 265,2 · Score théorique
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Anthropomorphe · Emeldarion
+### Derrière la carte
+Originaire des Îles Esseulées, un maître martial anthropomorphe en possession d’un artefact magique s’est installé au nord-ouest d’Emeldarion. Un jour, son bâton, laissé sans surveillance, fut utilisé sur un champignon. La magie opéra et l’être fongique prit une forme humanoïde. Comme il réclamait sans cesse de l’amertume, beaucoup crurent qu’il disait s’appeler Ameru ; le nom lui resta. En remerciement pour cette seconde vie, le nouvel être morphique proposa des cultures addictives très particulières qui font fureur à Abondance. Cette nouvelle agriculture permit aux chamans de l’Eau de prospérer.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

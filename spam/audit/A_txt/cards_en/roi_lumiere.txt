@@ -1,0 +1,154 @@
+Light King: SPAM Light epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Light King B View the full card
+Light King
+5 Blade-L
+5 Solar Choice
+Punching Bag
+1000/1000
+10
+Standard
+Light King
+5 Blade-L
+5 Solar Choice
+Punching Bag
+1000/1000
+10
+Elemental
+Light King
+5 Blade-L
+5 Solar Choice
+Punching Bag
+1000/1000
+10
+FA
+Light King
+5 Blade-L
+5 Solar Choice
+Punching Bag
+1000/1000
+10
+## Light King
+B Light · Epic · Standard
+1,000 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+Recommended
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+Three ability slots
+- Blade-L ability · Cooldown 5 Deal [40 to 60] Light damage
+5
+- Solar Choice ability · Cooldown 5 Choice
+Light bonus [1 to 20]
+---------- or ----------
+Light bonus [5 to 15]
+---------- or ----------
+Light bonus [8 to 12]
+5
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Light Epic #252
+# Light King
+Generation Defense
+1,000 Health points
+10 Spamtons / turn
+#33 Rank / 127
+A No talent · #25
+Attack
+45
+Generation
+82
+Defense
+76
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Focus 2 Evolution 3 Ultimate Reset
+Build with this card 1 deck
+Share
+### Abilities
+#### Blade-L
+5 turns
+Deal [40 to 60] Light damage
+Accuracy 100% Critical 1%
+#### Solar Choice
+5 turns
+Choice
+Light bonus [1 to 20]
+---------- or ----------
+Light bonus [5 to 15]
+---------- or ----------
+Light bonus [8 to 12]
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Focus
+Recommended
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 193.2 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Ultimate Reset
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 7.1 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+D Intermediate
+Elemental ramp ·
+### Radiant Shinobi + Thorn of Love
+39 % Relative index 10 turns Estimated elimination 37 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Eltherien · Aelther
+### Beyond the card
+The title of elemental King is honorary, but carries immense responsibility for maintaining elemental balance. The Kings equipped their heirs with runic weapons. According to Faerylia’s interpretation of the Primordial Codex, those weapons would allow them to seal the Deities and win their freedom. The Kings of shadow and light had a diplomatic relationship. The cracking of the single continent created a clean break between the two heirs. Aelther was abandoned by the heir of light. He left behind only pilgrimage markers.
+## Better together
+The most promising partners according to the model.
+B # 245 Light
+Rare · Attack
+### Radiant Shinobi
+600 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+A # 078 Light
+Rare · Control
+### Green Guardian
+800 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,129 @@
+Artisan des Heures : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Artisan des Heures D Voir la carte en grand
+Artisan des Heures
+4 Ralentissement
+3 Flash
+700/700
+5
+Standard
+Artisan des Heures
+4 Ralentissement
+3 Flash
+700/700
+5
+Élémentaire
+Artisan des Heures
+4 Ralentissement
+3 Flash
+700/700
+5
+FA
+Artisan des Heures
+4 Ralentissement
+3 Flash
+700/700
+5
+## Artisan des Heures
+D Lumière · Commune · Standard
+700 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 2 Dette Les deux joueurs commencent avec une dette de (-20) Spamton.
+- Talent 3 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Conseillé
+Trois champs de compétence
+- Ralentissement compétence · Recharge 4 Applique Éternité
+4
+- Flash compétence · Recharge 3 Attaque 35 Lumière
+Gel
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Mr.Kelbi
+Fiche complète
+Illustration par Mr.Kelbi
+Lumière Commune #023
+# Artisan des Heures
+Contrôle
+700 Points de vie
+5 Spamtons / tour
+#115 Classement / 127
+D Sans talent · #120
+Attaque
+19
+Génération
+0
+Défense
+63
+Soutien
+1
+Contrôle
+98
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Imprudent 2 Dette 3 Résilience
+Jouer cette carte
+Partager
+### Compétences
+#### Ralentissement
+4 tours
+Applique Éternité
+Précision 100% Critique 0%
+#### Flash
+3 tours
+Attaque 35 Lumière
+Gel
+Précision 100% Critique 1%
+### Talents
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -88,1 · Score théorique
+#### Dette
+Les deux joueurs commencent avec une dette de (-20) Spamton.
+Δ 0 · Score théorique
+#### Résilience
+Conseillé
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 11,9 · Score théorique
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Tokscyth · Lumethia
+### Derrière la carte
+Le monde a grand besoin d’un véritable chercheur : le plus grand de tous les Tokscyth et, objectivement, le plus beau. L’Artisan des Heures est un inventeur sans égal, un voyageur qui observe le monde et consigne toutes ses aventures dans un seul livre. Originaire de Lumethia, il a créé une superbe machine volante qui lui permet d’atteindre le centre des Îles Esseulées. Ce rêve d’exploration vient parfaire des connaissances déjà irréprochables.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

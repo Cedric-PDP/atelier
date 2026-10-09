@@ -1,0 +1,147 @@
+Dragosaure Céleste : carte SPAM Nature commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Dragosaure Céleste A Voir la carte en grand
+Dragosaure Céleste
+3 Hurle frappe
+Reset
+800/800
+12
+Standard
+Dragosaure Céleste
+3 Hurle frappe
+Reset
+800/800
+12
+Élémentaire
+Dragosaure Céleste
+3 Hurle frappe
+Reset
+800/800
+12
+FA
+Dragosaure Céleste
+3 Hurle frappe
+Reset
+800/800
+12
+## Dragosaure Céleste
+A Nature · Commune · Standard
+800 PV 12 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 AOE Rare Commence la partie avec le passif "AoE"
+Conseillé
+- Talent 2 Critique Bonus critique (+10 %)
+- Talent 3 Armure des Âmes Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Trois champs de compétence
+- Hurle frappe compétence · Recharge 3 Choix
+Attaque [10 à 100] Nature
+Gel
+---------- ou ----------
+Attaque [45 à 65] Terre
+Gel
+3
+- Reset tox · Épique Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Mr.Kelbi
+Fiche complète
+Illustration par Mr.Kelbi
+Nature Commune #211
+# Dragosaure Céleste
+Contrôle Économie
+800 Points de vie
+12 Spamtons / tour
+#23 Classement / 127
+C Sans talent · #64
+Attaque
+70
+Génération
+0
+Défense
+61
+Soutien
+1
+Contrôle
+94
+Économie
+91
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 AOE Rare 2 Critique 3 Armure des Âmes
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Hurle frappe
+3 tours
+Choix
+Attaque [10 à 100] Nature
+Gel
+---------- ou ----------
+Attaque [45 à 65] Terre
+Gel
+Précision 100% Critique 1%
+### Tox de départ
+#### Reset
+Épique
+Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+### Talents
+#### AOE Rare
+Conseillé
+Commence la partie avec le passif "AoE"
+Δ 411,9 · Score théorique
+#### Critique
+Bonus critique (+10 %)
+Δ 172 · Score théorique
+#### Armure des Âmes
+Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Δ 200,2 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Commando Gerz
+89,4 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Zombie Floral + Gabriel
+50,2 % Indice relatif 9 tours Élimination estimée 39 / tour Spamtons
+### Résistances
+15% Feu
+16% Eau
+17% Terre
+16% Nature
+15% Ombre
+15% Lumière
+Créature · Emeldarion
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Des créatures extraordinaires peuplent les Îles Esseulées, un amas d’îles flottant au-dessus de la Mer Nimbée. Parmi elles figurerait le Dragosaure Céleste. Ses nids sont visibles sur les falaises d’Aelther. Une fois adultes, les Dragosaures rejoignent les îles volantes, sans que l’on sache encore pourquoi.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,131 @@
+Maître Thronebéur : carte SPAM Lumière commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Maître Thronebéur C Voir la carte en grand
+Maître Thronebéur
+4 Ralentissement
+3 Marteau-lumineux
+850/850
+8
+Standard
+Maître Thronebéur
+4 Ralentissement
+3 Marteau-lumineux
+850/850
+8
+Élémentaire
+Maître Thronebéur
+4 Ralentissement
+3 Marteau-lumineux
+850/850
+8
+FA
+Maître Thronebéur
+4 Ralentissement
+3 Marteau-lumineux
+850/850
+8
+## Maître Thronebéur
+C Lumière · Commune · Standard
+850 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+- Talent 2 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 3 Fortune Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+Trois champs de compétence
+- Ralentissement compétence · Recharge 4 Applique Éternité
+4
+- Marteau-lumineux compétence · Recharge 3 Attaque 20 Lumière
+Attaque 20 Terre
+Précision (+20%) sur toutes les cartes alliées
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Lumière Commune #064
+# Maître Thronebéur
+Polyvalent
+850 Points de vie
+8 Spamtons / tour
+#90 Classement / 127
+C Sans talent · #79
+Attaque
+17
+Génération
+0
+Défense
+66
+Soutien
+84
+Contrôle
+85
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Longueur 2 Départ multi 3 Fortune
+Jouer cette carte
+Partager
+### Compétences
+#### Ralentissement
+4 tours
+Applique Éternité
+Précision 100% Critique 0%
+#### Marteau-lumineux
+3 tours
+Attaque 20 Lumière
+Attaque 20 Terre
+Précision (+20%) sur toutes les cartes alliées
+Précision 100% Critique 1%
+### Talents
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 1 017,3 · Score théorique
+#### Fortune
+Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+Δ 33 · Score théorique
+### Résistances
+10% Feu
+10% Eau
+30% Terre
+10% Nature
+10% Ombre
+30% Lumière
+Olforgeur · Lumethia
+### Derrière la carte
+Les livres d’histoire racontent que les artisans se spécialisaient chacun dans une activité, au sein d’une société fondée sur l’efficacité du nombre et la confiance en autrui. Les Olforgeurs sont des êtres trapus, à peine plus petits que les Eltheriens et solidement bâtis. Leur passion commune pour l’artisanat les a toujours rapprochés des Oniyx. Maître Thronebéur, Forgeron du Fer, est une légende olforgeuse. Son histoire perpétue, autour d’un bon verre, la mémoire des camarades tombés au combat et rend hommage à la transmission des savoirs de génération en génération. On raconte qu’il fut un ami proche du grand chef Oniyx.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+B # 229 Terre
+Commune · Attaque
+### Maître Amphibian
+700 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

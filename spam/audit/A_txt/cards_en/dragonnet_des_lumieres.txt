@@ -1,0 +1,144 @@
+Wyrmling of Lights: SPAM Light epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Wyrmling of Lights B View the full card
+Wyrmling of Lights
+1 Peaceful Glow
+3 Thoughtful Aid
+500/500
+3
+Standard
+Wyrmling of Lights
+1 Peaceful Glow
+3 Thoughtful Aid
+500/500
+3
+Elemental
+Wyrmling of Lights
+1 Peaceful Glow
+3 Thoughtful Aid
+500/500
+3
+FA
+Wyrmling of Lights
+1 Peaceful Glow
+3 Thoughtful Aid
+500/500
+3
+## Wyrmling of Lights
+B Light · Epic · Standard
+500 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 New Rich Starts the game with either the Spamland or Lucky passive, chosen at random.
+- Talent 2 New Life Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+Recommended
+- Talent 3 Magic Coin Start the game with (+2) Luck
+Three ability slots
+- Peaceful Glow ability · Cooldown 1 Deal 20 Light damage
+Steals (+1) Light
+1
+- Thoughtful Aid ability · Cooldown 3 Apply Temporality
+3
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Light Epic #042
+# Wyrmling of Lights
+Versatile
+500 Health points
+3 Spamtons / turn
+#53 Rank / 127
+B No talent · #48
+Attack
+64
+Generation
+57
+Defense
+4
+Support
+72
+Control
+0
+Economy
+2
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 New Rich 2 New Life 3 Magic Coin
+Build with this card 3 decks
+Share
+### Abilities
+#### Peaceful Glow
+1 turn
+Deal 20 Light damage
+Steals (+1) Light
+Accuracy 100% Critical 1%
+#### Thoughtful Aid
+3 turns
+Apply Temporality
+Accuracy 100% Critical 0%
+### Talents
+#### New Rich
+Starts the game with either the Spamland or Lucky passive, chosen at random.
+Δ 5.4 · Theoretical score
+#### New Life
+Recommended
+Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+Δ 204.6 · Theoretical score
+#### Magic Coin
+Start the game with (+2) Luck
+Δ 4 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+D Advanced collection
+Elemental ramp ·
+### Commando Gerz + Melody of Divinities
+49.8 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Intermediate
+Midrange ·
+### Commando Gerz + Radiant Shinobi
+49.7 % Relative index 9 turns Estimated elimination 16 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Radiant Shinobi + Codex of Luminous Spells
+47.9 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Dhöggeïr · Aelther
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Eternal agents patrol the Abyss to keep their shifting state stable. The Wyrmling of Lights handles the content of the dreams in the dream world. It creates the exchanges between the body and the subconscious of the Awakened. This complex process is said to allow the creation of new souls. Certain flaws suggest it doesn't do its job well.
+## Better together
+The most promising partners according to the model.
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+B # 081 Water
+Epic · Attack
+### Abyssal Lightbearer
+600 HP
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

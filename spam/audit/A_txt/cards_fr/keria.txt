@@ -1,0 +1,156 @@
+Keria : carte SPAM Feu rare, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Keria D Voir la carte en grand
+Keria
+3 Feu allié
+2 Embrasement
+550/550
+8
+Standard
+Keria
+3 Feu allié
+2 Embrasement
+550/550
+8
+Élémentaire
+Keria
+3 Feu allié
+2 Embrasement
+550/550
+8
+FA
+Keria
+3 Feu allié
+2 Embrasement
+550/550
+8
+## Keria
+D Feu · Rare · Standard
+550 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Conseillé
+- Talent 2 Éternisé La carte est insensible aux Éternités.
+- Talent 3 Souffle-8 Récupère l'attaque Souffle élémentaire au début du tour 8
+Trois champs de compétence
+- Feu allié compétence · Recharge 3 Cible toutes les cartes alliées
+Les valeurs de base des soins et des dégâts augmentent de 3
+3
+- Embrasement compétence · Recharge 2 Cible toutes les cartes alliées
+Critique (+5%)
+2
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Daerun
+Fiche complète
+Illustration par Daerun
+Feu Rare #117
+# Keria
+Soutien
+550 Points de vie
+8 Spamtons / tour
+#123 Classement / 127
+D Sans talent · #124
+Attaque
+0
+Génération
+0
+Défense
+21
+Soutien
+92
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage Partagé 2 Éternisé 3 Souffle-8
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Feu allié
+3 tours
+Cible toutes les cartes alliées
+Les valeurs de base des soins et des dégâts augmentent de 3
+Précision 100% Critique 0%
+#### Embrasement
+2 tours
+Cible toutes les cartes alliées
+Critique (+5%)
+Précision 100% Critique 0%
+### Talents
+#### Blindage Partagé
+Conseillé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 521,5 · Score théorique
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+#### Souffle-8
+Récupère l'attaque Souffle élémentaire au début du tour 8
+Δ 216,2 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Pyro + Scorch
+73,3 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Wibs l'Enflammé + Apprentie de la Mort
+54,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+C Collection avancée
+Critique ·
+### Souverain des Flammes + Wibs l'Enflammé
+54,6 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Pyro + Wibs l'Enflammé
+53,8 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Pyro + Logidrake
+51,9 % Indice relatif 8 tours Élimination estimée 22 / tour Spamtons
+Les autres decks (1)
+- D Souverain des Flammes + Wibs l'Enflammé avec Keria · Squall Collection avancée · 49,5%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Pixarch · Emeldarion
+### Derrière la carte
+De nos jours, au nord d’Emeldarion, s’élèvent de magnifiques épis : des pousses de Bleh arrosées par le feu des Flammeveilles. Ces champs sont cultivés d’une main de maître par les chamans de la tribu de Keria. En discutant avec elle, on découvre une étrange Pixarch qui ne cache pas ses origines. Elle porte des catalyseurs élémentaires du Feu, dont certains modifient son apparence. Ces illusions lui permettent de masquer les stigmates de son passé, dit-elle. Très ouverte à la discussion, elle partage ses connaissances avec quiconque souhaite s’en abreuver et apaise avec sagesse et altruisme les tensions entre les tribus de la région.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

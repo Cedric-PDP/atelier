@@ -1,0 +1,646 @@
+{
+ "duel": {
+  "codexShadow": {
+   "chimere": {
+    "J": 3996,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 3191,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 2710,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt1": {
+    "J": 3966,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 3611,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 7,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "scorchWater": {
+   "chimere": {
+    "J": 6236,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 2924,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 3937,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt1": {
+    "J": 4536,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4146,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "gabrielNature": {
+   "chimere": {
+    "J": 3507,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 3077,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 3453,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt1": {
+    "J": 5256,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 15,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4044,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "owlGerz": {
+   "chimere": {
+    "J": 3212,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 17,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 14,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 4077,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 19,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 20,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 6363,
+    "race": [
+     {
+      "p": 1,
+      "kill": 15,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 20,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 5281,
+    "race": [
+     {
+      "p": 1,
+      "kill": 19,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": 18,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4981,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 19,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": 27,
+      "wipe": null,
+      "win": true,
+      "deaths10": 3,
+      "kills10": 2
+     }
+    ]
+   }
+  },
+  "mirrorChimere": {
+   "chimere": {
+    "J": 8922,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 0,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 8030,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 9080,
+    "race": [
+     {
+      "p": 1,
+      "kill": 12,
+      "wipe": null,
+      "win": true,
+      "deaths10": 0,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": 12,
+      "wipe": null,
+      "win": true,
+      "deaths10": 0,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 8988,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 0,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": 17,
+      "wipe": null,
+      "win": true,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 8635,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 25,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "mirrorZerocrit": {
+   "chimere": {
+    "J": 6581,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 6245,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 6096,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 6370,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 6340,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  }
+ }
+}

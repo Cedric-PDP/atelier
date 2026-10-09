@@ -1,0 +1,130 @@
+Neilla: SPAM Water common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Neilla D View the full card
+Neilla
+4 Marine Protection
+Temporality
+650/650
+9
+Standard
+Neilla
+4 Marine Protection
+Temporality
+650/650
+9
+Elemental
+Neilla
+4 Marine Protection
+Temporality
+650/650
+9
+FA
+Neilla
+4 Marine Protection
+Temporality
+650/650
+9
+## Neilla
+D Water · Common · Standard
+650 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Inscribed The card is immune to Vanish effects
+- Talent 2 Reducer At the start of your first turn, a random allied card receives "Temporality"
+- Talent 3 Breath-8 Gains the Elemental Breath attack at the start of turn 8
+Recommended
+Three ability slots
+- Marine Protection ability · Cooldown 4 Heal 80 Water
+Resistance to all elements (+15)
+Apply Taunt
+4
+- Temporality tox · Legendary Decreases cooldowns by 1
+- Free slot Open to a shop Tox
+Illustration by SAN
+Full card details
+Illustration by SAN
+Water Common #101
+# Neilla
+Defense
+650 Health points
+9 Spamtons / turn
+#97 Rank / 127
+D No talent · #115
+Attack
+20
+Generation
+0
+Defense
+81
+Support
+80
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Inscribed 2 Reducer 3 Breath-8
+Build with this card
+Share
+### Abilities
+#### Marine Protection
+4 turns
+Heal 80 Water
+Resistance to all elements (+15)
+Apply Taunt
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Temporality
+Legendary
+Decreases cooldowns by 1
+### Talents
+#### Inscribed
+The card is immune to Vanish effects
+Δ 7 · Theoretical score
+#### Reducer
+At the start of your first turn, a random allied card receives "Temporality"
+Δ 85.4 · Theoretical score
+#### Breath-8
+Recommended
+Gains the Elemental Breath attack at the start of turn 8
+Δ 360.5 · Theoretical score
+### Resistances
+8% Fire
+8% Water
+8% Earth
+8% Nature
+8% Shadow
+8% Light
+Art · Lumethia
+### Beyond the card
+Among the Eternals, Spirits, and other mythical beings is Neilla. This singular entity creates currents and keeps the waters from overflowing. Those who follow the currents may glimpse the demigoddess for the briefest instant. Countless sailors, captivated by her beauty and her secrets, have set out in search of the beautiful Alphilan. Yet the most dangerous routes spare not even the boldest travelers. After so many ships and lives were lost, a treaty was enacted forbidding the use of vessels to hunt the Lady.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+C # 002 Water
+Common · Generation
+### Water Spirit
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,130 @@
+Nakyel : carte SPAM Ombre rare, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Nakyel D Voir la carte en grand
+Nakyel
+2 Écorchage
+Éternité
+500/500
+3
+Standard
+Nakyel
+2 Écorchage
+Éternité
+500/500
+3
+Élémentaire
+Nakyel
+2 Écorchage
+Éternité
+500/500
+3
+FA
+Nakyel
+2 Écorchage
+Éternité
+500/500
+3
+## Nakyel
+D Ombre · Rare · Standard
+500 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur OMBRE Commence la partie avec le passif "Cœur d'ombre"
+- Talent 2 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Écorchage compétence · Recharge 2 Attaque 20 Ombre
+Augmente les dégâts de base de (+5)
+Augmente les résistances du lanceur de (+5%)
+2
+- Éternité tox · Légendaire Augmente les temps de recharge de 1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Ombre Rare #033
+# Nakyel
+Utilitaire
+500 Points de vie
+3 Spamtons / tour
+#113 Classement / 127
+D Sans talent · #107
+Attaque
+39
+Génération
+0
+Défense
+25
+Soutien
+1
+Contrôle
+91
+Économie
+2
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur OMBRE 2 Longueur 3 Vitalité des Âmes
+Jouer cette carte
+Partager
+### Compétences
+#### Écorchage
+2 tours
+Attaque 20 Ombre
+Augmente les dégâts de base de (+5)
+Augmente les résistances du lanceur de (+5%)
+Précision 100% Critique 1%
+### Tox de départ
+#### Éternité
+Légendaire
+Augmente les temps de recharge de 1
+### Talents
+#### Cœur OMBRE
+Commence la partie avec le passif "Cœur d'ombre"
+Δ 32,3 · Score théorique
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 299,1 · Score théorique
+### Résistances
+0% Feu
+0% Eau
+0% Terre
+0% Nature
+0% Ombre
+0% Lumière
+Cauchemar · Abysses
+### Derrière la carte
+Les monstres abyssaux ont une forme horrifique indescriptible. Ces créatures démoniaques furent rencontrées lors de l’expédition Oniyx, une aventure terrifiante dans les profondeurs du temple de Zaar’Phahl, en Shal’Zaar. La progression du groupe dans les Abysses fut éprouvante. Certains membres virent leurs affaires et leurs vivres disparaître, alors qu’il s’agissait de ressources indispensables à leur survie. Des rires semblaient provenir de toutes les directions : la créature invisible s’amusait de leur détresse, même si certains objets éparpillés paraissaient la laisser indifférente. Le périple devint plus atroce encore à mesure que la faim augmentait. Certains finirent par manger ce qu’ils n’auraient jamais dû toucher, nourrissant toujours davantage la curiosité morbide de leur harceleur. L’histoire de Nakyel est racontée en Shal’Zaar pour rappeler que la curiosité est un vilain défaut.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

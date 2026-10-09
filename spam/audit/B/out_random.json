@@ -1,0 +1,48 @@
+{
+ "random": {
+  "alt2": {
+   "focus": {
+    "J": 6077,
+    "ttk": 19
+   },
+   "randomEV": {
+    "J": 6266,
+    "ttk": 18.3
+   },
+   "deltaPct": 3.1
+  },
+  "owlGerz": {
+   "focus": {
+    "J": 7302,
+    "ttk": 14.9
+   },
+   "randomEV": {
+    "J": 7325,
+    "ttk": 14.6
+   },
+   "deltaPct": 0.3
+  },
+  "zaydGerz_neilla": {
+   "focus": {
+    "J": 6181,
+    "ttk": 19.5
+   },
+   "randomEV": {
+    "J": 7313,
+    "ttk": 15.8
+   },
+   "deltaPct": 18.3
+  },
+  "codexLight": {
+   "focus": {
+    "J": 9362,
+    "ttk": 11.1
+   },
+   "randomEV": {
+    "J": 9492,
+    "ttk": 10.8
+   },
+   "deltaPct": 1.4
+  }
+ }
+}

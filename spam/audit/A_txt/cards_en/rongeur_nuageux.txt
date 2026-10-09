@@ -1,0 +1,177 @@
+Cloudy Rodent: SPAM Light common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Cloudy Rodent C View the full card
+Cloudy Rodent
+2 Lightning
+Taunt
+Berserk
+650/650
+11
+Standard
+Cloudy Rodent
+2 Lightning
+Taunt
+Berserk
+650/650
+11
+Elemental
+Cloudy Rodent
+2 Lightning
+Taunt
+Berserk
+650/650
+11
+FA
+Cloudy Rodent
+2 Lightning
+Taunt
+Berserk
+650/650
+11
+## Cloudy Rodent
+C Light · Common · Standard
+650 HP 11 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 L-Shield Shadow resistance (+25%)
+Light resistance (+25%)
+Recommended
+- Talent 2 F/E-Shield Fire resistance (+25%)
+Earth resistance (+25%)
+- Talent 3 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Three ability slots
+- Lightning ability · Cooldown 2 Deal 30 Light damage + 50% of the caster's missing HP
+2
+- Taunt tox · Rare When this character launches an attack, all enemy attacks during the next turn must target it
+- Berserk tox · Common All your cards' damage and heals are increased by 12%
+Illustration by Saki
+Full card details
+Illustration by Saki
+Light Common #234
+# Cloudy Rodent
+Economy
+650 Health points
+11 Spamtons / turn
+#70 Rank / 127
+B No talent · #62
+Attack
+74
+Generation
+0
+Defense
+35
+Support
+1
+Control
+0
+Economy
+87
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 L-Shield 2 F/E-Shield 3 Evolution
+Build with this card 16 decks
+Share
+### Abilities
+#### Lightning
+2 turns
+Deal 30 Light damage + 50% of the caster's missing HP
+Accuracy 100% Critical 15%
+### Starting Tox
+#### Taunt
+Rare
+When this character launches an attack, all enemy attacks during the next turn must target it
+#### Berserk
+Common
+All your cards' damage and heals are increased by 12%
+### Talents
+#### L-Shield
+Recommended
+Shadow resistance (+25%)
+Light resistance (+25%)
+Δ 34.6 · Theoretical score
+#### F/E-Shield
+Fire resistance (+25%)
+Earth resistance (+25%)
+Δ 34.6 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0.6 · Theoretical score
+## Its best decks
+16 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Midrange ·
+### Cloudy Rodent + Melody of Divinities
+51.5 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+D Intermediate
+Midrange ·
+### Abyssal Lightbearer + Cloudy Rodent
+49.9 % Relative index 9 turns Estimated elimination 29 / turn Spamtons
+D Accessible
+Midrange ·
+### Sky Dragon + Cloudy Rodent
+49.5 % Relative index 9 turns Estimated elimination 32 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Cloudy Rodent + Codex of Luminous Spells
+46.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+D Intermediate
+Midrange ·
+### Commando Gerz + Cloudy Rodent
+45.4 % Relative index 10 turns Estimated elimination 27 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Canine Specter + Cloudy Rodent
+44.8 % Relative index 10 turns Estimated elimination 34 / turn Spamtons
+The other decks (10)
+- D Commando Gerz + Cloudy Rodent with Pyrokinetic Sorceress · Toad of the Stars Accessible · 45.3%
+- D Sky Dragon + Cloudy Rodent with Polychrome Owl · Thorn of Love Accessible · 44.4%
+- D Squall + Cloudy Rodent with Commando Gerz · Polychrome Owl Intermediate · 43%
+- D Commando Gerz + Cloudy Rodent with Canine Specter · Snow Warrior Accessible · 42.8%
+- D Canine Specter + Mistress of Tints with Cloudy Rodent · Thorn of Love Accessible · 42.1%
+- D Canine Specter + Cloudy Rodent with Commando Gerz · Squall Intermediate · 41.2%
+- D Commando Gerz + Thorn of Love with Cloudy Rodent · Green Guardian Intermediate · 40.7%
+- D Commando Gerz + Cloudy Rodent with Toad of the Stars · Green Guardian Intermediate · 38.2%
+- D Abyssal Lightbearer + Codex of Luminous Spells with Cloudy Rodent · Ephial Advanced collection · 35.7%
+- D Cloudy Rodent + Codex of Luminous Spells with Radiant Shinobi · Green Guardian Intermediate · 32%
+### Resistances
+-18% Fire
+7% Water
+7% Earth
+6% Nature
+7% Shadow
+18% Light
+Creature · Aelther
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. Cloudy Rodents live on the clouds of the Celestial Mount, which they devour like cotton candy. Native to the Eternals’ Celestial Realms, where they are considered an invasive species, they sometimes cross the sky aboard cumulonimbus clouds that have drifted away from their realm.
+## Better together
+The most promising partners according to the model.
+C # 198 Light
+Epic · Generation
+### Codex of Luminous Spells
+1000 HP
+B # 051 Fire
+Common · Defense
+### Pyrokinetic Sorceress
+800 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

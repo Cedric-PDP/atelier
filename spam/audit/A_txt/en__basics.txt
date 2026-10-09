@@ -1,0 +1,137 @@
+How to play SPAM: rules, mechanics and fundamentals
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Fundamentals Fundamentals
+# The rules, plainly.
+How SPAM works: the mechanics that actually decide a game, and what the data says about every card.
+Strategies Build a deck
+4 rules
+## The basics
+### Every elemental bonus point is +10% for the rest of the game
+Damage and healing = base × (1 + bonus × 0.1). The bonus belongs to the player and never decays, except through a Cost: generating early pays on every later hit. A deck focused on one or two elements turns each "+1" into a gain for three or four cards instead of one.
+### Activation order: generate, then buff, then attack
+Within a turn, cast the abilities that grant bonuses first (Blaze, Multiboost, Heart…), then attack: your hits immediately use the new multiplier. The same applies to critical, precision and base-damage buffs.
+### Understanding cooldowns
+A cooldown of n means "usable every n turns". The first player starts with every cooldown reduced by 1, the second by 2: going second, your cooldown-2 abilities are ready on turn 1. Shorten your own cooldowns with Temporality, lengthen the opponent’s with Eternity; Purge cancels a lengthening.
+### Base damage counts on every hit
+A "base damage (+5)" bonus is added to every hit before the elemental multiplier: an eighteen-hit attack of 3 points benefits eighteen times. Hearts, Graveyard, Punching Bag and One man army therefore turn multi-hit abilities into real threats, far more than a single strike.
+4 rules
+## In combat
+### Team critical stacks without a cap
+Effects that grant "Critical (+x%) to all allied cards" are permanent: after a few casts the whole team crits almost every time, for at least double damage. Abilities with a ×3 to ×6 multiplier then become real cannons.
+### Resistances: aim at the weak spot
+Resistances reduce damage by a percentage, element by element, and can be negative. Hit a card in the element where it sits at −20 or −50: that is 20 to 50% of free damage. Raw ignores both resistance and taunt.
+### Kills trigger cascades
+Reset keeps the attack available after a kill, Avenger refreshes all its attacks whenever a card dies, Graveyard raises every bonus you hold, Soul Vitality grants health and One man army base damage. Finish a low enemy card before your other attacks: the chain resolves within the same turn.
+### Cost abilities spend your bonuses
+A "[Cost 10 FIRE]" removes ten Fire bonus points when cast. Bring generators to prime the pump, and check that the ability returns more than it spends: a bonus pushed below zero does not reduce your damage, but you will have to rebuild it before it pays again.
+4 rules
+## Defense and control
+### Taunt forces the opponent’s targeting, not yours
+A high-health taunter shields your fragile generators. Punching Bag grants an element point per attack taken, Reflect returns part of the damage, Heart of Steel raises resistances on every hit: each blow absorbed becomes an advantage.
+### Stun and Eternity win whole turns
+A stunned card casts nothing for the duration; Eternity adds a turn to every cooldown on the target. Apply them to the most dangerous enemy card right before its big ability comes up: count its cooldowns.
+### Freeze: a lost turn, don’t shatter it too soon
+A frozen card can do nothing until the end of the opponent’s next turn. But any damage, heal or Tox applied to it shatters the ice: it takes forty damage and is free again. Freeze a target with your last hit of the turn, not the first, and never heal a frozen ally by mistake.
+### Vanish removes the last passive
+Passives are ordered and Vanish removes the last one, usually the most recently bought Tox. Buy your most valuable Tox first, or keep a cheaper passive in the last slot. Inscribed makes a card immune to Vanish.
+4 rules
+## Economy and shop
+### Spamtons and the Tox shop
+Each turn you earn the Spamtons of your living cards (shown in the top right corner) plus the turn number, and every card you lose returns fifty. The shop opens on even turns, offers three Tox and closes after one purchase: rerolling costs ten Spamtons, then five more each time; skipping pays ten. Small Price refunds your first purchase.
+### The shop follows your Luck
+Your Luck rises by one point every turn, and it decides which rarities the shop offers: on turn 2 only common Tox show up, rares appear around turn 4, epics around turn 6, legendaries much later. Lucky and Magic Coin bring that schedule forward; Lucky Tox ignores it and evens the four rarities to 25% each.
+### Buy for the right card, on the right line
+A card has three slots, abilities and Tox combined. A Tox goes on a free slot, or replaces an ability or a passive you sacrifice: deck pages tell you which line is worth the least. Aim for the Tox that changes the card rather than a survival passive on a card that never gets hit.
+### The shop: knowing when to stop
+Every deck page gives the expected value of a shop opening, before and after the recommended plan. Once it drops below one percent of score, or once every remaining line is worth more than any Tox would add, skip: ten Spamtons beat a useless Tox, which occupies a slot and gives Vanish a target.
+2 rules
+## Talents
+### Turn-gated talents
+Breath-8, Life-8, Bomb-8 and Immunity-8 do nothing before turn 8. On an aggressive deck they are wasted; on a control or tank deck they are strong fallbacks: doubled health, immunity, or a free cooldown-1 attack.
+### Avoid random shapeshifting on a key card
+Random shapeshifting swaps the card for another of the same rarity: the five hundred health from Reckless is worthless if your generator becomes a card outside your elements. Transition, which transforms the card on death, remains a decent second life.
+Rankings
+## What the data says
+Computed across all 127 official cards, updated with every game version.
+### The best elemental generators
+Bonus produced per turn, in their main elements.
+- Aidan Each element +1.7
+- Scorch, the Ignited Lizards Fire +3 · Water +3 · Earth +3
+- Astry Light +1.7 · Fire +1.2 · Water +1.2 · Earth +1.2 · Nature +1.2 · Shadow +1.2
+- Thorn of Love Earth +2 · Nature +2 · Light +2
+- Codex of Ancient Woes Shadow +5.5
+- Codex of Luminous Spells Light +5.5
+### The biggest abilities
+Base damage and cooldown: these are the ones to accelerate with Temporality.
+- Floral Zombie Aquatic Curse · 90 · Cooldown 8
+- Aldrin & Gorakar Waltz of Clouds · 90 · Cooldown 5
+- Ignea Incandescence · 120 · Cooldown 4
+- Mistress of Tints Elemental Chaos · 90 · Cooldown 3
+- Aquatic Whiteness Swallowater · 100 · Cooldown 5
+- Commando Gerz Final Delight · 200 · Cooldown 10
+- Green Guardian Radiance · 80 · Cooldown 5
+- Polychrome Owl Dance of Feathers · 180 · Cooldown 2
+### Cards with an elemental weakness
+Negative resistances: free damage for anyone hitting in the right element.
+- Prisoner of the Machine Water -50%
+- Léo Shadow -38%
+- Wander Blades Fire -10% · Water -10% · Earth -10%
+- Catimimi Water -22% · Nature -22%
+- Nocturnal Watcher Light -21%
+- Weaver of Words Water -21%
+- Faerylia Light -21%
+- Paguroniyx Earth -20% · Light -19%
+### The best Spamton income
+Spamtons generated per turn: the fuel for earlier Tox purchases.
+- Ameru 15 / turn
+- Wander Blades 15 / turn
+- Celestial Dragosaur 12 / turn
+- Hibernatus 12 / turn
+- Ephial 12 / turn
+- Verdant Fruit Cruncher 11 / turn
+- Shado, Abyssal Scourge 11 / turn
+- Cloudy Rodent 11 / turn
+### Solid taunters
+Health and average resistance: they take the hits instead of your generators.
+- Prisoner of the Machine 1,000 HP · 13%
+- The Wild Carrier 1,000 HP · 10%
+### Cooldown accelerators
+Temporality: your big abilities come back sooner.
+- Nocturnal Watcher
+- Wyrmling of Lights
+- Verdelune
+- Neilla
+- Polychrome Owl
+## What next?
+The guides go deeper on deck building, tempo and Tox priorities.
+All strategies
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 122 Nature
+Common · Attack
+### Spirit of the Fauna
+800 HP
+S # 174 Nature
+Common · Attack
+### Floral Zombie
+850 HP
+These rules are derived from the game’s mechanics and its official data. Understanding the scores
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

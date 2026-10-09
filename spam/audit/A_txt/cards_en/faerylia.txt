@@ -1,0 +1,167 @@
+Faerylia: SPAM Shadow epic card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Faerylia C View the full card
+Faerylia
+9 Global Aim
+2 Offensive Aim
+3 Multiboost
+600/600
+5
+Standard
+Faerylia
+9 Global Aim
+2 Offensive Aim
+3 Multiboost
+600/600
+5
+Elemental
+Faerylia
+9 Global Aim
+2 Offensive Aim
+3 Multiboost
+600/600
+5
+FA
+Faerylia
+9 Global Aim
+2 Offensive Aim
+3 Multiboost
+600/600
+5
+## Faerylia
+C Shadow · Epic · Standard
+600 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Revitalization 5% chance each turn to restore this card’s HP to maximum.
+- Talent 2 Multi Start Gain (+3) in each element.
+Recommended
+- Talent 3 Doomed Hour Applies Eternity to all enemy cards when this card is killed.
+Three ability slots
+- Global Aim ability · Cooldown 9 Apply Eternity to all enemy cards
+9
+- Offensive Aim ability · Cooldown 2 Deal 15 Shadow damage
+Eternity on critical hit
+2
+- Multiboost ability · Cooldown 3 Bonus (+3) in every element
+3
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Shadow Epic #088
+# Faerylia
+Control
+600 Health points
+5 Spamtons / turn
+#92 Rank / 127
+C No talent · #91
+Attack
+31
+Generation
+54
+Defense
+23
+Support
+1
+Control
+93
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Revitalization 2 Multi Start 3 Doomed Hour
+Build with this card 7 decks
+Share
+### Abilities
+#### Global Aim
+9 turns
+Apply Eternity to all enemy cards
+Accuracy 100% Critical 0%
+#### Offensive Aim
+2 turns
+Deal 15 Shadow damage
+Eternity on critical hit
+Accuracy 100% Critical 50%
+#### Multiboost
+3 turns
+Bonus (+3) in every element
+Accuracy 100% Critical 0%
+### Talents
+#### Revitalization
+5% chance each turn to restore this card’s HP to maximum.
+Δ 13.8 · Theoretical score
+#### Multi Start
+Recommended
+Gain (+3) in each element.
+Δ 564.9 · Theoretical score
+#### Doomed Hour
+Applies Eternity to all enemy cards when this card is killed.
+Δ 40 · Theoretical score
+## Its best decks
+7 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Catimimi + Faerylia
+57.1 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Wibs the Blazing + Apprentice of Death
+53.5 % Relative index 8 turns Estimated elimination 20 / turn Spamtons
+C Intermediate
+Aggro / burst ·
+### Sky Dragon + Nebular Aristocrat
+52.5 % Relative index 7 turns Estimated elimination 22 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Sky Dragon + Deer of Mournful Colors
+49.5 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Blue-Stone-Eater + Thorn of Love
+48.4 % Relative index 9 turns Estimated elimination 24 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Faerylia + Vladislaus
+46.3 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+The other decks (1)
+- D Commando Gerz + Zayd with Faerylia · Polychrome Owl Advanced collection · 44.4%
+### Resistances
+10% Fire
+15% Water
+15% Earth
+15% Nature
+15% Shadow
+-21% Light
+Eltherien · Hadeïr
+### Beyond the card
+Faerylia was renowned as the most learned and cultivated person in Shal’Zaar. A vassal of the Earth King, she mastered magic and the written word like no one else. Alone, she succeeded in deciphering the Primordial Codex. Time revealed, however, that she had disclosed only a fraction of the grimoire’s true contents. She explained precisely how to seal the Deities, from forging the runic weapons to constructing the portal. After attempting to claim powers akin to those of the Deities, she was punished with the destruction of her homeland. The Weaver of Chaos is now the world’s most wanted witch.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

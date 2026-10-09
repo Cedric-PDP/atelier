@@ -1,0 +1,60 @@
+Beyond the letter S: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Understanding rankings Understanding rankings
+# Beyond the letter S.
+Use rankings to ask better questions about your decks.
+3 min read Share
+Illustration by Krackdur
+01
+## Strong card, coherent team.
+A card’s tier summarizes several individual performances. It doesn’t measure compatibility with every team. A lower-tier card may provide exactly the generation your attacker needs. Partners and deck pages make that context visible.
+02
+## Two different scales.
+Cards are ranked by percentile within the catalogue. Decks use a common relative index: 0% is the average random deck and 100% the best deck found. An accessible deck and an advanced-collection deck are therefore comparable on this scale. The percentage is never a win rate.
+03
+## A compass for experimentation.
+Rankings come from a search with explicit assumptions and a diversity filter for the suggested compositions. They do not cover every matchup. Start with a list, adapt it to your collection, and save the variants you enjoy in the workshop.
+Understanding the scores
+## Explore with this guide
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+S # 188 Earth
+Rare · Generation
+### Commando Gerz
+1200 HP
+## Put it into practice
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

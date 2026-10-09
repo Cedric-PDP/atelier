@@ -1,0 +1,139 @@
+Le Transporteur Sauvage : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Le Transporteur Sauvage D Voir la carte en grand
+Le Transporteur Sauvage
+4 Fort
+Sac de frappe
+1000/1000
+7
+Standard
+Le Transporteur Sauvage
+4 Fort
+Sac de frappe
+1000/1000
+7
+Élémentaire
+Le Transporteur Sauvage
+4 Fort
+Sac de frappe
+1000/1000
+7
+FA
+Le Transporteur Sauvage
+4 Fort
+Sac de frappe
+1000/1000
+7
+## Le Transporteur Sauvage
+D Terre · Commune · Standard
+1 000 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Conseillé
+Trois champs de compétence
+- Fort compétence · Recharge 4 Applique Provocation pendant 2 tours
+4
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Simdof
+Fiche complète
+Illustration par Simdof
+Terre Commune #058
+# Le Transporteur Sauvage
+Utilitaire
+1 000 Points de vie
+7 Spamtons / tour
+#119 Classement / 127
+D Sans talent · #116
+Attaque
+0
+Génération
+50
+Défense
+70
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Focus 2 Évolution 3 Cavalerie
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Fort
+4 tours
+Applique Provocation pendant 2 tours
+Précision 100% Critique 0%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+### Talents
+#### Focus
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 563,6 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0 · Score théorique
+#### Cavalerie
+Conseillé
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 729,1 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Commando Gerz
+87,9 % Indice relatif 6 tours Élimination estimée 21 / tour Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Maître Amphibian
+85,3 % Indice relatif 6 tours Élimination estimée 21 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Créature · Shal'Zaar
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. À l’état sauvage, le Transporteur de Shal’Zaar est l’une des rares créatures capables de faire face à la menace abyssale du désert. Ses aptitudes en font une monture de choix, aussi bien au combat que pour le transport de marchandises. Les chasseurs de monstres vivent en harmonie avec des troupeaux de Transporteurs.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 085 Terre
+Épique · Attaque
+### Bleu-mange-cailloux
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

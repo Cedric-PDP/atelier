@@ -1,0 +1,168 @@
+Ephial : carte SPAM Lumière légendaire, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Ephial C Voir la carte en grand
+Ephial
+4 Plaquage astral
+5 Planète Soin
+Reset
+1500/1500
+12
+Standard
+Ephial
+4 Plaquage astral
+5 Planète Soin
+Reset
+1500/1500
+12
+Élémentaire
+Ephial
+4 Plaquage astral
+5 Planète Soin
+Reset
+1500/1500
+12
+FA
+Ephial
+4 Plaquage astral
+5 Planète Soin
+Reset
+1500/1500
+12
+## Ephial
+C Lumière · Légendaire · Standard
+1 500 PV 12 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Conseillé
+- Talent 2 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+- Talent 3 Tox chanceux Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Trois champs de compétence
+- Plaquage astral compétence · Recharge 4 Attaque 20 Lumière
+Attaque 20 Ombre
+Attaque 20 Nature
+4
+- Planète Soin compétence · Recharge 5 Soigne 70 Lumière à toutes les cartes alliées
+5
+- Reset tox · Épique Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Lumière Légendaire #204
+# Ephial
+Soutien Défense Économie
+1 500 Points de vie
+12 Spamtons / tour
+#89 Classement / 127
+C Sans talent · #77
+Attaque
+14
+Génération
+0
+Défense
+98
+Soutien
+94
+Contrôle
+0
+Économie
+91
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cavalerie 2 Focus 3 Tox chanceux
+Jouer cette carte 7 decks
+Partager
+### Compétences
+#### Plaquage astral
+4 tours
+Attaque 20 Lumière
+Attaque 20 Ombre
+Attaque 20 Nature
+Précision 100% Critique 1%
+#### Planète Soin
+5 tours
+Soigne 70 Lumière à toutes les cartes alliées
+Précision 100% Critique 1%
+### Tox de départ
+#### Reset
+Épique
+Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+### Talents
+#### Cavalerie
+Conseillé
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 414,7 · Score théorique
+#### Focus
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 253,6 · Score théorique
+#### Tox chanceux
+Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Δ 10 · Score théorique
+## Ses meilleurs decks
+7 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Maître Amphibian
+92,5 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Ephial
+90,7 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+A Collection avancée
+Aggro / burst ·
+### Spectre Canin + Aleera Mange-Cauchemars
+89,9 % Indice relatif 6 tours Élimination estimée 29 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Shinobi Éclairant + L'Épine d'Amour
+46,8 % Indice relatif 10 tours Élimination estimée 33 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Spectre Canin + Rongeur Nuageux
+44,8 % Indice relatif 10 tours Élimination estimée 34 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Spectre Canin + Maîtresse des Teintes
+35,9 % Indice relatif 11,9 tours Élimination estimée 35 / tour Spamtons
+Les autres decks (1)
+- D Luminaire Abyssal + Codex des Sorts Lumineux avec Rongeur Nuageux · Ephial Collection avancée · 35,7%
+### Résistances
+20% Feu
+20% Eau
+20% Terre
+20% Nature
+20% Ombre
+20% Lumière
+Art · Emeldarion
+### Derrière la carte
+Abondance accueille un grand nombre de peintures. Parmi elles figure Ephial, la Baleine Astrale. Cette œuvre peinte au sol fait l’objet de nombreux débats. La Maîtresse des Teintes utilise la ville entière comme une toile vierge et attire ainsi de nombreux visiteurs. Ephial demeure sa création la plus marquante. Certains pensent qu’elle représente le pèlerinage et que les pèlerins s’y reconnaissent dans leur quête de leur Éternel au Mont Céleste. D’autres y voient un lien avec la créature volante aperçue au sud-ouest d’Emeldarion. La Maîtresse des Teintes, quant à elle, reste discrète sur l’origine de ses idées.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

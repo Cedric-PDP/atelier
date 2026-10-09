@@ -1,0 +1,165 @@
+Luminaire Abyssal : carte SPAM Eau épique, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Luminaire Abyssal B Voir la carte en grand
+Luminaire Abyssal
+1 Hasardo
+4 Phare
+600/600
+4
+Standard
+Luminaire Abyssal
+1 Hasardo
+4 Phare
+600/600
+4
+Élémentaire
+Luminaire Abyssal
+1 Hasardo
+4 Phare
+600/600
+4
+FA
+Luminaire Abyssal
+1 Hasardo
+4 Phare
+600/600
+4
+## Luminaire Abyssal
+B Eau · Épique · Standard
+600 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+- Talent 2 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+- Talent 3 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Conseillé
+Trois champs de compétence
+- Hasardo compétence · Recharge 1 Cible aléatoirement une carte adverse
+Attaque [20 à +30] Eau
+1
+- Phare compétence · Recharge 4 Cible toutes les cartes adverses
+Attaque [30 à 50] Lumière
+Précision (-10%)
+4
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Eau Épique #081
+# Luminaire Abyssal
+Attaque
+600 Points de vie
+4 Spamtons / tour
+#44 Classement / 127
+B Sans talent · #40
+Attaque
+91
+Génération
+0
+Défense
+24
+Soutien
+1
+Contrôle
+89
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Roulette 2 Erreur Croissante 3 One man army
+Jouer cette carte 10 decks
+Partager
+### Compétences
+#### Hasardo
+1 tour
+Cible aléatoirement une carte adverse
+Attaque [20 à +30] Eau
+Précision 100% Critique 1%
+#### Phare
+4 tours
+Cible toutes les cartes adverses
+Attaque [30 à 50] Lumière
+Précision (-10%)
+Précision 100% Critique 1%
+### Talents
+#### Roulette
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 41,7 · Score théorique
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 28,3 · Score théorique
+#### One man army
+Conseillé
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 66,2 · Score théorique
+## Ses meilleurs decks
+10 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Luminaire Abyssal + Aristocrate Nébulaire
+53,9 % Indice relatif 9 tours Élimination estimée 18 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Luminaire Abyssal + Rongeur Nuageux
+49,9 % Indice relatif 9 tours Élimination estimée 29 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Codex des Sorts Lumineux + Aristocrate Nébulaire
+48,6 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Luminaire Abyssal + L'Épine d'Amour
+47,9 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Rongeur Nuageux + Codex des Sorts Lumineux
+46,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+45,4 % Indice relatif 10 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (4)
+- C Luminaire Abyssal + Aristocrate Nébulaire avec Codex des Sorts Lumineux · Lums Collection avancée · 52%
+- D Luminaire Abyssal + Astry avec Maîtresse des Teintes · Squall Intermédiaire · 44%
+- D Luminaire Abyssal + Codex des Sorts Lumineux avec Rongeur Nuageux · Ephial Collection avancée · 35,7%
+- D Spectre Canin + Esprit Lumière avec Luminaire Abyssal · Squall Intermédiaire · 35,3%
+### Résistances
+9% Feu
+9% Eau
+9% Terre
+9% Nature
+9% Ombre
+9% Lumière
+Cauchemar · Nyevielh
+### Derrière la carte
+Après la fracture du continent unique, une gigantesque mer intérieure se forma, parsemée de multiples îles. Certaines demeurent suspendues au-dessus de la Mer Nimbée par une force inconnue ; d’autres sont de véritables îles rendues inaccessibles par la présence de monstres abyssaux. Le Luminaire fait partie de ces monstres. Sa lumière attire les passagers des bateaux, et de nombreuses personnes se seraient jetées à l’eau sous l’emprise de ses illusions. Ces créatures effroyables ont entraîné la fermeture de plusieurs voies maritimes. Nyevielh demeure inaccessible en raison du risque d’apparition de Luminaires Abyssaux.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 198 Lumière
+Épique · Génération
+### Codex des Sorts Lumineux
+1000 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

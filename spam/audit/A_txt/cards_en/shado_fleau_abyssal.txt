@@ -1,0 +1,144 @@
+Shado, Abyssal Scourge: SPAM Shadow common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Shado, Abyssal Scourge B View the full card
+Shado, Abyssal Scourge
+3 Tenebr'heal
+Ancient Healing
+AoE
+800/800
+11
+Standard
+Shado, Abyssal Scourge
+3 Tenebr'heal
+Ancient Healing
+AoE
+800/800
+11
+Elemental
+Shado, Abyssal Scourge
+3 Tenebr'heal
+Ancient Healing
+AoE
+800/800
+11
+FA
+Shado, Abyssal Scourge
+3 Tenebr'heal
+Ancient Healing
+AoE
+800/800
+11
+## Shado, Abyssal Scourge
+B Shadow · Common · Standard
+800 HP 11 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Soul Armor Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Recommended
+Three ability slots
+- Tenebr'heal ability · Cooldown 3 Deal 40 Shadow damage Shadow bonus (+1)
+Vampirism
+3
+- Ancient Healing tox · Common At the start of each turn, the card recovers 4% of its max HP
+- AoE tox · Common Attacks and heals adjacent targets for 20% of the damage dealt
+Illustration by quetrax
+Full card details
+Illustration by quetrax
+Shadow Common #063
+# Shado, Abyssal Scourge
+Defense Economy
+800 Health points
+11 Spamtons / turn
+#58 Rank / 127
+B No talent · #47
+Attack
+43
+Generation
+43
+Defense
+80
+Support
+1
+Control
+0
+Economy
+87
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Resilience 2 Evolution 3 Soul Armor
+Build with this card 1 deck
+Share
+### Abilities
+#### Tenebr'heal
+3 turns
+Deal 40 Shadow damage Shadow bonus (+1)
+Vampirism
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Ancient Healing
+Common
+At the start of each turn, the card recovers 4% of its max HP
+#### AoE
+Common
+Attacks and heals adjacent targets for 20% of the damage dealt
+### Talents
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 37.4 · Theoretical score
+#### Soul Armor
+Recommended
+Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Δ 208 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+B Accessible
+Aggro / burst ·
+### Aleera + Squall
+78.5 % Relative index 6 turns Estimated elimination 31 / turn Spamtons
+### Resistances
+24% Fire
+5% Water
+15% Earth
+15% Nature
+5% Shadow
+15% Light
+Nightmare · Abyss
+### Beyond the card
+Abyssal monsters possess indescribably horrific forms. These demonic creatures were encountered during the Oniyx expedition, a terrifying venture into the depths of the temple of Zaar’Phahl in Shal’Zaar. While seeking a way out of the Abyss, the group encountered new abyssal scourges. Their forms were difficult to describe, but after their initial fright, the explorers realized that these monstrosities were pointing them toward the exit. Trusting them was their last hope. These unlikely guides mowed down monsters like wheat, wielding weapons fed by the elemental chaos of the place. The specters thus kept the Abyss from spilling onto the Surface, giving the survivors time to raise fortifications around the breach. They were named “Shado,” from shadow without its W: as the initial of win, that letter had no place in an endless battle where victory could never be achieved. The temple of Zaar’Phahl is adorned with countless decorations in their honor.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

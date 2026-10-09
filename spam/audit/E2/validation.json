@@ -1,0 +1,86 @@
+{
+ "decks": 80,
+ "maxAbsDiff_evaluate_orig_vs_stress": 0,
+ "maxAbsDiff_X_orig_vs_stress": 0,
+ "maxAbsDiff_driverLoop_orig_vs_stress": 0,
+ "maxAbsDiff_driverLoop_vs_X_vs_evaluate": 0,
+ "maxAbsDiff_STRESS_emptyObject_vs_off": 0,
+ "named": [
+  {
+   "name": "deck chimere",
+   "nums": [
+    103,
+    238,
+    156,
+    117
+   ],
+   "orig": 8018.221187085179,
+   "stress": 8018.221187085179,
+   "dataJson_s1": 8018
+  },
+  {
+   "name": "anti-critiques",
+   "nums": [
+    12,
+    238,
+    27,
+    117
+   ],
+   "orig": 6989.285991965131,
+   "stress": 6989.285991965131,
+   "dataJson_s1": 6989
+  },
+  {
+   "name": "zéro critique",
+   "nums": [
+    102,
+    116,
+    12,
+    69
+   ],
+   "orig": 6529.198659718492,
+   "stress": 6529.198659718492,
+   "dataJson_s1": 6529
+  },
+  {
+   "name": "deck aleera",
+   "nums": [
+    231,
+    238,
+    156,
+    117
+   ],
+   "orig": 12846.814933165275,
+   "stress": 12846.814933165275,
+   "dataJson_s1": 12847
+  },
+  {
+   "name": "robuste A",
+   "nums": [
+    3,
+    103,
+    117,
+    238
+   ],
+   "orig": 7625.4812084265905,
+   "stress": 7625.4812084265905,
+   "dataJson_s1": 7625
+  },
+  {
+   "name": "robuste B",
+   "nums": [
+    69,
+    160,
+    227,
+    238
+   ],
+   "orig": 6077.269814973483,
+   "stress": 6077.269814973483,
+   "dataJson_s1": 6077
+  }
+ ],
+ "wallMs": {
+  "orig": 27101,
+  "stress": 40871
+ }
+}

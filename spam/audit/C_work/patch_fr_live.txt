@@ -1,0 +1,403 @@
+Patch 1.21 de SPAM : cartes modifiées et effet sur la tier list Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks
+EN
+Créer un deck
+Accueil
+Notes de patch
+Notes de patch
+Ce que change la 1.21
+Version publiée le 9 octobre 2026. 15 cartes changent vraiment ; 80 autres ne voient que leurs textes reformulés. Le tier indiqué est celui de notre classement des cartes, avant et après le patch, avec le même modèle.
+Voir la tier list
+1.20 → 1.21
+Cartes modifiées
+Cartes modifiées 15
+PV relevés 0
+Compétences retouchées 8
+Tiers qui bougent 22
+Dragon Ciel
+D
+A +103 places
+Remplacé Compétences Appel de la forêt ← Souffle tornade Avant Attaque 40 Nature
+Après Attaque toutes les cartes adverses 30 Nature
+Bonus Nature (+4)
+Zombie Floral
+B
+S +60 places
+PV 1 000 850
+Rongeur Nuageux
+D
+C +38 places
+PV 750 650
+Remplacé Compétences Foudre ← Ronge-nuage Avant Attaque 30 Lumière
+Bonus Lumière (+1)
+Après Attaque 30 Lumière + 50 % des PV manquants du lanceur
+Apprentie de la Mort
+C
+B +36 places
+Modifié Compétences Brûlure Nocturne Avant Cible toutes les cartes adverses
+Attaque 15 Feu et 15 Ombre
+Après Cible toutes les cartes adverses
+Attaque 25 Feu et 25 Ombre
+Dragon de la Cité Infernale
+C
+C +16 places
+Modifié Tox de départ Gel Avant Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.
+Après Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+L'Inventeur
+D
+C +6 places
+Modifié Compétences Materia Avant Bonus [-8 à +10] dans chaque élément
+Après Bonus [-5 à +8] dans chaque élément
+Wyrm des Dunes Cornu
+D
+D +3 places
+Modifié Compétences Morsure brûlante Avant Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+5%)
+Après Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+Naissance d'Aldrin
+D
+D
+Remplacé Tox de départ Cimetière ← Reset Avant Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+Après Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+Roi des Flammes Ardentes
+C
+C -1 places
+Modifié Compétences Morsure brûlante Avant Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+5%)
+Après Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+Tisseuse de Mots
+B
+B -2 places
+Spamtons 3 2
+Frost & Glacier
+C
+C -6 places
+Modifié Tox de départ Gel Avant Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.
+Après Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+Lapin-Plume
+C
+C -14 places
+PV 1 000 850
+Murmures du Corail Noir
+B
+B -19 places
+PV 500 400
+Spamtons 7 2
+Modifié Compétences Murmure Avant Soigne 10 Eau
+La valeur de base du soin augmente de 5
+Après Soigne 10 Eau
+La valeur de base du soin augmente de 3
+Ashtarae Lycaria
+A
+B -24 places
+PV 1 000 700
+Spamtons 8 4
+Sorcière Pyrokinétique
+A
+B -37 places
+Modifié Compétences Flamme magique Avant Attaque 25 Feu
+Applique Éternité en cas de critique
+Attaque 25 Lumière
+Applique Éternité en cas de critique
+Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+Après Attaque 25 Feu
+Applique Éternité en cas de critique
+Attaque 25 Lumière
+Applique Éternité en cas de critique
+Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+Sans changer, elles changent de tier
+Le classement des cartes est relatif : quand d’autres cartes changent, certaines bougent sans avoir été touchées.
+Lame de la forêt D
+B
+Esprit Eau D
+C
+Pyro B
+A
+Gazpoison Flottant C
+B
+Épine Médusine S
+A
+Baleine Farceuse B
+C
+Esprit Terre C
+D
+Esprit Nature C
+D
+Ameru B
+C
+Esprit Feu C
+D
+Esprit Lumière C
+D
+Loutre Intrépide B
+C
+Catixy A
+B
+L'Épine d'Amour C
+D
+Mélodie des Divinités A
+C
+Les decks qui en profitent
+Zombie Floral + Souverain des Chutes d'Éther D
+C +63 pts
+Dragon Ciel + Aristocrate Nébulaire D
+C +50,9 pts
+Esprit de la Faune + Zombie Floral D
+C +47,4 pts
+Dragon Ciel + Aldrin & Gorakar D
+C +34,1 pts
+Maîtresse des Teintes + L'Inventeur D
+C +31,7 pts
+1.19 → 1.20
+Cartes modifiées
+Cartes modifiées 30
+PV relevés 18
+Compétences retouchées 9
+Tiers qui bougent 12
+Ashtarae Lycaria
+B
+A +31 places
+Modifié Compétences Mélodie n°1 Avant Attaque [10 à 20] Ombre
+Critique (+2%) sur toutes les cartes alliées
+Après Attaque [15 à 25] Ombre
+Critique (+2%) sur toutes les cartes alliées
+Modifié Compétences Mélodie n°2 Avant Soigne [10 à 20] Ombre
+Précision (+2%) sur toutes les cartes alliées
+Après Soigne [15 à 25] Ombre
+Précision (+2%) sur toutes les cartes alliées
+L'Inventeur
+D
+D +20 places
+Modifié Compétences Materia Avant Bonus [-10 à +10] dans un élément aléatoire
+Après Bonus [-8 à +10] dans chaque élément
+Gardien Vert
+A
+A +15 places
+PV 600 800
+Verdelune
+C
+C +14 places
+PV 700 900
+Modifié Compétences Trêve Avant Soigne 30 Nature
+Résistance à tous les éléments (+10)
+Après Soigne 60 Nature
+Résistance à tous les éléments (+10)
+Maîtresse des Teintes
+B
+B +11 places
+PV 500 600
+Résistances Feu 10% 20%
+Résistances Eau 10% 20%
+Résistances Terre 10% 20%
+Résistances Nature 10% 20%
+Résistances Ombre 10% 20%
+Résistances Lumière 10% 20%
+Godlur
+D
+D +10 places
+PV 700 1 000
+Guerrier des Neiges
+B
+B +9 places
+PV 500 600
+Sorcière Pyrokinétique
+A
+A +8 places
+PV 700 800
+Modifié Compétences Flamme magique Avant Attaque 25 Feu
+Attaque 25 Lumière
+Résistance Feu (-10) et Lumière (-10)
+Étourdissement
+Après Attaque 25 Feu
+Applique Éternité en cas de critique
+Attaque 25 Lumière
+Applique Éternité en cas de critique
+Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+Aidan
+C
+C +8 places
+PV 600 750
+Baleine Farceuse
+C
+B +4 places
+PV 900 1 000
+Zombie Floral
+C
+B +4 places
+PV 800 1 000
+Roi Lumière
+B
+B +3 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Roi Feu
+B
+B +2 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Roi Eau
+B
+B +2 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Roi Nature
+B
+B +2 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Roi Terre
+B
+B +2 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Squall, Émissaire des cauchemars
+B
+B +2 places
+PV 800 1 000
+Dragon de la Cité Infernale
+C
+C +2 places
+Remplacé Tox de départ Gel ← Étourdissement Avant Étourdit l'adversaire. Une cible étourdie ne peut pas lancer de compétence
+Après Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.
+Ignea
+S
+S +1 places
+PV 700 750
+Gabriel
+A
+A +1 places
+PV 900 1 000
+Moxilys, la Fredonneuse
+S
+S
+PV 850 900
+Esprit de la Faune
+S
+S
+Modifié Compétences Appel de la forêt Avant Attaque toutes les cartes adverses 30 Nature
+Bonus Nature (+2)
+Après Attaque toutes les cartes adverses 30 Nature
+Bonus Nature (+4)
+Modifié Compétences Soin soleil Avant Soigne 50 Lumière
+Étourdissement
+Après Soigne 60 Lumière
+Gel
+Éclat du Renard Blanc
+S
+S
+PV 600 700
+Modifié Compétences Aqua-sombre Avant Attaque 20 Eau
+Attaque 20 Ombre
+Étourdissement
+Après Choix
+Attaque 20 Eau
+Gel
+---------- ou ----------
+Attaque 20 Ombre
+Applique Éternité
+Veilleur Nocturne
+A
+A
+PV 700 800
+Maître Amphibian
+B
+B -1 places
+PV 650 700
+Léo
+C
+C -1 places
+PV 600 800
+Frost & Glacier
+C
+C -2 places
+Remplacé Tox de départ Gel ← Étourdissement Avant Étourdit l'adversaire. Une cible étourdie ne peut pas lancer de compétence
+Après Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.
+Roi Ombre
+B
+B -3 places
+Nouveau Tox de départ Sac de frappe Après Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque
+Remplacé Talent Évolution ← Cœur d’acier Avant Les attaques reçues augmentent vos résistances élémentaires de (+1)
+Après Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Hibernatus
+C
+C -3 places
+PV 700 750
+Le Héraut des Cendres
+D
+D -10 places
+Modifié Compétences Souffle du dragon Avant Choix
+Attaque 15 Feu
+Attaque 15 Nature
+Étourdissement
+---------- ou ----------
+Bonus Feu (+5)
+Bonus Nature (+5)
+Après Choix
+Attaque 30 Feu
+Attaque 10 Nature
+Attaque 10 Nature
+---------- ou ----------
+Bonus Feu (+5)
+Bonus Nature (+5)
+Sans changer, elles changent de tier
+Le classement des cartes est relatif : quand d’autres cartes changent, certaines bougent sans avoir été touchées.
+Esprit Lumière D
+C
+Épine Médusine A
+S
+Sanglier Doré S
+A
+Gazpoison Flottant B
+C
+Sylvan, Protecteur de la Verdure B
+C
+Neilla C
+D
+Voyageur des Crêtes A
+B
+Pyro A
+B
+Léviathan des Cieux A
+B
+Les decks qui en profitent
+Zombie Floral + Princesse Meridia D
+D +5,8 pts
+Roi Terre + Bleu-mange-cailloux C
+C +5,2 pts
+Esprit de la Faune + Zombie Floral D
+D +5,1 pts
+Zombie Floral + Gabriel D
+D +4,6 pts
+Wibs l'Enflammé + Apprentie de la Mort D
+D +4,3 pts
+Les decks qui en pâtissent
+Rongeur Nuageux + Mélodie des Divinités D
+D -5,5 pts
+Nouveaux passifs
+Gel Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu
+Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

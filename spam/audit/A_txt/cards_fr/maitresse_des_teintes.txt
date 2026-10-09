@@ -1,0 +1,187 @@
+Maîtresse des Teintes : carte SPAM Terre rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Maîtresse des Teintes B Voir la carte en grand
+Maîtresse des Teintes
+3 Chaos élémentaire
+3 Multiboost
+600/600
+10
+Standard
+Maîtresse des Teintes
+3 Chaos élémentaire
+3 Multiboost
+600/600
+10
+Élémentaire
+Maîtresse des Teintes
+3 Chaos élémentaire
+3 Multiboost
+600/600
+10
+FA
+Maîtresse des Teintes
+3 Chaos élémentaire
+3 Multiboost
+600/600
+10
+AAA
+Maîtresse des Teintes
+3 Chaos élémentaire
+3 Multiboost
+600/600
+10
+## Maîtresse des Teintes
+B Terre · Rare · Standard
+600 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Départ multi Bonus (+3) dans chaque élément.
+- Talent 2 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+- Talent 3 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Conseillé
+Trois champs de compétence
+- Chaos élémentaire compétence · Recharge 3 Cible aléatoirement les cartes adverses
+Attaque 15 Nature
+15 Terre
+15 Feu
+15 Lumière
+15 Ombre
+15 Eau
+3
+- Multiboost compétence · Recharge 3 Bonus de chaque élément (+3)
+3
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Terre Rare #032
+# Maîtresse des Teintes
+Polyvalent
+600 Points de vie
+10 Spamtons / tour
+#43 Classement / 127
+B Sans talent · #39
+Attaque
+67
+Génération
+54
+Défense
+35
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Départ multi 2 Cœur d’acier 3 Incisif
+Jouer cette carte 20 decks
+Partager
+### Compétences
+#### Chaos élémentaire
+3 tours
+Cible aléatoirement les cartes adverses
+Attaque 15 Nature
+15 Terre
+15 Feu
+15 Lumière
+15 Ombre
+15 Eau
+Précision 100% Critique 25%
+#### Multiboost
+3 tours
+Bonus de chaque élément (+3)
+Précision 100% Critique 0%
+### Talents
+#### Départ multi
+Bonus (+3) dans chaque élément.
+Δ 526,5 · Score théorique
+#### Cœur d’acier
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 13,9 · Score théorique
+#### Incisif
+Conseillé
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 663,5 · Score théorique
+## Ses meilleurs decks
+20 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Scorch
+73 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + L'Inventeur
+65,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+60,5 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+57,9 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+56,8 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Esprit de la Faune + L'Épine d'Amour
+54,3 % Indice relatif 8 tours Élimination estimée 37 / tour Spamtons
+Les autres decks (14)
+- C Maîtresse des Teintes + Apprentie de la Mort avec L'Inventeur · Roi des Flammes Ardentes Intermédiaire · 56,7%
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Maîtresse des Teintes Intermédiaire · 52,7%
+- C Rongeur Nuageux + Mélodie des Divinités avec Commando Gerz · Maîtresse des Teintes Collection avancée · 51,5%
+- C Maîtresse des Teintes + Apprentie de la Mort avec Roi Feu · Vladislaus Collection avancée · 50,5%
+- C Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Dragon Ciel Accessible · 50,3%
+- D Luminaire Abyssal + Rongeur Nuageux avec Commando Gerz · Maîtresse des Teintes Intermédiaire · 49,9%
+- D Maîtresse des Teintes + Cerf des Couleurs Funèbres avec Aldrin & Gorakar · Aidan Collection avancée · 49,3%
+- D Maître Amphibian + Aidan avec Maîtresse des Teintes · Rob l'Aventurier Accessible · 47,6%
+- D Faerylia + Vladislaus avec Maîtresse des Teintes · Squall Collection avancée · 46,3%
+- D Cerf des Couleurs Funèbres + L'Épine d'Amour avec Verdelune · Maîtresse des Teintes Collection avancée · 46,3%
+- D Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Squall Intermédiaire · 45,7%
+- D Luminaire Abyssal + Astry avec Maîtresse des Teintes · Squall Intermédiaire · 44%
+- D Spectre Canin + Maîtresse des Teintes avec Rongeur Nuageux · L'Épine d'Amour Accessible · 42,1%
+- D Spectre Canin + Maîtresse des Teintes avec Ephial · L'Épine d'Amour Collection avancée · 35,9%
+### Résistances
+20% Feu
+20% Eau
+20% Terre
+20% Nature
+20% Ombre
+20% Lumière
+Eltherien · Emeldarion
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Abondance, dans le quartier des plaisirs de Katrobu, les Sans-nom tentent de se bâtir un avenir. Une jeune artiste turbulente repeint chaque jour des pans entiers de la ville. Sans cesse pourchassée par les autorités, elle attira pourtant de nombreux touristes grâce à ses œuvres. La Maîtresse des Teintes devint ainsi une célébrité suivie dans le monde entier. On dit qu’elle aurait des visions de ses cauchemars, sans jamais connaître les rêves ordinaires. Elle les peindrait pour les extérioriser et préserver son esprit.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,7 @@
+(()=>{const I=ht(MODELS.x1);
+ const ids=["f55c5b0a-9493-4e19-b3fe-5eac4c281a1f","6598bdc6-b5f4-47a8-be11-761422965f71","3c5cc4d2-1692-4da7-81ae-eb853c91327f","5721ea5f-5978-4328-8874-28abc283f6b8"];
+ const r=I.evaluate(ids.map(id=>({id,talentId:null})),{optimize:false,suggestions:false,shop:false});
+ const keys=Object.keys(r); OUT.keys=keys; OUT.score=r.score;
+ for(const k of keys){ const v=r[k]; OUT['t_'+k]=Array.isArray(v)?('array'+v.length):typeof v; }
+ OUT.sample={}; for(const k of keys){ const v=r[k]; if(v&&typeof v==='object') OUT.sample[k]=JSON.stringify(v).slice(0,600); }
+})();

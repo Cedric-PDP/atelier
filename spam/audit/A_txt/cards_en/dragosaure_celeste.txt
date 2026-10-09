@@ -1,0 +1,147 @@
+Celestial Dragosaur: SPAM Nature common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Celestial Dragosaur A View the full card
+Celestial Dragosaur
+3 Howl Strike
+Reset
+800/800
+12
+Standard
+Celestial Dragosaur
+3 Howl Strike
+Reset
+800/800
+12
+Elemental
+Celestial Dragosaur
+3 Howl Strike
+Reset
+800/800
+12
+FA
+Celestial Dragosaur
+3 Howl Strike
+Reset
+800/800
+12
+## Celestial Dragosaur
+A Nature · Common · Standard
+800 HP 12 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Rare AOE Start the game with the "AoE" passive.
+Recommended
+- Talent 2 Critical Critical bonus (+10%).
+- Talent 3 Soul Armor Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Three ability slots
+- Howl Strike ability · Cooldown 3 Choice
+Deal [10 to 100] Nature damage
+[Freeze]
+---------- or ----------
+Deal [45 to 65] Earth damage
+[Freeze]
+3
+- Reset tox · Epic When you kill an ENEMY card with one of your attacks, that attack remains available
+- Free slot Open to a shop Tox
+Illustration by Mr.Kelbi
+Full card details
+Illustration by Mr.Kelbi
+Nature Common #211
+# Celestial Dragosaur
+Control Economy
+800 Health points
+12 Spamtons / turn
+#23 Rank / 127
+C No talent · #64
+Attack
+70
+Generation
+0
+Defense
+61
+Support
+1
+Control
+94
+Economy
+91
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Rare AOE 2 Critical 3 Soul Armor
+Build with this card 2 decks
+Share
+### Abilities
+#### Howl Strike
+3 turns
+Choice
+Deal [10 to 100] Nature damage
+[Freeze]
+---------- or ----------
+Deal [45 to 65] Earth damage
+[Freeze]
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Reset
+Epic
+When you kill an ENEMY card with one of your attacks, that attack remains available
+### Talents
+#### Rare AOE
+Recommended
+Start the game with the "AoE" passive.
+Δ 411.9 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ 172 · Theoretical score
+#### Soul Armor
+Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Δ 200.2 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+A Accessible
+Aggro / burst ·
+### Aleera + Commando Gerz
+89.4 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+C Intermediate
+Midrange ·
+### Floral Zombie + Gabriel
+50.2 % Relative index 9 turns Estimated elimination 39 / turn Spamtons
+### Resistances
+15% Fire
+16% Water
+17% Earth
+16% Nature
+15% Shadow
+15% Light
+Creature · Emeldarion
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. Incredible creatures inhabit the Lonely Isles, a cluster of flying islands above the Nimbus Sea. Among these species is the Celestial Dragosaur. Its nests can be observed on the cliffs of the continent of Aelther. Once adults, they head to the floating islands. No one knows why they go there, for now.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

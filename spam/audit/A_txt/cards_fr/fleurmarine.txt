@@ -1,0 +1,140 @@
+Fleurmarine : carte SPAM Eau commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Fleurmarine A Voir la carte en grand
+Fleurmarine
+1 Nageoire sifflante
+2 Fond marin
+600/600
+6
+Standard
+Fleurmarine
+1 Nageoire sifflante
+2 Fond marin
+600/600
+6
+Élémentaire
+Fleurmarine
+1 Nageoire sifflante
+2 Fond marin
+600/600
+6
+FA
+Fleurmarine
+1 Nageoire sifflante
+2 Fond marin
+600/600
+6
+## Fleurmarine
+A Eau · Commune · Standard
+600 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Conseillé
+- Talent 2 Critique Bonus critique (+10 %)
+- Talent 3 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Trois champs de compétence
+- Nageoire sifflante compétence · Recharge 1 Attaque 10 Eau
++ Bonus Eau (+2) en cas de coup critique
+Attaque 10 Nature
++ Bonus Nature (+2) en cas de coup critique
+1
+- Fond marin compétence · Recharge 2 Précision (+12%)
+2
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Eau Commune #119
+# Fleurmarine
+Polyvalent
+600 Points de vie
+6 Spamtons / tour
+#24 Classement / 127
+B Sans talent · #34
+Attaque
+60
+Génération
+73
+Défense
+19
+Soutien
+74
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Incisif 2 Critique 3 Erreur Croissante
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Nageoire sifflante
+1 tour
+Attaque 10 Eau
++ Bonus Eau (+2) en cas de coup critique
+Attaque 10 Nature
++ Bonus Nature (+2) en cas de coup critique
+Précision 50% Critique 50%
+#### Fond marin
+2 tours
+Précision (+12%)
+Précision 100% Critique 0%
+### Talents
+#### Incisif
+Conseillé
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 198,2 · Score théorique
+#### Critique
+Bonus critique (+10 %)
+Δ 13,3 · Score théorique
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 22,6 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Accessible
+Aggro / burst ·
+### Raffteru + L'Épine d'Amour
+58 % Indice relatif 7 tours Élimination estimée 25 / tour Spamtons
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Lumethia
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Sur les côtes occidentales de Lumethia, on peut apercevoir des amas d’algues provenant de l’Océan des Profondeurs. Ces plages sont interdites en raison des Fleurmarines très agressives qui peuvent s’y installer. Ces anguilles marines sont redoutées des pêcheurs. Elles constituent toutefois un mets délicat et une spécialité des ports de Lumethia.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+B # 229 Terre
+Commune · Attaque
+### Maître Amphibian
+700 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

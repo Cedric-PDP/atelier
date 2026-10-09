@@ -1,0 +1,163 @@
+Le compagnon des esprits : carte SPAM Eau commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Le compagnon des esprits B Voir la carte en grand
+Le compagnon des esprits
+1 Petite vague
+1 Hasardo
+Immunité
+600/600
+5
+Standard
+Le compagnon des esprits
+1 Petite vague
+1 Hasardo
+Immunité
+600/600
+5
+Élémentaire
+Le compagnon des esprits
+1 Petite vague
+1 Hasardo
+Immunité
+600/600
+5
+FA
+Le compagnon des esprits
+1 Petite vague
+1 Hasardo
+Immunité
+600/600
+5
+## Le compagnon des esprits
+B Eau · Commune · Standard
+600 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Contre Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+- Talent 2 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Conseillé
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Petite vague compétence · Recharge 1 Attaque 10 Eau
+Augmente sa génération de Spamtons de (+1)
+Echo (50%)
+1
+- Hasardo compétence · Recharge 1 Cible aléatoirement une carte adverse
+Attaque [20 à +30] Eau
+1
+- Immunité tox · Épique La carte est immunisée contre tous les effets des cartes adverses
+Illustration par Amytis
+Fiche complète
+Illustration par Amytis
+Eau Commune #260
+# Le compagnon des esprits
+Attaque Économie
+600 Points de vie
+5 Spamtons / tour
+#35 Classement / 127
+B Sans talent · #32
+Attaque
+94
+Génération
+0
+Défense
+40
+Soutien
+1
+Contrôle
+0
+Économie
+97
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Contre 2 One man army 3 Pièce magique
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Petite vague
+1 tour
+Attaque 10 Eau
+Augmente sa génération de Spamtons de (+1)
+Echo (50%)
+Précision 100% Critique 1%
+#### Hasardo
+1 tour
+Cible aléatoirement une carte adverse
+Attaque [20 à +30] Eau
+Précision 100% Critique 1%
+### Tox de départ
+#### Immunité
+Épique
+La carte est immunisée contre tous les effets des cartes adverses
+### Talents
+#### Contre
+Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+Δ 8,6 · Score théorique
+#### One man army
+Conseillé
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 172,4 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Le compagnon des esprits + Esprit Eau
+58,7 % Indice relatif 8 tours Élimination estimée 35 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Épine Médusine + Scorch
+54,5 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Épine Médusine + Le compagnon des esprits
+51,7 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Le compagnon des esprits + Scorch
+51,5 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+Les autres decks (2)
+- C Le compagnon des esprits + Esprit Eau avec Léviathan des Cieux · Scorch Collection avancée · 53,1%
+- C Épine Médusine + Le compagnon des esprits avec Léviathan des Cieux · Scorch Collection avancée · 51,1%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Nordvinter
+### Derrière la carte
+Autour du lac de l’Esprit de l’Eau, de petits rongeurs ont élu domicile. Les Compagnons des Esprits y jouent et semblent communiquer avec des papillons. Ces curieux petits animaux ne fuient pas la présence des Eltheriens, bien au contraire. Ils sont devenus les mascottes de la région montagneuse du nord de Vaeloria. Ce paisible écosystème a trouvé son équilibre loin de tout prédateur. Ces petites boules de poils gardent certainement un secret au fond de leurs terriers, mais Lycaria veille à ce que personne ne trouble la tranquillité du lac.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+C # 002 Eau
+Commune · Génération
+### Esprit Eau
+500 PV
+D # 146 Eau
+Épique · Polyvalent
+### Poulpe Parleur
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

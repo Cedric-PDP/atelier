@@ -1,0 +1,136 @@
+Aeltheria, Mère Primordiale : carte SPAM Éther divine, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Aeltheria, Mère Primordiale B Voir la carte en grand
+Aeltheria, Mère Primordiale
+1 Souffle élémentaire
+1 Berceau des Éléments
+1 Mythique
+700/700
+10
+Standard
+Aeltheria, Mère Primordiale
+1 Souffle élémentaire
+1 Berceau des Éléments
+1 Mythique
+700/700
+10
+Élémentaire
+Aeltheria, Mère Primordiale
+1 Souffle élémentaire
+1 Berceau des Éléments
+1 Mythique
+700/700
+10
+FA
+Aeltheria, Mère Primordiale
+1 Souffle élémentaire
+1 Berceau des Éléments
+1 Mythique
+700/700
+10
+## Aeltheria, Mère Primordiale
+B Éther · Divine · Standard
+700 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+Conseillé
+- Talent 2 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 3 Corrosion Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Trois champs de compétence
+- Souffle élémentaire compétence · Recharge 1 Attaque 30 dans son élément
+1
+- Berceau des Éléments compétence · Recharge 1 Bonus (1 à 5) dans son élément
+1
+- Mythique compétence · Recharge 1 Change aléatoirement l'élément de votre carte
+1
+Illustration par White_arts
+Fiche complète
+Illustration par White_arts
+Éther Divine #265
+# Aeltheria, Mère Primordiale
+Génération
+700 Points de vie
+10 Spamtons / tour
+#56 Classement / 127
+B Sans talent · #58
+Attaque
+41
+Génération
+93
+Défense
+32
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Roulette 2 Résilience 3 Corrosion
+Jouer cette carte
+Partager
+### Compétences
+#### Souffle élémentaire
+1 tour
+Attaque 30 dans son élément
+Précision 100% Critique 1%
+#### Berceau des Éléments
+1 tour
+Bonus (1 à 5) dans son élément
+Précision 100% Critique 0%
+#### Mythique
+1 tour
+Change aléatoirement l'élément de votre carte
+Précision 100% Critique 0%
+### Talents
+#### Roulette
+Conseillé
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 121,1 · Score théorique
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 14,4 · Score théorique
+#### Corrosion
+Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Δ 74,3 · Score théorique
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Divinité · Inconnue
+### Derrière la carte
+Elther n’existerait pas sans les Divinités : toute forme de vie est le fruit d’une œuvre de création divine. Aeltheria est la créatrice de toutes les Divinités. Son apparence favorite serait celle d’une louve, ce qui fait de cet animal une figure sacrée et profondément respectée en Elther. Le jour du Grand Cataclysme, les peuples Éveillés s’allièrent pour sceller les Divinités ; la créature qu’ils enfermèrent avait justement la forme d’une louve gigantesque. De nombreuses théories existent, mais toutes établissent un lien avec Aeltheria. Faerylia est activement recherchée, car elle pourrait détenir des réponses sur le sujet.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+D # 094 Terre
+Légendaire · Utilitaire
+### Zayd
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

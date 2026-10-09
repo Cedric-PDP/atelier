@@ -1,0 +1,139 @@
+Lapin-Plume : carte SPAM Nature commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Lapin-Plume C Voir la carte en grand
+Lapin-Plume
+1 Son perçant
+Cœur résistance
+Contrecoup
+850/850
+7
+Standard
+Lapin-Plume
+1 Son perçant
+Cœur résistance
+Contrecoup
+850/850
+7
+Élémentaire
+Lapin-Plume
+1 Son perçant
+Cœur résistance
+Contrecoup
+850/850
+7
+FA
+Lapin-Plume
+1 Son perçant
+Cœur résistance
+Contrecoup
+850/850
+7
+## Lapin-Plume
+C Nature · Commune · Standard
+850 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Trois champs de compétence
+- Son perçant compétence · Recharge 1 [Coût 1 Nature]
+Attaque 20 Nature
+Les dégâts de base de cette attaque augmentent de (+2) après utilisation
+1
+- Cœur résistance tox · Commune Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3).
+- Contrecoup tox · Commune Subit 50% des dégâts infligés à la cible
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Nature Commune #158
+# Lapin-Plume
+Polyvalent
+850 Points de vie
+7 Spamtons / tour
+#91 Classement / 127
+C Sans talent · #78
+Attaque
+62
+Génération
+0
+Défense
+50
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Vitalité des Âmes 2 Évolution 3 One man army
+Jouer cette carte
+Partager
+### Compétences
+#### Son perçant
+1 tour
+[Coût 1 Nature]
+Attaque 20 Nature
+Les dégâts de base de cette attaque augmentent de (+2) après utilisation
+Précision 100% Critique 1%
+### Tox de départ
+#### Cœur résistance
+Commune
+Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3).
+#### Contrecoup
+Commune
+Subit 50% des dégâts infligés à la cible
+### Talents
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 324,7 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 12,4 · Score théorique
+#### One man army
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 30,2 · Score théorique
+### Résistances
+0% Feu
+0% Eau
+0% Terre
+0% Nature
+0% Ombre
+0% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Les Lapins-Plumes comptent parmi les rongeurs du désert les plus faciles à apprivoiser. Ils entretiennent une relation de confiance fusionnelle avec les tribus de Shal’Zaar. Capables de percevoir le danger comme aucune autre créature du désert et de voler, ils sont les compagnons idéaux des chasseurs de monstres. Lorsqu’un Lapin-Plume s’affole, les Abyssaux ne sont jamais loin.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

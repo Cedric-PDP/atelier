@@ -1,0 +1,172 @@
+Maître Amphibian : carte SPAM Terre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Maître Amphibian B Voir la carte en grand
+Maître Amphibian
+1 Miasmes de la Sagesse
+Érosion
+700/700
+4
+Standard
+Maître Amphibian
+1 Miasmes de la Sagesse
+Érosion
+700/700
+4
+Élémentaire
+Maître Amphibian
+1 Miasmes de la Sagesse
+Érosion
+700/700
+4
+FA
+Maître Amphibian
+1 Miasmes de la Sagesse
+Érosion
+700/700
+4
+## Maître Amphibian
+B Terre · Commune · Standard
+700 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+- Talent 2 Durcissement Augmente les résistances élémentaires de la carte de (+15 %).
+Conseillé
+- Talent 3 13e mois La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+Trois champs de compétence
+- Miasmes de la Sagesse compétence · Recharge 1 Cible toutes les cartes adverses
+Attaque 15 Terre 15 Eau
+1
+- Érosion tox · Commune Réduit les PV max à hauteur de 50% des dégâts infligés
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Terre Commune #229
+# Maître Amphibian
+Attaque Défense
+700 Points de vie
+4 Spamtons / tour
+#39 Classement / 127
+B Sans talent · #42
+Attaque
+93
+Génération
+0
+Défense
+76
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Longueur 2 Durcissement 3 13e mois
+Jouer cette carte 22 decks
+Partager
+### Compétences
+#### Miasmes de la Sagesse
+1 tour
+Cible toutes les cartes adverses
+Attaque 15 Terre 15 Eau
+Précision 50% Critique 1%
+### Tox de départ
+#### Érosion
+Commune
+Réduit les PV max à hauteur de 50% des dégâts infligés
+### Talents
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+#### Durcissement
+Conseillé
+Augmente les résistances élémentaires de la carte de (+15 %).
+Δ 81,7 · Score théorique
+#### 13e mois
+La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+Δ 30 · Score théorique
+## Ses meilleurs decks
+22 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+94,6 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Maître Amphibian
+92,5 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Souverain des Chutes d'Éther + Maître Amphibian
+77,9 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Maître Amphibian + Rob l'Aventurier
+72,7 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Épine Médusine + Scorch
+54,5 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### L'Épine d'Amour + Rob l'Aventurier
+53,4 % Indice relatif 7 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (16)
+- A Aleera Mange-Cauchemars + Maître Amphibian avec Souverain des Chutes d'Éther · Le Transporteur Sauvage Accessible · 85,3%
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Aidan · L'Œil des montagnes Accessible · 68,6%
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Léviathan des Cieux · Scorch Collection avancée · 61,1%
+- C Maître Amphibian + Rob l'Aventurier avec Commando Gerz · Aidan Accessible · 59,3%
+- C Souverain des Chutes d'Éther + Maître Amphibian avec Léviathan des Cieux · L'Œil des montagnes Collection avancée · 59,1%
+- C Maître Amphibian + Rob l'Aventurier avec Scorch · Aidan Accessible · 58,5%
+- C Maître Amphibian + Scorch avec Rob l'Aventurier · Croqueur de Fruits Verdoyant Accessible · 50,9%
+- C Maître Amphibian + Rob l'Aventurier avec Zayd · Scorch Collection avancée · 50,7%
+- D Maître Amphibian + Aidan avec Maîtresse des Teintes · Rob l'Aventurier Accessible · 47,6%
+- D Zombie Floral + Aidan avec Maître Amphibian · Chimère Brasse-chair Accessible · 46,3%
+- D Sanglier Doré + Rob l'Aventurier avec Maître Amphibian · Bleu-mange-cailloux Intermédiaire · 44,7%
+- D Commando Gerz + Sanglier Doré avec Maître Amphibian · Croqueur de Fruits Verdoyant Accessible · 43,8%
+- D Maître Amphibian + Bleu-mange-cailloux avec Roi Terre · Aidan Collection avancée · 43,8%
+- D Croqueur de Fruits Verdoyant + Maître Amphibian avec Rob l'Aventurier · L'Épine d'Amour Accessible · 39,6%
+- D Maître Amphibian + Scorch avec Frost & Glacier · Épine Médusine Collection avancée · 32,4%
+- D Zombie Floral + Maître Amphibian avec Frost & Glacier · Princesse Meridia Collection avancée · 31,8%
+### Résistances
+25% Feu
+25% Eau
+25% Terre
+25% Nature
+25% Ombre
+25% Lumière
+Anthropomorphe · Emeldarion
+### Derrière la carte
+Originaire des Îles Esseulées, un maître martial anthropomorphe en possession d’un artefact de métamorphose s’est installé au nord-ouest d’Emeldarion. Amphibian donna vie à de nombreux habitants du village, et ce sanctuaire chamanique se développa avec l’aide de Keria. En échange de terres, le reptilien utilisa son bâton pour aider cette dernière à développer sa tribu du Feu. Lorsqu’on lui demande pourquoi il a quitté les îles volantes, il évoque toujours une amitié brisée par des idéaux divergents, rupture qu’il regrette de plus en plus à mesure que le temps passe.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+A # 136 Eau
+Rare · Attaque
+### Souverain des Chutes d'Éther
+800 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

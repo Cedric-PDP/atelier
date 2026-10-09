@@ -1,0 +1,154 @@
+Vladislaus : carte SPAM Feu épique, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Vladislaus D Voir la carte en grand
+Vladislaus
+1 Double-afflux
+1 Transfusion
+Ténacité
+350/350
+4
+Standard
+Vladislaus
+1 Double-afflux
+1 Transfusion
+Ténacité
+350/350
+4
+Élémentaire
+Vladislaus
+1 Double-afflux
+1 Transfusion
+Ténacité
+350/350
+4
+FA
+Vladislaus
+1 Double-afflux
+1 Transfusion
+Ténacité
+350/350
+4
+## Vladislaus
+D Feu · Épique · Standard
+350 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Sursaut Vital Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+- Talent 2 Plume de Phénix 50 % de chance de récupérer le passif Phénix une fois utilisé.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Double-afflux compétence · Recharge 1 Attaque 5 Feu
+Attaque 5 Ombre
+La valeur de base de dégâts augmente de 5
+1
+- Transfusion compétence · Recharge 1 Vole 100 PV max à un allié pour se soigner du même montant
+1
+- Ténacité tox · Commune La première attaque fatale vous laisse à 1 PV
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Feu Épique #193
+# Vladislaus
+Utilitaire
+350 Points de vie
+4 Spamtons / tour
+#126 Classement / 127
+D Sans talent · #126
+Attaque
+13
+Génération
+0
+Défense
+0
+Soutien
+0
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Sursaut Vital 2 Plume de Phénix 3 Vitalité des Âmes
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Double-afflux
+1 tour
+Attaque 5 Feu
+Attaque 5 Ombre
+La valeur de base de dégâts augmente de 5
+Précision 100% Critique 1%
+#### Transfusion
+1 tour
+Vole 100 PV max à un allié pour se soigner du même montant
+Précision 100% Critique 1%
+### Tox de départ
+#### Ténacité
+Commune
+La première attaque fatale vous laisse à 1 PV
+### Talents
+#### Sursaut Vital
+Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+Δ 0 · Score théorique
+#### Plume de Phénix
+50 % de chance de récupérer le passif Phénix une fois utilisé.
+Δ 0 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 210,5 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Midrange ·
+### Wibs l'Enflammé + Apprentie de la Mort
+53,5 % Indice relatif 8 tours Élimination estimée 20 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+50,5 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Faerylia + Vladislaus
+46,3 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+### Résistances
+30% Feu
+31% Eau
+40% Terre
+40% Nature
+39% Ombre
+0% Lumière
+Eltherien · Nyevielh
+### Derrière la carte
+Trésorier de Nyevielh, Vladislaus s’occupait de la plupart des documents pour le compte de son régent. Philosophe et chercheur de renom, il était l’ami d’enfance des Rois de la Terre et de l’Ombre. Lorsque les cauchemars rendirent ses terres inhabitables, des fragments du Codex lui furent confiés. Vladislaus fit alors construire un manoir aux pièces mobiles, dans lequel il est impossible de se déplacer sans suivre des schémas précis. La duchesse et plusieurs serviteurs choisirent de l’accompagner. Depuis des siècles, le Codex y est farouchement protégé des cauchemars. Personne ne sait ce qu’ils sont devenus… Sont-ils encore en vie ?
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

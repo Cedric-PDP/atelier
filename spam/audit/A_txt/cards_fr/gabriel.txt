@@ -1,0 +1,178 @@
+Gabriel : carte SPAM Nature épique, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Gabriel A Voir la carte en grand
+Gabriel
+3 Cocon
+6 Chenille
+9 Papillon
+1000/1000
+9
+Standard
+Gabriel
+3 Cocon
+6 Chenille
+9 Papillon
+1000/1000
+9
+Élémentaire
+Gabriel
+3 Cocon
+6 Chenille
+9 Papillon
+1000/1000
+9
+FA
+Gabriel
+3 Cocon
+6 Chenille
+9 Papillon
+1000/1000
+9
+## Gabriel
+A Nature · Épique · Standard
+1 000 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Terrain terrestre Bonus (+7) Terre.
+- Talent 2 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+- Talent 3 Tox chanceux Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Trois champs de compétence
+- Cocon compétence · Recharge 3 Attaque 20 Nature
+Bonus Nature (+5)
+[Usage Limité 1/1]
+3
+- Chenille compétence · Recharge 6 Attaque 40 Nature
+Bonus Nature (+10)
+[Usage Limité 1/1]
+6
+- Papillon compétence · Recharge 9 Attaque 60 Nature
+Bonus Nature (+15)
+[Usage Limité 1/1]
+9
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Nature Épique #195
+# Gabriel
+Génération
+1 000 Points de vie
+9 Spamtons / tour
+#14 Classement / 127
+S Sans talent · #7
+Attaque
+59
+Génération
+89
+Défense
+70
+Soutien
+1
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Terrain terrestre 2 Vitalité des Âmes 3 Tox chanceux
+Jouer cette carte 8 decks
+Partager
+### Compétences
+#### Cocon
+3 tours
+Attaque 20 Nature
+Bonus Nature (+5)
+[Usage Limité 1/1]
+Précision 100% Critique 1%
+#### Chenille
+6 tours
+Attaque 40 Nature
+Bonus Nature (+10)
+[Usage Limité 1/1]
+Précision 100% Critique 1%
+#### Papillon
+9 tours
+Attaque 60 Nature
+Bonus Nature (+15)
+[Usage Limité 1/1]
+Précision 100% Critique 1%
+### Talents
+#### Terrain terrestre
+Bonus (+7) Terre.
+Δ 269,5 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 408,3 · Score théorique
+#### Tox chanceux
+Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Δ 10 · Score théorique
+## Ses meilleurs decks
+8 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Lame de la forêt
+56,7 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+51,2 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Zombie Floral + Gabriel
+50,2 % Indice relatif 9 tours Élimination estimée 39 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Gabriel + Esprit Nature
+50 % Indice relatif 9 tours Élimination estimée 31 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Zombie Floral + Princesse Meridia
+42,4 % Indice relatif 10,5 tours Élimination estimée 29 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Esprit de la Faune + L'Épine d'Amour
+41,9 % Indice relatif 11,9 tours Élimination estimée 33 / tour Spamtons
+Les autres decks (2)
+- D Zombie Floral + Gabriel avec Roi Nature · Lame de la forêt Collection avancée · 35,4%
+- D Gabriel + Dragon Ciel avec Verdelune · Lame de la forêt Collection avancée · 32,7%
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Pixarch · Vaeloria
+### Derrière la carte
+Les livres d’histoire racontent cette légende sous de multiples formes : celle d’Aurelia, l’Éternelle qui donna naissance aux Pixarch, et de sa première création, Gabriel. Tous deux lièrent leur destin à celui de leur peuple. Gabriel était un grand inventeur et le meilleur ami de l’Oniyx Lumisaros. Ensemble, ils créèrent de nombreuses innovations qui transformèrent le quotidien, ainsi que des artefacts légendaires. La disparition des grands êtres ailés lors de l’Aurore d’Aurelia est déplorée, même si certains survécurent à l’événement, comme le Roi de la Nature ou Keria.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 056 Nature
+Commune · Attaque
+### Lisa, la Dragonnière
+800 PV
+C # 158 Nature
+Commune · Polyvalent
+### Lapin-Plume
+850 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

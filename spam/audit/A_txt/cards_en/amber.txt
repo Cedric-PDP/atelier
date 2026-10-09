@@ -1,0 +1,140 @@
+Amber: SPAM Fire rare card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Amber A View the full card
+Amber
+3 Amber Mist
+3 Misty Blaze
+750/750
+10
+Standard
+Amber
+3 Amber Mist
+3 Misty Blaze
+750/750
+10
+Elemental
+Amber
+3 Amber Mist
+3 Misty Blaze
+750/750
+10
+FA
+Amber
+3 Amber Mist
+3 Misty Blaze
+750/750
+10
+## Amber
+A Fire · Rare · Standard
+750 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Roulette All of this card's abilities gain Echo (10%).
+Recommended
+- Talent 2 Inversion Start the game with the "Inversion" passive
+- Talent 3 F/W-Shield Fire resistance (+25%)
+Water resistance (+25%)
+Three ability slots
+- Amber Mist ability · Cooldown 3 Deal 10 Fire damage
+Deal 20 Water damage Water bonus (+4)
+3
+- Misty Blaze ability · Cooldown 3 Deal 10 Water damage
+Deal 20 Fire damage Fire bonus (+4)
+3
+- Free slot Open to a shop Tox
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Fire Rare #025
+# Amber
+Generation
+750 Health points
+10 Spamtons / turn
+#27 Rank / 127
+B No talent · #43
+Attack
+55
+Generation
+87
+Defense
+43
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Roulette 2 Inversion 3 F/W-Shield
+Build with this card 1 deck
+Share
+### Abilities
+#### Amber Mist
+3 turns
+Deal 10 Fire damage
+Deal 20 Water damage Water bonus (+4)
+Accuracy 100% Critical 1%
+#### Misty Blaze
+3 turns
+Deal 10 Water damage
+Deal 20 Fire damage Fire bonus (+4)
+Accuracy 100% Critical 1%
+### Talents
+#### Roulette
+Recommended
+All of this card's abilities gain Echo (10%).
+Δ 87.5 · Theoretical score
+#### Inversion
+Start the game with the "Inversion" passive
+Δ -414.2 · Theoretical score
+#### F/W-Shield
+Fire resistance (+25%)
+Water resistance (+25%)
+Δ 29.1 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+C Advanced collection
+Midrange ·
+### Medusine Thorn + The Companion of Spirits
+51.7 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+### Resistances
+13% Fire
+13% Water
+7% Earth
+7% Nature
+7% Shadow
+7% Light
+Art · Nordvinter
+### Beyond the card
+The great military fortress-city of Dragheïr is a dam between the ocean and the Blazing Sea, a place of exchange between Eltherians and Dhöggeïrs, and a city rich in symbols with a noble martial culture. Amber is one of those symbols: a female warrior who masters Water and Fire and represents the alliance between Hadeïr and Nordvinter. Legend says that one day, two heroes who oppose each other in every way will manage to free Hadeïr from the flames. They will purify Mount Vulcan and free the mother of the Dhöggeïr. Amber is a charismatic, combative figure.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+C # 027 Water
+Rare · Versatile
+### Nimbus Seahorse
+900 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

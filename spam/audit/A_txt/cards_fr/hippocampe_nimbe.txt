@@ -1,0 +1,135 @@
+Hippocampe Nimbé : carte SPAM Eau rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Hippocampe Nimbé C Voir la carte en grand
+Hippocampe Nimbé
+5 Supra-rayon-humide
+Reset
+Brut
+900/900
+4
+Standard
+Hippocampe Nimbé
+5 Supra-rayon-humide
+Reset
+Brut
+900/900
+4
+Élémentaire
+Hippocampe Nimbé
+5 Supra-rayon-humide
+Reset
+Brut
+900/900
+4
+FA
+Hippocampe Nimbé
+5 Supra-rayon-humide
+Reset
+Brut
+900/900
+4
+## Hippocampe Nimbé
+C Eau · Rare · Standard
+900 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 2 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+- Talent 3 Imprécision Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+Trois champs de compétence
+- Supra-rayon-humide compétence · Recharge 5 Attaque 25 Eau 25 Lumière 25 Nature
+Bonus Eau (+3) Lumière (+3) Nature (+3)
+5
+- Reset tox · Épique Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+- Brut tox · Rare Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé
+Illustration par ElisaMalan
+Fiche complète
+Illustration par ElisaMalan
+Eau Rare #027
+# Hippocampe Nimbé
+Polyvalent
+900 Points de vie
+4 Spamtons / tour
+#85 Classement / 127
+C Sans talent · #84
+Attaque
+32
+Génération
+72
+Défense
+67
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Départ multi 2 Incisif 3 Imprécision
+Jouer cette carte
+Partager
+### Compétences
+#### Supra-rayon-humide
+5 tours
+Attaque 25 Eau 25 Lumière 25 Nature
+Bonus Eau (+3) Lumière (+3) Nature (+3)
+Précision 100% Critique 1%
+### Tox de départ
+#### Reset
+Épique
+Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+#### Brut
+Rare
+Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé
+### Talents
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 531,5 · Score théorique
+#### Incisif
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 289,8 · Score théorique
+#### Imprécision
+Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+Δ 19,2 · Score théorique
+### Résistances
+20% Feu
+20% Eau
+5% Terre
+5% Nature
+5% Ombre
+20% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Le long des côtes méridionales de la nouvelle Vaeloria s’étendent les eaux limpides de la Mer Nimbée. L’Hippocampe Nimbé est l’animal emblématique de cette vaste étendue. Les mâles portent les œufs fécondés, tandis que les femelles les protègent à l’aide de leurs nageoires dorsales. Les Alphilans se servent de ces animaux pour signaler leur présence à la surface de l’eau. Ignorer cet avertissement risque de provoquer un conflit dangereux et inutile.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

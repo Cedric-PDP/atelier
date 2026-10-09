@@ -1,0 +1,161 @@
+Aldrin & Gorakar : carte SPAM Nature légendaire, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Aldrin & Gorakar C Voir la carte en grand
+Aldrin & Gorakar
+5 Valse des nuages
+1 Souffle critique
+2 Piétinement
+700/700
+4
+Standard
+Aldrin & Gorakar
+5 Valse des nuages
+1 Souffle critique
+2 Piétinement
+700/700
+4
+Élémentaire
+Aldrin & Gorakar
+5 Valse des nuages
+1 Souffle critique
+2 Piétinement
+700/700
+4
+FA
+Aldrin & Gorakar
+5 Valse des nuages
+1 Souffle critique
+2 Piétinement
+700/700
+4
+## Aldrin & Gorakar
+C Nature · Légendaire · Standard
+700 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Terrain enflammé Bonus (+7) Feu.
+- Talent 2 Éternisé La carte est insensible aux Éternités.
+- Talent 3 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Conseillé
+Trois champs de compétence
+- Valse des nuages compétence · Recharge 5 Attaque 90 Nature
+[Usage Limité 1/1]
+5
+- Souffle critique compétence · Recharge 1 Attaque 7 Nature
+Attaque 7 Nature
+1
+- Piétinement compétence · Recharge 2 Attaque 10 Terre
+Attaque 10 Nature
+2
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Nature Légendaire #045
+# Aldrin & Gorakar
+Attaque
+700 Points de vie
+4 Spamtons / tour
+#78 Classement / 127
+C Sans talent · #70
+Attaque
+82
+Génération
+0
+Défense
+37
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Terrain enflammé 2 Éternisé 3 Reset ultime
+Jouer cette carte 4 decks
+Partager
+### Compétences
+#### Valse des nuages
+5 tours
+Attaque 90 Nature
+[Usage Limité 1/1]
+Précision 100% Critique 5%
+#### Souffle critique
+1 tour
+Attaque 7 Nature
+Attaque 7 Nature
+Précision 100% Critique 50%
+#### Piétinement
+2 tours
+Attaque 10 Terre
+Attaque 10 Nature
+Précision 100% Critique 1%
+### Talents
+#### Terrain enflammé
+Bonus (+7) Feu.
+Δ 3,3 · Score théorique
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+#### Reset ultime
+Conseillé
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 17,7 · Score théorique
+## Ses meilleurs decks
+4 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Aggro / burst ·
+### Dragon Ciel + Aldrin & Gorakar
+60,5 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+52,4 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Maîtresse des Teintes + Cerf des Couleurs Funèbres
+49,3 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Aldrin & Gorakar + L'Épine d'Amour
+42 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+### Résistances
+10% Feu
+11% Eau
+12% Terre
+-10% Nature
+9% Ombre
+11% Lumière
+Eltherien · Lumethia
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Lumethia, non loin de la Pierre du Sage sacrée, une famille noble avide d’aventure donna naissance à Gorakar. Après avoir longtemps rêvé de grands voyages, ses membres entendirent enfin l’appel du pèlerinage. Appelé vers le centre des Îles Esseulées, le jeune aventurier partit rejoindre Aldrin. Ses parents, conduits vers une autre destination, sollicitèrent alors le plus érudit des Tokscyth. À bord de sa machine volante révolutionnaire, ils partirent à la rencontre d’un puissant Dhöggeïr au cœur des îles volantes.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+B # 249 Nature
+Épique · Génération
+### Roi Nature
+1000 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,175 @@
+Souverain des Flammes : carte SPAM Feu légendaire, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Souverain des Flammes A Voir la carte en grand
+Souverain des Flammes
+1 Braise chaude
+4 Chaleur divine
+2 Embrasement
+900/900
+7
+Standard
+Souverain des Flammes
+1 Braise chaude
+4 Chaleur divine
+2 Embrasement
+900/900
+7
+Élémentaire
+Souverain des Flammes
+1 Braise chaude
+4 Chaleur divine
+2 Embrasement
+900/900
+7
+FA
+Souverain des Flammes
+1 Braise chaude
+4 Chaleur divine
+2 Embrasement
+900/900
+7
+## Souverain des Flammes
+A Feu · Légendaire · Standard
+900 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Critique Bonus critique (+10 %)
+- Talent 2 Éternisé La carte est insensible aux Éternités.
+- Talent 3 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Conseillé
+Trois champs de compétence
+- Braise chaude compétence · Recharge 1 Attaque 10 Feu
+Résistance Feu (+3)
+1
+- Chaleur divine compétence · Recharge 4 Cible toutes les cartes adverses
+Attaque 20 Feu
+4
+- Embrasement compétence · Recharge 2 Cible toutes les cartes alliées
+Critique (+5%)
+2
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Feu Légendaire #043
+# Souverain des Flammes
+Attaque Défense
+900 Points de vie
+7 Spamtons / tour
+#13 Classement / 127
+A Sans talent · #11
+Attaque
+80
+Génération
+0
+Défense
+88
+Soutien
+81
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Critique 2 Éternisé 3 Blindage Partagé
+Jouer cette carte 11 decks
+Partager
+### Compétences
+#### Braise chaude
+1 tour
+Attaque 10 Feu
+Résistance Feu (+3)
+Précision 100% Critique 1%
+#### Chaleur divine
+4 tours
+Cible toutes les cartes adverses
+Attaque 20 Feu
+Précision 100% Critique 1%
+#### Embrasement
+2 tours
+Cible toutes les cartes alliées
+Critique (+5%)
+Précision 100% Critique 0%
+### Talents
+#### Critique
+Bonus critique (+10 %)
+Δ 67,6 · Score théorique
+#### Éternisé
+La carte est insensible aux Éternités.
+Δ 7 · Score théorique
+#### Blindage Partagé
+Conseillé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 417,4 · Score théorique
+## Ses meilleurs decks
+11 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Flammes
+91,2 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+A Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Paguroniyx
+86,2 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+B Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+73,2 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + L'Inventeur
+65,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+C Collection avancée
+Aggro / burst ·
+### Souverain des Flammes + Scorch
+60,9 % Indice relatif 7 tours Élimination estimée 24 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+60,5 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+Les autres decks (5)
+- C Souverain des Flammes + Apprentie de la Mort avec Wibs l'Enflammé · Scorch Collection avancée · 58,7%
+- C Souverain des Flammes + Wibs l'Enflammé avec Apprentie de la Mort · Keria Collection avancée · 54,6%
+- D Souverain des Flammes + Wibs l'Enflammé avec Keria · Squall Collection avancée · 49,5%
+- D Souverain des Flammes + Wibs l'Enflammé avec Apprentie de la Mort · Sorcière Pyrokinétique Collection avancée · 45,7%
+- D Souverain des Flammes + Wibs l'Enflammé avec Roi Feu · Squall Collection avancée · 37%
+### Résistances
+20% Feu
+15% Eau
+15% Terre
+15% Nature
+16% Ombre
+16% Lumière
+Calamité · Abysses
+### Derrière la carte
+Les créateurs du monde n’ont pas de forme que l’on puisse décrire ; ils sont probablement des instruments divins. Leurs apparitions historiques aux traits apocalyptiques leur valurent toutefois le nom de Calamités. Une fois leur œuvre, aussi créatrice que destructrice, achevée, les Calamités se retirèrent dans l’Abysse. Elles y demeurent endormies et séparent le monde matériel du monde onirique. Le Souverain des Flammes est une créature gigantesque à la forme serpentine, semblable aux Ignatius. En Hadeïr, les Eltheriens le tiennent pour responsable de la corruption du Feu.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+A # 134 Feu
+Commune · Attaque
+### Wibs l'Enflammé
+550 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

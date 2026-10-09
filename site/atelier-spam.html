@@ -213,6 +213,11 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .saved-item .meta { font-size: .85rem; color: var(--muted); }
 .best { font-weight: 700; color: var(--good); }
 details summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; }
+.news-notes { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; max-width: 90ch; }
+.chg-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.chg-list > li { border-top: 1px solid var(--line); padding: 10px 0; display: grid; grid-template-columns: minmax(150px, 230px) minmax(0, 1fr); gap: 4px 16px; }
+@media (max-width: 600px) { .chg-list > li { grid-template-columns: minmax(0, 1fr); } }
+.chg-list ul { margin: 0; padding-left: 18px; font-size: .88rem; color: var(--ink-2); display: flex; flex-direction: column; gap: 3px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 
@@ -223,12 +228,13 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; }
         <h1>Atelier de decks <b>SPAM</b></h1>
         <span class="muted small" id="subtitle">Chargement des données…</span>
       </div>
-      <span class="muted small">Modèle du wiki communautaire, jeu v1.20, sans talents</span>
+      <span class="muted small" id="model-line">Modèle du wiki communautaire, sans talents</span>
     </div>
     <nav class="tabs" role="tablist" aria-label="Vues">
       <button class="tab" role="tab" id="tab-atelier" aria-selected="true" aria-controls="view-atelier">Atelier</button>
       <button class="tab" role="tab" id="tab-top" aria-selected="false" aria-controls="view-top">Meilleurs decks</button>
       <button class="tab" role="tab" id="tab-mine" aria-selected="false" aria-controls="view-mine">Mes decks <span class="count" id="saved-count"></span></button>
+      <button class="tab" role="tab" id="tab-news" aria-selected="false" aria-controls="view-news" hidden>Nouveautés</button>
     </nav>
   </div>
 </header>
@@ -303,6 +309,10 @@ details summary { cursor: pointer; color: var(--ink-2); font-size: .88rem; }
         <div id="compare"><p class="empty">Coche au moins 2 decks dans la liste pour les comparer.</p></div>
       </div>
     </div>
+  </section>
+
+  <section id="view-news" role="tabpanel" aria-labelledby="tab-news" hidden>
+    <div class="stack" style="margin-top:16px" id="news"></div>
   </section>
 </main>
 <div class="tip" id="tip" hidden></div>
@@ -420,6 +430,8 @@ async function load() {
   const nOwn = S.data.cards.filter(c => c.own).length;
   $('subtitle').textContent = `${nOwn} cartes dans ta collection · ${fmt(S.ownSorted.length)} decks possibles`;
   $('coll-count').textContent = `${nOwn} cartes + ${S.data.cards.length - nOwn} à obtenir`;
+  $('model-line').textContent = `Modèle du wiki communautaire, jeu v${S.data.meta.game}, sans talents`;
+  if (S.data.changelog) { $('tab-news').hidden = false; $('tab-news').textContent = `Nouveautés ${S.data.changelog.to}`; }
   initFilters(); initTop();
   const saved = store.get('spam-current-deck', null);
   const startNames = ['Lame de la forêt', 'Chimère Brasse-chair', "L'Œil des montagnes", 'Keria'];
@@ -516,6 +528,7 @@ function verdictHtml(r) {
       <div class="big">${fmt(s1)}<small>points</small></div>
       <p class="line">Mieux que <b>${pct1(gp)}</b> des decks du jeu${one ? ` (1 deck sur ${fmt(one)})` : ''}</p>
       <p class="line">${rank ? `<b>${rank === 1 ? '1er' : fmt(rank) + 'e'}</b> sur ${fmt(S.ownSorted.length)} decks de ta collection` : 'Contient des cartes que tu n\'as pas encore'}</p>
+      ${prevLine(r)}
       <div><span class="badge tier">Tier ${t.tier}</span> <span class="small muted">indice ${pct0(100 * t.idx)} entre un deck moyen (0 %) et le meilleur deck du jeu (100 %)</span></div>
       <div class="tierbar" aria-hidden="true"><i style="width:${Math.min(100, 100 * t.idx)}%"></i>${tk}</div>
     </div>
@@ -765,6 +778,7 @@ function renderSaved() {
     </div>`;
   }).join('');
   renderCompare();
+  if (S.view === 'news') renderNews();
 }
 $('saved-list').addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
@@ -807,16 +821,73 @@ function renderCompare() {
   bindTips(el);
 }
 
+/* ---------- What changed with the last game version (data.changelog, built by build_changelog.js) ---------- */
+const ord = k => k === 1 ? '1er' : fmt(k) + 'e';
+const sgn = x => (x > 0 ? '+' : x < 0 ? '−' : '') + nf1.format(Math.abs(x)) + ' %';
+const deltaHtml = (a, b) => a == null || b == null || !a ? '' : `<span class="${b >= a ? 'delta-up' : 'delta-down'}">${sgn(100 * (b - a) / a)}</span>`;
+const prevS1 = r => S.data.changelog && S.data.changelog.prev ? S.data.changelog.prev.s1[r] : null;
+function prevLine(r) {
+  const o = prevS1(r); if (o == null) return '';
+  return `<p class="line small muted">En v${esc(S.data.changelog.from)} : ${fmt(o)} points (${deltaHtml(o, R.s1(r))})</p>`;
+}
+/* Card numbers -> names; pool cards get their element dot and the « à obtenir » badge. */
+function numsHtml(nums, names) {
+  return `<div class="deck-names">${nums.map((n, k) => { const c = S.data.cards.find(x => x.n === n);
+    return c ? `<span><span class="dot ${c.el}"></span>${esc(c.name)}${c.own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>` : `<span>${esc(names ? names[k] : '#' + n)}</span>`; }).join('')}</div>`;
+}
+function renderNews() {
+  const c = S.data && S.data.changelog; const box = $('news'); if (!c) { box.innerHTML = '<p class="empty">Pas de changement de version enregistré.</p>'; return; }
+  const v0 = esc(c.from), v1 = esc(c.to);
+  const deckRows = list => list.map(x => `<tr><td>${numsHtml(x.d, x.names)}</td><td class="n">${x.o1 != null ? fmt(x.o1) : '—'}</td><td class="n">${fmt(x.s1)}</td><td class="n">${deltaHtml(x.o1, x.s1)}</td><td class="n">${x.o0 != null ? fmt(x.o0) + ' → ' : ''}${fmt(x.s0)}</td><td class="n">${x.rankOld ? ord(x.rankOld) : '—'} → ${x.rank ? ord(x.rank) : '—'}</td>
+    <td>${(() => { const r = rowOf(x.d.map(n => S.data.cards.findIndex(k => k.n === n))); return r != null ? `<button class="btn" data-open="${R.key(r)}">Ouvrir</button>` : ''; })()}</td></tr>`).join('');
+  const deckHead = `<thead><tr><th>Cartes</th><th class="n">v${v0}</th><th class="n">v${v1}</th><th class="n">Écart</th><th class="n">Sans critiques</th><th class="n">Rang dans ta collection</th><th></th></tr></thead>`;
+  // Saved decks come live from the database, so any deck saved later still gets its before/after.
+  const saved = S.saved.map(d => ({ d, r: savedRow(d) })).filter(x => x.r != null);
+  const savedHtml = !S.savedReady ? '<p class="empty">Chargement de tes decks…</p>' : !saved.length ? '<p class="empty">Aucun deck enregistré.</p>'
+    : `<div class="scroll-x"><table><thead><tr><th>Deck</th><th class="n">v${v0}</th><th class="n">v${v1}</th><th class="n">Écart</th><th class="n">Sans critiques v${v1}</th><th class="n">Rang v${v1}</th><th></th></tr></thead><tbody>${saved.map(({ d, r }) => {
+      const o = prevS1(r); const rank = owned(r) ? collRank(R.s1(r)) : null;
+      return `<tr><td><b>${esc(d.name)}</b>${numsHtml(d.cards)}</td><td class="n">${o != null ? fmt(o) : '—'}</td><td class="n">${fmt(R.s1(r))}</td><td class="n">${deltaHtml(o, R.s1(r))}</td><td class="n">${fmt(R.s0(r))}</td><td class="n">${rank ? ord(rank) : '—'}</td><td><button class="btn" data-open="${R.key(r)}">Ouvrir</button></td></tr>`; }).join('')}</tbody></table></div>`;
+  const cardsSorted = c.cards.slice().sort((a, b) => (b.own - a.own) || (b.wish - a.wish) || a.name.localeCompare(b.name, 'fr'));
+  const imp = new Map(c.impact.map(x => [x.n, x]));
+  const cardsHtml = `<ul class="chg-list">${cardsSorted.map(x => { const i = imp.get(x.n);
+    return `<li><div><b>${esc(x.name)}</b><div class="small muted">${x.own ? '<span class="badge">Dans ta collection</span>' : x.wish ? '<span class="badge wish">Liste de souhaits</span>' : ''}${i ? ` effet ${sgn(i.d)}` : ''}</div></div><ul>${x.changes.map(t => `<li>${esc(t)}</li>`).join('')}</ul></li>`; }).join('')}</ul>`;
+  const impList = arr => `<ol class="tips">${arr.map(x => `<li>${esc(x.name)}${x.own ? ' <span class="badge">à toi</span>' : x.wish ? ' <span class="badge wish">souhait</span>' : ''} <span class="${x.d >= 0 ? 'delta-up' : 'delta-down'}">${sgn(x.d)}</span></li>`).join('')}</ol>`;
+  const mineImp = c.impact.filter(x => x.own || x.wish).sort((a, b) => b.d - a.d);
+  const metaHtml = `<div class="scroll-x"><table><thead><tr><th>Deck</th><th class="n">Rang v${v0}</th><th class="n">Rang v${v1}</th><th class="n">Score v${v0}</th><th class="n">Score v${v1}</th><th class="n">Écart</th><th class="n">Tes cartes</th></tr></thead><tbody>${c.meta.map(m =>
+    `<tr><td>${numsHtml(m.d, m.names)}${m.rankNew && !m.rankOld ? ' <span class="badge">Nouveau</span>' : !m.rankNew ? ' <span class="badge">Sorti de la liste</span>' : ''}</td><td class="n">${m.rankOld || '—'}</td><td class="n">${m.rankNew || '—'}</td><td class="n">${m.o1 != null ? fmt(m.o1) : '—'}</td><td class="n">${m.s1 != null ? fmt(m.s1) : '—'}</td><td class="n">${deltaHtml(m.o1, m.s1)}</td><td class="n">${m.owned}/4</td></tr>`).join('')}</tbody></table></div>`;
+  box.innerHTML = `
+    <div class="panel stack"><div class="sec-head"><h2>Ce qui change en v${v1}</h2><p>Comparé à la v${v0}, avec le même moteur que le reste de la page : scores sans talent et sans boutique, recalculés le ${esc(c.built)}.</p></div>
+      <ul class="news-notes">${c.notes.map(n => `<li>${esc(n)}</li>`).join('')}</ul></div>
+    <div class="panel stack"><div class="sec-head"><h2>Tes decks enregistrés</h2></div>${savedHtml}</div>
+    <div class="panel stack"><div class="sec-head"><h2>Ton top 10 en v${v1}</h2><p>Les meilleurs decks de ta collection, avec leur score et leur rang avant le patch.</p></div>
+      <div class="scroll-x"><table>${deckHead}<tbody>${deckRows(c.mine.top)}</tbody></table></div>
+      <div class="two"><div><h3>Plus fortes hausses</h3><div class="scroll-x"><table>${deckHead}<tbody>${deckRows(c.mine.risers)}</tbody></table></div></div>
+        <div><h3>Plus fortes baisses</h3><div class="scroll-x"><table>${deckHead}<tbody>${deckRows(c.mine.fallers)}</tbody></table></div></div></div>
+      <p class="small muted">Hausses et baisses parmi tes 300 meilleurs decks, avant ou après le patch.</p></div>
+    <div class="panel stack"><div class="sec-head"><h2>Cartes modifiées</h2><p>Tes cartes d'abord. « Effet » : écart moyen des decks qui jouent la carte, comparé à l'évolution de tous les decks, sur les mêmes 24 000 decks aléatoires.</p></div>${cardsHtml}
+      ${c.textOnly && c.textOnly.length ? `<details><summary>Textes reformulés sans changement dans le moteur (${c.textOnly.length} cartes)</summary><ul class="chg-list">${c.textOnly.map(x => `<li><div><b>${esc(x.name)}</b>${x.own ? ' <span class="badge">À toi</span>' : ''}</div><ul>${x.changes.map(t => `<li>${esc(t)}</li>`).join('')}</ul></li>`).join('')}</ul></details>` : ''}
+      ${c.tox.length ? `<h3>Boutique</h3><ul class="tips">${c.tox.map(x => `<li><b>${esc(x.name)}</b> : ${esc(x.changes.join(', '))}</li>`).join('')}</ul>` : ''}</div>
+    ${c.ban ? `<div class="panel stack"><div class="sec-head"><h2>Cibles de ban à surveiller</h2><p>Chaque joueur bannit un Tox de la boutique. Voici ceux dont tes ${c.ban.decks} decks de référence (top 10, top 5 sans critiques, decks sauvegardés) dépendent le plus. Le gain est un maximum : un autre Tox peut en compenser une partie.</p></div>
+      <div class="scroll-x"><table><thead><tr><th>Tox</th><th class="n">Decks qui l'achètent</th><th class="n">Gain moyen</th><th class="n">Gain max</th><th class="n">1er achat</th></tr></thead><tbody>${c.ban.list.map(x => `<tr><td><b>${esc(x.name)}</b></td><td class="n">${x.decks}/${c.ban.decks}</td><td class="n">+${nf1.format(x.avg)} %</td><td class="n">+${nf1.format(x.max)} %</td><td class="n">tour ${x.turn}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+    <div class="panel stack"><div class="sec-head"><h2>Effet du patch par carte</h2><p>Une carte peut monter sans avoir été modifiée : elle profite d'un changement ailleurs (moteur, Tox, adversaire de référence).</p></div>
+      <div class="two"><div><h3>Ce qui monte</h3>${impList(c.impact.slice(0, 8))}</div><div><h3>Ce qui baisse</h3>${impList(c.impact.slice(-8).reverse())}</div></div>
+      <details><summary>Tes cartes et ta liste de souhaits (${mineImp.length})</summary>${impList(mineImp)}</details></div>
+    <div class="panel stack"><div class="sec-head"><h2>Méta : tier list du wiki</h2><p>Les decks que les joueurs voient sur spamgame-wiki.com, en v${v0} et en v${v1}, recalculés ici avec les deux moteurs.</p></div>${metaHtml}</div>`;
+  bindOpenButtons(box);
+}
+
 /* ---------- Views ---------- */
 function setView(v) {
+  if (v === 'news' && !(S.data && S.data.changelog)) v = 'atelier';
   S.view = v;
-  [['atelier', 'tab-atelier', 'view-atelier'], ['top', 'tab-top', 'view-top'], ['mine', 'tab-mine', 'view-mine']].forEach(([k, t, p]) => { $(t).setAttribute('aria-selected', k === v); $(p).hidden = k !== v; });
+  [['atelier', 'tab-atelier', 'view-atelier'], ['top', 'tab-top', 'view-top'], ['mine', 'tab-mine', 'view-mine'], ['news', 'tab-news', 'view-news']].forEach(([k, t, p]) => { $(t).setAttribute('aria-selected', k === v); $(p).hidden = k !== v; });
   store.set('spam-view', v);
-  if (v === 'top') renderTop(); if (v === 'mine') renderSaved(); if (v === 'atelier' && S.data) renderAnalysis();
+  if (v === 'top') renderTop(); if (v === 'mine') renderSaved(); if (v === 'news') renderNews(); if (v === 'atelier' && S.data) renderAnalysis();
 }
 $('tab-atelier').addEventListener('click', () => setView('atelier'));
 $('tab-top').addEventListener('click', () => setView('top'));
 $('tab-mine').addEventListener('click', () => setView('mine'));
+$('tab-news').addEventListener('click', () => setView('news'));
 function renderAll() { renderCollection(); renderSlots(); renderAnalysis(); }
 
 renderSlotsPlaceholder();

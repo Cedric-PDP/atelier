@@ -1,0 +1,107 @@
+wrote C:\Users\cperouseduperrier\AppData\Local\Temp\claude\c--Users-cperouseduperrier-Desktop-ANALYSE-CI-CD-SCRIPTS-V2\52579210-6154-455d-a027-3e07a00fada0\scratchpad\spam\audit\v121stress\E2_121.json 199279 bytes; decks 307 offense check {"n":142644,"max":0}
+medians {"ABS_nat":{"net":61,"engine":23.3},"CDR_nat":{"net":6.8,"engine":6.8},"SUS_h32":{"net":14.3,"engine":0},"SUS_rev":{"net":11.2,"engine":-1.2},"SET_nat":{"net":18.7,"engine":18.7},"ABS_T4":{"net":84.9,"engine":44.5},"ABS_T6":{"net":69.4,"engine":30.8},"ABS_T8":{"net":57.3,"engine":20.2},"DPS_x1.5":{"net":15.7,"engine":15.7},"DPS_x2":{"net":37.9,"engine":37.9}}
+wins {"decksWithAWin":81,"of":307,"meanWinsPer18":0.37}
+{"name":"chimere","nums":[103,238,156,117],"base":8011,"worst":2893,"worstId":"ABS_nat","meanDrop":32,"ranks":{"base":20,"worst":140,"mean":171,"dpsX2":304}}
+{"name":"robA","nums":[3,103,117,238],"base":7337,"worst":3723,"worstId":"ABS_nat","meanDrop":22.5,"ranks":{"base":91,"worst":35,"mean":118,"dpsX2":200}}
+{"name":"anticrit","nums":[12,238,27,117],"base":6964,"worst":2414,"worstId":"ABS_nat","meanDrop":25.7,"ranks":{"base":194,"worst":217,"mean":237,"dpsX2":292}}
+{"name":"zerocrit","nums":[102,116,12,69],"base":6315,"worst":1266,"worstId":"ABS_nat","meanDrop":35.7,"ranks":{"base":303,"worst":305,"mean":307,"dpsX2":300}}
+{"name":"robB","nums":[69,160,227,238],"base":6064,"worst":1594,"worstId":"ABS_nat","meanDrop":27.5,"ranks":{"base":307,"worst":298,"mean":305,"dpsX2":244}}
+{"name":"r3","nums":[69,102,117,238],"base":6886,"worst":3184,"worstId":"ABS_nat","meanDrop":22.6,"ranks":{"base":210,"worst":97,"mean":197,"dpsX2":301}}
+{"name":"r4","nums":[2,69,102,238],"base":6285,"worst":3413,"worstId":"ABS_nat","meanDrop":20.5,"ranks":{"base":304,"worst":61,"mean":270,"dpsX2":299}}
+{"name":"e2b","nums":[69,102,156,227],"base":6235,"worst":3275,"worstId":"ABS_nat","meanDrop":23.2,"ranks":{"base":305,"worst":82,"mean":293,"dpsX2":303}}
+{"name":"e1b","nums":[3,103,156,238],"base":6676,"worst":2558,"worstId":"ABS_nat","meanDrop":29.6,"ranks":{"base":301,"worst":186,"mean":299,"dpsX2":296}}
+{"name":"e1c","nums":[12,103,117,238],"base":6206,"worst":2762,"worstId":"ABS_nat","meanDrop":23.5,"ranks":{"base":306,"worst":163,"mean":296,"dpsX2":298}}
+{"name":"nochim","nums":[2,69,82,102],"base":6369,"worst":1387,"worstId":"ABS_nat","meanDrop":32.6,"ranks":{"base":302,"worst":302,"mean":306,"dpsX2":293}}
+{"name":"hip","nums":[27,117,156,238],"base":7787,"worst":3034,"worstId":"ABS_nat","meanDrop":29.2,"ranks":{"base":33,"worst":113,"mean":152,"dpsX2":307}}
+{"name":"dc1","nums":[180,103,117,238],"base":8033,"worst":4340,"worstId":"ABS_nat","meanDrop":20.9,"ranks":{"base":19,"worst":5,"mean":19,"dpsX2":9}}
+{"name":"dc2","nums":[180,3,117,238],"base":8619,"worst":4916,"worstId":"ABS_nat","meanDrop":14.1,"ranks":{"base":3,"worst":1,"mean":1,"dpsX2":38}}
+{"name":"dc3","nums":[180,69,102,238],"base":6976,"worst":3270,"worstId":"ABS_nat","meanDrop":20.5,"ranks":{"base":190,"worst":83,"mean":145,"dpsX2":133}}
+{"name":"dc4","nums":[180,238,156,117],"base":8343,"worst":4802,"worstId":"ABS_nat","meanDrop":19.3,"ranks":{"base":9,"worst":2,"mean":9,"dpsX2":186}}
+{"name":"dc5","nums":[180,3,103,238],"base":8644,"worst":3591,"worstId":"ABS_nat","meanDrop":22,"ranks":{"base":2,"worst":45,"mean":7,"dpsX2":4}}
+{"name":"dc6","nums":[180,69,117,238],"base":7922,"worst":3718,"worstId":"ABS_nat","meanDrop":18.1,"ranks":{"base":27,"worst":36,"mean":17,"dpsX2":125}}
+--- byWorst
+1 {"nums":[180,3,117,238],"name":"dc2","base":8619,"worst":4916,"worstId":"ABS_nat","meanDrop":14.1,"mean":7408,"dpsX2":5887,"crit":6.4}
+2 {"nums":[180,238,156,117],"name":"dc4","base":8343,"worst":4802,"worstId":"ABS_nat","meanDrop":19.3,"mean":6736,"dpsX2":4164,"crit":23.8}
+3 {"nums":[117,180,227,238],"base":8093,"worst":4622,"worstId":"ABS_nat","meanDrop":15.3,"mean":6853,"dpsX2":5339,"crit":16.4}
+4 {"nums":[153,180,227,238],"base":8313,"worst":4341,"worstId":"ABS_nat","meanDrop":16.6,"mean":6931,"dpsX2":4604,"crit":14.6}
+5 {"nums":[180,103,117,238],"name":"dc1","base":8033,"worst":4340,"worstId":"ABS_nat","meanDrop":20.9,"mean":6351,"dpsX2":6898,"crit":22.9}
+6 {"nums":[69,180,227,238],"base":7003,"worst":4291,"worstId":"ABS_nat","meanDrop":15.9,"mean":5887,"dpsX2":5412,"crit":0.2}
+7 {"nums":[3,153,180,238],"base":8406,"worst":4282,"worstId":"ABS_nat","meanDrop":16.6,"mean":7007,"dpsX2":4644,"crit":6.5}
+8 {"nums":[2,180,227,238],"base":7355,"worst":4281,"worstId":"ABS_nat","meanDrop":15.4,"mean":6221,"dpsX2":5410,"crit":6}
+9 {"nums":[3,6,180,227],"base":7808,"worst":4166,"worstId":"ABS_nat","meanDrop":15.9,"mean":6570,"dpsX2":5346,"crit":11.1}
+10 {"nums":[12,117,180,238],"base":7972,"worst":4164,"worstId":"ABS_nat","meanDrop":20.8,"mean":6310,"dpsX2":7096,"crit":17.9}
+11 {"nums":[6,180,227,238],"base":7234,"worst":4131,"worstId":"ABS_nat","meanDrop":14.7,"mean":6171,"dpsX2":5323,"crit":6.4}
+12 {"nums":[3,103,117,180],"base":8934,"worst":4126,"worstId":"ABS_nat","meanDrop":20.9,"mean":7066,"dpsX2":8103,"crit":48.4}
+--- byMean
+1 {"nums":[180,3,117,238],"name":"dc2","base":8619,"worst":4916,"worstId":"ABS_nat","meanDrop":14.1,"mean":7408,"dpsX2":5887,"crit":6.4}
+2 {"nums":[3,103,117,180],"base":8934,"worst":4126,"worstId":"ABS_nat","meanDrop":20.9,"mean":7066,"dpsX2":8103,"crit":48.4}
+3 {"nums":[3,153,180,238],"base":8406,"worst":4282,"worstId":"ABS_nat","meanDrop":16.6,"mean":7007,"dpsX2":4644,"crit":6.5}
+4 {"nums":[153,180,227,238],"base":8313,"worst":4341,"worstId":"ABS_nat","meanDrop":16.6,"mean":6931,"dpsX2":4604,"crit":14.6}
+5 {"nums":[117,180,227,238],"base":8093,"worst":4622,"worstId":"ABS_nat","meanDrop":15.3,"mean":6853,"dpsX2":5339,"crit":16.4}
+6 {"nums":[117,153,180,238],"base":8532,"worst":3413,"worstId":"ABS_nat","meanDrop":19.9,"mean":6830,"dpsX2":4193,"crit":23.9}
+7 {"nums":[180,3,103,238],"name":"dc5","base":8644,"worst":3591,"worstId":"ABS_nat","meanDrop":22,"mean":6744,"dpsX2":7502,"crit":27.9}
+8 {"nums":[69,153,180,238],"base":8458,"worst":3963,"worstId":"ABS_nat","meanDrop":20.3,"mean":6744,"dpsX2":4157,"crit":4.4}
+9 {"nums":[180,238,156,117],"name":"dc4","base":8343,"worst":4802,"worstId":"ABS_nat","meanDrop":19.3,"mean":6736,"dpsX2":4164,"crit":23.8}
+10 {"nums":[3,27,180,238],"base":8120,"worst":3833,"worstId":"ABS_nat","meanDrop":18.3,"mean":6634,"dpsX2":3796,"crit":0.5}
+11 {"nums":[2,117,180,238],"base":8037,"worst":4113,"worstId":"ABS_nat","meanDrop":17.7,"mean":6615,"dpsX2":4859,"crit":12.4}
+12 {"nums":[12,153,180,238],"base":7948,"worst":3800,"worstId":"ABS_nat","meanDrop":17.2,"mean":6581,"dpsX2":6539,"crit":-3.7}
+--- byMeanDrop base>=7000
+1 {"nums":[180,3,117,238],"name":"dc2","base":8619,"worst":4916,"worstId":"ABS_nat","meanDrop":14.1,"mean":7408,"dpsX2":5887,"crit":6.4}
+2 {"nums":[6,180,227,238],"base":7234,"worst":4131,"worstId":"ABS_nat","meanDrop":14.7,"mean":6171,"dpsX2":5323,"crit":6.4}
+3 {"nums":[117,180,227,238],"base":8093,"worst":4622,"worstId":"ABS_nat","meanDrop":15.3,"mean":6853,"dpsX2":5339,"crit":16.4}
+4 {"nums":[2,180,227,238],"base":7355,"worst":4281,"worstId":"ABS_nat","meanDrop":15.4,"mean":6221,"dpsX2":5410,"crit":6}
+5 {"nums":[5,180,227,238],"base":7047,"worst":3945,"worstId":"ABS_nat","meanDrop":15.4,"mean":5959,"dpsX2":5248,"crit":6.6}
+6 {"nums":[1,153,180,227],"base":7118,"worst":3086,"worstId":"ABS_nat","meanDrop":15.5,"mean":6012,"dpsX2":4376,"crit":9.4}
+7 {"nums":[3,30,180,238],"base":7733,"worst":3885,"worstId":"ABS_nat","meanDrop":15.7,"mean":6518,"dpsX2":5103,"crit":0.6}
+8 {"nums":[6,153,180,227],"base":7196,"worst":3268,"worstId":"ABS_nat","meanDrop":15.8,"mean":6059,"dpsX2":4469,"crit":9.7}
+9 {"nums":[5,153,180,227],"base":7041,"worst":3017,"worstId":"ABS_nat","meanDrop":15.8,"mean":5931,"dpsX2":4325,"crit":14.6}
+10 {"nums":[2,153,180,227],"base":7041,"worst":3017,"worstId":"ABS_nat","meanDrop":15.8,"mean":5931,"dpsX2":4325,"crit":14.6}
+--- byDpsX2
+1 {"nums":[30,103,156,180],"base":7148,"worst":1220,"worstId":"ABS_nat","meanDrop":31.4,"mean":4903,"dpsX2":8156,"crit":51.4}
+2 {"nums":[3,103,117,180],"base":8934,"worst":4126,"worstId":"ABS_nat","meanDrop":20.9,"mean":7066,"dpsX2":8103,"crit":48.4}
+3 {"nums":[3,103,156,180],"base":8582,"worst":2494,"worstId":"ABS_nat","meanDrop":27.8,"mean":6193,"dpsX2":8059,"crit":33.4}
+4 {"nums":[180,3,103,238],"name":"dc5","base":8644,"worst":3591,"worstId":"ABS_nat","meanDrop":22,"mean":6744,"dpsX2":7502,"crit":27.9}
+5 {"nums":[3,12,180,238],"base":7225,"worst":3341,"worstId":"ABS_nat","meanDrop":18.4,"mean":5897,"dpsX2":7256,"crit":0.7}
+6 {"nums":[12,117,180,238],"base":7972,"worst":4164,"worstId":"ABS_nat","meanDrop":20.8,"mean":6310,"dpsX2":7096,"crit":17.9}
+7 {"nums":[3,116,180,238],"base":7313,"worst":2817,"worstId":"ABS_nat","meanDrop":19.4,"mean":5892,"dpsX2":6994,"crit":0.1}
+8 {"nums":[3,12,180,227],"base":6974,"worst":3150,"worstId":"ABS_nat","meanDrop":20,"mean":5576,"dpsX2":6915,"crit":12.2}
+9 {"nums":[180,103,117,238],"name":"dc1","base":8033,"worst":4340,"worstId":"ABS_nat","meanDrop":20.9,"mean":6351,"dpsX2":6898,"crit":22.9}
+10 {"nums":[3,30,103,180],"base":7543,"worst":1935,"worstId":"ABS_nat","meanDrop":26.2,"mean":5570,"dpsX2":6895,"crit":33.3}
+--- corr
+crit        {"ABS_nat":0.39,"CDR_nat":0.35,"SUS_h32":-0.12,"SUS_rev":-0.04,"SET_nat":0.49,"ABS_T4":0.23,"DPS_x2":-0.08,"meanDrop":0.44,"base":0.17}
+depProxy    {"ABS_nat":0.36,"CDR_nat":0.07,"SUS_h32":0.06,"SUS_rev":-0.01,"SET_nat":0.57,"ABS_T4":0.74,"DPS_x2":0.11,"meanDrop":0.45,"base":-0.03}
+hpSum       {"ABS_nat":0.47,"CDR_nat":0.02,"SUS_h32":-0.1,"SUS_rev":0.14,"SET_nat":0.06,"ABS_T4":0.07,"DPS_x2":0,"meanDrop":0.24,"base":-0.03}
+hpMin       {"ABS_nat":0.22,"CDR_nat":0.05,"SUS_h32":-0.13,"SUS_rev":-0.14,"SET_nat":0.24,"ABS_T4":0.01,"DPS_x2":-0.27,"meanDrop":0.15,"base":0.16}
+aoe         {"ABS_nat":-0.66,"CDR_nat":-0.19,"SUS_h32":0.06,"SUS_rev":-0.27,"SET_nat":-0.5,"ABS_T4":-0.54,"DPS_x2":-0.16,"meanDrop":-0.62,"base":0.18}
+team        {"ABS_nat":0.33,"CDR_nat":0.32,"SUS_h32":-0.23,"SUS_rev":-0.14,"SET_nat":0.63,"ABS_T4":0.14,"DPS_x2":-0.01,"meanDrop":0.42,"base":0.18}
+longCd      {"ABS_nat":0.3,"CDR_nat":0.1,"SUS_h32":-0.06,"SUS_rev":-0.1,"SET_nat":0.21,"ABS_T4":0.19,"DPS_x2":-0.23,"meanDrop":0.21,"base":0.03}
+heal        {"ABS_nat":0.03,"CDR_nat":0.38,"SUS_h32":-0.2,"SUS_rev":-0.04,"SET_nat":0.35,"ABS_T4":-0.31,"DPS_x2":0.09,"meanDrop":0.21,"base":0.09}
+chimere     {"ABS_nat":-0.33,"CDR_nat":0.16,"SUS_h32":-0.15,"SUS_rev":-0.12,"SET_nat":-0.04,"ABS_T4":-0.62,"DPS_x2":0.16,"meanDrop":-0.18,"base":0.2}
+dragonCiel  {"ABS_nat":-0.09,"CDR_nat":-0.46,"SUS_h32":0.01,"SUS_rev":-0.27,"SET_nat":-0.25,"ABS_T4":-0.04,"DPS_x2":-0.46,"meanDrop":-0.34,"base":0.18}
+--- cards
+{"n":180,"name":"Dragon Ciel","hp":700,"decks":281,"absorbedDropNet":56.7,"absorbedDropEng":23.8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":19,"rayonnementDropAsTarget":3,"worstAbsorbTargetShareNet":58,"worstAbsorbTargetShareEng":86.1}
+{"n":238,"name":"Chimère Brasse-chair","hp":525,"decks":137,"absorbedDropNet":38,"absorbedDropEng":14.6,"deadBeforeAbsorbPct":3.2,"corne25DropAsTarget":10.9,"rayonnementDropAsTarget":6.2,"worstAbsorbTargetShareNet":6.6,"worstAbsorbTargetShareEng":22.6}
+{"n":153,"name":"L'Inventeur","hp":1000,"decks":99,"absorbedDropNet":61.2,"absorbedDropEng":14.5,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":2.1,"rayonnementDropAsTarget":1.4,"worstAbsorbTargetShareNet":64.6,"worstAbsorbTargetShareEng":14.1}
+{"n":3,"name":"Esprit Nature","hp":500,"decks":96,"absorbedDropNet":23.2,"absorbedDropEng":7,"deadBeforeAbsorbPct":29.2,"corne25DropAsTarget":3.5,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":1}
+{"n":227,"name":"Chouette Polychrome","hp":500,"decks":81,"absorbedDropNet":14.2,"absorbedDropEng":4.8,"deadBeforeAbsorbPct":61.4,"corne25DropAsTarget":0.5,"rayonnementDropAsTarget":3.5,"worstAbsorbTargetShareNet":1.2,"worstAbsorbTargetShareEng":1.2}
+{"n":117,"name":"Keria","hp":550,"decks":69,"absorbedDropNet":30.4,"absorbedDropEng":7.6,"deadBeforeAbsorbPct":8.6,"corne25DropAsTarget":1.5,"rayonnementDropAsTarget":5.3,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":103,"name":"Lame de la forêt","hp":650,"decks":54,"absorbedDropNet":39.8,"absorbedDropEng":10.2,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":2.3,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":1.9,"worstAbsorbTargetShareEng":1.9}
+{"n":156,"name":"L'Œil des montagnes","hp":600,"decks":42,"absorbedDropNet":38.5,"absorbedDropEng":13.1,"deadBeforeAbsorbPct":9.3,"corne25DropAsTarget":8.2,"rayonnementDropAsTarget":1.7,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":69,"name":"Scorch, les Lézards Ignés","hp":350,"decks":39,"absorbedDropNet":0,"absorbedDropEng":0,"deadBeforeAbsorbPct":99.9,"corne25DropAsTarget":0,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":27,"name":"Hippocampe Nimbé","hp":900,"decks":35,"absorbedDropNet":60.1,"absorbedDropEng":17.8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":7.6,"rayonnementDropAsTarget":6.1,"worstAbsorbTargetShareNet":62.9,"worstAbsorbTargetShareEng":8.6}
+{"n":12,"name":"Hibernatus","hp":750,"decks":34,"absorbedDropNet":43.9,"absorbedDropEng":8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":2.8,"rayonnementDropAsTarget":6.2,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":160,"name":"Sanglier Doré","hp":900,"decks":31,"absorbedDropNet":63.7,"absorbedDropEng":13.8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":4,"rayonnementDropAsTarget":5.1,"worstAbsorbTargetShareNet":83.9,"worstAbsorbTargetShareEng":22.6}
+{"n":30,"name":"Naissance d'Aldrin","hp":700,"decks":28,"absorbedDropNet":43.8,"absorbedDropEng":11.6,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":-17.7,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":6,"name":"Esprit Lumière","hp":500,"decks":27,"absorbedDropNet":3,"absorbedDropEng":0.7,"deadBeforeAbsorbPct":90.9,"corne25DropAsTarget":-0.2,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":102,"name":"Murmures du Corail Noir","hp":400,"decks":26,"absorbedDropNet":9.1,"absorbedDropEng":3.5,"deadBeforeAbsorbPct":73.1,"corne25DropAsTarget":3.7,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":2,"name":"Esprit Eau","hp":500,"decks":25,"absorbedDropNet":4.3,"absorbedDropEng":1.1,"deadBeforeAbsorbPct":88,"corne25DropAsTarget":0.8,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":82,"name":"Baleine Farceuse","hp":1000,"decks":20,"absorbedDropNet":61.4,"absorbedDropEng":12.9,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":3.1,"rayonnementDropAsTarget":11.1,"worstAbsorbTargetShareNet":60,"worstAbsorbTargetShareEng":25}
+{"n":1,"name":"Esprit Feu","hp":500,"decks":19,"absorbedDropNet":1.1,"absorbedDropEng":0.3,"deadBeforeAbsorbPct":97.1,"corne25DropAsTarget":0,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":116,"name":"Prisonnière de la Machine","hp":1000,"decks":18,"absorbedDropNet":49.1,"absorbedDropEng":7.9,"deadBeforeAbsorbPct":15.1,"corne25DropAsTarget":3.4,"rayonnementDropAsTarget":1.7,"worstAbsorbTargetShareNet":11.1,"worstAbsorbTargetShareEng":5.6}
+{"n":4,"name":"Esprit Terre","hp":500,"decks":15,"absorbedDropNet":10.2,"absorbedDropEng":3.7,"deadBeforeAbsorbPct":73.7,"corne25DropAsTarget":2.7,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":5,"name":"Esprit Ombre","hp":500,"decks":12,"absorbedDropNet":0,"absorbedDropEng":0,"deadBeforeAbsorbPct":100,"corne25DropAsTarget":0,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":251,"name":"Roi Ombre","hp":1000,"decks":10,"absorbedDropNet":62.7,"absorbedDropEng":14.8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":7.7,"rayonnementDropAsTarget":1.5,"worstAbsorbTargetShareNet":30,"worstAbsorbTargetShareEng":0}
+{"n":33,"name":"Nakyel","hp":500,"decks":9,"absorbedDropNet":0,"absorbedDropEng":0,"deadBeforeAbsorbPct":100,"corne25DropAsTarget":0,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}
+{"n":243,"name":"Vivy","hp":1000,"decks":8,"absorbedDropNet":60.4,"absorbedDropEng":12.6,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":3.7,"rayonnementDropAsTarget":6.5,"worstAbsorbTargetShareNet":25,"worstAbsorbTargetShareEng":0}
+{"n":158,"name":"Lapin-Plume","hp":850,"decks":7,"absorbedDropNet":54,"absorbedDropEng":13.8,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":5.6,"rayonnementDropAsTarget":0,"worstAbsorbTargetShareNet":28.6,"worstAbsorbTargetShareEng":14.3}
+{"n":259,"name":"Dragon de la Cité Infernale","hp":550,"decks":6,"absorbedDropNet":36.3,"absorbedDropEng":9.6,"deadBeforeAbsorbPct":0,"corne25DropAsTarget":11.2,"rayonnementDropAsTarget":1.4,"worstAbsorbTargetShareNet":0,"worstAbsorbTargetShareEng":0}

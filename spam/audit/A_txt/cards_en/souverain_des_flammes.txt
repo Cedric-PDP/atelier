@@ -1,0 +1,169 @@
+Sovereign of Flames: SPAM Fire legendary card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Sovereign of Flames A View the full card
+Sovereign of Flames
+1 Roaring Ember
+4 Divine Warmth
+2 Ignition
+900/900
+7
+Standard
+Sovereign of Flames
+1 Roaring Ember
+4 Divine Warmth
+2 Ignition
+900/900
+7
+Elemental
+Sovereign of Flames
+1 Roaring Ember
+4 Divine Warmth
+2 Ignition
+900/900
+7
+FA
+Sovereign of Flames
+1 Roaring Ember
+4 Divine Warmth
+2 Ignition
+900/900
+7
+## Sovereign of Flames
+A Fire · Legendary · Standard
+900 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Critical Critical bonus (+10%).
+- Talent 2 Eternalized The card is immune to Eternity effects
+- Talent 3 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+Recommended
+Three ability slots
+- Roaring Ember ability · Cooldown 1 Deal 10 Fire damage Fire resistance (+3)
+1
+- Divine Warmth ability · Cooldown 4 Deal 20 Fire damage to all enemy cards
+4
+- Ignition ability · Cooldown 2 Critical (+5%) on all allied cards
+2
+Illustration by Saki
+Full card details
+Illustration by Saki
+Fire Legendary #043
+# Sovereign of Flames
+Attack Defense
+900 Health points
+7 Spamtons / turn
+#13 Rank / 127
+A No talent · #11
+Attack
+80
+Generation
+0
+Defense
+88
+Support
+81
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Critical 2 Eternalized 3 Shared Shield
+Build with this card 11 decks
+Share
+### Abilities
+#### Roaring Ember
+1 turn
+Deal 10 Fire damage Fire resistance (+3)
+Accuracy 100% Critical 1%
+#### Divine Warmth
+4 turns
+Deal 20 Fire damage to all enemy cards
+Accuracy 100% Critical 1%
+#### Ignition
+2 turns
+Critical (+5%) on all allied cards
+Accuracy 100% Critical 0%
+### Talents
+#### Critical
+Critical bonus (+10%).
+Δ 67.6 · Theoretical score
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Shared Shield
+Recommended
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 417.4 · Theoretical score
+## Its best decks
+11 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of Flames
+91.2 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+A Advanced collection
+Aggro / burst ·
+### Aleera + Paguroniyx
+86.2 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+B Advanced collection
+Aggro / burst ·
+### Aleera + Apprentice of Death
+73.2 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + The Inventor
+65.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Advanced collection
+Aggro / burst ·
+### Sovereign of Flames + Scorch
+60.9 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + Apprentice of Death
+60.5 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+The other decks (5)
+- C Sovereign of Flames + Apprentice of Death with Wibs the Blazing · Scorch Advanced collection · 58.7%
+- C Sovereign of Flames + Wibs the Blazing with Apprentice of Death · Keria Advanced collection · 54.6%
+- D Sovereign of Flames + Wibs the Blazing with Keria · Squall Advanced collection · 49.5%
+- D Sovereign of Flames + Wibs the Blazing with Apprentice of Death · Pyrokinetic Sorceress Advanced collection · 45.7%
+- D Sovereign of Flames + Wibs the Blazing with Fire King · Squall Advanced collection · 37%
+### Resistances
+20% Fire
+15% Water
+15% Earth
+15% Nature
+16% Shadow
+16% Light
+Calamity · Abyss
+### Beyond the card
+The world's creators have no describable form; they are probably divine tools. But their historical appearance with apocalyptic features earned them the name of Calamities. Their work — as much creative as destructive — complete, the Calamities reside in the Abyss where, dormant, they separate the material world from the dream world. The Sovereign of Flames is a gigantic creature of serpentine form, similar to the Ignatius. In Hadeïr, the Eltherians hold it responsible for the Fire's corruption.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+A # 134 Fire
+Common · Attack
+### Wibs the Blazing
+550 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

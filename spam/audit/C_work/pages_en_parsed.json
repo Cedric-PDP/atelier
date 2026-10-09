@@ -1,0 +1,5187 @@
+{
+ "aeltheria_mere_primordiale": {
+  "abilities": [
+   {
+    "name": "Elemental Breath",
+    "cd": 1,
+    "text": "Deal 30 damage in its element",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Cradle of Elements",
+    "cd": 1,
+    "text": "Bonus (1 to 5) in its element",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Mythic",
+    "cd": 1,
+    "text": "Randomly changes your card's element",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": true,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 100.1 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 15.1 · Theoretical score"
+   },
+   {
+    "name": "Corrosion",
+    "rec": false,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 58 · Theoretical score"
+   }
+  ]
+ },
+ "aidan": {
+  "abilities": [
+   {
+    "name": "Luckster",
+    "cd": 1,
+    "text": "Bonus (+10) in a random element",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Pay-torch",
+    "cd": 3,
+    "text": "[Cost 10 Fire] | Deal 30 damage in a random element",
+    "prec": 100,
+    "crit": 5
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vanish",
+    "rarity": "Legendary",
+    "text": "Removes the target's last passive"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Counter",
+    "rec": false,
+    "text": "Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 90 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "aldrin_gorakar": {
+  "abilities": [
+   {
+    "name": "Waltz of Clouds",
+    "cd": 5,
+    "text": "Deal 90 Nature damage | [Limited Use 1/1]",
+    "prec": 100,
+    "crit": 5
+   },
+   {
+    "name": "Critical Breath",
+    "cd": 1,
+    "text": "Deal 7 Nature damage | Deal 7 Nature damage",
+    "prec": 100,
+    "crit": 50
+   },
+   {
+    "name": "Earthstamp",
+    "cd": 2,
+    "text": "Deal 10 Earth damage | Deal 10 Nature damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Blazing Field",
+    "rec": false,
+    "text": "Fire bonus (+7).",
+    "delta": "Δ 2.5 · Theoretical score"
+   },
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": true,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 11.7 · Theoretical score"
+   }
+  ]
+ },
+ "aleera_mange_cauchemars": {
+  "abilities": [
+   {
+    "name": "Word-Chew",
+    "cd": 2,
+    "text": "Deal 5 Shadow damage to all enemy cards + 50% of the caster's missing HP",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   },
+   {
+    "name": "Shadowheart",
+    "rarity": "Common",
+    "text": "Shadow bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "F/W-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ -363.5 · Theoretical score"
+   },
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ -363.5 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": true,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 953.7 · Theoretical score"
+   }
+  ]
+ },
+ "amber": {
+  "abilities": [
+   {
+    "name": "Amber Mist",
+    "cd": 3,
+    "text": "Deal 10 Fire damage | Deal 20 Water damage Water bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Misty Blaze",
+    "cd": 3,
+    "text": "Deal 10 Water damage | Deal 20 Fire damage Fire bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": true,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 84.9 · Theoretical score"
+   },
+   {
+    "name": "Inversion",
+    "rec": false,
+    "text": "Start the game with the \"Inversion\" passive",
+    "delta": "Δ -38.1 · Theoretical score"
+   },
+   {
+    "name": "F/W-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 29.1 · Theoretical score"
+   }
+  ]
+ },
+ "ameru": {
+  "abilities": [
+   {
+    "name": "Smoky Dream",
+    "cd": 3,
+    "text": "Deal 15 Light, 15 Water and 15 Shadow damage Light bonus (+4) & Water bonus (+4) & Shadow bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Smoke",
+    "rarity": "Rare",
+    "text": "Enshrouds the allied field after using an attack or a heal"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Corrosion",
+    "rec": false,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 51 · Theoretical score"
+   },
+   {
+    "name": "Hardening",
+    "rec": false,
+    "text": "Increases this card’s elemental resistances by (+15%).",
+    "delta": "Δ 62.2 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 275.9 · Theoretical score"
+   }
+  ]
+ },
+ "apprentie_de_la_mort": {
+  "abilities": [
+   {
+    "name": "Nocturnal Burn",
+    "cd": 3,
+    "text": "Deal 15 Fire and 15 Shadow damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Graveyard",
+    "rarity": "Common",
+    "text": "Increases all your elemental bonuses by (+3) when a card dies"
+   },
+   {
+    "name": "Avenger",
+    "rarity": "Epic",
+    "text": "This card recovers all its attacks whenever a card it didn't kill dies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Revitalization",
+    "rec": false,
+    "text": "5% chance each turn to restore this card’s HP to maximum.",
+    "delta": "Δ 10.5 · Theoretical score"
+   },
+   {
+    "name": "Hardening",
+    "rec": true,
+    "text": "Increases this card’s elemental resistances by (+15%).",
+    "delta": "Δ 65.8 · Theoretical score"
+   },
+   {
+    "name": "Doomed Hour",
+    "rec": false,
+    "text": "Applies Eternity to all enemy cards when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "apprenti_evocateur": {
+  "abilities": [
+   {
+    "name": "Little Spell",
+    "cd": 3,
+    "text": "Deal [40 to 60] Water damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Mystery",
+    "rarity": "Rare",
+    "text": "Starts the game with a random passive"
+   },
+   {
+    "name": "Mystery",
+    "rarity": "Rare",
+    "text": "Starts the game with a random passive"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ -235.6 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 423.2 · Theoretical score"
+   }
+  ]
+ },
+ "aristocrate_nebulaire": {
+  "abilities": [
+   {
+    "name": "Cosmic Masquerade",
+    "cd": 2,
+    "text": "Choice | Accuracy (+20%) | ---------- or ---------- | Critical (+20%)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": true,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 586.5 · Theoretical score"
+   },
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   }
+  ]
+ },
+ "artisan_des_heures": {
+  "abilities": [
+   {
+    "name": "Slowing",
+    "cd": 4,
+    "text": "Apply Eternity",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Flash",
+    "cd": 3,
+    "text": "Deal 35 Light damage | [Freeze]",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Reckless",
+    "rec": true,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ 52.1 · Theoretical score"
+   },
+   {
+    "name": "Debt",
+    "rec": false,
+    "text": "Both players start with a debt of (-20) Spamton.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 15.1 · Theoretical score"
+   }
+  ]
+ },
+ "ashtarae_lycaria": {
+  "abilities": [
+   {
+    "name": "Melody No. 1",
+    "cd": 1,
+    "text": "Deal [15 to 25] Shadow damage | Critical (+2%) on all allied cards",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Melody No. 2",
+    "cd": 1,
+    "text": "Heal [15 to 25] Shadow | Accuracy (+2%) on all allied cards",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Resurrection",
+    "cd": 8,
+    "text": "Revives the last destroyed ally with half of its max HP",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 20.5 · Theoretical score"
+   },
+   {
+    "name": "Life-8",
+    "rec": true,
+    "text": "The card's HP and max HP are doubled at the start of turn 8",
+    "delta": "Δ 368.4 · Theoretical score"
+   },
+   {
+    "name": "Increasing Error",
+    "rec": false,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 28.3 · Theoretical score"
+   }
+  ]
+ },
+ "astry": {
+  "abilities": [
+   {
+    "name": "Misunderstood Genius",
+    "cd": 4,
+    "text": "Bonus (+35) in a random element",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Chiaroscuro",
+    "cd": 3,
+    "text": "Deal 40 Shadow damage | Heal the caster 40 Light",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Mystery",
+    "rec": true,
+    "text": "Start the game with the \"Mystery\" passive",
+    "delta": "Δ 72.3 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ -186.3 · Theoretical score"
+   },
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ -117.8 · Theoretical score"
+   }
+  ]
+ },
+ "baleine_farceuse": {
+  "abilities": [
+   {
+    "name": "Hydroluck",
+    "cd": 3,
+    "text": "Deal 35 Water damage | Echo (50%)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Hahahahahaha",
+    "cd": 6,
+    "text": "Caster's critical (+50%)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 73.7 · Theoretical score"
+   },
+   {
+    "name": "Hardening",
+    "rec": false,
+    "text": "Increases this card’s elemental resistances by (+15%).",
+    "delta": "Δ 69.1 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 218.9 · Theoretical score"
+   }
+  ]
+ },
+ "blancheur_aquatique": {
+  "abilities": [
+   {
+    "name": "Swallowater",
+    "cd": 5,
+    "text": "Deal 100 Water damage | Heal the caster 100 Water Water bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "F/E-Shield",
+    "rec": true,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 40.8 · Theoretical score"
+   },
+   {
+    "name": "F/W-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 40.8 · Theoretical score"
+   },
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 40.8 · Theoretical score"
+   }
+  ]
+ },
+ "blaze": {
+  "abilities": [
+   {
+    "name": "Amber Mist",
+    "cd": 3,
+    "text": "Deal 10 Fire damage | Deal 20 Water damage Water bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Misty Blaze",
+    "cd": 3,
+    "text": "Deal 10 Water damage | Deal 20 Fire damage Fire bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": true,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 84.9 · Theoretical score"
+   },
+   {
+    "name": "Inversion",
+    "rec": false,
+    "text": "Start the game with the \"Inversion\" passive",
+    "delta": "Δ -38.1 · Theoretical score"
+   },
+   {
+    "name": "F/W-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 29.1 · Theoretical score"
+   }
+  ]
+ },
+ "bleu_mange_cailloux": {
+  "abilities": [
+   {
+    "name": "Rock-Swallower",
+    "cd": 3,
+    "text": "Choice | Deal 30 Earth damage to all enemy cards | ---------- or ---------- | Deal [10 to 70] Earth damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Phoenix",
+    "rarity": "Common",
+    "text": "When destroyed, this card returns to life with 25% of its max HP."
+   },
+   {
+    "name": "Single use",
+    "rarity": "Reset",
+    "text": "Epic"
+   },
+   {
+    "name": "When you kill an ENEMY card with one of your attacks, that attack remains available",
+    "rarity": "Talents",
+    "text": "Inscribed"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Inscribed",
+    "rec": false,
+    "text": "The card is immune to Vanish effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Strike",
+    "rec": false,
+    "text": "Increases critical damage by (+1).",
+    "delta": "Δ 4 · Theoretical score"
+   },
+   {
+    "name": "Phoenix Feather",
+    "rec": true,
+    "text": "50% chance to regain the Phoenix passive once used.",
+    "delta": "Δ 161 · Theoretical score"
+   }
+  ]
+ },
+ "catimimi": {
+  "abilities": [
+   {
+    "name": "Darkflight Slap",
+    "cd": 2,
+    "text": "[Cost 2 Fire & 2 Shadow & 2 Nature] | Deal 15 Shadow, 15 Nature and 15 Fire damage to all enemy cards | Shadow bonus (+3) & Nature bonus (+3) & Fire bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Legacy",
+    "rec": true,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 15 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "catixy": {
+  "abilities": [
+   {
+    "name": "Mewling",
+    "cd": 1,
+    "text": "Deal [4 to 16] Shadow damage | Caster's critical (+5%)",
+    "prec": 100,
+    "crit": 25
+   },
+   {
+    "name": "Sinister Charm",
+    "cd": 2,
+    "text": "Critical (+25%) on a random allied card",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Extortion",
+    "rec": true,
+    "text": "Each time this card deals damage, the opponent loses 5 Spamton.",
+    "delta": "Δ 11.5 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 10.6 · Theoretical score"
+   },
+   {
+    "name": "Inversion",
+    "rec": false,
+    "text": "Start the game with the \"Inversion\" passive",
+    "delta": "Δ -265.5 · Theoretical score"
+   }
+  ]
+ },
+ "cerf_des_couleurs_funebres": {
+  "abilities": [
+   {
+    "name": "Elemental Drain",
+    "cd": 1,
+    "text": "Deal 6 Earth damage Random | Deal 6 Nature damage | Deal 6 Fire damage | Deal 6 Water damage | Deal 6 Light damage | Deal 6 Shadow damage | Vampirism",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Multiplier",
+    "rarity": "Rare",
+    "text": "Elemental bonuses are doubled for this card's damage and heals"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Cash Out",
+    "rec": false,
+    "text": "At the start of the game, gain (+25) Spamton.",
+    "delta": "Δ 7.5 · Theoretical score"
+   },
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 1,370.5 · Theoretical score"
+   },
+   {
+    "name": "Soul Armor",
+    "rec": false,
+    "text": "Whenever a card on the field dies, this card's elemental resistances increase by (+10%)",
+    "delta": "Δ 127 · Theoretical score"
+   }
+  ]
+ },
+ "chimere_brasse_chair": {
+  "abilities": [
+   {
+    "name": "Arctic Gallop",
+    "cd": 2,
+    "text": "Deal 10 Water and 10 Nature damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vampirism",
+    "rarity": "Epic",
+    "text": "Regenerates 75% of the damage dealt to the target"
+   },
+   {
+    "name": "Mimicry",
+    "rarity": "Rare",
+    "text": "Each time the opponent generates one or more elements, you generate 1 of the same type."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Critical",
+    "rec": true,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 24.6 · Theoretical score"
+   },
+   {
+    "name": "Strike",
+    "rec": false,
+    "text": "Increases critical damage by (+1).",
+    "delta": "Δ 4 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "chouette_polychrome": {
+  "abilities": [
+   {
+    "name": "Dance of Feathers",
+    "cd": 2,
+    "text": "Deal 30 Nature damage to random cards on the field | Deal 30 Fire damage | Deal 30 Shadow damage | Deal 30 Light damage | Deal 30 Water damage | Deal 30 Earth damage | Apply Temporality to the targeted card on critical hit",
+    "prec": 100,
+    "crit": 50
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "360 Turn",
+    "rec": false,
+    "text": "Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+    "delta": "Δ -290.7 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": true,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ 57.8 · Theoretical score"
+   },
+   {
+    "name": "Last Breath",
+    "rec": false,
+    "text": "Applies Temporality to all your cards when this card dies",
+    "delta": "Δ 33.4 · Theoretical score"
+   }
+  ]
+ },
+ "codex_des_maux_ancestraux": {
+  "abilities": [
+   {
+    "name": "Dark Script",
+    "cd": 1,
+    "text": "Shadow bonus (+1). Base bonus increases by 1",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Immunity",
+    "rarity": "Epic",
+    "text": "The card is immune to all effects from enemy cards"
+   }
+  ],
+  "talents": [
+   {
+    "name": "F/W-Shield",
+    "rec": true,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 37.7 · Theoretical score"
+   },
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 37.7 · Theoretical score"
+   },
+   {
+    "name": "F/E-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 37.7 · Theoretical score"
+   }
+  ]
+ },
+ "codex_des_sorts_lumineux": {
+  "abilities": [
+   {
+    "name": "Luminescent Script",
+    "cd": 1,
+    "text": "Light bonus (+1). Base bonus increases by 1",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Immunity",
+    "rarity": "Epic",
+    "text": "The card is immune to all effects from enemy cards"
+   }
+  ],
+  "talents": [
+   {
+    "name": "F/W-Shield",
+    "rec": true,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 35.4 · Theoretical score"
+   },
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 35.4 · Theoretical score"
+   },
+   {
+    "name": "F/E-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 35.4 · Theoretical score"
+   }
+  ]
+ },
+ "commando_gerz": {
+  "abilities": [
+   {
+    "name": "Cigarillos",
+    "cd": 2,
+    "text": "Earth bonus (+3) Light bonus (+3)",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Final Delight",
+    "cd": 10,
+    "text": "Deal 100 Earth damage Random | Deal 100 Light damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Berserk",
+    "rarity": "Rare",
+    "text": "All your cards' damage and heals are increased by 25%"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Inaccuracy",
+    "rec": false,
+    "text": "At the start of the game, a random enemy card loses (-20%) accuracy.",
+    "delta": "Δ 19.2 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 25.5 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 483.4 · Theoretical score"
+   }
+  ]
+ },
+ "cornu_mythologique": {
+  "abilities": [
+   {
+    "name": "Horn 25",
+    "cd": 7,
+    "text": "The target is set to 25% of its max HP",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Horn 75",
+    "cd": 5,
+    "text": "The target is set to 75% of its max HP",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "360 Turn",
+    "rec": false,
+    "text": "Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Breath-8",
+    "rec": true,
+    "text": "Gains the Elemental Breath attack at the start of turn 8",
+    "delta": "Δ 281.2 · Theoretical score"
+   }
+  ]
+ },
+ "crapaud_des_etoiles": {
+  "abilities": [
+   {
+    "name": "Eye for an Eye",
+    "cd": 2,
+    "text": "Deal 40 Light damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   },
+   {
+    "name": "Backlash",
+    "rarity": "Common",
+    "text": "Takes 50% of the damage dealt to the target"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Aquatic Field",
+    "rec": false,
+    "text": "Water bonus (+7).",
+    "delta": "Δ 308.4 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 368.4 · Theoretical score"
+   }
+  ]
+ },
+ "croqueur_de_fruits_verdoyant": {
+  "abilities": [
+   {
+    "name": "Torrent",
+    "cd": 1,
+    "text": "Deal [20 to 30] Earth damage Random",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Earthheart",
+    "rarity": "Common",
+    "text": "Earth bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Epic AOE",
+    "rec": true,
+    "text": "Start the game with the \"AoE\" passive.",
+    "delta": "Δ 632 · Theoretical score"
+   },
+   {
+    "name": "Lucky Tox",
+    "rec": false,
+    "text": "Each Tox rarity has exactly a 25% chance to be obtained.",
+    "delta": "Δ 10 · Theoretical score"
+   },
+   {
+    "name": "Breath-8",
+    "rec": false,
+    "text": "Gains the Elemental Breath attack at the start of turn 8",
+    "delta": "Δ 298.8 · Theoretical score"
+   }
+  ]
+ },
+ "devoreur_de_faune": {
+  "abilities": [
+   {
+    "name": "Ball of Hatred",
+    "cd": 1,
+    "text": "Deal 5 Shadow damage | Base damage increases by 5",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vampirism",
+    "rarity": "Common",
+    "text": "Regenerates 25% of the damage dealt to the target"
+   }
+  ],
+  "talents": [
+   {
+    "name": "L-Shield",
+    "rec": true,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 28.6 · Theoretical score"
+   },
+   {
+    "name": "F/E-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 28.6 · Theoretical score"
+   },
+   {
+    "name": "F/W-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 28.6 · Theoretical score"
+   }
+  ]
+ },
+ "dragonnet_des_lumieres": {
+  "abilities": [
+   {
+    "name": "Peaceful Glow",
+    "cd": 1,
+    "text": "Deal 20 Light damage | Steals (+1) Light",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Thoughtful Aid",
+    "cd": 3,
+    "text": "Apply Temporality",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "New Rich",
+    "rec": false,
+    "text": "Starts the game with either the Spamland or Lucky passive, chosen at random.",
+    "delta": "Δ 5.1 · Theoretical score"
+   },
+   {
+    "name": "New Life",
+    "rec": true,
+    "text": "Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+    "delta": "Δ 113.4 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "dragon_ciel": {
+  "abilities": [
+   {
+    "name": "Dazzling Breath",
+    "cd": 4,
+    "text": "Deal 40 Light damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Tornado Breath",
+    "cd": 4,
+    "text": "Deal 40 Nature damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Avenger",
+    "rarity": "Epic",
+    "text": "This card recovers all its attacks whenever a card it didn't kill dies."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Last Breath",
+    "rec": false,
+    "text": "Applies Temporality to all your cards when this card dies",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 4.3 · Theoretical score"
+   },
+   {
+    "name": "Fortune",
+    "rec": true,
+    "text": "Increases this card's Spamton generation by (+2) per turn",
+    "delta": "Δ 33 · Theoretical score"
+   }
+  ]
+ },
+ "dragon_de_la_cite_infernale": {
+  "abilities": [
+   {
+    "name": "Draconic Duality",
+    "cd": 2,
+    "text": "Choice | Deal [10 to 40] Fire damage | ---------- or ---------- | Deal [10 to 40] Shadow damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Freeze",
+    "rarity": "Epic",
+    "text": "When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Fire Heart",
+    "rec": false,
+    "text": "Start the game with the \"Fireheart\" passive",
+    "delta": "Δ 216.9 · Theoretical score"
+   },
+   {
+    "name": "Shadow Heart",
+    "rec": true,
+    "text": "Start the game with the \"Shadowheart\" passive",
+    "delta": "Δ 467.6 · Theoretical score"
+   },
+   {
+    "name": "Immunity-8",
+    "rec": false,
+    "text": "Applies the \"Immunity\" passive on turn 8",
+    "delta": "Δ 17.3 · Theoretical score"
+   }
+  ]
+ },
+ "dragosaure_celeste": {
+  "abilities": [
+   {
+    "name": "Howl Strike",
+    "cd": 3,
+    "text": "Choice | Deal [10 to 100] Nature damage | [Freeze] | ---------- or ---------- | Deal [45 to 65] Earth damage | [Freeze]",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Reset",
+    "rarity": "Epic",
+    "text": "When you kill an ENEMY card with one of your attacks, that attack remains available"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Rare AOE",
+    "rec": true,
+    "text": "Start the game with the \"AoE\" passive.",
+    "delta": "Δ 551.1 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 316.5 · Theoretical score"
+   },
+   {
+    "name": "Soul Armor",
+    "rec": false,
+    "text": "Whenever a card on the field dies, this card's elemental resistances increase by (+10%)",
+    "delta": "Δ 183.6 · Theoretical score"
+   }
+  ]
+ },
+ "eclat_du_renard_blanc": {
+  "abilities": [
+   {
+    "name": "Doubleshadow",
+    "cd": 2,
+    "text": "Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Darkaqua",
+    "cd": 4,
+    "text": "Choice | Deal 20 Water damage | [Freeze] | ---------- or ---------- | Deal 20 Shadow damage | Apply Eternity",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Strike",
+    "rec": false,
+    "text": "Increases critical damage by (+1).",
+    "delta": "Δ 5.6 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": true,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 58.9 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ -412.1 · Theoretical score"
+   }
+  ]
+ },
+ "ephial": {
+  "abilities": [
+   {
+    "name": "Astral Tackle",
+    "cd": 4,
+    "text": "Deal 20 Light damage | Deal 20 Shadow damage | Deal 20 Nature damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Planet Heal",
+    "cd": 5,
+    "text": "Heal 70 Light to all allied cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Reset",
+    "rarity": "Epic",
+    "text": "When you kill an ENEMY card with one of your attacks, that attack remains available"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 606.6 · Theoretical score"
+   },
+   {
+    "name": "Focus",
+    "rec": false,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 514 · Theoretical score"
+   },
+   {
+    "name": "Lucky Tox",
+    "rec": false,
+    "text": "Each Tox rarity has exactly a 25% chance to be obtained.",
+    "delta": "Δ 10 · Theoretical score"
+   }
+  ]
+ },
+ "epine_medusine": {
+  "abilities": [
+   {
+    "name": "Inflamed Toxin",
+    "cd": 1,
+    "text": "Deal [1 to 35] Water damage | Heal [1 to 35] Fire",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Multiplier",
+    "rarity": "Rare",
+    "text": "Elemental bonuses are doubled for this card's damage and heals"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Aquatic Field",
+    "rec": true,
+    "text": "Water bonus (+7).",
+    "delta": "Δ 955.6 · Theoretical score"
+   },
+   {
+    "name": "Blazing Field",
+    "rec": false,
+    "text": "Fire bonus (+7).",
+    "delta": "Δ 324.3 · Theoretical score"
+   },
+   {
+    "name": "Weaken",
+    "rec": false,
+    "text": "Reduces the elemental resistances of all enemy cards by (-1%) per turn",
+    "delta": "Δ 278.6 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_de_la_faune": {
+  "abilities": [
+   {
+    "name": "Call of the Forest",
+    "cd": 4,
+    "text": "Deal 30 Nature damage to all enemy cards Nature bonus (+4)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Solar heal",
+    "cd": 3,
+    "text": "Heal 60 Light | [Freeze]",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Immunity-8",
+    "rec": false,
+    "text": "Applies the \"Immunity\" passive on turn 8",
+    "delta": "Δ 25.2 · Theoretical score"
+   },
+   {
+    "name": "Erosion",
+    "rec": true,
+    "text": "Start the game with the \"Erosion\" passive",
+    "delta": "Δ 60 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_eau": {
+  "abilities": [
+   {
+    "name": "Aquatic Breath",
+    "cd": 1,
+    "text": "Deal 10 Water damage Water bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Wave",
+    "cd": 1,
+    "text": "Water bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Water Heart",
+    "rec": false,
+    "text": "Start the game with the \"Waterheart\" passive",
+    "delta": "Δ 233.3 · Theoretical score"
+   },
+   {
+    "name": "Blazing Field",
+    "rec": false,
+    "text": "Fire bonus (+7).",
+    "delta": "Δ 11.3 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 388.8 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_feu": {
+  "abilities": [
+   {
+    "name": "Breath of Flames",
+    "cd": 1,
+    "text": "Deal 10 Fire damage Fire bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Blaze",
+    "cd": 1,
+    "text": "Fire bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Fire Heart",
+    "rec": false,
+    "text": "Start the game with the \"Fireheart\" passive",
+    "delta": "Δ 45.9 · Theoretical score"
+   },
+   {
+    "name": "Aquatic Field",
+    "rec": true,
+    "text": "Water bonus (+7).",
+    "delta": "Δ 317.4 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": false,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 204.8 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_lumiere": {
+  "abilities": [
+   {
+    "name": "Radiant Whisper",
+    "cd": 1,
+    "text": "Deal 10 Light damage Light bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Screen",
+    "cd": 1,
+    "text": "Light bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Light Heart",
+    "rec": false,
+    "text": "Start the game with the \"Lightheart\" passive",
+    "delta": "Δ 106.1 · Theoretical score"
+   },
+   {
+    "name": "Shadow Field",
+    "rec": true,
+    "text": "Shadow bonus (+7).",
+    "delta": "Δ 439.5 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": false,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 203.3 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_nature": {
+  "abilities": [
+   {
+    "name": "Breeze Whisper",
+    "cd": 1,
+    "text": "Deal 10 Nature damage Nature bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Windmill",
+    "cd": 1,
+    "text": "Nature bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Nature Heart",
+    "rec": false,
+    "text": "Start the game with the \"Natureheart\" passive",
+    "delta": "Δ 78.5 · Theoretical score"
+   },
+   {
+    "name": "Earth Field",
+    "rec": false,
+    "text": "Earth bonus (+7).",
+    "delta": "Δ 394.3 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 487.2 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_ombre": {
+  "abilities": [
+   {
+    "name": "Shadow Breath",
+    "cd": 1,
+    "text": "Deal 10 Shadow damage Shadow bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Umbral",
+    "cd": 1,
+    "text": "Shadow bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Shadow Heart",
+    "rec": false,
+    "text": "Start the game with the \"Shadowheart\" passive",
+    "delta": "Δ 75.9 · Theoretical score"
+   },
+   {
+    "name": "Luminous Field",
+    "rec": false,
+    "text": "Light bonus (+7).",
+    "delta": "Δ 278 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 815.2 · Theoretical score"
+   }
+  ]
+ },
+ "esprit_terre": {
+  "abilities": [
+   {
+    "name": "Earthen Breath",
+    "cd": 1,
+    "text": "Deal 10 Earth damage Earth bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Rampart",
+    "cd": 1,
+    "text": "Earth bonus (+1)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Earth Heart",
+    "rec": false,
+    "text": "Start the game with the \"Earthheart\" passive",
+    "delta": "Δ 136.4 · Theoretical score"
+   },
+   {
+    "name": "Natural Field",
+    "rec": false,
+    "text": "Nature bonus (+7).",
+    "delta": "Δ 26.3 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 436 · Theoretical score"
+   }
+  ]
+ },
+ "faerylia": {
+  "abilities": [
+   {
+    "name": "Global Aim",
+    "cd": 9,
+    "text": "Apply Eternity to all enemy cards",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Offensive Aim",
+    "cd": 2,
+    "text": "Deal 15 Shadow damage | Eternity on critical hit",
+    "prec": 100,
+    "crit": 50
+   },
+   {
+    "name": "Multiboost",
+    "cd": 3,
+    "text": "Bonus (+3) in every element",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Revitalization",
+    "rec": false,
+    "text": "5% chance each turn to restore this card’s HP to maximum.",
+    "delta": "Δ 17.8 · Theoretical score"
+   },
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 655.2 · Theoretical score"
+   },
+   {
+    "name": "Doomed Hour",
+    "rec": false,
+    "text": "Applies Eternity to all enemy cards when this card is killed.",
+    "delta": "Δ 40 · Theoretical score"
+   }
+  ]
+ },
+ "felin_errant": {
+  "abilities": [
+   {
+    "name": "Offensive Aim",
+    "cd": 2,
+    "text": "Deal 15 Shadow damage | Eternity on critical hit",
+    "prec": 100,
+    "crit": 50
+   },
+   {
+    "name": "Swift Leap",
+    "cd": 1,
+    "text": "Deal 5 Nature damage Nature bonus (+1) | Caster's accuracy and critical (+2%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vitalheart",
+    "rarity": "Common",
+    "text": "This card increases its max HP by 15 per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Cash Out",
+    "rec": false,
+    "text": "At the start of the game, gain (+25) Spamton.",
+    "delta": "Δ 7.5 · Theoretical score"
+   },
+   {
+    "name": "Roulette",
+    "rec": true,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 48.6 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 23.5 · Theoretical score"
+   }
+  ]
+ },
+ "fleurmarine": {
+  "abilities": [
+   {
+    "name": "Whistling fin",
+    "cd": 1,
+    "text": "Deal 10 Water damage | + Water bonus (+2) on critical hit | Deal 10 Nature damage | + Nature bonus (+2) on critical hit",
+    "prec": 50,
+    "crit": 50
+   },
+   {
+    "name": "Seabed",
+    "cd": 2,
+    "text": "Accuracy (+12%)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Piercing",
+    "rec": true,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 136.1 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 12.4 · Theoretical score"
+   },
+   {
+    "name": "Increasing Error",
+    "rec": false,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 21.6 · Theoretical score"
+   }
+  ]
+ },
+ "fleur_de_vie": {
+  "abilities": [
+   {
+    "name": "Radiant Whisper",
+    "cd": 1,
+    "text": "Deal 10 Light damage Light bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Floral Barrier",
+    "cd": 1,
+    "text": "Apply Taunt to the caster",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Shared Shield",
+    "rec": false,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 243.7 · Theoretical score"
+   },
+   {
+    "name": "Corrupted Heart",
+    "rec": false,
+    "text": "Start the game with a random Rare Heart passive",
+    "delta": "Δ 485.5 · Theoretical score"
+   },
+   {
+    "name": "Piercing",
+    "rec": true,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 488.5 · Theoretical score"
+   }
+  ]
+ },
+ "frost_glacier": {
+  "abilities": [
+   {
+    "name": "Muddy Water",
+    "cd": 2,
+    "text": "Deal 25 Water damage | Deal 25 Water damage | Random enemies",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Freeze",
+    "rarity": "Epic",
+    "text": "When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 40 damage."
+   },
+   {
+    "name": "Erosion",
+    "rarity": "Common",
+    "text": "Reduces the target's max HP by 50% of the damage dealt"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Ultimate Reset",
+    "rec": true,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 51.5 · Theoretical score"
+   },
+   {
+    "name": "Revaluation",
+    "rec": false,
+    "text": "Increases this card’s Spamton generation by (+5).",
+    "delta": "Δ 12 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "gabriel": {
+  "abilities": [
+   {
+    "name": "Cocoon",
+    "cd": 3,
+    "text": "Deal 20 Nature damage Nature bonus (+5) | [Limited Use 1/1]",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Caterpillar",
+    "cd": 6,
+    "text": "Deal 40 Nature damage Nature bonus (+10) | [Limited Use 1/1]",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Butterfly",
+    "cd": 9,
+    "text": "Deal 60 Nature damage Nature bonus (+15) | [Limited Use 1/1]",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Earth Field",
+    "rec": true,
+    "text": "Earth bonus (+7).",
+    "delta": "Δ 434.9 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": false,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 408.3 · Theoretical score"
+   },
+   {
+    "name": "Lucky Tox",
+    "rec": false,
+    "text": "Each Tox rarity has exactly a 25% chance to be obtained.",
+    "delta": "Δ 10 · Theoretical score"
+   }
+  ]
+ },
+ "gardien_vert": {
+  "abilities": [
+   {
+    "name": "Radiance",
+    "cd": 5,
+    "text": "Deal 80 Light damage | The target's cooldowns are reset to maximum",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Multi Heal",
+    "cd": 5,
+    "text": "Heal 40 Light to all allied cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "13th month",
+    "rec": false,
+    "text": "The first time you reach 200 Spamton or more, gain 100 additional Spamton.",
+    "delta": "Δ 30 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 18.5 · Theoretical score"
+   },
+   {
+    "name": "AOE",
+    "rec": true,
+    "text": "Start the game with the \"AoE\" passive.",
+    "delta": "Δ 114.9 · Theoretical score"
+   }
+  ]
+ },
+ "gazpoison_flottant": {
+  "abilities": [
+   {
+    "name": "Exploison",
+    "cd": 1,
+    "text": "Deal 10 Shadow damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Poison",
+    "rarity": "Common",
+    "text": "Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns."
+   },
+   {
+    "name": "Tenacity",
+    "rarity": "Common",
+    "text": "The first fatal attack leaves you with 1 HP"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Counter",
+    "rec": true,
+    "text": "Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+    "delta": "Δ 15.4 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 3.9 · Theoretical score"
+   },
+   {
+    "name": "Corrosion",
+    "rec": false,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "girafe_florale": {
+  "abilities": [
+   {
+    "name": "Sylvan Rebirth",
+    "cd": 2,
+    "text": "Apply Taunt | Accuracy and Critical (+5%) on all allied cards",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 312.9 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": false,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 273.8 · Theoretical score"
+   },
+   {
+    "name": "Corrosion",
+    "rec": false,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 103.8 · Theoretical score"
+   }
+  ]
+ },
+ "godlur": {
+  "abilities": [
+   {
+    "name": "Golem Strike",
+    "cd": 2,
+    "text": "Deal 25 Earth damage | Smoke",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Tenacity",
+    "rarity": "Common",
+    "text": "The first fatal attack leaves you with 1 HP"
+   },
+   {
+    "name": "Ancient Healing",
+    "rarity": "Common",
+    "text": "At the start of each turn, the card recovers 4% of its max HP"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Piercing",
+    "rec": true,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 671.8 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Revaluation",
+    "rec": false,
+    "text": "Increases this card’s Spamton generation by (+5).",
+    "delta": "Δ 15 · Theoretical score"
+   }
+  ]
+ },
+ "guerrier_des_neiges": {
+  "abilities": [
+   {
+    "name": "Earthcleave",
+    "cd": 3,
+    "text": "Deal 30 Earth damage | [Freeze]",
+    "prec": 100,
+    "crit": 25
+   },
+   {
+    "name": "Multiboost",
+    "cd": 3,
+    "text": "Bonus (+3) in every element",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Bomb-8",
+    "rec": false,
+    "text": "Applies the \"Bomba\" passive on turn 8",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Vital Chance",
+    "rec": false,
+    "text": "This card has a 10% chance to heal instead of taking damage when attacked.",
+    "delta": "Δ 21.3 · Theoretical score"
+   },
+   {
+    "name": "Brutal",
+    "rec": true,
+    "text": "Start the game with the \"Brutal\" passive",
+    "delta": "Δ 40 · Theoretical score"
+   }
+  ]
+ },
+ "heraldesse_serpentine": {
+  "abilities": [
+   {
+    "name": "Eternal Constriction",
+    "cd": 5,
+    "text": "Deal 30 Earth damage Random X8",
+    "prec": 50,
+    "crit": 1
+   },
+   {
+    "name": "Sacrifice",
+    "cd": 1,
+    "text": "[Cost 7 Earth] | Fully heals itself",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Eternity",
+    "rarity": "Legendary",
+    "text": "Increases cooldowns by 1"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Shadow Field",
+    "rec": true,
+    "text": "Shadow bonus (+7).",
+    "delta": "Δ 106.4 · Theoretical score"
+   },
+   {
+    "name": "Doomed Hour",
+    "rec": false,
+    "text": "Applies Eternity to all enemy cards when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "hibernatus": {
+  "abilities": [
+   {
+    "name": "Aquallo",
+    "cd": 2,
+    "text": "Deal [10 to 20] Light damage | Deal [10 to 20] Water damage | Bonus (+5) in a random element",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Dyke",
+    "cd": 3,
+    "text": "Apply Taunt",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Lucky",
+    "rarity": "Common",
+    "text": "Increases your Luck by (+0.5) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 778.5 · Theoretical score"
+   },
+   {
+    "name": "Bomb-8",
+    "rec": false,
+    "text": "Applies the \"Bomba\" passive on turn 8",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Anticipation",
+    "rec": false,
+    "text": "At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.",
+    "delta": "Δ 38.1 · Theoretical score"
+   }
+  ]
+ },
+ "hippocampe_nimbe": {
+  "abilities": [
+   {
+    "name": "Supra-Dew-Ray",
+    "cd": 5,
+    "text": "Deal 25 Water, 25 Light and 25 Nature damage Water bonus (+3) & Light bonus (+3) & Nature bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Reset",
+    "rarity": "Epic",
+    "text": "When you kill an ENEMY card with one of your attacks, that attack remains available"
+   },
+   {
+    "name": "Brutal",
+    "rarity": "Rare",
+    "text": "Ignores resistances and taunts. Destroys enemy taunts if targeted"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 522.1 · Theoretical score"
+   },
+   {
+    "name": "Piercing",
+    "rec": false,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 273.5 · Theoretical score"
+   },
+   {
+    "name": "Inaccuracy",
+    "rec": false,
+    "text": "At the start of the game, a random enemy card loses (-20%) accuracy.",
+    "delta": "Δ 19.2 · Theoretical score"
+   }
+  ]
+ },
+ "ignea": {
+  "abilities": [
+   {
+    "name": "Incandescence",
+    "cd": 4,
+    "text": "Deal 120 Fire damage Random Fire bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Silentfire",
+    "cd": 3,
+    "text": "Apply [Freeze]",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Blue Whale",
+    "rec": true,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 73.7 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ 4.6 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 11.5 · Theoretical score"
+   }
+  ]
+ },
+ "keria": {
+  "abilities": [
+   {
+    "name": "Allied Fire",
+    "cd": 3,
+    "text": "Base damage and healing increase by 3 for all allied cards",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Ignition",
+    "cd": 2,
+    "text": "Critical (+5%) on all allied cards",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 659.2 · Theoretical score"
+   },
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Breath-8",
+    "rec": false,
+    "text": "Gains the Elemental Breath attack at the start of turn 8",
+    "delta": "Δ 214 · Theoretical score"
+   }
+  ]
+ },
+ "lames_en_peine": {
+  "abilities": [],
+  "tox": [
+   {
+    "name": "Graveyard",
+    "rarity": "Rare",
+    "text": "Increases all your elemental bonuses by (+5) when a card dies"
+   },
+   {
+    "name": "Heart Resistance",
+    "rarity": "Rare",
+    "text": "This card increases the resistances of all allied cards (+6)"
+   },
+   {
+    "name": "Lucky",
+    "rarity": "Rare",
+    "text": "Increases your Luck by (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Bargain",
+    "rec": false,
+    "text": "Your first Tox purchase of the game is refunded.",
+    "delta": "Δ 18 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 1,097.8 · Theoretical score"
+   },
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   }
+  ]
+ },
+ "lame_de_la_foret": {
+  "abilities": [
+   {
+    "name": "Pincers",
+    "cd": 1,
+    "text": "Deal 5 Nature damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Critical Recovery",
+    "cd": 1,
+    "text": "Heal 20 Nature | Critical (+10%) on critical hit",
+    "prec": 100,
+    "crit": 50
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Nature Heart",
+    "rec": true,
+    "text": "Start the game with the \"Natureheart\" passive",
+    "delta": "Δ 429.7 · Theoretical score"
+   },
+   {
+    "name": "Extortion",
+    "rec": false,
+    "text": "Each time this card deals damage, the opponent loses 5 Spamton.",
+    "delta": "Δ 12.1 · Theoretical score"
+   },
+   {
+    "name": "Weaken",
+    "rec": false,
+    "text": "Reduces the elemental resistances of all enemy cards by (-1%) per turn",
+    "delta": "Δ 277.4 · Theoretical score"
+   }
+  ]
+ },
+ "lapin_plume": {
+  "abilities": [
+   {
+    "name": "Piercing Sound",
+    "cd": 1,
+    "text": "[Cost 1 Nature] | Deal 20 Nature damage | Base damage of this attack increases by (+2) after use",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Heart Resistance",
+    "rarity": "Common",
+    "text": "This card increases the resistances of all allied cards (+3)"
+   },
+   {
+    "name": "Backlash",
+    "rarity": "Common",
+    "text": "Takes 50% of the damage dealt to the target"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 252.6 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 13.1 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": false,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 65.1 · Theoretical score"
+   }
+  ]
+ },
+ "leo": {
+  "abilities": [
+   {
+    "name": "Purifying Flash",
+    "cd": 4,
+    "text": "Deal [20 to 60] Light damage | Deal [20 to 60] Light damage | Random enemies | Apply Eternity",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Mimicry",
+    "rarity": "Rare",
+    "text": "Each time the opponent generates one or more elements, you generate 1 of the same type."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Life-8",
+    "rec": true,
+    "text": "The card's HP and max HP are doubled at the start of turn 8",
+    "delta": "Δ 243.1 · Theoretical score"
+   },
+   {
+    "name": "Mimicry",
+    "rec": false,
+    "text": "Start the game with the Mimicry passive",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "lepine_damour": {
+  "abilities": [
+   {
+    "name": "Wisdom",
+    "cd": 1,
+    "text": "Earth bonus (+2) Nature bonus (+2) Light bonus (+2)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Reflection",
+    "rarity": "Epic",
+    "text": "Reflects 75% of the damage taken back to the attacker"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Revaluation",
+    "rec": false,
+    "text": "Increases this card’s Spamton generation by (+5).",
+    "delta": "Δ 10 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   },
+   {
+    "name": "Weaken",
+    "rec": true,
+    "text": "Reduces the elemental resistances of all enemy cards by (-1%) per turn",
+    "delta": "Δ 223.2 · Theoretical score"
+   }
+  ]
+ },
+ "leviathan_des_cieux": {
+  "abilities": [
+   {
+    "name": "Crushwave",
+    "cd": 3,
+    "text": "Deal damage equal to 30% of the target's max HP",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Ultimate Relief",
+    "cd": 6,
+    "text": "Heals itself for 50% of its max HP",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Waterheart",
+    "rarity": "Common",
+    "text": "Water bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 77.8 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 447.2 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 29.8 · Theoretical score"
+   }
+  ]
+ },
+ "le_compagnon_des_esprits": {
+  "abilities": [
+   {
+    "name": "Small Wave",
+    "cd": 1,
+    "text": "Deal 10 Water damage | Increases its Spamton generation by (+1) | Echo (50%)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Hazardo",
+    "cd": 1,
+    "text": "Deal [20 to +30] Water damage Random",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Immunity",
+    "rarity": "Epic",
+    "text": "The card is immune to all effects from enemy cards"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Counter",
+    "rec": false,
+    "text": "Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+    "delta": "Δ 23.4 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": true,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 292.7 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "le_heraut_des_cendres": {
+  "abilities": [
+   {
+    "name": "Dragon's Breath",
+    "cd": 3,
+    "text": "Choice | Deal 30 Fire damage | Deal 10 Nature damage | Deal 10 Nature damage | ---------- or ---------- | Fire bonus (+5) Nature bonus (+5)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Smoke",
+    "rarity": "Rare",
+    "text": "Enshrouds the allied field after using an attack or a heal"
+   },
+   {
+    "name": "Lucky",
+    "rarity": "Common",
+    "text": "Increases your Luck by (+0.5) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Fortune",
+    "rec": false,
+    "text": "Increases this card's Spamton generation by (+2) per turn",
+    "delta": "Δ 33 · Theoretical score"
+   },
+   {
+    "name": "Focus",
+    "rec": false,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 331.5 · Theoretical score"
+   },
+   {
+    "name": "Corrosion",
+    "rec": true,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 333.5 · Theoretical score"
+   }
+  ]
+ },
+ "le_transporteur_sauvage": {
+  "abilities": [
+   {
+    "name": "Stronghold",
+    "cd": 4,
+    "text": "Apply Taunt for 2 turns",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": false,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 286.2 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Cavalry",
+    "rec": true,
+    "text": "Increases the max HP of all other allied cards by (+150)",
+    "delta": "Δ 455 · Theoretical score"
+   }
+  ]
+ },
+ "lil_des_montagnes": {
+  "abilities": [
+   {
+    "name": "Revitalization",
+    "cd": 4,
+    "text": "Heal 50 Water | Critical damage (+1)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Berserk",
+    "rarity": "Common",
+    "text": "All your cards' damage and heals are increased by 12%"
+   },
+   {
+    "name": "Waterheart",
+    "rarity": "Common",
+    "text": "Water bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Heart of Steel",
+    "rec": true,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 12.1 · Theoretical score"
+   },
+   {
+    "name": "Inscribed",
+    "rec": false,
+    "text": "The card is immune to Vanish effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 6.5 · Theoretical score"
+   }
+  ]
+ },
+ "linventeur": {
+  "abilities": [
+   {
+    "name": "Materia",
+    "cd": 2,
+    "text": "Bonus [-8 to +10] in every element",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Rainbow",
+    "cd": 1,
+    "text": "Deal 10 damage in a random element",
+    "prec": 100,
+    "crit": 50
+   }
+  ],
+  "tox": [
+   {
+    "name": "Multiplier",
+    "rarity": "Rare",
+    "text": "Elemental bonuses are doubled for this card's damage and heals"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 43 · Theoretical score"
+   },
+   {
+    "name": "Vital Chance",
+    "rec": false,
+    "text": "This card has a 10% chance to heal instead of taking damage when attacked.",
+    "delta": "Δ 6.4 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 379.5 · Theoretical score"
+   }
+  ]
+ },
+ "lisa_la_dragonniere": {
+  "abilities": [
+   {
+    "name": "Random Current",
+    "cd": 2,
+    "text": "Deal [30 to 50] Nature damage Random Nature bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vanish",
+    "rarity": "Legendary",
+    "text": "Removes the target's last passive"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Increasing Error",
+    "rec": false,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 14.4 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Rare AOE",
+    "rec": true,
+    "text": "Start the game with the \"AoE\" passive.",
+    "delta": "Δ 413.6 · Theoretical score"
+   }
+  ]
+ },
+ "logidrake_lignatus": {
+  "abilities": [
+   {
+    "name": "Lucky-Fire",
+    "cd": 1,
+    "text": "Deal 7 Fire damage | Deal 7 Fire damage | Deal 7 Fire damage | Echo (50%)",
+    "prec": 50,
+    "crit": 50
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vampirism",
+    "rarity": "Rare",
+    "text": "Regenerates 50% of the damage dealt to the target"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Cash Out",
+    "rec": false,
+    "text": "At the start of the game, gain (+25) Spamton.",
+    "delta": "Δ 7.5 · Theoretical score"
+   },
+   {
+    "name": "New Life",
+    "rec": true,
+    "text": "Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+    "delta": "Δ 464 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 180.3 · Theoretical score"
+   }
+  ]
+ },
+ "loutre_intrepide": {
+  "abilities": [
+   {
+    "name": "Bite",
+    "cd": 1,
+    "text": "Deal 6 Water damage | Critical (+3%) on all allied cards",
+    "prec": 100,
+    "crit": 50
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 139.8 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 140.2 · Theoretical score"
+   },
+   {
+    "name": "Weaken",
+    "rec": true,
+    "text": "Reduces the elemental resistances of all enemy cards by (-1%) per turn",
+    "delta": "Δ 244.9 · Theoretical score"
+   }
+  ]
+ },
+ "lueur_despoir": {
+  "abilities": [
+   {
+    "name": "Breath",
+    "cd": 1,
+    "text": "Heal 20 Nature | Heal 20 Light | Resistance in a random element (+15)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Lucky",
+    "rarity": "Rare",
+    "text": "Increases your Luck by (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Lucky Tox",
+    "rec": false,
+    "text": "Each Tox rarity has exactly a 25% chance to be obtained.",
+    "delta": "Δ 10 · Theoretical score"
+   },
+   {
+    "name": "Roulette",
+    "rec": true,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 87.4 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "luminaire_abyssal": {
+  "abilities": [
+   {
+    "name": "Hazardo",
+    "cd": 1,
+    "text": "Deal [20 to +30] Water damage Random",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Beacon",
+    "cd": 4,
+    "text": "Deal [30 to 50] Light damage to all enemy cards | Accuracy (-10%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 26.3 · Theoretical score"
+   },
+   {
+    "name": "Increasing Error",
+    "rec": true,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 28.3 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": false,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 17.7 · Theoretical score"
+   }
+  ]
+ },
+ "lums": {
+  "abilities": [
+   {
+    "name": "Silver Wind",
+    "cd": 2,
+    "text": "Choice | Deal 10 Light and 10 Shadow damage | ---------- or ---------- | Light bonus (+3) & Shadow bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Liftoff",
+    "cd": 4,
+    "text": "Critical damage (+1) on all cards on the field",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Light Heart",
+    "rec": true,
+    "text": "Start the game with the \"Lightheart\" passive",
+    "delta": "Δ 485.6 · Theoretical score"
+   },
+   {
+    "name": "Shadow Heart",
+    "rec": false,
+    "text": "Start the game with the \"Shadowheart\" passive",
+    "delta": "Δ 449.3 · Theoretical score"
+   },
+   {
+    "name": "Crit Sphere",
+    "rec": false,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 407.6 · Theoretical score"
+   }
+  ]
+ },
+ "maitresse_des_teintes": {
+  "abilities": [
+   {
+    "name": "Elemental Chaos",
+    "cd": 3,
+    "text": "Deal 15 Nature damage Random | 15 Earth damage | 15 Fire damage | 15 Light damage | 15 Shadow damage | 15 Water damage",
+    "prec": 100,
+    "crit": 25
+   },
+   {
+    "name": "Multiboost",
+    "cd": 3,
+    "text": "Bonus (+3) in every element",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 512.1 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 14.2 · Theoretical score"
+   },
+   {
+    "name": "Piercing",
+    "rec": false,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 219.2 · Theoretical score"
+   }
+  ]
+ },
+ "maitre_amphibian": {
+  "abilities": [
+   {
+    "name": "Miasmas of Wisdom",
+    "cd": 1,
+    "text": "Deal 15 Earth and 15 Water damage to all enemy cards",
+    "prec": 50,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Erosion",
+    "rarity": "Common",
+    "text": "Reduces the target's max HP by 50% of the damage dealt"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Hardening",
+    "rec": true,
+    "text": "Increases this card’s elemental resistances by (+15%).",
+    "delta": "Δ 81.7 · Theoretical score"
+   },
+   {
+    "name": "13th month",
+    "rec": false,
+    "text": "The first time you reach 200 Spamton or more, gain 100 additional Spamton.",
+    "delta": "Δ 30 · Theoretical score"
+   }
+  ]
+ },
+ "maitre_thronebeur": {
+  "abilities": [
+   {
+    "name": "Slowing",
+    "cd": 4,
+    "text": "Apply Eternity",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Luminous Hammer",
+    "cd": 3,
+    "text": "Deal 20 Light damage | Deal 20 Earth damage | Accuracy (+20%) on all allied cards",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 1,324.3 · Theoretical score"
+   },
+   {
+    "name": "Fortune",
+    "rec": false,
+    "text": "Increases this card's Spamton generation by (+2) per turn",
+    "delta": "Δ 33 · Theoretical score"
+   }
+  ]
+ },
+ "melodie_des_divinites": {
+  "abilities": [
+   {
+    "name": "Celestial Arrows",
+    "cd": 2,
+    "text": "Deal 3 Light damage Random X18",
+    "prec": 100,
+    "crit": 25
+   },
+   {
+    "name": "Divine Judgment",
+    "cd": 10,
+    "text": "The opponent's Spamtons drop to 0",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Legacy",
+    "rec": false,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 7.5 · Theoretical score"
+   },
+   {
+    "name": "Corrupted Heart",
+    "rec": true,
+    "text": "Start the game with a random Rare Heart passive",
+    "delta": "Δ 308.9 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": false,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 196.6 · Theoretical score"
+   }
+  ]
+ },
+ "moxilys_la_fredonneuse": {
+  "abilities": [
+   {
+    "name": "Doubleshadow",
+    "cd": 2,
+    "text": "Deal 15 Shadow damage to all enemy cards Shadow bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Regenair",
+    "cd": 1,
+    "text": "Heal 10 Nature Random X4",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Life-8",
+    "rec": true,
+    "text": "The card's HP and max HP are doubled at the start of turn 8",
+    "delta": "Δ 339.1 · Theoretical score"
+   },
+   {
+    "name": "Magic Coin",
+    "rec": false,
+    "text": "Start the game with (+2) Luck",
+    "delta": "Δ 4 · Theoretical score"
+   }
+  ]
+ },
+ "murmures_du_corail_noir": {
+  "abilities": [
+   {
+    "name": "Whisper",
+    "cd": 1,
+    "text": "Heal 10 Water | Base healing increases by 5",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Aquatic Breath",
+    "cd": 1,
+    "text": "Deal 10 Water damage Water bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Multiplier",
+    "rarity": "Rare",
+    "text": "Elemental bonuses are doubled for this card's damage and heals"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 468.6 · Theoretical score"
+   },
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 68.1 · Theoretical score"
+   },
+   {
+    "name": "Shadow Field",
+    "rec": false,
+    "text": "Shadow bonus (+7).",
+    "delta": "Δ 104.4 · Theoretical score"
+   }
+  ]
+ },
+ "naissance_daldrin": {
+  "abilities": [
+   {
+    "name": "First Waltz",
+    "cd": 4,
+    "text": "Deal 50 Nature damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Phoenix",
+    "rarity": "Rare",
+    "text": "When destroyed, this card returns to life with 50% of its max HP."
+   },
+   {
+    "name": "Single use",
+    "rarity": "Reset",
+    "text": "Epic"
+   },
+   {
+    "name": "When you kill an ENEMY card with one of your attacks, that attack remains available",
+    "rarity": "Talents",
+    "text": "Ultimate Reset"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Ultimate Reset",
+    "rec": true,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 3.6 · Theoretical score"
+   },
+   {
+    "name": "Phoenix Feather",
+    "rec": false,
+    "text": "50% chance to regain the Phoenix passive once used.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "360 Turn",
+    "rec": false,
+    "text": "Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "nakyel": {
+  "abilities": [
+   {
+    "name": "Skinning",
+    "cd": 2,
+    "text": "Deal 20 Shadow damage | Increases base damage by (+5) | Increases the caster's resistances by (+5%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Eternity",
+    "rarity": "Legendary",
+    "text": "Increases cooldowns by 1"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Shadow Heart",
+    "rec": false,
+    "text": "Start the game with the \"Shadowheart\" passive",
+    "delta": "Δ 91.4 · Theoretical score"
+   },
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 212.1 · Theoretical score"
+   }
+  ]
+ },
+ "neilla": {
+  "abilities": [
+   {
+    "name": "Marine Protection",
+    "cd": 4,
+    "text": "Heal 80 Water | Resistance to all elements (+15) | Apply Taunt",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Temporality",
+    "rarity": "Legendary",
+    "text": "Decreases cooldowns by 1"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Inscribed",
+    "rec": false,
+    "text": "The card is immune to Vanish effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Reducer",
+    "rec": false,
+    "text": "At the start of your first turn, a random allied card receives \"Temporality\"",
+    "delta": "Δ -128.4 · Theoretical score"
+   },
+   {
+    "name": "Breath-8",
+    "rec": true,
+    "text": "Gains the Elemental Breath attack at the start of turn 8",
+    "delta": "Δ 346.6 · Theoretical score"
+   }
+  ]
+ },
+ "oisillons_de_midas": {
+  "abilities": [
+   {
+    "name": "Chirp-chirp-chirp",
+    "cd": 2,
+    "text": "Heal 10 Light | Heal 10 Light | Heal 10 Light | Heal 10 Light Light bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Quintet",
+    "cd": 2,
+    "text": "Base damage and healing increase by 2",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Breath-8",
+    "rec": true,
+    "text": "Gains the Elemental Breath attack at the start of turn 8",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ -964.4 · Theoretical score"
+   },
+   {
+    "name": "Paradox",
+    "rec": false,
+    "text": "This card's resistances are inverted: positive ones become negative, and vice versa.",
+    "delta": "Δ -35.4 · Theoretical score"
+   }
+  ]
+ },
+ "paguroniyx": {
+  "abilities": [
+   {
+    "name": "Burrow",
+    "cd": 4,
+    "text": "Increases the max HP of all allied cards by 100",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Venomous Shears",
+    "cd": 2,
+    "text": "Deal 30 Shadow damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Mystery",
+    "rarity": "Rare",
+    "text": "Starts the game with a random passive"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Multi Start",
+    "rec": true,
+    "text": "Gain (+3) in each element.",
+    "delta": "Δ 546.4 · Theoretical score"
+   },
+   {
+    "name": "Anticipation",
+    "rec": false,
+    "text": "At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.",
+    "delta": "Δ 24.1 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": false,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 342.4 · Theoretical score"
+   }
+  ]
+ },
+ "panthere_imaginaire": {
+  "abilities": [
+   {
+    "name": "Crazy Speed",
+    "cd": 1,
+    "text": "Deal 9 Nature damage | Echo (75%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Vital Chance",
+    "rec": false,
+    "text": "This card has a 10% chance to heal instead of taking damage when attacked.",
+    "delta": "Δ -247.3 · Theoretical score"
+   },
+   {
+    "name": "Roulette",
+    "rec": false,
+    "text": "All of this card's abilities gain Echo (10%).",
+    "delta": "Δ 88.1 · Theoretical score"
+   },
+   {
+    "name": "Brutal",
+    "rec": true,
+    "text": "Start the game with the \"Brutal\" passive",
+    "delta": "Δ 89.5 · Theoretical score"
+   }
+  ]
+ },
+ "poulpe_parleur": {
+  "abilities": [
+   {
+    "name": "Dry ink",
+    "cd": 1,
+    "text": "Heal 10 Water Water bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Smoke",
+    "rarity": "Rare",
+    "text": "Enshrouds the allied field after using an attack or a heal"
+   }
+  ],
+  "talents": [
+   {
+    "name": "New Life",
+    "rec": false,
+    "text": "Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+    "delta": "Δ 66.3 · Theoretical score"
+   },
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 230.7 · Theoretical score"
+   },
+   {
+    "name": "Inversion",
+    "rec": false,
+    "text": "Start the game with the \"Inversion\" passive",
+    "delta": "Δ 173.6 · Theoretical score"
+   }
+  ]
+ },
+ "princesse_meridia": {
+  "abilities": [
+   {
+    "name": "Critical Wind",
+    "cd": 4,
+    "text": "Deal 40 Nature damage | [Freeze]",
+    "prec": 100,
+    "crit": 20
+   },
+   {
+    "name": "Delight",
+    "cd": 2,
+    "text": "Water bonus (+2 to +5) Nature bonus (+2 to +5)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Life-8",
+    "rec": true,
+    "text": "The card's HP and max HP are doubled at the start of turn 8",
+    "delta": "Δ 305.7 · Theoretical score"
+   },
+   {
+    "name": "Strike",
+    "rec": false,
+    "text": "Increases critical damage by (+1).",
+    "delta": "Δ 79.9 · Theoretical score"
+   },
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   }
+  ]
+ },
+ "prisonniere_de_la_machine": {
+  "abilities": [
+   {
+    "name": "Explosion",
+    "cd": 1,
+    "text": "[Cost 100 HP] | Deal 10 Fire damage | After use, this attack’s base damage increases by (+10)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Emberguard",
+    "cd": 3,
+    "text": "Apply Taunt",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Paradox",
+    "rec": false,
+    "text": "This card's resistances are inverted: positive ones become negative, and vice versa.",
+    "delta": "Δ -29.6 · Theoretical score"
+   },
+   {
+    "name": "360 Turn",
+    "rec": false,
+    "text": "Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+    "delta": "Δ 43.5 · Theoretical score"
+   },
+   {
+    "name": "Punching Bag",
+    "rec": true,
+    "text": "Start the game with the \"Punching Bag\" passive",
+    "delta": "Δ 498.8 · Theoretical score"
+   }
+  ]
+ },
+ "protecteur_des_ruines": {
+  "abilities": [
+   {
+    "name": "Roly-Poly",
+    "cd": 1,
+    "text": "Deal 15 Earth damage | Base damage increases by 5",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "F/W-Shield",
+    "rec": true,
+    "text": "Fire resistance (+25%) Water resistance (+25%)",
+    "delta": "Δ 48.5 · Theoretical score"
+   },
+   {
+    "name": "F/E-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 48.5 · Theoretical score"
+   },
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 48.5 · Theoretical score"
+   }
+  ]
+ },
+ "pyro": {
+  "abilities": [
+   {
+    "name": "Conflagration",
+    "cd": 1,
+    "text": "Deal 5 Fire damage to all enemy cards | Fire bonus (+1)",
+    "prec": 100,
+    "crit": 50
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Crit Sphere",
+    "rec": true,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 37 · Theoretical score"
+   },
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Phoenix Feather",
+    "rec": false,
+    "text": "50% chance to regain the Phoenix passive once used.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "raffteru": {
+  "abilities": [
+   {
+    "name": "Random Rumble",
+    "cd": 1,
+    "text": "Deal 70 Earth damage | Critical (+20%) on all allied cards",
+    "prec": 10,
+    "crit": 1
+   },
+   {
+    "name": "Fortunate Leap",
+    "cd": 1,
+    "text": "Deal 10 Nature damage | Echo (50%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 6 · Theoretical score"
+   },
+   {
+    "name": "Crit Sphere",
+    "rec": false,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 20.7 · Theoretical score"
+   },
+   {
+    "name": "Brutal",
+    "rec": true,
+    "text": "Start the game with the \"Brutal\" passive",
+    "delta": "Δ 22.4 · Theoretical score"
+   }
+  ]
+ },
+ "regent_des_abysses": {
+  "abilities": [
+   {
+    "name": "Quakecry",
+    "cd": 2,
+    "text": "Deal 15 Earth damage | Deal 15 Shadow damage Earth bonus (+3) Shadow bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Engulfment",
+    "cd": 5,
+    "text": "Absorbs an allied card",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Ancient Healing",
+    "rarity": "Common",
+    "text": "At the start of each turn, the card recovers 4% of its max HP"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 302.3 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": false,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 145.9 · Theoretical score"
+   }
+  ]
+ },
+ "rob_laventurier": {
+  "abilities": [
+   {
+    "name": "Adventure",
+    "cd": 1,
+    "text": "Base damage and healing increase by 1 | Accuracy and Critical (+4%)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Shadowheart",
+    "rarity": "Common",
+    "text": "Shadow bonus (+1) per turn"
+   },
+   {
+    "name": "Earthheart",
+    "rarity": "Common",
+    "text": "Earth bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Inscribed",
+    "rec": false,
+    "text": "The card is immune to Vanish effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Doomed Hour",
+    "rec": false,
+    "text": "Applies Eternity to all enemy cards when this card is killed.",
+    "delta": "Δ 66.7 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": true,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 436.4 · Theoretical score"
+   }
+  ]
+ },
+ "roi_des_flammes_ardentes": {
+  "abilities": [
+   {
+    "name": "Scorching Bite",
+    "cd": 2,
+    "text": "Deal 15 Fire damage | Deal 15 Earth damage | Critical of all the caster's cards (+5%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Phoenix",
+    "rarity": "Common",
+    "text": "When destroyed, this card returns to life with 25% of its max HP."
+   },
+   {
+    "name": "Single use",
+    "rarity": "Talents",
+    "text": "Counter"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Counter",
+    "rec": false,
+    "text": "Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Crit Sphere",
+    "rec": true,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 62.6 · Theoretical score"
+   }
+  ]
+ },
+ "roi_eau": {
+  "abilities": [
+   {
+    "name": "Blade-E",
+    "cd": 5,
+    "text": "Deal [40 to 60] Water damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Watery Choice",
+    "cd": 5,
+    "text": "Choice | Water bonus [1 to 20] | ---------- or ---------- | Water bonus [5 to 15] | ---------- or ---------- | Water bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 367.4 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 12.4 · Theoretical score"
+   }
+  ]
+ },
+ "roi_feu": {
+  "abilities": [
+   {
+    "name": "Blade-F",
+    "cd": 5,
+    "text": "Deal [40 to 60] Fire damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Burning Choice",
+    "cd": 5,
+    "text": "Choice | Fire bonus [1 to 20] | ---------- or ---------- | Fire bonus [5 to 15] | ---------- or ---------- | Fire bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 186 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 10.3 · Theoretical score"
+   }
+  ]
+ },
+ "roi_lumiere": {
+  "abilities": [
+   {
+    "name": "Blade-L",
+    "cd": 5,
+    "text": "Deal [40 to 60] Light damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Solar Choice",
+    "cd": 5,
+    "text": "Choice | Light bonus [1 to 20] | ---------- or ---------- | Light bonus [5 to 15] | ---------- or ---------- | Light bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 353.5 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 6.7 · Theoretical score"
+   }
+  ]
+ },
+ "roi_nature": {
+  "abilities": [
+   {
+    "name": "Blade-N",
+    "cd": 5,
+    "text": "Deal [40 to 60] Nature damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Floral Choice",
+    "cd": 5,
+    "text": "Choice | Nature bonus [1 to 20] | ---------- or ---------- | Nature bonus [5 to 15] | ---------- or ---------- | Nature bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 303.5 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 7.8 · Theoretical score"
+   }
+  ]
+ },
+ "roi_ombre": {
+  "abilities": [
+   {
+    "name": "Blade-O",
+    "cd": 5,
+    "text": "Deal [40 to 60] Shadow damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Dark Choice",
+    "cd": 5,
+    "text": "Choice | Shadow bonus [1 to 20] | ---------- or ---------- | Shadow bonus [5 to 15] | ---------- or ---------- | Shadow bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 290.4 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 7.8 · Theoretical score"
+   }
+  ]
+ },
+ "roi_terre": {
+  "abilities": [
+   {
+    "name": "Blade-T",
+    "cd": 5,
+    "text": "Deal [40 to 60] Earth damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Earthly Choice",
+    "cd": 5,
+    "text": "Choice | Earth bonus [1 to 20] | ---------- or ---------- | Earth bonus [5 to 15] | ---------- or ---------- | Earth bonus [8 to 12]",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Focus",
+    "rec": true,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ 293.3 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 12.6 · Theoretical score"
+   }
+  ]
+ },
+ "rongeur_nuageux": {
+  "abilities": [
+   {
+    "name": "Cloud Gnawer",
+    "cd": 3,
+    "text": "Deal 30 Light damage Light bonus (+1)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Taunt",
+    "rarity": "Rare",
+    "text": "When this character launches an attack, all enemy attacks during the next turn must target it"
+   },
+   {
+    "name": "Berserk",
+    "rarity": "Common",
+    "text": "All your cards' damage and heals are increased by 12%"
+   }
+  ],
+  "talents": [
+   {
+    "name": "L-Shield",
+    "rec": false,
+    "text": "Shadow resistance (+25%) Light resistance (+25%)",
+    "delta": "Δ 23.8 · Theoretical score"
+   },
+   {
+    "name": "F/E-Shield",
+    "rec": false,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 23.8 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": true,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 90.4 · Theoretical score"
+   }
+  ]
+ },
+ "sanglier_dore": {
+  "abilities": [
+   {
+    "name": "Earth Shaker",
+    "cd": 2,
+    "text": "Deal 40 Earth damage Random | Increases its max HP by 40 Earth Earth bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 78.7 · Theoretical score"
+   },
+   {
+    "name": "Vital Surge",
+    "rec": false,
+    "text": "At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 452.2 · Theoretical score"
+   }
+  ]
+ },
+ "sbire_des_flammes": {
+  "abilities": [
+   {
+    "name": "Sweet Home",
+    "cd": 2,
+    "text": "Heal 25 Fire Random | Heal 25 Fire | Heal 25 Fire",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "AoE",
+    "rarity": "Common",
+    "text": "Attacks and heals adjacent targets for 20% of the damage dealt"
+   },
+   {
+    "name": "Berserk",
+    "rarity": "Common",
+    "text": "All your cards' damage and heals are increased by 12%"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Inscribed",
+    "rec": false,
+    "text": "The card is immune to Vanish effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": true,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 227.5 · Theoretical score"
+   }
+  ]
+ },
+ "scorch_les_lezards_ignes": {
+  "abilities": [
+   {
+    "name": "Flameflow",
+    "cd": 1,
+    "text": "Fire bonus (+3) Water bonus (+3) Earth bonus (+3)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Ancient Healing",
+    "rarity": "Common",
+    "text": "At the start of each turn, the card recovers 4% of its max HP"
+   }
+  ],
+  "talents": [
+   {
+    "name": "New Life",
+    "rec": true,
+    "text": "Starts the game with either the Phoenix or Graveyard passive, chosen at random.",
+    "delta": "Δ 91.6 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 4.1 · Theoretical score"
+   },
+   {
+    "name": "Debt",
+    "rec": false,
+    "text": "Both players start with a debt of (-20) Spamton.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "shado_fleau_abyssal": {
+  "abilities": [
+   {
+    "name": "Tenebr'heal",
+    "cd": 3,
+    "text": "Deal 40 Shadow damage Shadow bonus (+1) | Vampirism",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Ancient Healing",
+    "rarity": "Common",
+    "text": "At the start of each turn, the card recovers 4% of its max HP"
+   },
+   {
+    "name": "AoE",
+    "rarity": "Common",
+    "text": "Attacks and heals adjacent targets for 20% of the damage dealt"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 33.8 · Theoretical score"
+   },
+   {
+    "name": "Soul Armor",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's elemental resistances increase by (+10%)",
+    "delta": "Δ 207.6 · Theoretical score"
+   }
+  ]
+ },
+ "shinobi_eclairant": {
+  "abilities": [
+   {
+    "name": "Yellow Lightning",
+    "cd": 5,
+    "text": "Deal 50 Light damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Kung‑Fu",
+    "cd": 5,
+    "text": "Deal 40 Earth damage | AoE",
+    "prec": 100,
+    "crit": 25
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Crit Sphere",
+    "rec": false,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 43.8 · Theoretical score"
+   },
+   {
+    "name": "Multicolor",
+    "rec": true,
+    "text": "Gains (+1) in each element with every attack from this card",
+    "delta": "Δ 147.2 · Theoretical score"
+   },
+   {
+    "name": "Brutal",
+    "rec": false,
+    "text": "Start the game with the \"Brutal\" passive",
+    "delta": "Δ 32.4 · Theoretical score"
+   }
+  ]
+ },
+ "soigneuse_astrale_des_bois": {
+  "abilities": [
+   {
+    "name": "Magic Leaf",
+    "cd": 1,
+    "text": "Heal 10 Nature | Critical (+2%) on all allied cards",
+    "prec": 100,
+    "crit": 25
+   }
+  ],
+  "tox": [
+   {
+    "name": "Natureheart",
+    "rarity": "Common",
+    "text": "Nature bonus (+1) per turn"
+   },
+   {
+    "name": "Lucky",
+    "rarity": "Common",
+    "text": "Increases your Luck by (+0.5) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Legacy",
+    "rec": false,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 7.5 · Theoretical score"
+   },
+   {
+    "name": "Crit Sphere",
+    "rec": true,
+    "text": "Increases this card's critical chance by (+2%) each turn",
+    "delta": "Δ 312.5 · Theoretical score"
+   },
+   {
+    "name": "Evolution",
+    "rec": false,
+    "text": "If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are. Thresholds at 75%, 50% and 25% HP.",
+    "delta": "Δ 152.7 · Theoretical score"
+   }
+  ]
+ },
+ "sorciere_pyrokinetique": {
+  "abilities": [
+   {
+    "name": "Enchanted Flame",
+    "cd": 3,
+    "text": "Deal 25 Fire damage | Apply Eternity on critical hit | Deal 25 Light damage | Apply Eternity on critical hit | Lowers the opponent's Fire and Light resistance by (10%)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Solid Veil",
+    "cd": 1,
+    "text": "Resistance to all elements (+3)",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Light Heart",
+    "rec": true,
+    "text": "Start the game with the \"Lightheart\" passive",
+    "delta": "Δ 238.2 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Weaken",
+    "rec": false,
+    "text": "Reduces the elemental resistances of all enemy cards by (-1%) per turn",
+    "delta": "Δ 140.7 · Theoretical score"
+   }
+  ]
+ },
+ "souris_des_bles": {
+  "abilities": [
+   {
+    "name": "Outbreak",
+    "cd": 3,
+    "text": "Heal 125 Earth Earth bonus (+2)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Vanish",
+    "rarity": "Legendary",
+    "text": "Removes the target's last passive"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Luminous Field",
+    "rec": true,
+    "text": "Light bonus (+7).",
+    "delta": "Δ 156.6 · Theoretical score"
+   },
+   {
+    "name": "Bargain",
+    "rec": false,
+    "text": "Your first Tox purchase of the game is refunded.",
+    "delta": "Δ 18 · Theoretical score"
+   },
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   }
+  ]
+ },
+ "souverain_des_chutes_dether": {
+  "abilities": [
+   {
+    "name": "Glacial Laser",
+    "cd": 1,
+    "text": "Deal 10 Water damage",
+    "prec": 33,
+    "crit": 1
+   },
+   {
+    "name": "Critical Fall",
+    "cd": 1,
+    "text": "Critical (+10%)",
+    "prec": 33,
+    "crit": 0
+   },
+   {
+    "name": "Precise Fall",
+    "cd": 1,
+    "text": "Accuracy (+10%)",
+    "prec": 33,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Legacy",
+    "rec": false,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Piercing",
+    "rec": true,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 149.3 · Theoretical score"
+   },
+   {
+    "name": "Last Breath",
+    "rec": false,
+    "text": "Applies Temporality to all your cards when this card dies",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "souverain_des_flammes": {
+  "abilities": [
+   {
+    "name": "Roaring Ember",
+    "cd": 1,
+    "text": "Deal 10 Fire damage Fire resistance (+3)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Divine Warmth",
+    "cd": 4,
+    "text": "Deal 20 Fire damage to all enemy cards",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Ignition",
+    "cd": 2,
+    "text": "Critical (+5%) on all allied cards",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 116.3 · Theoretical score"
+   },
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 241.6 · Theoretical score"
+   }
+  ]
+ },
+ "spectre_canin": {
+  "abilities": [
+   {
+    "name": "Bang-Boom",
+    "cd": 2,
+    "text": "Deal 20 Shadow and 20 Light damage to all enemy cards",
+    "prec": 50,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Shadowheart",
+    "rarity": "Common",
+    "text": "Shadow bonus (+1) per turn"
+   },
+   {
+    "name": "Lightheart",
+    "rarity": "Common",
+    "text": "Light bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Eternalized",
+    "rec": false,
+    "text": "The card is immune to Eternity effects",
+    "delta": "Δ 7 · Theoretical score"
+   },
+   {
+    "name": "Hardening",
+    "rec": false,
+    "text": "Increases this card’s elemental resistances by (+15%).",
+    "delta": "Δ 69.1 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": true,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 562.8 · Theoretical score"
+   }
+  ]
+ },
+ "squall_emissaire_des_cauchemars": {
+  "abilities": [
+   {
+    "name": "Cosmic Flames",
+    "cd": 3,
+    "text": "Deal 15 Fire damage | Deal 20 Shadow damage Fire bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Cosmic Light",
+    "cd": 3,
+    "text": "Deal 15 Light damage | Deal 20 Shadow damage Light bonus (+3)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Berserk",
+    "rarity": "Common",
+    "text": "All your cards' damage and heals are increased by 12%"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 93.3 · Theoretical score"
+   },
+   {
+    "name": "Counter",
+    "rec": false,
+    "text": "Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "One Man Army",
+    "rec": true,
+    "text": "Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).",
+    "delta": "Δ 251.4 · Theoretical score"
+   }
+  ]
+ },
+ "sylvan_protecteur_de_la_verdure": {
+  "abilities": [
+   {
+    "name": "Double Breath",
+    "cd": 4,
+    "text": "Deal 25 Nature damage | Deal 25 Nature damage | Deal 25 Nature damage",
+    "prec": 50,
+    "crit": 1
+   },
+   {
+    "name": "Swift Leap",
+    "cd": 1,
+    "text": "Deal 5 Nature damage Nature bonus (+1) | Caster's accuracy and critical (+2%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Erosion",
+    "rarity": "Common",
+    "text": "Reduces the target's max HP by 50% of the damage dealt"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Increasing Error",
+    "rec": false,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 26.9 · Theoretical score"
+   },
+   {
+    "name": "360 Turn",
+    "rec": false,
+    "text": "Applies \"Random Metamorph\" to all your other cards when this card is killed.",
+    "delta": "Δ -256.7 · Theoretical score"
+   },
+   {
+    "name": "Piercing",
+    "rec": true,
+    "text": "All your cards' critical and accuracy increase by (+1%) per turn",
+    "delta": "Δ 454.6 · Theoretical score"
+   }
+  ]
+ },
+ "tisseuse_de_mots": {
+  "abilities": [
+   {
+    "name": "Black Widow",
+    "cd": 8,
+    "text": "Absorbs a card",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Punching Bag",
+    "rarity": "Common",
+    "text": "Increases the element of the caster's card by +1 each time it is attacked"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Legacy",
+    "rec": false,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 10 · Theoretical score"
+   },
+   {
+    "name": "Vital Surge",
+    "rec": false,
+    "text": "At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+    "delta": "Δ 44.6 · Theoretical score"
+   },
+   {
+    "name": "Corrosion",
+    "rec": true,
+    "text": "Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.",
+    "delta": "Δ 105.5 · Theoretical score"
+   }
+  ]
+ },
+ "veilleur_nocturne": {
+  "abilities": [
+   {
+    "name": "Final Night",
+    "cd": 9,
+    "text": "Apply Temporality x(+3) to all allied cards",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Shadowcleave",
+    "cd": 4,
+    "text": "Deal [10 to 30] Shadow damage | Deal [10 to 30] Nature damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Tenebr'heal",
+    "cd": 3,
+    "text": "Deal 40 Shadow damage Shadow bonus (+1) | Vampirism",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Reckless",
+    "rec": false,
+    "text": "Immediately applies \"Random Metamorph\" to this card and grants (+500) HP.",
+    "delta": "Δ -266 · Theoretical score"
+   },
+   {
+    "name": "Legacy",
+    "rec": false,
+    "text": "Gain (+50) Spamton when this card is killed.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Revaluation",
+    "rec": true,
+    "text": "Increases this card’s Spamton generation by (+5).",
+    "delta": "Δ 15 · Theoretical score"
+   }
+  ]
+ },
+ "verdelune": {
+  "abilities": [
+   {
+    "name": "Multi-Foliage",
+    "cd": 3,
+    "text": "Deal 5 Nature damage Random | Deal 15 Nature damage | Deal 25 Nature damage | Deal 35 Nature damage",
+    "prec": 50,
+    "crit": 5
+   },
+   {
+    "name": "Truce",
+    "cd": 3,
+    "text": "Heal 60 Nature | Resistance to all elements (+10)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Temporality",
+    "rarity": "Legendary",
+    "text": "Decreases cooldowns by 1"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Length",
+    "rec": false,
+    "text": "At the start of your first turn, a random enemy card receives \"Eternity\"",
+    "delta": "Δ 20 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": true,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 24 · Theoretical score"
+   },
+   {
+    "name": "Last Breath",
+    "rec": false,
+    "text": "Applies Temporality to all your cards when this card dies",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "vivy": {
+  "abilities": [
+   {
+    "name": "Wave of Darkness",
+    "cd": 3,
+    "text": "Deal 40 Shadow damage | Deal [+1 to +40] Light damage | Caster's critical (+20)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Smoke",
+    "rarity": "Rare",
+    "text": "Enshrouds the allied field after using an attack or a heal"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Brutal",
+    "rec": false,
+    "text": "Start the game with the \"Brutal\" passive",
+    "delta": "Δ 28.3 · Theoretical score"
+   },
+   {
+    "name": "Luminous Field",
+    "rec": true,
+    "text": "Light bonus (+7).",
+    "delta": "Δ 269.3 · Theoretical score"
+   },
+   {
+    "name": "Blue Whale",
+    "rec": false,
+    "text": "Increases this card’s HP by (+200)",
+    "delta": "Δ 83.2 · Theoretical score"
+   }
+  ]
+ },
+ "vladislaus": {
+  "abilities": [
+   {
+    "name": "Double Influx",
+    "cd": 1,
+    "text": "Deal 5 Fire damage | Deal 5 Shadow damage | Base damage increases by 5",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Transfusion",
+    "cd": 1,
+    "text": "Steals 100 max HP from an ally to heal itself for the same amount",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Tenacity",
+    "rarity": "Common",
+    "text": "The first fatal attack leaves you with 1 HP"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Vital Surge",
+    "rec": false,
+    "text": "At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Phoenix Feather",
+    "rec": false,
+    "text": "50% chance to regain the Phoenix passive once used.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Soul Vitality",
+    "rec": true,
+    "text": "Whenever a card on the field dies, this card's HP and max HP increase by (+300)",
+    "delta": "Δ 381.9 · Theoretical score"
+   }
+  ]
+ },
+ "voyageur_des_cretes": {
+  "abilities": [
+   {
+    "name": "End of the Journey",
+    "cd": 5,
+    "text": "Deal 65 Water damage | Fully heals itself",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Immunity",
+    "rarity": "Epic",
+    "text": "The card is immune to all effects from enemy cards"
+   },
+   {
+    "name": "AoE",
+    "rarity": "Epic",
+    "text": "Attacks and heals adjacent targets for 80% of the damage dealt"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Revitalization",
+    "rec": false,
+    "text": "5% chance each turn to restore this card’s HP to maximum.",
+    "delta": "Δ 0 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": true,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ 20.5 · Theoretical score"
+   },
+   {
+    "name": "Resilience",
+    "rec": false,
+    "text": "While this card's HP is below 50%, its elemental resistances increase by (+25%).",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "wibs_lenflamme": {
+  "abilities": [
+   {
+    "name": "Lava-flow",
+    "cd": 1,
+    "text": "Deal 5 Fire damage | Deal 5 Fire damage",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Fireheart",
+    "rarity": "Rare",
+    "text": "Fire bonus (+2) per turn"
+   },
+   {
+    "name": "Poison",
+    "rarity": "Common",
+    "text": "Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns."
+   }
+  ],
+  "talents": [
+   {
+    "name": "F/E-Shield",
+    "rec": true,
+    "text": "Fire resistance (+25%) Earth resistance (+25%)",
+    "delta": "Δ 125.2 · Theoretical score"
+   },
+   {
+    "name": "Strike",
+    "rec": false,
+    "text": "Increases critical damage by (+1).",
+    "delta": "Δ 0.1 · Theoretical score"
+   },
+   {
+    "name": "Increasing Error",
+    "rec": false,
+    "text": "Each time this card attacks, a random enemy card loses 3% accuracy",
+    "delta": "Δ 22.6 · Theoretical score"
+   }
+  ]
+ },
+ "wyrm_des_dunes_cornu": {
+  "abilities": [
+   {
+    "name": "Scorching Bite",
+    "cd": 2,
+    "text": "Deal 15 Fire damage | Deal 15 Earth damage | Critical of all the caster's cards (+5%)",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Mimicry",
+    "rarity": "Rare",
+    "text": "Each time the opponent generates one or more elements, you generate 1 of the same type."
+   }
+  ],
+  "talents": [
+   {
+    "name": "Erosion",
+    "rec": false,
+    "text": "Start the game with the \"Erosion\" passive",
+    "delta": "Δ 8.7 · Theoretical score"
+   },
+   {
+    "name": "Life-8",
+    "rec": false,
+    "text": "The card's HP and max HP are doubled at the start of turn 8",
+    "delta": "Δ 43.3 · Theoretical score"
+   },
+   {
+    "name": "Last Breath",
+    "rec": true,
+    "text": "Applies Temporality to all your cards when this card dies",
+    "delta": "Δ 227.4 · Theoretical score"
+   }
+  ]
+ },
+ "yotaru_gardefeuille": {
+  "abilities": [
+   {
+    "name": "Protect",
+    "cd": 1,
+    "text": "Apply Taunt to a random allied card",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Earthguard",
+    "cd": 2,
+    "text": "Breaks a Taunt to grant 100 max HP",
+    "prec": 100,
+    "crit": 0
+   },
+   {
+    "name": "Boostguard",
+    "cd": 2,
+    "text": "Breaks a Taunt to increase base damage and healing by 3",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [],
+  "talents": [
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 172.5 · Theoretical score"
+   },
+   {
+    "name": "Focus",
+    "rec": false,
+    "text": "At the start of each turn, this card has a 25% chance to gain Taunt.",
+    "delta": "Δ -4.6 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ },
+ "zayd": {
+  "abilities": [
+   {
+    "name": "World's End",
+    "cd": 7,
+    "text": "Deal 50 Earth damage Random | Deal 50 Nature damage | Deal 50 Fire damage | Deal 50 Light damage | Deal 50 Shadow damage | Deal 50 Water damage",
+    "prec": 100,
+    "crit": 1
+   },
+   {
+    "name": "Fortress",
+    "cd": 3,
+    "text": "Apply Taunt",
+    "prec": 100,
+    "crit": 0
+   }
+  ],
+  "tox": [
+   {
+    "name": "Revenge",
+    "rarity": "Rare",
+    "text": "Once destroyed, this card deals all of its attacks to the opponent"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Shared Shield",
+    "rec": true,
+    "text": "Increases the elemental resistances of all allied cards by (+10%).",
+    "delta": "Δ 313 · Theoretical score"
+   },
+   {
+    "name": "Heart of Steel",
+    "rec": false,
+    "text": "Each time this card is attacked, its elemental resistances increase by (+1%).",
+    "delta": "Δ -137.7 · Theoretical score"
+   },
+   {
+    "name": "Critical",
+    "rec": false,
+    "text": "Critical bonus (+10%).",
+    "delta": "Δ 3 · Theoretical score"
+   }
+  ]
+ },
+ "zombie_floral": {
+  "abilities": [
+   {
+    "name": "Aquatic Curse",
+    "cd": 8,
+    "text": "Deal [30 to +60] Water damage | Deal [30 to +60] Nature damage | Apply Vanish",
+    "prec": 100,
+    "crit": 1
+   }
+  ],
+  "tox": [
+   {
+    "name": "Waterheart",
+    "rarity": "Common",
+    "text": "Water bonus (+1) per turn"
+   },
+   {
+    "name": "Natureheart",
+    "rarity": "Common",
+    "text": "Nature bonus (+1) per turn"
+   }
+  ],
+  "talents": [
+   {
+    "name": "Revaluation",
+    "rec": true,
+    "text": "Increases this card’s Spamton generation by (+5).",
+    "delta": "Δ 15 · Theoretical score"
+   },
+   {
+    "name": "Ultimate Reset",
+    "rec": false,
+    "text": "This card restores to 100% of its max HP if its attack defeats an enemy card.",
+    "delta": "Δ 7.3 · Theoretical score"
+   },
+   {
+    "name": "Transition",
+    "rec": false,
+    "text": "When this card is permanently killed, it comes back to life with the \"Random Metamorph\" passive.",
+    "delta": "Δ 0 · Theoretical score"
+   }
+  ]
+ }
+}

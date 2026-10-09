@@ -7,7 +7,7 @@ mechanics ourselves, find every mechanic that can wreck a deck in a real match b
 the wiki's score, and quantify it.
 
 ## The incident that triggered this
-Real match, our "deck chimere" vs player AZURIAN. Opponent's **Tisseuse de Mots** (#123, COMMON, 3 Spamtons,
+Real match, our "deck chimere" vs player AZURIAN. Opponent's **Tisseuse de Mots** (#123, COMMON, income 3 Spamtons/turn in 1.20 (2 in 1.21),
 500 HP) used **Veuve noire** (CD 8, effect `absorbAny`, text "Absorbe une carte") around turn 7 and
 absorbed our **Chimère Brasse-chair** (525 HP): Chimère vanished and Tisseuse's max HP went 500 -> 1025.
 Opponent's **Fleur de Vie** (#222) used **Barrière Florale** (CD 1, `taunt` on self, duration 2) every
@@ -21,7 +21,7 @@ Write ONLY under SP/spam/audit/ (your own files/subdir). Never modify other file
 
 ### Data
 - SP/spam/js/model.json — the wiki engine's model, game 1.20, engineHash a8193b3d422a54a9. 127 cards.
-  card: {id (uuid), slug, number, name (FR), element, rarity, spamton (cost), hp, res{fire,water,earth,nature,light,shadow} (% damage reduction, can be negative), rows (Tox slots), abilities[], passives[] (= innate Tox), talents[3], ...}
+  card: {id (uuid), slug, number, name (FR), element, rarity, spamton (INCOME per turn while the card is alive — NOT a cost; verified in the engine: income = sum of living cards spamton + turn number), hp, res{fire,water,earth,nature,light,shadow} (% damage reduction, can be negative), rows (fields already used = abilities + innate passives; free Tox slots = 3 - rows), abilities[], passives[] (= innate Tox), talents[3], ...}
   ability: {id,name,cd,prec,crit,critMult,duration,uses,echo,elements,cost,costHp,choice,options[]}
   option: {hits[{min,max,element}], heals[], gen[{element,min,max,cond}], effects[{type,...}], target, text}
   targets: enemy, randomEnemy, spreadEnemy, aoeEnemy, ally, allAllies, randomAlly, self, none, field, spreadField
@@ -60,3 +60,8 @@ The user dislikes crit-dependent decks (too random). Opponents are real players 
 ## Output
 Write your report to SP/spam/audit/<your file>.md (+ optional JSON). Keep FR card and Tox names as in the data.
 Separate FACTS (from data/rules, cite file or URL) from INFERENCES (state confidence). Report numbers, not adjectives.
+
+## Corrections (added after launch)
+- `spamton` on a card = Spamtons earned per turn while it lives (not a cost). `rows` = abilities + innate passives; a card has 3 - rows free Tox fields.
+- Death bounty: the 50 Spamtons go to the player who LOSES the card (catch-up).
+- Wiki 1.21 is out (engine + model now in SP/spam/versions/1.21/js/; the 1.20→1.21 diff is spam/versions/1.21/CHANGELOG.md). Audit stays on 1.20 data; flag findings that 1.21 changes.

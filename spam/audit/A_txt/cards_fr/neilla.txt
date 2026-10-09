@@ -1,0 +1,130 @@
+Neilla : carte SPAM Eau commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Neilla D Voir la carte en grand
+Neilla
+4 Protection marine
+Temporalité
+650/650
+9
+Standard
+Neilla
+4 Protection marine
+Temporalité
+650/650
+9
+Élémentaire
+Neilla
+4 Protection marine
+Temporalité
+650/650
+9
+FA
+Neilla
+4 Protection marine
+Temporalité
+650/650
+9
+## Neilla
+D Eau · Commune · Standard
+650 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Inscrit La carte est insensible aux Disparitions.
+- Talent 2 Réducteur Au début de votre premier tour, une carte alliée aléatoire reçoit "Temporalité"
+- Talent 3 Souffle-8 Récupère l'attaque Souffle élémentaire au début du tour 8
+Conseillé
+Trois champs de compétence
+- Protection marine compétence · Recharge 4 Soigne 80 Eau
+Résistance à tous les éléments (+15)
+Applique Provocation
+4
+- Temporalité tox · Légendaire Diminue les temps de recharge de 1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par SAN
+Fiche complète
+Illustration par SAN
+Eau Commune #101
+# Neilla
+Défense
+650 Points de vie
+9 Spamtons / tour
+#97 Classement / 127
+D Sans talent · #115
+Attaque
+20
+Génération
+0
+Défense
+81
+Soutien
+80
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Inscrit 2 Réducteur 3 Souffle-8
+Jouer cette carte
+Partager
+### Compétences
+#### Protection marine
+4 tours
+Soigne 80 Eau
+Résistance à tous les éléments (+15)
+Applique Provocation
+Précision 100% Critique 1%
+### Tox de départ
+#### Temporalité
+Légendaire
+Diminue les temps de recharge de 1
+### Talents
+#### Inscrit
+La carte est insensible aux Disparitions.
+Δ 7 · Score théorique
+#### Réducteur
+Au début de votre premier tour, une carte alliée aléatoire reçoit "Temporalité"
+Δ 85,4 · Score théorique
+#### Souffle-8
+Conseillé
+Récupère l'attaque Souffle élémentaire au début du tour 8
+Δ 360,5 · Score théorique
+### Résistances
+8% Feu
+8% Eau
+8% Terre
+8% Nature
+8% Ombre
+8% Lumière
+Art · Lumethia
+### Derrière la carte
+Parmi les Éternels, les Esprits et les autres entités mythiques se trouve Neilla. Cet être singulier crée les courants et empêche les eaux de déborder. En suivant ces courants, on peut parfois apercevoir cette demi-déesse le temps d’un clignement d’œil. De nombreux marins, fascinés par sa beauté et ses secrets, sont partis à la recherche de la belle Alphilane. Mais les routes les plus dangereuses n’épargnent pas même les plus intrépides. Devant tant de navires et de vies perdus, un traité finit par interdire l’utilisation de bateaux pour traquer la Dame.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+C # 002 Eau
+Commune · Génération
+### Esprit Eau
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

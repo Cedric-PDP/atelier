@@ -1,0 +1,141 @@
+Wyrm des Dunes Cornu : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Wyrm des Dunes Cornu D Voir la carte en grand
+Wyrm des Dunes Cornu
+2 Morsure brûlante
+Mimétisme
+500/500
+4
+Standard
+Wyrm des Dunes Cornu
+2 Morsure brûlante
+Mimétisme
+500/500
+4
+Élémentaire
+Wyrm des Dunes Cornu
+2 Morsure brûlante
+Mimétisme
+500/500
+4
+FA
+Wyrm des Dunes Cornu
+2 Morsure brûlante
+Mimétisme
+500/500
+4
+## Wyrm des Dunes Cornu
+D Terre · Commune · Standard
+500 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Érosion Commence la partie avec le passif "Érosion"
+- Talent 2 Life-8 Les PV et PV max de la carte sont doublés au début du tour 8
+- Talent 3 Dernier souffle Applique Temporalité à toutes vos cartes quand celle-ci meurt
+Conseillé
+Trois champs de compétence
+- Morsure brûlante compétence · Recharge 2 Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+2
+- Mimétisme tox · Rare Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Terre Commune #124
+# Wyrm des Dunes Cornu
+Soutien
+500 Points de vie
+4 Spamtons / tour
+#117 Classement / 127
+D Sans talent · #112
+Attaque
+33
+Génération
+0
+Défense
+9
+Soutien
+87
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Érosion 2 Life-8 3 Dernier souffle
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Morsure brûlante
+2 tours
+Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+Précision 100% Critique 1%
+### Tox de départ
+#### Mimétisme
+Rare
+Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+### Talents
+#### Érosion
+Commence la partie avec le passif "Érosion"
+Δ 4,3 · Score théorique
+#### Life-8
+Les PV et PV max de la carte sont doublés au début du tour 8
+Δ 46,3 · Score théorique
+#### Dernier souffle
+Conseillé
+Applique Temporalité à toutes vos cartes quand celle-ci meurt
+Δ 83,4 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Accessible
+Midrange ·
+### Aleera Mange-Cauchemars + Paguroniyx
+71,4 % Indice relatif 8 tours Élimination estimée 21 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Shinobi Éclairant + Wyrm des Dunes Cornu
+50,7 % Indice relatif 9 tours Élimination estimée 20 / tour Spamtons
+### Résistances
+7% Feu
+8% Eau
+6% Terre
+8% Nature
+5% Ombre
+8% Lumière
+Créature · Shal'Zaar
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Les Wyrms comptent parmi les espèces hostiles de Shal’Zaar. À mi-chemin entre le serpent et le ver des sables, ces créatures immenses transforment le sable en cristal. Les mines ainsi créées par leur activité sont appelées Dunes Cornues. Apprendre à éviter ou à affronter ces monstres fait partie du quotidien dans la région de Shal’Azd’Hun. Leurs cristaux constituent une ressource rare et précieuse pour les chasseurs de monstres, car leur pureté permet d’y insuffler n’importe quel élément.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

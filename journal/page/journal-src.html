@@ -1,0 +1,1019 @@
+<title>Journal de parties SPAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Chakra+Petch:wght@500;600;700&display=swap">
+<style>
+/* Layout: scouting notebook. Sticky tab bar; summary first (Bilan), then the match log as list + detail, the meta board, the player's own habits, and the rulebook. Same family as the deck workshop. */
+:root {
+  --bg: #f2f3f7;
+  --surface: #ffffff;
+  --surface-2: #e9ebf2;
+  --ink: #151826;
+  --ink-2: #474b60;
+  --muted: #6d7189;
+  --line: #d9dce7;
+  --accent: #0d7a6b;
+  --accent-ink: #ffffff;
+  --accent-soft: #d6efea;
+  --win: #11823b;
+  --win-soft: #dcf2e3;
+  --loss: #c22f2f;
+  --loss-soft: #fbe3e3;
+  --warn: #9a6400;
+  --warn-soft: #fff1d6;
+  --grid: #e3e4ec;
+  --el-fire: #eb6834;
+  --el-water: #2a78d6;
+  --el-earth: #a0521c;
+  --el-nature: #1baf7a;
+  --el-light: #c98500;
+  --el-shadow: #4a3aa7;
+  --el-divine: #d6336c;
+  --font-display: "Chakra Petch", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --r: 10px;
+  --r-s: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1118; --surface: #171a24; --surface-2: #20242f; --ink: #eef0f7; --ink-2: #b8bccf; --muted: #8b90a8; --line: #2b3040;
+    --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --win: #46c46a; --win-soft: #15301f; --loss: #f07070; --loss-soft: #3a1c1c;
+    --warn: #f0b429; --warn-soft: #3a2e12; --grid: #262a36;
+    --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1118; --surface: #171a24; --surface-2: #20242f; --ink: #eef0f7; --ink-2: #b8bccf; --muted: #8b90a8; --line: #2b3040;
+  --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --win: #46c46a; --win-soft: #15301f; --loss: #f07070; --loss-soft: #3a1c1c;
+  --warn: #f0b429; --warn-soft: #3a2e12; --grid: #262a36;
+  --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; padding: 0 16px; padding-block: 0 48px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.2; margin: 0; text-wrap: balance; }
+h2 { font-size: 1.15rem; letter-spacing: .01em; }
+h3 { font-size: 1rem; }
+p { margin: 0; }
+a { color: var(--accent); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: .85rem; }
+.wrap { max-width: 1280px; margin: 0 auto; }
+
+.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); border-bottom: 1px solid var(--line); margin: 0 -16px; padding: 12px 16px 0; }
+.top-row { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
+.brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font-size: 1.35rem; letter-spacing: .02em; }
+.brand h1 b { color: var(--accent); font-weight: 700; }
+.tabs { display: flex; gap: 4px; margin-top: 10px; overflow-x: auto; }
+.tab { border: 0; background: none; padding: 8px 14px 10px; font-family: var(--font-display); font-weight: 600; font-size: .95rem; color: var(--ink-2); border-bottom: 3px solid transparent; white-space: nowrap; }
+.tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.tab .count { font-family: var(--font-body); font-weight: 400; color: var(--muted); margin-left: 4px; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; min-width: 0; }
+.stack { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.stack-s { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+@media (max-width: 820px) { .two { grid-template-columns: minmax(0, 1fr); } }
+.sec { margin-top: 16px; }
+.sec-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
+.sec-head p { color: var(--ink-2); font-size: .9rem; max-width: 70ch; }
+.eyebrow { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+.note { background: var(--surface-2); border-radius: var(--r-s); padding: 10px 12px; font-size: .9rem; color: var(--ink-2); }
+.note.warn { background: var(--warn-soft); color: var(--ink); }
+.empty { color: var(--muted); padding: 8px 0; }
+
+.btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; border-radius: var(--r-s); font-size: .9rem; line-height: 1.2; }
+.btn:hover { border-color: var(--muted); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.danger { color: var(--loss); }
+.btn:disabled { opacity: .5; cursor: default; }
+.input { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 7px 10px; min-width: 0; width: 100%; }
+.chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 4px 10px; font-size: .85rem; white-space: nowrap; }
+button.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; background: var(--muted); }
+.dot.fire { background: var(--el-fire); } .dot.water { background: var(--el-water); } .dot.earth { background: var(--el-earth); }
+.dot.nature { background: var(--el-nature); } .dot.light { background: var(--el-light); } .dot.shadow { background: var(--el-shadow); } .dot.divine { background: var(--el-divine); }
+.cc { display: inline-flex; align-items: center; gap: 5px; font-size: .86rem; white-space: nowrap; }
+.cc .t { font-size: .7rem; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 0 3px; }
+.cards-row { display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.res { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 4px; font-family: var(--font-display); font-weight: 700; font-size: .85rem; }
+.res.V { background: var(--win-soft); color: var(--win); }
+.res.D { background: var(--loss-soft); color: var(--loss); }
+.res.N { background: var(--surface-2); color: var(--ink-2); }
+.badge { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); white-space: nowrap; }
+.badge.ok { background: var(--win-soft); color: var(--win); }
+.badge.hyp { background: var(--warn-soft); color: var(--warn); }
+.badge.no { background: var(--loss-soft); color: var(--loss); }
+.badge.acc { background: var(--accent-soft); color: var(--accent); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 700; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.scroll-x { overflow-x: auto; min-width: 0; }
+
+/* Bilan */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+.tile { border: 1px solid var(--line); border-radius: var(--r-s); padding: 12px; display: flex; flex-direction: column; gap: 4px; min-width: 0; background: var(--surface); }
+.tile .lab { font-size: .8rem; color: var(--muted); }
+.tile .val { font-family: var(--font-display); font-size: 1.7rem; font-weight: 700; line-height: 1.05; }
+.tile .hint { font-size: .82rem; color: var(--ink-2); }
+.form-strip { display: flex; flex-wrap: wrap; gap: 4px; }
+.form-strip button { border: 0; padding: 0; background: none; }
+.pipeline { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; counter-reset: step; }
+.pipeline li { border: 1px solid var(--line); border-radius: var(--r-s); padding: 12px; font-size: .9rem; color: var(--ink-2); counter-increment: step; }
+.pipeline li::before { content: counter(step); display: inline-flex; width: 22px; height: 22px; border-radius: 50%; align-items: center; justify-content: center; background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: .8rem; margin-right: 8px; }
+.pipeline b { color: var(--ink); }
+
+/* Parties */
+.log { display: grid; grid-template-columns: minmax(260px, 360px) minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 16px; }
+@media (max-width: 880px) { .log { grid-template-columns: minmax(0, 1fr); } }
+.mlist { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.mitem { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 10px 4px; }
+.mitem:hover { background: var(--surface-2); }
+.mitem[aria-current="true"] { background: var(--accent-soft); }
+.mitem .res { grid-row: 1 / 3; align-self: center; }
+.mitem .l1 { font-weight: 700; min-width: 0; overflow-wrap: anywhere; }
+.mitem .l2 { font-size: .82rem; color: var(--muted); min-width: 0; overflow-wrap: anywhere; }
+.detail-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.detail-head h2 { font-size: 1.3rem; }
+.sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+@media (max-width: 600px) { .sides { grid-template-columns: minmax(0, 1fr); } }
+.side { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.timeline td:first-child { font-family: var(--font-display); font-weight: 700; white-space: nowrap; }
+.inferred { color: var(--muted); font-style: italic; }
+.mist { border-left: 3px solid var(--warn); padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
+.mist.high { border-left-color: var(--loss); }
+.mist.low { border-left-color: var(--line); }
+.mist .better { color: var(--ink-2); }
+.good { border-left: 3px solid var(--win); padding: 6px 10px; font-size: .9rem; }
+.bullets { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: .92rem; }
+details.add summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; }
+.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 12px; }
+.fgrid label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--ink-2); min-width: 0; }
+.fgrid .wide { grid-column: 1 / -1; }
+.confirm { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+/* Méta */
+.arch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+@media (max-width: 420px) { .arch-grid { grid-template-columns: minmax(0, 1fr); } }
+.arch { border: 1px solid var(--line); border-radius: var(--r-s); padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; background: var(--surface); }
+.arch.seen { border-color: var(--accent); }
+.arch h3 { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.arch .plan { font-size: .88rem; color: var(--ink-2); }
+.arch ul { margin: 0; padding-left: 18px; font-size: .86rem; display: flex; flex-direction: column; gap: 3px; }
+.bars { display: flex; flex-direction: column; gap: 6px; }
+.bar-row { display: grid; grid-template-columns: minmax(120px, 210px) minmax(0, 1fr) 54px; gap: 10px; align-items: center; font-size: .86rem; }
+@media (max-width: 480px) { .bar-row { grid-template-columns: minmax(0, 1fr) 54px; } .bar-row .track { grid-column: 1 / -1; grid-row: 2; } }
+.bar-row .lbl { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.track { height: 14px; background: var(--surface-2); border-radius: 3px; display: flex; overflow: hidden; }
+.track i { display: block; height: 100%; }
+.track i.w { background: var(--win); } .track i.l { background: var(--loss); } .track i.a { background: var(--accent); } .track i.m { background: var(--warn); }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .8rem; color: var(--ink-2); }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.watch { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.watch .w { border: 1px solid var(--line); border-radius: var(--r-s); padding: 8px 10px; font-size: .84rem; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.watch .w b { font-family: var(--font-display); }
+
+/* Mon jeu / Savoir */
+.spark svg { display: block; width: 100%; height: auto; overflow: visible; }
+.spark text { fill: var(--muted); font-size: 11px; font-family: var(--font-body); }
+.check { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.check li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; font-size: .92rem; align-items: start; }
+.check li::before { content: ""; width: 14px; height: 14px; border: 2px solid var(--accent); border-radius: 3px; margin-top: 4px; }
+.kn { border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-direction: column; gap: 4px; }
+.kn .h { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.kn .h b { font-family: var(--font-display); font-weight: 600; }
+.kn p { font-size: .92rem; color: var(--ink-2); max-width: 80ch; }
+/* Screenshot analysis */
+.drop { position: relative; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--line); border-radius: var(--r); padding: 22px 16px; cursor: pointer; background: var(--bg); color: var(--ink-2); }
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.shots { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.shots:empty { display: none; }
+.shot { border: 1px solid var(--line); border-radius: var(--r-s); overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-width: 0; }
+.shot img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--surface-2); cursor: zoom-in; }
+.shot .bar { display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 4px 6px; font-size: .8rem; }
+.shot .bar b { font-family: var(--font-display); margin-right: auto; }
+.shot .x { border: 0; background: none; color: var(--muted); padding: 2px 6px; border-radius: 4px; font-size: .95rem; line-height: 1; }
+.shot .x:hover { background: var(--surface-2); color: var(--ink); }
+.shot .x:disabled { opacity: .3; cursor: default; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.gallery button { border: 0; padding: 0; background: none; cursor: zoom-in; }
+.gallery img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-s); border: 1px solid var(--line); display: block; background: var(--surface-2); }
+.lightbox { position: fixed; inset: 0; z-index: 60; background: rgba(8, 10, 16, .9); display: flex; align-items: center; justify-content: center; padding: 16px; cursor: zoom-out; border: 0; width: 100%; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 4px; }
+.cert { display: inline-block; font-size: .72rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; white-space: nowrap; font-variant-numeric: tabular-nums; font-style: normal; }
+.cert.seen { background: var(--win-soft); color: var(--win); }
+.cert.forced { background: var(--accent-soft); color: var(--accent); }
+.cert.likely { background: var(--warn-soft); color: var(--warn); }
+.cert.guess { background: var(--loss-soft); color: var(--loss); }
+.basis { display: block; font-size: .78rem; color: var(--muted); font-style: normal; }
+.draft { border: 2px solid var(--accent); }
+.kn-pick { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: .9rem; align-items: start; }
+.linkish { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; text-align: left; }
+.linkish:hover { text-decoration: underline; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <h1>Journal de parties <b>SPAM</b></h1>
+        <span class="muted small" id="subtitle">Chargement…</span>
+      </div>
+      <a class="small" href="https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE" target="_blank" rel="noopener">Ouvrir l'atelier de decks ↗</a>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Vues">
+      <button class="tab" role="tab" id="tab-bilan" data-view="bilan" aria-selected="true" aria-controls="view-bilan">Bilan</button>
+      <button class="tab" role="tab" id="tab-parties" data-view="parties" aria-selected="false" aria-controls="view-parties">Parties <span class="count" id="c-parties"></span></button>
+      <button class="tab" role="tab" id="tab-meta" data-view="meta" aria-selected="false" aria-controls="view-meta">Méta <span class="count" id="c-meta"></span></button>
+      <button class="tab" role="tab" id="tab-jeu" data-view="jeu" aria-selected="false" aria-controls="view-jeu">Mon jeu</button>
+      <button class="tab" role="tab" id="tab-savoir" data-view="savoir" aria-selected="false" aria-controls="view-savoir">Savoir <span class="count" id="c-savoir"></span></button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="note warn sec" id="db-note" hidden></p>
+  <section id="view-bilan" role="tabpanel" aria-labelledby="tab-bilan"><p class="empty sec">Chargement du journal…</p></section>
+  <section id="view-parties" role="tabpanel" aria-labelledby="tab-parties" hidden>
+    <div class="panel sec stack" id="an-panel">
+      <div class="sec-head"><h2>Analyser une partie</h2><p>Dépose tes captures dans l'ordre où tu les as prises. Claude lit les cartes, les PV, les recharges et la boutique, puis reconstitue les tours manquants en donnant sa certitude pour chacun.</p></div>
+      <p class="note" id="an-unavail">Vérification de ce que cette vue permet…</p>
+      <div id="an-body" hidden>
+        <label class="drop" id="an-drop" for="an-file">
+          <input type="file" id="an-file" multiple accept="image/png,image/jpeg,image/webp">
+          <span><b>Dépose tes captures ici</b>, colle-les avec Ctrl+V, ou clique pour les choisir.</span>
+          <span class="small muted" id="an-limit"></span>
+        </label>
+        <ol class="shots" id="an-shots"></ol>
+        <div class="fgrid">
+          <label>Nom de mon deck (facultatif)<input class="input" type="text" id="an-deck" maxlength="60" placeholder="deck chimere"></label>
+          <label class="wide">Ce que tu sais déjà (facultatif)<input class="input" type="text" id="an-hint" maxlength="400" placeholder="J'ai perdu au tour 11, j'étais second, l'adversaire a acheté Berserk au tour 4"></label>
+        </div>
+        <div class="row" style="margin-top:12px"><button class="btn primary" id="an-go" type="button">Analyser les captures</button><button class="btn" id="an-stop" type="button" hidden>Arrêter</button><span class="small muted" id="an-msg" role="status"></span></div>
+        <p class="small muted" style="margin-top:8px">L'analyse utilise ton compte Claude et prend une à deux minutes. Les captures ne sont enregistrées qu'au moment où tu valides la partie.</p>
+      </div>
+    </div>
+    <div id="an-draft" class="stack sec" hidden></div>
+    <div class="panel sec">
+      <details class="add" id="add-box">
+        <summary>Ajouter une partie sans captures</summary>
+        <form id="add-form" autocomplete="off">
+          <div class="fgrid">
+            <label>Date et heure<input class="input" type="datetime-local" id="f-date" required></label>
+            <label>Résultat<select class="input" id="f-res"><option value="V">Victoire</option><option value="D">Défaite</option><option value="N">Nul ou abandon</option></select></label>
+            <label>Ordre de jeu<select class="input" id="f-first"><option value="">Je ne sais plus</option><option value="1">Premier</option><option value="0">Second</option></select></label>
+            <label>Mode<select class="input" id="f-mode"><option value="classé">Classé</option><option value="normal">Normal</option><option value="défi">Défi</option><option value="inconnu">Autre</option></select></label>
+            <label>Nombre de tours<input class="input" type="number" min="1" max="60" id="f-turns"></label>
+            <label>Nom de mon deck<input class="input" type="text" id="f-deck" maxlength="60" placeholder="deck chimere"></label>
+            <label>Mon ban du shop<select class="input" id="f-ban-mine"></select></label>
+            <label>Ban de l'adversaire<select class="input" id="f-ban-theirs"></select></label>
+            <label>Mes cartes 1 à 4<input class="input" list="dl-cards" id="f-my0"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-my1" aria-label="Ma carte 2"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-my2" aria-label="Ma carte 3"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-my3" aria-label="Ma carte 4"></label>
+            <label>Cartes adverses 1 à 4<input class="input" list="dl-cards" id="f-op0"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-op1" aria-label="Carte adverse 2"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-op2" aria-label="Carte adverse 3"></label>
+            <label>&nbsp;<input class="input" list="dl-cards" id="f-op3" aria-label="Carte adverse 4"></label>
+            <label class="wide">Ce qui s'est passé<textarea class="input" id="f-note" rows="3" maxlength="2000" placeholder="Le tour qui a tout décidé, ce que tu referais autrement…"></textarea></label>
+          </div>
+          <div class="row" style="margin-top:12px"><button class="btn primary" type="submit" id="f-save">Enregistrer la partie</button><span class="small muted" id="f-msg" role="status"></span></div>
+        </form>
+        <datalist id="dl-cards"></datalist>
+      </details>
+    </div>
+    <div class="log">
+      <aside class="panel stack-s">
+        <div class="row" id="m-filters" role="group" aria-label="Filtrer par résultat"></div>
+        <select class="input" id="m-deck" aria-label="Filtrer par deck"></select>
+        <ul class="mlist" id="m-list"></ul>
+      </aside>
+      <div id="m-detail" class="stack"></div>
+    </div>
+  </section>
+  <section id="view-meta" role="tabpanel" aria-labelledby="tab-meta" hidden></section>
+  <section id="view-jeu" role="tabpanel" aria-labelledby="tab-jeu" hidden></section>
+  <section id="view-savoir" role="tabpanel" aria-labelledby="tab-savoir" hidden></section>
+</main>
+
+<!--CARDS-->
+<!--TOX-->
+<script>
+(() => {
+'use strict';
+const EL = { fire: 'Feu', water: 'Eau', earth: 'Terre', nature: 'Nature', light: 'Lumière', shadow: 'Ombre', divine: 'Divin' };
+const RES = { V: 'Victoire', D: 'Défaite', N: 'Nul' };
+const CAT = {
+  ordre: ["Ordre d'activation", 'Chaque tour : générateurs, puis buffs, puis attaques. Les frappes du tour profitent tout de suite du bonus.'],
+  ciblage: ['Ciblage', "Avant d'attaquer : quelle carte adverse lance sa grosse capacité au prochain tour, et laquelle a une résistance négative à mon élément ?"],
+  tempo: ['Tempo et recharges', "Compter les recharges adverses. Garder Gel, Étourdissement et Éternité pour le tour qui précède leur gros coup."],
+  boutique: ['Boutique', "Tours pairs : une famille utile (Cœur de mon élément, Berserk, Poison) sur la bonne ligne, sinon passer (+10 Spamtons)."],
+  economie: ['Économie', 'Ne pas dormir sur les Spamtons : acheter tôt, garder 15 pour une relance.'],
+  defense: ['Défense', "Provocation et soins sur la carte clé avant le gros coup adverse. Ne jamais soigner une carte gelée."],
+  lecture: ["Lecture de l'adversaire", "Au tour 1, lire les 4 cartes adverses : quel est leur moteur, quelle est leur carte clé, quand arrive leur pic ?"],
+  deck: ['Choix du deck', "Choisir le deck selon la méta du moment (onglet Méta) et non par habitude."],
+  ban: ['Ban du shop', "Bannir l'élément du shop qui sert le plus l'adversaire, jamais ta propre réponse (Brut, Éternité, Gel) : le ban vaut pour les deux joueurs."]
+};
+const COST = { élevé: 3, moyen: 2, faible: 1 };
+const KIND = { mécanique: 'Mécaniques', économie: 'Économie et boutique', carte: 'Cartes', tox: 'Tox', adversaire: 'Adversaires', méta: 'Méta', jeu: 'Mon style de jeu' };
+const STATUS = { confirmé: 'ok', hypothèse: 'hyp', réfuté: 'no', théorique: 'acc', observé: 'ok', émergent: 'hyp', établi: 'ok' };
+const nf = new Intl.NumberFormat('fr-FR');
+const pct = x => nf.format(Math.round(x)) + ' %';
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const S = { cards: [], byN: new Map(), byName: new Map(), matches: [], know: [], arch: [], ready: { m: false, k: false, a: false },
+  db: null, canWrite: null, view: 'bilan', sel: null, resFilter: 'all', deckFilter: '', kindFilter: 'all', kSearch: '', confirmDel: null,
+  sample: null, limits: null, assets: null, shots: [], draft: null, ctl: null, busy: false, saving: false };
+
+/* ---------- Helpers ---------- */
+const arr = x => Array.isArray(x) ? x : [];
+const cardOf = v => typeof v === 'number' ? S.byN.get(v) : S.byName.get(String(v || '').toLowerCase());
+function chip(v) {
+  const c = cardOf(v);
+  if (!c) return `<span class="cc"><span class="dot"></span>${esc(v)} <span class="t">?</span></span>`;
+  return `<span class="cc" title="${esc(`${EL[c.el] || c.el} · ${c.rar} · ${c.hp} PV`)}"><span class="dot ${c.el}"></span>${esc(c.name)}</span>`;
+}
+const chips = list => arr(list).length ? `<div class="cards-row">${arr(list).map(chip).join('')}</div>` : '<span class="muted small">Inconnues</span>';
+const oppCards = m => arr(m.opp && m.opp.cards).concat(arr(m.opp && m.opp.unknown));
+const myCards = m => arr(m.my && m.my.cards);
+const deckKey = m => myCards(m).map(v => { const c = cardOf(v); return c ? c.n : v; }).sort((a, b) => String(a).localeCompare(String(b))).join('-');
+const deckLabel = m => (m.my && m.my.deck) || myCards(m).map(v => (cardOf(v) || { name: v }).name).join(' · ') || 'Deck inconnu';
+function fmtDate(iso) {
+  const d = new Date(iso); if (isNaN(d)) return esc(iso || '');
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+const sorted = () => S.matches.slice().sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
+const decided = list => list.filter(m => m.result === 'V' || m.result === 'D');
+const wr = list => { const d = decided(list); return d.length ? 100 * d.filter(m => m.result === 'V').length / d.length : null; };
+const wl = list => `${list.filter(m => m.result === 'V').length}-${list.filter(m => m.result === 'D').length}`;
+function archOf(m) {
+  const set = m.opp && m.opp.archetype;
+  if (set) return S.arch.find(a => a.id === set) || null;
+  const opp = new Set(arr(m.opp && m.opp.cards).map(v => (cardOf(v) || {}).n).filter(Boolean));
+  let best = null, bestHits = 1;
+  for (const a of S.arch) { const hits = arr(a.core).filter(n => opp.has(n)).length; if (hits > bestHits) { best = a; bestHits = hits; } }
+  return best;
+}
+const mistakeWeight = m => arr(m.mistakes).reduce((s, x) => s + (COST[x.cost] || 2), 0);
+/* Shop items (Tox families) are stored by family id ("Multiplicator"); an unrecognised name is kept as read. */
+function toxFam(v) {
+  if (!v) return null; const t = S.tox || {}; const s = String(v).trim();
+  if (t[s]) return s; const id = s.replace(/_[CREL]$/, ''); if (t[id]) return id;
+  const low = s.toLowerCase(); return Object.keys(t).find(k => t[k].name.toLowerCase() === low) || null;
+}
+const toxName = v => { if (!v) return ''; const t = (S.tox || {})[v]; return t ? t.name : String(v); };
+const toxOptions = sel => '<option value="">Aucun ou inconnu</option>' + (sel && !(S.tox || {})[sel] ? `<option value="${esc(sel)}" selected>${esc(sel)} (lu tel quel, non reconnu)</option>` : '') + Object.entries(S.tox || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, 'fr')).map(([id, t]) => `<option value="${esc(id)}"${id === sel ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
+function bansHtml(m) {
+  const b = m.bans; if (!b || (!b.mine && !b.theirs)) return '';
+  const extra = [b.phase, b.order].filter(Boolean).join(' · ');
+  return `<div class="note small"><b>Bans du shop</b> · moi : ${esc(toxName(b.mine) || '?')} · adversaire : ${esc(toxName(b.theirs) || '?')} ${cert(b.c)}${extra ? `<span class="basis">${esc(extra)}</span>` : ''}</div>`;
+}
+
+/* ---------- Boot ---------- */
+async function boot() {
+  try {
+    S.cards = JSON.parse($('cards-data').textContent).cards;
+    try { S.tox = JSON.parse($('tox-data').textContent); } catch (err) { S.tox = {}; }
+    $('f-ban-mine').innerHTML = toxOptions(null); $('f-ban-theirs').innerHTML = toxOptions(null);
+  } catch (e) { $('view-bilan').innerHTML = `<p class="note warn sec">Les cartes n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</p>`; return; }
+  S.cards.forEach(c => { S.byN.set(c.n, c); S.byName.set(c.name.toLowerCase(), c); if (c.en) S.byName.set(c.en.toLowerCase(), c); });
+  $('dl-cards').innerHTML = S.cards.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr')).map(c => `<option value="${esc(c.name)}">`).join('');
+  initTabs(); initParties(); render();
+  const last = store.get('spam-journal-view', 'bilan'); if (last !== 'bilan') setView(last);
+  const w = window.claude;
+  initAnalyzer();
+  if (!w || !w.use) { dbMissing(); anAvailability(); return; }
+  w.use('user').then(u => { if (!u) return; Promise.resolve(u.can('data.write')).then(v => { S.canWrite = v; render(); }).catch(() => {}); }).catch(() => {});
+  w.use('sample').then(async s => { S.sample = s; S.limits = s ? await s.limits().catch(() => null) : null; anAvailability(); }).catch(() => anAvailability());
+  w.use('assets').then(a => { S.assets = a; }).catch(() => {});
+  const db = await w.use('db').catch(() => null);
+  if (!db) { dbMissing(); return; }
+  S.db = db;
+  const sub = (col, key, prop) => db.collection(col).onSnapshot(snap => {
+    S[prop] = snap.docs.map(d => Object.assign({ id: d.id }, d.data())); S.ready[key] = true; render();
+  }, err => { S.ready[key] = true; $('db-note').hidden = false; $('db-note').textContent = `Lecture du journal interrompue (${err.code}). Recharge la page.`; render(); });
+  sub('matches', 'm', 'matches'); sub('knowledge', 'k', 'know'); sub('archetypes', 'a', 'arch');
+}
+function dbMissing() {
+  $('db-note').hidden = false;
+  $('db-note').textContent = "Le journal n'est pas accessible dans cette vue. Ouvre la page depuis claude.ai en étant connecté.";
+  S.ready = { m: true, k: true, a: true }; render();
+}
+
+/* ---------- Tabs ---------- */
+function initTabs() {
+  document.querySelectorAll('.tab').forEach(t => t.addEventListener('click', () => setView(t.dataset.view)));
+  if (/^#(bilan|parties|meta|jeu|savoir)$/.test(location.hash)) setView(location.hash.slice(1));
+}
+function setView(v) {
+  if (!$('view-' + v)) v = 'bilan';
+  S.view = v; store.set('spam-journal-view', v);
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.view === v));
+  document.querySelectorAll('[role=tabpanel]').forEach(p => { p.hidden = p.id !== 'view-' + v; });
+  render();
+}
+function openMatch(id) { S.sel = id; S.resFilter = 'all'; S.deckFilter = ''; setView('parties'); }
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-open]'); if (b) { openMatch(b.dataset.open); return; }
+  const g = e.target.closest('[data-goto]'); if (g) setView(g.dataset.goto);
+});
+
+/* ---------- Render ---------- */
+function render() {
+  const n = S.matches.length;
+  $('c-parties').textContent = n ? n : '';
+  $('c-meta').textContent = S.arch.length ? S.arch.length : '';
+  $('c-savoir').textContent = S.know.length ? S.know.length : '';
+  const w = wr(S.matches);
+  $('subtitle').textContent = !S.ready.m ? 'Chargement du journal…' : n ? `${n} partie${n > 1 ? 's' : ''} · ${wl(S.matches)}${w != null ? ' · ' + pct(w) + ' de victoires' : ''}` : 'Aucune partie enregistrée pour l\'instant';
+  if (S.view === 'bilan') renderBilan();
+  if (S.view === 'parties') renderParties();
+  if (S.view === 'meta') renderMeta();
+  if (S.view === 'jeu') renderJeu();
+  if (S.view === 'savoir') renderSavoir();
+}
+
+function emptyJournal() {
+  return `<div class="panel sec stack">
+    <div class="sec-head"><h2>Le journal est vide</h2><p>Chaque partie analysée vient s'ajouter ici. Les onglets Méta et Savoir sont déjà remplis avec ce que l'on sait du jeu avant la première partie.</p></div>
+    <ol class="pipeline">
+      <li><b>Prends des captures</b> pendant la partie : le tour 1 (les 4 cartes adverses), les tours où la boutique s'ouvre, les gros coups, l'écran de fin.</li>
+      <li><b>Envoie-les à Claude</b> dans Claude Code en disant « analyse cette partie SPAM ». Pas besoin de tous les tours, les recharges et les PV permettent de combler les trous.</li>
+      <li><b>Claude reconstitue la partie</b> et l'enregistre ici : déroulé, achats, tournant, erreurs, bons coups, leçons.</li>
+      <li><b>Les bilans se construisent seuls</b> : taux de victoire par deck, archétypes adverses, erreurs qui reviennent, contre-méta.</li>
+    </ol>
+    <p class="small muted">Une partie sans captures ? Saisis-la à la main dans l'onglet <button class="linkish" data-goto="parties">Parties</button>.</p>
+  </div>`;
+}
+
+/* Bilan */
+function renderBilan() {
+  const box = $('view-bilan');
+  if (!S.ready.m) { box.innerHTML = '<p class="empty sec">Chargement du journal…</p>'; return; }
+  const all = sorted();
+  if (!all.length) { box.innerHTML = emptyJournal(); return; }
+  const w = wr(all), firsts = all.filter(m => m.first === true), seconds = all.filter(m => m.first === false);
+  const recent = all.slice(0, 5), before = all.slice(5, 15);
+  const avgMist = list => list.length ? list.reduce((s, m) => s + arr(m.mistakes).length, 0) / list.length : null;
+  const mr = avgMist(recent), mb = avgMist(before);
+  const form = all.slice(0, 10).reverse();
+  const decks = groupBy(all, deckKey).map(([, list]) => ({ label: deckLabel(list[0]), list })).sort((a, b) => b.list.length - a.list.length);
+  const arches = archStats(all).filter(x => x.list.length).sort((a, b) => b.list.length - a.list.length);
+  const cats = catStats(all).slice(0, 3);
+  box.innerHTML = `<div class="stack sec">
+    <div class="tiles">
+      <div class="tile"><span class="lab">Parties enregistrées</span><span class="val num">${all.length}</span><span class="hint">${wl(all)} (victoires-défaites)</span></div>
+      <div class="tile"><span class="lab">Taux de victoire</span><span class="val num">${w == null ? '–' : pct(w)}</span><span class="hint">${all.length < 10 ? 'Encore peu de parties : à lire comme une tendance' : 'Sur ' + decided(all).length + ' parties terminées'}</span></div>
+      <div class="tile"><span class="lab">Premier / second</span><span class="val num">${firsts.length ? pct(wr(firsts) ?? 0) : '–'} / ${seconds.length ? pct(wr(seconds) ?? 0) : '–'}</span><span class="hint">${firsts.length} en premier, ${seconds.length} en second</span></div>
+      <div class="tile"><span class="lab">Erreurs par partie</span><span class="val num">${mr == null ? '–' : nf.format(Math.round(mr * 10) / 10)}</span><span class="hint">${mb == null ? 'Sur les 5 dernières parties' : mr < mb ? `En baisse (avant : ${nf.format(Math.round(mb * 10) / 10)})` : mr > mb ? `En hausse (avant : ${nf.format(Math.round(mb * 10) / 10)})` : 'Stable'}</span></div>
+    </div>
+    <div class="panel"><div class="sec-head"><h2>Forme</h2><p>Les 10 dernières parties, de la plus ancienne à la plus récente.</p></div>
+      <div class="form-strip">${form.map(m => `<button data-open="${esc(m.id)}" title="${esc(fmtDate(m.date) + ' · ' + deckLabel(m))}"><span class="res ${esc(m.result)}">${esc(m.result || '?')}</span></button>`).join('')}</div></div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Tes decks</h2></div><div class="scroll-x"><table><thead><tr><th>Deck</th><th class="n">Parties</th><th class="n">V-D</th><th class="n">Victoires</th></tr></thead><tbody>
+        ${decks.map(d => `<tr><td>${esc(d.label)}</td><td class="n">${d.list.length}</td><td class="n">${wl(d.list)}</td><td class="n">${wr(d.list) == null ? '–' : pct(wr(d.list))}</td></tr>`).join('')}</tbody></table></div></div>
+      <div class="panel"><div class="sec-head"><h2>Face aux archétypes</h2></div>${arches.length ? `<div class="scroll-x"><table><thead><tr><th>Archétype adverse</th><th class="n">Vu</th><th class="n">V-D</th></tr></thead><tbody>
+        ${arches.map(a => `<tr><td>${esc(a.name)}</td><td class="n">${a.list.length}</td><td class="n">${wl(a.list)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">Aucun adversaire rattaché à un archétype pour l\'instant.</p>'}</div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>À travailler</h2><p>Les catégories d'erreurs qui coûtent le plus, pondérées par leur gravité.</p></div>
+        ${cats.length ? `<ul class="check">${cats.map(c => `<li><span><b>${esc(CAT[c.cat] ? CAT[c.cat][0] : c.cat)}</b> · ${c.count} fois<br><span class="muted small">${esc(CAT[c.cat] ? CAT[c.cat][1] : '')}</span></span></li>`).join('')}</ul>` : '<p class="empty">Aucune erreur relevée pour l\'instant.</p>'}</div>
+      <div class="panel"><div class="sec-head"><h2>Dernières parties</h2></div><ul class="mlist">${recent.map(matchItem).join('')}</ul></div>
+    </div>
+  </div>`;
+}
+function groupBy(list, fn) { const m = new Map(); list.forEach(x => { const k = fn(x); if (!m.has(k)) m.set(k, []); m.get(k).push(x); }); return [...m.entries()]; }
+function archStats(list) {
+  const res = S.arch.map(a => ({ id: a.id, name: a.name, a, list: [] }));
+  const other = { id: '', name: 'Non classé', a: null, list: [] };
+  list.forEach(m => { const a = archOf(m); (a ? res.find(r => r.id === a.id) : other).list.push(m); });
+  return other.list.length ? res.concat(other) : res;
+}
+function catStats(list) {
+  const m = new Map();
+  list.forEach(x => arr(x.mistakes).forEach(k => { const c = k.cat || 'autre'; const o = m.get(c) || { cat: c, count: 0, weight: 0 }; o.count++; o.weight += COST[k.cost] || 2; m.set(c, o); }));
+  return [...m.values()].sort((a, b) => b.weight - a.weight);
+}
+
+/* Parties */
+function matchItem(m) {
+  const a = archOf(m);
+  return `<li><button class="mitem" data-open="${esc(m.id)}" aria-current="${S.sel === m.id}">
+    <span class="res ${esc(m.result)}">${esc(m.result || '?')}</span>
+    <span class="l1">${esc(deckLabel(m))}</span>
+    <span class="l2">${fmtDate(m.date)} · contre ${esc(a ? a.name : (m.opp && m.opp.name) || 'adversaire')}${m.turns ? ` · ${m.turns} tours` : ''}${m.source === 'manuel' ? ' · saisie manuelle' : ''}</span>
+  </button></li>`;
+}
+function initParties() {
+  const f = $('m-filters');
+  f.innerHTML = [['all', 'Toutes'], ['V', 'Victoires'], ['D', 'Défaites']].map(([k, l]) => `<button class="chip" data-res="${k}" aria-pressed="${k === 'all'}">${l}</button>`).join('');
+  f.addEventListener('click', e => { const b = e.target.closest('[data-res]'); if (!b) return; S.resFilter = b.dataset.res; renderParties(); });
+  $('m-deck').addEventListener('change', e => { S.deckFilter = e.target.value; renderParties(); });
+  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  $('f-date').value = now.toISOString().slice(0, 16);
+  $('add-form').addEventListener('submit', saveManual);
+  $('m-detail').addEventListener('click', onDetailClick);
+}
+function renderParties() {
+  if (S.view !== 'parties') return;
+  document.querySelectorAll('[data-res]').forEach(b => b.setAttribute('aria-pressed', b.dataset.res === S.resFilter));
+  const all = sorted();
+  const decks = groupBy(all, deckKey).map(([k, list]) => [k, deckLabel(list[0]), list.length]);
+  $('m-deck').innerHTML = `<option value="">Tous mes decks</option>` + decks.map(([k, l, n]) => `<option value="${esc(k)}"${k === S.deckFilter ? ' selected' : ''}>${esc(l)} (${n})</option>`).join('');
+  const list = all.filter(m => (S.resFilter === 'all' || m.result === S.resFilter) && (!S.deckFilter || deckKey(m) === S.deckFilter));
+  $('m-list').innerHTML = !S.ready.m ? '<li class="empty">Chargement…</li>' : list.length ? list.map(matchItem).join('') : `<li class="empty">${all.length ? 'Aucune partie ne correspond.' : 'Aucune partie pour l\'instant.'}</li>`;
+  if (!S.sel || !all.some(m => m.id === S.sel)) S.sel = list.length ? list[0].id : null;
+  document.querySelectorAll('#m-list .mitem').forEach(b => b.setAttribute('aria-current', b.dataset.open === S.sel));
+  const m = all.find(x => x.id === S.sel);
+  $('m-detail').innerHTML = m ? detailHtml(m) : `<div class="panel"><p class="empty">${S.ready.m ? 'Sélectionne une partie, ou envoie tes captures à Claude pour enregistrer la première.' : 'Chargement…'}</p></div>`;
+  const disabled = S.canWrite === false || !S.db;
+  $('f-save').disabled = disabled;
+  if (disabled && !$('f-msg').textContent) $('f-msg').textContent = !S.db ? 'Journal indisponible dans cette vue.' : 'Tu peux consulter le journal mais pas y écrire.';
+}
+const CERT = { seen: 'Lu sur une capture', forced: 'Déduit : une seule explication possible', likely: 'Explication la plus probable', guess: 'Supposition' };
+function certNum(c) { const v = Math.round(Number(c)); return c == null || c === '' || isNaN(v) ? null : Math.max(0, Math.min(100, v)); }
+function cert(c) {
+  const v = certNum(c); if (v == null) return '';
+  const k = v >= 100 ? 'seen' : v >= 85 ? 'forced' : v >= 60 ? 'likely' : 'guess';
+  return `<span class="cert ${k}" title="${CERT[k]}">${v === 100 ? 'vu' : v + ' %'}</span>`;
+}
+const certLegend = () => `<div class="legend small">${[['seen', 'vu', 'lu sur une capture'], ['forced', '85-99 %', 'forcé par les chiffres'], ['likely', '60-84 %', 'le plus probable'], ['guess', '< 60 %', 'supposition']].map(([k, l, d]) => `<span><span class="cert ${k}">${l}</span>${d}</span>`).join('')}</div>`;
+function galleryHtml(srcs) {
+  return srcs.length ? `<div class="panel"><div class="sec-head"><h2>Captures</h2></div><div class="gallery">${srcs.map((s, i) => `<button type="button" data-zoom="${esc(s)}" aria-label="Agrandir la capture ${i + 1}"><img src="${esc(s)}" alt="Capture ${i + 1}" loading="lazy"></button>`).join('')}</div></div>` : '';
+}
+function detailHtml(m, draft) {
+  const a = archOf(m), ev = m.evidence || {};
+  const tl = arr(m.timeline), shop = arr(m.shop), mist = arr(m.mistakes), good = arr(m.goodPlays), less = arr(m.lessons), gaps = arr(m.gaps);
+  const first = m.first === true ? 'Joué en premier' : m.first === false ? 'Joué en second' : '';
+  const hasCert = tl.some(t => certNum(t.c) != null);
+  const conf = certNum(ev.confidence);
+  const srcs = draft ? S.shots.map(s => s.url) : arr(m.screens).map(id => '/_blob/' + encodeURIComponent(id));
+  const head = draft ? `<div class="sec-head"><h2>Brouillon à vérifier</h2><p>Corrige ce qui est faux avant d'enregistrer. Les pourcentages sont l'estimation de Claude selon le barème ci-dessous, pas une preuve.${conf != null ? ' Certitude globale : ' + cert(conf) : ''}</p></div>
+    ${certLegend()}
+    <div class="fgrid">
+      <label>Résultat ${cert(m.resultCertainty)}<select class="input" id="d-res">${['V', 'D', 'N'].map(r => `<option value="${r}"${m.result === r ? ' selected' : ''}>${RES[r]}</option>`).join('')}<option value=""${!m.result ? ' selected' : ''}>Inconnu</option></select></label>
+      <label>Ordre de jeu ${cert(m.firstCertainty)}<select class="input" id="d-first"><option value="1"${m.first === true ? ' selected' : ''}>Premier</option><option value="0"${m.first === false ? ' selected' : ''}>Second</option><option value=""${m.first == null ? ' selected' : ''}>Inconnu</option></select></label>
+      <label>Nom de mon deck<input class="input" id="d-deck" maxlength="60" value="${esc(m.my && m.my.deck || '')}"></label>
+      <label>Archétype adverse ${cert(m.opp && m.opp.certainty)}<select class="input" id="d-arch"><option value="">Détection automatique</option>${S.arch.map(x => `<option value="${esc(x.id)}"${m.opp && m.opp.archetype === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
+      <label>Mon ban du shop ${cert(m.bans && m.bans.c)}<select class="input" id="d-ban-mine">${toxOptions(m.bans && m.bans.mine)}</select></label>
+      <label>Ban de l'adversaire<select class="input" id="d-ban-theirs">${toxOptions(m.bans && m.bans.theirs)}</select></label>
+    </div>`
+    : `<div class="detail-head"><span class="res ${esc(m.result)}">${esc(RES[m.result] || m.result || '?')}</span><h2>${esc(deckLabel(m))}</h2>
+      <span class="muted small">${fmtDate(m.date)}${m.mode ? ' · ' + esc(m.mode) : ''}${first ? ' · ' + first : ''}${m.turns ? ` · ${esc(m.turns)} tours` : ''}</span>${conf != null ? `<span class="small">certitude globale ${cert(conf)}</span>` : ''}</div>`;
+  return `<div class="panel stack ${draft ? 'draft' : ''}">
+    ${head}
+    <div class="sides">
+      <div class="side"><span class="eyebrow">Mon deck</span>${chips(myCards(m).concat(arr(m.my && m.my.unknown)))}${m.my && m.my.notes ? `<p class="small muted">${esc(m.my.notes)}</p>` : ''}</div>
+      <div class="side"><span class="eyebrow">Adversaire${m.opp && m.opp.name ? ' · ' + esc(m.opp.name) : ''}</span>${chips(oppCards(m))}
+        <span class="small">${a ? `Archétype : <b>${esc(a.name)}</b>` : '<span class="muted">Aucun archétype reconnu</span>'}</span></div>
+    </div>
+    ${bansHtml(m)}
+    ${m.summary ? `<p>${esc(m.summary)}</p>` : ''}
+    ${m.turningPoint ? `<div class="note"><b>Tournant :</b> ${esc(m.turningPoint)}</div>` : ''}
+    ${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}
+  </div>
+  ${tl.length ? `<div class="panel"><div class="sec-head"><h2>Déroulé</h2><p>${hasCert ? 'Chaque tour indique ce qui a été lu sur une capture et ce qui a été déduit, avec la certitude.' : 'Les lignes en italique sont déduites (recharges, PV, bonus) et non vues sur une capture.'}</p></div>
+    <div class="scroll-x"><table class="timeline"><thead><tr><th>Tour</th><th>Moi</th><th>Adversaire</th><th>Remarque</th>${hasCert ? '<th>Certitude</th>' : ''}</tr></thead><tbody>
+    ${tl.map(t => `<tr class="${t.inferred ? 'inferred' : ''}"><td>${esc(t.t)}</td><td>${esc(t.me || '')}</td><td>${esc(t.opp || '')}</td><td>${esc(t.note || '')}</td>${hasCert ? `<td>${cert(t.c)}${t.basis ? `<span class="basis">${esc(t.basis)}</span>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div></div>` : ''}
+  ${gaps.length ? `<div class="panel"><div class="sec-head"><h2>Trous comblés</h2><p>Les tours sans capture, et comment ils ont été reconstitués.</p></div><ul class="bullets">${gaps.map(g => `<li><b>Tours ${esc(g.turns)}</b> : ${esc(g.how)} ${cert(g.c)}</li>`).join('')}</ul></div>` : ''}
+  ${shop.length ? `<div class="panel"><div class="sec-head"><h2>Boutique</h2></div><div class="scroll-x"><table><thead><tr><th>Tour</th><th>Qui</th><th>Achat</th><th>Sur</th><th>À la place de</th><th></th></tr></thead><tbody>
+    ${shop.map(s => `<tr><td class="num">${esc(s.t)}</td><td>${s.who === 'opp' ? 'Adversaire' : 'Moi'}</td><td>${esc(s.tox || (s.pass ? 'Passe' : ''))}</td><td>${s.on != null && s.on !== '' ? chip(s.on) : ''}</td><td>${esc(s.replaced || '')}</td><td>${cert(s.c)}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
+  ${mist.length || good.length ? `<div class="two">
+    <div class="panel stack-s"><h2>Erreurs</h2>${mist.length ? mist.map(x => `<div class="mist ${x.cost === 'élevé' ? 'high' : x.cost === 'faible' ? 'low' : ''}"><span class="row"><span class="badge">${esc(CAT[x.cat] ? CAT[x.cat][0] : x.cat || 'Autre')}</span>${x.t != null ? `<span class="small muted">Tour ${esc(x.t)}</span>` : ''}${x.cost ? `<span class="small muted">· coût ${esc(x.cost)}</span>` : ''}${cert(x.c)}</span><span>${esc(x.what)}</span>${x.better ? `<span class="better">Mieux : ${esc(x.better)}</span>` : ''}</div>`).join('') : '<p class="empty">Aucune erreur relevée.</p>'}</div>
+    <div class="panel stack-s"><h2>Bons coups</h2>${good.length ? good.map(g => `<div class="good">${g.t != null ? `<span class="small muted">Tour ${esc(g.t)} · </span>` : ''}${esc(g.what || g)}</div>`).join('') : '<p class="empty">Rien de notable.</p>'}</div>
+  </div>` : ''}
+  ${less.length ? `<div class="panel"><h2>Leçons</h2><ul class="bullets" style="margin-top:8px">${less.map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>` : ''}
+  ${galleryHtml(srcs)}
+  ${draft ? draftFooter(m) : `<div class="panel row" style="justify-content:space-between">
+    <span class="small muted">${m.source === 'manuel' ? 'Saisie manuelle' : `${ev.screens ? esc(ev.screens) + ' captures' : 'Captures'}${ev.coverage ? ' · ' + esc(ev.coverage) : ''}`} · réf. ${esc(m.id)}</span>
+    ${S.db && S.canWrite !== false ? (S.confirmDel === m.id ? `<span class="confirm"><span class="small">Supprimer cette partie du journal ?</span><button class="btn danger" data-del-yes="${esc(m.id)}">Supprimer</button><button class="btn" data-del-no>Annuler</button></span>` : `<button class="btn danger" data-del="${esc(m.id)}">Supprimer</button>`) : ''}
+  </div>`}`;
+}
+async function onDetailClick(e) {
+  const d = e.target.closest('[data-del]'), y = e.target.closest('[data-del-yes]'), n = e.target.closest('[data-del-no]');
+  if (d) { S.confirmDel = d.dataset.del; renderParties(); return; }
+  if (n) { S.confirmDel = null; renderParties(); return; }
+  if (y) {
+    y.disabled = true;
+    try { await S.db.collection('matches').doc(y.dataset.delYes).delete(); S.confirmDel = null; S.sel = null; }
+    catch (err) { y.disabled = false; y.textContent = 'Échec, réessayer'; }
+  }
+}
+async function saveManual(e) {
+  e.preventDefault();
+  if (!S.db) return;
+  const pick = p => [0, 1, 2, 3].map(i => $(p + i).value.trim()).filter(Boolean);
+  const resolve = names => { const cards = [], unknown = []; names.forEach(nm => { const c = cardOf(nm); if (c) cards.push(c.n); else unknown.push(nm); }); return { cards, unknown }; };
+  const my = resolve(pick('f-my')), op = resolve(pick('f-op'));
+  if (my.unknown.length || op.unknown.length) { $('f-msg').textContent = 'Carte introuvable : ' + my.unknown.concat(op.unknown).join(', ') + '. Choisis-la dans la liste proposée.'; return; }
+  const dateVal = $('f-date').value; const d = new Date(dateVal);
+  if (isNaN(d)) { $('f-msg').textContent = 'Indique la date de la partie.'; return; }
+  const id = dateVal.slice(0, 10) + '-' + dateVal.slice(11, 16).replace(':', '') + '-m' + Math.random().toString(36).slice(2, 6);
+  const first = $('f-first').value;
+  const doc = { date: d.toISOString(), mode: $('f-mode').value, result: $('f-res').value, first: first === '' ? null : first === '1',
+    turns: $('f-turns').value ? +$('f-turns').value : null, my: { deck: $('f-deck').value.trim(), cards: my.cards }, opp: { cards: op.cards, unknown: [] },
+    note: $('f-note').value.trim(), source: 'manuel', createdAt: new Date().toISOString() };
+  const banMine = $('f-ban-mine').value, banTheirs = $('f-ban-theirs').value;
+  if (banMine || banTheirs) doc.bans = { mine: banMine || null, theirs: banTheirs || null, c: 100 };
+  $('f-save').disabled = true; $('f-msg').textContent = 'Enregistrement…';
+  try {
+    await S.db.collection('matches').doc(id).set(doc);
+    $('f-msg').textContent = 'Partie enregistrée.'; S.sel = id;
+    ['f-turns', 'f-note', 'f-op0', 'f-op1', 'f-op2', 'f-op3', 'f-ban-mine', 'f-ban-theirs'].forEach(k => { $(k).value = ''; });
+  } catch (err) {
+    $('f-msg').textContent = err && err.code === 'quota_exceeded' ? 'Le journal est plein : supprime des parties anciennes.' : 'Échec de l\'enregistrement (' + (err && err.code || 'erreur') + '). Réessaie.';
+  } finally { $('f-save').disabled = false; }
+}
+
+/* Méta */
+function renderMeta() {
+  const box = $('view-meta');
+  const all = sorted(), st = archStats(all);
+  const archCards = S.arch.slice().sort((a, b) => {
+    const na = (st.find(x => x.id === a.id) || { list: [] }).list.length, nb = (st.find(x => x.id === b.id) || { list: [] }).list.length;
+    return nb - na || String(a.name).localeCompare(String(b.name), 'fr');
+  }).map(a => {
+    const s = st.find(x => x.id === a.id) || { list: [] }; const seen = s.list.length;
+    return `<article class="arch ${seen ? 'seen' : ''}">
+      <h3><span>${esc(a.name)}</span><span class="badge ${STATUS[a.status] || ''}">${esc(a.status || '')}</span></h3>
+      <div class="small muted">${seen ? `Croisé ${seen} fois · ${wl(s.list)} · ${all.length ? pct(100 * seen / all.length) + ' des adversaires' : ''}` : 'Pas encore croisé'}</div>
+      <div><span class="eyebrow">Cartes signature</span>${chips(a.core)}</div>
+      ${arr(a.flex).length ? `<div><span class="eyebrow">Souvent avec</span>${chips(a.flex)}</div>` : ''}
+      ${a.plan ? `<p class="plan">${esc(a.plan)}</p>` : ''}
+      ${arr(a.counters).length ? `<div><span class="eyebrow">Comment le contrer</span><ul>${arr(a.counters).map(c => `<li>${esc(c)}</li>`).join('')}</ul></div>` : ''}
+      ${a.ban && a.ban.tox ? `<div><span class="eyebrow">À lui bannir dans le shop</span> <span class="badge ${STATUS[a.ban.status] || 'hyp'}">${esc(a.ban.status || 'hypothèse')}</span><p class="plan"><b>${esc(toxName(a.ban.tox))}</b>${a.ban.why ? ' : ' + esc(a.ban.why) : ''}</p></div>` : ''}
+      ${arr(a.bestAnswers).length ? `<div><span class="eyebrow">Mes meilleures réponses</span><ul>${arr(a.bestAnswers).map(b => `<li>${arr(b.cards).map(v => esc((cardOf(v) || { name: v }).name)).join(' · ')}${b.why ? ` <span class="muted">· ${esc(b.why)}</span>` : ''}</li>`).join('')}</ul></div>` : ''}
+    </article>`;
+  }).join('');
+  // Opponent cards seen
+  const seen = new Map();
+  all.forEach(m => { new Set(oppCards(m).map(v => { const c = cardOf(v); return c ? c.n : String(v); })).forEach(k => { const o = seen.get(k) || { k, n: 0, V: 0, D: 0 }; o.n++; if (m.result === 'V') o.V++; if (m.result === 'D') o.D++; seen.set(k, o); }); });
+  const top = [...seen.values()].sort((a, b) => b.n - a.n || b.D - a.D).slice(0, 15);
+  const max = top.length ? top[0].n : 1;
+  const els = new Map(); all.forEach(m => oppCards(m).forEach(v => { const c = cardOf(v); if (c) els.set(c.el, (els.get(c.el) || 0) + 1); }));
+  const elTot = [...els.values()].reduce((a, b) => a + b, 0);
+  const banCount = side => { const m = new Map(); all.forEach(x => { const k = x.bans && x.bans[side]; if (!k) return; const o = m.get(k) || { k, n: 0, V: 0, D: 0 }; o.n++; if (x.result === 'V') o.V++; if (x.result === 'D') o.D++; m.set(k, o); }); return [...m.values()].sort((a, b) => b.n - a.n); };
+  const banBars = list => { const mx = list.length ? list[0].n : 1; return list.length ? `<div class="bars">${list.map(o => `<div class="bar-row"><span class="lbl">${esc(toxName(o.k))}</span><span class="track" title="${o.V} victoires, ${o.D} défaites">${o.V ? `<i class="w" style="width:${100 * o.V / mx}%"></i>` : ''}${o.D ? `<i class="l" style="width:${100 * o.D / mx}%"></i>` : ''}${o.n - o.V - o.D > 0 ? `<i class="a" style="width:${100 * (o.n - o.V - o.D) / mx}%"></i>` : ''}</span><span class="num small">${o.n} · ${o.V}-${o.D}</span></div>`).join('')}</div>` : '<p class="empty">Aucun ban relevé pour l\'instant.</p>'; };
+  const sig = new Set(); S.arch.forEach(a => arr(a.core).forEach(n => sig.add(n)));
+  const watch = S.cards.filter(c => sig.has(c.n)).sort((a, b) => (seen.get(b.n) || { n: 0 }).n - (seen.get(a.n) || { n: 0 }).n || a.name.localeCompare(b.name, 'fr'));
+  box.innerHTML = `<div class="stack sec">
+    <div class="panel"><div class="sec-head"><h2>Archétypes</h2><p>Les familles de decks attendues d'après les synergies du jeu, puis confirmées ou non par tes parties. Un adversaire est rattaché à un archétype quand il joue au moins 2 de ses cartes signature.</p></div>
+      ${S.ready.a ? (archCards ? `<div class="arch-grid">${archCards}</div>` : '<p class="empty">Aucun archétype enregistré.</p>') : '<p class="empty">Chargement…</p>'}</div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Cartes adverses croisées</h2><p>Nombre de parties où l'adversaire jouait la carte, et ton résultat.</p></div>
+        ${top.length ? `<div class="legend" style="margin-bottom:10px"><span><i style="background:var(--win)"></i>Tu as gagné</span><span><i style="background:var(--loss)"></i>Tu as perdu</span></div>
+        <div class="bars">${top.map(o => `<div class="bar-row"><span class="lbl">${chip(isNaN(+o.k) ? o.k : +o.k)}</span><span class="track" title="${o.V} victoires, ${o.D} défaites">${o.V ? `<i class="w" style="width:${100 * o.V / max}%"></i>` : ''}${o.D ? `<i class="l" style="width:${100 * o.D / max}%"></i>` : ''}${o.n - o.V - o.D > 0 ? `<i class="a" style="width:${100 * (o.n - o.V - o.D) / max}%"></i>` : ''}</span><span class="num small">${o.n} · ${o.V}-${o.D}</span></div>`).join('')}</div>` : '<p class="empty">Les cartes adverses apparaîtront après la première partie.</p>'}</div>
+      <div class="panel"><div class="sec-head"><h2>Éléments adverses</h2><p>Part de chaque élément parmi les cartes adverses croisées : la résistance à viser pour tes decks.</p></div>
+        ${elTot ? `<div class="bars">${[...els.entries()].sort((a, b) => b[1] - a[1]).map(([e, n]) => `<div class="bar-row"><span class="lbl"><span class="cc"><span class="dot ${e}"></span>${EL[e] || e}</span></span><span class="track"><i style="width:${100 * n / elTot}%;background:var(--el-${e})"></i></span><span class="num small">${pct(100 * n / elTot)}</span></div>`).join('')}</div>` : '<p class="empty">Pas encore de données.</p>'}</div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Ce que bannissent tes adversaires</h2><p>Un élément du shop par joueur, retiré du shop pour les deux. Ton résultat dans ces parties.</p></div>${banBars(banCount('theirs'))}</div>
+      <div class="panel"><div class="sec-head"><h2>Ce que tu bannis</h2><p>Et ce que ça t'a rapporté.</p></div>${banBars(banCount('mine'))}</div>
+    </div>
+    <div class="panel"><div class="sec-head"><h2>Cartes signature à surveiller</h2><p>Les cartes qui font tourner les archétypes ci-dessus. Celles déjà croisées remontent en tête.</p></div>
+      <div class="watch">${watch.map(c => { const o = seen.get(c.n); return `<div class="w"><span class="row"><span class="dot ${c.el}"></span><b>${esc(c.name)}</b></span><span class="muted">${EL[c.el]} · ${c.hp} PV · ${o ? `croisée ${o.n} fois (${o.V}-${o.D})` : 'pas encore croisée'}</span><span class="small">${esc(c.ab.map(a => a[0] + ' (recharge ' + a[1] + ')').join(', '))}</span></div>`; }).join('')}</div></div>
+  </div>`;
+}
+
+/* Mon jeu */
+function renderJeu() {
+  const box = $('view-jeu');
+  const all = sorted();
+  if (S.ready.m && !all.length) { box.innerHTML = emptyJournal(); return; }
+  const cats = catStats(all); const maxW = cats.length ? cats[0].weight : 1;
+  const chrono = all.slice().reverse();
+  const lessons = []; all.forEach(m => arr(m.lessons).forEach(l => lessons.push({ l, m })));
+  const goods = []; all.forEach(m => arr(m.goodPlays).forEach(g => goods.push({ g, m })));
+  const style = S.know.filter(k => k.kind === 'jeu');
+  const checklist = cats.slice(0, 4).filter(c => CAT[c.cat]).map(c => CAT[c.cat][1]);
+  if (!checklist.length) checklist.push(CAT.lecture[1], CAT.ordre[1], CAT.tempo[1], CAT.boutique[1]);
+  box.innerHTML = `<div class="stack sec">
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Erreurs par catégorie</h2><p>Gravité cumulée : élevé compte 3, moyen 2, faible 1.</p></div>
+        ${cats.length ? `<div class="bars">${cats.map(c => `<div class="bar-row"><span class="lbl">${esc(CAT[c.cat] ? CAT[c.cat][0] : c.cat)}</span><span class="track"><i class="m" style="width:${100 * c.weight / maxW}%"></i></span><span class="num small">${c.count} fois</span></div>`).join('')}</div>` : '<p class="empty">Aucune erreur relevée pour l\'instant.</p>'}</div>
+      <div class="panel"><div class="sec-head"><h2>Évolution</h2><p>Gravité des erreurs à chaque partie, de la plus ancienne à la plus récente.</p></div>${sparkHtml(chrono)}</div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Avant chaque partie</h2><p>${cats.length ? 'Construit à partir de tes erreurs les plus coûteuses.' : 'Les points de base, en attendant tes premières parties.'}</p></div><ul class="check">${checklist.map(t => `<li><span>${esc(t)}</span></li>`).join('')}</ul></div>
+      <div class="panel"><div class="sec-head"><h2>Ton style</h2></div>${style.length ? style.map(knHtml).join('') : '<p class="empty">Rien encore.</p>'}</div>
+    </div>
+    <div class="two">
+      <div class="panel"><div class="sec-head"><h2>Leçons</h2></div>${lessons.length ? `<ul class="bullets">${lessons.map(x => `<li>${esc(x.l)} <button class="linkish small" data-open="${esc(x.m.id)}">${fmtDate(x.m.date)}</button></li>`).join('')}</ul>` : '<p class="empty">Les leçons de chaque partie s\'ajouteront ici.</p>'}</div>
+      <div class="panel"><div class="sec-head"><h2>Bons réflexes</h2></div>${goods.length ? `<ul class="bullets">${goods.map(x => `<li>${esc(x.g.what || x.g)} <button class="linkish small" data-open="${esc(x.m.id)}">${fmtDate(x.m.date)}</button></li>`).join('')}</ul>` : '<p class="empty">Les bons coups relevés s\'ajouteront ici.</p>'}</div>
+    </div>
+  </div>`;
+}
+function sparkHtml(chrono) {
+  if (chrono.length < 3) return '<p class="empty">La courbe apparaît à partir de 3 parties.</p>';
+  const W = 520, H = 140, P = { l: 28, r: 10, t: 10, b: 22 };
+  const ys = chrono.map(mistakeWeight), max = Math.max(4, ...ys);
+  const x = i => P.l + (W - P.l - P.r) * (chrono.length === 1 ? 0 : i / (chrono.length - 1));
+  const y = v => P.t + (H - P.t - P.b) * (1 - v / max);
+  const pts = ys.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const ticks = [0, Math.round(max / 2), max];
+  const last = ys.length - 1;
+  return `<div class="spark"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Gravité des erreurs par partie">
+    ${ticks.map(t => `<line x1="${P.l}" x2="${W - P.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/><text x="${P.l - 6}" y="${y(t) + 4}" text-anchor="end">${t}</text>`).join('')}
+    <polygon points="${x(0)},${y(0)} ${pts} ${x(last)},${y(0)}" fill="var(--warn)" opacity=".15"/>
+    <polyline points="${pts}" fill="none" stroke="var(--warn)" stroke-width="2"/>
+    ${ys.map((v, i) => `<circle cx="${x(i)}" cy="${y(v)}" r="${i === last ? 4.5 : 2.5}" fill="${chrono[i].result === 'V' ? 'var(--win)' : chrono[i].result === 'D' ? 'var(--loss)' : 'var(--muted)'}" stroke="var(--surface)" stroke-width="1.5"><title>${esc(fmtDate(chrono[i].date))} · ${esc(RES[chrono[i].result] || '')} · gravité ${v}</title></circle>`).join('')}
+    <text x="${P.l}" y="${H - 4}">1re partie</text><text x="${W - P.r}" y="${H - 4}" text-anchor="end">dernière</text>
+  </svg><div class="legend" style="margin-top:6px"><span><i style="background:var(--win)"></i>Victoire</span><span><i style="background:var(--loss)"></i>Défaite</span></div></div>`;
+}
+
+/* Savoir */
+function knHtml(k) {
+  const ev = arr(k.evidence);
+  return `<div class="kn"><div class="h"><b>${esc(k.subject)}</b><span class="badge ${STATUS[k.status] || ''}">${esc(k.status || '')}</span>${k.source ? `<span class="small muted">${esc(k.source)}</span>` : ''}</div>
+    <p>${esc(k.text)}</p>${arr(k.cards).length ? chips(k.cards) : ''}
+    ${ev.length ? `<span class="small muted">Vu dans : ${ev.map(id => { const m = S.matches.find(x => x.id === id); return m ? `<button class="linkish small" data-open="${esc(id)}">${fmtDate(m.date)}</button>` : esc(id); }).join(', ')}</span>` : ''}</div>`;
+}
+function renderSavoir() {
+  const box = $('view-savoir');
+  const kinds = Object.keys(KIND).filter(k => S.know.some(x => x.kind === k));
+  const q = S.kSearch.toLowerCase();
+  const list = S.know.filter(k => (S.kindFilter === 'all' || k.kind === S.kindFilter) && (!q || (String(k.subject) + ' ' + String(k.text)).toLowerCase().includes(q)));
+  const groups = Object.keys(KIND).map(kind => [kind, list.filter(k => k.kind === kind)]).filter(([, l]) => l.length);
+  const prev = $('k-search'); const hadFocus = prev && document.activeElement === prev;
+  box.innerHTML = `<div class="panel sec stack">
+    <div class="sec-head"><h2>Ce que l'on sait du jeu</h2><p>Règles du jeu, comportements observés et hypothèses à vérifier. Une hypothèse devient confirmée après plusieurs parties qui vont dans le même sens.</p></div>
+    <div class="row"><button class="chip" data-kind="all" aria-pressed="${S.kindFilter === 'all'}">Tout</button>${kinds.map(k => `<button class="chip" data-kind="${k}" aria-pressed="${S.kindFilter === k}">${esc(KIND[k])}</button>`).join('')}
+      <input class="input" id="k-search" type="search" placeholder="Chercher" aria-label="Chercher dans le savoir" style="max-width:240px" value="${esc(S.kSearch)}"></div>
+    ${!S.ready.k ? '<p class="empty">Chargement…</p>' : groups.length ? groups.map(([kind, l]) => `<div><h3 style="margin-top:8px">${esc(KIND[kind])}</h3>${l.sort((a, b) => String(a.subject).localeCompare(String(b.subject), 'fr')).map(knHtml).join('')}</div>`).join('') : '<p class="empty">Rien ne correspond.</p>'}
+  </div>`;
+  box.querySelectorAll('[data-kind]').forEach(b => b.addEventListener('click', () => { S.kindFilter = b.dataset.kind; renderSavoir(); }));
+  const s = $('k-search'); s.addEventListener('input', e => { S.kSearch = e.target.value; renderSavoir(); });
+  if (hadFocus) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
+}
+
+/* ---------- Screenshot analysis ---------- */
+const str = (v, n = 600) => v == null ? '' : String(v).slice(0, n);
+let REF = null;
+function refText() {
+  if (REF) return REF;
+  REF = S.cards.map(c => `#${c.n} ${c.name} | ${EL[c.el] || c.el} ${c.rar} | ${c.hp} PV | ${c.spt} Sp | rés ${c.res.join('/')} | `
+    + c.ab.map(a => `${a[0]} (recharge ${a[1]}${a[3] ? ', crit x' + a[3] : ''}) : ${a[2]}`).join(' ; ')
+    + (c.pa.length ? ' | passifs : ' + c.pa.map(p => `${p[0]} : ${p[2]}`).join(' ; ') : '')
+    + (arr(c.tal).length ? ' | talents possibles : ' + c.tal.map(t => `${t[1]} : ${str(t[2], 90)}`).join(' ; ') : '')).join('\n');
+  return REF;
+}
+const anMsg = t => { $('an-msg').textContent = t; };
+function anAvailability() {
+  const ok = !!(S.sample && S.limits && S.limits.images);
+  $('an-body').hidden = !ok;
+  const u = $('an-unavail'); u.hidden = ok;
+  if (!ok) u.textContent = !window.claude ? "L'analyse des captures ne fonctionne que dans la page ouverte sur claude.ai."
+    : S.sample && S.limits && !S.limits.images ? "Cette vue ne peut pas envoyer d'images à Claude. Envoie plutôt tes captures à Claude dans Claude Code."
+    : "L'analyse des captures n'est pas disponible dans cette vue. Tu peux toujours envoyer tes captures à Claude dans Claude Code.";
+  if (ok) {
+    $('an-limit').textContent = `Jusqu'à ${S.limits.images.maxCount} captures par analyse. En priorité : le tour 1, les tours de boutique, les gros coups et l'écran de fin.`;
+    $('an-file').accept = S.limits.images.mediaTypes.join(',');
+  }
+}
+function initAnalyzer() {
+  const drop = $('an-drop'), file = $('an-file');
+  file.addEventListener('change', () => { addShots(file.files); file.value = ''; });
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => addShots(e.dataTransfer && e.dataTransfer.files));
+  document.addEventListener('paste', e => {
+    if (S.view !== 'parties' || $('an-body').hidden || S.busy) return;
+    const files = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => /^image\//.test(f.type));
+    if (files.length) { e.preventDefault(); addShots(files); }
+  });
+  $('an-shots').addEventListener('click', e => {
+    const b = e.target.closest('[data-shot]'); if (!b || S.busy) return;
+    const i = +b.dataset.i, act = b.dataset.shot, sh = S.shots;
+    if (act === 'rm') { URL.revokeObjectURL(sh[i].url); sh.splice(i, 1); }
+    if (act === 'left' && i > 0) [sh[i - 1], sh[i]] = [sh[i], sh[i - 1]];
+    if (act === 'right' && i < sh.length - 1) [sh[i + 1], sh[i]] = [sh[i], sh[i + 1]];
+    renderShots(); if (S.draft) renderDraft();
+  });
+  $('an-go').addEventListener('click', runAnalysis);
+  $('an-stop').addEventListener('click', () => { if (S.ctl) S.ctl.abort(); });
+  $('an-draft').addEventListener('click', onDraftClick);
+  $('an-draft').addEventListener('change', onDraftChange);
+  document.addEventListener('click', e => { const z = e.target.closest('[data-zoom]'); if (z) openZoom(z.dataset.zoom); });
+}
+function addShots(list) {
+  const lim = S.limits && S.limits.images;
+  const types = lim ? lim.mediaTypes : ['image/png', 'image/jpeg', 'image/webp'];
+  const max = lim ? lim.maxCount : 20, maxBytes = lim ? lim.maxInputBytes : 20e6;
+  const all = [...(list || [])];
+  const incoming = all.filter(f => types.includes(f.type)).sort((a, b) => (a.lastModified - b.lastModified) || a.name.localeCompare(b.name));
+  let added = 0, big = 0, over = 0;
+  for (const f of incoming) {
+    if (f.size > maxBytes) { big++; continue; }
+    if (S.shots.length >= max) { over++; continue; }
+    S.shots.push({ file: f, url: URL.createObjectURL(f), ts: f.lastModified || Date.now() }); added++;
+  }
+  const notes = [];
+  if (all.length - incoming.length) notes.push(`${all.length - incoming.length} fichier(s) ignoré(s) : formats acceptés PNG, JPEG, WebP`);
+  if (big) notes.push(`${big} capture(s) trop lourde(s)`);
+  if (over) notes.push(`${over} capture(s) en trop : ${max} au maximum par analyse, garde les plus parlantes`);
+  anMsg(notes.length ? notes.join('. ') + '.' : added ? `${S.shots.length} capture(s) prête(s).` : '');
+  renderShots();
+}
+function renderShots() {
+  const n = S.shots.length;
+  $('an-shots').innerHTML = S.shots.map((s, i) => `<li class="shot"><img src="${esc(s.url)}" alt="Capture ${i + 1}" data-zoom="${esc(s.url)}">
+    <span class="bar"><b>${i + 1}</b><button class="x" data-shot="left" data-i="${i}" aria-label="Avancer la capture ${i + 1}" ${i === 0 || S.busy ? 'disabled' : ''}>←</button><button class="x" data-shot="right" data-i="${i}" aria-label="Reculer la capture ${i + 1}" ${i === n - 1 || S.busy ? 'disabled' : ''}>→</button><button class="x" data-shot="rm" data-i="${i}" aria-label="Retirer la capture ${i + 1}" ${S.busy ? 'disabled' : ''}>×</button></span></li>`).join('');
+  $('an-go').disabled = S.busy || !n;
+}
+function setBusy(on) { S.busy = on; $('an-stop').hidden = !on; renderShots(); }
+function buildPrompt() {
+  const deck = $('an-deck').value.trim(), hint = $('an-hint').value.trim();
+  const arch = S.arch.map(a => `${a.id} : ${a.name} : ${arr(a.core).join(', ')}`).join('\n');
+  const known = S.know.filter(k => k.kind !== 'jeu' && k.status !== 'réfuté').map(k => `- ${k.subject} : ${k.text}`).join('\n');
+  return [
+`Tu analyses une partie du jeu de cartes SPAM (jeu Steam de Ticroco, version 1.20 ou 1.21) à partir de ${S.shots.length} capture(s) d'écran prises par le joueur, appelé "moi". Les captures sont jointes dans l'ordre chronologique : la capture 1 est la plus ancienne. Elles ne couvrent pas tous les tours.`,
+`TA MISSION
+1. Lis chaque capture : numéro du tour, cartes des deux camps (noms), PV, recharges affichées, bonus élémentaires, Spamtons, boutique, écran de fin.
+2. Identifie les 4 cartes de chaque camp dans la RÉFÉRENCE ci-dessous, par leur numéro.
+3. Reconstitue la partie tour par tour, y compris les tours sans capture, à partir des recharges, des écarts de PV, des bonus et des Spamtons. Pour chaque tour, indique sur quoi tu t'appuies (champ "basis").
+4. Relève le tournant, les erreurs de "moi" (seulement celles que les captures montrent ou que les chiffres prouvent), les bons coups et 1 à 3 leçons concrètes et réutilisables.`,
+`BARÈME DE CERTITUDE (champ "c", entier de 0 à 100)
+- 100 : lu directement sur une capture.
+- 85 à 99 : déduit, et les chiffres n'admettent qu'une seule explication (recharge revenue, écart de PV exact, bonus).
+- 60 à 84 : l'explication la plus probable parmi plusieurs.
+- moins de 60 : supposition.
+Ne jamais inventer. Un tour impossible à reconstituer : écris "inconnu" avec un c bas. Une carte illisible : mets ce que tu lis dans "unknown".`,
+`RÈGLES UTILES
+- Chaque camp a 4 cartes. Une capacité de recharge n est utilisable tous les n tours. Le premier joueur commence avec toutes ses recharges réduites de 1, le second de 2.
+- Bonus élémentaire : +10 % de dégâts et de soins par point, pour toute la partie.
+- Ordre conseillé dans un tour : générer, puis buffer, puis attaquer.
+- Boutique : tours pairs, 3 Tox, un seul achat ; relance 10 puis +5 ; passer rapporte 10. Revenus par tour : Spamtons des cartes vivantes + numéro du tour ; une carte perdue rapporte 50.
+- Ban du shop : chaque joueur bannit un élément du shop (une Tox) et les deux éléments bannis disparaissent du shop pour les deux joueurs. Relève les bans visibles sur les captures (écran de ban, éléments barrés ou grisés dans le shop), à quel moment ils ont lieu (phase) et si les deux joueurs bannissent en même temps ou l'un après l'autre (order). Écris les Tox avec leur nom exact dans cette liste : ${Object.values(S.tox || {}).map(t => t.name).join(', ')}. Le ban d'une carte du deck n'a jamais été observé : ne le cherche pas.
+- Gel : tout dégât ou soin sur la carte gelée brise la glace et lui inflige 60 dégâts (version 1.21). Provocation force le ciblage adverse. Brut ignore résistance et Provocation. Disparition retire le dernier passif. Immunité : insensible aux effets adverses.${known ? '\nSavoir accumulé :\n' + known : ''}`,
+`CE QUE LE JOUEUR PRÉCISE : ${hint || 'rien'}${deck ? `\nNom de son deck : ${deck}` : ''}
+Il préfère les decks réguliers, peu dépendants des critiques.`,
+`ARCHÉTYPES CONNUS (id : nom : numéros des cartes signature)
+${arch || 'aucun'}
+Mets l'id dans opp.archetype si l'adversaire joue au moins 2 cartes signature d'un archétype, sinon null.`,
+`CATÉGORIES D'ERREUR (champ "cat") : ordre, ciblage, tempo, boutique, economie, defense, lecture, deck, ban. Coût (champ "cost") : élevé, moyen ou faible.`,
+`RÉFÉRENCE DES CARTES (numéro, nom, élément, rareté, PV, Spamtons par tour, résistances Feu/Eau/Terre/Nature/Lumière/Ombre en %, capacités avec recharge, passifs, talents possibles)
+${refText()}`,
+`RÉPONDS UNIQUEMENT avec un objet JSON, en français, de cette forme :
+{"result":"V"|"D"|"N"|null,"resultCertainty":0-100,"first":true|false|null,"firstCertainty":0-100,"turns":nombre|null,"mode":"classé"|"normal"|"défi"|"inconnu",
+"my":{"deck":"","cards":[numéros],"unknown":["noms lus mais introuvables"]},
+"opp":{"name":"pseudo lu ou vide","cards":[numéros],"unknown":[],"archetype":"id"|null,"certainty":0-100},
+"screensRead":[{"i":1,"turn":1,"shows":"ce que montre la capture"}],
+"timeline":[{"t":1,"me":"ce que j'ai fait","opp":"ce qu'a fait l'adversaire","note":"PV, bonus, morts","inferred":false,"c":100,"basis":"capture 1"}],
+"gaps":[{"turns":"3-4","how":"comment ces tours ont été reconstitués","c":80}],
+"shop":[{"t":2,"who":"me"|"opp","tox":"nom de la Tox ou vide","pass":false,"on":numéro de carte|null,"replaced":"ligne remplacée ou vide","c":100}],
+"turningPoint":"une phrase","summary":"2 à 4 phrases",
+"mistakes":[{"t":5,"cat":"ciblage","what":"ce qui s'est passé","better":"ce qu'il fallait faire","cost":"élevé","c":90}],
+"goodPlays":[{"t":3,"what":"..."}],
+"lessons":["..."],
+"newKnowledge":[{"kind":"carte"|"mécanique"|"adversaire"|"tox"|"économie","subject":"titre court","text":"fait observé dans cette partie et absent du savoir accumulé","cards":[numéros]}],
+"bans":{"mine":"nom de la Tox"|null,"theirs":"nom de la Tox"|null,"c":0-100,"phase":"moment du ban, ou inconnu","order":"simultané, l'un après l'autre, ou inconnu"},
+"evidence":{"coverage":"tours vus : 1, 2, 5, 9","confidence":0-100}}`
+  ].join('\n\n');
+}
+function sampleErr(e) {
+  const c = e && e.code;
+  return ({
+    cancelled: 'Analyse arrêtée.',
+    not_granted: "L'accès à Claude a été refusé pour cette page. Recharge la page pour qu'il te soit redemandé.",
+    rate_limited: "Limite d'utilisation de Claude atteinte. Réessaie plus tard.",
+    image_rejected: 'Une capture a été refusée (format ou taille). Retire-la et relance.',
+    images_unavailable: "Cette vue ne peut pas envoyer d'images à Claude.",
+    invalid_json: "La réponse de Claude n'était pas exploitable. Relance l'analyse.",
+    prompt_too_large: 'Trop de données pour une seule analyse : retire quelques captures.',
+    refused: "Claude n'a pas voulu analyser ces images.",
+    session_expired: 'Ta session claude.ai a expiré : reconnecte-toi puis relance.',
+    sampling_disabled: "Claude n'est pas disponible pour ce compte."
+  })[c] || `L'analyse a échoué (${c || 'erreur inconnue'}). Relance-la.`;
+}
+async function runAnalysis() {
+  if (S.busy || !S.sample) return;
+  if (!S.shots.length) { anMsg('Ajoute au moins une capture.'); return; }
+  S.ctl = new AbortController(); setBusy(true);
+  anMsg('Claude regarde les captures… compte une à deux minutes.');
+  try {
+    const out = await S.sample.json(buildPrompt(), { images: S.shots.map(s => s.file), modelTier: 'complex', signal: S.ctl.signal, onText: () => anMsg('Claude rédige l\'analyse…') });
+    S.draft = normalize(out);
+    anMsg('Analyse terminée : vérifie le brouillon ci-dessous.');
+    renderDraft();
+    $('an-draft').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    anMsg(sampleErr(e));
+  } finally { S.ctl = null; setBusy(false); }
+}
+function normalize(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) throw { code: 'invalid_json' };
+  const nums = v => [...new Set(arr(v).map(Number).filter(n => S.byN.has(n)))].slice(0, 4);
+  const strs = v => arr(v).map(x => str(x, 60)).filter(Boolean).slice(0, 4);
+  const my = o.my || {}, op = o.opp || {}, ev = o.evidence || {};
+  const ts = Math.min(...S.shots.map(s => s.ts));
+  return {
+    date: new Date(isFinite(ts) ? ts : Date.now()).toISOString(),
+    mode: ['classé', 'normal', 'défi', 'inconnu'].includes(o.mode) ? o.mode : 'inconnu',
+    result: ['V', 'D', 'N'].includes(o.result) ? o.result : null, resultCertainty: certNum(o.resultCertainty),
+    first: typeof o.first === 'boolean' ? o.first : null, firstCertainty: certNum(o.firstCertainty),
+    turns: +o.turns > 0 ? Math.round(+o.turns) : null,
+    my: { deck: str($('an-deck').value.trim() || my.deck, 60), cards: nums(my.cards), unknown: strs(my.unknown) },
+    opp: { name: str(op.name, 60), cards: nums(op.cards), unknown: strs(op.unknown), archetype: S.arch.some(a => a.id === op.archetype) ? op.archetype : null, certainty: certNum(op.certainty) },
+    screensRead: arr(o.screensRead).slice(0, 40).map(s => ({ i: +s.i || null, turn: +s.turn || null, shows: str(s.shows, 300) })),
+    timeline: arr(o.timeline).slice(0, 80).map(t => ({ t: str(t.t, 10), me: str(t.me), opp: str(t.opp), note: str(t.note, 300), inferred: !!t.inferred, c: certNum(t.c), basis: str(t.basis, 300) })),
+    gaps: arr(o.gaps).slice(0, 20).map(g => ({ turns: str(g.turns, 20), how: str(g.how), c: certNum(g.c) })),
+    shop: arr(o.shop).slice(0, 40).map(s => ({ t: str(s.t, 10), who: s.who === 'opp' ? 'opp' : 'me', tox: str(s.tox, 60), pass: !!s.pass, on: S.byN.has(+s.on) ? +s.on : null, replaced: str(s.replaced, 80), c: certNum(s.c) })),
+    turningPoint: str(o.turningPoint), summary: str(o.summary, 1200),
+    mistakes: arr(o.mistakes).slice(0, 20).map(x => ({ t: str(x.t, 10), cat: CAT[x.cat] ? x.cat : 'lecture', what: str(x.what), better: str(x.better), cost: COST[x.cost] ? x.cost : 'moyen', c: certNum(x.c) })),
+    goodPlays: arr(o.goodPlays).slice(0, 20).map(g => ({ t: str(g && g.t, 10), what: str(g && g.what || g) })),
+    lessons: arr(o.lessons).slice(0, 6).map(l => str(l, 400)).filter(Boolean),
+    newKnowledge: arr(o.newKnowledge).slice(0, 8).map(k => ({ kind: KIND[k.kind] ? k.kind : 'carte', subject: str(k.subject, 80), text: str(k.text, 600), cards: nums(k.cards), keep: true })).filter(k => k.subject && k.text),
+    bans: (() => { const b = o.bans || {}; const mine = toxFam(b.mine) || str(b.mine, 60) || null, theirs = toxFam(b.theirs) || str(b.theirs, 60) || null;
+      return mine || theirs ? { mine, theirs, c: certNum(b.c), phase: str(b.phase, 80), order: str(b.order, 60) } : null; })(),
+    evidence: { coverage: str(ev.coverage, 200), confidence: certNum(ev.confidence) }
+  };
+}
+function renderDraft() {
+  const box = $('an-draft'); box.hidden = !S.draft;
+  box.innerHTML = S.draft ? detailHtml(S.draft, true) : '';
+}
+function draftFooter(m) {
+  const kn = arr(m.newKnowledge);
+  const canSave = S.db && S.canWrite !== false && !S.saving;
+  return `<div class="panel stack-s">
+    ${kn.length ? `<h3>À ajouter au Savoir, en hypothèse</h3>${kn.map((k, i) => `<label class="kn-pick"><input type="checkbox" data-kn="${i}"${k.keep !== false ? ' checked' : ''}><span><b>${esc(k.subject)}</b> · ${esc(k.text)}</span></label>`).join('')}` : ''}
+    <div class="row" style="justify-content:space-between;margin-top:8px">
+      <span class="small muted">${S.shots.length} capture(s)${S.assets ? ' enregistrée(s) avec la partie' : ' non conservée(s) : cette vue ne peut pas stocker d\'images'}</span>
+      <span class="row"><button class="btn" type="button" data-draft="drop">Abandonner</button><button class="btn primary" type="button" data-draft="save"${canSave ? '' : ' disabled'}>Enregistrer dans le journal</button></span>
+    </div>
+    <span class="small muted" id="d-msg" role="status">${!S.db ? 'Journal indisponible dans cette vue.' : S.canWrite === false ? 'Tu peux consulter le journal mais pas y écrire.' : ''}</span>
+  </div>`;
+}
+function onDraftChange(e) {
+  const d = S.draft; if (!d) return; const t = e.target;
+  if (t.id === 'd-res') { d.result = t.value || null; d.resultCertainty = 100; }
+  if (t.id === 'd-first') { d.first = t.value === '' ? null : t.value === '1'; d.firstCertainty = 100; }
+  if (t.id === 'd-deck') d.my.deck = t.value.trim();
+  if (t.id === 'd-arch') { d.opp.archetype = t.value || null; d.opp.certainty = t.value ? 100 : d.opp.certainty; renderDraft(); }
+  if (t.id === 'd-ban-mine' || t.id === 'd-ban-theirs') { d.bans = Object.assign({ mine: null, theirs: null, c: null }, d.bans); d.bans[t.id === 'd-ban-mine' ? 'mine' : 'theirs'] = t.value || null; d.bans.c = 100; }
+  if (t.dataset.kn != null) { const k = d.newKnowledge[+t.dataset.kn]; if (k) k.keep = t.checked; }
+}
+function onDraftClick(e) {
+  const b = e.target.closest('[data-draft]'); if (!b) return;
+  if (b.dataset.draft === 'drop') { S.draft = null; renderDraft(); anMsg('Brouillon abandonné. Les captures restent prêtes pour une nouvelle analyse.'); }
+  if (b.dataset.draft === 'save') saveDraft(b);
+}
+async function saveDraft(btn) {
+  const d = S.draft; if (!d || S.saving || !S.db) return;
+  const dm = t => { const el = $('d-msg'); if (el) el.textContent = t; };
+  S.saving = true; btn.disabled = true;
+  const id = `${d.date.slice(0, 10)}-${d.date.slice(11, 16).replace(':', '')}-c${Math.random().toString(36).slice(2, 6)}`;
+  const screens = []; let failed = 0;
+  if (S.assets) {
+    for (let i = 0; i < S.shots.length; i++) {
+      dm(`Enregistrement des captures (${i + 1}/${S.shots.length})…`);
+      try { screens.push((await S.assets.upload(S.shots[i].file)).id); } catch (err) { failed++; }
+    }
+  }
+  dm('Enregistrement de la partie…');
+  const { newKnowledge, ...rest } = d;
+  const doc = Object.assign({}, rest, { screens, evidence: Object.assign({}, d.evidence, { screens: S.shots.length }), source: 'captures', createdAt: new Date().toISOString() });
+  try {
+    await S.db.collection('matches').doc(id).set(doc);
+    for (const k of arr(newKnowledge).filter(k => k.keep !== false)) {
+      await S.db.collection('knowledge').doc().set({ kind: k.kind, subject: k.subject, text: k.text, cards: k.cards, status: 'hypothèse', source: 'analyse de captures', evidence: [id], createdAt: new Date().toISOString() });
+    }
+    S.shots.forEach(s => URL.revokeObjectURL(s.url)); S.shots = [];
+    S.draft = null; S.sel = id; S.resFilter = 'all'; S.deckFilter = '';
+    $('an-hint').value = '';
+    renderDraft(); renderShots(); renderParties();
+    anMsg('Partie enregistrée' + (failed ? `, mais ${failed} capture(s) n'ont pas pu être conservées` : '') + '.');
+  } catch (err) {
+    dm(err && err.code === 'quota_exceeded' ? 'Le journal est plein : supprime des parties anciennes.' : `Échec de l'enregistrement (${err && err.code || 'erreur'}). Réessaie.`);
+    btn.disabled = false;
+  } finally { S.saving = false; }
+}
+function openZoom(src) {
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'lightbox'; b.setAttribute('aria-label', 'Fermer la capture');
+  b.innerHTML = `<img src="${esc(src)}" alt="">`;
+  const close = () => { b.remove(); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  b.addEventListener('click', close); document.addEventListener('keydown', onKey);
+  document.body.appendChild(b); b.focus();
+}
+
+boot();
+})();
+</script>

@@ -1,0 +1,157 @@
+Chouette Polychrome : carte SPAM Nature commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Chouette Polychrome D Voir la carte en grand
+Chouette Polychrome
+2 Danse des plumes
+500/500
+9
+Standard
+Chouette Polychrome
+2 Danse des plumes
+500/500
+9
+Élémentaire
+Chouette Polychrome
+2 Danse des plumes
+500/500
+9
+FA
+Chouette Polychrome
+2 Danse des plumes
+500/500
+9
+## Chouette Polychrome
+D Nature · Commune · Standard
+500 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Virage 360 Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+- Talent 2 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 3 Dernier souffle Applique Temporalité à toutes vos cartes quand celle-ci meurt
+Conseillé
+Trois champs de compétence
+- Danse des plumes compétence · Recharge 2 Cible aléatoirement les cartes du terrain
+Attaque 30 Nature
+Attaque 30 Feu
+Attaque 30 Ombre
+Attaque 30 Lumière
+Attaque 30 Eau
+Attaque 30 Terre
+Applique Temporalité à la carte ciblée en cas de coup critique
+2
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Nature Commune #227
+# Chouette Polychrome
+Économie
+500 Points de vie
+9 Spamtons / tour
+#110 Classement / 127
+D Sans talent · #100
+Attaque
+54
+Génération
+0
+Défense
+10
+Soutien
+1
+Contrôle
+0
+Économie
+87
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Virage 360 2 Imprudent 3 Dernier souffle
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Danse des plumes
+2 tours
+Cible aléatoirement les cartes du terrain
+Attaque 30 Nature
+Attaque 30 Feu
+Attaque 30 Ombre
+Attaque 30 Lumière
+Attaque 30 Eau
+Attaque 30 Terre
+Applique Temporalité à la carte ciblée en cas de coup critique
+Précision 100% Critique 50%
+### Talents
+#### Virage 360
+Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+Δ -440,9 · Score théorique
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -509,1 · Score théorique
+#### Dernier souffle
+Conseillé
+Applique Temporalité à toutes vos cartes quand celle-ci meurt
+Δ 54,2 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Rampe élémentaire ·
+### Mélodie des Divinités + Chouette Polychrome
+53,9 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Commando Gerz + Shinobi Éclairant
+51,8 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+D Accessible
+Midrange ·
+### Dragon Ciel + Rongeur Nuageux
+49,5 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Commando Gerz + Zayd
+44,4 % Indice relatif 9 tours Élimination estimée 19 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Squall + Rongeur Nuageux
+43 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+Les autres decks (1)
+- D Dragon Ciel + Rongeur Nuageux avec Chouette Polychrome · L'Épine d'Amour Accessible · 44,4%
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. La Chouette Polychrome est un animal emblématique du sud de Vaeloria. Dans les bois, on reconnaît sa chasse à un son singulier qui rappelle la roulette d’un casino. Ses plumes, ramassées au sol le matin, servent à garnir des oreillers censés porter chance. La présence d’une Chouette Polychrome dans un bois voisin indique que la forêt est saine, ce qui la rend très appréciée des Vaeloriens.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

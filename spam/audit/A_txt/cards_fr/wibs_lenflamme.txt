@@ -1,0 +1,174 @@
+Wibs l'Enflammé : carte SPAM Feu commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Wibs l'Enflammé A Voir la carte en grand
+Wibs l'Enflammé
+1 Ecou-lave
+Cœur de feu
+Poison
+550/550
+5
+Standard
+Wibs l'Enflammé
+1 Ecou-lave
+Cœur de feu
+Poison
+550/550
+5
+Élémentaire
+Wibs l'Enflammé
+1 Ecou-lave
+Cœur de feu
+Poison
+550/550
+5
+FA
+Wibs l'Enflammé
+1 Ecou-lave
+Cœur de feu
+Poison
+550/550
+5
+## Wibs l'Enflammé
+A Feu · Commune · Standard
+550 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+Conseillé
+- Talent 2 Frappe Augmente les dégâts critiques de (+1).
+- Talent 3 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Trois champs de compétence
+- Ecou-lave compétence · Recharge 1 Attaque 5 Feu
+Attaque 5 Feu
+1
+- Cœur de feu tox · Rare Bonus Feu (+2) par tour de jeu
+- Poison tox · Commune Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+Illustration par Mr.Kelbi
+Fiche complète
+Illustration par Mr.Kelbi
+Feu Commune #134
+# Wibs l'Enflammé
+Attaque
+550 Points de vie
+5 Spamtons / tour
+#25 Classement / 127
+A Sans talent · #31
+Attaque
+77
+Génération
+74
+Défense
+28
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage N/T 2 Frappe 3 Erreur Croissante
+Jouer cette carte 15 decks
+Partager
+### Compétences
+#### Ecou-lave
+1 tour
+Attaque 5 Feu
+Attaque 5 Feu
+Précision 100% Critique 1%
+### Tox de départ
+#### Cœur de feu
+Rare
+Bonus Feu (+2) par tour de jeu
+#### Poison
+Commune
+Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+### Talents
+#### Blindage N/T
+Conseillé
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 62,7 · Score théorique
+#### Frappe
+Augmente les dégâts critiques de (+1).
+Δ 0,4 · Score théorique
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 22,1 · Score théorique
+## Ses meilleurs decks
+15 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Aggro / burst ·
+### Wibs l'Enflammé + Apprentie de la Mort
+63,3 % Indice relatif 7 tours Élimination estimée 22 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Souverain des Flammes + Apprentie de la Mort
+58,7 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+C Collection avancée
+Critique ·
+### Souverain des Flammes + Wibs l'Enflammé
+54,6 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Pyro + Wibs l'Enflammé
+53,8 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Pyro + Logidrake
+51,9 % Indice relatif 8 tours Élimination estimée 22 / tour Spamtons
+D Accessible
+Midrange ·
+### Wibs l'Enflammé + Logidrake
+34,8 % Indice relatif 10 tours Élimination estimée 19 / tour Spamtons
+Les autres decks (9)
+- C Wibs l'Enflammé + Apprentie de la Mort avec Squall · Scorch Intermédiaire · 57,7%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Keria · L'Inventeur Intermédiaire · 54,8%
+- C Wibs l'Enflammé + Apprentie de la Mort avec Faerylia · Vladislaus Collection avancée · 53,5%
+- D Souverain des Flammes + Wibs l'Enflammé avec Keria · Squall Collection avancée · 49,5%
+- D Souverain des Flammes + Wibs l'Enflammé avec Apprentie de la Mort · Sorcière Pyrokinétique Collection avancée · 45,7%
+- D Wibs l'Enflammé + Apprentie de la Mort avec Prisonnière de la Machine · L'Inventeur Accessible · 39%
+- D Souverain des Flammes + Wibs l'Enflammé avec Roi Feu · Squall Collection avancée · 37%
+- D Wibs l'Enflammé + Apprentie de la Mort avec Pyro · Prisonnière de la Machine Accessible · 36,8%
+- D Pyro + Wibs l'Enflammé avec Logidrake · Sbire des Flammes Accessible · 26%
+### Résistances
+15% Feu
+14% Eau
+15% Terre
+16% Nature
+14% Ombre
+-10% Lumière
+Art · Lumethia
+### Derrière la carte
+Les récits historiques nous apprennent que les Oniyx n’étaient pas seulement des inventeurs. Certains mettaient leur intelligence au service de l’aventure. Le plus célèbre fut Lumisaros, incapable de rester assis et chargé de développer les relations d’Oniyxia. Il faisait partie d’un groupe d’aventuriers connu sous le nom de Déviants. Wibs, surnommée « l’Enflammée », était l’une d’entre eux. Née avec une rare affinité élémentaire pour son espèce, elle rêvait par-dessus tout d’aventures en mer. Avec l’aide de Lumisaros, elle construisit des vaisseaux capables de traverser l’océan. Ces machines gigantesques se trouvent aujourd’hui dans le port de Lumethia, et chaque cabine de capitaine abrite un portrait de l’Oniyx souriante. Wibs est célébrée chaque année par un festival de rires et de chansons dans tout le port.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 117 Feu
+Rare · Soutien
+### Keria
+550 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

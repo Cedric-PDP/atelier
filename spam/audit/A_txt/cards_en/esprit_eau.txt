@@ -1,0 +1,136 @@
+Water Spirit: SPAM Water common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Water Spirit C View the full card
+Water Spirit
+1 Aquatic Breath
+1 Wave
+500/500
+10
+Standard
+Water Spirit
+1 Aquatic Breath
+1 Wave
+500/500
+10
+Elemental
+Water Spirit
+1 Aquatic Breath
+1 Wave
+500/500
+10
+FA
+Water Spirit
+1 Aquatic Breath
+1 Wave
+500/500
+10
+## Water Spirit
+C Water · Common · Standard
+500 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Water Heart Start the game with the "Waterheart" passive
+Recommended
+- Talent 2 Blazing Field Fire bonus (+7).
+- Talent 3 Cavalry Increases the max HP of all other allied cards by (+150)
+Three ability slots
+- Aquatic Breath ability · Cooldown 1 Deal 10 Water damage Water bonus (+1)
+1
+- Wave ability · Cooldown 1 Water bonus (+1)
+1
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Water Common #002
+# Water Spirit
+Generation
+500 Health points
+10 Spamtons / turn
+#79 Rank / 127
+D No talent · #96
+Attack
+39
+Generation
+89
+Defense
+4
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Water Heart 2 Blazing Field 3 Cavalry
+Build with this card 2 decks
+Share
+### Abilities
+#### Aquatic Breath
+1 turn
+Deal 10 Water damage Water bonus (+1)
+Accuracy 100% Critical 1%
+#### Wave
+1 turn
+Water bonus (+1)
+Accuracy 100% Critical 0%
+### Talents
+#### Water Heart
+Recommended
+Start the game with the "Waterheart" passive
+Δ 237.2 · Theoretical score
+#### Blazing Field
+Fire bonus (+7).
+Δ 12.9 · Theoretical score
+#### Cavalry
+Increases the max HP of all other allied cards by (+150)
+Δ 207.2 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Midrange ·
+### The Companion of Spirits + Water Spirit
+58.7 % Relative index 8 turns Estimated elimination 35 / turn Spamtons
+The other decks (1)
+- C The Companion of Spirits + Water Spirit with Leviathan of the Skies · Scorch Advanced collection · 53.1%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Spirit · Nordvinter
+### Beyond the card
+With the single continent freshly shattered, the Water Spirit spends whole days slowing the advance of the ice of the Crystal Lands. Active in a huge lake of Nordvinter, it is the only clearly visible spirit accessible to a large population. This peculiarity never fails to attract many travelers. However, disturbing a spirit's activity has a price that Lycaria, Shadow of the White, is ready to make one pay, so that no one bothers the little aquatic canine.
+## Better together
+The most promising partners according to the model.
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+A # 178 Shadow
+Common · Attack
+### Medusine Thorn
+800 HP
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

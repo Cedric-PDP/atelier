@@ -1,0 +1,850 @@
+{
+ "meta": {
+  "N": 40000,
+  "note": "opponent = 4 uniform random cards; greedy buys any member of the set when offered & affordable"
+ },
+ "sets": {
+  "chimere_core": {
+   "families": [
+    "PunchingBag",
+    "Reflect",
+    "Erosion",
+    "Frozen",
+    "Bomba",
+    "Disparition"
+   ],
+   "greedy": {
+    "T2": 35.6,
+    "T4": 55.9,
+    "T6": 68.9,
+    "T8": 78,
+    "T10": 85.1
+   },
+   "soft": {
+    "T2": 11.6,
+    "T4": 21,
+    "T6": 28.6,
+    "T8": 35.6,
+    "T10": 42.5
+   },
+   "greedyToxChanceux": {
+    "T2": 14.2,
+    "T4": 33.8,
+    "T6": 51.3,
+    "T8": 65.6,
+    "T10": 76
+   }
+  },
+  "chimere_core_plus": {
+   "families": [
+    "PunchingBag",
+    "Reflect",
+    "Erosion",
+    "Frozen",
+    "Bomba",
+    "Disparition",
+    "Taunt",
+    "Primitive heal",
+    "Eternity",
+    "Reset",
+    "Revenge"
+   ],
+   "greedy": {
+    "T2": 44.6,
+    "T4": 69.1,
+    "T6": 82.9,
+    "T8": 90.9,
+    "T10": 95.4
+   },
+   "soft": {
+    "T2": 15.2,
+    "T4": 27.9,
+    "T6": 38.7,
+    "T8": 48.4,
+    "T10": 57
+   },
+   "greedyToxChanceux": {
+    "T2": 21.2,
+    "T4": 48,
+    "T6": 68.2,
+    "T8": 81.7,
+    "T10": 89.7
+   }
+  },
+  "zero_core": {
+   "families": [
+    "Mimetisme",
+    "Taunt",
+    "Reflect",
+    "Shield",
+    "Bomba",
+    "Disparition"
+   ],
+   "greedy": {
+    "T2": 24.9,
+    "T4": 45.7,
+    "T6": 62.1,
+    "T8": 73.9,
+    "T10": 82
+   },
+   "soft": {
+    "T2": 8.5,
+    "T4": 16.8,
+    "T6": 25.3,
+    "T8": 33.1,
+    "T10": 39.9
+   },
+   "greedyToxChanceux": {
+    "T2": 12.8,
+    "T4": 31,
+    "T6": 47.6,
+    "T8": 61.1,
+    "T10": 71.7
+   }
+  },
+  "zero_core_plus": {
+   "families": [
+    "Mimetisme",
+    "Taunt",
+    "Reflect",
+    "Shield",
+    "Bomba",
+    "Disparition",
+    "Brut",
+    "Tenacite",
+    "Phoenix",
+    "Reset",
+    "Aoe"
+   ],
+   "greedy": {
+    "T2": 44.1,
+    "T4": 71.7,
+    "T6": 86.3,
+    "T8": 93.1,
+    "T10": 96.5
+   },
+   "soft": {
+    "T2": 14.9,
+    "T4": 29.2,
+    "T6": 41.5,
+    "T8": 51.6,
+    "T10": 59.8
+   },
+   "greedyToxChanceux": {
+    "T2": 19.5,
+    "T4": 45.4,
+    "T6": 66,
+    "T8": 79.9,
+    "T10": 88.7
+   }
+  },
+  "any_epic_control": {
+   "families": [
+    "Frozen",
+    "Immunity",
+    "Bomba",
+    "Metamorph",
+    "Reset",
+    "Vengeur"
+   ],
+   "greedy": {
+    "T2": 0,
+    "T4": 0.7,
+    "T6": 5.8,
+    "T8": 18.9,
+    "T10": 37.9
+   },
+   "soft": {
+    "T2": 0,
+    "T4": 0.2,
+    "T6": 1.9,
+    "T8": 6.7,
+    "T10": 13.9
+   },
+   "greedyToxChanceux": {
+    "T2": 0.1,
+    "T4": 5.6,
+    "T6": 14.6,
+    "T8": 24.4,
+    "T10": 34
+   }
+  }
+ },
+ "ourCounters": {
+  "chimere": {
+   "Brut": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 2.1,
+     "T6": 6.6,
+     "T8": 11.6,
+     "T10": 16.1
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 2,
+     "T6": 6.6,
+     "T8": 11.8,
+     "T10": 16.2
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 4.1,
+     "T6": 12.8,
+     "T8": 21.9,
+     "T10": 29.9
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 7.8,
+     "T6": 23.6,
+     "T8": 38.5,
+     "T10": 50.1
+    }
+   },
+   "Immunity": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 0.6,
+     "T8": 3,
+     "T10": 7.5
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 0.5,
+     "T8": 2.8,
+     "T10": 7.1
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 1.1,
+     "T8": 5.3,
+     "T10": 13.3
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 2.2,
+     "T8": 10.2,
+     "T10": 24.9
+    }
+   },
+   "Frozen": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 0.2,
+     "T8": 1.9,
+     "T10": 5.4
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 0.5,
+     "T8": 2.5,
+     "T10": 6.8
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 1.2,
+     "T8": 5.4,
+     "T10": 13.4
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 2.1,
+     "T8": 10.3,
+     "T10": 25.2
+    }
+   },
+   "Tenacite": {
+    "buyWhenOffered": {
+     "T2": 12.7,
+     "T4": 21.9,
+     "T6": 27,
+     "T8": 29.6,
+     "T10": 30.4
+    },
+    "buyWhenOffered_save": {
+     "T2": 13,
+     "T4": 22.3,
+     "T6": 27.5,
+     "T8": 30.3,
+     "T10": 31.2
+    },
+    "hunt_1reroll_save": {
+     "T2": 24.1,
+     "T4": 39.4,
+     "T6": 47.1,
+     "T8": 51,
+     "T10": 52.3
+    },
+    "hunt_3rerolls_save": {
+     "T2": 34.3,
+     "T4": 57.7,
+     "T6": 67.9,
+     "T8": 72.2,
+     "T10": 73.6
+    }
+   },
+   "Phoenix": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0.8,
+     "T6": 7,
+     "T8": 12.9,
+     "T10": 18.2
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 10.7,
+     "T6": 20.4,
+     "T8": 29.3,
+     "T10": 36.5
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 19.6,
+     "T6": 36.3,
+     "T8": 49.4,
+     "T10": 59.8
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 19.8,
+     "T6": 47.6,
+     "T8": 64.7,
+     "T10": 76.3
+    }
+   },
+   "Shield": {
+    "buyWhenOffered": {
+     "T2": 13.1,
+     "T4": 23.7,
+     "T6": 32.4,
+     "T8": 39.5,
+     "T10": 45.6
+    },
+    "buyWhenOffered_save": {
+     "T2": 13,
+     "T4": 23.8,
+     "T6": 32.7,
+     "T8": 40.1,
+     "T10": 46.1
+    },
+    "hunt_1reroll_save": {
+     "T2": 24.3,
+     "T4": 41.8,
+     "T6": 54.3,
+     "T8": 63.7,
+     "T10": 70.9
+    },
+    "hunt_3rerolls_save": {
+     "T2": 24.8,
+     "T4": 55.8,
+     "T6": 72.6,
+     "T8": 82.5,
+     "T10": 88.7
+    }
+   }
+  },
+  "zero": {
+   "Brut": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 4.3,
+     "T6": 9.2,
+     "T8": 12.9,
+     "T10": 15.4
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 4.6,
+     "T6": 9.7,
+     "T8": 13.5,
+     "T10": 16.1
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 9.1,
+     "T6": 18.6,
+     "T8": 25.2,
+     "T10": 29.8
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 17.2,
+     "T6": 33.7,
+     "T8": 44.4,
+     "T10": 51.2
+    }
+   },
+   "Immunity": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0.3,
+     "T6": 3.3,
+     "T8": 8.1,
+     "T10": 13.4
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 0.5,
+     "T6": 3.7,
+     "T8": 9.1,
+     "T10": 15.1
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 1.1,
+     "T6": 7.5,
+     "T8": 17.6,
+     "T10": 27.8
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 1.5,
+     "T6": 13.9,
+     "T8": 31.7,
+     "T10": 47.6
+    }
+   },
+   "Frozen": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 0.6,
+     "T8": 3,
+     "T10": 6.2
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 3.3,
+     "T8": 8.7,
+     "T10": 14.7
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 6.4,
+     "T8": 16.9,
+     "T10": 27.4
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 0,
+     "T6": 12.6,
+     "T8": 31,
+     "T10": 47.5
+    }
+   },
+   "Tenacite": {
+    "buyWhenOffered": {
+     "T2": 12.1,
+     "T4": 17.6,
+     "T6": 19.3,
+     "T8": 19.7,
+     "T10": 19.7
+    },
+    "buyWhenOffered_save": {
+     "T2": 12.2,
+     "T4": 18.1,
+     "T6": 19.9,
+     "T8": 20.4,
+     "T10": 20.4
+    },
+    "hunt_1reroll_save": {
+     "T2": 22.6,
+     "T4": 32.8,
+     "T6": 35.7,
+     "T8": 36.5,
+     "T10": 36.5
+    },
+    "hunt_3rerolls_save": {
+     "T2": 32.3,
+     "T4": 48.4,
+     "T6": 52.8,
+     "T8": 53.9,
+     "T10": 53.9
+    }
+   },
+   "Phoenix": {
+    "buyWhenOffered": {
+     "T2": 0,
+     "T4": 0.6,
+     "T6": 2.3,
+     "T8": 4,
+     "T10": 5.8
+    },
+    "buyWhenOffered_save": {
+     "T2": 0,
+     "T4": 6.7,
+     "T6": 13.7,
+     "T8": 22.9,
+     "T10": 31.1
+    },
+    "hunt_1reroll_save": {
+     "T2": 0,
+     "T4": 12.6,
+     "T6": 25.4,
+     "T8": 40,
+     "T10": 52.2
+    },
+    "hunt_3rerolls_save": {
+     "T2": 0,
+     "T4": 13.1,
+     "T6": 32.9,
+     "T8": 48.3,
+     "T10": 63.2
+    }
+   },
+   "Shield": {
+    "buyWhenOffered": {
+     "T2": 11.9,
+     "T4": 21.4,
+     "T6": 28.9,
+     "T8": 34.9,
+     "T10": 39.8
+    },
+    "buyWhenOffered_save": {
+     "T2": 12.3,
+     "T4": 21.9,
+     "T6": 30.1,
+     "T8": 37.5,
+     "T10": 44
+    },
+    "hunt_1reroll_save": {
+     "T2": 22.6,
+     "T4": 38.9,
+     "T6": 51.4,
+     "T8": 61,
+     "T10": 68.7
+    },
+    "hunt_3rerolls_save": {
+     "T2": 23,
+     "T4": 51.8,
+     "T6": 67.4,
+     "T8": 77.6,
+     "T10": 85.4
+    }
+   }
+  }
+ },
+ "carriers": {
+  "Chance": {
+   "cards": [
+    12,
+    22,
+    71,
+    152,
+    190
+   ],
+   "k": 5,
+   "pUniform": 15
+  },
+  "CoeurTerre": {
+   "cards": [
+    17,
+    176
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "CoeurVital": {
+   "cards": [
+    21
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "Reset": {
+   "cards": [
+    27,
+    85,
+    204,
+    211
+   ],
+   "k": 4,
+   "pUniform": 12.2
+  },
+  "Brut": {
+   "cards": [
+    27
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "Phoenix": {
+   "cards": [
+    30,
+    37,
+    85
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Cimetiere": {
+   "cards": [
+    30,
+    190,
+    236
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Eternity": {
+   "cards": [
+    33,
+    256
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Mimetisme": {
+   "cards": [
+    35,
+    124,
+    238
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Erosion": {
+   "cards": [
+    39,
+    92,
+    229
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "CoeurEau": {
+   "cards": [
+    44,
+    156,
+    174
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Disparition": {
+   "cards": [
+    56,
+    115,
+    140
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "PunchingBag": {
+   "cards": [
+    58,
+    72,
+    123,
+    160,
+    221,
+    231,
+    247,
+    248,
+    249,
+    250,
+    251,
+    252
+   ],
+   "k": 12,
+   "pUniform": 33.1
+  },
+  "Primitive heal": {
+   "cards": [
+    63,
+    69,
+    86,
+    261
+   ],
+   "k": 4,
+   "pUniform": 12.2
+  },
+  "Aoe": {
+   "cards": [
+    63,
+    151,
+    237
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Life Steal": {
+   "cards": [
+    67,
+    128,
+    238
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "CoeurNature": {
+   "cards": [
+    71,
+    174
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Frozen": {
+   "cards": [
+    92,
+    259
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Revenge": {
+   "cards": [
+    94
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "Temporality": {
+   "cards": [
+    101,
+    255
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Multiplicator": {
+   "cards": [
+    102,
+    137,
+    153,
+    178
+   ],
+   "k": 4,
+   "pUniform": 12.2
+  },
+  "Reflect": {
+   "cards": [
+    106
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "CoeurOmbre": {
+   "cards": [
+    127,
+    176,
+    231
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "CoeurLumiere": {
+   "cards": [
+    127
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "CoeurFeu": {
+   "cards": [
+    134
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  },
+  "Poison": {
+   "cards": [
+    134,
+    244
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Berserk": {
+   "cards": [
+    142,
+    151,
+    156,
+    188,
+    234
+   ],
+   "k": 5,
+   "pUniform": 15
+  },
+  "Smoked": {
+   "cards": [
+    146,
+    152,
+    191,
+    243
+   ],
+   "k": 4,
+   "pUniform": 12.2
+  },
+  "CoeurResistance": {
+   "cards": [
+    158,
+    190
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "ContreCoup": {
+   "cards": [
+    158,
+    221
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Vengeur": {
+   "cards": [
+    180,
+    236
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Tenacite": {
+   "cards": [
+    193,
+    244,
+    261
+   ],
+   "k": 3,
+   "pUniform": 9.2
+  },
+  "Immunity": {
+   "cards": [
+    197,
+    198,
+    237,
+    260
+   ],
+   "k": 4,
+   "pUniform": 12.2
+  },
+  "Mystere": {
+   "cards": [
+    226,
+    263
+   ],
+   "k": 2,
+   "pUniform": 6.2
+  },
+  "Taunt": {
+   "cards": [
+    234
+   ],
+   "k": 1,
+   "pUniform": 3.1
+  }
+ }
+}

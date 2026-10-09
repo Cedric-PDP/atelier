@@ -1,0 +1,1065 @@
+#1 Esprit Feu (Fire Spirit) — Feu common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Souffle de feu (recharge 1, crit x2) : Attaque 10 Feu · Bonus Feu (+1)
+  ACT Flambée (recharge 1) : Bonus Feu (+1)
+  TAL1 Cœur FEU : Commence la partie avec le passif "Cœur de feu"
+  TAL2 Terrain aquatique : Bonus (+7) Eau.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#2 Esprit Eau (Water Spirit) — Eau common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Souffle d'eau (recharge 1, crit x2) : Attaque 10 Eau · Bonus Eau (+1)
+  ACT Vague (recharge 1) : Bonus Eau (+1)
+  TAL1 Cœur EAU : Commence la partie avec le passif Cœur d'eau
+  TAL2 Terrain enflammé : Bonus (+7) Feu.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#3 Esprit Nature (Nature Spirit) — Nature common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 14 / Eau 16 / Terre 15 / Nature 14 / Lumière 18 / Ombre 20
+  ACT Souffle d'air (recharge 1, crit x2) : Attaque 10 Nature · Bonus Nature (+1)
+  ACT Éolienne (recharge 1) : Bonus Nature (+1)
+  TAL1 Cœur NATURE : Commence la partie avec le passif Cœur de nature
+  TAL2 Terrain terrestre : Bonus (+7) Terre.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#4 Esprit Terre (Earth Spirit) — Terre common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 8 / Eau 12 / Terre 14 / Nature 16 / Lumière 24 / Ombre 20
+  ACT Souffle de terre (recharge 1, crit x2) : Attaque 10 Terre · Bonus Terre (+1)
+  ACT Rempart (recharge 1) : Bonus Terre (+1)
+  TAL1 Cœur TERRE : Commence la partie avec le passif Cœur de terre
+  TAL2 Terrain naturel : Bonus (+7) Nature.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#5 Esprit Ombre (Shadow Spirit) — Ombre common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Souffle d'ombre (recharge 1, crit x2) : Attaque 10 Ombre · Bonus Ombre (+1)
+  ACT Obscur (recharge 1) : Bonus Ombre (+1)
+  TAL1 Cœur OMBRE : Commence la partie avec le passif "Cœur d'ombre"
+  TAL2 Terrain lumineux : Bonus (+7) Lumière.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#6 Esprit Lumière (Light Spirit) — Lumière common, 500 PV, 10 Sp/tour [À MOI]
+  rés Feu 11 / Eau 9 / Terre 7 / Nature 5 / Lumière 1 / Ombre 3
+  ACT Souffle de lumière (recharge 1, crit x2) : Attaque 10 Lumière · Bonus Lumière (+1)
+  ACT Écran (recharge 1) : Bonus Lumière (+1)
+  TAL1 Cœur LUMIÈRE : Commence la partie avec le passif Cœur de lumière
+  TAL2 Terrain sombre : Bonus (+7) Ombre.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#12 Hibernatus (Hibernatus) — Eau common, 750 PV, 12 Sp/tour [À MOI]
+  rés Feu 12 / Eau 14 / Terre 20 / Nature 21 / Lumière 20 / Ombre 20
+  ACT Haleau (recharge 2, crit x2) : Attaque [10 à 20] Lumière · Attaque [10 à 20] Eau · Bonus (+5) dans un élément aléatoire
+  ACT Digue (recharge 3) : Applique Provocation
+  PAS Chanceur (common) : Augmente votre Chance de (+0,5) chaque tour
+  TAL1 Départ multi : Bonus (+3) dans chaque élément.
+  TAL2 Bombe-8 : Applique le passif "Bomba" au tour 8
+  TAL3 Anticipation : Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+
+#17 Croqueur de Fruits Verdoyant (Verdant Fruit Cruncher) — Terre common, 650 PV, 11 Sp/tour
+  rés Feu 6 / Eau 4 / Terre 6 / Nature 6 / Lumière 5 / Ombre 5
+  ACT Dévalement (recharge 1, crit x2) : Cible aléatoirement une carte adverse · Attaque [20 à 30] Terre
+  PAS Cœur de terre (common) : Bonus Terre (+1) par tour de jeu
+  TAL1 AOE Épique : Commence la partie avec le passif "AoE"
+  TAL2 Tox chanceux : Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+  TAL3 Souffle-8 : Récupère l'attaque Souffle élémentaire au début du tour 8
+
+#21 Félin Errant (Wandering Feline) — Ombre common, 550 PV, 5 Sp/tour
+  rés Feu 8 / Eau 39 / Terre 6 / Nature 7 / Lumière 7 / Ombre 7
+  ACT Visée offensive (recharge 2, crit x2) : Attaque 15 Ombre · Éternité en cas de coup critique
+  ACT Bond-rapide (recharge 1, crit x3) : Attaque 5 Nature · Bonus Nature (+1) · Précision et Critique (+2%) pour le lanceur
+  PAS Cœur vital (common) : Cette carte augmente ses PV max de 15 chaque tour
+  TAL1 À la caisse : Au début de la partie, gagnez (+25) Spamton.
+  TAL2 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#22 Lueur d'Espoir (Glimmer of Hope) — Lumière common, 900 PV, 10 Sp/tour
+  rés Feu 15 / Eau 11 / Terre 9 / Nature 9 / Lumière 9 / Ombre 9
+  ACT Respiration (recharge 1, crit x2) : Soigne 20 Nature · Soigne 20 Lumière · Résistance d'un élément aléatoire (+15)
+  PAS Chanceur (rare) : Augmente votre Chance de (+1) chaque tour
+  TAL1 Tox chanceux : Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+  TAL2 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL3 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+
+#23 Artisan des Heures (Artisan of Hours) — Lumière common, 700 PV, 5 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Ralentissement (recharge 4) : Applique Éternité
+  ACT Flash (recharge 3, crit x2) : Attaque 35 Lumière · Gel
+  TAL1 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL2 Dette : Les deux joueurs commencent avec une dette de (-20) Spamton.
+  TAL3 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+
+#25 Amber (Amber) — Feu rare, 750 PV, 10 Sp/tour
+  rés Feu 13 / Eau 13 / Terre 7 / Nature 7 / Lumière 7 / Ombre 7
+  ACT Feu humide (recharge 3, crit x2) : Attaque 10 Feu · Attaque 20 Eau · Bonus Eau (+4)
+  ACT Eau-brûlante (recharge 3, crit x2) : Attaque 10 Eau · Attaque 20 Feu · Bonus Feu (+4)
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Inversement : Commence la partie avec le passif "Inversement"
+  TAL3 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+
+#26 Blaze (Blaze) — Feu rare, 750 PV, 10 Sp/tour
+  rés Feu 13 / Eau 13 / Terre 7 / Nature 7 / Lumière 7 / Ombre 7
+  ACT Feu humide (recharge 3, crit x2) : Attaque 10 Feu · Attaque 20 Eau · Bonus Eau (+4)
+  ACT Eau-brûlante (recharge 3, crit x2) : Attaque 10 Eau · Attaque 20 Feu · Bonus Feu (+4)
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Inversement : Commence la partie avec le passif "Inversement"
+  TAL3 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+
+#27 Hippocampe Nimbé (Nimbus Seahorse) — Eau rare, 900 PV, 4 Sp/tour [À MOI]
+  rés Feu 20 / Eau 20 / Terre 5 / Nature 5 / Lumière 20 / Ombre 5
+  ACT Supra-rayon-humide (recharge 5, crit x2) : Attaque 25 Eau 25 Lumière 25 Nature · Bonus Eau (+3) Lumière (+3) Nature (+3)
+  PAS Reset (epic) : Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+  PAS Brut (rare) : Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé
+  TAL1 Départ multi : Bonus (+3) dans chaque élément.
+  TAL2 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+  TAL3 Imprécision : Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+
+#29 Princesse Meridia (Princess Meridia) — Nature rare, 750 PV, 7 Sp/tour
+  rés Feu 45 / Eau 7 / Terre 8 / Nature 7 / Lumière 5 / Ombre 45
+  ACT Vent critique (recharge 4, crit x2) : Attaque 40 Nature · Gel
+  ACT Volupté (recharge 2) : Bonus Eau (+2 à +5) · Bonus Nature (+2 à +5)
+  TAL1 Life-8 : Les PV et PV max de la carte sont doublés au début du tour 8
+  TAL2 Frappe : Augmente les dégâts critiques de (+1).
+  TAL3 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+
+#30 Naissance d'Aldrin (Birth of Aldrin) — Nature rare, 700 PV, 7 Sp/tour [À MOI]
+  rés Feu 6 / Eau 6 / Terre 5 / Nature 5 / Lumière 5 / Ombre 6
+  ACT Première valse (recharge 4, crit x2) : Attaque 50 Nature
+  PAS Phénix (rare) : Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max. · Usage unique
+  PAS Cimetière (rare) : Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+  TAL1 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+  TAL2 Plume de Phénix : 50 % de chance de récupérer le passif Phénix une fois utilisé.
+  TAL3 Virage 360 : Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+
+#31 Raffteru (Raffteru) — Terre rare, 600 PV, 5 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Secousse aléatoire (recharge 1, crit x2) : Attaque 70 Terre · Critique (+20%) sur toutes les cartes alliées
+  ACT Bond-chanceux (recharge 1, crit x2) : Attaque 10 Nature · Echo (50%)
+  TAL1 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+  TAL2 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+  TAL3 Brut : Commence la partie avec le passif "Brut"
+
+#32 Maîtresse des Teintes (Mistress of Tints) — Terre rare, 600 PV, 10 Sp/tour
+  rés Feu 20 / Eau 20 / Terre 20 / Nature 20 / Lumière 20 / Ombre 20
+  ACT Chaos élémentaire (recharge 3, crit x2) : Cible aléatoirement les cartes adverses · Attaque 15 Nature · 15 Terre · 15 Feu · 15 Lumière · 15 Ombre · 15 Eau
+  ACT Multiboost (recharge 3) : Bonus de chaque élément (+3)
+  TAL1 Départ multi : Bonus (+3) dans chaque élément.
+  TAL2 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL3 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+
+#33 Nakyel (Nakyel) — Ombre rare, 500 PV, 3 Sp/tour [À MOI]
+  rés Feu 0 / Eau 0 / Terre 0 / Nature 0 / Lumière 0 / Ombre 0
+  ACT Écorchage (recharge 2, crit x2) : Attaque 20 Ombre · Augmente les dégâts de base de (+5) · Augmente les résistances du lanceur de (+5%)
+  PAS Éternité (legendary) : Augmente les temps de recharge de 1
+  TAL1 Cœur OMBRE : Commence la partie avec le passif "Cœur d'ombre"
+  TAL2 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#34 Éclat du Renard Blanc (Gleam of the White Fox) — Ombre rare, 700 PV, 5 Sp/tour
+  rés Feu 15 / Eau 15 / Terre 15 / Nature 15 / Lumière 15 / Ombre 15
+  ACT Duombre (recharge 2, crit x2) : Cible toutes les cartes adverses · Attaque 15 Ombre · Bonus Ombre (+2)
+  ACT Aqua-sombre (recharge 4, crit x2) : Choix · Attaque 20 Eau · Gel · ---------- ou ---------- · Attaque 20 Ombre · Applique Éternité
+  TAL1 Frappe : Augmente les dégâts critiques de (+1).
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+
+#35 Léo (Léo) — Lumière rare, 800 PV, 6 Sp/tour
+  rés Feu 0 / Eau 0 / Terre 0 / Nature 0 / Lumière 0 / Ombre -38
+  ACT Éclair purificateur (recharge 4, crit x2) : Attaque [20 à 60] Lumière · Attaque [20 à 60] Lumière · Ennemis aléatoires · Applique Éternité
+  PAS Mimétisme (rare) : Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Life-8 : Les PV et PV max de la carte sont doublés au début du tour 8
+  TAL3 Mimétisme : Commence la partie avec le passif Mimétisme
+
+#36 Astry (Astry) — Lumière rare, 600 PV, 10 Sp/tour
+  rés Feu 8 / Eau 7 / Terre 8 / Nature 9 / Lumière 10 / Ombre 7
+  ACT Génie incompris (recharge 4) : Bonus (+35) dans un élément aléatoire
+  ACT Clair-obscur (recharge 3, crit x2) : Attaque 40 Ombre · Se soigne 40 Lumière
+  TAL1 Mystère : Commence la partie avec le passif "Mystère"
+  TAL2 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL3 Baleine bleue : Augmente les PV de cette carte de (+200).
+
+#37 Roi des Flammes Ardentes (King of the Blazing Flames) — Feu epic, 900 PV, 7 Sp/tour
+  rés Feu 20 / Eau 21 / Terre 19 / Nature 16 / Lumière 20 / Ombre 20
+  ACT Morsure brûlante (recharge 2, crit x3) : Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+7%)
+  PAS Phénix (common) : Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max. · Usage unique
+  TAL1 Contre : Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+
+#39 Sylvan, Protecteur de la Verdure (Sylvan, Protector of the Verdure) — Nature common, 550 PV, 5 Sp/tour
+  rés Feu 15 / Eau 15 / Terre 15 / Nature 15 / Lumière 15 / Ombre 15
+  ACT Double souffle (recharge 4, crit x2) : Attaque 25 Nature · Attaque 25 Nature · Attaque 25 Nature
+  ACT Bond-rapide (recharge 1, crit x3) : Attaque 5 Nature · Bonus Nature (+1) · Précision et Critique (+2%) pour le lanceur
+  PAS Érosion (common) : Réduit les PV max à hauteur de 50% des dégâts infligés
+  TAL1 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+  TAL2 Virage 360 : Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+  TAL3 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+
+#42 Dragonnet des Lumières (Wyrmling of Lights) — Lumière epic, 500 PV, 3 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Éclat paisible (recharge 1, crit x2) : Attaque 20 Lumière · Vole (+1) Lumière
+  ACT Aide pensive (recharge 3) : Applique Temporalité
+  TAL1 Nouveau riche : Commence la partie avec, au hasard, le passif Spamland ou Chanceur.
+  TAL2 Nouvelle vie : Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#43 Souverain des Flammes (Sovereign of Flames) — Feu legendary, 900 PV, 7 Sp/tour
+  rés Feu 20 / Eau 15 / Terre 15 / Nature 15 / Lumière 16 / Ombre 16
+  ACT Braise chaude (recharge 1, crit x2) : Attaque 10 Feu · Résistance Feu (+3)
+  ACT Chaleur divine (recharge 4, crit x3) : Cible toutes les cartes adverses · Attaque 20 Feu
+  ACT Embrasement (recharge 2) : Cible toutes les cartes alliées · Critique (+5%)
+  TAL1 Critique : Bonus critique (+10 %)
+  TAL2 Éternisé : La carte est insensible aux Éternités.
+  TAL3 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+
+#44 Léviathan des Cieux (Leviathan of the Skies) — Eau legendary, 1000 PV, 5 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Écras'eau (recharge 3) : Attaque 30% des PV max de la cible
+  ACT Ultime repos (recharge 6) : Se soigne 50% de ses PV max
+  PAS Cœur d'eau (common) : Bonus Eau (+1) par tour de jeu
+  TAL1 Baleine bleue : Augmente les PV de cette carte de (+200).
+  TAL2 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#45 Aldrin & Gorakar (Aldrin & Gorakar) — Nature legendary, 700 PV, 4 Sp/tour
+  rés Feu 10 / Eau 11 / Terre 12 / Nature -10 / Lumière 11 / Ombre 9
+  ACT Valse des nuages (recharge 5, crit x2) : Attaque 90 Nature · [Usage Limité 1/1]
+  ACT Souffle critique (recharge 1, crit x2) : Attaque 7 Nature · Attaque 7 Nature
+  ACT Piétinement (recharge 2, crit x2) : Attaque 10 Terre · Attaque 10 Nature
+  TAL1 Terrain enflammé : Bonus (+7) Feu.
+  TAL2 Éternisé : La carte est insensible aux Éternités.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#47 Veilleur Nocturne (Nocturnal Watcher) — Ombre legendary, 800 PV, 7 Sp/tour
+  rés Feu 10 / Eau 15 / Terre 15 / Nature 10 / Lumière -21 / Ombre 15
+  ACT Nuit finale (recharge 9) : Cible toutes les cartes alliées · Applique Temporalité x (+3)
+  ACT Tranche-ombre (recharge 4, crit x3) : Attaque [10 à 30] Ombre · Attaque [10 à 30] Nature
+  ACT Tenebr'eal (recharge 3, crit x2) : Attaque 40 Ombre · Bonus Ombre (+1) · Vampirisme
+  TAL1 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL2 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL3 Revalorisation : Augmente la génération de Spamton de cette carte de (+5)
+
+#51 Sorcière Pyrokinétique (Pyrokinetic Sorceress) — Feu common, 800 PV, 8 Sp/tour
+  rés Feu 5 / Eau 10 / Terre 5 / Nature 5 / Lumière 5 / Ombre 10
+  ACT Flamme magique (recharge 3, crit x2) : Attaque 25 Feu · Applique Éternité en cas de critique · Attaque 25 Lumière · Applique Éternité en cas de critique · Baisse la résistance Feu et Lumière de l'adversaire de (10%)
+  ACT Voile solide (recharge 1) : Résistance à tous les éléments (+3)
+  TAL1 Cœur LUMIÈRE : Commence la partie avec le passif Cœur de lumière
+  TAL2 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL3 Affaiblissement : Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+
+#54 Loutre Intrépide (Intrepid Otter) — Eau common, 650 PV, 5 Sp/tour
+  rés Feu 12 / Eau 13 / Terre 14 / Nature 15 / Lumière 13 / Ombre 14
+  ACT Morsure (recharge 1, crit x6) : Attaque 6 Eau · Critique (+3%) sur toutes les cartes alliées
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Affaiblissement : Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+
+#56 Lisa, la Dragonnière (Lisa, the Dragonrider) — Nature common, 800 PV, 7 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Courant aléatoire (recharge 2, crit x2) : Cible aléatoirement une carte adverse · Attaque [30 à 50] Nature · Bonus Nature (+2)
+  PAS Disparition (legendary) : Supprime le dernier passif de la cible
+  TAL1 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+  TAL2 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+  TAL3 AOE Rare : Commence la partie avec le passif "AoE"
+
+#58 Le Transporteur Sauvage (The Wild Carrier) — Terre common, 1000 PV, 7 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Fort (recharge 4) : Applique Provocation pendant 2 tours
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#59 Guerrier des Neiges (Snow Warrior) — Terre common, 600 PV, 7 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Tranche-sol (recharge 3, crit x4) : Attaque 30 Terre · Gel
+  ACT Multiboost (recharge 3) : Bonus de chaque élément (+3)
+  TAL1 Bombe-8 : Applique le passif "Bomba" au tour 8
+  TAL2 Chance Vitale : Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+  TAL3 Brut : Commence la partie avec le passif "Brut"
+
+#60 Protecteur des ruines (Protector of Ruins) — Terre common, 700 PV, 6 Sp/tour
+  rés Feu 15 / Eau 10 / Terre 15 / Nature 15 / Lumière 12 / Ombre 12
+  ACT Roulé-boulé (recharge 1, crit x2) : Attaque 15 Terre · La valeur de base de dégâts augmente de 5
+  TAL1 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+  TAL2 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+  TAL3 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+
+#63 Shado, Fléau abyssal (Shado, Abyssal Scourge) — Ombre common, 800 PV, 11 Sp/tour
+  rés Feu 24 / Eau 5 / Terre 15 / Nature 15 / Lumière 15 / Ombre 5
+  ACT Tenebr'eal (recharge 3, crit x2) : Attaque 40 Ombre · Bonus Ombre (+1) · Vampirisme
+  PAS Soin primitif (common) : Au début de chaque tour, la carte récupère 4% de ses PV max
+  PAS AoE (common) : Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+  TAL1 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Armure des Âmes : Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+
+#64 Maître Thronebéur (Master Thronebéur) — Lumière common, 850 PV, 8 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 30 / Nature 10 / Lumière 30 / Ombre 10
+  ACT Ralentissement (recharge 4) : Applique Éternité
+  ACT Marteau-lumineux (recharge 3, crit x2) : Attaque 20 Lumière · Attaque 20 Terre · Précision (+20%) sur toutes les cartes alliées
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Départ multi : Bonus (+3) dans chaque élément.
+  TAL3 Fortune : Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+
+#67 Logidrake, l'Ignatius (Logidrake, the Ignatius) — Feu rare, 500 PV, 5 Sp/tour
+  rés Feu 0 / Eau 0 / Terre 0 / Nature 0 / Lumière 0 / Ombre 0
+  ACT Lucky-Fire (recharge 1, crit x2) : Attaque 7 Feu · Attaque 7 Feu · Attaque 7 Feu · Echo (50%)
+  PAS Vampirisme (rare) : Régénère 50% des dégâts infligés à la cible
+  TAL1 À la caisse : Au début de la partie, gagnez (+25) Spamton.
+  TAL2 Nouvelle vie : Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+  TAL3 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+
+#69 Scorch, les Lézards Ignés (Scorch, the Ignited Lizards) — Eau rare, 350 PV, 7 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Feau (recharge 1) : Bonus Feu (+3) · Bonus Eau (+3) · Bonus Terre (+3)
+  PAS Soin primitif (common) : Au début de chaque tour, la carte récupère 4% de ses PV max
+  TAL1 Nouvelle vie : Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Dette : Les deux joueurs commencent avec une dette de (-20) Spamton.
+
+#71 Soigneuse Astrale des Bois (Astral Healer of the Woods) — Nature rare, 600 PV, 11 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Feuille magique (recharge 1, crit x3) : Soigne 10 Nature · Critique (+2%) sur toutes les cartes alliées
+  PAS Cœur de nature (common) : Bonus Nature (+1) par tour de jeu
+  PAS Chanceur (common) : Augmente votre Chance de (+0,5) chaque tour
+  TAL1 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL2 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#72 Girafe Florale (Floral Giraffe) — Nature rare, 750 PV, 7 Sp/tour
+  rés Feu 8 / Eau 9 / Terre 7 / Nature 7 / Lumière 8 / Ombre 8
+  ACT Renaissance Sylvatique (recharge 2) : Applique Provocation · Cible toutes les cartes alliées · Précision et Critique (+5%)
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Départ multi : Bonus (+3) dans chaque élément.
+  TAL2 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+  TAL3 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+
+#78 Gardien Vert (Green Guardian) — Lumière rare, 800 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Rayonnement (recharge 5, crit x2) : Attaque 80 Lumière · Les temps de recharge des compétences sont remis au maximum
+  ACT Soin multiple (recharge 5, crit x2) : Soigne 40 Lumière à toutes les cartes alliées
+  TAL1 13e mois : La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+  TAL2 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL3 AOE : Commence la partie avec le passif "AoE"
+
+#81 Luminaire Abyssal (Abyssal Lightbearer) — Eau epic, 600 PV, 4 Sp/tour
+  rés Feu 9 / Eau 9 / Terre 9 / Nature 9 / Lumière 9 / Ombre 9
+  ACT Hasardo (recharge 1, crit x2) : Cible aléatoirement une carte adverse · Attaque [20 à +30] Eau
+  ACT Phare (recharge 4, crit x2) : Cible toutes les cartes adverses · Attaque [30 à 50] Lumière · Précision (-10%)
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#82 Baleine Farceuse (Prankster Whale) — Eau common, 1000 PV, 7 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Hydrochance (recharge 3, crit x2) : Attaque 35 Eau · Echo (50%)
+  ACT Ohohohohohoh (recharge 6) : Critique du lanceur (+50%)
+  TAL1 Baleine bleue : Augmente les PV de cette carte de (+200).
+  TAL2 Durcissement : Augmente les résistances élémentaires de la carte de (+15 %).
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#83 Panthère imaginaire (Imaginary Panther) — Nature epic, 600 PV, 4 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Vitesse folle (recharge 1, crit x2) : Attaque 9 Nature · Echo (75%)
+  TAL1 Chance Vitale : Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+  TAL2 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL3 Brut : Commence la partie avec le passif "Brut"
+
+#85 Bleu-mange-cailloux (Blue-Stone-Eater) — Terre epic, 500 PV, 4 Sp/tour
+  rés Feu 9 / Eau 7 / Terre 37 / Nature 27 / Lumière 19 / Ombre -20
+  ACT Gobe-pierre (recharge 3, crit x2) : Choix · Cible toutes les cartes adverses · Attaque 30 Terre · ---------- ou ---------- · Cible toutes les cartes adverses · Attaque [10 à 70] Terre
+  PAS Phénix (common) : Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max. · Usage unique
+  PAS Reset (epic) : Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+  TAL1 Inscrit : La carte est insensible aux Disparitions.
+  TAL2 Frappe : Augmente les dégâts critiques de (+1).
+  TAL3 Plume de Phénix : 50 % de chance de récupérer le passif Phénix une fois utilisé.
+
+#86 Régent des Abysses (Regent of the Abysses) — Terre epic, 1000 PV, 6 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Tremblement (recharge 2, crit x2) : Attaque 15 Terre · Attaque 15 Ombre · Bonus Terre (+3) · Bonus Ombre (+3)
+  ACT Avalement (recharge 5) : Absorbe une carte alliée
+  PAS Soin primitif (common) : Au début de chaque tour, la carte récupère 4% de ses PV max
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#88 Faerylia (Faerylia) — Ombre epic, 600 PV, 5 Sp/tour
+  rés Feu 10 / Eau 15 / Terre 15 / Nature 15 / Lumière -21 / Ombre 15
+  ACT Visée globale (recharge 9) : Cible toutes les cartes adverses · Applique Éternité
+  ACT Visée offensive (recharge 2, crit x2) : Attaque 15 Ombre · Éternité en cas de coup critique
+  ACT Multiboost (recharge 3) : Bonus de chaque élément (+3)
+  TAL1 Revitalisation : 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+  TAL2 Départ multi : Bonus (+3) dans chaque élément.
+  TAL3 Heure Funeste : Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+
+#91 Ignea (Ignea) — Feu legendary, 750 PV, 10 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Incandescence (recharge 4, crit x2) : Cible aléatoirement une carte adverse · Attaque 120 Feu · Bonus Feu (+2)
+  ACT Silenfeu (recharge 3, crit x2) : Applique Gel
+  TAL1 Baleine bleue : Augmente les PV de cette carte de (+200).
+  TAL2 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#92 Frost & Glacier (Frost & Glacier) — Eau legendary, 500 PV, 4 Sp/tour
+  rés Feu 20 / Eau 20 / Terre 20 / Nature 20 / Lumière 20 / Ombre 20
+  ACT Eau trouble (recharge 2, crit x2) : Attaque 25 Eau · Attaque 25 Eau · Ennemis aléatoires
+  PAS Gel (epic) : Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+  PAS Érosion (common) : Réduit les PV max à hauteur de 50% des dégâts infligés
+  TAL1 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+  TAL2 Revalorisation : Augmente la génération de Spamton de cette carte de (+5)
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#94 Zayd (Zayd) — Terre legendary, 600 PV, 1 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Fin du monde (recharge 7, crit x2) : Cible aléatoirement les cartes adverses · Attaque 50 Terre · Attaque 50 Nature · Attaque 50 Feu · Attaque 50 Lumière · Attaque 50 Ombre · Attaque 50 Eau
+  ACT Forteresse (recharge 3) : Applique Provocation
+  PAS Revanche (rare) : Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire
+  TAL1 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL2 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL3 Critique : Bonus critique (+10 %)
+
+#96 Mélodie des Divinités (Melody of Divinities) — Lumière legendary, 550 PV, 3 Sp/tour
+  rés Feu 8 / Eau 8 / Terre 8 / Nature 8 / Lumière 8 / Ombre 8
+  ACT Flèches célestes (recharge 2, crit x2) : Cible aléatoirement les cartes adverses · Attaque 3 Lumière X18
+  ACT Jugement divin (recharge 10) : Les Spamtons de l'adversaire tombent à 0
+  TAL1 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL2 Cœur Corrompu : Commence la partie avec un passif Cœur rare aléatoire
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#97 Pyro (Pyro) — Feu common, 500 PV, 4 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Incendie (recharge 1, crit x4) : Cible toutes les cartes adverses · Attaque 5 Feu · Bonus Feu (+1)
+  TAL1 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+  TAL2 Éternisé : La carte est insensible aux Éternités.
+  TAL3 Plume de Phénix : 50 % de chance de récupérer le passif Phénix une fois utilisé.
+
+#100 Blancheur Aquatique (Aquatic Whiteness) — Eau common, 700 PV, 7 Sp/tour
+  rés Feu 25 / Eau 25 / Terre 25 / Nature 25 / Lumière 25 / Ombre 25
+  ACT Avaleau (recharge 5, crit x2) : Attaque 100 Eau · Se soigne (+100) Eau · Bonus Eau (+2)
+  TAL1 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+  TAL2 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+  TAL3 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+
+#101 Neilla (Neilla) — Eau common, 650 PV, 9 Sp/tour
+  rés Feu 8 / Eau 8 / Terre 8 / Nature 8 / Lumière 8 / Ombre 8
+  ACT Protection marine (recharge 4, crit x2) : Soigne 80 Eau · Résistance à tous les éléments (+15) · Applique Provocation
+  PAS Temporalité (legendary) : Diminue les temps de recharge de 1
+  TAL1 Inscrit : La carte est insensible aux Disparitions.
+  TAL2 Réducteur : Au début de votre premier tour, une carte alliée aléatoire reçoit "Temporalité"
+  TAL3 Souffle-8 : Récupère l'attaque Souffle élémentaire au début du tour 8
+
+#102 Murmures du Corail Noir (Murmurs of Black Coral) — Eau common, 400 PV, 2 Sp/tour [À MOI]
+  rés Feu 10 / Eau 5 / Terre 0 / Nature 7 / Lumière 0 / Ombre 7
+  ACT Murmure (recharge 1, crit x2) : Soigne 10 Eau · La valeur de base du soin augmente de 3
+  ACT Souffle d'eau (recharge 1, crit x2) : Attaque 10 Eau · Bonus Eau (+1)
+  PAS Multiplicateur (rare) : Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+  TAL1 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL2 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL3 Terrain sombre : Bonus (+7) Ombre.
+
+#103 Lame de la forêt (Blade of the Forest) — Nature common, 650 PV, 5 Sp/tour [À MOI]
+  rés Feu 7 / Eau 8 / Terre 9 / Nature 10 / Lumière 12 / Ombre 11
+  ACT Pinces (recharge 1, crit x6) : Attaque 5 Nature
+  ACT Soin critique (recharge 1, crit x2) : Soigne 20 Nature · Critique (+10%) en cas de coup critique
+  TAL1 Cœur NATURE : Commence la partie avec le passif Cœur de nature
+  TAL2 Racket : Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+  TAL3 Affaiblissement : Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+
+#106 L'Épine d'Amour (Thorn of Love) — Terre common, 500 PV, 6 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Sagesse (recharge 1) : Bonus Terre (+2) · Bonus Nature (+2) · Bonus Lumière (+2)
+  PAS Renvoi (epic) : Renvoie 75% des dégâts subis à l'attaquant
+  TAL1 Revalorisation : Augmente la génération de Spamton de cette carte de (+5)
+  TAL2 Pièce magique : Commencez la partie avec (+2) en Chance
+  TAL3 Affaiblissement : Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+
+#113 Lums (Lums) — Lumière common, 600 PV, 7 Sp/tour
+  rés Feu 7 / Eau 7 / Terre 7 / Nature 25 / Lumière 7 / Ombre 25
+  ACT Vent argenté (recharge 2, crit x2) : Choix · Attaque 10 Lumière 10 Ombre · ---------- ou ---------- · Bonus Lumière (+3) Bonus Ombre (+3)
+  ACT Envol (recharge 4) : Cible toutes les cartes du terrain · Dégâts critiques (+1)
+  TAL1 Cœur LUMIÈRE : Commence la partie avec le passif Cœur de lumière
+  TAL2 Cœur OMBRE : Commence la partie avec le passif "Cœur d'ombre"
+  TAL3 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+
+#115 Aidan (Aidan) — Feu common, 750 PV, 8 Sp/tour
+  rés Feu 11 / Eau 12 / Terre 10 / Nature 12 / Lumière 10 / Ombre 10
+  ACT Chanceur (recharge 1) : Bonus (+10) dans un élément aléatoire
+  ACT Paie-torche (recharge 3, crit x2) : [Coût 10 Feu] · Attaque 30 dans un élément aléatoire
+  PAS Disparition (legendary) : Supprime le dernier passif de la cible
+  TAL1 Contre : Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+  TAL2 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL3 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+
+#116 Prisonnière de la Machine (Prisoner of the Machine) — Feu common, 1000 PV, 3 Sp/tour [À MOI]
+  rés Feu 25 / Eau -50 / Terre 25 / Nature 25 / Lumière 25 / Ombre 25
+  ACT Explosion (recharge 1, crit x2) : [Coût 100 PV] · Attaque 10 Feu · Après utilisation, les dégâts de base de cette attaque augmentent de (+10)
+  ACT Braisegarde (recharge 3) : Applique Provocation
+  TAL1 Paradoxe : Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+  TAL2 Virage 360 : Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+  TAL3 Sac de frappe : Commence la partie avec le passif "Sac de frappe"
+
+#117 Keria (Keria) — Feu rare, 550 PV, 8 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Feu allié (recharge 3) : Cible toutes les cartes alliées · Les valeurs de base des soins et des dégâts augmentent de 3
+  ACT Embrasement (recharge 2) : Cible toutes les cartes alliées · Critique (+5%)
+  TAL1 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL2 Éternisé : La carte est insensible aux Éternités.
+  TAL3 Souffle-8 : Récupère l'attaque Souffle élémentaire au début du tour 8
+
+#119 Fleurmarine (Marineflower) — Eau common, 600 PV, 6 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Nageoire sifflante (recharge 1, crit x2) : Attaque 10 Eau · + Bonus Eau (+2) en cas de coup critique · Attaque 10 Nature · + Bonus Nature (+2) en cas de coup critique
+  ACT Fond marin (recharge 2) : Précision (+12%)
+  TAL1 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+
+#122 Esprit de la Faune (Spirit of the Fauna) — Nature common, 800 PV, 8 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 35
+  ACT Appel de la forêt (recharge 4, crit x2) : Attaque toutes les cartes adverses 30 Nature · Bonus Nature (+4)
+  ACT Soin soleil (recharge 3, crit x2) : Soigne 60 Lumière · Gel
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Immunité-8 : Applique le passif "Immunité" au tour 8
+  TAL3 Érosion : Commence la partie avec le passif "Érosion"
+
+#123 Tisseuse de Mots (Weaver of Words) — Nature common, 500 PV, 2 Sp/tour
+  rés Feu 8 / Eau -21 / Terre 8 / Nature 9 / Lumière 35 / Ombre 6
+  ACT Veuve noire (recharge 8) : Absorbe une carte
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL2 Sursaut Vital : Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+  TAL3 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+
+#124 Wyrm des Dunes Cornu (Horned Dune Wyrm) — Terre common, 500 PV, 4 Sp/tour
+  rés Feu 7 / Eau 8 / Terre 6 / Nature 8 / Lumière 8 / Ombre 5
+  ACT Morsure brûlante (recharge 2, crit x3) : Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+7%)
+  PAS Mimétisme (rare) : Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+  TAL1 Érosion : Commence la partie avec le passif "Érosion"
+  TAL2 Life-8 : Les PV et PV max de la carte sont doublés au début du tour 8
+  TAL3 Dernier souffle : Applique Temporalité à toutes vos cartes quand celle-ci meurt
+
+#127 Spectre Canin (Canine Specter) — Ombre common, 1000 PV, 7 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Bim-boum (recharge 2, crit x2) : Cible toutes les cartes adverses · Attaque 20 Ombre et 20 Lumière
+  PAS Cœur d'ombre (common) : Bonus Ombre (+1) par tour de jeu
+  PAS Cœur de lumière (common) : Bonus Lumière (+1) par tour de jeu
+  TAL1 Éternisé : La carte est insensible aux Éternités.
+  TAL2 Durcissement : Augmente les résistances élémentaires de la carte de (+15 %).
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#128 Dévoreur de faune (Devourer of Fauna) — Ombre common, 700 PV, 5 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Boule de haine (recharge 1, crit x2) : Attaque 5 Ombre · La valeur de base de dégâts augmente de 5
+  PAS Vampirisme (common) : Régénère 25% des dégâts infligés à la cible
+  TAL1 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+  TAL2 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+  TAL3 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+
+#134 Wibs l'Enflammé (Wibs the Blazing) — Feu common, 550 PV, 5 Sp/tour
+  rés Feu 15 / Eau 14 / Terre 15 / Nature 16 / Lumière -10 / Ombre 14
+  ACT Ecou-lave (recharge 1, crit x5) : Attaque 5 Feu · Attaque 5 Feu
+  PAS Cœur de feu (rare) : Bonus Feu (+2) par tour de jeu
+  PAS Poison (common) : Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+  TAL1 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+  TAL2 Frappe : Augmente les dégâts critiques de (+1).
+  TAL3 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+
+#136 Souverain des Chutes d'Éther (Sovereign of the Ether Falls) — Eau rare, 800 PV, 5 Sp/tour
+  rés Feu 10 / Eau 11 / Terre 10 / Nature 11 / Lumière 11 / Ombre 10
+  ACT Laser glacial (recharge 1, crit x6) : Attaque 10 Eau
+  ACT Chute critique (recharge 1) : Critique (+10%)
+  ACT Chute précise (recharge 1) : Précision (+10%)
+  TAL1 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL2 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+  TAL3 Dernier souffle : Applique Temporalité à toutes vos cartes quand celle-ci meurt
+
+#137 Cerf des Couleurs Funèbres (Deer of Mournful Colors) — Nature rare, 600 PV, 5 Sp/tour
+  rés Feu 9 / Eau 9 / Terre 9 / Nature 9 / Lumière 9 / Ombre 9
+  ACT Drain élémentaire (recharge 1, crit x2) : Cible aléatoirement les cartes adverses · Attaque 6 Terre · Attaque 6 Nature · Attaque 6 Feu · Attaque 6 Eau · Attaque 6 Lumière · Attaque 6 Ombre · Vampirisme
+  PAS Multiplicateur (rare) : Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+  TAL1 À la caisse : Au début de la partie, gagnez (+25) Spamton.
+  TAL2 Départ multi : Bonus (+3) dans chaque élément.
+  TAL3 Armure des Âmes : Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+
+#139 Cornu mythologique (Mythic Horned One) — Terre rare, 700 PV, 5 Sp/tour
+  rés Feu 0 / Eau 25 / Terre 30 / Nature 18 / Lumière 18 / Ombre 18
+  ACT Corne 25 (recharge 7) : La cible se retrouve à 25% de ses PV max
+  ACT Corne 75 (recharge 5) : La cible se retrouve à 75% de ses PV max
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Virage 360 : Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+  TAL3 Souffle-8 : Récupère l'attaque Souffle élémentaire au début du tour 8
+
+#140 Souris des blés (Mouse of the Wheat) — Terre rare, 500 PV, 10 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Épidémie (recharge 3, crit x2) : Soigne 125 Terre · Bonus Terre (+2)
+  PAS Disparition (legendary) : Supprime le dernier passif de la cible
+  TAL1 Terrain lumineux : Bonus (+7) Lumière.
+  TAL2 Petit prix : Votre premier achat de Tox de la partie est remboursé.
+  TAL3 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+
+#142 Squall, Émissaire des cauchemars (Squall, Emissary of Nightmares) — Ombre rare, 1000 PV, 8 Sp/tour
+  rés Feu 25 / Eau 25 / Terre 25 / Nature 25 / Lumière 25 / Ombre 25
+  ACT Flammes Cosmiques (recharge 3, crit x2) : Attaque 15 Feu · Attaque 20 Ombre · Bonus Feu (+3)
+  ACT Lumière cosmique (recharge 3, crit x2) : Attaque 15 Lumière · Attaque 20 Ombre · Bonus Lumière (+3)
+  PAS Berserk (common) : Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+  TAL1 Baleine bleue : Augmente les PV de cette carte de (+200).
+  TAL2 Contre : Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#146 Poulpe Parleur (Chatty Octopus) — Eau epic, 500 PV, 3 Sp/tour
+  rés Feu 8 / Eau 9 / Terre 11 / Nature 8 / Lumière 8 / Ombre 8
+  ACT Encre sèche (recharge 1, crit x2) : Soigne 10 Eau · Bonus Eau (+2)
+  PAS Fumée (rare) : Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+  TAL1 Nouvelle vie : Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+  TAL2 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL3 Inversement : Commence la partie avec le passif "Inversement"
+
+#151 Sbire des Flammes (Minion of Flames) — Feu common, 800 PV, 9 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Doux foyer (recharge 2, crit x5) : Cible aléatoirement les cartes alliées · Soigne 25 Feu · Soigne 25 Feu · Soigne 25 Feu
+  PAS AoE (common) : Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+  PAS Berserk (common) : Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Inscrit : La carte est insensible aux Disparitions.
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#152 Le Héraut des Cendres (Herald of Ashes) — Feu common, 800 PV, 8 Sp/tour
+  rés Feu 7 / Eau 8 / Terre 7 / Nature 8 / Lumière 8 / Ombre 10
+  ACT Souffle du dragon (recharge 3, crit x2) : Choix · Attaque 30 Feu · Attaque 10 Nature · Attaque 10 Nature · ---------- ou ---------- · Bonus Feu (+5) · Bonus Nature (+5)
+  PAS Fumée (rare) : Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+  PAS Chanceur (common) : Augmente votre Chance de (+0,5) chaque tour
+  TAL1 Fortune : Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+  TAL2 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL3 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+
+#153 L'Inventeur (The Inventor) — Feu common, 1000 PV, 5 Sp/tour [À MOI]
+  rés Feu 17 / Eau 16 / Terre 16 / Nature 18 / Lumière 18 / Ombre 17
+  ACT Materia (recharge 2) : Bonus [-5 à +8] dans chaque élément
+  ACT Arc-en-ciel (recharge 1, crit x2) : Attaque 10 dans un élément aléatoire
+  PAS Multiplicateur (rare) : Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Chance Vitale : Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#156 L'Œil des montagnes (The Eye of the Mountains) — Eau common, 600 PV, 6 Sp/tour [À MOI]
+  rés Feu 10 / Eau 12 / Terre 11 / Nature 10 / Lumière 12 / Ombre 10
+  ACT Revitalisation (recharge 4, crit x2) : Soigne 50 Eau · Dégâts critiques (+1)
+  PAS Berserk (common) : Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+  PAS Cœur d'eau (common) : Bonus Eau (+1) par tour de jeu
+  TAL1 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL2 Inscrit : La carte est insensible aux Disparitions.
+  TAL3 Critique : Bonus critique (+10 %)
+
+#158 Lapin-Plume (Feathered Rabbit) — Nature common, 850 PV, 7 Sp/tour [À MOI]
+  rés Feu 0 / Eau 0 / Terre 0 / Nature 0 / Lumière 0 / Ombre 0
+  ACT Son perçant (recharge 1, crit x2) : [Coût 1 Nature] · Attaque 20 Nature · Les dégâts de base de cette attaque augmentent de (+2) après utilisation
+  PAS Cœur résistance (common) : Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3).
+  PAS Contrecoup (common) : Subit 50% des dégâts infligés à la cible
+  TAL1 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+
+#160 Sanglier Doré (Golden Boar) — Terre common, 900 PV, 6 Sp/tour [À MOI]
+  rés Feu 11 / Eau 11 / Terre 11 / Nature 11 / Lumière 11 / Ombre 11
+  ACT Remue-sol (recharge 2, crit x2) : Cible aléatoirement une carte adverse · Attaque 40 Terre · Augmente ses PV max de 40 Terre · Bonus Terre (+2)
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Baleine bleue : Augmente les PV de cette carte de (+200).
+  TAL2 Sursaut Vital : Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#174 Zombie Floral (Floral Zombie) — Nature common, 850 PV, 5 Sp/tour
+  rés Feu 4 / Eau 6 / Terre 4 / Nature 4 / Lumière 5 / Ombre 1
+  ACT Malédiction aquatique (recharge 8, crit x2) : Attaque [30 à 60] Eau sur toutes les cartes adverses · Applique Disparition · Attaque [30 à 60] Nature sur toutes les cartes adverses · Applique Disparition
+  PAS Cœur d'eau (common) : Bonus Eau (+1) par tour de jeu
+  PAS Cœur de nature (common) : Bonus Nature (+1) par tour de jeu
+  TAL1 Revalorisation : Augmente la génération de Spamton de cette carte de (+5)
+  TAL2 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+  TAL3 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+
+#176 Rob l'Aventurier (Rob the Adventurer) — Terre common, 500 PV, 9 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Aventure (recharge 1) : Les valeurs de base des soins et des dégâts augmentent de 1 · Précision et Critique (+4%)
+  PAS Cœur d'ombre (common) : Bonus Ombre (+1) par tour de jeu
+  PAS Cœur de terre (common) : Bonus Terre (+1) par tour de jeu
+  TAL1 Inscrit : La carte est insensible aux Disparitions.
+  TAL2 Heure Funeste : Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#177 Moxilys, la Fredonneuse (Moxilys, the Humming One) — Ombre common, 900 PV, 9 Sp/tour
+  rés Feu 10 / Eau 9 / Terre 8 / Nature 7 / Lumière 5 / Ombre 6
+  ACT Duombre (recharge 2, crit x2) : Cible toutes les cartes adverses · Attaque 15 Ombre · Bonus Ombre (+2)
+  ACT Régénair (recharge 1, crit x2) : Cible aléatoirement les cartes alliées · Soigne 10 Nature X4
+  TAL1 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL2 Life-8 : Les PV et PV max de la carte sont doublés au début du tour 8
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#178 Épine Médusine (Medusine Thorn) — Ombre common, 800 PV, 10 Sp/tour
+  rés Feu 20 / Eau 20 / Terre 20 / Nature 20 / Lumière 20 / Ombre 20
+  ACT Toxine enflammée (recharge 1, crit x2) : Attaque [1 à 35] Eau · Soigne [1 à 35] Feu
+  PAS Multiplicateur (rare) : Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+  TAL1 Terrain aquatique : Bonus (+7) Eau.
+  TAL2 Terrain enflammé : Bonus (+7) Feu.
+  TAL3 Affaiblissement : Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+
+#180 Dragon Ciel (Sky Dragon) — Lumière common, 700 PV, 8 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Souffle éblouissant (recharge 4, crit x2) : Attaque 40 Lumière
+  ACT Appel de la forêt (recharge 4, crit x2) : Attaque toutes les cartes adverses 30 Nature · Bonus Nature (+4)
+  PAS Vengeur (epic) : Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+  TAL1 Dernier souffle : Applique Temporalité à toutes vos cartes quand celle-ci meurt
+  TAL2 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+  TAL3 Fortune : Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+
+#188 Commando Gerz (Commando Gerz) — Terre rare, 1200 PV, 4 Sp/tour
+  rés Feu 8 / Eau 10 / Terre 10 / Nature 9 / Lumière 10 / Ombre 10
+  ACT Cigarillos (recharge 2) : Bonus Terre (+3) · Bonus Lumière (+3)
+  ACT Dernier plaisir (recharge 10, crit x2) : Cible aléatoirement les cartes adverses · Attaque 100 Terre · Attaque 100 Lumière
+  PAS Berserk (rare) : Les dégâts et les soins de toutes vos cartes sont augmentés de 25%
+  TAL1 Imprécision : Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+  TAL2 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#190 Lames en peine (Wander Blades) — Ombre rare, 550 PV, 15 Sp/tour
+  rés Feu -10 / Eau -10 / Terre -10 / Nature -10 / Lumière -30 / Ombre -10
+
+  PAS Cimetière (rare) : Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+  PAS Cœur résistance (rare) : Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6).
+  PAS Chanceur (rare) : Augmente votre Chance de (+1) chaque tour
+  TAL1 Petit prix : Votre premier achat de Tox de la partie est remboursé.
+  TAL2 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+  TAL3 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+
+#191 Ameru (Ameru) — Lumière rare, 800 PV, 15 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Rêve enfumé (recharge 3, crit x2) : Attaque 15 Lumière 15 Eau 15 Ombre · Bonus Lumière (+4) Eau (+4) Ombre (+4)
+  PAS Fumée (rare) : Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+  TAL1 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+  TAL2 Durcissement : Augmente les résistances élémentaires de la carte de (+15 %).
+  TAL3 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+
+#193 Vladislaus (Vladislaus) — Feu epic, 350 PV, 4 Sp/tour
+  rés Feu 30 / Eau 31 / Terre 40 / Nature 40 / Lumière 0 / Ombre 39
+  ACT Double-afflux (recharge 1, crit x2) : Attaque 5 Feu · Attaque 5 Ombre · La valeur de base de dégâts augmente de 5
+  ACT Transfusion (recharge 1, crit x2) : Vole 100 PV max à un allié pour se soigner du même montant
+  PAS Ténacité (common) : La première attaque fatale vous laisse à 1 PV
+  TAL1 Sursaut Vital : Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+  TAL2 Plume de Phénix : 50 % de chance de récupérer le passif Phénix une fois utilisé.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#195 Gabriel (Gabriel) — Nature epic, 1000 PV, 9 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Cocon (recharge 3, crit x2) : Attaque 20 Nature · Bonus Nature (+5) · [Usage Limité 1/1]
+  ACT Chenille (recharge 6, crit x2) : Attaque 40 Nature · Bonus Nature (+10) · [Usage Limité 1/1]
+  ACT Papillon (recharge 9, crit x2) : Attaque 60 Nature · Bonus Nature (+15) · [Usage Limité 1/1]
+  TAL1 Terrain terrestre : Bonus (+7) Terre.
+  TAL2 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+  TAL3 Tox chanceux : Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+
+#197 Codex des Maux Ancestraux (Codex of Ancient Woes) — Ombre epic, 1000 PV, 10 Sp/tour
+  rés Feu 8 / Eau 9 / Terre 7 / Nature 7 / Lumière 8 / Ombre 8
+  ACT Écrit sombre (recharge 1) : Bonus Ombre (+1). La valeur de base du bonus augmente de 1
+  PAS Immunité (epic) : La carte est immunisée contre tous les effets des cartes adverses
+  TAL1 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+  TAL2 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+  TAL3 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+
+#198 Codex des Sorts Lumineux (Codex of Luminous Spells) — Lumière epic, 1000 PV, 10 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Écrit luminescent (recharge 1) : Bonus Lumière (+1). La valeur de base du bonus augmente de 1
+  PAS Immunité (epic) : La carte est immunisée contre tous les effets des cartes adverses
+  TAL1 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+  TAL2 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+  TAL3 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+
+#203 Ashtarae Lycaria (Ashtarae Lycaria) — Ombre legendary, 700 PV, 4 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Mélodie n°1 (recharge 1, crit x2) : Attaque [15 à 25] Ombre · Critique (+2%) sur toutes les cartes alliées
+  ACT Mélodie n°2 (recharge 1, crit x2) : Soigne [15 à 25] Ombre · Précision (+2%) sur toutes les cartes alliées
+  ACT Résurrection (recharge 8) : [Coût 5 Ombre] · Ressuscite le dernier allié détruit avec la moitié de ses PV max
+  TAL1 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL2 Life-8 : Les PV et PV max de la carte sont doublés au début du tour 8
+  TAL3 Erreur Croissante : -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+
+#204 Ephial (Ephial) — Lumière legendary, 1500 PV, 12 Sp/tour
+  rés Feu 20 / Eau 20 / Terre 20 / Nature 20 / Lumière 20 / Ombre 20
+  ACT Plaquage astral (recharge 4, crit x2) : Attaque 20 Lumière · Attaque 20 Ombre · Attaque 20 Nature
+  ACT Planète Soin (recharge 5, crit x2) : Soigne 70 Lumière à toutes les cartes alliées
+  PAS Reset (epic) : Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+  TAL1 Cavalerie : Augmente les PV max de toutes les autres cartes alliées de (+150).
+  TAL2 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL3 Tox chanceux : Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+
+#206 Catimimi (Catimimi) — Feu common, 500 PV, 5 Sp/tour
+  rés Feu 0 / Eau -22 / Terre 0 / Nature -22 / Lumière 0 / Ombre 0
+  ACT Claque sombrevol (recharge 2, crit x2) : [Coût 2 Feu & 2 Ombre & 2 Nature] · Cible toutes les cartes adverses · Attaque 15 Ombre 15 Nature 15 Feu · Bonus Ombre (+3) Nature (+3) Feu (+3)
+  TAL1 Éternisé : La carte est insensible aux Éternités.
+  TAL2 Héritage : Bonus (+50) Spamton quand cette carte est tuée.
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#211 Dragosaure Céleste (Celestial Dragosaur) — Nature common, 800 PV, 12 Sp/tour
+  rés Feu 15 / Eau 16 / Terre 17 / Nature 16 / Lumière 15 / Ombre 15
+  ACT Hurle frappe (recharge 3, crit x2) : Choix · Attaque [10 à 100] Nature · Gel · ---------- ou ---------- · Attaque [45 à 65] Terre · Gel
+  PAS Reset (epic) : Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+  TAL1 AOE Rare : Commence la partie avec le passif "AoE"
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Armure des Âmes : Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+
+#219 Catixy (Catixy) — Ombre common, 600 PV, 5 Sp/tour
+  rés Feu 5 / Eau 25 / Terre 5 / Nature 25 / Lumière 25 / Ombre 5
+  ACT Miaulement (recharge 1, crit x4) : Attaque [4 à 16] Ombre · Critique du lanceur (+5%)
+  ACT Charme Sinistre (recharge 2) : Critique (+25%) aléatoirement sur une carte alliée
+  TAL1 Racket : Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Inversement : Commence la partie avec le passif "Inversement"
+
+#221 Crapaud des Étoiles (Toad of the Stars) — Lumière common, 900 PV, 6 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Œil pour œil (recharge 2, crit x2) : Attaque 40 Lumière
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  PAS Contrecoup (common) : Subit 50% des dégâts infligés à la cible
+  TAL1 Terrain aquatique : Bonus (+7) Eau.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#222 Fleur de Vie (Flower of Life) — Lumière common, 600 PV, 7 Sp/tour
+  rés Feu 0 / Eau 0 / Terre 0 / Nature 0 / Lumière 0 / Ombre 0
+  ACT Souffle de lumière (recharge 1, crit x2) : Attaque 10 Lumière · Bonus Lumière (+1)
+  ACT Barrière Florale (recharge 1) : Applique Provocation au lanceur
+  TAL1 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL2 Cœur Corrompu : Commence la partie avec un passif Cœur rare aléatoire
+  TAL3 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+
+#226 Apprenti Évocateur (Apprentice Evoker) — Eau common, 800 PV, 10 Sp/tour
+  rés Feu 9 / Eau 7 / Terre 37 / Nature 27 / Lumière 19 / Ombre -20
+  ACT Petit sortilège (recharge 3, crit x2) : Attaque [40 à 60] Eau
+  PAS Mystère (rare) : Commence la partie avec un passif aléatoire
+  PAS Mystère (rare) : Commence la partie avec un passif aléatoire
+  TAL1 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL2 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#227 Chouette Polychrome (Polychrome Owl) — Nature common, 500 PV, 9 Sp/tour [À MOI]
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Danse des plumes (recharge 2, crit x2) : Cible aléatoirement les cartes du terrain · Attaque 30 Nature · Attaque 30 Feu · Attaque 30 Ombre · Attaque 30 Lumière · Attaque 30 Eau · Attaque 30 Terre · Applique Temporalité à la carte ciblée en cas de coup critique
+  TAL1 Virage 360 : Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+  TAL2 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL3 Dernier souffle : Applique Temporalité à toutes vos cartes quand celle-ci meurt
+
+#229 Maître Amphibian (Master Amphibian) — Terre common, 700 PV, 4 Sp/tour
+  rés Feu 25 / Eau 25 / Terre 25 / Nature 25 / Lumière 25 / Ombre 25
+  ACT Miasmes de la Sagesse (recharge 1, crit x2) : Cible toutes les cartes adverses · Attaque 15 Terre 15 Eau
+  PAS Érosion (common) : Réduit les PV max à hauteur de 50% des dégâts infligés
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Durcissement : Augmente les résistances élémentaires de la carte de (+15 %).
+  TAL3 13e mois : La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+
+#231 Aleera Mange-Cauchemars (Aleera, Nightmare-Eater) — Ombre common, 500 PV, 5 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Mâche-mot (recharge 2, crit x3) : Cible toutes les cartes adverses · Attaque 5 Ombre + 50% des PV manquants du lanceur
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  PAS Cœur d'ombre (common) : Bonus Ombre (+1) par tour de jeu
+  TAL1 Blindage F/E : Résistance feu (+25 %) · Résistance eau (+25 %)
+  TAL2 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+  TAL3 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+
+#233 Oisillons de Midas (Hatchlings of Midas) — Lumière common, 500 PV, 8 Sp/tour
+  rés Feu -10 / Eau -19 / Terre 14 / Nature 13 / Lumière 15 / Ombre 14
+  ACT Piou-piou-piou (recharge 2, crit x2) : Soigne 10 Lumière · Soigne 10 Lumière · Soigne 10 Lumière · Soigne 10 Lumière · Bonus Lumière (+3)
+  ACT Quintuor (recharge 2) : Les valeurs de base des soins et des dégâts augmentent de 2
+  TAL1 Souffle-8 : Récupère l'attaque Souffle élémentaire au début du tour 8
+  TAL2 Imprudent : Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+  TAL3 Paradoxe : Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+
+#234 Rongeur Nuageux (Cloudy Rodent) — Lumière common, 650 PV, 11 Sp/tour
+  rés Feu -18 / Eau 7 / Terre 7 / Nature 6 / Lumière 18 / Ombre 7
+  ACT Foudre (recharge 2, crit x2) : Attaque 30 Lumière + 50% des PV manquants du lanceur
+  PAS Provocation (rare) : Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler
+  PAS Berserk (common) : Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+  TAL1 Blindage O/L : Résistance ombre (+25 %) · Résistance lumière (+25 %)
+  TAL2 Blindage N/T : Résistance nature (+25 %) · Résistance terre (+25 %)
+  TAL3 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+
+#236 Apprentie de la Mort (Apprentice of Death) — Feu rare, 700 PV, 6 Sp/tour
+  rés Feu 7 / Eau -18 / Terre 17 / Nature 18 / Lumière -17 / Ombre 17
+  ACT Brûlure Nocturne (recharge 3, crit x2) : Cible toutes les cartes adverses · Attaque 25 Feu et 25 Ombre
+  PAS Cimetière (common) : Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt
+  PAS Vengeur (epic) : Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.
+  TAL1 Revitalisation : 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+  TAL2 Durcissement : Augmente les résistances élémentaires de la carte de (+15 %).
+  TAL3 Heure Funeste : Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+
+#237 Voyageur des Crêtes (Traveler of the Ridges) — Eau rare, 1000 PV, 9 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Fin du périple (recharge 5, crit x2) : Attaque 65 Eau · Se soigne totalement
+  PAS Immunité (epic) : La carte est immunisée contre tous les effets des cartes adverses
+  PAS AoE (epic) : Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés
+  TAL1 Revitalisation : 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+  TAL2 Cœur d’acier : Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+  TAL3 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+
+#238 Chimère Brasse-chair (Flesh-Melding Chimera) — Eau rare, 525 PV, 5 Sp/tour [À MOI]
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Galop arctique (recharge 2, crit x2) : Cible toutes les cartes adverses · Attaque 10 Eau 10 Nature
+  PAS Vampirisme (epic) : Régénère 75% des dégâts infligés à la cible
+  PAS Mimétisme (rare) : Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+  TAL1 Critique : Bonus critique (+10 %)
+  TAL2 Frappe : Augmente les dégâts critiques de (+1).
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#243 Vivy (Vivy) — Ombre common, 1000 PV, 9 Sp/tour [À MOI]
+  rés Feu 9 / Eau 9 / Terre 9 / Nature 50 / Lumière 9 / Ombre 9
+  ACT Onde de Ténèbres (recharge 3, crit x2) : Attaque 40 Ombre · Attaque [+1 à +40] Lumière · Critique du lanceur (+20)
+  PAS Fumée (rare) : Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+  TAL1 Brut : Commence la partie avec le passif "Brut"
+  TAL2 Terrain lumineux : Bonus (+7) Lumière.
+  TAL3 Baleine bleue : Augmente les PV de cette carte de (+200).
+
+#244 Gazpoison Flottant (Floating Poison Gas) — Ombre rare, 450 PV, 4 Sp/tour
+  rés Feu 25 / Eau 25 / Terre 25 / Nature 25 / Lumière 25 / Ombre 25
+  ACT Exploison (recharge 1, crit x2) : Cible toutes les cartes adverses · Attaque 10 Ombre
+  PAS Poison (common) : Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+  PAS Ténacité (common) : La première attaque fatale vous laisse à 1 PV
+  TAL1 Contre : Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+
+#245 Shinobi Éclairant (Radiant Shinobi) — Lumière rare, 600 PV, 6 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Éclair jaune (recharge 5, crit x3) : Attaque 50 Lumière à toutes les cartes adverses
+  ACT Kung‑Fu (recharge 5, crit x3) : Attaque 40 Terre · AoE
+  TAL1 Boule de Crit : Augmente les critiques de cette carte de (+2 %) à chaque tour
+  TAL2 Multicolore : Bonus (+1) dans tous les éléments à chaque attaque de cette carte
+  TAL3 Brut : Commence la partie avec le passif "Brut"
+
+#247 Roi Feu (Fire King) — Feu epic, 1000 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-F (recharge 5, crit x2) : Attaque [40 à 60] Feu
+  ACT Choix brûlant (recharge 5) : Choix · Bonus Feu [1 à 20] · ---------- ou ---------- · Bonus Feu [5 à 15] · ---------- ou ---------- · Bonus Feu [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#248 Roi Eau (Water King) — Eau epic, 1000 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-E (recharge 5, crit x2) : Attaque [40 à 60] Eau
+  ACT Choix Aqueux (recharge 5) : Choix · Bonus Eau [1 à 20] · ---------- ou ---------- · Bonus Eau [5 à 15] · ---------- ou ---------- · Bonus Eau [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#249 Roi Nature (Nature King) — Nature epic, 1000 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-N (recharge 5, crit x2) : Attaque [40 à 60] Nature
+  ACT Choix Floral (recharge 5) : Choix · Bonus Nature [1 à 20] · ---------- ou ---------- · Bonus Nature [5 à 15] · ---------- ou ---------- · Bonus Nature [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#250 Roi Terre (Earth King) — Terre epic, 1000 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-T (recharge 5, crit x2) : Attaque [40 à 60] Terre
+  ACT Choix Terrestre (recharge 5) : Choix · Bonus Terre [1 à 20] · ---------- ou ---------- · Bonus Terre [5 à 15] · ---------- ou ---------- · Bonus Terre [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#251 Roi Ombre (Shadow King) — Ombre epic, 1000 PV, 10 Sp/tour [À MOI]
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-O (recharge 5, crit x2) : Attaque [40 à 60] Ombre
+  ACT Choix sombre (recharge 5) : Choix · Bonus Ombre [1 à 20] · ---------- ou ---------- · Bonus Ombre [5 à 15] · ---------- ou ---------- · Bonus Ombre [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#252 Roi Lumière (Light King) — Lumière epic, 1000 PV, 10 Sp/tour
+  rés Feu 10 / Eau 10 / Terre 10 / Nature 10 / Lumière 10 / Ombre 10
+  ACT Lame-L (recharge 5, crit x2) : Attaque [40 à 60] Lumière
+  ACT Choix Solaire (recharge 5) : Choix · Bonus Lumière [1 à 20] · ---------- ou ---------- · Bonus Lumière [5 à 15] · ---------- ou ---------- · Bonus Lumière [8 à 12]
+  PAS Sac de frappe (common) : Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+  TAL1 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Reset ultime : La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+
+#255 Verdelune (Verdelune) — Nature legendary, 900 PV, 5 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Multi feuillage (recharge 3, crit x3) : Cible aléatoirement les cartes adverses · Attaque 5 Nature · Attaque 15 Nature · Attaque 25 Nature · Attaque 35 Nature
+  ACT Trêve (recharge 3, crit x2) : Soigne 60 Nature · Résistance à tous les éléments (+10)
+  PAS Temporalité (legendary) : Diminue les temps de recharge de 1
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Critique : Bonus critique (+10 %)
+  TAL3 Dernier souffle : Applique Temporalité à toutes vos cartes quand celle-ci meurt
+
+#256 Héraldesse Serpentine (Serpentine Heraldess) — Terre legendary, 900 PV, 9 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Constriction Éternelle (recharge 5, crit x2) : Cible aléatoirement les cartes adverses · Attaque 30 Terre X8
+  ACT Sacrifice (recharge 1) : [Coût 7 Terre] · Se soigne totalement
+  PAS Éternité (legendary) : Augmente les temps de recharge de 1
+  TAL1 Terrain sombre : Bonus (+7) Ombre.
+  TAL2 Heure Funeste : Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+  TAL3 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+
+#259 Dragon de la Cité Infernale (Dragon of the Infernal City) — Feu common, 550 PV, 10 Sp/tour [À MOI]
+  rés Feu 20 / Eau 15 / Terre 15 / Nature 15 / Lumière 16 / Ombre 16
+  ACT Dualité Draconique (recharge 2, crit x2) : Choix · Attaque [10 à 40] Feu · ---------- ou ---------- · Attaque [10 à 40] Ombre
+  PAS Gel (epic) : Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+  TAL1 Cœur FEU : Commence la partie avec le passif "Cœur de feu"
+  TAL2 Cœur OMBRE : Commence la partie avec le passif "Cœur d'ombre"
+  TAL3 Immunité-8 : Applique le passif "Immunité" au tour 8
+
+#260 Le compagnon des esprits (The Companion of Spirits) — Eau common, 600 PV, 5 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Petite vague (recharge 1, crit x2) : Attaque 10 Eau · Augmente sa génération de Spamtons de (+1) · Echo (50%)
+  ACT Hasardo (recharge 1, crit x2) : Cible aléatoirement une carte adverse · Attaque [20 à +30] Eau
+  PAS Immunité (epic) : La carte est immunisée contre tous les effets des cartes adverses
+  TAL1 Contre : Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+  TAL2 One man army : Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+  TAL3 Pièce magique : Commencez la partie avec (+2) en Chance
+
+#261 Godlur (Godlur) — Terre common, 1000 PV, 7 Sp/tour
+  rés Feu 17 / Eau 17 / Terre 17 / Nature 17 / Lumière 17 / Ombre 17
+  ACT Frappe golémique (recharge 2, crit x4) : Attaque 25 Terre · Fumée
+  PAS Ténacité (common) : La première attaque fatale vous laisse à 1 PV
+  PAS Soin primitif (common) : Au début de chaque tour, la carte récupère 4% de ses PV max
+  TAL1 Incisif : Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+  TAL2 Évolution : Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares. · Paliers à 75 %, 50 % et 25 % des PV.
+  TAL3 Revalorisation : Augmente la génération de Spamton de cette carte de (+5)
+
+#262 Yotaru Gardefeuille (Yotaru, Leafguard) — Nature common, 500 PV, 5 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Protect (recharge 1) : Applique Provocation aléatoirement à une carte alliée
+  ACT Protect-terre (recharge 2) : Brise une Provocation pour donner 100 PV max
+  ACT Protect-boost (recharge 2) : Brise une Provocation pour augmenter les dégâts et soins de base de 3
+  TAL1 Blindage Partagé : Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+  TAL2 Focus : Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+  TAL3 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+
+#263 Paguroniyx (Paguroniyx) — Ombre common, 850 PV, 8 Sp/tour
+  rés Feu 24 / Eau 24 / Terre -20 / Nature 24 / Lumière -19 / Ombre 15
+  ACT Terrier (recharge 4) : Augmente les PV max de toutes les cartes alliées de 100
+  ACT Cisaille vénéneuse (recharge 2, crit x2) : Attaque 30 Ombre
+  PAS Mystère (rare) : Commence la partie avec un passif aléatoire
+  TAL1 Départ multi : Bonus (+3) dans chaque élément.
+  TAL2 Anticipation : Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+  TAL3 Vitalité des Âmes : Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+
+#264 Aristocrate Nébulaire (Nebular Aristocrat) — Lumière common, 500 PV, 3 Sp/tour
+  rés Feu -20 / Eau -20 / Terre -20 / Nature -20 / Lumière -20 / Ombre -20
+  ACT Mascarade cosmique (recharge 2) : Choix · Précision (+20%) · ---------- ou ---------- · Critique (+20%)
+  TAL1 Longueur : Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+  TAL2 Transition : Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+  TAL3 Éternisé : La carte est insensible aux Éternités.
+
+#265 Aeltheria, Mère Primordiale (Aeltheria, Primordial Mother) — Divin divine, 700 PV, 10 Sp/tour
+  rés Feu 5 / Eau 5 / Terre 5 / Nature 5 / Lumière 5 / Ombre 5
+  ACT Souffle élémentaire (recharge 1, crit x2) : Attaque 30 dans son élément
+  ACT Berceau des Éléments (recharge 1) : Bonus (1 à 5) dans son élément
+  ACT Mythique (recharge 1) : Change aléatoirement l'élément de votre carte
+  TAL1 Roulette : Toutes les compétences de cette carte gagnent Écho (10 %).
+  TAL2 Résilience : Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+  TAL3 Corrosion : Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.

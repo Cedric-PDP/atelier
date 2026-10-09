@@ -1,0 +1,209 @@
+Commando Gerz: SPAM Earth rare card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Commando Gerz S View the full card
+Commando Gerz
+2 Cigarillos
+10 Final Delight
+Berserk
+1200/1200
+4
+Standard
+Commando Gerz
+2 Cigarillos
+10 Final Delight
+Berserk
+1200/1200
+4
+Elemental
+Commando Gerz
+2 Cigarillos
+10 Final Delight
+Berserk
+1200/1200
+4
+FA
+Commando Gerz
+2 Cigarillos
+10 Final Delight
+Berserk
+1200/1200
+4
+## Commando Gerz
+S Earth · Rare · Standard
+1,200 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Inaccuracy At the start of the game, a random enemy card loses (-20%) accuracy.
+- Talent 2 Heart of Steel Each time this card is attacked, its elemental resistances increase by (+1%).
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Cigarillos ability · Cooldown 2 Earth bonus (+3) Light bonus (+3)
+2
+- Final Delight ability · Cooldown 10 Deal 100 Earth damage Random
+Deal 100 Light damage
+10
+- Berserk tox · Rare All your cards' damage and heals are increased by 25%
+Illustration by Krackdur
+Full card details
+Illustration by Krackdur
+Earth Rare #188
+# Commando Gerz
+Generation Defense
+1,200 Health points
+4 Spamtons / turn
+#10 Rank / 127
+S No talent · #6
+Attack
+65
+Generation
+89
+Defense
+89
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Inaccuracy 2 Heart of Steel 3 Soul Vitality
+Build with this card 50 decks
+Share
+### Abilities
+#### Cigarillos
+2 turns
+Earth bonus (+3) Light bonus (+3)
+Accuracy 100% Critical 0%
+#### Final Delight
+10 turns
+Deal 100 Earth damage Random
+Deal 100 Light damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Berserk
+Rare
+All your cards' damage and heals are increased by 25%
+### Talents
+#### Inaccuracy
+At the start of the game, a random enemy card loses (-20%) accuracy.
+Δ 19.2 · Theoretical score
+#### Heart of Steel
+Each time this card is attacked, its elemental resistances increase by (+1%).
+Δ 25.5 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 483.4 · Theoretical score
+## Its best decks
+50 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Canine Specter + Aleera
+92.1 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of Flames
+91.2 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Ephial
+90.7 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera + Commando Gerz
+89.4 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Paguroniyx
+89.1 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+The other decks (44)
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Commando Gerz Intermediate · 98.1%
+- A Aleera + Catixy with Squall · Commando Gerz Intermediate · 87.9%
+- A Aleera + Commando Gerz with Sovereign of the Ether Falls · The Wild Carrier Intermediate · 87.9%
+- B Master Amphibian + Rob the Adventurer with Scorch · Commando Gerz Intermediate · 72.7%
+- B Blue-Stone-Eater + Thorn of Love with Commando Gerz · Rob the Adventurer Intermediate · 71.9%
+- B Aleera + Paguroniyx with Commando Gerz · Horned Dune Wyrm Accessible · 71.4%
+- C Aleera + Catixy with Commando Gerz · Green Guardian Intermediate · 67.1%
+- C Verdant Fruit Cruncher + Blue-Stone-Eater with Commando Gerz · Earth Spirit Intermediate · 61%
+- C Verdant Fruit Cruncher + Commando Gerz with Golden Boar · Blue-Stone-Eater Intermediate · 60.8%
+- C Master Amphibian + Rob the Adventurer with Commando Gerz · Aidan Accessible · 59.3%
+- C Earth King + Blue-Stone-Eater with Golden Boar · Commando Gerz Advanced collection · 57.1%
+- C Verdant Fruit Cruncher + Blue-Stone-Eater with Regent of the Abysses · Commando Gerz Advanced collection · 56.3%
+- C Melody of Divinities + Polychrome Owl with Commando Gerz · Astry Advanced collection · 53.9%
+- C Abyssal Lightbearer + Nebular Aristocrat with Commando Gerz · Lums Intermediate · 53.9%
+- C Commando Gerz + Blue-Stone-Eater with Earth King · Rob the Adventurer Advanced collection · 53.1%
+- C Blue-Stone-Eater + Scorch with Golden Boar · Commando Gerz Intermediate · 53.1%
+- C Commando Gerz + Radiant Shinobi with Nebular Aristocrat · Polychrome Owl Intermediate · 51.8%
+- C Cloudy Rodent + Melody of Divinities with Commando Gerz · Mistress of Tints Advanced collection · 51.5%
+- C Radiant Shinobi + Horned Dune Wyrm with Commando Gerz · Regent of the Abysses Intermediate · 50.7%
+- C Commando Gerz + Blue-Stone-Eater with Regent of the Abysses · Scorch Advanced collection · 50.1%
+- D Abyssal Lightbearer + Cloudy Rodent with Commando Gerz · Mistress of Tints Intermediate · 49.9%
+- D Commando Gerz + Melody of Divinities with Hatchlings of Midas · Wyrmling of Lights Advanced collection · 49.8%
+- D Commando Gerz + Radiant Shinobi with Nebular Aristocrat · Wyrmling of Lights Intermediate · 49.7%
+- D Sky Dragon + Cloudy Rodent with Commando Gerz · Polychrome Owl Accessible · 49.5%
+- D Radiant Shinobi + Glimmer of Hope with Commando Gerz · Codex of Luminous Spells Intermediate · 49.2%
+- D Blue-Stone-Eater + Rob the Adventurer with Commando Gerz · Snow Warrior Intermediate · 48.9%
+- D Blue-Stone-Eater + Thorn of Love with Faerylia · Commando Gerz Advanced collection · 48.4%
+- D Abyssal Lightbearer + Thorn of Love with Canine Specter · Commando Gerz Intermediate · 47.9%
+- D Radiant Shinobi + Thorn of Love with Ephial · Commando Gerz Advanced collection · 46.8%
+- D Verdant Fruit Cruncher + Golden Boar with Commando Gerz · Earth Spirit Accessible · 46.5%
+- D Commando Gerz + Cloudy Rodent with Abyssal Lightbearer · Pyrokinetic Sorceress Intermediate · 45.4%
+- D Commando Gerz + Cloudy Rodent with Pyrokinetic Sorceress · Toad of the Stars Accessible · 45.3%
+- D Canine Specter + Cloudy Rodent with Ephial · Commando Gerz Advanced collection · 44.8%
+- D Commando Gerz + Zayd with Faerylia · Polychrome Owl Advanced collection · 44.4%
+- D Commando Gerz + Golden Boar with Master Amphibian · Verdant Fruit Cruncher Accessible · 43.8%
+- D Squall + Cloudy Rodent with Commando Gerz · Polychrome Owl Intermediate · 43%
+- D Commando Gerz + Cloudy Rodent with Canine Specter · Snow Warrior Accessible · 42.8%
+- D Canine Specter + Cloudy Rodent with Commando Gerz · Squall Intermediate · 41.2%
+- D Commando Gerz + Thorn of Love with Cloudy Rodent · Green Guardian Intermediate · 40.7%
+- D Canine Specter + Commando Gerz with Nebular Aristocrat · Toad of the Stars Accessible · 38.3%
+- D Commando Gerz + Cloudy Rodent with Toad of the Stars · Green Guardian Intermediate · 38.2%
+- D Canine Specter + Hatchlings of Midas with Commando Gerz · Codex of Luminous Spells Intermediate · 35.1%
+- D Commando Gerz + Zayd with Protector of Ruins · Golden Boar Advanced collection · 33.6%
+- D Commando Gerz + Protector of Ruins with Snow Warrior · Aidan Accessible · 33%
+### Resistances
+8% Fire
+10% Water
+10% Earth
+9% Nature
+10% Shadow
+10% Light
+Eltherien · Emeldarion
+### Beyond the card
+These days, in the wild lands of northern Emeldarion, lives a shamanic people led by the sage Keria. This people cultivates plants and raises animals, all bound to and nourished by the element of fire. Many training courses from the Dragheïr military academy are held in this region. Their purpose is to teach an understanding of the element of fire. Gerz, a former commando, retired here. A friend of the military school's headmistress, he agreed to welcome the students onto his ranch so they could be trained.
+## Better together
+The most promising partners according to the model.
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+C # 085 Earth
+Epic · Attack
+### Blue-Stone-Eater
+500 HP
+D # 094 Earth
+Legendary · Utility
+### Zayd
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

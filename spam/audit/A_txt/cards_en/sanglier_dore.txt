@@ -1,0 +1,159 @@
+Golden Boar: SPAM Earth common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Golden Boar A View the full card
+Golden Boar
+2 Earth Shaker
+Punching Bag
+900/900
+6
+Standard
+Golden Boar
+2 Earth Shaker
+Punching Bag
+900/900
+6
+Elemental
+Golden Boar
+2 Earth Shaker
+Punching Bag
+900/900
+6
+FA
+Golden Boar
+2 Earth Shaker
+Punching Bag
+900/900
+6
+## Golden Boar
+A Earth · Common · Standard
+900 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Blue Whale Increases this card’s HP by (+200)
+- Talent 2 Vital Surge At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Earth Shaker ability · Cooldown 2 Deal 40 Earth damage Random
+Increases its max HP by 40 Earth Earth bonus (+2)
+2
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Free slot Open to a shop Tox
+Illustration by Saki
+Full card details
+Illustration by Saki
+Earth Common #160
+# Golden Boar
+Defense
+900 Health points
+6 Spamtons / turn
+#12 Rank / 127
+S No talent · #8
+Attack
+69
+Generation
+69
+Defense
+84
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Blue Whale 2 Vital Surge 3 Soul Vitality
+Build with this card 9 decks
+Share
+### Abilities
+#### Earth Shaker
+2 turns
+Deal 40 Earth damage Random
+Increases its max HP by 40 Earth Earth bonus (+2)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Blue Whale
+Increases this card’s HP by (+200)
+Δ 78.7 · Theoretical score
+#### Vital Surge
+At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+Δ 0 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 452.2 · Theoretical score
+## Its best decks
+9 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Elemental ramp ·
+### Verdant Fruit Cruncher + Commando Gerz
+60.8 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Earth King + Blue-Stone-Eater
+57.1 % Relative index 9 turns Estimated elimination 24 / turn Spamtons
+C Intermediate
+Elemental ramp ·
+### Blue-Stone-Eater + Scorch
+53.1 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Golden Boar + Earth King
+47.8 % Relative index 9 turns Estimated elimination 31 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Verdant Fruit Cruncher + Golden Boar
+46.5 % Relative index 10 turns Estimated elimination 31 / turn Spamtons
+D Intermediate
+Midrange ·
+### Golden Boar + Rob the Adventurer
+44.7 % Relative index 9 turns Estimated elimination 23 / turn Spamtons
+The other decks (3)
+- D Commando Gerz + Golden Boar with Master Amphibian · Verdant Fruit Cruncher Accessible · 43.8%
+- D Earth King + Blue-Stone-Eater with Golden Boar · Protector of Ruins Advanced collection · 37.1%
+- D Commando Gerz + Zayd with Protector of Ruins · Golden Boar Advanced collection · 33.6%
+### Resistances
+11% Fire
+11% Water
+11% Earth
+11% Nature
+11% Shadow
+11% Light
+Creature · Aelther
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Golden Boar is part of the wildlife living in the forests of Aelther. It's mostly found at the foot of the Celestial Mount, where it feeds on gold and roots. This diet strengthens its gold-rich skeleton and makes it quite dangerous to provoke. Pilgrims have a rule to feed only on Honey Caterpillars there. That way, the continent's species are protected from poaching.
+## Better together
+The most promising partners according to the model.
+S # 017 Earth
+Common · Attack
+### Verdant Fruit Cruncher
+650 HP
+C # 085 Earth
+Epic · Attack
+### Blue-Stone-Eater
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,177 @@
+Rongeur Nuageux : carte SPAM Lumière commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Rongeur Nuageux C Voir la carte en grand
+Rongeur Nuageux
+2 Foudre
+Provocation
+Berserk
+650/650
+11
+Standard
+Rongeur Nuageux
+2 Foudre
+Provocation
+Berserk
+650/650
+11
+Élémentaire
+Rongeur Nuageux
+2 Foudre
+Provocation
+Berserk
+650/650
+11
+FA
+Rongeur Nuageux
+2 Foudre
+Provocation
+Berserk
+650/650
+11
+## Rongeur Nuageux
+C Lumière · Commune · Standard
+650 PV 11 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Conseillé
+- Talent 2 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Trois champs de compétence
+- Foudre compétence · Recharge 2 Attaque 30 Lumière + 50 % des PV manquants du lanceur
+2
+- Provocation tox · Rare Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler
+- Berserk tox · Commune Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Lumière Commune #234
+# Rongeur Nuageux
+Économie
+650 Points de vie
+11 Spamtons / tour
+#70 Classement / 127
+B Sans talent · #62
+Attaque
+74
+Génération
+0
+Défense
+35
+Soutien
+1
+Contrôle
+0
+Économie
+87
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage O/L 2 Blindage N/T 3 Évolution
+Jouer cette carte 16 decks
+Partager
+### Compétences
+#### Foudre
+2 tours
+Attaque 30 Lumière + 50 % des PV manquants du lanceur
+Précision 100% Critique 15%
+### Tox de départ
+#### Provocation
+Rare
+Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler
+#### Berserk
+Commune
+Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+### Talents
+#### Blindage O/L
+Conseillé
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 34,6 · Score théorique
+#### Blindage N/T
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 34,6 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0,6 · Score théorique
+## Ses meilleurs decks
+16 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Midrange ·
+### Rongeur Nuageux + Mélodie des Divinités
+51,5 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Luminaire Abyssal + Rongeur Nuageux
+49,9 % Indice relatif 9 tours Élimination estimée 29 / tour Spamtons
+D Accessible
+Midrange ·
+### Dragon Ciel + Rongeur Nuageux
+49,5 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Rongeur Nuageux + Codex des Sorts Lumineux
+46,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Commando Gerz + Rongeur Nuageux
+45,4 % Indice relatif 10 tours Élimination estimée 27 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Spectre Canin + Rongeur Nuageux
+44,8 % Indice relatif 10 tours Élimination estimée 34 / tour Spamtons
+Les autres decks (10)
+- D Commando Gerz + Rongeur Nuageux avec Sorcière Pyrokinétique · Crapaud des Étoiles Accessible · 45,3%
+- D Dragon Ciel + Rongeur Nuageux avec Chouette Polychrome · L'Épine d'Amour Accessible · 44,4%
+- D Squall + Rongeur Nuageux avec Commando Gerz · Chouette Polychrome Intermédiaire · 43%
+- D Commando Gerz + Rongeur Nuageux avec Spectre Canin · Guerrier des Neiges Accessible · 42,8%
+- D Spectre Canin + Maîtresse des Teintes avec Rongeur Nuageux · L'Épine d'Amour Accessible · 42,1%
+- D Spectre Canin + Rongeur Nuageux avec Commando Gerz · Squall Intermédiaire · 41,2%
+- D Commando Gerz + L'Épine d'Amour avec Rongeur Nuageux · Gardien Vert Intermédiaire · 40,7%
+- D Commando Gerz + Rongeur Nuageux avec Crapaud des Étoiles · Gardien Vert Intermédiaire · 38,2%
+- D Luminaire Abyssal + Codex des Sorts Lumineux avec Rongeur Nuageux · Ephial Collection avancée · 35,7%
+- D Rongeur Nuageux + Codex des Sorts Lumineux avec Shinobi Éclairant · Gardien Vert Intermédiaire · 32%
+### Résistances
+-18% Feu
+7% Eau
+7% Terre
+6% Nature
+7% Ombre
+18% Lumière
+Créature · Aelther
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Les Rongeurs Nuageux vivent sur les nuages du Mont Céleste, qu’ils dévorent comme de la barbe à papa. Originaires des Royaumes Célestes des Éternels, où ils sont considérés comme une espèce invasive, ils parcourent parfois le ciel à bord de cumulonimbus qui se sont détachés de leur royaume.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 198 Lumière
+Épique · Génération
+### Codex des Sorts Lumineux
+1000 PV
+B # 051 Feu
+Commune · Défense
+### Sorcière Pyrokinétique
+800 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

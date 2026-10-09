@@ -1,0 +1,135 @@
+Imaginary Panther: SPAM Nature epic card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Imaginary Panther C View the full card
+Imaginary Panther
+1 Crazy Speed
+600/600
+4
+Standard
+Imaginary Panther
+1 Crazy Speed
+600/600
+4
+Elemental
+Imaginary Panther
+1 Crazy Speed
+600/600
+4
+FA
+Imaginary Panther
+1 Crazy Speed
+600/600
+4
+## Imaginary Panther
+C Nature · Epic · Standard
+600 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Vital Chance This card has a 10% chance to heal instead of taking damage when attacked.
+- Talent 2 Roulette All of this card's abilities gain Echo (10%).
+- Talent 3 Brutal Start the game with the "Brutal" passive
+Recommended
+Three ability slots
+- Crazy Speed ability · Cooldown 1 Deal 9 Nature damage
+Echo (75%)
+1
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Epic #083
+# Imaginary Panther
+Attack
+600 Health points
+4 Spamtons / turn
+#87 Rank / 127
+C No talent · #82
+Attack
+84
+Generation
+0
+Defense
+19
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Vital Chance 2 Roulette 3 Brutal
+Build with this card 5 decks
+Share
+### Abilities
+#### Crazy Speed
+1 turn
+Deal 9 Nature damage
+Echo (75%)
+Accuracy 100% Critical 1%
+### Talents
+#### Vital Chance
+This card has a 10% chance to heal instead of taking damage when attacked.
+Δ -83.5 · Theoretical score
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ 80.6 · Theoretical score
+#### Brutal
+Recommended
+Start the game with the "Brutal" passive
+Δ 89.5 · Theoretical score
+## Its best decks
+5 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Sky Dragon + Thorn of Love
+54.6 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Gabriel + Nature Spirit
+50 % Relative index 9 turns Estimated elimination 31 / turn Spamtons
+The other decks (3)
+- C Sky Dragon + Thorn of Love with Imaginary Panther · Mistress of Tints Intermediate · 52.7%
+- C Sky Dragon + Thorn of Love with Gabriel · Imaginary Panther Advanced collection · 51.2%
+- D Sky Dragon + Thorn of Love with Imaginary Panther · Princess Meridia Intermediate · 48.3%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Nightmare · Lonely Isles
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Imaginary Panther teleports through spatial rifts similar to Vivy's. These rifts are traced toward the arrival point by one of the eyes present on its body. It is sometimes found on the beaches of Vaeloria, where it lets itself be observed. It seems to commute there from the Lonely Isles. The panther is neutral, even though its appearance suggests an elemental corruption.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+D # 072 Nature
+Rare · Support
+### Floral Giraffe
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

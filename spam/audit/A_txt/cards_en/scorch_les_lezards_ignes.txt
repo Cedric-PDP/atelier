@@ -1,0 +1,169 @@
+Scorch, the Ignited Lizards: SPAM Water rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Scorch, the Ignited Lizards D View the full card
+Scorch, the Ignited Lizards
+1 Flameflow
+Ancient Healing
+350/350
+7
+Standard
+Scorch, the Ignited Lizards
+1 Flameflow
+Ancient Healing
+350/350
+7
+Elemental
+Scorch, the Ignited Lizards
+1 Flameflow
+Ancient Healing
+350/350
+7
+FA
+Scorch, the Ignited Lizards
+1 Flameflow
+Ancient Healing
+350/350
+7
+## Scorch, the Ignited Lizards
+D Water · Rare · Standard
+350 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 New Life Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+Recommended
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Debt Both players start with a debt of (-20) Spamton.
+Three ability slots
+- Flameflow ability · Cooldown 1 Fire bonus (+3) Water bonus (+3) Earth bonus (+3)
+1
+- Ancient Healing tox · Common At the start of each turn, the card recovers 4% of its max HP
+- Free slot Open to a shop Tox
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Water Rare #069
+# Scorch, the Ignited Lizards
+Generation
+350 Health points
+7 Spamtons / turn
+#120 Rank / 127
+D No talent · #119
+Attack
+0
+Generation
+98
+Defense
+2
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 New Life 2 Evolution 3 Debt
+Build with this card 19 decks
+Share
+### Abilities
+#### Flameflow
+1 turn
+Fire bonus (+3) Water bonus (+3) Earth bonus (+3)
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Ancient Healing
+Common
+At the start of each turn, the card recovers 4% of its max HP
+### Talents
+#### New Life
+Recommended
+Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+Δ 104.8 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 4.6 · Theoretical score
+#### Debt
+Both players start with a debt of (-20) Spamton.
+Δ 0 · Theoretical score
+## Its best decks
+19 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Sovereign of the Ether Falls + Master Amphibian
+77.9 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Pyro + Scorch
+73.3 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Apprentice of Death + Scorch
+73 % Relative index 7 turns Estimated elimination 28 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Master Amphibian + Rob the Adventurer
+72.7 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+C Intermediate
+Aggro / burst ·
+### Wibs the Blazing + Apprentice of Death
+63.3 % Relative index 7 turns Estimated elimination 22 / turn Spamtons
+C Advanced collection
+Aggro / burst ·
+### Sovereign of Flames + Scorch
+60.9 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+The other decks (13)
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · Scorch Advanced collection · 61.1%
+- C Sovereign of Flames + Apprentice of Death with Wibs the Blazing · Scorch Advanced collection · 58.7%
+- C Master Amphibian + Rob the Adventurer with Scorch · Aidan Accessible · 58.5%
+- C Wibs the Blazing + Apprentice of Death with Squall · Scorch Intermediate · 57.7%
+- C Medusine Thorn + Scorch with Master Amphibian · The Companion of Spirits Accessible · 54.5%
+- C The Companion of Spirits + Water Spirit with Leviathan of the Skies · Scorch Advanced collection · 53.1%
+- C Blue-Stone-Eater + Scorch with Golden Boar · Commando Gerz Intermediate · 53.1%
+- C The Companion of Spirits + Scorch with Leviathan of the Skies · Princess Meridia Advanced collection · 51.5%
+- C Medusine Thorn + The Companion of Spirits with Leviathan of the Skies · Scorch Advanced collection · 51.1%
+- C Master Amphibian + Scorch with Rob the Adventurer · Verdant Fruit Cruncher Accessible · 50.9%
+- C Master Amphibian + Rob the Adventurer with Zayd · Scorch Advanced collection · 50.7%
+- C Commando Gerz + Blue-Stone-Eater with Regent of the Abysses · Scorch Advanced collection · 50.1%
+- D Master Amphibian + Scorch with Frost & Glacier · Medusine Thorn Advanced collection · 32.4%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Creature · Emeldarion
+### Beyond the card
+These days, a shamanic people led by the sage Keria live in the wild lands of northern Emeldarion. They cultivate plants and raise animals, all attuned to and nourished by the element of Fire. Scorch are small igneous lizards that help preserve the aquatic ecosystem. They feed on pollutants found in the water, whether mineral or plant-based. The lizards dry them inside their large mouths, then burn them in their stomachs. This unusual digestive process can cause fiery burps.
+## Better together
+The most promising partners according to the model.
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+B # 229 Earth
+Common · Attack
+### Master Amphibian
+700 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

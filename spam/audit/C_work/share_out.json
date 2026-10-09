@@ -1,0 +1,107 @@
+{
+ "res": {
+  "deck chimere": {
+   "score": 8018.221187085179,
+   "dmgTotal": 2316.0999999999995,
+   "planDmg": 2357,
+   "byTurn": [
+    5,
+    118,
+    12,
+    234,
+    14,
+    384,
+    23,
+    612,
+    35,
+    920
+   ],
+   "per": {
+    "103 Lame de la forêt / Soin critique [ally]": {
+     "dmg": 0,
+     "heal": 487,
+     "casts": 10
+    },
+    "103 Lame de la forêt / Pinces [enemy]": {
+     "dmg": 202,
+     "heal": 0,
+     "casts": 10
+    },
+    "117 Keria / Embrasement [allAllies]": {
+     "dmg": 0,
+     "heal": 0,
+     "casts": 5
+    },
+    "238 Chimère Brasse-chair / Galop arctique [aoeEnemy]": {
+     "dmg": 2155,
+     "heal": 1616,
+     "casts": 5
+    },
+    "117 Keria / Feu allié [allAllies]": {
+     "dmg": 0,
+     "heal": 0,
+     "casts": 3
+    },
+    "156 L'Œil des montagnes / Revitalisation [ally]": {
+     "dmg": 0,
+     "heal": 240,
+     "casts": 2
+    }
+   }
+  },
+  "zero critique": {
+   "score": 6529.198659718492,
+   "dmgTotal": 1857.54,
+   "planDmg": 2073,
+   "byTurn": [
+    28,
+    92,
+    87,
+    181,
+    169,
+    264,
+    230,
+    331,
+    292,
+    399
+   ],
+   "per": {
+    "69 Scorch, les Lézards Ignés / Feau [none]": {
+     "dmg": 0,
+     "heal": 0,
+     "casts": 5
+    },
+    "102 Murmures du Corail Noir / Murmure [ally]": {
+     "dmg": 0,
+     "heal": 456,
+     "casts": 10
+    },
+    "116 Prisonnière de la Machine / Explosion [enemy]": {
+     "dmg": 1334,
+     "heal": 0,
+     "casts": 10
+    },
+    "102 Murmures du Corail Noir / Souffle d'eau [enemy]": {
+     "dmg": 448,
+     "heal": 0,
+     "casts": 10
+    },
+    "12 Hibernatus / Haleau [enemy]": {
+     "dmg": 291,
+     "heal": 0,
+     "casts": 5
+    },
+    "12 Hibernatus / Digue [none]": {
+     "dmg": 0,
+     "heal": 0,
+     "casts": 3
+    },
+    "116 Prisonnière de la Machine / Braisegarde [none]": {
+     "dmg": 0,
+     "heal": 0,
+     "casts": 3
+    }
+   }
+  }
+ }
+}

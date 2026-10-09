@@ -1,0 +1,154 @@
+Vladislaus: SPAM Fire epic card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Vladislaus D View the full card
+Vladislaus
+1 Double Influx
+1 Transfusion
+Tenacity
+350/350
+4
+Standard
+Vladislaus
+1 Double Influx
+1 Transfusion
+Tenacity
+350/350
+4
+Elemental
+Vladislaus
+1 Double Influx
+1 Transfusion
+Tenacity
+350/350
+4
+FA
+Vladislaus
+1 Double Influx
+1 Transfusion
+Tenacity
+350/350
+4
+## Vladislaus
+D Fire · Epic · Standard
+350 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Vital Surge At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+- Talent 2 Phoenix Feather 50% chance to regain the Phoenix passive once used.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Double Influx ability · Cooldown 1 Deal 5 Fire damage
+Deal 5 Shadow damage
+Base damage increases by 5
+1
+- Transfusion ability · Cooldown 1 Steals 100 max HP from an ally to heal itself for the same amount
+1
+- Tenacity tox · Common The first fatal attack leaves you with 1 HP
+Illustration by Nao
+Full card details
+Illustration by Nao
+Fire Epic #193
+# Vladislaus
+Utility
+350 Health points
+4 Spamtons / turn
+#126 Rank / 127
+D No talent · #126
+Attack
+13
+Generation
+0
+Defense
+0
+Support
+0
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Vital Surge 2 Phoenix Feather 3 Soul Vitality
+Build with this card 3 decks
+Share
+### Abilities
+#### Double Influx
+1 turn
+Deal 5 Fire damage
+Deal 5 Shadow damage
+Base damage increases by 5
+Accuracy 100% Critical 1%
+#### Transfusion
+1 turn
+Steals 100 max HP from an ally to heal itself for the same amount
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Tenacity
+Common
+The first fatal attack leaves you with 1 HP
+### Talents
+#### Vital Surge
+At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+Δ 0 · Theoretical score
+#### Phoenix Feather
+50% chance to regain the Phoenix passive once used.
+Δ 0 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 210.5 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Midrange ·
+### Wibs the Blazing + Apprentice of Death
+53.5 % Relative index 8 turns Estimated elimination 20 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + Apprentice of Death
+50.5 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Faerylia + Vladislaus
+46.3 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+### Resistances
+30% Fire
+31% Water
+40% Earth
+40% Nature
+39% Shadow
+0% Light
+Eltherien · Nyevielh
+### Beyond the card
+Treasurer of Nyevielh, Vladislaus handled most of the documents for his regent. A renowned philosopher and researcher, he is the childhood friend of the Kings of Earth and Shadow. As nightmares made his lands uninhabitable, he was entrusted with fragments of the Codex. Vladislaus had a manor built with moving rooms — impossible to get around without following precise patterns. The duchess and some servants chose to follow him. The Codex has been heavily protected from nightmares for centuries. No one knows what became of them... Are they still alive?
+## Better together
+The most promising partners according to the model.
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+C # 115 Fire
+Common · Generation
+### Aidan
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

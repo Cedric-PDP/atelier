@@ -1,0 +1,2558 @@
+const §={
+  cardsPerDeck:4,
+  turnDurationPerCardAlive:15,
+  turnAfterOvertime:20,
+  overtimeReducingRatio:.1,
+  overtimeScalingRatio:.5,
+  frozenOwnerTurns:1,
+  talentDraftSeconds:30,
+  startLuck:0,
+  luckPerTurn:1,
+  rerollCost:10,
+  itemShopMax:3,
+  luckForSkip:0,
+  moneyForSkip:10,
+  deathBounty:50,
+  bansPerPlayer:1,
+  skipPerCardAlive:[10,10,10,10]
+},
+§={
+  common:[
+    {time:0,value:100,inSlope:0,outSlope:0},
+    {time:2,value:100,inSlope:-.067162,outSlope:-.067162},
+    {time:4,value:80,inSlope:-15.084803,outSlope:-15.084803},
+    {time:6,value:50,inSlope:-12.485646,outSlope:-12.485646},
+    {time:10,value:10,inSlope:-2.723492,outSlope:-2.723492},
+    {time:11.898575,value:5,inSlope:-2.532998,outSlope:-2.532998},
+    {time:14,value:0,inSlope:.020802,outSlope:.020802},
+    {time:30,value:0,inSlope:.003486,outSlope:.003486},
+    {time:50,value:0,inSlope:.018618,outSlope:.018618},
+    {time:100,value:0,inSlope:-.016249,outSlope:-.016249}
+  ],
+  rare:[
+    {time:0,value:0,inSlope:0,outSlope:0},
+    {time:2,value:0,inSlope:-0,outSlope:-0},
+    {time:4,value:20,inSlope:10.921633,outSlope:10.921633},
+    {time:6,value:45,inSlope:3.672301,outSlope:3.672301},
+    {time:10,value:50,inSlope:.013722,outSlope:.013722},
+    {time:14,value:35,inSlope:-3.881487,outSlope:-3.881487},
+    {time:30,value:0,inSlope:-.043959,outSlope:-.043959},
+    {time:50,value:0,inSlope:-0,outSlope:-0},
+    {time:100,value:0,inSlope:-.018971,outSlope:-.018971}
+  ],
+  epic:[
+    {time:0,value:0,inSlope:0,outSlope:0},
+    {time:2,value:0,inSlope:-.004759,outSlope:-.004759},
+    {time:4,value:0,inSlope:.018664,outSlope:.018664},
+    {time:6,value:5,inSlope:4.621785,outSlope:4.621785},
+    {time:10,value:40,inSlope:12.498692,outSlope:12.498692},
+    {time:14,value:60,inSlope:-.013768,outSlope:-.013768},
+    {time:20,value:50,inSlope:-2.215345,outSlope:-2.215345},
+    {time:30,value:30,inSlope:-1.968494,outSlope:-1.968494},
+    {time:50,value:0,inSlope:.038897,outSlope:.038897},
+    {time:100,value:0,inSlope:.016928,outSlope:.016928}
+  ],
+  legendary:[
+    {time:0,value:0,inSlope:.024763,outSlope:.024763},
+    {time:2,value:0,inSlope:-.008026,outSlope:-.008026},
+    {time:3,value:0,inSlope:-.025547,outSlope:-.025547},
+    {time:4,value:0,inSlope:.039026,outSlope:.039026},
+    {time:6,value:0,inSlope:.049538,outSlope:.049538},
+    {time:10,value:0,inSlope:.046918,outSlope:.046918},
+    {time:14,value:5,inSlope:2.524274,outSlope:2.524274},
+    {time:20,value:35,inSlope:4.054379,outSlope:4.054379},
+    {time:30,value:70,inSlope:3.165212,outSlope:3.165212},
+    {time:50,value:100,inSlope:.032301,outSlope:.032301},
+    {time:100,value:100,inSlope:.062129,outSlope:.062129}
+  ]
+},
+§={
+  common:[
+    `Aoe_C`,
+    `Berserk_C`,
+    `Chance_C`,
+    `Cimetiere_C`,
+    `CoeurEau_C`,
+    `CoeurFeu_C`,
+    `CoeurLumiere_C`,
+    `CoeurNature_C`,
+    `CoeurOmbre_C`,
+    `CoeurResistance_C`,
+    `CoeurTerre_C`,
+    `CoeurVital_C`,
+    `Erosion_C`,
+    `Life Steal_C`,
+    `Phoenix_C`,
+    `Poison_C`,
+    `Primitive heal_C`,
+    `PunchingBag_C`,
+    `Reflect_C`,
+    `Shield_C`,
+    `Spamland_C`,
+    `Tenacite_C`
+  ],
+  rare:/* @__PURE__ */ `Aoe_R.Berserk_R.Brut_R.Chance_R.Cimetiere_R.CoeurEau_R.CoeurFeu_R.CoeurLumiere_R.CoeurNature_R.CoeurOmbre_R.CoeurResistance_R.CoeurTerre_R.CoeurVital_R.Inversement_R.Life Steal_R.Mimetisme_R.Multiplicator_R.Mystere_R.Optimisation_R.Phoenix_R.Poison_R.Primitive heal_R.PunchingBag_R.Reflect_R.Revenge_R.Shield_R.Smoked_R.Spamland_R.Taunt_R`.split(`.`),
+  epic:/* @__PURE__ */ `Aoe_E.Berserk_E.Bomba_E.Chance_E.Cimetiere_E.CoeurEau_E.CoeurFeu_E.CoeurLumiere_E.CoeurNature_E.CoeurOmbre_E.CoeurResistance_E.CoeurTerre_E.CoeurVital_E.Erosion_E.Frozen_E.Immunity_E.Life Steal_E.Metamorph_E.Phoenix_E.Poison_E.Primitive heal_E.PunchingBag_E.Reflect_E.Reset_E.Shield_E.Spamland_E.Vengeur_E`.split(`.`),
+  legendary:[
+    `Aoe_L`,
+    `Berserk_L`,
+    `Chance_L`,
+    `Cimetiere_L`,
+    `CoeurEau_L`,
+    `CoeurFeu_L`,
+    `CoeurLumiere_L`,
+    `CoeurNature_L`,
+    `CoeurOmbre_L`,
+    `CoeurResistance_L`,
+    `CoeurTerre_L`,
+    `CoeurVital_L`,
+    `Disparition_L`,
+    `Eternity_L`,
+    `Life Steal_L`,
+    `Phoenix_L`,
+    `Poison_L`,
+    `Primitive heal_L`,
+    `PunchingBag_L`,
+    `Reflect_L`,
+    `Shield_L`,
+    `Spamland_L`,
+    `Temporality_L`
+  ]
+},
+§={
+  Aoe_C:{effect:`§`,value:20,element:null,rarity:`common`,cost:45},
+  Aoe_E:{effect:`§`,value:80,element:null,rarity:`epic`,cost:135},
+  Aoe_L:{effect:`§`,value:100,element:null,rarity:`legendary`,cost:180},
+  Aoe_R:{effect:`§`,value:40,element:null,rarity:`rare`,cost:90},
+  AttackMultiColor:{effect:`AttackMultiColor`,value:1,element:null,rarity:null,cost:0},
+  Aveuglement:{effect:`Aveuglement`,value:25,element:null,rarity:null,cost:0},
+  Berserk_C:{effect:`Berserk`,value:12,element:null,rarity:`common`,cost:30},
+  Berserk_E:{effect:`Berserk`,value:50,element:null,rarity:`epic`,cost:100},
+  Berserk_L:{effect:`Berserk`,value:100,element:null,rarity:`legendary`,cost:180},
+  Berserk_R:{effect:`Berserk`,value:25,element:null,rarity:`rare`,cost:60},
+  Bomba_E:{effect:`Bomba`,value:500,element:null,rarity:`epic`,cost:130},
+  Brut_R:{effect:`Brut`,value:0,element:null,rarity:`rare`,cost:65},
+  Casino:{effect:`Casino`,value:0,element:null,rarity:null,cost:0},
+  ChanceVitale:{effect:`ChanceVitale`,value:10,element:null,rarity:null,cost:0},
+  Chance_C:{effect:`Chance`,value:.5,element:null,rarity:`common`,cost:5},
+  Chance_E:{effect:`Chance`,value:2,element:null,rarity:`epic`,cost:15},
+  Chance_L:{effect:`Chance`,value:4,element:null,rarity:`legendary`,cost:20},
+  Chance_R:{effect:`Chance`,value:1,element:null,rarity:`rare`,cost:10},
+  Changement:{effect:`Changement`,value:0,element:null,rarity:null,cost:0},
+  Cimetiere_C:{effect:`Cimetierre`,value:3,element:null,rarity:`common`,cost:20},
+  Cimetiere_E:{effect:`Cimetierre`,value:8,element:null,rarity:`epic`,cost:60},
+  Cimetiere_L:{effect:`Cimetierre`,value:12,element:null,rarity:`legendary`,cost:80},
+  Cimetiere_R:{effect:`Cimetierre`,value:5,element:null,rarity:`rare`,cost:40},
+  "Coeur elementaire §":{effect:`CoeurElement`,value:1,element:null,rarity:`common`,cost:20},
+  CoeurCorrompu:{effect:`CoeurCorrompu`,value:50,element:null,rarity:`common`,cost:0},
+  CoeurEau_C:{effect:`CoeurElement`,value:1,element:`water`,rarity:`common`,cost:15},
+  CoeurEau_E:{effect:`CoeurElement`,value:5,element:`water`,rarity:`epic`,cost:60},
+  CoeurEau_L:{effect:`CoeurElement`,value:8,element:`water`,rarity:`legendary`,cost:120},
+  CoeurEau_R:{effect:`CoeurElement`,value:2,element:`water`,rarity:`rare`,cost:30},
+  CoeurFeu_C:{effect:`CoeurElement`,value:1,element:`fire`,rarity:`common`,cost:15},
+  CoeurFeu_E:{effect:`CoeurElement`,value:5,element:`fire`,rarity:`epic`,cost:60},
+  CoeurFeu_L:{effect:`CoeurElement`,value:8,element:`fire`,rarity:`legendary`,cost:120},
+  CoeurFeu_R:{effect:`CoeurElement`,value:2,element:`fire`,rarity:`rare`,cost:30},
+  CoeurLumiere_C:{effect:`CoeurElement`,value:1,element:`light`,rarity:`common`,cost:15},
+  CoeurLumiere_E:{effect:`CoeurElement`,value:5,element:`light`,rarity:`epic`,cost:60},
+  CoeurLumiere_L:{effect:`CoeurElement`,value:8,element:`light`,rarity:`legendary`,cost:120},
+  CoeurLumiere_R:{effect:`CoeurElement`,value:2,element:`light`,rarity:`rare`,cost:30},
+  CoeurNature_C:{effect:`CoeurElement`,value:1,element:`nature`,rarity:`common`,cost:15},
+  CoeurNature_E:{effect:`CoeurElement`,value:5,element:`nature`,rarity:`epic`,cost:60},
+  CoeurNature_L:{effect:`CoeurElement`,value:8,element:`nature`,rarity:`legendary`,cost:120},
+  CoeurNature_R:{effect:`CoeurElement`,value:2,element:`nature`,rarity:`rare`,cost:30},
+  CoeurOmbre_C:{effect:`CoeurElement`,value:1,element:`shadow`,rarity:`common`,cost:15},
+  CoeurOmbre_E:{effect:`CoeurElement`,value:5,element:`shadow`,rarity:`epic`,cost:60},
+  CoeurOmbre_L:{effect:`CoeurElement`,value:8,element:`shadow`,rarity:`legendary`,cost:120},
+  CoeurOmbre_R:{effect:`CoeurElement`,value:2,element:`shadow`,rarity:`rare`,cost:30},
+  CoeurResistance_C:{effect:`CoeurResistance`,value:3,element:null,rarity:`common`,cost:10},
+  CoeurResistance_E:{effect:`CoeurResistance`,value:10,element:null,rarity:`epic`,cost:70},
+  CoeurResistance_L:{effect:`CoeurResistance`,value:15,element:null,rarity:`legendary`,cost:120},
+  CoeurResistance_R:{effect:`CoeurResistance`,value:6,element:null,rarity:`rare`,cost:30},
+  CoeurTerre_C:{effect:`CoeurElement`,value:1,element:`earth`,rarity:`common`,cost:15},
+  CoeurTerre_E:{effect:`CoeurElement`,value:5,element:`earth`,rarity:`epic`,cost:60},
+  CoeurTerre_L:{effect:`CoeurElement`,value:8,element:`earth`,rarity:`legendary`,cost:120},
+  CoeurTerre_R:{effect:`CoeurElement`,value:2,element:`earth`,rarity:`rare`,cost:30},
+  CoeurVital_C:{effect:`CoeurVital`,value:15,element:null,rarity:`common`,cost:10},
+  CoeurVital_E:{effect:`CoeurVital`,value:60,element:null,rarity:`epic`,cost:70},
+  CoeurVital_L:{effect:`CoeurVital`,value:100,element:null,rarity:`legendary`,cost:150},
+  CoeurVital_R:{effect:`CoeurVital`,value:30,element:null,rarity:`rare`,cost:30},
+  ContreCoup_C:{effect:`ContreCoup`,value:50,element:null,rarity:`common`,cost:30},
+  ContreCoup_R:{effect:`ContreCoup`,value:100,element:null,rarity:`rare`,cost:50},
+  "§œ§ §’acier":{effect:`CoeurAcier`,value:1,element:null,rarity:null,cost:0},
+  Decouverte_E:{effect:`Decouverte`,value:0,element:null,rarity:`epic`,cost:100},
+  Disparition_L:{effect:`Disparition`,value:0,element:null,rarity:`legendary`,cost:180},
+  Erosion_C:{effect:`Erosion`,value:50,element:null,rarity:`common`,cost:20},
+  Erosion_E:{effect:`Erosion`,value:100,element:null,rarity:`epic`,cost:75},
+  Eternity_L:{effect:`Eternity`,value:0,element:null,rarity:`legendary`,cost:220},
+  Frozen_E:{effect:`Frozen`,value:60,element:null,rarity:`epic`,cost:140},
+  Immunity_E:{effect:`ImunityStatus`,value:0,element:null,rarity:`epic`,cost:90},
+  InsensibleDisparition:{effect:`InsensibleDisparition`,value:50,element:null,rarity:null,cost:0},
+  InsensinleEternite:{effect:`InsensibleEternity`,value:50,element:null,rarity:null,cost:0},
+  Inversement_R:{effect:`Inversement`,value:0,element:null,rarity:`rare`,cost:40},
+  "Life Steal_C":{effect:`LifeSteal`,value:25,element:null,rarity:`common`,cost:30},
+  "Life Steal_E":{effect:`LifeSteal`,value:75,element:null,rarity:`epic`,cost:110},
+  "Life Steal_L":{effect:`LifeSteal`,value:100,element:null,rarity:`legendary`,cost:160},
+  "Life Steal_R":{effect:`LifeSteal`,value:50,element:null,rarity:`rare`,cost:70},
+  MetamorphSimple_C:{effect:`MetamorphSimple`,value:0,element:null,rarity:`epic`,cost:120},
+  Metamorph_E:{effect:`Metamorph`,value:0,element:null,rarity:`epic`,cost:120},
+  Mimetisme_R:{effect:`Mimetisme`,value:0,element:null,rarity:`rare`,cost:50},
+  Multiplicator_R:{effect:`Multiplicator`,value:2,element:null,rarity:`rare`,cost:80},
+  Mystere_R:{effect:`Mystere`,value:0,element:null,rarity:`rare`,cost:70},
+  Optimisation_R:{effect:`Optimisation`,value:0,element:null,rarity:`rare`,cost:40},
+  Paradoxe:{effect:`Paradoxe`,value:0,element:null,rarity:null,cost:0},
+  PetitPrix:{effect:`PetitPrix`,value:50,element:null,rarity:null,cost:0},
+  Phoenix_C:{effect:`Phoenix`,value:25,element:null,rarity:`common`,cost:100},
+  Phoenix_E:{effect:`Phoenix`,value:75,element:null,rarity:`epic`,cost:200},
+  Phoenix_L:{effect:`Phoenix`,value:100,element:null,rarity:`legendary`,cost:250},
+  Phoenix_R:{effect:`Phoenix`,value:50,element:null,rarity:`rare`,cost:150},
+  PlumePhoenix:{effect:`PlumePhoenix`,value:50,element:null,rarity:null,cost:0},
+  Poison_C:{effect:`Poisoned`,value:1,element:null,rarity:`common`,cost:10},
+  Poison_E:{effect:`Poisoned`,value:6,element:null,rarity:`epic`,cost:100},
+  Poison_L:{effect:`Poisoned`,value:8,element:null,rarity:`legendary`,cost:150},
+  Poison_R:{effect:`Poisoned`,value:3,element:null,rarity:`rare`,cost:50},
+  "Primitive heal_C":{effect:`SoinPrimitif`,value:4,element:null,rarity:`common`,cost:20},
+  "Primitive heal_E":{effect:`SoinPrimitif`,value:14,element:null,rarity:`epic`,cost:60},
+  "Primitive heal_L":{effect:`SoinPrimitif`,value:19,element:null,rarity:`legendary`,cost:120},
+  "Primitive heal_R":{effect:`SoinPrimitif`,value:9,element:null,rarity:`rare`,cost:40},
+  PunchingBag_C:{effect:`SacDeFrappe`,value:1,element:null,rarity:`common`,cost:25},
+  PunchingBag_E:{effect:`SacDeFrappe`,value:3,element:null,rarity:`epic`,cost:100},
+  PunchingBag_L:{effect:`SacDeFrappe`,value:4,element:null,rarity:`legendary`,cost:150},
+  PunchingBag_R:{effect:`SacDeFrappe`,value:2,element:null,rarity:`rare`,cost:50},
+  Reflect_C:{effect:`Renvoie`,value:25,element:null,rarity:`common`,cost:24},
+  Reflect_E:{effect:`Renvoie`,value:75,element:null,rarity:`epic`,cost:72},
+  Reflect_L:{effect:`Renvoie`,value:100,element:null,rarity:`legendary`,cost:96},
+  Reflect_R:{effect:`Renvoie`,value:50,element:null,rarity:`rare`,cost:48},
+  Reset_E:{effect:`Reset`,value:0,element:null,rarity:`epic`,cost:160},
+  Revenge_R:{effect:`Revanche`,value:0,element:null,rarity:`rare`,cost:80},
+  Roulette:{effect:`Roulette`,value:10,element:null,rarity:null,cost:0},
+  Shield_C:{effect:`Shield`,value:25,element:null,rarity:`common`,cost:30},
+  Shield_E:{effect:`Shield`,value:75,element:null,rarity:`epic`,cost:120},
+  Shield_L:{effect:`Shield`,value:100,element:null,rarity:`legendary`,cost:180},
+  Shield_R:{effect:`Shield`,value:50,element:null,rarity:`rare`,cost:60},
+  Smoked_R:{effect:`Smoked`,value:0,element:null,rarity:`rare`,cost:50},
+  Spamland_C:{effect:`SpamLand`,value:3,element:null,rarity:`common`,cost:6},
+  Spamland_E:{effect:`SpamLand`,value:24,element:null,rarity:`epic`,cost:16},
+  Spamland_L:{effect:`SpamLand`,value:48,element:null,rarity:`legendary`,cost:24},
+  Spamland_R:{effect:`SpamLand`,value:8,element:null,rarity:`rare`,cost:10},
+  Stun_L:{effect:`Silenced`,value:0,element:null,rarity:`legendary`,cost:200},
+  Taunt_R:{effect:`Protection`,value:0,element:null,rarity:`rare`,cost:70},
+  Temporality_L:{effect:`Temporality`,value:0,element:null,rarity:`legendary`,cost:190},
+  Tenacite_C:{effect:`Tenacite`,value:0,element:null,rarity:`common`,cost:10},
+  ToxChanceux:{effect:`ToxChanceux`,value:50,element:null,rarity:null,cost:0},
+  Vengeur_E:{effect:`Vengeur`,value:0,element:null,rarity:`epic`,cost:80},
+  Voleur_R:{effect:`StealTox`,value:0,element:null,rarity:`epic`,cost:70}
+},
+§=[`fire`,`water`,`earth`,`nature`,`shadow`,`light`],
+§={common:1,rare:2,epic:3,legendary:4,divine:5},
+§={
+  deckSize:§.cardsPerDeck,
+  bonusPerPoint:.1,
+  simTurns:10,
+  player:1,
+  oneActionPerCardPerTurn:!1,
+  talentMode:`best-§`,
+  aoeTargets:§.cardsPerDeck,
+  allyTargets:§.cardsPerDeck,
+  vampirismRatio:.5,
+  fullHealValue:.45,
+  echoMaxCasts:4,
+  echoPity:{step:5,resolutions:8},
+  turnIncome:!0,
+  deathBounty:§.deathBounty,
+  opponent:{
+    cards:§.cardsPerDeck,
+    cardHp:700,
+    totalHp:2800,
+    resist:.1,
+    dpsByTurn:[113,130,146,163,179,196,212,229,245,262],
+    aoeShare:.21
+  },
+  luckValue:4,
+  spamtonValue:.6,
+  turn8:8,
+  imprudentMult:.6
+},
+§={offense:1,defense:.35,control:.8,economy:.5},
+§={offense:.4,generation:.2,defense:.15,support:.1,control:.08,economy:.07};
+§.length;
+const §=[{tier:`§`,§:.92},{tier:`§`,§:.75},{tier:`§`,§:.5},{tier:`§`,§:.25},{tier:`§`,§:0}],
+§={
+  maxRows:3,
+  everyTurns:2,
+  items:§.itemShopMax,
+  onePurchasePerOpening:!0,
+  rerollCost:§.rerollCost,
+  rerollStep:5,
+  skipReward:§.moneyForSkip,
+  startLuck:§.startLuck,
+  luckPerTurn:§.luckPerTurn,
+  canReplace:`§`,
+  luckyOdds:{common:.25,rare:.25,epic:.25,legendary:.25},
+  pools:§,
+  usePrices:!0,
+  minRarityOdds:.1,
+  maxPlan:6,
+  minGainPct:1,
+  replaceMinGainPct:3,
+  coreMinLossPct:5,
+  robustCandidates:6,
+  robustTries:8
+},
+§=[
+  {§:`neutral`,cardHp:§.opponent.cardHp,resist:§.opponent.resist*100},
+  {§:`fragile`,cardHp:550,resist:5},
+  {§:`tank`,cardHp:900,resist:15},
+  ...i.map(§=>({§:`anti-§{§}`,cardHp:§.opponent.cardHp,resist:§.opponent.resist*100,extra:{[§]:25}}))
+],
+§={beamPairs:260,beamTriples:260,beamQuads:120,finalTop:40},
+§={beamPairs:120,beamTriples:100,beamQuads:400,finalTop:8,decks:3,maxShared:2},
+§=(§,§,§)=>Math.max(§,Math.min(§,§)),
+§=(§,§)=>(§+§)/2,
+§={
+  stunPerTargetTurn:60,
+  freezePerTarget:70,
+  eternityPerTarget:25,
+  vanish:40,
+  resetEnemyCd:120,
+  resetEnemySpamton:60,
+  enemyPrecPerPoint:1.2,
+  smoke:10,
+  breakTaunt:10,
+  tauntPerTurnAt700:40,
+  immunityPerHp:.3,
+  enemyHit:70,
+  missingHpFraction:.35,
+  setHp25Factor:1.2,
+  mysteryDefense:40,
+  mimetismPerTurn:1.5,
+  hitsTakenPerTurn:.5,
+  hitsTakenTaunting:1.2
+},
+§=/* @__PURE__ */ new §;
+function §(§){
+  if(§<=0)return 0;
+  let §=Math.round(§*1e3);
+  if(§.has(§))return §.get(§);
+  let §=§*100,
+  §=(100-§)/10,
+  {step:§,resolutions:§}=§.echoPity,
+  §=/* @__PURE__ */ new §([[0,1]]),
+  §=0;
+  for(let §=0;§<§;§++){
+    let §=/* @__PURE__ */ new §,
+    §=0;
+    for(let[§,§]of §){
+      let §=§((§+§)/100,0,1);
+      §+=§*§;
+      let §=Math.round((§-§)*10)/10,
+      §=Math.round((§+§)*10)/10;
+      §.set(§,(§.get(§)??0)+§*§),
+      §.set(§,(§.get(§)??0)+§*(1-§))
+    }
+    §+=§,
+    §=§
+  }
+  let §=§/§;
+  return §.set(§,§),
+  §
+}
+function §(§=0){
+  let §={};
+  for(let § of §)§[§]=§;
+  return §
+}
+function §(§=§[0]){
+  if(§.cards?.length){
+    let §=§.cards.map((§,§)=>({...e,index:§})),
+    §={};
+    for(let § of §)§[§]=§.reduce((§,§)=>§+(§.res?.[§]??0),0)/§.length;
+    let §=§.reduce((§,§)=>§+§.hp,0);
+    return{§:§.id??`deck`,cardHp:§/§.length,totalHp:§,§:§,cards:§}
+  }
+  let §={};
+  for(let § of §)§[§]=(§.resist??0)+(§.extra?.[§]??0);
+  return{§:§.id??`custom`,cardHp:§.cardHp,totalHp:§.cardHp*§.opponent.cards,§:§}
+}
+function §(§){
+  return §.reduce((§,§)=>§+§.enemy.res[§],0)/§.length
+}
+function §(§,§,§){
+  return(§===`card`||§===`self`)&&(§=§.element),
+  !§||§===`random`||!(§ in §.enemy.res)?§(§):§.enemy.res[§]
+}
+function §(§,§,§,§){
+  (§===`card`||§===`self`)&&(§=§.element);
+  let §=§=>(§.res[§]??0)+§.enemy.res[§]-§.opp.res[§];
+  return!§||§===`random`||!(§ in §.enemy.res)?§.reduce((§,§)=>§+§(§),0)/§.length:§(§)
+}
+function §(§){
+  let §=§.opts.focus;
+  return §.enemies.filter(§=>§.hp>0).sort((§,§)=>(§==null?0:(§.id===§)-(§.id===§))||§.hp-§.hp||§.index-§.index)
+}
+function §(§){
+  let §=§(0);
+  for(let{card:§}of §)for(let § of §.abilities){
+    let §=§.options.reduce((§,§)=>§.hits.length>(§?.hits.length??-1)?§:§,null);
+    if(!§)continue;
+    let §=§.target===`aoeEnemy`?§.aoeTargets:1;
+    for(let § of §.hits){
+      if(§.pctMaxHp||§.pctOwnHp)continue;
+      let §=§(§.min,§.max)*§/§.cd,
+      §=§.element===`card`||§.element===`self`?§.element:§.element;
+      if(§&&§.includes(§))§[§]+=§;
+      else if(§===`random`)for(let § of §)§[§]+=§/6
+    }
+  }
+  return §
+}
+function §(§,§,§){
+  let §=§.card;
+  return{
+    §:§,
+    card:§,
+    entry:§,
+    element:§.element===`divine`?`random`:§.element,
+    crit:0,
+    prec:0,
+    base:0,
+    critMult:0,
+    resAdd:0,
+    hpMax:§.hp,
+    echo:0,
+    brut:!1,
+    multiplicator:!1,
+    inversion:!1,
+    immune:!1,
+    aoePct:0,
+    lifesteal:0,
+    recoil:0,
+    erosion:!1,
+    poison:0,
+    freezeOnHit:!1,
+    optimisation:!1,
+    regenPct:0,
+    hpGrowth:0,
+    coeur:[],
+    luckPerTurn:0,
+    cimetiere:0,
+    phoenix:0,
+    tenacity:!1,
+    reset:!1,
+    revenge:!1,
+    avenger:!1,
+    stunOnHit:!1,
+    eternityOnHit:!1,
+    temporalityOnHit:!1,
+    vanishOnHit:!1,
+    tauntOnAttack:!1,
+    smoke:!1,
+    mimetism:!1,
+    mystery:0,
+    spamland:0,
+    bomba:0,
+    spamtonGen:0,
+    spamtonRamp:0,
+    critPerTurn:0,
+    incisive:0,
+    resOnHit:0,
+    corrosion:0,
+    enemyPrecOnAttack:0,
+    genOnAttack:0,
+    racket:0,
+    healOnKill:0,
+    hpOnDeath:0,
+    baseOnDeath:0,
+    resOnDeath:0,
+    spamtonOnDeath:0,
+    counter:!1,
+    anticipation:!1,
+    eternityAllOnDeath:0,
+    temporalityOnDeath:0,
+    metamorphOnDeath:!1,
+    metamorphOthersOnDeath:!1,
+    life8:!1,
+    breath8:!1,
+    passiveAt8:null,
+    fullHealChance:0,
+    fullHealLow:!1,
+    vitalChance:0,
+    focus:0,
+    evolution:1,
+    phoenixFeather:1,
+    dead:!1,
+    randomized:!1,
+    dmgTaken:0,
+    reflect:0,
+    shieldPct:0,
+    shieldUsed:!1,
+    resLowHp:0,
+    taunting:!1,
+    wasTaunting:!1,
+    counterUsed:!1,
+    abilities:§.abilities.filter(§=>!(§.opts?.removeAbilities?.[§]??[]).includes(§.id)).map(§=>({§:§,nextTurn:§(§.cd,§.player),uses:§.uses||1/0,baseAdd:0,genUses:0,casts:0})),
+    passives:§.passives.filter(§=>!(§.opts?.removePassives?.[§]??[]).includes(§.id)),
+    talents:[]
+  }
+}
+function §(§,§){
+  return Math.max(1,§===1?§:§-1)
+}
+function §(§,§,§){
+  let §=§.shop?1:§.evolution;
+  switch(§.type){
+    case`berserk`:§.team.berserk+=§.pct/100*§;
+    break;
+    case`brut`:§.brut=!0;
+    break;
+    case`multiplicator`:§.multiplicator=!0;
+    break;
+    case`inversion`:§.inversion=!0;
+    break;
+    case`immunity`:§.immune=!0;
+    break;
+    case`§`:§.aoePct=Math.max(§.aoePct,§.pct*§);
+    break;
+    case`lifesteal`:§.lifesteal=Math.max(§.lifesteal,§.pct/100*§);
+    break;
+    case`reflect`:§.reflect=Math.max(§.reflect,§.pct/100*§);
+    break;
+    case`recoil`:§.recoil=§.pct/100;
+    break;
+    case`erosion`:§.erosion=!0;
+    break;
+    case`poison`:§.poison=Math.max(§.poison,(§.pct??1)*§);
+    break;
+    case`freezeOnHit`:§.freezeOnHit=!0;
+    break;
+    case`shield`:§.shieldPct=Math.min(1,Math.max(§.shieldPct,§.pct/100*§));
+    break;
+    case`optimisation`:§.optimisation=!0;
+    break;
+    case`regen`:§.regenPct+=§.pct/100*§;
+    break;
+    case`hpGrowth`:§.hpGrowth+=§.perTurn*§;
+    break;
+    case`coeur`:§.coeur.push({element:§.element,perTurn:§.perTurn*§});
+    break;
+    case`luck`:§.luckPerTurn+=§.perTurn;
+    break;
+    case`cimetiere`:§.cimetiere+=§.value*§;
+    break;
+    case`phoenix`:§.phoenix=Math.max(§.phoenix,§.pct/100*§);
+    break;
+    case`tenacity`:§.tenacity=!0;
+    break;
+    case`reset`:§.reset=!0;
+    break;
+    case`revenge`:§.revenge=!0;
+    break;
+    case`avenger`:§.avenger=!0;
+    break;
+    case`stunOnHit`:§.stunOnHit=!0;
+    break;
+    case`eternityOnHit`:§.eternityOnHit=!0;
+    break;
+    case`temporalityOnHit`:§.temporalityOnHit=!0;
+    break;
+    case`vanishOnHit`:§.vanishOnHit=!0;
+    break;
+    case`tauntOnAttack`:§.tauntOnAttack=!0;
+    break;
+    case`smoke`:§.smoke=!0;
+    break;
+    case`mimetism`:§.mimetism=!0;
+    break;
+    case`mystery`:§.mystery+=1;
+    break;
+    case`spamland`:§.spamland+=§.perTurn;
+    break;
+    case`bomba`:§.bomba+=§.value;
+    break;
+    case`teamRes`:§.team.res+=§.value*§
+  }
+}
+function §(§,§,§){
+  switch(§.talents.push(§.name),§.kind){
+    case`§`:if(§.element===`§`)for(let § of §)§.bonus[§]+=§.value;
+    else §.bonus[§.element]+=§.value;
+    break;
+    case`crit`:§.crit+=§.value;
+    break;
+    case`critMult`:§.critMult+=§.value;
+    break;
+    case`critPerTurn`:§.critPerTurn+=§.value;
+    break;
+    case`hpMax`:if(§.scope===`card`)§.hpMax+=§.value;
+    else if(§.scope===`others`)for(let § of §.cards)§!==§&&(§.hpMax+=§.value);
+    break;
+    case`§`:§.scope===`team`?§.team.res+=§.value:§.resAdd+=§.elements===`§`?§.value:§.value*§.elements.length/6;
+    break;
+    case`resOnHit`:§.resOnHit+=§.value;
+    break;
+    case`resLowHp`:§.resLowHp+=§.value;
+    break;
+    case`passive`:§.passives.push(§.passiveObj);
+    break;
+    case`passiveAt8`:§.passiveAt8=§.passiveObj;
+    break;
+    case`echoAll`:§.echo+=§.chance;
+    break;
+    case`eternityStart`:§.startControl+=§.eternityPerTarget*§.value;
+    break;
+    case`temporalityStart`:§.startTemporality+=§.value;
+    break;
+    case`hpOnDeath`:§.hpOnDeath+=§.value;
+    break;
+    case`baseOnDeath`:§.baseOnDeath+=§.value;
+    break;
+    case`resOnDeath`:§.resOnDeath+=§.value;
+    break;
+    case`healOnKill`:§.healOnKill=§.pct/100;
+    break;
+    case`spamtonOnDeath`:§.spamtonOnDeath+=§.value;
+    break;
+    case`spamton`:§.totals.spamton+=§.value;
+    break;
+    case`spamtonGen`:§.spamtonGen+=§.value;
+    break;
+    case`spamtonGenPerTurn`:§.spamtonRamp+=§.value;
+    break;
+    case`spamtonThreshold`:§.spamtonThreshold+=§.value;
+    break;
+    case`luck`:§.totals.luck+=§.value,
+    §.luck+=§.value;
+    break;
+    case`debt`:§.totals.spamton+=§.value,
+    §.totals.economy-=§.value*§.spamtonValue;
+    break;
+    case`racket`:§.racket+=§.value;
+    break;
+    case`enemyPrec`:§.enemy.prec+=§.value,
+    §.totals.control+=§.value*§.enemyPrecPerPoint;
+    break;
+    case`enemyPrecOnAttack`:§.enemyPrecOnAttack+=§.value;
+    break;
+    case`enemyResOnHitTaken`:§.corrosion+=§.value;
+    break;
+    case`enemyResPerTurn`:§.enemyResPerTurn+=§.value;
+    break;
+    case`immuneEternity`:case`immuneVanish`:§.totals.defense+=20;
+    break;
+    case`incisive`:§.incisive+=§.value;
+    break;
+    case`focus`:§.focus+=§.chance;
+    break;
+    case`vitalChance`:§.vitalChance+=§.chance;
+    break;
+    case`fullHealChance`:§.fullHealChance+=§.chance;
+    break;
+    case`fullHealLow`:§.fullHealLow=§;
+    break;
+    case`life8`:§.life8=!0;
+    break;
+    case`breath8`:§.breath8=!0;
+    break;
+    case`imprudent`:§.hpMax+=§.hp,
+    §.randomized=!0;
+    break;
+    case`metamorphOnDeath`:§.metamorphOnDeath=!0;
+    break;
+    case`metamorphOthersOnDeath`:§.metamorphOthersOnDeath=!0;
+    break;
+    case`evolution`:§.evolution=1.3;
+    break;
+    case`phoenixFeather`:§.phoenixFeather=1+§.chance;
+    break;
+    case`counter`:§.counter=!0;
+    break;
+    case`anticipation`:§.anticipation=!0;
+    break;
+    case`eternityAllOnDeath`:§.eternityAllOnDeath+=§.value;
+    break;
+    case`temporalityOnDeath`:§.temporalityOnDeath+=§.value;
+    break;
+    case`toxLuck`:§.totals.economy+=20;
+    break;
+    case`paradox`:§.paradox=!0;
+    break;
+    case`genOnAttack`:§.genOnAttack+=§.value
+  }
+}
+const §=§=>§.hpMax-§.dmgTaken;
+function §(§,§,§=null){
+  let §=§.paradox?-1:1,
+  §=§&&§ in §.card.res?§.card.res[§]:§?0:§.card.avgRes,
+  §=§.resLowHp&&§(§)<§.hpMax/2?§.resLowHp:0;
+  return §(§*§+§.resAdd+§.team.res+§,-60,80)
+}
+function §(§,§){
+  return 1/(1-§(§,§)/100)
+}
+function §(§,§,§,§){
+  if(§)return 1;
+  if(!§)return 1-§(§,§)/100;
+  let §=0;
+  for(let § of §)§+=(§[§]??0)*(1-§(§,§,§)/100);
+  return §
+}
+function §(§,§,§,§){
+  let §=0;
+  for(let § of §.hits)§+=§(§,§,§,§,§,!0);
+  for(let § of §.heals)§+=.6*§(§,§,§,§);
+  for(let § of §.gen)§+=§(§,§,§,§);
+  for(let § of §.effects)§+=§(§,§,§);
+  return §
+}
+function §(§,§,§,§){
+  let §=§(§.min,§.max);
+  return §.growth&&(§+=§.growth*(§?.genUses??0)),
+  §.cond&&(§*=§((§.crit+§.crit+§.S.team.crit)/100,0,1)),
+  §
+}
+function §(§,§,§,§){
+  let §=Math.max(1,§.T-§.turn),
+  §=Math.min(§,5),
+  §=§(§,§,§,null),
+  §=§=>§.bonusPerPoint*§.profile[§]*§*(1-§.enemy.res[§]/100);
+  if(§.element===`§`)return §*§.reduce((§,§)=>§+§(§),0);
+  if(§.element===`random`)return §/6*§.reduce((§,§)=>§+§(§),0);
+  let §=§.element===`self`?§.element:§.element;
+  return §===`random`?§/6*§.reduce((§,§)=>§+§(§),0):§*§(§)
+}
+function §(§,§,§){
+  switch(§.type){
+    case`stun`:return §.stunPerTargetTurn*§.duration*(§.target===`aoeEnemy`?§.aoeTargets:1);
+    case`freeze`:return §.freezePerTarget*(§.target===`aoeEnemy`?§.aoeTargets:1);
+    case`eternity`:return §.eternityPerTarget*§.value*(§.target===`aoeEnemy`?§.aoeTargets:1)*(§.cond?.5:1);
+    case`temporality`:return §.scope===`team`?40*§.value:§.scope===`field`?0:15*§.value;
+    case`taunt`:return §.tauntPerTurnAt700*§.duration*.5;
+    case`setHpPct`:return §.value===25?.75*§.opp.cardHp*§.setHp25Factor:.25*§.hpMax*.6;
+    case`absorbAny`:return §.opp.cardHp;
+    case`resurrect`:return 210;
+    case`crit`:return §.value*(§.scope===`team`?6:2);
+    case`prec`:return §.value*(§.scope===`team`?3:1);
+    case`critMult`:return §.scope===`field`?20:40;
+    case`base`:return §.scope===`team`?§.value*12:§.value*4;
+    case`§`:return §.scope===`enemy`?-§.value*3:§.value*1.5;
+    case`hpMax`:return §.scope===`team`?§.value*1.5:§.value*.5;
+    default:return 0
+  }
+}
+function §(§,§,§){
+  if((§===`card`||§===`self`)&&(§=§.element),!§)return 0;
+  let §;
+  return §=§===`random`?§.reduce((§,§)=>§+§.bonus[§],0)/6:§.bonus[§]??0,
+  Math.max(0,§.multiplicator?§*2:§)
+}
+function §(§,§,§){
+  return §(§.crit+§.crit+§.team.crit,0,100)/100
+}
+function §(§,§,§){
+  return §.critMult+§.critMult+§.team.critMult
+}
+function §(§,§,§){
+  return 1+§(§,§,§)*(§(§,§,§)-1)
+}
+const §=(§,§)=>Math.round(Math.round(§)*(1-§));
+function §(§,§,§){
+  return §((§.prec+§.prec+§.team.prec)/100,0,1)
+}
+function §(§,§,§){
+  let §=§.enemies?§.enemies.filter(§=>§.hp>0).length:§.opponent.cards,
+  §=§=>Math.max(1,Math.min(§,§));
+  if(§.target===`spreadField`)return[.5];
+  if(§.target===`aoeEnemy`)return Array(§(§.aoeTargets)).fill(1);
+  if(§.effects.some(§=>§.type===`aoe2`))return Array(§(2)).fill(1);
+  if(§.aoePct){
+    let §=§.aoePct/100;
+    if(§>=4)return[1,§,§*.5];
+    if(§===3)return[1,§];
+    if(§===2)return[1,§*.5]
+  }
+  return[1]
+}
+const §=§=>§.reduce((§,§)=>§+§,0);
+function §(§,§,§,§){
+  let §=((§.optimisation?§.max:§(§.min,§.max))+(§?.baseAdd??0)+§.base+§.team.base)*(1+§.bonusPerPoint*§(§,§.element,§));
+  if(§.missingPct){
+    let §=§.opts.potential?§.missingHpFraction*§.hpMax:Math.max(0,§.dmgTaken);
+    §+=§*§.missingPct/100
+  }
+  return §
+}
+function §(§,§,§,§,§,§=!1,§=null,§=null){
+  let §=§?[1]:§(§,§,§),
+  §=§.brut?0:(§?§(§,§,§.element,§):§(§,§,§.element))/100,
+  §=§?§.hpMax:§.opp.cardHp,
+  §=§.team.berserk*(§.randomized?§.imprudentMult:1),
+  §=(§.pctMaxHp?§*§.min/100:§(§,§,§,§))*§,
+  §=§(§,§,§),
+  §=§(§,§,§),
+  §=(1-§)*§(§,§)+§*§(§*§,§);
+  return §*=§(§,§,§)*§(§),
+  §.erosion&&(§*=1.1),
+  §.poison&&(§+=§.poison/100*§*3*§.length*§(§,§,§)),
+  §
+}
+function §(§,§,§,§){
+  let §;
+  return §=§.pctOwnHp?§.hpMax*§.min/100*(§.full?§.fullHealValue:1):§.flat?§.min:((§.optimisation?§.max:§(§.min,§.max))+§.base+§.team.base)*(1+§.bonusPerPoint*§(§,§.element,§))*§(§,§,§)*§.team.berserk,
+  §.target===`allAllies`&&(§*=§.allyTargets),
+  §*(§.randomized?§.imprudentMult:1)
+}
+function §(§,§,§,§){
+  if((§===`card`||§===`self`)&&(§=§.element),§===`random`)for(let § of §)§[§]+=§/6;
+  else § in §&&(§[§]+=§)
+}
+function §(§,§,§,§){
+  for(let § of §.cards){
+    if(§.cimetiere)for(let § of §)§.bonus[§]+=§.cimetiere;
+    if(§.hpOnDeath&&(§.hpMax+=§.hpOnDeath),§.baseOnDeath&&(§.base+=§.baseOnDeath),§.resOnDeath&&(§.resAdd+=§.resOnDeath),§.avenger&&§!==§)for(let § of §.abilities)§.nextTurn=Math.min(§.nextTurn,§)
+  }
+}
+function §(§,§,§,§){
+  §.enemyDeaths+=1,
+  §.events.push({turn:§,type:`kill`,card:§?.card.name,ability:§?.ab.name}),
+  §(§,§,§,§),
+  §&&(§.healOnKill&&§(§,§,§.dmgTaken*§.healOnKill),§.reset&&§&&(§.resetPending=(§.resetPending??0)+1))
+}
+const §=§=>§.opponent.dpsByTurn[Math.min(§,§.opponent.dpsByTurn.length)-1];
+function §(§,§){
+  let §=§.enemies.filter(§=>§.hp>0);
+  if(!§.length)return;
+  let §=Math.max(1,§.cards.length)/§.deckSize,
+  §=§.perCard?§.map(§=>({§:(§.dmg?.[§-1]??0)*§,§:§.mix??null,brut:!!§.brut,§:§.aoe??0})):§.map(()=>({§:§(§)/§.opponent.cards*§,§:null,brut:!1,§:§.opponent.aoeShare}));
+  for(let § of §)§.raw<=0||(§.pressureTaken+=§.raw,§(§,§,§));
+  for(let § of §.cards)§.shieldUsed=!1,
+  §.wasTaunting=§.taunting,
+  §.taunting=!1
+}
+function §(§,§,§){
+  let §=Math.max(1,Math.ceil(§.raw/§.enemyHit-1e-9)),
+  §=§.raw/§,
+  §=(§,§)=>{
+    let §=§(§,§,§.mix,§.brut),
+    §=§(§,§,§,§*§);
+    return §>0?§/§:0
+  };
+  for(let §=0;§<§;§++){
+    let §=§.cards.filter(§=>!§.dead);
+    if(!§.length)return;
+    let §=§*§.aoe;
+    for(let § of §)§(§,§,§,§/§.length*§(§,§,§.mix,§.brut));
+    let §=§-§,
+    §=§.cards.find(§=>!§.dead&&§.taunting);
+    if(§)§=§(§,§);
+    else{
+      let §=0;
+      for(let § of §.cards.filter(§=>!§.dead&&§.focus)){
+        let §=§*Math.min(1,§.focus);
+        §+=§-§(§,§)
+      }
+      §-=§
+    }
+    for(let §=0;§>1e-9&&§<§.cards.length;§++){
+      let §=§.cards.filter(§=>!§.dead).sort((§,§)=>§(§)-§(§))[0];
+      if(!§)break;
+      §=§(§,§)
+    }
+  }
+}
+function §(§,§,§,§){
+  if(!(§>0))return 0;
+  if(§.dead)return §;
+  §.vitalChance&&(§*=Math.max(0,1-2*§.vitalChance)),
+  §.shieldPct&&!§.shieldUsed&&(§-=Math.min(§,§.enemyHit)*§.shieldPct,§.shieldUsed=!0);
+  let §=§(§);
+  if(§.dmgTaken+=§,§.reflect&&§(§,§,§*§.reflect,§,null),§.counter&&!§.counterUsed&&§>.25*§.hpMax&&§(§)<=.25*§.hpMax&&(§.counterUsed=!0,§(§,§,§)),§(§)>0)return 0;
+  let §=-§(§);
+  if(§.tenacity&&§>1){
+    let §=Math.min(§+1,§.enemyHit);
+    if(§-=§,§<=0)return §.dmgTaken=§.hpMax-1,
+    0
+  }
+  return §.dmgTaken=§.hpMax,
+  §(§,§,§),
+  §
+}
+function §(§,§,§){
+  if(!(§>0)||§.dead)return 0;
+  §.totals.healOffered+=§;
+  let §=Math.min(§,Math.max(0,§.dmgTaken));
+  return §.dmgTaken-=§,
+  §.totals.heal+=§,
+  §
+}
+function §(§,§,§){
+  let §=0;
+  for(let § of §.abilities){
+    let §=§(§,§.ab,§);
+    if(§)for(let § of §.hits)§+=§(§,§.ab,§,§,§,!0,§)
+  }
+  §(§,§,§,§,null)
+}
+function §(§,§){
+  let §=§.enemies.filter(§=>§.hp>0),
+  §=§.reduce((§,§)=>§+(§.heal?.[§-1]??0),0);
+  if(!(§<=0)){
+    §.sort((§,§)=>§.hp/§.hpMax-§.hp/§.hpMax||§.index-§.index);
+    for(let § of §){
+      let §=Math.min(§,§.hpMax-§.hp);
+      if(§.hp+=§,§-=§,§.enemyHealed+=§,§<=0)break
+    }
+  }
+}
+function §(§,§,§){
+  if(§.revenge&&§(§,§,§),§.bomba&&§(§,§,§.bomba,§,null),§.deathBounty&&(§.totals.spamton+=§.deathBounty,§.spamtonByTurn[§-1]=(§.spamtonByTurn[§-1]??0)+§.deathBounty),§.metamorphOthersOnDeath)for(let § of §.cards)!§.dead&&§!==§&&(§.randomized=!0,§(§,§,§.dmgTaken));
+  if(§.spamtonOnDeath&&(§.totals.spamton+=§.spamtonOnDeath),§.eternityAllOnDeath&&(§.totals.control+=§.eternityPerTarget*§.aoeTargets*§.eternityAllOnDeath),§.temporalityOnDeath)for(let § of §.cards)for(let § of §.abilities)§.nextTurn=Math.max(§,§.nextTurn-§.temporalityOnDeath);
+  §.phoenix>0?(§.dmgTaken=§.hpMax*(1-Math.min(1,§.phoenix)),§.phoenix=§.phoenixFeather>1?§.phoenix*(§.phoenixFeather-1):0,§.phoenixFeather=1,§.events.push({turn:§,type:`ownRevive`,card:§.card.name})):§.metamorphOnDeath?(§.metamorphOnDeath=!1,§.dmgTaken=0,§.randomized=!0,§.events.push({turn:§,type:`ownRevive`,card:§.card.name})):(§.dead=!0,§.events.push({turn:§,type:`ownDeath`,card:§.card.name})),
+  §(§,§,null,null)
+}
+function §(§,§,§){
+  if(!§.options.length)return null;
+  if(§.options.length===1)return §.options[0];
+  let §=null,
+  §=-1/0;
+  for(let § of §.options){
+    let §=§(§,§,§,§);
+    §>§&&(§=§,§=§)
+  }
+  return §
+}
+function §(§,§,§,§,§,§=[1]){
+  if(§<=0||§.over)return;
+  if(§.dmgByTurn[§-1]+=§,§.opts.potential){
+    §&&(§.dmgByCard[§.idx][§-1]+=§,§.length>1&&(§.aoeByCard[§.idx]+=§*(1-Math.max(...a)/§(§))));
+    return
+  }
+  let §=§(§);
+  if(!§.length)return;
+  let §=§(§),
+  §=[];
+  for(let §=0;§<§.length&&§<§.length;§++){
+    let §=§[§],
+    §=Math.min(§*§[§]/§,§.hp);
+    §.hp-=§,
+    §.totals.dmg+=§,
+    §.usefulByTurn[§-1]+=§,
+    §.hp<=0&&§.push(§)
+  }
+  for(let § of §){
+    if(§.phoenix>0){
+      §(§,§,§,§),
+      --§.enemyDeaths,
+      §.hp=Math.min(1,§.phoenix)*§.hpMax,
+      §.phoenix=0;
+      continue
+    }
+    if(§.ttk==null&&§.enemyDeaths+1===§.opponent.cards){
+      let §=§.totals.dmg-§.dmgTurnStart,
+      §=§.perCard?§.hpTurnStart:§.opp.totalHp-§.dmgTurnStart;
+      §.ttk=§-1+(§>0?§(§/§,.05,1):1)
+    }
+    §(§,§,§,§)
+  }
+  §.enemyDeaths>=§.opponent.cards&&!§.over&&(§.over=!0)
+}
+function §(§,§,§,§){
+  if(!(§>0))return;
+  let §=§.cards.filter(§=>!§.dead);
+  if(§===`self`)§(§,§,§);
+  else if(§===`§`)for(let § of §)§(§,§,§/§.allyTargets);
+  else if(§===`spread`)for(let § of §)§(§,§,§/§.length);
+  else{
+    let §=§.reduce((§,§)=>§.dmgTaken>§.dmgTaken+1e-9?§:§,§[0]);
+    §&&§(§,§,§)
+  }
+}
+function §(§,§,§){
+  if(§===`card`||!§){
+    §.taunting=!0;
+    return
+  }
+  let §=§.cards.filter(§=>!§.dead),
+  §=§.reduce((§,§)=>§(§)*§(§,§)>§(§)*§(§,§)+1e-9?§:§,§[0]??§);
+  §.taunting=!0
+}
+function §(§,§){
+  let §=§.cards.filter(§=>§.dead);
+  if(!§.length)return;
+  let §=§.reduce((§,§)=>§(§,§)>§(§,§)+1e-9?§:§);
+  §.dead=!1,
+  §.dmgTaken=§.hpMax*.5,
+  §.totals.support+=§.hpMax*.25,
+  §.events.push({turn:§,type:`ownRevive`,card:§.card.name})
+}
+function §(§,§,§,§,§=null){
+  let §=§.ab,
+  §=§(§,§,§);
+  if(!§)return;
+  let §=§(§(§.echo)+§.echo,0,.9),
+  §=§??Math.min(§.echoMaxCasts,1/(1-§)),
+  §=§.hits.length&&§.prec<100?§(§,§,§):1;
+  if(§.cost)for(let[§,§]of Object.entries(§.cost))§.bonus[§]-=§;
+  §.costHp&&(§.dmgTaken+=§.costHp*§);
+  let §=§.gen.length?§.gen.map(§=>`§{§.element===`self`?§.element:§.element}+§{Math.round(§(§,§,§,§)*§)}`).join(` `):``;
+  for(let § of §.gen){
+    let §=§(§,§,§,§)*§*§,
+    §=§.element===`self`?§.element:§.element;
+    if(§===`§`)for(let § of §)§.bonus[§]+=§,
+    §.totals.genByElement[§]+=§;
+    else if(§===`random`)for(let § of §)§.bonus[§]+=§/6,
+    §.totals.genByElement[§]+=§/6;
+    else §.bonus[§]+=§,
+    §.totals.genByElement[§]+=§;
+    §.totals.genPoints+=§,
+    §.genUses+=§
+  }
+  let §=(§.hits.length+§.heals.length)*§*(§.hits.length?§(§,§,§):1);
+  if(§.genOnAttack&&§)for(let § of §)§.bonus[§]+=§.genOnAttack*§,
+  §.totals.genByElement[§]+=§.genOnAttack*§;
+  let §=0,
+  §=0,
+  §=[],
+  §=§(§,§,§);
+  for(let § of §.hits){
+    let §=§(§,§,§,§,§,!1,§);
+    §+=§,
+    §.pctMaxHp||§(§.totals.useByElement,§,§.element,§*§)
+  }
+  if(§.perCard&&§.hits.length&&!§.inversion){
+    let §=§(§),
+    §=§.slice(0,§.length).map((§,§)=>§*§.hits.reduce((§,§)=>§+§(§,§,§,§,§,!1,§,§[§]),0)),
+    §=§(§);
+    §>0&&(§=§,§=§)
+  }
+  for(let § of §.heals){
+    let §=§(§,§,§,§);
+    §+=§,
+    §.push({
+      §:§.self||§.target===`self`?`self`:§.target===`allAllies`?`§`:§.target===`randomAlly`||§.target===`randomAlly`?`spread`:`ally`,
+      §:§
+    }),
+    !§.pctOwnHp&&!§.flat&&§(§.totals.useByElement,§,§.element,§*§)
+  }
+  let §=0;
+  §.inversion&&([§,§]=[§*(1-§(§)/100),§],§.length=0,§.push({§:`ally`,§:§})),
+  §.target===`spreadField`&&§>0&&(§+=§),
+  §*=§,
+  §*=§,
+  §*=§;
+  let §=§.effects.some(§=>§.type===`vampirism`)?§.vampirismRatio:0,
+  §=§*Math.max(§,§.lifesteal);
+  §&&(§+=§,§.push({§:`self`,§:§/§})),
+  §.recoil&&(§+=§*§.recoil),
+  §&&(§.heals.every(§=>§.self)||(§.totals.support+=Math.max(0,§-§)*.5));
+  for(let § of §)§(§,§,§.to,§.v*§);
+  if(§>0){
+    let §=§.cards.filter(§=>!§.dead);
+    if(§.target===`spreadField`)for(let § of §)§(§,§,§,§/§.length*§(§,§,null,!1));
+    else §(§,§,§,§*§(§,§,null,!1))
+  }
+  if(§.resetPending=0,§(§,§,§,§,§,§),§.resetPending){
+    let §=Math.min(§.resetPending,1);
+    §.resetPending=0,
+    §(§,§,§/§*§,§,§,§)
+  }
+  let §=§.hits.length>0,
+  §=§.heals.some(§=>!§.self)||[`ally`,`allAllies`,`randomAlly`].includes(§.target);
+  for(let § of §.effects){
+    let §=§.target===`aoeEnemy`?§.aoeTargets:1;
+    switch([`team`,`ally`,`randomAlly`,`field`].includes(§.scope)&&[`crit`,`prec`,`base`,`critMult`,`§`,`hpMax`,`temporality`].includes(§.type)&&(§.totals.teamBuff+=§(§,§,§)*§*§),§<1&&[`crit`,`prec`,`base`,`critMult`,`§`,`hpMax`].includes(§.type)&&(§={...a,value:§.value*§}),§.type){
+      case`stun`:§.totals.control+=§.stunPerTargetTurn*§.duration*§*§(§,§,§)*§;
+      break;
+      case`freeze`:§.totals.control+=§.freezePerTarget*§*§(§,§,§)*§;
+      break;
+      case`eternity`:§.totals.control+=§.eternityPerTarget*§.value*§*(§.cond?§(§.crit+§.crit+§.team.crit,0,100)/100:1)*§;
+      break;
+      case`temporality`:if(§.scope===`team`)for(let § of §.cards)for(let § of §.abilities)§!==§&&(§.nextTurn=Math.max(§,§.nextTurn-§.value));
+      else §.scope===`ally`&&§(§,§,§.value);
+      break;
+      case`taunt`:§(§,§,§.scope);
+      break;
+      case`vanish`:§.totals.control+=§.vanish;
+      break;
+      case`smoke`:§.totals.defense+=§.smoke;
+      break;
+      case`crit`:§(§,§,§,(§,§=1)=>{
+        §.crit+=§*§.value*(§.cond?.5:1)
+      },§=>{
+        §.team.crit+=§
+      });
+      break;
+      case`prec`:§(§,§,§,(§,§=1)=>{
+        §.prec+=§*§.value
+      },§=>{
+        §.team.prec+=§
+      });
+      break;
+      case`critMult`:§.scope===`field`?§.team.critMult+=§.value*.5:§(§,§,§,(§,§=1)=>{
+        §.critMult+=§*§.value
+      },§=>{
+        §.team.critMult+=§
+      });
+      break;
+      case`base`:§.scope===`ability`?§.baseAdd+=§.value*§:§(§,§,§,(§,§=1)=>{
+        §.base+=§*§.value
+      },§=>{
+        §.team.base+=§
+      });
+      break;
+      case`§`:if(§.scope===`enemy`)for(let § of §.elements===`§`?§:§.elements)§.enemy.res[§]+=§.value*.7;
+      else §.scope===`team`?§.team.res+=§.value:§(§,§,§,(§,§=1)=>{
+        §.resAdd+=§*(§.elements===`§`?§.value:§.value*§.elements.length/6)
+      },§=>{
+        §.team.res+=§
+      });
+      break;
+      case`hpMax`:if(§.scope===`team`)for(let § of §.cards)§.hpMax+=§.value;
+      else §(§,§,§,(§,§=1)=>{
+        §.hpMax+=§*§.value
+      },()=>{});
+      break;
+      case`enemyPrec`:§.enemy.prec+=§.value*§,
+      §.totals.control+=§.value*§*§.enemyPrecPerPoint;
+      break;
+      case`resetEnemyCd`:§.totals.control+=§.resetEnemyCd;
+      break;
+      case`resetEnemySpamton`:§.totals.economy+=§.resetEnemySpamton;
+      break;
+      case`resurrect`:§(§,§);
+      break;
+      case`absorbAny`:§(§,§,§.opp.cardHp,§,§),
+      §.hpMax+=§.opp.cardHp*.5;
+      break;
+      case`absorbAlly`:break;
+      case`setHpPct`:§.value<=50?§(§,§,(1-§.value/100)*§.opp.cardHp*§.setHp25Factor,§,§):§(§,§,§.value/100*§.hpMax-§(§));
+      break;
+      case`spamtonGen`:§.spamtonGen+=§.value*§;
+      break;
+      case`breakTaunt`:§.totals.defense+=§.breakTaunt
+    }
+  }
+  if(§){
+    let §=§.hits.length*§*§(§,§,§);
+    §.stunOnHit&&(§.totals.control+=§.stunPerTargetTurn*§(§,§,§)*§),
+    §.freezeOnHit&&(§.totals.control+=§.freezePerTarget*§(§,§,§)*§),
+    §.eternityOnHit&&(§.totals.control+=§.eternityPerTarget*§),
+    §.vanishOnHit&&(§.totals.control+=§.vanish*.6*§),
+    §.tauntOnAttack&&(§.taunting=!0),
+    §.enemyPrecOnAttack&&(§.enemy.prec+=§.enemyPrecOnAttack,§.totals.control+=§.enemyPrecOnAttack*§.enemyPrecPerPoint),
+    §.racket&&(§.totals.economy+=§.racket*.5*§)
+  }
+  §&&§.temporalityOnHit&&§(§,§,1),
+  §.smoke&&(§||§>0)&&(§.totals.defense+=§.smoke),
+  §.nextTurn=§+§.cd,
+  --§.uses,
+  §.casts+=§,
+  §.plan[§-1].push({
+    cardId:§.card.id,
+    abilityId:§.id??`elemental-breath`,
+    card:§.card.name,
+    ability:§.name,
+    option:§.options.indexOf(§),
+    §:Math.round(§),
+    heal:Math.round(§),
+    §:§
+  }),
+  §.totals.casts+=1
+}
+const §=/* @__PURE__ */ new §([`crit`,`prec`,`critMult`,`base`]),
+§=[`crit`,`prec`,`critMult`,`base`,`resAdd`,`hpMax`];
+function §(§,§){
+  let §=0;
+  for(let § of §.abilities){
+    if(§.uses<=0)continue;
+    let §=§(§,§.ab,§);
+    if(!§)continue;
+    let §=0;
+    for(let § of §.hits)§+=§(§,§.ab,§,§,§,!0,§);
+    §+=§/§.ab.cd
+  }
+  return §
+}
+function §(§,§,§,§,§){
+  if(§.scope===`team`||§.scope===`field`){
+    §(§.value);
+    return
+  }
+  if(§.scope===`card`){
+    §(§);
+    return
+  }
+  if(§.scope===`randomAlly`){
+    for(let § of §.cards)§(§,1/§.cards.length);
+    return
+  }
+  let §=§.has(§.type)?§=>§(§,§):§=>§.hpMax*§(§,§),
+  §=null,
+  §=-1/0;
+  for(let § of §.cards){
+    let §=§(§),
+    §=§.map(§=>§[§]);
+    §(§);
+    let §=§(§)-§;
+    §.forEach((§,§)=>{
+      §[§]=§[§]
+    }),
+    §>§+1e-9&&(§=§,§=§)
+  }
+  §(§??§)
+}
+function §(§,§,§){
+  let §=null,
+  §=-1;
+  for(let § of §.cards)for(let § of §.abilities){
+    let §=§.nextTurn-§;
+    §>§&&(§=§,§=§)
+  }
+  §&&§>0&&(§.nextTurn=Math.max(§,§.nextTurn-§))
+}
+function §(§,§={}){
+  let §=§.turns??§.simTurns,
+  §=§(§.opponent??§[0]),
+  §=!!§.cards,
+  §={
+    §:§,
+    turn:0,
+    player:§.player??§.player,
+    opts:§,
+    §:§,
+    perCard:§,
+    bonus:§(0),
+    team:{crit:0,prec:0,base:0,critMult:0,§:0,berserk:1},
+    enemy:{§:{...r.res},prec:0},
+    totals:{
+      §:0,
+      heal:0,
+      healOffered:0,
+      control:0,
+      economy:0,
+      defense:0,
+      spamton:0,
+      luck:0,
+      genPoints:0,
+      support:0,
+      casts:0,
+      teamBuff:0,
+      genByElement:§(0),
+      useByElement:§(0)
+    },
+    dmgByTurn:Array(§).fill(0),
+    plan:Array.from({length:§},()=>[]),
+    events:[],
+    enemies:§?§.cards.map(§=>({
+      index:§.index,
+      §:§.id,
+      §:§.hp,
+      hpMax:§.hp,
+      §:§.res,
+      phoenix:§.phoenix??0,
+      §:§.dmgByTurn,
+      heal:§.healByTurn,
+      §:§.mix??null,
+      brut:!!§.brut,
+      §:§.aoe??§.opponent.aoeShare
+    })):Array.from({length:§.opponent.cards},(§,§)=>({index:§,§:§.cardHp})),
+    hpTurnStart:0,
+    enemyHealed:0,
+    dmgByCard:§.potential?§.map(()=>Array(§).fill(0)):null,
+    aoeByCard:§.potential?§.map(()=>0):null,
+    healByTurn:Array(§).fill(0),
+    pressureTaken:0,
+    usefulByTurn:Array(§).fill(0),
+    spamtonByTurn:[],
+    enemyDeaths:0,
+    §:null,
+    dmgTurnStart:0,
+    startControl:0,
+    startTemporality:0,
+    spamtonThreshold:0,
+    enemyResPerTurn:0,
+    luck:§.startLuck,
+    luckByTurn:[],
+    cards:[],
+    profile:null
+  };
+  §.profile=§(§),
+  §.forEach((§,§)=>§.cards.push(§(§,§,§))),
+  §.cards.sort((§,§)=>§.card.number-§.card.number);
+  for(let § of §.cards){
+    §.S=§;
+    let §=§.talentMode??§.talentMode,
+    §=§.card.talents,
+    §=§.excludeTalents?.[§.idx]??[];
+    §===`§`?§.forEach((§,§)=>{
+      §.includes(§)||§(§,§,§)
+    }):§!==`none`&&§.entry.talent!=null&&§[§.entry.talent]&&§(§,§[§.entry.talent],§);
+    for(let § of §.extraPassives?.[§.idx]??[])§.passives.push(§);
+    for(let § of §.passives)§(§,§,§);
+    §.mystery&&(§.coeur.push({element:§.element,perTurn:.5*§.mystery}),§.totals.defense+=§.mysteryDefense*§.mystery),
+    §.immune&&(§.totals.defense+=§.hpMax*§.immunityPerHp)
+  }
+  let §=§.cards.reduce((§,§)=>§+§.card.spamton+§.spamtonGen+§.spamland,0);
+  §.totals.control+=§.startControl,
+  §.startTemporality&&§(§,1,§.startTemporality);
+  let §=§.externalGen??null,
+  §=§.potential?§.map((§,§)=>{
+    let §=§.cards.find(§=>§.idx===§),
+    §=Object.fromEntries(§.map(§=>[§,§((§.paradox?-1:1)*(§.card.res[§]??0)+§.resAdd+§.team.res,-60,80)]));
+    return{§:§.hpMax,§:§,phoenix:§.phoenix*§.phoenixFeather,brut:§.brut}
+  }):null,
+  §=§.totals.healOffered,
+  §=!§.potential&&§.player===2;
+  for(let §=1;§<=§&&!§.over;§++){
+    if(§.turn=§,§&&(§(§,§),§&&§(§,§)),§.dmgTurnStart=§.totals.dmg,§&&(§.hpTurnStart=§.enemies.reduce((§,§)=>§+Math.max(0,§.hp),0)),§.luck+=§.luckPerTurn,§)for(let § of §)§.bonus[§]+=§[§]??0;
+    for(let § of §.cards){
+      for(let § of §.coeur){
+        if(§.element===`random`||§.element===`divine`)for(let § of §)§.bonus[§]+=§.perTurn/6,
+        §.totals.genByElement[§]+=§.perTurn/6;
+        else §.bonus[§.element]+=§.perTurn,
+        §.totals.genByElement[§.element]+=§.perTurn;
+        §.totals.genPoints+=§.perTurn
+      }
+      if(§.mimetism)for(let § of §)§.bonus[§]+=§.mimetismPerTurn/6;
+      §.hpGrowth&&(§.hpMax+=§.hpGrowth),
+      §.regenPct&&§(§,§,§.regenPct*§.hpMax),
+      §.luckPerTurn&&!§.dead&&(§.totals.luck+=§.luckPerTurn,§.luck+=§.luckPerTurn),
+      §.critPerTurn&&(§.crit+=§.critPerTurn),
+      §.incisive&&(§.team.crit+=§.incisive,§.team.prec+=§.incisive),
+      §.fullHealChance&&§(§,§,§.fullHealChance*§.dmgTaken),
+      §.fullHealLow&&!§.dead&&§(§)<=§.fullHealLow.threshold/100*§.hpMax&&(!§.fullHealLow.minSpamton||§.totals.spamton>=§.fullHealLow.minSpamton)&&§(§,§,§.dmgTaken*(§.fullHealLow.minSpamton?.7:1));
+      let §=§.wasTaunting?§.hitsTakenTaunting:§.hitsTakenPerTurn;
+      if(§.passives.some(§=>§.type===`punchingBag`)){
+        if(§.element===`random`)for(let § of §)§.bonus[§]+=§/6;
+        else §.bonus[§.element]+=§;
+        §.totals.genPoints+=§
+      }
+      if(§.resOnHit&&(§.resAdd+=§.resOnHit*§),§.corrosion)for(let § of §)§.enemy.res[§]-=§.corrosion*§;
+      if(§.focus&&(§.totals.defense+=§.focus*§.tauntPerTurnAt700*((§.hpMax-600)/700)),§===1&&§.anticipation){
+        let §=0;
+        for(let § of §.abilities){
+          let §=§(§,§.ab,§);
+          if(§)for(let § of §.hits)§+=§(§,§.ab,§,§,§,!0,§)
+        }
+        §(§,§,§,§,null)
+      }
+      if(§===§.turn8){
+        if(§.life8&&(§.dmgTaken*=2,§.hpMax*=2),§.passiveAt8){
+          let §={immune:§.immune};
+          §.passives.push(§.passiveAt8),
+          §(§,§.passiveAt8,§);
+          let §=(§-§.turn8+1)/§;
+          !§.immune&&§.immune&&(§.totals.defense+=§.hpMax*§.immunityPerHp*§)
+        }
+        §.breath8&&§.abilities.push({
+          §:{
+            name:`Souffle é§émentaire`,
+            §:1,
+            prec:100,
+            crit:1,
+            critMult:2,
+            echo:0,
+            uses:0,
+            cost:null,
+            costHp:0,
+            options:[{target:`enemy`,hits:[{§:30,§:30,element:`card`}],heals:[],§:[],effects:[]}]
+          },
+          nextTurn:§,
+          uses:1/0,
+          baseAdd:0,
+          genUses:0,
+          casts:0
+        })
+      }
+    }
+    if(§.enemyResPerTurn)for(let § of §)§.enemy.res[§]-=§.enemyResPerTurn;
+    §.luckByTurn[§-1]=§.luck;
+    let §=[];
+    for(let § of §.cards)for(let § of §.abilities){
+      if(§.dead||§<§.nextTurn||§.uses<=0)continue;
+      let §=§.ab;
+      if(§.cost&&Object.entries(§.cost).some(([§,§])=>§.bonus[§]<§)||§.costHp&&§(§)-§.costHp<.2*§.hpMax)continue;
+      let §=§(§,§,§);
+      if(!§)continue;
+      let §=§(§,§,§,§);
+      §<=0&&!§.gen.length&&!§.hits.length&&!§.heals.length&&!§.effects.length||§<=.01&&(§.effects.some(§=>§.type===`absorbAlly`)||§.costHp&&§<§.costHp*.5)||§.push({§:§,§:§,§:§,hasDmg:§.hits.length>0})
+    }
+    if(§.sort((§,§)=>§.hasDmg-§.hasDmg||§.v-§.v),§.oneActionPerCardPerTurn||§.oneActionPerCard){
+      let §=/* @__PURE__ */ new §;
+      for(let § of §.slice().sort((§,§)=>§.v-§.v))§.has(§.cs)?§.skip=!0:§.add(§.cs)
+    }
+    for(let § of §){
+      if(§.over)break;
+      §.skip||§(§.cs,§.a,§,§)
+    }
+    let §=§.turnIncome?§:0;
+    for(let § of §.cards)§.spamtonRampAcc=(§.spamtonRampAcc??0)+§.spamtonRamp,
+    !§.dead&&(§+=§.card.spamton+§.spamtonGen+§.spamland+§.spamtonRampAcc);
+    §.totals.spamton+=§,
+    §.spamtonByTurn[§-1]=(§.spamtonByTurn[§-1]??0)+§,
+    §.spamtonThreshold&&§.totals.spamton>200&&!§.thresholdDone&&(§.totals.spamton+=§.spamtonThreshold,§.thresholdDone=!0),
+    §.healByTurn[§-1]=Math.max(0,§.totals.healOffered-§),
+    §=§.totals.healOffered,
+    !§.over&&!§.potential&&!§&&§(§,§),
+    !§.over&&§&&!§.potential&&!§&&§(§,§)
+  }
+  let §=§.cards.reduce((§,§)=>§+§.hpMax,0),
+  §=§.cards.reduce((§,§)=>§+§.hpMax*§(§,§),0),
+  §=§+Math.min(§.totals.heal,§*.8)*.8+§.totals.defense,
+  §=§.usefulByTurn.reduce((§,§,§)=>§+§*(1.5-.5*(§+1)/§),0),
+  §=§.totals.spamton*§.spamtonValue+§.totals.luck*§.luckValue+§.totals.economy,
+  §=§?§.enemies.reduce((§,§)=>§+Math.max(0,§.hp),0):§.opp.totalHp-§.totals.dmg,
+  §=§?§.opp.totalHp-§:§.totals.dmg,
+  §=§.ttk??(§>0?§+§/(§/§):99),
+  §=§.opponent.totalHp,
+  §=3*(§.over?§*(1+1.5*(§-§.ttk)/§):Math.min(§*(§/§.opp.totalHp),§)),
+  §=(§?§.enemies.reduce((§,§)=>§+(§.dmg??[]).slice(0,§).reduce((§,§)=>§+§,0),0):Array.from({length:§},(§,§)=>§(§+1)).reduce((§,§)=>§+§,0))*(Math.max(1,§.cards.length)/§.deckSize),
+  §=§.pressureTaken,
+  §=Math.max(0,§-§),
+  §=§.potential?{dmgByCard:§.dmgByCard,aoeByCard:§.aoeByCard,healByTurn:§.healByTurn,board:§}:null;
+  return{
+    opponent:§.opp.id,
+    offense:§,
+    dmgTotal:§.totals.dmg,
+    dmgByTurn:§.dmgByTurn.map(§=>Math.round(§)),
+    §:Math.round(§*10)/10,
+    pressureTaken:§,
+    pressureAvoided:§,
+    ownDeaths:§.cards.filter(§=>§.dead).length,
+    enemyHealed:§.enemyHealed,
+    potential:§,
+    hpLeft:§.cards.reduce((§,§)=>§+(§.dead?0:Math.max(0,§(§))),0),
+    ehpLeft:§.cards.reduce((§,§)=>§+(§.dead?0:Math.max(0,§(§))*§(§,§)),0),
+    defenseCredits:§.totals.defense,
+    defense:§,
+    §:§,
+    heal:§.totals.heal,
+    hpTotal:§,
+    control:§.totals.control,
+    economy:§,
+    spamton:§.totals.spamton,
+    spamtonByTurn:§.spamtonByTurn,
+    income:§,
+    luckByTurn:§.luckByTurn,
+    support:§.totals.support,
+    teamBuff:§.totals.teamBuff,
+    genPoints:§.totals.genPoints,
+    genByElement:Object.fromEntries(§.map(§=>[§,Math.round(§.totals.genByElement[§]*10)/10])),
+    bonusFinal:Object.fromEntries(§.map(§=>[§,Math.round(§.bonus[§]*10)/10])),
+    useByElement:Object.fromEntries(§.map(§=>[§,Math.round(§.totals.useByElement[§])])),
+    teamCrit:Math.round(§.team.crit),
+    enemyRes:Math.round(§(§)),
+    plan:§.plan,
+    events:§.events,
+    kills:§.enemyDeaths,
+    talents:§.map((§,§)=>§.cards.find(§=>§.idx===§)?.talents[0]??null),
+    casts:§.totals.casts
+  }
+}
+function §(§,§=§){
+  return §.offense*§.offense+(§.ehpLeft+§.defenseCredits)*§.defense+§.control*§.control+§.economy*§.economy
+}
+const §=[1,2],
+§=§=>§.reduce((§,§)=>§+§,0)/§.length;
+function §(§,§={}){
+  let §=§.player?[§.player]:§,
+  §=§.flatMap(§=>§.map(§=>{
+    let §=§(§,{...t,opponent:§,player:§});
+    return{§:§.id,player:§,result:§,score:§(§)}
+  })),
+  §=§.find(§=>§.id===`neutral`&&§.player===§[0])??§[0],
+  §=§(§.map(§=>§.score)),
+  §=§=>Math.round(§*10)/10,
+  §=§.map(§=>{
+    let §=§.filter(§=>§.id===§.id);
+    return{
+      §:§.id,
+      score:§(§.map(§=>§.score)),
+      §:§(§(§.map(§=>§.result.ttk))),
+      kills:§(§(§.map(§=>§.result.kills))),
+      dmgTotal:Math.round(§(§.map(§=>§.result.dmgTotal)))
+    }
+  }),
+  §=§.find(§=>§.id===`neutral`)??§[0],
+  §=§.map(§=>({...e,deltaPct:§.score>0&&Math.round((§.score-§.score)/§.score*1e3)/10||0})),
+  §=§.map(§=>{
+    let §=§.filter(§=>§.player===§),
+    §=§(§.map(§=>§.score));
+    return{player:§,score:§,§:§(§(§.map(§=>§.result.ttk))),deltaPct:§>0&&Math.round((§-§)/§*1e3)/10||0}
+  });
+  return{score:§,result:§.result,matchups:§,positions:§}
+}
+function §(§,§={}){
+  let §=§.talentMode??§.talentMode;
+  if(§===`§`||§===`none`){
+    let §=§(§.map(§=>({card:§,talent:null})),§);
+    return{
+      result:§.result,
+      talents:§.map(()=>null),
+      score:§.score,
+      matchups:§.matchups,
+      positions:§.positions,
+      neutralScore:§(§.result)
+    }
+  }
+  let §=§.player?[§.player]:§,
+  {talents:§,score:§}=§(§,§=>§(§.map(§=>§(§(§,{...t,player:§}))))),
+  §=§(§.map((§,§)=>({card:§,talent:§.talents.length?§[§]:null})),§);
+  return{result:§.result,talents:§,score:§.score,matchups:§.matchups,positions:§.positions,neutralScore:§}
+}
+function §(§,§){
+  let §=-1/0,
+  §=null;
+  for(let § of §(§)){
+    let §=§(§.map((§,§)=>({card:§,talent:§.talents.length?§[§]:null})));
+    §>§&&(§=§,§=§)
+  }
+  return{talents:§,score:§}
+}
+function*§(§){
+  let §=§.map(§=>Math.max(1,§.talents.length)),
+  §=§.reduce((§,§)=>§*§,1);
+  for(let §=0;§<§;§++){
+    let §=§,
+    §=[];
+    for(let §=0;§<§.length;§++)§.push(§%§[§]),
+    §=Math.floor(§/§[§]);
+    yield §
+  }
+}
+const §=(§,§)=>(§+§)/2;
+function §(§,§){
+  let §=§.length;
+  if(!§)return 0;
+  let §=0;
+  for(let § of §)§<§&&§++;
+  return §/§*100
+}
+function §(§){
+  for(let § of §)if(§>=§.q*100)return §.tier;
+  return`§`
+}
+const §=§=>§=>§.card.element===§||§.tags.has(`§:§{§}`)||§.tags.has(`§:§{§}`);
+function §(§){
+  if(§.talentMode===`§`||!§.talents.length)return null;
+  let §=0,
+  §=-1/0;
+  return §.talents.forEach((§,§)=>{
+    let §=§(§([{card:§,talent:§}]));
+    §>§&&(§=§,§=§)
+  }),
+  §
+}
+function §(§){
+  let §=new §(§.map(§=>[§.card.number,§(§([{card:§.card,talent:§.talent}]))]));
+  return §.map(§=>§.filter(§(§)).sort((§,§)=>§.get(§.card.number)-§.get(§.card.number)||§.card.number-§.card.number).slice(0,§.deckSize)).filter(§=>§.length>=§.deckSize)
+}
+function §(§,§){
+  return §.filter(§=>§.card.number!==§.number).slice(0,§.deckSize-1).map(§=>({card:§.card,talent:§.talent}))
+}
+function §(§,§){
+  let §=§.talents.map(()=>0),
+  §=0;
+  for(let § of §){
+    let §=§(§,§);
+    if(!(§.length<§.deckSize-1)){
+      if(§++,§.talentMode===`§`){
+        let §=§(§([...t,{card:§,talent:null}]));
+        §.talents.forEach((§,§)=>{
+          let §=[];
+          §[§.length]=[§],
+          §[§]+=§-§(§([...t,{card:§,talent:null}],{excludeTalents:§}))
+        })
+      }else{
+        let §=§(§([...t,{card:§,talent:null}]));
+        §.talents.forEach((§,§)=>{
+          §[§]+=§(§([...t,{card:§,talent:§}]))-§
+        })
+      }
+    }
+  }
+  return §.talents.map((§,§)=>({name:§.name,kind:§.kind,delta:§?§[§]/§:0}))
+}
+function §(§,§){
+  if(§.talentMode===`§`||!§.talents.length)return null;
+  let §=0;
+  return §.forEach((§,§)=>{
+    §.delta>§[§].delta&&(§=§)
+  }),
+  §
+}
+function §(§){
+  let §=§([{card:§}]),
+  §=§.reduce((§,§)=>§+§[§],0),
+  §={};
+  for(let § of §)§[§]=§>0?3*§[§]/§:0;
+  return §===0&&§.element!==`divine`&&(§[§.element]=3),
+  §
+}
+function §(§,§){
+  let §=/* @__PURE__ */ new §,
+  §=§.atkProfile;
+  for(let § of §)§[§]>=8&&§.add(`§:§{§}`),
+  (§.genByElement[§]??0)/§.simTurns>=.8&&§.add(`§:§{§}`);
+  §.generation/§.simTurns>=3&&§.add(`bigGen`),
+  §.generation/§.simTurns>=1&&§.add(`§`);
+  for(let § of §.abilities){
+    let §=§.options,
+    §=Math.max(...e.map(§=>§.hits.filter(§=>!§.pctMaxHp).reduce((§,§)=>§+§(§.min,§.max),0)),0);
+    §.some(§=>§.target===`aoeEnemy`&&§.hits.length)&&§.add(`§`),
+    §>=80&&§.add(`nuke`),
+    §>0&&§.cd>=6&&§.add(`longCd`),
+    §>0&&§.cd===1&&§.add(`spam`),
+    §.cost&&§.add(`cost`),
+    §.echo>0&&§.add(`echo`),
+    §.some(§=>§.heals.some(§=>!§.self))&&§.add(`heal`),
+    §.some(§=>§.heals.some(§=>§.self))&&§.add(`selfheal`),
+    §.some(§=>§.heals.some(§=>§.target===`allAllies`))&&§.add(`healAll`),
+    §.some(§=>§.hits.some(§=>§.pctMaxHp))&&§.add(`pctHp`),
+    §.some(§=>§.target===`randomEnemy`||§.target===`spreadEnemy`)&&§.add(`randomTarget`);
+    for(let § of §)for(let § of §.effects)§.type===`stun`&&§.add(`stun`),
+    §.type===`eternity`&&§.add(`eternity`),
+    §.type===`temporality`&&§.add(§.scope===`team`?`temporalityTeam`:`temporalityAlly`),
+    §.type===`taunt`&&§.add(`taunt`),
+    (§.type===`absorbAny`||§.type===`setHpPct`&&§.value<=50)&&§.add(`execute`),
+    §.type===`resurrect`&&§.add(`resurrect`),
+    §.type===`crit`&&§.scope===`team`&&§.add(`critTeam`),
+    §.type===`crit`&&§.scope===`card`&&§.add(`critSelf`),
+    §.type===`prec`&&[`team`,`ally`,`randomAlly`].includes(§.scope)&&§.add(`precTeam`),
+    §.type===`base`&&[`team`,`ally`,`randomAlly`].includes(§.scope)&&§.add(`baseTeam`),
+    §.type===`base`&&§.scope===`ability`&&§.add(`baseGrowth`),
+    §.type===`hpMax`&&§.scope===`team`&&§.add(`hpTeam`),
+    §.type===`§`&&§.scope===`enemy`&&§.add(`enemyRes`),
+    §.type===`§`&&§.scope!==`enemy`&&§.add(`resBuff`),
+    §.type===`enemyPrec`&&§.add(`enemyPrec`),
+    §.type===`resetEnemyCd`&&§.add(`resetEnemyCd`),
+    §.type===`resetEnemySpamton`&&§.add(`spamtonAttack`),
+    §.type===`vanish`&&§.add(`vanish`),
+    §.type===`vampirism`&&§.add(`vampirism`),
+    §.type===`critMult`&&§.add(`critMult`);
+    for(let § of §)for(let § of §.gen)§.growth&&§.add(`genGrowth`)
+  }
+  for(let § of §.passives){
+    let §={
+      reset:`reset`,
+      avenger:`avenger`,
+      revenge:`revenge`,
+      phoenix:`phoenix`,
+      berserk:`berserk`,
+      multiplicator:`multiplicator`,
+      brut:`brut`,
+      immunity:`immune`,
+      lifesteal:`vampirism`,
+      erosion:`erosion`,
+      stunOnHit:`stunOnHit`,
+      eternityOnHit:`eternityOnHit`,
+      temporalityOnHit:`temporalityOnHit`,
+      vanishOnHit:`disparition`,
+      cimetiere:`cimetiere`,
+      coeur:`coeur`,
+      punchingBag:`punchingBag`,
+      poison:`poison`,
+      reflect:`reflect`,
+      recoil:`recoil`,
+      tenacity:`tenacity`,
+      mystery:`mystery`,
+      mimetism:`mimetism`,
+      smoke:`smoke`,
+      tauntOnAttack:`tauntOnAttack`,
+      regen:`regen`,
+      luck:`luck`,
+      teamRes:`resBuff`,
+      hpGrowth:`hpGrowth`
+    };
+    §[§.type]&&§.add(§[§.type])
+  }(§.hp>=900||§.avgRes>=20)&&§.add(`tank`),
+  §.negRes.length&&§.add(`negRes`),
+  §.spamton>=10&&§.add(`highSpamton`),
+  §.spamton<=4&&§.add(`lowSpamton`),
+  §.abilities.some(§=>§.hasDamage)||§.add(`noDamage`),
+  §.rows<3&&§.add(`toxSlot`);
+  for(let § of §.talents)§.add(`talent:§{§.name}`);
+  return §
+}
+function §(§,§){
+  let §=§(§),
+  §=§([{card:§,talent:§}]),
+  §=§([{card:§,talent:§}],{externalGen:§}),
+  §={
+    card:§,
+    talent:§,
+    talentName:§==null?null:§.talents[§]?.name??null,
+    soloResult:§,
+    supportedResult:§,
+    offense:§.offense,
+    offenseSolo:§.offense,
+    generation:§.genPoints,
+    genByElement:§.genByElement,
+    defense:§.defense,
+    support:§.support+§.teamBuff,
+    control:§.control,
+    economy:§.economy,
+    atkProfile:§([{card:§}])
+  };
+  return §.tags=§(§,§),
+  §
+}
+const §={
+  offense:`Attaquant`,
+  generation:`§é§érateur`,
+  support:`Soutien`,
+  defense:`Tank`,
+  control:`Contrô§`,
+  economy:`Économie`
+};
+function §(§){
+  let §={};
+  for(let § of Object.keys(§)){
+    let §=§.map(§=>§[§]).filter(§=>§>0).sort((§,§)=>§-§);
+    §[§]=§.length?§[Math.floor(§.length/2)]:1/0
+  }
+  return §
+}
+function §(§,§){
+  let §=[];
+  for(let[§,§]of Object.entries(§))§.pct[§]>=75&&§[§]>=§[§]&&§.push(§);
+  return §.length?§:[Object.keys(§).filter(§=>§.pct[§]>=50).length>=2?`Polyvalent`:`Utilitaire`]
+}
+function §(§){
+  let §=§(§.map(§=>§(§,§(§)))),
+  §=§.map(§=>{
+    let §=§(§,§),
+    §=§(§,§(§,§));
+    return §.talentDeltas=§,
+    §
+  }),
+  §=[`offense`,`offenseSolo`,`generation`,`defense`,`support`,`control`,`economy`],
+  §=Object.fromEntries(§.map(§=>[§,§.map(§=>§[§])]));
+  for(let § of §){
+    §.pct={};
+    for(let § of §)§.pct[§]=§(§[§],§[§]);
+    §.overall=0;
+    for(let[§,§]of Object.entries(§))§.overall+=§*§.pct[§]
+  }
+  let §=§.map(§=>§.overall);
+  for(let § of §)§.overallPct=§(§,§.overall),
+  §.tier=§(§.overallPct);
+  let §=§(§);
+  for(let § of §)§.roles=§(§,§);
+  §.sort((§,§)=>§.overall-§.overall),
+  §.forEach((§,§)=>{
+    §.rank=§+1
+  });
+  let §=§.map(§=>§(§,null)),
+  §=Object.fromEntries(§.map(§=>[§,§.map(§=>§[§])]));
+  for(let § of §){
+    §.pct={};
+    for(let § of §)§.pct[§]=§(§[§],§[§]);
+    §.overall=0;
+    for(let[§,§]of Object.entries(§))§.overall+=§*§.pct[§]
+  }
+  let §=§.map(§=>§.overall),
+  §=new §(§.map(§=>[§.card.number,§])),
+  §=new §([...s].sort((§,§)=>§.overall-§.overall||§.card.number-§.card.number).map((§,§)=>[§.card.number,§+1]));
+  for(let § of §){
+    let §=§.get(§.card.number),
+    §=§(§,§.overall);
+    §.noTalent={
+      overall:§.overall,
+      overallPct:§,
+      tier:§(§),
+      rank:§.get(§.card.number),
+      §:§.pct,
+      metrics:{
+        offense:§.offense,
+        offenseSolo:§.offenseSolo,
+        generation:§.generation,
+        defense:§.defense,
+        support:§.support,
+        control:§.control,
+        economy:§.economy
+      }
+    }
+  }
+  return §
+}
+const §=§=>Number(String(§).replace(`,`,`.`)),
+§=§=>String(§??``).replace(/(\§)[ \u00a0\u202f]+%/§,`§%`).replace(/É§/§,`Echo`),
+§={
+  §:(§,§)=>({type:`§`,§:§(§.match(/(\§+)%/)?.[1]??20)}),
+  Berserk:(§,§)=>({type:`berserk`,§:§(§.match(/(\§+)%/)?.[1]??12)}),
+  Brut:()=>({type:`brut`}),
+  Chance:(§,§)=>({type:`luck`,perTurn:§(§.match(/\(\+?([\§,]+)\)/)?.[1]??.5)}),
+  Cimetiere:(§,§)=>({type:`cimetiere`,value:§(§.match(/\(\+?(\§+)\)/)?.[1]??3)}),
+  CoeurEau:(§,§)=>({type:`coeur`,element:`water`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurFeu:(§,§)=>({type:`coeur`,element:`fire`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurLumiere:(§,§)=>({type:`coeur`,element:`light`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurNature:(§,§)=>({type:`coeur`,element:`nature`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurOmbre:(§,§)=>({type:`coeur`,element:`shadow`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurTerre:(§,§)=>({type:`coeur`,element:`earth`,perTurn:§(§.match(/\(\+?(\§+)\)/)?.[1]??1)}),
+  CoeurResistance:(§,§)=>({type:`teamRes`,value:§(§.match(/\(\+?(\§+)\)/)?.[1]??3)}),
+  CoeurVital:(§,§)=>({type:`hpGrowth`,perTurn:§(§.match(/§ (\§+)/)?.[1]??15)}),
+  ContreCoup:(§,§)=>({type:`recoil`,§:§(§.match(/(\§+)%/)?.[1]??50)}),
+  Disparition:()=>({type:`vanishOnHit`}),
+  Erosion:(§,§)=>({type:`erosion`,§:§(§.match(/(\§+)%/)?.[1]??50)}),
+  Eternity:()=>({type:`eternityOnHit`}),
+  Immunity:()=>({type:`immunity`}),
+  "Life Steal":(§,§)=>({type:`lifesteal`,§:§(§.match(/(\§+)%/)?.[1]??25)}),
+  Mimetisme:()=>({type:`mimetism`}),
+  Multiplicator:()=>({type:`multiplicator`}),
+  Mystere:()=>({type:`mystery`}),
+  Phoenix:(§,§)=>({type:`phoenix`,§:§(§.match(/(\§+)%/)?.[1]??25)}),
+  Poison:()=>({type:`poison`,§:1,turns:3}),
+  "Primitive heal":(§,§)=>({type:`regen`,§:§(§.match(/(\§+)%/)?.[1]??4)}),
+  PunchingBag:()=>({type:`punchingBag`}),
+  Reflect:(§,§)=>({type:`reflect`,§:§(§.match(/(\§+)%/)?.[1]??25)}),
+  Reset:()=>({type:`reset`}),
+  Revenge:()=>({type:`revenge`}),
+  Smoked:()=>({type:`smoke`}),
+  Stun:()=>({type:`stunOnHit`}),
+  Taunt:()=>({type:`tauntOnAttack`}),
+  Temporality:()=>({type:`temporalityOnHit`}),
+  Tenacite:()=>({type:`tenacity`}),
+  Vengeur:()=>({type:`avenger`}),
+  Spamland:()=>({type:`spamland`,perTurn:3}),
+  Bomba:()=>({type:`bomba`,value:500}),
+  Inversement:()=>({type:`inversion`}),
+  MetamorphSimple:()=>({type:`metamorph`}),
+  Metamorph:()=>({type:`metamorph`,choice:!0}),
+  CoeurCorrompu:()=>({type:`coeur`,element:`random`,perTurn:2}),
+  Frozen:(§,§)=>({type:`freezeOnHit`,value:§(§.match(/(\§+) §é§â§/)?.[1]??40)}),
+  Shield:(§,§)=>({type:`shield`,§:§(§.match(/(\§+)%/)?.[1]??25)}),
+  Optimisation:()=>({type:`optimisation`})
+};
+function §(§,§){
+  let §=(§.id??``).replace(/§[CRELD]§/§,``),
+  §=§[§],
+  §=§.rarity??`common`;
+  return §?{§:§.id,name:§.name,rarity:§,text:§.effect,...r(§.id,§(§.effect))}:(§?.warnings.push(`passif inconnu §{§.id}`),{§:§.id,name:§.name,rarity:§,type:`unknown`,text:§.effect})
+}
+const §={
+  §:{fire:`§`,water:`§`,earth:`Terre`,nature:`Nature`,shadow:`Ombre`,light:`Lumiè§`},
+  §:{fire:`Fire`,water:`Water`,earth:`Earth`,nature:`Nature`,shadow:`Shadow`,light:`Light`}
+},
+§=§=>String(§).replace(`.`,`,`),
+§={
+  §:{
+    §:[`§`,§=>`Attaque § soigne § cibles adjacentes à hauteur § §{§}% § §é§â§ infligé§`],
+    §:[`§`,§=>`Attacks § heals adjacent targets for §{§}% of § damage dealt.`]
+  },
+  Berserk:{
+    §:[`Berserk`,§=>`§ §é§â§ § § soins § toutes § cartes sont augmenté§ § §{§}%`],
+    §:[`Berserk`,§=>`Damage § healing of § your cards § increased § §{§}%.`]
+  },
+  Chance:{
+    §:[`Chanceur`,§=>`Augmente votre Chance § (+§{§(§)}) chaque tour`],
+    §:[`Lucky`,§=>`Increases your Luck § (+§{§}) each turn.`]
+  },
+  Cimetierre:{
+    §:[`Cimetiè§`,§=>`Augmente tous § bonus é§émentaires § (+§{§}) lorsqu'§ carte meurt`],
+    §:[`Graveyard`,§=>`Raises § your elemental bonuses § (+§{§}) whenever § card dies.`]
+  },
+  CoeurElement:{
+    §:[`§œ§`,(§,§)=>`Bonus §{§.fr[§]??`§ §’é§ément § § carte`} (+§{§}) § tour § §`],
+    §:[`Heart`,(§,§)=>`§{§.en[§]??`Card element`} bonus (+§{§}) each turn.`]
+  },
+  CoeurResistance:{
+    §:[`§œ§ § §ésistance`,§=>`Cette carte augmente § §ésistances § toutes § cartes allié§ (+§{§})`],
+    §:[`Heart of Resistance`,§=>`This card raises § resistances of § allied cards (+§{§}).`]
+  },
+  CoeurVital:{
+    §:[`§œ§ vital`,§=>`Cette carte augmente § § § § §{§} chaque tour`],
+    §:[`Vital Heart`,§=>`This card gains §{§} § § each turn.`]
+  },
+  Erosion:{
+    §:[`Érosion`,§=>`§éduit § § § à hauteur § §{§}% § §é§â§ infligé§`],
+    §:[`Erosion`,§=>`Reduces § § § §{§}% of § damage dealt.`]
+  },
+  LifeSteal:{
+    §:[`Vampirisme`,§=>`§é§é§è§ §{§}% § §é§â§ infligé§ à § cible`],
+    §:[`Lifesteal`,§=>`Heals for §{§}% of § damage dealt § § target.`]
+  },
+  Poisoned:{
+    §:[`Poison`,§=>`Inflige § §é§â§ égaux à §{§}% § § § § § cible § §é§ § chacun § § tours, pendant 3 tours`],
+    §:[`Poison`,§=>`Deals damage equal § §{§}% of § target'§ § § § § start of each of § turns, for 3 turns.`]
+  },
+  SoinPrimitif:{
+    §:[`Soin primitif`,§=>`§ §é§ § chaque tour, § carte §é§è§ §{§}% § § § §`],
+    §:[`Primitive Heal`,§=>`§ § start of each turn, § card recovers §{§}% of § § §.`]
+  },
+  SacDeFrappe:{
+    §:[`§ § frappe`,§=>`Augmente § +§{§} §'é§ément § § carte § lanceur à chaque fois § celle-§ subit § attaque`],
+    §:[`Punching §`,§=>`Raises § card'§ element bonus § +§{§} each time § § attacked.`]
+  },
+  Renvoie:{
+    §:[`Renvoi`,§=>`Renvoie §{§}% § §é§â§ subis à §'attaquant`],
+    §:[`Reflect`,§=>`Reflects §{§}% of § damage taken back § § attacker.`]
+  },
+  Phoenix:{
+    §:[`§é§`,§=>`Lorsqu’elle § §étruite, cette carte revient à § § avec §{§}% § § § §.\nUsage unique`],
+    §:[`Phoenix`,§=>`When destroyed, this card comes back § life with §{§}% of § § §.\nSingle §`]
+  },
+  Shield:{
+    §:[`Bouclier`,§=>`§ premier coup §ç§ à chaque tour adverse § §éduit § §{§}%`],
+    §:[`Shield`,§=>`§ first § taken each enemy turn § reduced § §{§}%.`]
+  },
+  SpamLand:{
+    §:[`Spamland`,§=>`§é§è§ (+§{§}) Spamtons chaque tour`],
+    §:[`Spamland`,§=>`Generates (+§{§}) Spamtons each turn.`]
+  },
+  Bomba:{
+    §:[`Bomba`,§=>`Inflige §{§} §é§â§ bruts à § carte adverse §éatoire quand cette carte meurt`],
+    §:[`Bomba`,§=>`Deals §{§} § damage § § random enemy card when this card dies.`]
+  },
+  Metamorph:{
+    §:[`§étamorphe`,()=>`Choisissez § carte parmi trois § § §ê§ rareté pour remplacer cette carte`],
+    §:[`Shapeshifter`,()=>`Choose § of three random cards of § same rarity § replace this card.`]
+  },
+  MetamorphSimple:{
+    §:[`§étamorphe §éatoire`,()=>`Transforme § carte § § carte §éatoire § § §ê§ rareté`],
+    §:[`Random shapeshifter`,()=>`Transforms § card into § random card of § same rarity.`]
+  },
+  Optimisation:{
+    §:[`Optimisation`,()=>`§ valeurs variables § §é§â§, § soins § § bonus § cette carte sont toujours § maximum`],
+    §:[`Optimisation`,()=>`Variable damage, healing § bonus values of this card always roll their maximum.`]
+  },
+  Inversement:{
+    §:[`Inversement`,()=>`§ §é§â§ § cette carte deviennent § soins, § Éternité§ § Temporalité§, § inversement.`],
+    §:[`Inversion`,()=>`This card’§ damage becomes healing, § Eternities become Temporalities, § vice versa.`]
+  }
+};
+function §(§,§=`§`){
+  let §=§[§],
+  §=§&&§[§.effect];
+  if(!§)return null;
+  let[§,§]=§[§]??§.fr;
+  return{name:§,effect:§(§.value,§.element)}
+}
+const §=§=>§.replace(/§[CRELD]§/§,``),
+§=[`common`,`rare`,`epic`,`legendary`];
+function §(§,§){
+  let §=§.length;
+  if(§===1||§<=§[0].time)return §[0].value;
+  if(§>=§[§-1].time)return §[§-1].value;
+  let §=0,
+  §=§-1;
+  for(;§-§>1;){
+    let §=§+§>>1;
+    §[§].time<=§?§=§:§=§
+  }
+  let §=§[§],
+  §=§[§+1],
+  §=§.time-§.time;
+  if(§<=0)return §.value;
+  let §=(§-§.time)/§,
+  §=§*§,
+  §=§*§;
+  return(2*§-3*§+1)*§.value+(§-2*§+§)*§*§.outSlope+(-2*§+3*§)*§.value+(§-§)*§*§.inSlope
+}
+const §=/* @__PURE__ */ new §;
+function §(§,§=!1){
+  if(§)return{...u.luckyOdds};
+  let §=Math.round(§*10);
+  if(§.has(§))return §.get(§);
+  let §=Object.fromEntries(§.map(§=>[§,Math.max(0,§(§[§],§))])),
+  §=§.reduce((§,§)=>§+§[§],0),
+  §={common:0,rare:0,epic:0,legendary:0};
+  if(§<=0)§.common=1e3;
+  else for(let §=0;§<1e3;§++){
+    let §=Math.min(Math.max(§/10,0),§)*§/100;
+    §<=§.common?§.common++:§<=§.common+§.rare?§.rare++:§<=§.common+§.rare+§.epic?§.epic++:§.legendary++
+  }
+  let §=Object.fromEntries(§.map(§=>[§,§[§]/1e3]));
+  return §.set(§,§),
+  §
+}
+const §={
+  element:[`coeur`,`cimetiere`,`punchingBag`,`multiplicator`,`mimetism`],
+  offense:[`§`,`berserk`,`erosion`,`poison`,`brut`,`bomba`,`reset`,`avenger`,`revenge`,`recoil`,`optimisation`],
+  defense:[`teamRes`,`hpGrowth`,`phoenix`,`reflect`,`regen`,`tenacity`,`lifesteal`,`immunity`,`smoke`,`shield`],
+  control:[`tauntOnAttack`,`taunt`,`vanishOnHit`,`vanish`,`eternityOnHit`,`eternity`,`stunOnHit`,`stun`,`temporalityOnHit`,`temporality`,`freezeOnHit`,`freeze`],
+  economy:[`luck`,`spamland`,`spamtonGen`],
+  special:[`metamorph`,`mystery`,`inversion`]
+},
+§=§=>Object.keys(§).find(§=>§[§].includes(§))??`special`,
+§=§=>§[§]?`§{§[§].effect}|§{§[§].element??``}`:§(§),
+§=new §(Object.values(§.pools).flat());
+function §(§){
+  let §=/* @__PURE__ */ new §,
+  §=/* @__PURE__ */ new §;
+  for(let § of §)for(let § of §.rawSkills??[])§.has(§.id)||§.set(§.id,§),
+  §.has(§(§.id))||§.set(§(§.id),§.name);
+  for(let[§,§]of Object.entries(§.pools))for(let § of §){
+    if(§.has(§))continue;
+    let §=§(§,`§`);
+    §&&§.set(§,{§:§,name:§.get(§(§))??§.name,rarity:§,effect:§.effect})
+  }
+  let §=[];
+  for(let § of §.values()){
+    let §=§({§:§.id,name:§.name,rarity:§.rarity,effect:§.effect},null);
+    §.type!==`unknown`&&§.push({
+      §:§.id,
+      name:§.name,
+      rarity:§.rarity,
+      text:§.effect,
+      family:§(§.type),
+      passive:{...t,shop:!0},
+      purchasable:§.has(§.id),
+      cost:§[§.id]?.cost??null
+    })
+  }
+  return §.sort((§,§)=>§[§.rarity]-§[§.rarity]||§.name.localeCompare(§.name,`§`)||§.id.localeCompare(§.id)),
+  §
+}
+function §(§,§){
+  return §.map((§,§)=>({card:§.card,talent:§?§[§]:§.talent}))
+}
+function §(§,§,§,§,§){
+  let §=new §(§.map(§=>[§.tox.id,Math.max(0,§.gain)])),
+  §=[];
+  for(let § of §){
+    let §=§.filter(§=>§.rarity===§&&!§.has(§.id));
+    if(§.length&&§[§])for(let § of §)§.push({§:§[§]/§.length,§:§.usePrices&&§.cost!=null&&§.cost>§?0:§.get(§.id)??0})
+  }
+  let §=§.reduce((§,§)=>§+§.p,0);
+  if(!§)return 0;
+  §.sort((§,§)=>§.g-§.g);
+  let §=0,
+  §=0;
+  for(let § of §){
+    let §=§;
+    §+=§.p/§,
+    §+=§.g*(§**§.items-§**§.items)
+  }
+  return §
+}
+function §(§,§,§,§={}){
+  let §=§(§,§),
+  §=§(§),
+  §=§(§),
+  §=§.filter(§=>§.purchasable!==!1),
+  §=§.canReplace!==`none`,
+  §=§.canReplace===`§`,
+  §=§.map(§=>Math.max(0,§.maxRows-§.card.rows)),
+  §=§.map(()=>({added:[],removed:[]})),
+  §=§.map(§=>new §(§.card.abilities.map(§=>§.id).filter(Boolean))),
+  §=§=>({
+    extraPassives:§.map(§=>§.added.map(§=>§.passive)),
+    removePassives:§.map((§,§)=>§.removed.filter(§=>!§[§].has(§))),
+    removeAbilities:§.map((§,§)=>§.removed.filter(§=>§[§].has(§)))
+  }),
+  §=§=>§(§(§,§(§))),
+  §=§=>§(§,§(§)).score,
+  §=§(§.map(()=>({added:[],removed:[]}))),
+  §=§=>§.map(§=>({added:[...e.added],removed:[...e.removed]})),
+  §=§=>new §(§.flatMap(§=>[...e.added.map(§=>§.id),...e.removed])),
+  §=(§,§)=>§[§]+§[§].removed.length-§[§].added.length>0,
+  §=§.map((§,§)=>Object.fromEntries([...e.card.passives.map(§=>[§.id,§]),...e.card.abilities.filter(§=>§.id).map(§=>[§.id,§])].map(([§])=>{
+    let §=§(§);
+    return §[§].removed.push(§),
+    [§,§-§(§)]
+  }))),
+  §=(§,§)=>(§[§][§]??0)>=§.coreMinLossPct/100*§,
+  §=(§,§)=>§[§].card.passives.find(§=>§.id===§),
+  §=(§,§,§)=>{
+    if(!§(§,§))return!0;
+    let §=§(§,§);
+    return!!§&&§(§.id)===§(§.id)&&(§[§.rarity]??0)>(§[§.rarity]??0)
+  },
+  §=(§,§)=>{
+    let §=§.plan.map((§,§)=>§.filter(§=>§.cardId===§[§].card.id&&§.abilityId===§).length?§+1:0).filter(Boolean);
+    return{
+      casts:§.plan.reduce((§,§)=>§+§.filter(§=>§.cardId===§[§].card.id&&§.abilityId===§).length,0),
+      firstTurn:§[0]??null
+    }
+  },
+  §=§=>[
+    ...e[§].card.passives.map(§=>({§:§.id,name:§.name,kind:`passive`})),
+    ...f?§[§].card.abilities.filter(§=>§.id).map(§=>({§:§.id,name:§.name,kind:`ability`})):[]
+  ].sort((§,§)=>§[§][§.id]-§[§][§.id]),
+  §=(§,§)=>{
+    let §=[],
+    §=§(§);
+    for(let § of §){
+      if(§.has(§.id))continue;
+      let §=null;
+      for(let §=0;§<§.length;§++){
+        let §=[];
+        if(§(§,§)&&§.push({replace:null}),§)for(let § of §(§))!§[§].removed.includes(§.id)&&§(§,§,§.id)&&§.push({replace:§});
+        for(let § of §){
+          let §=§(§);
+          §.replace&&§[§].removed.push(§.replace.id),
+          §[§].added.push(§);
+          let §=§(§)-§;
+          (!§||§>§.gain+1e-6)&&(§={§:§,card:§,replace:§.replace,gain:§,next:§})
+        }
+      }
+      §&&§.push(§)
+    }
+    return §.sort((§,§)=>§.gain-§.gain),
+    §
+  },
+  §=Math.min(§.simTurns,Math.ceil(§.ttk??§.simTurns)),
+  §=§=>Math.round((§.spamtonByTurn??[]).slice(0,§).reduce((§,§)=>§+(§??0),0)),
+  §=[];
+  for(let §=§.everyTurns;§<=Math.max(§.everyTurns,§);§+=§.everyTurns){
+    let §=§.luckByTurn?.[§-1]??§;
+    §.push({turn:§,luck:§,odds:§(§,§.lucky),spamton:§(§)})
+  }
+  let §=(§,§,§)=>{
+    let §=[];
+    for(let § of §){
+      if(§&&!§(§,§,§))continue;
+      let §=§(§);
+      §&&§[§].removed.push(§),
+      §[§].added.push(§);
+      let §=§(§)-§;
+      §>0&&§.push({§:§,next:§,§:§})
+    }
+    §.sort((§,§)=>§.g-§.g);
+    let §=[];
+    for(let{§:§,next:§}of §.slice(0,§.robustCandidates)){
+      let §=§(§)-§;
+      §>0&&§.push({§:§.name,§:§.id,rarity:§.rarity,gainPct:100*§/§})
+    }
+    return §.sort((§,§)=>§.gainPct-§.gainPct)
+  },
+  §=/* @__PURE__ */ new §,
+  §=§.map((§,§)=>{
+    let §=[],
+    §=(§,§,§)=>(§[0]?.gainPct??0)>=§.replaceMinGainPct?`remplacer`:§&&§(§,§)?`coeur`:§?`garder`:`fixe`;
+    for(let § of §.card.abilities){
+      let §=§&&§.id?§(§,§,§.id):[],
+      §=§.id?§[§][§.id]:null;
+      §.push({
+        kind:`ability`,
+        §:§.id??null,
+        name:§.name,
+        text:§.text,
+        valuePct:§==null?null:100*§/§,
+        core:!!§.id&&§(§,§.id),
+        ...D(§,§.id),
+        verdict:§(§.id,§,§),
+        candidates:§.filter(§=>§.gainPct>=§.minGainPct).slice(0,6)
+      })
+    }
+    for(let § of §.card.passives){
+      let §=§[§][§.id],
+      §=§?§(§,§,§.id):[];
+      §.push({
+        kind:`passive`,
+        §:§.id,
+        name:§.name,
+        rarity:§.rarity,
+        text:§.text,
+        valuePct:100*§/§,
+        core:§(§,§.id),
+        verdict:§(§.id,§,§),
+        candidates:§.filter(§=>§.gainPct>=§.minGainPct).slice(0,6)
+      })
+    }
+    for(let §=0;§<§[§];§++){
+      §.has(§)||§.set(§,§(§,§,null));
+      let §=§.get(§);
+      §.push({
+        kind:`free`,
+        name:`Ligne libre`,
+        verdict:§.length&&§[0].gainPct>=§.minGainPct?`acheter`:`vide`,
+        candidates:§.slice(0,6)
+      })
+    }
+    return{card:§.card.name,cardId:§.card.id,role:§.roles?.[0]??null,free:§[§],lines:§}
+  }),
+  §=§(§,§),
+  §=§.length?§(§,§[0].odds,§,§(§),§[0].spamton):0,
+  §=[],
+  §=§(§),
+  §=§,
+  §=§,
+  §=0,
+  §=§,
+  §=§=>(§.replace?§.replaceMinGainPct:§.minGainPct)/100*§;
+  for(let § of §.slice(0,§.maxPlan)){
+    let §=§.spamton-§,
+    §=null,
+    §=0;
+    for(let § of §){
+      if(§.gain<=0||§.odds[§.tox.rarity]<§.minRarityOdds||§.usePrices&&§.tox.cost!=null&&§.tox.cost>§)continue;
+      if(§++>=§.robustTries)break;
+      let §=§(§.next)-§;
+      if(§>=§(§)){
+        §={...e,robustGain:§};
+        break
+      }
+    }
+    §&&(§=§.next,§+=§.gain,§+=§.robustGain,§+=§.usePrices?§.tox.cost??0:0,§.push({
+      step:§.length+1,
+      turn:§.turn,
+      luck:§.luck,
+      rarityOdds:§.odds[§.tox.rarity],
+      §:§.tox.name,
+      §:§.tox.id,
+      rarity:§.tox.rarity,
+      card:§[§.card].card.name,
+      cardId:§[§.card].card.id,
+      replaces:§.replace?.name??null,
+      replacesId:§.replace?.id??null,
+      replacesKind:§.replace?.kind??null,
+      gain:§.robustGain,
+      gainPct:100*§.robustGain/§,
+      cumulativePct:100*(§-§)/§
+    }),§=§(§,§))
+  }
+  let §=§[§.length-1],
+  §=§?§(§,§.odds,§,§(§),§.spamton-§):0,
+  §=/* @__PURE__ */ new §;
+  for(let § of §)§.set(§.tox.name,Math.max(§.get(§.tox.name)??-1/0,§.gain));
+  let §=[...H.entries()].filter(([,§])=>§<=0).map(([§])=>§).sort((§,§)=>§.localeCompare(§,`§`)),
+  §=[...new §(§.filter(§=>§.includes(§.name)).map(§=>§.id))],
+  §=§.map((§,§)=>{
+    let §=§[0]?.odds??§(§.everyTurns,§.lucky),
+    §=0;
+    for(let § of §){
+      let §=§.filter(§=>§.rarity===§);
+      if(!§.length)continue;
+      let §=§.map(§=>{
+        let §=§.find(§=>§.tox.id===§.id);
+        return §&&§.card===§?Math.max(0,§.gain):0
+      });
+      §+=§[§]*(§.reduce((§,§)=>§+§,0)/§.length)
+    }
+    return{card:§.card.name,cardId:§.card.id,free:§[§],evPct:100*§/§}
+  }),
+  §=§.map(§=>({
+    turn:§.turn,
+    spamton:§.spamton,
+    luck:§.luck,
+    odds:Object.fromEntries(§.map(§=>[§,Math.round(§.odds[§]*1e3)/10]))
+  })),
+  §=/* @__PURE__ */ new §;
+  for(let § of §){
+    let §=§(§.id);
+    §.has(§)||§.set(§,[]),
+    §.get(§).push(§.id)
+  }
+  let §=§.map(§=>§(§,§.odds,§,/* @__PURE__ */ new §,§.spamton)),
+  §=§=>§.some(§=>§.odds[§.tox.rarity]>=§.minRarityOdds&&(!§.usePrices||§.tox.cost==null||§.tox.cost<=§.spamton)),
+  §=[...U].map(([§,§])=>{
+    let §=§.filter(§=>!§.includes(§.id)),
+    §=§.reduce((§,§,§)=>§+§[§]-§(§,§.odds,§,/* @__PURE__ */ new §,§.spamton),0),
+    §=§.filter(§=>§.includes(§.tox.id)&&§(§)).reduce((§,§)=>Math.max(§,§.gain),0);
+    return{family:§,§:§,lossPct:100*§/§,bestGainPct:100*§/§}
+  }).sort((§,§)=>§.lossPct-§.lossPct||§.family.localeCompare(§.family)),
+  §=§.reduce((§,§)=>§+§,0)+(§?§.reduce((§,§)=>§+§.card.passives.length,0):0)+(§?§.reduce((§,§)=>§+§.card.abilities.filter(§=>§.id).length,0):0),
+  §=§.length?§[§.length-1].cumulativePct:0,
+  §;
+  return §=§===0?`Aucune ligne disponible : § boutique § inutile pour § deck.`:§/§<§.minGainPct/100?`§ fois §{§.length?`§ §{§.length} § §é§`:`§ meilleurs § §é§`}, § ouverture § rapporte plus § +§{(100*§/§).toFixed(1)} % : passez § gardez § Spamtons.`:`§ê§ §è§ § plan, § ouverture vaut encore +§{(100*§/§).toFixed(1)} % : continuez tant §'§ ligne peut accueillir § §.`,
+  {
+    cards:§,
+    slots:§.map((§,§)=>({card:§.card.name,free:§[§],rows:§.card.rows})),
+    slotsTotal:§,
+    plan:§,
+    potentialPct:§,
+    avoid:[...new §(§)],
+    avoidIds:§,
+    evNowPct:100*§/§,
+    evAfterPct:100*§/§,
+    evByCard:§,
+    budget:Math.round(§.spamton),
+    spent:§,
+    openings:§.length,
+    everyTurns:§.everyTurns,
+    spamtonByOpening:§,
+    familyLoss:§,
+    stop:§,
+    _firstFull:§.map(§=>({§:§.tox.id,gainPct:100*§.gain/§,card:§[§.card].card.name,role:§[§.card].roles?.[0]??null}))
+  }
+}
+function §(§,§=§.talentMode){
+  return §.map(§=>({card:§.card,talent:§===`none`?null:§.talent}))
+}
+function §(§){
+  return §.map(§=>§.card.number).sort((§,§)=>§-§).join(`-`)
+}
+function §(§,§={}){
+  let §={...f,...t.beam??{}},
+  §=§.talentMode??§.talentMode,
+  §={talentMode:§},
+  §=§.constraint??(()=>!0),
+  §=§.finalConstraint??(()=>!0),
+  §=/* @__PURE__ */ new §,
+  §=[];
+  for(let §=0;§<§.length;§++)for(let §=§+1;§<§.length;§++){
+    let §=[§[§],§[§]];
+    §(§)&&§.push({rows:§,score:§(§(§(§,§),§))})
+  }
+  §.sort((§,§)=>§.score-§.score),
+  §=§.slice(0,§.beamPairs);
+  for(let[§,§]of[[§.beamTriples,3],[§.beamQuads,4]]){
+    let §=[];
+    §.clear();
+    for(let § of §)for(let § of §){
+      if(§.rows.includes(§))continue;
+      let §=[...t.rows,§];
+      if(!§(§)||§===§.deckSize&&!§(§))continue;
+      let §=§(§);
+      §.has(§)||(§.add(§),§.push({rows:§,score:§(§(§(§,§),§))}))
+    }
+    if(§.sort((§,§)=>§.score-§.score),§=§.slice(0,§),§===§.deckSize)break
+  }
+  return §
+}
+function §(§,§,§=0){
+  let §=§(§,§,§);
+  return §>=.9?`§`:§>=.8?`§`:§>=.7?`§`:§>=.5?`§`:`§`
+}
+function §(§,§,§=0){
+  return §>§?(§-§)/(§-§):0
+}
+function §(§,§){
+  if(!Array.isArray(§)||§.length!==§.deckSize)throw Error(`Select exactly four cards.`);
+  if(new §(§.map(§=>§?.id)).size!==§.deckSize)throw Error(`Cards must § distinct.`);
+  return §.map(§=>{
+    let §=§.find(§=>§.id===§?.id);
+    if(!§)throw Error(`Unknown card §.`);
+    if(§.talentId==null)return{card:§,talent:null};
+    let §=§.talents.findIndex(§=>§.id===§.talentId);
+    if(§<0)throw Error(`This talent does § belong § this card.`);
+    return{card:§,talent:§}
+  })
+}
+function §(§,§,§){
+  let §=§.map(()=>({added:[],removed:[]}));
+  if(!§)return §;
+  if(!Array.isArray(§))throw Error(`Invalid § loadout.`);
+  let §=/* @__PURE__ */ new §;
+  return §.forEach(§=>{
+    let §=§.findIndex(§=>§.card.id===§?.cardId);
+    if(§<0)throw Error(`Unknown card in § loadout.`);
+    if(§.filter(§=>§?.cardId===§.cardId).length>1)throw Error(`Duplicate card in § loadout.`);
+    let §=§[§].card,
+    §=new §([...s.abilities.map(§=>§.id),...s.passives.map(§=>§.id)].filter(Boolean));
+    for(let § of §?.removed??[]){
+      if(!§.has(§))throw Error(`Unknown card §.`);
+      if(§.canReplace===`none`||§.canReplace===`passives`&&§.abilities.some(§=>§.id===§))throw Error(`This § cannot § replaced.`);
+      if(§[§].removed.includes(§))throw Error(`§ removed twice.`);
+      §[§].removed.push(§)
+    }
+    for(let § of §?.added??[]){
+      let §=§.find(§=>§.id===§);
+      if(!§)throw Error(`Unknown §.`);
+      if(§.has(§))throw Error(`§ same § cannot § bought twice.`);
+      §.add(§),
+      §[§].added.push(§)
+    }
+    if(§.rows-§[§].removed.length+§[§].added.length>§.maxRows)throw Error(`§ card cannot hold more than three rows.`)
+  }),
+  §
+}
+function §(§){
+  if(§.schema!==1||!Array.isArray(§.cards)||§.cards.length<§.deckSize)throw Error(`Invalid simulation snapshot.`);
+  let §=§.recommended?§.cards.map(§=>({card:§,talent:§.recommended[§.id]??null})):§(§.cards),
+  §=§(§.cards),
+  §=/* @__PURE__ */ new §;
+  return{
+    evaluate(§,{optimize:§=!0,suggestions:§=!0,shop:§=!0,loadout:§=null,player:§=null}={}){
+      let §=§(§,§.cards);
+      if(§!=null&&!§.includes(§))throw Error(`Invalid play order.`);
+      let §=§?{player:§}:{},
+      §=§(§,§,§),
+      §=§.some(§=>§.added.length||§.removed.length),
+      §=§?{
+        extraPassives:§.map(§=>§.added.map(§=>§.passive)),
+        removePassives:§.map((§,§)=>§.removed.filter(§=>!§[§].card.abilities.some(§=>§.id===§))),
+        removeAbilities:§.map((§,§)=>§.removed.filter(§=>§[§].card.abilities.some(§=>§.id===§)))
+      }:{},
+      §=JSON.stringify({selection:§,optimize:§,suggestions:§,shop:§,loadout:§,player:§});
+      if(§.has(§))return §.get(§);
+      let §=§.map(§=>§.find(§=>§.card.id===§.card.id)),
+      §=§?§(§.map(§=>§.card),{...h,...f}):§(§,{...h,...f}),
+      §=§.result,
+      §=§?§.talents:§.map(§=>§.talent),
+      §=§.score,
+      §=[];
+      if(§){
+        let §=§.map(§=>!§&&§.talent===null),
+        §=§.every(Boolean),
+        §=§=>§.map((§,§)=>§||§!==§&&§);
+        for(let §=0;§<§.deckSize;§++){
+          let §=null;
+          for(let § of §){
+            if(§.includes(§))continue;
+            let §=§.map((§,§)=>§===§?§:§),
+            §=§(§(§.map((§,§)=>({card:§.card,talent:§===§?§?null:§.talent:§[§]})),{...m?{}:§,...f}));
+            (!§||§>§.score)&&(§={§:§,score:§,candidate:§})
+          }
+          if(!§)continue;
+          let §=§(§),
+          §=§(§.set.map((§,§)=>§[§]?{...e.card,talents:[]}:§.card),§);
+          §.score<=§*1.03||§.push({
+            replaceId:§[§].card.id,
+            withId:§.candidate.card.id,
+            gain:(§.score-§)/§*100,
+            selection:§.set.map((§,§)=>({§:§.card.id,talentId:§[§]?null:§(§.card,§.talents[§])}))
+          })
+        }
+      }
+      let §=§.every(§=>§===null)&&§.noTalent?§.noTalent:null,
+      §={
+        score:§,
+        §:§.ttk,
+        dmgTotal:§.dmgTotal,
+        §:§.ehp,
+        heal:§.heal,
+        control:§.control,
+        spamton:§.spamton,
+        income:§.income,
+        tier:§(§,(§??§).best,(§??§).baseline),
+        advantage:§(§,(§??§).best,(§??§).baseline)*100,
+        scale:§?`none`:`talents`,
+        dmgByTurn:§.dmgByTurn,
+        matchups:§.matchups,
+        positions:§.positions.map(({player:§,§:§,deltaPct:§})=>({player:§,§:§,deltaPct:§})),
+        selection:§.map((§,§)=>({§:§.card.id,talentId:§(§.card,§[§])})),
+        player:§,
+        plan:§.plan.map(§=>§.map(({cardId:§,abilityId:§,option:§,§:§,heal:§,§:§})=>({cardId:§,abilityId:§,option:§,§:§,heal:§,§:§}))),
+        suggestions:§.sort((§,§)=>§.gain-§.gain),
+        baseScore:§?(§?§(§.map(§=>§.card),§):§(§,§)).score:§,
+        noTalent:(()=>{
+          let §=§(§,{...h,...f,talentMode:`none`}),
+          §=§.noTalent;
+          return{
+            score:§.score,
+            §:§.result.ttk,
+            tier:§?§(§.score,§.best,§.baseline):null,
+            advantage:§?§(§.score,§.best,§.baseline)*100:null
+          }
+        })(),
+        loadout:§.map((§,§)=>({cardId:§[§].card.id,added:§.added.map(§=>§.id),removed:§.removed})),
+        shop:§?§(§(§,§,§)):null
+      };
+      return §.size>=30&&§.delete(§.keys().next().value),
+      §.set(§,§),
+      §
+    },
+    bestDecks(§){
+      let §=/* @__PURE__ */ new §;
+      for(let § of Array.isArray(§)?§:[])§&&typeof §.id==`string`&&§.set(§.id,new §(Array.isArray(§.talents)?§.talents:[]));
+      let §=§.filter(§=>§.has(§.card.id)).map(§=>{
+        let §=§.get(§.card.id),
+        §=§.card.talents.filter(§=>§.has(§.id)),
+        §=§.length===§.card.talents.length?§.card:{...e.card,talents:§},
+        §=§.talent==null?null:§.card.talents[§.talent]?.id;
+        return{card:§,talent:§.length?Math.max(0,§.findIndex(§=>§.id===§)):null}
+      });
+      if(§.length<§.deckSize)throw Error(`Select § least four known cards.`);
+      let §=JSON.stringify({collection:§.map(§=>[§.card.id,§.card.talents.map(§=>§.id)])});
+      if(§.has(§))return §.get(§);
+      let §=(§,§)=>§.rows.filter(§=>§.rows.includes(§)).length>§.maxShared,
+      §=(§,§,§)=>{
+        let §=[];
+        for(let § of §){
+          if(§.length>=§)break;
+          §.some(§=>§(§(§),§(§)))||§.push(§)
+        }
+        return §
+      },
+      §=§.some(§=>§.card.talents.length)?§.talentMode:`none`,
+      §=§(§,{beam:§,talentMode:§}),
+      §=§([.../* @__PURE__ */ new §([...d.slice(0,§.finalTop),...l(§,§=>§,§.decks)])].map(§=>({node:§,best:§(§.rows.map(§=>§.card),{talentMode:§})})).sort((§,§)=>§.best.score-§.best.score),§=>§.node,§.decks).map(({node:§,best:§})=>{
+        let §=§.rows.map((§,§)=>({§:§.card.id,talentId:§(§.card,§.talents[§])})),
+        §=§.every(§=>§.talentId===null)&&§.noTalent,
+        §=§?§.noTalent:{best:§.best,baseline:§.baseline};
+        return{
+          cards:§,
+          score:§.score,
+          §:§.result.ttk,
+          scale:§?`none`:`talents`,
+          tier:§(§.score,§.best,§.baseline),
+          advantage:§(§.score,§.best,§.baseline)*100,
+          positions:§.positions.map(({player:§,§:§,deltaPct:§})=>({player:§,§:§,deltaPct:§}))
+        }
+      }),
+      §={cards:§.length,talents:§.reduce((§,§)=>§+§.card.talents.length,0),decks:§};
+      return §.size>=30&&§.delete(§.keys().next().value),
+      §.set(§,§),
+      §
+    }
+  }
+}
+const §=(§,§)=>§==null?null:§.talents[§]?.id??null;
+function §(§){
+  let §=§=>Math.round(§*10)/10;
+  return{
+    budget:§.budget,
+    openings:§.openings,
+    everyTurns:§.everyTurns,
+    potentialPct:§(§.potentialPct),
+    evNowPct:§(§.evNowPct),
+    evAfterPct:§(§.evAfterPct),
+    slotsTotal:§.slotsTotal,
+    timeline:§.spamtonByOpening.map(§=>({turn:§.turn,luck:§(§.luck),spamton:§.spamton,odds:§.odds})),
+    plan:§.plan.map(§=>({
+      step:§.step,
+      turn:§.turn,
+      toxId:§.id,
+      rarity:§.rarity,
+      cardId:§.cardId,
+      replacesId:§.replacesId,
+      gainPct:§(§.gainPct),
+      cumulativePct:§(§.cumulativePct)
+    })),
+    cards:§.cards.map(§=>({
+      cardId:§.cardId,
+      free:§.free,
+      lines:§.lines.map(§=>({
+        kind:§.kind,
+        §:§.id??null,
+        rarity:§.rarity??null,
+        verdict:§.verdict,
+        valuePct:§.valuePct==null?null:§(§.valuePct),
+        casts:§.casts??null,
+        firstTurn:§.firstTurn??null,
+        candidates:§.candidates.map(§=>({toxId:§.id,rarity:§.rarity,gainPct:§(§.gainPct)}))
+      }))
+    })),
+    avoidIds:§.avoidIds
+  }
+}
+let §=``,
+§=``,
+§=null,
+§=null;
+async function §(§,§){
+  if(!(§&&§===§&&§===§)&&(§&&await §,!(§&&§===§&&§===§))){
+    §=(async()=>{
+      let §=await fetch(§);
+      if(!§.ok)throw Error(`Snapshot unavailable`);
+      let §=await §.json();
+      if(§.engineHash!==§)throw Error(`Incompatible engine snapshot`);
+      §=§(§),
+      §=§,
+      §=§
+    })();
+    try{
+      await §
+    }finally{
+      §=null
+    }
+  }
+}
+self.onmessage=async §=>{
+  let §=§.data,
+  {requestId:§,modelUrl:§,engineHash:§}=§;
+  try{
+    await §(§,§);
+    let §=§;
+    if(§.kind===`collection`){
+      self.postMessage({requestId:§,collection:§.bestDecks(§.collection)});
+      return
+    }
+    let{selection:§,optimize:§,loadout:§,player:§}=§;
+    self.postMessage({requestId:§,result:§.evaluate(§,{optimize:§,loadout:§??null,player:§??null})})
+  }catch{
+    self.postMessage({requestId:§,error:`simulation-failed`})
+  }
+};

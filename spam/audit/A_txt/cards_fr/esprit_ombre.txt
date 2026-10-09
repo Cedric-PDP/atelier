@@ -1,0 +1,129 @@
+Esprit Ombre : carte SPAM Ombre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Esprit Ombre D Voir la carte en grand
+Esprit Ombre
+1 Souffle d'ombre
+1 Obscur
+500/500
+10
+Standard
+Esprit Ombre
+1 Souffle d'ombre
+1 Obscur
+500/500
+10
+Élémentaire
+Esprit Ombre
+1 Souffle d'ombre
+1 Obscur
+500/500
+10
+FA
+Esprit Ombre
+1 Souffle d'ombre
+1 Obscur
+500/500
+10
+## Esprit Ombre
+D Ombre · Commune · Standard
+500 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur OMBRE Commence la partie avec le passif "Cœur d'ombre"
+- Talent 2 Terrain lumineux Bonus (+7) Lumière.
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Conseillé
+Trois champs de compétence
+- Souffle d'ombre compétence · Recharge 1 Attaque 10 Ombre
+Bonus Ombre (+1)
+1
+- Obscur compétence · Recharge 1 Bonus Ombre (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Ombre Commune #005
+# Esprit Ombre
+Polyvalent
+500 Points de vie
+10 Spamtons / tour
+#105 Classement / 127
+D Sans talent · #97
+Attaque
+26
+Génération
+74
+Défense
+4
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur OMBRE 2 Terrain lumineux 3 Cavalerie
+Jouer cette carte
+Partager
+### Compétences
+#### Souffle d'ombre
+1 tour
+Attaque 10 Ombre
+Bonus Ombre (+1)
+Précision 100% Critique 1%
+#### Obscur
+1 tour
+Bonus Ombre (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur OMBRE
+Commence la partie avec le passif "Cœur d'ombre"
+Δ 19,5 · Score théorique
+#### Terrain lumineux
+Bonus (+7) Lumière.
+Δ 110,9 · Score théorique
+#### Cavalerie
+Conseillé
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 682,3 · Score théorique
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Esprit · Nyevielh
+### Derrière la carte
+Alors que le continent unique vient de se fracturer, l’Esprit de l’Ombre passe des journées entières à traquer les cauchemars de Nyevielh. Son activité violente et terrifiante lui a donné une apparence particulièrement hostile. Les rares Eltheriens encore en vie préfèrent ne pas le croiser, car sa proie n’est jamais loin. Une statue de bois a été érigée en son honneur à Port Rhyezeal. Elle y est entretenue comme une idole protectrice de Nyevielh et comme un épouvantail destiné aux abominations.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 034 Ombre
+Rare · Attaque
+### Éclat du Renard Blanc
+700 PV
+S # 177 Ombre
+Commune · Attaque
+### Moxilys, la Fredonneuse
+900 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

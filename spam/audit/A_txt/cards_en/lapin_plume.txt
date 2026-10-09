@@ -1,0 +1,139 @@
+Feathered Rabbit: SPAM Nature common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Feathered Rabbit C View the full card
+Feathered Rabbit
+1 Piercing Sound
+Heart Resistance
+Backlash
+850/850
+7
+Standard
+Feathered Rabbit
+1 Piercing Sound
+Heart Resistance
+Backlash
+850/850
+7
+Elemental
+Feathered Rabbit
+1 Piercing Sound
+Heart Resistance
+Backlash
+850/850
+7
+FA
+Feathered Rabbit
+1 Piercing Sound
+Heart Resistance
+Backlash
+850/850
+7
+## Feathered Rabbit
+C Nature · Common · Standard
+850 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Three ability slots
+- Piercing Sound ability · Cooldown 1 [Cost 1 Nature]
+Deal 20 Nature damage
+Base damage of this attack increases by (+2) after use
+1
+- Heart Resistance tox · Common At the start of each of your turns, this card increases the resistances of all allied cards (+3).
+- Backlash tox · Common Takes 50% of the damage dealt to the target
+Illustration by Krackdur
+Full card details
+Illustration by Krackdur
+Nature Common #158
+# Feathered Rabbit
+Versatile
+850 Health points
+7 Spamtons / turn
+#91 Rank / 127
+C No talent · #78
+Attack
+62
+Generation
+0
+Defense
+50
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Soul Vitality 2 Evolution 3 One Man Army
+Build with this card
+Share
+### Abilities
+#### Piercing Sound
+1 turn
+[Cost 1 Nature]
+Deal 20 Nature damage
+Base damage of this attack increases by (+2) after use
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Heart Resistance
+Common
+At the start of each of your turns, this card increases the resistances of all allied cards (+3).
+#### Backlash
+Common
+Takes 50% of the damage dealt to the target
+### Talents
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 324.7 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 12.4 · Theoretical score
+#### One Man Army
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 30.2 · Theoretical score
+### Resistances
+0% Fire
+0% Water
+0% Earth
+0% Nature
+0% Shadow
+0% Light
+Creature · Vaeloria
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Feathered Rabbits are among the easiest desert rodents to tame. They form a deep bond of trust with the desert tribes of Shal'Zaar. Able to sense danger like no other creature of the desert, and to fly, they are the ideal animal companion for a monster hunter. When a Feathered Rabbit panics, the Abyssals are never far away.
+## Better together
+The most promising partners according to the model.
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

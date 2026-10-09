@@ -1,0 +1,148 @@
+Frost & Glacier : carte SPAM Eau légendaire, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Frost & Glacier C Voir la carte en grand
+Frost & Glacier
+2 Eau trouble
+Gel
+Érosion
+500/500
+4
+Standard
+Frost & Glacier
+2 Eau trouble
+Gel
+Érosion
+500/500
+4
+Élémentaire
+Frost & Glacier
+2 Eau trouble
+Gel
+Érosion
+500/500
+4
+FA
+Frost & Glacier
+2 Eau trouble
+Gel
+Érosion
+500/500
+4
+## Frost & Glacier
+C Eau · Légendaire · Standard
+500 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Conseillé
+- Talent 2 Revalorisation Augmente la génération de Spamton de cette carte de (+5)
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Eau trouble compétence · Recharge 2 Attaque 25 Eau
+Attaque 25 Eau
+Ennemis aléatoires
+2
+- Gel tox · Épique Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+- Érosion tox · Commune Réduit les PV max à hauteur de 50% des dégâts infligés
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Eau Légendaire #092
+# Frost & Glacier
+Contrôle
+500 Points de vie
+4 Spamtons / tour
+#74 Classement / 127
+C Sans talent · #66
+Attaque
+72
+Génération
+0
+Défense
+18
+Soutien
+1
+Contrôle
+98
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Reset ultime 2 Revalorisation 3 Pièce magique
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Eau trouble
+2 tours
+Attaque 25 Eau
+Attaque 25 Eau
+Ennemis aléatoires
+Précision 100% Critique 1%
+### Tox de départ
+#### Gel
+Épique
+Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+#### Érosion
+Commune
+Réduit les PV max à hauteur de 50% des dégâts infligés
+### Talents
+#### Reset ultime
+Conseillé
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 68,3 · Score théorique
+#### Revalorisation
+Augmente la génération de Spamton de cette carte de (+5)
+Δ 12,5 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Collection avancée
+Rampe élémentaire ·
+### Maître Amphibian + Scorch
+32,4 % Indice relatif 11,2 tours Élimination estimée 30 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Zombie Floral + Maître Amphibian
+31,8 % Indice relatif 11,6 tours Élimination estimée 25 / tour Spamtons
+### Résistances
+20% Feu
+20% Eau
+20% Terre
+20% Nature
+20% Ombre
+20% Lumière
+Eltherien · Nordvinter
+### Derrière la carte
+On raconte que six enfants sont nés avec une rune sur la main. À Nordvinter, au sein de la grande tribu guerrière des Nords, Frost, fils du chef, naquit avec d’étranges traits animaux. Malgré une exceptionnelle résistance au froid, même le plus intense, il fut victime de nombreuses brimades. La mort de ses parents ne lui valut pas davantage d’autorité. Ce n’est qu’après avoir achevé son pèlerinage qu’il gagna le respect des siens. Aujourd’hui, il est le maître du prince dhöggeïr Glacier et le vice-président du conseil de l’école militaire de Dragheïr, où ses exploits lui valent une grande renommée.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+D # 146 Eau
+Épique · Polyvalent
+### Poulpe Parleur
+500 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

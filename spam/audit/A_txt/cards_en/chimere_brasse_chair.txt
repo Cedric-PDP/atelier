@@ -1,0 +1,154 @@
+Flesh-Melding Chimera: SPAM Water rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Flesh-Melding Chimera C View the full card
+Flesh-Melding Chimera
+2 Arctic Gallop
+Vampirism
+Mimicry
+525/525
+5
+Standard
+Flesh-Melding Chimera
+2 Arctic Gallop
+Vampirism
+Mimicry
+525/525
+5
+Elemental
+Flesh-Melding Chimera
+2 Arctic Gallop
+Vampirism
+Mimicry
+525/525
+5
+FA
+Flesh-Melding Chimera
+2 Arctic Gallop
+Vampirism
+Mimicry
+525/525
+5
+## Flesh-Melding Chimera
+C Water · Rare · Standard
+525 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Critical Critical bonus (+10%).
+Recommended
+- Talent 2 Strike Increases critical damage by (+1).
+- Talent 3 Magic Coin Start the game with (+2) Luck
+Three ability slots
+- Arctic Gallop ability · Cooldown 2 Deal 10 Water and 10 Nature damage to all enemy cards
+2
+- Vampirism tox · Epic Regenerates 75% of the damage dealt to the target
+- Mimicry tox · Rare Each time the opponent generates one or more elements, you generate 1 of the same type.
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Water Rare #238
+# Flesh-Melding Chimera
+Attack
+525 Health points
+5 Spamtons / turn
+#75 Rank / 127
+C No talent · #69
+Attack
+81
+Generation
+0
+Defense
+39
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Critical 2 Strike 3 Magic Coin
+Build with this card 5 decks
+Share
+### Abilities
+#### Arctic Gallop
+2 turns
+Deal 10 Water and 10 Nature damage to all enemy cards
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Vampirism
+Epic
+Regenerates 75% of the damage dealt to the target
+#### Mimicry
+Rare
+Each time the opponent generates one or more elements, you generate 1 of the same type.
+### Talents
+#### Critical
+Recommended
+Critical bonus (+10%).
+Δ 37.4 · Theoretical score
+#### Strike
+Increases critical damage by (+1).
+Δ 5.6 · Theoretical score
+#### Magic Coin
+Start the game with (+2) Luck
+Δ 4 · Theoretical score
+## Its best decks
+5 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Floral Zombie + Princess Meridia
+52.9 % Relative index 8 turns Estimated elimination 30 / turn Spamtons
+D Intermediate
+Midrange ·
+### Floral Zombie + Flesh-Melding Chimera
+48.8 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Floral Zombie + Aidan
+46.3 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Catimimi + Aidan
+39.6 % Relative index 8 turns Estimated elimination 23 / turn Spamtons
+The other decks (1)
+- D Floral Zombie + Flesh-Melding Chimera with Sky Dragon · Thorn of Love Accessible · 47.7%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Creature · Abyss
+### Beyond the card
+Abyssal monsters possess indescribably horrific forms. These demonic creatures were encountered during the Oniyx expedition, a terrifying venture into the depths of the temple of Zaar’Phahl in Shal’Zaar. A deep unease accompanied the group’s progress through the Abyss. Though their senses were deceived at every turn, they eventually made out a crystal of pure energy. The rare discovery was nothing more than a crude trap set by a monster. The Abyssal gleefully slaughtered nearly a quarter of the group before growing bored.
+## Better together
+The most promising partners according to the model.
+A # 029 Nature
+Rare · Generation
+### Princess Meridia
+750 HP
+D # 262 Nature
+Common · Support
+### Yotaru, Leafguard
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

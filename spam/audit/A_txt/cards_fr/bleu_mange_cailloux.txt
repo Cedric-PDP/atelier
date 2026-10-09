@@ -1,0 +1,187 @@
+Bleu-mange-cailloux : carte SPAM Terre épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Bleu-mange-cailloux C Voir la carte en grand
+Bleu-mange-cailloux
+3 Gobe-pierre
+Phénix
+Reset
+500/500
+4
+Standard
+Bleu-mange-cailloux
+3 Gobe-pierre
+Phénix
+Reset
+500/500
+4
+Élémentaire
+Bleu-mange-cailloux
+3 Gobe-pierre
+Phénix
+Reset
+500/500
+4
+FA
+Bleu-mange-cailloux
+3 Gobe-pierre
+Phénix
+Reset
+500/500
+4
+## Bleu-mange-cailloux
+C Terre · Épique · Standard
+500 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Inscrit La carte est insensible aux Disparitions.
+- Talent 2 Frappe Augmente les dégâts critiques de (+1).
+- Talent 3 Plume de Phénix 50 % de chance de récupérer le passif Phénix une fois utilisé.
+Conseillé
+Trois champs de compétence
+- Gobe-pierre compétence · Recharge 3 Choix
+Cible toutes les cartes adverses
+Attaque 30 Terre
+---------- ou ----------
+Cible toutes les cartes adverses
+Attaque [10 à 70] Terre
+3
+- Phénix tox · Commune Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+- Reset tox · Épique Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+Illustration par ElisaMalan
+Fiche complète
+Illustration par ElisaMalan
+Terre Épique #085
+# Bleu-mange-cailloux
+Attaque
+500 Points de vie
+4 Spamtons / tour
+#73 Classement / 127
+C Sans talent · #71
+Attaque
+95
+Génération
+0
+Défense
+13
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Inscrit 2 Frappe 3 Plume de Phénix
+Jouer cette carte 20 decks
+Partager
+### Compétences
+#### Gobe-pierre
+3 tours
+Choix
+Cible toutes les cartes adverses
+Attaque 30 Terre
+---------- ou ----------
+Cible toutes les cartes adverses
+Attaque [10 à 70] Terre
+Précision 100% Critique 1%
+### Tox de départ
+#### Phénix
+Commune
+Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+#### Reset
+Épique
+Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible
+### Talents
+#### Inscrit
+La carte est insensible aux Disparitions.
+Δ 7 · Score théorique
+#### Frappe
+Augmente les dégâts critiques de (+1).
+Δ 2,6 · Score théorique
+#### Plume de Phénix
+Conseillé
+50 % de chance de récupérer le passif Phénix une fois utilisé.
+Δ 20,5 · Score théorique
+## Ses meilleurs decks
+20 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Ephial
+90,7 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Bleu-mange-cailloux + L'Épine d'Amour
+71,9 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### Croqueur de Fruits Verdoyant + Bleu-mange-cailloux
+61 % Indice relatif 7 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Commando Gerz
+60,8 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Roi Terre + Bleu-mange-cailloux
+57,1 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+C Intermédiaire
+Aggro / burst ·
+### L'Épine d'Amour + Rob l'Aventurier
+53,4 % Indice relatif 7 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (14)
+- C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux avec Régent des Abysses · Commando Gerz Collection avancée · 56,3%
+- C Commando Gerz + Bleu-mange-cailloux avec Roi Terre · Rob l'Aventurier Collection avancée · 53,1%
+- C Bleu-mange-cailloux + Scorch avec Sanglier Doré · Commando Gerz Intermédiaire · 53,1%
+- C Commando Gerz + Bleu-mange-cailloux avec Régent des Abysses · Scorch Collection avancée · 50,1%
+- D Bleu-mange-cailloux + Rob l'Aventurier avec Commando Gerz · Guerrier des Neiges Intermédiaire · 48,9%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Faerylia · Commando Gerz Collection avancée · 48,4%
+- D Sanglier Doré + Roi Terre avec Bleu-mange-cailloux · Croqueur de Fruits Verdoyant Collection avancée · 47,8%
+- D Sanglier Doré + Rob l'Aventurier avec Maître Amphibian · Bleu-mange-cailloux Intermédiaire · 44,7%
+- D Bleu-mange-cailloux + Raffteru avec Rob l'Aventurier · Aidan Intermédiaire · 44,6%
+- D Croqueur de Fruits Verdoyant + Roi Terre avec Bleu-mange-cailloux · Guerrier des Neiges Collection avancée · 44%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Régent des Abysses · Rob l'Aventurier Collection avancée · 44%
+- D Maître Amphibian + Bleu-mange-cailloux avec Roi Terre · Aidan Collection avancée · 43,8%
+- D Bleu-mange-cailloux + Esprit Terre avec Régent des Abysses · L'Épine d'Amour Collection avancée · 42,2%
+- D Roi Terre + Bleu-mange-cailloux avec Sanglier Doré · Protecteur des ruines Collection avancée · 37,1%
+### Résistances
+9% Feu
+7% Eau
+37% Terre
+27% Nature
+-20% Ombre
+19% Lumière
+Créature · Emeldarion
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Le Bleu-mange-cailloux est un petit dinosaure des jungles de Presolda. Ses œufs sont couvés par la chaleur des grottes du sud d’Emeldarion. Les petits survivent seuls ou avec leur fratrie et se nourrissent de minerais et de roches de toutes sortes. Leur forme adulte dépend de leur régime alimentaire. Parmi les formes répertoriées figurent les Dragosaures célestes d’Aelther et ceux des Dunes de Shal’Zaar. Ces derniers sont apprivoisés comme montures par les chasseurs de monstres.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

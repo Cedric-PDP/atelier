@@ -1,0 +1,140 @@
+Apprenti Évocateur : carte SPAM Eau commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Apprenti Évocateur B Voir la carte en grand
+Apprenti Évocateur
+3 Petit sortilège
+Mystère
+Mystère
+800/800
+10
+Standard
+Apprenti Évocateur
+3 Petit sortilège
+Mystère
+Mystère
+800/800
+10
+Élémentaire
+Apprenti Évocateur
+3 Petit sortilège
+Mystère
+Mystère
+800/800
+10
+FA
+Apprenti Évocateur
+3 Petit sortilège
+Mystère
+Mystère
+800/800
+10
+## Apprenti Évocateur
+B Eau · Commune · Standard
+800 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 2 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Petit sortilège compétence · Recharge 3 Attaque [40 à 60] Eau
+3
+- Mystère tox · Rare Commence la partie avec un passif aléatoire
+- Mystère tox · Rare Commence la partie avec un passif aléatoire
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Eau Commune #226
+# Apprenti Évocateur
+Polyvalent
+800 Points de vie
+10 Spamtons / tour
+#48 Classement / 127
+B Sans talent · #37
+Attaque
+50
+Génération
+57
+Défense
+65
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Résilience 2 Imprudent 3 Vitalité des Âmes
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Petit sortilège
+3 tours
+Attaque [40 à 60] Eau
+Précision 100% Critique 1%
+### Tox de départ
+#### Mystère
+Rare
+Commence la partie avec un passif aléatoire
+#### Mystère
+Rare
+Commence la partie avec un passif aléatoire
+### Talents
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 0 · Score théorique
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -270,6 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 403,1 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Accessible
+Midrange ·
+### Le compagnon des esprits + Esprit Eau
+58,7 % Indice relatif 8 tours Élimination estimée 35 / tour Spamtons
+### Résistances
+9% Feu
+7% Eau
+37% Terre
+27% Nature
+-20% Ombre
+19% Lumière
+Anthropomorphe · Emeldarion
+### Derrière la carte
+Originaire des Îles Esseulées, un maître martial anthropomorphe en possession d’un artefact magique s’est installé au nord-ouest d’Emeldarion. Grâce à cet artefact, Amphibian donna vie à de nombreux habitants du village chamanique de l’Eau. Au fil du temps, ses élèves les plus talentueux finirent par le surpasser. Il organisa alors un tournoi de succession dont la règle était simple : « Le vainqueur remporte le bâton morphique. » L’Apprenti Évocateur, qui voulait rendre sa famille anthropomorphe, l’emporta et devint le nouveau chef de la tribu. Il fit construire des points d’eau adaptés à de nouvelles espèces animales.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

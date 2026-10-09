@@ -1,0 +1,160 @@
+Shinobi Éclairant : carte SPAM Lumière rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Shinobi Éclairant B Voir la carte en grand
+Shinobi Éclairant
+5 Éclair jaune
+5 Kung‑Fu
+600/600
+6
+Standard
+Shinobi Éclairant
+5 Éclair jaune
+5 Kung‑Fu
+600/600
+6
+Élémentaire
+Shinobi Éclairant
+5 Éclair jaune
+5 Kung‑Fu
+600/600
+6
+FA
+Shinobi Éclairant
+5 Éclair jaune
+5 Kung‑Fu
+600/600
+6
+## Shinobi Éclairant
+B Lumière · Rare · Standard
+600 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+- Talent 2 Multicolore Bonus (+1) dans tous les éléments à chaque attaque de cette carte
+Conseillé
+- Talent 3 Brut Commence la partie avec le passif "Brut"
+Trois champs de compétence
+- Éclair jaune compétence · Recharge 5 Attaque 50 Lumière à toutes les cartes adverses
+5
+- Kung‑Fu compétence · Recharge 5 Attaque 40 Terre
+AoE
+5
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Lumière Rare #245
+# Shinobi Éclairant
+Attaque
+600 Points de vie
+6 Spamtons / tour
+#59 Classement / 127
+B Sans talent · #55
+Attaque
+95
+Génération
+0
+Défense
+19
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Boule de Crit 2 Multicolore 3 Brut
+Jouer cette carte 9 decks
+Partager
+### Compétences
+#### Éclair jaune
+5 tours
+Attaque 50 Lumière à toutes les cartes adverses
+Précision 100% Critique 1%
+#### Kung‑Fu
+5 tours
+Attaque 40 Terre
+AoE
+Précision 100% Critique 25%
+### Talents
+#### Boule de Crit
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 64,1 · Score théorique
+#### Multicolore
+Conseillé
+Bonus (+1) dans tous les éléments à chaque attaque de cette carte
+Δ 191 · Score théorique
+#### Brut
+Commence la partie avec le passif "Brut"
+Δ 39 · Score théorique
+## Ses meilleurs decks
+9 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Commando Gerz + Shinobi Éclairant
+51,8 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Shinobi Éclairant + Wyrm des Dunes Cornu
+50,7 % Indice relatif 9 tours Élimination estimée 20 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Shinobi Éclairant + Lueur d'Espoir
+49,2 % Indice relatif 10 tours Élimination estimée 30 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Shinobi Éclairant + Codex des Sorts Lumineux
+47,9 % Indice relatif 9 tours Élimination estimée 22 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Shinobi Éclairant + L'Épine d'Amour
+46,8 % Indice relatif 10 tours Élimination estimée 33 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### L'Épine d'Amour + Aristocrate Nébulaire
+42,9 % Indice relatif 10 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (3)
+- D Commando Gerz + Shinobi Éclairant avec Aristocrate Nébulaire · Dragonnet des Lumières Intermédiaire · 49,7%
+- D Shinobi Éclairant + L'Épine d'Amour avec Roi Lumière · Lueur d'Espoir Intermédiaire · 39%
+- D Rongeur Nuageux + Codex des Sorts Lumineux avec Shinobi Éclairant · Gardien Vert Intermédiaire · 32%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Eltherien · Emeldarion
+### Derrière la carte
+À l’est d’Emeldarion vit une tribu martiale très territoriale. Le peu que l’on sait d’elle tient notamment à ses nombreuses représentations de loups. La foudre semble frapper sans relâche cette région. Les chercheurs pensent que le Roi de la Lumière et ses descendants pourraient y avoir élu domicile, mais cette théorie n’a jamais été confirmée. Une faille spatiale s’ouvre devant quiconque franchit la limite marquée par les totems canins. Vivy apparaît toujours la première, suivie de ses Shinobis Éclairants, un bataillon masqué et manifestement surentraîné.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 264 Lumière
+Commune · Soutien
+### Aristocrate Nébulaire
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

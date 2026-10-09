@@ -1,0 +1,22 @@
+{
+ "q_bestone_ms_per": 1.0433333333333332,
+ "q_none_ms_per": 0.85,
+ "X_ms_per": 17,
+ "Te_ms_per": 163.8,
+ "check": {
+  "evaluate": 7331.657952627691,
+  "X": 7331.657952627691
+ },
+ "profiles": [
+  "neutral",
+  "fragile",
+  "tank",
+  "anti-fire",
+  "anti-water",
+  "anti-earth",
+  "anti-nature",
+  "anti-shadow",
+  "anti-light"
+ ],
+ "acc": 6638891.318530294
+}

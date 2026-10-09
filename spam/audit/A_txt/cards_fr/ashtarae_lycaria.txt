@@ -1,0 +1,149 @@
+Ashtarae Lycaria : carte SPAM Ombre légendaire, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Ashtarae Lycaria B Voir la carte en grand
+Ashtarae Lycaria
+1 Mélodie n°1
+1 Mélodie n°2
+8 Résurrection
+700/700
+4
+Standard
+Ashtarae Lycaria
+1 Mélodie n°1
+1 Mélodie n°2
+8 Résurrection
+700/700
+4
+Élémentaire
+Ashtarae Lycaria
+1 Mélodie n°1
+1 Mélodie n°2
+8 Résurrection
+700/700
+4
+FA
+Ashtarae Lycaria
+1 Mélodie n°1
+1 Mélodie n°2
+8 Résurrection
+700/700
+4
+## Ashtarae Lycaria
+B Ombre · Légendaire · Standard
+700 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+- Talent 2 Life-8 Les PV et PV max de la carte sont doublés au début du tour 8
+Conseillé
+- Talent 3 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Trois champs de compétence
+- Mélodie n°1 compétence · Recharge 1 Attaque [15 à 25] Ombre
+Critique (+2%) sur toutes les cartes alliées
+1
+- Mélodie n°2 compétence · Recharge 1 Soigne [15 à 25] Ombre
+Précision (+2%) sur toutes les cartes alliées
+1
+- Résurrection compétence · Recharge 8 [Coût 5 Ombre]
+Ressuscite le dernier allié détruit avec la moitié de ses PV max
+8
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Ombre Légendaire #203
+# Ashtarae Lycaria
+Soutien Défense
+700 Points de vie
+4 Spamtons / tour
+#45 Classement / 127
+B Sans talent · #60
+Attaque
+57
+Génération
+0
+Défense
+95
+Soutien
+98
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur d’acier 2 Life-8 3 Erreur Croissante
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Mélodie n°1
+1 tour
+Attaque [15 à 25] Ombre
+Critique (+2%) sur toutes les cartes alliées
+Précision 100% Critique 1%
+#### Mélodie n°2
+1 tour
+Soigne [15 à 25] Ombre
+Précision (+2%) sur toutes les cartes alliées
+Précision 100% Critique 1%
+#### Résurrection
+8 tours
+[Coût 5 Ombre]
+Ressuscite le dernier allié détruit avec la moitié de ses PV max
+Précision 100% Critique 0%
+### Talents
+#### Cœur d’acier
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 14,3 · Score théorique
+#### Life-8
+Conseillé
+Les PV et PV max de la carte sont doublés au début du tour 8
+Δ 256,5 · Score théorique
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 28,8 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+A Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+82,3 % Indice relatif 6 tours Élimination estimée 20 / tour Spamtons
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Éternel · Nordvinter
+### Derrière la carte
+Lorsque l’Esprit de l’Eau commença sa mission de régulation, Lycaria constata la surpopulation des environs du lac. En Nordvinter, tandis que l’Esprit contenait la progression des Contrées de Cristal, l’Éternelle adopta une forme mêlant des traits d’Anthropomorphe et de Pixarch, avec des runes gravées sur le corps. Son aura rappelle sa proximité avec la volonté divine. Elle veille à ce que nul n’abuse de son indulgence et aspire à préserver la tranquillité du lac et de ses alentours.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,139 @@
+Hibernatus : carte SPAM Eau commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Hibernatus C Voir la carte en grand
+Hibernatus
+2 Haleau
+3 Digue
+Chanceur
+750/750
+12
+Standard
+Hibernatus
+2 Haleau
+3 Digue
+Chanceur
+750/750
+12
+Élémentaire
+Hibernatus
+2 Haleau
+3 Digue
+Chanceur
+750/750
+12
+FA
+Hibernatus
+2 Haleau
+3 Digue
+Chanceur
+750/750
+12
+## Hibernatus
+C Eau · Commune · Standard
+750 PV 12 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Départ multi Bonus (+3) dans chaque élément.
+Conseillé
+- Talent 2 Bombe-8 Applique le passif "Bomba" au tour 8
+- Talent 3 Anticipation Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+Trois champs de compétence
+- Haleau compétence · Recharge 2 Attaque [10 à 20] Lumière
+Attaque [10 à 20] Eau
+Bonus (+5) dans un élément aléatoire
+2
+- Digue compétence · Recharge 3 Applique Provocation
+3
+- Chanceur tox · Commune Augmente votre Chance de (+0,5) chaque tour
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Eau Commune #012
+# Hibernatus
+Génération Économie
+750 Points de vie
+12 Spamtons / tour
+#71 Classement / 127
+B Sans talent · #63
+Attaque
+23
+Génération
+81
+Défense
+55
+Soutien
+1
+Contrôle
+0
+Économie
+96
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Départ multi 2 Bombe-8 3 Anticipation
+Jouer cette carte
+Partager
+### Compétences
+#### Haleau
+2 tours
+Attaque [10 à 20] Lumière
+Attaque [10 à 20] Eau
+Bonus (+5) dans un élément aléatoire
+Précision 100% Critique 1%
+#### Digue
+3 tours
+Applique Provocation
+Précision 100% Critique 0%
+### Tox de départ
+#### Chanceur
+Commune
+Augmente votre Chance de (+0,5) chaque tour
+### Talents
+#### Départ multi
+Conseillé
+Bonus (+3) dans chaque élément.
+Δ 305,7 · Score théorique
+#### Bombe-8
+Applique le passif "Bomba" au tour 8
+Δ 0 · Score théorique
+#### Anticipation
+Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+Δ 14,1 · Score théorique
+### Résistances
+12% Feu
+14% Eau
+20% Terre
+21% Nature
+20% Ombre
+20% Lumière
+Natus · Nordvinter
+### Derrière la carte
+Les Natus sont une nouvelle espèce tribale qui ne compte encore que peu d’individus. Très attachés à leur territoire, ils semblent cultiver leurs propres croyances. Leur intelligence supérieure les distingue des simples animaux. On peut rencontrer des communautés très différentes dans les Monts Nomades de Nordvinter comme dans le désert brûlant de Shal’Zaar, et y découvrir leurs villages. Les Hibernatus de Nordvinter accueillent parfois les aventuriers frigorifiés en échange de leurs histoires.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

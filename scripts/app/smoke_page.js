@@ -30,6 +30,10 @@ setTimeout(async()=>{
   click('tab-mine');bad('saved-list',els['saved-list'].innerHTML);
   for(const d of saved)els['saved-list'].listeners.change.forEach(f=>f({target:{closest:()=>({checked:true,dataset:{cmp:d.id}})}}));
   bad('compare',els.compare.innerHTML);console.log('compare has table',/<table>/.test(els.compare.innerHTML),'svg',/<svg/.test(els['cmp-hist'].innerHTML));
+  // « Nouveautés » tab, when the data carries a changelog (build_changelog.js)
+  if(JSON.parse(fs.readFileSync(path.join(siteDir,'data.json'),'utf8')).changelog){click('tab-news');bad('news',els.news.innerHTML);
+    console.log('news panels',(els.news.innerHTML.match(/class="panel stack"/g)||[]).length,'rows',(els.news.innerHTML.match(/<tr>/g)||[]).length,'| tab:',els['tab-news'].textContent);}
+  else console.log('news: no changelog in data.json');
   // partial deck -> completions
   click('tab-atelier');click('clear-deck');bad('analysis-empty',els.analysis.innerHTML);
  }catch(e){errors.push('THROW '+e.stack)}

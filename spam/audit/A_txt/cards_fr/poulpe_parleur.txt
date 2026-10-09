@@ -1,0 +1,128 @@
+Poulpe Parleur : carte SPAM Eau épique, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Poulpe Parleur D Voir la carte en grand
+Poulpe Parleur
+1 Encre sèche
+Fumée
+500/500
+3
+Standard
+Poulpe Parleur
+1 Encre sèche
+Fumée
+500/500
+3
+Élémentaire
+Poulpe Parleur
+1 Encre sèche
+Fumée
+500/500
+3
+FA
+Poulpe Parleur
+1 Encre sèche
+Fumée
+500/500
+3
+## Poulpe Parleur
+D Eau · Épique · Standard
+500 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Nouvelle vie Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+- Talent 2 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Conseillé
+- Talent 3 Inversement Commence la partie avec le passif "Inversement"
+Trois champs de compétence
+- Encre sèche compétence · Recharge 1 Soigne 10 Eau
+Bonus Eau (+2)
+1
+- Fumée tox · Rare Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par le_yack_albinos
+Fiche complète
+Illustration par le_yack_albinos
+Eau Épique #146
+# Poulpe Parleur
+Polyvalent
+500 Points de vie
+3 Spamtons / tour
+#108 Classement / 127
+D Sans talent · #105
+Attaque
+0
+Génération
+74
+Défense
+49
+Soutien
+77
+Contrôle
+0
+Économie
+2
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Nouvelle vie 2 Blindage Partagé 3 Inversement
+Jouer cette carte
+Partager
+### Compétences
+#### Encre sèche
+1 tour
+Soigne 10 Eau
+Bonus Eau (+2)
+Précision 100% Critique 1%
+### Tox de départ
+#### Fumée
+Rare
+Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+### Talents
+#### Nouvelle vie
+Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+Δ 56,9 · Score théorique
+#### Blindage Partagé
+Conseillé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 161,9 · Score théorique
+#### Inversement
+Commence la partie avec le passif "Inversement"
+Δ 46,8 · Score théorique
+### Résistances
+8% Feu
+9% Eau
+11% Terre
+8% Nature
+8% Ombre
+8% Lumière
+Créature · Océan des Profondeurs
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Certaines zones peu profondes de l’Océan sont en réalité le domaine de poulpes géants. Non agressives envers les bateaux de Lumethia, ces pieuvres demeurent toutefois territoriales. Leurs tentacules émergent de l’eau et émettent un signal d’alerte qui indique leur présence. Les navires qui ignorent l’avertissement finissent au fond de la mer. Un seul accident, remontant à l’ancien temps, a été recensé. Aujourd’hui, ces créatures servent de repères pour tracer les routes maritimes.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 260 Eau
+Commune · Attaque
+### Le compagnon des esprits
+600 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+A # 136 Eau
+Rare · Attaque
+### Souverain des Chutes d'Éther
+800 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

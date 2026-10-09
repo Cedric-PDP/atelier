@@ -1,0 +1,60 @@
+Make every Spamton count: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Tox & economy Tox & economy
+# Make every Spamton count.
+Understand free slots, replacements, and the potential of Tox.
+4 min read Share
+Illustration by Atto
+01
+## Look at the available slots.
+Abilities and passives occupy a card’s three lines, and a Tox can take the place of either. Deck pages tell you what each line is worth, which to keep, which to sacrifice and where to put the Tox. An attractive Tox is only useful if you can place it on a compatible holder.
+02
+## Read the net gain.
+When a Tox replaces a passive, the engine accounts for the value lost. A replacement proposal therefore represents an estimated net improvement to the deck’s score. The plan ranks options, but depends on the draws you actually get.
+03
+## Separate potential from budget.
+Potential is simulated with Tox equipped from the start of combat; the plan follows the game instead: one purchase per shop opening, within the Spamtons the deck has generated, and only among the rarities the shop offers at that point — everything is common on turn 2, epics arrive around turn 6, legendaries much later. Draws remain random: prioritize the first accessible improvements rather than automatically pursuing the entire plan.
+Understanding the scores
+## Explore with this guide
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 122 Nature
+Common · Attack
+### Spirit of the Fauna
+800 HP
+S # 056 Nature
+Common · Attack
+### Lisa, the Dragonrider
+800 HP
+## Put it into practice
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,143 @@
+Herald of Ashes: SPAM Fire common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Herald of Ashes D View the full card
+Herald of Ashes
+3 Dragon's Breath
+Smoke
+Lucky
+800/800
+8
+Standard
+Herald of Ashes
+3 Dragon's Breath
+Smoke
+Lucky
+800/800
+8
+Elemental
+Herald of Ashes
+3 Dragon's Breath
+Smoke
+Lucky
+800/800
+8
+FA
+Herald of Ashes
+3 Dragon's Breath
+Smoke
+Lucky
+800/800
+8
+## Herald of Ashes
+D Fire · Common · Standard
+800 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Fortune Increases this card's Spamton generation by (+2) per turn
+- Talent 2 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+Recommended
+- Talent 3 Corrosion Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Three ability slots
+- Dragon's Breath ability · Cooldown 3 Choice
+Deal 30 Fire damage
+Deal 10 Nature damage
+Deal 10 Nature damage
+---------- or ----------
+Fire bonus (+5) Nature bonus (+5)
+3
+- Smoke tox · Rare Enshrouds the allied field after using an attack or a heal
+- Lucky tox · Common Increases your Luck by (+0.5) per turn
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Fire Common #152
+# Herald of Ashes
+Economy
+800 Health points
+8 Spamtons / turn
+#121 Rank / 127
+D No talent · #118
+Attack
+18
+Generation
+0
+Defense
+58
+Support
+1
+Control
+0
+Economy
+90
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Fortune 2 Focus 3 Corrosion
+Build with this card
+Share
+### Abilities
+#### Dragon's Breath
+3 turns
+Choice
+Deal 30 Fire damage
+Deal 10 Nature damage
+Deal 10 Nature damage
+---------- or ----------
+Fire bonus (+5) Nature bonus (+5)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Smoke
+Rare
+Enshrouds the allied field after using an attack or a heal
+#### Lucky
+Common
+Increases your Luck by (+0.5) per turn
+### Talents
+#### Fortune
+Increases this card's Spamton generation by (+2) per turn
+Δ 33 · Theoretical score
+#### Focus
+Recommended
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 469.4 · Theoretical score
+#### Corrosion
+Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Δ 454.2 · Theoretical score
+### Resistances
+7% Fire
+8% Water
+7% Earth
+8% Nature
+10% Shadow
+8% Light
+Dragon · Hadeïr
+### Beyond the card
+We have little information about Hadeïr beyond Dragheïr. We do know, however, that the Blazing Willow of Détwin Forest is an entity that must be protected. Able to cleanse creatures afflicted by corruption, it represents a source of hope for all of Hadeïr. Yet it cannot move and must be defended against the Abyssals. An Eltherian bastion was therefore established in the heart of the forest to keep them away from the saving entity. Dragons are the greatest known abyssal threat. In the region, some Dhöggeïrs attuned to Fire have become powerful corrupted Dragons. Repelling even one is nothing short of a miracle—and has already cost many soldiers their lives.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

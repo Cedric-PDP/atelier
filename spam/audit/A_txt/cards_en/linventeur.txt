@@ -1,0 +1,168 @@
+The Inventor: SPAM Fire common card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards The Inventor C View the full card
+The Inventor
+2 Materia
+1 Rainbow
+Multiplier
+1000/1000
+5
+Standard
+The Inventor
+2 Materia
+1 Rainbow
+Multiplier
+1000/1000
+5
+Elemental
+The Inventor
+2 Materia
+1 Rainbow
+Multiplier
+1000/1000
+5
+FA
+The Inventor
+2 Materia
+1 Rainbow
+Multiplier
+1000/1000
+5
+## The Inventor
+C Fire · Common · Standard
+1,000 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Roulette All of this card's abilities gain Echo (10%).
+- Talent 2 Vital Chance This card has a 10% chance to heal instead of taking damage when attacked.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Materia ability · Cooldown 2 Bonus [-5 to +8] in every element
+2
+- Rainbow ability · Cooldown 1 Deal 10 damage in a random element
+1
+- Multiplier tox · Rare Elemental bonuses are doubled for this card's damage and heals
+Illustration by Nao
+Full card details
+Illustration by Nao
+Fire Common #153
+# The Inventor
+Defense
+1,000 Health points
+5 Spamtons / turn
+#95 Rank / 127
+C No talent · #88
+Attack
+22
+Generation
+51
+Defense
+83
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Roulette 2 Vital Chance 3 Soul Vitality
+Build with this card 11 decks
+Share
+### Abilities
+#### Materia
+2 turns
+Bonus [-5 to +8] in every element
+Accuracy 100% Critical 0%
+#### Rainbow
+1 turn
+Deal 10 damage in a random element
+Accuracy 100% Critical 50%
+### Starting Tox
+#### Multiplier
+Rare
+Elemental bonuses are doubled for this card's damage and heals
+### Talents
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ 96 · Theoretical score
+#### Vital Chance
+This card has a 10% chance to heal instead of taking damage when attacked.
+Δ 5.9 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 484.9 · Theoretical score
+## Its best decks
+11 ranked decks play this card, from best to worst.
+All decks
+S Intermediate
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Apprentice of Death
+89.1 % Relative index 6 turns Estimated elimination 24 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + The Inventor
+65.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Intermediate
+Midrange ·
+### Mistress of Tints + Apprentice of Death
+56.7 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+C Intermediate
+Midrange ·
+### Wibs the Blazing + Apprentice of Death
+54.8 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+D Accessible
+Midrange ·
+### Apprentice of Death + The Inventor
+39.5 % Relative index 10.9 turns Estimated elimination 28 / turn Spamtons
+The other decks (5)
+- S Aleera + Sovereign of the Ether Falls with The Inventor · Master Amphibian Accessible · 94.6%
+- D Wibs the Blazing + Apprentice of Death with Prisoner of the Machine · The Inventor Accessible · 39%
+- D Apprentice of Death + Astry with The Inventor · Squall Intermediate · 38.4%
+- D Apprentice of Death + The Inventor with Snow Warrior · Aidan Accessible · 37.8%
+- D Wibs the Blazing + Logidrake with Pyro · The Inventor Accessible · 34.8%
+### Resistances
+17% Fire
+16% Water
+16% Earth
+18% Nature
+17% Shadow
+18% Light
+Oniyx · Nordvinter
+### Beyond the card
+The ancestral Oniyx species was led by a great chief known as the Inventor. His people vanished in rebellion against the divinities. The writings of Lumethia keep his courage and his many sacrifices in memory. Aided by his second, Lumisaros, the Inventor designed the magic orbs named after his species — still used today, though no one knows how to manufacture them, so they are looked after with care. He created many weapons and defenses against the divine madness of the old days. Today, his creations are prisoners of the crystal lands east of Nordvinter.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,202 @@
+Deck SPAM Aleera Mange-Cauchemars + Souverain des Chutes d'Éther (tier S) : plan de jeu et Tox
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Tier lists Le plan de jeu Partager
+# Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+Quatre cartes. Une même intention.
+Collection avancée Aggro / burst Ombre
+S Tier 100% · Indice relatif v1.21
+Sans talent : Tier D · 41,5% · Lecture pour un joueur sans doublon : aucun talent n’est actif. Même composition, même fiche, classée sur l’échelle des decks sans talent.
+Composition idéale : les compétences gardées et les Tox à viser, champ par champ. Tout n’est pas obligatoire : le plan d’achat donne l’ordre de priorité.
+S
+### Aleera Mange-Cauchemars
+Ombre · Commune
+Résilience Talent · Conseillé
+- Mâche-mot compétence Cœur du deck
+- Sac de frappe tox Garder
+- Cœur d'ombre tox Garder
+A
+### Souverain des Chutes d'Éther
+Eau · Rare
+Incisif Talent · Conseillé
+- Laser glacial compétence Garder
+- Chute critique compétence Cœur du deck
+- Chute précise compétence Garder
+S
+### Commando Gerz
+Terre · Rare
+Vitalité des Âmes Talent · Conseillé
+- Cigarillos compétence Garder
+- Dernier plaisir compétence Garder
+- Berserk tox Cœur du deck
+B
+### Léviathan des Cieux
+Eau · Légendaire
+Vitalité des Âmes Talent · Conseillé
+- Écras'eau compétence Remplaçable ou remplacer par Berserk + 7,2 %
+- Ultime repos compétence Garder
+- Cœur d'eau tox Garder
+### Les priorités Tox
+Ordre de priorité : quel Tox viser à chaque ouverture de boutique, et dans quel champ le poser. Le plan suit les Spamtons que le deck génère et les raretés que la boutique propose au fil des tours (tout est commun au début, les légendaires viennent tard) ; les tirages restent aléatoires, un achat par ouverture. Les lignes qui portent le deck (Cœur du deck) ne sont jamais remplacées, sauf par une meilleure rareté du même Tox.
+3 ouvertures de boutique 135 Spamtons générés + 0 % Potentiel du plan
+#### Les ouvertures de la boutique
+À chaque ouverture : les chances de chaque rareté selon la Chance du deck à ce tour, les Spamtons générés depuis le début, et l’achat conseillé. Un achat par ouverture.
+Commune Rare Épique Légendaire
+- T 2 100 %
+Chance 2 · 41 Spamtons passer
+- T 4 80 % 20 %
+Chance 4 · 86 Spamtons passer
+- T 6 50 % 45 %
+Chance 6 · 135 Spamtons passer
+Aucun achat rentable : ce deck n’a pas de ligne disponible ou aucun Tox ne l’améliore franchement.
+Espérance d’un achat aléatoire, avant → après ce plan : + 0,1 % → + 0,2 %
+À éviter pour ce deck
+AoE · Bomba · Cimetière · Cœur de feu · Cœur de lumière · Cœur de nature · Cœur de terre · Inversement · Métamorphe · Mimétisme · Multiplicateur · Optimisation · Phénix · Reset · Revanche · Sac de frappe · Temporalité · Ténacité · Vampirisme · Vengeur
+Score théorique 16 182
+Élimination estimée 6 tours
+PV effectifs 6 705
+Soins 32
+Spamtons / tour 19
+### Profils adverses
+Score moyenné sur neuf adversaires théoriques, faute de méta observable : neutre (700 PV, 10 % de résistance), fragile, tank et six decks résistants à un élément (+25 %), chacun joué en premier comme en second. Écart de score par rapport au profil neutre, celui du plan de jeu affiché.
+Ordre de jeu En premier -3,9 % · 6 tours En second + 3,9 % · 5 tours
+- Deck fragile + 0,1 % 5,5 tours
+- Deck tank 0 % 5,5 tours
+- Résistant Feu 0 % 5,5 tours
+- Résistant Eau 0 % 5,5 tours
+- Résistant Terre 0 % 5,5 tours
+- Résistant Nature 0 % 5,5 tours
+- Résistant Ombre 0 % 5,5 tours
+- Résistant Lumière 0 % 5,5 tours
+### Points forts
+- 3 cartes avec génération active.
+- Élimination estimée en 6 tours.
+- 32 soins dans la simulation.
+### Points de vigilance
+- Aucun contrôle comptabilisé par le modèle.
+### En quatre temps
+- 01 Installer les bonus et les talents de départ.
+- 02 Alimenter les axes Ombre.
+- 03 Pic de dégâts simulé : tour 6.
+- 04 Élimination estimée : 6 tours.
+### Classement du modèle
+0 % = deck aléatoire moyen. 100 % = meilleur deck trouvé. Ce score n’est pas un taux de victoire.
+Comprendre les scores
+### Talents
+#### Résilience
+Aleera Mange-Cauchemars
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Conseillé
+#### Incisif
+Souverain des Chutes d'Éther
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Conseillé
+#### Vitalité des Âmes
+Commando Gerz
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+#### Vitalité des Âmes
+Léviathan des Cieux
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Adapter dans l’atelier Copier le deck
+### Pourquoi ça fonctionne
+#### Installer le moteur
+Aleera Mange-Cauchemars, Commando Gerz, Léviathan des Cieux alimentent la composition en bonus. Les axes dominants sont Ombre. Chaque point de bonus augmente les dégâts et soins de l’élément de 10 % dans le modèle.
+#### Convertir les bonus
+Aleera Mange-Cauchemars + Souverain des Chutes d'Éther présentent les profils offensifs individuels les plus élevés de cette composition. Le deck atteint 2 800 dégâts utiles simulés ; l’élimination est estimée à 6 tours. Consulte la courbe pour repérer où cet investissement devient rentable.
+#### Protéger la composition
+Le modèle estime 6 705 PV effectifs et 32 soins. Les soins sont limités : observe si le rythme offensif correspond à ton plan.
+### Le plan de jeu Analyse théorique
+Tour par tour, ce que le moteur joue avec ce deck. Les deux premiers tours sont dépliés.
+01 Tour 1 6 dégâts
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Laser glacial Souverain des Chutes d'Éther
+⚔ 6
+02 Tour 2 305 dégâts
+Cigarillos Commando Gerz
+Terre +3 · Lumière +3
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Mâche-mot Aleera Mange-Cauchemars
+⚔ 296
+Laser glacial Souverain des Chutes d'Éther
+⚔ 9
+Voir la suite du plan Replier le plan + 8 tours
+03 Tour 3 279 dégâts
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Écras'eau Léviathan des Cieux
+⚔ 268
+Laser glacial Souverain des Chutes d'Éther
+⚔ 11
+04 Tour 4 1 210 dégâts
+Cigarillos Commando Gerz
+Terre +3 · Lumière +3
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Mâche-mot Aleera Mange-Cauchemars
+⚔ 1 195
+Laser glacial Souverain des Chutes d'Éther
+⚔ 15
+05 Tour 5 19 dégâts
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Laser glacial Souverain des Chutes d'Éther
+⚔ 19
+06 Tour 6 1 769 dégâts
+Ultime repos Léviathan des Cieux
++ 650
+Cigarillos Commando Gerz
+Terre +3 · Lumière +3
+Chute critique Souverain des Chutes d'Éther
+Chute précise Souverain des Chutes d'Éther
+Mâche-mot Aleera Mange-Cauchemars
+⚔ 1 769
+07 Tour 7 Simulation terminée.
+Simulation terminée.
+08 Tour 8 Simulation terminée.
+Simulation terminée.
+09 Tour 9 Simulation terminée.
+Simulation terminée.
+10 Tour 10 Simulation terminée.
+Simulation terminée.
+### Le rythme du deck
+6
+T 1
+305
+T 2
+279
+T 3
+1211
+T 4
+19
+T 5
+1769
+T 6
+0
+T 7
+0
+T 8
+0
+T 9
+0
+T 10
+Dégâts bruts simulés par tour, surdégâts inclus. La simulation s’arrête à l’élimination adverse.
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

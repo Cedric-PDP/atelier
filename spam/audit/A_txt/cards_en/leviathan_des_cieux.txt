@@ -1,0 +1,168 @@
+Leviathan of the Skies: SPAM Water legendary card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Leviathan of the Skies B View the full card
+Leviathan of the Skies
+3 Crushwave
+6 Ultimate Relief
+Waterheart
+1000/1000
+5
+Standard
+Leviathan of the Skies
+3 Crushwave
+6 Ultimate Relief
+Waterheart
+1000/1000
+5
+Elemental
+Leviathan of the Skies
+3 Crushwave
+6 Ultimate Relief
+Waterheart
+1000/1000
+5
+FA
+Leviathan of the Skies
+3 Crushwave
+6 Ultimate Relief
+Waterheart
+1000/1000
+5
+## Leviathan of the Skies
+B Water · Legendary · Standard
+1,000 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Blue Whale Increases this card’s HP by (+200)
+- Talent 2 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+- Talent 3 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Three ability slots
+- Crushwave ability · Cooldown 3 Deal damage equal to 30% of the target's max HP
+3
+- Ultimate Relief ability · Cooldown 6 Heals itself for 50% of its max HP
+6
+- Waterheart tox · Common Water bonus (+1) per turn
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Water Legendary #044
+# Leviathan of the Skies
+Defense
+1,000 Health points
+5 Spamtons / turn
+#34 Rank / 127
+A No talent · #26
+Attack
+63
+Generation
+57
+Defense
+86
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Blue Whale 2 Soul Vitality 3 Evolution
+Build with this card 9 decks
+Share
+### Abilities
+#### Crushwave
+3 turns
+Deal damage equal to 30% of the target's max HP
+Accuracy 100% Critical 0%
+#### Ultimate Relief
+6 turns
+Heals itself for 50% of its max HP
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Waterheart
+Common
+Water bonus (+1) per turn
+### Talents
+#### Blue Whale
+Increases this card’s HP by (+200)
+Δ 77.8 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 447.2 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 29.2 · Theoretical score
+## Its best decks
+9 ranked decks play this card, from best to worst.
+All decks
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Sovereign of the Ether Falls + Master Amphibian
+61.1 % Relative index 8 turns Estimated elimination 21 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### The Companion of Spirits + Water Spirit
+53.1 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Medusine Thorn + The Companion of Spirits
+51.7 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### The Companion of Spirits + Scorch
+51.5 % Relative index 9 turns Estimated elimination 24 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Floral Zombie + Princess Meridia
+36.6 % Relative index 11.6 turns Estimated elimination 32 / turn Spamtons
+The other decks (3)
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · The Eye of the Mountains Advanced collection · 59.1%
+- C Medusine Thorn + The Companion of Spirits with Leviathan of the Skies · Scorch Advanced collection · 51.1%
+- D Water King + Traveler of the Ridges with Leviathan of the Skies · Aquatic Whiteness Advanced collection · 33.8%
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Eternal · Abyss
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, which nightmares then purify. Eternal agents patrol the Abyss to keep their shifting state stable. The Leviathan of the Skies is one of them; it weaves the bubbles of each individual dream in its wake. Should it one day stop or disappear, the Awakened would be condemned to know only nightmare during their sleep.
+## Better together
+The most promising partners according to the model.
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,161 @@
+The Companion of Spirits: SPAM Water common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards The Companion of Spirits B View the full card
+The Companion of Spirits
+1 Small Wave
+1 Hazardo
+Immunity
+600/600
+5
+Standard
+The Companion of Spirits
+1 Small Wave
+1 Hazardo
+Immunity
+600/600
+5
+Elemental
+The Companion of Spirits
+1 Small Wave
+1 Hazardo
+Immunity
+600/600
+5
+FA
+The Companion of Spirits
+1 Small Wave
+1 Hazardo
+Immunity
+600/600
+5
+## The Companion of Spirits
+B Water · Common · Standard
+600 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Counter Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.
+- Talent 2 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Recommended
+- Talent 3 Magic Coin Start the game with (+2) Luck
+Three ability slots
+- Small Wave ability · Cooldown 1 Deal 10 Water damage
+Increases its Spamton generation by (+1)
+Echo (50%)
+1
+- Hazardo ability · Cooldown 1 Deal [20 to +30] Water damage Random
+1
+- Immunity tox · Epic The card is immune to all effects from enemy cards
+Illustration by Amytis
+Full card details
+Illustration by Amytis
+Water Common #260
+# The Companion of Spirits
+Attack Economy
+600 Health points
+5 Spamtons / turn
+#35 Rank / 127
+B No talent · #32
+Attack
+94
+Generation
+0
+Defense
+40
+Support
+1
+Control
+0
+Economy
+97
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Counter 2 One Man Army 3 Magic Coin
+Build with this card 6 decks
+Share
+### Abilities
+#### Small Wave
+1 turn
+Deal 10 Water damage
+Increases its Spamton generation by (+1)
+Echo (50%)
+Accuracy 100% Critical 1%
+#### Hazardo
+1 turn
+Deal [20 to +30] Water damage Random
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Immunity
+Epic
+The card is immune to all effects from enemy cards
+### Talents
+#### Counter
+Once per game, when this card takes damage while below 25% HP, it retaliates by using all its abilities on the card that attacked it.
+Δ 8.6 · Theoretical score
+#### One Man Army
+Recommended
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 172.4 · Theoretical score
+#### Magic Coin
+Start the game with (+2) Luck
+Δ 4 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Midrange ·
+### The Companion of Spirits + Water Spirit
+58.7 % Relative index 8 turns Estimated elimination 35 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Medusine Thorn + Scorch
+54.5 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Medusine Thorn + The Companion of Spirits
+51.7 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### The Companion of Spirits + Scorch
+51.5 % Relative index 9 turns Estimated elimination 24 / turn Spamtons
+The other decks (2)
+- C The Companion of Spirits + Water Spirit with Leviathan of the Skies · Scorch Advanced collection · 53.1%
+- C Medusine Thorn + The Companion of Spirits with Leviathan of the Skies · Scorch Advanced collection · 51.1%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Creature · Nordvinter
+### Beyond the card
+Around the lake of the Water Spirit, small rodents have made their home. The spirit companions play there and seem to communicate with butterflies. These curious little animals don't flee from Eltherians — quite the opposite. They've become a mascot of the northern mountainous region of Vaeloria. This peaceful ecosystem has found its balance far from any predator. These little furballs surely keep a secret deep in their burrows. But Lycaria makes sure no one disturbs the calm of the lake.
+## Better together
+The most promising partners according to the model.
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+C # 002 Water
+Common · Generation
+### Water Spirit
+500 HP
+D # 146 Water
+Epic · Versatile
+### Chatty Octopus
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

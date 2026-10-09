@@ -1,0 +1,192 @@
+Sky Dragon: SPAM Light common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Sky Dragon A View the full card
+Sky Dragon
+4 Dazzling Breath
+4 Call of the Forest
+Avenger
+700/700
+8
+Standard
+Sky Dragon
+4 Dazzling Breath
+4 Call of the Forest
+Avenger
+700/700
+8
+Elemental
+Sky Dragon
+4 Dazzling Breath
+4 Call of the Forest
+Avenger
+700/700
+8
+FA
+Sky Dragon
+4 Dazzling Breath
+4 Call of the Forest
+Avenger
+700/700
+8
+## Sky Dragon
+A Light · Common · Standard
+700 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Last Breath Applies Temporality to all your cards when this card dies
+- Talent 2 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+- Talent 3 Fortune Increases this card's Spamton generation by (+2) per turn
+Recommended
+Three ability slots
+- Dazzling Breath ability · Cooldown 4 Deal 40 Light damage
+4
+- Call of the Forest ability · Cooldown 4 Deal 30 Nature damage to all enemy cards Nature bonus (+4)
+4
+- Avenger tox · Epic This card recovers all its attacks whenever a card it didn't kill dies.
+Illustration by Nao
+Full card details
+Illustration by Nao
+Light Common #180
+# Sky Dragon
+Attack Economy
+700 Health points
+8 Spamtons / turn
+#18 Rank / 127
+A No talent · #18
+Attack
+78
+Generation
+53
+Defense
+32
+Support
+1
+Control
+0
+Economy
+98
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Last Breath 2 Ultimate Reset 3 Fortune
+Build with this card 35 decks
+Share
+### Abilities
+#### Dazzling Breath
+4 turns
+Deal 40 Light damage
+Accuracy 100% Critical 1%
+#### Call of the Forest
+4 turns
+Deal 30 Nature damage to all enemy cards Nature bonus (+4)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Avenger
+Epic
+This card recovers all its attacks whenever a card it didn't kill dies.
+### Talents
+#### Last Breath
+Applies Temporality to all your cards when this card dies
+Δ 0 · Theoretical score
+#### Ultimate Reset
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 6.2 · Theoretical score
+#### Fortune
+Recommended
+Increases this card's Spamton generation by (+2) per turn
+Δ 31.1 · Theoretical score
+## Its best decks
+35 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Aggro / burst ·
+### Sky Dragon + Aldrin & Gorakar
+60.5 % Relative index 7 turns Estimated elimination 28 / turn Spamtons
+C Accessible
+Aggro / burst ·
+### Raffteru + Thorn of Love
+58 % Relative index 7 turns Estimated elimination 25 / turn Spamtons
+C Intermediate
+Midrange ·
+### Deer of Mournful Colors + Thorn of Love
+57.9 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+56.8 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Intermediate
+Elemental ramp ·
+### Sky Dragon + Blade of the Forest
+56.7 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Accessible
+Aggro / burst ·
+### Sky Dragon + Nebular Aristocrat
+55.7 % Relative index 7 turns Estimated elimination 27 / turn Spamtons
+The other decks (29)
+- C Spirit of the Fauna + Thorn of Love with Sky Dragon · Princess Meridia Accessible · 55.2%
+- C Lisa + Blade of the Forest with Sky Dragon · Thorn of Love Accessible · 55%
+- C Sky Dragon + Nebular Aristocrat with Thorn of Love · Squall Accessible · 54.9%
+- C Sky Dragon + Thorn of Love with Imaginary Panther · Lisa Intermediate · 54.6%
+- C Spirit of the Fauna + Thorn of Love with Sky Dragon · Mistress of Tints Accessible · 54.3%
+- C Sky Dragon + Princess Meridia with Floral Zombie · Blade of the Forest Accessible · 53.3%
+- C Sky Dragon + Thorn of Love with Blade of the Forest · Nature Spirit Accessible · 52.8%
+- C Sky Dragon + Thorn of Love with Imaginary Panther · Mistress of Tints Intermediate · 52.7%
+- C Sky Dragon + Nebular Aristocrat with Thorn of Love · Faerylia Intermediate · 52.5%
+- C Sky Dragon + Deer of Mournful Colors with Thorn of Love · Birth of Aldrin Intermediate · 52.5%
+- C Sky Dragon + Thorn of Love with Aldrin & Gorakar · Spirit of the Fauna Advanced collection · 52.4%
+- C Deer of Mournful Colors + Thorn of Love with Sky Dragon · Lisa Accessible · 52.3%
+- C Sky Dragon + Thorn of Love with Gabriel · Imaginary Panther Advanced collection · 51.2%
+- C Spirit of the Fauna + Floral Zombie with Sky Dragon · Aidan Accessible · 50.7%
+- C Canine Specter + Mistress of Tints with Thorn of Love · Sky Dragon Accessible · 50.3%
+- D Gabriel + Nature Spirit with Imaginary Panther · Sky Dragon Advanced collection · 50%
+- D Floral Zombie + Sky Dragon with Astral Healer of the Woods · Spirit of the Fauna Accessible · 49.7%
+- D Floral Zombie + Sky Dragon with Astral Healer of the Woods · Princess Meridia Intermediate · 49.6%
+- D Sky Dragon + Cloudy Rodent with Commando Gerz · Polychrome Owl Accessible · 49.5%
+- D Sky Dragon + Deer of Mournful Colors with Faerylia · Aidan Intermediate · 49.5%
+- D Floral Zombie + Flesh-Melding Chimera with Princess Meridia · Sky Dragon Intermediate · 48.8%
+- D Sky Dragon + Thorn of Love with Imaginary Panther · Princess Meridia Intermediate · 48.3%
+- D Floral Zombie + Flesh-Melding Chimera with Sky Dragon · Thorn of Love Accessible · 47.7%
+- D Spirit of the Fauna + Thorn of Love with Verdelune · Sky Dragon Advanced collection · 46.6%
+- D Sky Dragon + Cloudy Rodent with Polychrome Owl · Thorn of Love Accessible · 44.4%
+- D Thorn of Love + Nebular Aristocrat with Sky Dragon · Radiant Shinobi Accessible · 42.9%
+- D Aldrin & Gorakar + Thorn of Love with Sky Dragon · Snow Warrior Advanced collection · 42%
+- D Sky Dragon + Nature Spirit with Verdelune · Spirit of the Fauna Advanced collection · 36%
+- D Gabriel + Sky Dragon with Verdelune · Blade of the Forest Advanced collection · 32.7%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Art · Aelther
+### Beyond the card
+Making the great pilgrimage to the summit of the Celestial Mount is now the norm. Every pilgrim who succeeds is welcomed, beyond the clouds, by an Eternal who acknowledges their hard work and rewards their achievement. A rare few have claimed to have met the Calamity of light, Sky Dragon. The blessing of these people is proof enough of the truth of their words. This possibility led to the making of a great ground fresco in Abondance.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+D # 003 Nature
+Common · Versatile
+### Nature Spirit
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

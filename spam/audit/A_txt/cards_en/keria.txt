@@ -1,0 +1,152 @@
+Keria: SPAM Fire rare card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Keria D View the full card
+Keria
+3 Allied Fire
+2 Ignition
+550/550
+8
+Standard
+Keria
+3 Allied Fire
+2 Ignition
+550/550
+8
+Elemental
+Keria
+3 Allied Fire
+2 Ignition
+550/550
+8
+FA
+Keria
+3 Allied Fire
+2 Ignition
+550/550
+8
+## Keria
+D Fire · Rare · Standard
+550 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+Recommended
+- Talent 2 Eternalized The card is immune to Eternity effects
+- Talent 3 Breath-8 Gains the Elemental Breath attack at the start of turn 8
+Three ability slots
+- Allied Fire ability · Cooldown 3 Base damage and healing increase by 3 for all allied cards
+3
+- Ignition ability · Cooldown 2 Critical (+5%) on all allied cards
+2
+- Free slot Open to a shop Tox
+Illustration by Daerun
+Full card details
+Illustration by Daerun
+Fire Rare #117
+# Keria
+Support
+550 Health points
+8 Spamtons / turn
+#123 Rank / 127
+D No talent · #124
+Attack
+0
+Generation
+0
+Defense
+21
+Support
+92
+Control
+0
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shared Shield 2 Eternalized 3 Breath-8
+Build with this card 6 decks
+Share
+### Abilities
+#### Allied Fire
+3 turns
+Base damage and healing increase by 3 for all allied cards
+Accuracy 100% Critical 0%
+#### Ignition
+2 turns
+Critical (+5%) on all allied cards
+Accuracy 100% Critical 0%
+### Talents
+#### Shared Shield
+Recommended
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 521.5 · Theoretical score
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Breath-8
+Gains the Elemental Breath attack at the start of turn 8
+Δ 216.2 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Pyro + Scorch
+73.3 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+C Intermediate
+Midrange ·
+### Wibs the Blazing + Apprentice of Death
+54.8 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+C Advanced collection
+Critical ·
+### Sovereign of Flames + Wibs the Blazing
+54.6 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Pyro + Wibs the Blazing
+53.8 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Pyro + Logidrake
+51.9 % Relative index 8 turns Estimated elimination 22 / turn Spamtons
+The other decks (1)
+- D Sovereign of Flames + Wibs the Blazing with Keria · Squall Advanced collection · 49.5%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Pixarch · Emeldarion
+### Beyond the card
+These days, in the north of Emeldarion, magnificent ears of grain rise — the shoots of Bleh watered by the fire of the Flammeveilles. These fields are run with a master's hand by the shamans of Keria's tribe. Talking with her, you discover a strange Pixarch who doesn't hide her origins. She is equipped with Fire elemental catalysts, some of which alter her appearance. These illusions let her mask the scars of her past, she tells us. Very open to conversation, she offers her knowledge to anyone who wishes to drink it in. She soothes the tensions between the region's tribes with wisdom and altruism.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,170 @@
+Master Amphibian: SPAM Earth common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Master Amphibian B View the full card
+Master Amphibian
+1 Miasmas of Wisdom
+Erosion
+700/700
+4
+Standard
+Master Amphibian
+1 Miasmas of Wisdom
+Erosion
+700/700
+4
+Elemental
+Master Amphibian
+1 Miasmas of Wisdom
+Erosion
+700/700
+4
+FA
+Master Amphibian
+1 Miasmas of Wisdom
+Erosion
+700/700
+4
+## Master Amphibian
+B Earth · Common · Standard
+700 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Length At the start of your first turn, a random enemy card receives "Eternity"
+- Talent 2 Hardening Increases this card’s elemental resistances by (+15%).
+Recommended
+- Talent 3 13th month The first time you reach 200 Spamton or more, gain 100 additional Spamton.
+Three ability slots
+- Miasmas of Wisdom ability · Cooldown 1 Deal 15 Earth and 15 Water damage to all enemy cards
+1
+- Erosion tox · Common Reduces the target's max HP by 50% of the damage dealt
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Earth Common #229
+# Master Amphibian
+Attack Defense
+700 Health points
+4 Spamtons / turn
+#39 Rank / 127
+B No talent · #42
+Attack
+93
+Generation
+0
+Defense
+76
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Length 2 Hardening 3 13th month
+Build with this card 22 decks
+Share
+### Abilities
+#### Miasmas of Wisdom
+1 turn
+Deal 15 Earth and 15 Water damage to all enemy cards
+Accuracy 50% Critical 1%
+### Starting Tox
+#### Erosion
+Common
+Reduces the target's max HP by 50% of the damage dealt
+### Talents
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Hardening
+Recommended
+Increases this card’s elemental resistances by (+15%).
+Δ 81.7 · Theoretical score
+#### 13th month
+The first time you reach 200 Spamton or more, gain 100 additional Spamton.
+Δ 30 · Theoretical score
+## Its best decks
+22 ranked decks play this card, from best to worst.
+All decks
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Advanced collection
+Aggro / burst ·
+### Aleera + Master Amphibian
+92.5 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Sovereign of the Ether Falls + Master Amphibian
+77.9 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Master Amphibian + Rob the Adventurer
+72.7 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Medusine Thorn + Scorch
+54.5 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Intermediate
+Aggro / burst ·
+### Thorn of Love + Rob the Adventurer
+53.4 % Relative index 7 turns Estimated elimination 23 / turn Spamtons
+The other decks (16)
+- A Aleera + Master Amphibian with Sovereign of the Ether Falls · The Wild Carrier Accessible · 85.3%
+- C Sovereign of the Ether Falls + Master Amphibian with Aidan · The Eye of the Mountains Accessible · 68.6%
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · Scorch Advanced collection · 61.1%
+- C Master Amphibian + Rob the Adventurer with Commando Gerz · Aidan Accessible · 59.3%
+- C Sovereign of the Ether Falls + Master Amphibian with Leviathan of the Skies · The Eye of the Mountains Advanced collection · 59.1%
+- C Master Amphibian + Rob the Adventurer with Scorch · Aidan Accessible · 58.5%
+- C Master Amphibian + Scorch with Rob the Adventurer · Verdant Fruit Cruncher Accessible · 50.9%
+- C Master Amphibian + Rob the Adventurer with Zayd · Scorch Advanced collection · 50.7%
+- D Master Amphibian + Aidan with Mistress of Tints · Rob the Adventurer Accessible · 47.6%
+- D Floral Zombie + Aidan with Master Amphibian · Flesh-Melding Chimera Accessible · 46.3%
+- D Golden Boar + Rob the Adventurer with Master Amphibian · Blue-Stone-Eater Intermediate · 44.7%
+- D Commando Gerz + Golden Boar with Master Amphibian · Verdant Fruit Cruncher Accessible · 43.8%
+- D Master Amphibian + Blue-Stone-Eater with Earth King · Aidan Advanced collection · 43.8%
+- D Verdant Fruit Cruncher + Master Amphibian with Rob the Adventurer · Thorn of Love Accessible · 39.6%
+- D Master Amphibian + Scorch with Frost & Glacier · Medusine Thorn Advanced collection · 32.4%
+- D Floral Zombie + Master Amphibian with Frost & Glacier · Princess Meridia Advanced collection · 31.8%
+### Resistances
+25% Fire
+25% Water
+25% Earth
+25% Nature
+25% Shadow
+25% Light
+Anthropomorph · Emeldarion
+### Beyond the card
+Originally from the Lonely Isles, an anthropomorphic martial master carrying a metamorphosis artifact settled northwest of Emeldarion. Amphibian gave life to many of the village's inhabitants. This shamanic sanctuary then grew with Keria's help: in exchange for land, the reptilian used his staff to help Keria build up her fire tribe. Asked why he left the flying isles, he always answers that it's the story of a broken friendship — of diverging ideals he regrets more and more as time goes by.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,159 @@
+Croqueur de Fruits Verdoyant : carte SPAM Terre commune, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Croqueur de Fruits Verdoyant S Voir la carte en grand
+Croqueur de Fruits Verdoyant
+1 Dévalement
+Cœur de terre
+650/650
+11
+Standard
+Croqueur de Fruits Verdoyant
+1 Dévalement
+Cœur de terre
+650/650
+11
+Élémentaire
+Croqueur de Fruits Verdoyant
+1 Dévalement
+Cœur de terre
+650/650
+11
+FA
+Croqueur de Fruits Verdoyant
+1 Dévalement
+Cœur de terre
+650/650
+11
+## Croqueur de Fruits Verdoyant
+S Terre · Commune · Standard
+650 PV 11 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 AOE Épique Commence la partie avec le passif "AoE"
+Conseillé
+- Talent 2 Tox chanceux Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+- Talent 3 Souffle-8 Récupère l'attaque Souffle élémentaire au début du tour 8
+Trois champs de compétence
+- Dévalement compétence · Recharge 1 Cible aléatoirement une carte adverse
+Attaque [20 à 30] Terre
+1
+- Cœur de terre tox · Commune Bonus Terre (+1) par tour de jeu
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Terre Commune #017
+# Croqueur de Fruits Verdoyant
+Attaque Économie
+650 Points de vie
+11 Spamtons / tour
+#7 Classement / 127
+A Sans talent · #15
+Attaque
+97
+Génération
+57
+Défense
+28
+Soutien
+1
+Contrôle
+0
+Économie
+87
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 AOE Épique 2 Tox chanceux 3 Souffle-8
+Jouer cette carte 9 decks
+Partager
+### Compétences
+#### Dévalement
+1 tour
+Cible aléatoirement une carte adverse
+Attaque [20 à 30] Terre
+Précision 100% Critique 1%
+### Tox de départ
+#### Cœur de terre
+Commune
+Bonus Terre (+1) par tour de jeu
+### Talents
+#### AOE Épique
+Conseillé
+Commence la partie avec le passif "AoE"
+Δ 846,1 · Score théorique
+#### Tox chanceux
+Chaque rareté de Tox a exactement 25 % de probabilité d’être obtenue.
+Δ 10 · Score théorique
+#### Souffle-8
+Récupère l'attaque Souffle élémentaire au début du tour 8
+Δ 262,7 · Score théorique
+## Ses meilleurs decks
+9 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Aggro / burst ·
+### Croqueur de Fruits Verdoyant + Bleu-mange-cailloux
+61 % Indice relatif 7 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Commando Gerz
+60,8 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Maître Amphibian + Scorch
+50,9 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Sanglier Doré + Roi Terre
+47,8 % Indice relatif 9 tours Élimination estimée 31 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Sanglier Doré
+46,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Croqueur de Fruits Verdoyant + Roi Terre
+44 % Indice relatif 9 tours Élimination estimée 32 / tour Spamtons
+Les autres decks (3)
+- C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux avec Régent des Abysses · Commando Gerz Collection avancée · 56,3%
+- D Commando Gerz + Sanglier Doré avec Maître Amphibian · Croqueur de Fruits Verdoyant Accessible · 43,8%
+- D Croqueur de Fruits Verdoyant + Maître Amphibian avec Rob l'Aventurier · L'Épine d'Amour Accessible · 39,6%
+### Résistances
+6% Feu
+4% Eau
+6% Terre
+6% Nature
+5% Ombre
+5% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Le Croqueur est un herbivore de Vaeloria friand de fruits à peine mûrs tombés au sol. Généralement très peu actif, il peut stocker dans son ventre des réserves pour les périodes où les fruits se font rares. Il arrive toutefois que l’on en retrouve dans des entrepôts de nourriture pendant la saison froide.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,142 @@
+Raffteru : carte SPAM Terre rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Raffteru C Voir la carte en grand
+Raffteru
+1 Secousse aléatoire
+1 Bond-chanceux
+600/600
+5
+Standard
+Raffteru
+1 Secousse aléatoire
+1 Bond-chanceux
+600/600
+5
+Élémentaire
+Raffteru
+1 Secousse aléatoire
+1 Bond-chanceux
+600/600
+5
+FA
+Raffteru
+1 Secousse aléatoire
+1 Bond-chanceux
+600/600
+5
+## Raffteru
+C Terre · Rare · Standard
+600 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+- Talent 2 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+Conseillé
+- Talent 3 Brut Commence la partie avec le passif "Brut"
+Trois champs de compétence
+- Secousse aléatoire compétence · Recharge 1 Attaque 70 Terre
+Critique (+20%) sur toutes les cartes alliées
+1
+- Bond-chanceux compétence · Recharge 1 Attaque 10 Nature
+Echo (50%)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Terre Rare #031
+# Raffteru
+Polyvalent
+600 Points de vie
+5 Spamtons / tour
+#94 Classement / 127
+D Sans talent · #99
+Attaque
+51
+Génération
+0
+Défense
+26
+Soutien
+78
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Reset ultime 2 Boule de Crit 3 Brut
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Secousse aléatoire
+1 tour
+Attaque 70 Terre
+Critique (+20%) sur toutes les cartes alliées
+Précision 10% Critique 1%
+#### Bond-chanceux
+1 tour
+Attaque 10 Nature
+Echo (50%)
+Précision 100% Critique 1%
+### Talents
+#### Reset ultime
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 5,1 · Score théorique
+#### Boule de Crit
+Conseillé
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 28,8 · Score théorique
+#### Brut
+Commence la partie avec le passif "Brut"
+Δ 24,9 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Aggro / burst ·
+### Raffteru + L'Épine d'Amour
+58 % Indice relatif 7 tours Élimination estimée 25 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Bleu-mange-cailloux + Raffteru
+44,6 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Maladie · Abysses
+### Derrière la carte
+Les monstres abyssaux ont une forme horrifique indescriptible. Ces créatures démoniaques furent rencontrées lors de l’expédition Oniyx, une aventure terrifiante dans les profondeurs du temple de Zaar’Phahl, en Shal’Zaar. La progression du groupe dans les Abysses fut éprouvante. Certains membres virent des yeux rouge vif apparaître sur leur peau. On ignore l’origine de ce phénomène ; peut-être s’agissait-il d’une contamination. Rongés par des pulsions meurtrières, ils devinrent de dangereux zombies hyperactifs. Cette peste fut baptisée « Raffteru » : la limite des Abysses, loi qui voue à la corruption toute forme de vie présente sur ces terres et lui interdit d’y subsister.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+A # 136 Eau
+Rare · Attaque
+### Souverain des Chutes d'Éther
+800 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

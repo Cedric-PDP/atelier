@@ -1,0 +1,134 @@
+Dévoreur de faune : carte SPAM Ombre commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Dévoreur de faune C Voir la carte en grand
+Dévoreur de faune
+1 Boule de haine
+Vampirisme
+700/700
+5
+Standard
+Dévoreur de faune
+1 Boule de haine
+Vampirisme
+700/700
+5
+Élémentaire
+Dévoreur de faune
+1 Boule de haine
+Vampirisme
+700/700
+5
+FA
+Dévoreur de faune
+1 Boule de haine
+Vampirisme
+700/700
+5
+## Dévoreur de faune
+C Ombre · Commune · Standard
+700 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Conseillé
+- Talent 2 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+- Talent 3 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+Trois champs de compétence
+- Boule de haine compétence · Recharge 1 Attaque 5 Ombre
+La valeur de base de dégâts augmente de 5
+1
+- Vampirisme tox · Commune Régénère 25% des dégâts infligés à la cible
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krisakx
+Fiche complète
+Illustration par Krisakx
+Ombre Commune #128
+# Dévoreur de faune
+Polyvalent
+700 Points de vie
+5 Spamtons / tour
+#83 Classement / 127
+C Sans talent · #75
+Attaque
+71
+Génération
+0
+Défense
+54
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage O/L 2 Blindage N/T 3 Blindage F/E
+Jouer cette carte
+Partager
+### Compétences
+#### Boule de haine
+1 tour
+Attaque 5 Ombre
+La valeur de base de dégâts augmente de 5
+Précision 100% Critique 1%
+### Tox de départ
+#### Vampirisme
+Commune
+Régénère 25% des dégâts infligés à la cible
+### Talents
+#### Blindage O/L
+Conseillé
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 28,7 · Score théorique
+#### Blindage N/T
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 28,7 · Score théorique
+#### Blindage F/E
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 28,7 · Score théorique
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Cauchemar · Nyevielh
+### Derrière la carte
+Dans l’effroyable Forêt Rêveuse de Nyevielh vivent des mutations cauchemardesques de la faune, engendrées par la puissance abyssale libérée lors de la fracture de la Mer Étoilée. Méfiez-vous des grands buissons : des Dévoreurs de Faune peuvent s’y dissimuler pour surprendre leurs proies. Dans cette forêt, inutile de s’interroger : si le moindre protocole a été laissé à l’intention des malheureux qui osent y pénétrer, respectez-en les indications.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+B # 251 Ombre
+Épique · Génération
+### Roi Ombre
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

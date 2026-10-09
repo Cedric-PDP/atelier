@@ -1,0 +1,173 @@
+Rob the Adventurer: SPAM Earth common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Rob the Adventurer D View the full card
+Rob the Adventurer
+1 Adventure
+Shadowheart
+Earthheart
+500/500
+9
+Standard
+Rob the Adventurer
+1 Adventure
+Shadowheart
+Earthheart
+500/500
+9
+Elemental
+Rob the Adventurer
+1 Adventure
+Shadowheart
+Earthheart
+500/500
+9
+FA
+Rob the Adventurer
+1 Adventure
+Shadowheart
+Earthheart
+500/500
+9
+## Rob the Adventurer
+D Earth · Common · Standard
+500 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Inscribed The card is immune to Vanish effects
+- Talent 2 Doomed Hour Applies Eternity to all enemy cards when this card is killed.
+- Talent 3 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Recommended
+Three ability slots
+- Adventure ability · Cooldown 1 Base damage and healing increase by 1
+Accuracy and Critical (+4%)
+1
+- Shadowheart tox · Common Shadow bonus (+1) per turn
+- Earthheart tox · Common Earth bonus (+1) per turn
+Illustration by Nao
+Full card details
+Illustration by Nao
+Earth Common #176
+# Rob the Adventurer
+Generation
+500 Health points
+9 Spamtons / turn
+#107 Rank / 127
+D No talent · #108
+Attack
+0
+Generation
+87
+Defense
+4
+Support
+82
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Inscribed 2 Doomed Hour 3 Evolution
+Build with this card 14 decks
+Share
+### Abilities
+#### Adventure
+1 turn
+Base damage and healing increase by 1
+Accuracy and Critical (+4%)
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Shadowheart
+Common
+Shadow bonus (+1) per turn
+#### Earthheart
+Common
+Earth bonus (+1) per turn
+### Talents
+#### Inscribed
+The card is immune to Vanish effects
+Δ 7 · Theoretical score
+#### Doomed Hour
+Applies Eternity to all enemy cards when this card is killed.
+Δ 66.7 · Theoretical score
+#### Evolution
+Recommended
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 445 · Theoretical score
+## Its best decks
+14 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Master Amphibian + Rob the Adventurer
+72.7 % Relative index 7 turns Estimated elimination 24 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Blue-Stone-Eater + Thorn of Love
+71.9 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+C Intermediate
+Aggro / burst ·
+### Thorn of Love + Rob the Adventurer
+53.4 % Relative index 7 turns Estimated elimination 23 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Commando Gerz + Blue-Stone-Eater
+53.1 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Master Amphibian + Scorch
+50.9 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+D Intermediate
+Midrange ·
+### Blue-Stone-Eater + Rob the Adventurer
+48.9 % Relative index 9 turns Estimated elimination 24 / turn Spamtons
+The other decks (8)
+- C Master Amphibian + Rob the Adventurer with Commando Gerz · Aidan Accessible · 59.3%
+- C Master Amphibian + Rob the Adventurer with Scorch · Aidan Accessible · 58.5%
+- C Master Amphibian + Rob the Adventurer with Zayd · Scorch Advanced collection · 50.7%
+- D Master Amphibian + Aidan with Mistress of Tints · Rob the Adventurer Accessible · 47.6%
+- D Golden Boar + Rob the Adventurer with Master Amphibian · Blue-Stone-Eater Intermediate · 44.7%
+- D Blue-Stone-Eater + Raffteru with Rob the Adventurer · Aidan Intermediate · 44.6%
+- D Blue-Stone-Eater + Thorn of Love with Regent of the Abysses · Rob the Adventurer Advanced collection · 44%
+- D Verdant Fruit Cruncher + Master Amphibian with Rob the Adventurer · Thorn of Love Accessible · 39.6%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Tokscyth · Lumethia
+### Beyond the card
+Not all Tokscyth are just alchemists. Some care more about the thrill of adventure. They contribute a great deal to their kin's research: their knowledge of plants, ores and mushrooms helped create TOX — a substance with random effects that are not always without consequences. The adventurers of this species are small, fearless daredevils from Hadeïr, braving mountains and seas in search of the very best for their creations.
+## Better together
+The most promising partners according to the model.
+B # 229 Earth
+Common · Attack
+### Master Amphibian
+700 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+C # 096 Light
+Legendary · Attack
+### Melody of Divinities
+550 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

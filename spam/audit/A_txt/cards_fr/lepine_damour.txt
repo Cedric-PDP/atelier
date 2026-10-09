@@ -1,0 +1,192 @@
+L'Épine d'Amour : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes L'Épine d'Amour D Voir la carte en grand
+L'Épine d'Amour
+1 Sagesse
+Renvoi
+500/500
+6
+Standard
+L'Épine d'Amour
+1 Sagesse
+Renvoi
+500/500
+6
+Élémentaire
+L'Épine d'Amour
+1 Sagesse
+Renvoi
+500/500
+6
+FA
+L'Épine d'Amour
+1 Sagesse
+Renvoi
+500/500
+6
+## L'Épine d'Amour
+D Terre · Commune · Standard
+500 PV 6 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Revalorisation Augmente la génération de Spamton de cette carte de (+5)
+- Talent 2 Pièce magique Commencez la partie avec (+2) en Chance
+- Talent 3 Affaiblissement Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Conseillé
+Trois champs de compétence
+- Sagesse compétence · Recharge 1 Bonus Terre (+2)
+Bonus Nature (+2)
+Bonus Lumière (+2)
+1
+- Renvoi tox · Épique Renvoie 75% des dégâts subis à l'attaquant
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Terre Commune #106
+# L'Épine d'Amour
+Génération
+500 Points de vie
+6 Spamtons / tour
+#96 Classement / 127
+C Sans talent · #92
+Attaque
+25
+Génération
+97
+Défense
+4
+Soutien
+1
+Contrôle
+0
+Économie
+31
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Revalorisation 2 Pièce magique 3 Affaiblissement
+Jouer cette carte 40 decks
+Partager
+### Compétences
+#### Sagesse
+1 tour
+Bonus Terre (+2)
+Bonus Nature (+2)
+Bonus Lumière (+2)
+Précision 100% Critique 0%
+### Tox de départ
+#### Renvoi
+Épique
+Renvoie 75% des dégâts subis à l'attaquant
+### Talents
+#### Revalorisation
+Augmente la génération de Spamton de cette carte de (+5)
+Δ 10,8 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+#### Affaiblissement
+Conseillé
+Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Δ 48,1 · Score théorique
+## Ses meilleurs decks
+40 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+B Intermédiaire
+Aggro / burst ·
+### Bleu-mange-cailloux + L'Épine d'Amour
+71,9 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+C Collection avancée
+Aggro / burst ·
+### Dragon Ciel + Aldrin & Gorakar
+60,5 % Indice relatif 7 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Aggro / burst ·
+### Raffteru + L'Épine d'Amour
+58 % Indice relatif 7 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+57,9 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + L'Épine d'Amour
+56,8 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Lame de la forêt
+56,7 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+Les autres decks (34)
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Astry Accessible · 55,7%
+- C Esprit de la Faune + L'Épine d'Amour avec Dragon Ciel · Princesse Meridia Accessible · 55,2%
+- C Lisa + Lame de la forêt avec Dragon Ciel · L'Épine d'Amour Accessible · 55%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Squall Accessible · 54,9%
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Lisa Intermédiaire · 54,6%
+- C Esprit de la Faune + L'Épine d'Amour avec Dragon Ciel · Maîtresse des Teintes Accessible · 54,3%
+- C L'Épine d'Amour + Rob l'Aventurier avec Bleu-mange-cailloux · Maître Amphibian Intermédiaire · 53,4%
+- C Dragon Ciel + L'Épine d'Amour avec Lame de la forêt · Esprit Nature Accessible · 52,8%
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Maîtresse des Teintes Intermédiaire · 52,7%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Faerylia Intermédiaire · 52,5%
+- C Dragon Ciel + Cerf des Couleurs Funèbres avec L'Épine d'Amour · Naissance d'Aldrin Intermédiaire · 52,5%
+- C Dragon Ciel + L'Épine d'Amour avec Aldrin & Gorakar · Esprit de la Faune Collection avancée · 52,4%
+- C Cerf des Couleurs Funèbres + L'Épine d'Amour avec Dragon Ciel · Lisa Accessible · 52,3%
+- C Dragon Ciel + L'Épine d'Amour avec Gabriel · Panthère imaginaire Collection avancée · 51,2%
+- C Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Dragon Ciel Accessible · 50,3%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Faerylia · Commando Gerz Collection avancée · 48,4%
+- D Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Princesse Meridia Intermédiaire · 48,3%
+- D Luminaire Abyssal + L'Épine d'Amour avec Spectre Canin · Commando Gerz Intermédiaire · 47,9%
+- D Zombie Floral + Chimère Brasse-chair avec Dragon Ciel · L'Épine d'Amour Accessible · 47,7%
+- D Shinobi Éclairant + L'Épine d'Amour avec Ephial · Commando Gerz Collection avancée · 46,8%
+- D Esprit de la Faune + L'Épine d'Amour avec Verdelune · Dragon Ciel Collection avancée · 46,6%
+- D Cerf des Couleurs Funèbres + L'Épine d'Amour avec Verdelune · Maîtresse des Teintes Collection avancée · 46,3%
+- D Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Squall Intermédiaire · 45,7%
+- D Dragon Ciel + Rongeur Nuageux avec Chouette Polychrome · L'Épine d'Amour Accessible · 44,4%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Régent des Abysses · Rob l'Aventurier Collection avancée · 44%
+- D L'Épine d'Amour + Aristocrate Nébulaire avec Dragon Ciel · Shinobi Éclairant Accessible · 42,9%
+- D Bleu-mange-cailloux + Esprit Terre avec Régent des Abysses · L'Épine d'Amour Collection avancée · 42,2%
+- D Spectre Canin + Maîtresse des Teintes avec Rongeur Nuageux · L'Épine d'Amour Accessible · 42,1%
+- D Aldrin & Gorakar + L'Épine d'Amour avec Dragon Ciel · Guerrier des Neiges Collection avancée · 42%
+- D Esprit de la Faune + L'Épine d'Amour avec Verdelune · Gabriel Collection avancée · 41,9%
+- D Commando Gerz + L'Épine d'Amour avec Rongeur Nuageux · Gardien Vert Intermédiaire · 40,7%
+- D Croqueur de Fruits Verdoyant + Maître Amphibian avec Rob l'Aventurier · L'Épine d'Amour Accessible · 39,6%
+- D Shinobi Éclairant + L'Épine d'Amour avec Roi Lumière · Lueur d'Espoir Intermédiaire · 39%
+- D Spectre Canin + Maîtresse des Teintes avec Ephial · L'Épine d'Amour Collection avancée · 35,9%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Emeldarion
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. L’Épine d’Amour est un hérisson dont les épines sont réputées hallucinogènes. Elles sont très utilisées dans les recherches sur les TOX afin d’en réduire les effets secondaires. On ne trouve désormais que peu de ces échidnés à Vaeloria. Des pèlerins affirment toutefois en avoir rencontré sur leur route, en Emeldarion et à Aelther. Des discussions sont en cours afin de réintroduire l’espèce dans son habitat naturel.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+C # 096 Lumière
+Légendaire · Attaque
+### Mélodie des Divinités
+550 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,147 @@
+Shadow King: SPAM Shadow epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Shadow King B View the full card
+Shadow King
+5 Blade-O
+5 Dark Choice
+Punching Bag
+1000/1000
+10
+Standard
+Shadow King
+5 Blade-O
+5 Dark Choice
+Punching Bag
+1000/1000
+10
+Elemental
+Shadow King
+5 Blade-O
+5 Dark Choice
+Punching Bag
+1000/1000
+10
+FA
+Shadow King
+5 Blade-O
+5 Dark Choice
+Punching Bag
+1000/1000
+10
+## Shadow King
+B Shadow · Epic · Standard
+1,000 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+Recommended
+Three ability slots
+- Blade-O ability · Cooldown 5 Deal [40 to 60] Shadow damage
+5
+- Dark Choice ability · Cooldown 5 Choice
+Shadow bonus [1 to 20]
+---------- or ----------
+Shadow bonus [5 to 15]
+---------- or ----------
+Shadow bonus [8 to 12]
+5
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Shadow Epic #251
+# Shadow King
+Generation
+1,000 Health points
+10 Spamtons / turn
+#37 Rank / 127
+A No talent · #24
+Attack
+45
+Generation
+82
+Defense
+70
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Focus 2 Evolution 3 Ultimate Reset
+Build with this card
+Share
+### Abilities
+#### Blade-O
+5 turns
+Deal [40 to 60] Shadow damage
+Accuracy 100% Critical 1%
+#### Dark Choice
+5 turns
+Choice
+Shadow bonus [1 to 20]
+---------- or ----------
+Shadow bonus [5 to 15]
+---------- or ----------
+Shadow bonus [8 to 12]
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Focus
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ -184.9 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Ultimate Reset
+Recommended
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 7.1 · Theoretical score
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Eltherien · Nyevielh
+### Beyond the card
+The title of elemental King is honorary, but carries immense responsibility for maintaining elemental balance. The Kings equipped their heirs with runic weapons. According to Faerylia’s interpretation of the Primordial Codex, those weapons would allow them to seal the Deities and win their freedom. The Kings of shadow and light had a diplomatic relationship. The cracking of the single continent created a clean break between the two heirs. Nyevielh became a hostile zone, forcing the heir of Shadow into perpetual combat. These cursed lands are an open-air nightmare that one should never visit.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 034 Shadow
+Rare · Attack
+### Gleam of the White Fox
+700 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

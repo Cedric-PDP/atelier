@@ -1,0 +1,126 @@
+Chatty Octopus: SPAM Water epic card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Chatty Octopus D View the full card
+Chatty Octopus
+1 Dry ink
+Smoke
+500/500
+3
+Standard
+Chatty Octopus
+1 Dry ink
+Smoke
+500/500
+3
+Elemental
+Chatty Octopus
+1 Dry ink
+Smoke
+500/500
+3
+FA
+Chatty Octopus
+1 Dry ink
+Smoke
+500/500
+3
+## Chatty Octopus
+D Water · Epic · Standard
+500 HP 3 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 New Life Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+- Talent 2 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+Recommended
+- Talent 3 Inversion Start the game with the "Inversion" passive
+Three ability slots
+- Dry ink ability · Cooldown 1 Heal 10 Water Water bonus (+2)
+1
+- Smoke tox · Rare Enshrouds the allied field after using an attack or a heal
+- Free slot Open to a shop Tox
+Illustration by le_yack_albinos
+Full card details
+Illustration by le_yack_albinos
+Water Epic #146
+# Chatty Octopus
+Versatile
+500 Health points
+3 Spamtons / turn
+#108 Rank / 127
+D No talent · #105
+Attack
+0
+Generation
+74
+Defense
+49
+Support
+77
+Control
+0
+Economy
+2
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 New Life 2 Shared Shield 3 Inversion
+Build with this card
+Share
+### Abilities
+#### Dry ink
+1 turn
+Heal 10 Water Water bonus (+2)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Smoke
+Rare
+Enshrouds the allied field after using an attack or a heal
+### Talents
+#### New Life
+Starts the game with either the Phoenix or Graveyard passive, chosen at random.
+Δ 56.9 · Theoretical score
+#### Shared Shield
+Recommended
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 161.9 · Theoretical score
+#### Inversion
+Start the game with the "Inversion" passive
+Δ 46.8 · Theoretical score
+### Resistances
+8% Fire
+9% Water
+11% Earth
+8% Nature
+8% Shadow
+8% Light
+Creature · Ocean of the Depths
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. Some shallow areas of the Ocean are in fact the domain of a giant octopus. These octopuses, non-aggressive toward the ships of Lumethia, are nonetheless territorial. Their tentacles come out of the water to emit an alert sound signaling the octopus's presence. Ships that ignore the warning end up at the bottom of the sea. Only one accident is on record, dating from the old days. Today, these creatures serve as landmarks at sea to chart routes.
+## Better together
+The most promising partners according to the model.
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

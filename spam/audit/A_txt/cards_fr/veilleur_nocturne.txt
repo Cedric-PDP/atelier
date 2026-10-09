@@ -1,0 +1,144 @@
+Veilleur Nocturne : carte SPAM Ombre légendaire, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Veilleur Nocturne A Voir la carte en grand
+Veilleur Nocturne
+9 Nuit finale
+4 Tranche-ombre
+3 Tenebr'eal
+800/800
+7
+Standard
+Veilleur Nocturne
+9 Nuit finale
+4 Tranche-ombre
+3 Tenebr'eal
+800/800
+7
+Élémentaire
+Veilleur Nocturne
+9 Nuit finale
+4 Tranche-ombre
+3 Tenebr'eal
+800/800
+7
+FA
+Veilleur Nocturne
+9 Nuit finale
+4 Tranche-ombre
+3 Tenebr'eal
+800/800
+7
+## Veilleur Nocturne
+A Ombre · Légendaire · Standard
+800 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Imprudent Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+- Talent 2 Héritage Bonus (+50) Spamton quand cette carte est tuée.
+- Talent 3 Revalorisation Augmente la génération de Spamton de cette carte de (+5)
+Conseillé
+Trois champs de compétence
+- Nuit finale compétence · Recharge 9 Cible toutes les cartes alliées
+Applique Temporalité x (+3)
+9
+- Tranche-ombre compétence · Recharge 4 Attaque [10 à 30] Ombre
+Attaque [10 à 30] Nature
+4
+- Tenebr'eal compétence · Recharge 3 Attaque 40 Ombre
+Bonus Ombre (+1)
+Vampirisme
+3
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Ombre Légendaire #047
+# Veilleur Nocturne
+Économie
+800 Points de vie
+7 Spamtons / tour
+#17 Classement / 127
+A Sans talent · #16
+Attaque
+58
+Génération
+43
+Défense
+56
+Soutien
+78
+Contrôle
+0
+Économie
+91
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Imprudent 2 Héritage 3 Revalorisation
+Jouer cette carte
+Partager
+### Compétences
+#### Nuit finale
+9 tours
+Cible toutes les cartes alliées
+Applique Temporalité x (+3)
+Précision 100% Critique 0%
+#### Tranche-ombre
+4 tours
+Attaque [10 à 30] Ombre
+Attaque [10 à 30] Nature
+Précision 100% Critique 1%
+#### Tenebr'eal
+3 tours
+Attaque 40 Ombre
+Bonus Ombre (+1)
+Vampirisme
+Précision 100% Critique 1%
+### Talents
+#### Imprudent
+Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+Δ -82,4 · Score théorique
+#### Héritage
+Bonus (+50) Spamton quand cette carte est tuée.
+Δ 0 · Score théorique
+#### Revalorisation
+Conseillé
+Augmente la génération de Spamton de cette carte de (+5)
+Δ 15 · Score théorique
+### Résistances
+10% Feu
+15% Eau
+15% Terre
+10% Nature
+15% Ombre
+-21% Lumière
+Créature · Azeel
+### Derrière la carte
+Dans la région d’Azeel, dont les bois s’étendent au nord-ouest de Vaeloria, vivent des créatures non agressives dont le seul objectif semble être de faire peur. Le Bouha est ainsi devenu un lieu touristique réputé pour ses tests de courage. L’épreuve est surveillée par le Veilleur Nocturne. Si un visiteur cède à une panique dangereuse, ce puissant hibou apparaît et le ramène en lieu sûr. Il maîtrise également parfaitement la langue commune. Sa puissance magique dissimule un lourd secret qu’il ne révélera jamais.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

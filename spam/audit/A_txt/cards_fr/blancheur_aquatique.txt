@@ -1,0 +1,135 @@
+Blancheur Aquatique : carte SPAM Eau commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Blancheur Aquatique A Voir la carte en grand
+Blancheur Aquatique
+5 Avaleau
+700/700
+7
+Standard
+Blancheur Aquatique
+5 Avaleau
+700/700
+7
+Élémentaire
+Blancheur Aquatique
+5 Avaleau
+700/700
+7
+FA
+Blancheur Aquatique
+5 Avaleau
+700/700
+7
+## Blancheur Aquatique
+A Eau · Commune · Standard
+700 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+Conseillé
+- Talent 2 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+- Talent 3 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Trois champs de compétence
+- Avaleau compétence · Recharge 5 Attaque 100 Eau
+Se soigne (+100) Eau
+Bonus Eau (+2)
+5
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Eau Commune #100
+# Blancheur Aquatique
+Défense
+700 Points de vie
+7 Spamtons / tour
+#26 Classement / 127
+A Sans talent · #28
+Attaque
+65
+Génération
+45
+Défense
+85
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage N/T 2 Blindage F/E 3 Blindage O/L
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Avaleau
+5 tours
+Attaque 100 Eau
+Se soigne (+100) Eau
+Bonus Eau (+2)
+Précision 100% Critique 1%
+### Talents
+#### Blindage N/T
+Conseillé
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 40,8 · Score théorique
+#### Blindage F/E
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 40,8 · Score théorique
+#### Blindage O/L
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 40,8 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Collection avancée
+Midrange ·
+### Roi Eau + Voyageur des Crêtes
+33,8 % Indice relatif 12 tours Élimination estimée 31 / tour Spamtons
+### Résistances
+25% Feu
+25% Eau
+25% Terre
+25% Nature
+25% Ombre
+25% Lumière
+Créature · Vaeloria
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Dans les récifs coralliens situés entre Lumethia et Vaeloria, où se sont installées des communautés alphilanes, vivent des axolotls passionnés de musique et de peinture. Nombreuses sont les Blancheurs Aquatiques qui traversent la Mer Nimbée pour rejoindre Abondance, où elles semblent apprécier le mélange foisonnant des cultures.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+B # 248 Eau
+Épique · Génération
+### Roi Eau
+1000 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

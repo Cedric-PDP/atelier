@@ -1,0 +1,139 @@
+Léo: SPAM Light rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Léo C View the full card
+Léo
+4 Purifying Flash
+Mimicry
+800/800
+6
+Standard
+Léo
+4 Purifying Flash
+Mimicry
+800/800
+6
+Elemental
+Léo
+4 Purifying Flash
+Mimicry
+800/800
+6
+FA
+Léo
+4 Purifying Flash
+Mimicry
+800/800
+6
+## Léo
+C Light · Rare · Standard
+800 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Length At the start of your first turn, a random enemy card receives "Eternity"
+- Talent 2 Life-8 The card's HP and max HP are doubled at the start of turn 8
+Recommended
+- Talent 3 Mimicry Start the game with the Mimicry passive
+Three ability slots
+- Purifying Flash ability · Cooldown 4 Deal [20 to 60] Light damage
+Deal [20 to 60] Light damage
+Random enemies
+Apply Eternity
+4
+- Mimicry tox · Rare Each time the opponent generates one or more elements, you generate 1 of the same type.
+- Free slot Open to a shop Tox
+Illustration by Nao
+Full card details
+Illustration by Nao
+Light Rare #035
+# Léo
+Defense
+800 Health points
+6 Spamtons / turn
+#72 Rank / 127
+C No talent · #95
+Attack
+43
+Generation
+0
+Defense
+94
+Support
+1
+Control
+85
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Length 2 Life-8 3 Mimicry
+Build with this card 1 deck
+Share
+### Abilities
+#### Purifying Flash
+4 turns
+Deal [20 to 60] Light damage
+Deal [20 to 60] Light damage
+Random enemies
+Apply Eternity
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Mimicry
+Rare
+Each time the opponent generates one or more elements, you generate 1 of the same type.
+### Talents
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Life-8
+Recommended
+The card's HP and max HP are doubled at the start of turn 8
+Δ 242 · Theoretical score
+#### Mimicry
+Start the game with the Mimicry passive
+Δ 0 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+D Advanced collection
+Elemental ramp ·
+### Hatchlings of Midas + Melody of Divinities
+36.3 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+### Resistances
+0% Fire
+0% Water
+0% Earth
+0% Nature
+-38% Shadow
+0% Light
+Eltherien · Lumethia
+### Beyond the card
+The Drako'vish ranges stretch across the north of Lumethia. They form a border with Vaeloria and Hadeïr, land of the Great Lions. As the lions clashed in the northern savanna, Sylvan died in one final battle. Following the sacrifice of this shared friend, the clan leaders heeded his last wish and accepted peace. They then took Leo in. Despite a growing interest in the Eltherians who resemble him, Leo considers the Great Lions his family. He works to have them seen as a species in their own right, like the Natus.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+C # 198 Light
+Epic · Generation
+### Codex of Luminous Spells
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

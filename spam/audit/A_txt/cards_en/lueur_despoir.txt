@@ -1,0 +1,141 @@
+Glimmer of Hope: SPAM Light common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Glimmer of Hope D View the full card
+Glimmer of Hope
+1 Breath
+Lucky
+900/900
+10
+Standard
+Glimmer of Hope
+1 Breath
+Lucky
+900/900
+10
+Elemental
+Glimmer of Hope
+1 Breath
+Lucky
+900/900
+10
+FA
+Glimmer of Hope
+1 Breath
+Lucky
+900/900
+10
+## Glimmer of Hope
+D Light · Common · Standard
+900 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Lucky Tox Each Tox rarity has exactly a 25% chance to be obtained.
+Recommended
+- Talent 2 Roulette All of this card's abilities gain Echo (10%).
+- Talent 3 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Three ability slots
+- Breath ability · Cooldown 1 Heal 20 Nature
+Heal 20 Light
+Resistance in a random element (+15)
+1
+- Lucky tox · Rare Increases your Luck by (+1) per turn
+- Free slot Open to a shop Tox
+Illustration by Deirdre
+Full card details
+Illustration by Deirdre
+Light Common #022
+# Glimmer of Hope
+Support Defense Economy
+900 Health points
+10 Spamtons / turn
+#106 Rank / 127
+D No talent · #102
+Attack
+0
+Generation
+0
+Defense
+96
+Support
+91
+Control
+0
+Economy
+98
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Lucky Tox 2 Roulette 3 Transition
+Build with this card 2 decks
+Share
+### Abilities
+#### Breath
+1 turn
+Heal 20 Nature
+Heal 20 Light
+Resistance in a random element (+15)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Lucky
+Rare
+Increases your Luck by (+1) per turn
+### Talents
+#### Lucky Tox
+Recommended
+Each Tox rarity has exactly a 25% chance to be obtained.
+Δ 10 · Theoretical score
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ -18 · Theoretical score
+#### Transition
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 0 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+D Intermediate
+Elemental ramp ·
+### Radiant Shinobi + Glimmer of Hope
+49.2 % Relative index 10 turns Estimated elimination 30 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Radiant Shinobi + Thorn of Love
+39 % Relative index 10 turns Estimated elimination 37 / turn Spamtons
+### Resistances
+15% Fire
+11% Water
+9% Earth
+9% Nature
+9% Shadow
+9% Light
+Creature · Nyevielh
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Glimmers of Hope are the only neutral creatures in Nyevielh’s forest. They are said to mark the path to Vladislaus’s manor, and their presence also means that no abyssal monster is nearby. Do not stop to question this forest: if any protocol has been left for the unfortunate souls who dare enter, follow its instructions.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 227 Nature
+Common · Economy
+### Polychrome Owl
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

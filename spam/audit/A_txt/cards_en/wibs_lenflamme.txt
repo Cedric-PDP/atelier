@@ -1,0 +1,174 @@
+Wibs the Blazing: SPAM Fire common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Wibs the Blazing A View the full card
+Wibs the Blazing
+1 Lava-flow
+Fireheart
+Poison
+550/550
+5
+Standard
+Wibs the Blazing
+1 Lava-flow
+Fireheart
+Poison
+550/550
+5
+Elemental
+Wibs the Blazing
+1 Lava-flow
+Fireheart
+Poison
+550/550
+5
+FA
+Wibs the Blazing
+1 Lava-flow
+Fireheart
+Poison
+550/550
+5
+## Wibs the Blazing
+A Fire · Common · Standard
+550 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 F/E-Shield Fire resistance (+25%)
+Earth resistance (+25%)
+Recommended
+- Talent 2 Strike Increases critical damage by (+1).
+- Talent 3 Increasing Error Each time this card attacks, a random enemy card loses 3% accuracy
+Three ability slots
+- Lava-flow ability · Cooldown 1 Deal 5 Fire damage
+Deal 5 Fire damage
+1
+- Fireheart tox · Rare Fire bonus (+2) per turn
+- Poison tox · Common Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns.
+Illustration by Mr.Kelbi
+Full card details
+Illustration by Mr.Kelbi
+Fire Common #134
+# Wibs the Blazing
+Attack
+550 Health points
+5 Spamtons / turn
+#25 Rank / 127
+A No talent · #31
+Attack
+77
+Generation
+74
+Defense
+28
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 F/E-Shield 2 Strike 3 Increasing Error
+Build with this card 15 decks
+Share
+### Abilities
+#### Lava-flow
+1 turn
+Deal 5 Fire damage
+Deal 5 Fire damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Fireheart
+Rare
+Fire bonus (+2) per turn
+#### Poison
+Common
+Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns.
+### Talents
+#### F/E-Shield
+Recommended
+Fire resistance (+25%)
+Earth resistance (+25%)
+Δ 62.7 · Theoretical score
+#### Strike
+Increases critical damage by (+1).
+Δ 0.4 · Theoretical score
+#### Increasing Error
+Each time this card attacks, a random enemy card loses 3% accuracy
+Δ 22.1 · Theoretical score
+## Its best decks
+15 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Aggro / burst ·
+### Wibs the Blazing + Apprentice of Death
+63.3 % Relative index 7 turns Estimated elimination 22 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Sovereign of Flames + Apprentice of Death
+58.7 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+C Advanced collection
+Critical ·
+### Sovereign of Flames + Wibs the Blazing
+54.6 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Pyro + Wibs the Blazing
+53.8 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Pyro + Logidrake
+51.9 % Relative index 8 turns Estimated elimination 22 / turn Spamtons
+D Accessible
+Midrange ·
+### Wibs the Blazing + Logidrake
+34.8 % Relative index 10 turns Estimated elimination 19 / turn Spamtons
+The other decks (9)
+- C Wibs the Blazing + Apprentice of Death with Squall · Scorch Intermediate · 57.7%
+- C Wibs the Blazing + Apprentice of Death with Keria · The Inventor Intermediate · 54.8%
+- C Wibs the Blazing + Apprentice of Death with Faerylia · Vladislaus Advanced collection · 53.5%
+- D Sovereign of Flames + Wibs the Blazing with Keria · Squall Advanced collection · 49.5%
+- D Sovereign of Flames + Wibs the Blazing with Apprentice of Death · Pyrokinetic Sorceress Advanced collection · 45.7%
+- D Wibs the Blazing + Apprentice of Death with Prisoner of the Machine · The Inventor Accessible · 39%
+- D Sovereign of Flames + Wibs the Blazing with Fire King · Squall Advanced collection · 37%
+- D Wibs the Blazing + Apprentice of Death with Pyro · Prisoner of the Machine Accessible · 36.8%
+- D Pyro + Wibs the Blazing with Logidrake · Minion of Flames Accessible · 26%
+### Resistances
+15% Fire
+14% Water
+15% Earth
+16% Nature
+14% Shadow
+-10% Light
+Art · Lumethia
+### Beyond the card
+Historical accounts tell us the Oniyx were not only inventors. Some used their intelligence to set off on adventure. The most famous was Lumisaros, incapable of staying put on a chair. In charge of developing Oniyxia's relations, he was part of an adventuring group known as the deviants. Wibs, nicknamed "l'enflammée", is one of them, born with a rare elemental affinity for her species. Adventuring at sea was one of her greatest dreams. She built ships to cross the ocean with Lumisaros's help. Those gigantic machines now sit in the port of Lumethia. The painting of the happy Oniyx hangs in every captain's cabin. Wibs is celebrated every year with a festival of laughter and songs all across the port.
+## Better together
+The most promising partners according to the model.
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 117 Fire
+Rare · Support
+### Keria
+550 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

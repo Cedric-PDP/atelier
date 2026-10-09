@@ -1,0 +1,172 @@
+Gabriel: SPAM Nature epic card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Gabriel A View the full card
+Gabriel
+3 Cocoon
+6 Caterpillar
+9 Butterfly
+1000/1000
+9
+Standard
+Gabriel
+3 Cocoon
+6 Caterpillar
+9 Butterfly
+1000/1000
+9
+Elemental
+Gabriel
+3 Cocoon
+6 Caterpillar
+9 Butterfly
+1000/1000
+9
+FA
+Gabriel
+3 Cocoon
+6 Caterpillar
+9 Butterfly
+1000/1000
+9
+## Gabriel
+A Nature · Epic · Standard
+1,000 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Earth Field Earth bonus (+7).
+- Talent 2 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+- Talent 3 Lucky Tox Each Tox rarity has exactly a 25% chance to be obtained.
+Three ability slots
+- Cocoon ability · Cooldown 3 Deal 20 Nature damage Nature bonus (+5)
+[Limited Use 1/1]
+3
+- Caterpillar ability · Cooldown 6 Deal 40 Nature damage Nature bonus (+10)
+[Limited Use 1/1]
+6
+- Butterfly ability · Cooldown 9 Deal 60 Nature damage Nature bonus (+15)
+[Limited Use 1/1]
+9
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Nature Epic #195
+# Gabriel
+Generation
+1,000 Health points
+9 Spamtons / turn
+#14 Rank / 127
+S No talent · #7
+Attack
+59
+Generation
+89
+Defense
+70
+Support
+1
+Control
+0
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Earth Field 2 Soul Vitality 3 Lucky Tox
+Build with this card 8 decks
+Share
+### Abilities
+#### Cocoon
+3 turns
+Deal 20 Nature damage Nature bonus (+5)
+[Limited Use 1/1]
+Accuracy 100% Critical 1%
+#### Caterpillar
+6 turns
+Deal 40 Nature damage Nature bonus (+10)
+[Limited Use 1/1]
+Accuracy 100% Critical 1%
+#### Butterfly
+9 turns
+Deal 60 Nature damage Nature bonus (+15)
+[Limited Use 1/1]
+Accuracy 100% Critical 1%
+### Talents
+#### Earth Field
+Earth bonus (+7).
+Δ 269.5 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 408.3 · Theoretical score
+#### Lucky Tox
+Each Tox rarity has exactly a 25% chance to be obtained.
+Δ 10 · Theoretical score
+## Its best decks
+8 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Elemental ramp ·
+### Sky Dragon + Blade of the Forest
+56.7 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+51.2 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Floral Zombie + Gabriel
+50.2 % Relative index 9 turns Estimated elimination 39 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Gabriel + Nature Spirit
+50 % Relative index 9 turns Estimated elimination 31 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Floral Zombie + Princess Meridia
+42.4 % Relative index 10.5 turns Estimated elimination 29 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Spirit of the Fauna + Thorn of Love
+41.9 % Relative index 11.9 turns Estimated elimination 33 / turn Spamtons
+The other decks (2)
+- D Floral Zombie + Gabriel with Nature King · Blade of the Forest Advanced collection · 35.4%
+- D Gabriel + Sky Dragon with Verdelune · Blade of the Forest Advanced collection · 32.7%
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Pixarch · Vaeloria
+### Beyond the card
+History books recount this legend in many forms: the story of Aurelia, the Eternal who gave birth to the Pixarchs, and of her first creation, Gabriel. Both bound their fate to that of their people. Gabriel was a brilliant inventor and the closest friend of the Oniyx Lumisaros. Together, they created innovations that transformed everyday life, as well as legendary artifacts. The loss of the great winged beings during Aurelia’s Dawn is still mourned, although some survived the event, including the Nature King and Keria.
+## Better together
+The most promising partners according to the model.
+S # 056 Nature
+Common · Attack
+### Lisa, the Dragonrider
+800 HP
+C # 158 Nature
+Common · Versatile
+### Feathered Rabbit
+850 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

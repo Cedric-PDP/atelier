@@ -1,0 +1,164 @@
+Princesse Meridia : carte SPAM Nature rare, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Princesse Meridia A Voir la carte en grand
+Princesse Meridia
+4 Vent critique
+2 Volupté
+750/750
+7
+Standard
+Princesse Meridia
+4 Vent critique
+2 Volupté
+750/750
+7
+Élémentaire
+Princesse Meridia
+4 Vent critique
+2 Volupté
+750/750
+7
+FA
+Princesse Meridia
+4 Vent critique
+2 Volupté
+750/750
+7
+## Princesse Meridia
+A Nature · Rare · Standard
+750 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Life-8 Les PV et PV max de la carte sont doublés au début du tour 8
+Conseillé
+- Talent 2 Frappe Augmente les dégâts critiques de (+1).
+- Talent 3 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Trois champs de compétence
+- Vent critique compétence · Recharge 4 Attaque 40 Nature
+Gel
+4
+- Volupté compétence · Recharge 2 Bonus Eau (+2 à +5)
+Bonus Nature (+2 à +5)
+2
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Trinity
+Fiche complète
+Illustration par Trinity
+Nature Rare #029
+# Princesse Meridia
+Génération Défense Contrôle
+750 Points de vie
+7 Spamtons / tour
+#19 Classement / 127
+B Sans talent · #35
+Attaque
+24
+Génération
+94
+Défense
+98
+Soutien
+1
+Contrôle
+91
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Life-8 2 Frappe 3 Longueur
+Jouer cette carte 11 decks
+Partager
+### Compétences
+#### Vent critique
+4 tours
+Attaque 40 Nature
+Gel
+Précision 100% Critique 20%
+#### Volupté
+2 tours
+Bonus Eau (+2 à +5)
+Bonus Nature (+2 à +5)
+Précision 100% Critique 0%
+### Talents
+#### Life-8
+Conseillé
+Les PV et PV max de la carte sont doublés au début du tour 8
+Δ 304,7 · Score théorique
+#### Frappe
+Augmente les dégâts critiques de (+1).
+Δ 70,9 · Score théorique
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+## Ses meilleurs decks
+11 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+61,8 % Indice relatif 8 tours Élimination estimée 23 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Esprit de la Faune + L'Épine d'Amour
+55,2 % Indice relatif 8 tours Élimination estimée 29 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + Princesse Meridia
+53,3 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Zombie Floral + Princesse Meridia
+52,9 % Indice relatif 8 tours Élimination estimée 30 / tour Spamtons
+C Collection avancée
+Rampe élémentaire ·
+### Le compagnon des esprits + Scorch
+51,5 % Indice relatif 9 tours Élimination estimée 24 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Zombie Floral + Dragon Ciel
+49,6 % Indice relatif 9 tours Élimination estimée 36 / tour Spamtons
+Les autres decks (5)
+- D Zombie Floral + Chimère Brasse-chair avec Princesse Meridia · Dragon Ciel Intermédiaire · 48,8%
+- D Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Princesse Meridia Intermédiaire · 48,3%
+- D Zombie Floral + Princesse Meridia avec Esprit de la Faune · Gabriel Intermédiaire · 42,4%
+- D Zombie Floral + Princesse Meridia avec Léviathan des Cieux · Épine Médusine Collection avancée · 36,6%
+- D Zombie Floral + Maître Amphibian avec Frost & Glacier · Princesse Meridia Collection avancée · 31,8%
+### Résistances
+45% Feu
+7% Eau
+8% Terre
+7% Nature
+45% Ombre
+5% Lumière
+Eltherien · Vaeloria
+### Derrière la carte
+Meridia est aujourd’hui une cité prospère dont le conseil assure les relations diplomatiques avec l’étranger. C’est le seul pays qui ait la chance de commercer avec les Alphilans. La princesse Meridia, nommée d’après l’arbre sacré, s’intéressait beaucoup au peuple de la mer. Sur les côtes méridionales, elle rencontra le Seigneur des Marées, blessé. Elle prit soin de lui, et leur amour grandit. Leur union créa un lien entre leurs deux peuples. Aujourd’hui, la Princesse guerrière combat au front aux côtés de son mari. Elle incarne un nouvel espoir face aux Abyssaux de la Mer Étoilée.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 174 Nature
+Commune · Attaque
+### Zombie Floral
+850 PV
+C # 238 Eau
+Rare · Attaque
+### Chimère Brasse-chair
+525 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

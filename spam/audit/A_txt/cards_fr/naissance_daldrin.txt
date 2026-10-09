@@ -1,0 +1,142 @@
+Naissance d'Aldrin : carte SPAM Nature rare, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Naissance d'Aldrin D Voir la carte en grand
+Naissance d'Aldrin
+4 Première valse
+Phénix
+Cimetière
+700/700
+7
+Standard
+Naissance d'Aldrin
+4 Première valse
+Phénix
+Cimetière
+700/700
+7
+Élémentaire
+Naissance d'Aldrin
+4 Première valse
+Phénix
+Cimetière
+700/700
+7
+FA
+Naissance d'Aldrin
+4 Première valse
+Phénix
+Cimetière
+700/700
+7
+## Naissance d'Aldrin
+D Nature · Rare · Standard
+700 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Conseillé
+- Talent 2 Plume de Phénix 50 % de chance de récupérer le passif Phénix une fois utilisé.
+- Talent 3 Virage 360 Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+Trois champs de compétence
+- Première valse compétence · Recharge 4 Attaque 50 Nature
+4
+- Phénix tox · Rare Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max.
+Usage unique
+- Cimetière tox · Rare Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Nature Rare #030
+# Naissance d'Aldrin
+Utilitaire
+700 Points de vie
+7 Spamtons / tour
+#124 Classement / 127
+D Sans talent · #123
+Attaque
+17
+Génération
+0
+Défense
+34
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Reset ultime 2 Plume de Phénix 3 Virage 360
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Première valse
+4 tours
+Attaque 50 Nature
+Précision 100% Critique 1%
+### Tox de départ
+#### Phénix
+Rare
+Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max.
+Usage unique
+#### Cimetière
+Rare
+Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt
+### Talents
+#### Reset ultime
+Conseillé
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 7,3 · Score théorique
+#### Plume de Phénix
+50 % de chance de récupérer le passif Phénix une fois utilisé.
+Δ 0 · Score théorique
+#### Virage 360
+Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+Δ 0 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Dragon Ciel + Cerf des Couleurs Funèbres
+52,5 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+### Résistances
+6% Feu
+6% Eau
+5% Terre
+5% Nature
+6% Ombre
+5% Lumière
+Dhöggeïr · Vaeloria
+### Derrière la carte
+Depuis des temps immémoriaux, les Dhöggeïrs naissent de grands œufs au sommet des montagnes. Ces créatures de légende arbitrent les combats entre Éternels afin de protéger la Surface. Aldrin et Emeraldoth furent les premiers-nés. Bien que frères issus du même œuf, ils furent souvent en désaccord. Lorsque le continent unique se fragmenta, tous deux mobilisèrent l’intégralité de leurs pouvoirs pour protéger les êtres vivants. Le sud de Vaeloria prit le nom d’Emeldarion en leur honneur. Aldrin aurait trouvé le sommeil sur les Îles Esseulées, et son frère dans le Marais’Cage d’Emeldarion.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,156 @@
+Chimère Brasse-chair : carte SPAM Eau rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Chimère Brasse-chair C Voir la carte en grand
+Chimère Brasse-chair
+2 Galop arctique
+Vampirisme
+Mimétisme
+525/525
+5
+Standard
+Chimère Brasse-chair
+2 Galop arctique
+Vampirisme
+Mimétisme
+525/525
+5
+Élémentaire
+Chimère Brasse-chair
+2 Galop arctique
+Vampirisme
+Mimétisme
+525/525
+5
+FA
+Chimère Brasse-chair
+2 Galop arctique
+Vampirisme
+Mimétisme
+525/525
+5
+## Chimère Brasse-chair
+C Eau · Rare · Standard
+525 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Critique Bonus critique (+10 %)
+Conseillé
+- Talent 2 Frappe Augmente les dégâts critiques de (+1).
+- Talent 3 Pièce magique Commencez la partie avec (+2) en Chance
+Trois champs de compétence
+- Galop arctique compétence · Recharge 2 Cible toutes les cartes adverses
+Attaque 10 Eau 10 Nature
+2
+- Vampirisme tox · Épique Régénère 75% des dégâts infligés à la cible
+- Mimétisme tox · Rare Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Eau Rare #238
+# Chimère Brasse-chair
+Attaque
+525 Points de vie
+5 Spamtons / tour
+#75 Classement / 127
+C Sans talent · #69
+Attaque
+81
+Génération
+0
+Défense
+39
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Critique 2 Frappe 3 Pièce magique
+Jouer cette carte 5 decks
+Partager
+### Compétences
+#### Galop arctique
+2 tours
+Cible toutes les cartes adverses
+Attaque 10 Eau 10 Nature
+Précision 100% Critique 1%
+### Tox de départ
+#### Vampirisme
+Épique
+Régénère 75% des dégâts infligés à la cible
+#### Mimétisme
+Rare
+Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.
+### Talents
+#### Critique
+Conseillé
+Bonus critique (+10 %)
+Δ 37,4 · Score théorique
+#### Frappe
+Augmente les dégâts critiques de (+1).
+Δ 5,6 · Score théorique
+#### Pièce magique
+Commencez la partie avec (+2) en Chance
+Δ 4 · Score théorique
+## Ses meilleurs decks
+5 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Zombie Floral + Princesse Meridia
+52,9 % Indice relatif 8 tours Élimination estimée 30 / tour Spamtons
+D Intermédiaire
+Midrange ·
+### Zombie Floral + Chimère Brasse-chair
+48,8 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Zombie Floral + Aidan
+46,3 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Catimimi + Aidan
+39,6 % Indice relatif 8 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (1)
+- D Zombie Floral + Chimère Brasse-chair avec Dragon Ciel · L'Épine d'Amour Accessible · 47,7%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Abysses
+### Derrière la carte
+Les monstres abyssaux ont une forme horrifique indescriptible. Ces créatures démoniaques furent rencontrées lors de l’expédition Oniyx, une aventure terrifiante dans les profondeurs du temple de Zaar’Phahl, en Shal’Zaar. La progression du groupe dans les Abysses s’accompagnait d’un profond malaise. Trompés de toutes parts, leurs sens finirent pourtant par distinguer un cristal d’énergie pure. Cette rare découverte n’était en réalité qu’un piège grossier tendu par un monstre. L’Abyssal décima avec délectation près d’un quart du groupe avant de se lasser.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 029 Nature
+Rare · Génération
+### Princesse Meridia
+750 PV
+D # 262 Nature
+Commune · Soutien
+### Yotaru Gardefeuille
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

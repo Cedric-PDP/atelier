@@ -1,0 +1,47 @@
+Four slots. One real plan: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Deck building Deck building
+# Four slots. One real plan.
+Give every card a purpose and turn a collection into a composition.
+5 min read Share
+Illustration by Amytis
+01
+## Choose what you want to accomplish.
+A deck can accelerate damage, accumulate bonuses, or protect a threat. Start with that intention, then choose a key card. Tiers help you discover options; they don’t replace coherence between all four cards.
+02
+## Give every slot a job.
+Ask what each card contributes to the others: compatible generation, damage, healing, control, or economy. Two cards can share a role, but a slot with no clear contribution is a good replacement candidate. Check talents too: the best solo talent can change in a team.
+03
+## Test one hypothesis at a time.
+Save a reference composition in the workshop. Change one card or talent, rerun the analysis, then compare score, tempo, and healing. The engine’s suggestions are ideas to try. Simulation uses an average opponent, so test your idea against real game situations afterward.
+Understanding the scores
+## Explore with this guide
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+S # 122 Nature
+Common · Attack
+### Spirit of the Fauna
+800 HP
+A # 178 Shadow
+Common · Attack
+### Medusine Thorn
+800 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

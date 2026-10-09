@@ -1,0 +1,139 @@
+The Wild Carrier: SPAM Earth common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards The Wild Carrier D View the full card
+The Wild Carrier
+4 Stronghold
+Punching Bag
+1000/1000
+7
+Standard
+The Wild Carrier
+4 Stronghold
+Punching Bag
+1000/1000
+7
+Elemental
+The Wild Carrier
+4 Stronghold
+Punching Bag
+1000/1000
+7
+FA
+The Wild Carrier
+4 Stronghold
+Punching Bag
+1000/1000
+7
+## The Wild Carrier
+D Earth · Common · Standard
+1,000 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+- Talent 2 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+- Talent 3 Cavalry Increases the max HP of all other allied cards by (+150)
+Recommended
+Three ability slots
+- Stronghold ability · Cooldown 4 Apply Taunt for 2 turns
+4
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Free slot Open to a shop Tox
+Illustration by Simdof
+Full card details
+Illustration by Simdof
+Earth Common #058
+# The Wild Carrier
+Utility
+1,000 Health points
+7 Spamtons / turn
+#119 Rank / 127
+D No talent · #116
+Attack
+0
+Generation
+50
+Defense
+70
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Focus 2 Evolution 3 Cavalry
+Build with this card 2 decks
+Share
+### Abilities
+#### Stronghold
+4 turns
+Apply Taunt for 2 turns
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Focus
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 563.6 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 0 · Theoretical score
+#### Cavalry
+Recommended
+Increases the max HP of all other allied cards by (+150)
+Δ 729.1 · Theoretical score
+## Its best decks
+2 ranked decks play this card, from best to worst.
+All decks
+A Intermediate
+Aggro / burst ·
+### Aleera + Commando Gerz
+87.9 % Relative index 6 turns Estimated elimination 21 / turn Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera + Master Amphibian
+85.3 % Relative index 6 turns Estimated elimination 21 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Creature · Shal'Zaar
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Carrier of Shal'Zaar, in the wild, is one of the few creatures able to stand against the desert's Abyssal threat. Its abilities make it a top pick to tame — for combat or for hauling goods. Monster hunters live in harmony with herds of Carriers.
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 085 Earth
+Epic · Attack
+### Blue-Stone-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

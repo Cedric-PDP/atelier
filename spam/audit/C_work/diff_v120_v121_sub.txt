@@ -1,0 +1,115 @@
+#5 Esprit Ombre
+   .talents[0].name: "Coeur OMBRE" -> "Cœur OMBRE"
+   .talents[0].passiveObj.name: "Coeur OMBRE" -> "Cœur OMBRE"
+#30 Naissance d'Aldrin
+   .passives[1].id: "Reset_E" -> "Cimetiere_R"
+   .passives[1].name: "Reset" -> "Cimetière"
+   .passives[1].rarity: "epic" -> "rare"
+   .passives[1].text: "Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible" -> "Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt"
+   .passives[1].type: "reset" -> "cimetiere"
+   .passives[1].value: undefined -> 5
+#33 Nakyel
+   .talents[0].name: "Coeur OMBRE" -> "Cœur OMBRE"
+   .talents[0].passiveObj.name: "Coeur OMBRE" -> "Cœur OMBRE"
+#37 Roi des Flammes Ardentes
+   .abilities[0].options[0].effects[0].value: 5 -> 7
+   .abilities[0].options[0].text: "Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%)" -> "Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+7%)"
+   .abilities[0].text: "Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+5%)" -> "Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+7%)"
+#51 Sorcière Pyrokinétique
+   .abilities[0].crit: 1 -> 20
+#58 Le Transporteur Sauvage
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#72 Girafe Florale
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#92 Frost & Glacier
+   .passives[0].text: "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts." -> "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts."
+   .passives[0].value: 40 -> 60
+#102 Murmures du Corail Noir
+   .spamton: 7 -> 2
+   .hp: 500 -> 400
+   .abilities[0].options[0].effects[0].value: 5 -> 3
+   .abilities[0].options[0].text: "Soigne 10 Eau | La valeur de base du soin augmente de 5" -> "Soigne 10 Eau | La valeur de base du soin augmente de 3"
+   .abilities[0].text: "Soigne 10 Eau\nLa valeur de base du soin augmente de 5" -> "Soigne 10 Eau\nLa valeur de base du soin augmente de 3"
+#113 Lums
+   .talents[1].name: "Coeur OMBRE" -> "Cœur OMBRE"
+   .talents[1].passiveObj.name: "Coeur OMBRE" -> "Cœur OMBRE"
+#123 Tisseuse de Mots
+   .spamton: 3 -> 2
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#124 Wyrm des Dunes Cornu
+   .abilities[0].options[0].effects[0].value: 5 -> 7
+   .abilities[0].options[0].text: "Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%)" -> "Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+7%)"
+   .abilities[0].text: "Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+5%)" -> "Attaque 15 Feu\nAttaque 15 Terre\nCritique de toutes les cartes du lanceur (+7%)"
+#153 L'Inventeur
+   .abilities[0].options[0].gen: [] -> [{"element":"all","min":-5,"max":8,"cond":false}]
+   .abilities[0].options[0].text: "Bonus [-8 à +10] dans chaque élément" -> "Bonus [-5 à +8] dans chaque élément"
+   .abilities[0].text: "Bonus [-8 à +10] dans chaque élément" -> "Bonus [-5 à +8] dans chaque élément"
+   .abilities[0].hasGen: false -> true
+#158 Lapin-Plume
+   .hp: 1000 -> 850
+   .passives[0].text: "Cette carte augmente les résistances de toutes les cartes alliées (+3)" -> "Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3)."
+#160 Sanglier Doré
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#174 Zombie Floral
+   .hp: 1000 -> 850
+   .abilities[0].options[0].effects: [{"type":"vanish"}] -> [{"type":"vanish"},{"type":"vanish"}]
+   .abilities[0].options[0].target: "enemy" -> "aoeEnemy"
+   .abilities[0].options[0].text: "Attaque [30 à +60] Eau | Attaque [30 à +60] Nature | Applique Disparition" -> "Attaque [30 à 60] Eau sur toutes les cartes adverses | Applique Disparition | Attaque [30 à 60] Nature sur toutes les cartes adverses | Applique Disparition"
+   .abilities[0].text: "Attaque [30 à +60] Eau\nAttaque [30 à +60] Nature\nApplique Disparition" -> "Attaque [30 à 60] Eau sur toutes les cartes adverses\nApplique Disparition\nAttaque [30 à 60] Nature sur toutes les cartes adverses\nApplique Disparition"
+#180 Dragon Ciel
+   .abilities[1].id: "Souffle tornade" -> "Appel de la forêt"
+   .abilities[1].name: "Souffle tornade" -> "Appel de la forêt"
+   .abilities[1].options[0].hits[0].min: 40 -> 30
+   .abilities[1].options[0].hits[0].max: 40 -> 30
+   .abilities[1].options[0].gen: [] -> [{"element":"nature","min":4,"max":4,"cond":false}]
+   .abilities[1].options[0].target: "enemy" -> "aoeEnemy"
+   .abilities[1].options[0].text: "Attaque 40 Nature" -> "Attaque toutes les cartes adverses 30 Nature | Bonus Nature (+4)"
+   .abilities[1].text: "Attaque 40 Nature" -> "Attaque toutes les cartes adverses 30 Nature\nBonus Nature (+4)"
+   .abilities[1].hasGen: false -> true
+#190 Lames en peine
+   .passives[1].text: "Cette carte augmente les résistances de toutes les cartes alliées (+6)" -> "Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6)."
+#203 Ashtarae Lycaria
+   .spamton: 8 -> 4
+   .hp: 1000 -> 700
+   .abilities[2].cost: null -> {"shadow":5}
+   .abilities[2].options[0].text: "Ressuscite le dernier allié détruit avec la moitié de ses PV max" -> "[Coût 5 Ombre] | Ressuscite le dernier allié détruit avec la moitié de ses PV max"
+   .abilities[2].text: "Ressuscite le dernier allié détruit avec la moitié de ses PV max" -> "[Coût 5 Ombre]\nRessuscite le dernier allié détruit avec la moitié de ses PV max"
+#221 Crapaud des Étoiles
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#231 Aleera Mange-Cauchemars
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#234 Rongeur Nuageux
+   .hp: 750 -> 650
+   .abilities[0].id: "Ronge nuage" -> "Foudre"
+   .abilities[0].name: "Ronge-nuage" -> "Foudre"
+   .abilities[0].cd: 3 -> 2
+   .abilities[0].crit: 1 -> 15
+   .abilities[0].options[0].hits[0].missingPct: undefined -> 50
+   .abilities[0].options[0].gen: [{"element":"light","min":1,"max":1,"cond":false}] -> []
+   .abilities[0].options[0].text: "Attaque 30 Lumière | Bonus Lumière (+1)" -> "Attaque 30 Lumière + 50% des PV manquants du lanceur"
+   .abilities[0].text: "Attaque 30 Lumière\nBonus Lumière (+1)" -> "Attaque 30 Lumière + 50% des PV manquants du lanceur"
+   .abilities[0].hasGen: true -> false
+#236 Apprentie de la Mort
+   .abilities[0].options[0].hits[0].min: 15 -> 25
+   .abilities[0].options[0].hits[0].max: 15 -> 25
+   .abilities[0].options[0].hits[1].min: 15 -> 25
+   .abilities[0].options[0].hits[1].max: 15 -> 25
+   .abilities[0].options[0].text: "Cible toutes les cartes adverses | Attaque 15 Feu et 15 Ombre" -> "Cible toutes les cartes adverses | Attaque 25 Feu et 25 Ombre"
+   .abilities[0].text: "Cible toutes les cartes adverses\nAttaque 15 Feu et 15 Ombre" -> "Cible toutes les cartes adverses\nAttaque 25 Feu et 25 Ombre"
+#247 Roi Feu
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#248 Roi Eau
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#249 Roi Nature
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#250 Roi Terre
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#251 Roi Ombre
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#252 Roi Lumière
+   .passives[0].text: "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque" -> "Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse"
+#259 Dragon de la Cité Infernale
+   .passives[0].text: "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts." -> "Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts."
+   .passives[0].value: 40 -> 60
+   .talents[1].name: "Coeur OMBRE" -> "Cœur OMBRE"
+   .talents[1].passiveObj.name: "Coeur OMBRE" -> "Cœur OMBRE"

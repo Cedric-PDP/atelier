@@ -1,0 +1,108 @@
+SPAM Helper: Spam Game tier list, decks and cards v1.21
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Your community game companion v1.21
+# Build.
+Test.
+Play.
+Your SPAM (Spam Game) community companion: card and deck tier list, deck builder, Tox and guides. Official data. Better games.
+Build a deck View the tier list
+127 cards 7 elements Official card data v1.21 Free. Made for players.
+C # 002 Water
+Common · Generation
+### Water Spirit
+500 HP
+D # 001 Fire
+Common · Versatile
+### Fire Spirit
+500 HP
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+Prepare Analyze Play.
+Every card has potential. Find its spark.
+What’s your element? Fire Water Earth Nature Shadow Light Aether
+01 / Our current picks
+## In the spotlight
+Beautiful cards. Real possibilities.
+All cards
+S # 091 Fire
+Legendary · Control
+### Ignea
+750 HP
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+B # 265 Aether
+Divine · Generation
+### Aeltheria, Primordial Mother
+700 HP
+A # 178 Shadow
+Common · Attack
+### Medusine Thorn
+800 HP
+B # 260 Water
+Common · Attack
+### The Companion of Spirits
+600 HP
+02 / Tier lists
+## Your next deck is right here.
+Analyzed compositions. A gameplan for every one.
+Explore the tier lists
+S Advanced collection 01
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Accessible 02
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate 03
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Advanced collection 04
+Aggro / burst ·
+### Aleera + Master Amphibian
+92.5 % Relative index 6 turns Estimated elimination 26 / turn Spamtons
+03 / Strategies
+## Play with a plan.
+Understanding the mechanics is your first advantage.
+All strategies
+01
+Elemental synergies
+### An engine, not four soloists.
+Let bonuses flow from your generators to your attackers. That’s where synergy begins.
+4 min read
+02
+Deck building
+### Four slots. One real plan.
+Give every card a purpose and turn a collection into a composition.
+5 min read
+03
+Tempo & rotations
+### The right move, at the right time.
+Read cooldowns, spot damage spikes, and prepare your windows of opportunity.
+4 min read
+Deck workshop
+## What if the next deck was yours?
+Four cards, your talents, your playstyle. The simulator explores their potential and tells you which Tox to hunt for.
+Open the workshop
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

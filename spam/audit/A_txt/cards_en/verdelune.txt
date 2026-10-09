@@ -1,0 +1,164 @@
+Verdelune: SPAM Nature legendary card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Verdelune C View the full card
+Verdelune
+3 Multi-Foliage
+3 Truce
+Temporality
+900/900
+5
+Standard
+Verdelune
+3 Multi-Foliage
+3 Truce
+Temporality
+900/900
+5
+Elemental
+Verdelune
+3 Multi-Foliage
+3 Truce
+Temporality
+900/900
+5
+FA
+Verdelune
+3 Multi-Foliage
+3 Truce
+Temporality
+900/900
+5
+## Verdelune
+C Nature · Legendary · Standard
+900 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Length At the start of your first turn, a random enemy card receives "Eternity"
+Recommended
+- Talent 2 Critical Critical bonus (+10%).
+- Talent 3 Last Breath Applies Temporality to all your cards when this card dies
+Three ability slots
+- Multi-Foliage ability · Cooldown 3 Deal 5 Nature damage Random
+Deal 15 Nature damage
+Deal 25 Nature damage
+Deal 35 Nature damage
+3
+- Truce ability · Cooldown 3 Heal 60 Nature
+Resistance to all elements (+10)
+3
+- Temporality tox · Legendary Decreases cooldowns by 1
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Legendary #255
+# Verdelune
+Defense
+900 Health points
+5 Spamtons / turn
+#76 Rank / 127
+C No talent · #89
+Attack
+24
+Generation
+0
+Defense
+95
+Support
+80
+Control
+84
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Length 2 Critical 3 Last Breath
+Build with this card 5 decks
+Share
+### Abilities
+#### Multi-Foliage
+3 turns
+Deal 5 Nature damage Random
+Deal 15 Nature damage
+Deal 25 Nature damage
+Deal 35 Nature damage
+Accuracy 50% Critical 5%
+#### Truce
+3 turns
+Heal 60 Nature
+Resistance to all elements (+10)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Temporality
+Legendary
+Decreases cooldowns by 1
+### Talents
+#### Length
+Recommended
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ -0.7 · Theoretical score
+#### Last Breath
+Applies Temporality to all your cards when this card dies
+Δ 0 · Theoretical score
+## Its best decks
+5 ranked decks play this card, from best to worst.
+All decks
+D Advanced collection
+Elemental ramp ·
+### Spirit of the Fauna + Thorn of Love
+46.6 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Deer of Mournful Colors + Thorn of Love
+46.3 % Relative index 9 turns Estimated elimination 26 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Sky Dragon + Nature Spirit
+36 % Relative index 10.4 turns Estimated elimination 31 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Gabriel + Sky Dragon
+32.7 % Relative index 10.5 turns Estimated elimination 27 / turn Spamtons
+The other decks (1)
+- D Spirit of the Fauna + Thorn of Love with Verdelune · Gabriel Advanced collection · 41.9%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eternal · Vaeloria
+### Beyond the card
+With the single continent freshly shattered, the environmental imbalance couldn't easily right itself — because of far too much elemactive activity in the aftermath of the divine war. The Eternal Verdelune took on a role of regulation. It sees to the needs of the growing plants on the Surface. Meeting it is exceedingly rare and heralds good harvests. Be careful not to disturb it in its work — its disappearance, they say, would wither the crops and pollute the waters.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

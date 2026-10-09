@@ -1,0 +1,153 @@
+Épine Médusine : carte SPAM Ombre commune, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Épine Médusine A Voir la carte en grand
+Épine Médusine
+1 Toxine enflammée
+Multiplicateur
+800/800
+10
+Standard
+Épine Médusine
+1 Toxine enflammée
+Multiplicateur
+800/800
+10
+Élémentaire
+Épine Médusine
+1 Toxine enflammée
+Multiplicateur
+800/800
+10
+FA
+Épine Médusine
+1 Toxine enflammée
+Multiplicateur
+800/800
+10
+## Épine Médusine
+A Ombre · Commune · Standard
+800 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Terrain aquatique Bonus (+7) Eau.
+Conseillé
+- Talent 2 Terrain enflammé Bonus (+7) Feu.
+- Talent 3 Affaiblissement Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Trois champs de compétence
+- Toxine enflammée compétence · Recharge 1 Attaque [1 à 35] Eau
+Soigne [1 à 35] Feu
+1
+- Multiplicateur tox · Rare Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Ombre Commune #178
+# Épine Médusine
+Attaque
+800 Points de vie
+10 Spamtons / tour
+#11 Classement / 127
+A Sans talent · #13
+Attaque
+84
+Génération
+0
+Défense
+74
+Soutien
+76
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Terrain aquatique 2 Terrain enflammé 3 Affaiblissement
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Toxine enflammée
+1 tour
+Attaque [1 à 35] Eau
+Soigne [1 à 35] Feu
+Précision 100% Critique 1%
+### Tox de départ
+#### Multiplicateur
+Rare
+Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte
+### Talents
+#### Terrain aquatique
+Conseillé
+Bonus (+7) Eau.
+Δ 609,3 · Score théorique
+#### Terrain enflammé
+Bonus (+7) Feu.
+Δ 440,2 · Score théorique
+#### Affaiblissement
+Diminue les résistances élémentaires de toutes les cartes adverses de (-1 %) par tour de jeu
+Δ 170,5 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Le compagnon des esprits + Esprit Eau
+58,7 % Indice relatif 8 tours Élimination estimée 35 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Épine Médusine + Scorch
+54,5 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Épine Médusine + Le compagnon des esprits
+51,7 % Indice relatif 9 tours Élimination estimée 30 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Zombie Floral + Princesse Meridia
+36,6 % Indice relatif 11,6 tours Élimination estimée 32 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Maître Amphibian + Scorch
+32,4 % Indice relatif 11,2 tours Élimination estimée 30 / tour Spamtons
+Les autres decks (1)
+- C Épine Médusine + Le compagnon des esprits avec Léviathan des Cieux · Scorch Collection avancée · 51,1%
+### Résistances
+20% Feu
+20% Eau
+20% Terre
+20% Nature
+20% Ombre
+20% Lumière
+Créature · Hadeïr
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Sur les côtes du nord de Hadeïr, des méduses enflammées s’envolent jusqu’au centre de la Mer Embrasée. La chaleur de leur corps leur permet de s’élever avant de retomber lentement dans l’eau. Sous la surface, elles emmagasinent assez de chaleur pour recommencer ce cycle chaque semaine. Les Lézards Ignés, importés d’Emeldarion, et les Épines Médusines offrent ainsi un spectacle nocturne grandiose, source de fierté nationale et thème de nombreux festivals.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 002 Eau
+Commune · Génération
+### Esprit Eau
+500 PV
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+B # 248 Eau
+Épique · Génération
+### Roi Eau
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

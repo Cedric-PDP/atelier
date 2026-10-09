@@ -1,0 +1,555 @@
+[
+ {
+  "number": 12,
+  "name": "Hibernatus",
+  "where": "TAL Bombe-8",
+  "kind": "talent",
+  "msg": "passif donné « Bombe-8 » (epic) — texte interne « Inflige 500 dégâts bruts » vs texte affiché « Applique le passif \"Bomba\" au tour 8 »"
+ },
+ {
+  "number": 17,
+  "name": "Croqueur de Fruits Verdoyant",
+  "where": "TAL AOE Épique",
+  "kind": "talent",
+  "msg": "passif donné « AOE Épique » (epic) — texte interne « à hauteur de 80% des dégâts » vs texte affiché « Commence la partie avec le passif \"AoE\" »"
+ },
+ {
+  "number": 22,
+  "name": "Lueur d'Espoir",
+  "where": "Respiration",
+  "kind": "nombre",
+  "msg": "texte « Soigne 20 Nature | Soigne 20 Lumière | Résistance d'un élément aléatoire (+15) » contient 15 absent(s) des champs structurés"
+ },
+ {
+  "number": 22,
+  "name": "Lueur d'Espoir",
+  "where": "Respiration",
+  "kind": "aléatoire",
+  "msg": "texte « Soigne 20 Nature | Soigne 20 Lumière | Résistance d'un élément aléatoire (+15) » dit « aléatoire » mais aucun champ aléatoire (cible ally, effets [{\"type\":\"res\",\"scope\":\"ally\",\"value\":2.5,\"elements\":\"all\"}])"
+ },
+ {
+  "number": 23,
+  "name": "Artisan des Heures",
+  "where": "Ralentissement",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"eternity\"] (texte « Applique Éternité ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 23,
+  "name": "Artisan des Heures",
+  "where": "Flash",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"freeze\"]) — durée de quoi ? (texte « Attaque 35 Lumière | Gel »)"
+ },
+ {
+  "number": 25,
+  "name": "Amber",
+  "where": "TAL Inversement",
+  "kind": "talent",
+  "msg": "passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif \"Inversement\" »"
+ },
+ {
+  "number": 26,
+  "name": "Blaze",
+  "where": "TAL Inversement",
+  "kind": "talent",
+  "msg": "passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif \"Inversement\" »"
+ },
+ {
+  "number": 29,
+  "name": "Princesse Meridia",
+  "where": "Vent critique",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"freeze\"]) — durée de quoi ? (texte « Attaque 40 Nature | Gel »)"
+ },
+ {
+  "number": 29,
+  "name": "Princesse Meridia",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 31,
+  "name": "Raffteru",
+  "where": "Secousse aléatoire",
+  "kind": "cible",
+  "msg": "cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 70 Terre | Critique (+20%) sur toutes les cartes alliées »)"
+ },
+ {
+  "number": 31,
+  "name": "Raffteru",
+  "where": "TAL Brut",
+  "kind": "talent",
+  "msg": "passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif \"Brut\" »"
+ },
+ {
+  "number": 33,
+  "name": "Nakyel",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 35,
+  "name": "Léo",
+  "where": "Éclair purificateur",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"eternity\"]) — durée de quoi ? (texte « Attaque [20 à 60] Lumière | Attaque [20 à 60] Lumière | Ennemis aléatoires | Applique Éternité »)"
+ },
+ {
+  "number": 35,
+  "name": "Léo",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 35,
+  "name": "Léo",
+  "where": "TAL Mimétisme",
+  "kind": "talent",
+  "msg": "passif donné « Mimétisme » (rare) — texte interne « Mimétisme » vs texte affiché « Commence la partie avec le passif Mimétisme »"
+ },
+ {
+  "number": 36,
+  "name": "Astry",
+  "where": "TAL Mystère",
+  "kind": "talent",
+  "msg": "passif donné « Mystère » (rare) — texte interne « Mystère » vs texte affiché « Commence la partie avec le passif \"Mystère\" »"
+ },
+ {
+  "number": 42,
+  "name": "Dragonnet des Lumières",
+  "where": "TAL Nouveau riche",
+  "kind": "talent",
+  "msg": "passif donné « Nouveau riche » (common) — texte interne « Génère (+3) Spamtons chaque tour » vs texte affiché « Commence la partie avec, au hasard, le passif Spamland ou Chanceur. » ; alternative Chance_C"
+ },
+ {
+  "number": 42,
+  "name": "Dragonnet des Lumières",
+  "where": "TAL Nouvelle vie",
+  "kind": "talent",
+  "msg": "passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C"
+ },
+ {
+  "number": 51,
+  "name": "Sorcière Pyrokinétique",
+  "where": "Flamme magique",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"eternity\",\"eternity\",\"res\"]) — durée de quoi ? (texte « Attaque 25 Feu | Applique Éternité en cas de critique | Attaque 25 Lumière | Applique Éternité en cas de critique | Baisse la résistance Feu et Lumière de l'adversaire de (10%) »)"
+ },
+ {
+  "number": 54,
+  "name": "Loutre Intrépide",
+  "where": "Morsure",
+  "kind": "cible",
+  "msg": "cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 6 Eau | Critique (+3%) sur toutes les cartes alliées »)"
+ },
+ {
+  "number": 56,
+  "name": "Lisa, la Dragonnière",
+  "where": "TAL AOE Rare",
+  "kind": "talent",
+  "msg": "passif donné « AOE Rare » (rare) — texte interne « à hauteur de 40% des dégâts » vs texte affiché « Commence la partie avec le passif \"AoE\" »"
+ },
+ {
+  "number": 58,
+  "name": "Le Transporteur Sauvage",
+  "where": "Fort",
+  "kind": "durée",
+  "msg": "texte « Applique Provocation pendant 2 tours » (durée 2) vs ability.duration=4, effet.duration=2"
+ },
+ {
+  "number": 58,
+  "name": "Le Transporteur Sauvage",
+  "where": "Fort",
+  "kind": "durée",
+  "msg": "ability.duration=4 ≠ effet taunt.duration=2 (texte « Applique Provocation pendant 2 tours »)"
+ },
+ {
+  "number": 59,
+  "name": "Guerrier des Neiges",
+  "where": "TAL Bombe-8",
+  "kind": "talent",
+  "msg": "passif donné « Bombe-8 » (epic) — texte interne « Inflige 500 dégâts bruts » vs texte affiché « Applique le passif \"Bomba\" au tour 8 »"
+ },
+ {
+  "number": 59,
+  "name": "Guerrier des Neiges",
+  "where": "TAL Brut",
+  "kind": "talent",
+  "msg": "passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif \"Brut\" »"
+ },
+ {
+  "number": 64,
+  "name": "Maître Thronebéur",
+  "where": "Ralentissement",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"eternity\"] (texte « Applique Éternité ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 64,
+  "name": "Maître Thronebéur",
+  "where": "Marteau-lumineux",
+  "kind": "cible",
+  "msg": "cible allAllies avec des dégâts (2 hits) : le coup vise-t-il un ennemi ? (texte « Attaque 20 Lumière | Attaque 20 Terre | Précision (+20%) sur toutes les cartes alliées »)"
+ },
+ {
+  "number": 64,
+  "name": "Maître Thronebéur",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 67,
+  "name": "Logidrake, l'Ignatius",
+  "where": "TAL Nouvelle vie",
+  "kind": "talent",
+  "msg": "passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C"
+ },
+ {
+  "number": 69,
+  "name": "Scorch, les Lézards Ignés",
+  "where": "TAL Nouvelle vie",
+  "kind": "talent",
+  "msg": "passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C"
+ },
+ {
+  "number": 72,
+  "name": "Girafe Florale",
+  "where": "Renaissance Sylvatique",
+  "kind": "cible",
+  "msg": "Provocation portée « ally » mais cible « allAllies » : un allié ou toute l'équipe ? (texte « Applique Provocation | Cible toutes les cartes alliées | Précision et Critique (+5%) »)"
+ },
+ {
+  "number": 78,
+  "name": "Gardien Vert",
+  "where": "TAL AOE",
+  "kind": "talent",
+  "msg": "passif donné « AOE » (common) — texte interne « à hauteur de 20% des dégâts » vs texte affiché « Commence la partie avec le passif \"AoE\" »"
+ },
+ {
+  "number": 83,
+  "name": "Panthère imaginaire",
+  "where": "TAL Brut",
+  "kind": "talent",
+  "msg": "passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif \"Brut\" »"
+ },
+ {
+  "number": 86,
+  "name": "Régent des Abysses",
+  "where": "Avalement",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"absorbAlly\"] (texte « Absorbe une carte alliée ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 88,
+  "name": "Faerylia",
+  "where": "TAL Heure Funeste",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »"
+ },
+ {
+  "number": 91,
+  "name": "Ignea",
+  "where": "Silenfeu",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"freeze\"]) — durée de quoi ? (texte « Applique Gel »)"
+ },
+ {
+  "number": 91,
+  "name": "Ignea",
+  "where": "Silenfeu",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"freeze\"] (texte « Applique Gel ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 101,
+  "name": "Neilla",
+  "where": "TAL Réducteur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte alliée aléatoire reçoit \"Temporalité\" »"
+ },
+ {
+  "number": 116,
+  "name": "Prisonnière de la Machine",
+  "where": "TAL Sac de frappe",
+  "kind": "talent",
+  "msg": "passif donné « Sac de frappe » (common) — texte interne « Sac de frappe » vs texte affiché « Commence la partie avec le passif \"Sac de frappe\" »"
+ },
+ {
+  "number": 122,
+  "name": "Esprit de la Faune",
+  "where": "Soin soleil",
+  "kind": "durée",
+  "msg": "ability.duration=2 mais aucun effet n'a de durée (effets [\"freeze\"]) — durée de quoi ? (texte « Soigne 60 Lumière | Gel »)"
+ },
+ {
+  "number": 122,
+  "name": "Esprit de la Faune",
+  "where": "Soin soleil",
+  "kind": "cible",
+  "msg": "Gel sur un ALLIÉ (cible ally) — le lanceur gèle la carte qu'il soigne ? (texte « Soigne 60 Lumière | Gel »)"
+ },
+ {
+  "number": 122,
+  "name": "Esprit de la Faune",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 122,
+  "name": "Esprit de la Faune",
+  "where": "TAL Immunité-8",
+  "kind": "talent",
+  "msg": "passif donné « Immunité-8 » (epic) — texte interne « immunisée » vs texte affiché « Applique le passif \"Immunité\" au tour 8 »"
+ },
+ {
+  "number": 122,
+  "name": "Esprit de la Faune",
+  "where": "TAL Érosion",
+  "kind": "talent",
+  "msg": "passif donné « Érosion » (common) — texte interne « Réduit les PV max à hauteur de 50% » vs texte affiché « Commence la partie avec le passif \"Érosion\" »"
+ },
+ {
+  "number": 123,
+  "name": "Tisseuse de Mots",
+  "where": "Veuve noire",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"absorbAny\"] (texte « Absorbe une carte ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 123,
+  "name": "Tisseuse de Mots",
+  "where": "TAL Sursaut Vital",
+  "kind": "talent",
+  "msg": "paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »"
+ },
+ {
+  "number": 124,
+  "name": "Wyrm des Dunes Cornu",
+  "where": "TAL Érosion",
+  "kind": "talent",
+  "msg": "passif donné « Érosion » (common) — texte interne « Réduit les PV max à hauteur de 50% » vs texte affiché « Commence la partie avec le passif \"Érosion\" »"
+ },
+ {
+  "number": 124,
+  "name": "Wyrm des Dunes Cornu",
+  "where": "TAL Dernier souffle",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »"
+ },
+ {
+  "number": 136,
+  "name": "Souverain des Chutes d'Éther",
+  "where": "TAL Dernier souffle",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »"
+ },
+ {
+  "number": 139,
+  "name": "Cornu mythologique",
+  "where": "Corne 25",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"setHpPct\"] (texte « La cible se retrouve à 25% de ses PV max ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 139,
+  "name": "Cornu mythologique",
+  "where": "Corne 75",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"setHpPct\"] (texte « La cible se retrouve à 75% de ses PV max ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 140,
+  "name": "Souris des blés",
+  "where": "TAL Petit prix",
+  "kind": "talent",
+  "msg": "paramètre value=60 absent du texte « Votre premier achat de Tox de la partie est remboursé. »"
+ },
+ {
+  "number": 140,
+  "name": "Souris des blés",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 146,
+  "name": "Poulpe Parleur",
+  "where": "TAL Nouvelle vie",
+  "kind": "talent",
+  "msg": "passif donné « Nouvelle vie » (common) — texte interne « revient à la vie avec 25% de ses PV max » vs texte affiché « Commence la partie avec, au hasard, le passif Phénix ou Cimetière. » ; alternative Cimetiere_C"
+ },
+ {
+  "number": 146,
+  "name": "Poulpe Parleur",
+  "where": "TAL Inversement",
+  "kind": "talent",
+  "msg": "passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif \"Inversement\" »"
+ },
+ {
+  "number": 151,
+  "name": "Sbire des Flammes",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 160,
+  "name": "Sanglier Doré",
+  "where": "TAL Sursaut Vital",
+  "kind": "talent",
+  "msg": "paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »"
+ },
+ {
+  "number": 176,
+  "name": "Rob l'Aventurier",
+  "where": "TAL Heure Funeste",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »"
+ },
+ {
+  "number": 180,
+  "name": "Dragon Ciel",
+  "where": "TAL Dernier souffle",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »"
+ },
+ {
+  "number": 190,
+  "name": "Lames en peine",
+  "where": "TAL Petit prix",
+  "kind": "talent",
+  "msg": "paramètre value=60 absent du texte « Votre premier achat de Tox de la partie est remboursé. »"
+ },
+ {
+  "number": 190,
+  "name": "Lames en peine",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 193,
+  "name": "Vladislaus",
+  "where": "TAL Sursaut Vital",
+  "kind": "talent",
+  "msg": "paramètre minSpamton=100 absent du texte « Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV. »"
+ },
+ {
+  "number": 203,
+  "name": "Ashtarae Lycaria",
+  "where": "Mélodie n°1",
+  "kind": "cible",
+  "msg": "cible allAllies avec des dégâts (1 hits) : le coup vise-t-il un ennemi ? (texte « Attaque [15 à 25] Ombre | Critique (+2%) sur toutes les cartes alliées »)"
+ },
+ {
+  "number": 211,
+  "name": "Dragosaure Céleste",
+  "where": "TAL AOE Rare",
+  "kind": "talent",
+  "msg": "passif donné « AOE Rare » (rare) — texte interne « à hauteur de 40% des dégâts » vs texte affiché « Commence la partie avec le passif \"AoE\" »"
+ },
+ {
+  "number": 219,
+  "name": "Catixy",
+  "where": "TAL Inversement",
+  "kind": "talent",
+  "msg": "passif donné « Inversement » (rare) — texte interne « Inverse les dégâts et les soins » vs texte affiché « Commence la partie avec le passif \"Inversement\" »"
+ },
+ {
+  "number": 222,
+  "name": "Fleur de Vie",
+  "where": "Barrière Florale",
+  "kind": "durée",
+  "msg": "ability.duration=0 ≠ effet taunt.duration=2 (texte « Applique Provocation au lanceur »)"
+ },
+ {
+  "number": 227,
+  "name": "Chouette Polychrome",
+  "where": "TAL Dernier souffle",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »"
+ },
+ {
+  "number": 229,
+  "name": "Maître Amphibian",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 236,
+  "name": "Apprentie de la Mort",
+  "where": "TAL Heure Funeste",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »"
+ },
+ {
+  "number": 243,
+  "name": "Vivy",
+  "where": "TAL Brut",
+  "kind": "talent",
+  "msg": "passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif \"Brut\" »"
+ },
+ {
+  "number": 245,
+  "name": "Shinobi Éclairant",
+  "where": "TAL Brut",
+  "kind": "talent",
+  "msg": "passif donné « Brut » (rare) — texte interne « Ignore les résistances et les provocations » vs texte affiché « Commence la partie avec le passif \"Brut\" »"
+ },
+ {
+  "number": 255,
+  "name": "Verdelune",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ },
+ {
+  "number": 255,
+  "name": "Verdelune",
+  "where": "TAL Dernier souffle",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Temporalité à toutes vos cartes quand celle-ci meurt »"
+ },
+ {
+  "number": 256,
+  "name": "Héraldesse Serpentine",
+  "where": "TAL Heure Funeste",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Applique Éternité à toutes les cartes adverses quand cette carte est tuée. »"
+ },
+ {
+  "number": 259,
+  "name": "Dragon de la Cité Infernale",
+  "where": "TAL Immunité-8",
+  "kind": "talent",
+  "msg": "passif donné « Immunité-8 » (epic) — texte interne « immunisée » vs texte affiché « Applique le passif \"Immunité\" au tour 8 »"
+ },
+ {
+  "number": 262,
+  "name": "Yotaru Gardefeuille",
+  "where": "Protect-terre",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"breakTaunt\",\"hpMax\"] (texte « Brise une Provocation pour donner 100 PV max ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 262,
+  "name": "Yotaru Gardefeuille",
+  "where": "Protect-boost",
+  "kind": "cible",
+  "msg": "cible « none » pour un effet ciblé [\"breakTaunt\",\"base\"] (texte « Brise une Provocation pour augmenter les dégâts et soins de base de 3 ») : qui est visé n'est pas encodé"
+ },
+ {
+  "number": 264,
+  "name": "Aristocrate Nébulaire",
+  "where": "TAL Longueur",
+  "kind": "talent",
+  "msg": "paramètre value=1 absent du texte « Au début de votre premier tour, une carte adverse aléatoire reçoit \"Éternité\" »"
+ }
+]

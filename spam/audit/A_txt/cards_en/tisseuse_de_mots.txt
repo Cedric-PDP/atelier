@@ -1,0 +1,126 @@
+Weaver of Words: SPAM Nature common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Weaver of Words B View the full card
+Weaver of Words
+8 Black Widow
+Punching Bag
+500/500
+2
+Standard
+Weaver of Words
+8 Black Widow
+Punching Bag
+500/500
+2
+Elemental
+Weaver of Words
+8 Black Widow
+Punching Bag
+500/500
+2
+FA
+Weaver of Words
+8 Black Widow
+Punching Bag
+500/500
+2
+## Weaver of Words
+B Nature · Common · Standard
+500 HP 2 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Legacy Gain (+50) Spamton when this card is killed.
+- Talent 2 Vital Surge At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+- Talent 3 Corrosion Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Recommended
+Three ability slots
+- Black Widow ability · Cooldown 8 Absorbs a card
+8
+- Punching Bag tox · Common Increases the element of the caster's card by +1 each time it is attacked by an enemy
+- Free slot Open to a shop Tox
+Illustration by Nao
+Full card details
+Illustration by Nao
+Nature Common #123
+# Weaver of Words
+Versatile
+500 Health points
+2 Spamtons / turn
+#52 Rank / 127
+B No talent · #41
+Attack
+68
+Generation
+47
+Defense
+58
+Support
+1
+Control
+0
+Economy
+1
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Legacy 2 Vital Surge 3 Corrosion
+Build with this card
+Share
+### Abilities
+#### Black Widow
+8 turns
+Absorbs a card
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Punching Bag
+Common
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+### Talents
+#### Legacy
+Gain (+50) Spamton when this card is killed.
+Δ 10 · Theoretical score
+#### Vital Surge
+At the start of the turn, if this card’s HP are below 10%, it fully restores its HP.
+Δ 0 · Theoretical score
+#### Corrosion
+Recommended
+Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Δ 139 · Theoretical score
+### Resistances
+8% Fire
+-21% Water
+8% Earth
+9% Nature
+6% Shadow
+35% Light
+Creature · Emeldarion
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Weavers of Words inhabit the tropical jungle of Presolda, southeast of Emeldarion. They rank among the region’s greatest animal threats. These giant spiders imitate the cries of prey to lure in their predators. Once caught in the spiders’ webs, those predators become stores of food.
+## Better together
+The most promising partners according to the model.
+C # 158 Nature
+Common · Versatile
+### Feathered Rabbit
+850 HP
+S # 188 Earth
+Rare · Generation
+### Commando Gerz
+1200 HP
+D # 101 Water
+Common · Defense
+### Neilla
+650 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

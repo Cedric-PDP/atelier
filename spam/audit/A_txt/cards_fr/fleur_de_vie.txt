@@ -1,0 +1,129 @@
+Fleur de Vie : carte SPAM Lumière commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Fleur de Vie D Voir la carte en grand
+Fleur de Vie
+1 Souffle de lumière
+1 Barrière Florale
+600/600
+7
+Standard
+Fleur de Vie
+1 Souffle de lumière
+1 Barrière Florale
+600/600
+7
+Élémentaire
+Fleur de Vie
+1 Souffle de lumière
+1 Barrière Florale
+600/600
+7
+FA
+Fleur de Vie
+1 Souffle de lumière
+1 Barrière Florale
+600/600
+7
+## Fleur de Vie
+D Lumière · Commune · Standard
+600 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage Partagé Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+- Talent 2 Cœur Corrompu Commence la partie avec un passif Cœur rare aléatoire
+Conseillé
+- Talent 3 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Trois champs de compétence
+- Souffle de lumière compétence · Recharge 1 Attaque 10 Lumière
+Bonus Lumière (+1)
+1
+- Barrière Florale compétence · Recharge 1 Applique Provocation au lanceur
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krisakx
+Fiche complète
+Illustration par Krisakx
+Lumière Commune #222
+# Fleur de Vie
+Génération
+600 Points de vie
+7 Spamtons / tour
+#101 Classement / 127
+D Sans talent · #113
+Attaque
+21
+Génération
+89
+Défense
+16
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage Partagé 2 Cœur Corrompu 3 Incisif
+Jouer cette carte
+Partager
+### Compétences
+#### Souffle de lumière
+1 tour
+Attaque 10 Lumière
+Bonus Lumière (+1)
+Précision 100% Critique 1%
+#### Barrière Florale
+1 tour
+Applique Provocation au lanceur
+Précision 100% Critique 0%
+### Talents
+#### Blindage Partagé
+Augmente les résistances élémentaires de toutes les cartes alliées de (+10 %)
+Δ 162,9 · Score théorique
+#### Cœur Corrompu
+Conseillé
+Commence la partie avec un passif Cœur rare aléatoire
+Δ 437,9 · Score théorique
+#### Incisif
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 429,6 · Score théorique
+### Résistances
+0% Feu
+0% Eau
+0% Terre
+0% Nature
+0% Ombre
+0% Lumière
+Art · Aelther
+### Derrière la carte
+Après l’abandon d’Aelther par le Roi de la Lumière, des fleurs aux propriétés curatives commencèrent à pousser sur le Mont Céleste. Certains pèlerins les cueillent malgré l’interdiction et échouent alors dans leur pèlerinage. Ce geste leur permet toutefois de soigner un proche ou de gagner leur vie à Abondance. La plus grande Fleur de Vie se trouve au sommet de la plus haute montagne. Composée de pétales gigantesques, elle ne s’ouvre jamais. Tous se demandent ce qu’elle renferme. Un élu parviendra-t-il un jour à l’ouvrir ? Contient-elle un remède miraculeux ?
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

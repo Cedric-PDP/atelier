@@ -1,0 +1,64 @@
+{
+ "res": {
+  "deck chimere p1": {
+   "score": 8124.8128924458015,
+   "turns": [
+    "103:Soin critique=0/h34 ; 103:Pinces=5",
+    "103:Soin critique=0/h35 ; 238:Galop arctique=111/h83 ; 103:Pinces=7",
+    "103:Soin critique=0/h37 ; 103:Pinces=12",
+    "156:Revitalisation=0/h94 ; 103:Soin critique=0/h44 ; 238:Galop arctique=220/h165 ; 103:Pinces=14",
+    "103:Soin critique=0/h46 ; 103:Pinces=14",
+    "103:Soin critique=0/h47 ; 238:Galop arctique=361/h271 ; 103:Pinces=23",
+    "103:Soin critique=0/h56 ; 103:Pinces=23",
+    "156:Revitalisation=0/h146 ; 103:Soin critique=0/h58 ; 238:Galop arctique=584/h438 ; 103:Pinces=28",
+    "103:Soin critique=0/h61 ; 103:Pinces=35",
+    "103:Soin critique=0/h69 ; 238:Galop arctique=879/h659 ; 103:Pinces=41"
+   ]
+  },
+  "deck chimere p2": {
+   "score": 7911.629481724555,
+   "turns": [
+    "103:Soin critique=0/h34 ; 238:Galop arctique=98/h73 ; 103:Pinces=7",
+    "103:Soin critique=0/h36 ; 103:Pinces=11",
+    "156:Revitalisation=0/h87 ; 103:Soin critique=0/h43 ; 238:Galop arctique=195/h146 ; 103:Pinces=14",
+    "103:Soin critique=0/h45 ; 103:Pinces=14",
+    "103:Soin critique=0/h46 ; 238:Galop arctique=320/h240 ; 103:Pinces=23",
+    "103:Soin critique=0/h55 ; 103:Pinces=23",
+    "156:Revitalisation=0/h136 ; 103:Soin critique=0/h56 ; 238:Galop arctique=529/h397 ; 103:Pinces=27",
+    "103:Soin critique=0/h59 ; 103:Pinces=35",
+    "103:Soin critique=0/h68 ; 238:Galop arctique=804/h603 ; 103:Pinces=40",
+    "103:Soin critique=0/h71 ; 103:Pinces=41"
+   ]
+  },
+  "zero critique p1": {
+   "score": 6759.943479938235,
+   "turns": [
+    "102:Murmure=0/h16 ; 116:Explosion=12 ; 102:Souffle d'eau=16",
+    "102:Murmure=0/h24 ; 116:Explosion=29 ; 12:Haleau=38 ; 102:Souffle d'eau=25",
+    "102:Murmure=0/h34 ; 116:Explosion=55 ; 102:Souffle d'eau=32",
+    "102:Murmure=0/h36 ; 12:Haleau=53 ; 116:Explosion=87 ; 102:Souffle d'eau=41",
+    "102:Murmure=0/h46 ; 116:Explosion=121 ; 102:Souffle d'eau=48",
+    "102:Murmure=0/h54 ; 12:Haleau=62 ; 116:Explosion=150 ; 102:Souffle d'eau=52",
+    "102:Murmure=0/h58 ; 116:Explosion=176 ; 102:Souffle d'eau=54",
+    "102:Murmure=0/h60 ; 12:Haleau=67 ; 116:Explosion=206 ; 102:Souffle d'eau=58",
+    "102:Murmure=0/h63 ; 116:Explosion=232 ; 102:Souffle d'eau=60",
+    "102:Murmure=0/h65 ; 12:Haleau=71 ; 116:Explosion=266 ; 102:Souffle d'eau=62"
+   ]
+  },
+  "zero critique p2": {
+   "score": 6298.453839498751,
+   "turns": [
+    "102:Murmure=0/h16 ; 116:Explosion=12 ; 12:Haleau=33 ; 102:Souffle d'eau=18",
+    "102:Murmure=0/h26 ; 116:Explosion=31 ; 102:Souffle d'eau=25",
+    "102:Murmure=0/h34 ; 116:Explosion=55 ; 12:Haleau=47 ; 102:Souffle d'eau=33",
+    "102:Murmure=0/h38 ; 116:Explosion=87 ; 102:Souffle d'eau=41",
+    "102:Murmure=0/h46 ; 12:Haleau=57 ; 116:Explosion=112 ; 102:Souffle d'eau=44",
+    "102:Murmure=0/h49 ; 116:Explosion=133 ; 102:Souffle d'eau=46",
+    "102:Murmure=0/h52 ; 12:Haleau=61 ; 116:Explosion=161 ; 102:Souffle d'eau=50",
+    "102:Murmure=0/h55 ; 116:Explosion=185 ; 102:Souffle d'eau=52",
+    "102:Murmure=0/h57 ; 12:Haleau=66 ; 116:Explosion=214 ; 102:Souffle d'eau=55",
+    "102:Murmure=0/h61 ; 116:Explosion=238 ; 102:Souffle d'eau=57"
+   ]
+  }
+ }
+}

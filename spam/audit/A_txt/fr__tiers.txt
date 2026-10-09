@@ -1,0 +1,452 @@
+Tier list SPAM (Spam Game) v1.21 : meilleures cartes et decks
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+SPAM v 1.21 / Tier lists
+# Tier list
+des decks
+Les meilleures compositions trouvées par le moteur. Quatre cartes, un vrai plan de jeu.
+La méta,
+en pratique.
+Analyse du 9 octobre 2026 127 cartes analysées
+Decks Cartes
+Tier Tier : Tout S A B C D Style de jeu Style de jeu : Tout Aggro / burst Rampe élémentaire Contrôle Critique Midrange Élément Élément : Tout Feu Eau Terre Nature Ombre Lumière Éther Axe élémentaire Axe élémentaire : Tout Feu Eau Terre Nature Ombre Lumière
+Chercher un deck ou une carte…
+Avec talents Sans talent
+Tout Accessible Intermédiaire Collection avancée
+Sélection globale de compositions diversifiées, toutes raretés confondues.
+40 decks Comprendre les scores
+0 % = deck aléatoire moyen. 100 % = meilleur deck trouvé. Ce score n’est pas un taux de victoire.
+S Au sommet 4 decks ≥ 90%
+01
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 %
+16 182 Score théorique
+6 tours · élimination estimée
+6 705 PV effectifs
+19 Spamtons / tour
+Axes élémentaires : Ombre .
+Aggro / burst Collection avancée Soins
+Voir le deck
+3 autres decks · Tier S
+02
+### Aleera Mange-Cauchemars + Maître Amphibian
+92,5 %
+15 445 Score théorique
+6 tours · élimination estimée
+5 282 PV effectifs
+26 Spamtons / tour
+Axes élémentaires : Ombre .
+Aggro / burst Collection avancée Soins
+Voir le deck
+03
+### Spectre Canin + Aleera Mange-Cauchemars
+92,1 %
+15 402 Score théorique
+6 tours · élimination estimée
+5 480 PV effectifs
+22 Spamtons / tour
+Axes élémentaires : Ombre .
+Aggro / burst Intermédiaire
+Voir le deck
+04
+### Aleera Mange-Cauchemars + Ephial
+90,7 %
+15 262 Score théorique
+6 tours · élimination estimée
+6 370 PV effectifs
+25 Spamtons / tour
+Axes élémentaires : Ombre / Lumière / Terre .
+Aggro / burst Collection avancée Soins
+Voir le deck
+B À combiner 5 decks 70–80%
+05
+### Apprentie de la Mort + Codex des Maux Ancestraux
+78,1 %
+14 019 Score théorique
+6 tours · élimination estimée
+3 744 PV effectifs
+30 Spamtons / tour
+Axes élémentaires : Ombre .
+Aggro / burst Intermédiaire Soins
+Voir le deck
+4 autres decks · Tier B
+06
+### Souverain des Chutes d'Éther + Maître Amphibian
+77,9 %
+13 997 Score théorique
+6 tours · élimination estimée
+3 125 PV effectifs
+22 Spamtons / tour
+Axes élémentaires : Eau / Terre .
+Aggro / burst Intermédiaire Soins
+Voir le deck
+07
+### Pyro + Scorch
+73,3 %
+13 547 Score théorique
+6 tours · élimination estimée
+2 633 PV effectifs
+25 Spamtons / tour
+Axes élémentaires : Feu / Ombre .
+Aggro / burst Intermédiaire Soins
+Voir le deck
+08
+### Apprentie de la Mort + Scorch
+73 %
+13 522 Score théorique
+7 tours · élimination estimée
+2 448 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Feu / Ombre / Nature .
+Aggro / burst Intermédiaire Soins
+Voir le deck
+09
+### Maître Amphibian + Rob l'Aventurier
+72,7 %
+13 487 Score théorique
+7 tours · élimination estimée
+5 376 PV effectifs
+24 Spamtons / tour
+Axes élémentaires : Terre / Eau .
+Aggro / burst Intermédiaire Soins
+Voir le deck
+C Situationnels 28 decks 50–70%
+10
+### Maîtresse des Teintes + L'Inventeur
+65,5 %
+12 774 Score théorique
+8 tours · élimination estimée
+5 754 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Feu / Ombre .
+Midrange Collection avancée
+Voir le deck
+27 autres decks · Tier C
+11
+### Zombie Floral + Souverain des Chutes d'Éther
+63,8 %
+12 614 Score théorique
+8 tours · élimination estimée
+3 293 PV effectifs
+24 Spamtons / tour
+Axes élémentaires : Eau / Nature .
+Rampe élémentaire Accessible Soins
+Voir le deck
+12
+### Croqueur de Fruits Verdoyant + Bleu-mange-cailloux
+61 %
+12 335 Score théorique
+7 tours · élimination estimée
+4 839 PV effectifs
+29 Spamtons / tour
+Axes élémentaires : Terre .
+Aggro / burst Intermédiaire
+Voir le deck
+13
+### Dragon Ciel + Aldrin & Gorakar
+60,5 %
+12 284 Score théorique
+7 tours · élimination estimée
+2 614 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Nature .
+Aggro / burst Collection avancée Soins
+Voir le deck
+14
+### Le compagnon des esprits + Esprit Eau
+58,7 %
+12 108 Score théorique
+8 tours · élimination estimée
+4 807 PV effectifs
+35 Spamtons / tour
+Axes élémentaires : Eau .
+Midrange Accessible Soins
+Voir le deck
+15
+### Souverain des Flammes + Apprentie de la Mort
+58,7 %
+12 104 Score théorique
+8 tours · élimination estimée
+2 969 PV effectifs
+25 Spamtons / tour
+Axes élémentaires : Feu / Ombre .
+Rampe élémentaire Collection avancée Soins
+Voir le deck
+16
+### Raffteru + L'Épine d'Amour
+58 %
+12 036 Score théorique
+7 tours · élimination estimée
+2 561 PV effectifs
+25 Spamtons / tour
+Axes élémentaires : Nature / Lumière / Terre .
+Aggro / burst Accessible
+Voir le deck
+17
+### Cerf des Couleurs Funèbres + L'Épine d'Amour
+57,9 %
+12 024 Score théorique
+8 tours · élimination estimée
+3 477 PV effectifs
+29 Spamtons / tour
+Axes élémentaires : Nature / Lumière .
+Midrange Intermédiaire Soins
+Voir le deck
+18
+### Catimimi + Girafe Florale
+57,2 %
+11 961 Score théorique
+8 tours · élimination estimée
+3 490 PV effectifs
+27 Spamtons / tour
+Axes élémentaires : Nature / Eau .
+Midrange Accessible
+Voir le deck
+19
+### Roi Terre + Bleu-mange-cailloux
+57,1 %
+11 948 Score théorique
+9 tours · élimination estimée
+8 215 PV effectifs
+24 Spamtons / tour
+Axes élémentaires : Terre .
+Rampe élémentaire Collection avancée
+Voir le deck
+20
+### Dragon Ciel + Lame de la forêt
+56,7 %
+11 909 Score théorique
+8 tours · élimination estimée
+4 426 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Nature / Lumière .
+Rampe élémentaire Intermédiaire Soins
+Voir le deck
+21
+### Dragon Ciel + Aristocrate Nébulaire
+55,7 %
+11 812 Score théorique
+7 tours · élimination estimée
+2 333 PV effectifs
+27 Spamtons / tour
+Axes élémentaires : Nature / Lumière .
+Aggro / burst Accessible Soins
+Voir le deck
+22
+### Esprit de la Faune + L'Épine d'Amour
+55,2 %
+11 766 Score théorique
+8 tours · élimination estimée
+4 059 PV effectifs
+29 Spamtons / tour
+Axes élémentaires : Nature / Lumière .
+Rampe élémentaire Accessible Soins
+Voir le deck
+23
+### Wibs l'Enflammé + Apprentie de la Mort
+54,8 %
+11 719 Score théorique
+8 tours · élimination estimée
+5 832 PV effectifs
+24 Spamtons / tour
+Axes élémentaires : Feu / Ombre .
+Midrange Intermédiaire
+Voir le deck
+24
+### Dragon Ciel + L'Épine d'Amour
+54,6 %
+11 702 Score théorique
+8 tours · élimination estimée
+2 784 PV effectifs
+25 Spamtons / tour
+Axes élémentaires : Nature .
+Midrange Intermédiaire
+Voir le deck
+25
+### Épine Médusine + Scorch
+54,5 %
+11 688 Score théorique
+8 tours · élimination estimée
+3 167 PV effectifs
+26 Spamtons / tour
+Axes élémentaires : Eau / Feu / Terre .
+Rampe élémentaire Accessible Soins
+Voir le deck
+26
+### Mélodie des Divinités + Chouette Polychrome
+53,9 %
+11 629 Score théorique
+9 tours · élimination estimée
+5 335 PV effectifs
+26 Spamtons / tour
+Axes élémentaires : Lumière / Terre .
+Rampe élémentaire Collection avancée Soins
+Voir le deck
+27
+### Luminaire Abyssal + Aristocrate Nébulaire
+53,9 %
+11 628 Score théorique
+9 tours · élimination estimée
+5 081 PV effectifs
+18 Spamtons / tour
+Axes élémentaires : Lumière .
+Midrange Intermédiaire
+Voir le deck
+28
+### Pyro + Wibs l'Enflammé
+53,8 %
+11 626 Score théorique
+8 tours · élimination estimée
+3 199 PV effectifs
+27 Spamtons / tour
+Axes élémentaires : Feu .
+Rampe élémentaire Accessible
+Voir le deck
+29
+### Zombie Floral + Princesse Meridia
+52,9 %
+11 535 Score théorique
+8 tours · élimination estimée
+4 233 PV effectifs
+30 Spamtons / tour
+Axes élémentaires : Nature / Eau .
+Midrange Intermédiaire Soins
+Voir le deck
+30
+### Commando Gerz + Shinobi Éclairant
+51,8 %
+11 430 Score théorique
+9 tours · élimination estimée
+4 919 PV effectifs
+22 Spamtons / tour
+Axes élémentaires : Lumière / Terre .
+Midrange Intermédiaire
+Voir le deck
+31
+### Épine Médusine + Le compagnon des esprits
+51,7 %
+11 414 Score théorique
+9 tours · élimination estimée
+4 900 PV effectifs
+30 Spamtons / tour
+Axes élémentaires : Eau / Feu .
+Midrange Collection avancée Soins
+Voir le deck
+32
+### Le compagnon des esprits + Scorch
+51,5 %
+11 399 Score théorique
+9 tours · élimination estimée
+5 974 PV effectifs
+24 Spamtons / tour
+Axes élémentaires : Eau .
+Rampe élémentaire Collection avancée Soins
+Voir le deck
+33
+### Rongeur Nuageux + Mélodie des Divinités
+51,5 %
+11 392 Score théorique
+9 tours · élimination estimée
+4 680 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Lumière .
+Midrange Collection avancée
+Voir le deck
+34
+### Shinobi Éclairant + Wyrm des Dunes Cornu
+50,7 %
+11 321 Score théorique
+9 tours · élimination estimée
+5 264 PV effectifs
+20 Spamtons / tour
+Axes élémentaires : Terre / Lumière .
+Midrange Intermédiaire Soins
+Voir le deck
+35
+### Esprit de la Faune + Zombie Floral
+50,7 %
+11 314 Score théorique
+8 tours · élimination estimée
+3 395 PV effectifs
+34 Spamtons / tour
+Axes élémentaires : Nature / Eau .
+Rampe élémentaire Accessible Soins
+Voir le deck
+36
+### Zombie Floral + Gabriel
+50,2 %
+11 266 Score théorique
+9 tours · élimination estimée
+5 544 PV effectifs
+39 Spamtons / tour
+Axes élémentaires : Nature / Eau .
+Midrange Intermédiaire Soins
+Voir le deck
+37
+### Commando Gerz + Bleu-mange-cailloux
+50,1 %
+11 262 Score théorique
+9 tours · élimination estimée
+5 370 PV effectifs
+21 Spamtons / tour
+Axes élémentaires : Terre .
+Rampe élémentaire Collection avancée Soins
+Voir le deck
+D À expérimenter 3 decks < 50%
+38
+### Gabriel + Esprit Nature
+50 %
+11 246 Score théorique
+9 tours · élimination estimée
+5 225 PV effectifs
+31 Spamtons / tour
+Axes élémentaires : Nature .
+Midrange Collection avancée
+Voir le deck
+2 autres decks · Tier D
+39
+### Commando Gerz + Mélodie des Divinités
+49,8 %
+11 230 Score théorique
+9 tours · élimination estimée
+4 823 PV effectifs
+21 Spamtons / tour
+Axes élémentaires : Lumière .
+Rampe élémentaire Collection avancée Soins
+Voir le deck
+40
+### Souverain des Flammes + Wibs l'Enflammé
+49,5 %
+11 198 Score théorique
+9 tours · élimination estimée
+4 862 PV effectifs
+28 Spamtons / tour
+Axes élémentaires : Feu .
+Critique Collection avancée
+Voir le deck
+## Questions fréquentes sur la tier list SPAM
+Quelle est la meilleure carte de SPAM ?
+Dans la version 1.21, Moxilys, la Fredonneuse est en tête de la tier list des cartes (tier S), devant Esprit de la Faune et Zombie Floral. Le classement combine attaque, génération, défense, soutien, contrôle et économie dans un même modèle de simulation.
+Quel est le meilleur deck SPAM ?
+Aleera Mange-Cauchemars + Souverain des Chutes d'Éther (Aleera Mange-Cauchemars, Souverain des Chutes d'Éther, Commando Gerz, Léviathan des Cieux) est le meilleur deck trouvé par le moteur pour la version 1.21, avec une élimination estimée en 6 tours. Chaque deck de la tier list a sa fiche : composition, talents conseillés, plan de jeu, Tox à viser et profils adverses.
+Comment la tier list SPAM est-elle calculée ?
+Chaque carte et chaque deck sont simulés sur 10 tours, avec un talent actif par carte, contre des profils adverses théoriques. Les tiers des cartes sont relatifs au catalogue (S = 8 % supérieurs) ; ceux des decks comparent le score au deck aléatoire moyen et au meilleur deck trouvé. Ce n’est pas un taux de victoire : la page Méthodologie détaille les hypothèses.
+À quelle fréquence la tier list est-elle mise à jour ?
+À chaque nouvelle version du Spamdex officiel : les données de cartes sont vérifiées chaque jour et la tier list est recalculée automatiquement dès qu’un changement paraît. Version actuelle : 1.21, analyse du 9 octobre 2026.
+Comprendre les scores
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

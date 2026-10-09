@@ -1,0 +1,145 @@
+Le Héraut des Cendres : carte SPAM Feu commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Le Héraut des Cendres D Voir la carte en grand
+Le Héraut des Cendres
+3 Souffle du dragon
+Fumée
+Chanceur
+800/800
+8
+Standard
+Le Héraut des Cendres
+3 Souffle du dragon
+Fumée
+Chanceur
+800/800
+8
+Élémentaire
+Le Héraut des Cendres
+3 Souffle du dragon
+Fumée
+Chanceur
+800/800
+8
+FA
+Le Héraut des Cendres
+3 Souffle du dragon
+Fumée
+Chanceur
+800/800
+8
+## Le Héraut des Cendres
+D Feu · Commune · Standard
+800 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Fortune Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+- Talent 2 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Conseillé
+- Talent 3 Corrosion Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Trois champs de compétence
+- Souffle du dragon compétence · Recharge 3 Choix
+Attaque 30 Feu
+Attaque 10 Nature
+Attaque 10 Nature
+---------- ou ----------
+Bonus Feu (+5)
+Bonus Nature (+5)
+3
+- Fumée tox · Rare Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+- Chanceur tox · Commune Augmente votre Chance de (+0,5) chaque tour
+Illustration par Lune Rouge
+Fiche complète
+Illustration par Lune Rouge
+Feu Commune #152
+# Le Héraut des Cendres
+Économie
+800 Points de vie
+8 Spamtons / tour
+#121 Classement / 127
+D Sans talent · #118
+Attaque
+18
+Génération
+0
+Défense
+58
+Soutien
+1
+Contrôle
+0
+Économie
+90
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Fortune 2 Focus 3 Corrosion
+Jouer cette carte
+Partager
+### Compétences
+#### Souffle du dragon
+3 tours
+Choix
+Attaque 30 Feu
+Attaque 10 Nature
+Attaque 10 Nature
+---------- ou ----------
+Bonus Feu (+5)
+Bonus Nature (+5)
+Précision 100% Critique 1%
+### Tox de départ
+#### Fumée
+Rare
+Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+#### Chanceur
+Commune
+Augmente votre Chance de (+0,5) chaque tour
+### Talents
+#### Fortune
+Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+Δ 33 · Score théorique
+#### Focus
+Conseillé
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 469,4 · Score théorique
+#### Corrosion
+Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Δ 454,2 · Score théorique
+### Résistances
+7% Feu
+8% Eau
+7% Terre
+8% Nature
+10% Ombre
+8% Lumière
+Dragon · Hadeïr
+### Derrière la carte
+Nous disposons de peu d’informations sur Hadeïr en dehors de Dragheïr. Nous savons toutefois que le Saule ardent de la forêt Détwin est une entité à protéger. Capable de purifier les créatures atteintes par la corruption, il représente un espoir pour tout Hadeïr, mais ne peut se déplacer et doit être défendu contre les Abyssaux. Un bastion eltherien a donc été établi au cœur de la forêt afin de repousser ces derniers loin de l’entité salvatrice. Le Dragon constitue la plus grande menace abyssale connue. Dans la région, certains Dhöggeïrs affiliés au Feu sont devenus de puissants Dragons corrompus. Repousser l’un d’eux tient du miracle et a déjà coûté la vie à de nombreux soldats.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

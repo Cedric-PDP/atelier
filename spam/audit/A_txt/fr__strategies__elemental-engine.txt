@@ -1,0 +1,60 @@
+Un moteur, pas quatre solistes : guide SPAM
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Stratégies Synergies élémentaires Synergies élémentaires
+# Un moteur, pas quatre solistes.
+Fais circuler les bonus entre tes générateurs et tes attaquants. C’est là que la synergie commence.
+4 min de lecture Partager
+Illustration par Atto
+01
+## Pars de tes attaques.
+Regarde les éléments utilisés par les compétences de ton attaquant principal. L’élément de sa carte ne raconte pas toujours toute l’histoire : certaines cartes frappent dans plusieurs éléments. Choisis ensuite des générateurs qui alimentent réellement ces compétences.
+02
+## Génère avant de convertir.
+Dans le modèle, chaque point de bonus ajoute 10 % aux dégâts et aux soins de son élément. Ces bonus appartiennent au joueur et persistent. Une petite génération répétée peut donc soutenir plusieurs cartes à la fois. Observe le plan de jeu : les bonus disponibles avant une attaque comptent davantage que ceux obtenus juste après.
+03
+## Garde une condition de victoire.
+Quatre bons générateurs ne font pas forcément un bon deck. Il te faut une carte capable de convertir leur investissement assez vite. Compare la courbe des dégâts et le temps d’élimination estimé, puis teste un remplacement dans l’atelier. La meilleure amélioration peut venir d’une carte moins bien classée individuellement.
+Comprendre les scores
+## À explorer avec ce guide
+S # 177 Ombre
+Commune · Attaque
+### Moxilys, la Fredonneuse
+900 PV
+S # 174 Nature
+Commune · Attaque
+### Zombie Floral
+850 PV
+S # 056 Nature
+Commune · Attaque
+### Lisa, la Dragonnière
+800 PV
+## Passer à la pratique
+C Accessible
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+63,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+61,8 % Indice relatif 8 tours Élimination estimée 23 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Commando Gerz
+60,8 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

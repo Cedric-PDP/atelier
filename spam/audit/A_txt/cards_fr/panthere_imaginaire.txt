@@ -1,0 +1,135 @@
+Panthère imaginaire : carte SPAM Nature épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Panthère imaginaire C Voir la carte en grand
+Panthère imaginaire
+1 Vitesse folle
+600/600
+4
+Standard
+Panthère imaginaire
+1 Vitesse folle
+600/600
+4
+Élémentaire
+Panthère imaginaire
+1 Vitesse folle
+600/600
+4
+FA
+Panthère imaginaire
+1 Vitesse folle
+600/600
+4
+## Panthère imaginaire
+C Nature · Épique · Standard
+600 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Chance Vitale Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+- Talent 2 Roulette Toutes les compétences de cette carte gagnent Écho (10 %).
+- Talent 3 Brut Commence la partie avec le passif "Brut"
+Conseillé
+Trois champs de compétence
+- Vitesse folle compétence · Recharge 1 Attaque 9 Nature
+Echo (75%)
+1
+- Champ libre Ouvert à un Tox de la boutique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Nature Épique #083
+# Panthère imaginaire
+Attaque
+600 Points de vie
+4 Spamtons / tour
+#87 Classement / 127
+C Sans talent · #82
+Attaque
+84
+Génération
+0
+Défense
+19
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Chance Vitale 2 Roulette 3 Brut
+Jouer cette carte 5 decks
+Partager
+### Compétences
+#### Vitesse folle
+1 tour
+Attaque 9 Nature
+Echo (75%)
+Précision 100% Critique 1%
+### Talents
+#### Chance Vitale
+Cette carte a 10 % de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+Δ -83,5 · Score théorique
+#### Roulette
+Toutes les compétences de cette carte gagnent Écho (10 %).
+Δ 80,6 · Score théorique
+#### Brut
+Conseillé
+Commence la partie avec le passif "Brut"
+Δ 89,5 · Score théorique
+## Ses meilleurs decks
+5 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Dragon Ciel + L'Épine d'Amour
+54,6 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Gabriel + Esprit Nature
+50 % Indice relatif 9 tours Élimination estimée 31 / tour Spamtons
+Les autres decks (3)
+- C Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Maîtresse des Teintes Intermédiaire · 52,7%
+- C Dragon Ciel + L'Épine d'Amour avec Gabriel · Panthère imaginaire Collection avancée · 51,2%
+- D Dragon Ciel + L'Épine d'Amour avec Panthère imaginaire · Princesse Meridia Intermédiaire · 48,3%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Cauchemar · Îles Esseulées
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. La Panthère Imaginaire se téléporte par des failles spatiales semblables à celles de Vivy. L’un des yeux présents sur son corps trace chaque faille en direction du point d’arrivée. On la rencontre parfois sur les plages de Vaeloria, où elle se laisse observer. Elle semble faire la navette entre ces côtes et les Îles Esseulées. La panthère demeure neutre, malgré une apparence qui évoque une corruption élémentaire.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+D # 072 Nature
+Rare · Soutien
+### Girafe Florale
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

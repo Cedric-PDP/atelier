@@ -1,0 +1,157 @@
+Deer of Mournful Colors: SPAM Nature rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Deer of Mournful Colors C View the full card
+Deer of Mournful Colors
+1 Elemental Drain
+Multiplier
+600/600
+5
+Standard
+Deer of Mournful Colors
+1 Elemental Drain
+Multiplier
+600/600
+5
+Elemental
+Deer of Mournful Colors
+1 Elemental Drain
+Multiplier
+600/600
+5
+FA
+Deer of Mournful Colors
+1 Elemental Drain
+Multiplier
+600/600
+5
+## Deer of Mournful Colors
+C Nature · Rare · Standard
+600 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Cash Out At the start of the game, gain (+25) Spamton.
+- Talent 2 Multi Start Gain (+3) in each element.
+Recommended
+- Talent 3 Soul Armor Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Three ability slots
+- Elemental Drain ability · Cooldown 1 Deal 6 Earth damage Random
+Deal 6 Nature damage
+Deal 6 Fire damage
+Deal 6 Water damage
+Deal 6 Light damage
+Deal 6 Shadow damage
+Vampirism
+1
+- Multiplier tox · Rare Elemental bonuses are doubled for this card's damage and heals
+- Free slot Open to a shop Tox
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Nature Rare #137
+# Deer of Mournful Colors
+Attack
+600 Health points
+5 Spamtons / turn
+#80 Rank / 127
+D No talent · #98
+Attack
+76
+Generation
+0
+Defense
+46
+Support
+1
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Cash Out 2 Multi Start 3 Soul Armor
+Build with this card 6 decks
+Share
+### Abilities
+#### Elemental Drain
+1 turn
+Deal 6 Earth damage Random
+Deal 6 Nature damage
+Deal 6 Fire damage
+Deal 6 Water damage
+Deal 6 Light damage
+Deal 6 Shadow damage
+Vampirism
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Multiplier
+Rare
+Elemental bonuses are doubled for this card's damage and heals
+### Talents
+#### Cash Out
+At the start of the game, gain (+25) Spamton.
+Δ 7.5 · Theoretical score
+#### Multi Start
+Recommended
+Gain (+3) in each element.
+Δ 1,043.2 · Theoretical score
+#### Soul Armor
+Whenever a card on the field dies, this card's elemental resistances increase by (+10%)
+Δ 138.2 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Deer of Mournful Colors + Thorn of Love
+57.9 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Intermediate
+Midrange ·
+### Sky Dragon + Deer of Mournful Colors
+52.5 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Mistress of Tints + Deer of Mournful Colors
+49.3 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+The other decks (3)
+- C Deer of Mournful Colors + Thorn of Love with Sky Dragon · Lisa Accessible · 52.3%
+- D Sky Dragon + Deer of Mournful Colors with Faerylia · Aidan Intermediate · 49.5%
+- D Deer of Mournful Colors + Thorn of Love with Verdelune · Mistress of Tints Advanced collection · 46.3%
+### Resistances
+9% Fire
+9% Water
+9% Earth
+9% Nature
+9% Shadow
+9% Light
+Eternal · Nyevielh
+### Beyond the card
+Deep within Nyevielh’s dreadful Dreaming Forest dwells an Eternal corrupted by the abyssal power released when the Starry Sea fractured. When your vision blooms with color, the river water seems drinkable, the grass feels comfortable, and the air becomes breathable—run! Your life depends on it. Do not stop to question this forest: if any protocol has been left for the unfortunate souls who dare enter, follow its instructions.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+C # 115 Fire
+Common · Generation
+### Aidan
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,1658 @@
+{
+ "tox": {
+  "chimere": {
+   "holder": "Lame de la forêt",
+   "base": 8018,
+   "rows": [
+    {
+     "id": "CoeurEau_L",
+     "name": "Cœur d'eau",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 46.5
+    },
+    {
+     "id": "CoeurNature_L",
+     "name": "Cœur de nature",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 38.3
+    },
+    {
+     "id": "CoeurNature_E",
+     "name": "Cœur de nature",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 27.8
+    },
+    {
+     "id": "CoeurEau_E",
+     "name": "Cœur d'eau",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 26.8
+    },
+    {
+     "id": "Berserk_L",
+     "name": "Berserk",
+     "rarity": "legendary",
+     "type": "berserk",
+     "gainPct": 26.6
+    },
+    {
+     "id": "Berserk_E",
+     "name": "Berserk",
+     "rarity": "epic",
+     "type": "berserk",
+     "gainPct": 20.7
+    },
+    {
+     "id": "CoeurNature_R",
+     "name": "Cœur de nature",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 16.7
+    },
+    {
+     "id": "CoeurEau_R",
+     "name": "Cœur d'eau",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 15.7
+    },
+    {
+     "id": "Temporality_L",
+     "name": "Temporalité",
+     "rarity": "legendary",
+     "type": "temporalityOnHit",
+     "gainPct": 14.1
+    },
+    {
+     "id": "CoeurNature_C",
+     "name": "Cœur de nature",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 13.7
+    },
+    {
+     "id": "Berserk_R",
+     "name": "Berserk",
+     "rarity": "rare",
+     "type": "berserk",
+     "gainPct": 12.4
+    },
+    {
+     "id": "CoeurEau_C",
+     "name": "Cœur d'eau",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 11.6
+    },
+    {
+     "id": "Mystere_R",
+     "name": "Mystère",
+     "rarity": "rare",
+     "type": "mystery",
+     "gainPct": 10.2
+    },
+    {
+     "id": "PunchingBag_C",
+     "name": "Sac de frappe",
+     "rarity": "common",
+     "type": "punchingBag",
+     "gainPct": 10
+    },
+    {
+     "id": "PunchingBag_R",
+     "name": "Sac de frappe",
+     "rarity": "rare",
+     "type": "punchingBag",
+     "gainPct": 10
+    },
+    {
+     "id": "PunchingBag_E",
+     "name": "Sac de frappe",
+     "rarity": "epic",
+     "type": "punchingBag",
+     "gainPct": 10
+    },
+    {
+     "id": "PunchingBag_L",
+     "name": "Sac de frappe",
+     "rarity": "legendary",
+     "type": "punchingBag",
+     "gainPct": 10
+    },
+    {
+     "id": "Mimetisme_R",
+     "name": "Mimétisme",
+     "rarity": "rare",
+     "type": "mimetism",
+     "gainPct": 9.4
+    },
+    {
+     "id": "Berserk_C",
+     "name": "Berserk",
+     "rarity": "common",
+     "type": "berserk",
+     "gainPct": 9.1
+    },
+    {
+     "id": "Frozen_E",
+     "name": "Gel",
+     "rarity": "epic",
+     "type": "freezeOnHit",
+     "gainPct": 6.9
+    },
+    {
+     "id": "Poison_C",
+     "name": "Poison",
+     "rarity": "common",
+     "type": "poison",
+     "gainPct": 5.7
+    },
+    {
+     "id": "Poison_R",
+     "name": "Poison",
+     "rarity": "rare",
+     "type": "poison",
+     "gainPct": 5.7
+    },
+    {
+     "id": "Poison_E",
+     "name": "Poison",
+     "rarity": "epic",
+     "type": "poison",
+     "gainPct": 5.7
+    },
+    {
+     "id": "Poison_L",
+     "name": "Poison",
+     "rarity": "legendary",
+     "type": "poison",
+     "gainPct": 5.7
+    },
+    {
+     "id": "Aoe_L",
+     "name": "AoE",
+     "rarity": "legendary",
+     "type": "aoe",
+     "gainPct": 4.9
+    },
+    {
+     "id": "CoeurVital_L",
+     "name": "Cœur vital",
+     "rarity": "legendary",
+     "type": "hpGrowth",
+     "gainPct": 4.8
+    },
+    {
+     "id": "Aoe_R",
+     "name": "AoE",
+     "rarity": "rare",
+     "type": "aoe",
+     "gainPct": 4.2
+    },
+    {
+     "id": "Inversement_R",
+     "name": "Inversement",
+     "rarity": "rare",
+     "type": "inversion",
+     "gainPct": 3.9
+    },
+    {
+     "id": "Reflect_L",
+     "name": "Renvoi",
+     "rarity": "legendary",
+     "type": "reflect",
+     "gainPct": 3
+    },
+    {
+     "id": "CoeurVital_E",
+     "name": "Cœur vital",
+     "rarity": "epic",
+     "type": "hpGrowth",
+     "gainPct": 2.9
+    },
+    {
+     "id": "CoeurResistance_L",
+     "name": "Cœur résistance",
+     "rarity": "legendary",
+     "type": "teamRes",
+     "gainPct": 2.5
+    },
+    {
+     "id": "Eternity_L",
+     "name": "Éternité",
+     "rarity": "legendary",
+     "type": "eternityOnHit",
+     "gainPct": 2.5
+    },
+    {
+     "id": "Aoe_E",
+     "name": "AoE",
+     "rarity": "epic",
+     "type": "aoe",
+     "gainPct": 2.4
+    },
+    {
+     "id": "Disparition_L",
+     "name": "Disparition",
+     "rarity": "legendary",
+     "type": "vanishOnHit",
+     "gainPct": 2.4
+    },
+    {
+     "id": "Aoe_C",
+     "name": "AoE",
+     "rarity": "common",
+     "type": "aoe",
+     "gainPct": 2.3
+    },
+    {
+     "id": "Reflect_E",
+     "name": "Renvoi",
+     "rarity": "epic",
+     "type": "reflect",
+     "gainPct": 2.2
+    },
+    {
+     "id": "Reflect_R",
+     "name": "Renvoi",
+     "rarity": "rare",
+     "type": "reflect",
+     "gainPct": 1.8
+    },
+    {
+     "id": "Multiplicator_R",
+     "name": "Multiplicateur",
+     "rarity": "rare",
+     "type": "multiplicator",
+     "gainPct": 1.7
+    },
+    {
+     "id": "CoeurResistance_E",
+     "name": "Cœur résistance",
+     "rarity": "epic",
+     "type": "teamRes",
+     "gainPct": 1.6
+    },
+    {
+     "id": "CoeurVital_R",
+     "name": "Cœur vital",
+     "rarity": "rare",
+     "type": "hpGrowth",
+     "gainPct": 1.4
+    },
+    {
+     "id": "Brut_R",
+     "name": "Brut",
+     "rarity": "rare",
+     "type": "brut",
+     "gainPct": 1.2
+    },
+    {
+     "id": "Chance_L",
+     "name": "Chanceur",
+     "rarity": "legendary",
+     "type": "luck",
+     "gainPct": 1
+    },
+    {
+     "id": "CoeurResistance_R",
+     "name": "Cœur résistance",
+     "rarity": "rare",
+     "type": "teamRes",
+     "gainPct": 0.9
+    },
+    {
+     "id": "Smoked_R",
+     "name": "Fumée",
+     "rarity": "rare",
+     "type": "smoke",
+     "gainPct": 0.9
+    },
+    {
+     "id": "Immunity_E",
+     "name": "Immunité",
+     "rarity": "epic",
+     "type": "immunity",
+     "gainPct": 0.9
+    },
+    {
+     "id": "Reset_E",
+     "name": "Reset",
+     "rarity": "epic",
+     "type": "reset",
+     "gainPct": 0.9
+    },
+    {
+     "id": "Erosion_C",
+     "name": "Érosion",
+     "rarity": "common",
+     "type": "erosion",
+     "gainPct": 0.8
+    },
+    {
+     "id": "Reflect_C",
+     "name": "Renvoi",
+     "rarity": "common",
+     "type": "reflect",
+     "gainPct": 0.8
+    },
+    {
+     "id": "Erosion_E",
+     "name": "Érosion",
+     "rarity": "epic",
+     "type": "erosion",
+     "gainPct": 0.8
+    },
+    {
+     "id": "CoeurVital_C",
+     "name": "Cœur vital",
+     "rarity": "common",
+     "type": "hpGrowth",
+     "gainPct": 0.7
+    },
+    {
+     "id": "Chance_E",
+     "name": "Chanceur",
+     "rarity": "epic",
+     "type": "luck",
+     "gainPct": 0.5
+    },
+    {
+     "id": "CoeurResistance_C",
+     "name": "Cœur résistance",
+     "rarity": "common",
+     "type": "teamRes",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_C",
+     "name": "Soin primitif",
+     "rarity": "common",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_R",
+     "name": "Soin primitif",
+     "rarity": "rare",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_R",
+     "name": "Vampirisme",
+     "rarity": "rare",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_E",
+     "name": "Soin primitif",
+     "rarity": "epic",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_E",
+     "name": "Vampirisme",
+     "rarity": "epic",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_L",
+     "name": "Soin primitif",
+     "rarity": "legendary",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_L",
+     "name": "Vampirisme",
+     "rarity": "legendary",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_C",
+     "name": "Vampirisme",
+     "rarity": "common",
+     "type": "lifesteal",
+     "gainPct": 0.2
+    },
+    {
+     "id": "Chance_R",
+     "name": "Chanceur",
+     "rarity": "rare",
+     "type": "luck",
+     "gainPct": 0.2
+    },
+    {
+     "id": "Chance_C",
+     "name": "Chanceur",
+     "rarity": "common",
+     "type": "luck",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_C",
+     "name": "Spamland",
+     "rarity": "common",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_R",
+     "name": "Bouclier",
+     "rarity": "rare",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_R",
+     "name": "Spamland",
+     "rarity": "rare",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_E",
+     "name": "Bouclier",
+     "rarity": "epic",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_E",
+     "name": "Spamland",
+     "rarity": "epic",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_L",
+     "name": "Bouclier",
+     "rarity": "legendary",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_L",
+     "name": "Spamland",
+     "rarity": "legendary",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_C",
+     "name": "Bouclier",
+     "rarity": "common",
+     "type": "shield",
+     "gainPct": 0
+    },
+    {
+     "id": "Cimetiere_C",
+     "name": "Cimetière",
+     "rarity": "common",
+     "type": "cimetiere",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_C",
+     "name": "Cœur d'ombre",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_C",
+     "name": "Cœur de feu",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_C",
+     "name": "Cœur de lumière",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_C",
+     "name": "Cœur de terre",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_C",
+     "name": "Phénix",
+     "rarity": "common",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Tenacite_C",
+     "name": "Ténacité",
+     "rarity": "common",
+     "type": "tenacity",
+     "gainPct": 0
+    },
+    {
+     "id": "Cimetiere_R",
+     "name": "Cimetière",
+     "rarity": "rare",
+     "type": "cimetiere",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_R",
+     "name": "Cœur d'ombre",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_R",
+     "name": "Cœur de feu",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_R",
+     "name": "Cœur de lumière",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_R",
+     "name": "Cœur de terre",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Optimisation_R",
+     "name": "Optimisation",
+     "rarity": "rare",
+     "type": "optimisation",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_R",
+     "name": "Phénix",
+     "rarity": "rare",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Revenge_R",
+     "name": "Revanche",
+     "rarity": "rare",
+     "type": "revenge",
+     "gainPct": 0
+    },
+    {
+     "id": "Bomba_E",
+     "name": "Bomba",
+     "rarity": "epic",
+     "type": "bomba",
+     "gainPct": 0
+    },
+    {
+     "id": "Cimetiere_E",
+     "name": "Cimetière",
+     "rarity": "epic",
+     "type": "cimetiere",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_E",
+     "name": "Cœur d'ombre",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_E",
+     "name": "Cœur de feu",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_E",
+     "name": "Cœur de lumière",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_E",
+     "name": "Cœur de terre",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Metamorph_E",
+     "name": "Métamorphe",
+     "rarity": "epic",
+     "type": "metamorph",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "name": "Phénix",
+     "rarity": "epic",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Vengeur_E",
+     "name": "Vengeur",
+     "rarity": "epic",
+     "type": "avenger",
+     "gainPct": 0
+    },
+    {
+     "id": "Cimetiere_L",
+     "name": "Cimetière",
+     "rarity": "legendary",
+     "type": "cimetiere",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_L",
+     "name": "Cœur d'ombre",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_L",
+     "name": "Cœur de feu",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_L",
+     "name": "Cœur de lumière",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_L",
+     "name": "Cœur de terre",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_L",
+     "name": "Phénix",
+     "rarity": "legendary",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Taunt_R",
+     "name": "Provocation",
+     "rarity": "rare",
+     "type": "tauntOnAttack",
+     "gainPct": -1.3
+    }
+   ],
+   "timing": [
+    {
+     "id": "CoeurEau_L",
+     "fromT1": 46.5,
+     "T2": 37.5,
+     "T4": 25.9,
+     "T6": 20.5,
+     "T8": 11.9
+    },
+    {
+     "id": "CoeurNature_L",
+     "fromT1": 38.3,
+     "T2": 36.5,
+     "T4": 26.1,
+     "T6": 21.3,
+     "T8": 13.8
+    },
+    {
+     "id": "CoeurNature_E",
+     "fromT1": 27.8,
+     "T2": 25.1,
+     "T4": 21.4,
+     "T6": 16.1,
+     "T8": 11.6
+    },
+    {
+     "id": "CoeurEau_E",
+     "fromT1": 26.8,
+     "T2": 24.6,
+     "T4": 22.3,
+     "T6": 14.1,
+     "T8": 9.3
+    },
+    {
+     "id": "Berserk_L",
+     "fromT1": 26.6,
+     "T2": 24.9,
+     "T4": 24.9,
+     "T6": 23.2,
+     "T8": 15.8
+    },
+    {
+     "id": "Berserk_E",
+     "fromT1": 20.7,
+     "T2": 16.3,
+     "T4": 15.9,
+     "T6": 15.2,
+     "T8": 12.8
+    },
+    {
+     "id": "CoeurNature_R",
+     "fromT1": 16.7,
+     "T2": 16.1,
+     "T4": 14.3,
+     "T6": 11.3,
+     "T8": 5.7
+    },
+    {
+     "id": "CoeurEau_R",
+     "fromT1": 15.7,
+     "T2": 14.9,
+     "T4": 12.7,
+     "T6": 9.8,
+     "T8": 4.8
+    },
+    {
+     "id": "Temporality_L",
+     "fromT1": 14.1,
+     "T2": 12.5,
+     "T4": 9.2,
+     "T6": 9.6,
+     "T8": 3.9
+    },
+    {
+     "id": "CoeurNature_C",
+     "fromT1": 13.7,
+     "T2": 12.5,
+     "T4": 10.5,
+     "T6": 6.4,
+     "T8": 2.8
+    },
+    {
+     "id": "Reflect_E",
+     "fromT1": 2.2,
+     "T2": 2.2,
+     "T4": 1.9,
+     "T6": 1.7,
+     "T8": 1.3
+    },
+    {
+     "id": "Immunity_E",
+     "fromT1": 0.9,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    },
+    {
+     "id": "Shield_E",
+     "fromT1": 0.1,
+     "T2": 0.1,
+     "T4": 0.1,
+     "T6": 0.1,
+     "T8": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "fromT1": 0,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    }
+   ]
+  },
+  "alt1": {
+   "holder": "Lame de la forêt",
+   "base": 7625,
+   "rows": [
+    {
+     "id": "CoeurNature_L",
+     "name": "Cœur de nature",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 43.2
+    },
+    {
+     "id": "Berserk_L",
+     "name": "Berserk",
+     "rarity": "legendary",
+     "type": "berserk",
+     "gainPct": 30.5
+    },
+    {
+     "id": "CoeurNature_E",
+     "name": "Cœur de nature",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 29.6
+    },
+    {
+     "id": "CoeurEau_L",
+     "name": "Cœur d'eau",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 28.9
+    },
+    {
+     "id": "Berserk_E",
+     "name": "Berserk",
+     "rarity": "epic",
+     "type": "berserk",
+     "gainPct": 21.3
+    },
+    {
+     "id": "CoeurEau_E",
+     "name": "Cœur d'eau",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 20.8
+    },
+    {
+     "id": "Aoe_L",
+     "name": "AoE",
+     "rarity": "legendary",
+     "type": "aoe",
+     "gainPct": 20.3
+    },
+    {
+     "id": "CoeurNature_R",
+     "name": "Cœur de nature",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 19
+    },
+    {
+     "id": "Aoe_E",
+     "name": "AoE",
+     "rarity": "epic",
+     "type": "aoe",
+     "gainPct": 18.5
+    },
+    {
+     "id": "Berserk_R",
+     "name": "Berserk",
+     "rarity": "rare",
+     "type": "berserk",
+     "gainPct": 16.6
+    },
+    {
+     "id": "CoeurNature_C",
+     "name": "Cœur de nature",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 16
+    },
+    {
+     "id": "CoeurEau_R",
+     "name": "Cœur d'eau",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 13.6
+    },
+    {
+     "id": "Multiplicator_R",
+     "name": "Multiplicateur",
+     "rarity": "rare",
+     "type": "multiplicator",
+     "gainPct": 13.3
+    },
+    {
+     "id": "Temporality_L",
+     "name": "Temporalité",
+     "rarity": "legendary",
+     "type": "temporalityOnHit",
+     "gainPct": 12.3
+    },
+    {
+     "id": "Aoe_R",
+     "name": "AoE",
+     "rarity": "rare",
+     "type": "aoe",
+     "gainPct": 11.4
+    },
+    {
+     "id": "Cimetiere_L",
+     "name": "Cimetière",
+     "rarity": "legendary",
+     "type": "cimetiere",
+     "gainPct": 10
+    },
+    {
+     "id": "Berserk_C",
+     "name": "Berserk",
+     "rarity": "common",
+     "type": "berserk",
+     "gainPct": 7.6
+    },
+    {
+     "id": "Frozen_E",
+     "name": "Gel",
+     "rarity": "epic",
+     "type": "freezeOnHit",
+     "gainPct": 7.3
+    },
+    {
+     "id": "Poison_C",
+     "name": "Poison",
+     "rarity": "common",
+     "type": "poison",
+     "gainPct": 6.6
+    },
+    {
+     "id": "Poison_R",
+     "name": "Poison",
+     "rarity": "rare",
+     "type": "poison",
+     "gainPct": 6.6
+    },
+    {
+     "id": "Poison_E",
+     "name": "Poison",
+     "rarity": "epic",
+     "type": "poison",
+     "gainPct": 6.6
+    },
+    {
+     "id": "Poison_L",
+     "name": "Poison",
+     "rarity": "legendary",
+     "type": "poison",
+     "gainPct": 6.6
+    },
+    {
+     "id": "CoeurEau_C",
+     "name": "Cœur d'eau",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 6
+    },
+    {
+     "id": "Mystere_R",
+     "name": "Mystère",
+     "rarity": "rare",
+     "type": "mystery",
+     "gainPct": 5.9
+    },
+    {
+     "id": "PunchingBag_C",
+     "name": "Sac de frappe",
+     "rarity": "common",
+     "type": "punchingBag",
+     "gainPct": 5.7
+    },
+    {
+     "id": "PunchingBag_R",
+     "name": "Sac de frappe",
+     "rarity": "rare",
+     "type": "punchingBag",
+     "gainPct": 5.7
+    },
+    {
+     "id": "PunchingBag_E",
+     "name": "Sac de frappe",
+     "rarity": "epic",
+     "type": "punchingBag",
+     "gainPct": 5.7
+    },
+    {
+     "id": "PunchingBag_L",
+     "name": "Sac de frappe",
+     "rarity": "legendary",
+     "type": "punchingBag",
+     "gainPct": 5.7
+    },
+    {
+     "id": "Cimetiere_E",
+     "name": "Cimetière",
+     "rarity": "epic",
+     "type": "cimetiere",
+     "gainPct": 5.5
+    },
+    {
+     "id": "Aoe_C",
+     "name": "AoE",
+     "rarity": "common",
+     "type": "aoe",
+     "gainPct": 5.1
+    },
+    {
+     "id": "CoeurVital_L",
+     "name": "Cœur vital",
+     "rarity": "legendary",
+     "type": "hpGrowth",
+     "gainPct": 5.1
+    },
+    {
+     "id": "Mimetisme_R",
+     "name": "Mimétisme",
+     "rarity": "rare",
+     "type": "mimetism",
+     "gainPct": 4.9
+    },
+    {
+     "id": "Cimetiere_R",
+     "name": "Cimetière",
+     "rarity": "rare",
+     "type": "cimetiere",
+     "gainPct": 3.8
+    },
+    {
+     "id": "CoeurResistance_L",
+     "name": "Cœur résistance",
+     "rarity": "legendary",
+     "type": "teamRes",
+     "gainPct": 3.8
+    },
+    {
+     "id": "CoeurVital_E",
+     "name": "Cœur vital",
+     "rarity": "epic",
+     "type": "hpGrowth",
+     "gainPct": 3
+    },
+    {
+     "id": "Reset_E",
+     "name": "Reset",
+     "rarity": "epic",
+     "type": "reset",
+     "gainPct": 2.7
+    },
+    {
+     "id": "CoeurResistance_E",
+     "name": "Cœur résistance",
+     "rarity": "epic",
+     "type": "teamRes",
+     "gainPct": 2.6
+    },
+    {
+     "id": "Eternity_L",
+     "name": "Éternité",
+     "rarity": "legendary",
+     "type": "eternityOnHit",
+     "gainPct": 2.6
+    },
+    {
+     "id": "Cimetiere_C",
+     "name": "Cimetière",
+     "rarity": "common",
+     "type": "cimetiere",
+     "gainPct": 2.5
+    },
+    {
+     "id": "Disparition_L",
+     "name": "Disparition",
+     "rarity": "legendary",
+     "type": "vanishOnHit",
+     "gainPct": 2.5
+    },
+    {
+     "id": "Brut_R",
+     "name": "Brut",
+     "rarity": "rare",
+     "type": "brut",
+     "gainPct": 2.2
+    },
+    {
+     "id": "Reflect_L",
+     "name": "Renvoi",
+     "rarity": "legendary",
+     "type": "reflect",
+     "gainPct": 1.9
+    },
+    {
+     "id": "CoeurResistance_R",
+     "name": "Cœur résistance",
+     "rarity": "rare",
+     "type": "teamRes",
+     "gainPct": 1.7
+    },
+    {
+     "id": "Reflect_E",
+     "name": "Renvoi",
+     "rarity": "epic",
+     "type": "reflect",
+     "gainPct": 1.6
+    },
+    {
+     "id": "CoeurVital_R",
+     "name": "Cœur vital",
+     "rarity": "rare",
+     "type": "hpGrowth",
+     "gainPct": 1.5
+    },
+    {
+     "id": "CoeurResistance_C",
+     "name": "Cœur résistance",
+     "rarity": "common",
+     "type": "teamRes",
+     "gainPct": 1.1
+    },
+    {
+     "id": "Erosion_C",
+     "name": "Érosion",
+     "rarity": "common",
+     "type": "erosion",
+     "gainPct": 1
+    },
+    {
+     "id": "Erosion_E",
+     "name": "Érosion",
+     "rarity": "epic",
+     "type": "erosion",
+     "gainPct": 1
+    },
+    {
+     "id": "Chance_L",
+     "name": "Chanceur",
+     "rarity": "legendary",
+     "type": "luck",
+     "gainPct": 1
+    },
+    {
+     "id": "Smoked_R",
+     "name": "Fumée",
+     "rarity": "rare",
+     "type": "smoke",
+     "gainPct": 0.9
+    },
+    {
+     "id": "Immunity_E",
+     "name": "Immunité",
+     "rarity": "epic",
+     "type": "immunity",
+     "gainPct": 0.9
+    },
+    {
+     "id": "CoeurVital_C",
+     "name": "Cœur vital",
+     "rarity": "common",
+     "type": "hpGrowth",
+     "gainPct": 0.8
+    },
+    {
+     "id": "Chance_E",
+     "name": "Chanceur",
+     "rarity": "epic",
+     "type": "luck",
+     "gainPct": 0.5
+    },
+    {
+     "id": "Primitive heal_C",
+     "name": "Soin primitif",
+     "rarity": "common",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_C",
+     "name": "Vampirisme",
+     "rarity": "common",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Reflect_R",
+     "name": "Renvoi",
+     "rarity": "rare",
+     "type": "reflect",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_R",
+     "name": "Soin primitif",
+     "rarity": "rare",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_R",
+     "name": "Vampirisme",
+     "rarity": "rare",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_E",
+     "name": "Soin primitif",
+     "rarity": "epic",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_E",
+     "name": "Vampirisme",
+     "rarity": "epic",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Primitive heal_L",
+     "name": "Soin primitif",
+     "rarity": "legendary",
+     "type": "regen",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Life Steal_L",
+     "name": "Vampirisme",
+     "rarity": "legendary",
+     "type": "lifesteal",
+     "gainPct": 0.4
+    },
+    {
+     "id": "Reflect_C",
+     "name": "Renvoi",
+     "rarity": "common",
+     "type": "reflect",
+     "gainPct": 0.3
+    },
+    {
+     "id": "Chance_R",
+     "name": "Chanceur",
+     "rarity": "rare",
+     "type": "luck",
+     "gainPct": 0.3
+    },
+    {
+     "id": "Taunt_R",
+     "name": "Provocation",
+     "rarity": "rare",
+     "type": "tauntOnAttack",
+     "gainPct": 0.2
+    },
+    {
+     "id": "Chance_C",
+     "name": "Chanceur",
+     "rarity": "common",
+     "type": "luck",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_C",
+     "name": "Spamland",
+     "rarity": "common",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_R",
+     "name": "Bouclier",
+     "rarity": "rare",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_R",
+     "name": "Spamland",
+     "rarity": "rare",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_E",
+     "name": "Bouclier",
+     "rarity": "epic",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_E",
+     "name": "Spamland",
+     "rarity": "epic",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_L",
+     "name": "Bouclier",
+     "rarity": "legendary",
+     "type": "shield",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Spamland_L",
+     "name": "Spamland",
+     "rarity": "legendary",
+     "type": "spamland",
+     "gainPct": 0.1
+    },
+    {
+     "id": "Shield_C",
+     "name": "Bouclier",
+     "rarity": "common",
+     "type": "shield",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_C",
+     "name": "Cœur d'ombre",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_C",
+     "name": "Cœur de feu",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_C",
+     "name": "Cœur de lumière",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_C",
+     "name": "Cœur de terre",
+     "rarity": "common",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_C",
+     "name": "Phénix",
+     "rarity": "common",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Tenacite_C",
+     "name": "Ténacité",
+     "rarity": "common",
+     "type": "tenacity",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_R",
+     "name": "Cœur d'ombre",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_R",
+     "name": "Cœur de feu",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_R",
+     "name": "Cœur de lumière",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_R",
+     "name": "Cœur de terre",
+     "rarity": "rare",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Optimisation_R",
+     "name": "Optimisation",
+     "rarity": "rare",
+     "type": "optimisation",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_R",
+     "name": "Phénix",
+     "rarity": "rare",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Revenge_R",
+     "name": "Revanche",
+     "rarity": "rare",
+     "type": "revenge",
+     "gainPct": 0
+    },
+    {
+     "id": "Bomba_E",
+     "name": "Bomba",
+     "rarity": "epic",
+     "type": "bomba",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_E",
+     "name": "Cœur d'ombre",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_E",
+     "name": "Cœur de feu",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_E",
+     "name": "Cœur de lumière",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_E",
+     "name": "Cœur de terre",
+     "rarity": "epic",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Metamorph_E",
+     "name": "Métamorphe",
+     "rarity": "epic",
+     "type": "metamorph",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "name": "Phénix",
+     "rarity": "epic",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Vengeur_E",
+     "name": "Vengeur",
+     "rarity": "epic",
+     "type": "avenger",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurOmbre_L",
+     "name": "Cœur d'ombre",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurFeu_L",
+     "name": "Cœur de feu",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurLumiere_L",
+     "name": "Cœur de lumière",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "CoeurTerre_L",
+     "name": "Cœur de terre",
+     "rarity": "legendary",
+     "type": "coeur",
+     "gainPct": 0
+    },
+    {
+     "id": "Phoenix_L",
+     "name": "Phénix",
+     "rarity": "legendary",
+     "type": "phoenix",
+     "gainPct": 0
+    },
+    {
+     "id": "Inversement_R",
+     "name": "Inversement",
+     "rarity": "rare",
+     "type": "inversion",
+     "gainPct": -8
+    }
+   ],
+   "timing": [
+    {
+     "id": "CoeurNature_L",
+     "fromT1": 43.2,
+     "T2": 36.9,
+     "T4": 24.2,
+     "T6": 20.5,
+     "T8": 15.4
+    },
+    {
+     "id": "Berserk_L",
+     "fromT1": 30.5,
+     "T2": 30.5,
+     "T4": 24.2,
+     "T6": 24,
+     "T8": 20.2
+    },
+    {
+     "id": "CoeurNature_E",
+     "fromT1": 29.6,
+     "T2": 24.2,
+     "T4": 22.2,
+     "T6": 17.7,
+     "T8": 6.5
+    },
+    {
+     "id": "CoeurEau_L",
+     "fromT1": 28.9,
+     "T2": 27.8,
+     "T4": 19.9,
+     "T6": 15.1,
+     "T8": 5.9
+    },
+    {
+     "id": "Berserk_E",
+     "fromT1": 21.3,
+     "T2": 21.1,
+     "T4": 20.6,
+     "T6": 18,
+     "T8": 16.5
+    },
+    {
+     "id": "CoeurEau_E",
+     "fromT1": 20.8,
+     "T2": 19.8,
+     "T4": 16.8,
+     "T6": 9.8,
+     "T8": 3.8
+    },
+    {
+     "id": "Aoe_L",
+     "fromT1": 20.3,
+     "T2": 19,
+     "T4": 17.8,
+     "T6": 15.8,
+     "T8": 13
+    },
+    {
+     "id": "CoeurNature_R",
+     "fromT1": 19,
+     "T2": 18.6,
+     "T4": 15.9,
+     "T6": 7,
+     "T8": 3.1
+    },
+    {
+     "id": "Aoe_E",
+     "fromT1": 18.5,
+     "T2": 17.9,
+     "T4": 16.6,
+     "T6": 14.2,
+     "T8": 10.7
+    },
+    {
+     "id": "Berserk_R",
+     "fromT1": 16.6,
+     "T2": 16.5,
+     "T4": 16.1,
+     "T6": 9.7,
+     "T8": 6.1
+    },
+    {
+     "id": "Reflect_E",
+     "fromT1": 1.6,
+     "T2": 1.5,
+     "T4": 1.5,
+     "T6": 0.4,
+     "T8": 0.3
+    },
+    {
+     "id": "Immunity_E",
+     "fromT1": 0.9,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    },
+    {
+     "id": "Shield_E",
+     "fromT1": 0.1,
+     "T2": 0.1,
+     "T4": 0.1,
+     "T6": 0.1,
+     "T8": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "fromT1": 0,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    }
+   ]
+  }
+ }
+}

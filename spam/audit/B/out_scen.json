@@ -1,0 +1,614 @@
+{
+ "scen": {
+  "chimere": {
+   "base": {
+    "J": 8018,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1834
+   },
+   "mimetism0": {
+    "J": 7321,
+    "deaths": 0.9,
+    "off": 6611,
+    "ehpL": 1740
+   },
+   "absorb": {
+    "Lame de la forêt": {
+     "J": 7188,
+     "deaths": 2,
+     "off": 6760,
+     "ehpL": 943
+    },
+    "Chimère Brasse-chair": {
+     "J": 4602,
+     "deaths": 1.5,
+     "off": 4086,
+     "ehpL": 1216
+    },
+    "L'Œil des montagnes": {
+     "J": 7393,
+     "deaths": 1.9,
+     "off": 6904,
+     "ehpL": 1120
+    },
+    "Keria": {
+     "J": 7387,
+     "deaths": 1,
+     "off": 6753,
+     "ehpL": 1581
+    }
+   },
+   "focus": {
+    "Lame de la forêt": {
+     "J": 7909,
+     "deaths": 0.6,
+     "off": 7253,
+     "ehpL": 1598
+    },
+    "Chimère Brasse-chair": {
+     "J": 8112,
+     "deaths": 0,
+     "off": 7288,
+     "ehpL": 2102
+    },
+    "L'Œil des montagnes": {
+     "J": 7964,
+     "deaths": 0.9,
+     "off": 7288,
+     "ehpL": 1643
+    },
+    "Keria": {
+     "J": 7857,
+     "deaths": 1,
+     "off": 7198,
+     "ehpL": 1598
+    }
+   },
+   "freeze": {
+    "Lame de la forêt": {
+     "J": 7241,
+     "deaths": 1,
+     "off": 6553,
+     "ehpL": 1672
+    },
+    "Chimère Brasse-chair": {
+     "J": 5840,
+     "deaths": 1,
+     "off": 5141,
+     "ehpL": 1704
+    },
+    "L'Œil des montagnes": {
+     "J": 7639,
+     "deaths": 0.5,
+     "off": 6891,
+     "ehpL": 1866
+    },
+    "Keria": {
+     "J": 7595,
+     "deaths": 0.4,
+     "off": 6874,
+     "ehpL": 1792
+    }
+   },
+   "precMalus": {
+    "J": 7059,
+    "deaths": 0,
+    "off": 6339,
+    "ehpL": 1803
+   },
+   "cdReset": {
+    "J": 5579,
+    "deaths": 0,
+    "off": 4818,
+    "ehpL": 1921
+   },
+   "reflectR_first": {
+    "J": 8046,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1915
+   },
+   "reflectC_all": {
+    "J": 8026,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1855
+   },
+   "reflectL_all": {
+    "J": 3674,
+    "deaths": 1,
+    "off": 3195,
+    "ehpL": 1094
+   }
+  },
+  "anticrit": {
+   "base": {
+    "J": 6989,
+    "deaths": 0,
+    "off": 6140,
+    "ehpL": 2104
+   },
+   "mimetism0": {
+    "J": 6565,
+    "deaths": 0,
+    "off": 5744,
+    "ehpL": 2021
+   },
+   "absorb": {
+    "Hibernatus": {
+     "J": 6090,
+     "deaths": 1.3,
+     "off": 5496,
+     "ehpL": 1400
+    },
+    "Chimère Brasse-chair": {
+     "J": 5703,
+     "deaths": 1.5,
+     "off": 5109,
+     "ehpL": 1364
+    },
+    "Hippocampe Nimbé": {
+     "J": 5493,
+     "deaths": 1,
+     "off": 5001,
+     "ehpL": 1092
+    },
+    "Keria": {
+     "J": 6467,
+     "deaths": 1,
+     "off": 5830,
+     "ehpL": 1517
+    }
+   },
+   "focus": {
+    "Hibernatus": {
+     "J": 6320,
+     "deaths": 2,
+     "off": 5698,
+     "ehpL": 1417
+    },
+    "Chimère Brasse-chair": {
+     "J": 6989,
+     "deaths": 0,
+     "off": 6140,
+     "ehpL": 2104
+    },
+    "Hippocampe Nimbé": {
+     "J": 6755,
+     "deaths": 0,
+     "off": 6140,
+     "ehpL": 1435
+    },
+    "Keria": {
+     "J": 6425,
+     "deaths": 1.9,
+     "off": 5788,
+     "ehpL": 1444
+    }
+   },
+   "freeze": {
+    "Hibernatus": {
+     "J": 6630,
+     "deaths": 0,
+     "off": 5796,
+     "ehpL": 2060
+    },
+    "Chimère Brasse-chair": {
+     "J": 5639,
+     "deaths": 1,
+     "off": 4915,
+     "ehpL": 1701
+    },
+    "Hippocampe Nimbé": {
+     "J": 6353,
+     "deaths": 0,
+     "off": 5516,
+     "ehpL": 2068
+    },
+    "Keria": {
+     "J": 6739,
+     "deaths": 0,
+     "off": 5904,
+     "ehpL": 2060
+    }
+   },
+   "precMalus": {
+    "J": 6320,
+    "deaths": 0,
+    "off": 5517,
+    "ehpL": 1968
+   },
+   "cdReset": {
+    "J": 5252,
+    "deaths": 1,
+    "off": 4508,
+    "ehpL": 1762
+   },
+   "reflectR_first": {
+    "J": 6866,
+    "deaths": 0,
+    "off": 6140,
+    "ehpL": 1751
+   },
+   "reflectC_all": {
+    "J": 6758,
+    "deaths": 0.2,
+    "off": 6067,
+    "ehpL": 1642
+   },
+   "reflectL_all": {
+    "J": 4699,
+    "deaths": 2,
+    "off": 4424,
+    "ehpL": 421
+   }
+  },
+  "zerocrit": {
+   "base": {
+    "J": 6529,
+    "deaths": 1.2,
+    "off": 6102,
+    "ehpL": 879
+   },
+   "mimetism0": {
+    "J": 6529,
+    "deaths": 1.2,
+    "off": 6102,
+    "ehpL": 879
+   },
+   "absorb": {
+    "Murmures du Corail Noir": {
+     "J": 4889,
+     "deaths": 2.4,
+     "off": 4614,
+     "ehpL": 451
+    },
+    "Prisonnière de la Machine": {
+     "J": 4814,
+     "deaths": 2,
+     "off": 4488,
+     "ehpL": 606
+    },
+    "Hibernatus": {
+     "J": 5584,
+     "deaths": 2.3,
+     "off": 5362,
+     "ehpL": 328
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 6529,
+     "deaths": 1.2,
+     "off": 6102,
+     "ehpL": 879
+    }
+   },
+   "focus": {
+    "Murmures du Corail Noir": {
+     "J": 5767,
+     "deaths": 1,
+     "off": 5340,
+     "ehpL": 873
+    },
+    "Prisonnière de la Machine": {
+     "J": 4519,
+     "deaths": 0,
+     "off": 3903,
+     "ehpL": 1435
+    },
+    "Hibernatus": {
+     "J": 7084,
+     "deaths": 0.6,
+     "off": 6547,
+     "ehpL": 1188
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 6529,
+     "deaths": 1.2,
+     "off": 6102,
+     "ehpL": 879
+    }
+   },
+   "freeze": {
+    "Murmures du Corail Noir": {
+     "J": 4816,
+     "deaths": 1,
+     "off": 4382,
+     "ehpL": 906
+    },
+    "Prisonnière de la Machine": {
+     "J": 5231,
+     "deaths": 1.2,
+     "off": 4709,
+     "ehpL": 1146
+    },
+    "Hibernatus": {
+     "J": 6220,
+     "deaths": 1.3,
+     "off": 5803,
+     "ehpL": 845
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 5858,
+     "deaths": 1.5,
+     "off": 5449,
+     "ehpL": 817
+    }
+   },
+   "precMalus": {
+    "J": 5797,
+    "deaths": 1.3,
+    "off": 5382,
+    "ehpL": 840
+   },
+   "cdReset": {
+    "J": 5967,
+    "deaths": 1.9,
+    "off": 5534,
+    "ehpL": 870
+   },
+   "reflectR_first": {
+    "J": 5179,
+    "deaths": 1.4,
+    "off": 4789,
+    "ehpL": 765
+   },
+   "reflectC_all": {
+    "J": 5560,
+    "deaths": 1.9,
+    "off": 5213,
+    "ehpL": 622
+   },
+   "reflectL_all": {
+    "J": 3949,
+    "deaths": 2.9,
+    "off": 3752,
+    "ehpL": 160
+   }
+  },
+  "alt1": {
+   "base": {
+    "J": 7625,
+    "deaths": 0.1,
+    "off": 6853,
+    "ehpL": 1917
+   },
+   "mimetism0": {
+    "J": 6920,
+    "deaths": 0.4,
+    "off": 6199,
+    "ehpL": 1764
+   },
+   "absorb": {
+    "Esprit Nature": {
+     "J": 6795,
+     "deaths": 1,
+     "off": 6173,
+     "ehpL": 1516
+    },
+    "Lame de la forêt": {
+     "J": 6005,
+     "deaths": 2,
+     "off": 5672,
+     "ehpL": 651
+    },
+    "Keria": {
+     "J": 6985,
+     "deaths": 1.1,
+     "off": 6424,
+     "ehpL": 1334
+    },
+    "Chimère Brasse-chair": {
+     "J": 5962,
+     "deaths": 1.1,
+     "off": 5414,
+     "ehpL": 1291
+    }
+   },
+   "focus": {
+    "Esprit Nature": {
+     "J": 7625,
+     "deaths": 0.1,
+     "off": 6853,
+     "ehpL": 1917
+    },
+    "Lame de la forêt": {
+     "J": 7641,
+     "deaths": 0,
+     "off": 6892,
+     "ehpL": 1852
+    },
+    "Keria": {
+     "J": 7411,
+     "deaths": 0.6,
+     "off": 6683,
+     "ehpL": 1778
+    },
+    "Chimère Brasse-chair": {
+     "J": 7739,
+     "deaths": 0,
+     "off": 6892,
+     "ehpL": 2132
+    }
+   },
+   "freeze": {
+    "Esprit Nature": {
+     "J": 6517,
+     "deaths": 0.6,
+     "off": 5823,
+     "ehpL": 1684
+    },
+    "Lame de la forêt": {
+     "J": 6038,
+     "deaths": 1,
+     "off": 5424,
+     "ehpL": 1454
+    },
+    "Keria": {
+     "J": 7202,
+     "deaths": 0.1,
+     "off": 6454,
+     "ehpL": 1846
+    },
+    "Chimère Brasse-chair": {
+     "J": 6287,
+     "deaths": 0.1,
+     "off": 5534,
+     "ehpL": 1863
+    }
+   },
+   "precMalus": {
+    "J": 6678,
+    "deaths": 0.4,
+    "off": 5940,
+    "ehpL": 1810
+   },
+   "cdReset": {
+    "J": 5832,
+    "deaths": 0.6,
+    "off": 5121,
+    "ehpL": 1729
+   },
+   "reflectR_first": {
+    "J": 7210,
+    "deaths": 0.6,
+    "off": 6531,
+    "ehpL": 1643
+   },
+   "reflectC_all": {
+    "J": 7269,
+    "deaths": 0.4,
+    "off": 6603,
+    "ehpL": 1611
+   },
+   "reflectL_all": {
+    "J": 5411,
+    "deaths": 1.6,
+    "off": 5048,
+    "ehpL": 703
+   }
+  },
+  "alt2": {
+   "base": {
+    "J": 6077,
+    "deaths": 2.1,
+    "off": 5618,
+    "ehpL": 1017
+   },
+   "mimetism0": {
+    "J": 5700,
+    "deaths": 2.1,
+    "off": 5244,
+    "ehpL": 1004
+   },
+   "absorb": {
+    "Scorch, les Lézards Ignés": {
+     "J": 6077,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1017
+    },
+    "Sanglier Doré": {
+     "J": 5135,
+     "deaths": 3.8,
+     "off": 5021,
+     "ehpL": 14
+    },
+    "Chouette Polychrome": {
+     "J": 6076,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1016
+    },
+    "Chimère Brasse-chair": {
+     "J": 5436,
+     "deaths": 3,
+     "off": 5187,
+     "ehpL": 433
+    }
+   },
+   "focus": {
+    "Scorch, les Lézards Ignés": {
+     "J": 6077,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1017
+    },
+    "Sanglier Doré": {
+     "J": 7623,
+     "deaths": 1.9,
+     "off": 7319,
+     "ehpL": 522
+    },
+    "Chouette Polychrome": {
+     "J": 5893,
+     "deaths": 2,
+     "off": 5378,
+     "ehpL": 1171
+    },
+    "Chimère Brasse-chair": {
+     "J": 6745,
+     "deaths": 3,
+     "off": 6385,
+     "ehpL": 675
+    }
+   },
+   "freeze": {
+    "Scorch, les Lézards Ignés": {
+     "J": 5651,
+     "deaths": 2.1,
+     "off": 5194,
+     "ehpL": 1008
+    },
+    "Sanglier Doré": {
+     "J": 5416,
+     "deaths": 2.1,
+     "off": 4992,
+     "ehpL": 916
+    },
+    "Chouette Polychrome": {
+     "J": 5487,
+     "deaths": 2.1,
+     "off": 4996,
+     "ehpL": 1100
+    },
+    "Chimère Brasse-chair": {
+     "J": 5399,
+     "deaths": 2.9,
+     "off": 4976,
+     "ehpL": 876
+    }
+   },
+   "precMalus": {
+    "J": 5487,
+    "deaths": 2.1,
+    "off": 5034,
+    "ehpL": 994
+   },
+   "cdReset": {
+    "J": 5273,
+    "deaths": 2.8,
+    "off": 4843,
+    "ehpL": 905
+   },
+   "reflectR_first": {
+    "J": 5736,
+    "deaths": 2.9,
+    "off": 5348,
+    "ehpL": 792
+   },
+   "reflectC_all": {
+    "J": 5702,
+    "deaths": 2.9,
+    "off": 5368,
+    "ehpL": 635
+   },
+   "reflectL_all": {
+    "J": 4494,
+    "deaths": 3.9,
+    "off": 4375,
+    "ehpL": 0
+   }
+  }
+ }
+}

@@ -1,0 +1,126 @@
+Ameru: SPAM Light rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Ameru C View the full card
+Ameru
+3 Smoky Dream
+Smoke
+800/800
+15
+Standard
+Ameru
+3 Smoky Dream
+Smoke
+800/800
+15
+Elemental
+Ameru
+3 Smoky Dream
+Smoke
+800/800
+15
+FA
+Ameru
+3 Smoky Dream
+Smoke
+800/800
+15
+## Ameru
+C Light · Rare · Standard
+800 HP 15 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Corrosion Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Recommended
+- Talent 2 Hardening Increases this card’s elemental resistances by (+15%).
+- Talent 3 Cavalry Increases the max HP of all other allied cards by (+150)
+Three ability slots
+- Smoky Dream ability · Cooldown 3 Deal 15 Light, 15 Water and 15 Shadow damage Light bonus (+4) & Water bonus (+4) & Shadow bonus (+4)
+3
+- Smoke tox · Rare Enshrouds the allied field after using an attack or a heal
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Light Rare #191
+# Ameru
+Generation Economy
+800 Health points
+15 Spamtons / turn
+#66 Rank / 127
+B No talent · #54
+Attack
+21
+Generation
+95
+Defense
+57
+Support
+1
+Control
+0
+Economy
+95
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Corrosion 2 Hardening 3 Cavalry
+Build with this card
+Share
+### Abilities
+#### Smoky Dream
+3 turns
+Deal 15 Light, 15 Water and 15 Shadow damage Light bonus (+4) & Water bonus (+4) & Shadow bonus (+4)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Smoke
+Rare
+Enshrouds the allied field after using an attack or a heal
+### Talents
+#### Corrosion
+Recommended
+Each time this card is attacked, the attacker loses (-1%) in all its elemental resistances.
+Δ 495.9 · Theoretical score
+#### Hardening
+Increases this card’s elemental resistances by (+15%).
+Δ 62.2 · Theoretical score
+#### Cavalry
+Increases the max HP of all other allied cards by (+150)
+Δ 265.2 · Theoretical score
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Anthropomorph · Emeldarion
+### Beyond the card
+Originally from the Lonely Isles, an anthropomorphic martial master carrying a magical artifact settled northwest of Emeldarion. One day, his unattended staff was used on a mushroom. The magic took effect, and the fungus assumed a humanoid form. Because it constantly demanded bitter flavors, many believed it was saying that its name was Ameru; the name stuck. Grateful for this second life, the new morphic being introduced unusual addictive crops that became wildly popular in Abondance. This new form of agriculture allowed the Water shamans to prosper.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+S # 127 Shadow
+Common · Attack
+### Canine Specter
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

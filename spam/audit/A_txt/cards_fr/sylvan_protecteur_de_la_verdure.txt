@@ -1,0 +1,143 @@
+Sylvan, Protecteur de la Verdure : carte SPAM Nature commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Sylvan, Protecteur de la Verdure C Voir la carte en grand
+Sylvan, Protecteur de la Verdure
+4 Double souffle
+1 Bond-rapide
+Érosion
+550/550
+5
+Standard
+Sylvan, Protecteur de la Verdure
+4 Double souffle
+1 Bond-rapide
+Érosion
+550/550
+5
+Élémentaire
+Sylvan, Protecteur de la Verdure
+4 Double souffle
+1 Bond-rapide
+Érosion
+550/550
+5
+FA
+Sylvan, Protecteur de la Verdure
+4 Double souffle
+1 Bond-rapide
+Érosion
+550/550
+5
+## Sylvan, Protecteur de la Verdure
+C Nature · Commune · Standard
+550 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Erreur Croissante -3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+- Talent 2 Virage 360 Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+- Talent 3 Incisif Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Conseillé
+Trois champs de compétence
+- Double souffle compétence · Recharge 4 Attaque 25 Nature
+Attaque 25 Nature
+Attaque 25 Nature
+4
+- Bond-rapide compétence · Recharge 1 Attaque 5 Nature
+Bonus Nature (+1)
+Précision et Critique (+2%) pour le lanceur
+1
+- Érosion tox · Commune Réduit les PV max à hauteur de 50% des dégâts infligés
+Illustration par Embers
+Fiche complète
+Illustration par Embers
+Nature Commune #039
+# Sylvan, Protecteur de la Verdure
+Polyvalent
+550 Points de vie
+5 Spamtons / tour
+#69 Classement / 127
+C Sans talent · #65
+Attaque
+66
+Génération
+57
+Défense
+21
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Erreur Croissante 2 Virage 360 3 Incisif
+Jouer cette carte
+Partager
+### Compétences
+#### Double souffle
+4 tours
+Attaque 25 Nature
+Attaque 25 Nature
+Attaque 25 Nature
+Précision 50% Critique 1%
+#### Bond-rapide
+1 tour
+Attaque 5 Nature
+Bonus Nature (+1)
+Précision et Critique (+2%) pour le lanceur
+Précision 100% Critique 1%
+### Tox de départ
+#### Érosion
+Commune
+Réduit les PV max à hauteur de 50% des dégâts infligés
+### Talents
+#### Erreur Croissante
+-3 % de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+Δ 28,8 · Score théorique
+#### Virage 360
+Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+Δ -302,3 · Score théorique
+#### Incisif
+Conseillé
+Les critiques et la précision de toutes vos cartes augmentent de (+1 %) par tour
+Δ 411,9 · Score théorique
+### Résistances
+15% Feu
+15% Eau
+15% Terre
+15% Nature
+15% Ombre
+15% Lumière
+Grand Lion · Lumethia
+### Derrière la carte
+Les chaînes de Drako’vish s’étendent au nord de Lumethia et forment une frontière avec Vaeloria, terre des Grands Lions. Au cours d’un voyage consacré à ses recherches, Sylvan recueillit un enfant abandonné, Léo. Lorsqu’il apprit qu’une guerre sanglante opposait ses amis d’enfance, Catimimi le pressa d’intervenir pour mettre fin au combat. Sylvan parvint à imposer l’accalmie tant espérée, mais reçut des blessures mortelles. Dans ses dernières paroles, il demanda que l’on prenne soin de Léo. Son sacrifice mit fin à la guerre.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 180 Lumière
+Commune · Attaque
+### Dragon Ciel
+700 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

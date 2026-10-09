@@ -1,0 +1,154 @@
+Mélodie des Divinités : carte SPAM Lumière légendaire, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Mélodie des Divinités C Voir la carte en grand
+Mélodie des Divinités
+2 Flèches célestes
+10 Jugement divin
+550/550
+3
+Standard
+Mélodie des Divinités
+2 Flèches célestes
+10 Jugement divin
+550/550
+3
+Élémentaire
+Mélodie des Divinités
+2 Flèches célestes
+10 Jugement divin
+550/550
+3
+FA
+Mélodie des Divinités
+2 Flèches célestes
+10 Jugement divin
+550/550
+3
+## Mélodie des Divinités
+C Lumière · Légendaire · Standard
+550 PV 3 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Héritage Bonus (+50) Spamton quand cette carte est tuée.
+- Talent 2 Cœur Corrompu Commence la partie avec un passif Cœur rare aléatoire
+- Talent 3 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Conseillé
+Trois champs de compétence
+- Flèches célestes compétence · Recharge 2 Cible aléatoirement les cartes adverses
+Attaque 3 Lumière X18
+2
+- Jugement divin compétence · Recharge 10 Les Spamtons de l'adversaire tombent à 0
+10
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Saki
+Fiche complète
+Illustration par Saki
+Lumière Légendaire #096
+# Mélodie des Divinités
+Attaque Économie
+550 Points de vie
+3 Spamtons / tour
+#77 Classement / 127
+C Sans talent · #68
+Attaque
+76
+Génération
+0
+Défense
+15
+Soutien
+1
+Contrôle
+0
+Économie
+93
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Héritage 2 Cœur Corrompu 3 One man army
+Jouer cette carte 6 decks
+Partager
+### Compétences
+#### Flèches célestes
+2 tours
+Cible aléatoirement les cartes adverses
+Attaque 3 Lumière X18
+Précision 100% Critique 25%
+#### Jugement divin
+10 tours
+Les Spamtons de l'adversaire tombent à 0
+Précision 100% Critique 0%
+### Talents
+#### Héritage
+Bonus (+50) Spamton quand cette carte est tuée.
+Δ 10 · Score théorique
+#### Cœur Corrompu
+Commence la partie avec un passif Cœur rare aléatoire
+Δ 232,6 · Score théorique
+#### One man army
+Conseillé
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 324,9 · Score théorique
+## Ses meilleurs decks
+6 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Collection avancée
+Rampe élémentaire ·
+### Mélodie des Divinités + Chouette Polychrome
+53,9 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Rongeur Nuageux + Mélodie des Divinités
+51,5 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Commando Gerz + Mélodie des Divinités
+49,8 % Indice relatif 9 tours Élimination estimée 21 / tour Spamtons
+D Collection avancée
+Midrange ·
+### Rongeur Nuageux + Codex des Sorts Lumineux
+46,5 % Indice relatif 8 tours Élimination estimée 28 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Oisillons de Midas + Mélodie des Divinités
+41,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+Les autres decks (1)
+- D Oisillons de Midas + Mélodie des Divinités avec Codex des Sorts Lumineux · Léo Collection avancée · 36,3%
+### Résistances
+8% Feu
+8% Eau
+8% Terre
+8% Nature
+8% Ombre
+8% Lumière
+Art · Inconnue
+### Derrière la carte
+Elther n’existerait pas sans les Divinités : toute forme de vie est le fruit d’une œuvre de création divine. Chaque créateur possède ses propres œuvres et ses propres doctrines. Le langage runique employé par ces êtres suprêmes ressemble à une partition indéchiffrable. Seule la forme de certaines runes demeure accessible aux habitants de la Surface. La Mélodie des Divinités est un chant religieux qui a traversé les âges. L’œuvre rend grâce au divin, et ses psaumes incompréhensibles sont étudiés afin d’en élucider le sens.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 233 Lumière
+Commune · Soutien
+### Oisillons de Midas
+500 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+D # 262 Nature
+Commune · Soutien
+### Yotaru Gardefeuille
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,160 @@
+Regent of the Abysses: SPAM Earth epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Regent of the Abysses B View the full card
+Regent of the Abysses
+2 Quakecry
+5 Engulfment
+Ancient Healing
+1000/1000
+6
+Standard
+Regent of the Abysses
+2 Quakecry
+5 Engulfment
+Ancient Healing
+1000/1000
+6
+Elemental
+Regent of the Abysses
+2 Quakecry
+5 Engulfment
+Ancient Healing
+1000/1000
+6
+FA
+Regent of the Abysses
+2 Quakecry
+5 Engulfment
+Ancient Healing
+1000/1000
+6
+## Regent of the Abysses
+B Earth · Epic · Standard
+1,000 HP 6 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+Recommended
+- Talent 2 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+- Talent 3 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Three ability slots
+- Quakecry ability · Cooldown 2 Deal 15 Earth damage
+Deal 15 Shadow damage Earth bonus (+3) Shadow bonus (+3)
+2
+- Engulfment ability · Cooldown 5 Absorbs an allied card
+5
+- Ancient Healing tox · Common At the start of each turn, the card recovers 4% of its max HP
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Earth Epic #086
+# Regent of the Abysses
+Generation Defense
+1,000 Health points
+6 Spamtons / turn
+#41 Rank / 127
+B No talent · #33
+Attack
+35
+Generation
+89
+Defense
+91
+Support
+1
+Control
+0
+Economy
+31
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Focus 2 Resilience 3 One Man Army
+Build with this card 5 decks
+Share
+### Abilities
+#### Quakecry
+2 turns
+Deal 15 Earth damage
+Deal 15 Shadow damage Earth bonus (+3) Shadow bonus (+3)
+Accuracy 100% Critical 1%
+#### Engulfment
+5 turns
+Absorbs an allied card
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Ancient Healing
+Common
+At the start of each turn, the card recovers 4% of its max HP
+### Talents
+#### Focus
+Recommended
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ 171.6 · Theoretical score
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+#### One Man Army
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 98.7 · Theoretical score
+## Its best decks
+5 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Elemental ramp ·
+### Verdant Fruit Cruncher + Blue-Stone-Eater
+56.3 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+C Intermediate
+Midrange ·
+### Radiant Shinobi + Horned Dune Wyrm
+50.7 % Relative index 9 turns Estimated elimination 20 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Commando Gerz + Blue-Stone-Eater
+50.1 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Blue-Stone-Eater + Thorn of Love
+44 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Blue-Stone-Eater + Earth Spirit
+42.2 % Relative index 9 turns Estimated elimination 26 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Logidrake · Shal'Zaar
+### Beyond the card
+Death does not exist in Elther. In the Abyss, the dreams and nightmares of the Awakened mingle to purge damned souls: dreams shape new souls, while nightmares cleanse them of their regrets. Not every creature accepts this system. The Regent of the Abyss is a powerful member of the Logidrake family, serpentine abominations capable of commanding hordes of Abyssals. They wreak havoc across the world with alarming coordination. This one was sighted south of Shal’Zaar and appears to be responsible for the Abyssals that have risen to the Surface.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

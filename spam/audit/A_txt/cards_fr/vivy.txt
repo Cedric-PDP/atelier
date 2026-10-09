@@ -1,0 +1,130 @@
+Vivy : carte SPAM Ombre commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Vivy C Voir la carte en grand
+Vivy
+3 Onde de Ténèbres
+Fumée
+1000/1000
+9
+Standard
+Vivy
+3 Onde de Ténèbres
+Fumée
+1000/1000
+9
+Élémentaire
+Vivy
+3 Onde de Ténèbres
+Fumée
+1000/1000
+9
+FA
+Vivy
+3 Onde de Ténèbres
+Fumée
+1000/1000
+9
+## Vivy
+C Ombre · Commune · Standard
+1 000 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Brut Commence la partie avec le passif "Brut"
+- Talent 2 Terrain lumineux Bonus (+7) Lumière.
+Conseillé
+- Talent 3 Baleine bleue Augmente les PV de cette carte de (+200).
+Trois champs de compétence
+- Onde de Ténèbres compétence · Recharge 3 Attaque 40 Ombre
+Attaque [+1 à +40] Lumière
+Critique du lanceur (+20)
+3
+- Fumée tox · Rare Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Mr Wolf
+Fiche complète
+Illustration par Mr Wolf
+Ombre Commune #243
+# Vivy
+Défense
+1 000 Points de vie
+9 Spamtons / tour
+#88 Classement / 127
+C Sans talent · #90
+Attaque
+50
+Génération
+0
+Défense
+84
+Soutien
+1
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Brut 2 Terrain lumineux 3 Baleine bleue
+Jouer cette carte
+Partager
+### Compétences
+#### Onde de Ténèbres
+3 tours
+Attaque 40 Ombre
+Attaque [+1 à +40] Lumière
+Critique du lanceur (+20)
+Précision 100% Critique 1%
+### Tox de départ
+#### Fumée
+Rare
+Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin
+### Talents
+#### Brut
+Commence la partie avec le passif "Brut"
+Δ 28,5 · Score théorique
+#### Terrain lumineux
+Conseillé
+Bonus (+7) Lumière.
+Δ 166,1 · Score théorique
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ 83,2 · Score théorique
+### Résistances
+9% Feu
+9% Eau
+9% Terre
+50% Nature
+9% Ombre
+9% Lumière
+Eltherien · Aelther
+### Derrière la carte
+À l’est d’Emeldarion vit une tribu martiale très territoriale. Le peu que l’on sait d’elle tient notamment à ses nombreuses représentations de loups. La foudre semble frapper sans relâche cette région. Les chercheurs pensent que le Roi de la Lumière et ses descendants pourraient y avoir élu domicile, mais cette théorie n’a jamais été confirmée. Une faille spatiale s’ouvre devant quiconque franchit la limite marquée par les totems canins. Vivy apparaît toujours la première. Suivie de ses Shinobis, elle menace d’attaquer quiconque s’aventurerait plus loin sur les terres de la Meute.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

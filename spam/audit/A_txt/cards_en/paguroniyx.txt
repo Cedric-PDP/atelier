@@ -1,0 +1,156 @@
+Paguroniyx: SPAM Shadow common card, tier A
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Paguroniyx A View the full card
+Paguroniyx
+4 Burrow
+2 Venomous Shears
+Mystery
+850/850
+8
+Standard
+Paguroniyx
+4 Burrow
+2 Venomous Shears
+Mystery
+850/850
+8
+Elemental
+Paguroniyx
+4 Burrow
+2 Venomous Shears
+Mystery
+850/850
+8
+FA
+Paguroniyx
+4 Burrow
+2 Venomous Shears
+Mystery
+850/850
+8
+## Paguroniyx
+A Shadow · Common · Standard
+850 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Multi Start Gain (+3) in each element.
+- Talent 2 Anticipation At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Burrow ability · Cooldown 4 Increases the max HP of all allied cards by 100
+4
+- Venomous Shears ability · Cooldown 2 Deal 30 Shadow damage
+2
+- Mystery tox · Rare Starts the game with a random passive
+Illustration by Luga
+Full card details
+Illustration by Luga
+Shadow Common #263
+# Paguroniyx
+Support Defense
+850 Health points
+8 Spamtons / turn
+#22 Rank / 127
+A No talent · #17
+Attack
+42
+Generation
+47
+Defense
+82
+Support
+95
+Control
+0
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Multi Start 2 Anticipation 3 Soul Vitality
+Build with this card 8 decks
+Share
+### Abilities
+#### Burrow
+4 turns
+Increases the max HP of all allied cards by 100
+Accuracy 100% Critical 0%
+#### Venomous Shears
+2 turns
+Deal 30 Shadow damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Mystery
+Rare
+Starts the game with a random passive
+### Talents
+#### Multi Start
+Gain (+3) in each element.
+Δ 338.9 · Theoretical score
+#### Anticipation
+At the start of the game, this card uses all its abilities. Single-target abilities all hit the same random enemy card.
+Δ 17.7 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 342.4 · Theoretical score
+## Its best decks
+8 ranked decks play this card, from best to worst.
+All decks
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+93.4 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Paguroniyx
+89.1 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+A Intermediate
+Aggro / burst ·
+### Aleera + Apprentice of Death
+88.4 % Relative index 6 turns Estimated elimination 27 / turn Spamtons
+The other decks (5)
+- A Aleera + Sovereign of the Ether Falls with Squall · Paguroniyx Intermediate · 89.2%
+- A Aleera + Apprentice of Death with Catixy · Paguroniyx Accessible · 88%
+- A Aleera + Paguroniyx with Sovereign of the Ether Falls · Sovereign of Flames Advanced collection · 86.2%
+- A Aleera + Paguroniyx with Sovereign of the Ether Falls · Floral Zombie Accessible · 85.1%
+- B Aleera + Paguroniyx with Commando Gerz · Horned Dune Wyrm Accessible · 71.4%
+### Resistances
+24% Fire
+24% Water
+-20% Earth
+24% Nature
+15% Shadow
+-19% Light
+Artificial Creature · Abyss
+### Beyond the card
+According to many historical accounts, the war between the higher magical species and the Eternals was raging. Armed with their finest weaponry, blending elemental magic and weapons of mass destruction, the Oniyx bought the time needed to seal the Deities. The most fearsome machine, Paguroniyx, was piloted by the Inventor. No one knows where this machine is today. Perhaps trapped in the ice of the crystal lands? Or maybe it sank into the ocean depths?
+## Better together
+The most promising partners according to the model.
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

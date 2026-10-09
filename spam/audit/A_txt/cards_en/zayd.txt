@@ -1,0 +1,158 @@
+Zayd: SPAM Earth legendary card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Zayd D View the full card
+Zayd
+7 World's End
+3 Fortress
+Revenge
+600/600
+1
+Standard
+Zayd
+7 World's End
+3 Fortress
+Revenge
+600/600
+1
+Elemental
+Zayd
+7 World's End
+3 Fortress
+Revenge
+600/600
+1
+FA
+Zayd
+7 World's End
+3 Fortress
+Revenge
+600/600
+1
+## Zayd
+D Earth · Legendary · Standard
+600 HP 1 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+Recommended
+- Talent 2 Heart of Steel Each time this card is attacked, its elemental resistances increase by (+1%).
+- Talent 3 Critical Critical bonus (+10%).
+Three ability slots
+- World's End ability · Cooldown 7 Deal 50 Earth damage Random
+Deal 50 Nature damage
+Deal 50 Fire damage
+Deal 50 Light damage
+Deal 50 Shadow damage
+Deal 50 Water damage
+7
+- Fortress ability · Cooldown 3 Apply Taunt
+3
+- Revenge tox · Rare Once destroyed, this card deals all of its attacks to the opponent
+Illustration by Daerun
+Full card details
+Illustration by Daerun
+Earth Legendary #094
+# Zayd
+Utility
+600 Health points
+1 Spamtons / turn
+#122 Rank / 127
+D No talent · #122
+Attack
+32
+Generation
+0
+Defense
+30
+Support
+1
+Control
+0
+Economy
+0
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shared Shield 2 Heart of Steel 3 Critical
+Build with this card 3 decks
+Share
+### Abilities
+#### World's End
+7 turns
+Deal 50 Earth damage Random
+Deal 50 Nature damage
+Deal 50 Fire damage
+Deal 50 Light damage
+Deal 50 Shadow damage
+Deal 50 Water damage
+Accuracy 100% Critical 1%
+#### Fortress
+3 turns
+Apply Taunt
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Revenge
+Rare
+Once destroyed, this card deals all of its attacks to the opponent
+### Talents
+#### Shared Shield
+Recommended
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 127 · Theoretical score
+#### Heart of Steel
+Each time this card is attacked, its elemental resistances increase by (+1%).
+Δ 11.8 · Theoretical score
+#### Critical
+Critical bonus (+10%).
+Δ 3 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Elemental ramp ·
+### Master Amphibian + Rob the Adventurer
+50.7 % Relative index 8 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Commando Gerz + Zayd
+44.4 % Relative index 9 turns Estimated elimination 19 / turn Spamtons
+The other decks (1)
+- D Commando Gerz + Zayd with Protector of Ruins · Golden Boar Advanced collection · 33.6%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eltherien · Shal'Zaar
+### Beyond the card
+They say six children were born with a rune on their hand. In Shal'Zaar, among the dunes, the hunter tribes prepare their hunts. To defend the children and non-combatants, the most gifted teenagers are trained day and night. Among them is Zayd, a warrior whose strength defies the laws of physics. The young man can multiply his muscular density. However, he burns huge amounts of energy and needs to eat a lot — so he's responsible for his own meals. Once he finally reached adulthood, an important figure of the desert came to take him in as a disciple.
+## Better together
+The most promising partners according to the model.
+B # 032 Earth
+Rare · Versatile
+### Mistress of Tints
+600 HP
+B # 265 Aether
+Divine · Generation
+### Aeltheria, Primordial Mother
+700 HP
+S # 188 Earth
+Rare · Generation
+### Commando Gerz
+1200 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

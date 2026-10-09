@@ -1,0 +1,148 @@
+Pyrokinetic Sorceress: SPAM Fire common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Pyrokinetic Sorceress B View the full card
+Pyrokinetic Sorceress
+3 Enchanted Flame
+1 Solid Veil
+800/800
+8
+Standard
+Pyrokinetic Sorceress
+3 Enchanted Flame
+1 Solid Veil
+800/800
+8
+Elemental
+Pyrokinetic Sorceress
+3 Enchanted Flame
+1 Solid Veil
+800/800
+8
+FA
+Pyrokinetic Sorceress
+3 Enchanted Flame
+1 Solid Veil
+800/800
+8
+## Pyrokinetic Sorceress
+B Fire · Common · Standard
+800 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Light Heart Start the game with the "Lightheart" passive
+- Talent 2 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+- Talent 3 Weaken Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Recommended
+Three ability slots
+- Enchanted Flame ability · Cooldown 3 Deal 25 Fire damage
+Apply Eternity on critical hit
+Deal 25 Light damage
+Apply Eternity on critical hit
+Lowers the opponent's Fire and Light resistance by (10%)
+3
+- Solid Veil ability · Cooldown 1 Resistance to all elements (+3)
+1
+- Free slot Open to a shop Tox
+Illustration by Euphy
+Full card details
+Illustration by Euphy
+Fire Common #051
+# Pyrokinetic Sorceress
+Defense
+800 Health points
+8 Spamtons / turn
+#60 Rank / 127
+B No talent · #57
+Attack
+30
+Generation
+0
+Defense
+87
+Support
+72
+Control
+84
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Light Heart 2 Resilience 3 Weaken
+Build with this card 3 decks
+Share
+### Abilities
+#### Enchanted Flame
+3 turns
+Deal 25 Fire damage
+Apply Eternity on critical hit
+Deal 25 Light damage
+Apply Eternity on critical hit
+Lowers the opponent's Fire and Light resistance by (10%)
+Accuracy 100% Critical 20%
+#### Solid Veil
+1 turn
+Resistance to all elements (+3)
+Accuracy 100% Critical 0%
+### Talents
+#### Light Heart
+Start the game with the "Lightheart" passive
+Δ 111.6 · Theoretical score
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+#### Weaken
+Recommended
+Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Δ 140.7 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+D Advanced collection
+Midrange ·
+### Sovereign of Flames + Wibs the Blazing
+45.7 % Relative index 10 turns Estimated elimination 26 / turn Spamtons
+D Intermediate
+Midrange ·
+### Commando Gerz + Cloudy Rodent
+45.4 % Relative index 10 turns Estimated elimination 27 / turn Spamtons
+The other decks (1)
+- D Commando Gerz + Cloudy Rodent with Pyrokinetic Sorceress · Toad of the Stars Accessible · 45.3%
+### Resistances
+5% Fire
+10% Water
+5% Earth
+5% Nature
+10% Shadow
+5% Light
+Eltherien · Emeldarion
+### Beyond the card
+These days, in the wild lands of northern Emeldarion, lives a shamanic people led by the sage Keria. This people cultivates plants and raises animals, all bound to and nourished by the element of fire. Many training courses from the Dragheïr military academy are held in this region. The Pyrokinetic Sorceress, headmistress of this prestigious school, sought a way to train her students against the fire corruption. She then reached an agreement with Keria.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

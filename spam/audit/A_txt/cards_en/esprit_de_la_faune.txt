@@ -1,0 +1,162 @@
+Spirit of the Fauna: SPAM Nature common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Spirit of the Fauna S View the full card
+Spirit of the Fauna
+4 Call of the Forest
+3 Solar heal
+800/800
+8
+Standard
+Spirit of the Fauna
+4 Call of the Forest
+3 Solar heal
+800/800
+8
+Elemental
+Spirit of the Fauna
+4 Call of the Forest
+3 Solar heal
+800/800
+8
+FA
+Spirit of the Fauna
+4 Call of the Forest
+3 Solar heal
+800/800
+8
+## Spirit of the Fauna
+S Nature · Common · Standard
+800 HP 8 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Length At the start of your first turn, a random enemy card receives "Eternity"
+- Talent 2 Immunity-8 Applies the "Immunity" passive on turn 8
+- Talent 3 Erosion Start the game with the "Erosion" passive
+Recommended
+Three ability slots
+- Call of the Forest ability · Cooldown 4 Deal 30 Nature damage to all enemy cards Nature bonus (+4)
+4
+- Solar heal ability · Cooldown 3 Heal 60 Light
+[Freeze]
+3
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Common #122
+# Spirit of the Fauna
+Attack Control
+800 Health points
+8 Spamtons / turn
+#2 Rank / 127
+S No talent · #2
+Attack
+80
+Generation
+53
+Defense
+69
+Support
+75
+Control
+94
+Economy
+52
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Length 2 Immunity-8 3 Erosion
+Build with this card 11 decks
+Share
+### Abilities
+#### Call of the Forest
+4 turns
+Deal 30 Nature damage to all enemy cards Nature bonus (+4)
+Accuracy 100% Critical 1%
+#### Solar heal
+3 turns
+Heal 60 Light
+[Freeze]
+Accuracy 100% Critical 1%
+### Talents
+#### Length
+At the start of your first turn, a random enemy card receives "Eternity"
+Δ 20 · Theoretical score
+#### Immunity-8
+Applies the "Immunity" passive on turn 8
+Δ 25.2 · Theoretical score
+#### Erosion
+Recommended
+Start the game with the "Erosion" passive
+Δ 54.5 · Theoretical score
+## Its best decks
+11 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Elemental ramp ·
+### Spirit of the Fauna + Thorn of Love
+55.2 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Intermediate
+Midrange ·
+### Floral Zombie + Princess Meridia
+52.9 % Relative index 8 turns Estimated elimination 30 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+52.4 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Spirit of the Fauna + Floral Zombie
+50.7 % Relative index 8 turns Estimated elimination 34 / turn Spamtons
+C Intermediate
+Midrange ·
+### Floral Zombie + Gabriel
+50.2 % Relative index 9 turns Estimated elimination 39 / turn Spamtons
+D Accessible
+Midrange ·
+### Floral Zombie + Sky Dragon
+49.7 % Relative index 9 turns Estimated elimination 37 / turn Spamtons
+The other decks (5)
+- C Spirit of the Fauna + Thorn of Love with Sky Dragon · Mistress of Tints Accessible · 54.3%
+- D Spirit of the Fauna + Thorn of Love with Verdelune · Sky Dragon Advanced collection · 46.6%
+- D Floral Zombie + Princess Meridia with Spirit of the Fauna · Gabriel Intermediate · 42.4%
+- D Spirit of the Fauna + Thorn of Love with Verdelune · Gabriel Advanced collection · 41.9%
+- D Sky Dragon + Nature Spirit with Verdelune · Spirit of the Fauna Advanced collection · 36%
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+35% Shadow
+10% Light
+Eternal · Vaeloria
+### Beyond the card
+After the single continent shattered, the environment struggled to regain its balance because elemactive activity remained far too intense after the divine wars. The Eternal, wrongly nicknamed Spirit of the Fauna, took on a role of regulation. It sees to the needs of the living species on the Surface. Meeting it is exceedingly rare, unless you're its target. Be careful not to disturb it in its work. It knows how to punish poachers without the slightest mercy, through its powerful abilities.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+D # 003 Nature
+Common · Versatile
+### Nature Spirit
+500 HP
+A # 029 Nature
+Rare · Generation
+### Princess Meridia
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,140 @@
+Apprentice Evoker: SPAM Water common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Apprentice Evoker B View the full card
+Apprentice Evoker
+3 Little Spell
+Mystery
+Mystery
+800/800
+10
+Standard
+Apprentice Evoker
+3 Little Spell
+Mystery
+Mystery
+800/800
+10
+Elemental
+Apprentice Evoker
+3 Little Spell
+Mystery
+Mystery
+800/800
+10
+FA
+Apprentice Evoker
+3 Little Spell
+Mystery
+Mystery
+800/800
+10
+## Apprentice Evoker
+B Water · Common · Standard
+800 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Resilience While this card's HP is below 50%, its elemental resistances increase by (+25%).
+- Talent 2 Reckless Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+- Talent 3 Soul Vitality Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Recommended
+Three ability slots
+- Little Spell ability · Cooldown 3 Deal [40 to 60] Water damage
+3
+- Mystery tox · Rare Starts the game with a random passive
+- Mystery tox · Rare Starts the game with a random passive
+Illustration by Nao
+Full card details
+Illustration by Nao
+Water Common #226
+# Apprentice Evoker
+Versatile
+800 Health points
+10 Spamtons / turn
+#48 Rank / 127
+B No talent · #37
+Attack
+50
+Generation
+57
+Defense
+65
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Resilience 2 Reckless 3 Soul Vitality
+Build with this card 1 deck
+Share
+### Abilities
+#### Little Spell
+3 turns
+Deal [40 to 60] Water damage
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Mystery
+Rare
+Starts the game with a random passive
+#### Mystery
+Rare
+Starts the game with a random passive
+### Talents
+#### Resilience
+While this card's HP is below 50%, its elemental resistances increase by (+25%).
+Δ 0 · Theoretical score
+#### Reckless
+Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+Δ -270.6 · Theoretical score
+#### Soul Vitality
+Recommended
+Whenever a card on the field dies, this card's HP and max HP increase by (+300)
+Δ 403.1 · Theoretical score
+## Its best decks
+1 ranked deck plays this card.
+All decks
+C Accessible
+Midrange ·
+### The Companion of Spirits + Water Spirit
+58.7 % Relative index 8 turns Estimated elimination 35 / turn Spamtons
+### Resistances
+9% Fire
+7% Water
+37% Earth
+27% Nature
+-20% Shadow
+19% Light
+Anthropomorph · Emeldarion
+### Beyond the card
+Originally from the Lonely Isles, an anthropomorphic martial master carrying a magical artifact settled northwest of Emeldarion. With that artifact, Amphibian brought many inhabitants of the Water shaman village to life. In time, his most gifted students surpassed him. He therefore organized a succession tournament with one simple rule: “The winner receives the morphic staff.” The Apprentice Evoker, determined to transform his family into Anthropomorphs, prevailed and became the tribe’s new leader. He then ordered the construction of watering places suited to new animal species.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

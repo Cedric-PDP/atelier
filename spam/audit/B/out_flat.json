@@ -1,0 +1,339 @@
+{
+ "flat": {
+  "decks": {
+   "freeze": {
+    "J": 4470,
+    "off": 3179,
+    "ehp": 563,
+    "defC": 0,
+    "ctl": 600,
+    "eco": 128,
+    "flatPct": 13,
+    "oneActionPerCardJ": 3748,
+    "cards": "Artisan des Heures, Princesse Meridia, Guerrier des Neiges, Dragosaure Céleste"
+   },
+   "eternity": {
+    "J": 3386,
+    "off": 2543,
+    "ehp": 489,
+    "defC": 0,
+    "ctl": 243,
+    "eco": 111,
+    "flatPct": 7,
+    "oneActionPerCardJ": 3111,
+    "cards": "Faerylia, Félin Errant, Maître Thronebéur, Léo"
+   },
+   "misc": {
+    "J": 4838,
+    "off": 3818,
+    "ehp": 611,
+    "defC": 0,
+    "ctl": 301,
+    "eco": 107,
+    "flatPct": 6,
+    "oneActionPerCardJ": 4301,
+    "cards": "Gardien Vert, Zombie Floral, Luminaire Abyssal, Mélodie des Divinités"
+   },
+   "owned_ctl": {
+    "J": 3089,
+    "off": 2356,
+    "ehp": 257,
+    "defC": 0,
+    "ctl": 340,
+    "eco": 136,
+    "flatPct": 11,
+    "oneActionPerCardJ": 2920,
+    "cards": "Nakyel, Dragon de la Cité Infernale, Hibernatus, Prisonnière de la Machine"
+   },
+   "owned_ctl2": {
+    "J": 3732,
+    "off": 2855,
+    "ehp": 440,
+    "defC": 0,
+    "ctl": 340,
+    "eco": 96,
+    "flatPct": 9,
+    "oneActionPerCardJ": 3541,
+    "cards": "Nakyel, Dragon de la Cité Infernale, Lame de la forêt, Chimère Brasse-chair"
+   },
+   "chimere": {
+    "J": 8018,
+    "off": 7288,
+    "ehp": 642,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 89,
+    "flatPct": 0,
+    "oneActionPerCardJ": 7190,
+    "cards": "Lame de la forêt, Chimère Brasse-chair, L'Œil des montagnes, Keria"
+   }
+  },
+  "solo": [
+   {
+    "n": 92,
+    "name": "Frost & Glacier",
+    "control": 350,
+    "defC": 0,
+    "off": 920,
+    "J": 1289
+   },
+   {
+    "n": 259,
+    "name": "Dragon de la Cité Infernale",
+    "control": 350,
+    "defC": 0,
+    "off": 418,
+    "J": 816
+   },
+   {
+    "n": 23,
+    "name": "Artisan des Heures",
+    "control": 260,
+    "defC": 0,
+    "off": 349,
+    "J": 689
+   },
+   {
+    "n": 78,
+    "name": "Gardien Vert",
+    "control": 240,
+    "defC": 0,
+    "off": 491,
+    "J": 914
+   },
+   {
+    "n": 59,
+    "name": "Guerrier des Neiges",
+    "control": 210,
+    "defC": 0,
+    "off": 802,
+    "J": 1083
+   },
+   {
+    "n": 91,
+    "name": "Ignea",
+    "control": 210,
+    "defC": 0,
+    "off": 1015,
+    "J": 1349
+   },
+   {
+    "n": 122,
+    "name": "Esprit de la Faune",
+    "control": 210,
+    "defC": 0,
+    "off": 1252,
+    "J": 1699
+   },
+   {
+    "n": 211,
+    "name": "Dragosaure Céleste",
+    "control": 210,
+    "defC": 0,
+    "off": 545,
+    "J": 940
+   },
+   {
+    "n": 88,
+    "name": "Faerylia",
+    "control": 163,
+    "defC": 0,
+    "off": 529,
+    "J": 762
+   },
+   {
+    "n": 29,
+    "name": "Princesse Meridia",
+    "control": 140,
+    "defC": 0,
+    "off": 627,
+    "J": 945
+   },
+   {
+    "n": 34,
+    "name": "Éclat du Renard Blanc",
+    "control": 140,
+    "defC": 0,
+    "off": 1669,
+    "J": 1943
+   },
+   {
+    "n": 197,
+    "name": "Codex des Maux Ancestraux",
+    "control": 0,
+    "defC": 300,
+    "off": 0,
+    "J": 374
+   },
+   {
+    "n": 198,
+    "name": "Codex des Sorts Lumineux",
+    "control": 0,
+    "defC": 300,
+    "off": 0,
+    "J": 362
+   },
+   {
+    "n": 237,
+    "name": "Voyageur des Crêtes",
+    "control": 0,
+    "defC": 300,
+    "off": 885,
+    "J": 1380
+   },
+   {
+    "n": 33,
+    "name": "Nakyel",
+    "control": 125,
+    "defC": 0,
+    "off": 481,
+    "J": 660
+   },
+   {
+    "n": 56,
+    "name": "Lisa, la Dragonnière",
+    "control": 120,
+    "defC": 0,
+    "off": 1025,
+    "J": 1312
+   },
+   {
+    "n": 81,
+    "name": "Luminaire Abyssal",
+    "control": 96,
+    "defC": 0,
+    "off": 1901,
+    "J": 2079
+   },
+   {
+    "n": 260,
+    "name": "Le compagnon des esprits",
+    "control": 0,
+    "defC": 180,
+    "off": 1521,
+    "J": 1712
+   },
+   {
+    "n": 21,
+    "name": "Félin Errant",
+    "control": 75,
+    "defC": 0,
+    "off": 695,
+    "J": 908
+   },
+   {
+    "n": 35,
+    "name": "Léo",
+    "control": 50,
+    "defC": 0,
+    "off": 602,
+    "J": 782
+   },
+   {
+    "n": 64,
+    "name": "Maître Thronebéur",
+    "control": 50,
+    "defC": 0,
+    "off": 393,
+    "J": 673
+   },
+   {
+    "n": 256,
+    "name": "Héraldesse Serpentine",
+    "control": 50,
+    "defC": 0,
+    "off": 736,
+    "J": 994
+   },
+   {
+    "n": 146,
+    "name": "Poulpe Parleur",
+    "control": 0,
+    "defC": 100,
+    "off": 0,
+    "J": 171
+   },
+   {
+    "n": 262,
+    "name": "Yotaru Gardefeuille",
+    "control": 0,
+    "defC": 100,
+    "off": 0,
+    "J": 277
+   },
+   {
+    "n": 174,
+    "name": "Zombie Floral",
+    "control": 40,
+    "defC": 0,
+    "off": 487,
+    "J": 757
+   },
+   {
+    "n": 226,
+    "name": "Apprenti Évocateur",
+    "control": 0,
+    "defC": 80,
+    "off": 777,
+    "J": 1016
+   },
+   {
+    "n": 115,
+    "name": "Aidan",
+    "control": 24,
+    "defC": 0,
+    "off": 196,
+    "J": 392
+   },
+   {
+    "n": 261,
+    "name": "Godlur",
+    "control": 0,
+    "defC": 50,
+    "off": 426,
+    "J": 873
+   },
+   {
+    "n": 263,
+    "name": "Paguroniyx",
+    "control": 0,
+    "defC": 40,
+    "off": 631,
+    "J": 928
+   },
+   {
+    "n": 152,
+    "name": "Le Héraut des Cendres",
+    "control": 0,
+    "defC": 30,
+    "off": 491,
+    "J": 699
+   },
+   {
+    "n": 191,
+    "name": "Ameru",
+    "control": 0,
+    "defC": 30,
+    "off": 781,
+    "J": 1007
+   },
+   {
+    "n": 243,
+    "name": "Vivy",
+    "control": 0,
+    "defC": 30,
+    "off": 707,
+    "J": 1019
+   },
+   {
+    "n": 51,
+    "name": "Sorcière Pyrokinétique",
+    "control": 2,
+    "defC": 0,
+    "off": 528,
+    "J": 826
+   }
+  ],
+  "oneAction": {}
+ }
+}

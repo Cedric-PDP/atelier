@@ -1,0 +1,129 @@
+Baleine Farceuse : carte SPAM Eau commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Baleine Farceuse C Voir la carte en grand
+Baleine Farceuse
+3 Hydrochance
+6 Ohohohohohoh
+1000/1000
+7
+Standard
+Baleine Farceuse
+3 Hydrochance
+6 Ohohohohohoh
+1000/1000
+7
+Élémentaire
+Baleine Farceuse
+3 Hydrochance
+6 Ohohohohohoh
+1000/1000
+7
+FA
+Baleine Farceuse
+3 Hydrochance
+6 Ohohohohohoh
+1000/1000
+7
+## Baleine Farceuse
+C Eau · Commune · Standard
+1 000 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Baleine bleue Augmente les PV de cette carte de (+200).
+- Talent 2 Durcissement Augmente les résistances élémentaires de la carte de (+15 %).
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Conseillé
+Trois champs de compétence
+- Hydrochance compétence · Recharge 3 Attaque 35 Eau
+Echo (50%)
+3
+- Ohohohohohoh compétence · Recharge 6 Critique du lanceur (+50%)
+6
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par le_yack_albinos
+Fiche complète
+Illustration par le_yack_albinos
+Eau Commune #082
+# Baleine Farceuse
+Polyvalent
+1 000 Points de vie
+7 Spamtons / tour
+#65 Classement / 127
+B Sans talent · #56
+Attaque
+73
+Génération
+0
+Défense
+68
+Soutien
+1
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Baleine bleue 2 Durcissement 3 Cavalerie
+Jouer cette carte
+Partager
+### Compétences
+#### Hydrochance
+3 tours
+Attaque 35 Eau
+Echo (50%)
+Précision 100% Critique 1%
+#### Ohohohohohoh
+6 tours
+Critique du lanceur (+50%)
+Précision 100% Critique 0%
+### Talents
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ 73,7 · Score théorique
+#### Durcissement
+Augmente les résistances élémentaires de la carte de (+15 %).
+Δ 69,1 · Score théorique
+#### Cavalerie
+Conseillé
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 263,5 · Score théorique
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Créature · Océan des Profondeurs
+### Derrière la carte
+Alors que le monde semble avoir retrouvé son équilibre élémentaire, la nature et son adaptation à l’environnement peuvent être observées comme jamais auparavant. Des bancs de cétacés singuliers migrent depuis l’Océan des Profondeurs. Les Baleines Farceuses aiment taquiner les bateaux de Lumethia et les saluent volontiers en leur faisant croire qu’elles vont les renverser. Leurs déplacements constituent un phénomène étrange : elles font l’aller-retour entre l’Océan des Profondeurs et la Mer Nimbée. Le peuple alphilan y est manifestement lié, mais le mystère demeure entier.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 069 Eau
+Rare · Génération
+### Scorch, les Lézards Ignés
+350 PV
+D # 156 Eau
+Commune · Polyvalent
+### L'Œil des montagnes
+600 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

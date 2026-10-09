@@ -1,0 +1,139 @@
+Dragon de la Cité Infernale : carte SPAM Feu commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Dragon de la Cité Infernale C Voir la carte en grand
+Dragon de la Cité Infernale
+2 Dualité Draconique
+Gel
+550/550
+10
+Standard
+Dragon de la Cité Infernale
+2 Dualité Draconique
+Gel
+550/550
+10
+Élémentaire
+Dragon de la Cité Infernale
+2 Dualité Draconique
+Gel
+550/550
+10
+FA
+Dragon de la Cité Infernale
+2 Dualité Draconique
+Gel
+550/550
+10
+## Dragon de la Cité Infernale
+C Feu · Commune · Standard
+550 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur FEU Commence la partie avec le passif "Cœur de feu"
+Conseillé
+- Talent 2 Cœur OMBRE Commence la partie avec le passif "Cœur d'ombre"
+- Talent 3 Immunité-8 Applique le passif "Immunité" au tour 8
+Trois champs de compétence
+- Dualité Draconique compétence · Recharge 2 Choix
+Attaque [10 à 40] Feu
+---------- ou ----------
+Attaque [10 à 40] Ombre
+2
+- Gel tox · Épique Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Takoo
+Fiche complète
+Illustration par Takoo
+Feu Commune #259
+# Dragon de la Cité Infernale
+Contrôle
+550 Points de vie
+10 Spamtons / tour
+#67 Classement / 127
+D Sans talent · #111
+Attaque
+37
+Génération
+57
+Défense
+24
+Soutien
+1
+Contrôle
+98
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur FEU 2 Cœur OMBRE 3 Immunité-8
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Dualité Draconique
+2 tours
+Choix
+Attaque [10 à 40] Feu
+---------- ou ----------
+Attaque [10 à 40] Ombre
+Précision 100% Critique 1%
+### Tox de départ
+#### Gel
+Épique
+Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 60 dégâts.
+### Talents
+#### Cœur FEU
+Conseillé
+Commence la partie avec le passif "Cœur de feu"
+Δ 64,7 · Score théorique
+#### Cœur OMBRE
+Commence la partie avec le passif "Cœur d'ombre"
+Δ 51,8 · Score théorique
+#### Immunité-8
+Applique le passif "Immunité" au tour 8
+Δ 17,3 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Accessible
+Midrange ·
+### Apprentie de la Mort + L'Inventeur
+39,5 % Indice relatif 10,9 tours Élimination estimée 28 / tour Spamtons
+### Résistances
+20% Feu
+15% Eau
+15% Terre
+15% Nature
+16% Ombre
+16% Lumière
+Dhöggeïr · Hadeïr
+### Derrière la carte
+Au cœur du volcan du Mont Vulcain vivait un puissant Dhöggeïr. Son nid servit de fondation aux premières structures de Logaïr, et la grande cité des forges se développa peu à peu sous sa bienveillance. Une relation de confiance s’établit entre lui et les différents Rois du Feu. Chacun d’eux enseignait à son tour la langue dhöggeïr à son héritier afin qu’il puisse communiquer avec la créature. Nul ne sait ce qu’elle est devenue après la corruption du Feu, mais l’état de Hadeïr ne laisse rien présager de bon. Beaucoup pensent qu’elle a pris la forme d’un Dragon abyssal.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 236 Feu
+Rare · Attaque
+### Apprentie de la Mort
+700 PV
+A # 043 Feu
+Légendaire · Attaque
+### Souverain des Flammes
+900 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

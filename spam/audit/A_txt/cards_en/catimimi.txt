@@ -1,0 +1,144 @@
+Catimimi: SPAM Fire common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Catimimi B View the full card
+Catimimi
+2 Darkflight Slap
+500/500
+5
+Standard
+Catimimi
+2 Darkflight Slap
+500/500
+5
+Elemental
+Catimimi
+2 Darkflight Slap
+500/500
+5
+FA
+Catimimi
+2 Darkflight Slap
+500/500
+5
+## Catimimi
+B Fire · Common · Standard
+500 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Eternalized The card is immune to Eternity effects
+- Talent 2 Legacy Gain (+50) Spamton when this card is killed.
+Recommended
+- Talent 3 Magic Coin Start the game with (+2) Luck
+Three ability slots
+- Darkflight Slap ability · Cooldown 2 [Cost 2 Fire & 2 Shadow & 2 Nature]
+Deal 15 Shadow, 15 Nature and 15 Fire damage to all enemy cards
+Shadow bonus (+3) & Nature bonus (+3) & Fire bonus (+3)
+2
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Fire Common #206
+# Catimimi
+Attack Economy
+500 Health points
+5 Spamtons / turn
+#50 Rank / 127
+B No talent · #52
+Attack
+96
+Generation
+0
+Defense
+2
+Support
+1
+Control
+0
+Economy
+95
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Eternalized 2 Legacy 3 Magic Coin
+Build with this card 6 decks
+Share
+### Abilities
+#### Darkflight Slap
+2 turns
+[Cost 2 Fire & 2 Shadow & 2 Nature]
+Deal 15 Shadow, 15 Nature and 15 Fire damage to all enemy cards
+Shadow bonus (+3) & Nature bonus (+3) & Fire bonus (+3)
+Accuracy 100% Critical 1%
+### Talents
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Legacy
+Recommended
+Gain (+50) Spamton when this card is killed.
+Δ 15 · Theoretical score
+#### Magic Coin
+Start the game with (+2) Luck
+Δ 4 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Apprentice of Death + Scorch
+73 % Relative index 7 turns Estimated elimination 28 / turn Spamtons
+C Accessible
+Midrange ·
+### Catimimi + Floral Giraffe
+57.2 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Catimimi + Faerylia
+57.1 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Catimimi + Aidan
+44.5 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+The other decks (2)
+- D Catimimi + Floral Giraffe with Floral Zombie · Astral Healer of the Woods Intermediate · 44.7%
+- D Catimimi + Aidan with Yotaru · Flesh-Melding Chimera Accessible · 39.6%
+### Resistances
+0% Fire
+-22% Water
+0% Earth
+-22% Nature
+0% Shadow
+0% Light
+Great Lion · Lumethia
+### Beyond the card
+The Drako'vish ranges stretch across the north of Lumethia. They form a border with Hadeïr, land of the Great Lions. This region suffered heavy corruption by Fire. The creatures touched and infected often have only one hope: the Blazing Willow of the Détwin woods. Catimimi was among the young infected lions. Barely saved by the Willow, he often tells the story of his king leading him to the woods. Catimimi witnessed the end of the battle between his kin. Today, he is tasked with protecting Leo.
+## Better together
+The most promising partners according to the model.
+D # 072 Nature
+Rare · Support
+### Floral Giraffe
+750 HP
+C # 012 Water
+Common · Generation
+### Hibernatus
+750 HP
+C # 115 Fire
+Common · Generation
+### Aidan
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

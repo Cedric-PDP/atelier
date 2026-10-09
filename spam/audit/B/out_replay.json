@@ -1,0 +1,524 @@
+{
+ "replay": {
+  "chimere": {
+   "abstractNeutral": {
+    "J": 8369,
+    "p1": {
+     "J": 8488.052318371727,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 8248.96694468752,
+     "ttk": 13,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    }
+   },
+   "cloneNeutral": {
+    "J": 8369,
+    "p1": {
+     "J": 8488.052318371727,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 8248.96694468752,
+     "ttk": 13,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_plain": {
+    "J": 9009,
+    "p1": {
+     "J": 9112.035068371728,
+     "ttk": 11.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8906.17703468752,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_taunt": {
+    "J": 9123,
+    "p1": {
+     "J": 9112.035068371728,
+     "ttk": 11.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "10:kill:Chimère Brasse-chair 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 9133.011194687519,
+     "ttk": 11.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 5549,
+    "p1": {
+     "J": 4486.46736574015,
+     "ttk": 57.5,
+     "deaths": 1,
+     "kills": 0,
+     "ev": "7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6611.541351313195,
+     "ttk": 26.2,
+     "deaths": 2,
+     "kills": 0,
+     "ev": "8:absorbed:Chimère Brasse-chair 10:ownDeath:Keria"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 5597,
+    "p1": {
+     "J": 4531.4073657401495,
+     "ttk": 56.1,
+     "deaths": 1,
+     "kills": 0,
+     "ev": "7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6661.976631313195,
+     "ttk": 25.9,
+     "deaths": 2,
+     "kills": 0,
+     "ev": "8:absorbed:Chimère Brasse-chair 10:ownDeath:Keria"
+    }
+   }
+  },
+  "anticrit": {
+   "abstractNeutral": {
+    "J": 7178,
+    "p1": {
+     "J": 7068.001379790755,
+     "ttk": 15.2,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 7287.363906106544,
+     "ttk": 15.3,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "9:kill:Hippocampe Nimbé"
+    }
+   },
+   "cloneNeutral": {
+    "J": 7178,
+    "p1": {
+     "J": 7068.001379790755,
+     "ttk": 15.2,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 7287.363906106544,
+     "ttk": 15.3,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "9:kill:Hippocampe Nimbé"
+    }
+   },
+   "azurian_plain": {
+    "J": 7388,
+    "p1": {
+     "J": 7495.869656632862,
+     "ttk": 14.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Chimère Brasse-chair 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 7279.939986106545,
+     "ttk": 15.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Hibernatus 9:kill:Hibernatus"
+    }
+   },
+   "azurian_taunt": {
+    "J": 8517,
+    "p1": {
+     "J": 8378.702671369703,
+     "ttk": 12.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "10:kill:Chimère Brasse-chair 10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 8654.555908211809,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 9:kill:Hippocampe Nimbé"
+    }
+   },
+   "azurian_absorb": {
+    "J": 6362,
+    "p1": {
+     "J": 5443.330135580229,
+     "ttk": 34.8,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 10:kill:Hibernatus 10:ownDeath:Hibernatus"
+    },
+    "p2": {
+     "J": 7279.939986106545,
+     "ttk": 15.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Hibernatus 9:kill:Hibernatus"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6262,
+    "p1": {
+     "J": 5771.67269558023,
+     "ttk": 30.7,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 10:kill:Hippocampe Nimbé 10:ownDeath:Hibernatus"
+    },
+    "p2": {
+     "J": 6752.6033255802295,
+     "ttk": 25.2,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "8:absorbed:Chimère Brasse-chair 9:kill:Hippocampe Nimbé 10:ownDeath:Hibernatus"
+    }
+   }
+  },
+  "zerocrit": {
+   "abstractNeutral": {
+    "J": 6722,
+    "p1": {
+     "J": 6899.382146604902,
+     "ttk": 15.1,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    },
+    "p2": {
+     "J": 6545.217865903146,
+     "ttk": 16,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    }
+   },
+   "cloneNeutral": {
+    "J": 6722,
+    "p1": {
+     "J": 6899.382146604902,
+     "ttk": 15.1,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    },
+    "p2": {
+     "J": 6545.217865903146,
+     "ttk": 16,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_plain": {
+    "J": 7957,
+    "p1": {
+     "J": 8422.7941066049,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Prisonnière de la Machine 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7490.95975923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Hibernatus 7:kill:Prisonnière de la Machine 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_taunt": {
+    "J": 7952,
+    "p1": {
+     "J": 8440.653626604904,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Murmures du Corail Noir 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7463.85743923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Prisonnière de la Machine 7:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_absorb": {
+    "J": 7957,
+    "p1": {
+     "J": 8422.7941066049,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Prisonnière de la Machine 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7490.95975923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Hibernatus 7:kill:Prisonnière de la Machine 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 7952,
+    "p1": {
+     "J": 8440.653626604904,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Murmures du Corail Noir 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7463.85743923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Prisonnière de la Machine 7:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   }
+  },
+  "alt1": {
+   "abstractNeutral": {
+    "J": 7917,
+    "p1": {
+     "J": 7814.990103012775,
+     "ttk": 13.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Esprit Nature 10:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8019.40157393723,
+     "ttk": 13.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Lame de la forêt"
+    }
+   },
+   "cloneNeutral": {
+    "J": 7917,
+    "p1": {
+     "J": 7814.990103012775,
+     "ttk": 13.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Esprit Nature 10:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8019.40157393723,
+     "ttk": 13.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_plain": {
+    "J": 8416,
+    "p1": {
+     "J": 8369.577923808003,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8463.270037048564,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Chimère Brasse-chair 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_taunt": {
+    "J": 8454,
+    "p1": {
+     "J": 8417.783283808007,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Chimère Brasse-chair 9:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8490.260917048563,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Esprit Nature 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 8416,
+    "p1": {
+     "J": 8369.577923808003,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8463.270037048564,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Chimère Brasse-chair 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6844,
+    "p1": {
+     "J": 6328.414701176425,
+     "ttk": 26.7,
+     "deaths": 1,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 8:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 7359.611284416983,
+     "ttk": 21.4,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:kill:Esprit Nature 8:absorbed:Chimère Brasse-chair 9:ownDeath:Esprit Nature"
+    }
+   }
+  },
+  "alt2": {
+   "abstractNeutral": {
+    "J": 6130,
+    "p1": {
+     "J": 6210.007339107367,
+     "ttk": 17.9,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 6:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    },
+    "p2": {
+     "J": 6050.4210693705245,
+     "ttk": 19.1,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    }
+   },
+   "cloneNeutral": {
+    "J": 6130,
+    "p1": {
+     "J": 6210.007339107367,
+     "ttk": 17.9,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 6:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    },
+    "p2": {
+     "J": 6050.4210693705245,
+     "ttk": 19.1,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    }
+   },
+   "azurian_plain": {
+    "J": 6595,
+    "p1": {
+     "J": 7088.390518317893,
+     "ttk": 15.4,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Chouette Polychrome 6:kill:Chimère Brasse-chair 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6102.09143384421,
+     "ttk": 19,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "3:kill:Sanglier Doré 4:ownDeath:Scorch, les Lézards Ignés 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair 9:kill:Sanglier Doré"
+    }
+   },
+   "azurian_taunt": {
+    "J": 6317,
+    "p1": {
+     "J": 6604.405084107367,
+     "ttk": 16.8,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Sanglier Doré 6:ownDeath:Chouette Polychrome 8:kill:Sanglier Doré 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6029.411413844209,
+     "ttk": 19.1,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 6595,
+    "p1": {
+     "J": 7088.390518317893,
+     "ttk": 15.4,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Chouette Polychrome 6:kill:Chimère Brasse-chair 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6102.09143384421,
+     "ttk": 19,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "3:kill:Sanglier Doré 4:ownDeath:Scorch, les Lézards Ignés 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair 9:kill:Sanglier Doré"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6222,
+    "p1": {
+     "J": 6563.836609662923,
+     "ttk": 24.8,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Sanglier Doré 6:ownDeath:Chouette Polychrome 7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 5879.806192996255,
+     "ttk": 32.1,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome 8:absorbed:Chimère Brasse-chair"
+    }
+   }
+  }
+ }
+}

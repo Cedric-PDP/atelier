@@ -1,0 +1,60 @@
+The right move, at the right time: SPAM guide
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Strategies Tempo & rotations Tempo & rotations
+# The right move, at the right time.
+Read cooldowns, spot damage spikes, and prepare your windows of opportunity.
+4 min read Share
+Illustration by Nenaosu
+01
+## Read the timeline before the total.
+Two decks can deal the same total damage at very different speeds. Expand turns on the deck page to see which abilities are ready, when bonuses arrive, and where the attack spike happens. Estimated elimination time helps summarize the difference.
+02
+## Accelerate what matters.
+Cooldown reduction is most valuable when it unlocks a decisive ability. Pair it with an attack or support effect whose earlier arrival you can use. The simulator’s order is heuristic: it collects ready abilities at the start of the action phase, which limits same-turn chains in the model.
+03
+## Don’t confuse a spike with consistency.
+A large late attack can inflate a curve without improving your opening. Check the early turns and each card’s contribution. Bars show raw damage, including overkill; useful total damage is capped at enemy health. Simulation stops after all four enemy cards are eliminated.
+Understanding the scores
+## Explore with this guide
+S # 174 Nature
+Common · Attack
+### Floral Zombie
+850 HP
+S # 188 Earth
+Rare · Generation
+### Commando Gerz
+1200 HP
+A # 195 Nature
+Epic · Generation
+### Gabriel
+1000 HP
+## Put it into practice
+S Advanced collection
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+100 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+98.1 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+94.6 % Relative index 6 turns Estimated elimination 19 / turn Spamtons
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

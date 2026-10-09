@@ -1,0 +1,133 @@
+Nimbus Seahorse: SPAM Water rare card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Nimbus Seahorse C View the full card
+Nimbus Seahorse
+5 Supra-Dew-Ray
+Reset
+Brutal
+900/900
+4
+Standard
+Nimbus Seahorse
+5 Supra-Dew-Ray
+Reset
+Brutal
+900/900
+4
+Elemental
+Nimbus Seahorse
+5 Supra-Dew-Ray
+Reset
+Brutal
+900/900
+4
+FA
+Nimbus Seahorse
+5 Supra-Dew-Ray
+Reset
+Brutal
+900/900
+4
+## Nimbus Seahorse
+C Water · Rare · Standard
+900 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Multi Start Gain (+3) in each element.
+Recommended
+- Talent 2 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+- Talent 3 Inaccuracy At the start of the game, a random enemy card loses (-20%) accuracy.
+Three ability slots
+- Supra-Dew-Ray ability · Cooldown 5 Deal 25 Water, 25 Light and 25 Nature damage Water bonus (+3) & Light bonus (+3) & Nature bonus (+3)
+5
+- Reset tox · Epic When you kill an ENEMY card with one of your attacks, that attack remains available
+- Brutal tox · Rare Ignores resistances and taunts. Destroys enemy taunts if targeted
+Illustration by ElisaMalan
+Full card details
+Illustration by ElisaMalan
+Water Rare #027
+# Nimbus Seahorse
+Versatile
+900 Health points
+4 Spamtons / turn
+#85 Rank / 127
+C No talent · #84
+Attack
+32
+Generation
+72
+Defense
+67
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Multi Start 2 Piercing 3 Inaccuracy
+Build with this card
+Share
+### Abilities
+#### Supra-Dew-Ray
+5 turns
+Deal 25 Water, 25 Light and 25 Nature damage Water bonus (+3) & Light bonus (+3) & Nature bonus (+3)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Reset
+Epic
+When you kill an ENEMY card with one of your attacks, that attack remains available
+#### Brutal
+Rare
+Ignores resistances and taunts. Destroys enemy taunts if targeted
+### Talents
+#### Multi Start
+Recommended
+Gain (+3) in each element.
+Δ 531.5 · Theoretical score
+#### Piercing
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 289.8 · Theoretical score
+#### Inaccuracy
+At the start of the game, a random enemy card loses (-20%) accuracy.
+Δ 19.2 · Theoretical score
+### Resistances
+20% Fire
+20% Water
+5% Earth
+5% Nature
+5% Shadow
+20% Light
+Creature · Vaeloria
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The clear waters of the Nimbus Sea stretch along the southern shores of the new Vaeloria. The Nimbus Seahorse is the emblematic animal of this vast expanse. Males carry the fertilized eggs, while females protect both the males and their broods with their dorsal fins. The Alphilans use these creatures to signal their presence at the Surface. Ignoring that warning may provoke a dangerous and needless conflict.
+## Better together
+The most promising partners according to the model.
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

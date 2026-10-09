@@ -1,0 +1,252 @@
+=== EFFECT absorbAlly (1)
+  #86 Régent des Abysses / Avalement [cd5] t=none :: Absorbe une carte alliée || {"type":"absorbAlly"}
+=== EFFECT absorbAny (1)
+  #123 Tisseuse de Mots / Veuve noire [cd8] t=none :: Absorbe une carte || {"type":"absorbAny"}
+=== EFFECT aoe2 (1)
+  #245 Shinobi Éclairant / Kung‑Fu [cd5] t=enemy :: Attaque 40 Terre | AoE || {"type":"aoe2"}
+=== EFFECT base (11)
+  #33 Nakyel / Écorchage [cd2] t=enemy :: Attaque 20 Ombre | Augmente les dégâts de base de (+5) | Augmente les résistances du lanceur de (+5%) || {"type":"base","scope":"card","value":5}
+  #60 Protecteur des ruines / Roulé-boulé [cd1] t=enemy :: Attaque 15 Terre | La valeur de base de dégâts augmente de 5 || {"type":"base","scope":"ability","value":5}
+  #102 Murmures du Corail Noir / Murmure [cd1] t=ally :: Soigne 10 Eau | La valeur de base du soin augmente de 5 || {"type":"base","scope":"ability","value":5}
+  #116 Prisonnière de la Machine / Explosion [cd1 costHp100] t=enemy :: [Coût 100 PV] | Attaque 10 Feu | Après utilisation, les dégâts de base de cette attaque augmentent de (+10) || {"type":"base","scope":"ability","value":10}
+  #117 Keria / Feu allié [cd3] t=allAllies :: Cible toutes les cartes alliées | Les valeurs de base des soins et des dégâts augmentent de 3 || {"type":"base","scope":"team","value":3}
+  #128 Dévoreur de faune / Boule de haine [cd1] t=enemy :: Attaque 5 Ombre | La valeur de base de dégâts augmente de 5 || {"type":"base","scope":"ability","value":5}
+  #158 Lapin-Plume / Son perçant [cd1 cost{"nature":1}] t=enemy :: [Coût 1 Nature] | Attaque 20 Nature | Les dégâts de base de cette attaque augmentent de (+2) après utilisation || {"type":"base","scope":"ability","value":2}
+  #176 Rob l'Aventurier / Aventure [cd1] t=none :: Les valeurs de base des soins et des dégâts augmentent de 1 | Précision et Critique (+4%) || {"type":"base","scope":"ally","value":1}
+  #193 Vladislaus / Double-afflux [cd1] t=enemy :: Attaque 5 Feu | Attaque 5 Ombre | La valeur de base de dégâts augmente de 5 || {"type":"base","scope":"ability","value":5}
+  #233 Oisillons de Midas / Quintuor [cd2] t=none :: Les valeurs de base des soins et des dégâts augmentent de 2 || {"type":"base","scope":"ally","value":2}
+  #262 Yotaru Gardefeuille / Protect-boost [cd2] t=none :: Brise une Provocation pour augmenter les dégâts et soins de base de 3 || {"type":"base","scope":"ally","value":3}
+=== EFFECT breakTaunt (2)
+  #262 Yotaru Gardefeuille / Protect-terre [cd2] t=none :: Brise une Provocation pour donner 100 PV max || {"type":"breakTaunt"}
+  #262 Yotaru Gardefeuille / Protect-boost [cd2] t=none :: Brise une Provocation pour augmenter les dégâts et soins de base de 3 || {"type":"breakTaunt"}
+=== EFFECT changeElement (1)
+  #265 Aeltheria, Mère Primordiale / Mythique [cd1] t=none :: Change aléatoirement l'élément de votre carte || {"type":"changeElement"}
+=== EFFECT crit (19)
+  #21 Félin Errant / Bond-rapide [cd1] t=enemy :: Attaque 5 Nature | Bonus Nature (+1) | Précision et Critique (+2%) pour le lanceur || {"type":"crit","scope":"card","value":2}
+  #31 Raffteru / Secousse aléatoire [cd1] t=allAllies :: Attaque 70 Terre | Critique (+20%) sur toutes les cartes alliées || {"type":"crit","scope":"team","value":20,"cond":false}
+  #37 Roi des Flammes Ardentes / Morsure brûlante [cd2] t=enemy :: Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%) || {"type":"crit","scope":"team","value":5,"cond":false}
+  #39 Sylvan, Protecteur de la Verdure / Bond-rapide [cd1] t=enemy :: Attaque 5 Nature | Bonus Nature (+1) | Précision et Critique (+2%) pour le lanceur || {"type":"crit","scope":"card","value":2}
+  #43 Souverain des Flammes / Embrasement [cd2] t=allAllies :: Cible toutes les cartes alliées | Critique (+5%) || {"type":"crit","scope":"team","value":5,"cond":false}
+  #54 Loutre Intrépide / Morsure [cd1] t=allAllies :: Attaque 6 Eau | Critique (+3%) sur toutes les cartes alliées || {"type":"crit","scope":"team","value":3,"cond":false}
+  #71 Soigneuse Astrale des Bois / Feuille magique [cd1] t=allAllies :: Soigne 10 Nature | Critique (+2%) sur toutes les cartes alliées || {"type":"crit","scope":"team","value":2,"cond":false}
+  #72 Girafe Florale / Renaissance Sylvatique [cd2 dur2] t=allAllies :: Applique Provocation | Cible toutes les cartes alliées | Précision et Critique (+5%) || {"type":"crit","scope":"team","value":5}
+  #82 Baleine Farceuse / Ohohohohohoh [cd6] t=self :: Critique du lanceur (+50%) || {"type":"crit","scope":"card","value":50,"cond":false}
+  #103 Lame de la forêt / Soin critique [cd1] t=ally :: Soigne 20 Nature | Critique (+10%) en cas de coup critique || {"type":"crit","scope":"ally","value":10,"cond":true}
+  #117 Keria / Embrasement [cd2] t=allAllies :: Cible toutes les cartes alliées | Critique (+5%) || {"type":"crit","scope":"team","value":5,"cond":false}
+  #124 Wyrm des Dunes Cornu / Morsure brûlante [cd2] t=enemy :: Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%) || {"type":"crit","scope":"team","value":5,"cond":false}
+  #136 Souverain des Chutes d'Éther / Chute critique [cd1] t=none :: Critique (+10%) || {"type":"crit","scope":"ally","value":10,"cond":false}
+  #176 Rob l'Aventurier / Aventure [cd1] t=none :: Les valeurs de base des soins et des dégâts augmentent de 1 | Précision et Critique (+4%) || {"type":"crit","scope":"ally","value":4}
+  #203 Ashtarae Lycaria / Mélodie n°1 [cd1] t=allAllies :: Attaque [15 à 25] Ombre | Critique (+2%) sur toutes les cartes alliées || {"type":"crit","scope":"team","value":2,"cond":false}
+  #219 Catixy / Miaulement [cd1] t=enemy :: Attaque [4 à 16] Ombre | Critique du lanceur (+5%) || {"type":"crit","scope":"card","value":5,"cond":false}
+  #219 Catixy / Charme Sinistre [cd2] t=randomAlly :: Critique (+25%) aléatoirement sur une carte alliée || {"type":"crit","scope":"randomAlly","value":25,"cond":false}
+  #243 Vivy / Onde de Ténèbres [cd3] t=enemy :: Attaque 40 Ombre | Attaque [+1 à +40] Lumière | Critique du lanceur (+20) || {"type":"crit","scope":"card","value":20,"cond":false}
+  #264 Aristocrate Nébulaire / Mascarade cosmique [cd2 choice] t=none :: Critique (+20%) || {"type":"crit","scope":"ally","value":20,"cond":false}
+=== EFFECT critMult (2)
+  #113 Lums / Envol [cd4] t=field :: Cible toutes les cartes du terrain | Dégâts critiques (+1) || {"type":"critMult","scope":"field","value":1}
+  #156 L'Œil des montagnes / Revitalisation [cd4] t=ally :: Soigne 50 Eau | Dégâts critiques (+1) || {"type":"critMult","scope":"ally","value":1}
+=== EFFECT enemyPrec (1)
+  #81 Luminaire Abyssal / Phare [cd4] t=aoeEnemy :: Cible toutes les cartes adverses | Attaque [30 à 50] Lumière | Précision (-10%) || {"type":"enemyPrec","value":10,"target":"aoeEnemy"}
+=== EFFECT eternity (9)
+  #21 Félin Errant / Visée offensive [cd2] t=enemy :: Attaque 15 Ombre | Éternité en cas de coup critique || {"type":"eternity","value":1,"target":"enemy","cond":true}
+  #23 Artisan des Heures / Ralentissement [cd4] t=none :: Applique Éternité || {"type":"eternity","value":1,"target":"none"}
+  #34 Éclat du Renard Blanc / Aqua-sombre [cd4 choice] t=enemy :: Attaque 20 Ombre | Applique Éternité || {"type":"eternity","value":1,"target":"enemy"}
+  #35 Léo / Éclair purificateur [cd4 dur2] t=spreadEnemy :: Attaque [20 à 60] Lumière | Attaque [20 à 60] Lumière | Ennemis aléatoires | Applique Éternité || {"type":"eternity","value":1,"target":"spreadEnemy"}
+  #51 Sorcière Pyrokinétique / Flamme magique [cd3 dur2] t=enemy :: Attaque 25 Feu | Applique Éternité en cas de critique | Attaque 25 Lumière | Applique Éternité en cas de critique | Baisse la résistance Feu et Lumière de l'adversaire de (10%) || {"type":"eternity","value":1,"target":"enemy","cond":true}
+  #51 Sorcière Pyrokinétique / Flamme magique [cd3 dur2] t=enemy :: Attaque 25 Feu | Applique Éternité en cas de critique | Attaque 25 Lumière | Applique Éternité en cas de critique | Baisse la résistance Feu et Lumière de l'adversaire de (10%) || {"type":"eternity","value":1,"target":"enemy","cond":true}
+  #64 Maître Thronebéur / Ralentissement [cd4] t=none :: Applique Éternité || {"type":"eternity","value":1,"target":"none"}
+  #88 Faerylia / Visée globale [cd9] t=aoeEnemy :: Cible toutes les cartes adverses | Applique Éternité || {"type":"eternity","value":1,"target":"aoeEnemy"}
+  #88 Faerylia / Visée offensive [cd2] t=enemy :: Attaque 15 Ombre | Éternité en cas de coup critique || {"type":"eternity","value":1,"target":"enemy","cond":true}
+=== EFFECT freeze (8)
+  #23 Artisan des Heures / Flash [cd3 dur2] t=enemy :: Attaque 35 Lumière | Gel || {"type":"freeze","target":"enemy"}
+  #29 Princesse Meridia / Vent critique [cd4 dur2] t=enemy :: Attaque 40 Nature | Gel || {"type":"freeze","target":"enemy"}
+  #34 Éclat du Renard Blanc / Aqua-sombre [cd4 choice] t=enemy :: Choix | Attaque 20 Eau | Gel || {"type":"freeze","target":"enemy"}
+  #59 Guerrier des Neiges / Tranche-sol [cd3] t=enemy :: Attaque 30 Terre | Gel || {"type":"freeze","target":"enemy"}
+  #91 Ignea / Silenfeu [cd3 dur2] t=none :: Applique Gel || {"type":"freeze","target":"none"}
+  #122 Esprit de la Faune / Soin soleil [cd3 dur2] t=ally :: Soigne 60 Lumière | Gel || {"type":"freeze","target":"ally"}
+  #211 Dragosaure Céleste / Hurle frappe [cd3 choice] t=enemy :: Choix | Attaque [10 à 100] Nature | Gel || {"type":"freeze","target":"enemy"}
+  #211 Dragosaure Céleste / Hurle frappe [cd3 choice] t=enemy :: Attaque [45 à 65] Terre | Gel || {"type":"freeze","target":"enemy"}
+=== EFFECT hpMax (4)
+  #160 Sanglier Doré / Remue-sol [cd2] t=randomEnemy :: Cible aléatoirement une carte adverse | Attaque 40 Terre | Augmente ses PV max de 40 Terre | Bonus Terre (+2) || {"type":"hpMax","scope":"card","value":40,"element":"earth"}
+  #193 Vladislaus / Transfusion [cd1] t=self :: Vole 100 PV max à un allié pour se soigner du même montant || {"type":"hpMax","scope":"ally","value":-100}
+  #262 Yotaru Gardefeuille / Protect-terre [cd2] t=none :: Brise une Provocation pour donner 100 PV max || {"type":"hpMax","scope":"ally","value":100}
+  #263 Paguroniyx / Terrier [cd4] t=allAllies :: Augmente les PV max de toutes les cartes alliées de 100 || {"type":"hpMax","scope":"team","value":100}
+=== EFFECT prec (9)
+  #21 Félin Errant / Bond-rapide [cd1] t=enemy :: Attaque 5 Nature | Bonus Nature (+1) | Précision et Critique (+2%) pour le lanceur || {"type":"prec","scope":"card","value":2}
+  #39 Sylvan, Protecteur de la Verdure / Bond-rapide [cd1] t=enemy :: Attaque 5 Nature | Bonus Nature (+1) | Précision et Critique (+2%) pour le lanceur || {"type":"prec","scope":"card","value":2}
+  #64 Maître Thronebéur / Marteau-lumineux [cd3] t=allAllies :: Attaque 20 Lumière | Attaque 20 Terre | Précision (+20%) sur toutes les cartes alliées || {"type":"prec","scope":"team","value":20}
+  #72 Girafe Florale / Renaissance Sylvatique [cd2 dur2] t=allAllies :: Applique Provocation | Cible toutes les cartes alliées | Précision et Critique (+5%) || {"type":"prec","scope":"team","value":5}
+  #119 Fleurmarine / Fond marin [cd2] t=none :: Précision (+12%) || {"type":"prec","scope":"ally","value":12}
+  #136 Souverain des Chutes d'Éther / Chute précise [cd1] t=none :: Précision (+10%) || {"type":"prec","scope":"ally","value":10}
+  #176 Rob l'Aventurier / Aventure [cd1] t=none :: Les valeurs de base des soins et des dégâts augmentent de 1 | Précision et Critique (+4%) || {"type":"prec","scope":"ally","value":4}
+  #203 Ashtarae Lycaria / Mélodie n°2 [cd1] t=allAllies :: Soigne [15 à 25] Ombre | Précision (+2%) sur toutes les cartes alliées || {"type":"prec","scope":"team","value":2}
+  #264 Aristocrate Nébulaire / Mascarade cosmique [cd2 choice] t=none :: Choix | Précision (+20%) || {"type":"prec","scope":"ally","value":20}
+=== EFFECT res (7)
+  #22 Lueur d'Espoir / Respiration [cd1] t=ally :: Soigne 20 Nature | Soigne 20 Lumière | Résistance d'un élément aléatoire (+15) || {"type":"res","scope":"ally","value":2.5,"elements":"all"}
+  #33 Nakyel / Écorchage [cd2] t=enemy :: Attaque 20 Ombre | Augmente les dégâts de base de (+5) | Augmente les résistances du lanceur de (+5%) || {"type":"res","scope":"card","value":5,"elements":"all"}
+  #43 Souverain des Flammes / Braise chaude [cd1] t=enemy :: Attaque 10 Feu | Résistance Feu (+3) || {"type":"res","scope":"card","value":3,"elements":["fire"]}
+  #51 Sorcière Pyrokinétique / Flamme magique [cd3 dur2] t=enemy :: Attaque 25 Feu | Applique Éternité en cas de critique | Attaque 25 Lumière | Applique Éternité en cas de critique | Baisse la résistance Feu et Lumière de l'adversaire de (10%) || {"type":"res","scope":"enemy","value":-10,"elements":["fire","light"]}
+  #51 Sorcière Pyrokinétique / Voile solide [cd1] t=none :: Résistance à tous les éléments (+3) || {"type":"res","scope":"ally","value":3,"elements":"all"}
+  #101 Neilla / Protection marine [cd4 dur2] t=ally :: Soigne 80 Eau | Résistance à tous les éléments (+15) | Applique Provocation || {"type":"res","scope":"ally","value":15,"elements":"all"}
+  #255 Verdelune / Trêve [cd3] t=ally :: Soigne 60 Nature | Résistance à tous les éléments (+10) || {"type":"res","scope":"ally","value":10,"elements":"all"}
+=== EFFECT resetEnemyCd (1)
+  #78 Gardien Vert / Rayonnement [cd5] t=enemy :: Attaque 80 Lumière | Les temps de recharge des compétences sont remis au maximum || {"type":"resetEnemyCd"}
+=== EFFECT resetEnemySpamton (1)
+  #96 Mélodie des Divinités / Jugement divin [cd10] t=none :: Les Spamtons de l'adversaire tombent à 0 || {"type":"resetEnemySpamton"}
+=== EFFECT resurrect (1)
+  #203 Ashtarae Lycaria / Résurrection [cd8] t=none :: Ressuscite le dernier allié détruit avec la moitié de ses PV max || {"type":"resurrect","pct":50}
+=== EFFECT setHpPct (2)
+  #139 Cornu mythologique / Corne 25 [cd7] t=none :: La cible se retrouve à 25% de ses PV max || {"type":"setHpPct","value":25}
+  #139 Cornu mythologique / Corne 75 [cd5] t=none :: La cible se retrouve à 75% de ses PV max || {"type":"setHpPct","value":75}
+=== EFFECT smoke (1)
+  #261 Godlur / Frappe golémique [cd2] t=enemy :: Attaque 25 Terre | Fumée || {"type":"smoke"}
+=== EFFECT spamtonGen (1)
+  #260 Le compagnon des esprits / Petite vague [cd1 echo0.5] t=enemy :: Attaque 10 Eau | Augmente sa génération de Spamtons de (+1) | Echo (50%) || {"type":"spamtonGen","value":1}
+=== EFFECT taunt (8)
+  #12 Hibernatus / Digue [cd3 dur2] t=none :: Applique Provocation || {"type":"taunt","duration":2,"scope":"card"}
+  #58 Le Transporteur Sauvage / Fort [cd4 dur4] t=none :: Applique Provocation pendant 2 tours || {"type":"taunt","duration":2,"scope":"card"}
+  #72 Girafe Florale / Renaissance Sylvatique [cd2 dur2] t=allAllies :: Applique Provocation | Cible toutes les cartes alliées | Précision et Critique (+5%) || {"type":"taunt","duration":2,"scope":"ally"}
+  #94 Zayd / Forteresse [cd3 dur2] t=none :: Applique Provocation || {"type":"taunt","duration":2,"scope":"card"}
+  #101 Neilla / Protection marine [cd4 dur2] t=ally :: Soigne 80 Eau | Résistance à tous les éléments (+15) | Applique Provocation || {"type":"taunt","duration":2,"scope":"ally"}
+  #116 Prisonnière de la Machine / Braisegarde [cd3 dur2] t=none :: Applique Provocation || {"type":"taunt","duration":2,"scope":"card"}
+  #222 Fleur de Vie / Barrière Florale [cd1] t=self :: Applique Provocation au lanceur || {"type":"taunt","duration":2,"scope":"card"}
+  #262 Yotaru Gardefeuille / Protect [cd1 dur2] t=randomAlly :: Applique Provocation aléatoirement à une carte alliée || {"type":"taunt","duration":2,"scope":"randomAlly"}
+=== EFFECT temporality (3)
+  #42 Dragonnet des Lumières / Aide pensive [cd3] t=none :: Applique Temporalité || {"type":"temporality","value":1,"scope":"ally"}
+  #47 Veilleur Nocturne / Nuit finale [cd9] t=allAllies :: Cible toutes les cartes alliées | Applique Temporalité x (+3) || {"type":"temporality","value":3,"scope":"team"}
+  #227 Chouette Polychrome / Danse des plumes [cd2] t=spreadField :: Cible aléatoirement les cartes du terrain | Attaque 30 Nature | Attaque 30 Feu | Attaque 30 Ombre | Attaque 30 Lumière | Attaque 30 Eau | Attaque 30 Terre | Applique Temporalité à la carte ciblée en cas de coup critique || {"type":"temporality","value":1,"scope":"field","cond":true}
+=== EFFECT vampirism (3)
+  #47 Veilleur Nocturne / Tenebr'eal [cd3] t=enemy :: Attaque 40 Ombre | Bonus Ombre (+1) | Vampirisme || {"type":"vampirism"}
+  #63 Shado, Fléau abyssal / Tenebr'eal [cd3] t=enemy :: Attaque 40 Ombre | Bonus Ombre (+1) | Vampirisme || {"type":"vampirism"}
+  #137 Cerf des Couleurs Funèbres / Drain élémentaire [cd1] t=spreadEnemy :: Cible aléatoirement les cartes adverses | Attaque 6 Terre | Attaque 6 Nature | Attaque 6 Feu | Attaque 6 Eau | Attaque 6 Lumière | Attaque 6 Ombre | Vampirisme || {"type":"vampirism"}
+=== EFFECT vanish (1)
+  #174 Zombie Floral / Malédiction aquatique [cd8] t=enemy :: Attaque [30 à +60] Eau | Attaque [30 à +60] Nature | Applique Disparition || {"type":"vanish"}
+=== PASSIVE aoe (3)
+  #63 Shado, Fléau abyssal :: AoE common {"id":"Aoe_C","name":"AoE","rarity":"common","text":"Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés","type":"aoe","pct":20}
+  #151 Sbire des Flammes :: AoE common {"id":"Aoe_C","name":"AoE","rarity":"common","text":"Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés","type":"aoe","pct":20}
+  #237 Voyageur des Crêtes :: AoE epic {"id":"Aoe_E","name":"AoE","rarity":"epic","text":"Attaque et soigne les cibles adjacentes à hauteur de 80% des dégâts infligés","type":"aoe","pct":80}
+=== PASSIVE avenger (2)
+  #180 Dragon Ciel :: Vengeur epic {"id":"Vengeur_E","name":"Vengeur","rarity":"epic","text":"Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.","type":"avenger"}
+  #236 Apprentie de la Mort :: Vengeur epic {"id":"Vengeur_E","name":"Vengeur","rarity":"epic","text":"Cette carte récupère toutes ses attaques chaque fois qu'une carte qu'elle n'a pas tuée meurt.","type":"avenger"}
+=== PASSIVE berserk (5)
+  #142 Squall, Émissaire des cauchemars :: Berserk common {"id":"Berserk_C","name":"Berserk","rarity":"common","text":"Les dégâts et les soins de toutes vos cartes sont augmentés de 12%","type":"berserk","pct":12}
+  #151 Sbire des Flammes :: Berserk common {"id":"Berserk_C","name":"Berserk","rarity":"common","text":"Les dégâts et les soins de toutes vos cartes sont augmentés de 12%","type":"berserk","pct":12}
+  #156 L'Œil des montagnes :: Berserk common {"id":"Berserk_C","name":"Berserk","rarity":"common","text":"Les dégâts et les soins de toutes vos cartes sont augmentés de 12%","type":"berserk","pct":12}
+  #188 Commando Gerz :: Berserk rare {"id":"Berserk_R","name":"Berserk","rarity":"rare","text":"Les dégâts et les soins de toutes vos cartes sont augmentés de 25%","type":"berserk","pct":25}
+  #234 Rongeur Nuageux :: Berserk common {"id":"Berserk_C","name":"Berserk","rarity":"common","text":"Les dégâts et les soins de toutes vos cartes sont augmentés de 12%","type":"berserk","pct":12}
+=== PASSIVE brut (1)
+  #27 Hippocampe Nimbé :: Brut rare {"id":"Brut_R","name":"Brut","rarity":"rare","text":"Ignore les résistances et les provocations. Détruit les provocations ennemies si ciblé","type":"brut"}
+=== PASSIVE cimetiere (2)
+  #190 Lames en peine :: Cimetière rare {"id":"Cimetiere_R","name":"Cimetière","rarity":"rare","text":"Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt","type":"cimetiere","value":5}
+  #236 Apprentie de la Mort :: Cimetière common {"id":"Cimetiere_C","name":"Cimetière","rarity":"common","text":"Augmente tous vos bonus élémentaires de (+3) lorsqu'une carte meurt","type":"cimetiere","value":3}
+=== PASSIVE coeur (12)
+  #17 Croqueur de Fruits Verdoyant :: Cœur de terre common {"id":"CoeurTerre_C","name":"Cœur de terre","rarity":"common","text":"Bonus Terre (+1) par tour de jeu","type":"coeur","element":"earth","perTurn":1}
+  #44 Léviathan des Cieux :: Cœur d'eau common {"id":"CoeurEau_C","name":"Cœur d'eau","rarity":"common","text":"Bonus Eau (+1) par tour de jeu","type":"coeur","element":"water","perTurn":1}
+  #71 Soigneuse Astrale des Bois :: Cœur de nature common {"id":"CoeurNature_C","name":"Cœur de nature","rarity":"common","text":"Bonus Nature (+1) par tour de jeu","type":"coeur","element":"nature","perTurn":1}
+  #127 Spectre Canin :: Cœur d'ombre common {"id":"CoeurOmbre_C","name":"Cœur d'ombre","rarity":"common","text":"Bonus Ombre (+1) par tour de jeu","type":"coeur","element":"shadow","perTurn":1}
+  #127 Spectre Canin :: Cœur de lumière common {"id":"CoeurLumiere_C","name":"Cœur de lumière","rarity":"common","text":"Bonus Lumière (+1) par tour de jeu","type":"coeur","element":"light","perTurn":1}
+  #134 Wibs l'Enflammé :: Cœur de feu rare {"id":"CoeurFeu_R","name":"Cœur de feu","rarity":"rare","text":"Bonus Feu (+2) par tour de jeu","type":"coeur","element":"fire","perTurn":2}
+  #156 L'Œil des montagnes :: Cœur d'eau common {"id":"CoeurEau_C","name":"Cœur d'eau","rarity":"common","text":"Bonus Eau (+1) par tour de jeu","type":"coeur","element":"water","perTurn":1}
+  #174 Zombie Floral :: Cœur d'eau common {"id":"CoeurEau_C","name":"Cœur d'eau","rarity":"common","text":"Bonus Eau (+1) par tour de jeu","type":"coeur","element":"water","perTurn":1}
+  #174 Zombie Floral :: Cœur de nature common {"id":"CoeurNature_C","name":"Cœur de nature","rarity":"common","text":"Bonus Nature (+1) par tour de jeu","type":"coeur","element":"nature","perTurn":1}
+  #176 Rob l'Aventurier :: Cœur d'ombre common {"id":"CoeurOmbre_C","name":"Cœur d'ombre","rarity":"common","text":"Bonus Ombre (+1) par tour de jeu","type":"coeur","element":"shadow","perTurn":1}
+  #176 Rob l'Aventurier :: Cœur de terre common {"id":"CoeurTerre_C","name":"Cœur de terre","rarity":"common","text":"Bonus Terre (+1) par tour de jeu","type":"coeur","element":"earth","perTurn":1}
+  #231 Aleera Mange-Cauchemars :: Cœur d'ombre common {"id":"CoeurOmbre_C","name":"Cœur d'ombre","rarity":"common","text":"Bonus Ombre (+1) par tour de jeu","type":"coeur","element":"shadow","perTurn":1}
+=== PASSIVE erosion (3)
+  #39 Sylvan, Protecteur de la Verdure :: Érosion common {"id":"Erosion_C","name":"Érosion","rarity":"common","text":"Réduit les PV max à hauteur de 50% des dégâts infligés","type":"erosion","pct":50}
+  #92 Frost & Glacier :: Érosion common {"id":"Erosion_C","name":"Érosion","rarity":"common","text":"Réduit les PV max à hauteur de 50% des dégâts infligés","type":"erosion","pct":50}
+  #229 Maître Amphibian :: Érosion common {"id":"Erosion_C","name":"Érosion","rarity":"common","text":"Réduit les PV max à hauteur de 50% des dégâts infligés","type":"erosion","pct":50}
+=== PASSIVE eternityOnHit (2)
+  #33 Nakyel :: Éternité legendary {"id":"Eternity_L","name":"Éternité","rarity":"legendary","text":"Augmente les temps de recharge de 1","type":"eternityOnHit"}
+  #256 Héraldesse Serpentine :: Éternité legendary {"id":"Eternity_L","name":"Éternité","rarity":"legendary","text":"Augmente les temps de recharge de 1","type":"eternityOnHit"}
+=== PASSIVE freezeOnHit (2)
+  #92 Frost & Glacier :: Gel epic {"id":"Frozen_E","name":"Gel","rarity":"epic","text":"Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.","type":"freezeOnHit","value":40}
+  #259 Dragon de la Cité Infernale :: Gel epic {"id":"Frozen_E","name":"Gel","rarity":"epic","text":"Les dégâts et les soins de cette carte gèlent leur cible : elle ne peut pas agir jusqu'à la fin du prochain tour adverse. Un autre dégât, un soin ou un nouveau Tox brise la glace et lui inflige 40 dégâts.","type":"freezeOnHit","value":40}
+=== PASSIVE hpGrowth (1)
+  #21 Félin Errant :: Cœur vital common {"id":"CoeurVital_C","name":"Cœur vital","rarity":"common","text":"Cette carte augmente ses PV max de 15 chaque tour","type":"hpGrowth","perTurn":15}
+=== PASSIVE immunity (4)
+  #197 Codex des Maux Ancestraux :: Immunité epic {"id":"Immunity_E","name":"Immunité","rarity":"epic","text":"La carte est immunisée contre tous les effets des cartes adverses","type":"immunity"}
+  #198 Codex des Sorts Lumineux :: Immunité epic {"id":"Immunity_E","name":"Immunité","rarity":"epic","text":"La carte est immunisée contre tous les effets des cartes adverses","type":"immunity"}
+  #237 Voyageur des Crêtes :: Immunité epic {"id":"Immunity_E","name":"Immunité","rarity":"epic","text":"La carte est immunisée contre tous les effets des cartes adverses","type":"immunity"}
+  #260 Le compagnon des esprits :: Immunité epic {"id":"Immunity_E","name":"Immunité","rarity":"epic","text":"La carte est immunisée contre tous les effets des cartes adverses","type":"immunity"}
+=== PASSIVE lifesteal (3)
+  #67 Logidrake, l'Ignatius :: Vampirisme rare {"id":"Life Steal_R","name":"Vampirisme","rarity":"rare","text":"Régénère 50% des dégâts infligés à la cible","type":"lifesteal","pct":50}
+  #128 Dévoreur de faune :: Vampirisme common {"id":"Life Steal_C","name":"Vampirisme","rarity":"common","text":"Régénère 25% des dégâts infligés à la cible","type":"lifesteal","pct":25}
+  #238 Chimère Brasse-chair :: Vampirisme epic {"id":"Life Steal_E","name":"Vampirisme","rarity":"epic","text":"Régénère 75% des dégâts infligés à la cible","type":"lifesteal","pct":75}
+=== PASSIVE luck (5)
+  #12 Hibernatus :: Chanceur common {"id":"Chance_C","name":"Chanceur","rarity":"common","text":"Augmente votre Chance de (+0,5) chaque tour","type":"luck","perTurn":0.5}
+  #22 Lueur d'Espoir :: Chanceur rare {"id":"Chance_R","name":"Chanceur","rarity":"rare","text":"Augmente votre Chance de (+1) chaque tour","type":"luck","perTurn":1}
+  #71 Soigneuse Astrale des Bois :: Chanceur common {"id":"Chance_C","name":"Chanceur","rarity":"common","text":"Augmente votre Chance de (+0,5) chaque tour","type":"luck","perTurn":0.5}
+  #152 Le Héraut des Cendres :: Chanceur common {"id":"Chance_C","name":"Chanceur","rarity":"common","text":"Augmente votre Chance de (+0,5) chaque tour","type":"luck","perTurn":0.5}
+  #190 Lames en peine :: Chanceur rare {"id":"Chance_R","name":"Chanceur","rarity":"rare","text":"Augmente votre Chance de (+1) chaque tour","type":"luck","perTurn":1}
+=== PASSIVE mimetism (3)
+  #35 Léo :: Mimétisme rare {"id":"Mimetisme_R","name":"Mimétisme","rarity":"rare","text":"Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.","type":"mimetism"}
+  #124 Wyrm des Dunes Cornu :: Mimétisme rare {"id":"Mimetisme_R","name":"Mimétisme","rarity":"rare","text":"Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.","type":"mimetism"}
+  #238 Chimère Brasse-chair :: Mimétisme rare {"id":"Mimetisme_R","name":"Mimétisme","rarity":"rare","text":"Chaque fois que l'adversaire génère un ou plusieurs éléments, vous en générez 1 du même type.","type":"mimetism"}
+=== PASSIVE multiplicator (4)
+  #102 Murmures du Corail Noir :: Multiplicateur rare {"id":"Multiplicator_R","name":"Multiplicateur","rarity":"rare","text":"Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte","type":"multiplicator"}
+  #137 Cerf des Couleurs Funèbres :: Multiplicateur rare {"id":"Multiplicator_R","name":"Multiplicateur","rarity":"rare","text":"Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte","type":"multiplicator"}
+  #153 L'Inventeur :: Multiplicateur rare {"id":"Multiplicator_R","name":"Multiplicateur","rarity":"rare","text":"Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte","type":"multiplicator"}
+  #178 Épine Médusine :: Multiplicateur rare {"id":"Multiplicator_R","name":"Multiplicateur","rarity":"rare","text":"Les bonus élémentaires sont doublés pour les dégâts et les soins de cette carte","type":"multiplicator"}
+=== PASSIVE mystery (3)
+  #226 Apprenti Évocateur :: Mystère rare {"id":"Mystere_R","name":"Mystère","rarity":"rare","text":"Commence la partie avec un passif aléatoire","type":"mystery"}
+  #226 Apprenti Évocateur :: Mystère rare {"id":"Mystere_R","name":"Mystère","rarity":"rare","text":"Commence la partie avec un passif aléatoire","type":"mystery"}
+  #263 Paguroniyx :: Mystère rare {"id":"Mystere_R","name":"Mystère","rarity":"rare","text":"Commence la partie avec un passif aléatoire","type":"mystery"}
+=== PASSIVE phoenix (3)
+  #30 Naissance d'Aldrin :: Phénix rare {"id":"Phoenix_R","name":"Phénix","rarity":"rare","text":"Lorsqu’elle est détruite, cette carte revient à la vie avec 50% de ses PV max.\nUsage unique","type":"phoenix","pct":50}
+  #37 Roi des Flammes Ardentes :: Phénix common {"id":"Phoenix_C","name":"Phénix","rarity":"common","text":"Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.\nUsage unique","type":"phoenix","pct":25}
+  #85 Bleu-mange-cailloux :: Phénix common {"id":"Phoenix_C","name":"Phénix","rarity":"common","text":"Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.\nUsage unique","type":"phoenix","pct":25}
+=== PASSIVE poison (2)
+  #134 Wibs l'Enflammé :: Poison common {"id":"Poison_C","name":"Poison","rarity":"common","text":"Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.","type":"poison","pct":1,"turns":3}
+  #244 Gazpoison Flottant :: Poison common {"id":"Poison_C","name":"Poison","rarity":"common","text":"Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.","type":"poison","pct":1,"turns":3}
+=== PASSIVE punchingBag (12)
+  #58 Le Transporteur Sauvage :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #72 Girafe Florale :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #123 Tisseuse de Mots :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #160 Sanglier Doré :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #221 Crapaud des Étoiles :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #231 Aleera Mange-Cauchemars :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #247 Roi Feu :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #248 Roi Eau :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #249 Roi Nature :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #250 Roi Terre :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #251 Roi Ombre :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+  #252 Roi Lumière :: Sac de frappe common {"id":"PunchingBag_C","name":"Sac de frappe","rarity":"common","text":"Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque","type":"punchingBag"}
+=== PASSIVE recoil (2)
+  #158 Lapin-Plume :: Contrecoup common {"id":"ContreCoup_C","name":"Contrecoup","rarity":"common","text":"Subit 50% des dégâts infligés à la cible","type":"recoil","pct":50}
+  #221 Crapaud des Étoiles :: Contrecoup common {"id":"ContreCoup_C","name":"Contrecoup","rarity":"common","text":"Subit 50% des dégâts infligés à la cible","type":"recoil","pct":50}
+=== PASSIVE reflect (1)
+  #106 L'Épine d'Amour :: Renvoi epic {"id":"Reflect_E","name":"Renvoi","rarity":"epic","text":"Renvoie 75% des dégâts subis à l'attaquant","type":"reflect","pct":75}
+=== PASSIVE regen (4)
+  #63 Shado, Fléau abyssal :: Soin primitif common {"id":"Primitive heal_C","name":"Soin primitif","rarity":"common","text":"Au début de chaque tour, la carte récupère 4% de ses PV max","type":"regen","pct":4}
+  #69 Scorch, les Lézards Ignés :: Soin primitif common {"id":"Primitive heal_C","name":"Soin primitif","rarity":"common","text":"Au début de chaque tour, la carte récupère 4% de ses PV max","type":"regen","pct":4}
+  #86 Régent des Abysses :: Soin primitif common {"id":"Primitive heal_C","name":"Soin primitif","rarity":"common","text":"Au début de chaque tour, la carte récupère 4% de ses PV max","type":"regen","pct":4}
+  #261 Godlur :: Soin primitif common {"id":"Primitive heal_C","name":"Soin primitif","rarity":"common","text":"Au début de chaque tour, la carte récupère 4% de ses PV max","type":"regen","pct":4}
+=== PASSIVE reset (5)
+  #27 Hippocampe Nimbé :: Reset epic {"id":"Reset_E","name":"Reset","rarity":"epic","text":"Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible","type":"reset"}
+  #30 Naissance d'Aldrin :: Reset epic {"id":"Reset_E","name":"Reset","rarity":"epic","text":"Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible","type":"reset"}
+  #85 Bleu-mange-cailloux :: Reset epic {"id":"Reset_E","name":"Reset","rarity":"epic","text":"Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible","type":"reset"}
+  #204 Ephial :: Reset epic {"id":"Reset_E","name":"Reset","rarity":"epic","text":"Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible","type":"reset"}
+  #211 Dragosaure Céleste :: Reset epic {"id":"Reset_E","name":"Reset","rarity":"epic","text":"Lorsque vous tuez une carte ADVERSE avec une de vos attaques, celle-ci reste disponible","type":"reset"}
+=== PASSIVE revenge (1)
+  #94 Zayd :: Revanche rare {"id":"Revenge_R","name":"Revanche","rarity":"rare","text":"Une fois détruite, cette carte inflige l'entièreté de ses attaques à l'adversaire","type":"revenge"}
+=== PASSIVE smoke (4)
+  #146 Poulpe Parleur :: Fumée rare {"id":"Smoked_R","name":"Fumée","rarity":"rare","text":"Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin","type":"smoke"}
+  #152 Le Héraut des Cendres :: Fumée rare {"id":"Smoked_R","name":"Fumée","rarity":"rare","text":"Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin","type":"smoke"}
+  #191 Ameru :: Fumée rare {"id":"Smoked_R","name":"Fumée","rarity":"rare","text":"Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin","type":"smoke"}
+  #243 Vivy :: Fumée rare {"id":"Smoked_R","name":"Fumée","rarity":"rare","text":"Enfume le terrain allié après l'utilisation d'une attaque ou d'un soin","type":"smoke"}
+=== PASSIVE tauntOnAttack (1)
+  #234 Rongeur Nuageux :: Provocation rare {"id":"Taunt_R","name":"Provocation","rarity":"rare","text":"Lorsque ce personnage lance une attaque, toutes les attaques ennemies du prochain tour doivent le cibler","type":"tauntOnAttack"}
+=== PASSIVE teamRes (2)
+  #158 Lapin-Plume :: Cœur résistance common {"id":"CoeurResistance_C","name":"Cœur résistance","rarity":"common","text":"Cette carte augmente les résistances de toutes les cartes alliées (+3)","type":"teamRes","value":3}
+  #190 Lames en peine :: Cœur résistance rare {"id":"CoeurResistance_R","name":"Cœur résistance","rarity":"rare","text":"Cette carte augmente les résistances de toutes les cartes alliées (+6)","type":"teamRes","value":6}
+=== PASSIVE temporalityOnHit (2)
+  #101 Neilla :: Temporalité legendary {"id":"Temporality_L","name":"Temporalité","rarity":"legendary","text":"Diminue les temps de recharge de 1","type":"temporalityOnHit"}
+  #255 Verdelune :: Temporalité legendary {"id":"Temporality_L","name":"Temporalité","rarity":"legendary","text":"Diminue les temps de recharge de 1","type":"temporalityOnHit"}
+=== PASSIVE tenacity (3)
+  #193 Vladislaus :: Ténacité common {"id":"Tenacite_C","name":"Ténacité","rarity":"common","text":"La première attaque fatale vous laisse à 1 PV","type":"tenacity"}
+  #244 Gazpoison Flottant :: Ténacité common {"id":"Tenacite_C","name":"Ténacité","rarity":"common","text":"La première attaque fatale vous laisse à 1 PV","type":"tenacity"}
+  #261 Godlur :: Ténacité common {"id":"Tenacite_C","name":"Ténacité","rarity":"common","text":"La première attaque fatale vous laisse à 1 PV","type":"tenacity"}
+=== PASSIVE vanishOnHit (3)
+  #56 Lisa, la Dragonnière :: Disparition legendary {"id":"Disparition_L","name":"Disparition","rarity":"legendary","text":"Supprime le dernier passif de la cible","type":"vanishOnHit"}
+  #115 Aidan :: Disparition legendary {"id":"Disparition_L","name":"Disparition","rarity":"legendary","text":"Supprime le dernier passif de la cible","type":"vanishOnHit"}
+  #140 Souris des blés :: Disparition legendary {"id":"Disparition_L","name":"Disparition","rarity":"legendary","text":"Supprime le dernier passif de la cible","type":"vanishOnHit"}

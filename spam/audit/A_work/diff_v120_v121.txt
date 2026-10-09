@@ -1,0 +1,59 @@
+[OWNED] #5 Esprit Ombre
+    talents: Coeur OMBRE,Terrain lumineux,Cavalerie -> Cœur OMBRE,Terrain lumineux,Cavalerie
+[OWNED] #30 Naissance d'Aldrin
+    passives: Phoenix_R,Reset_E -> Phoenix_R,Cimetiere_R
+[OWNED] #33 Nakyel
+    talents: Coeur OMBRE,Longueur,Vitalité des Âmes -> Cœur OMBRE,Longueur,Vitalité des Âmes
+#37 Roi des Flammes Ardentes
+    abilities:
+      OLD Morsure brûlante[cd2] enemy:Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%)
+      NEW Morsure brûlante[cd2] enemy:Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+7%)
+[OWNED] #102 Murmures du Corail Noir
+    hp: 500 -> 400
+    spamton: 7 -> 2
+    abilities:
+      OLD Murmure[cd1] ally:Soigne 10 Eau | La valeur de base du soin augmente de 5 || Souffle d'eau[cd1] enemy:Attaque 10 Eau | Bonus Eau (+1)
+      NEW Murmure[cd1] ally:Soigne 10 Eau | La valeur de base du soin augmente de 3 || Souffle d'eau[cd1] enemy:Attaque 10 Eau | Bonus Eau (+1)
+#113 Lums
+    talents: Cœur LUMIÈRE,Coeur OMBRE,Boule de Crit -> Cœur LUMIÈRE,Cœur OMBRE,Boule de Crit
+#122 Esprit de la Faune
+    talents: Longueur,Immunité-8,Erosion -> Longueur,Immunité-8,Érosion
+#123 Tisseuse de Mots
+    spamton: 3 -> 2
+#124 Wyrm des Dunes Cornu
+    abilities:
+      OLD Morsure brûlante[cd2] enemy:Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+5%)
+      NEW Morsure brûlante[cd2] enemy:Attaque 15 Feu | Attaque 15 Terre | Critique de toutes les cartes du lanceur (+7%)
+    talents: Erosion,Life-8,Dernier souffle -> Érosion,Life-8,Dernier souffle
+[OWNED] #153 L'Inventeur
+    abilities:
+      OLD Materia[cd2] none:Bonus [-8 à +10] dans chaque élément || Arc-en-ciel[cd1] enemy:Attaque 10 dans un élément aléatoire
+      NEW Materia[cd2] none:Bonus [-5 à +8] dans chaque élément || Arc-en-ciel[cd1] enemy:Attaque 10 dans un élément aléatoire
+[OWNED] #158 Lapin-Plume
+    hp: 1000 -> 850
+#174 Zombie Floral
+    hp: 1000 -> 850
+    abilities:
+      OLD Malédiction aquatique[cd8] enemy:Attaque [30 à +60] Eau | Attaque [30 à +60] Nature | Applique Disparition
+      NEW Malédiction aquatique[cd8] aoeEnemy:Attaque [30 à 60] Eau sur toutes les cartes adverses | Applique Disparition | Attaque [30 à 60] Nature sur toutes les cartes adverses | Applique Disparition
+[OWNED] #180 Dragon Ciel
+    abilities:
+      OLD Souffle éblouissant[cd4] enemy:Attaque 40 Lumière || Souffle tornade[cd4] enemy:Attaque 40 Nature
+      NEW Souffle éblouissant[cd4] enemy:Attaque 40 Lumière || Appel de la forêt[cd4] aoeEnemy:Attaque toutes les cartes adverses 30 Nature | Bonus Nature (+4)
+#203 Ashtarae Lycaria
+    hp: 1000 -> 700
+    spamton: 8 -> 4
+    abilities:
+      OLD Mélodie n°1[cd1] allAllies:Attaque [15 à 25] Ombre | Critique (+2%) sur toutes les cartes alliées || Mélodie n°2[cd1] allAllies:Soigne [15 à 25] Ombre | Précision (+2%) sur toutes les cartes alliées || Résurrection[cd8] none:Ressuscite le dernier allié détruit avec la moitié de ses PV max
+      NEW Mélodie n°1[cd1] allAllies:Attaque [15 à 25] Ombre | Critique (+2%) sur toutes les cartes alliées || Mélodie n°2[cd1] allAllies:Soigne [15 à 25] Ombre | Précision (+2%) sur toutes les cartes alliées || Résurrection[cd8 c{"shadow":5}] none:[Coût 5 Ombre] | Ressuscite le dernier allié détruit avec la moitié de ses PV max
+#234 Rongeur Nuageux
+    hp: 750 -> 650
+    abilities:
+      OLD Ronge-nuage[cd3] enemy:Attaque 30 Lumière | Bonus Lumière (+1)
+      NEW Foudre[cd2] enemy:Attaque 30 Lumière + 50% des PV manquants du lanceur
+#236 Apprentie de la Mort
+    abilities:
+      OLD Brûlure Nocturne[cd3] aoeEnemy:Cible toutes les cartes adverses | Attaque 15 Feu et 15 Ombre
+      NEW Brûlure Nocturne[cd3] aoeEnemy:Cible toutes les cartes adverses | Attaque 25 Feu et 25 Ombre
+[OWNED] #259 Dragon de la Cité Infernale
+    talents: Cœur FEU,Coeur OMBRE,Immunité-8 -> Cœur FEU,Cœur OMBRE,Immunité-8

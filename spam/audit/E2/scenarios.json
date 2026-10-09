@@ -1,0 +1,368 @@
+[
+ {
+  "name": "BASE",
+  "stress": null
+ },
+ {
+  "name": "ABS_T2_p0",
+  "stress": {
+   "absorb": {
+    "turn": 2,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T2_p1",
+  "stress": {
+   "absorb": {
+    "turn": 2,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T2_p2",
+  "stress": {
+   "absorb": {
+    "turn": 2,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T2_p3",
+  "stress": {
+   "absorb": {
+    "turn": 2,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p0",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p1",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p2",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p3",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p0",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p1",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p2",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p3",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p0",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p1",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p2",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p3",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p0",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p1",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p2",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p3",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "CDR_all_5",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5
+    ],
+    "target": "all"
+   }
+  }
+ },
+ {
+  "name": "CDR_all_5_9",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5,
+     9
+    ],
+    "target": "all"
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_5_p0",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5
+    ],
+    "target": 0
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_5_p1",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5
+    ],
+    "target": 1
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_5_p2",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5
+    ],
+    "target": 2
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_5_p3",
+  "stress": {
+   "cdreset": {
+    "turns": [
+     5
+    ],
+    "target": 3
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_nat_p0",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 0
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_nat_p1",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 1
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_nat_p2",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 2
+   }
+  }
+ },
+ {
+  "name": "CDR_tgt_nat_p3",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 3
+   }
+  }
+ },
+ {
+  "name": "SUS_h32",
+  "stress": {
+   "heal": {
+    "perTurn": 32
+   }
+  }
+ },
+ {
+  "name": "SUS_h80",
+  "stress": {
+   "heal": {
+    "perTurn": 80
+   }
+  }
+ },
+ {
+  "name": "SUS_rev",
+  "stress": {
+   "revive": {
+    "pct": 0.5,
+    "count": 1
+   }
+  }
+ },
+ {
+  "name": "SET_4",
+  "stress": {
+   "sethp": {
+    "turn": 4,
+    "target": "maxhp"
+   }
+  }
+ },
+ {
+  "name": "SET_4_p0",
+  "stress": {
+   "sethp": {
+    "turn": 4,
+    "target": 0
+   }
+  }
+ },
+ {
+  "name": "SET_4_p1",
+  "stress": {
+   "sethp": {
+    "turn": 4,
+    "target": 1
+   }
+  }
+ },
+ {
+  "name": "SET_4_p2",
+  "stress": {
+   "sethp": {
+    "turn": 4,
+    "target": 2
+   }
+  }
+ },
+ {
+  "name": "SET_4_p3",
+  "stress": {
+   "sethp": {
+    "turn": 4,
+    "target": 3
+   }
+  }
+ },
+ {
+  "name": "SET_nat",
+  "stress": {
+   "sethp": {
+    "turn": "nat",
+    "target": "maxhp"
+   }
+  }
+ }
+]

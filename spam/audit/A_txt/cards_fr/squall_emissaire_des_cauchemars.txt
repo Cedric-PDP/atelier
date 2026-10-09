@@ -1,0 +1,184 @@
+Squall, Émissaire des cauchemars : carte SPAM Ombre rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Squall, Émissaire des cauchemars B Voir la carte en grand
+Squall, Émissaire des cauchemars
+3 Flammes Cosmiques
+3 Lumière cosmique
+Berserk
+1000/1000
+8
+Standard
+Squall, Émissaire des cauchemars
+3 Flammes Cosmiques
+3 Lumière cosmique
+Berserk
+1000/1000
+8
+Élémentaire
+Squall, Émissaire des cauchemars
+3 Flammes Cosmiques
+3 Lumière cosmique
+Berserk
+1000/1000
+8
+FA
+Squall, Émissaire des cauchemars
+3 Flammes Cosmiques
+3 Lumière cosmique
+Berserk
+1000/1000
+8
+## Squall, Émissaire des cauchemars
+B Ombre · Rare · Standard
+1 000 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Baleine bleue Augmente les PV de cette carte de (+200).
+- Talent 2 Contre Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+- Talent 3 One man army Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Conseillé
+Trois champs de compétence
+- Flammes Cosmiques compétence · Recharge 3 Attaque 15 Feu
+Attaque 20 Ombre
+Bonus Feu (+3)
+3
+- Lumière cosmique compétence · Recharge 3 Attaque 15 Lumière
+Attaque 20 Ombre
+Bonus Lumière (+3)
+3
+- Berserk tox · Commune Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Ombre Rare #142
+# Squall, Émissaire des cauchemars
+Défense
+1 000 Points de vie
+8 Spamtons / tour
+#38 Classement / 127
+A Sans talent · #29
+Attaque
+44
+Génération
+72
+Défense
+90
+Soutien
+1
+Contrôle
+0
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Baleine bleue 2 Contre 3 One man army
+Jouer cette carte 19 decks
+Partager
+### Compétences
+#### Flammes Cosmiques
+3 tours
+Attaque 15 Feu
+Attaque 20 Ombre
+Bonus Feu (+3)
+Précision 100% Critique 1%
+#### Lumière cosmique
+3 tours
+Attaque 15 Lumière
+Attaque 20 Ombre
+Bonus Lumière (+3)
+Précision 100% Critique 1%
+### Tox de départ
+#### Berserk
+Commune
+Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+### Talents
+#### Baleine bleue
+Augmente les PV de cette carte de (+200).
+Δ 93,3 · Score théorique
+#### Contre
+Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+Δ 0 · Score théorique
+#### One man army
+Conseillé
+Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+Δ 340,6 · Score théorique
+## Ses meilleurs decks
+19 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+89,2 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Apprentie de la Mort
+89,1 % Indice relatif 6 tours Élimination estimée 24 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Catixy
+87,9 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+B Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Squall
+78,5 % Indice relatif 6 tours Élimination estimée 31 / tour Spamtons
+C Collection avancée
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+60,5 % Indice relatif 8 tours Élimination estimée 31 / tour Spamtons
+C Intermédiaire
+Rampe élémentaire ·
+### Wibs l'Enflammé + Apprentie de la Mort
+57,7 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+Les autres decks (13)
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Paguroniyx · Squall Intermédiaire · 88,4%
+- A Aleera Mange-Cauchemars + Catixy avec Squall · Codex des Maux Ancestraux Intermédiaire · 83,6%
+- C Dragon Ciel + Aristocrate Nébulaire avec L'Épine d'Amour · Squall Accessible · 54,9%
+- D Souverain des Flammes + Wibs l'Enflammé avec Keria · Squall Collection avancée · 49,5%
+- D Faerylia + Vladislaus avec Maîtresse des Teintes · Squall Collection avancée · 46,3%
+- D Spectre Canin + Maîtresse des Teintes avec L'Épine d'Amour · Squall Intermédiaire · 45,7%
+- D Luminaire Abyssal + Astry avec Maîtresse des Teintes · Squall Intermédiaire · 44%
+- D Squall + Rongeur Nuageux avec Commando Gerz · Chouette Polychrome Intermédiaire · 43%
+- D Spectre Canin + Rongeur Nuageux avec Commando Gerz · Squall Intermédiaire · 41,2%
+- D Apprentie de la Mort + Astry avec L'Inventeur · Squall Intermédiaire · 38,4%
+- D Souverain des Flammes + Wibs l'Enflammé avec Roi Feu · Squall Collection avancée · 37%
+- D Apprentie de la Mort + Guerrier des Neiges avec Ignea · Squall Collection avancée · 36,2%
+- D Spectre Canin + Esprit Lumière avec Luminaire Abyssal · Squall Intermédiaire · 35,3%
+### Résistances
+25% Feu
+25% Eau
+25% Terre
+25% Nature
+25% Ombre
+25% Lumière
+Créature · Abysses
+### Derrière la carte
+En Elther, il est courant de redouter le sommeil : le moindre rêve ou cauchemar peut bouleverser une vie entière. Ces représentations oniriques sont hantées par diverses apparitions prémonitoires. L’Émissaire des Cauchemars est une puissante créature salvatrice qui se manifeste pendant les nuits les plus épouvantables et meurtrières. Elle sauve les dormeurs d’une mort autrement inévitable. Souvent accompagnée d’un message, la créature se présente sous le nom de Squall.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,3751 @@
+{
+ "from": "1.20",
+ "to": "1.21",
+ "built": "2026-10-09",
+ "refs": {
+  "baseline": [
+   4714.7,
+   4865
+  ],
+  "best": [
+   15336.6,
+   15327.5
+  ]
+ },
+ "global": {
+  "median": [
+   4591.76,
+   4759.32
+  ],
+  "p90": [
+   6645.57,
+   6995.23
+  ],
+  "meanDeltaPct": 4.5
+ },
+ "notes": [
+  "Repères du modèle (sans talent) : deck moyen 4 715 → 4 865 (+3,2 %), meilleur deck 15 337 → 15 328 (-0,1 %). Les paliers S/A/B/C bougent avec eux.",
+  "Sur les mêmes 24 000 decks aléatoires, le score moyen évolue de +4,5 % (médiane 4 592 → 4 759).",
+  "6 cartes de ta collection modifiées : Naissance d'Aldrin (+12,0 %), Murmures du Corail Noir (-6,2 %), L'Inventeur (+25,6 %), Lapin-Plume (-1,7 %), Dragon Ciel (+40,1 %), Dragon de la Cité Infernale (-0,7 %) — entre parenthèses, l'effet moyen sur les decks qui la jouent, comparé au reste du jeu.",
+  "Ton meilleur deck change : Esprit Nature · Lame de la forêt · Keria · Dragon Ciel (8 934, 177e avant) passe devant Lame de la forêt · Keria · L'Œil des montagnes · Chimère Brasse-chair (8 018 → 8 011).",
+  "Sans critiques, ton meilleur deck devient Hibernatus · L'Inventeur · Dragon Ciel · Chimère Brasse-chair (8 242), devant Hibernatus · Scorch, les Lézards Ignés · Murmures du Corail Noir · Prisonnière de la Machine (6 515 → 6 300).",
+  "Deck sauvegardé « deck chimere » : 8 018 → 8 011 (-0,1 %), 1er → 20e de ta collection.",
+  "Deck sauvegardé « Anti-critiques (Hibernatus) » : 6 989 → 6 964 (-0,4 %), 6e → 194e de ta collection.",
+  "Deck sauvegardé « Zéro critique » : 6 529 → 6 315 (-3,3 %), 16e → 499e de ta collection.",
+  "Deck sauvegardé « Deck Aleera (à obtenir) » : 12 847 → 13 487 (+5,0 %).",
+  "Plus forte hausse parmi tes bons decks : Naissance d'Aldrin · Keria · L'Inventeur · Dragon Ciel (+220,3 %).",
+  "Méta du wiki : 46 decks dans la tier list 1.21, dont 32 nouveaux ; 34 decks de la 1.20 en sortent. Plus forte hausse : Girafe Florale · Zombie Floral · Catimimi · Yotaru Gardefeuille (+144,0 %).",
+  "Mesure « sans sa carte clé » corrigée : la carte est maintenant retirée au tour 1 sans mourir. Avant, une fausse carte de 1 PV mourait à sa place et déclenchait les effets à la mort des alliés (Vengeur de Dragon Ciel, Cimetière, Vitalité des Âmes), ce qui gonflait ce score sur ces decks.",
+  "Boutique : Gel E (coût 150 → 140, valeur 40 → 60) ; Reset E (coût 130 → 160).",
+  "Tox que l'adversaire a intérêt à bannir contre toi : Cœur de nature (acheté dans 13 de tes 17 decks de référence, jusqu'à +34,7 % de score), Berserk (acheté dans 9 de tes 17 decks de référence, jusqu'à +31,9 % de score), Poison (acheté dans 6 de tes 17 decks de référence, jusqu'à +18,8 % de score)."
+ ],
+ "cards": [
+  {
+   "n": 30,
+   "name": "Naissance d'Aldrin",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "Tox de départ Reset remplacé par Cimetière : « Augmente tous vos bonus élémentaires de (+5) lorsqu'une carte meurt »"
+   ]
+  },
+  {
+   "n": 37,
+   "name": "Roi des Flammes Ardentes",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Morsure brûlante : « Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+5%) » → « Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+7%) »"
+   ]
+  },
+  {
+   "n": 51,
+   "name": "Sorcière Pyrokinétique",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Flamme magique : chance de critique de base 1 % → 20 %"
+   ]
+  },
+  {
+   "n": 92,
+   "name": "Frost & Glacier",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Gel : valeur 40 → 60"
+   ]
+  },
+  {
+   "n": 102,
+   "name": "Murmures du Corail Noir",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "PV 500 → 400",
+    "Spamtons 7 → 2",
+    "Murmure : « Soigne 10 Eau · La valeur de base du soin augmente de 5 » → « Soigne 10 Eau · La valeur de base du soin augmente de 3 »"
+   ]
+  },
+  {
+   "n": 123,
+   "name": "Tisseuse de Mots",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Spamtons 3 → 2",
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse » (texte seulement)"
+   ]
+  },
+  {
+   "n": 124,
+   "name": "Wyrm des Dunes Cornu",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Morsure brûlante : « Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+5%) » → « Attaque 15 Feu · Attaque 15 Terre · Critique de toutes les cartes du lanceur (+7%) »"
+   ]
+  },
+  {
+   "n": 153,
+   "name": "L'Inventeur",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "Materia : « Bonus [-8 à +10] dans chaque élément » → « Bonus [-5 à +8] dans chaque élément »"
+   ]
+  },
+  {
+   "n": 158,
+   "name": "Lapin-Plume",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "PV 1 000 → 850",
+    "Tox de départ Cœur résistance : « Cette carte augmente les résistances de toutes les cartes alliées (+3) » → « Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+3). » (texte seulement)"
+   ]
+  },
+  {
+   "n": 174,
+   "name": "Zombie Floral",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "PV 1 000 → 850",
+    "Malédiction aquatique : « Attaque [30 à +60] Eau · Attaque [30 à +60] Nature · Applique Disparition » → « Attaque [30 à 60] Eau sur toutes les cartes adverses · Applique Disparition · Attaque [30 à 60] Nature sur toutes les cartes adverses · Applique Disparition »"
+   ]
+  },
+  {
+   "n": 180,
+   "name": "Dragon Ciel",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "compétence Souffle tornade remplacée par Appel de la forêt : « Attaque toutes les cartes adverses 30 Nature · Bonus Nature (+4) » (avant : « Attaque 40 Nature »)"
+   ]
+  },
+  {
+   "n": 203,
+   "name": "Ashtarae Lycaria",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "PV 1 000 → 700",
+    "Spamtons 8 → 4",
+    "Résurrection : « Ressuscite le dernier allié détruit avec la moitié de ses PV max » → « [Coût 5 Ombre] · Ressuscite le dernier allié détruit avec la moitié de ses PV max »"
+   ]
+  },
+  {
+   "n": 234,
+   "name": "Rongeur Nuageux",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "PV 750 → 650",
+    "compétence Ronge-nuage remplacée par Foudre : « Attaque 30 Lumière + 50% des PV manquants du lanceur » (avant : « Attaque 30 Lumière · Bonus Lumière (+1) »)",
+    "Foudre : recharge 3 → 2",
+    "Foudre : chance de critique de base 1 % → 15 %"
+   ]
+  },
+  {
+   "n": 236,
+   "name": "Apprentie de la Mort",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Brûlure Nocturne : « Cible toutes les cartes adverses · Attaque 15 Feu et 15 Ombre » → « Cible toutes les cartes adverses · Attaque 25 Feu et 25 Ombre »"
+   ]
+  },
+  {
+   "n": 259,
+   "name": "Dragon de la Cité Infernale",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "Tox de départ Gel : valeur 40 → 60"
+   ]
+  }
+ ],
+ "textOnly": [
+  {
+   "n": 58,
+   "name": "Le Transporteur Sauvage",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 72,
+   "name": "Girafe Florale",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 160,
+   "name": "Sanglier Doré",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 190,
+   "name": "Lames en peine",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Cœur résistance : « Cette carte augmente les résistances de toutes les cartes alliées (+6) » → « Au début de chacun de vos tours, cette carte augmente les résistances de toutes les cartes alliées (+6). »"
+   ]
+  },
+  {
+   "n": 221,
+   "name": "Crapaud des Étoiles",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 231,
+   "name": "Aleera Mange-Cauchemars",
+   "own": false,
+   "wish": true,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 247,
+   "name": "Roi Feu",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 248,
+   "name": "Roi Eau",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 249,
+   "name": "Roi Nature",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 250,
+   "name": "Roi Terre",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 251,
+   "name": "Roi Ombre",
+   "own": true,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  },
+  {
+   "n": 252,
+   "name": "Roi Lumière",
+   "own": false,
+   "wish": false,
+   "changes": [
+    "Tox de départ Sac de frappe : « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque » → « Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse »"
+   ]
+  }
+ ],
+ "tox": [
+  {
+   "id": "Frozen_E",
+   "name": "Gel E",
+   "changes": [
+    "coût 150 → 140",
+    "valeur 40 → 60"
+   ]
+  },
+  {
+   "id": "Reset_E",
+   "name": "Reset E",
+   "changes": [
+    "coût 130 → 160"
+   ]
+  }
+ ],
+ "impact": [
+  {
+   "n": 234,
+   "name": "Rongeur Nuageux",
+   "own": false,
+   "wish": false,
+   "d": 44.1,
+   "decks": 727
+  },
+  {
+   "n": 174,
+   "name": "Zombie Floral",
+   "own": false,
+   "wish": false,
+   "d": 40.2,
+   "decks": 711
+  },
+  {
+   "n": 180,
+   "name": "Dragon Ciel",
+   "own": true,
+   "wish": false,
+   "d": 40.1,
+   "decks": 745
+  },
+  {
+   "n": 153,
+   "name": "L'Inventeur",
+   "own": true,
+   "wish": false,
+   "d": 25.6,
+   "decks": 782
+  },
+  {
+   "n": 236,
+   "name": "Apprentie de la Mort",
+   "own": false,
+   "wish": false,
+   "d": 20,
+   "decks": 789
+  },
+  {
+   "n": 30,
+   "name": "Naissance d'Aldrin",
+   "own": true,
+   "wish": false,
+   "d": 12,
+   "decks": 778
+  },
+  {
+   "n": 124,
+   "name": "Wyrm des Dunes Cornu",
+   "own": false,
+   "wish": false,
+   "d": 2.5,
+   "decks": 789
+  },
+  {
+   "n": 51,
+   "name": "Sorcière Pyrokinétique",
+   "own": false,
+   "wish": false,
+   "d": 1.8,
+   "decks": 802
+  },
+  {
+   "n": 264,
+   "name": "Aristocrate Nébulaire",
+   "own": false,
+   "wish": false,
+   "d": 1.7,
+   "decks": 775
+  },
+  {
+   "n": 37,
+   "name": "Roi des Flammes Ardentes",
+   "own": false,
+   "wish": false,
+   "d": 1.6,
+   "decks": 775
+  },
+  {
+   "n": 140,
+   "name": "Souris des blés",
+   "own": false,
+   "wish": false,
+   "d": 0.5,
+   "decks": 728
+  },
+  {
+   "n": 206,
+   "name": "Catimimi",
+   "own": false,
+   "wish": false,
+   "d": 0.5,
+   "decks": 813
+  },
+  {
+   "n": 190,
+   "name": "Lames en peine",
+   "own": false,
+   "wish": false,
+   "d": 0.4,
+   "decks": 711
+  },
+  {
+   "n": 71,
+   "name": "Soigneuse Astrale des Bois",
+   "own": false,
+   "wish": false,
+   "d": 0.2,
+   "decks": 746
+  },
+  {
+   "n": 33,
+   "name": "Nakyel",
+   "own": true,
+   "wish": false,
+   "d": 0,
+   "decks": 768
+  },
+  {
+   "n": 117,
+   "name": "Keria",
+   "own": true,
+   "wish": false,
+   "d": 0,
+   "decks": 761
+  },
+  {
+   "n": 103,
+   "name": "Lame de la forêt",
+   "own": true,
+   "wish": false,
+   "d": -0.1,
+   "decks": 761
+  },
+  {
+   "n": 219,
+   "name": "Catixy",
+   "own": false,
+   "wish": false,
+   "d": -0.4,
+   "decks": 808
+  },
+  {
+   "n": 36,
+   "name": "Astry",
+   "own": false,
+   "wish": false,
+   "d": -0.5,
+   "decks": 752
+  },
+  {
+   "n": 226,
+   "name": "Apprenti Évocateur",
+   "own": false,
+   "wish": false,
+   "d": -0.5,
+   "decks": 783
+  },
+  {
+   "n": 35,
+   "name": "Léo",
+   "own": false,
+   "wish": false,
+   "d": -0.6,
+   "decks": 770
+  },
+  {
+   "n": 262,
+   "name": "Yotaru Gardefeuille",
+   "own": false,
+   "wish": false,
+   "d": -0.6,
+   "decks": 733
+  },
+  {
+   "n": 60,
+   "name": "Protecteur des ruines",
+   "own": false,
+   "wish": false,
+   "d": -0.7,
+   "decks": 752
+  },
+  {
+   "n": 94,
+   "name": "Zayd",
+   "own": false,
+   "wish": false,
+   "d": -0.7,
+   "decks": 755
+  },
+  {
+   "n": 146,
+   "name": "Poulpe Parleur",
+   "own": false,
+   "wish": false,
+   "d": -0.7,
+   "decks": 765
+  },
+  {
+   "n": 176,
+   "name": "Rob l'Aventurier",
+   "own": false,
+   "wish": false,
+   "d": -0.7,
+   "decks": 762
+  },
+  {
+   "n": 259,
+   "name": "Dragon de la Cité Infernale",
+   "own": true,
+   "wish": false,
+   "d": -0.7,
+   "decks": 758
+  },
+  {
+   "n": 39,
+   "name": "Sylvan, Protecteur de la Verdure",
+   "own": false,
+   "wish": false,
+   "d": -0.8,
+   "decks": 755
+  },
+  {
+   "n": 72,
+   "name": "Girafe Florale",
+   "own": false,
+   "wish": false,
+   "d": -0.8,
+   "decks": 785
+  },
+  {
+   "n": 123,
+   "name": "Tisseuse de Mots",
+   "own": false,
+   "wish": false,
+   "d": -0.8,
+   "decks": 780
+  },
+  {
+   "n": 151,
+   "name": "Sbire des Flammes",
+   "own": false,
+   "wish": false,
+   "d": -0.8,
+   "decks": 739
+  },
+  {
+   "n": 156,
+   "name": "L'Œil des montagnes",
+   "own": true,
+   "wish": false,
+   "d": -0.8,
+   "decks": 738
+  },
+  {
+   "n": 233,
+   "name": "Oisillons de Midas",
+   "own": false,
+   "wish": false,
+   "d": -0.8,
+   "decks": 760
+  },
+  {
+   "n": 6,
+   "name": "Esprit Lumière",
+   "own": true,
+   "wish": false,
+   "d": -0.9,
+   "decks": 725
+  },
+  {
+   "n": 27,
+   "name": "Hippocampe Nimbé",
+   "own": true,
+   "wish": false,
+   "d": -0.9,
+   "decks": 707
+  },
+  {
+   "n": 42,
+   "name": "Dragonnet des Lumières",
+   "own": false,
+   "wish": false,
+   "d": -0.9,
+   "decks": 708
+  },
+  {
+   "n": 69,
+   "name": "Scorch, les Lézards Ignés",
+   "own": true,
+   "wish": false,
+   "d": -0.9,
+   "decks": 736
+  },
+  {
+   "n": 5,
+   "name": "Esprit Ombre",
+   "own": true,
+   "wish": false,
+   "d": -1,
+   "decks": 735
+  },
+  {
+   "n": 56,
+   "name": "Lisa, la Dragonnière",
+   "own": false,
+   "wish": false,
+   "d": -1,
+   "decks": 747
+  },
+  {
+   "n": 58,
+   "name": "Le Transporteur Sauvage",
+   "own": false,
+   "wish": false,
+   "d": -1,
+   "decks": 769
+  },
+  {
+   "n": 3,
+   "name": "Esprit Nature",
+   "own": true,
+   "wish": false,
+   "d": -1.1,
+   "decks": 744
+  },
+  {
+   "n": 43,
+   "name": "Souverain des Flammes",
+   "own": false,
+   "wish": false,
+   "d": -1.1,
+   "decks": 755
+  },
+  {
+   "n": 81,
+   "name": "Luminaire Abyssal",
+   "own": false,
+   "wish": false,
+   "d": -1.1,
+   "decks": 742
+  },
+  {
+   "n": 82,
+   "name": "Baleine Farceuse",
+   "own": true,
+   "wish": false,
+   "d": -1.1,
+   "decks": 760
+  },
+  {
+   "n": 83,
+   "name": "Panthère imaginaire",
+   "own": false,
+   "wish": false,
+   "d": -1.1,
+   "decks": 753
+  },
+  {
+   "n": 113,
+   "name": "Lums",
+   "own": false,
+   "wish": false,
+   "d": -1.1,
+   "decks": 761
+  },
+  {
+   "n": 211,
+   "name": "Dragosaure Céleste",
+   "own": false,
+   "wish": false,
+   "d": -1.1,
+   "decks": 779
+  },
+  {
+   "n": 22,
+   "name": "Lueur d'Espoir",
+   "own": false,
+   "wish": false,
+   "d": -1.2,
+   "decks": 787
+  },
+  {
+   "n": 47,
+   "name": "Veilleur Nocturne",
+   "own": false,
+   "wish": false,
+   "d": -1.2,
+   "decks": 725
+  },
+  {
+   "n": 116,
+   "name": "Prisonnière de la Machine",
+   "own": true,
+   "wish": false,
+   "d": -1.2,
+   "decks": 773
+  },
+  {
+   "n": 136,
+   "name": "Souverain des Chutes d'Éther",
+   "own": false,
+   "wish": true,
+   "d": -1.2,
+   "decks": 761
+  },
+  {
+   "n": 137,
+   "name": "Cerf des Couleurs Funèbres",
+   "own": false,
+   "wish": false,
+   "d": -1.2,
+   "decks": 745
+  },
+  {
+   "n": 178,
+   "name": "Épine Médusine",
+   "own": false,
+   "wish": false,
+   "d": -1.2,
+   "decks": 788
+  },
+  {
+   "n": 12,
+   "name": "Hibernatus",
+   "own": true,
+   "wish": false,
+   "d": -1.3,
+   "decks": 788
+  },
+  {
+   "n": 54,
+   "name": "Loutre Intrépide",
+   "own": false,
+   "wish": false,
+   "d": -1.3,
+   "decks": 817
+  },
+  {
+   "n": 67,
+   "name": "Logidrake, l'Ignatius",
+   "own": false,
+   "wish": false,
+   "d": -1.3,
+   "decks": 707
+  },
+  {
+   "n": 195,
+   "name": "Gabriel",
+   "own": false,
+   "wish": false,
+   "d": -1.3,
+   "decks": 746
+  },
+  {
+   "n": 249,
+   "name": "Roi Nature",
+   "own": false,
+   "wish": false,
+   "d": -1.3,
+   "decks": 725
+  },
+  {
+   "n": 263,
+   "name": "Paguroniyx",
+   "own": false,
+   "wish": false,
+   "d": -1.3,
+   "decks": 761
+  },
+  {
+   "n": 1,
+   "name": "Esprit Feu",
+   "own": true,
+   "wish": false,
+   "d": -1.4,
+   "decks": 747
+  },
+  {
+   "n": 23,
+   "name": "Artisan des Heures",
+   "own": false,
+   "wish": false,
+   "d": -1.4,
+   "decks": 777
+  },
+  {
+   "n": 45,
+   "name": "Aldrin & Gorakar",
+   "own": false,
+   "wish": false,
+   "d": -1.4,
+   "decks": 723
+  },
+  {
+   "n": 188,
+   "name": "Commando Gerz",
+   "own": false,
+   "wish": false,
+   "d": -1.4,
+   "decks": 779
+  },
+  {
+   "n": 250,
+   "name": "Roi Terre",
+   "own": false,
+   "wish": false,
+   "d": -1.4,
+   "decks": 735
+  },
+  {
+   "n": 4,
+   "name": "Esprit Terre",
+   "own": true,
+   "wish": false,
+   "d": -1.5,
+   "decks": 766
+  },
+  {
+   "n": 21,
+   "name": "Félin Errant",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 752
+  },
+  {
+   "n": 31,
+   "name": "Raffteru",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 736
+  },
+  {
+   "n": 78,
+   "name": "Gardien Vert",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 768
+  },
+  {
+   "n": 85,
+   "name": "Bleu-mange-cailloux",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 713
+  },
+  {
+   "n": 88,
+   "name": "Faerylia",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 769
+  },
+  {
+   "n": 128,
+   "name": "Dévoreur de faune",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 749
+  },
+  {
+   "n": 247,
+   "name": "Roi Feu",
+   "own": false,
+   "wish": false,
+   "d": -1.5,
+   "decks": 783
+  },
+  {
+   "n": 2,
+   "name": "Esprit Eau",
+   "own": true,
+   "wish": false,
+   "d": -1.6,
+   "decks": 736
+  },
+  {
+   "n": 64,
+   "name": "Maître Thronebéur",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 717
+  },
+  {
+   "n": 100,
+   "name": "Blancheur Aquatique",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 779
+  },
+  {
+   "n": 106,
+   "name": "L'Épine d'Amour",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 734
+  },
+  {
+   "n": 115,
+   "name": "Aidan",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 712
+  },
+  {
+   "n": 193,
+   "name": "Vladislaus",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 782
+  },
+  {
+   "n": 197,
+   "name": "Codex des Maux Ancestraux",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 761
+  },
+  {
+   "n": 204,
+   "name": "Ephial",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 793
+  },
+  {
+   "n": 222,
+   "name": "Fleur de Vie",
+   "own": false,
+   "wish": false,
+   "d": -1.6,
+   "decks": 735
+  },
+  {
+   "n": 25,
+   "name": "Amber",
+   "own": false,
+   "wish": false,
+   "d": -1.7,
+   "decks": 788
+  },
+  {
+   "n": 63,
+   "name": "Shado, Fléau abyssal",
+   "own": false,
+   "wish": false,
+   "d": -1.7,
+   "decks": 784
+  },
+  {
+   "n": 119,
+   "name": "Fleurmarine",
+   "own": false,
+   "wish": false,
+   "d": -1.7,
+   "decks": 768
+  },
+  {
+   "n": 158,
+   "name": "Lapin-Plume",
+   "own": true,
+   "wish": false,
+   "d": -1.7,
+   "decks": 789
+  },
+  {
+   "n": 160,
+   "name": "Sanglier Doré",
+   "own": true,
+   "wish": false,
+   "d": -1.7,
+   "decks": 753
+  },
+  {
+   "n": 198,
+   "name": "Codex des Sorts Lumineux",
+   "own": false,
+   "wish": false,
+   "d": -1.7,
+   "decks": 748
+  },
+  {
+   "n": 237,
+   "name": "Voyageur des Crêtes",
+   "own": false,
+   "wish": false,
+   "d": -1.7,
+   "decks": 739
+  },
+  {
+   "n": 142,
+   "name": "Squall, Émissaire des cauchemars",
+   "own": false,
+   "wish": false,
+   "d": -1.8,
+   "decks": 681
+  },
+  {
+   "n": 221,
+   "name": "Crapaud des Étoiles",
+   "own": false,
+   "wish": false,
+   "d": -1.8,
+   "decks": 751
+  },
+  {
+   "n": 238,
+   "name": "Chimère Brasse-chair",
+   "own": true,
+   "wish": false,
+   "d": -1.8,
+   "decks": 809
+  },
+  {
+   "n": 256,
+   "name": "Héraldesse Serpentine",
+   "own": false,
+   "wish": false,
+   "d": -1.8,
+   "decks": 750
+  },
+  {
+   "n": 86,
+   "name": "Régent des Abysses",
+   "own": false,
+   "wish": false,
+   "d": -1.9,
+   "decks": 744
+  },
+  {
+   "n": 92,
+   "name": "Frost & Glacier",
+   "own": false,
+   "wish": false,
+   "d": -1.9,
+   "decks": 773
+  },
+  {
+   "n": 152,
+   "name": "Le Héraut des Cendres",
+   "own": false,
+   "wish": false,
+   "d": -1.9,
+   "decks": 754
+  },
+  {
+   "n": 265,
+   "name": "Aeltheria, Mère Primordiale",
+   "own": false,
+   "wish": false,
+   "d": -1.9,
+   "decks": 759
+  },
+  {
+   "n": 26,
+   "name": "Blaze",
+   "own": false,
+   "wish": false,
+   "d": -2,
+   "decks": 748
+  },
+  {
+   "n": 32,
+   "name": "Maîtresse des Teintes",
+   "own": false,
+   "wish": false,
+   "d": -2,
+   "decks": 742
+  },
+  {
+   "n": 91,
+   "name": "Ignea",
+   "own": false,
+   "wish": false,
+   "d": -2,
+   "decks": 752
+  },
+  {
+   "n": 101,
+   "name": "Neilla",
+   "own": false,
+   "wish": false,
+   "d": -2,
+   "decks": 782
+  },
+  {
+   "n": 17,
+   "name": "Croqueur de Fruits Verdoyant",
+   "own": false,
+   "wish": false,
+   "d": -2.1,
+   "decks": 680
+  },
+  {
+   "n": 59,
+   "name": "Guerrier des Neiges",
+   "own": false,
+   "wish": false,
+   "d": -2.1,
+   "decks": 807
+  },
+  {
+   "n": 251,
+   "name": "Roi Ombre",
+   "own": true,
+   "wish": false,
+   "d": -2.1,
+   "decks": 764
+  },
+  {
+   "n": 260,
+   "name": "Le compagnon des esprits",
+   "own": false,
+   "wish": false,
+   "d": -2.1,
+   "decks": 774
+  },
+  {
+   "n": 261,
+   "name": "Godlur",
+   "own": false,
+   "wish": false,
+   "d": -2.1,
+   "decks": 759
+  },
+  {
+   "n": 191,
+   "name": "Ameru",
+   "own": false,
+   "wish": false,
+   "d": -2.2,
+   "decks": 755
+  },
+  {
+   "n": 243,
+   "name": "Vivy",
+   "own": true,
+   "wish": false,
+   "d": -2.2,
+   "decks": 744
+  },
+  {
+   "n": 122,
+   "name": "Esprit de la Faune",
+   "own": false,
+   "wish": false,
+   "d": -2.3,
+   "decks": 759
+  },
+  {
+   "n": 177,
+   "name": "Moxilys, la Fredonneuse",
+   "own": false,
+   "wish": false,
+   "d": -2.3,
+   "decks": 750
+  },
+  {
+   "n": 248,
+   "name": "Roi Eau",
+   "own": false,
+   "wish": false,
+   "d": -2.3,
+   "decks": 767
+  },
+  {
+   "n": 29,
+   "name": "Princesse Meridia",
+   "own": false,
+   "wish": true,
+   "d": -2.4,
+   "decks": 745
+  },
+  {
+   "n": 44,
+   "name": "Léviathan des Cieux",
+   "own": false,
+   "wish": false,
+   "d": -2.5,
+   "decks": 803
+  },
+  {
+   "n": 252,
+   "name": "Roi Lumière",
+   "own": false,
+   "wish": false,
+   "d": -2.5,
+   "decks": 726
+  },
+  {
+   "n": 127,
+   "name": "Spectre Canin",
+   "own": false,
+   "wish": true,
+   "d": -2.6,
+   "decks": 749
+  },
+  {
+   "n": 255,
+   "name": "Verdelune",
+   "own": false,
+   "wish": false,
+   "d": -2.6,
+   "decks": 721
+  },
+  {
+   "n": 227,
+   "name": "Chouette Polychrome",
+   "own": true,
+   "wish": false,
+   "d": -2.8,
+   "decks": 761
+  },
+  {
+   "n": 229,
+   "name": "Maître Amphibian",
+   "own": false,
+   "wish": true,
+   "d": -2.8,
+   "decks": 779
+  },
+  {
+   "n": 34,
+   "name": "Éclat du Renard Blanc",
+   "own": false,
+   "wish": false,
+   "d": -2.9,
+   "decks": 762
+  },
+  {
+   "n": 139,
+   "name": "Cornu mythologique",
+   "own": false,
+   "wish": false,
+   "d": -2.9,
+   "decks": 763
+  },
+  {
+   "n": 96,
+   "name": "Mélodie des Divinités",
+   "own": false,
+   "wish": false,
+   "d": -3,
+   "decks": 739
+  },
+  {
+   "n": 245,
+   "name": "Shinobi Éclairant",
+   "own": false,
+   "wish": false,
+   "d": -3,
+   "decks": 742
+  },
+  {
+   "n": 97,
+   "name": "Pyro",
+   "own": false,
+   "wish": false,
+   "d": -3.1,
+   "decks": 754
+  },
+  {
+   "n": 231,
+   "name": "Aleera Mange-Cauchemars",
+   "own": false,
+   "wish": true,
+   "d": -3.5,
+   "decks": 752
+  },
+  {
+   "n": 244,
+   "name": "Gazpoison Flottant",
+   "own": false,
+   "wish": false,
+   "d": -3.8,
+   "decks": 720
+  },
+  {
+   "n": 134,
+   "name": "Wibs l'Enflammé",
+   "own": false,
+   "wish": false,
+   "d": -3.9,
+   "decks": 786
+  },
+  {
+   "n": 102,
+   "name": "Murmures du Corail Noir",
+   "own": true,
+   "wish": false,
+   "d": -6.2,
+   "decks": 731
+  },
+  {
+   "n": 203,
+   "name": "Ashtarae Lycaria",
+   "own": false,
+   "wish": false,
+   "d": -8.6,
+   "decks": 748
+  }
+ ],
+ "ban": {
+  "decks": 17,
+  "list": [
+   {
+    "f": "CoeurNature",
+    "name": "Cœur de nature",
+    "decks": 13,
+    "avg": 20.5,
+    "max": 34.7,
+    "turn": 2
+   },
+   {
+    "f": "Berserk",
+    "name": "Berserk",
+    "decks": 9,
+    "avg": 11.2,
+    "max": 31.9,
+    "turn": 2
+   },
+   {
+    "f": "Poison",
+    "name": "Poison",
+    "decks": 6,
+    "avg": 4.6,
+    "max": 18.8,
+    "turn": 2
+   },
+   {
+    "f": "Multiplicator",
+    "name": "Multiplicateur",
+    "decks": 3,
+    "avg": 3.1,
+    "max": 25.2,
+    "turn": 4
+   },
+   {
+    "f": "Cimetiere",
+    "name": "Cimetière",
+    "decks": 3,
+    "avg": 3,
+    "max": 19.5,
+    "turn": 4
+   },
+   {
+    "f": "CoeurEau",
+    "name": "Cœur d'eau",
+    "decks": 4,
+    "avg": 2.8,
+    "max": 13.6,
+    "turn": 2
+   },
+   {
+    "f": "Primitive heal",
+    "name": "Soin primitif",
+    "decks": 2,
+    "avg": 1.3,
+    "max": 18.6,
+    "turn": 2
+   },
+   {
+    "f": "Reflect",
+    "name": "Renvoi",
+    "decks": 1,
+    "avg": 0.8,
+    "max": 14.4,
+    "turn": 10
+   }
+  ]
+ },
+ "mine": {
+  "top": [
+   {
+    "d": [
+     3,
+     103,
+     117,
+     180
+    ],
+    "names": [
+     "Esprit Nature",
+     "Lame de la forêt",
+     "Keria",
+     "Dragon Ciel"
+    ],
+    "s1": 8934,
+    "o1": 5562,
+    "s0": 4611,
+    "o0": 2601,
+    "rank": 1,
+    "rankOld": 177
+   },
+   {
+    "d": [
+     3,
+     103,
+     180,
+     238
+    ],
+    "names": [
+     "Esprit Nature",
+     "Lame de la forêt",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8644,
+    "o1": 5524,
+    "s0": 6230,
+    "o0": 4210,
+    "rank": 2,
+    "rankOld": 190
+   },
+   {
+    "d": [
+     3,
+     117,
+     180,
+     238
+    ],
+    "names": [
+     "Esprit Nature",
+     "Keria",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8619,
+    "o1": 5778,
+    "s0": 8064,
+    "o0": 5174,
+    "rank": 3,
+    "rankOld": 106
+   },
+   {
+    "d": [
+     3,
+     103,
+     156,
+     180
+    ],
+    "names": [
+     "Esprit Nature",
+     "Lame de la forêt",
+     "L'Œil des montagnes",
+     "Dragon Ciel"
+    ],
+    "s1": 8582,
+    "o1": 3565,
+    "s0": 5712,
+    "o0": 2906,
+    "rank": 4,
+    "rankOld": 6268
+   },
+   {
+    "d": [
+     117,
+     153,
+     180,
+     238
+    ],
+    "names": [
+     "Keria",
+     "L'Inventeur",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8532,
+    "o1": 3944,
+    "s0": 6497,
+    "o0": 3298,
+    "rank": 5,
+    "rankOld": 3980
+   },
+   {
+    "d": [
+     103,
+     117,
+     156,
+     180
+    ],
+    "names": [
+     "Lame de la forêt",
+     "Keria",
+     "L'Œil des montagnes",
+     "Dragon Ciel"
+    ],
+    "s1": 8512,
+    "o1": 3035,
+    "s0": 3004,
+    "o0": 1559,
+    "rank": 6,
+    "rankOld": 10223
+   },
+   {
+    "d": [
+     69,
+     153,
+     180,
+     238
+    ],
+    "names": [
+     "Scorch, les Lézards Ignés",
+     "L'Inventeur",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8458,
+    "o1": 4440,
+    "s0": 8082,
+    "o0": 4092,
+    "rank": 7,
+    "rankOld": 1858
+   },
+   {
+    "d": [
+     3,
+     153,
+     180,
+     238
+    ],
+    "names": [
+     "Esprit Nature",
+     "L'Inventeur",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8406,
+    "o1": 4550,
+    "s0": 7863,
+    "o0": 4241,
+    "rank": 8,
+    "rankOld": 1525
+   },
+   {
+    "d": [
+     117,
+     156,
+     180,
+     238
+    ],
+    "names": [
+     "Keria",
+     "L'Œil des montagnes",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8343,
+    "o1": 5995,
+    "s0": 6355,
+    "o0": 3816,
+    "rank": 9,
+    "rankOld": 62
+   },
+   {
+    "d": [
+     153,
+     180,
+     227,
+     238
+    ],
+    "names": [
+     "L'Inventeur",
+     "Dragon Ciel",
+     "Chouette Polychrome",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8313,
+    "o1": 4328,
+    "s0": 7103,
+    "o0": 3732,
+    "rank": 10,
+    "rankOld": 2238
+   }
+  ],
+  "risers": [
+   {
+    "d": [
+     30,
+     117,
+     153,
+     180
+    ],
+    "names": [
+     "Naissance d'Aldrin",
+     "Keria",
+     "L'Inventeur",
+     "Dragon Ciel"
+    ],
+    "s1": 7321,
+    "o1": 2286,
+    "s0": 5034,
+    "o0": 1953,
+    "rank": 93,
+    "rankOld": 13935,
+    "dp": 220.3
+   },
+   {
+    "d": [
+     30,
+     103,
+     156,
+     180
+    ],
+    "names": [
+     "Naissance d'Aldrin",
+     "Lame de la forêt",
+     "L'Œil des montagnes",
+     "Dragon Ciel"
+    ],
+    "s1": 7147,
+    "o1": 2349,
+    "s0": 3477,
+    "o0": 1722,
+    "rank": 133,
+    "rankOld": 13710,
+    "dp": 204.3
+   },
+   {
+    "d": [
+     30,
+     153,
+     156,
+     180
+    ],
+    "names": [
+     "Naissance d'Aldrin",
+     "L'Inventeur",
+     "L'Œil des montagnes",
+     "Dragon Ciel"
+    ],
+    "s1": 7043,
+    "o1": 2441,
+    "s0": 5040,
+    "o0": 2060,
+    "rank": 169,
+    "rankOld": 13404,
+    "dp": 188.5
+   },
+   {
+    "d": [
+     103,
+     117,
+     156,
+     180
+    ],
+    "names": [
+     "Lame de la forêt",
+     "Keria",
+     "L'Œil des montagnes",
+     "Dragon Ciel"
+    ],
+    "s1": 8512,
+    "o1": 3035,
+    "s0": 3004,
+    "o0": 1559,
+    "rank": 6,
+    "rankOld": 10223,
+    "dp": 180.5
+   },
+   {
+    "d": [
+     30,
+     103,
+     153,
+     180
+    ],
+    "names": [
+     "Naissance d'Aldrin",
+     "Lame de la forêt",
+     "L'Inventeur",
+     "Dragon Ciel"
+    ],
+    "s1": 7162,
+    "o1": 2595,
+    "s0": 4574,
+    "o0": 2008,
+    "rank": 129,
+    "rankOld": 12760,
+    "dp": 176
+   },
+   {
+    "d": [
+     6,
+     30,
+     153,
+     180
+    ],
+    "names": [
+     "Esprit Lumière",
+     "Naissance d'Aldrin",
+     "L'Inventeur",
+     "Dragon Ciel"
+    ],
+    "s1": 6707,
+    "o1": 2534,
+    "s0": 6099,
+    "o0": 2318,
+    "rank": 286,
+    "rankOld": 13038,
+    "dp": 164.7
+   }
+  ],
+  "fallers": [
+   {
+    "d": [
+     2,
+     102,
+     103,
+     117
+    ],
+    "names": [
+     "Esprit Eau",
+     "Murmures du Corail Noir",
+     "Lame de la forêt",
+     "Keria"
+    ],
+    "s1": 4218,
+    "o1": 5611,
+    "s0": 2240,
+    "o0": 3113,
+    "rank": 5154,
+    "rankOld": 155,
+    "dp": -24.8
+   },
+   {
+    "d": [
+     2,
+     102,
+     117,
+     156
+    ],
+    "names": [
+     "Esprit Eau",
+     "Murmures du Corail Noir",
+     "Keria",
+     "L'Œil des montagnes"
+    ],
+    "s1": 5082,
+    "o1": 6493,
+    "s0": 3210,
+    "o0": 5071,
+    "rank": 2095,
+    "rankOld": 20,
+    "dp": -21.7
+   },
+   {
+    "d": [
+     12,
+     102,
+     227,
+     251
+    ],
+    "names": [
+     "Hibernatus",
+     "Murmures du Corail Noir",
+     "Chouette Polychrome",
+     "Roi Ombre"
+    ],
+    "s1": 4315,
+    "o1": 5385,
+    "s0": 3906,
+    "o0": 4476,
+    "rank": 4716,
+    "rankOld": 259,
+    "dp": -19.9
+   },
+   {
+    "d": [
+     69,
+     102,
+     117,
+     227
+    ],
+    "names": [
+     "Scorch, les Lézards Ignés",
+     "Murmures du Corail Noir",
+     "Keria",
+     "Chouette Polychrome"
+    ],
+    "s1": 4449,
+    "o1": 5394,
+    "s0": 3584,
+    "o0": 4323,
+    "rank": 4139,
+    "rankOld": 252,
+    "dp": -17.5
+   },
+   {
+    "d": [
+     12,
+     27,
+     102,
+     227
+    ],
+    "names": [
+     "Hibernatus",
+     "Hippocampe Nimbé",
+     "Murmures du Corail Noir",
+     "Chouette Polychrome"
+    ],
+    "s1": 4529,
+    "o1": 5440,
+    "s0": 3972,
+    "o0": 4543,
+    "rank": 3822,
+    "rankOld": 223,
+    "dp": -16.7
+   },
+   {
+    "d": [
+     12,
+     102,
+     227,
+     238
+    ],
+    "names": [
+     "Hibernatus",
+     "Murmures du Corail Noir",
+     "Chouette Polychrome",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 5106,
+    "o1": 6102,
+    "s0": 4768,
+    "o0": 5332,
+    "rank": 2033,
+    "rankOld": 48,
+    "dp": -16.3
+   }
+  ],
+  "saved": [
+   {
+    "name": "deck chimere",
+    "d": [
+     103,
+     117,
+     156,
+     238
+    ],
+    "names": [
+     "Lame de la forêt",
+     "Keria",
+     "L'Œil des montagnes",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 8011,
+    "o1": 8018,
+    "s0": 4142,
+    "o0": 4146,
+    "rank": 20,
+    "rankOld": 1
+   },
+   {
+    "name": "Anti-critiques (Hibernatus)",
+    "d": [
+     12,
+     27,
+     117,
+     238
+    ],
+    "names": [
+     "Hibernatus",
+     "Hippocampe Nimbé",
+     "Keria",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 6964,
+    "o1": 6989,
+    "s0": 6252,
+    "o0": 6277,
+    "rank": 194,
+    "rankOld": 6
+   },
+   {
+    "name": "Zéro critique",
+    "d": [
+     12,
+     69,
+     102,
+     116
+    ],
+    "names": [
+     "Hibernatus",
+     "Scorch, les Lézards Ignés",
+     "Murmures du Corail Noir",
+     "Prisonnière de la Machine"
+    ],
+    "s1": 6315,
+    "o1": 6529,
+    "s0": 6300,
+    "o0": 6515,
+    "rank": 499,
+    "rankOld": 16
+   },
+   {
+    "name": "Deck Aleera (à obtenir)",
+    "d": [
+     117,
+     156,
+     238,
+     231
+    ],
+    "names": [
+     "Keria",
+     "L'Œil des montagnes",
+     "Chimère Brasse-chair",
+     "Aleera Mange-Cauchemars"
+    ],
+    "s1": 13487,
+    "o1": 12847,
+    "s0": 7757,
+    "o0": 9269
+   }
+  ],
+  "lowCrit": {
+   "new": {
+    "d": [
+     12,
+     153,
+     180,
+     238
+    ],
+    "names": [
+     "Hibernatus",
+     "L'Inventeur",
+     "Dragon Ciel",
+     "Chimère Brasse-chair"
+    ],
+    "s1": 7948,
+    "o1": 4839,
+    "s0": 8242,
+    "o0": 4526,
+    "rank": 26,
+    "rankOld": 860
+   },
+   "old": {
+    "d": [
+     12,
+     69,
+     102,
+     116
+    ],
+    "names": [
+     "Hibernatus",
+     "Scorch, les Lézards Ignés",
+     "Murmures du Corail Noir",
+     "Prisonnière de la Machine"
+    ],
+    "s1": 6315,
+    "o1": 6529,
+    "s0": 6300,
+    "o0": 6515,
+    "rank": 499,
+    "rankOld": 16
+   }
+  }
+ },
+ "meta": [
+  {
+   "d": [
+    136,
+    142,
+    231,
+    263
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "Squall, Émissaire des cauchemars",
+    "Aleera Mange-Cauchemars",
+    "Paguroniyx"
+   ],
+   "rankNew": null,
+   "rankOld": 10,
+   "o1": 15336.6,
+   "s1": 15327.5,
+   "o0": 10120.8,
+   "s0": 10389.2,
+   "owned": 0,
+   "dp": -0.1
+  },
+  {
+   "d": [
+    43,
+    136,
+    231,
+    263
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Souverain des Chutes d'Éther",
+    "Aleera Mange-Cauchemars",
+    "Paguroniyx"
+   ],
+   "rankNew": null,
+   "rankOld": 5,
+   "o1": 15180.1,
+   "s1": 15239.8,
+   "o0": 9303.8,
+   "s0": 9478.7,
+   "owned": 0,
+   "dp": 0.4
+  },
+  {
+   "d": [
+    127,
+    136,
+    231,
+    263
+   ],
+   "names": [
+    "Spectre Canin",
+    "Souverain des Chutes d'Éther",
+    "Aleera Mange-Cauchemars",
+    "Paguroniyx"
+   ],
+   "rankNew": 4,
+   "rankOld": 6,
+   "o1": 15225.3,
+   "s1": 15216.1,
+   "o0": 11358.4,
+   "s0": 12135.7,
+   "owned": 0,
+   "dp": -0.1
+  },
+  {
+   "d": [
+    127,
+    136,
+    204,
+    231
+   ],
+   "names": [
+    "Spectre Canin",
+    "Souverain des Chutes d'Éther",
+    "Ephial",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 9,
+   "rankOld": 9,
+   "o1": 14821,
+   "s1": 14884,
+   "o0": 10697.5,
+   "s0": 10759.1,
+   "owned": 0,
+   "dp": 0.4
+  },
+  {
+   "d": [
+    58,
+    136,
+    188,
+    231
+   ],
+   "names": [
+    "Le Transporteur Sauvage",
+    "Souverain des Chutes d'Éther",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 7,
+   "o1": 14188.5,
+   "s1": 14186.7,
+   "o0": 8771.4,
+   "s0": 9169.4,
+   "owned": 0,
+   "dp": 0
+  },
+  {
+   "d": [
+    136,
+    158,
+    204,
+    231
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "Lapin-Plume",
+    "Ephial",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 4,
+   "o1": 14182.5,
+   "s1": 14120.4,
+   "o0": 7842.5,
+   "s0": 8007.8,
+   "owned": 1,
+   "dp": -0.4
+  },
+  {
+   "d": [
+    85,
+    188,
+    204,
+    231
+   ],
+   "names": [
+    "Bleu-mange-cailloux",
+    "Commando Gerz",
+    "Ephial",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 8,
+   "rankOld": null,
+   "o1": 13540.8,
+   "s1": 13941.5,
+   "o0": 13537.8,
+   "s0": 13800.4,
+   "owned": 0,
+   "dp": 3
+  },
+  {
+   "d": [
+    69,
+    136,
+    156,
+    229
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Souverain des Chutes d'Éther",
+    "L'Œil des montagnes",
+    "Maître Amphibian"
+   ],
+   "rankNew": 12,
+   "rankOld": 14,
+   "o1": 13011.2,
+   "s1": 12996.4,
+   "o0": 9307.7,
+   "s0": 9284.4,
+   "owned": 2,
+   "dp": -0.1
+  },
+  {
+   "d": [
+    31,
+    136,
+    204,
+    231
+   ],
+   "names": [
+    "Raffteru",
+    "Souverain des Chutes d'Éther",
+    "Ephial",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 8,
+   "o1": 15049.4,
+   "s1": 12266,
+   "o0": 9297.3,
+   "s0": 6347.2,
+   "owned": 0,
+   "dp": -18.5
+  },
+  {
+   "d": [
+    127,
+    136,
+    188,
+    231
+   ],
+   "names": [
+    "Spectre Canin",
+    "Souverain des Chutes d'Éther",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 2,
+   "o1": 11250.6,
+   "s1": 11960.1,
+   "o0": 9971.7,
+   "s0": 9950.2,
+   "owned": 0,
+   "dp": 6.3
+  },
+  {
+   "d": [
+    115,
+    136,
+    156,
+    174
+   ],
+   "names": [
+    "Aidan",
+    "Souverain des Chutes d'Éther",
+    "L'Œil des montagnes",
+    "Zombie Floral"
+   ],
+   "rankNew": 17,
+   "rankOld": null,
+   "o1": 5677.2,
+   "s1": 11680.5,
+   "o0": 2920.9,
+   "s0": 5902.4,
+   "owned": 1,
+   "dp": 105.7
+  },
+  {
+   "d": [
+    69,
+    176,
+    188,
+    229
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Rob l'Aventurier",
+    "Commando Gerz",
+    "Maître Amphibian"
+   ],
+   "rankNew": 15,
+   "rankOld": 15,
+   "o1": 11406.7,
+   "s1": 11387.5,
+   "o0": 10295.8,
+   "s0": 10274.1,
+   "owned": 1,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    127,
+    188,
+    231,
+    236
+   ],
+   "names": [
+    "Spectre Canin",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 6,
+   "rankOld": null,
+   "o1": 9926.1,
+   "s1": 11157.6,
+   "o0": 9852.8,
+   "s0": 11157.6,
+   "owned": 0,
+   "dp": 12.4
+  },
+  {
+   "d": [
+    177,
+    197,
+    231,
+    236
+   ],
+   "names": [
+    "Moxilys, la Fredonneuse",
+    "Codex des Maux Ancestraux",
+    "Aleera Mange-Cauchemars",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 11,
+   "rankOld": null,
+   "o1": 9507,
+   "s1": 11136.5,
+   "o0": 9484.7,
+   "s0": 11136.2,
+   "owned": 0,
+   "dp": 17.1
+  },
+  {
+   "d": [
+    32,
+    43,
+    153,
+    236
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Souverain des Flammes",
+    "L'Inventeur",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 16,
+   "rankOld": null,
+   "o1": 7241.5,
+   "s1": 10846.5,
+   "o0": 5623.9,
+   "s0": 9208.6,
+   "owned": 1,
+   "dp": 49.8
+  },
+  {
+   "d": [
+    31,
+    106,
+    119,
+    180
+   ],
+   "names": [
+    "Raffteru",
+    "L'Épine d'Amour",
+    "Fleurmarine",
+    "Dragon Ciel"
+   ],
+   "rankNew": 22,
+   "rankOld": null,
+   "o1": 8919.9,
+   "s1": 10779,
+   "o0": 6561.2,
+   "s0": 8786.7,
+   "owned": 1,
+   "dp": 20.8
+  },
+  {
+   "d": [
+    43,
+    69,
+    134,
+    236
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Scorch, les Lézards Ignés",
+    "Wibs l'Enflammé",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 21,
+   "rankOld": null,
+   "o1": 9007.1,
+   "s1": 10774.9,
+   "o0": 8235.3,
+   "s0": 9573.8,
+   "owned": 1,
+   "dp": 19.6
+  },
+  {
+   "d": [
+    42,
+    96,
+    188,
+    233
+   ],
+   "names": [
+    "Dragonnet des Lumières",
+    "Mélodie des Divinités",
+    "Commando Gerz",
+    "Oisillons de Midas"
+   ],
+   "rankNew": 45,
+   "rankOld": 33,
+   "o1": 10886,
+   "s1": 10742.3,
+   "o0": 10869.2,
+   "s0": 10565.8,
+   "owned": 0,
+   "dp": -1.3
+  },
+  {
+   "d": [
+    29,
+    122,
+    174,
+    238
+   ],
+   "names": [
+    "Princesse Meridia",
+    "Esprit de la Faune",
+    "Zombie Floral",
+    "Chimère Brasse-chair"
+   ],
+   "rankNew": 35,
+   "rankOld": null,
+   "o1": 8912.1,
+   "s1": 10408.3,
+   "o0": 8835.1,
+   "s0": 10343.9,
+   "owned": 1,
+   "dp": 16.8
+  },
+  {
+   "d": [
+    34,
+    197,
+    203,
+    244
+   ],
+   "names": [
+    "Éclat du Renard Blanc",
+    "Codex des Maux Ancestraux",
+    "Ashtarae Lycaria",
+    "Gazpoison Flottant"
+   ],
+   "rankNew": null,
+   "rankOld": 20,
+   "o1": 10994.3,
+   "s1": 10334.2,
+   "o0": 10385,
+   "s0": 9916,
+   "owned": 0,
+   "dp": -6
+  },
+  {
+   "d": [
+    32,
+    106,
+    137,
+    180
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "L'Épine d'Amour",
+    "Cerf des Couleurs Funèbres",
+    "Dragon Ciel"
+   ],
+   "rankNew": 23,
+   "rankOld": null,
+   "o1": 8819.7,
+   "s1": 10242.1,
+   "o0": 8469,
+   "s0": 9787.1,
+   "owned": 1,
+   "dp": 16.1
+  },
+  {
+   "d": [
+    127,
+    188,
+    229,
+    231
+   ],
+   "names": [
+    "Spectre Canin",
+    "Commando Gerz",
+    "Maître Amphibian",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 11,
+   "o1": 10130.1,
+   "s1": 10181.1,
+   "o0": 9985.1,
+   "s0": 10107.7,
+   "owned": 0,
+   "dp": 0.5
+  },
+  {
+   "d": [
+    115,
+    119,
+    136,
+    229
+   ],
+   "names": [
+    "Aidan",
+    "Fleurmarine",
+    "Souverain des Chutes d'Éther",
+    "Maître Amphibian"
+   ],
+   "rankNew": null,
+   "rankOld": 31,
+   "o1": 10170.2,
+   "s1": 10151,
+   "o0": 8321.5,
+   "s0": 8301.2,
+   "owned": 0,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    3,
+    45,
+    106,
+    180
+   ],
+   "names": [
+    "Esprit Nature",
+    "Aldrin & Gorakar",
+    "L'Épine d'Amour",
+    "Dragon Ciel"
+   ],
+   "rankNew": 19,
+   "rankOld": null,
+   "o1": 8011.1,
+   "s1": 10111.3,
+   "o0": 7220.2,
+   "s0": 9259.1,
+   "owned": 2,
+   "dp": 26.2
+  },
+  {
+   "d": [
+    56,
+    83,
+    106,
+    180
+   ],
+   "names": [
+    "Lisa, la Dragonnière",
+    "Panthère imaginaire",
+    "L'Épine d'Amour",
+    "Dragon Ciel"
+   ],
+   "rankNew": 30,
+   "rankOld": null,
+   "o1": 7922,
+   "s1": 10093.3,
+   "o0": 7722.5,
+   "s0": 10100.2,
+   "owned": 1,
+   "dp": 27.4
+  },
+  {
+   "d": [
+    29,
+    106,
+    122,
+    180
+   ],
+   "names": [
+    "Princesse Meridia",
+    "L'Épine d'Amour",
+    "Esprit de la Faune",
+    "Dragon Ciel"
+   ],
+   "rankNew": 28,
+   "rankOld": null,
+   "o1": 8407.8,
+   "s1": 10067.4,
+   "o0": 8120.2,
+   "s0": 9617.5,
+   "owned": 1,
+   "dp": 19.7
+  },
+  {
+   "d": [
+    69,
+    97,
+    117,
+    236
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Pyro",
+    "Keria",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 13,
+   "rankOld": null,
+   "o1": 8766.3,
+   "s1": 9996.2,
+   "o0": 5721.4,
+   "s0": 7323.8,
+   "owned": 2,
+   "dp": 14
+  },
+  {
+   "d": [
+    85,
+    106,
+    176,
+    229
+   ],
+   "names": [
+    "Bleu-mange-cailloux",
+    "L'Épine d'Amour",
+    "Rob l'Aventurier",
+    "Maître Amphibian"
+   ],
+   "rankNew": null,
+   "rankOld": 27,
+   "o1": 10054.2,
+   "s1": 9959.7,
+   "o0": 9498.2,
+   "s0": 9411.8,
+   "owned": 0,
+   "dp": -0.9
+  },
+  {
+   "d": [
+    22,
+    188,
+    198,
+    245
+   ],
+   "names": [
+    "Lueur d'Espoir",
+    "Commando Gerz",
+    "Codex des Sorts Lumineux",
+    "Shinobi Éclairant"
+   ],
+   "rankNew": null,
+   "rankOld": 37,
+   "o1": 9976.2,
+   "s1": 9952.4,
+   "o0": 9845.1,
+   "s0": 9820.7,
+   "owned": 0,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    36,
+    106,
+    180,
+    264
+   ],
+   "names": [
+    "Astry",
+    "L'Épine d'Amour",
+    "Dragon Ciel",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": 27,
+   "rankOld": null,
+   "o1": 6124,
+   "s1": 9847.2,
+   "o0": 4743.5,
+   "s0": 7629.8,
+   "owned": 1,
+   "dp": 60.8
+  },
+  {
+   "d": [
+    103,
+    106,
+    180,
+    195
+   ],
+   "names": [
+    "Lame de la forêt",
+    "L'Épine d'Amour",
+    "Dragon Ciel",
+    "Gabriel"
+   ],
+   "rankNew": 26,
+   "rankOld": null,
+   "o1": 8363.3,
+   "s1": 9758.8,
+   "o0": 7059.4,
+   "s0": 9408.6,
+   "owned": 2,
+   "dp": 16.7
+  },
+  {
+   "d": [
+    117,
+    134,
+    153,
+    236
+   ],
+   "names": [
+    "Keria",
+    "Wibs l'Enflammé",
+    "L'Inventeur",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 29,
+   "rankOld": null,
+   "o1": 7640.8,
+   "s1": 9684.9,
+   "o0": 6618.7,
+   "s0": 9047.6,
+   "owned": 2,
+   "dp": 26.8
+  },
+  {
+   "d": [
+    43,
+    188,
+    231,
+    236
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 7,
+   "rankOld": null,
+   "o1": 9173.4,
+   "s1": 9650.8,
+   "o0": 8339.7,
+   "s0": 9207.8,
+   "owned": 0,
+   "dp": 5.2
+  },
+  {
+   "d": [
+    136,
+    153,
+    229,
+    231
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "L'Inventeur",
+    "Maître Amphibian",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 3,
+   "rankOld": null,
+   "o1": 9084.8,
+   "s1": 9615.2,
+   "o0": 7766.6,
+   "s0": 9072.5,
+   "owned": 1,
+   "dp": 5.8
+  },
+  {
+   "d": [
+    3,
+    83,
+    180,
+    195
+   ],
+   "names": [
+    "Esprit Nature",
+    "Panthère imaginaire",
+    "Dragon Ciel",
+    "Gabriel"
+   ],
+   "rankNew": 44,
+   "rankOld": null,
+   "o1": 7173.9,
+   "s1": 9559,
+   "o0": 6636.4,
+   "s0": 9089.1,
+   "owned": 2,
+   "dp": 33.2
+  },
+  {
+   "d": [
+    136,
+    204,
+    229,
+    231
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "Ephial",
+    "Maître Amphibian",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 5,
+   "rankOld": null,
+   "o1": 14906.1,
+   "s1": 9553,
+   "o0": 10194,
+   "s0": 8463.9,
+   "owned": 0,
+   "dp": -35.9
+  },
+  {
+   "d": [
+    32,
+    69,
+    206,
+    236
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Scorch, les Lézards Ignés",
+    "Catimimi",
+    "Apprentie de la Mort"
+   ],
+   "rankNew": 14,
+   "rankOld": 21,
+   "o1": 8552.7,
+   "s1": 9551,
+   "o0": 7920.7,
+   "s0": 9049.9,
+   "owned": 1,
+   "dp": 11.7
+  },
+  {
+   "d": [
+    31,
+    106,
+    119,
+    122
+   ],
+   "names": [
+    "Raffteru",
+    "L'Épine d'Amour",
+    "Fleurmarine",
+    "Esprit de la Faune"
+   ],
+   "rankNew": null,
+   "rankOld": 47,
+   "o1": 9609.8,
+   "s1": 9522.5,
+   "o0": 8241.5,
+   "s0": 7778.7,
+   "owned": 0,
+   "dp": -0.9
+  },
+  {
+   "d": [
+    32,
+    127,
+    142,
+    231
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Spectre Canin",
+    "Squall, Émissaire des cauchemars",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 13,
+   "o1": 9915.8,
+   "s1": 9501.6,
+   "o0": 9902,
+   "s0": 9471.9,
+   "owned": 0,
+   "dp": -4.2
+  },
+  {
+   "d": [
+    85,
+    160,
+    188,
+    250
+   ],
+   "names": [
+    "Bleu-mange-cailloux",
+    "Sanglier Doré",
+    "Commando Gerz",
+    "Roi Terre"
+   ],
+   "rankNew": 25,
+   "rankOld": 18,
+   "o1": 9474.4,
+   "s1": 9453.1,
+   "o0": 9461.9,
+   "s0": 9440.6,
+   "owned": 1,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    122,
+    174,
+    195,
+    211
+   ],
+   "names": [
+    "Esprit de la Faune",
+    "Zombie Floral",
+    "Gabriel",
+    "Dragosaure Céleste"
+   ],
+   "rankNew": 42,
+   "rankOld": null,
+   "o1": 8005.7,
+   "s1": 9451.6,
+   "o0": 7980.5,
+   "s0": 9440.3,
+   "owned": 0,
+   "dp": 18.1
+  },
+  {
+   "d": [
+    32,
+    96,
+    188,
+    234
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Mélodie des Divinités",
+    "Commando Gerz",
+    "Rongeur Nuageux"
+   ],
+   "rankNew": 39,
+   "rankOld": null,
+   "o1": 7876.7,
+   "s1": 9442.8,
+   "o0": 6076.6,
+   "s0": 9158.4,
+   "owned": 0,
+   "dp": 19.9
+  },
+  {
+   "d": [
+    136,
+    226,
+    229,
+    231
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "Apprenti Évocateur",
+    "Maître Amphibian",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 3,
+   "o1": 9414.6,
+   "s1": 9423.4,
+   "o0": 8703.5,
+   "s0": 8735.9,
+   "owned": 0,
+   "dp": 0.1
+  },
+  {
+   "d": [
+    69,
+    178,
+    229,
+    260
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Épine Médusine",
+    "Maître Amphibian",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": 31,
+   "rankOld": 22,
+   "o1": 9431.3,
+   "s1": 9382.2,
+   "o0": 9402.4,
+   "s0": 9357.1,
+   "owned": 1,
+   "dp": -0.5
+  },
+  {
+   "d": [
+    85,
+    88,
+    106,
+    188
+   ],
+   "names": [
+    "Bleu-mange-cailloux",
+    "Faerylia",
+    "L'Épine d'Amour",
+    "Commando Gerz"
+   ],
+   "rankNew": null,
+   "rankOld": 39,
+   "o1": 9190.6,
+   "s1": 9354.8,
+   "o0": 9050.9,
+   "s0": 9035,
+   "owned": 0,
+   "dp": 1.8
+  },
+  {
+   "d": [
+    88,
+    137,
+    206,
+    262
+   ],
+   "names": [
+    "Faerylia",
+    "Cerf des Couleurs Funèbres",
+    "Catimimi",
+    "Yotaru Gardefeuille"
+   ],
+   "rankNew": null,
+   "rankOld": 28,
+   "o1": 9362.9,
+   "s1": 9344.4,
+   "o0": 9242.9,
+   "s0": 9223.2,
+   "owned": 0,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    29,
+    32,
+    137,
+    262
+   ],
+   "names": [
+    "Princesse Meridia",
+    "Maîtresse des Teintes",
+    "Cerf des Couleurs Funèbres",
+    "Yotaru Gardefeuille"
+   ],
+   "rankNew": null,
+   "rankOld": 23,
+   "o1": 9344.5,
+   "s1": 9328,
+   "o0": 8956.1,
+   "s0": 8940.3,
+   "owned": 0,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    17,
+    160,
+    176,
+    229
+   ],
+   "names": [
+    "Croqueur de Fruits Verdoyant",
+    "Sanglier Doré",
+    "Rob l'Aventurier",
+    "Maître Amphibian"
+   ],
+   "rankNew": null,
+   "rankOld": 42,
+   "o1": 9288.3,
+   "s1": 9252.1,
+   "o0": 8979.4,
+   "s0": 8953.4,
+   "owned": 1,
+   "dp": -0.4
+  },
+  {
+   "d": [
+    32,
+    43,
+    134,
+    193
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Souverain des Flammes",
+    "Wibs l'Enflammé",
+    "Vladislaus"
+   ],
+   "rankNew": null,
+   "rankOld": 40,
+   "o1": 9218.3,
+   "s1": 9215.5,
+   "o0": 8273,
+   "s0": 8269.1,
+   "owned": 0,
+   "dp": 0
+  },
+  {
+   "d": [
+    188,
+    211,
+    219,
+    231
+   ],
+   "names": [
+    "Commando Gerz",
+    "Dragosaure Céleste",
+    "Catixy",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 10,
+   "rankOld": null,
+   "o1": 9111.7,
+   "s1": 9209.7,
+   "o0": 7277.7,
+   "s0": 7400.6,
+   "owned": 0,
+   "dp": 1.1
+  },
+  {
+   "d": [
+    44,
+    136,
+    188,
+    231
+   ],
+   "names": [
+    "Léviathan des Cieux",
+    "Souverain des Chutes d'Éther",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 1,
+   "rankOld": null,
+   "o1": 9685.4,
+   "s1": 9208.4,
+   "o0": 8014.5,
+   "s0": 8117.3,
+   "owned": 0,
+   "dp": -4.9
+  },
+  {
+   "d": [
+    43,
+    117,
+    134,
+    142
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Keria",
+    "Wibs l'Enflammé",
+    "Squall, Émissaire des cauchemars"
+   ],
+   "rankNew": 46,
+   "rankOld": 36,
+   "o1": 9205.5,
+   "s1": 9188,
+   "o0": 7286.6,
+   "s0": 7179.6,
+   "owned": 1,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    142,
+    188,
+    191,
+    231
+   ],
+   "names": [
+    "Squall, Émissaire des cauchemars",
+    "Commando Gerz",
+    "Ameru",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 12,
+   "o1": 9154.7,
+   "s1": 9153.8,
+   "o0": 9085.7,
+   "s0": 9144.9,
+   "owned": 0,
+   "dp": 0
+  },
+  {
+   "d": [
+    2,
+    136,
+    156,
+    260
+   ],
+   "names": [
+    "Esprit Eau",
+    "Souverain des Chutes d'Éther",
+    "L'Œil des montagnes",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": null,
+   "rankOld": 24,
+   "o1": 9129.9,
+   "s1": 9115.2,
+   "o0": 5490.9,
+   "s0": 5334.7,
+   "owned": 2,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    17,
+    60,
+    106,
+    160
+   ],
+   "names": [
+    "Croqueur de Fruits Verdoyant",
+    "Protecteur des ruines",
+    "L'Épine d'Amour",
+    "Sanglier Doré"
+   ],
+   "rankNew": null,
+   "rankOld": 41,
+   "o1": 9131.3,
+   "s1": 9115,
+   "o0": 9107.8,
+   "s0": 9091,
+   "owned": 1,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    4,
+    17,
+    85,
+    188
+   ],
+   "names": [
+    "Esprit Terre",
+    "Croqueur de Fruits Verdoyant",
+    "Bleu-mange-cailloux",
+    "Commando Gerz"
+   ],
+   "rankNew": 18,
+   "rankOld": 16,
+   "o1": 9083.8,
+   "s1": 9046.5,
+   "o0": 9051.3,
+   "s0": 9013.1,
+   "owned": 1,
+   "dp": -0.4
+  },
+  {
+   "d": [
+    32,
+    67,
+    117,
+    134
+   ],
+   "names": [
+    "Maîtresse des Teintes",
+    "Logidrake, l'Ignatius",
+    "Keria",
+    "Wibs l'Enflammé"
+   ],
+   "rankNew": null,
+   "rankOld": 43,
+   "o1": 9568.6,
+   "s1": 9029.6,
+   "o0": 6273.7,
+   "s0": 6226.4,
+   "owned": 1,
+   "dp": -5.6
+  },
+  {
+   "d": [
+    43,
+    136,
+    188,
+    231
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Souverain des Chutes d'Éther",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": null,
+   "rankOld": 1,
+   "o1": 8876.5,
+   "s1": 9021.8,
+   "o0": 6696.3,
+   "s0": 6815.9,
+   "owned": 0,
+   "dp": 1.6
+  },
+  {
+   "d": [
+    136,
+    153,
+    188,
+    231
+   ],
+   "names": [
+    "Souverain des Chutes d'Éther",
+    "L'Inventeur",
+    "Commando Gerz",
+    "Aleera Mange-Cauchemars"
+   ],
+   "rankNew": 2,
+   "rankOld": null,
+   "o1": 8402.7,
+   "s1": 8930.8,
+   "o0": 6299.4,
+   "s0": 6711.6,
+   "owned": 1,
+   "dp": 6.3
+  },
+  {
+   "d": [
+    67,
+    97,
+    117,
+    247
+   ],
+   "names": [
+    "Logidrake, l'Ignatius",
+    "Pyro",
+    "Keria",
+    "Roi Feu"
+   ],
+   "rankNew": null,
+   "rankOld": 46,
+   "o1": 9140.3,
+   "s1": 8856,
+   "o0": 4676.4,
+   "s0": 4269.3,
+   "owned": 1,
+   "dp": -3.1
+  },
+  {
+   "d": [
+    43,
+    69,
+    97,
+    117
+   ],
+   "names": [
+    "Souverain des Flammes",
+    "Scorch, les Lézards Ignés",
+    "Pyro",
+    "Keria"
+   ],
+   "rankNew": null,
+   "rankOld": 17,
+   "o1": 8957.3,
+   "s1": 8840.5,
+   "o0": 4821.4,
+   "s0": 4795,
+   "owned": 2,
+   "dp": -1.3
+  },
+  {
+   "d": [
+    17,
+    32,
+    85,
+    160
+   ],
+   "names": [
+    "Croqueur de Fruits Verdoyant",
+    "Maîtresse des Teintes",
+    "Bleu-mange-cailloux",
+    "Sanglier Doré"
+   ],
+   "rankNew": null,
+   "rankOld": 26,
+   "o1": 8766.3,
+   "s1": 8745.6,
+   "o0": 8361.2,
+   "s0": 8340,
+   "owned": 1,
+   "dp": -0.2
+  },
+  {
+   "d": [
+    1,
+    97,
+    117,
+    134
+   ],
+   "names": [
+    "Esprit Feu",
+    "Pyro",
+    "Keria",
+    "Wibs l'Enflammé"
+   ],
+   "rankNew": 34,
+   "rankOld": 25,
+   "o1": 8735.9,
+   "s1": 8712.5,
+   "o0": 6293.7,
+   "s0": 6238.2,
+   "owned": 2,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    115,
+    122,
+    174,
+    180
+   ],
+   "names": [
+    "Aidan",
+    "Esprit de la Faune",
+    "Zombie Floral",
+    "Dragon Ciel"
+   ],
+   "rankNew": 41,
+   "rankOld": null,
+   "o1": 5330.4,
+   "s1": 8692.5,
+   "o0": 5294,
+   "s0": 8619.1,
+   "owned": 1,
+   "dp": 63.1
+  },
+  {
+   "d": [
+    17,
+    59,
+    85,
+    250
+   ],
+   "names": [
+    "Croqueur de Fruits Verdoyant",
+    "Guerrier des Neiges",
+    "Bleu-mange-cailloux",
+    "Roi Terre"
+   ],
+   "rankNew": null,
+   "rankOld": 48,
+   "o1": 8507.7,
+   "s1": 8486.2,
+   "o0": 7784.4,
+   "s0": 7762.2,
+   "owned": 0,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    113,
+    127,
+    188,
+    264
+   ],
+   "names": [
+    "Lums",
+    "Spectre Canin",
+    "Commando Gerz",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": null,
+   "rankOld": 45,
+   "o1": 8427.1,
+   "s1": 8402.2,
+   "o0": 8695.5,
+   "s0": 8670.7,
+   "owned": 0,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    81,
+    113,
+    198,
+    264
+   ],
+   "names": [
+    "Luminaire Abyssal",
+    "Lums",
+    "Codex des Sorts Lumineux",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": null,
+   "rankOld": 30,
+   "o1": 8355.7,
+   "s1": 8331,
+   "o0": 5496.1,
+   "s0": 5470.3,
+   "owned": 0,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    81,
+    113,
+    188,
+    264
+   ],
+   "names": [
+    "Luminaire Abyssal",
+    "Lums",
+    "Commando Gerz",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": 33,
+   "rankOld": null,
+   "o1": 8334.2,
+   "s1": 8310.9,
+   "o0": 5825.2,
+   "s0": 5800.1,
+   "owned": 0,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    2,
+    32,
+    44,
+    260
+   ],
+   "names": [
+    "Esprit Eau",
+    "Maîtresse des Teintes",
+    "Léviathan des Cieux",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": null,
+   "rankOld": 38,
+   "o1": 8386.5,
+   "s1": 8220.5,
+   "o0": 7696.6,
+   "s0": 7446,
+   "owned": 1,
+   "dp": -2
+  },
+  {
+   "d": [
+    2,
+    29,
+    178,
+    260
+   ],
+   "names": [
+    "Esprit Eau",
+    "Princesse Meridia",
+    "Épine Médusine",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": null,
+   "rankOld": 19,
+   "o1": 8129.9,
+   "s1": 7916.7,
+   "o0": 7997.3,
+   "s0": 7803.7,
+   "owned": 1,
+   "dp": -2.6
+  },
+  {
+   "d": [
+    25,
+    44,
+    178,
+    260
+   ],
+   "names": [
+    "Amber",
+    "Léviathan des Cieux",
+    "Épine Médusine",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": 37,
+   "rankOld": null,
+   "o1": 7928.3,
+   "s1": 7769.8,
+   "o0": 7777.1,
+   "s0": 7746,
+   "owned": 0,
+   "dp": -2
+  },
+  {
+   "d": [
+    2,
+    178,
+    226,
+    260
+   ],
+   "names": [
+    "Esprit Eau",
+    "Épine Médusine",
+    "Apprenti Évocateur",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": 20,
+   "rankOld": null,
+   "o1": 7593.9,
+   "s1": 7434.4,
+   "o0": 7577,
+   "s0": 7404.8,
+   "owned": 1,
+   "dp": -2.1
+  },
+  {
+   "d": [
+    69,
+    88,
+    97,
+    206
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Faerylia",
+    "Pyro",
+    "Catimimi"
+   ],
+   "rankNew": null,
+   "rankOld": 44,
+   "o1": 7312.6,
+   "s1": 7286.5,
+   "o0": 4788.8,
+   "s0": 4762.4,
+   "owned": 1,
+   "dp": -0.4
+  },
+  {
+   "d": [
+    188,
+    221,
+    245,
+    264
+   ],
+   "names": [
+    "Commando Gerz",
+    "Crapaud des Étoiles",
+    "Shinobi Éclairant",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": null,
+   "rankOld": 35,
+   "o1": 7044.5,
+   "s1": 7021.6,
+   "o0": 5072.8,
+   "s0": 5048.8,
+   "owned": 0,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    86,
+    124,
+    188,
+    245
+   ],
+   "names": [
+    "Régent des Abysses",
+    "Wyrm des Dunes Cornu",
+    "Commando Gerz",
+    "Shinobi Éclairant"
+   ],
+   "rankNew": 40,
+   "rankOld": 34,
+   "o1": 6849.3,
+   "s1": 7017.2,
+   "o0": 5374.5,
+   "s0": 5358.4,
+   "owned": 0,
+   "dp": 2.5
+  },
+  {
+   "d": [
+    69,
+    85,
+    86,
+    188
+   ],
+   "names": [
+    "Scorch, les Lézards Ignés",
+    "Bleu-mange-cailloux",
+    "Régent des Abysses",
+    "Commando Gerz"
+   ],
+   "rankNew": 43,
+   "rankOld": 32,
+   "o1": 7004.1,
+   "s1": 6984.3,
+   "o0": 6971.8,
+   "s0": 6952,
+   "owned": 1,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    29,
+    44,
+    69,
+    260
+   ],
+   "names": [
+    "Princesse Meridia",
+    "Léviathan des Cieux",
+    "Scorch, les Lézards Ignés",
+    "Le compagnon des esprits"
+   ],
+   "rankNew": 38,
+   "rankOld": 29,
+   "o1": 7408.3,
+   "s1": 6881.7,
+   "o0": 7336.8,
+   "s0": 6826.3,
+   "owned": 1,
+   "dp": -7.1
+  },
+  {
+   "d": [
+    188,
+    227,
+    245,
+    264
+   ],
+   "names": [
+    "Commando Gerz",
+    "Chouette Polychrome",
+    "Shinobi Éclairant",
+    "Aristocrate Nébulaire"
+   ],
+   "rankNew": 36,
+   "rankOld": null,
+   "o1": 6894.8,
+   "s1": 6871.8,
+   "o0": 4676.7,
+   "s0": 4651.7,
+   "owned": 1,
+   "dp": -0.3
+  },
+  {
+   "d": [
+    36,
+    96,
+    188,
+    227
+   ],
+   "names": [
+    "Astry",
+    "Mélodie des Divinités",
+    "Commando Gerz",
+    "Chouette Polychrome"
+   ],
+   "rankNew": 32,
+   "rankOld": null,
+   "o1": 6133.7,
+   "s1": 6126.8,
+   "o0": 5910.3,
+   "s0": 5903.3,
+   "owned": 1,
+   "dp": -0.1
+  },
+  {
+   "d": [
+    72,
+    174,
+    206,
+    262
+   ],
+   "names": [
+    "Girafe Florale",
+    "Zombie Floral",
+    "Catimimi",
+    "Yotaru Gardefeuille"
+   ],
+   "rankNew": 24,
+   "rankOld": null,
+   "o1": 1373,
+   "s1": 3350.5,
+   "o0": 1257.8,
+   "s0": 2884.9,
+   "owned": 0,
+   "dp": 144
+  }
+ ]
+}

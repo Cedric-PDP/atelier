@@ -1,0 +1,136 @@
+Esprit Feu : carte SPAM Feu commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Esprit Feu D Voir la carte en grand
+Esprit Feu
+1 Souffle de feu
+1 Flambée
+500/500
+10
+Standard
+Esprit Feu
+1 Souffle de feu
+1 Flambée
+500/500
+10
+Élémentaire
+Esprit Feu
+1 Souffle de feu
+1 Flambée
+500/500
+10
+FA
+Esprit Feu
+1 Souffle de feu
+1 Flambée
+500/500
+10
+## Esprit Feu
+D Feu · Commune · Standard
+500 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur FEU Commence la partie avec le passif "Cœur de feu"
+- Talent 2 Terrain aquatique Bonus (+7) Eau.
+Conseillé
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Trois champs de compétence
+- Souffle de feu compétence · Recharge 1 Attaque 10 Feu
+Bonus Feu (+1)
+1
+- Flambée compétence · Recharge 1 Bonus Feu (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Feu Commune #001
+# Esprit Feu
+Polyvalent
+500 Points de vie
+10 Spamtons / tour
+#102 Classement / 127
+C Sans talent · #93
+Attaque
+26
+Génération
+74
+Défense
+10
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur FEU 2 Terrain aquatique 3 Cavalerie
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Souffle de feu
+1 tour
+Attaque 10 Feu
+Bonus Feu (+1)
+Précision 100% Critique 1%
+#### Flambée
+1 tour
+Bonus Feu (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur FEU
+Commence la partie avec le passif "Cœur de feu"
+Δ 36,5 · Score théorique
+#### Terrain aquatique
+Conseillé
+Bonus (+7) Eau.
+Δ 302 · Score théorique
+#### Cavalerie
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 237,8 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Accessible
+Rampe élémentaire ·
+### Pyro + Wibs l'Enflammé
+53,8 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+### Résistances
+10% Feu
+10% Eau
+10% Terre
+10% Nature
+10% Ombre
+10% Lumière
+Esprit · Hadeïr
+### Derrière la carte
+Alors que le continent unique vient de se fracturer, l’Esprit du Feu passe des journées entières à apaiser le déséquilibre ardent de Hadeïr. Vaillant et débordant d’énergie, il parcourt les zones élémactives de Feu et les éteint inlassablement afin, sans doute, de préserver l’équilibre élémentaire. À de rares occasions, on l’a aperçu aux côtés des soldats de Dragheïr. Les témoins décrivent une forme canine évoluant là où nul n’oserait mettre les pieds.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+A # 043 Feu
+Légendaire · Attaque
+### Souverain des Flammes
+900 PV
+B # 260 Eau
+Commune · Attaque
+### Le compagnon des esprits
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

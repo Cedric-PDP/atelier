@@ -1,0 +1,161 @@
+Abyssal Lightbearer: SPAM Water epic card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Abyssal Lightbearer B View the full card
+Abyssal Lightbearer
+1 Hazardo
+4 Beacon
+600/600
+4
+Standard
+Abyssal Lightbearer
+1 Hazardo
+4 Beacon
+600/600
+4
+Elemental
+Abyssal Lightbearer
+1 Hazardo
+4 Beacon
+600/600
+4
+FA
+Abyssal Lightbearer
+1 Hazardo
+4 Beacon
+600/600
+4
+## Abyssal Lightbearer
+B Water · Epic · Standard
+600 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Roulette All of this card's abilities gain Echo (10%).
+- Talent 2 Increasing Error Each time this card attacks, a random enemy card loses 3% accuracy
+- Talent 3 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Recommended
+Three ability slots
+- Hazardo ability · Cooldown 1 Deal [20 to +30] Water damage Random
+1
+- Beacon ability · Cooldown 4 Deal [30 to 50] Light damage to all enemy cards
+Accuracy (-10%)
+4
+- Free slot Open to a shop Tox
+Illustration by Lune Rouge
+Full card details
+Illustration by Lune Rouge
+Water Epic #081
+# Abyssal Lightbearer
+Attack
+600 Health points
+4 Spamtons / turn
+#44 Rank / 127
+B No talent · #40
+Attack
+91
+Generation
+0
+Defense
+24
+Support
+1
+Control
+89
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Roulette 2 Increasing Error 3 One Man Army
+Build with this card 10 decks
+Share
+### Abilities
+#### Hazardo
+1 turn
+Deal [20 to +30] Water damage Random
+Accuracy 100% Critical 1%
+#### Beacon
+4 turns
+Deal [30 to 50] Light damage to all enemy cards
+Accuracy (-10%)
+Accuracy 100% Critical 1%
+### Talents
+#### Roulette
+All of this card's abilities gain Echo (10%).
+Δ 41.7 · Theoretical score
+#### Increasing Error
+Each time this card attacks, a random enemy card loses 3% accuracy
+Δ 28.3 · Theoretical score
+#### One Man Army
+Recommended
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 66.2 · Theoretical score
+## Its best decks
+10 ranked decks play this card, from best to worst.
+All decks
+C Intermediate
+Midrange ·
+### Abyssal Lightbearer + Nebular Aristocrat
+53.9 % Relative index 9 turns Estimated elimination 18 / turn Spamtons
+D Intermediate
+Midrange ·
+### Abyssal Lightbearer + Cloudy Rodent
+49.9 % Relative index 9 turns Estimated elimination 29 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Codex of Luminous Spells + Nebular Aristocrat
+48.6 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+D Intermediate
+Elemental ramp ·
+### Abyssal Lightbearer + Thorn of Love
+47.9 % Relative index 9 turns Estimated elimination 21 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Cloudy Rodent + Codex of Luminous Spells
+46.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+D Intermediate
+Midrange ·
+### Commando Gerz + Cloudy Rodent
+45.4 % Relative index 10 turns Estimated elimination 27 / turn Spamtons
+The other decks (4)
+- C Abyssal Lightbearer + Nebular Aristocrat with Codex of Luminous Spells · Lums Advanced collection · 52%
+- D Abyssal Lightbearer + Astry with Mistress of Tints · Squall Intermediate · 44%
+- D Abyssal Lightbearer + Codex of Luminous Spells with Cloudy Rodent · Ephial Advanced collection · 35.7%
+- D Canine Specter + Light Spirit with Abyssal Lightbearer · Squall Intermediate · 35.3%
+### Resistances
+9% Fire
+9% Water
+9% Earth
+9% Nature
+9% Shadow
+9% Light
+Nightmare · Nyevielh
+### Beyond the card
+After the single continent fractured, a gigantic inland sea formed, dotted with many islands. Some remain suspended above the Nimbus Sea by an unknown force; others are true islands made inaccessible by abyssal monsters. The Lightbearer is one of those creatures. Its glow draws passengers from their ships, and many are said to have thrown themselves into the water under the sway of its illusions. These dreadful monsters have forced several sea routes to close. Nyevielh remains inaccessible because Abyssal Lightbearers may appear at any time.
+## Better together
+The most promising partners according to the model.
+C # 198 Light
+Epic · Generation
+### Codex of Luminous Spells
+1000 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+C # 115 Fire
+Common · Generation
+### Aidan
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

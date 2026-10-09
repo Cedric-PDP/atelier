@@ -1,0 +1,159 @@
+Blade of the Forest: SPAM Nature common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Blade of the Forest B View the full card
+Blade of the Forest
+1 Pincers
+1 Critical Recovery
+650/650
+5
+Standard
+Blade of the Forest
+1 Pincers
+1 Critical Recovery
+650/650
+5
+Elemental
+Blade of the Forest
+1 Pincers
+1 Critical Recovery
+650/650
+5
+FA
+Blade of the Forest
+1 Pincers
+1 Critical Recovery
+650/650
+5
+## Blade of the Forest
+B Nature · Common · Standard
+650 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Nature Heart Start the game with the "Natureheart" passive
+Recommended
+- Talent 2 Extortion Each time this card deals damage, the opponent loses 5 Spamton.
+- Talent 3 Weaken Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Three ability slots
+- Pincers ability · Cooldown 1 Deal 5 Nature damage
+1
+- Critical Recovery ability · Cooldown 1 Heal 20 Nature
+Critical (+10%) on critical hit
+1
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Common #103
+# Blade of the Forest
+Support
+650 Health points
+5 Spamtons / turn
+#49 Rank / 127
+D No talent · #103
+Attack
+35
+Generation
+57
+Defense
+65
+Support
+98
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Nature Heart 2 Extortion 3 Weaken
+Build with this card 8 decks
+Share
+### Abilities
+#### Pincers
+1 turn
+Deal 5 Nature damage
+Accuracy 100% Critical 1%
+#### Critical Recovery
+1 turn
+Heal 20 Nature
+Critical (+10%) on critical hit
+Accuracy 100% Critical 50%
+### Talents
+#### Nature Heart
+Recommended
+Start the game with the "Natureheart" passive
+Δ 328.8 · Theoretical score
+#### Extortion
+Each time this card deals damage, the opponent loses 5 Spamton.
+Δ 12.1 · Theoretical score
+#### Weaken
+Reduces the elemental resistances of all enemy cards by (-1%) per turn
+Δ 167.2 · Theoretical score
+## Its best decks
+8 ranked decks play this card, from best to worst.
+All decks
+B Advanced collection
+Aggro / burst ·
+### Aleera + Apprentice of Death
+73.2 % Relative index 6 turns Estimated elimination 23 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+56.8 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Intermediate
+Elemental ramp ·
+### Sky Dragon + Blade of the Forest
+56.7 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Lisa + Blade of the Forest
+55 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Sky Dragon + Princess Meridia
+53.3 % Relative index 9 turns Estimated elimination 25 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Floral Zombie + Gabriel
+35.4 % Relative index 10.9 turns Estimated elimination 29 / turn Spamtons
+The other decks (2)
+- C Sky Dragon + Thorn of Love with Blade of the Forest · Nature Spirit Accessible · 52.8%
+- D Gabriel + Sky Dragon with Verdelune · Blade of the Forest Advanced collection · 32.7%
+### Resistances
+7% Fire
+8% Water
+9% Earth
+10% Nature
+11% Shadow
+12% Light
+Nymph · Lonely Isles
+### Beyond the card
+The Blades of the Forest were a people of Nymphs who protected the Pixarch woods. Often tasked with guarding a single tree or a forest clearing, they delighted in life’s simple pleasures and loved to play pranks. They were also fearsome warriors. No one knows whether their people still exist today. The Blades are believed to dwell within the Lonely Isles. Further research may reveal whether any members of their species survived.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+B # 245 Light
+Rare · Attack
+### Radiant Shinobi
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,249 @@
+[
+ {
+  "name": "BASE",
+  "stress": null
+ },
+ {
+  "name": "ABS_nat_p0",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p1",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p2",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_nat_p3",
+  "stress": {
+   "absorb": {
+    "turn": "nat",
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "CDR_nat_p0",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 0
+   }
+  }
+ },
+ {
+  "name": "CDR_nat_p1",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 1
+   }
+  }
+ },
+ {
+  "name": "CDR_nat_p2",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 2
+   }
+  }
+ },
+ {
+  "name": "CDR_nat_p3",
+  "stress": {
+   "cdreset": {
+    "turns": "nat",
+    "target": 3
+   }
+  }
+ },
+ {
+  "name": "SUS_h32",
+  "stress": {
+   "heal": {
+    "perTurn": 32
+   }
+  }
+ },
+ {
+  "name": "SUS_rev",
+  "stress": {
+   "revive": {
+    "pct": 0.5,
+    "count": 1
+   }
+  }
+ },
+ {
+  "name": "SET_nat_p0",
+  "stress": {
+   "sethp": {
+    "turn": "nat",
+    "target": 0
+   }
+  }
+ },
+ {
+  "name": "SET_nat_p1",
+  "stress": {
+   "sethp": {
+    "turn": "nat",
+    "target": 1
+   }
+  }
+ },
+ {
+  "name": "SET_nat_p2",
+  "stress": {
+   "sethp": {
+    "turn": "nat",
+    "target": 2
+   }
+  }
+ },
+ {
+  "name": "SET_nat_p3",
+  "stress": {
+   "sethp": {
+    "turn": "nat",
+    "target": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p0",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p1",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p2",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T4_p3",
+  "stress": {
+   "absorb": {
+    "turn": 4,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p0",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p1",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p2",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T6_p3",
+  "stress": {
+   "absorb": {
+    "turn": 6,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p0",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 0
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p1",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 1
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p2",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 2
+   }
+  }
+ },
+ {
+  "name": "ABS_T8_p3",
+  "stress": {
+   "absorb": {
+    "turn": 8,
+    "pos": 3
+   }
+  }
+ },
+ {
+  "name": "DPS_x1.5",
+  "stress": null,
+  "dps": 1.5
+ },
+ {
+  "name": "DPS_x2",
+  "stress": null,
+  "dps": 2
+ }
+]

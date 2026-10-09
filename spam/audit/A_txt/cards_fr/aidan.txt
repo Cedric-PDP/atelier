@@ -1,0 +1,174 @@
+Aidan : carte SPAM Feu commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Aidan C Voir la carte en grand
+Aidan
+1 Chanceur
+3 Paie-torche
+Disparition
+750/750
+8
+Standard
+Aidan
+1 Chanceur
+3 Paie-torche
+Disparition
+750/750
+8
+Élémentaire
+Aidan
+1 Chanceur
+3 Paie-torche
+Disparition
+750/750
+8
+FA
+Aidan
+1 Chanceur
+3 Paie-torche
+Disparition
+750/750
+8
+## Aidan
+C Feu · Commune · Standard
+750 PV 8 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Contre Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+- Talent 2 Focus Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Conseillé
+- Talent 3 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Trois champs de compétence
+- Chanceur compétence · Recharge 1 Bonus (+10) dans un élément aléatoire
+1
+- Paie-torche compétence · Recharge 3 [Coût 10 Feu]
+Attaque 30 dans un élément aléatoire
+3
+- Disparition tox · Légendaire Supprime le dernier passif de la cible
+Illustration par Daerun
+Fiche complète
+Illustration par Daerun
+Feu Commune #115
+# Aidan
+Génération
+750 Points de vie
+8 Spamtons / tour
+#64 Classement / 127
+B Sans talent · #53
+Attaque
+13
+Génération
+99
+Défense
+47
+Soutien
+1
+Contrôle
+83
+Économie
+52
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Contre 2 Focus 3 Transition
+Jouer cette carte 15 decks
+Partager
+### Compétences
+#### Chanceur
+1 tour
+Bonus (+10) dans un élément aléatoire
+Précision 100% Critique 0%
+#### Paie-torche
+3 tours
+[Coût 10 Feu]
+Attaque 30 dans un élément aléatoire
+Précision 100% Critique 5%
+### Tox de départ
+#### Disparition
+Légendaire
+Supprime le dernier passif de la cible
+### Talents
+#### Contre
+Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+Δ 0 · Score théorique
+#### Focus
+Conseillé
+Au début de chaque tour, cette carte a 25 % de chance de gagner Provocation.
+Δ 26,1 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+## Ses meilleurs decks
+15 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Aggro / burst ·
+### Souverain des Chutes d'Éther + Maître Amphibian
+68,6 % Indice relatif 7 tours Élimination estimée 23 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+63,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Maître Amphibian + Rob l'Aventurier
+59,3 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Esprit de la Faune + Zombie Floral
+50,7 % Indice relatif 8 tours Élimination estimée 34 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Dragon Ciel + Cerf des Couleurs Funèbres
+49,5 % Indice relatif 8 tours Élimination estimée 26 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Maîtresse des Teintes + Cerf des Couleurs Funèbres
+49,3 % Indice relatif 9 tours Élimination estimée 27 / tour Spamtons
+Les autres decks (9)
+- C Maître Amphibian + Rob l'Aventurier avec Scorch · Aidan Accessible · 58,5%
+- D Maître Amphibian + Aidan avec Maîtresse des Teintes · Rob l'Aventurier Accessible · 47,6%
+- D Zombie Floral + Aidan avec Maître Amphibian · Chimère Brasse-chair Accessible · 46,3%
+- D Bleu-mange-cailloux + Raffteru avec Rob l'Aventurier · Aidan Intermédiaire · 44,6%
+- D Catimimi + Aidan avec Yotaru Gardefeuille · Zombie Floral Accessible · 44,5%
+- D Maître Amphibian + Bleu-mange-cailloux avec Roi Terre · Aidan Collection avancée · 43,8%
+- D Catimimi + Aidan avec Yotaru Gardefeuille · Chimère Brasse-chair Accessible · 39,6%
+- D Apprentie de la Mort + L'Inventeur avec Guerrier des Neiges · Aidan Accessible · 37,8%
+- D Commando Gerz + Protecteur des ruines avec Guerrier des Neiges · Aidan Accessible · 33%
+### Résistances
+11% Feu
+12% Eau
+10% Terre
+12% Nature
+10% Ombre
+10% Lumière
+Eltherien · Hadeïr
+### Derrière la carte
+Les cours d’histoire de l’école militaire de Dragheïr évoquent souvent Aidan. Fils de l’héritier de l’arme runique du Feu, il suivait dignement les traces de son père. Maître de ses propres arts martiaux, il parlait également couramment la langue dhöggeïr. Ses techniques ont pu être consignées et servent de fondement à l’entraînement des soldats. Aujourd’hui, aux côtés de son père, Aidan habite la Cité Infernale sous la forme d’un Abyssal humanoïde. Lisa témoigne régulièrement de rêves dans lesquels elle incarne Aidan, tantôt dans son quotidien passé, tantôt dans sa souffrance actuelle.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 206 Feu
+Commune · Attaque
+### Catimimi
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 245 Lumière
+Rare · Attaque
+### Shinobi Éclairant
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

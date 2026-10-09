@@ -1,0 +1,147 @@
+Codex des Maux Ancestraux : carte SPAM Ombre épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Codex des Maux Ancestraux C Voir la carte en grand
+Codex des Maux Ancestraux
+1 Écrit sombre
+Immunité
+1000/1000
+10
+Standard
+Codex des Maux Ancestraux
+1 Écrit sombre
+Immunité
+1000/1000
+10
+Élémentaire
+Codex des Maux Ancestraux
+1 Écrit sombre
+Immunité
+1000/1000
+10
+FA
+Codex des Maux Ancestraux
+1 Écrit sombre
+Immunité
+1000/1000
+10
+## Codex des Maux Ancestraux
+C Ombre · Épique · Standard
+1 000 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+Conseillé
+- Talent 2 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+- Talent 3 Blindage N/T Résistance nature (+25 %)
+Résistance terre (+25 %)
+Trois champs de compétence
+- Écrit sombre compétence · Recharge 1 Bonus Ombre (+1). La valeur de base du bonus augmente de 1
+1
+- Immunité tox · Épique La carte est immunisée contre tous les effets des cartes adverses
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Nenaosu
+Fiche complète
+Illustration par Nenaosu
+Ombre Épique #197
+# Codex des Maux Ancestraux
+Génération Défense
+1 000 Points de vie
+10 Spamtons / tour
+#82 Classement / 127
+C Sans talent · #74
+Attaque
+0
+Génération
+95
+Défense
+92
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage F/E 2 Blindage O/L 3 Blindage N/T
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Écrit sombre
+1 tour
+Bonus Ombre (+1). La valeur de base du bonus augmente de 1
+Précision 100% Critique 0%
+### Tox de départ
+#### Immunité
+Épique
+La carte est immunisée contre tous les effets des cartes adverses
+### Talents
+#### Blindage F/E
+Conseillé
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 37,7 · Score théorique
+#### Blindage O/L
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 37,7 · Score théorique
+#### Blindage N/T
+Résistance nature (+25 %)
+Résistance terre (+25 %)
+Δ 37,7 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Catixy
+83,6 % Indice relatif 6 tours Élimination estimée 28 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Apprentie de la Mort + Codex des Maux Ancestraux
+78,1 % Indice relatif 6 tours Élimination estimée 30 / tour Spamtons
+B Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Codex des Maux Ancestraux
+71,2 % Indice relatif 6 tours Élimination estimée 27 / tour Spamtons
+### Résistances
+8% Feu
+9% Eau
+7% Terre
+7% Nature
+8% Ombre
+8% Lumière
+Art · Emeldarion
+### Derrière la carte
+Abondance accueille un grand nombre de peintures historiques. Parmi elles figure le Codex des Maux Ancestraux. Les Rois qui scellèrent les Divinités furent longtemps tenus pour responsables d’une malédiction ayant contribué à libérer les Abysses. Cet événement donna son nom à la période funeste de la Malédiction des Rois. Nous savons aujourd’hui qu’ils ne furent en réalité que les acteurs tragiques d’un jeu qui les dépassait. Cette peinture haineuse a été réinterprétée par la Maîtresse des Teintes, en désaccord avec l’artiste d’origine. Selon elle, il faut rendre hommage aux héros oubliés. Le Codex est désormais au cœur de débats dans le monde entier.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 034 Ombre
+Rare · Attaque
+### Éclat du Renard Blanc
+700 PV
+C # 128 Ombre
+Commune · Polyvalent
+### Dévoreur de faune
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

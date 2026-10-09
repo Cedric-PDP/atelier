@@ -1,0 +1,63 @@
+a mechanics 7 distinct cards 10 act 5 pas 3 tal 2
+b mechanics 8 distinct cards 38 act 15 pas 8 tal 23
+c mechanics 6 distinct cards 42 act 8 pas 6 tal 31
+d mechanics 4 distinct cards 9 act 2 pas 3 tal 5
+e mechanics 5 distinct cards 20 act 4 pas 3 tal 15
+f mechanics 7 distinct cards 106 act 32 pas 15 tal 93
+g mechanics 11 distinct cards 110 act 70 pas 20 tal 75
+h mechanics 7 distinct cards 83 act 34 pas 21 tal 57
+a1 1 {"active":1,"passive":0,"talent":0} {"common":1} absorbAny — « Absorbe une carte » (n’importe quelle carte, adverse comprise)
+a2 1 {"active":1,"passive":0,"talent":0} {"rare":1} setHpPct — « La cible se retrouve à X % de ses PV max » (Corne 25 / Corne 75)
+a3 1 {"active":1,"passive":0,"talent":0} {"common":1} vanish actif — « Applique Disparition » (retire le dernier passif)
+a4 3 {"active":0,"passive":3,"talent":0} {"common":2,"rare":1} Disparition à chaque coup (passif légendaire de départ)
+a5 1 {"active":1,"passive":0,"talent":0} {"legendary":1} dégâts en % des PV max de la cible (anti-tank)
+a6 2 {"active":0,"passive":0,"talent":2} {"common":2} Bombe-8 (talent) — passif Bomba au tour 8
+a7 1 {"active":1,"passive":0,"talent":0} {"epic":1} absorbAlly — « Absorbe une carte alliée » (ne peut PAS nous viser)
+b1 7 {"active":7,"passive":0,"talent":0} {"common":4,"rare":2,"legendary":1} Gel actif (la cible ne peut pas agir jusqu’à la fin du prochain tour adverse)
+b2 2 {"active":0,"passive":2,"talent":0} {"legendary":1,"common":1} Gel à chaque dégât/soin (passif épique de départ)
+b3 7 {"active":7,"passive":0,"talent":0} {"common":4,"rare":2,"epic":1} Éternité active (toutes les recharges de la cible +1)
+b4 2 {"active":0,"passive":2,"talent":0} {"rare":1,"legendary":1} Éternité à chaque coup (passif légendaire de départ)
+b5 15 {"active":0,"passive":0,"talent":15} {"rare":6,"common":6,"epic":1,"legendary":2} Éternité par talent (Longueur au 1er tour, Heure Funeste à la mort)
+b6 1 {"active":1,"passive":0,"talent":0} {"rare":1} reset des recharges de la cible au maximum
+b7 8 {"active":1,"passive":0,"talent":8} {"epic":1,"rare":2,"common":4,"legendary":1} baisse de précision adverse
+b8 5 {"active":1,"passive":4,"talent":0} {"common":3,"epic":1,"rare":1} Fumée (effet non documenté)
+c1 8 {"active":8,"passive":0,"talent":0} {"common":6,"rare":1,"legendary":1} Provocation active
+c2 13 {"active":0,"passive":1,"talent":12} {"common":5,"epic":7,"legendary":1} Provocation passive (Provocation R) / talent Focus (25 %/tour)
+c3 6 {"active":0,"passive":1,"talent":5} {"rare":3,"common":2,"epic":1} Brut — ignore NOS provocations et NOS résistances
+c4 6 {"active":0,"passive":4,"talent":2} {"epic":2,"rare":1,"common":3} Immunité (insensible à tous les effets adverses)
+c5 1 {"active":1,"passive":0,"talent":0} {"common":1} brise une Provocation (camp non encodé)
+c6 12 {"active":0,"passive":0,"talent":12} {"legendary":2,"epic":1,"common":8,"rare":1} insensibilités par talent (Éternisé, Inscrit)
+d1 1 {"active":1,"passive":0,"talent":0} {"legendary":1} Spamtons de l’adversaire ramenés à 0
+d2 1 {"active":1,"passive":0,"talent":0} {"epic":1} vol de bonus élémentaire
+d3 4 {"active":0,"passive":0,"talent":4} {"common":3,"rare":1} Racket / Dette (talents)
+d4 3 {"active":0,"passive":3,"talent":1} {"rare":2,"common":1} Mimétisme — copie nos générations d’éléments
+e1 1 {"active":1,"passive":0,"talent":0} {"common":1} baisse de résistance adverse (active)
+e2 11 {"active":0,"passive":0,"talent":11} {"common":7,"rare":3,"divine":1} érosion progressive de nos résistances (talents)
+e3 5 {"active":0,"passive":3,"talent":2} {"common":4,"legendary":1} Érosion — nos PV max baissent avec les dégâts subis
+e4 2 {"active":0,"passive":0,"talent":2} {"common":2} Paradoxe — ses propres résistances inversées
+e5 3 {"active":3,"passive":0,"talent":0} {"common":2,"divine":1} élément aléatoire / changeant
+f1 23 {"active":23,"passive":0,"talent":0} {"common":11,"rare":5,"legendary":5,"epic":2} soins actifs
+f2 6 {"active":3,"passive":3,"talent":0} {"legendary":1,"common":2,"rare":3} vol de vie (Vampirisme)
+f3 4 {"active":0,"passive":4,"talent":0} {"common":2,"rare":1,"epic":1} régénération passive (Soin primitif)
+f4 39 {"active":4,"passive":1,"talent":37} {"common":22,"epic":2,"rare":10,"legendary":5} croissance / bonus de PV max
+f5 17 {"active":1,"passive":3,"talent":15} {"legendary":2,"rare":3,"epic":5,"common":7} retour à la vie (Résurrection, Phénix, Transition)
+f6 24 {"active":0,"passive":3,"talent":22} {"epic":9,"rare":5,"common":7,"legendary":3} survie conditionnelle / soins totaux
+f7 44 {"active":6,"passive":2,"talent":38} {"common":22,"rare":13,"legendary":4,"epic":4,"divine":1} résistances propres (buffs)
+g1 32 {"active":18,"passive":0,"talent":22} {"common":17,"rare":10,"epic":1,"legendary":4} buffs de critique
+g2 7 {"active":2,"passive":0,"talent":5} {"common":3,"rare":3,"epic":1} dégâts critiques +1 (critMult)
+g3 4 {"active":4,"passive":0,"talent":0} {"common":4} attaques à critique lourd (×4 à ×6, ≥25 % de base)
+g4 9 {"active":0,"passive":9,"talent":0} {"common":6,"rare":3} Berserk / Multiplicateur
+g5 8 {"active":3,"passive":2,"talent":6} {"epic":1,"legendary":2,"common":4,"rare":1} Temporalité (recharges -1)
+g6 15 {"active":5,"passive":0,"talent":11} {"rare":5,"common":7,"epic":2,"divine":1} Écho (chance de relancer)
+g7 17 {"active":11,"passive":0,"talent":7} {"rare":3,"common":10,"epic":3,"legendary":1} dégâts/soins de base croissants
+g8 14 {"active":0,"passive":9,"talent":5} {"rare":6,"epic":2,"legendary":2,"common":4} cascades sur kill / à la mort / riposte
+g9 9 {"active":9,"passive":0,"talent":0} {"legendary":4,"common":3,"rare":1,"epic":1} gros coups (≥100 de base, % PV manquants, usage limité)
+g10 9 {"active":9,"passive":0,"talent":0} {"common":6,"rare":2,"legendary":1} buffs de précision
+g11 55 {"active":26,"passive":0,"talent":38} {"common":27,"rare":14,"epic":10,"divine":1,"legendary":3} rampe élémentaire (génération, Cœurs, Terrains, AoE talents)
+h1 30 {"active":30,"passive":0,"talent":0} {"common":12,"rare":9,"legendary":7,"epic":2} schémas de ciblage des dégâts (zone, aléatoire, réparti, champ entier)
+h2 2 {"active":0,"passive":2,"talent":0} {"common":1,"rare":1} Poison (dégâts sur la durée)
+h3 15 {"active":0,"passive":14,"talent":1} {"common":8,"rare":1,"epic":6} punis / nourris par nos attaques (Renvoi, Sac de frappe) ; Contrecoup
+h4 33 {"active":0,"passive":2,"talent":32} {"common":16,"rare":8,"epic":8,"legendary":1} aléatoire & transformations (Anticipation, Métamorphe, Évolution, Mystère, Inversement)
+h5 28 {"active":1,"passive":0,"talent":28} {"common":14,"epic":2,"legendary":4,"rare":8} économie / chance propres
+h6 4 {"active":4,"passive":0,"talent":0} {"common":4} options de choix réduites à une attaque simple (et Materia, voir mismatch M13)
+h7 3 {"active":0,"passive":3,"talent":0} {"common":2,"rare":1} AoE (passif de départ) — éclaboussure sur les cibles adjacentes

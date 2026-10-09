@@ -1,0 +1,144 @@
+Esprit Terre : carte SPAM Terre commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Esprit Terre D Voir la carte en grand
+Esprit Terre
+1 Souffle de terre
+1 Rempart
+500/500
+10
+Standard
+Esprit Terre
+1 Souffle de terre
+1 Rempart
+500/500
+10
+Élémentaire
+Esprit Terre
+1 Souffle de terre
+1 Rempart
+500/500
+10
+FA
+Esprit Terre
+1 Souffle de terre
+1 Rempart
+500/500
+10
+## Esprit Terre
+D Terre · Commune · Standard
+500 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur TERRE Commence la partie avec le passif Cœur de terre
+- Talent 2 Terrain naturel Bonus (+7) Nature.
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Conseillé
+Trois champs de compétence
+- Souffle de terre compétence · Recharge 1 Attaque 10 Terre
+Bonus Terre (+1)
+1
+- Rempart compétence · Recharge 1 Bonus Terre (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Terre Commune #004
+# Esprit Terre
+Polyvalent
+500 Points de vie
+10 Spamtons / tour
+#99 Classement / 127
+C Sans talent · #87
+Attaque
+26
+Génération
+74
+Défense
+13
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur TERRE 2 Terrain naturel 3 Cavalerie
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Souffle de terre
+1 tour
+Attaque 10 Terre
+Bonus Terre (+1)
+Précision 100% Critique 1%
+#### Rempart
+1 tour
+Bonus Terre (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur TERRE
+Commence la partie avec le passif Cœur de terre
+Δ 124,9 · Score théorique
+#### Terrain naturel
+Bonus (+7) Nature.
+Δ 56,7 · Score théorique
+#### Cavalerie
+Conseillé
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 189,7 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Intermédiaire
+Aggro / burst ·
+### Croqueur de Fruits Verdoyant + Bleu-mange-cailloux
+61 % Indice relatif 7 tours Élimination estimée 29 / tour Spamtons
+D Accessible
+Rampe élémentaire ·
+### Croqueur de Fruits Verdoyant + Sanglier Doré
+46,5 % Indice relatif 10 tours Élimination estimée 31 / tour Spamtons
+D Collection avancée
+Rampe élémentaire ·
+### Bleu-mange-cailloux + Esprit Terre
+42,2 % Indice relatif 9 tours Élimination estimée 26 / tour Spamtons
+### Résistances
+8% Feu
+12% Eau
+14% Terre
+16% Nature
+20% Ombre
+24% Lumière
+Esprit · Shal'Zaar
+### Derrière la carte
+Alors que le continent unique vient de se fracturer, l’Esprit de la Terre passe ses journées à combattre dans le désert corrompu de Shal’Zaar. Constamment en activité, il approvisionne les mines en matériaux et affronte les Abyssaux. Les traces de certaines de ses longues batailles sont encore visibles. Quelques chasseurs de monstres ont eu la chance de l’apercevoir en action et racontent avec passion avoir combattu aux côtés du brave loup des sables.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 017 Terre
+Commune · Attaque
+### Croqueur de Fruits Verdoyant
+650 PV
+C # 085 Terre
+Épique · Attaque
+### Bleu-mange-cailloux
+500 PV
+B # 060 Terre
+Commune · Attaque
+### Protecteur des ruines
+700 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

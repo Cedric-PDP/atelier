@@ -1,0 +1,155 @@
+Polychrome Owl: SPAM Nature common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Polychrome Owl D View the full card
+Polychrome Owl
+2 Dance of Feathers
+500/500
+9
+Standard
+Polychrome Owl
+2 Dance of Feathers
+500/500
+9
+Elemental
+Polychrome Owl
+2 Dance of Feathers
+500/500
+9
+FA
+Polychrome Owl
+2 Dance of Feathers
+500/500
+9
+## Polychrome Owl
+D Nature · Common · Standard
+500 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 360 Turn Applies "Random Metamorph" to all your other cards when this card is killed.
+- Talent 2 Reckless Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+- Talent 3 Last Breath Applies Temporality to all your cards when this card dies
+Recommended
+Three ability slots
+- Dance of Feathers ability · Cooldown 2 Deal 30 Nature damage to random cards on the field
+Deal 30 Fire damage
+Deal 30 Shadow damage
+Deal 30 Light damage
+Deal 30 Water damage
+Deal 30 Earth damage
+Apply Temporality to the targeted card on critical hit
+2
+- Free slot Open to a shop Tox
+- Free slot Open to a shop Tox
+Illustration by Embers
+Full card details
+Illustration by Embers
+Nature Common #227
+# Polychrome Owl
+Economy
+500 Health points
+9 Spamtons / turn
+#110 Rank / 127
+D No talent · #100
+Attack
+54
+Generation
+0
+Defense
+10
+Support
+1
+Control
+0
+Economy
+87
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 360 Turn 2 Reckless 3 Last Breath
+Build with this card 6 decks
+Share
+### Abilities
+#### Dance of Feathers
+2 turns
+Deal 30 Nature damage to random cards on the field
+Deal 30 Fire damage
+Deal 30 Shadow damage
+Deal 30 Light damage
+Deal 30 Water damage
+Deal 30 Earth damage
+Apply Temporality to the targeted card on critical hit
+Accuracy 100% Critical 50%
+### Talents
+#### 360 Turn
+Applies "Random Metamorph" to all your other cards when this card is killed.
+Δ -440.9 · Theoretical score
+#### Reckless
+Immediately applies "Random Metamorph" to this card and grants (+500) HP.
+Δ -509.1 · Theoretical score
+#### Last Breath
+Recommended
+Applies Temporality to all your cards when this card dies
+Δ 54.2 · Theoretical score
+## Its best decks
+6 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Elemental ramp ·
+### Melody of Divinities + Polychrome Owl
+53.9 % Relative index 9 turns Estimated elimination 26 / turn Spamtons
+C Intermediate
+Midrange ·
+### Commando Gerz + Radiant Shinobi
+51.8 % Relative index 9 turns Estimated elimination 22 / turn Spamtons
+D Accessible
+Midrange ·
+### Sky Dragon + Cloudy Rodent
+49.5 % Relative index 9 turns Estimated elimination 32 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Commando Gerz + Zayd
+44.4 % Relative index 9 turns Estimated elimination 19 / turn Spamtons
+D Intermediate
+Midrange ·
+### Squall + Cloudy Rodent
+43 % Relative index 9 turns Estimated elimination 32 / turn Spamtons
+The other decks (1)
+- D Sky Dragon + Cloudy Rodent with Polychrome Owl · Thorn of Love Accessible · 44.4%
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Creature · Vaeloria
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. The Polychrome Owl is an emblematic animal of southern Vaeloria. In the woods, its hunt can be recognized by a peculiar sound reminiscent of a casino roulette wheel. Its feathers, collected from the ground each morning, are used to stuff pillows said to bring good fortune. The presence of a Polychrome Owl in a nearby wood means that the forest is healthy, making the species highly valued by the Vaelorians.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+C # 234 Light
+Common · Economy
+### Cloudy Rodent
+650 HP
+D # 069 Water
+Rare · Generation
+### Scorch, the Ignited Lizards
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

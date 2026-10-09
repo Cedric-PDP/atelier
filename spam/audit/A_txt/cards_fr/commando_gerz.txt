@@ -1,0 +1,213 @@
+Commando Gerz : carte SPAM Terre rare, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Commando Gerz S Voir la carte en grand
+Commando Gerz
+2 Cigarillos
+10 Dernier plaisir
+Berserk
+1200/1200
+4
+Standard
+Commando Gerz
+2 Cigarillos
+10 Dernier plaisir
+Berserk
+1200/1200
+4
+Élémentaire
+Commando Gerz
+2 Cigarillos
+10 Dernier plaisir
+Berserk
+1200/1200
+4
+FA
+Commando Gerz
+2 Cigarillos
+10 Dernier plaisir
+Berserk
+1200/1200
+4
+## Commando Gerz
+S Terre · Rare · Standard
+1 200 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Imprécision Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+- Talent 2 Cœur d’acier Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+- Talent 3 Vitalité des Âmes Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Conseillé
+Trois champs de compétence
+- Cigarillos compétence · Recharge 2 Bonus Terre (+3)
+Bonus Lumière (+3)
+2
+- Dernier plaisir compétence · Recharge 10 Cible aléatoirement les cartes adverses
+Attaque 100 Terre
+Attaque 100 Lumière
+10
+- Berserk tox · Rare Les dégâts et les soins de toutes vos cartes sont augmentés de 25%
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Terre Rare #188
+# Commando Gerz
+Génération Défense
+1 200 Points de vie
+4 Spamtons / tour
+#10 Classement / 127
+S Sans talent · #6
+Attaque
+65
+Génération
+89
+Défense
+89
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Imprécision 2 Cœur d’acier 3 Vitalité des Âmes
+Jouer cette carte 50 decks
+Partager
+### Compétences
+#### Cigarillos
+2 tours
+Bonus Terre (+3)
+Bonus Lumière (+3)
+Précision 100% Critique 0%
+#### Dernier plaisir
+10 tours
+Cible aléatoirement les cartes adverses
+Attaque 100 Terre
+Attaque 100 Lumière
+Précision 100% Critique 1%
+### Tox de départ
+#### Berserk
+Rare
+Les dégâts et les soins de toutes vos cartes sont augmentés de 25%
+### Talents
+#### Imprécision
+Au début de la partie, une carte adverse aléatoire perd (-20 %) de précision.
+Δ 19,2 · Score théorique
+#### Cœur d’acier
+Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1 %).
+Δ 25,5 · Score théorique
+#### Vitalité des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+Δ 483,4 · Score théorique
+## Ses meilleurs decks
+50 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Intermédiaire
+Aggro / burst ·
+### Spectre Canin + Aleera Mange-Cauchemars
+92,1 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Flammes
+91,2 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Ephial
+90,7 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Commando Gerz
+89,4 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+A Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Paguroniyx
+89,1 % Indice relatif 6 tours Élimination estimée 23 / tour Spamtons
+Les autres decks (44)
+- S Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec L'Inventeur · Commando Gerz Intermédiaire · 98,1%
+- A Aleera Mange-Cauchemars + Catixy avec Squall · Commando Gerz Intermédiaire · 87,9%
+- A Aleera Mange-Cauchemars + Commando Gerz avec Souverain des Chutes d'Éther · Le Transporteur Sauvage Intermédiaire · 87,9%
+- B Maître Amphibian + Rob l'Aventurier avec Scorch · Commando Gerz Intermédiaire · 72,7%
+- B Bleu-mange-cailloux + L'Épine d'Amour avec Commando Gerz · Rob l'Aventurier Intermédiaire · 71,9%
+- B Aleera Mange-Cauchemars + Paguroniyx avec Commando Gerz · Wyrm des Dunes Cornu Accessible · 71,4%
+- C Aleera Mange-Cauchemars + Catixy avec Commando Gerz · Gardien Vert Intermédiaire · 67,1%
+- C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux avec Commando Gerz · Esprit Terre Intermédiaire · 61%
+- C Croqueur de Fruits Verdoyant + Commando Gerz avec Sanglier Doré · Bleu-mange-cailloux Intermédiaire · 60,8%
+- C Maître Amphibian + Rob l'Aventurier avec Commando Gerz · Aidan Accessible · 59,3%
+- C Roi Terre + Bleu-mange-cailloux avec Sanglier Doré · Commando Gerz Collection avancée · 57,1%
+- C Croqueur de Fruits Verdoyant + Bleu-mange-cailloux avec Régent des Abysses · Commando Gerz Collection avancée · 56,3%
+- C Mélodie des Divinités + Chouette Polychrome avec Commando Gerz · Astry Collection avancée · 53,9%
+- C Luminaire Abyssal + Aristocrate Nébulaire avec Commando Gerz · Lums Intermédiaire · 53,9%
+- C Commando Gerz + Bleu-mange-cailloux avec Roi Terre · Rob l'Aventurier Collection avancée · 53,1%
+- C Bleu-mange-cailloux + Scorch avec Sanglier Doré · Commando Gerz Intermédiaire · 53,1%
+- C Commando Gerz + Shinobi Éclairant avec Aristocrate Nébulaire · Chouette Polychrome Intermédiaire · 51,8%
+- C Rongeur Nuageux + Mélodie des Divinités avec Commando Gerz · Maîtresse des Teintes Collection avancée · 51,5%
+- C Shinobi Éclairant + Wyrm des Dunes Cornu avec Commando Gerz · Régent des Abysses Intermédiaire · 50,7%
+- C Commando Gerz + Bleu-mange-cailloux avec Régent des Abysses · Scorch Collection avancée · 50,1%
+- D Luminaire Abyssal + Rongeur Nuageux avec Commando Gerz · Maîtresse des Teintes Intermédiaire · 49,9%
+- D Commando Gerz + Mélodie des Divinités avec Oisillons de Midas · Dragonnet des Lumières Collection avancée · 49,8%
+- D Commando Gerz + Shinobi Éclairant avec Aristocrate Nébulaire · Dragonnet des Lumières Intermédiaire · 49,7%
+- D Dragon Ciel + Rongeur Nuageux avec Commando Gerz · Chouette Polychrome Accessible · 49,5%
+- D Shinobi Éclairant + Lueur d'Espoir avec Commando Gerz · Codex des Sorts Lumineux Intermédiaire · 49,2%
+- D Bleu-mange-cailloux + Rob l'Aventurier avec Commando Gerz · Guerrier des Neiges Intermédiaire · 48,9%
+- D Bleu-mange-cailloux + L'Épine d'Amour avec Faerylia · Commando Gerz Collection avancée · 48,4%
+- D Luminaire Abyssal + L'Épine d'Amour avec Spectre Canin · Commando Gerz Intermédiaire · 47,9%
+- D Shinobi Éclairant + L'Épine d'Amour avec Ephial · Commando Gerz Collection avancée · 46,8%
+- D Croqueur de Fruits Verdoyant + Sanglier Doré avec Commando Gerz · Esprit Terre Accessible · 46,5%
+- D Commando Gerz + Rongeur Nuageux avec Luminaire Abyssal · Sorcière Pyrokinétique Intermédiaire · 45,4%
+- D Commando Gerz + Rongeur Nuageux avec Sorcière Pyrokinétique · Crapaud des Étoiles Accessible · 45,3%
+- D Spectre Canin + Rongeur Nuageux avec Ephial · Commando Gerz Collection avancée · 44,8%
+- D Commando Gerz + Zayd avec Faerylia · Chouette Polychrome Collection avancée · 44,4%
+- D Commando Gerz + Sanglier Doré avec Maître Amphibian · Croqueur de Fruits Verdoyant Accessible · 43,8%
+- D Squall + Rongeur Nuageux avec Commando Gerz · Chouette Polychrome Intermédiaire · 43%
+- D Commando Gerz + Rongeur Nuageux avec Spectre Canin · Guerrier des Neiges Accessible · 42,8%
+- D Spectre Canin + Rongeur Nuageux avec Commando Gerz · Squall Intermédiaire · 41,2%
+- D Commando Gerz + L'Épine d'Amour avec Rongeur Nuageux · Gardien Vert Intermédiaire · 40,7%
+- D Spectre Canin + Commando Gerz avec Aristocrate Nébulaire · Crapaud des Étoiles Accessible · 38,3%
+- D Commando Gerz + Rongeur Nuageux avec Crapaud des Étoiles · Gardien Vert Intermédiaire · 38,2%
+- D Spectre Canin + Oisillons de Midas avec Commando Gerz · Codex des Sorts Lumineux Intermédiaire · 35,1%
+- D Commando Gerz + Zayd avec Protecteur des ruines · Sanglier Doré Collection avancée · 33,6%
+- D Commando Gerz + Protecteur des ruines avec Guerrier des Neiges · Aidan Accessible · 33%
+### Résistances
+8% Feu
+10% Eau
+10% Terre
+9% Nature
+10% Ombre
+10% Lumière
+Eltherien · Emeldarion
+### Derrière la carte
+De nos jours, dans les contrées sauvages du nord d’Emeldarion, vit un peuple chaman dirigé par la sage Keria. Ce peuple cultive des plantes et élève des animaux, tous affiliés à l’élément du Feu et nourris par lui. De nombreux stages de formation de l’académie militaire de Dragheïr sont organisés dans cette région afin d’apprendre aux élèves à comprendre cet élément. Gerz, un ancien commando, y a pris sa retraite. Ami de la directrice de l’école militaire, il accepta d’accueillir les étudiants dans son ranch pour contribuer à leur formation.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+C # 085 Terre
+Épique · Attaque
+### Bleu-mange-cailloux
+500 PV
+D # 094 Terre
+Légendaire · Utilitaire
+### Zayd
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

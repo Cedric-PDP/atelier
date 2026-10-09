@@ -1,0 +1,141 @@
+Roi des Flammes Ardentes : carte SPAM Feu épique, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Roi des Flammes Ardentes C Voir la carte en grand
+Roi des Flammes Ardentes
+2 Morsure brûlante
+Phénix
+900/900
+7
+Standard
+Roi des Flammes Ardentes
+2 Morsure brûlante
+Phénix
+900/900
+7
+Élémentaire
+Roi des Flammes Ardentes
+2 Morsure brûlante
+Phénix
+900/900
+7
+FA
+Roi des Flammes Ardentes
+2 Morsure brûlante
+Phénix
+900/900
+7
+## Roi des Flammes Ardentes
+C Feu · Épique · Standard
+900 PV 7 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Contre Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+Conseillé
+Trois champs de compétence
+- Morsure brûlante compétence · Recharge 2 Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+2
+- Phénix tox · Commune Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Feu Épique #037
+# Roi des Flammes Ardentes
+Soutien
+900 Points de vie
+7 Spamtons / tour
+#81 Classement / 127
+C Sans talent · #81
+Attaque
+40
+Génération
+0
+Défense
+72
+Soutien
+87
+Contrôle
+0
+Économie
+39
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Contre 2 Évolution 3 Boule de Crit
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Morsure brûlante
+2 tours
+Attaque 15 Feu
+Attaque 15 Terre
+Critique de toutes les cartes du lanceur (+7%)
+Précision 100% Critique 1%
+### Tox de départ
+#### Phénix
+Commune
+Lorsqu’elle est détruite, cette carte revient à la vie avec 25% de ses PV max.
+Usage unique
+### Talents
+#### Contre
+Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+Δ 0 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 0 · Score théorique
+#### Boule de Crit
+Conseillé
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 31 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+C Intermédiaire
+Midrange ·
+### Maîtresse des Teintes + Apprentie de la Mort
+56,7 % Indice relatif 9 tours Élimination estimée 28 / tour Spamtons
+### Résistances
+20% Feu
+21% Eau
+19% Terre
+16% Nature
+20% Ombre
+20% Lumière
+Grand Lion · Lumethia
+### Derrière la carte
+Les chaînes de Drako’vish s’étendent au nord de Lumethia et forment une frontière avec Vaeloria, terre des Grands Lions. Face à une puissante vague de corruption par le Feu, le Roi des Flammes Ardentes et son clan durent chercher de nouvelles terres. Il se vit contraint de déplacer ses sujets sur le territoire d’Aurora. Son corps, corrompu par le Feu, prit alors l’apparence d’un Eltherien. Aurora lui refusa toute terre, déclenchant une guerre violente. Dans la savane du nord de Lumethia, les deux clans s’affrontèrent pendant des jours. Le conflit s’acheva par la mort tragique de Sylvan, ami commun aux deux camps.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+C # 234 Lumière
+Commune · Économie
+### Rongeur Nuageux
+650 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

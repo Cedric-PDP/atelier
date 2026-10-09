@@ -1,0 +1,818 @@
+[
+ {
+  "name": "deck chimere",
+  "nums": [
+   103,
+   238,
+   156,
+   117
+  ],
+  "base": 8018.2,
+  "cards": [
+   {
+    "card": "Lame de la forêt",
+    "dataJson_L": 4792,
+    "deadCard": 4792.4,
+    "rm_start": 4777,
+    "rmBounty_start": 4792,
+    "gain_start": 4777,
+    "rm_enemy": 4964.6,
+    "rmKeepProfile_start": 4777,
+    "gainFocus_start": 4777,
+    "gain_enemy": 4964.6,
+    "ttk": {
+     "dead": 23.5,
+     "rm_start": 23.5,
+     "gain_start": 28.9
+    },
+    "sP": {
+     "dead": [
+      4866,
+      4718.8
+     ],
+     "rm_start": [
+      4850.7,
+      4703.3
+     ],
+     "rm_enemy": [
+      5225.8,
+      4703.3
+     ]
+    }
+   },
+   {
+    "card": "Chimère Brasse-chair",
+    "dataJson_L": 1920,
+    "deadCard": 1919.7,
+    "rm_start": 1904.4,
+    "rmBounty_start": 1919.4,
+    "gain_start": 1904.4,
+    "rm_enemy": 1869.8,
+    "rmKeepProfile_start": 1904.4,
+    "gainFocus_start": 1904.4,
+    "gain_enemy": 1869.8,
+    "ttk": {
+     "dead": 70.3,
+     "rm_start": 70.3,
+     "gain_start": 83.4
+    },
+    "sP": {
+     "dead": [
+      1799.8,
+      2039.6
+     ],
+     "rm_start": [
+      1784.3,
+      2024.4
+     ],
+     "rm_enemy": [
+      1715.2,
+      2024.4
+     ]
+    }
+   },
+   {
+    "card": "L'Œil des montagnes",
+    "dataJson_L": 4213,
+    "deadCard": 4213.2,
+    "rm_start": 4197.9,
+    "rmBounty_start": 4212.9,
+    "gain_start": 4197.9,
+    "rm_enemy": 4276.4,
+    "rmKeepProfile_start": 4197.9,
+    "gainFocus_start": 4197.9,
+    "gain_enemy": 4276.4,
+    "ttk": {
+     "dead": 27.5,
+     "rm_start": 27.5,
+     "gain_start": 33.4
+    },
+    "sP": {
+     "dead": [
+      4269.6,
+      4156.9
+     ],
+     "rm_start": [
+      4254.3,
+      4141.5
+     ],
+     "rm_enemy": [
+      4411.2,
+      4141.5
+     ]
+    }
+   },
+   {
+    "card": "Keria",
+    "dataJson_L": 4314,
+    "deadCard": 4314.2,
+    "rm_start": 4298.9,
+    "rmBounty_start": 4313.9,
+    "gain_start": 4298.9,
+    "rm_enemy": 4300.1,
+    "rmKeepProfile_start": 4298.9,
+    "gainFocus_start": 4298.9,
+    "gain_enemy": 4300.1,
+    "ttk": {
+     "dead": 27,
+     "rm_start": 27,
+     "gain_start": 32.2
+    },
+    "sP": {
+     "dead": [
+      4440.1,
+      4188.4
+     ],
+     "rm_start": [
+      4424.7,
+      4173.1
+     ],
+     "rm_enemy": [
+      4427.1,
+      4173.1
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "anti-critiques",
+  "nums": [
+   12,
+   238,
+   27,
+   117
+  ],
+  "base": 6989.3,
+  "cards": [
+   {
+    "card": "Hibernatus",
+    "dataJson_L": 3041,
+    "deadCard": 3041.1,
+    "rm_start": 3025.7,
+    "rmBounty_start": 3040.7,
+    "gain_start": 3025.7,
+    "rm_enemy": 3028,
+    "rmKeepProfile_start": 3025.7,
+    "gainFocus_start": 3025.7,
+    "gain_enemy": 3028,
+    "ttk": {
+     "dead": 38.1,
+     "rm_start": 38.1,
+     "gain_start": 48.2
+    },
+    "sP": {
+     "dead": [
+      3012.5,
+      3069.8
+     ],
+     "rm_start": [
+      2997.1,
+      3054.3
+     ],
+     "rm_enemy": [
+      3001.7,
+      3054.3
+     ]
+    }
+   },
+   {
+    "card": "Chimère Brasse-chair",
+    "dataJson_L": 2681,
+    "deadCard": 2680.5,
+    "rm_start": 2665,
+    "rmBounty_start": 2680,
+    "gain_start": 2665,
+    "rm_enemy": 2685.2,
+    "rmKeepProfile_start": 2665,
+    "gainFocus_start": 2665,
+    "gain_enemy": 2685.2,
+    "ttk": {
+     "dead": 43.6,
+     "rm_start": 43.6,
+     "gain_start": 51.6
+    },
+    "sP": {
+     "dead": [
+      2633.9,
+      2727.2
+     ],
+     "rm_start": [
+      2618.4,
+      2711.7
+     ],
+     "rm_enemy": [
+      2658.7,
+      2711.7
+     ]
+    }
+   },
+   {
+    "card": "Hippocampe Nimbé",
+    "dataJson_L": 4389,
+    "deadCard": 4388.8,
+    "rm_start": 4373.3,
+    "rmBounty_start": 4388.3,
+    "gain_start": 4373.3,
+    "rm_enemy": 4373.9,
+    "rmKeepProfile_start": 4373.3,
+    "gainFocus_start": 4373.3,
+    "gain_enemy": 4373.9,
+    "ttk": {
+     "dead": 25.5,
+     "rm_start": 25.5,
+     "gain_start": 33.5
+    },
+    "sP": {
+     "dead": [
+      4331,
+      4446.5
+     ],
+     "rm_start": [
+      4315.5,
+      4431
+     ],
+     "rm_enemy": [
+      4316.7,
+      4431
+     ]
+    }
+   },
+   {
+    "card": "Keria",
+    "dataJson_L": 3802,
+    "deadCard": 3801.6,
+    "rm_start": 3786.2,
+    "rmBounty_start": 3801.2,
+    "gain_start": 3786.2,
+    "rm_enemy": 3787.4,
+    "rmKeepProfile_start": 3786.2,
+    "gainFocus_start": 3786.2,
+    "gain_enemy": 3787.4,
+    "ttk": {
+     "dead": 31.2,
+     "rm_start": 31.2,
+     "gain_start": 37.3
+    },
+    "sP": {
+     "dead": [
+      3802.6,
+      3800.7
+     ],
+     "rm_start": [
+      3787.2,
+      3785.3
+     ],
+     "rm_enemy": [
+      3789.6,
+      3785.3
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "zéro critique",
+  "nums": [
+   102,
+   116,
+   12,
+   69
+  ],
+  "base": 6529.2,
+  "cards": [
+   {
+    "card": "Murmures du Corail Noir",
+    "dataJson_L": 2626,
+    "deadCard": 2626.4,
+    "rm_start": 2611.2,
+    "rmBounty_start": 2626.2,
+    "gain_start": 2611.2,
+    "rm_enemy": 2638.8,
+    "rmKeepProfile_start": 2597.3,
+    "gainFocus_start": 2611.2,
+    "gain_enemy": 2638.8,
+    "ttk": {
+     "dead": 43.2,
+     "rm_start": 43.2,
+     "gain_start": 50.9
+    },
+    "sP": {
+     "dead": [
+      2691.4,
+      2561.5
+     ],
+     "rm_start": [
+      2676.1,
+      2546.4
+     ],
+     "rm_enemy": [
+      2731.2,
+      2546.4
+     ]
+    }
+   },
+   {
+    "card": "Prisonnière de la Machine",
+    "dataJson_L": 2961,
+    "deadCard": 2960.9,
+    "rm_start": 2916.9,
+    "rmBounty_start": 2931.9,
+    "gain_start": 2916.9,
+    "rm_enemy": 2945.2,
+    "rmKeepProfile_start": 2986.8,
+    "gainFocus_start": 2916.9,
+    "gain_enemy": 2945.2,
+    "ttk": {
+     "dead": 39.2,
+     "rm_start": 39.8,
+     "gain_start": 53.9
+    },
+    "sP": {
+     "dead": [
+      3042.3,
+      2879.5
+     ],
+     "rm_start": [
+      3026.8,
+      2807.1
+     ],
+     "rm_enemy": [
+      3083.3,
+      2807.1
+     ]
+    }
+   },
+   {
+    "card": "Hibernatus",
+    "dataJson_L": 2992,
+    "deadCard": 2992.4,
+    "rm_start": 2976.9,
+    "rmBounty_start": 2991.9,
+    "gain_start": 2976.9,
+    "rm_enemy": 2979.2,
+    "rmKeepProfile_start": 2980.5,
+    "gainFocus_start": 2976.9,
+    "gain_enemy": 2979.2,
+    "ttk": {
+     "dead": 37.8,
+     "rm_start": 37.8,
+     "gain_start": 47.7
+    },
+    "sP": {
+     "dead": [
+      3159.4,
+      2825.3
+     ],
+     "rm_start": [
+      3143.9,
+      2810
+     ],
+     "rm_enemy": [
+      3148.5,
+      2810
+     ]
+    }
+   },
+   {
+    "card": "Scorch, les Lézards Ignés",
+    "dataJson_L": 2417,
+    "deadCard": 2416.6,
+    "rm_start": 2401.1,
+    "rmBounty_start": 2416.1,
+    "gain_start": 2401.1,
+    "rm_enemy": 2659.9,
+    "rmKeepProfile_start": 2401.1,
+    "gainFocus_start": 2401.1,
+    "gain_enemy": 2659.9,
+    "ttk": {
+     "dead": 47.4,
+     "rm_start": 47.4,
+     "gain_start": 53.3
+    },
+    "sP": {
+     "dead": [
+      2438.8,
+      2394.4
+     ],
+     "rm_start": [
+      2423.3,
+      2378.9
+     ],
+     "rm_enemy": [
+      2940.9,
+      2378.9
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "deck aleera",
+  "nums": [
+   231,
+   238,
+   156,
+   117
+  ],
+  "base": 12846.8,
+  "cards": [
+   {
+    "card": "Aleera Mange-Cauchemars",
+    "dataJson_L": 4792,
+    "deadCard": 4792.4,
+    "rm_start": 4777,
+    "rmBounty_start": 4792,
+    "gain_start": 4777,
+    "rm_enemy": 4777.8,
+    "rmKeepProfile_start": 4777,
+    "gainFocus_start": 4777,
+    "gain_enemy": 4777.8,
+    "ttk": {
+     "dead": 23.5,
+     "rm_start": 23.5,
+     "gain_start": 27.6
+    },
+    "sP": {
+     "dead": [
+      4866,
+      4718.8
+     ],
+     "rm_start": [
+      4850.7,
+      4703.3
+     ],
+     "rm_enemy": [
+      4852.2,
+      4703.3
+     ]
+    }
+   },
+   {
+    "card": "Chimère Brasse-chair",
+    "dataJson_L": 8884,
+    "deadCard": 8883.7,
+    "rm_start": 8869.8,
+    "rmBounty_start": 8884.8,
+    "gain_start": 8239,
+    "rm_enemy": 8870.5,
+    "rmKeepProfile_start": 8869.8,
+    "gainFocus_start": 8239,
+    "gain_enemy": 8239.6,
+    "ttk": {
+     "dead": 11.7,
+     "rm_start": 11.7,
+     "gain_start": 14.4
+    },
+    "sP": {
+     "dead": [
+      8783,
+      8984.4
+     ],
+     "rm_start": [
+      8770.1,
+      8969.6
+     ],
+     "rm_enemy": [
+      8771.5,
+      8969.6
+     ]
+    }
+   },
+   {
+    "card": "L'Œil des montagnes",
+    "dataJson_L": 6198,
+    "deadCard": 6198.5,
+    "rm_start": 6187.4,
+    "rmBounty_start": 6202.4,
+    "gain_start": 6187.4,
+    "rm_enemy": 6251.6,
+    "rmKeepProfile_start": 6187.4,
+    "gainFocus_start": 6187.4,
+    "gain_enemy": 6251.6,
+    "ttk": {
+     "dead": 18.2,
+     "rm_start": 18.2,
+     "gain_start": 22.1
+    },
+    "sP": {
+     "dead": [
+      6117.2,
+      6279.8
+     ],
+     "rm_start": [
+      6109.2,
+      6265.5
+     ],
+     "rm_enemy": [
+      6237.7,
+      6265.5
+     ]
+    }
+   },
+   {
+    "card": "Keria",
+    "dataJson_L": 8625,
+    "deadCard": 8625.5,
+    "rm_start": 8610.3,
+    "rmBounty_start": 8625.3,
+    "gain_start": 8256.2,
+    "rm_enemy": 8611.5,
+    "rmKeepProfile_start": 8610.3,
+    "gainFocus_start": 8256.2,
+    "gain_enemy": 8257.4,
+    "ttk": {
+     "dead": 12.5,
+     "rm_start": 12.5,
+     "gain_start": 15.2
+    },
+    "sP": {
+     "dead": [
+      8544.1,
+      8706.9
+     ],
+     "rm_start": [
+      8528.9,
+      8691.7
+     ],
+     "rm_enemy": [
+      8531.3,
+      8691.7
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "robuste A",
+  "nums": [
+   3,
+   103,
+   117,
+   238
+  ],
+  "base": 7625.5,
+  "cards": [
+   {
+    "card": "Esprit Nature",
+    "dataJson_L": 4213,
+    "deadCard": 4213.2,
+    "rm_start": 4197.9,
+    "rmBounty_start": 4212.9,
+    "gain_start": 4197.9,
+    "rm_enemy": 4421.4,
+    "rmKeepProfile_start": 4197.9,
+    "gainFocus_start": 4197.9,
+    "gain_enemy": 4421.4,
+    "ttk": {
+     "dead": 27.5,
+     "rm_start": 27.5,
+     "gain_start": 32.4
+    },
+    "sP": {
+     "dead": [
+      4269.6,
+      4156.9
+     ],
+     "rm_start": [
+      4254.3,
+      4141.5
+     ],
+     "rm_enemy": [
+      4701.3,
+      4141.5
+     ]
+    }
+   },
+   {
+    "card": "Lame de la forêt",
+    "dataJson_L": 3672,
+    "deadCard": 3672.3,
+    "rm_start": 3657.1,
+    "rmBounty_start": 3672.1,
+    "gain_start": 3657.1,
+    "rm_enemy": 3739.9,
+    "rmKeepProfile_start": 3657.1,
+    "gainFocus_start": 3657.1,
+    "gain_enemy": 3739.9,
+    "ttk": {
+     "dead": 29.6,
+     "rm_start": 29.6,
+     "gain_start": 36.3
+    },
+    "sP": {
+     "dead": [
+      3782,
+      3562.5
+     ],
+     "rm_start": [
+      3766.8,
+      3547.3
+     ],
+     "rm_enemy": [
+      3932.5,
+      3547.3
+     ]
+    }
+   },
+   {
+    "card": "Keria",
+    "dataJson_L": 3880,
+    "deadCard": 3880.4,
+    "rm_start": 3865.3,
+    "rmBounty_start": 3880.3,
+    "gain_start": 3865.3,
+    "rm_enemy": 3866.5,
+    "rmKeepProfile_start": 3865.3,
+    "gainFocus_start": 3865.3,
+    "gain_enemy": 3866.5,
+    "ttk": {
+     "dead": 30.1,
+     "rm_start": 30.1,
+     "gain_start": 35.9
+    },
+    "sP": {
+     "dead": [
+      4112.8,
+      3648
+     ],
+     "rm_start": [
+      4097.6,
+      3633
+     ],
+     "rm_enemy": [
+      4100,
+      3633
+     ]
+    }
+   },
+   {
+    "card": "Chimère Brasse-chair",
+    "dataJson_L": 3701,
+    "deadCard": 3701.5,
+    "rm_start": 3686.1,
+    "rmBounty_start": 3701.1,
+    "gain_start": 3686.1,
+    "rm_enemy": 3588.9,
+    "rmKeepProfile_start": 3687.5,
+    "gainFocus_start": 3686.1,
+    "gain_enemy": 3588.9,
+    "ttk": {
+     "dead": 31.3,
+     "rm_start": 31.3,
+     "gain_start": 37
+    },
+    "sP": {
+     "dead": [
+      3835.4,
+      3567.6
+     ],
+     "rm_start": [
+      3819.9,
+      3552.3
+     ],
+     "rm_enemy": [
+      3625.4,
+      3552.3
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "robuste B",
+  "nums": [
+   69,
+   160,
+   227,
+   238
+  ],
+  "base": 6077.3,
+  "cards": [
+   {
+    "card": "Scorch, les Lézards Ignés",
+    "dataJson_L": 3818,
+    "deadCard": 3817.9,
+    "rm_start": 3802.6,
+    "rmBounty_start": 3817.6,
+    "gain_start": 3802.6,
+    "rm_enemy": 4041.2,
+    "rmKeepProfile_start": 3802.6,
+    "gainFocus_start": 3802.6,
+    "gain_enemy": 4041.2,
+    "ttk": {
+     "dead": 30.8,
+     "rm_start": 30.8,
+     "gain_start": 34.7
+    },
+    "sP": {
+     "dead": [
+      3803.3,
+      3832.5
+     ],
+     "rm_start": [
+      3787.9,
+      3817.2
+     ],
+     "rm_enemy": [
+      4265.2,
+      3817.2
+     ]
+    }
+   },
+   {
+    "card": "Sanglier Doré",
+    "dataJson_L": 3868,
+    "deadCard": 3867.7,
+    "rm_start": 3852.7,
+    "rmBounty_start": 3867.7,
+    "gain_start": 3852.7,
+    "rm_enemy": 3858.1,
+    "rmKeepProfile_start": 3852.7,
+    "gainFocus_start": 3852.7,
+    "gain_enemy": 3858.1,
+    "ttk": {
+     "dead": 29.4,
+     "rm_start": 29.4,
+     "gain_start": 38.7
+    },
+    "sP": {
+     "dead": [
+      4009.3,
+      3726.1
+     ],
+     "rm_start": [
+      3994.3,
+      3711.1
+     ],
+     "rm_enemy": [
+      4005.1,
+      3711.1
+     ]
+    }
+   },
+   {
+    "card": "Chouette Polychrome",
+    "dataJson_L": 3868,
+    "deadCard": 3868.3,
+    "rm_start": 3853,
+    "rmBounty_start": 3868,
+    "gain_start": 3853,
+    "rm_enemy": 3854.3,
+    "rmKeepProfile_start": 3853,
+    "gainFocus_start": 3853,
+    "gain_enemy": 3854.3,
+    "ttk": {
+     "dead": 29.7,
+     "rm_start": 29.7,
+     "gain_start": 35
+    },
+    "sP": {
+     "dead": [
+      4049.1,
+      3687.4
+     ],
+     "rm_start": [
+      4033.8,
+      3672.1
+     ],
+     "rm_enemy": [
+      4036.5,
+      3672.1
+     ]
+    }
+   },
+   {
+    "card": "Chimère Brasse-chair",
+    "dataJson_L": 3877,
+    "deadCard": 3877.3,
+    "rm_start": 3862,
+    "rmBounty_start": 3877,
+    "gain_start": 3862,
+    "rm_enemy": 3867.3,
+    "rmKeepProfile_start": 3862,
+    "gainFocus_start": 3862,
+    "gain_enemy": 3867.3,
+    "ttk": {
+     "dead": 29.1,
+     "rm_start": 29.1,
+     "gain_start": 34.5
+    },
+    "sP": {
+     "dead": [
+      4073.8,
+      3680.8
+     ],
+     "rm_start": [
+      4058.4,
+      3665.6
+     ],
+     "rm_enemy": [
+      4069.1,
+      3665.6
+     ]
+    }
+   }
+  ]
+ }
+]

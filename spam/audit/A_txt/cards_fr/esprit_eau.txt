@@ -1,0 +1,138 @@
+Esprit Eau : carte SPAM Eau commune, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Esprit Eau C Voir la carte en grand
+Esprit Eau
+1 Souffle d'eau
+1 Vague
+500/500
+10
+Standard
+Esprit Eau
+1 Souffle d'eau
+1 Vague
+500/500
+10
+Élémentaire
+Esprit Eau
+1 Souffle d'eau
+1 Vague
+500/500
+10
+FA
+Esprit Eau
+1 Souffle d'eau
+1 Vague
+500/500
+10
+## Esprit Eau
+C Eau · Commune · Standard
+500 PV 10 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Cœur EAU Commence la partie avec le passif Cœur d'eau
+Conseillé
+- Talent 2 Terrain enflammé Bonus (+7) Feu.
+- Talent 3 Cavalerie Augmente les PV max de toutes les autres cartes alliées de (+150).
+Trois champs de compétence
+- Souffle d'eau compétence · Recharge 1 Attaque 10 Eau
+Bonus Eau (+1)
+1
+- Vague compétence · Recharge 1 Bonus Eau (+1)
+1
+- Champ libre Ouvert à un Tox de la boutique
+Illustration par Atto
+Fiche complète
+Illustration par Atto
+Eau Commune #002
+# Esprit Eau
+Génération
+500 Points de vie
+10 Spamtons / tour
+#79 Classement / 127
+D Sans talent · #96
+Attaque
+39
+Génération
+89
+Défense
+4
+Soutien
+1
+Contrôle
+0
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Cœur EAU 2 Terrain enflammé 3 Cavalerie
+Jouer cette carte 2 decks
+Partager
+### Compétences
+#### Souffle d'eau
+1 tour
+Attaque 10 Eau
+Bonus Eau (+1)
+Précision 100% Critique 1%
+#### Vague
+1 tour
+Bonus Eau (+1)
+Précision 100% Critique 0%
+### Talents
+#### Cœur EAU
+Conseillé
+Commence la partie avec le passif Cœur d'eau
+Δ 237,2 · Score théorique
+#### Terrain enflammé
+Bonus (+7) Feu.
+Δ 12,9 · Score théorique
+#### Cavalerie
+Augmente les PV max de toutes les autres cartes alliées de (+150).
+Δ 207,2 · Score théorique
+## Ses meilleurs decks
+2 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+C Accessible
+Midrange ·
+### Le compagnon des esprits + Esprit Eau
+58,7 % Indice relatif 8 tours Élimination estimée 35 / tour Spamtons
+Les autres decks (1)
+- C Le compagnon des esprits + Esprit Eau avec Léviathan des Cieux · Scorch Collection avancée · 53,1%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Esprit · Nordvinter
+### Derrière la carte
+Alors que le continent unique vient de se fracturer, l’Esprit de l’Eau passe des journées entières à ralentir la progression des glaces des Contrées de Cristal. Actif dans un immense lac de Nordvinter, il est le seul Esprit clairement visible et accessible à une vaste population. Cette particularité attire de nombreux voyageurs. Perturber son travail a toutefois un prix que Lycaria, l’Ombre du Blanc, est prête à faire payer afin que nul ne dérange le petit canidé aquatique.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+B # 260 Eau
+Commune · Attaque
+### Le compagnon des esprits
+600 PV
+A # 178 Ombre
+Commune · Attaque
+### Épine Médusine
+800 PV
+A # 136 Eau
+Rare · Attaque
+### Souverain des Chutes d'Éther
+800 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

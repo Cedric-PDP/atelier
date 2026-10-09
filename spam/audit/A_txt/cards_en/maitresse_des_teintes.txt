@@ -1,0 +1,185 @@
+Mistress of Tints: SPAM Earth rare card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Mistress of Tints B View the full card
+Mistress of Tints
+3 Elemental Chaos
+3 Multiboost
+600/600
+10
+Standard
+Mistress of Tints
+3 Elemental Chaos
+3 Multiboost
+600/600
+10
+Elemental
+Mistress of Tints
+3 Elemental Chaos
+3 Multiboost
+600/600
+10
+FA
+Mistress of Tints
+3 Elemental Chaos
+3 Multiboost
+600/600
+10
+AAA
+Mistress of Tints
+3 Elemental Chaos
+3 Multiboost
+600/600
+10
+## Mistress of Tints
+B Earth · Rare · Standard
+600 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Multi Start Gain (+3) in each element.
+- Talent 2 Heart of Steel Each time this card is attacked, its elemental resistances increase by (+1%).
+- Talent 3 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+Recommended
+Three ability slots
+- Elemental Chaos ability · Cooldown 3 Deal 15 Nature damage Random
+15 Earth damage
+15 Fire damage
+15 Light damage
+15 Shadow damage
+15 Water damage
+3
+- Multiboost ability · Cooldown 3 Bonus (+3) in every element
+3
+- Free slot Open to a shop Tox
+Illustration by Saki
+Full card details
+Illustration by Saki
+Earth Rare #032
+# Mistress of Tints
+Versatile
+600 Health points
+10 Spamtons / turn
+#43 Rank / 127
+B No talent · #39
+Attack
+67
+Generation
+54
+Defense
+35
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Multi Start 2 Heart of Steel 3 Piercing
+Build with this card 20 decks
+Share
+### Abilities
+#### Elemental Chaos
+3 turns
+Deal 15 Nature damage Random
+15 Earth damage
+15 Fire damage
+15 Light damage
+15 Shadow damage
+15 Water damage
+Accuracy 100% Critical 25%
+#### Multiboost
+3 turns
+Bonus (+3) in every element
+Accuracy 100% Critical 0%
+### Talents
+#### Multi Start
+Gain (+3) in each element.
+Δ 526.5 · Theoretical score
+#### Heart of Steel
+Each time this card is attacked, its elemental resistances increase by (+1%).
+Δ 13.9 · Theoretical score
+#### Piercing
+Recommended
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 663.5 · Theoretical score
+## Its best decks
+20 ranked decks play this card, from best to worst.
+All decks
+B Intermediate
+Aggro / burst ·
+### Apprentice of Death + Scorch
+73 % Relative index 7 turns Estimated elimination 28 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + The Inventor
+65.5 % Relative index 8 turns Estimated elimination 28 / turn Spamtons
+C Advanced collection
+Midrange ·
+### Mistress of Tints + Apprentice of Death
+60.5 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+C Intermediate
+Midrange ·
+### Deer of Mournful Colors + Thorn of Love
+57.9 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+56.8 % Relative index 8 turns Estimated elimination 29 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Spirit of the Fauna + Thorn of Love
+54.3 % Relative index 8 turns Estimated elimination 37 / turn Spamtons
+The other decks (14)
+- C Mistress of Tints + Apprentice of Death with The Inventor · King of the Blazing Flames Intermediate · 56.7%
+- C Sky Dragon + Thorn of Love with Imaginary Panther · Mistress of Tints Intermediate · 52.7%
+- C Cloudy Rodent + Melody of Divinities with Commando Gerz · Mistress of Tints Advanced collection · 51.5%
+- C Mistress of Tints + Apprentice of Death with Fire King · Vladislaus Advanced collection · 50.5%
+- C Canine Specter + Mistress of Tints with Thorn of Love · Sky Dragon Accessible · 50.3%
+- D Abyssal Lightbearer + Cloudy Rodent with Commando Gerz · Mistress of Tints Intermediate · 49.9%
+- D Mistress of Tints + Deer of Mournful Colors with Aldrin & Gorakar · Aidan Advanced collection · 49.3%
+- D Master Amphibian + Aidan with Mistress of Tints · Rob the Adventurer Accessible · 47.6%
+- D Faerylia + Vladislaus with Mistress of Tints · Squall Advanced collection · 46.3%
+- D Deer of Mournful Colors + Thorn of Love with Verdelune · Mistress of Tints Advanced collection · 46.3%
+- D Canine Specter + Mistress of Tints with Thorn of Love · Squall Intermediate · 45.7%
+- D Abyssal Lightbearer + Astry with Mistress of Tints · Squall Intermediate · 44%
+- D Canine Specter + Mistress of Tints with Cloudy Rodent · Thorn of Love Accessible · 42.1%
+- D Canine Specter + Mistress of Tints with Ephial · Thorn of Love Advanced collection · 35.9%
+### Resistances
+20% Fire
+20% Water
+20% Earth
+20% Nature
+20% Shadow
+20% Light
+Eltherien · Emeldarion
+### Beyond the card
+They say that six children were born with a rune on their hand. In Abondance, in Katrobu’s pleasure district, the Nameless struggle to build a future for themselves. A rebellious young artist repaints entire sections of the city every day. Constantly pursued by the authorities, she nevertheless drew countless tourists with her work. The Mistress of Tints thus became a celebrity with followers throughout the world. She is said to have visions of her nightmares without ever experiencing ordinary dreams. She paints them to release them and preserve her mind.
+## Better together
+The most promising partners according to the model.
+B # 236 Fire
+Rare · Attack
+### Apprentice of Death
+700 HP
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

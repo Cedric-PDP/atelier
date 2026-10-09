@@ -1,0 +1,150 @@
+Soigneuse Astrale des Bois : carte SPAM Nature rare, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Soigneuse Astrale des Bois C Voir la carte en grand
+Soigneuse Astrale des Bois
+1 Feuille magique
+Cœur de nature
+Chanceur
+600/600
+11
+Standard
+Soigneuse Astrale des Bois
+1 Feuille magique
+Cœur de nature
+Chanceur
+600/600
+11
+Élémentaire
+Soigneuse Astrale des Bois
+1 Feuille magique
+Cœur de nature
+Chanceur
+600/600
+11
+FA
+Soigneuse Astrale des Bois
+1 Feuille magique
+Cœur de nature
+Chanceur
+600/600
+11
+## Soigneuse Astrale des Bois
+C Nature · Rare · Standard
+600 PV 11 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Héritage Bonus (+50) Spamton quand cette carte est tuée.
+- Talent 2 Boule de Crit Augmente les critiques de cette carte de (+2 %) à chaque tour
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Conseillé
+Trois champs de compétence
+- Feuille magique compétence · Recharge 1 Soigne 10 Nature
+Critique (+2%) sur toutes les cartes alliées
+1
+- Cœur de nature tox · Commune Bonus Nature (+1) par tour de jeu
+- Chanceur tox · Commune Augmente votre Chance de (+0,5) chaque tour
+Illustration par Nao
+Fiche complète
+Illustration par Nao
+Nature Rare #071
+# Soigneuse Astrale des Bois
+Soutien Économie
+600 Points de vie
+11 Spamtons / tour
+#86 Classement / 127
+C Sans talent · #80
+Attaque
+0
+Génération
+69
+Défense
+45
+Soutien
+99
+Contrôle
+0
+Économie
+94
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Héritage 2 Boule de Crit 3 Évolution
+Jouer cette carte 3 decks
+Partager
+### Compétences
+#### Feuille magique
+1 tour
+Soigne 10 Nature
+Critique (+2%) sur toutes les cartes alliées
+Précision 100% Critique 25%
+### Tox de départ
+#### Cœur de nature
+Commune
+Bonus Nature (+1) par tour de jeu
+#### Chanceur
+Commune
+Augmente votre Chance de (+0,5) chaque tour
+### Talents
+#### Héritage
+Bonus (+50) Spamton quand cette carte est tuée.
+Δ 5 · Score théorique
+#### Boule de Crit
+Augmente les critiques de cette carte de (+2 %) à chaque tour
+Δ 17,6 · Score théorique
+#### Évolution
+Conseillé
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 172,4 · Score théorique
+## Ses meilleurs decks
+3 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+D Accessible
+Midrange ·
+### Zombie Floral + Dragon Ciel
+49,7 % Indice relatif 9 tours Élimination estimée 37 / tour Spamtons
+D Intermédiaire
+Rampe élémentaire ·
+### Catimimi + Girafe Florale
+44,7 % Indice relatif 8 tours Élimination estimée 33 / tour Spamtons
+Les autres decks (1)
+- D Zombie Floral + Dragon Ciel avec Soigneuse Astrale des Bois · Princesse Meridia Intermédiaire · 49,6%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Anthropomorphe · Vaeloria
+### Derrière la carte
+La disparition des Pixarch a laissé un lourd héritage aux Anthropomorphes. La Soigneuse Astrale témoigne de la survie des protecteurs de l’Arbre des Mystères. On peut la rencontrer dans la forêt de Vaelor, où elle recherche le « bâton de Gabriel », un artefact capable de provoquer des métamorphoses. Celui-ci fut dérobé à la suite d’un conflit interne qui coûta la vie au Samouraï Croc. Absente lors de l’épidémie de Fanure, elle avait confié le bâton à son second, qui le perdit au cours d’un duel. Tout ce qu’elle sait du coupable, c’est qu’il se trouve probablement quelque part en Vaeloria.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+C # 158 Nature
+Commune · Polyvalent
+### Lapin-Plume
+850 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

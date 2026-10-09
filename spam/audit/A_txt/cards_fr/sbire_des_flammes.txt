@@ -1,0 +1,148 @@
+Sbire des Flammes : carte SPAM Feu commune, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Sbire des Flammes D Voir la carte en grand
+Sbire des Flammes
+2 Doux foyer
+AoE
+Berserk
+800/800
+9
+Standard
+Sbire des Flammes
+2 Doux foyer
+AoE
+Berserk
+800/800
+9
+Élémentaire
+Sbire des Flammes
+2 Doux foyer
+AoE
+Berserk
+800/800
+9
+FA
+Sbire des Flammes
+2 Doux foyer
+AoE
+Berserk
+800/800
+9
+## Sbire des Flammes
+D Feu · Commune · Standard
+800 PV 9 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Longueur Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+- Talent 2 Inscrit La carte est insensible aux Disparitions.
+- Talent 3 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Conseillé
+Trois champs de compétence
+- Doux foyer compétence · Recharge 2 Cible aléatoirement les cartes alliées
+Soigne 25 Feu
+Soigne 25 Feu
+Soigne 25 Feu
+2
+- AoE tox · Commune Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+- Berserk tox · Commune Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+Illustration par Krisakx
+Fiche complète
+Illustration par Krisakx
+Feu Commune #151
+# Sbire des Flammes
+Soutien
+800 Points de vie
+9 Spamtons / tour
+#116 Classement / 127
+D Sans talent · #114
+Attaque
+0
+Génération
+0
+Défense
+73
+Soutien
+90
+Contrôle
+0
+Économie
+60
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Longueur 2 Inscrit 3 Évolution
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Doux foyer
+2 tours
+Cible aléatoirement les cartes alliées
+Soigne 25 Feu
+Soigne 25 Feu
+Soigne 25 Feu
+Précision 100% Critique 1%
+### Tox de départ
+#### AoE
+Commune
+Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+#### Berserk
+Commune
+Les dégâts et les soins de toutes vos cartes sont augmentés de 12%
+### Talents
+#### Longueur
+Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+Δ 20 · Score théorique
+#### Inscrit
+La carte est insensible aux Disparitions.
+Δ 7 · Score théorique
+#### Évolution
+Conseillé
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 235,2 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+D Accessible
+Midrange ·
+### Pyro + Wibs l'Enflammé
+26 % Indice relatif 11,4 tours Élimination estimée 23 / tour Spamtons
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Arsh · Hadeïr
+### Derrière la carte
+Dans la grande forge de Logaïr, de gigantesques créatures brassaient la lave du Mont Vulcain. Le travail unique des Sbires des Flammes, que nul n’aurait pu reproduire à de telles températures, rendait l’artisanat de Hadeïr prospère et incontournable. En dehors d’Oniyxia, Logaïr était la ville préférée des Oniyx. De nombreux Olforgeurs y façonnaient les matériaux aux côtés d’artisans passionnés. Sans les Sbires des Flammes, les armes runiques n’auraient jamais pu être forgées. À l’époque, ils firent de Logaïr la meilleure forge du monde.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+S # 231 Ombre
+Commune · Attaque
+### Aleera Mange-Cauchemars
+500 PV
+D # 106 Terre
+Commune · Génération
+### L'Épine d'Amour
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

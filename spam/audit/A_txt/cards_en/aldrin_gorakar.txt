@@ -1,0 +1,161 @@
+Aldrin & Gorakar: SPAM Nature legendary card, tier C
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Aldrin & Gorakar C View the full card
+Aldrin & Gorakar
+5 Waltz of Clouds
+1 Critical Breath
+2 Earthstamp
+700/700
+4
+Standard
+Aldrin & Gorakar
+5 Waltz of Clouds
+1 Critical Breath
+2 Earthstamp
+700/700
+4
+Elemental
+Aldrin & Gorakar
+5 Waltz of Clouds
+1 Critical Breath
+2 Earthstamp
+700/700
+4
+FA
+Aldrin & Gorakar
+5 Waltz of Clouds
+1 Critical Breath
+2 Earthstamp
+700/700
+4
+## Aldrin & Gorakar
+C Nature · Legendary · Standard
+700 HP 4 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Blazing Field Fire bonus (+7).
+- Talent 2 Eternalized The card is immune to Eternity effects
+- Talent 3 Ultimate Reset This card returns to 100% of its max HP if its attack defeats an enemy card.
+Recommended
+Three ability slots
+- Waltz of Clouds ability · Cooldown 5 Deal 90 Nature damage
+[Limited Use 1/1]
+5
+- Critical Breath ability · Cooldown 1 Deal 7 Nature damage
+Deal 7 Nature damage
+1
+- Earthstamp ability · Cooldown 2 Deal 10 Earth damage
+Deal 10 Nature damage
+2
+Illustration by Nenaosu
+Full card details
+Illustration by Nenaosu
+Nature Legendary #045
+# Aldrin & Gorakar
+Attack
+700 Health points
+4 Spamtons / turn
+#78 Rank / 127
+C No talent · #70
+Attack
+82
+Generation
+0
+Defense
+37
+Support
+1
+Control
+0
+Economy
+5
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Blazing Field 2 Eternalized 3 Ultimate Reset
+Build with this card 4 decks
+Share
+### Abilities
+#### Waltz of Clouds
+5 turns
+Deal 90 Nature damage
+[Limited Use 1/1]
+Accuracy 100% Critical 5%
+#### Critical Breath
+1 turn
+Deal 7 Nature damage
+Deal 7 Nature damage
+Accuracy 100% Critical 50%
+#### Earthstamp
+2 turns
+Deal 10 Earth damage
+Deal 10 Nature damage
+Accuracy 100% Critical 1%
+### Talents
+#### Blazing Field
+Fire bonus (+7).
+Δ 3.3 · Theoretical score
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Ultimate Reset
+Recommended
+This card returns to 100% of its max HP if its attack defeats an enemy card.
+Δ 17.7 · Theoretical score
+## Its best decks
+4 ranked decks play this card, from best to worst.
+All decks
+C Advanced collection
+Aggro / burst ·
+### Sky Dragon + Aldrin & Gorakar
+60.5 % Relative index 7 turns Estimated elimination 28 / turn Spamtons
+C Advanced collection
+Elemental ramp ·
+### Sky Dragon + Thorn of Love
+52.4 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+D Advanced collection
+Elemental ramp ·
+### Mistress of Tints + Deer of Mournful Colors
+49.3 % Relative index 9 turns Estimated elimination 27 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Aldrin & Gorakar + Thorn of Love
+42 % Relative index 9 turns Estimated elimination 30 / turn Spamtons
+### Resistances
+10% Fire
+11% Water
+12% Earth
+-10% Nature
+9% Shadow
+11% Light
+Eltherien · Lumethia
+### Beyond the card
+They say six children were born with a rune on their hand. In Lumethia, not far from the sacred sage's stone, a noble family thirsting for adventure gave birth to Gorakar. This family long dreamed of adventure until the day their dream called them to make a pilgrimage. Summoned to the heart of the Lonely Isles, the young adventurer set off to join Aldrin. His parents, on a different journey, then called upon the most erudite of the Tokscyth. With his revolutionary flying machine, they will set off to meet a powerful Dhöggeïr at the heart of the flying islands.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+B # 249 Nature
+Epic · Generation
+### Nature King
+1000 HP
+C # 115 Fire
+Common · Generation
+### Aidan
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

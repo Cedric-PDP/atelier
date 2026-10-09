@@ -1,0 +1,146 @@
+Shado, Fléau abyssal : carte SPAM Ombre commune, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Shado, Fléau abyssal B Voir la carte en grand
+Shado, Fléau abyssal
+3 Tenebr'eal
+Soin primitif
+AoE
+800/800
+11
+Standard
+Shado, Fléau abyssal
+3 Tenebr'eal
+Soin primitif
+AoE
+800/800
+11
+Élémentaire
+Shado, Fléau abyssal
+3 Tenebr'eal
+Soin primitif
+AoE
+800/800
+11
+FA
+Shado, Fléau abyssal
+3 Tenebr'eal
+Soin primitif
+AoE
+800/800
+11
+## Shado, Fléau abyssal
+B Ombre · Commune · Standard
+800 PV 11 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+- Talent 3 Armure des Âmes Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Conseillé
+Trois champs de compétence
+- Tenebr'eal compétence · Recharge 3 Attaque 40 Ombre
+Bonus Ombre (+1)
+Vampirisme
+3
+- Soin primitif tox · Commune Au début de chaque tour, la carte récupère 4% de ses PV max
+- AoE tox · Commune Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+Illustration par quetrax
+Fiche complète
+Illustration par quetrax
+Ombre Commune #063
+# Shado, Fléau abyssal
+Défense Économie
+800 Points de vie
+11 Spamtons / tour
+#58 Classement / 127
+B Sans talent · #47
+Attaque
+43
+Génération
+43
+Défense
+80
+Soutien
+1
+Contrôle
+0
+Économie
+87
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Résilience 2 Évolution 3 Armure des Âmes
+Jouer cette carte 1 deck
+Partager
+### Compétences
+#### Tenebr'eal
+3 tours
+Attaque 40 Ombre
+Bonus Ombre (+1)
+Vampirisme
+Précision 100% Critique 1%
+### Tox de départ
+#### Soin primitif
+Commune
+Au début de chaque tour, la carte récupère 4% de ses PV max
+#### AoE
+Commune
+Attaque et soigne les cibles adjacentes à hauteur de 20% des dégâts infligés
+### Talents
+#### Résilience
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 0 · Score théorique
+#### Évolution
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 37,4 · Score théorique
+#### Armure des Âmes
+Conseillé
+Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10 %)
+Δ 208 · Score théorique
+## Ses meilleurs decks
+1 deck classé joue cette carte.
+Tous les decks
+B Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Squall
+78,5 % Indice relatif 6 tours Élimination estimée 31 / tour Spamtons
+### Résistances
+24% Feu
+5% Eau
+15% Terre
+15% Nature
+5% Ombre
+15% Lumière
+Cauchemar · Abysses
+### Derrière la carte
+Les monstres abyssaux ont une forme horrifique indescriptible. Ces créatures démoniaques furent rencontrées lors de l’expédition Oniyx, une aventure terrifiante dans les profondeurs du temple de Zaar’Phahl, en Shal’Zaar. En cherchant à quitter les Abysses, le groupe rencontra de nouveaux fléaux abyssaux. Leur forme était difficile à décrire, mais, après une première frayeur, les explorateurs comprirent que ces monstruosités leur indiquaient la sortie. Leur faire confiance constituait leur dernier espoir. Ces guides inespérés fauchaient les monstres comme du blé, avec des armes nourries par le chaos élémentaire des lieux. Les spectres maintenaient ainsi l’Abysse hors de la Surface, donnant aux survivants le temps d’ériger des fortifications autour de la brèche. Ils furent baptisés « Shado », d’après le mot anglais shadow, « ombre », privé de son W : cette lettre, initiale de win, « victoire », n’avait pas sa place dans un combat sans fin. Le temple de Zaar’Phahl est orné de nombreuses décorations en leur honneur.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 193 Feu
+Épique · Utilitaire
+### Vladislaus
+350 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

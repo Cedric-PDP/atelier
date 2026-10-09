@@ -5,20 +5,39 @@
 > d'outils, de MCP ni de mémoire O'Work (cicd-live, rag, SCRIPTS_V2…). Ouvrir Claude Code **dans ce dossier**.
 > Dépôt **privé** : il contient un instantané du moteur et des textes de spamgame-wiki.com (contenu tiers).
 
-L'utilisateur joue à **SPAM** (jeu de cartes Steam de Ticroco). Ce dépôt contient l'interface « Atelier de
-decks SPAM » et tout ce qu'il faut pour recalculer ses données.
+L'utilisateur joue à **SPAM** (jeu de cartes Steam de Ticroco, appid Steam `2902720`). Ce dépôt contient les
+trois pages publiées du projet et tout ce qu'il faut pour recalculer leurs données. Il remplace les sessions du
+2026-10-09 (lancées depuis un autre dossier) : tout ce qu'elles savaient est ici.
 
-## L'interface publiée
+## Les pages publiées
 
-- Artifact : https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE — page `site/atelier-spam.html`, qui charge
-  `data.json` et `shop.json` (publiés à côté via `files`).
-- Capacité `db` : collection `decks` = decks sauvegardés `{name, cards:[numéros], createdAt}`.
-  Instantané dans [spam/decks.json](spam/decks.json) ; **la source vivante est la base**, pas le fichier.
-- Republier : `Artifact` publish, `file_path: site/atelier-spam.html`,
-  `files: {"data.json": "site/data.json", "shop.json": "site/shop.json"}`, `url:` celle ci-dessus. Dans une
-  nouvelle session, faire d'abord `action: "read"` sur l'URL. Omettre `capabilities` pour garder la `db`.
-- Avant de republier une page modifiée : `node scripts/app/smoke_page.js site/atelier-spam.html site`
-  (faux DOM, doit finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`.
+Republier = `Artifact` publish avec le `url` de la page, **sans `capabilities`** (pour garder celles déclarées).
+Dans une nouvelle session, faire d'abord `action: "read"` sur l'URL : la page publiée peut avoir bougé. Une
+seule session publie à la fois (des sessions parallèles ont divergé le 2026-10-09 : 1.20 contre 1.21, deux
+journaux) ; les données des bases (`ArtifactData`) peuvent être lues et écrites par toute session.
+
+| Page | Source | Base / capacités |
+|---|---|---|
+| **Atelier de decks** https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE | `site/atelier-spam.html` + `files: {"data.json": "site/data.json", "shop.json": "site/shop.json"}` | `db` : `decks` = decks sauvegardés `{name, cards:[numéros], createdAt}` (instantané : [spam/decks.json](spam/decks.json), la source vivante est la base) |
+| **Journal de parties** https://claude.ai/artifact/WSVR5uVuFT9SMAa9WSaqpL | `journal/journal-spam.html` (construit par `journal/page/build_page.js`) | `db`, `user`, `assets`, `sample{images}` : `matches`, `knowledge`, `archetypes` — **schéma = contrat**, voir [journal/README.md](journal/README.md) |
+| **Pont SPAM** https://claude.ai/artifact/6hFsmpioodoRQFGjstecxc | `pont/pont-spam.html` | `db`, `assets` : `imports/<horodatage ISO>` + `orchestrator/status` |
+
+- **Atelier** : avant de republier, `node scripts/app/smoke_page.js site/atelier-spam.html site` (faux DOM, doit
+  finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`.
+- **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Procédure d'analyse des
+  captures, barème de certitude et schéma dans [journal/README.md](journal/README.md) ; smoke =
+  `node journal/page/smoke_journal.js journal/journal-spam.html` (doit finir par `SMOKE OK`). Le skill
+  utilisateur `spam-journal` (`~/.claude/skills/`) ne fait que pointer vers ce README.
+- **Pont** : l'utilisateur, sur son PC perso **sans rien d'installé**, y dépose des dossiers (données du jeu
+  `LocalLow`, Steam `userdata/<id>`, dossier d'installation) ; la page n'envoie que les fichiers cochés (`assets`)
+  et un inventaire dans `imports/<ts>` (`status: "à lire"`). Après lecture : poser `readAt` sur l'import et
+  répondre dans `orchestrator/status` `{updatedAt, headline, points[], asks[]}`, affiché en haut de la page.
+  `localconfig.vdf` de Steam est lu sur place (seuls le temps de jeu et la dernière date de SPAM sont gardés).
+  Les imports vont dans le Journal avec `source` = nom de l'import et des cartes en numéros ; les captures se
+  copient côté serveur (`Artifact` publish `asset: true` + `from_url` + `asset_ids`). Quand le format des
+  fichiers du jeu sera connu, ajouter un vrai parseur à la page.
+- Verdict Steam : le compte n'apporte presque rien (Steam ne voit pas les parties, une page ne peut pas appeler
+  Steam). L'inconnue est de savoir si le jeu garde l'**historique des parties en local** : le premier import le dira.
 
 ## Le joueur
 
@@ -30,13 +49,41 @@ decks SPAM » et tout ce qu'il faut pour recalculer ses données.
   joueurs, qui peuvent avoir des talents.
 - Incident fondateur : en vrai match, *Tisseuse de Mots* (#123, Veuve noire = `absorbAny`) a absorbé notre
   *Chimère Brasse-chair* → d'où la métrique « carte perdue » `L` (score si une carte disparaît au tour 1).
+- **Pas de tier des cartes, nulle part** (demande de l'utilisateur).
 
-## Le moteur (instantané du wiki, jeu 1.20)
+## Règles à ne pas confondre (vérifiées dans le moteur et l'audit)
 
-- `spam/js/simulation.js` = `/_astro/simulation-*.js` de spamgame-wiki.com, `spam/js/model.json` =
-  `/data/model-*.json` (127 cartes, engineHash `a8193b3d422a54a9`). `model_crit1.json` est identique à
-  `model.json`. Variantes : `model_nocrit` (sans critiques), `model_crit<k>` (critiques ×k),
-  `model_dead` (+ une carte factice `dead-card`, 1 PV, pour la carte perdue).
+- `spamton` d'une carte = **revenu par tour** tant qu'elle vit, **pas un coût**. Revenu d'un tour = somme des
+  `spamton` des cartes vivantes + numéro du tour. La prime de mort (50 Spamtons) va au joueur qui **perd** la carte.
+- `rows` = capacités + passifs innés ; une carte a `3 - rows` emplacements de Tox libres. La boutique ouvre aux
+  tours pairs.
+- **Deux bans différents** : le **ban de boutique est RÉEL** (vu par l'utilisateur) — chaque joueur bannit un
+  élément de la boutique, retiré pour les deux ; il fait partie des stratégies (robustesse du plan d'achat d'un
+  deck au ban adverse, choix de notre ban ; `bansPerPlayer:1` est probablement celui-là). Encore inconnus : le
+  moment du ban (une fois par partie ou à chaque boutique) et ce qu'on sait de l'adversaire à ce moment. Le
+  **ban d'une carte** du deck n'a jamais été observé (peut-être en Classé) : ne rien modéliser.
+
+## Le moteur : un instantané du wiki PAR VERSION du jeu (`spam/versions/<v>/`)
+
+- **Version courante : 1.21** (engineHash `36e2c03d5b7bf4a1`, sortie le 2026-10-09). 1.20 est archivée à côté.
+- `spam/versions/<v>/js/simulation.js` = `/_astro/simulation-*.js` de spamgame-wiki.com, `js/model.json` =
+  `/data/model-*.json` (127 cartes), `js/source.json` = URLs hachées, engineHash et date de récupération.
+  Variantes générées par `scripts/app/make_variants.js` (non versionnées) : `model_nocrit` (sans critiques),
+  `model_crit0.5` (chances de critique ×0,5, multiplicateurs gardés), `model_dead` (+ une carte factice
+  `dead-card`, 1 PV, pour la carte perdue). Vérifié : elles redonnent à l'identique celles de 1.20.
+- `spam/js/` (et `model_crit<k>`) = l'ancien emplacement 1.20, encore lu par les scripts d'analyse ponctuelle
+  et l'audit ; le pipeline de la page ne s'en sert plus.
+- 1.21 : `bestDecks` prend `[{id, talents:[]}]` (plus une liste d'ids) et ne rend que 3 decks ; `evaluate`
+  est inchangé.
+- **Métrique « carte perdue » L** (« Sans sa carte clé » dans la page) : depuis 1.21, la carte est **retirée au
+  tour 1 sans mourir** (absorption), via `js/engine_stress.js` = moteur + bascules de l'audit (`globalThis.STRESS`,
+  éteintes par défaut, scores identiques à l'octet) + `__lostAbsorb(model, ids)`. Construit par
+  `scripts/app/stress/make_engine_<v>.js` (ancres et noms minifiés **propres à chaque version** : à porter à
+  chaque patch du jeu, en partant de celui de la version précédente). Sans patcher pour la version, `recompute.sh`
+  retombe sur l'ancienne fausse carte `dead-card` de 1 PV et l'écrit dans `meta.lostMethod`. ⚠️ Cette fausse
+  carte MEURT au tour 1 : ça déclenche les effets à la mort des alliés (Vengeur inné de Dragon Ciel, Cimetière,
+  Vitalité des Âmes) et gonfle L de ~+977 points sur les decks avec Dragon Ciel (audit du 2026-10-09 ; ex.
+  117-156-180-238 : 5 220 au lieu de 3 519), contre −15 ailleurs.
 - Exécuté dans un `vm` Node isolé (ni `require` ni `fs` dedans) : `scripts/sim_lab2.js <engine>
   "x1=<model>;x0=<model>" <driver.js> <out.json>`. Le driver est du JS évalué dans le contexte du moteur :
   globals `MODELS`, `OUT` (écrit dans out.json), `ht` (fabrique d'évaluateur) ; les données doivent être
@@ -45,57 +92,92 @@ decks SPAM » et tout ce qu'il faut pour recalculer ses données.
   (()=>{const I=ht(MODELS.x1);const r=I.evaluate(ids.map(id=>({id,talentId:null})),{optimize:false,suggestions:false,shop:false});
    OUT.res={score:r.score,ttk:r.ttk,matchups:r.matchups,dmgByTurn:r.dmgByTurn};})();
   ```
-- Repères sans talent : baseline 4 714,7, meilleur deck 15 336,6. Deck chimere = 8 018 (48 % des dégâts
-  viennent des critiques).
+- Repères sans talent (`model.noTalent`) : 1.20 baseline 4 714,7 / meilleur 15 336,6 ; 1.21 baseline 4 865 /
+  meilleur 15 327,5. Deck chimere = 8 018 en 1.20 (48 % des dégâts viennent des critiques), 8 011 en 1.21.
+- 1.21 en bref (détail : `spam/versions/1.21/CHANGELOG.md`) : Dragon Ciel (AoE + Nature +4) passe en tête de la
+  collection, meilleur deck possédé Esprit Nature · Lame de la forêt · Keria · Dragon Ciel ≈ 8 934. Côté menaces :
+  Tisseuse de Mots à 2 Spamtons, Zombie Floral en AoE Disparition, Gel à 60.
+- **Leçon : le moteur du wiki affronte un adversaire ABSTRAIT** (une courbe de dégâts, aucune mécanique).
+  L'absorption de carte (Veuve noire de Tisseuse), la Provocation permanente (Fleur de Vie), le Gel, le Renvoi…
+  sont invisibles dans ses scores : toujours éprouver un deck face aux mécaniques adverses (`spam/audit/E1`, `E2`,
+  moteur à bascules `engine_stress.js`).
+
+## Nouvelle version du jeu : UNE commande (c'est la procédure de base)
+
+```bash
+bash scripts/app/new_version.sh          # --force pour tout refaire, --no-site pour ne pas toucher site/
+```
+
+1. `fetch_version.js` lit la page builder du wiki, retrouve `model-*.json` et `simulation-*.js` (noms hachés,
+   le second via les scripts de la page), et crée `spam/versions/<v>/` : `js/`, `cards_fr.json` (page cartes),
+   `builder_fr.txt` (textes des Tox), `meta_decks.json` (decks de la tier list du wiki = la « méta »). Exit 3
+   et rien d'autre si le wiki sert les mêmes fichiers que la dernière fois.
+2. `recompute.sh <v>` recalcule tout avec ce moteur (détail ci-dessous), écrit le changelog contre la version
+   précédente et copie `data.json` / `shop.json` dans `site/`.
+3. Publier reste manuel (voir « L'interface publiée »). La page affiche l'onglet « Nouveautés <v> ».
 
 ## Recalculer les données de la page
 
 ```bash
-bash scripts/app/recompute.sh
+bash scripts/app/recompute.sh [<v>] [--only-build] [--no-site]   # <v> par défaut : la plus haute ; CHUNKS=16 process
 ```
 
-Enchaîne : `gen_drivers` (pre, lost) → `pre` = tous les decks de 4 cartes du pool (31 465, 6 process,
-≈ 9 min) → `pick_shop_keys` (1 630 decks) → `gen_drivers shop` → `lost` (20 process) → `shop` (20 process,
-≈ 2,4 s/deck ; le PC perso a 22 cœurs) → `build_core` + `build_shop` → smoke de la page. Les sorties
-intermédiaires vont dans `spam/app/`, les journaux `*_log_*.txt` sont ignorés par git.
+Enchaîne, tout dans `spam/versions/<v>/` : variantes + `toxinfo` → `pre` = tous les decks de 4 cartes du pool
+(31 465, ≈ 4 min sur 16 process si la machine est libre, 11 min le 2026-10-09 avec d'autres sessions) →
+`pick_shop_keys` (≈ 1 600 decks) → `lost` → `shop` (≈ 2,4 s/deck) → échantillon global + Monte-Carlo de boutique
+des 4 decks de `spam/mcv2/` → decks méta notés par ce moteur **et** le précédent → `build_core --ver` +
+`build_shop` → `build_changelog` → `site/` → smoke de la page. `--only-build` refait l'assemblage sans relancer
+le moteur ; `--only-lost` ne recalcule que L (par ex. après avoir ajouté le patcher d'une version). Drivers
+générés dans `drv/`, sorties dans `app/` (ni l'un ni l'autre versionné).
+
+`build_core.js --ver` ne code plus rien en dur : version, baseline, meilleur (`model.noTalent`), paliers
+(S/A/B/C = 90/80/70/50 % de l'indice, règle du wiki), meilleur deck (le mieux noté de la tier list du wiki) et
+simulations de boutique (`app/mc_*.json` + `spam/mcv2/deck_*.json`) viennent des résultats. Sans `--ver`, il
+garde l'ancien comportement 1.20 (vérifié : redonne `site/data.json` 1.20 à l'octet près).
+
+**Changelog** (`build_changelog.js`) — écrit dans `spam/versions/<v>/` : `changelog.json`, `CHANGELOG.md`, et
+l'intègre à `data.json` (`data.changelog`, + `prev.s1/s0` alignés sur `decks` pour afficher « avant → après » sur
+n'importe quel deck, y compris les decks sauvegardés plus tard). Contenu : repères, cartes modifiées (diff des
+modèles ; les renommages de talents « Coeur » → « Cœur » sont ignorés, et un texte reformulé sans aucun champ
+moteur changé va dans `textOnly`, à part), Tox de la boutique, **cibles de ban** (chaque joueur bannit un Tox de
+la boutique : Tox les plus achetés par les plans de boutique de tes decks de référence), **effet par carte**
+(sur les MÊMES 24 000 decks aléatoires, `spam/stats/global_decks.json`, écart des decks qui jouent la carte
+comparé à l'évolution moyenne), tes decks (top 10, hausses/baisses parmi tes 300 meilleurs, meilleur sans
+critiques, decks sauvegardés), decks méta du wiki (rangs et scores avant/après). Il écrit aussi `scores.json` et
+`global.json`, versionnés : c'est ce que la version SUIVANTE compare.
 
 Le **pool** = [spam/app/pool_order.json](spam/app/pool_order.json) : 31 uuid, les **26 possédés d'abord**,
 puis les 5 souhaités. Quand la collection change :
 1. mettre à jour `spam/mine.txt` et `pool_order.json` (possédés en tête) ;
 2. mettre à jour `NOWN` dans `scripts/app/build_core.js` **et** `scripts/app/pick_shop_keys.js` ;
-3. relancer `recompute.sh`, republier.
-
-Valeurs **codées en dur** dans `build_core.js`, à revoir après un patch : `meta` (version du jeu, date,
-baseline, best, paliers S/A/B/C, meilleur deck) et `sims` (simulations de boutique Monte-Carlo de 4 decks).
-`stats/g_res_*.json` (échantillon global de 24 000 decks, drivers `scripts/stats/drv_g_*.js`) ne dépend pas
-de la collection.
-
-## ⚠️ Patch 1.21 (2026-10-09) — les scores de la page sont périmés
-
-15 cartes modifiées, dont 6 de la collection : 180, 259, 153, 30, 158, 102 (`spam/patch.txt` = 1.20). Pour
-recalculer : récupérer le nouveau `simulation-*.js` + `model-*.json` du wiki (noms hachés, à lire dans le
-HTML de la page builder), les déposer dans `spam/js/`, régénérer les variantes de modèle (`model_nocrit`,
-`model_dead`…), mettre à jour `meta` dans `build_core.js`, puis `recompute.sh`.
+3. relancer `recompute.sh`, republier. Le changelog suivant comparera les decks par **numéros de cartes** :
+   un changement de collection entre deux versions ne casse pas la comparaison.
 
 ## Réseau et données réelles
 
 - Depuis le PC du travail, le proxy bloque spamgame.com, Steam (store/community/api) et metabot.gg (curl
-  **et** WebFetch) ; spamgame-wiki.com passe en `curl -s -L --max-time 30`.
+  **et** WebFetch) ; spamgame-wiki.com passe en `curl -s -L --max-time 30`. steamdb et gamefaqs sont bloqués aussi,
+  Reddit ne sert qu'un mur anti-robots.
 - Aucune source publique de matchs réels (ladder, replays, API) : le wiki et metabot ne font que simuler.
-  Le jeu garde l'historique des matchs (taux de victoire par deck) **en local** sur le PC perso.
+  Le jeu affiche un historique des parties (taux de victoire par deck) ; s'il est stocké **en local** sur le PC
+  perso, le premier import du Pont le dira.
 
 ## Plan du dépôt
 
 | Chemin | Contenu |
 |---|---|
-| `site/` | la page publiée + `data.json` / `shop.json` (sortie de `recompute.sh`) |
+| `site/` | la page Atelier + `data.json` / `shop.json` de la version courante (copiés par `recompute.sh`) |
+| `journal/` | la page Journal : `journal-spam.html` (à publier), `page/` (source, build, smoke), `ref/` (127 cartes 1.21 FR/EN, Tox, collection) ; `README.md` = procédure + contrat de la base |
+| `pont/` | la page Pont SPAM (`pont-spam.html`, autonome) |
+| `spam/versions/<v>/` | une version du jeu : `js/` (moteur + modèle), `cards_fr.json`, `builder_fr.txt`, `meta_decks.json`, `scores.json`, `global.json`, `changelog.json`, `CHANGELOG.md` ; `app/`, `drv/`, `data.json`, `shop.json` non versionnés |
 | `scripts/sim_lab*.js`, `run_sim.js` | lanceurs du moteur dans un `vm` |
-| `scripts/app/` | pipeline de la page (`recompute.sh`, `gen_drivers`, `pick_shop_keys`, `build_*`, `smoke_page`) ; `drv_*_N.js` sont **générés** depuis `drv_*_0.js` |
-| `scripts/*.js`, `stats/`, `addx/`, `mcv2/` | drivers des analyses ponctuelles (critiques, talents, Monte-Carlo, ajout de carte…) |
-| `spam/js/` | moteur + modèles |
+| `scripts/app/` | pipeline de la page (`new_version.sh`, `fetch_version`, `make_variants`, `recompute.sh`, `gen_drivers`, `gen_global_drivers`, `gen_eval_driver`, `extract_meta_decks`, `pick_shop_keys`, `build_*`, `smoke_page`) ; `drv_*_N.js` de ce dossier = drivers 1.20, **générés** depuis `drv_*_0.js` (les modèles) |
+| `scripts/*.js`, `stats/`, `addx/`, `mcv2/` | drivers des analyses ponctuelles (critiques, talents, Monte-Carlo, ajout de carte…) ; `mcv2/drv_*.js` sont aussi relancés à chaque version |
+| `spam/js/` | moteur + modèles 1.20 (ancien emplacement, analyses ponctuelles) |
 | `spam/*.json`, `*.csv`, `*.txt` | cartes (FR/EN), Tox, collection, extraits texte du wiki (règles, méthodologie, stratégies), résultats d'analyses |
 | `spam/app/`, `spam/stats/` | sorties intermédiaires lues par `build_core.js` |
-| `spam/audit/README.md` | cadrage de l'audit des mécaniques (en cours le 2026-10-09, rapports pas encore versés) |
+| `spam/audit/` | audit des mécaniques du 2026-10-09 (terminé ; données 1.20, écarts 1.21 signalés) : `README.md` (cadrage + corrections), `A_rules.md` (règles complètes et sources), `B_engine.md` (ce que le moteur du wiki voit ou non ; `B_engine_pretty.js` = moteur lisible), `C_actives.md` / `C_actives.json` (ce qu'un adversaire peut faire à nos decks hors dégâts : 55 mécaniques), `D_tox.md` / `D_tox.json` (les Tox vus côté adverse), `E1/E1_stress.md` + `E2/` (nos decks face à Provocation, Gel, précision, renvoi, absorption, reset de recharge, soins : moteur à bascules, base des `stress/`), `F/F_meta.md` (cartes et mécaniques adverses probables, par proxy) |
 
-Les pages HTML brutes aspirées du wiki (`spam/pages/`, `spam/*.html`, `spam/audit/A_raw/`) ne sont pas
-versionnées : elles se re-téléchargent.
+Non versionnés (ils se re-téléchargent ou se recalculent) : les pages HTML brutes du wiki (`spam/pages/`,
+`spam/*.html`, `spam/audit/A_raw/`, `D_raw/`), les sorties de runs de l'audit (`spam/audit/F/runs/`, `F/dl/`,
+`E2/res_chunk_*`), les journaux d'exécution.

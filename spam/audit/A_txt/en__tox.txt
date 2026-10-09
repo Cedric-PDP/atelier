@@ -1,0 +1,622 @@
+SPAM Tox: the 101 shop passives, rarities and gains
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Tox
+# Tox,
+line by line.
+What each Tox does, which cards start with it, and what it brings to the model’s decks.
+## Rarities as the game goes on
+Odds of each rarity for an offered Tox, at each shop opening (every two turns), with the starting Luck (+1 per turn). Everything is common at first; Luck talents and Tox bring rarities earlier.
+Common Rare Epic Legendary
+- T 2 100 %
+Luck 2
+- T 4 80 % 20 %
+Luck 4
+- T 6 50 % 45 %
+Luck 6
+- T 8 27 % 53 % 20 %
+Luck 8
+- T 10 50 % 40 %
+Luck 10
+- T 12 42 % 53 %
+Luck 12
+- T 14 35 % 60 %
+Luck 14
+- T 16 28 % 59 %
+Luck 16
+- T 18 21 % 55 % 25 %
+Luck 18
+- T 20 50 % 35 %
+Luck 20
+Search Tox / Sort by Average gain Maximum gain Frequency in plans Rarity Name
+All Common Rare Epic Legendary
+All families Elemental bonuses Damage Survival Control Economy & luck Transformation
+102 results · gains computed on tier-list decks, Tox equipped from the start
+### Berserk
+Legendary Damage
+Damage and healing of all your cards are increased by 100%.
+Average gain + 17.2 % Maximum gain + 59.1 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Berserk
+Epic Damage
+Damage and healing of all your cards are increased by 50%.
+Average gain + 7.8 % Maximum gain + 44.3 % In purchase plans 20 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it B Aleera + Paguroniyx C Mistress of Tints + Apprentice of Death C The Companion of Spirits + Water Spirit
+### Graveyard
+Legendary Elemental bonuses Official glossary
+Raises all your elemental bonuses by (+12) whenever a card dies.
+Average gain + 6 % Maximum gain + 35.8 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Natureheart
+Legendary Elemental bonuses
+Nature bonus (+8) each turn.
+Average gain + 4.6 % Maximum gain + 56.7 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Earthheart
+Legendary Elemental bonuses
+Earth bonus (+8) each turn.
+Average gain + 4.3 % Maximum gain + 45.5 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Multiplier
+Rare Elemental bonuses
+Elemental bonuses are doubled for this card's damage and heals
+Average gain + 3.8 % Maximum gain + 36.5 % In purchase plans 10 % Likely from turn 4
+Cards that start with it Medusine Thorn Murmurs of Black Coral Deer of Mournful Colors The Inventor
+Decks that target it B Sovereign of the Ether Falls + Master Amphibian C Master Amphibian + Rob the Adventurer C Pyro + Wibs the Blazing
+### Graveyard
+Epic Elemental bonuses Official glossary
+Raises all your elemental bonuses by (+8) whenever a card dies.
+Average gain + 3.7 % Maximum gain + 42.6 % In purchase plans 2 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Medusine Thorn + The Companion of Spirits D Commando Gerz + Zayd D Floral Zombie + Princess Meridia
+### Fireheart
+Legendary Elemental bonuses
+Fire bonus (+8) each turn.
+Average gain + 3.7 % Maximum gain + 59.1 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### AoE
+Legendary Damage Official glossary
+Attacks and heals adjacent targets for 100% of the damage dealt.
+Average gain + 3.7 % Maximum gain + 29.8 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Waterheart
+Legendary Elemental bonuses
+Water bonus (+8) each turn.
+Average gain + 3.5 % Maximum gain + 33.5 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Freeze
+Epic Control
+When this card deals damage or heals, it freezes the target: it cannot act until the end of the opponent's next turn. Further damage, healing, or a new Tox shatters the ice and deals 60 damage.
+Average gain + 3.4 % Maximum gain + 16.7 % In purchase plans 5 % Likely from turn 8
+Cards that start with it Dragon of the Infernal City Frost & Glacier
+Decks that target it C Aleera + Catixy C Catimimi + Floral Giraffe C Catimimi + Faerylia
+### Avenger
+Epic Damage
+This card recovers all its attacks whenever a card it didn't kill dies.
+Average gain + 3.3 % Maximum gain + 56.5 % In purchase plans 3 % Likely from turn 8
+Cards that start with it Sky Dragon Apprentice of Death
+Decks that target it C Sky Dragon + Thorn of Love C Abyssal Lightbearer + Nebular Aristocrat C Commando Gerz + Radiant Shinobi
+### Earthheart
+Epic Elemental bonuses
+Earth bonus (+5) each turn.
+Average gain + 3.2 % Maximum gain + 36.5 % In purchase plans 5 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Commando Gerz + Blue-Stone-Eater D Blue-Stone-Eater + Rob the Adventurer D Golden Boar + Earth King
+### Vitalheart
+Legendary Survival
+This card gains 100 max HP each turn.
+Average gain + 3.1 % Maximum gain + 18.5 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### AoE
+Epic Damage Official glossary
+Attacks and heals adjacent targets for 80% of the damage dealt
+Average gain + 3 % Maximum gain + 29.6 % In purchase plans 1 % Likely from turn 8
+Cards that start with it Traveler of the Ridges
+Decks that target it D Verdant Fruit Cruncher + Golden Boar D Hatchlings of Midas + Melody of Divinities
+### Natureheart
+Epic Elemental bonuses
+Nature bonus (+5) each turn.
+Average gain + 2.8 % Maximum gain + 42.6 % In purchase plans 5 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Spirit of the Fauna + Thorn of Love C Sky Dragon + Thorn of Love C Floral Zombie + Gabriel
+### Berserk
+Rare Damage
+All your cards' damage and heals are increased by 25%
+Average gain + 2.8 % Maximum gain + 36.5 % In purchase plans 18 % Likely from turn 4
+Cards that start with it Commando Gerz
+Decks that target it S Aleera + Master Amphibian A Aleera + Sovereign of the Ether Falls A Aleera + Apprentice of Death
+### Lightheart
+Legendary Elemental bonuses
+Light bonus (+8) each turn.
+Average gain + 2.6 % Maximum gain + 70.8 % In purchase plans 1 % Likely from turn 16
+Cards that start with it Shop only
+Decks that target it D Radiant Shinobi + Thorn of Love
+### Shadowheart
+Legendary Elemental bonuses
+Shadow bonus (+8) each turn.
+Average gain + 2.6 % Maximum gain + 44 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Poison
+Rare Damage
+Deals damage equal to 3% of the target's max HP at the start of each of its turns, for 3 turns.
+Average gain + 2.6 % Maximum gain + 29.6 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it D Wibs the Blazing + Logidrake D Pyro + Wibs the Blazing
+### Poison
+Epic Damage
+Deals damage equal to 6% of the target's max HP at the start of each of its turns, for 3 turns.
+Average gain + 2.6 % Maximum gain + 29.6 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Poison
+Legendary Damage
+Deals damage equal to 8% of the target's max HP at the start of each of its turns, for 3 turns.
+Average gain + 2.6 % Maximum gain + 29.6 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Poison
+Common Damage
+Deals damage equal to 1% of the target’s max HP at the start of each of its turns for 3 turns.
+Average gain + 2.6 % Maximum gain + 29.6 % In purchase plans 20 % Likely from turn 2
+Cards that start with it Wibs the Blazing Floating Poison Gas
+Decks that target it S Aleera + Master Amphibian B Apprentice of Death + Scorch B Master Amphibian + Rob the Adventurer
+### Fireheart
+Epic Elemental bonuses
+Fire bonus (+5) each turn.
+Average gain + 2.5 % Maximum gain + 58.9 % In purchase plans 5 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Mistress of Tints + Apprentice of Death C Sovereign of Flames + Wibs the Blazing C Pyro + Wibs the Blazing
+### Reflection
+Legendary Survival Official glossary
+Reflects 100% of the damage taken back to the attacker.
+Average gain + 2.4 % Maximum gain + 29.7 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Waterheart
+Epic Elemental bonuses
+Water bonus (+5) each turn.
+Average gain + 2 % Maximum gain + 27.6 % In purchase plans 4 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Master Amphibian + Rob the Adventurer C Sovereign of the Ether Falls + Master Amphibian C Floral Zombie + Sovereign of the Ether Falls
+### Reset
+Epic Damage
+When you kill an ENEMY card with one of your attacks, that attack remains available
+Average gain + 2 % Maximum gain + 25.3 % In purchase plans 1 % Likely from turn 8
+Cards that start with it Celestial Dragosaur Blue-Stone-Eater Nimbus Seahorse Ephial
+Decks that target it D Floral Zombie + Gabriel
+### Vitalheart
+Epic Survival
+This card gains 60 max HP each turn.
+Average gain + 2 % Maximum gain + 17 % In purchase plans 6 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Deer of Mournful Colors + Thorn of Love C Spirit of the Fauna + Thorn of Love C Cloudy Rodent + Melody of Divinities
+### Graveyard
+Rare Elemental bonuses Official glossary
+Increases all your elemental bonuses by (+5) when a card dies
+Average gain + 1.9 % Maximum gain + 24.6 % In purchase plans 5 % Likely from turn 4
+Cards that start with it Birth of Aldrin Wander Blades
+Decks that target it C Raffteru + Thorn of Love C Melody of Divinities + Polychrome Owl C Sky Dragon + Thorn of Love
+### Phoenix
+Legendary Survival Official glossary
+When destroyed, this card comes back to life with 100% of its max HP.
+Single use
+Average gain + 1.4 % Maximum gain + 18.2 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Eternity
+Legendary Control Official glossary
+Increases cooldowns by 1
+Average gain + 1.4 % Maximum gain + 12.6 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Nakyel Serpentine Heraldess
+### Phoenix
+Epic Survival Official glossary
+When destroyed, this card comes back to life with 75% of its max HP.
+Single use
+Average gain + 1.4 % Maximum gain + 17.3 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Phoenix
+Rare Survival Official glossary
+When destroyed, this card returns to life with 50% of its max HP.
+Single use
+Average gain + 1.4 % Maximum gain + 16.4 % In purchase plans 5 % Likely from turn 4
+Cards that start with it Birth of Aldrin
+Decks that target it C Spirit of the Fauna + Thorn of Love C Sky Dragon + Thorn of Love C Abyssal Lightbearer + Nebular Aristocrat
+### Vanish
+Legendary Control Official glossary
+Removes the target's last passive
+Average gain + 1.3 % Maximum gain + 12.6 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Lisa, the Dragonrider Aidan Mouse of the Wheat
+### Optimisation
+Rare Damage
+Variable damage, healing and bonus values of this card always roll their maximum.
+Average gain + 1.3 % Maximum gain + 36.5 % In purchase plans 3 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C The Companion of Spirits + Water Spirit C Medusine Thorn + The Companion of Spirits D Blue-Stone-Eater + Earth Spirit
+### Reflection
+Epic Survival Official glossary
+Reflects 75% of the damage taken back to the attacker
+Average gain + 1.3 % Maximum gain + 29.8 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Thorn of Love
+### AoE
+Rare Damage Official glossary
+Attacks and heals adjacent targets for 40% of the damage dealt.
+Average gain + 1.2 % Maximum gain + 29.6 % In purchase plans 2 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Cloudy Rodent + Melody of Divinities D Commando Gerz + Melody of Divinities D Sky Dragon + Thorn of Love
+### Shadowheart
+Epic Elemental bonuses
+Shadow bonus (+5) each turn.
+Average gain + 1.2 % Maximum gain + 29.4 % In purchase plans 2 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Wibs the Blazing + Apprentice of Death C Wibs the Blazing + Apprentice of Death D Canine Specter + Mistress of Tints
+### Graveyard
+Common Elemental bonuses Official glossary
+Increases all your elemental bonuses by (+3) when a card dies
+Average gain + 1.2 % Maximum gain + 42.4 % In purchase plans 6 % Likely from turn 2
+Cards that start with it Apprentice of Death
+Decks that target it C Sovereign of Flames + Apprentice of Death C Deer of Mournful Colors + Thorn of Love C Wibs the Blazing + Apprentice of Death
+### Phoenix
+Common Survival Official glossary
+When destroyed, this card returns to life with 25% of its max HP.
+Single use
+Average gain + 1.2 % Maximum gain + 15.3 % In purchase plans 7 % Likely from turn 2
+Cards that start with it Blue-Stone-Eater King of the Blazing Flames
+Decks that target it C Sky Dragon + Nebular Aristocrat C Wibs the Blazing + Apprentice of Death C Melody of Divinities + Polychrome Owl
+### Bomba
+Epic Damage Official glossary
+Deals 500 raw damage to a random enemy card when this card dies.
+Average gain + 1.1 % Maximum gain + 21.6 % In purchase plans 1 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it C Mistress of Tints + Apprentice of Death D Sky Dragon + Cloudy Rodent
+### Fireheart
+Rare Elemental bonuses
+Fire bonus (+2) per turn
+Average gain + 1 % Maximum gain + 43.9 % In purchase plans 2 % Likely from turn 4
+Cards that start with it Wibs the Blazing
+Decks that target it D Wibs the Blazing + Apprentice of Death D Pyro + Apprentice of Death D Wibs the Blazing + Logidrake
+### Earthheart
+Rare Elemental bonuses
+Earth bonus (+2) each turn.
+Average gain + 0.9 % Maximum gain + 36.5 % In purchase plans 3 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Verdant Fruit Cruncher + Blue-Stone-Eater C Thorn of Love + Rob the Adventurer D Verdant Fruit Cruncher + Golden Boar
+### Immunity
+Epic Survival Official glossary
+The card is immune to all effects from enemy cards
+Average gain + 0.9 % Maximum gain + 12.9 % In purchase plans 0 % Likely from turn 8
+Cards that start with it The Companion of Spirits Traveler of the Ridges Codex of Ancient Woes Codex of Luminous Spells
+### Berserk
+Common Damage
+All your cards' damage and heals are increased by 12%
+Average gain + 0.9 % Maximum gain + 29.6 % In purchase plans 17 % Likely from turn 2
+Cards that start with it Squall, Emissary of Nightmares Cloudy Rodent The Eye of the Mountains Minion of Flames
+Decks that target it A Canine Specter + Aleera B Aleera + Paguroniyx C Aleera + Catixy
+### Vitalheart
+Rare Survival
+This card gains 30 max HP each turn.
+Average gain + 0.9 % Maximum gain + 15 % In purchase plans 15 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it A Aleera + Commando Gerz A Aleera + Paguroniyx A Aleera + Paguroniyx
+### Ancient Healing
+Legendary Survival
+At the start of each turn, the card recovers 19% of its max HP.
+Average gain + 0.8 % Maximum gain + 18.3 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Ancient Healing
+Epic Survival
+At the start of each turn, the card recovers 14% of its max HP.
+Average gain + 0.8 % Maximum gain + 18.1 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Ancient Healing
+Rare Survival
+At the start of each turn, the card recovers 9% of its max HP.
+Average gain + 0.8 % Maximum gain + 16.9 % In purchase plans 3 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Floral Zombie + Sovereign of the Ether Falls C Catimimi + Floral Giraffe D Canine Specter + Mistress of Tints
+### Lucky
+Legendary Economy & luck Official glossary
+Increases your Luck by (+4) each turn.
+Average gain + 0.7 % Maximum gain + 12.9 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Mystery
+Rare Transformation
+Starts the game with a random passive
+Average gain + 0.7 % Maximum gain + 15.1 % In purchase plans 7 % Likely from turn 4
+Cards that start with it Paguroniyx Apprentice Evoker
+Decks that target it C Verdant Fruit Cruncher + Blue-Stone-Eater C Verdant Fruit Cruncher + Blue-Stone-Eater C Medusine Thorn + Scorch
+### Lightheart
+Epic Elemental bonuses
+Light bonus (+5) each turn.
+Average gain + 0.7 % Maximum gain + 23.2 % In purchase plans 4 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it D Commando Gerz + Radiant Shinobi D Radiant Shinobi + Thorn of Love D Commando Gerz + Cloudy Rodent
+### AoE
+Common Damage Official glossary
+Attacks and heals adjacent targets for 20% of the damage dealt
+Average gain + 0.7 % Maximum gain + 15.2 % In purchase plans 2 % Likely from turn 2
+Cards that start with it Shado, Abyssal Scourge Minion of Flames
+Decks that target it C Verdant Fruit Cruncher + Commando Gerz D Gabriel + Nature Spirit D Wibs the Blazing + Logidrake
+### Erosion
+Common Damage Official glossary
+Reduces the target's max HP by 50% of the damage dealt
+Average gain + 0.7 % Maximum gain + 19.1 % In purchase plans 0 % Likely from turn 2
+Cards that start with it Master Amphibian Sylvan, Protector of the Verdure Frost & Glacier
+### Erosion
+Epic Damage Official glossary
+Reduces max HP by 100% of the damage dealt.
+Average gain + 0.7 % Maximum gain + 19.1 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Natureheart
+Rare Elemental bonuses
+Nature bonus (+2) each turn.
+Average gain + 0.6 % Maximum gain + 28.1 % In purchase plans 3 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Sky Dragon + Thorn of Love D Mistress of Tints + Deer of Mournful Colors D Catimimi + Floral Giraffe
+### Waterheart
+Rare Elemental bonuses
+Water bonus (+2) each turn.
+Average gain + 0.6 % Maximum gain + 12.5 % In purchase plans 3 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it B Sovereign of the Ether Falls + Master Amphibian C Sovereign of the Ether Falls + Master Amphibian C Sovereign of the Ether Falls + Master Amphibian
+### Reflection
+Rare Survival Official glossary
+Reflects 50% of the damage taken back to the attacker.
+Average gain + 0.6 % Maximum gain + 29.6 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it D Floral Zombie + Sky Dragon D Radiant Shinobi + Glimmer of Hope
+### Punching Bag
+Common Elemental bonuses
+Increases the element of the caster's card by +1 each time it is attacked by an enemy
+Average gain + 0.6 % Maximum gain + 15 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Aleera, Nightmare-Eater Golden Boar Fire King Water King Nature King Earth King Light King Shadow King Weaver of Words Toad of the Stars Floral Giraffe The Wild Carrier
+Decks that target it C Sky Dragon + Princess Meridia
+### Punching Bag
+Rare Elemental bonuses
+Raises the card's element bonus by +2 each time it is attacked.
+Average gain + 0.6 % Maximum gain + 15 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Shop only
+### Punching Bag
+Epic Elemental bonuses
+Raises the card's element bonus by +3 each time it is attacked.
+Average gain + 0.6 % Maximum gain + 15 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Punching Bag
+Legendary Elemental bonuses
+Raises the card's element bonus by +4 each time it is attacked.
+Average gain + 0.6 % Maximum gain + 15 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Brutal
+Rare Damage
+Ignores resistances and taunts. Destroys enemy taunts if targeted
+Average gain + 0.6 % Maximum gain + 19.1 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Nimbus Seahorse
+### Reflection
+Common Survival Official glossary
+Reflects 25% of the damage taken back to the attacker.
+Average gain + 0.6 % Maximum gain + 29.6 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Shop only
+Decks that target it C Abyssal Lightbearer + Nebular Aristocrat D Canine Specter + Hatchlings of Midas
+### Vampirism
+Legendary Survival Official glossary
+Heals for 100% of the damage dealt to the target.
+Average gain + 0.5 % Maximum gain + 17.8 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Vampirism
+Epic Survival Official glossary
+Regenerates 75% of the damage dealt to the target
+Average gain + 0.5 % Maximum gain + 17.4 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Flesh-Melding Chimera
+### Lucky
+Epic Economy & luck Official glossary
+Increases your Luck by (+2) each turn.
+Average gain + 0.5 % Maximum gain + 12.6 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Earthheart
+Common Elemental bonuses
+Earth bonus (+1) per turn
+Average gain + 0.4 % Maximum gain + 36.3 % In purchase plans 3 % Likely from turn 2
+Cards that start with it Verdant Fruit Cruncher Rob the Adventurer
+Decks that target it C Verdant Fruit Cruncher + Blue-Stone-Eater C Verdant Fruit Cruncher + Commando Gerz D Blue-Stone-Eater + Raffteru
+### Temporality
+Legendary Control Official glossary
+Decreases cooldowns by 1
+Average gain + 0.4 % Maximum gain + 13.6 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Verdelune Neilla
+### Smoke
+Rare Survival Official glossary
+Enshrouds the allied field after using an attack or a heal
+Average gain + 0.4 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Ameru Vivy Chatty Octopus Herald of Ashes
+### Lucky
+Rare Economy & luck Official glossary
+Increases your Luck by (+1) per turn
+Average gain + 0.3 % Maximum gain + 12.4 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Glimmer of Hope Wander Blades
+### Revenge
+Rare Damage
+Once destroyed, this card deals all of its attacks to the opponent
+Average gain + 0.3 % Maximum gain + 12.5 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Zayd
+Decks that target it D Commando Gerz + Cloudy Rodent D Commando Gerz + Protector of Ruins
+### Vampirism
+Rare Survival Official glossary
+Regenerates 50% of the damage dealt to the target
+Average gain + 0.3 % Maximum gain + 16.9 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Logidrake, the Ignatius
+### Lucky
+Common Economy & luck Official glossary
+Increases your Luck by (+0.5) per turn
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Hibernatus Astral Healer of the Woods Herald of Ashes
+Decks that target it A Aleera + Master Amphibian
+### Spamland
+Common Economy & luck Official glossary
+Generates (+3) Spamtons each turn.
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 2
+Cards that start with it Shop only
+### Spamland
+Rare Economy & luck Official glossary
+Generates (+8) Spamtons each turn.
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Shop only
+### Spamland
+Epic Economy & luck Official glossary
+Generates (+24) Spamtons each turn.
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Spamland
+Legendary Economy & luck Official glossary
+Generates (+48) Spamtons each turn.
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Vampirism
+Common Survival Official glossary
+Regenerates 25% of the damage dealt to the target
+Average gain + 0.2 % Maximum gain + 15.2 % In purchase plans 3 % Likely from turn 2
+Cards that start with it Devourer of Fauna
+Decks that target it C Melody of Divinities + Polychrome Owl D Abyssal Lightbearer + Cloudy Rodent D Verdant Fruit Cruncher + Golden Boar
+### Vitalheart
+Common Survival
+This card increases its max HP by 15 per turn
+Average gain + 0.2 % Maximum gain + 12.7 % In purchase plans 3 % Likely from turn 2
+Cards that start with it Wandering Feline
+Decks that target it B Aleera + Apprentice of Death D Radiant Shinobi + Codex of Luminous Spells D Faerylia + Vladislaus
+### Tenacity
+Common Survival
+The first fatal attack leaves you with 1 HP
+Average gain + 0.2 % Maximum gain + 15 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Floating Poison Gas Godlur Vladislaus
+Decks that target it D Canine Specter + Cloudy Rodent
+### Shapeshifter
+Epic Transformation
+Choose one of three random cards of the same rarity to replace this card.
+Average gain + 0.2 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Fireheart
+Common Elemental bonuses
+Fire bonus (+1) each turn.
+Average gain + 0.2 % Maximum gain + 29.5 % In purchase plans 2 % Likely from turn 2
+Cards that start with it Shop only
+Decks that target it C Mistress of Tints + Apprentice of Death C Sovereign of Flames + Wibs the Blazing D Sky Dragon + Deer of Mournful Colors
+### Shadowheart
+Rare Elemental bonuses
+Shadow bonus (+2) each turn.
+Average gain + 0.1 % Maximum gain + 15 % In purchase plans 2 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Sky Dragon + Nebular Aristocrat C Mistress of Tints + Apprentice of Death D Canine Specter + Commando Gerz
+### Ancient Healing
+Common Survival
+At the start of each turn, the card recovers 4% of its max HP
+Average gain + 0.1 % Maximum gain + 15.1 % In purchase plans 6 % Likely from turn 2
+Cards that start with it Regent of the Abysses Shado, Abyssal Scourge Godlur Scorch, the Ignited Lizards
+Decks that target it C Floral Zombie + Sovereign of the Ether Falls C Sky Dragon + Aldrin & Gorakar C Raffteru + Thorn of Love
+### Taunt
+Rare Control Official glossary
+When this character launches an attack, all enemy attacks during the next turn must target it
+Average gain + 0.1 % Maximum gain + 12.1 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Cloudy Rodent
+Decks that target it C Wibs the Blazing + Apprentice of Death C Radiant Shinobi + Horned Dune Wyrm
+### Heart Resistance
+Rare Survival
+At the start of each of your turns, this card increases the resistances of all allied cards (+6).
+Average gain + 0.1 % Maximum gain + 15.5 % In purchase plans 10 % Likely from turn 4
+Cards that start with it Wander Blades
+Decks that target it C Raffteru + Thorn of Love C Sky Dragon + Princess Meridia C Floral Zombie + Princess Meridia
+### Heart Resistance
+Common Survival
+At the start of each of your turns, this card increases the resistances of all allied cards (+3).
+Average gain + 0 % Maximum gain + 15.1 % In purchase plans 4 % Likely from turn 2
+Cards that start with it Feathered Rabbit
+Decks that target it A Aleera + Commando Gerz A Aleera + Paguroniyx C Sky Dragon + Nebular Aristocrat
+### Shield
+Rare Survival
+The first hit taken each enemy turn is reduced by 50%.
+Average gain + 0 % Maximum gain + 14.8 % In purchase plans 0 % Likely from turn 4
+Cards that start with it Shop only
+### Shield
+Common Survival
+The first hit taken each enemy turn is reduced by 25%.
+Average gain + 0 % Maximum gain + 12.3 % In purchase plans 0 % Likely from turn 2
+Cards that start with it Shop only
+### Natureheart
+Common Elemental bonuses
+Nature bonus (+1) per turn
+Average gain + 0 % Maximum gain + 14 % In purchase plans 2 % Likely from turn 2
+Cards that start with it Floral Zombie Astral Healer of the Woods
+Decks that target it D Floral Zombie + Sky Dragon D Floral Zombie + Sky Dragon D Spirit of the Fauna + Thorn of Love
+### Shield
+Legendary Survival
+The first hit taken each enemy turn is reduced by 100%.
+Average gain + 0 % Maximum gain + 14.9 % In purchase plans 0 % Likely from turn 16
+Cards that start with it Shop only
+### Backlash
+Common Damage Not in shop
+Takes 50% of the damage dealt to the target
+Average gain + 0 % Maximum gain + 0 % In purchase plans 0 %
+Cards that start with it Toad of the Stars Feathered Rabbit
+### Shield
+Epic Survival
+The first hit taken each enemy turn is reduced by 75%.
+Average gain + 0 % Maximum gain + 14.9 % In purchase plans 0 % Likely from turn 8
+Cards that start with it Shop only
+### Waterheart
+Common Elemental bonuses
+Water bonus (+1) per turn
+Average gain + 0 % Maximum gain + 12.3 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Floral Zombie Leviathan of the Skies The Eye of the Mountains
+Decks that target it C Floral Zombie + Princess Meridia
+### Shadowheart
+Common Elemental bonuses
+Shadow bonus (+1) per turn
+Average gain + 0 % Maximum gain + 12.5 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Canine Specter Aleera, Nightmare-Eater Rob the Adventurer
+Decks that target it B Pyro + Scorch C Canine Specter + Mistress of Tints
+### Heart Resistance
+Legendary Survival
+This card raises the resistances of all allied cards (+15).
+Average gain + 0 % Maximum gain + 18.5 % In purchase plans 1 % Likely from turn 16
+Cards that start with it Shop only
+Decks that target it D Radiant Shinobi + Glimmer of Hope
+### Mimicry
+Rare Elemental bonuses
+Each time the opponent generates one or more elements, you generate 1 of the same type.
+Average gain + -0.1 % Maximum gain + 15 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Léo Flesh-Melding Chimera Horned Dune Wyrm
+Decks that target it D Catimimi + Aidan
+### Lightheart
+Common Elemental bonuses
+Light bonus (+1) per turn
+Average gain + -0.4 % Maximum gain + 28.3 % In purchase plans 1 % Likely from turn 2
+Cards that start with it Canine Specter
+Decks that target it D Hatchlings of Midas + Melody of Divinities D Cloudy Rodent + Codex of Luminous Spells
+### Heart Resistance
+Epic Survival
+This card raises the resistances of all allied cards (+10).
+Average gain + -0.4 % Maximum gain + 16 % In purchase plans 3 % Likely from turn 8
+Cards that start with it Shop only
+Decks that target it D Commando Gerz + Melody of Divinities D Radiant Shinobi + Glimmer of Hope D Golden Boar + Rob the Adventurer
+### Lightheart
+Rare Elemental bonuses
+Light bonus (+2) each turn.
+Average gain + -0.8 % Maximum gain + 14.4 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it D Commando Gerz + Cloudy Rodent
+### Inversion
+Rare Transformation
+This card’s damage becomes healing, its Eternities become Temporalities, and vice versa.
+Average gain + -1.4 % Maximum gain + 9.9 % In purchase plans 1 % Likely from turn 4
+Cards that start with it Shop only
+Decks that target it C Sky Dragon + Nebular Aristocrat C Master Amphibian + Scorch D Master Amphibian + Aidan
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

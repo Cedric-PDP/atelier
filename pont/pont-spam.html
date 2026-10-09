@@ -1,0 +1,614 @@
+<title>Pont SPAM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one working column — four real steps (find, drop, check, send), Claude's answer above them, past imports below. */
+:root {
+  --bg: #F3F2F7;
+  --surface: #FFFFFF;
+  --ink: #1D1A2B;
+  --muted: #5E5A72;
+  --line: #DCD9E6;
+  --chip: #ECE8F5;
+  --accent: #6B2FA3;
+  --accent-ink: #FFFFFF;
+  --ok: #1E7A4C;
+  --warn: #9A5600;
+  --bad: #B3261E;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15131D; --surface: #1E1B29; --ink: #ECEAF4; --muted: #A7A2BC; --line: #34304A;
+    --chip: #2A2639; --accent: #B48CF0; --accent-ink: #160F24; --ok: #5CC98F; --warn: #E6A64A; --bad: #F08A80;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15131D; --surface: #1E1B29; --ink: #ECEAF4; --muted: #A7A2BC; --line: #34304A;
+  --chip: #2A2639; --accent: #B48CF0; --accent-ink: #160F24; --ok: #5CC98F; --warn: #E6A64A; --bad: #F08A80;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body); }
+.wrap { max-width: 940px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 28px; }
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 750; line-height: 1.05; }
+h2 { font-size: 1.25rem; font-weight: 600; display: flex; align-items: baseline; gap: 10px; }
+h2 .n { font-family: var(--mono); font-size: .8rem; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.lede { color: var(--muted); font-size: 1.02rem; }
+header { display: grid; gap: 12px; }
+.strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.chip { display: inline-flex; align-items: center; gap: 6px; background: var(--chip); color: var(--ink); border-radius: 999px; padding: 3px 11px; font-size: .84rem; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.chip.ok::before { background: var(--ok); } .chip.warn::before { background: var(--warn); } .chip.bad::before { background: var(--bad); }
+section { display: grid; gap: 14px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.claude { border-left: 4px solid var(--accent); }
+.claude h3 { margin: 0; font: 600 1.05rem/1.3 var(--body); }
+.claude ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.meta { color: var(--muted); font-size: .84rem; }
+.places { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+.place { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.place b { font-weight: 600; }
+.path { display: flex; gap: 6px; align-items: center; min-width: 0; }
+code, .mono { font-family: var(--mono); font-size: .84rem; }
+.path code { background: var(--chip); border-radius: 5px; padding: 3px 7px; overflow-x: auto; white-space: nowrap; min-width: 0; flex: 1; }
+button, .btn { font: 500 .9rem var(--body); border-radius: 7px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 7px 13px; cursor: pointer; }
+button:hover, .btn:hover { border-color: var(--accent); }
+button:focus-visible, .btn:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.small { padding: 3px 9px; font-size: .8rem; }
+details { display: grid; gap: 10px; }
+summary { cursor: pointer; font-weight: 500; }
+pre { margin: 0; background: var(--chip); border-radius: 7px; padding: 12px; overflow-x: auto; font: .8rem/1.5 var(--mono); white-space: pre; }
+textarea { width: 100%; min-height: 84px; font: .84rem/1.45 var(--mono); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 9px; resize: vertical; }
+textarea.note { font-family: var(--body); font-size: .92rem; min-height: 64px; }
+.drop { border: 2px dashed var(--line); border-radius: 12px; padding: 28px 18px; display: grid; gap: 12px; justify-items: center; text-align: center; transition: border-color .15s, background .15s; }
+.drop.over { border-color: var(--accent); background: var(--chip); }
+.drop .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.vh { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.facts { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.fact { background: var(--chip); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; min-width: 0; }
+.fact span { color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
+.fact strong { font-size: 1.05rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; max-height: 460px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .84rem; }
+th, td { text-align: left; padding: 6px 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { position: sticky; top: 0; background: var(--surface); font-weight: 600; color: var(--muted); font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.p { font-family: var(--mono); font-size: .78rem; overflow-wrap: anywhere; min-width: 220px; }
+td.why { color: var(--muted); min-width: 160px; }
+.kind { font-family: var(--mono); font-size: .74rem; background: var(--chip); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+tr.rel td.p { color: var(--ink); font-weight: 500; }
+tr.excl td { color: var(--muted); }
+.log { display: grid; gap: 3px; font-size: .84rem; max-height: 220px; overflow-y: auto; }
+.log .ok { color: var(--ok); } .log .bad { color: var(--bad); } .log .warn { color: var(--warn); }
+.imports { display: grid; gap: 8px; }
+.imp { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.imp .when { font-family: var(--mono); font-size: .82rem; }
+.empty { color: var(--muted); font-size: .92rem; }
+footer { color: var(--muted); font-size: .86rem; display: flex; flex-wrap: wrap; gap: 6px 18px; }
+footer a { color: var(--accent); }
+.honest { font-size: .9rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main class="wrap">
+  <header>
+    <p class="eyebrow">SPAM · Steam appid 2902720 · Ticroco</p>
+    <h1>Pont SPAM</h1>
+    <p class="lede">Depuis ton PC perso, tu déposes ici les dossiers du jeu et de Steam. Il n'y a rien à installer : la page lit les fichiers dans ton navigateur et te montre ce qu'elle a trouvé. Elle n'envoie aux sessions Claude que ce que tu coches.</p>
+    <div class="strip" aria-live="polite">
+      <span class="chip" id="st-db">Connexion au stockage…</span>
+      <span class="chip" id="st-last">Aucun envoi</span>
+      <span class="chip" id="st-claude">Pas encore de réponse</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-claude">
+    <div class="panel claude" id="claude-box">
+      <p class="eyebrow" id="h-claude">Réponse de Claude</p>
+      <div id="claude-body"><p class="empty">Claude n'a encore rien écrit ici. Après ton premier envoi, l'orchestrateur des sessions SPAM lit ce que tu as envoyé et répond dans ce cadre.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h1s">
+    <h2 id="h1s"><span class="n">1</span>Trouver les dossiers</h2>
+    <p>Sur le PC où tourne le jeu, trois endroits comptent. Copie un chemin, ouvre « Choisir un dossier » à l'étape 2, puis colle le chemin dans la barre d'adresse de la fenêtre.</p>
+    <div class="places">
+      <div class="panel place">
+        <b>Données du jeu</b>
+        <div class="path"><code>%USERPROFILE%\AppData\LocalLow</code><button class="small" data-copy="%USERPROFILE%\AppData\LocalLow">Copier</button></div>
+        <p class="meta">Si le jeu est fait avec Unity, il range ses journaux et ses réglages dans un dossier au nom de l'éditeur. Dépose ce dossier-là, pas tout LocalLow.</p>
+      </div>
+      <div class="panel place">
+        <b>Ton compte Steam</b>
+        <div class="path"><code>C:\Program Files (x86)\Steam\userdata</code><button class="small" data-copy="C:\Program Files (x86)\Steam\userdata">Copier</button></div>
+        <p class="meta">Dépose le dossier à ton numéro. Tu y trouves le temps de jeu, tes captures F12 et la sauvegarde cloud. Les fichiers de connexion ne sont jamais lus.</p>
+      </div>
+      <div class="panel place">
+        <b>Installation du jeu</b>
+        <div class="path"><code>C:\Program Files (x86)\Steam\steamapps\common\SPAM</code><button class="small" data-copy="C:\Program Files (x86)\Steam\steamapps\common\SPAM">Copier</button></div>
+        <p class="meta">Facultatif. Sert à reconnaître le moteur du jeu, donc à savoir où il garde ses données. Les gros fichiers ne sont pas envoyés.</p>
+      </div>
+    </div>
+    <details class="panel">
+      <summary>Pas trouvé ? Une commande PowerShell (déjà sur Windows) liste les bons dossiers</summary>
+      <p class="meta">Dans le menu Démarrer, tape « PowerShell » et ouvre-le. Colle la commande puis appuie sur Entrée ; elle ne fait que lire. Si Steam est installé ailleurs (par exemple <span class="mono">D:\SteamLibrary</span>), remplace ce chemin dans la commande.</p>
+      <pre id="ps-cmd">Get-ChildItem "$env:USERPROFILE\AppData\LocalLow","$env:APPDATA","$env:LOCALAPPDATA","${env:ProgramFiles(x86)}\Steam\userdata","${env:ProgramFiles(x86)}\Steam\steamapps" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'spam|ticroco|2902720' -and $_.FullName -notmatch 'antispam' } | Sort-Object LastWriteTime -Descending | Select-Object -First 60 -ExpandProperty FullName</pre>
+      <div><button id="copy-ps">Copier la commande</button></div>
+      <label for="ps-out" class="meta">Colle ici ce que la commande a affiché : la page en tire les dossiers à déposer.</label>
+      <textarea id="ps-out" placeholder="C:\Users\…\AppData\LocalLow\…\Player.log"></textarea>
+      <div id="ps-dirs" class="places"></div>
+    </details>
+  </section>
+
+  <section aria-labelledby="h2s">
+    <h2 id="h2s"><span class="n">2</span>Déposer</h2>
+    <div class="drop" id="drop">
+      <p><strong>Glisse un ou plusieurs dossiers ici</strong></p>
+      <div class="row">
+        <label class="btn" for="pick-dir">Choisir un dossier</label>
+        <input class="vh" type="file" id="pick-dir" webkitdirectory directory multiple>
+        <label class="btn" for="pick-files">Choisir des fichiers</label>
+        <input class="vh" type="file" id="pick-files" multiple>
+        <button id="reset" type="button">Vider la liste</button>
+      </div>
+      <p class="meta">Ton navigateur demandera de confirmer l'envoi du dossier au site. Rien ne quitte ton PC à ce moment-là : la page lit les fichiers sur place, et seuls ceux que tu coches partent, à l'étape 4.</p>
+    </div>
+    <p class="meta" id="scan-msg" aria-live="polite"></p>
+  </section>
+
+  <section aria-labelledby="h3s">
+    <h2 id="h3s"><span class="n">3</span>Vérifier ce qui a été trouvé</h2>
+    <div class="facts" id="facts">
+      <div class="fact"><span>Moteur du jeu</span><strong id="f-engine">—</strong></div>
+      <div class="fact"><span>Temps de jeu SPAM</span><strong id="f-play">—</strong></div>
+      <div class="fact"><span>Dernière partie</span><strong id="f-last">—</strong></div>
+      <div class="fact"><span>Captures SPAM</span><strong id="f-shots">—</strong></div>
+      <div class="fact"><span>Fichiers utiles</span><strong id="f-rel">—</strong></div>
+    </div>
+    <div class="tools">
+      <label class="meta"><input type="checkbox" id="show-all"> Afficher aussi les fichiers sans intérêt</label>
+      <span class="meta" id="sel-sum">Rien de coché</span>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th><span class="vh">Envoyer</span></th><th>Fichier</th><th>Type</th><th class="num">Taille</th><th>Modifié</th><th>Pourquoi</th></tr></thead>
+        <tbody id="rows"><tr><td colspan="6" class="empty">Dépose un dossier à l'étape 2 : la liste des fichiers apparaît ici, avec ceux qui comptent déjà cochés.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section aria-labelledby="h4s">
+    <h2 id="h4s"><span class="n">4</span>Envoyer aux sessions Claude</h2>
+    <label for="note" class="meta">Un mot pour Claude (facultatif) : ce que tu viens de jouer, ce que tu cherches.</label>
+    <textarea id="note" class="note" placeholder="Ex. : 5 parties classées ce soir avec le deck chimère, 3 défaites contre des decks à crit."></textarea>
+    <div><button class="primary" id="send" disabled>Envoyer la sélection</button></div>
+    <div class="log" id="log" aria-live="polite"></div>
+  </section>
+
+  <section aria-labelledby="h-steam">
+    <div class="panel">
+      <p class="eyebrow" id="h-steam">Et la connexion à Steam ?</p>
+      <p class="honest">La page ne se connecte pas à ton compte Steam et ne te demandera jamais ton mot de passe. Depuis une page web, les serveurs de Steam refusent de répondre. De toute façon, Steam ne connaît pas tes parties de SPAM : il ne garde que le temps de jeu, les succès et les captures. Tout cela est déjà dans ton dossier <span class="mono">userdata</span>, que tu peux déposer à l'étape 2.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-imp">
+    <p class="eyebrow" id="h-imp">Envois précédents</p>
+    <div class="imports" id="imports"><p class="empty">Aucun envoi pour l'instant.</p></div>
+  </section>
+
+  <footer>
+    <span>Pages liées :</span>
+    <a href="https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE" target="_blank" rel="noopener">Atelier de decks</a>
+    <a href="https://claude.ai/artifact/WSVR5uVuFT9SMAa9WSaqpL" target="_blank" rel="noopener">Journal de parties</a>
+  </footer>
+</main>
+
+<script>
+(() => {
+  const APPID = '2902720';
+  const SNIFF = 65536;
+  const MAX_ASSET = 20 * 1024 * 1024;
+  const MAX_B64_RAW = 14 * 1024 * 1024;
+  const MAX_FILES = 30000;
+  const SHOTS_DEFAULT = 40;
+  const PATH_HINT = /(spam|ticroco|2902720)/i;
+  const PATH_NOISE = /antispam/i;
+  const KEYWORDS = /\b(match|matches|deck|decks|card|cards|carte|cartes|opponent|adversaire|victory|victoire|defeat|d[ée]faite|winner|rank|ranked|rang|elo|replay|history|historique|collection|talent|talents|orb|orbe|shop|boutique|turn|tour)\b/gi;
+  const EXCLUDE = [
+    /(^|\/)ssfn[^/]*$/i, /(^|\/)config\/config\.vdf$/i, /(^|\/)loginusers\.vdf$/i, /(^|\/)local\.vdf$/i,
+    /(^|\/)htmlcache\//i, /(^|\/)(cookies|login data|web data|local state)(-journal)?$/i,
+    /(^|\/)(google|microsoft\/edge|mozilla|bravesoftware|opera software)\//i, /\.(key|pem|pfx|kdbx)$/i,
+  ];
+  const $ = s => document.querySelector(s);
+  const state = { files: [], byKey: new Map(), engine: new Set(), steam: { accounts: {}, manifest: null }, pasted: [], showAll: false, busy: false };
+
+  const use = name => { try { return (window.claude && window.claude.use) ? window.claude.use(name) : Promise.resolve(null); } catch (e) { return Promise.resolve(null); } };
+  const fmtSize = n => n < 1024 ? n + ' o' : n < 1048576 ? (n / 1024).toFixed(0) + ' Ko' : (n / 1048576).toFixed(1).replace('.', ',') + ' Mo';
+  const fmtDate = ms => ms ? new Date(ms).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  function chip(id, level, text) { const el = $('#' + id); el.className = 'chip ' + (level || ''); el.textContent = text; }
+  function log(level, text) { const p = document.createElement('div'); p.className = level; p.textContent = text; $('#log').appendChild(p); p.scrollIntoView({ block: 'nearest' }); }
+
+  // ---------- copy buttons ----------
+  async function copy(text, btn) {
+    try { await navigator.clipboard.writeText(text); const t = btn.textContent; btn.textContent = 'Copié'; setTimeout(() => btn.textContent = t, 1400); }
+    catch (e) { const r = document.createRange(); const code = btn.previousElementSibling || $('#ps-cmd'); r.selectNodeContents(code); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Ctrl+C pour copier'; }
+  }
+  document.addEventListener('click', e => { const b = e.target.closest('[data-copy]'); if (b) copy(b.dataset.copy, b); });
+  $('#copy-ps').addEventListener('click', e => copy($('#ps-cmd').textContent, e.currentTarget));
+
+  // ---------- PowerShell output → folders ----------
+  $('#ps-out').addEventListener('input', () => {
+    const lines = $('#ps-out').value.split(/\r?\n/).map(l => l.trim()).filter(l => /^[A-Za-z]:\\/.test(l));
+    state.pasted = lines.slice(0, 200);
+    const dirs = new Map();
+    for (const l of lines) { const d = l.replace(/\\[^\\]+$/, ''); dirs.set(d, (dirs.get(d) || 0) + 1); }
+    const box = $('#ps-dirs'); box.textContent = '';
+    [...dirs.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).forEach(([d, n]) => {
+      const div = document.createElement('div'); div.className = 'panel place';
+      const b = document.createElement('b'); b.textContent = n + (n > 1 ? ' fichiers' : ' fichier'); div.appendChild(b);
+      const row = document.createElement('div'); row.className = 'path';
+      const c = document.createElement('code'); c.textContent = d; row.appendChild(c);
+      const btn = document.createElement('button'); btn.className = 'small'; btn.dataset.copy = d; btn.textContent = 'Copier'; row.appendChild(btn);
+      div.appendChild(row); box.appendChild(div);
+    });
+  });
+
+  // ---------- intake ----------
+  const drop = $('#drop');
+  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, () => drop.classList.remove('over')));
+  drop.addEventListener('drop', async e => {
+    e.preventDefault();
+    const items = [...(e.dataTransfer.items || [])];
+    const entries = items.map(i => i.webkitGetAsEntry ? i.webkitGetAsEntry() : null).filter(Boolean);
+    const plain = [...(e.dataTransfer.files || [])];
+    if (!entries.length) return ingest(plain.map(f => ({ file: f, path: f.name })));
+    const out = [];
+    $('#scan-msg').textContent = 'Lecture du dossier…';
+    try { for (const en of entries) await walk(en, '', out); }
+    catch (err) { if (err && err.message === 'too-many') $('#scan-msg').textContent = `Plus de ${MAX_FILES} fichiers : la page s'arrête là. Dépose un dossier plus précis.`; }
+    ingest(out);
+  });
+  async function walk(entry, prefix, out) {
+    const p = prefix + entry.name;
+    if (entry.isFile) {
+      const f = await new Promise((res, rej) => entry.file(res, rej)).catch(() => null);
+      if (f) out.push({ file: f, path: p });
+      if (out.length >= MAX_FILES) throw new Error('too-many');
+    } else if (entry.isDirectory) {
+      const reader = entry.createReader();
+      let batch;
+      do {
+        batch = await new Promise((res, rej) => reader.readEntries(res, rej)).catch(() => []);
+        for (const c of batch) await walk(c, p + '/', out);
+      } while (batch.length);
+    }
+  }
+  $('#pick-dir').addEventListener('change', e => { ingest([...e.target.files].slice(0, MAX_FILES).map(f => ({ file: f, path: f.webkitRelativePath || f.name }))); e.target.value = ''; });
+  $('#pick-files').addEventListener('change', e => { ingest([...e.target.files].map(f => ({ file: f, path: f.name }))); e.target.value = ''; });
+  $('#reset').addEventListener('click', () => { state.files = []; state.byKey.clear(); state.engine.clear(); state.steam = { accounts: {}, manifest: null }; $('#scan-msg').textContent = ''; render(); });
+  $('#show-all').addEventListener('change', e => { state.showAll = e.target.checked; renderRows(); });
+
+  async function ingest(list) {
+    if (!list.length) return;
+    const fresh = [];
+    for (const { file, path } of list) {
+      const p = path.replace(/\\/g, '/');
+      const key = p + '|' + file.size + '|' + file.lastModified;
+      if (state.byKey.has(key)) continue;
+      const r = { file, path: p, size: file.size, mtime: file.lastModified, kind: '?', why: [], relevant: false, sendable: true, checked: false };
+      state.byKey.set(key, r); state.files.push(r); fresh.push(r);
+    }
+    $('#scan-msg').textContent = `Analyse de ${fresh.length} fichiers…`;
+    let i = 0;
+    const worker = async () => { while (i < fresh.length) { const r = fresh[i++]; try { await classify(r); } catch (e) { r.kind = 'illisible'; r.sendable = false; r.why.push('lecture impossible'); } } };
+    await Promise.all(Array.from({ length: 6 }, worker));
+    pickDefaults();
+    $('#scan-msg').textContent = `${state.files.length} fichiers lus sur ton PC. Rien n'a été envoyé.`;
+    render();
+  }
+
+  // ---------- classification ----------
+  function vdf(text) {
+    const re = /"((?:[^"\\]|\\.)*)"|([{}])/g; const root = {}; const stack = [root]; let key = null, m;
+    while ((m = re.exec(text))) {
+      if (m[2] === '{') { const o = {}; if (key !== null) stack[stack.length - 1][key.toLowerCase()] = o; stack.push(o); key = null; }
+      else if (m[2] === '}') { if (stack.length > 1) stack.pop(); key = null; }
+      else if (key === null) key = m[1];
+      else { stack[stack.length - 1][key.toLowerCase()] = m[1]; key = null; }
+    }
+    return root;
+  }
+  const dig = (o, ...ks) => ks.reduce((a, k) => (a && typeof a === 'object') ? a[k] : undefined, o);
+  const ascii = (b, s, n) => String.fromCharCode(...b.subarray(s, s + n));
+  const hex = (b, n) => [...b.subarray(0, n)].map(x => x.toString(16).padStart(2, '0')).join(' ');
+  function strings(b) {
+    const out = []; let cur = '';
+    for (const x of b) { if (x >= 32 && x < 127) cur += String.fromCharCode(x); else { if (cur.length >= 6) out.push(cur); cur = ''; } }
+    if (cur.length >= 6) out.push(cur);
+    return out;
+  }
+
+  async function classify(r) {
+    const lp = r.path.toLowerCase(), f = r.file, name = lp.split('/').pop();
+    if (EXCLUDE.some(rx => rx.test(lp))) { r.kind = 'exclu'; r.sendable = false; r.why.push('fichier sensible, jamais lu'); return; }
+    if (name === 'unityplayer.dll' || name === 'gameassembly.dll' || /_data\/(globalgamemanagers|resources\.assets)$/.test(lp)) state.engine.add(name === 'gameassembly.dll' ? 'Unity (IL2CPP)' : 'Unity');
+    if (/\.pck$/.test(name)) state.engine.add('Godot');
+    if (/\.asar$/.test(name)) state.engine.add('Electron');
+    if (/\/paks\/[^/]+\.pak$/.test(lp)) state.engine.add('Unreal');
+
+    let m;
+    if ((m = lp.match(/(?:^|\/)(\d{3,})\/config\/localconfig\.vdf$/))) {
+      r.kind = 'steam'; r.sendable = false;
+      const app = dig(vdf(await f.text()), 'userlocalconfigstore', 'software', 'valve', 'steam', 'apps', APPID);
+      if (app) {
+        const acc = { playtimeMin: +app.playtime || 0, playtime2wksMin: +app.playtime2wks || 0, lastPlayed: app.lastplayed ? +app.lastplayed * 1000 : null };
+        state.steam.accounts[m[1]] = acc; r.relevant = true;
+        r.why.push('lu sur place : seul le temps de jeu SPAM est gardé, le fichier ne part pas');
+      } else r.why.push('SPAM absent de ce compte Steam');
+      return;
+    }
+    if (/(?:^|\/)760\/remote\/2902720\/screenshots\/(?!thumbnails\/)[^/]+\.(jpe?g|png)$/.test(lp)) {
+      r.kind = 'capture'; r.relevant = true; r.why.push('capture F12 de SPAM'); return;
+    }
+    if (/\.(jpe?g|png|webp|gif)$/.test(name)) { r.kind = 'image'; if (PATH_HINT.test(lp) && !PATH_NOISE.test(lp)) { r.relevant = true; r.why.push('image dans un dossier SPAM'); } return; }
+    if (/(?:^|\/)appmanifest_2902720\.acf$/.test(lp)) {
+      r.kind = 'texte'; r.relevant = true; r.why.push('fiche d\'installation Steam de SPAM');
+      const st = dig(vdf(await f.text()), 'appstate');
+      if (st) state.steam.manifest = { buildid: st.buildid || null, lastUpdated: st.lastupdated ? +st.lastupdated * 1000 : null, sizeOnDisk: st.sizeondisk ? +st.sizeondisk : null, installdir: st.installdir || null };
+      return;
+    }
+    const cloud = /(?:^|\/)\d{3,}\/2902720\//.test(lp);
+    const hinted = (PATH_HINT.test(lp) && !PATH_NOISE.test(lp)) || cloud;
+    const install = /(^|\/)[^/]*_data\//.test(lp) || /steamapps\/common\//.test(lp) || /\.(dll|exe|assets|ress|resource|bundle|pck|pak|asar|so|bin)$/.test(name);
+    r.hinted = hinted; r.cloud = cloud; r.install = install;
+    if (f.size === 0) { r.kind = 'vide'; r.sendable = false; return; }
+    if (!hinted && state.files.length > 3000) { r.kind = 'non lu'; r.sendable = false; return; }
+
+    const b = new Uint8Array(await f.slice(0, SNIFF).arrayBuffer());
+    if (ascii(b, 0, 15) === 'SQLite format 3') { r.kind = 'sqlite'; }
+    else if (b[0] === 0xFF && b[1] === 0xFE) { r.kind = 'texte'; r.enc = 'utf-16le'; }
+    else if (b[0] === 0xFE && b[1] === 0xFF) { r.kind = 'texte'; r.enc = 'utf-16be'; }
+    else if (b.subarray(0, 4096).includes(0)) { r.kind = /^(manifest-\d+|current|lock|log(\.old)?|\d+\.(ldb|log))$/.test(name) ? 'leveldb' : 'binaire'; }
+    else { const t = new TextDecoder('utf-8').decode(b).trimStart(); r.kind = (t[0] === '{' || t[0] === '[') ? 'json' : 'texte'; }
+
+    let hits = 0;
+    if (r.kind === 'texte' || r.kind === 'json') {
+      const t = new TextDecoder(r.enc || 'utf-8').decode(b);
+      hits = (t.match(KEYWORDS) || []).length;
+    } else {
+      const ss = strings(b); const keep = ss.filter(s => { KEYWORDS.lastIndex = 0; return KEYWORDS.test(s); });
+      hits = keep.length;
+      r.sig = { head: hex(b, 32), strings: keep.slice(0, 12).map(s => s.slice(0, 120)) };
+    }
+    if (cloud) r.why.push('sauvegarde cloud Steam de SPAM');
+    else if (install) r.why.push('fichier d\'installation');
+    else if (hinted) r.why.push('dans un dossier SPAM');
+    if (/(^|\/)player(-prev)?\.log$/.test(lp)) r.why.push('journal Unity du jeu');
+    if (hits >= 3) r.why.push(hits + ' mots de partie (deck, carte, rang…)');
+    const binary = r.kind === 'binaire' || r.kind === 'leveldb';
+    r.relevant = install ? (!binary && f.size <= 5 * 1024 * 1024) : (hinted || hits >= 8);
+    if (r.kind === 'sqlite') r.why.push('base SQLite : convertie en tableaux à l\'envoi');
+    if (r.kind === 'binaire' || r.kind === 'leveldb') {
+      if (f.size > MAX_B64_RAW) { r.sendable = false; r.why.push('trop gros pour être envoyé'); }
+      else r.why.push('format inconnu : envoyé en base64');
+    } else if (f.size > MAX_ASSET) { r.sendable = false; r.why.push('plus de 20 Mo : trop gros'); }
+  }
+
+  function pickDefaults() {
+    const shots = state.files.filter(r => r.kind === 'capture').sort((a, b) => b.mtime - a.mtime);
+    shots.forEach((r, i) => { r.checked = i < SHOTS_DEFAULT; });
+    // Checked by default: only what sits in a SPAM folder (or its cloud save), never an unknown binary
+    // outside the cloud save, never the install, never a file that merely mentions cards somewhere else.
+    for (const r of state.files) {
+      if (r.kind === 'capture') continue;
+      const binary = r.kind === 'binaire' || r.kind === 'leveldb';
+      r.checked = r.sendable && r.relevant && (r.kind === 'steam' ? false : r.cloud || (r.hinted && !r.install && !binary) || /appmanifest_2902720/.test(r.path));
+    }
+  }
+
+  // ---------- render ----------
+  function render() { renderFacts(); renderRows(); }
+  function renderFacts() {
+    $('#f-engine').textContent = state.engine.size ? [...state.engine].join(', ') : (state.files.length ? 'pas reconnu' : '—');
+    const accs = Object.values(state.steam.accounts);
+    if (accs.length) {
+      const min = accs.reduce((a, x) => a + x.playtimeMin, 0); const last = Math.max(...accs.map(x => x.lastPlayed || 0));
+      $('#f-play').textContent = (min / 60).toFixed(1).replace('.', ',') + ' h';
+      $('#f-last').textContent = last ? fmtDate(last) : '—';
+    } else { $('#f-play').textContent = '—'; $('#f-last').textContent = '—'; }
+    const shots = state.files.filter(r => r.kind === 'capture').length;
+    $('#f-shots').textContent = state.files.length ? String(shots) : '—';
+    const rel = state.files.filter(r => r.relevant).length;
+    $('#f-rel').textContent = state.files.length ? `${rel} sur ${state.files.length}` : '—';
+    updateSel();
+  }
+  function updateSel() {
+    const sel = state.files.filter(r => r.checked);
+    const bytes = sel.reduce((a, r) => a + r.size, 0);
+    $('#sel-sum').textContent = sel.length ? `${sel.length} coché${sel.length > 1 ? 's' : ''} · ${fmtSize(bytes)}` : 'Rien de coché';
+    $('#send').disabled = state.busy || (!sel.length && !Object.keys(state.steam.accounts).length && !state.pasted.length);
+  }
+  function renderRows() {
+    const tb = $('#rows'); tb.textContent = '';
+    const list = state.files.filter(r => state.showAll || r.relevant || r.checked)
+      .sort((a, b) => (b.relevant - a.relevant) || (b.mtime - a.mtime)).slice(0, 600);
+    if (!list.length) {
+      const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 6; td.className = 'empty';
+      td.textContent = state.files.length ? 'Aucun fichier utile repéré dans ce dossier. Coche « Afficher aussi les fichiers sans intérêt » pour tout voir.' : 'Dépose un dossier à l\'étape 2 : la liste des fichiers apparaît ici, avec ceux qui comptent déjà cochés.';
+      tr.appendChild(td); tb.appendChild(tr); updateSel(); return;
+    }
+    for (const r of list) {
+      const tr = document.createElement('tr'); if (r.relevant) tr.className = 'rel'; if (!r.sendable) tr.classList.add('excl');
+      const c0 = document.createElement('td'); const cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = r.checked; cb.disabled = !r.sendable;
+      cb.setAttribute('aria-label', 'Envoyer ' + r.path); cb.addEventListener('change', () => { r.checked = cb.checked; updateSel(); }); c0.appendChild(cb);
+      const c1 = document.createElement('td'); c1.className = 'p'; c1.textContent = r.path;
+      const c2 = document.createElement('td'); const k = document.createElement('span'); k.className = 'kind'; k.textContent = r.kind; c2.appendChild(k);
+      const c3 = document.createElement('td'); c3.className = 'num'; c3.textContent = fmtSize(r.size);
+      const c4 = document.createElement('td'); c4.className = 'num'; c4.textContent = fmtDate(r.mtime);
+      const c5 = document.createElement('td'); c5.className = 'why'; c5.textContent = r.why.join(' · ') || '';
+      tr.append(c0, c1, c2, c3, c4, c5); tb.appendChild(tr);
+    }
+    updateSel();
+  }
+
+  // ---------- send ----------
+  let sqlPromise = null;
+  function loadSql() {
+    if (!sqlPromise) sqlPromise = new Promise((res, rej) => {
+      const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.3/sql-asm.js';
+      s.onload = () => window.initSqlJs().then(res, rej); s.onerror = () => rej(new Error('sql.js indisponible')); document.head.appendChild(s);
+    });
+    return sqlPromise;
+  }
+  async function sqliteJson(file) {
+    const SQL = await loadSql();
+    const dbx = new SQL.Database(new Uint8Array(await file.arrayBuffer()));
+    const out = { source: 'sqlite', tables: {} };
+    const t = dbx.exec("SELECT name FROM sqlite_master WHERE type='table'");
+    for (const [name] of (t[0] ? t[0].values : [])) {
+      const res = dbx.exec('SELECT * FROM "' + String(name).replace(/"/g, '""') + '" LIMIT 5000');
+      const conv = v => v instanceof Uint8Array ? { blobBytes: v.length } : v;
+      out.tables[name] = res[0] ? { columns: res[0].columns, rows: res[0].values.map(row => row.map(conv)) } : { columns: [], rows: [] };
+    }
+    dbx.close();
+    return JSON.stringify(out);
+  }
+  function b64(file) {
+    return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).replace(/^data:[^,]*,/, '')); fr.onerror = () => rej(fr.error); fr.readAsDataURL(file); });
+  }
+  async function uploadOne(assets, r) {
+    if (r.kind === 'capture' || r.kind === 'image') {
+      const ext = r.path.split('.').pop().toLowerCase();
+      const type = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' }[ext];
+      return assets.upload(r.file, { type });
+    }
+    if (r.kind === 'sqlite') {
+      try { const json = await sqliteJson(r.file); return assets.upload(new Blob([json], { type: 'application/json' }), { type: 'application/json' }); }
+      catch (e) { r.why.push('conversion SQLite ratée, envoyé en base64'); }
+    }
+    if (r.kind === 'texte' || r.kind === 'json') {
+      const text = r.enc ? new TextDecoder(r.enc).decode(await r.file.arrayBuffer()) : await r.file.text();
+      let type = 'text/plain';
+      if (r.kind === 'json') { try { JSON.parse(text); type = 'application/json'; } catch (e) {} }
+      else if (/\.csv$/i.test(r.path)) type = 'text/csv';
+      else if (/\.md$/i.test(r.path)) type = 'text/markdown';
+      return assets.upload(new Blob([text], { type }), { type });
+    }
+    const data = await b64(r.file);
+    return assets.upload(new Blob([data], { type: 'text/plain' }), { type: 'text/plain' });
+  }
+  const explain = e => ({
+    too_large: 'trop gros', unsupported_type: 'type refusé', quota_or_state: 'stockage plein', rate_limited: 'trop d\'envois d\'un coup',
+    upstream_auth: 'session expirée : recharge la page', not_granted: 'envoi non autorisé dans cette vue', invalid_request: 'fichier illisible',
+  }[e && e.code] || (e && (e.message || e.code)) || 'erreur inconnue');
+
+  function buildDoc(sent, failed) {
+    const roots = [...new Set(state.files.map(r => r.path.split('/')[0]))].slice(0, 20);
+    const entry = r => {
+      const o = { path: r.path, size: r.size, mtime: r.mtime, kind: r.kind, why: r.why.join(' · ') };
+      if (r.assetId) { o.assetId = r.assetId; o.sentAs = r.sentAs; }
+      if (r.error) o.error = r.error;
+      if (r.sig) o.sig = r.sig;
+      return o;
+    };
+    let files = state.files.filter(r => r.relevant || r.checked || r.assetId).slice(0, 500).map(entry);
+    const doc = {
+      createdAt: new Date().toISOString(),
+      note: $('#note').value.trim().slice(0, 4000),
+      roots, engine: [...state.engine],
+      counts: { files: state.files.length, relevant: state.files.filter(r => r.relevant).length, sent, failed },
+      steam: { appid: APPID, accounts: state.steam.accounts, manifest: state.steam.manifest, screenshots: state.files.filter(r => r.kind === 'capture').length },
+      pastedPaths: state.pasted,
+      files, status: 'à lire',
+    };
+    if (JSON.stringify(doc).length > 240000) { doc.files = files.filter(f => f.assetId).map(f => { const c = { ...f }; delete c.sig; return c; }); doc.truncated = true; }
+    return doc;
+  }
+
+  $('#send').addEventListener('click', async () => {
+    state.busy = true; updateSel(); $('#log').textContent = '';
+    const [db, assets] = await Promise.all([use('db'), use('assets')]);
+    if (!db) { log('bad', 'Envoi impossible ici : ouvre la page sur claude.ai, connecté avec ton compte.'); state.busy = false; updateSel(); return; }
+    const chosen = state.files.filter(r => r.checked && !r.assetId);
+    if (chosen.length && !assets) { log('bad', 'Le dépôt de fichiers n\'est ouvert qu\'au propriétaire de la page. Ouvre-la avec ton compte claude.ai.'); state.busy = false; updateSel(); return; }
+    let sent = 0, failed = 0;
+    for (const r of chosen) {
+      try {
+        const res = await uploadOne(assets, r); r.assetId = res.id; r.sentAs = res.contentType; delete r.error; sent++;
+        log('ok', `Envoyé : ${r.path}`);
+      } catch (e) {
+        r.error = (e && e.code) || 'erreur'; failed++;
+        log('bad', `${r.path} : ${explain(e)}`);
+        if (e && e.code === 'rate_limited') await sleep(6000);
+        if (e && e.code === 'store_unavailable') await sleep(2500);
+        if (e && (e.code === 'quota_or_state' || e.code === 'upstream_auth' || e.code === 'not_granted')) break;
+      }
+    }
+    try {
+      const id = new Date().toISOString().replace(/[:.]/g, '-');
+      await db.collection('imports').doc(id).set(buildDoc(sent, failed));
+      log(failed ? 'warn' : 'ok', `Inventaire enregistré : ${sent} fichier${sent > 1 ? 's' : ''} envoyé${sent > 1 ? 's' : ''}${failed ? `, ${failed} en échec` : ''}. L'orchestrateur le lira et répondra en haut de page.`);
+      $('#note').value = '';
+    } catch (e) {
+      log('bad', 'Les fichiers sont partis mais l\'inventaire n\'a pas pu être enregistré (' + explain(e) + '). Renvoie la sélection.');
+    }
+    state.busy = false; renderRows();
+  });
+
+  // ---------- live data: Claude's answer + past imports ----------
+  function renderClaude(d) {
+    const body = $('#claude-body'); body.textContent = '';
+    if (!d) {
+      const p = document.createElement('p'); p.className = 'empty';
+      p.textContent = 'Claude n\'a encore rien écrit ici. Après ton premier envoi, l\'orchestrateur des sessions SPAM lit ce que tu as envoyé et répond dans ce cadre.';
+      body.appendChild(p); chip('st-claude', '', 'Pas encore de réponse'); return;
+    }
+    const h = document.createElement('h3'); h.textContent = d.headline || 'Réponse'; body.appendChild(h);
+    const add = (label, arr) => {
+      if (!Array.isArray(arr) || !arr.length) return;
+      const l = document.createElement('p'); l.className = 'meta'; l.textContent = label; body.appendChild(l);
+      const ul = document.createElement('ul'); arr.forEach(t => { const li = document.createElement('li'); li.textContent = String(t); ul.appendChild(li); }); body.appendChild(ul);
+    };
+    add('Ce qu\'on sait', d.points); add('Ce que j\'attends de toi', d.asks);
+    if (d.updatedAt) { const m = document.createElement('p'); m.className = 'meta'; m.textContent = 'Mis à jour le ' + fmtDate(Date.parse(d.updatedAt)); body.appendChild(m); }
+    chip('st-claude', 'ok', 'Réponse du ' + fmtDate(Date.parse(d.updatedAt || '') || 0));
+  }
+  function renderImports(list) {
+    const box = $('#imports'); box.textContent = '';
+    if (!list.length) { const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Aucun envoi pour l\'instant.'; box.appendChild(p); chip('st-last', '', 'Aucun envoi'); return; }
+    for (const d of list) {
+      const div = document.createElement('div'); div.className = 'imp';
+      const w = document.createElement('span'); w.className = 'when'; w.textContent = fmtDate(Date.parse(d.createdAt)); div.appendChild(w);
+      const c = d.counts || {};
+      const s = document.createElement('span'); s.textContent = `${c.sent || 0} envoyés · ${c.relevant || 0} utiles sur ${c.files || 0}`; div.appendChild(s);
+      const st = document.createElement('span'); st.className = 'chip ' + (d.readAt ? 'ok' : 'warn'); st.textContent = d.readAt ? 'lu par Claude' : 'pas encore lu'; div.appendChild(st);
+      if (d.note) { const n = document.createElement('span'); n.className = 'meta'; n.textContent = '« ' + d.note.slice(0, 140) + (d.note.length > 140 ? '…' : '') + ' »'; div.appendChild(n); }
+      box.appendChild(div);
+    }
+    const last = list[0];
+    chip('st-last', last.readAt ? 'ok' : 'warn', 'Dernier envoi : ' + fmtDate(Date.parse(last.createdAt)));
+  }
+
+  (async () => {
+    const db = await use('db');
+    if (!db) { chip('st-db', 'warn', 'Stockage indisponible ici : ouvre la page sur claude.ai'); return; }
+    chip('st-db', 'ok', 'Stockage connecté');
+    db.doc('orchestrator/status').onSnapshot(s => renderClaude(s.exists ? s.data() : null), () => chip('st-claude', 'warn', 'Réponse illisible pour l\'instant'));
+    db.collection('imports').orderBy('createdAt', 'desc').limit(20).onSnapshot(q => renderImports(q.docs.map(d => ({ id: d.id, ...d.data() }))), () => chip('st-last', 'warn', 'Historique illisible pour l\'instant'));
+  })();
+})();
+</script>

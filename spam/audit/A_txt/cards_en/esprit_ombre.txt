@@ -1,0 +1,127 @@
+Shadow Spirit: SPAM Shadow common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Shadow Spirit D View the full card
+Shadow Spirit
+1 Shadow Breath
+1 Umbral
+500/500
+10
+Standard
+Shadow Spirit
+1 Shadow Breath
+1 Umbral
+500/500
+10
+Elemental
+Shadow Spirit
+1 Shadow Breath
+1 Umbral
+500/500
+10
+FA
+Shadow Spirit
+1 Shadow Breath
+1 Umbral
+500/500
+10
+## Shadow Spirit
+D Shadow · Common · Standard
+500 HP 10 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shadow Heart Start the game with the "Shadowheart" passive
+- Talent 2 Luminous Field Light bonus (+7).
+- Talent 3 Cavalry Increases the max HP of all other allied cards by (+150)
+Recommended
+Three ability slots
+- Shadow Breath ability · Cooldown 1 Deal 10 Shadow damage Shadow bonus (+1)
+1
+- Umbral ability · Cooldown 1 Shadow bonus (+1)
+1
+- Free slot Open to a shop Tox
+Illustration by Atto
+Full card details
+Illustration by Atto
+Shadow Common #005
+# Shadow Spirit
+Versatile
+500 Health points
+10 Spamtons / turn
+#105 Rank / 127
+D No talent · #97
+Attack
+26
+Generation
+74
+Defense
+4
+Support
+1
+Control
+0
+Economy
+66
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shadow Heart 2 Luminous Field 3 Cavalry
+Build with this card
+Share
+### Abilities
+#### Shadow Breath
+1 turn
+Deal 10 Shadow damage Shadow bonus (+1)
+Accuracy 100% Critical 1%
+#### Umbral
+1 turn
+Shadow bonus (+1)
+Accuracy 100% Critical 0%
+### Talents
+#### Shadow Heart
+Start the game with the "Shadowheart" passive
+Δ 19.5 · Theoretical score
+#### Luminous Field
+Light bonus (+7).
+Δ 110.9 · Theoretical score
+#### Cavalry
+Recommended
+Increases the max HP of all other allied cards by (+150)
+Δ 682.3 · Theoretical score
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Spirit · Nyevielh
+### Beyond the card
+With the single continent freshly shattered, the shadow spirit spends whole days hunting the nightmares of Nyevielh. Its violent and dreadful activity has given it a most hostile appearance; the few Eltherians still alive prefer not to cross its path, for its prey is never far. A wooden statue was built in its honor at Port Rhyezeal, maintained there as a protective idol of Nyevielh and a scarecrow against abominations.
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+S # 034 Shadow
+Rare · Attack
+### Gleam of the White Fox
+700 HP
+S # 177 Shadow
+Common · Attack
+### Moxilys, the Humming One
+900 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,137 @@
+Serpentine Heraldess: SPAM Earth legendary card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Serpentine Heraldess D View the full card
+Serpentine Heraldess
+5 Eternal Constriction
+1 Sacrifice
+Eternity
+900/900
+9
+Standard
+Serpentine Heraldess
+5 Eternal Constriction
+1 Sacrifice
+Eternity
+900/900
+9
+Elemental
+Serpentine Heraldess
+5 Eternal Constriction
+1 Sacrifice
+Eternity
+900/900
+9
+FA
+Serpentine Heraldess
+5 Eternal Constriction
+1 Sacrifice
+Eternity
+900/900
+9
+## Serpentine Heraldess
+D Earth · Legendary · Standard
+900 HP 9 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shadow Field Shadow bonus (+7).
+Recommended
+- Talent 2 Doomed Hour Applies Eternity to all enemy cards when this card is killed.
+- Talent 3 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Three ability slots
+- Eternal Constriction ability · Cooldown 5 Deal 30 Earth damage Random X8
+5
+- Sacrifice ability · Cooldown 1 [Cost 7 Earth]
+Fully heals itself
+1
+- Eternity tox · Legendary Increases cooldowns by 1
+Illustration by Euphy
+Full card details
+Illustration by Euphy
+Earth Legendary #256
+# Serpentine Heraldess
+Versatile
+900 Health points
+9 Spamtons / turn
+#114 Rank / 127
+D No talent · #109
+Attack
+16
+Generation
+0
+Defense
+59
+Support
+1
+Control
+85
+Economy
+60
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shadow Field 2 Doomed Hour 3 Transition
+Build with this card
+Share
+### Abilities
+#### Eternal Constriction
+5 turns
+Deal 30 Earth damage Random X8
+Accuracy 50% Critical 1%
+#### Sacrifice
+1 turn
+[Cost 7 Earth]
+Fully heals itself
+Accuracy 100% Critical 0%
+### Starting Tox
+#### Eternity
+Legendary
+Increases cooldowns by 1
+### Talents
+#### Shadow Field
+Recommended
+Shadow bonus (+7).
+Δ 499.5 · Theoretical score
+#### Doomed Hour
+Applies Eternity to all enemy cards when this card is killed.
+Δ 0 · Theoretical score
+#### Transition
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 0 · Theoretical score
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Eltherien · Shal'Zaar
+### Beyond the card
+They say six children were born with a rune on their hand. In Shal'Zaar, in a village of monster hunters, a young girl can communicate with her mind. The moment she forms a link, her eyes seem filled with a purplish liquid. With her power, she tamed some of the most terrifying creatures of the Presolda jungle — tropical snakes and other dinosaurs that now aid monster hunters. For all these feats, she earned the title of Heraldess, a divine envoy echoing the vanished regent.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+B # 059 Earth
+Common · Control
+### Snow Warrior
+600 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

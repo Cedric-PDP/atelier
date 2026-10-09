@@ -1,0 +1,42 @@
+14:54:40 done tri_best-one_3 102.2s
+14:54:41 done tri_best-one_2 102.4s
+14:54:42 done tri_best-one_4 103.8s
+14:54:42 done tri_best-one_0 104.3s
+14:54:43 done tri_best-one_1 104.9s
+14:54:49 done tri_none_0 110.3s
+14:56:39 done rnd_none 110.0s
+14:56:41 done rnd_best-one 118.4s
+14:56:49 done tri_none_2 128.9s
+14:56:50 done tri_none_4 127.7s
+14:56:51 done tri_none_1 130.5s
+14:56:56 done tri_none_3 133.8s
+triples done 238s best-one: top 14746 / 5000th 8672 | none: top 14280 / 5000th 7585
+15:01:11 done quad_best-one_4 254.6s
+15:01:13 done quad_best-one_3 256.9s
+15:01:13 done quad_none_0 256.5s
+15:01:21 done quad_best-one_1 265.1s
+15:01:24 done quad_best-one_0 267.7s
+15:01:27 done quad_best-one_2 271.1s
+15:04:33 done quad_none_3 199.8s
+15:04:34 done quad_none_1 202.7s
+15:04:39 done quad_none_2 206.1s
+15:04:44 done quad_none_4 203.3s
+quads done 707s best-one: 75962 kept, top 15725 / 4000th 14312 | none: 87023 kept, top 14967 / 4000th 11802
+check {"best-one":{"threshold":14311.668099425768,"randomAbove":30,"missing":[],"randomMax":14860.38849232456,"randomMean":6030.413071004635},"none":{"threshold":11802.171661670001,"randomAbove":17,"missing":[],"randomMax":12326.33317192814,"randomMean":4915.128040232026}}
+15:05:38 done X_none_0 51.9s
+15:06:23 done X_none_1 97.2s
+15:06:25 done X_best-one_1 99.4s
+15:06:28 done X_best-one_2 102.3s
+15:06:33 done X_best-one_0 107.1s
+15:06:36 done X_best-one_3 109.7s
+15:06:54 done X_none_2 75.8s
+15:07:09 done X_none_3 46.2s
+X done 851s
+15:09:35 done Te_0 145.8s
+15:09:42 done Te_2 152.3s
+15:09:50 done Te_5 160.3s
+15:09:54 done Te_4 164.6s
+15:09:55 done Te_1 165.9s
+15:09:59 done Te_3 168.9s
+Te done 1020s
+ALL DONE 1020s

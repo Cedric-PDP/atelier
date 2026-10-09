@@ -1,0 +1,141 @@
+Wandering Feline: SPAM Shadow common card, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Wandering Feline B View the full card
+Wandering Feline
+2 Offensive Aim
+1 Swift Leap
+Vitalheart
+550/550
+5
+Standard
+Wandering Feline
+2 Offensive Aim
+1 Swift Leap
+Vitalheart
+550/550
+5
+Elemental
+Wandering Feline
+2 Offensive Aim
+1 Swift Leap
+Vitalheart
+550/550
+5
+FA
+Wandering Feline
+2 Offensive Aim
+1 Swift Leap
+Vitalheart
+550/550
+5
+## Wandering Feline
+B Shadow · Common · Standard
+550 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Cash Out At the start of the game, gain (+25) Spamton.
+- Talent 2 Roulette All of this card's abilities gain Echo (10%).
+Recommended
+- Talent 3 Evolution If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Three ability slots
+- Offensive Aim ability · Cooldown 2 Deal 15 Shadow damage
+Eternity on critical hit
+2
+- Swift Leap ability · Cooldown 1 Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%)
+1
+- Vitalheart tox · Common This card increases its max HP by 15 per turn
+Illustration by Embers
+Full card details
+Illustration by Embers
+Shadow Common #021
+# Wandering Feline
+Versatile
+550 Health points
+5 Spamtons / turn
+#61 Rank / 127
+C No talent · #67
+Attack
+38
+Generation
+68
+Defense
+39
+Support
+1
+Control
+88
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Cash Out 2 Roulette 3 Evolution
+Build with this card
+Share
+### Abilities
+#### Offensive Aim
+2 turns
+Deal 15 Shadow damage
+Eternity on critical hit
+Accuracy 100% Critical 50%
+#### Swift Leap
+1 turn
+Deal 5 Nature damage Nature bonus (+1)
+Caster's accuracy and critical (+2%)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Vitalheart
+Common
+This card increases its max HP by 15 per turn
+### Talents
+#### Cash Out
+At the start of the game, gain (+25) Spamton.
+Δ 7.5 · Theoretical score
+#### Roulette
+Recommended
+All of this card's abilities gain Echo (10%).
+Δ 48 · Theoretical score
+#### Evolution
+If possible, this card's original passives change rarity based on its HP: the lower its HP, the rarer they are.
+Thresholds at 75%, 50% and 25% HP.
+Δ 15.4 · Theoretical score
+### Resistances
+8% Fire
+39% Water
+6% Earth
+7% Nature
+7% Shadow
+7% Light
+Anthropomorph · Emeldarion
+### Beyond the card
+Abondance, the economic capital of Emeldarion, is as rich in natural resources as it is in culture. The full diversity of its population can be seen there. Yet choosing to live in this divided city is no easy matter. Often poorly informed, residents find themselves in need of help. Several companies control the area, and the most prosperous hold seats on the city’s ruling council. Clans such as the Wandering Feline form in the hope of gaining influence. This one welcomes Anthropomorphs, gives them guidance, and provides them with housing.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+C # 197 Shadow
+Epic · Generation
+### Codex of Ancient Woes
+1000 HP
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

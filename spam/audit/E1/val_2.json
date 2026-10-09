@@ -1,0 +1,1609 @@
+{
+ "mode": "validate",
+ "shard": 2,
+ "nShards": 3,
+ "decks": [
+  {
+   "label": "zéro critique",
+   "nums": [
+    102,
+    116,
+    12,
+    69
+   ],
+   "orig": 6529.198659718492,
+   "stressOff": 6529.198659718492,
+   "stressOnNoToggle": 6529.198659718492,
+   "site": 6529,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "robuste B [69,160,227,238]",
+   "nums": [
+    69,
+    160,
+    227,
+    238
+   ],
+   "orig": 6077.269814973483,
+   "stressOff": 6077.269814973483,
+   "stressOnNoToggle": 6077.269814973483,
+   "site": 6077,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#5",
+   "nums": [
+    27,
+    103,
+    117,
+    238
+   ],
+   "orig": 6996.807509196354,
+   "stressOff": 6996.807509196354,
+   "stressOnNoToggle": 6996.807509196354,
+   "site": 6997,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#9",
+   "nums": [
+    117,
+    156,
+    160,
+    238
+   ],
+   "orig": 6901.691291517721,
+   "stressOff": 6901.691291517721,
+   "stressOnNoToggle": 6901.691291517721,
+   "site": 6902,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#12",
+   "nums": [
+    2,
+    117,
+    156,
+    238
+   ],
+   "orig": 6760.718442682373,
+   "stressOff": 6760.718442682373,
+   "stressOnNoToggle": 6760.718442682373,
+   "site": 6761,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#15",
+   "nums": [
+    69,
+    117,
+    156,
+    238
+   ],
+   "orig": 6573.497784929405,
+   "stressOff": 6573.497784929405,
+   "stressOnNoToggle": 6573.497784929405,
+   "site": 6573,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#19",
+   "nums": [
+    82,
+    117,
+    156,
+    238
+   ],
+   "orig": 6518.044242836546,
+   "stressOff": 6518.044242836546,
+   "stressOnNoToggle": 6518.044242836546,
+   "site": 6518,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#22",
+   "nums": [
+    117,
+    156,
+    238,
+    251
+   ],
+   "orig": 6483.953429262208,
+   "stressOff": 6483.953429262208,
+   "stressOnNoToggle": 6483.953429262208,
+   "site": 6484,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#25",
+   "nums": [
+    69,
+    82,
+    102,
+    156
+   ],
+   "orig": 6372.169718698475,
+   "stressOff": 6372.169718698475,
+   "stressOnNoToggle": 6372.169718698475,
+   "site": 6372,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#28",
+   "nums": [
+    27,
+    103,
+    156,
+    238
+   ],
+   "orig": 6290.562861398486,
+   "stressOff": 6290.562861398486,
+   "stressOnNoToggle": 6290.562861398486,
+   "site": 6291,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#31",
+   "nums": [
+    12,
+    69,
+    102,
+    238
+   ],
+   "orig": 6231.952034054906,
+   "stressOff": 6231.952034054906,
+   "stressOnNoToggle": 6231.952034054906,
+   "site": 6232,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#34",
+   "nums": [
+    69,
+    103,
+    156,
+    238
+   ],
+   "orig": 6195.023234771149,
+   "stressOff": 6195.023234771149,
+   "stressOnNoToggle": 6195.023234771149,
+   "site": 6195,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#37",
+   "nums": [
+    69,
+    102,
+    227,
+    238
+   ],
+   "orig": 6173.833226633264,
+   "stressOff": 6173.833226633264,
+   "stressOnNoToggle": 6173.833226633264,
+   "site": 6174,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#40",
+   "nums": [
+    117,
+    153,
+    156,
+    238
+   ],
+   "orig": 6140.697221642681,
+   "stressOff": 6140.697221642681,
+   "stressOnNoToggle": 6140.697221642681,
+   "site": 6141,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#43",
+   "nums": [
+    103,
+    156,
+    160,
+    238
+   ],
+   "orig": 6117.5640664902585,
+   "stressOff": 6117.5640664902585,
+   "stressOnNoToggle": 6117.5640664902585,
+   "site": 6118,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#46",
+   "nums": [
+    3,
+    27,
+    103,
+    117
+   ],
+   "orig": 6103.582289338028,
+   "stressOff": 6103.582289338028,
+   "stressOnNoToggle": 6103.582289338028,
+   "site": 6104,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#49",
+   "nums": [
+    82,
+    103,
+    156,
+    238
+   ],
+   "orig": 6101.221440833184,
+   "stressOff": 6101.221440833184,
+   "stressOnNoToggle": 6101.221440833184,
+   "site": 6101,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#53",
+   "nums": [
+    2,
+    82,
+    102,
+    156
+   ],
+   "orig": 6071.378742927217,
+   "stressOff": 6071.378742927217,
+   "stressOnNoToggle": 6071.378742927217,
+   "site": 6071,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#56",
+   "nums": [
+    3,
+    12,
+    117,
+    238
+   ],
+   "orig": 6046.622570782278,
+   "stressOff": 6046.622570782278,
+   "stressOnNoToggle": 6046.622570782278,
+   "site": 6047,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#59",
+   "nums": [
+    3,
+    27,
+    103,
+    238
+   ],
+   "orig": 6015.2290359808685,
+   "stressOff": 6015.2290359808685,
+   "stressOnNoToggle": 6015.2290359808685,
+   "site": 6015,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#62",
+   "nums": [
+    117,
+    156,
+    180,
+    238
+   ],
+   "orig": 5994.508119808015,
+   "stressOff": 5994.508119808015,
+   "stressOnNoToggle": 5994.508119808015,
+   "site": 5995,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#65",
+   "nums": [
+    12,
+    103,
+    156,
+    238
+   ],
+   "orig": 5977.622863245271,
+   "stressOff": 5977.622863245271,
+   "stressOnNoToggle": 5977.622863245271,
+   "site": 5978,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#68",
+   "nums": [
+    12,
+    82,
+    117,
+    238
+   ],
+   "orig": 5946.951808817869,
+   "stressOff": 5946.951808817869,
+   "stressOnNoToggle": 5946.951808817869,
+   "site": 5947,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#71",
+   "nums": [
+    69,
+    82,
+    160,
+    238
+   ],
+   "orig": 5940.1141517735,
+   "stressOff": 5940.1141517735,
+   "stressOnNoToggle": 5940.1141517735,
+   "site": 5940,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#74",
+   "nums": [
+    69,
+    103,
+    117,
+    238
+   ],
+   "orig": 5933.819323966866,
+   "stressOff": 5933.819323966866,
+   "stressOnNoToggle": 5933.819323966866,
+   "site": 5934,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#77",
+   "nums": [
+    2,
+    156,
+    227,
+    238
+   ],
+   "orig": 5921.182796819302,
+   "stressOff": 5921.182796819302,
+   "stressOnNoToggle": 5921.182796819302,
+   "site": 5921,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#80",
+   "nums": [
+    69,
+    82,
+    102,
+    227
+   ],
+   "orig": 5893.951497390713,
+   "stressOff": 5893.951497390713,
+   "stressOnNoToggle": 5893.951497390713,
+   "site": 5894,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#83",
+   "nums": [
+    69,
+    102,
+    116,
+    238
+   ],
+   "orig": 5874.948913209876,
+   "stressOff": 5874.948913209876,
+   "stressOnNoToggle": 5874.948913209876,
+   "site": 5875,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#86",
+   "nums": [
+    2,
+    69,
+    82,
+    238
+   ],
+   "orig": 5849.400751683502,
+   "stressOff": 5849.400751683502,
+   "stressOnNoToggle": 5849.400751683502,
+   "site": 5849,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#89",
+   "nums": [
+    2,
+    12,
+    82,
+    102
+   ],
+   "orig": 5843.165615565988,
+   "stressOff": 5843.165615565988,
+   "stressOnNoToggle": 5843.165615565988,
+   "site": 5843,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#92",
+   "nums": [
+    3,
+    102,
+    117,
+    238
+   ],
+   "orig": 5831.580247027113,
+   "stressOff": 5831.580247027113,
+   "stressOnNoToggle": 5831.580247027113,
+   "site": 5832,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#95",
+   "nums": [
+    12,
+    69,
+    160,
+    238
+   ],
+   "orig": 5828.746009988853,
+   "stressOff": 5828.746009988853,
+   "stressOnNoToggle": 5828.746009988853,
+   "site": 5829,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#98",
+   "nums": [
+    27,
+    69,
+    102,
+    238
+   ],
+   "orig": 5819.594275319814,
+   "stressOff": 5819.594275319814,
+   "stressOnNoToggle": 5819.594275319814,
+   "site": 5820,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#101",
+   "nums": [
+    12,
+    160,
+    227,
+    238
+   ],
+   "orig": 5796.234647533878,
+   "stressOff": 5796.234647533878,
+   "stressOnNoToggle": 5796.234647533878,
+   "site": 5796,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#104",
+   "nums": [
+    69,
+    82,
+    160,
+    227
+   ],
+   "orig": 5788.9655281247315,
+   "stressOff": 5788.9655281247315,
+   "stressOnNoToggle": 5788.9655281247315,
+   "site": 5789,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#107",
+   "nums": [
+    2,
+    82,
+    227,
+    238
+   ],
+   "orig": 5766.792524868568,
+   "stressOff": 5766.792524868568,
+   "stressOnNoToggle": 5766.792524868568,
+   "site": 5767,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#110",
+   "nums": [
+    69,
+    82,
+    117,
+    238
+   ],
+   "orig": 5748.725640528089,
+   "stressOff": 5748.725640528089,
+   "stressOnNoToggle": 5748.725640528089,
+   "site": 5749,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#113",
+   "nums": [
+    12,
+    69,
+    160,
+    227
+   ],
+   "orig": 5736.058325719256,
+   "stressOff": 5736.058325719256,
+   "stressOnNoToggle": 5736.058325719256,
+   "site": 5736,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#116",
+   "nums": [
+    2,
+    69,
+    117,
+    238
+   ],
+   "orig": 5727.316348972177,
+   "stressOff": 5727.316348972177,
+   "stressOnNoToggle": 5727.316348972177,
+   "site": 5727,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#119",
+   "nums": [
+    2,
+    82,
+    156,
+    227
+   ],
+   "orig": 5713.084837707774,
+   "stressOff": 5713.084837707774,
+   "stressOnNoToggle": 5713.084837707774,
+   "site": 5713,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#122",
+   "nums": [
+    27,
+    69,
+    82,
+    102
+   ],
+   "orig": 5707.294265426019,
+   "stressOff": 5707.294265426019,
+   "stressOnNoToggle": 5707.294265426019,
+   "site": 5707,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#125",
+   "nums": [
+    3,
+    69,
+    117,
+    238
+   ],
+   "orig": 5702.398234873322,
+   "stressOff": 5702.398234873322,
+   "stressOnNoToggle": 5702.398234873322,
+   "site": 5702,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#128",
+   "nums": [
+    12,
+    27,
+    82,
+    238
+   ],
+   "orig": 5693.033456534066,
+   "stressOff": 5693.033456534066,
+   "stressOnNoToggle": 5693.033456534066,
+   "site": 5693,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#131",
+   "nums": [
+    2,
+    69,
+    102,
+    160
+   ],
+   "orig": 5690.755795842737,
+   "stressOff": 5690.755795842737,
+   "stressOnNoToggle": 5690.755795842737,
+   "site": 5691,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#134",
+   "nums": [
+    4,
+    117,
+    160,
+    238
+   ],
+   "orig": 5682.38600789767,
+   "stressOff": 5682.38600789767,
+   "stressOnNoToggle": 5682.38600789767,
+   "site": 5682,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#137",
+   "nums": [
+    69,
+    82,
+    116,
+    238
+   ],
+   "orig": 5676.420859981394,
+   "stressOff": 5676.420859981394,
+   "stressOnNoToggle": 5676.420859981394,
+   "site": 5676,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#140",
+   "nums": [
+    69,
+    116,
+    160,
+    227
+   ],
+   "orig": 5663.234488470145,
+   "stressOff": 5663.234488470145,
+   "stressOnNoToggle": 5663.234488470145,
+   "site": 5663,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#143",
+   "nums": [
+    69,
+    82,
+    156,
+    160
+   ],
+   "orig": 5649.675273230322,
+   "stressOff": 5649.675273230322,
+   "stressOnNoToggle": 5649.675273230322,
+   "site": 5650,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#146",
+   "nums": [
+    30,
+    117,
+    156,
+    238
+   ],
+   "orig": 5643.274223033251,
+   "stressOff": 5643.274223033251,
+   "stressOnNoToggle": 5643.274223033251,
+   "site": 5643,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#149",
+   "nums": [
+    2,
+    69,
+    227,
+    238
+   ],
+   "orig": 5640.288129419193,
+   "stressOff": 5640.288129419193,
+   "stressOnNoToggle": 5640.288129419193,
+   "site": 5640,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#152",
+   "nums": [
+    2,
+    27,
+    102,
+    238
+   ],
+   "orig": 5626.854691158113,
+   "stressOff": 5626.854691158113,
+   "stressOnNoToggle": 5626.854691158113,
+   "site": 5627,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#155",
+   "nums": [
+    2,
+    102,
+    103,
+    117
+   ],
+   "orig": 5611.119239131433,
+   "stressOff": 5611.119239131433,
+   "stressOnNoToggle": 5611.119239131433,
+   "site": 5611,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#158",
+   "nums": [
+    102,
+    160,
+    227,
+    238
+   ],
+   "orig": 5594.826871915548,
+   "stressOff": 5594.826871915548,
+   "stressOnNoToggle": 5594.826871915548,
+   "site": 5595,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#161",
+   "nums": [
+    4,
+    12,
+    160,
+    227
+   ],
+   "orig": 5591.1875100026555,
+   "stressOff": 5591.1875100026555,
+   "stressOnNoToggle": 5591.1875100026555,
+   "site": 5591,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#164",
+   "nums": [
+    69,
+    82,
+    116,
+    160
+   ],
+   "orig": 5587.243645925548,
+   "stressOff": 5587.243645925548,
+   "stressOnNoToggle": 5587.243645925548,
+   "site": 5587,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#167",
+   "nums": [
+    103,
+    117,
+    227,
+    238
+   ],
+   "orig": 5582.456299248705,
+   "stressOff": 5582.456299248705,
+   "stressOnNoToggle": 5582.456299248705,
+   "site": 5582,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#170",
+   "nums": [
+    12,
+    117,
+    180,
+    238
+   ],
+   "orig": 5575.873109057102,
+   "stressOff": 5575.873109057102,
+   "stressOnNoToggle": 5575.873109057102,
+   "site": 5576,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#173",
+   "nums": [
+    69,
+    82,
+    156,
+    238
+   ],
+   "orig": 5571.2067619797335,
+   "stressOff": 5571.2067619797335,
+   "stressOnNoToggle": 5571.2067619797335,
+   "site": 5571,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#176",
+   "nums": [
+    12,
+    102,
+    156,
+    238
+   ],
+   "orig": 5562.74910236383,
+   "stressOff": 5562.74910236383,
+   "stressOnNoToggle": 5562.74910236383,
+   "site": 5563,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#179",
+   "nums": [
+    27,
+    156,
+    227,
+    238
+   ],
+   "orig": 5558.067237000683,
+   "stressOff": 5558.067237000683,
+   "stressOnNoToggle": 5558.067237000683,
+   "site": 5558,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#182",
+   "nums": [
+    12,
+    82,
+    156,
+    238
+   ],
+   "orig": 5548.967368533734,
+   "stressOff": 5548.967368533734,
+   "stressOnNoToggle": 5548.967368533734,
+   "site": 5549,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#185",
+   "nums": [
+    69,
+    117,
+    227,
+    238
+   ],
+   "orig": 5537.8552320389545,
+   "stressOff": 5537.8552320389545,
+   "stressOnNoToggle": 5537.8552320389545,
+   "site": 5538,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#188",
+   "nums": [
+    2,
+    12,
+    82,
+    227
+   ],
+   "orig": 5531.330554225157,
+   "stressOff": 5531.330554225157,
+   "stressOnNoToggle": 5531.330554225157,
+   "site": 5531,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#191",
+   "nums": [
+    2,
+    12,
+    69,
+    82
+   ],
+   "orig": 5522.872720389726,
+   "stressOff": 5522.872720389726,
+   "stressOnNoToggle": 5522.872720389726,
+   "site": 5523,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#194",
+   "nums": [
+    2,
+    82,
+    160,
+    227
+   ],
+   "orig": 5511.596399011967,
+   "stressOff": 5511.596399011967,
+   "stressOnNoToggle": 5511.596399011967,
+   "site": 5512,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#197",
+   "nums": [
+    102,
+    117,
+    160,
+    238
+   ],
+   "orig": 5508.81950601056,
+   "stressOff": 5508.81950601056,
+   "stressOnNoToggle": 5508.81950601056,
+   "site": 5509,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#200",
+   "nums": [
+    3,
+    117,
+    238,
+    243
+   ],
+   "orig": 5502.446666853501,
+   "stressOff": 5502.446666853501,
+   "stressOnNoToggle": 5502.446666853501,
+   "site": 5502,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#203",
+   "nums": [
+    1,
+    156,
+    227,
+    238
+   ],
+   "orig": 5495.327987160557,
+   "stressOff": 5495.327987160557,
+   "stressOnNoToggle": 5495.327987160557,
+   "site": 5495,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#206",
+   "nums": [
+    69,
+    116,
+    117,
+    238
+   ],
+   "orig": 5489.109696371612,
+   "stressOff": 5489.109696371612,
+   "stressOnNoToggle": 5489.109696371612,
+   "site": 5489,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#209",
+   "nums": [
+    6,
+    156,
+    227,
+    238
+   ],
+   "orig": 5485.789942003179,
+   "stressOff": 5485.789942003179,
+   "stressOnNoToggle": 5485.789942003179,
+   "site": 5486,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#212",
+   "nums": [
+    2,
+    12,
+    82,
+    156
+   ],
+   "orig": 5475.638161868671,
+   "stressOff": 5475.638161868671,
+   "stressOnNoToggle": 5475.638161868671,
+   "site": 5476,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#215",
+   "nums": [
+    117,
+    160,
+    227,
+    238
+   ],
+   "orig": 5468.01046055946,
+   "stressOff": 5468.01046055946,
+   "stressOnNoToggle": 5468.01046055946,
+   "site": 5468,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#218",
+   "nums": [
+    12,
+    82,
+    102,
+    156
+   ],
+   "orig": 5456.390637957431,
+   "stressOff": 5456.390637957431,
+   "stressOnNoToggle": 5456.390637957431,
+   "site": 5456,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#221",
+   "nums": [
+    69,
+    82,
+    102,
+    153
+   ],
+   "orig": 5440.724042003138,
+   "stressOff": 5440.724042003138,
+   "stressOnNoToggle": 5440.724042003138,
+   "site": 5441,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#224",
+   "nums": [
+    3,
+    117,
+    158,
+    238
+   ],
+   "orig": 5439.401060972229,
+   "stressOff": 5439.401060972229,
+   "stressOnNoToggle": 5439.401060972229,
+   "site": 5439,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#227",
+   "nums": [
+    1,
+    4,
+    160,
+    227
+   ],
+   "orig": 5429.961172971368,
+   "stressOff": 5429.961172971368,
+   "stressOnNoToggle": 5429.961172971368,
+   "site": 5430,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#230",
+   "nums": [
+    69,
+    102,
+    103,
+    116
+   ],
+   "orig": 5428.343986536816,
+   "stressOff": 5428.343986536816,
+   "stressOnNoToggle": 5428.343986536816,
+   "site": 5428,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#233",
+   "nums": [
+    116,
+    117,
+    160,
+    238
+   ],
+   "orig": 5424.959223377701,
+   "stressOff": 5424.959223377701,
+   "stressOnNoToggle": 5424.959223377701,
+   "site": 5425,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#236",
+   "nums": [
+    3,
+    27,
+    156,
+    238
+   ],
+   "orig": 5420.3115833734955,
+   "stressOff": 5420.3115833734955,
+   "stressOnNoToggle": 5420.3115833734955,
+   "site": 5420,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#239",
+   "nums": [
+    3,
+    27,
+    160,
+    238
+   ],
+   "orig": 5417.504893602828,
+   "stressOff": 5417.504893602828,
+   "stressOnNoToggle": 5417.504893602828,
+   "site": 5418,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#242",
+   "nums": [
+    69,
+    102,
+    103,
+    227
+   ],
+   "orig": 5407.883337490284,
+   "stressOff": 5407.883337490284,
+   "stressOnNoToggle": 5407.883337490284,
+   "site": 5408,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#245",
+   "nums": [
+    12,
+    227,
+    238,
+    243
+   ],
+   "orig": 5404.490660342258,
+   "stressOff": 5404.490660342258,
+   "stressOnNoToggle": 5404.490660342258,
+   "site": 5404,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#248",
+   "nums": [
+    3,
+    69,
+    160,
+    238
+   ],
+   "orig": 5398.64877585922,
+   "stressOff": 5398.64877585922,
+   "stressOnNoToggle": 5398.64877585922,
+   "site": 5399,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#251",
+   "nums": [
+    5,
+    12,
+    227,
+    251
+   ],
+   "orig": 5393.6077881063675,
+   "stressOff": 5393.6077881063675,
+   "stressOnNoToggle": 5393.6077881063675,
+   "site": 5394,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#254",
+   "nums": [
+    69,
+    153,
+    160,
+    238
+   ],
+   "orig": 5391.7799459881035,
+   "stressOff": 5391.7799459881035,
+   "stressOnNoToggle": 5391.7799459881035,
+   "site": 5392,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#257",
+   "nums": [
+    4,
+    102,
+    160,
+    227
+   ],
+   "orig": 5388.672621661997,
+   "stressOff": 5388.672621661997,
+   "stressOnNoToggle": 5388.672621661997,
+   "site": 5389,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#260",
+   "nums": [
+    2,
+    102,
+    156,
+    227
+   ],
+   "orig": 5384.395936480618,
+   "stressOff": 5384.395936480618,
+   "stressOnNoToggle": 5384.395936480618,
+   "site": 5384,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#263",
+   "nums": [
+    5,
+    12,
+    160,
+    227
+   ],
+   "orig": 5380.629909421778,
+   "stressOff": 5380.629909421778,
+   "stressOnNoToggle": 5380.629909421778,
+   "site": 5381,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#266",
+   "nums": [
+    4,
+    12,
+    160,
+    238
+   ],
+   "orig": 5376.81918863602,
+   "stressOff": 5376.81918863602,
+   "stressOnNoToggle": 5376.81918863602,
+   "site": 5377,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#269",
+   "nums": [
+    27,
+    69,
+    82,
+    238
+   ],
+   "orig": 5372.975254430267,
+   "stressOff": 5372.975254430267,
+   "stressOnNoToggle": 5372.975254430267,
+   "site": 5373,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#272",
+   "nums": [
+    4,
+    117,
+    156,
+    238
+   ],
+   "orig": 5370.473008928338,
+   "stressOff": 5370.473008928338,
+   "stressOnNoToggle": 5370.473008928338,
+   "site": 5370,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#275",
+   "nums": [
+    2,
+    102,
+    160,
+    238
+   ],
+   "orig": 5364.125308278775,
+   "stressOff": 5364.125308278775,
+   "stressOnNoToggle": 5364.125308278775,
+   "site": 5364,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#278",
+   "nums": [
+    2,
+    12,
+    69,
+    227
+   ],
+   "orig": 5359.195242424242,
+   "stressOff": 5359.195242424242,
+   "stressOnNoToggle": 5359.195242424242,
+   "site": 5359,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#281",
+   "nums": [
+    4,
+    160,
+    227,
+    238
+   ],
+   "orig": 5358.840085908104,
+   "stressOff": 5358.840085908104,
+   "stressOnNoToggle": 5358.840085908104,
+   "site": 5359,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#284",
+   "nums": [
+    1,
+    117,
+    156,
+    238
+   ],
+   "orig": 5355.06601938271,
+   "stressOff": 5355.06601938271,
+   "stressOnNoToggle": 5355.06601938271,
+   "site": 5355,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#287",
+   "nums": [
+    27,
+    102,
+    227,
+    238
+   ],
+   "orig": 5351.960934677378,
+   "stressOff": 5351.960934677378,
+   "stressOnNoToggle": 5351.960934677378,
+   "site": 5352,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#290",
+   "nums": [
+    12,
+    103,
+    160,
+    238
+   ],
+   "orig": 5347.853941105021,
+   "stressOff": 5347.853941105021,
+   "stressOnNoToggle": 5347.853941105021,
+   "site": 5348,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#293",
+   "nums": [
+    3,
+    4,
+    103,
+    117
+   ],
+   "orig": 5343.822861579589,
+   "stressOff": 5343.822861579589,
+   "stressOnNoToggle": 5343.822861579589,
+   "site": 5344,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#296",
+   "nums": [
+    2,
+    27,
+    69,
+    102
+   ],
+   "orig": 5333.994869120935,
+   "stressOff": 5333.994869120935,
+   "stressOnNoToggle": 5333.994869120935,
+   "site": 5334,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  },
+  {
+   "label": "top#299",
+   "nums": [
+    103,
+    117,
+    180,
+    238
+   ],
+   "orig": 5331.826143367009,
+   "stressOff": 5331.826143367009,
+   "stressOnNoToggle": 5331.826143367009,
+   "site": 5332,
+   "diffOff": 0,
+   "diffOnEmpty": 0,
+   "identicalJSON": true
+  }
+ ],
+ "evals": 300,
+ "seconds": 66.605
+}

@@ -1,0 +1,80 @@
+2 13e mois :: La première fois que vous atteignez 200 Spamton ou plus, vous recevez 100 Spamton supplémentaires.
+1 AOE :: Commence la partie avec le passif "AoE"
+2 AOE Rare :: Commence la partie avec le passif "AoE"
+1 AOE Épique :: Commence la partie avec le passif "AoE"
+5 Affaiblissement :: Diminue les résistances élémentaires de toutes les cartes adverses de (-1%) par tour de jeu
+2 Anticipation :: Au début de la partie, cette carte lance toutes ses compétences. Les compétences à cible unique visent une même carte adverse aléatoire.
+3 Armure des Âmes :: Dès qu'une carte sur le terrain meurt, les résistances élémentaires de cette carte augmentent de (+10%)
+7 Baleine bleue :: Augmente les PV de cette carte de (+200).
+8 Blindage F/E :: Résistance feu(+25%)
+7 Blindage N/T :: Résistance nature (+25%)
+7 Blindage O/L :: Résistance ombre (+25%)
+7 Blindage Partagé :: Augmente les résistances élémentaires de toutes les cartes alliées de (+10%)
+2 Bombe-8 :: Applique le passif "Bomba" au tour 8
+6 Boule de Crit :: Augmente les critiques de cette carte de (+2%) à chaque tour
+5 Brut :: Commence la partie avec le passif "Brut"
+12 Cavalerie :: Augmente les PV max de toutes les autres cartes alliées de (+150).
+3 Chance Vitale :: Cette carte a 10% de chance de se soigner plutôt que de subir des dégâts en cas d'attaque.
+4 Coeur OMBRE :: Commence la partie avec le passif "Cœur d'ombre"
+5 Contre :: Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+6 Corrosion :: Chaque fois que cette carte subit une attaque, l'attaquant perd (-1%) dans toutes ses résistances élémentaires.
+10 Critique :: Bonus critique (+10%)
+2 Cœur Corrompu :: Commence la partie avec un passif Cœur rare aléatoire
+1 Cœur EAU :: Commence la partie avec le passif Cœur d'eau
+2 Cœur FEU :: Commence la partie avec le passif "Cœur de feu"
+3 Cœur LUMIÈRE :: Commence la partie avec le passif Cœur de lumière
+2 Cœur NATURE :: Commence la partie avec le passif Cœur de nature
+1 Cœur TERRE :: Commence la partie avec le passif Cœur de terre
+8 Cœur d’acier :: Chaque fois que cette carte subit une attaque, ses résistances élémentaires augmentent de (+1%).
+5 Dernier souffle :: Applique Temporalité à toutes vos cartes quand celle-ci meurt
+2 Dette :: Les deux joueurs commencent avec une dette de (-20) Spamton.
+5 Durcissement :: Augmente les résistances élémentaires de la carte de (+15%).
+8 Départ multi :: Bonus (+3) dans chaque élément.
+2 Erosion :: Commence la partie avec le passif "Érosion"
+6 Erreur Croissante :: -3% de précision à une carte adverse aléatoire à chaque attaque de cette carte.
+12 Focus :: Au début de chaque tour, cette carte a 25% de chance de gagner Provocation.
+3 Fortune :: Augmente la génération de Spamton de cette carte de (+2) par tour de jeu
+5 Frappe :: Augmente les dégâts critiques de (+1).
+4 Heure Funeste :: Applique Éternité à toutes les cartes adverses quand cette carte est tuée.
+6 Héritage :: Bonus (+50) Spamton quand cette carte est tuée.
+2 Immunité-8 :: Applique le passif "Immunité" au tour 8
+8 Imprudent :: Applique immédiatement "Métamorphe aléatoire" à cette carte puis confère un bonus de (+500) PV.
+2 Imprécision :: Au début de la partie, une carte adverse aléatoire perd (-20%) de précision.
+7 Incisif :: Les critiques et la précision de toutes vos cartes augmentent de (+1%) par tour
+5 Inscrit :: La carte est insensible aux Disparitions.
+4 Inversement :: Commence la partie avec le passif "Inversement"
+5 Life-8 :: Les PV et PV max de la carte sont doublés au début du tour 8
+11 Longueur :: Au début de votre premier tour, une carte adverse aléatoire reçoit "Éternité"
+1 Mimétisme :: Commence la partie avec le passif Mimétisme
+1 Multicolore :: Bonus (+1) dans tous les éléments à chaque attaque de cette carte
+1 Mystère :: Commence la partie avec le passif "Mystère"
+1 Nouveau riche :: Commence la partie avec, au hasard, le passif Spamland ou Chanceur.
+4 Nouvelle vie :: Commence la partie avec, au hasard, le passif Phénix ou Cimetière.
+7 One man army :: Chaque fois qu'une autre carte meurt sur le terrain, les dégâts et les soins de base de toutes les attaques de cette carte augmentent de (+5).
+2 Paradoxe :: Les résistances de cette carte sont inversées : les positives deviennent négatives, et inversement.
+2 Petit prix :: Votre premier achat de Tox de la partie est remboursé.
+7 Pièce magique :: Commencez la partie avec (+2) en Chance
+4 Plume de Phénix :: 50% de chance de récupérer le passif Phénix une fois utilisé.
+2 Racket :: Chaque fois que cette carte inflige des dégâts, l'adversaire perd 5 Spamton.
+13 Reset ultime :: La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+5 Revalorisation :: Augmente la génération de Spamton de cette carte de (+5)
+3 Revitalisation :: 5 % de chance par tour de jeu de restaurer ses PV au maximum.
+11 Roulette :: Toutes les compétences de cette carte gagnent Echo (10%).
+1 Réducteur :: Au début de votre premier tour, une carte alliée aléatoire reçoit "Temporalité"
+9 Résilience :: Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25%).
+1 Sac de frappe :: Commence la partie avec le passif "Sac de frappe"
+5 Souffle-8 :: Récupère l'attaque Souffle élémentaire au début du tour 8
+3 Sursaut Vital :: Au début du tour, si les PV sont inférieurs à 10 %, la carte récupère entièrement ses PV.
+3 Terrain aquatique :: Bonus (+7) Eau.
+3 Terrain enflammé :: Bonus (+7) Feu.
+3 Terrain lumineux :: Bonus (+7) Lumière.
+1 Terrain naturel :: Bonus (+7) Nature.
+3 Terrain sombre :: Bonus (+7) Ombre.
+2 Terrain terrestre :: Bonus (+7) Terre.
+4 Tox chanceux :: Chaque rareté de Tox a exactement 25% de probabilité d’être obtenue.
+7 Transition :: Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+5 Virage 360 :: Applique "Métamorphe aléatoire" à toutes vos autres cartes quand celle-ci est tuée.
+11 Vitalité des Âmes :: Dès qu'une carte sur le terrain meurt, les PV et PV max de cette carte augmentent de (+300)
+3 À la caisse :: Au début de la partie, gagnez (+25) Spamton.
+7 Éternisé :: La carte est insensible aux Éternités.
+20 Évolution :: Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.

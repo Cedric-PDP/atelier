@@ -1,0 +1,182 @@
+Zombie Floral : carte SPAM Nature commune, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Zombie Floral S Voir la carte en grand
+Zombie Floral
+8 Malédiction aquatique
+Cœur d'eau
+Cœur de nature
+850/850
+5
+Standard
+Zombie Floral
+8 Malédiction aquatique
+Cœur d'eau
+Cœur de nature
+850/850
+5
+Élémentaire
+Zombie Floral
+8 Malédiction aquatique
+Cœur d'eau
+Cœur de nature
+850/850
+5
+FA
+Zombie Floral
+8 Malédiction aquatique
+Cœur d'eau
+Cœur de nature
+850/850
+5
+## Zombie Floral
+S Nature · Commune · Standard
+850 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Revalorisation Augmente la génération de Spamton de cette carte de (+5)
+Conseillé
+- Talent 2 Reset ultime La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+- Talent 3 Transition Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Trois champs de compétence
+- Malédiction aquatique compétence · Recharge 8 Attaque [30 à 60] Eau sur toutes les cartes adverses
+Applique Disparition
+Attaque [30 à 60] Nature sur toutes les cartes adverses
+Applique Disparition
+8
+- Cœur d'eau tox · Commune Bonus Eau (+1) par tour de jeu
+- Cœur de nature tox · Commune Bonus Nature (+1) par tour de jeu
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Nature Commune #174
+# Zombie Floral
+Attaque
+850 Points de vie
+5 Spamtons / tour
+#3 Classement / 127
+S Sans talent · #3
+Attaque
+89
+Génération
+74
+Défense
+51
+Soutien
+1
+Contrôle
+87
+Économie
+66
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Revalorisation 2 Reset ultime 3 Transition
+Jouer cette carte 21 decks
+Partager
+### Compétences
+#### Malédiction aquatique
+8 tours
+Attaque [30 à 60] Eau sur toutes les cartes adverses
+Applique Disparition
+Attaque [30 à 60] Nature sur toutes les cartes adverses
+Applique Disparition
+Précision 100% Critique 1%
+### Tox de départ
+#### Cœur d'eau
+Commune
+Bonus Eau (+1) par tour de jeu
+#### Cœur de nature
+Commune
+Bonus Nature (+1) par tour de jeu
+### Talents
+#### Revalorisation
+Conseillé
+Augmente la génération de Spamton de cette carte de (+5)
+Δ 14,5 · Score théorique
+#### Reset ultime
+La carte remonte à 100 % de ses PV max si une attaque de cette carte tue une carte adverse.
+Δ 7,3 · Score théorique
+#### Transition
+Quand cette carte est tuée définitivement, elle revient à la vie avec le passif "Métamorphe aléatoire".
+Δ 0 · Score théorique
+## Ses meilleurs decks
+21 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Paguroniyx
+85,1 % Indice relatif 6 tours Élimination estimée 28 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Zombie Floral + Souverain des Chutes d'Éther
+63,8 % Indice relatif 8 tours Élimination estimée 24 / tour Spamtons
+C Accessible
+Midrange ·
+### Catimimi + Girafe Florale
+57,2 % Indice relatif 8 tours Élimination estimée 27 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Catimimi + Faerylia
+57,1 % Indice relatif 8 tours Élimination estimée 25 / tour Spamtons
+C Accessible
+Rampe élémentaire ·
+### Dragon Ciel + Princesse Meridia
+53,3 % Indice relatif 9 tours Élimination estimée 25 / tour Spamtons
+C Intermédiaire
+Midrange ·
+### Zombie Floral + Princesse Meridia
+52,9 % Indice relatif 8 tours Élimination estimée 30 / tour Spamtons
+Les autres decks (15)
+- C Zombie Floral + Souverain des Chutes d'Éther avec L'Œil des montagnes · Princesse Meridia Intermédiaire · 61,8%
+- C Zombie Floral + Souverain des Chutes d'Éther avec L'Œil des montagnes · Guerrier des Neiges Accessible · 59%
+- C Esprit de la Faune + Zombie Floral avec Dragon Ciel · Aidan Accessible · 50,7%
+- C Zombie Floral + Gabriel avec Dragosaure Céleste · Esprit de la Faune Intermédiaire · 50,2%
+- D Zombie Floral + Dragon Ciel avec Soigneuse Astrale des Bois · Esprit de la Faune Accessible · 49,7%
+- D Zombie Floral + Dragon Ciel avec Soigneuse Astrale des Bois · Princesse Meridia Intermédiaire · 49,6%
+- D Zombie Floral + Chimère Brasse-chair avec Princesse Meridia · Dragon Ciel Intermédiaire · 48,8%
+- D Zombie Floral + Chimère Brasse-chair avec Dragon Ciel · L'Épine d'Amour Accessible · 47,7%
+- D Zombie Floral + Aidan avec Maître Amphibian · Chimère Brasse-chair Accessible · 46,3%
+- D Catimimi + Girafe Florale avec Zombie Floral · Soigneuse Astrale des Bois Intermédiaire · 44,7%
+- D Catimimi + Aidan avec Yotaru Gardefeuille · Zombie Floral Accessible · 44,5%
+- D Zombie Floral + Princesse Meridia avec Esprit de la Faune · Gabriel Intermédiaire · 42,4%
+- D Zombie Floral + Princesse Meridia avec Léviathan des Cieux · Épine Médusine Collection avancée · 36,6%
+- D Zombie Floral + Gabriel avec Roi Nature · Lame de la forêt Collection avancée · 35,4%
+- D Zombie Floral + Maître Amphibian avec Frost & Glacier · Princesse Meridia Collection avancée · 31,8%
+### Résistances
+4% Feu
+6% Eau
+4% Terre
+4% Nature
+1% Ombre
+5% Lumière
+Cauchemar · Îles Esseulées
+### Derrière la carte
+Il y a fort longtemps, Gabriel et Lumisaros construisirent un arbre mystérieux au cœur de la capitale pixarch. Cet arbre absorbait l’excédent d’énergie élémactive afin d’assainir l’environnement. Aujourd’hui, les ruines se sont fragmentées en un archipel flottant au-dessus de la Mer Nimbée. Les Îles Esseulées sont devenues une destination rêvée pour les chercheurs. Selon une théorie, l’arbre serait à l’origine des Zombies Floraux, créatures humanoïdes figées dans un état végétatif. Ils tombent au compte-gouttes depuis les îles et sont ramenés vers les côtes de Vaeloria. Ces faibles monstres abyssaux constituent d’excellents sujets de recherche.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 029 Nature
+Rare · Génération
+### Princesse Meridia
+750 PV
+D # 264 Lumière
+Commune · Soutien
+### Aristocrate Nébulaire
+500 PV
+B # 059 Terre
+Commune · Contrôle
+### Guerrier des Neiges
+600 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

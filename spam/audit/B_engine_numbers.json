@@ -1,0 +1,3813 @@
+{
+ "_readme": "Numbers behind SP/spam/audit/B_engine.md. J = wiki engine score (mean of 18 runs: 9 profiles x 2 play orders) unless stated. Decks by card number: chimere [103,238,156,117], anticrit [12,238,27,117], zerocrit [102,116,12,69], alt1 [3,103,117,238], alt2 [69,160,227,238]. Drivers: SP/spam/audit/B/t_*.js; raw outputs: SP/spam/audit/B/out_*.json.",
+ "decomposition": {
+  "chimere_x1": {
+   "J": 8018.2,
+   "offense": 7287.7,
+   "ehpLeft": 1834.4,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 177,
+   "sharePct": {
+    "off": 91,
+    "ehp": 8,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 1
+   },
+   "ttk": 13.2,
+   "ownDeathsMean": 0,
+   "runsWithAnOwnDeath": "0/18",
+   "dmgDealtMean": 2157.4,
+   "neutralP1DmgByTurn": [
+    5,
+    117,
+    12,
+    234,
+    14,
+    384,
+    23,
+    612,
+    35,
+    920
+   ]
+  },
+  "anticrit_x1": {
+   "J": 6989.3,
+   "offense": 6139.5,
+   "ehpLeft": 2103.5,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 227,
+   "sharePct": {
+    "off": 88,
+    "ehp": 11,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 2
+   },
+   "ttk": 16,
+   "ownDeathsMean": 0,
+   "runsWithAnOwnDeath": "0/18",
+   "dmgDealtMean": 1771.4,
+   "neutralP1DmgByTurn": [
+    0,
+    116,
+    0,
+    171,
+    150,
+    289,
+    0,
+    326,
+    0,
+    1008
+   ]
+  },
+  "zerocrit_x1": {
+   "J": 6529.2,
+   "offense": 6102.4,
+   "ehpLeft": 879,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 238.2,
+   "sharePct": {
+    "off": 93,
+    "ehp": 5,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 2
+   },
+   "ttk": 16.4,
+   "ownDeathsMean": 1.2,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 1746.8,
+   "neutralP1DmgByTurn": [
+    28,
+    93,
+    87,
+    181,
+    170,
+    264,
+    229,
+    330,
+    292,
+    398
+   ]
+  },
+  "alt1_x1": {
+   "J": 7625.5,
+   "offense": 6853.2,
+   "ehpLeft": 1916.6,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 203,
+   "sharePct": {
+    "off": 90,
+    "ehp": 9,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 1
+   },
+   "ttk": 14.3,
+   "ownDeathsMean": 0.1,
+   "runsWithAnOwnDeath": "2/18",
+   "dmgDealtMean": 1984,
+   "neutralP1DmgByTurn": [
+    16,
+    128,
+    37,
+    225,
+    55,
+    357,
+    105,
+    445,
+    184,
+    554
+   ]
+  },
+  "alt2_x1": {
+   "J": 6077.3,
+   "offense": 5617.6,
+   "ehpLeft": 1017.4,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 207.1,
+   "sharePct": {
+    "off": 92,
+    "ehp": 6,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 2
+   },
+   "ttk": 19,
+   "ownDeathsMean": 2.1,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 1490.5,
+   "neutralP1DmgByTurn": [
+    0,
+    339,
+    0,
+    445,
+    0,
+    446,
+    0,
+    231,
+    0,
+    249
+   ]
+  },
+  "chimere_x2": {
+   "J": 1947.6,
+   "offense": 1819.2,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 256.8,
+   "sharePct": {
+    "off": 93,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 7
+   },
+   "ttk": 61.5,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 463.3,
+   "neutralP1DmgByTurn": [
+    5,
+    117,
+    12,
+    234,
+    14,
+    23,
+    23,
+    25,
+    25,
+    25
+   ]
+  },
+  "anticrit_x2": {
+   "J": 3139.6,
+   "offense": 2994.8,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 289.5,
+   "sharePct": {
+    "off": 95,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 5
+   },
+   "ttk": 34.8,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 816,
+   "neutralP1DmgByTurn": [
+    0,
+    116,
+    0,
+    171,
+    150,
+    74,
+    0,
+    81,
+    0,
+    236
+   ]
+  },
+  "zerocrit_x2": {
+   "J": 3312.2,
+   "offense": 3177.4,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 269.5,
+   "sharePct": {
+    "off": 96,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 4
+   },
+   "ttk": 36,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 823.5,
+   "neutralP1DmgByTurn": [
+    28,
+    93,
+    87,
+    181,
+    150,
+    191,
+    157,
+    60,
+    0,
+    0
+   ]
+  },
+  "alt1_x2": {
+   "J": 4093.6,
+   "offense": 3966.8,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 253.6,
+   "sharePct": {
+    "off": 97,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 3
+   },
+   "ttk": 26.7,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 1069.9,
+   "neutralP1DmgByTurn": [
+    16,
+    128,
+    37,
+    225,
+    25,
+    289,
+    45,
+    310,
+    56,
+    62
+   ]
+  },
+  "alt2_x2": {
+   "J": 3651.3,
+   "offense": 3539.6,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 223.5,
+   "sharePct": {
+    "off": 97,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 3
+   },
+   "ttk": 32,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 887.2,
+   "neutralP1DmgByTurn": [
+    0,
+    339,
+    0,
+    363,
+    0,
+    205,
+    0,
+    109,
+    0,
+    0
+   ]
+  },
+  "chimere_x3": {
+   "J": 834.2,
+   "offense": 723.5,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 221.4,
+   "sharePct": {
+    "off": 87,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 13
+   },
+   "ttk": 163,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 175.1,
+   "neutralP1DmgByTurn": [
+    5,
+    117,
+    12,
+    14,
+    14,
+    14,
+    15,
+    0,
+    0,
+    0
+   ]
+  },
+  "anticrit_x3": {
+   "J": 1769.2,
+   "offense": 1645.9,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 246.6,
+   "sharePct": {
+    "off": 93,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 7
+   },
+   "ttk": 70.3,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 408.6,
+   "neutralP1DmgByTurn": [
+    0,
+    116,
+    0,
+    171,
+    150,
+    0,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "zerocrit_x3": {
+   "J": 1736.5,
+   "offense": 1623.8,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 225.3,
+   "sharePct": {
+    "off": 94,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 6
+   },
+   "ttk": 73.4,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 405.4,
+   "neutralP1DmgByTurn": [
+    28,
+    93,
+    74,
+    135,
+    80,
+    96,
+    0,
+    0,
+    0,
+    0
+   ]
+  },
+  "alt1_x3": {
+   "J": 1756.1,
+   "offense": 1642.4,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 227.4,
+   "sharePct": {
+    "off": 94,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 6
+   },
+   "ttk": 70.8,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 406.4,
+   "neutralP1DmgByTurn": [
+    16,
+    128,
+    37,
+    193,
+    20,
+    31,
+    36,
+    0,
+    0,
+    0
+   ]
+  },
+  "alt2_x3": {
+   "J": 2398.7,
+   "offense": 2295.7,
+   "ehpLeft": 0,
+   "defenseCredits": 0,
+   "control": 0,
+   "economy": 206.1,
+   "sharePct": {
+    "off": 96,
+    "ehp": 0,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 4
+   },
+   "ttk": 51.2,
+   "ownDeathsMean": 4,
+   "runsWithAnOwnDeath": "18/18",
+   "dmgDealtMean": 556.9,
+   "neutralP1DmgByTurn": [
+    0,
+    339,
+    0,
+    185,
+    0,
+    96,
+    0,
+    0,
+    0,
+    0
+   ]
+  }
+ },
+ "abstractOpponentDps": [
+  108,
+  124,
+  140,
+  156,
+  172,
+  188,
+  204,
+  220,
+  236,
+  253
+ ],
+ "abstractOpponent10TurnDmg": 1801,
+ "realDeckUnopposed10TurnDmg": {
+  "codexShadow": {
+   "cards": [
+    197,
+    127,
+    244,
+    177
+   ],
+   "noTalent": 4675,
+   "recommendedTalents": 4675,
+   "perTurnNoTalent": [
+    216,
+    245,
+    294,
+    338,
+    403,
+    468,
+    547,
+    625,
+    721,
+    818
+   ]
+  },
+  "codexLight": {
+   "cards": [
+    198,
+    127,
+    81,
+    245
+   ],
+   "noTalent": 4214,
+   "recommendedTalents": 4470,
+   "perTurnNoTalent": [
+    66,
+    73,
+    218,
+    540,
+    434,
+    120,
+    464,
+    545,
+    815,
+    939
+   ]
+  },
+  "scorchWater": {
+   "cards": [
+    69,
+    248,
+    229,
+    260
+   ],
+   "noTalent": 3940,
+   "recommendedTalents": 3940,
+   "perTurnNoTalent": [
+    138,
+    170,
+    205,
+    354,
+    431,
+    381,
+    415,
+    448,
+    661,
+    737
+   ]
+  },
+  "gabrielNature": {
+   "cards": [
+    195,
+    249,
+    45,
+    122
+   ],
+   "noTalent": 2986,
+   "recommendedTalents": 3091,
+   "perTurnNoTalent": [
+    30,
+    50,
+    176,
+    385,
+    379,
+    183,
+    367,
+    562,
+    506,
+    348
+   ]
+  },
+  "owlGerz": {
+   "cards": [
+    227,
+    188,
+    195,
+    94
+   ],
+   "noTalent": 2677,
+   "recommendedTalents": 2391,
+   "perTurnNoTalent": [
+    84,
+    101,
+    115,
+    98,
+    175,
+    440,
+    391,
+    262,
+    574,
+    437
+   ]
+  },
+  "giraffe": {
+   "cards": [
+    72,
+    45,
+    122,
+    206
+   ],
+   "noTalent": 1132,
+   "recommendedTalents": 3282,
+   "perTurnNoTalent": [
+    30,
+    32,
+    133,
+    215,
+    125,
+    50,
+    201,
+    208,
+    69,
+    69
+   ]
+  },
+  "userChimere": {
+   "cards": [
+    103,
+    238,
+    156,
+    117
+   ],
+   "noTalent": 2269,
+   "recommendedTalents": 3128,
+   "perTurnNoTalent": [
+    55,
+    64,
+    110,
+    124,
+    179,
+    204,
+    290,
+    323,
+    440,
+    480
+   ]
+  }
+ },
+ "random300Decks10TurnDmg": {
+  "p10": 761,
+  "p25": 974,
+  "p50": 1278,
+  "p75": 1689,
+  "p90": 2164,
+  "max": 4667
+ },
+ "scenarios": {
+  "chimere": {
+   "base": {
+    "J": 8018,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1834
+   },
+   "mimetism0": {
+    "J": 7321,
+    "deaths": 0.9,
+    "off": 6611,
+    "ehpL": 1740
+   },
+   "absorb": {
+    "Lame de la forêt": {
+     "J": 7188,
+     "deaths": 2,
+     "off": 6760,
+     "ehpL": 943
+    },
+    "Chimère Brasse-chair": {
+     "J": 4602,
+     "deaths": 1.5,
+     "off": 4086,
+     "ehpL": 1216
+    },
+    "L'Œil des montagnes": {
+     "J": 7393,
+     "deaths": 1.9,
+     "off": 6904,
+     "ehpL": 1120
+    },
+    "Keria": {
+     "J": 7387,
+     "deaths": 1,
+     "off": 6753,
+     "ehpL": 1581
+    }
+   },
+   "focus": {
+    "Lame de la forêt": {
+     "J": 7909,
+     "deaths": 0.6,
+     "off": 7253,
+     "ehpL": 1598
+    },
+    "Chimère Brasse-chair": {
+     "J": 8112,
+     "deaths": 0,
+     "off": 7288,
+     "ehpL": 2102
+    },
+    "L'Œil des montagnes": {
+     "J": 7964,
+     "deaths": 0.9,
+     "off": 7288,
+     "ehpL": 1643
+    },
+    "Keria": {
+     "J": 7857,
+     "deaths": 1,
+     "off": 7198,
+     "ehpL": 1598
+    }
+   },
+   "freeze": {
+    "Lame de la forêt": {
+     "J": 7241,
+     "deaths": 1,
+     "off": 6553,
+     "ehpL": 1672
+    },
+    "Chimère Brasse-chair": {
+     "J": 5840,
+     "deaths": 1,
+     "off": 5141,
+     "ehpL": 1704
+    },
+    "L'Œil des montagnes": {
+     "J": 7639,
+     "deaths": 0.5,
+     "off": 6891,
+     "ehpL": 1866
+    },
+    "Keria": {
+     "J": 7595,
+     "deaths": 0.4,
+     "off": 6874,
+     "ehpL": 1792
+    }
+   },
+   "precMalus": {
+    "J": 7059,
+    "deaths": 0,
+    "off": 6339,
+    "ehpL": 1803
+   },
+   "cdReset": {
+    "J": 5579,
+    "deaths": 0,
+    "off": 4818,
+    "ehpL": 1921
+   },
+   "reflectR_first": {
+    "J": 8046,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1915
+   },
+   "reflectC_all": {
+    "J": 8026,
+    "deaths": 0,
+    "off": 7288,
+    "ehpL": 1855
+   },
+   "reflectL_all": {
+    "J": 3674,
+    "deaths": 1,
+    "off": 3195,
+    "ehpL": 1094
+   }
+  },
+  "anticrit": {
+   "base": {
+    "J": 6989,
+    "deaths": 0,
+    "off": 6140,
+    "ehpL": 2104
+   },
+   "mimetism0": {
+    "J": 6565,
+    "deaths": 0,
+    "off": 5744,
+    "ehpL": 2021
+   },
+   "absorb": {
+    "Hibernatus": {
+     "J": 6090,
+     "deaths": 1.3,
+     "off": 5496,
+     "ehpL": 1400
+    },
+    "Chimère Brasse-chair": {
+     "J": 5703,
+     "deaths": 1.5,
+     "off": 5109,
+     "ehpL": 1364
+    },
+    "Hippocampe Nimbé": {
+     "J": 5493,
+     "deaths": 1,
+     "off": 5001,
+     "ehpL": 1092
+    },
+    "Keria": {
+     "J": 6467,
+     "deaths": 1,
+     "off": 5830,
+     "ehpL": 1517
+    }
+   },
+   "focus": {
+    "Hibernatus": {
+     "J": 6320,
+     "deaths": 2,
+     "off": 5698,
+     "ehpL": 1417
+    },
+    "Chimère Brasse-chair": {
+     "J": 6989,
+     "deaths": 0,
+     "off": 6140,
+     "ehpL": 2104
+    },
+    "Hippocampe Nimbé": {
+     "J": 6755,
+     "deaths": 0,
+     "off": 6140,
+     "ehpL": 1435
+    },
+    "Keria": {
+     "J": 6425,
+     "deaths": 1.9,
+     "off": 5788,
+     "ehpL": 1444
+    }
+   },
+   "freeze": {
+    "Hibernatus": {
+     "J": 6630,
+     "deaths": 0,
+     "off": 5796,
+     "ehpL": 2060
+    },
+    "Chimère Brasse-chair": {
+     "J": 5639,
+     "deaths": 1,
+     "off": 4915,
+     "ehpL": 1701
+    },
+    "Hippocampe Nimbé": {
+     "J": 6353,
+     "deaths": 0,
+     "off": 5516,
+     "ehpL": 2068
+    },
+    "Keria": {
+     "J": 6739,
+     "deaths": 0,
+     "off": 5904,
+     "ehpL": 2060
+    }
+   },
+   "precMalus": {
+    "J": 6320,
+    "deaths": 0,
+    "off": 5517,
+    "ehpL": 1968
+   },
+   "cdReset": {
+    "J": 5252,
+    "deaths": 1,
+    "off": 4508,
+    "ehpL": 1762
+   },
+   "reflectR_first": {
+    "J": 6866,
+    "deaths": 0,
+    "off": 6140,
+    "ehpL": 1751
+   },
+   "reflectC_all": {
+    "J": 6758,
+    "deaths": 0.2,
+    "off": 6067,
+    "ehpL": 1642
+   },
+   "reflectL_all": {
+    "J": 4699,
+    "deaths": 2,
+    "off": 4424,
+    "ehpL": 421
+   }
+  },
+  "zerocrit": {
+   "base": {
+    "J": 6529,
+    "deaths": 1.2,
+    "off": 6102,
+    "ehpL": 879
+   },
+   "mimetism0": {
+    "J": 6529,
+    "deaths": 1.2,
+    "off": 6102,
+    "ehpL": 879
+   },
+   "absorb": {
+    "Murmures du Corail Noir": {
+     "J": 4889,
+     "deaths": 2.4,
+     "off": 4614,
+     "ehpL": 451
+    },
+    "Prisonnière de la Machine": {
+     "J": 4814,
+     "deaths": 2,
+     "off": 4488,
+     "ehpL": 606
+    },
+    "Hibernatus": {
+     "J": 5584,
+     "deaths": 2.3,
+     "off": 5362,
+     "ehpL": 328
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 6529,
+     "deaths": 1.2,
+     "off": 6102,
+     "ehpL": 879
+    }
+   },
+   "focus": {
+    "Murmures du Corail Noir": {
+     "J": 5767,
+     "deaths": 1,
+     "off": 5340,
+     "ehpL": 873
+    },
+    "Prisonnière de la Machine": {
+     "J": 4519,
+     "deaths": 0,
+     "off": 3903,
+     "ehpL": 1435
+    },
+    "Hibernatus": {
+     "J": 7084,
+     "deaths": 0.6,
+     "off": 6547,
+     "ehpL": 1188
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 6529,
+     "deaths": 1.2,
+     "off": 6102,
+     "ehpL": 879
+    }
+   },
+   "freeze": {
+    "Murmures du Corail Noir": {
+     "J": 4816,
+     "deaths": 1,
+     "off": 4382,
+     "ehpL": 906
+    },
+    "Prisonnière de la Machine": {
+     "J": 5231,
+     "deaths": 1.2,
+     "off": 4709,
+     "ehpL": 1146
+    },
+    "Hibernatus": {
+     "J": 6220,
+     "deaths": 1.3,
+     "off": 5803,
+     "ehpL": 845
+    },
+    "Scorch, les Lézards Ignés": {
+     "J": 5858,
+     "deaths": 1.5,
+     "off": 5449,
+     "ehpL": 817
+    }
+   },
+   "precMalus": {
+    "J": 5797,
+    "deaths": 1.3,
+    "off": 5382,
+    "ehpL": 840
+   },
+   "cdReset": {
+    "J": 5967,
+    "deaths": 1.9,
+    "off": 5534,
+    "ehpL": 870
+   },
+   "reflectR_first": {
+    "J": 5179,
+    "deaths": 1.4,
+    "off": 4789,
+    "ehpL": 765
+   },
+   "reflectC_all": {
+    "J": 5560,
+    "deaths": 1.9,
+    "off": 5213,
+    "ehpL": 622
+   },
+   "reflectL_all": {
+    "J": 3949,
+    "deaths": 2.9,
+    "off": 3752,
+    "ehpL": 160
+   }
+  },
+  "alt1": {
+   "base": {
+    "J": 7625,
+    "deaths": 0.1,
+    "off": 6853,
+    "ehpL": 1917
+   },
+   "mimetism0": {
+    "J": 6920,
+    "deaths": 0.4,
+    "off": 6199,
+    "ehpL": 1764
+   },
+   "absorb": {
+    "Esprit Nature": {
+     "J": 6795,
+     "deaths": 1,
+     "off": 6173,
+     "ehpL": 1516
+    },
+    "Lame de la forêt": {
+     "J": 6005,
+     "deaths": 2,
+     "off": 5672,
+     "ehpL": 651
+    },
+    "Keria": {
+     "J": 6985,
+     "deaths": 1.1,
+     "off": 6424,
+     "ehpL": 1334
+    },
+    "Chimère Brasse-chair": {
+     "J": 5962,
+     "deaths": 1.1,
+     "off": 5414,
+     "ehpL": 1291
+    }
+   },
+   "focus": {
+    "Esprit Nature": {
+     "J": 7625,
+     "deaths": 0.1,
+     "off": 6853,
+     "ehpL": 1917
+    },
+    "Lame de la forêt": {
+     "J": 7641,
+     "deaths": 0,
+     "off": 6892,
+     "ehpL": 1852
+    },
+    "Keria": {
+     "J": 7411,
+     "deaths": 0.6,
+     "off": 6683,
+     "ehpL": 1778
+    },
+    "Chimère Brasse-chair": {
+     "J": 7739,
+     "deaths": 0,
+     "off": 6892,
+     "ehpL": 2132
+    }
+   },
+   "freeze": {
+    "Esprit Nature": {
+     "J": 6517,
+     "deaths": 0.6,
+     "off": 5823,
+     "ehpL": 1684
+    },
+    "Lame de la forêt": {
+     "J": 6038,
+     "deaths": 1,
+     "off": 5424,
+     "ehpL": 1454
+    },
+    "Keria": {
+     "J": 7202,
+     "deaths": 0.1,
+     "off": 6454,
+     "ehpL": 1846
+    },
+    "Chimère Brasse-chair": {
+     "J": 6287,
+     "deaths": 0.1,
+     "off": 5534,
+     "ehpL": 1863
+    }
+   },
+   "precMalus": {
+    "J": 6678,
+    "deaths": 0.4,
+    "off": 5940,
+    "ehpL": 1810
+   },
+   "cdReset": {
+    "J": 5832,
+    "deaths": 0.6,
+    "off": 5121,
+    "ehpL": 1729
+   },
+   "reflectR_first": {
+    "J": 7210,
+    "deaths": 0.6,
+    "off": 6531,
+    "ehpL": 1643
+   },
+   "reflectC_all": {
+    "J": 7269,
+    "deaths": 0.4,
+    "off": 6603,
+    "ehpL": 1611
+   },
+   "reflectL_all": {
+    "J": 5411,
+    "deaths": 1.6,
+    "off": 5048,
+    "ehpL": 703
+   }
+  },
+  "alt2": {
+   "base": {
+    "J": 6077,
+    "deaths": 2.1,
+    "off": 5618,
+    "ehpL": 1017
+   },
+   "mimetism0": {
+    "J": 5700,
+    "deaths": 2.1,
+    "off": 5244,
+    "ehpL": 1004
+   },
+   "absorb": {
+    "Scorch, les Lézards Ignés": {
+     "J": 6077,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1017
+    },
+    "Sanglier Doré": {
+     "J": 5135,
+     "deaths": 3.8,
+     "off": 5021,
+     "ehpL": 14
+    },
+    "Chouette Polychrome": {
+     "J": 6076,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1016
+    },
+    "Chimère Brasse-chair": {
+     "J": 5436,
+     "deaths": 3,
+     "off": 5187,
+     "ehpL": 433
+    }
+   },
+   "focus": {
+    "Scorch, les Lézards Ignés": {
+     "J": 6077,
+     "deaths": 2.1,
+     "off": 5618,
+     "ehpL": 1017
+    },
+    "Sanglier Doré": {
+     "J": 7623,
+     "deaths": 1.9,
+     "off": 7319,
+     "ehpL": 522
+    },
+    "Chouette Polychrome": {
+     "J": 5893,
+     "deaths": 2,
+     "off": 5378,
+     "ehpL": 1171
+    },
+    "Chimère Brasse-chair": {
+     "J": 6745,
+     "deaths": 3,
+     "off": 6385,
+     "ehpL": 675
+    }
+   },
+   "freeze": {
+    "Scorch, les Lézards Ignés": {
+     "J": 5651,
+     "deaths": 2.1,
+     "off": 5194,
+     "ehpL": 1008
+    },
+    "Sanglier Doré": {
+     "J": 5416,
+     "deaths": 2.1,
+     "off": 4992,
+     "ehpL": 916
+    },
+    "Chouette Polychrome": {
+     "J": 5487,
+     "deaths": 2.1,
+     "off": 4996,
+     "ehpL": 1100
+    },
+    "Chimère Brasse-chair": {
+     "J": 5399,
+     "deaths": 2.9,
+     "off": 4976,
+     "ehpL": 876
+    }
+   },
+   "precMalus": {
+    "J": 5487,
+    "deaths": 2.1,
+    "off": 5034,
+    "ehpL": 994
+   },
+   "cdReset": {
+    "J": 5273,
+    "deaths": 2.8,
+    "off": 4843,
+    "ehpL": 905
+   },
+   "reflectR_first": {
+    "J": 5736,
+    "deaths": 2.9,
+    "off": 5348,
+    "ehpL": 792
+   },
+   "reflectC_all": {
+    "J": 5702,
+    "deaths": 2.9,
+    "off": 5368,
+    "ehpL": 635
+   },
+   "reflectL_all": {
+    "J": 4494,
+    "deaths": 3.9,
+    "off": 4375,
+    "ehpL": 0
+   }
+  }
+ },
+ "incidentReplayPerCard": {
+  "chimere": {
+   "abstractNeutral": {
+    "J": 8369,
+    "p1": {
+     "J": 8488.052318371727,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 8248.96694468752,
+     "ttk": 13,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    }
+   },
+   "cloneNeutral": {
+    "J": 8369,
+    "p1": {
+     "J": 8488.052318371727,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 8248.96694468752,
+     "ttk": 13,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_plain": {
+    "J": 9009,
+    "p1": {
+     "J": 9112.035068371728,
+     "ttk": 11.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8906.17703468752,
+     "ttk": 12.1,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_taunt": {
+    "J": 9123,
+    "p1": {
+     "J": 9112.035068371728,
+     "ttk": 11.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "10:kill:Chimère Brasse-chair 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 9133.011194687519,
+     "ttk": 11.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 5549,
+    "p1": {
+     "J": 4486.46736574015,
+     "ttk": 57.5,
+     "deaths": 1,
+     "kills": 0,
+     "ev": "7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6611.541351313195,
+     "ttk": 26.2,
+     "deaths": 2,
+     "kills": 0,
+     "ev": "8:absorbed:Chimère Brasse-chair 10:ownDeath:Keria"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 5597,
+    "p1": {
+     "J": 4531.4073657401495,
+     "ttk": 56.1,
+     "deaths": 1,
+     "kills": 0,
+     "ev": "7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6661.976631313195,
+     "ttk": 25.9,
+     "deaths": 2,
+     "kills": 0,
+     "ev": "8:absorbed:Chimère Brasse-chair 10:ownDeath:Keria"
+    }
+   }
+  },
+  "anticrit": {
+   "abstractNeutral": {
+    "J": 7178,
+    "p1": {
+     "J": 7068.001379790755,
+     "ttk": 15.2,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 7287.363906106544,
+     "ttk": 15.3,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "9:kill:Hippocampe Nimbé"
+    }
+   },
+   "cloneNeutral": {
+    "J": 7178,
+    "p1": {
+     "J": 7068.001379790755,
+     "ttk": 15.2,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 7287.363906106544,
+     "ttk": 15.3,
+     "deaths": 0,
+     "kills": 1,
+     "ev": "9:kill:Hippocampe Nimbé"
+    }
+   },
+   "azurian_plain": {
+    "J": 7388,
+    "p1": {
+     "J": 7495.869656632862,
+     "ttk": 14.3,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Chimère Brasse-chair 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 7279.939986106545,
+     "ttk": 15.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Hibernatus 9:kill:Hibernatus"
+    }
+   },
+   "azurian_taunt": {
+    "J": 8517,
+    "p1": {
+     "J": 8378.702671369703,
+     "ttk": 12.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "10:kill:Chimère Brasse-chair 10:kill:Hippocampe Nimbé"
+    },
+    "p2": {
+     "J": 8654.555908211809,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "9:kill:Chimère Brasse-chair 9:kill:Hippocampe Nimbé"
+    }
+   },
+   "azurian_absorb": {
+    "J": 6362,
+    "p1": {
+     "J": 5443.330135580229,
+     "ttk": 34.8,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 10:kill:Hibernatus 10:ownDeath:Hibernatus"
+    },
+    "p2": {
+     "J": 7279.939986106545,
+     "ttk": 15.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Hibernatus 9:kill:Hibernatus"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6262,
+    "p1": {
+     "J": 5771.67269558023,
+     "ttk": 30.7,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 10:kill:Hippocampe Nimbé 10:ownDeath:Hibernatus"
+    },
+    "p2": {
+     "J": 6752.6033255802295,
+     "ttk": 25.2,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "8:absorbed:Chimère Brasse-chair 9:kill:Hippocampe Nimbé 10:ownDeath:Hibernatus"
+    }
+   }
+  },
+  "zerocrit": {
+   "abstractNeutral": {
+    "J": 6722,
+    "p1": {
+     "J": 6899.382146604902,
+     "ttk": 15.1,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    },
+    "p2": {
+     "J": 6545.217865903146,
+     "ttk": 16,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    }
+   },
+   "cloneNeutral": {
+    "J": 6722,
+    "p1": {
+     "J": 6899.382146604902,
+     "ttk": 15.1,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    },
+    "p2": {
+     "J": 6545.217865903146,
+     "ttk": 16,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 6:kill:Prisonnière de la Machine 9:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_plain": {
+    "J": 7957,
+    "p1": {
+     "J": 8422.7941066049,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Prisonnière de la Machine 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7490.95975923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Hibernatus 7:kill:Prisonnière de la Machine 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_taunt": {
+    "J": 7952,
+    "p1": {
+     "J": 8440.653626604904,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Murmures du Corail Noir 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7463.85743923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Prisonnière de la Machine 7:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_absorb": {
+    "J": 7957,
+    "p1": {
+     "J": 8422.7941066049,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Prisonnière de la Machine 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7490.95975923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Hibernatus 7:kill:Prisonnière de la Machine 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 7952,
+    "p1": {
+     "J": 8440.653626604904,
+     "ttk": 12.1,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:kill:Murmures du Corail Noir 5:ownDeath:Scorch, les Lézards Ignés 7:kill:Murmures du Corail Noir 10:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir"
+    },
+    "p2": {
+     "J": 7463.85743923648,
+     "ttk": 13.9,
+     "deaths": 2,
+     "kills": 3,
+     "ev": "5:ownDeath:Scorch, les Lézards Ignés 5:kill:Prisonnière de la Machine 7:kill:Murmures du Corail Noir 10:ownDeath:Murmures du Corail Noir 10:kill:Prisonnière de la Machine"
+    }
+   }
+  },
+  "alt1": {
+   "abstractNeutral": {
+    "J": 7917,
+    "p1": {
+     "J": 7814.990103012775,
+     "ttk": 13.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Esprit Nature 10:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8019.40157393723,
+     "ttk": 13.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Lame de la forêt"
+    }
+   },
+   "cloneNeutral": {
+    "J": 7917,
+    "p1": {
+     "J": 7814.990103012775,
+     "ttk": 13.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Esprit Nature 10:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8019.40157393723,
+     "ttk": 13.5,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Lame de la forêt 10:kill:Lame de la forêt"
+    }
+   },
+   "azurian_plain": {
+    "J": 8416,
+    "p1": {
+     "J": 8369.577923808003,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8463.270037048564,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Chimère Brasse-chair 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_taunt": {
+    "J": 8454,
+    "p1": {
+     "J": 8417.783283808007,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "8:kill:Chimère Brasse-chair 9:kill:Esprit Nature"
+    },
+    "p2": {
+     "J": 8490.260917048563,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Esprit Nature 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 8416,
+    "p1": {
+     "J": 8369.577923808003,
+     "ttk": 12.6,
+     "deaths": 0,
+     "kills": 2,
+     "ev": "7:kill:Lame de la forêt 10:kill:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 8463.270037048564,
+     "ttk": 12.8,
+     "deaths": 1,
+     "kills": 2,
+     "ev": "7:kill:Chimère Brasse-chair 9:ownDeath:Esprit Nature 9:kill:Chimère Brasse-chair"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6844,
+    "p1": {
+     "J": 6328.414701176425,
+     "ttk": 26.7,
+     "deaths": 1,
+     "kills": 1,
+     "ev": "7:absorbed:Chimère Brasse-chair 8:kill:Lame de la forêt"
+    },
+    "p2": {
+     "J": 7359.611284416983,
+     "ttk": 21.4,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "7:kill:Esprit Nature 8:absorbed:Chimère Brasse-chair 9:ownDeath:Esprit Nature"
+    }
+   }
+  },
+  "alt2": {
+   "abstractNeutral": {
+    "J": 6130,
+    "p1": {
+     "J": 6210.007339107367,
+     "ttk": 17.9,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 6:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    },
+    "p2": {
+     "J": 6050.4210693705245,
+     "ttk": 19.1,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    }
+   },
+   "cloneNeutral": {
+    "J": 6130,
+    "p1": {
+     "J": 6210.007339107367,
+     "ttk": 17.9,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 6:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    },
+    "p2": {
+     "J": 6050.4210693705245,
+     "ttk": 19.1,
+     "deaths": 2,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome"
+    }
+   },
+   "azurian_plain": {
+    "J": 6595,
+    "p1": {
+     "J": 7088.390518317893,
+     "ttk": 15.4,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Chouette Polychrome 6:kill:Chimère Brasse-chair 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6102.09143384421,
+     "ttk": 19,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "3:kill:Sanglier Doré 4:ownDeath:Scorch, les Lézards Ignés 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair 9:kill:Sanglier Doré"
+    }
+   },
+   "azurian_taunt": {
+    "J": 6317,
+    "p1": {
+     "J": 6604.405084107367,
+     "ttk": 16.8,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Sanglier Doré 6:ownDeath:Chouette Polychrome 8:kill:Sanglier Doré 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6029.411413844209,
+     "ttk": 19.1,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    }
+   },
+   "azurian_absorb": {
+    "J": 6595,
+    "p1": {
+     "J": 7088.390518317893,
+     "ttk": 15.4,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Chouette Polychrome 6:kill:Chimère Brasse-chair 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 6102.09143384421,
+     "ttk": 19,
+     "deaths": 3,
+     "kills": 2,
+     "ev": "3:kill:Sanglier Doré 4:ownDeath:Scorch, les Lézards Ignés 6:ownDeath:Chouette Polychrome 9:ownDeath:Chimère Brasse-chair 9:kill:Sanglier Doré"
+    }
+   },
+   "azurian_taunt_absorb": {
+    "J": 6222,
+    "p1": {
+     "J": 6563.836609662923,
+     "ttk": 24.8,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 4:kill:Sanglier Doré 6:ownDeath:Chouette Polychrome 7:absorbed:Chimère Brasse-chair"
+    },
+    "p2": {
+     "J": 5879.806192996255,
+     "ttk": 32.1,
+     "deaths": 3,
+     "kills": 1,
+     "ev": "4:ownDeath:Scorch, les Lézards Ignés 5:kill:Chouette Polychrome 6:ownDeath:Chouette Polychrome 8:absorbed:Chimère Brasse-chair"
+    }
+   }
+  }
+ },
+ "toxValuationOnLame": {
+  "chimere": {
+   "base": 8018,
+   "gainPctFromTurn1": {
+    "CoeurEau_L": 46.5,
+    "CoeurNature_L": 38.3,
+    "CoeurNature_E": 27.8,
+    "CoeurEau_E": 26.8,
+    "Berserk_L": 26.6,
+    "Berserk_E": 20.7,
+    "CoeurNature_R": 16.7,
+    "CoeurEau_R": 15.7,
+    "Temporality_L": 14.1,
+    "CoeurNature_C": 13.7,
+    "Berserk_R": 12.4,
+    "CoeurEau_C": 11.6,
+    "Mystere_R": 10.2,
+    "PunchingBag_C": 10,
+    "PunchingBag_R": 10,
+    "PunchingBag_E": 10,
+    "PunchingBag_L": 10,
+    "Mimetisme_R": 9.4,
+    "Berserk_C": 9.1,
+    "Frozen_E": 6.9,
+    "Poison_C": 5.7,
+    "Poison_R": 5.7,
+    "Poison_E": 5.7,
+    "Poison_L": 5.7,
+    "Aoe_L": 4.9,
+    "CoeurVital_L": 4.8,
+    "Aoe_R": 4.2,
+    "Inversement_R": 3.9,
+    "Reflect_L": 3,
+    "CoeurVital_E": 2.9,
+    "CoeurResistance_L": 2.5,
+    "Eternity_L": 2.5,
+    "Aoe_E": 2.4,
+    "Disparition_L": 2.4,
+    "Aoe_C": 2.3,
+    "Reflect_E": 2.2,
+    "Reflect_R": 1.8,
+    "Multiplicator_R": 1.7,
+    "CoeurResistance_E": 1.6,
+    "CoeurVital_R": 1.4,
+    "Brut_R": 1.2,
+    "Chance_L": 1,
+    "CoeurResistance_R": 0.9,
+    "Smoked_R": 0.9,
+    "Immunity_E": 0.9,
+    "Reset_E": 0.9,
+    "Erosion_C": 0.8,
+    "Reflect_C": 0.8,
+    "Erosion_E": 0.8,
+    "CoeurVital_C": 0.7,
+    "Chance_E": 0.5,
+    "CoeurResistance_C": 0.4,
+    "Primitive heal_C": 0.4,
+    "Primitive heal_R": 0.4,
+    "Life Steal_R": 0.4,
+    "Primitive heal_E": 0.4,
+    "Life Steal_E": 0.4,
+    "Primitive heal_L": 0.4,
+    "Life Steal_L": 0.4,
+    "Life Steal_C": 0.2,
+    "Chance_R": 0.2,
+    "Chance_C": 0.1,
+    "Spamland_C": 0.1,
+    "Shield_R": 0.1,
+    "Spamland_R": 0.1,
+    "Shield_E": 0.1,
+    "Spamland_E": 0.1,
+    "Shield_L": 0.1,
+    "Spamland_L": 0.1,
+    "Shield_C": 0,
+    "Cimetiere_C": 0,
+    "CoeurOmbre_C": 0,
+    "CoeurFeu_C": 0,
+    "CoeurLumiere_C": 0,
+    "CoeurTerre_C": 0,
+    "Phoenix_C": 0,
+    "Tenacite_C": 0,
+    "Cimetiere_R": 0,
+    "CoeurOmbre_R": 0,
+    "CoeurFeu_R": 0,
+    "CoeurLumiere_R": 0,
+    "CoeurTerre_R": 0,
+    "Optimisation_R": 0,
+    "Phoenix_R": 0,
+    "Revenge_R": 0,
+    "Bomba_E": 0,
+    "Cimetiere_E": 0,
+    "CoeurOmbre_E": 0,
+    "CoeurFeu_E": 0,
+    "CoeurLumiere_E": 0,
+    "CoeurTerre_E": 0,
+    "Metamorph_E": 0,
+    "Phoenix_E": 0,
+    "Vengeur_E": 0,
+    "Cimetiere_L": 0,
+    "CoeurOmbre_L": 0,
+    "CoeurFeu_L": 0,
+    "CoeurLumiere_L": 0,
+    "CoeurTerre_L": 0,
+    "Phoenix_L": 0,
+    "Taunt_R": -1.3
+   },
+   "purchaseTiming": [
+    {
+     "id": "CoeurEau_L",
+     "fromT1": 46.5,
+     "T2": 37.5,
+     "T4": 25.9,
+     "T6": 20.5,
+     "T8": 11.9
+    },
+    {
+     "id": "CoeurNature_L",
+     "fromT1": 38.3,
+     "T2": 36.5,
+     "T4": 26.1,
+     "T6": 21.3,
+     "T8": 13.8
+    },
+    {
+     "id": "CoeurNature_E",
+     "fromT1": 27.8,
+     "T2": 25.1,
+     "T4": 21.4,
+     "T6": 16.1,
+     "T8": 11.6
+    },
+    {
+     "id": "CoeurEau_E",
+     "fromT1": 26.8,
+     "T2": 24.6,
+     "T4": 22.3,
+     "T6": 14.1,
+     "T8": 9.3
+    },
+    {
+     "id": "Berserk_L",
+     "fromT1": 26.6,
+     "T2": 24.9,
+     "T4": 24.9,
+     "T6": 23.2,
+     "T8": 15.8
+    },
+    {
+     "id": "Berserk_E",
+     "fromT1": 20.7,
+     "T2": 16.3,
+     "T4": 15.9,
+     "T6": 15.2,
+     "T8": 12.8
+    },
+    {
+     "id": "CoeurNature_R",
+     "fromT1": 16.7,
+     "T2": 16.1,
+     "T4": 14.3,
+     "T6": 11.3,
+     "T8": 5.7
+    },
+    {
+     "id": "CoeurEau_R",
+     "fromT1": 15.7,
+     "T2": 14.9,
+     "T4": 12.7,
+     "T6": 9.8,
+     "T8": 4.8
+    },
+    {
+     "id": "Temporality_L",
+     "fromT1": 14.1,
+     "T2": 12.5,
+     "T4": 9.2,
+     "T6": 9.6,
+     "T8": 3.9
+    },
+    {
+     "id": "CoeurNature_C",
+     "fromT1": 13.7,
+     "T2": 12.5,
+     "T4": 10.5,
+     "T6": 6.4,
+     "T8": 2.8
+    },
+    {
+     "id": "Reflect_E",
+     "fromT1": 2.2,
+     "T2": 2.2,
+     "T4": 1.9,
+     "T6": 1.7,
+     "T8": 1.3
+    },
+    {
+     "id": "Immunity_E",
+     "fromT1": 0.9,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    },
+    {
+     "id": "Shield_E",
+     "fromT1": 0.1,
+     "T2": 0.1,
+     "T4": 0.1,
+     "T6": 0.1,
+     "T8": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "fromT1": 0,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    }
+   ]
+  },
+  "alt1": {
+   "base": 7625,
+   "gainPctFromTurn1": {
+    "CoeurNature_L": 43.2,
+    "Berserk_L": 30.5,
+    "CoeurNature_E": 29.6,
+    "CoeurEau_L": 28.9,
+    "Berserk_E": 21.3,
+    "CoeurEau_E": 20.8,
+    "Aoe_L": 20.3,
+    "CoeurNature_R": 19,
+    "Aoe_E": 18.5,
+    "Berserk_R": 16.6,
+    "CoeurNature_C": 16,
+    "CoeurEau_R": 13.6,
+    "Multiplicator_R": 13.3,
+    "Temporality_L": 12.3,
+    "Aoe_R": 11.4,
+    "Cimetiere_L": 10,
+    "Berserk_C": 7.6,
+    "Frozen_E": 7.3,
+    "Poison_C": 6.6,
+    "Poison_R": 6.6,
+    "Poison_E": 6.6,
+    "Poison_L": 6.6,
+    "CoeurEau_C": 6,
+    "Mystere_R": 5.9,
+    "PunchingBag_C": 5.7,
+    "PunchingBag_R": 5.7,
+    "PunchingBag_E": 5.7,
+    "PunchingBag_L": 5.7,
+    "Cimetiere_E": 5.5,
+    "Aoe_C": 5.1,
+    "CoeurVital_L": 5.1,
+    "Mimetisme_R": 4.9,
+    "Cimetiere_R": 3.8,
+    "CoeurResistance_L": 3.8,
+    "CoeurVital_E": 3,
+    "Reset_E": 2.7,
+    "CoeurResistance_E": 2.6,
+    "Eternity_L": 2.6,
+    "Cimetiere_C": 2.5,
+    "Disparition_L": 2.5,
+    "Brut_R": 2.2,
+    "Reflect_L": 1.9,
+    "CoeurResistance_R": 1.7,
+    "Reflect_E": 1.6,
+    "CoeurVital_R": 1.5,
+    "CoeurResistance_C": 1.1,
+    "Erosion_C": 1,
+    "Erosion_E": 1,
+    "Chance_L": 1,
+    "Smoked_R": 0.9,
+    "Immunity_E": 0.9,
+    "CoeurVital_C": 0.8,
+    "Chance_E": 0.5,
+    "Primitive heal_C": 0.4,
+    "Life Steal_C": 0.4,
+    "Reflect_R": 0.4,
+    "Primitive heal_R": 0.4,
+    "Life Steal_R": 0.4,
+    "Primitive heal_E": 0.4,
+    "Life Steal_E": 0.4,
+    "Primitive heal_L": 0.4,
+    "Life Steal_L": 0.4,
+    "Reflect_C": 0.3,
+    "Chance_R": 0.3,
+    "Taunt_R": 0.2,
+    "Chance_C": 0.1,
+    "Spamland_C": 0.1,
+    "Shield_R": 0.1,
+    "Spamland_R": 0.1,
+    "Shield_E": 0.1,
+    "Spamland_E": 0.1,
+    "Shield_L": 0.1,
+    "Spamland_L": 0.1,
+    "Shield_C": 0,
+    "CoeurOmbre_C": 0,
+    "CoeurFeu_C": 0,
+    "CoeurLumiere_C": 0,
+    "CoeurTerre_C": 0,
+    "Phoenix_C": 0,
+    "Tenacite_C": 0,
+    "CoeurOmbre_R": 0,
+    "CoeurFeu_R": 0,
+    "CoeurLumiere_R": 0,
+    "CoeurTerre_R": 0,
+    "Optimisation_R": 0,
+    "Phoenix_R": 0,
+    "Revenge_R": 0,
+    "Bomba_E": 0,
+    "CoeurOmbre_E": 0,
+    "CoeurFeu_E": 0,
+    "CoeurLumiere_E": 0,
+    "CoeurTerre_E": 0,
+    "Metamorph_E": 0,
+    "Phoenix_E": 0,
+    "Vengeur_E": 0,
+    "CoeurOmbre_L": 0,
+    "CoeurFeu_L": 0,
+    "CoeurLumiere_L": 0,
+    "CoeurTerre_L": 0,
+    "Phoenix_L": 0,
+    "Inversement_R": -8
+   },
+   "purchaseTiming": [
+    {
+     "id": "CoeurNature_L",
+     "fromT1": 43.2,
+     "T2": 36.9,
+     "T4": 24.2,
+     "T6": 20.5,
+     "T8": 15.4
+    },
+    {
+     "id": "Berserk_L",
+     "fromT1": 30.5,
+     "T2": 30.5,
+     "T4": 24.2,
+     "T6": 24,
+     "T8": 20.2
+    },
+    {
+     "id": "CoeurNature_E",
+     "fromT1": 29.6,
+     "T2": 24.2,
+     "T4": 22.2,
+     "T6": 17.7,
+     "T8": 6.5
+    },
+    {
+     "id": "CoeurEau_L",
+     "fromT1": 28.9,
+     "T2": 27.8,
+     "T4": 19.9,
+     "T6": 15.1,
+     "T8": 5.9
+    },
+    {
+     "id": "Berserk_E",
+     "fromT1": 21.3,
+     "T2": 21.1,
+     "T4": 20.6,
+     "T6": 18,
+     "T8": 16.5
+    },
+    {
+     "id": "CoeurEau_E",
+     "fromT1": 20.8,
+     "T2": 19.8,
+     "T4": 16.8,
+     "T6": 9.8,
+     "T8": 3.8
+    },
+    {
+     "id": "Aoe_L",
+     "fromT1": 20.3,
+     "T2": 19,
+     "T4": 17.8,
+     "T6": 15.8,
+     "T8": 13
+    },
+    {
+     "id": "CoeurNature_R",
+     "fromT1": 19,
+     "T2": 18.6,
+     "T4": 15.9,
+     "T6": 7,
+     "T8": 3.1
+    },
+    {
+     "id": "Aoe_E",
+     "fromT1": 18.5,
+     "T2": 17.9,
+     "T4": 16.6,
+     "T6": 14.2,
+     "T8": 10.7
+    },
+    {
+     "id": "Berserk_R",
+     "fromT1": 16.6,
+     "T2": 16.5,
+     "T4": 16.1,
+     "T6": 9.7,
+     "T8": 6.1
+    },
+    {
+     "id": "Reflect_E",
+     "fromT1": 1.6,
+     "T2": 1.5,
+     "T4": 1.5,
+     "T6": 0.4,
+     "T8": 0.3
+    },
+    {
+     "id": "Immunity_E",
+     "fromT1": 0.9,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    },
+    {
+     "id": "Shield_E",
+     "fromT1": 0.1,
+     "T2": 0.1,
+     "T4": 0.1,
+     "T6": 0.1,
+     "T8": 0
+    },
+    {
+     "id": "Phoenix_E",
+     "fromT1": 0,
+     "T2": 0,
+     "T4": 0,
+     "T6": 0,
+     "T8": 0
+    }
+   ]
+  }
+ },
+ "critMonteCarlo": {
+  "chimere": {
+   "ev18": 8018,
+   "mc18": {
+    "mean": 7971,
+    "sd": 213,
+    "p10": 7715,
+    "p90": 8249
+   },
+   "neutralP1": {
+    "ev": 8488,
+    "mean": 8337,
+    "sd": 902,
+    "p10": 7078,
+    "p50": 8647,
+    "p90": 9151,
+    "ttkP10": 10.4,
+    "ttkP50": 11.9,
+    "ttkP90": 14.8
+   }
+  },
+  "anticrit": {
+   "ev18": 6989,
+   "mc18": {
+    "mean": 7037,
+    "sd": 93,
+    "p10": 6937,
+    "p90": 7156
+   },
+   "neutralP1": {
+    "ev": 7068,
+    "mean": 7051,
+    "sd": 338,
+    "p10": 6615,
+    "p50": 7066,
+    "p90": 7475,
+    "ttkP10": 14.3,
+    "ttkP50": 15.2,
+    "ttkP90": 16.3
+   }
+  },
+  "zerocrit": {
+   "ev18": 6529,
+   "mc18": {
+    "mean": 6571,
+    "sd": 51,
+    "p10": 6519,
+    "p90": 6648
+   },
+   "neutralP1": {
+    "ev": 6899,
+    "mean": 6922,
+    "sd": 159,
+    "p10": 6882,
+    "p50": 6882,
+    "p90": 6906,
+    "ttkP10": 15.1,
+    "ttkP50": 15.1,
+    "ttkP90": 15.1
+   }
+  },
+  "alt1": {
+   "ev18": 7625,
+   "mc18": {
+    "mean": 7495,
+    "sd": 126,
+    "p10": 7335,
+    "p90": 7661
+   },
+   "neutralP1": {
+    "ev": 7815,
+    "mean": 7685,
+    "sd": 623,
+    "p10": 6882,
+    "p50": 7696,
+    "p90": 8462,
+    "ttkP10": 12.5,
+    "ttkP50": 13.8,
+    "ttkP90": 15.8
+   }
+  },
+  "alt2": {
+   "ev18": 6077,
+   "mc18": {
+    "mean": 6020,
+    "sd": 42,
+    "p10": 5973,
+    "p90": 6077
+   },
+   "neutralP1": {
+    "ev": 6210,
+    "mean": 6227,
+    "sd": 146,
+    "p10": 6163,
+    "p50": 6183,
+    "p90": 6320,
+    "ttkP10": 17.6,
+    "ttkP50": 17.9,
+    "ttkP90": 17.9
+   }
+  }
+ },
+ "race30turns": {
+  "chimere": {
+   "x1": {
+    "wins": "18/18",
+    "medianKillTurn": 12,
+    "medianWipeTurn": null,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 12,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": 11,
+      "wipe": null,
+      "win": true
+     }
+    ]
+   },
+   "x1.5": {
+    "wins": "14/18",
+    "medianKillTurn": 14,
+    "medianWipeTurn": 14,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 14,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": 11,
+      "wipe": null,
+      "win": true
+     }
+    ]
+   },
+   "x2": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 10,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     }
+    ]
+   }
+  },
+  "anticrit": {
+   "x1": {
+    "wins": "18/18",
+    "medianKillTurn": 15,
+    "medianWipeTurn": null,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 15,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": 14,
+      "wipe": null,
+      "win": true
+     }
+    ]
+   },
+   "x1.5": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 13,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 13,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 13,
+      "win": false
+     }
+    ]
+   },
+   "x2": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 10,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     }
+    ]
+   }
+  },
+  "zerocrit": {
+   "x1": {
+    "wins": "8/18",
+    "medianKillTurn": 20,
+    "medianWipeTurn": 17,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 20,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 17,
+      "win": false
+     }
+    ]
+   },
+   "x1.5": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 11,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     }
+    ]
+   },
+   "x2": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 8,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false
+     }
+    ]
+   }
+  },
+  "alt1": {
+   "x1": {
+    "wins": "18/18",
+    "medianKillTurn": 12,
+    "medianWipeTurn": null,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 12,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": 12,
+      "wipe": null,
+      "win": true
+     }
+    ]
+   },
+   "x1.5": {
+    "wins": "8/18",
+    "medianKillTurn": 15,
+    "medianWipeTurn": 15,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": 15,
+      "wipe": null,
+      "win": true
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 15,
+      "win": false
+     }
+    ]
+   },
+   "x2": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 10,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false
+     }
+    ]
+   }
+  },
+  "alt2": {
+   "x1": {
+    "wins": "2/18",
+    "medianKillTurn": 19,
+    "medianWipeTurn": 18,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 22,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 18,
+      "win": false
+     }
+    ]
+   },
+   "x1.5": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 11,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 12,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 11,
+      "win": false
+     }
+    ]
+   },
+   "x2": {
+    "wins": "0/18",
+    "medianKillTurn": null,
+    "medianWipeTurn": 8,
+    "neutral": [
+     {
+      "prof": "neutral",
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false
+     },
+     {
+      "prof": "neutral",
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false
+     }
+    ]
+   }
+  }
+ },
+ "flatCredits": {
+  "decks": {
+   "freeze": {
+    "J": 4470,
+    "off": 3179,
+    "ehp": 563,
+    "defC": 0,
+    "ctl": 600,
+    "eco": 128,
+    "flatPct": 13,
+    "oneActionPerCardJ": 3748,
+    "cards": "Artisan des Heures, Princesse Meridia, Guerrier des Neiges, Dragosaure Céleste"
+   },
+   "eternity": {
+    "J": 3386,
+    "off": 2543,
+    "ehp": 489,
+    "defC": 0,
+    "ctl": 243,
+    "eco": 111,
+    "flatPct": 7,
+    "oneActionPerCardJ": 3111,
+    "cards": "Faerylia, Félin Errant, Maître Thronebéur, Léo"
+   },
+   "misc": {
+    "J": 4838,
+    "off": 3818,
+    "ehp": 611,
+    "defC": 0,
+    "ctl": 301,
+    "eco": 107,
+    "flatPct": 6,
+    "oneActionPerCardJ": 4301,
+    "cards": "Gardien Vert, Zombie Floral, Luminaire Abyssal, Mélodie des Divinités"
+   },
+   "owned_ctl": {
+    "J": 3089,
+    "off": 2356,
+    "ehp": 257,
+    "defC": 0,
+    "ctl": 340,
+    "eco": 136,
+    "flatPct": 11,
+    "oneActionPerCardJ": 2920,
+    "cards": "Nakyel, Dragon de la Cité Infernale, Hibernatus, Prisonnière de la Machine"
+   },
+   "owned_ctl2": {
+    "J": 3732,
+    "off": 2855,
+    "ehp": 440,
+    "defC": 0,
+    "ctl": 340,
+    "eco": 96,
+    "flatPct": 9,
+    "oneActionPerCardJ": 3541,
+    "cards": "Nakyel, Dragon de la Cité Infernale, Lame de la forêt, Chimère Brasse-chair"
+   },
+   "chimere": {
+    "J": 8018,
+    "off": 7288,
+    "ehp": 642,
+    "defC": 0,
+    "ctl": 0,
+    "eco": 89,
+    "flatPct": 0,
+    "oneActionPerCardJ": 7190,
+    "cards": "Lame de la forêt, Chimère Brasse-chair, L'Œil des montagnes, Keria"
+   }
+  },
+  "solo": [
+   {
+    "n": 92,
+    "name": "Frost & Glacier",
+    "control": 350,
+    "defC": 0,
+    "off": 920,
+    "J": 1289
+   },
+   {
+    "n": 259,
+    "name": "Dragon de la Cité Infernale",
+    "control": 350,
+    "defC": 0,
+    "off": 418,
+    "J": 816
+   },
+   {
+    "n": 23,
+    "name": "Artisan des Heures",
+    "control": 260,
+    "defC": 0,
+    "off": 349,
+    "J": 689
+   },
+   {
+    "n": 78,
+    "name": "Gardien Vert",
+    "control": 240,
+    "defC": 0,
+    "off": 491,
+    "J": 914
+   },
+   {
+    "n": 59,
+    "name": "Guerrier des Neiges",
+    "control": 210,
+    "defC": 0,
+    "off": 802,
+    "J": 1083
+   },
+   {
+    "n": 91,
+    "name": "Ignea",
+    "control": 210,
+    "defC": 0,
+    "off": 1015,
+    "J": 1349
+   },
+   {
+    "n": 122,
+    "name": "Esprit de la Faune",
+    "control": 210,
+    "defC": 0,
+    "off": 1252,
+    "J": 1699
+   },
+   {
+    "n": 211,
+    "name": "Dragosaure Céleste",
+    "control": 210,
+    "defC": 0,
+    "off": 545,
+    "J": 940
+   },
+   {
+    "n": 88,
+    "name": "Faerylia",
+    "control": 163,
+    "defC": 0,
+    "off": 529,
+    "J": 762
+   },
+   {
+    "n": 29,
+    "name": "Princesse Meridia",
+    "control": 140,
+    "defC": 0,
+    "off": 627,
+    "J": 945
+   },
+   {
+    "n": 34,
+    "name": "Éclat du Renard Blanc",
+    "control": 140,
+    "defC": 0,
+    "off": 1669,
+    "J": 1943
+   },
+   {
+    "n": 197,
+    "name": "Codex des Maux Ancestraux",
+    "control": 0,
+    "defC": 300,
+    "off": 0,
+    "J": 374
+   },
+   {
+    "n": 198,
+    "name": "Codex des Sorts Lumineux",
+    "control": 0,
+    "defC": 300,
+    "off": 0,
+    "J": 362
+   },
+   {
+    "n": 237,
+    "name": "Voyageur des Crêtes",
+    "control": 0,
+    "defC": 300,
+    "off": 885,
+    "J": 1380
+   },
+   {
+    "n": 33,
+    "name": "Nakyel",
+    "control": 125,
+    "defC": 0,
+    "off": 481,
+    "J": 660
+   },
+   {
+    "n": 56,
+    "name": "Lisa, la Dragonnière",
+    "control": 120,
+    "defC": 0,
+    "off": 1025,
+    "J": 1312
+   },
+   {
+    "n": 81,
+    "name": "Luminaire Abyssal",
+    "control": 96,
+    "defC": 0,
+    "off": 1901,
+    "J": 2079
+   },
+   {
+    "n": 260,
+    "name": "Le compagnon des esprits",
+    "control": 0,
+    "defC": 180,
+    "off": 1521,
+    "J": 1712
+   },
+   {
+    "n": 21,
+    "name": "Félin Errant",
+    "control": 75,
+    "defC": 0,
+    "off": 695,
+    "J": 908
+   },
+   {
+    "n": 35,
+    "name": "Léo",
+    "control": 50,
+    "defC": 0,
+    "off": 602,
+    "J": 782
+   },
+   {
+    "n": 64,
+    "name": "Maître Thronebéur",
+    "control": 50,
+    "defC": 0,
+    "off": 393,
+    "J": 673
+   },
+   {
+    "n": 256,
+    "name": "Héraldesse Serpentine",
+    "control": 50,
+    "defC": 0,
+    "off": 736,
+    "J": 994
+   },
+   {
+    "n": 146,
+    "name": "Poulpe Parleur",
+    "control": 0,
+    "defC": 100,
+    "off": 0,
+    "J": 171
+   },
+   {
+    "n": 262,
+    "name": "Yotaru Gardefeuille",
+    "control": 0,
+    "defC": 100,
+    "off": 0,
+    "J": 277
+   },
+   {
+    "n": 174,
+    "name": "Zombie Floral",
+    "control": 40,
+    "defC": 0,
+    "off": 487,
+    "J": 757
+   },
+   {
+    "n": 226,
+    "name": "Apprenti Évocateur",
+    "control": 0,
+    "defC": 80,
+    "off": 777,
+    "J": 1016
+   },
+   {
+    "n": 115,
+    "name": "Aidan",
+    "control": 24,
+    "defC": 0,
+    "off": 196,
+    "J": 392
+   },
+   {
+    "n": 261,
+    "name": "Godlur",
+    "control": 0,
+    "defC": 50,
+    "off": 426,
+    "J": 873
+   },
+   {
+    "n": 263,
+    "name": "Paguroniyx",
+    "control": 0,
+    "defC": 40,
+    "off": 631,
+    "J": 928
+   },
+   {
+    "n": 152,
+    "name": "Le Héraut des Cendres",
+    "control": 0,
+    "defC": 30,
+    "off": 491,
+    "J": 699
+   },
+   {
+    "n": 191,
+    "name": "Ameru",
+    "control": 0,
+    "defC": 30,
+    "off": 781,
+    "J": 1007
+   },
+   {
+    "n": 243,
+    "name": "Vivy",
+    "control": 0,
+    "defC": 30,
+    "off": 707,
+    "J": 1019
+   },
+   {
+    "n": 51,
+    "name": "Sorcière Pyrokinétique",
+    "control": 2,
+    "defC": 0,
+    "off": 528,
+    "J": 826
+   }
+  ],
+  "oneAction": {}
+ },
+ "deadCardLeak": {
+  "stock": {
+   "chimere": {
+    "dps_x1": 8018,
+    "dps_x1.5": 6952,
+    "dps_x2": 1948,
+    "absorb_Lame de la forêt": 7188,
+    "absorb_Chimère Brasse-chair": 4602,
+    "absorb_L'Œil des montagnes": 7393,
+    "absorb_Keria": 7387
+   },
+   "anticrit": {
+    "dps_x1": 6989,
+    "dps_x1.5": 3890,
+    "dps_x2": 3140,
+    "absorb_Hibernatus": 6090,
+    "absorb_Chimère Brasse-chair": 5703,
+    "absorb_Hippocampe Nimbé": 5493,
+    "absorb_Keria": 6467
+   },
+   "zerocrit": {
+    "dps_x1": 6529,
+    "dps_x1.5": 4338,
+    "dps_x2": 3312,
+    "absorb_Murmures du Corail Noir": 4889,
+    "absorb_Prisonnière de la Machine": 4814,
+    "absorb_Hibernatus": 5584,
+    "absorb_Scorch, les Lézards Ignés": 6529
+   },
+   "alt1": {
+    "dps_x1": 7625,
+    "dps_x1.5": 5681,
+    "dps_x2": 4094,
+    "absorb_Esprit Nature": 6795,
+    "absorb_Lame de la forêt": 6005,
+    "absorb_Keria": 6985,
+    "absorb_Chimère Brasse-chair": 5962
+   },
+   "alt2": {
+    "dps_x1": 6077,
+    "dps_x1.5": 4421,
+    "dps_x2": 3651,
+    "absorb_Scorch, les Lézards Ignés": 6077,
+    "absorb_Sanglier Doré": 5135,
+    "absorb_Chouette Polychrome": 6076,
+    "absorb_Chimère Brasse-chair": 5436
+   }
+  },
+  "fixed": {
+   "chimere": {
+    "dps_x1": 8018,
+    "dps_x1.5": 6948,
+    "dps_x2": 1931,
+    "absorb_Lame de la forêt": 7188,
+    "absorb_Chimère Brasse-chair": 4588,
+    "absorb_L'Œil des montagnes": 7245,
+    "absorb_Keria": 7387
+   },
+   "anticrit": {
+    "dps_x1": 6989,
+    "dps_x1.5": 3404,
+    "dps_x2": 3085,
+    "absorb_Hibernatus": 6089,
+    "absorb_Chimère Brasse-chair": 5676,
+    "absorb_Hippocampe Nimbé": 5493,
+    "absorb_Keria": 6467
+   },
+   "zerocrit": {
+    "dps_x1": 6529,
+    "dps_x1.5": 4338,
+    "dps_x2": 3312,
+    "absorb_Murmures du Corail Noir": 4889,
+    "absorb_Prisonnière de la Machine": 4814,
+    "absorb_Hibernatus": 5584,
+    "absorb_Scorch, les Lézards Ignés": 6529
+   },
+   "alt1": {
+    "dps_x1": 7625,
+    "dps_x1.5": 5680,
+    "dps_x2": 4091,
+    "absorb_Esprit Nature": 6795,
+    "absorb_Lame de la forêt": 6005,
+    "absorb_Keria": 6985,
+    "absorb_Chimère Brasse-chair": 5941
+   },
+   "alt2": {
+    "dps_x1": 6077,
+    "dps_x1.5": 4392,
+    "dps_x2": 3647,
+    "absorb_Scorch, les Lézards Ignés": 6077,
+    "absorb_Sanglier Doré": 5135,
+    "absorb_Chouette Polychrome": 6076,
+    "absorb_Chimère Brasse-chair": 5429
+   }
+  }
+ },
+ "ownTauntDuration": {
+  "anticrit": {
+   "x1_dur1(engine)": {
+    "J": 6989,
+    "deaths": 0
+   },
+   "x1_dur2": {
+    "J": 6586,
+    "deaths": 1
+   },
+   "x1.5_dur1(engine)": {
+    "J": 3890,
+    "deaths": 3
+   },
+   "x1.5_dur2": {
+    "J": 6073,
+    "deaths": 2
+   }
+  },
+  "zerocrit": {
+   "x1_dur1(engine)": {
+    "J": 6529,
+    "deaths": 1.2
+   },
+   "x1_dur2": {
+    "J": 7595,
+    "deaths": 0.2
+   },
+   "x1.5_dur1(engine)": {
+    "J": 4338,
+    "deaths": 3.4
+   },
+   "x1.5_dur2": {
+    "J": 4939,
+    "deaths": 2.6
+   }
+  }
+ },
+ "duelsPerCard": {
+  "codexShadow": {
+   "chimere": {
+    "J": 3996,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 3191,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 2710,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt1": {
+    "J": 3966,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 3611,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 7,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "scorchWater": {
+   "chimere": {
+    "J": 6236,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 2924,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 3937,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt1": {
+    "J": 4536,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4146,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 8,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 9,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "gabrielNature": {
+   "chimere": {
+    "J": 3507,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 3077,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 3453,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt1": {
+    "J": 5256,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 15,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4044,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "owlGerz": {
+   "chimere": {
+    "J": 3212,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 17,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 14,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 4077,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 19,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 20,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 6363,
+    "race": [
+     {
+      "p": 1,
+      "kill": 15,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 20,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 5281,
+    "race": [
+     {
+      "p": 1,
+      "kill": 19,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": 18,
+      "wipe": null,
+      "win": true,
+      "deaths10": 2,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt2": {
+    "J": 4981,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 19,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": 27,
+      "wipe": null,
+      "win": true,
+      "deaths10": 3,
+      "kills10": 2
+     }
+    ]
+   }
+  },
+  "mirrorChimere": {
+   "chimere": {
+    "J": 8922,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 0,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 8030,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 9080,
+    "race": [
+     {
+      "p": 1,
+      "kill": 12,
+      "wipe": null,
+      "win": true,
+      "deaths10": 0,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": 12,
+      "wipe": null,
+      "win": true,
+      "deaths10": 0,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 8988,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 0,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": 17,
+      "wipe": null,
+      "win": true,
+      "deaths10": 1,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 8635,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 25,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 1
+     }
+    ]
+   }
+  },
+  "mirrorZerocrit": {
+   "chimere": {
+    "J": 6581,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 13,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     }
+    ]
+   },
+   "anticrit": {
+    "J": 6245,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 1
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "zerocrit": {
+    "J": 6096,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     }
+    ]
+   },
+   "alt1": {
+    "J": 6370,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 2,
+      "kills10": 0
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 12,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 0
+     }
+    ]
+   },
+   "alt2": {
+    "J": 6340,
+    "race": [
+     {
+      "p": 1,
+      "kill": null,
+      "wipe": 11,
+      "win": false,
+      "deaths10": 3,
+      "kills10": 2
+     },
+     {
+      "p": 2,
+      "kill": null,
+      "wipe": 10,
+      "win": false,
+      "deaths10": 4,
+      "kills10": 1
+     }
+    ]
+   }
+  }
+ },
+ "randomTargetEV": {
+  "alt2": {
+   "focus": {
+    "J": 6077,
+    "ttk": 19
+   },
+   "randomEV": {
+    "J": 6266,
+    "ttk": 18.3
+   },
+   "deltaPct": 3.1
+  },
+  "owlGerz": {
+   "focus": {
+    "J": 7302,
+    "ttk": 14.9
+   },
+   "randomEV": {
+    "J": 7325,
+    "ttk": 14.6
+   },
+   "deltaPct": 0.3
+  },
+  "zaydGerz_neilla": {
+   "focus": {
+    "J": 6181,
+    "ttk": 19.5
+   },
+   "randomEV": {
+    "J": 7313,
+    "ttk": 15.8
+   },
+   "deltaPct": 18.3
+  },
+  "codexLight": {
+   "focus": {
+    "J": 9362,
+    "ttk": 11.1
+   },
+   "randomEV": {
+    "J": 9492,
+    "ttk": 10.8
+   },
+   "deltaPct": 1.4
+  }
+ }
+}

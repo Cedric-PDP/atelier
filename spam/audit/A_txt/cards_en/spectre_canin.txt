@@ -1,0 +1,172 @@
+Canine Specter: SPAM Shadow common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Canine Specter S View the full card
+Canine Specter
+2 Bang-Boom
+Shadowheart
+Lightheart
+1000/1000
+7
+Standard
+Canine Specter
+2 Bang-Boom
+Shadowheart
+Lightheart
+1000/1000
+7
+Elemental
+Canine Specter
+2 Bang-Boom
+Shadowheart
+Lightheart
+1000/1000
+7
+FA
+Canine Specter
+2 Bang-Boom
+Shadowheart
+Lightheart
+1000/1000
+7
+## Canine Specter
+S Shadow · Common · Standard
+1,000 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Eternalized The card is immune to Eternity effects
+- Talent 2 Hardening Increases this card’s elemental resistances by (+15%).
+- Talent 3 One Man Army Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Recommended
+Three ability slots
+- Bang-Boom ability · Cooldown 2 Deal 20 Shadow and 20 Light damage to all enemy cards
+2
+- Shadowheart tox · Common Shadow bonus (+1) per turn
+- Lightheart tox · Common Light bonus (+1) per turn
+Illustration by Embers
+Full card details
+Illustration by Embers
+Shadow Common #127
+# Canine Specter
+Attack
+1,000 Health points
+7 Spamtons / turn
+#5 Rank / 127
+S No talent · #4
+Attack
+87
+Generation
+74
+Defense
+68
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Eternalized 2 Hardening 3 One Man Army
+Build with this card 17 decks
+Share
+### Abilities
+#### Bang-Boom
+2 turns
+Deal 20 Shadow and 20 Light damage to all enemy cards
+Accuracy 50% Critical 1%
+### Starting Tox
+#### Shadowheart
+Common
+Shadow bonus (+1) per turn
+#### Lightheart
+Common
+Light bonus (+1) per turn
+### Talents
+#### Eternalized
+The card is immune to Eternity effects
+Δ 7 · Theoretical score
+#### Hardening
+Increases this card’s elemental resistances by (+15%).
+Δ 69.1 · Theoretical score
+#### One Man Army
+Recommended
+Each time another card on the field dies, the base damage and base healing of all this card's attacks increase by (+5).
+Δ 633 · Theoretical score
+## Its best decks
+17 ranked decks play this card, from best to worst.
+All decks
+S Accessible
+Aggro / burst ·
+### Aleera + Sovereign of the Ether Falls
+93.4 % Relative index 6 turns Estimated elimination 25 / turn Spamtons
+S Intermediate
+Aggro / burst ·
+### Canine Specter + Aleera
+92.1 % Relative index 6 turns Estimated elimination 22 / turn Spamtons
+B Accessible
+Aggro / burst ·
+### Aleera + Squall
+78.5 % Relative index 6 turns Estimated elimination 31 / turn Spamtons
+B Intermediate
+Aggro / burst ·
+### Aleera + Codex of Ancient Woes
+71.2 % Relative index 6 turns Estimated elimination 27 / turn Spamtons
+C Accessible
+Elemental ramp ·
+### Canine Specter + Mistress of Tints
+50.3 % Relative index 8 turns Estimated elimination 31 / turn Spamtons
+D Advanced collection
+Midrange ·
+### Codex of Luminous Spells + Nebular Aristocrat
+48.6 % Relative index 8 turns Estimated elimination 24 / turn Spamtons
+The other decks (11)
+- A Canine Specter + Aleera with Sovereign of the Ether Falls · Ephial Advanced collection · 89.9%
+- D Abyssal Lightbearer + Thorn of Love with Canine Specter · Commando Gerz Intermediate · 47.9%
+- D Canine Specter + Mistress of Tints with Thorn of Love · Squall Intermediate · 45.7%
+- D Canine Specter + Cloudy Rodent with Ephial · Commando Gerz Advanced collection · 44.8%
+- D Commando Gerz + Cloudy Rodent with Canine Specter · Snow Warrior Accessible · 42.8%
+- D Canine Specter + Mistress of Tints with Cloudy Rodent · Thorn of Love Accessible · 42.1%
+- D Canine Specter + Cloudy Rodent with Commando Gerz · Squall Intermediate · 41.2%
+- D Canine Specter + Commando Gerz with Nebular Aristocrat · Toad of the Stars Accessible · 38.3%
+- D Canine Specter + Mistress of Tints with Ephial · Thorn of Love Advanced collection · 35.9%
+- D Canine Specter + Light Spirit with Abyssal Lightbearer · Squall Intermediate · 35.3%
+- D Canine Specter + Hatchlings of Midas with Commando Gerz · Codex of Luminous Spells Intermediate · 35.1%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Creature · Azeel
+### Beyond the card
+Now that the world seems to have regained its elemental balance, nature and its adaptation to the environment can be observed as never before. In the region of Azeel, whose woods stretch across the lands northwest of Vaeloria, one can find non-aggressive creatures whose goal is to scare. The Bouha thus becomes a tourist spot for its tests of courage, or for its Canine Specter. It takes the form of the last animal companion you loved, letting you say goodbye to it one last time.
+## Better together
+The most promising partners according to the model.
+D # 176 Earth
+Common · Generation
+### Rob the Adventurer
+500 HP
+A # 136 Water
+Rare · Attack
+### Sovereign of the Ether Falls
+800 HP
+C # 064 Light
+Common · Versatile
+### Master Thronebéur
+850 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

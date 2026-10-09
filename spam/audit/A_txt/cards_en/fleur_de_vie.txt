@@ -1,0 +1,127 @@
+Flower of Life: SPAM Light common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Flower of Life D View the full card
+Flower of Life
+1 Radiant Whisper
+1 Floral Barrier
+600/600
+7
+Standard
+Flower of Life
+1 Radiant Whisper
+1 Floral Barrier
+600/600
+7
+Elemental
+Flower of Life
+1 Radiant Whisper
+1 Floral Barrier
+600/600
+7
+FA
+Flower of Life
+1 Radiant Whisper
+1 Floral Barrier
+600/600
+7
+## Flower of Life
+D Light · Common · Standard
+600 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+- Talent 2 Corrupted Heart Start the game with a random Rare Heart passive
+Recommended
+- Talent 3 Piercing All your cards' critical and accuracy increase by (+1%) per turn
+Three ability slots
+- Radiant Whisper ability · Cooldown 1 Deal 10 Light damage Light bonus (+1)
+1
+- Floral Barrier ability · Cooldown 1 Apply Taunt to the caster
+1
+- Free slot Open to a shop Tox
+Illustration by Krisakx
+Full card details
+Illustration by Krisakx
+Light Common #222
+# Flower of Life
+Generation
+600 Health points
+7 Spamtons / turn
+#101 Rank / 127
+D No talent · #113
+Attack
+21
+Generation
+89
+Defense
+16
+Support
+1
+Control
+0
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shared Shield 2 Corrupted Heart 3 Piercing
+Build with this card
+Share
+### Abilities
+#### Radiant Whisper
+1 turn
+Deal 10 Light damage Light bonus (+1)
+Accuracy 100% Critical 1%
+#### Floral Barrier
+1 turn
+Apply Taunt to the caster
+Accuracy 100% Critical 0%
+### Talents
+#### Shared Shield
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 162.9 · Theoretical score
+#### Corrupted Heart
+Recommended
+Start the game with a random Rare Heart passive
+Δ 437.9 · Theoretical score
+#### Piercing
+All your cards' critical and accuracy increase by (+1%) per turn
+Δ 429.6 · Theoretical score
+### Resistances
+0% Fire
+0% Water
+0% Earth
+0% Nature
+0% Shadow
+0% Light
+Art · Aelther
+### Beyond the card
+After the Light King abandoned Aelther, flowers with healing potential began to grow on the Celestial Mount. Some pilgrims pick them despite the bans and fail to complete their pilgrimage — but it lets them heal a loved one or earn a living in Abondance. The greatest of the Flowers of Life sits atop the highest mountain. It is made of gigantic petals and never opens. Everyone wonders what could be inside. Will a chosen one one day be able to open it? Is there a miracle remedy inside?
+## Better together
+The most promising partners according to the model.
+D # 193 Fire
+Epic · Utility
+### Vladislaus
+350 HP
+B # 206 Fire
+Common · Attack
+### Catimimi
+500 HP
+A # 180 Light
+Common · Attack
+### Sky Dragon
+700 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

@@ -1,0 +1,60 @@
+Au-delà de la lettre S : guide SPAM
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Stratégies Comprendre les classements Comprendre les classements
+# Au-delà de la lettre S.
+Utilise les classements pour poser de meilleures questions à tes decks.
+3 min de lecture Partager
+Illustration par Krackdur
+01
+## Carte forte, équipe cohérente.
+Le tier d’une carte résume plusieurs performances individuelles. Il ne mesure pas sa compatibilité avec toutes les équipes. Une carte de tier inférieur peut apporter exactement la génération dont ton attaquant a besoin. Les partenaires et les fiches de deck rendent ce contexte visible.
+02
+## Deux échelles différentes.
+Les cartes sont classées par percentiles dans le catalogue. Les decks utilisent une échelle commune d’indice relatif : 0 % correspond au deck aléatoire moyen et 100 % au meilleur deck trouvé. Un deck accessible et un deck de collection avancée sont donc comparables sur cette échelle. Le pourcentage n’est jamais un taux de victoire.
+03
+## Une boussole pour expérimenter.
+Les classements sont issus d’une recherche et d’hypothèses explicites, avec un filtre pour varier les compositions proposées. Ils ne couvrent pas tous les matchups. Pars d’une liste, adapte-la à ta collection et conserve les variantes que tu apprécies dans l’atelier.
+Comprendre les scores
+## À explorer avec ce guide
+S # 177 Ombre
+Commune · Attaque
+### Moxilys, la Fredonneuse
+900 PV
+S # 127 Ombre
+Commune · Attaque
+### Spectre Canin
+1000 PV
+S # 188 Terre
+Rare · Génération
+### Commando Gerz
+1200 PV
+## Passer à la pratique
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Intermédiaire
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+98,1 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+94,6 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

@@ -1,0 +1,403 @@
+{
+ "v": {
+  "mc": {
+   "chimere": {
+    "ev": 8018,
+    "mcMean": 6078,
+    "sd18": 173,
+    "p10_18": 5869,
+    "p90_18": 6302,
+    "neutralP1": {
+     "ev": 8488,
+     "mean": 6156,
+     "p10": 5268,
+     "p50": 6075,
+     "p90": 7228
+    }
+   },
+   "anticrit": {
+    "ev": 6989,
+    "mcMean": 7051,
+    "sd18": 101,
+    "p10_18": 6927,
+    "p90_18": 7193,
+    "neutralP1": {
+     "ev": 7068,
+     "mean": 7084,
+     "p10": 6644,
+     "p50": 7090,
+     "p90": 7538
+    }
+   },
+   "zerocrit": {
+    "ev": 6529,
+    "mcMean": 6581,
+    "sd18": 57,
+    "p10_18": 6517,
+    "p90_18": 6669,
+    "neutralP1": {
+     "ev": 6899,
+     "mean": 6936,
+     "p10": 6881,
+     "p50": 6881,
+     "p90": 6941
+    }
+   },
+   "alt1": {
+    "ev": 7625,
+    "mcMean": 7070,
+    "sd18": 138,
+    "p10_18": 6848,
+    "p90_18": 7223,
+    "neutralP1": {
+     "ev": 7815,
+     "mean": 7276,
+     "p10": 6481,
+     "p50": 7253,
+     "p90": 8125
+    }
+   },
+   "alt2": {
+    "ev": 6077,
+    "mcMean": 6016,
+    "sd18": 43,
+    "p10_18": 5965,
+    "p90_18": 6073,
+    "neutralP1": {
+     "ev": 6210,
+     "mean": 6234,
+     "p10": 6165,
+     "p50": 6184,
+     "p90": 6387
+    }
+   }
+  },
+  "race": {
+   "chimere": {
+    "x1": {
+     "wins": "18/18",
+     "medianKillTurn": 12,
+     "medianWipeTurn": null,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 12,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": 11,
+       "wipe": null,
+       "win": true
+      }
+     ]
+    },
+    "x1.5": {
+     "wins": "14/18",
+     "medianKillTurn": 14,
+     "medianWipeTurn": 14,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 14,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": 11,
+       "wipe": null,
+       "win": true
+      }
+     ]
+    },
+    "x2": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 10,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      }
+     ]
+    }
+   },
+   "anticrit": {
+    "x1": {
+     "wins": "18/18",
+     "medianKillTurn": 15,
+     "medianWipeTurn": null,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 15,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": 14,
+       "wipe": null,
+       "win": true
+      }
+     ]
+    },
+    "x1.5": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 13,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 13,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 13,
+       "win": false
+      }
+     ]
+    },
+    "x2": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 10,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      }
+     ]
+    }
+   },
+   "zerocrit": {
+    "x1": {
+     "wins": "8/18",
+     "medianKillTurn": 20,
+     "medianWipeTurn": 17,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 20,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 17,
+       "win": false
+      }
+     ]
+    },
+    "x1.5": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 11,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 11,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      }
+     ]
+    },
+    "x2": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 8,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 9,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 8,
+       "win": false
+      }
+     ]
+    }
+   },
+   "alt1": {
+    "x1": {
+     "wins": "18/18",
+     "medianKillTurn": 12,
+     "medianWipeTurn": null,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 12,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": 12,
+       "wipe": null,
+       "win": true
+      }
+     ]
+    },
+    "x1.5": {
+     "wins": "8/18",
+     "medianKillTurn": 15,
+     "medianWipeTurn": 15,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": 15,
+       "wipe": null,
+       "win": true
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 15,
+       "win": false
+      }
+     ]
+    },
+    "x2": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 10,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 10,
+       "win": false
+      }
+     ]
+    }
+   },
+   "alt2": {
+    "x1": {
+     "wins": "2/18",
+     "medianKillTurn": 19,
+     "medianWipeTurn": 18,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 22,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 18,
+       "win": false
+      }
+     ]
+    },
+    "x1.5": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 11,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 12,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 11,
+       "win": false
+      }
+     ]
+    },
+    "x2": {
+     "wins": "0/18",
+     "medianKillTurn": null,
+     "medianWipeTurn": 8,
+     "neutral": [
+      {
+       "prof": "neutral",
+       "p": 1,
+       "kill": null,
+       "wipe": 9,
+       "win": false
+      },
+      {
+       "prof": "neutral",
+       "p": 2,
+       "kill": null,
+       "wipe": 8,
+       "win": false
+      }
+     ]
+    }
+   }
+  }
+ }
+}

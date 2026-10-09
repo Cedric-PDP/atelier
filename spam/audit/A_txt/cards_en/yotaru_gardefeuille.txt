@@ -1,0 +1,153 @@
+Yotaru, Leafguard: SPAM Nature common card, tier D
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Yotaru, Leafguard D View the full card
+Yotaru, Leafguard
+1 Protect
+2 Earthguard
+2 Boostguard
+500/500
+5
+Standard
+Yotaru, Leafguard
+1 Protect
+2 Earthguard
+2 Boostguard
+500/500
+5
+Elemental
+Yotaru, Leafguard
+1 Protect
+2 Earthguard
+2 Boostguard
+500/500
+5
+FA
+Yotaru, Leafguard
+1 Protect
+2 Earthguard
+2 Boostguard
+500/500
+5
+## Yotaru, Leafguard
+D Nature · Common · Standard
+500 HP 5 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Shared Shield Increases the elemental resistances of all allied cards by (+10%).
+Recommended
+- Talent 2 Focus At the start of each turn, this card has a 25% chance to gain Taunt.
+- Talent 3 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Three ability slots
+- Protect ability · Cooldown 1 Apply Taunt to a random allied card
+1
+- Earthguard ability · Cooldown 2 Breaks a Taunt to grant 100 max HP
+2
+- Boostguard ability · Cooldown 2 Breaks a Taunt to increase base damage and healing by 3
+2
+Illustration by Atto
+Full card details
+Illustration by Atto
+Nature Common #262
+# Yotaru, Leafguard
+Support Defense
+500 Health points
+5 Spamtons / turn
+#118 Rank / 127
+D No talent · #117
+Attack
+0
+Generation
+0
+Defense
+87
+Support
+96
+Control
+0
+Economy
+14
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Shared Shield 2 Focus 3 Transition
+Build with this card 4 decks
+Share
+### Abilities
+#### Protect
+1 turn
+Apply Taunt to a random allied card
+Accuracy 100% Critical 0%
+#### Earthguard
+2 turns
+Breaks a Taunt to grant 100 max HP
+Accuracy 100% Critical 0%
+#### Boostguard
+2 turns
+Breaks a Taunt to increase base damage and healing by 3
+Accuracy 100% Critical 0%
+### Talents
+#### Shared Shield
+Recommended
+Increases the elemental resistances of all allied cards by (+10%).
+Δ 178.7 · Theoretical score
+#### Focus
+At the start of each turn, this card has a 25% chance to gain Taunt.
+Δ -4.7 · Theoretical score
+#### Transition
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 0 · Theoretical score
+## Its best decks
+4 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Midrange ·
+### Catimimi + Floral Giraffe
+57.2 % Relative index 8 turns Estimated elimination 27 / turn Spamtons
+C Intermediate
+Midrange ·
+### Catimimi + Faerylia
+57.1 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+D Accessible
+Elemental ramp ·
+### Catimimi + Aidan
+44.5 % Relative index 9 turns Estimated elimination 28 / turn Spamtons
+The other decks (1)
+- D Catimimi + Aidan with Yotaru · Flesh-Melding Chimera Accessible · 39.6%
+### Resistances
+5% Fire
+5% Water
+5% Earth
+5% Nature
+5% Shadow
+5% Light
+Nymph · Emeldarion
+### Beyond the card
+Sir Leafguard is a Nymph in the service of the Dhöggeïr Emeraldoth. Since the latter isn't the most eloquent, Yotaru served as his messenger and interpreter. Brave and warm-hearted, he sacrificed much of himself to meet the needs of his lizard friend. Today, in the Marais'Cage south of Emeldarion, he makes sure pilgrims respect the area's rules. No one may leave the road or set foot on the ground. Guided by such a living legend, the pilgrims gladly comply.
+## Better together
+The most promising partners according to the model.
+A # 097 Fire
+Common · Attack
+### Pyro
+500 HP
+C # 096 Light
+Legendary · Attack
+### Melody of Divinities
+550 HP
+S # 231 Shadow
+Common · Attack
+### Aleera, Nightmare-Eater
+500 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

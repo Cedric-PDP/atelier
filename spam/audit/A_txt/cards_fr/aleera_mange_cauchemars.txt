@@ -1,0 +1,189 @@
+Aleera Mange-Cauchemars : carte SPAM Ombre commune, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Aleera Mange-Cauchemars S Voir la carte en grand
+Aleera Mange-Cauchemars
+2 Mâche-mot
+Sac de frappe
+Cœur d'ombre
+500/500
+5
+Standard
+Aleera Mange-Cauchemars
+2 Mâche-mot
+Sac de frappe
+Cœur d'ombre
+500/500
+5
+Élémentaire
+Aleera Mange-Cauchemars
+2 Mâche-mot
+Sac de frappe
+Cœur d'ombre
+500/500
+5
+FA
+Aleera Mange-Cauchemars
+2 Mâche-mot
+Sac de frappe
+Cœur d'ombre
+500/500
+5
+## Aleera Mange-Cauchemars
+S Ombre · Commune · Standard
+500 PV 5 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Blindage F/E Résistance feu (+25 %)
+Résistance eau (+25 %)
+- Talent 2 Blindage O/L Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+- Talent 3 Résilience Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Conseillé
+Trois champs de compétence
+- Mâche-mot compétence · Recharge 2 Cible toutes les cartes adverses
+Attaque 5 Ombre + 50 % des PV manquants du lanceur
+2
+- Sac de frappe tox · Commune Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+- Cœur d'ombre tox · Commune Bonus Ombre (+1) par tour de jeu
+Illustration par Trinity
+Fiche complète
+Illustration par Trinity
+Ombre Commune #231
+# Aleera Mange-Cauchemars
+Attaque
+500 Points de vie
+5 Spamtons / tour
+#9 Classement / 127
+A Sans talent · #12
+Attaque
+98
+Génération
+69
+Défense
+32
+Soutien
+1
+Contrôle
+0
+Économie
+14
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Blindage F/E 2 Blindage O/L 3 Résilience
+Jouer cette carte 28 decks
+Partager
+### Compétences
+#### Mâche-mot
+2 tours
+Cible toutes les cartes adverses
+Attaque 5 Ombre + 50 % des PV manquants du lanceur
+Précision 100% Critique 1%
+### Tox de départ
+#### Sac de frappe
+Commune
+Augmente de +1 l'élément de la carte du lanceur à chaque fois que celle-ci subit une attaque adverse
+#### Cœur d'ombre
+Commune
+Bonus Ombre (+1) par tour de jeu
+### Talents
+#### Blindage F/E
+Résistance feu (+25 %)
+Résistance eau (+25 %)
+Δ 25,8 · Score théorique
+#### Blindage O/L
+Résistance ombre (+25 %)
+Résistance lumière (+25 %)
+Δ 25,8 · Score théorique
+#### Résilience
+Conseillé
+Tant que les PV de cette carte sont sous 50 %, ses résistances élémentaires augmentent de (+25 %).
+Δ 753,5 · Score théorique
+## Ses meilleurs decks
+28 decks classés jouent cette carte, du meilleur au moins bon.
+Tous les decks
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Chutes d'Éther
+100 % Indice relatif 6 tours Élimination estimée 19 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Maître Amphibian
+92,5 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+S Intermédiaire
+Aggro / burst ·
+### Spectre Canin + Aleera Mange-Cauchemars
+92,1 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Souverain des Flammes
+91,2 % Indice relatif 6 tours Élimination estimée 22 / tour Spamtons
+S Collection avancée
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Ephial
+90,7 % Indice relatif 6 tours Élimination estimée 25 / tour Spamtons
+A Accessible
+Aggro / burst ·
+### Aleera Mange-Cauchemars + Commando Gerz
+89,4 % Indice relatif 6 tours Élimination estimée 26 / tour Spamtons
+Les autres decks (22)
+- S Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec L'Inventeur · Commando Gerz Intermédiaire · 98,1%
+- S Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec L'Inventeur · Maître Amphibian Accessible · 94,6%
+- S Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec Paguroniyx · Spectre Canin Accessible · 93,4%
+- A Spectre Canin + Aleera Mange-Cauchemars avec Souverain des Chutes d'Éther · Ephial Collection avancée · 89,9%
+- A Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec Squall · Paguroniyx Intermédiaire · 89,2%
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Squall · L'Inventeur Intermédiaire · 89,1%
+- A Aleera Mange-Cauchemars + Paguroniyx avec Apprentie de la Mort · Commando Gerz Intermédiaire · 89,1%
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Paguroniyx · Squall Intermédiaire · 88,4%
+- A Aleera Mange-Cauchemars + Apprentie de la Mort avec Catixy · Paguroniyx Accessible · 88%
+- A Aleera Mange-Cauchemars + Catixy avec Squall · Commando Gerz Intermédiaire · 87,9%
+- A Aleera Mange-Cauchemars + Commando Gerz avec Souverain des Chutes d'Éther · Le Transporteur Sauvage Intermédiaire · 87,9%
+- A Aleera Mange-Cauchemars + Paguroniyx avec Souverain des Chutes d'Éther · Souverain des Flammes Collection avancée · 86,2%
+- A Aleera Mange-Cauchemars + Maître Amphibian avec Souverain des Chutes d'Éther · Le Transporteur Sauvage Accessible · 85,3%
+- A Aleera Mange-Cauchemars + Paguroniyx avec Souverain des Chutes d'Éther · Zombie Floral Accessible · 85,1%
+- A Aleera Mange-Cauchemars + Catixy avec Squall · Codex des Maux Ancestraux Intermédiaire · 83,6%
+- A Aleera Mange-Cauchemars + Souverain des Chutes d'Éther avec Ashtarae Lycaria · Apprentie de la Mort Collection avancée · 82,3%
+- B Aleera Mange-Cauchemars + Squall avec Shado · Spectre Canin Accessible · 78,5%
+- B Apprentie de la Mort + Codex des Maux Ancestraux avec Aleera Mange-Cauchemars · Moxilys Intermédiaire · 78,1%
+- B Aleera Mange-Cauchemars + Apprentie de la Mort avec Souverain des Flammes · Lame de la forêt Collection avancée · 73,2%
+- B Aleera Mange-Cauchemars + Paguroniyx avec Commando Gerz · Wyrm des Dunes Cornu Accessible · 71,4%
+- B Aleera Mange-Cauchemars + Codex des Maux Ancestraux avec Éclat du Renard Blanc · Spectre Canin Intermédiaire · 71,2%
+- C Aleera Mange-Cauchemars + Catixy avec Commando Gerz · Gardien Vert Intermédiaire · 67,1%
+### Résistances
+5% Feu
+5% Eau
+5% Terre
+5% Nature
+5% Ombre
+5% Lumière
+Esprit · Abysses
+### Derrière la carte
+La mort n’existe pas en Elther. Dans l’Abysse, les rêves et les cauchemars des Éveillés se mêlent afin de purger les âmes damnées : le rêve façonne de nouvelles âmes, que le cauchemar purifie. Certaines âmes corrompues conservent toutefois leurs souvenirs et profitent des failles oniriques pour prendre possession d’une créature. Les Mange-Cauchemars échappent à la Faucheuse de cauchemars en se faisant passer pour les amis de leurs proies. Une fois la possession achevée, ils font muter leur victime jusqu’à en prendre le contrôle total. Ce fléau est si connu à Nyevielh que l’histoire d’Aleera, la petite fille corrompue, a fait le tour des chaumières.
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+A # 136 Eau
+Rare · Attaque
+### Souverain des Chutes d'Éther
+800 PV
+B # 219 Ombre
+Commune · Attaque
+### Catixy
+600 PV
+D # 262 Nature
+Commune · Soutien
+### Yotaru Gardefeuille
+500 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer

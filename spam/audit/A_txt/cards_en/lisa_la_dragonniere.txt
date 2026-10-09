@@ -1,0 +1,141 @@
+Lisa, the Dragonrider: SPAM Nature common card, tier S
+-
+-
+-
+-
+-
+-
+-
+-
+- Skip to content Community site (unofficial) Official website
+Cards Tier lists Tox Fundamentals Strategies Deck workshop FR Create a deck
+Home Cards Lisa, the Dragonrider S View the full card
+Lisa, the Dragonrider
+2 Random Current
+Vanish
+800/800
+7
+Standard
+Lisa, the Dragonrider
+2 Random Current
+Vanish
+800/800
+7
+Elemental
+Lisa, the Dragonrider
+2 Random Current
+Vanish
+800/800
+7
+FA
+Lisa, the Dragonrider
+2 Random Current
+Vanish
+800/800
+7
+## Lisa, the Dragonrider
+S Nature · Common · Standard
+800 HP 7 Spamtons / turn
+Three unlockable talents · one active
+- Talent 1 Increasing Error Each time this card attacks, a random enemy card loses 3% accuracy
+- Talent 2 Transition When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+- Talent 3 Rare AOE Start the game with the "AoE" passive.
+Recommended
+Three ability slots
+- Random Current ability · Cooldown 2 Deal [30 to 50] Nature damage Random Nature bonus (+2)
+2
+- Vanish tox · Legendary Removes the target's last passive
+- Free slot Open to a shop Tox
+Illustration by SAN
+Full card details
+Illustration by SAN
+Nature Common #056
+# Lisa, the Dragonrider
+Attack
+800 Health points
+7 Spamtons / turn
+#4 Rank / 127
+S No talent · #9
+Attack
+90
+Generation
+57
+Defense
+52
+Support
+1
+Control
+90
+Economy
+39
+Percentile ranks across the card pool: 100 represents the top of the ranking for that metric.
+My cards Add to my cards 1 Increasing Error 2 Transition 3 Rare AOE
+Build with this card 3 decks
+Share
+### Abilities
+#### Random Current
+2 turns
+Deal [30 to 50] Nature damage Random Nature bonus (+2)
+Accuracy 100% Critical 1%
+### Starting Tox
+#### Vanish
+Legendary
+Removes the target's last passive
+### Talents
+#### Increasing Error
+Each time this card attacks, a random enemy card loses 3% accuracy
+Δ 14.4 · Theoretical score
+#### Transition
+When this card is permanently killed, it comes back to life with the "Random Metamorph" passive.
+Δ 0 · Theoretical score
+#### Rare AOE
+Recommended
+Start the game with the "AoE" passive.
+Δ 377.9 · Theoretical score
+## Its best decks
+3 ranked decks play this card, from best to worst.
+All decks
+C Accessible
+Elemental ramp ·
+### Lisa + Blade of the Forest
+55 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+C Intermediate
+Midrange ·
+### Sky Dragon + Thorn of Love
+54.6 % Relative index 8 turns Estimated elimination 25 / turn Spamtons
+C Accessible
+Midrange ·
+### Deer of Mournful Colors + Thorn of Love
+52.3 % Relative index 8 turns Estimated elimination 26 / turn Spamtons
+### Resistances
+10% Fire
+10% Water
+10% Earth
+10% Nature
+10% Shadow
+10% Light
+Creature · Nordvinter
+### Beyond the card
+They say six children were born with a rune on their hand. In Dragheïr, the slums see many war orphans struggle to survive. This atrocious military meritocracy, beginning at the earliest age, gave rise to Lisa. As a child, she showed unmatched combat abilities as well as a mastery of the Dhöggeïr language. A noble family, that of Pyra, decided to adopt her for these feats. Her studies are funded, and she becomes president of the military academy's council.
+## Better together
+The most promising partners according to the model.
+D # 106 Earth
+Common · Generation
+### Thorn of Love
+500 HP
+A # 195 Nature
+Epic · Generation
+### Gabriel
+1000 HP
+A # 029 Nature
+Rare · Generation
+### Princess Meridia
+750 HP
+An independent community project, built with a passion for SPAM.
+Free. Made for players.
+Patch notes Understanding the scores Play the game Contact Cookies
+Unofficial fan tool, not affiliated with Ticroco. SPAM and its artwork belong to their respective owners. Artists are credited on every card page. Logos, images and content are removed upon simple request from their owners: contact@spamgame-wiki.com
+SPAM v1.21
+All Card Deck Tox Talent Synergy Guide Rule
+Simulating…
+↑ ↓ navigate · ↵ open · Échap Close

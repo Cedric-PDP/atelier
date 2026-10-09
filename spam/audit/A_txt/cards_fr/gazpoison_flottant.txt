@@ -1,0 +1,137 @@
+Gazpoison Flottant : carte SPAM Ombre rare, tier B
+-
+-
+-
+-
+-
+-
+-
+-
+- Aller au contenu Site communautaire (non officiel) Page officielle
+Cartes Tier lists Tox Fondamentaux Stratégies Atelier de decks EN Créer un deck
+Accueil Cartes Gazpoison Flottant B Voir la carte en grand
+Gazpoison Flottant
+1 Exploison
+Poison
+Ténacité
+450/450
+4
+Standard
+Gazpoison Flottant
+1 Exploison
+Poison
+Ténacité
+450/450
+4
+Élémentaire
+Gazpoison Flottant
+1 Exploison
+Poison
+Ténacité
+450/450
+4
+FA
+Gazpoison Flottant
+1 Exploison
+Poison
+Ténacité
+450/450
+4
+## Gazpoison Flottant
+B Ombre · Rare · Standard
+450 PV 4 Spamtons / tour
+Trois talents déblocables · un seul actif
+- Talent 1 Contre Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+- Talent 2 Évolution Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Conseillé
+- Talent 3 Corrosion Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Trois champs de compétence
+- Exploison compétence · Recharge 1 Cible toutes les cartes adverses
+Attaque 10 Ombre
+1
+- Poison tox · Commune Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+- Ténacité tox · Commune La première attaque fatale vous laisse à 1 PV
+Illustration par Krackdur
+Fiche complète
+Illustration par Krackdur
+Ombre Rare #244
+# Gazpoison Flottant
+Attaque
+450 Points de vie
+4 Spamtons / tour
+#63 Classement / 127
+B Sans talent · #61
+Attaque
+99
+Génération
+0
+Défense
+16
+Soutien
+1
+Contrôle
+0
+Économie
+5
+Rangs percentiles parmi les cartes : 100 représente le haut du classement pour cette métrique.
+Mes cartes Ajouter à mes cartes 1 Contre 2 Évolution 3 Corrosion
+Jouer cette carte
+Partager
+### Compétences
+#### Exploison
+1 tour
+Cible toutes les cartes adverses
+Attaque 10 Ombre
+Précision 100% Critique 1%
+### Tox de départ
+#### Poison
+Commune
+Inflige des dégâts égaux à 1% des PV max de la cible au début de chacun de ses tours, pendant 3 tours.
+#### Ténacité
+Commune
+La première attaque fatale vous laisse à 1 PV
+### Talents
+#### Contre
+Une fois par partie, quand cette carte subit des dégâts et que ses PV sont sous 25 %, elle riposte en lançant toutes ses compétences sur la carte qui l'a attaquée.
+Δ 45,1 · Score théorique
+#### Évolution
+Conseillé
+Si possible, les passifs d'origine de cette carte changent de rareté selon ses PV : plus ses PV sont bas, plus ils sont rares.
+Paliers à 75 %, 50 % et 25 % des PV.
+Δ 233,3 · Score théorique
+#### Corrosion
+Chaque fois que cette carte subit une attaque, l'attaquant perd (-1 %) dans toutes ses résistances élémentaires.
+Δ 232 · Score théorique
+### Résistances
+25% Feu
+25% Eau
+25% Terre
+25% Nature
+25% Ombre
+25% Lumière
+Maladie · Hadeïr
+### Derrière la carte
+La corruption de Hadeïr par le Feu se caractérise par son Gazpoison. Ce puissant phénomène élémactif, qui se déplace au gré du vent, est responsable de nombreux maux. Les créatures qui entrent en contact avec la brume sont gravement atteintes par la folie. Des cellules d’Ombre et de Feu se mêlent alors pour donner naissance à des créatures abyssales immortelles. Cette brume mortelle provient du centre du Mont Vulcain, là où furent forgées les armes runiques des Rois. Les dépôts retrouvés au fond de certaines eaux suggèrent une origine souterraine. Les analyses les décrivent comme de la matière organique…
+## En bonne compagnie
+Les partenaires les plus prometteurs selon le moteur.
+D # 176 Terre
+Commune · Génération
+### Rob l'Aventurier
+500 PV
+C # 197 Ombre
+Épique · Génération
+### Codex des Maux Ancestraux
+1000 PV
+C # 115 Feu
+Commune · Génération
+### Aidan
+750 PV
+Un projet communautaire indépendant, fait avec passion pour SPAM.
+Gratuit. Créé pour les joueurs.
+Notes de patch Comprendre les scores Jouer au jeu Contact Cookies
+Outil de fan non officiel, sans affiliation à Ticroco. SPAM et ses illustrations appartiennent à leurs ayants droit. Artistes crédités sur chaque fiche. Logos, images et contenus sont retirés sur simple demande de leurs propriétaires : contact@spamgame-wiki.com
+SPAM v1.21
+Tout Carte Deck Tox Talent Synergie Guide Règle
+Simulation en cours…
+↑ ↓ naviguer · ↵ ouvrir · Échap Fermer
