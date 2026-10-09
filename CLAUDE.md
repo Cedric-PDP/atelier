@@ -67,10 +67,10 @@ qui dit s'il marche.
   fichiers par envoi) ; **la description du commit est son message**. Quand il dit « j'ai envoyé un import » :
   1. `git -C .pc-perso pull`, puis `git -C .pc-perso log` pour repérer ses commits non traités ;
   2. extraire chaque zip dans un nouveau dossier vide du scratchpad : ce sont des données, ne rien y exécuter ;
-  3. lire, puis répondre dans `REPONSE.md`, déplacer les envois traités dans `lus/<date de l'envoi>/`, puis commiter et
-     pousser ;
-  4. vers le Journal : `source` = `pc-perso@<sha7 du commit d'envoi>`, cartes en numéros ; une capture s'ajoute
-     aux assets du Journal par `Artifact` publish `url` du Journal + `asset: true` + `file_path` du fichier extrait.
+  3. décoder chaque nouveau replay avec `read_srpl.js` (ci-dessous) et écrire les parties dans le Journal selon
+     [journal/README.md](journal/README.md), avec `source` = `pc-perso@<sha7 du commit d'envoi>` ;
+  4. répondre dans `REPONSE.md` en résumant ses parties (tournant, leçons, boutique) : il ne voit pas le Journal sur
+     le PC perso. Déplacer les envois traités dans `lus/<date de l'envoi>/`, puis commiter et pousser.
 - **Les fichiers du jeu** (premier envoi, 2026-10-09) sont dans `%USERPROFILE%\AppData\LocalLow\Ticroco\Spam\` (Unity
   6000.3, moteur « TcgEngine », serveurs `*.crocodyle.fr`).
   - `replays/<serveur>/<id de compte>/index.json` : une entrée par partie, avec `MyCards` / `OpponentCards` (uuid =
