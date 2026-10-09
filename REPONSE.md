@@ -1,27 +1,29 @@
 # Réponse de Claude
 
-*Mis à jour le 9 octobre 2026.*
+*Mis à jour le 9 octobre 2026, 19 h.*
 
-## Rien reçu pour l'instant
+## Ton envoi du 9 octobre (dossier Ticroco) : le jeu garde tes parties
 
-**Ce que le premier envoi doit nous apprendre**
+**Ce qu'on sait maintenant**
 
-- Si le jeu garde l'historique de tes parties sur ton PC, dans son dossier de `LocalLow`. Si oui,
-  Claude pourra lire tes parties directement au lieu de passer par des captures.
-- Où le jeu range ses réglages et sa collection.
+- Le jeu enregistre un **replay de chaque partie** sur ton PC, dans
+  `%USERPROFILE%\AppData\LocalLow\Ticroco\Spam\replays\`. Il y en avait 2, avec un index qui donne pour chaque
+  partie les 4 cartes des deux camps, le vainqueur, l'adversaire, le nombre de tours et la durée.
+- Les 2 parties sont dans le Journal de parties :
+  - 13 h 04, contre **Punkhard_** (Paguroniyx, Catixy, Nakyel, Esprit Ombre) : défaite en 11 tours ;
+  - 15 h 46, contre **Azurian** (Tisseuse de Mots, Fleur de Vie, Esprit Lumière, Lueur d'Espoir) : défaite en
+    8 tours, sans doute par abandon. C'est très probablement la partie où la Tisseuse a absorbé ta Chimère.
+- Chaque replay contient aussi tout le déroulé de la partie (environ 1 000 messages : tours, attaques, boutique,
+  bans). Il n'est pas encore décodé : c'est la prochaine étape. Il répondra aux questions sur le ban et
+  l'absorption sans que tu aies à faire de captures.
+- Le journal du jeu (`Player.log`) ne garde que la dernière session, mais il montre les achats en boutique.
 
 **Ce que j'attends de toi**
 
-- Le dossier du jeu dans `LocalLow`, compressé (voir le [README](README.md)).
-- Un mot dans la description de l'envoi : ce que tu as joué depuis la dernière fois.
-
-**Les captures F12 qui nous manquent**, pendant tes parties :
-
-- **Le ban de la boutique** : l'écran de ban *avant* de cliquer, puis la boutique suivante. On saura si le ban a lieu
-  une fois par partie ou à chaque boutique, et ce qu'on voit de l'adversaire à ce moment-là.
-- **Une absorption par Tisseuse de Mots** : une capture juste avant et une juste après, avec les PV des deux cartes et
-  les Spamtons.
-- **Les tours 19 à 22**, si une partie dure jusque-là : le jeu y change quelque chose (prolongation).
+- Après chaque soirée de jeu, renvoie le dossier `Ticroco\Spam` compressé (ou seulement son sous-dossier
+  `replays`). Le jeu n'en garde peut-être qu'un nombre limité : n'attends pas trop.
+- Les captures F12 ne sont plus indispensables. Elles restent utiles pour l'écran de ban, tant que le décodage des
+  replays n'est pas fini.
 
 **Un essai à faire**
 
@@ -30,5 +32,5 @@ Joue en alternance, 10 parties chacun :
 - le deck **Essai Dragon Ciel** : Esprit Nature, Keria, Dragon Ciel, Chimère Brasse-chair ;
 - le deck **chimère** : Lame de la forêt, Chimère Brasse-chair, L'Œil des montagnes, Keria.
 
-Les deux sont dans tes decks enregistrés de l'Atelier. À chaque partie, bannis **Renvoi** dans la boutique. Note
-victoire ou défaite et le deck adverse si tu le vois (une capture de fin de partie suffit).
+Les deux sont dans tes decks enregistrés de l'Atelier. À chaque partie, bannis **Renvoi** dans la boutique. Les
+replays suffiront pour le reste.
