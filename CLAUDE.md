@@ -31,8 +31,9 @@ branche GitHub `pc-perso` (section « Le PC perso » ci-dessous).
 - **Atelier** : avant de republier, `node scripts/app/smoke_page.js site/atelier-spam.html site` (faux DOM, doit
   finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`. Après chaque changement de la page ou de
   ses données, reconstruire aussi la copie hors ligne du PC perso (section « Le PC perso »).
-- **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Procédure d'analyse des
-  captures, barème de certitude et schéma dans [journal/README.md](journal/README.md) ; smoke =
+- **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Les parties viennent
+  seulement des replays (pas d'analyse de captures ni de saisie dans la page) : import, barème de certitude et
+  schéma dans [journal/README.md](journal/README.md) ; smoke =
   `node journal/page/smoke_journal.js journal/journal-spam.html` (doit finir par `SMOKE OK`). Le skill
   du projet `spam-journal` (`.claude/skills/`) ne fait que pointer vers ce README.
 - **Pont** : conçu pour que l'utilisateur y dépose depuis son PC perso les dossiers du jeu, il est inutilisable

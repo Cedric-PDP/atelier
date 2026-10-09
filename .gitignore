@@ -28,3 +28,6 @@ Thumbs.db
 
 # Worktree of the orphan branch `pc-perso` (interface and uploads for the personal PC, see CLAUDE.md)
 .pc-perso/
+
+# Claude Code agent worktrees (temporary)
+.claude/worktrees/

@@ -29,6 +29,10 @@
   --el-light: #c98500;
   --el-shadow: #4a3aa7;
   --el-divine: #d6336c;
+  --rar-c: #6d7189;
+  --rar-r: #2363c4;
+  --rar-e: #8a3fc7;
+  --rar-l: #9a6400;
   --font-display: "Chakra Petch", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
   --r: 10px;
@@ -40,6 +44,7 @@
     --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --win: #46c46a; --win-soft: #15301f; --loss: #f07070; --loss-soft: #3a1c1c;
     --warn: #f0b429; --warn-soft: #3a2e12; --grid: #262a36;
     --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+    --rar-c: #8b90a8; --rar-r: #6ea8f5; --rar-e: #c09af5; --rar-l: #f0b429;
     color-scheme: dark;
   }
 }
@@ -48,6 +53,7 @@
   --accent: #2fc2ad; --accent-ink: #062521; --accent-soft: #123a35; --win: #46c46a; --win-soft: #15301f; --loss: #f07070; --loss-soft: #3a1c1c;
   --warn: #f0b429; --warn-soft: #3a2e12; --grid: #262a36;
   --el-fire: #d95926; --el-water: #3987e5; --el-earth: #b5651d; --el-nature: #199e70; --el-light: #c98500; --el-shadow: #9085e9; --el-divine: #ec5f93;
+  --rar-c: #8b90a8; --rar-r: #6ea8f5; --rar-e: #c09af5; --rar-l: #f0b429;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -92,7 +98,6 @@ button { cursor: pointer; }
 
 .btn { border: 1px solid var(--line); background: var(--surface); padding: 7px 12px; border-radius: var(--r-s); font-size: .9rem; line-height: 1.2; }
 .btn:hover { border-color: var(--muted); }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 700; }
 .btn.danger { color: var(--loss); }
 .btn:disabled { opacity: .5; cursor: default; }
 .input { border: 1px solid var(--line); background: var(--surface); border-radius: var(--r-s); padding: 7px 10px; min-width: 0; width: 100%; }
@@ -147,19 +152,43 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 .sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
 @media (max-width: 600px) { .sides { grid-template-columns: minmax(0, 1fr); } }
 .side { border: 1px solid var(--line); border-radius: var(--r-s); padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.timeline td:first-child { font-family: var(--font-display); font-weight: 700; white-space: nowrap; }
-.inferred { color: var(--muted); font-style: italic; }
+/* Déroulé (one block per turn, the two half-turns side by side, stacked when narrow) and shop visits */
+.tn { font-family: var(--font-display); font-weight: 700; }
+.who { font-family: var(--font-display); font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2); }
+.tl, .shop { list-style: none; margin: 0; padding: 0; }
+.tl { container-type: inline-size; }
+.turn, .sv { border-top: 1px solid var(--line); padding: 10px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.turn-h, .sv-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.halves { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px 16px; }
+@media (max-width: 600px) { .halves { grid-template-columns: minmax(0, 1fr); } }
+@container (max-width: 640px) { .halves { grid-template-columns: minmax(0, 1fr); } }
+.half { border-left: 3px solid var(--line); padding-left: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.half.me { border-left-color: var(--accent); }
+.half.me .who, .sv.me .who { color: var(--accent); }
+.half-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: .8rem; }
+.acts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; font-size: .88rem; overflow-wrap: anywhere; }
+.acts .pas { color: var(--muted); font-size: .82rem; }
+.acts .ko { font-weight: 700; }
+.turn.inferred .acts { color: var(--muted); font-style: italic; }
+.turn-note { color: var(--ink-2); }
+.sv-what { font-size: .92rem; overflow-wrap: anywhere; }
+.tox { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.tox.bought { font-weight: 700; }
+.tox .pr { color: var(--muted); font-size: .78rem; font-weight: 400; }
+.rar { font-size: .66rem; font-weight: 700; line-height: 1.25; padding: 0 4px; border: 1px solid currentColor; border-radius: 3px; }
+.rar.C { color: var(--rar-c); } .rar.R { color: var(--rar-r); } .rar.E { color: var(--rar-e); } .rar.L { color: var(--rar-l); }
+details.offers summary { cursor: pointer; font-size: .85rem; color: var(--accent); width: max-content; max-width: 100%; }
+details.offers ol { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+details.offers li { display: grid; grid-template-columns: 64px minmax(0, 1fr); align-items: baseline; gap: 2px 8px; font-size: .86rem; }
+details.offers .ol { color: var(--muted); font-size: .78rem; }
+details.offers .ox { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 14px; min-width: 0; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .mist { border-left: 3px solid var(--warn); padding: 6px 10px; display: flex; flex-direction: column; gap: 3px; font-size: .9rem; }
 .mist.high { border-left-color: var(--loss); }
 .mist.low { border-left-color: var(--line); }
 .mist .better { color: var(--ink-2); }
 .good { border-left: 3px solid var(--win); padding: 6px 10px; font-size: .9rem; }
 .bullets { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: .92rem; }
-details.add summary { cursor: pointer; font-family: var(--font-display); font-weight: 600; }
-.fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 12px; }
-.fgrid label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--ink-2); min-width: 0; }
-.fgrid .wide { grid-column: 1 / -1; }
-.fgrid .fsub { margin: 6px 0 -4px; }
 .confirm { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
 /* Méta */
@@ -194,19 +223,7 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
 .kn .h { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
 .kn .h b { font-family: var(--font-display); font-weight: 600; }
 .kn p { font-size: .92rem; color: var(--ink-2); max-width: 80ch; }
-/* Screenshot analysis */
-.drop { position: relative; display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; text-align: center; border: 2px dashed var(--line); border-radius: var(--r); padding: 22px 16px; cursor: pointer; background: var(--bg); color: var(--ink-2); }
-.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
-.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.shots { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
-.shots:empty { display: none; }
-.shot { border: 1px solid var(--line); border-radius: var(--r-s); overflow: hidden; display: flex; flex-direction: column; background: var(--surface); min-width: 0; }
-.shot img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; background: var(--surface-2); cursor: zoom-in; }
-.shot .bar { display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 4px 6px; font-size: .8rem; }
-.shot .bar b { font-family: var(--font-display); margin-right: auto; }
-.shot .x { border: 0; background: none; color: var(--muted); padding: 2px 6px; border-radius: 4px; font-size: .95rem; line-height: 1; }
-.shot .x:hover { background: var(--surface-2); color: var(--ink); }
-.shot .x:disabled { opacity: .3; cursor: default; }
+/* Screenshots of older matches, certainty badges */
 .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
 .gallery button { border: 0; padding: 0; background: none; cursor: zoom-in; }
 .gallery img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: var(--r-s); border: 1px solid var(--line); display: block; background: var(--surface-2); }
@@ -218,8 +235,6 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
 .cert.likely { background: var(--warn-soft); color: var(--warn); }
 .cert.guess { background: var(--loss-soft); color: var(--loss); }
 .basis { display: block; font-size: .78rem; color: var(--muted); font-style: normal; }
-.draft { border: 2px solid var(--accent); }
-.kn-pick { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 10px; font-size: .9rem; align-items: start; }
 .linkish { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; text-align: left; }
 .linkish:hover { text-decoration: underline; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -248,64 +263,7 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
   <p class="note warn sec" id="db-note" hidden></p>
   <section id="view-bilan" role="tabpanel" aria-labelledby="tab-bilan"><p class="empty sec">Chargement du journal…</p></section>
   <section id="view-parties" role="tabpanel" aria-labelledby="tab-parties" hidden>
-    <div class="panel sec stack" id="an-panel">
-      <div class="sec-head"><h2>Analyser une partie</h2><p>Dépose tes captures dans l'ordre où tu les as prises. Claude lit les cartes, les PV, les recharges et la boutique, puis reconstitue les tours manquants en donnant sa certitude pour chacun.</p></div>
-      <p class="note" id="an-unavail">Vérification de ce que cette vue permet…</p>
-      <div id="an-body" hidden>
-        <label class="drop" id="an-drop" for="an-file">
-          <input type="file" id="an-file" multiple accept="image/png,image/jpeg,image/webp">
-          <span><b>Dépose tes captures ici</b>, colle-les avec Ctrl+V, ou clique pour les choisir.</span>
-          <span class="small muted" id="an-limit"></span>
-        </label>
-        <ol class="shots" id="an-shots"></ol>
-        <div class="fgrid">
-          <label>Nom de mon deck (facultatif)<input class="input" type="text" id="an-deck" maxlength="60" placeholder="deck chimere"></label>
-          <label class="wide">Ce que tu sais déjà (facultatif)<input class="input" type="text" id="an-hint" maxlength="400" placeholder="J'ai perdu au tour 11, j'étais second, l'adversaire a acheté Berserk au tour 4"></label>
-        </div>
-        <div class="row" style="margin-top:12px"><button class="btn primary" id="an-go" type="button">Analyser les captures</button><button class="btn" id="an-stop" type="button" hidden>Arrêter</button><span class="small muted" id="an-msg" role="status"></span></div>
-        <p class="small muted" style="margin-top:8px">L'analyse utilise ton compte Claude et prend une à deux minutes. Les captures ne sont enregistrées qu'au moment où tu valides la partie.</p>
-      </div>
-    </div>
-    <div id="an-draft" class="stack sec" hidden></div>
-    <div class="panel sec">
-      <details class="add" id="add-box">
-        <summary>Ajouter une partie sans captures</summary>
-        <form id="add-form" autocomplete="off">
-          <div class="fgrid">
-            <label>Date et heure<input class="input" type="datetime-local" id="f-date" required></label>
-            <label>Résultat<select class="input" id="f-res"><option value="V">Victoire</option><option value="D">Défaite</option><option value="N">Nul ou abandon</option></select></label>
-            <label>Ordre de jeu<select class="input" id="f-first"><option value="">Je ne sais plus</option><option value="1">Premier</option><option value="0">Second</option></select></label>
-            <label>Mode<select class="input" id="f-mode"><option value="classé">Classé</option><option value="normal">Normal</option><option value="défi">Défi</option><option value="inconnu">Autre</option></select></label>
-            <label>Nombre de tours<input class="input" type="number" min="1" max="60" id="f-turns"></label>
-            <label>Nom de mon deck<input class="input" type="text" id="f-deck" maxlength="60" placeholder="deck chimere"></label>
-            <p class="wide eyebrow fsub">Ban du shop (facultatif)</p>
-            <label>Mon ban<select class="input" id="f-ban-mine"></select></label>
-            <label>Rareté de mon ban<select class="input" id="f-ban-rar-mine"></select></label>
-            <label>Ban de l'adversaire<select class="input" id="f-ban-theirs"></select></label>
-            <label>Rareté de son ban<select class="input" id="f-ban-rar-theirs"></select></label>
-            <label>Moment du ban<input class="input" list="dl-ban-phase" id="f-ban-phase" maxlength="80" placeholder="Je ne sais plus"></label>
-            <label>Ordre des bans<input class="input" list="dl-ban-order" id="f-ban-order" maxlength="60" placeholder="Je ne sais plus"></label>
-            <label>Voyais-tu ses 4 cartes en bannissant ?<select class="input" id="f-ban-saw"></select></label>
-            <label>Durée du ban (le Tox est-il revenu ?)<input class="input" list="dl-ban-lasts" id="f-ban-lasts" maxlength="60" placeholder="Je ne sais plus"></label>
-            <p class="wide eyebrow fsub">Les cartes</p>
-            <label>Mes cartes 1 à 4<input class="input" list="dl-cards" id="f-my0"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-my1" aria-label="Ma carte 2"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-my2" aria-label="Ma carte 3"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-my3" aria-label="Ma carte 4"></label>
-            <label>Cartes adverses 1 à 4<input class="input" list="dl-cards" id="f-op0"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-op1" aria-label="Carte adverse 2"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-op2" aria-label="Carte adverse 3"></label>
-            <label>&nbsp;<input class="input" list="dl-cards" id="f-op3" aria-label="Carte adverse 4"></label>
-            <label class="wide">Ce qui s'est passé<textarea class="input" id="f-note" rows="3" maxlength="2000" placeholder="Le tour qui a tout décidé, ce que tu referais autrement…"></textarea></label>
-          </div>
-          <div class="row" style="margin-top:12px"><button class="btn primary" type="submit" id="f-save">Enregistrer la partie</button><span class="small muted" id="f-msg" role="status"></span></div>
-        </form>
-        <datalist id="dl-cards"></datalist>
-      </details>
-      <datalist id="dl-ban-phase"><option value="une fois, avant le tour 1"><option value="une fois, à la première boutique"><option value="à chaque boutique"></datalist>
-      <datalist id="dl-ban-order"><option value="simultané"><option value="moi d'abord"><option value="l'adversaire d'abord"></datalist>
-      <datalist id="dl-ban-lasts"><option value="toute la partie"><option value="la boutique en cours seulement"></datalist>
-    </div>
+    <p class="note sec" id="m-origin">Les parties viennent des replays du jeu, envoyés depuis ton PC perso. Claude les lit et les écrit ici, avec son analyse : tournant, erreurs, leçons. Rien à saisir dans cette page.</p>
     <div class="log">
       <aside class="panel stack-s">
         <div class="row" id="m-filters" role="group" aria-label="Filtrer par résultat"></div>
@@ -349,9 +307,8 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
 };
-const S = { cards: [], byN: new Map(), byName: new Map(), matches: [], know: [], arch: [], ready: { m: false, k: false, a: false },
-  db: null, canWrite: null, view: 'bilan', sel: null, resFilter: 'all', deckFilter: '', kindFilter: 'all', kSearch: '', confirmDel: null,
-  sample: null, limits: null, assets: null, shots: [], draft: null, ctl: null, busy: false, saving: false };
+const S = { cards: [], byN: new Map(), byName: new Map(), tox: {}, toxIds: {}, matches: [], know: [], arch: [], ready: { m: false, k: false, a: false },
+  db: null, canWrite: null, view: 'bilan', sel: null, resFilter: 'all', deckFilter: '', kindFilter: 'all', kSearch: '', confirmDel: null };
 
 /* ---------- Helpers ---------- */
 const arr = x => Array.isArray(x) ? x : [];
@@ -383,41 +340,49 @@ function archOf(m) {
   return best;
 }
 const mistakeWeight = m => arr(m.mistakes).reduce((s, x) => s + (COST[x.cost] || 2), 0);
-/* Shop items (Tox families) are stored by family id ("Multiplicator"); an unrecognised name is kept as read. */
+const plural = (n, w) => `${nf.format(n)} ${w}${n > 1 ? 's' : ''}`;
+/* Tox: ref/tox.json inlined by build_page.js, keyed by game id with rarity ("CoeurVital_R": name, rar, cost, text).
+   Replays store these ids (shop[].tox, replaced, offers); bans and archetypes store the family id ("CoeurVital"). */
+const RAR = { C: 'Commune', R: 'Rare', E: 'Épique', L: 'Légendaire' };
+const own = (o, k) => Object.prototype.hasOwnProperty.call(o, k);
 function toxFam(v) {
-  if (!v) return null; const t = S.tox || {}; const s = String(v).trim();
-  if (t[s]) return s; const id = s.replace(/_[CREL]$/, ''); if (t[id]) return id;
+  if (!v) return null; const t = S.tox; const s = String(v).trim();
+  if (own(t, s)) return s; const id = s.replace(/_[CREL]$/, ''); if (own(t, id)) return id;
   const low = s.toLowerCase(); return Object.keys(t).find(k => t[k].name.toLowerCase() === low) || null;
 }
-const toxName = v => { if (!v) return ''; const t = (S.tox || {})[v]; return t ? t.name : String(v); };
-/* Optional ban details (schema in journal/README.md): rarity {mine, theirs} as C/R/E/L, phase, order, sawOpp (bool|null), lasts, seen. */
-const RAR = { C: 'Commune', R: 'Rare', E: 'Épique', L: 'Légendaire' };
-const rarOf = v => { const s = String(v == null ? '' : v).trim(); if (/^[CREL]$/i.test(s)) return s.toUpperCase(); const low = s.toLowerCase(); return low ? Object.keys(RAR).find(k => low.startsWith(RAR[k].toLowerCase().slice(0, 4))) || null : null; };
-const rarOptions = sel => '<option value="">Rareté inconnue</option>' + Object.entries(RAR).map(([k, l]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${l}</option>`).join('');
-const sawOptions = v => [['', 'Je ne sais pas', null], ['1', 'Oui, ses 4 cartes', true], ['0', 'Non, pas toutes', false]].map(([k, l, b]) => `<option value="${k}"${b === (typeof v === 'boolean' ? v : null) ? ' selected' : ''}>${l}</option>`).join('');
-/* Keeps only the ban fields that carry something; null when nothing is known. */
-function cleanBans(b) {
-  if (!b) return null;
-  const o = { mine: b.mine || null, theirs: b.theirs || null, c: certNum(b.c) };
-  const r = b.rarity || {};
-  if (RAR[r.mine] || RAR[r.theirs]) o.rarity = { mine: RAR[r.mine] ? r.mine : null, theirs: RAR[r.theirs] ? r.theirs : null };
-  ['phase', 'order', 'lasts', 'seen'].forEach(k => { const v = String(b[k] == null ? '' : b[k]).trim(); if (v) o[k] = v; });
-  if (typeof b.sawOpp === 'boolean') o.sawOpp = b.sawOpp;
-  return o.mine || o.theirs || Object.keys(o).length > 3 ? o : null;
+/* Name, rarity, price and text of a stored Tox: game id, family id (its rarity given apart, as in bans.rarity), or a name kept as read. */
+function toxInfo(v, rar) {
+  const s = String(v == null ? '' : v).trim(); if (!s) return null;
+  if (own(S.toxIds, s)) return S.toxIds[s];
+  const r = own(RAR, rar) ? rar : (/_([CREL])$/.exec(s) || [])[1] || null, f = toxFam(s);
+  if (!f) return { name: s, rar: r };
+  return own(S.toxIds, f + '_' + r) ? S.toxIds[f + '_' + r] : { name: S.tox[f].name, rar: r };
 }
-const toxOptions = sel => '<option value="">Aucun ou inconnu</option>' + (sel && !(S.tox || {})[sel] ? `<option value="${esc(sel)}" selected>${esc(sel)} (lu tel quel, non reconnu)</option>` : '') + Object.entries(S.tox || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, 'fr')).map(([id, t]) => `<option value="${esc(id)}"${id === sel ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
+const toxName = v => { const t = toxInfo(v); return t ? t.name : ''; };
+function toxHtml(v, o = {}) {
+  const t = toxInfo(v, o.rar); if (!t) return '';
+  const tip = [t.name + (RAR[t.rar] ? ' ' + RAR[t.rar].toLowerCase() : ''), t.cost != null ? t.cost + ' Spamtons' : '', t.text, o.bought ? 'acheté' : ''].filter(Boolean).join(' · ');
+  return `<span class="tox${o.bought ? ' bought' : ''}" title="${esc(tip)}">${o.bought ? '<span aria-hidden="true">✓</span><span class="sr">acheté :</span> ' : ''}${esc(t.name)}${RAR[t.rar] ? ` <span class="rar ${t.rar}">${t.rar}</span>` : ''}${o.price && t.cost != null ? ` <span class="pr num">${esc(t.cost)}</span>` : ''}</span>`;
+}
+/* Shop bans (schema in journal/README.md): none (no ban at all, established), mine/theirs (family ids), c, rarity {mine, theirs} as C/R/E/L, phase, order, sawOpp, lasts, seen. */
 function bansHtml(m) {
-  const b = m.bans; if (!b) return '';
+  const b = m.bans; if (!b || typeof b !== 'object') return '';
+  if (b.none === true) return `<div class="note small"><b>Bans du shop</b> · Aucun ban dans cette partie ${cert(b.c)}${b.seen ? `<span class="basis">${esc(b.seen)}</span>` : ''}</div>`;
   const r = b.rarity || {};
-  const side = (v, k) => (toxName(v) || '?') + (RAR[k] ? ' (' + RAR[k].toLowerCase() + ')' : '');
+  const side = (v, k) => v ? toxHtml(v, { rar: k }) : '<span class="muted">?</span>';
   const extra = [b.phase && 'moment : ' + b.phase, b.order && 'ordre : ' + b.order,
     b.sawOpp === true ? 'ses 4 cartes étaient visibles au moment du ban' : b.sawOpp === false ? "ses 4 cartes n'étaient pas toutes visibles au moment du ban" : '',
-    b.lasts && 'durée : ' + b.lasts, b.seen && 'sur les captures : ' + b.seen].filter(Boolean).join(' · ');
+    b.lasts && 'durée : ' + b.lasts, b.seen && 'constat : ' + b.seen].filter(Boolean).join(' · ');
   if (!b.mine && !b.theirs && !extra) return '';
-  return `<div class="note small"><b>Bans du shop</b> · moi : ${esc(side(b.mine, r.mine))} · adversaire : ${esc(side(b.theirs, r.theirs))} ${cert(b.c)}${extra ? `<span class="basis">${esc(extra)}</span>` : ''}</div>`;
+  return `<div class="note small"><b>Bans du shop</b> · moi : ${side(b.mine, r.mine)} · adversaire : ${side(b.theirs, r.theirs)} ${cert(b.c)}${extra ? `<span class="basis">${esc(extra)}</span>` : ''}</div>`;
 }
-/* Where a match comes from: "captures" (this page), "manuel" (the form), or the name of a Pont import. */
-const importName = m => m.source && m.source !== 'captures' && m.source !== 'manuel' ? String(m.source) : '';
+/* Where a match comes from (schema: source). "pc-perso@<sha7>" = a replay sent from the home PC, the only source since 2026-10-09.
+   Older matches: "captures" (analysed in this page), "manuel" (typed in a form), or the name of a Pont import. */
+const importName = m => m.source && !['captures', 'manuel'].includes(m.source) && !/^pc-perso@/.test(m.source) ? String(m.source) : '';
+function srcLabel(m) {
+  const s = String(m.source || ''), pc = /^pc-perso@(\S+)$/.exec(s);
+  return pc ? `Replay du jeu · envoi ${pc[1]}` : s === 'captures' ? 'Analyse de captures' : s === 'manuel' ? 'Saisie manuelle' : s ? `Import « ${s} »` : '';
+}
 /* screens holds asset ids (shown as "/_blob/<id>"), or a URL kept as given by a server-side copy (anything with / or :). */
 const blobSrc = id => /[/:]/.test(String(id)) ? String(id) : '/_blob/' + encodeURIComponent(id);
 
@@ -425,20 +390,15 @@ const blobSrc = id => /[/:]/.test(String(id)) ? String(id) : '/_blob/' + encodeU
 async function boot() {
   try {
     S.cards = JSON.parse($('cards-data').textContent).cards;
-    try { S.tox = JSON.parse($('tox-data').textContent); } catch (err) { S.tox = {}; }
-    $('f-ban-mine').innerHTML = toxOptions(null); $('f-ban-theirs').innerHTML = toxOptions(null);
-    $('f-ban-rar-mine').innerHTML = rarOptions(null); $('f-ban-rar-theirs').innerHTML = rarOptions(null); $('f-ban-saw').innerHTML = sawOptions(null);
+    try { S.toxIds = JSON.parse($('tox-data').textContent) || {}; } catch (err) { S.toxIds = {}; }
+    Object.entries(S.toxIds).forEach(([id, t]) => { const f = id.replace(/_[CREL]$/, ''); if (!S.tox[f]) S.tox[f] = { name: t.name }; });
   } catch (e) { $('view-bilan').innerHTML = `<p class="note warn sec">Les cartes n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</p>`; return; }
   S.cards.forEach(c => { S.byN.set(c.n, c); S.byName.set(c.name.toLowerCase(), c); if (c.en) S.byName.set(c.en.toLowerCase(), c); });
-  $('dl-cards').innerHTML = S.cards.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr')).map(c => `<option value="${esc(c.name)}">`).join('');
   initTabs(); initParties(); render();
   const last = store.get('spam-journal-view', 'bilan'); if (last !== 'bilan') setView(last);
   const w = window.claude;
-  initAnalyzer();
-  if (!w || !w.use) { dbMissing(); anAvailability(); return; }
+  if (!w || !w.use) { dbMissing(); return; }
   w.use('user').then(u => { if (!u) return; Promise.resolve(u.can('data.write')).then(v => { S.canWrite = v; render(); }).catch(() => {}); }).catch(() => {});
-  w.use('sample').then(async s => { S.sample = s; S.limits = s ? await s.limits().catch(() => null) : null; anAvailability(); }).catch(() => anAvailability());
-  w.use('assets').then(a => { S.assets = a; }).catch(() => {});
   const db = await w.use('db').catch(() => null);
   if (!db) { dbMissing(); return; }
   S.db = db;
@@ -468,7 +428,7 @@ function setView(v) {
 function openMatch(id) { S.sel = id; S.resFilter = 'all'; S.deckFilter = ''; setView('parties'); }
 document.addEventListener('click', e => {
   const b = e.target.closest('[data-open]'); if (b) { openMatch(b.dataset.open); return; }
-  const g = e.target.closest('[data-goto]'); if (g) setView(g.dataset.goto);
+  const z = e.target.closest('[data-zoom]'); if (z) openZoom(z.dataset.zoom);
 });
 
 /* ---------- Render ---------- */
@@ -488,14 +448,13 @@ function render() {
 
 function emptyJournal() {
   return `<div class="panel sec stack">
-    <div class="sec-head"><h2>Le journal est vide</h2><p>Chaque partie analysée vient s'ajouter ici. Les onglets Méta et Savoir sont déjà remplis avec ce que l'on sait du jeu avant la première partie.</p></div>
+    <div class="sec-head"><h2>Le journal est vide</h2><p>Chaque partie envoyée vient s'ajouter ici. Les onglets Méta et Savoir sont déjà remplis avec ce que l'on sait du jeu.</p></div>
     <ol class="pipeline">
-      <li><b>Prends des captures</b> pendant la partie : le tour 1 (les 4 cartes adverses), les tours où la boutique s'ouvre, les gros coups, l'écran de fin.</li>
-      <li><b>Envoie-les à Claude</b> dans Claude Code en disant « analyse cette partie SPAM ». Pas besoin de tous les tours, les recharges et les PV permettent de combler les trous.</li>
-      <li><b>Claude reconstitue la partie</b> et l'enregistre ici : déroulé, achats, tournant, erreurs, bons coups, leçons.</li>
-      <li><b>Les bilans se construisent seuls</b> : taux de victoire par deck, archétypes adverses, erreurs qui reviennent, contre-méta.</li>
+      <li><b>Joue sur ton PC perso.</b> Le jeu garde un replay de chaque partie.</li>
+      <li><b>Envoie le dossier des replays</b> après ta séance, par la branche pc-perso.</li>
+      <li><b>Claude lit chaque replay</b> et écrit la partie ici : déroulé tour par tour, boutique, bans, puis son analyse (tournant, erreurs, leçons).</li>
+      <li><b>Les bilans se construisent seuls</b> : victoires par deck, archétypes adverses, erreurs qui reviennent, contre-méta.</li>
     </ol>
-    <p class="small muted">Une partie sans captures ? Saisis-la à la main dans l'onglet <button class="linkish" data-goto="parties">Parties</button>.</p>
   </div>`;
 }
 
@@ -554,7 +513,7 @@ function matchItem(m) {
   return `<li><button class="mitem" data-open="${esc(m.id)}" aria-current="${S.sel === m.id}">
     <span class="res ${esc(m.result)}">${esc(m.result || '?')}</span>
     <span class="l1">${esc(deckLabel(m))}</span>
-    <span class="l2">${fmtDate(m.date)} · contre ${esc(a ? a.name : (m.opp && m.opp.name) || 'adversaire')}${m.turns ? ` · ${m.turns} tours` : ''}${m.source === 'manuel' ? ' · saisie manuelle' : importName(m) ? ` · import « ${esc(importName(m))} »` : ''}</span>
+    <span class="l2">${fmtDate(m.date)} · contre ${esc(a ? a.name : (m.opp && m.opp.name) || 'adversaire')}${m.turns ? ` · ${esc(m.turns)} tours` : ''}${m.source === 'manuel' ? ' · saisie manuelle' : m.source === 'captures' ? ' · captures' : importName(m) ? ` · import « ${esc(importName(m))} »` : ''}</span>
   </button></li>`;
 }
 function initParties() {
@@ -562,9 +521,6 @@ function initParties() {
   f.innerHTML = [['all', 'Toutes'], ['V', 'Victoires'], ['D', 'Défaites']].map(([k, l]) => `<button class="chip" data-res="${k}" aria-pressed="${k === 'all'}">${l}</button>`).join('');
   f.addEventListener('click', e => { const b = e.target.closest('[data-res]'); if (!b) return; S.resFilter = b.dataset.res; renderParties(); });
   $('m-deck').addEventListener('change', e => { S.deckFilter = e.target.value; renderParties(); });
-  const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  $('f-date').value = now.toISOString().slice(0, 16);
-  $('add-form').addEventListener('submit', saveManual);
   $('m-detail').addEventListener('click', onDetailClick);
 }
 function renderParties() {
@@ -578,50 +534,85 @@ function renderParties() {
   if (!S.sel || !all.some(m => m.id === S.sel)) S.sel = list.length ? list[0].id : null;
   document.querySelectorAll('#m-list .mitem').forEach(b => b.setAttribute('aria-current', b.dataset.open === S.sel));
   const m = all.find(x => x.id === S.sel);
-  $('m-detail').innerHTML = m ? detailHtml(m) : `<div class="panel"><p class="empty">${S.ready.m ? 'Sélectionne une partie, ou envoie tes captures à Claude pour enregistrer la première.' : 'Chargement…'}</p></div>`;
-  const disabled = S.canWrite === false || !S.db;
-  $('f-save').disabled = disabled;
-  if (disabled && !$('f-msg').textContent) $('f-msg').textContent = !S.db ? 'Journal indisponible dans cette vue.' : 'Tu peux consulter le journal mais pas y écrire.';
+  $('m-detail').innerHTML = m ? detailHtml(m) : `<div class="panel"><p class="empty">${S.ready.m ? (all.length ? 'Sélectionne une partie.' : 'Aucune partie pour l\'instant : la première arrivera avec ton prochain envoi de replays.') : 'Chargement…'}</p></div>`;
 }
-const CERT = { seen: 'Lu sur une capture', forced: 'Déduit : une seule explication possible', likely: 'Explication la plus probable', guess: 'Supposition' };
+const CERT = { seen: 'Lu tel quel : dans le replay, ou sur une capture pour les anciennes parties', forced: 'Déduit : une seule explication possible', likely: 'Explication la plus probable', guess: 'Supposition' };
 function certNum(c) { const v = Math.round(Number(c)); return c == null || c === '' || isNaN(v) ? null : Math.max(0, Math.min(100, v)); }
 function cert(c) {
   const v = certNum(c); if (v == null) return '';
   const k = v >= 100 ? 'seen' : v >= 85 ? 'forced' : v >= 60 ? 'likely' : 'guess';
-  return `<span class="cert ${k}" title="${CERT[k]}">${v === 100 ? 'vu' : v + ' %'}</span>`;
+  return `<span class="cert ${k}" title="${CERT[k]}">${v === 100 ? 'lu' : v + ' %'}</span>`;
 }
-const certLegend = () => `<div class="legend small">${[['seen', 'vu', 'lu sur une capture'], ['forced', '85-99 %', 'forcé par les chiffres'], ['likely', '60-84 %', 'le plus probable'], ['guess', '< 60 %', 'supposition']].map(([k, l, d]) => `<span><span class="cert ${k}">${l}</span>${d}</span>`).join('')}</div>`;
 function galleryHtml(srcs) {
   return srcs.length ? `<div class="panel"><div class="sec-head"><h2>Captures</h2></div><div class="gallery">${srcs.map((s, i) => `<button type="button" data-zoom="${esc(s)}" aria-label="Agrandir la capture ${i + 1}"><img src="${esc(s)}" alt="Capture ${i + 1}" loading="lazy"></button>`).join('')}</div></div>` : '';
 }
-function detailHtml(m, draft) {
-  const a = archOf(m), ev = m.evidence || {}, bn = m.bans || {};
-  const tl = arr(m.timeline), shop = arr(m.shop), mist = arr(m.mistakes), good = arr(m.goodPlays), less = arr(m.lessons), gaps = arr(m.gaps);
+/* One half-turn of the timeline. The replay reader writes "[25 Spamtons, Chance 1] Action. Action. passifs : …": the bracketed
+   state goes to the header, then one line per action (split on ". ", the "crit. " of a critical hit kept), the actor before " : " in bold. */
+function halfHtml(side, s) {
+  let txt = String(s == null ? '' : s).trim(), head = '';
+  const h = /^\[([^\]]{1,80})\]\s*/.exec(txt); if (h) { head = h[1]; txt = txt.slice(h[0].length); }
+  const lines = txt.replace(/ crit\. /g, ' crit.\u00a0').split(/\. +/).map(l => l.trim().replace(/\.$/, '')).filter(Boolean);
+  const line = l => {
+    const a = /^([^:]{1,60}?) : (.+)$/.exec(l), cls = /^passifs\b/.test(l) ? 'pas' : /retirée? du jeu/.test(l) ? 'ko' : '';
+    return `<li${cls ? ` class="${cls}"` : ''}>${a ? `<b>${esc(a[1])}</b> : ${esc(a[2])}` : esc(l)}</li>`;
+  };
+  return `<div class="half ${side}"><div class="half-h"><b class="who">${side === 'me' ? 'Moi' : 'Adversaire'}</b>${head ? `<span class="muted">${esc(head)}</span>` : ''}</div>
+    ${lines.length ? `<ul class="acts">${lines.map(line).join('')}</ul>` : '<span class="muted small">Rien de noté.</span>'}</div>`;
+}
+/* Timeline: one block per turn, the first player's half-turn first. A certainty or basis shared by every turn is shown once. */
+function timelineHtml(m) {
+  const tl = arr(m.timeline); if (!tl.length) return '';
+  const same = k => tl.every(t => String(t[k] == null ? '' : t[k]) === String(tl[0][k] == null ? '' : tl[0][k]));
+  const oneC = same('c') ? certNum(tl[0].c) : undefined, oneBasis = same('basis') ? String(tl[0].basis || '') : undefined;
+  const order = m.first === false ? ['opp', 'me'] : ['me', 'opp'];
+  const intro = [m.first === true ? "Tu jouais en premier : dans chaque tour, ton action vient d'abord." : m.first === false ? "L'adversaire jouait en premier : dans chaque tour, son action vient d'abord." : '',
+    tl.some(t => t.inferred) ? 'Les tours en italique sont déduits, pas lus.' : ''].filter(Boolean).join(' ');
+  return `<div class="panel"><div class="sec-head"><h2>Déroulé</h2>${intro ? `<p>${intro}</p>` : ''}</div>
+    ${oneC != null || oneBasis ? `<p class="small muted" style="margin-bottom:8px">Tous les tours : ${cert(oneC)} ${esc(oneBasis || '')}</p>` : ''}
+    <ol class="tl">${tl.map(t => `<li class="turn${t.inferred ? ' inferred' : ''}">
+      <div class="turn-h"><span class="tn">Tour ${esc(t.t)}</span>${oneC === undefined ? cert(t.c) : ''}${oneBasis === undefined && t.basis ? `<span class="basis">${esc(t.basis)}</span>` : ''}</div>
+      <div class="halves">${order.map(k => halfHtml(k, t[k])).join('')}</div>
+      ${t.note ? `<p class="small turn-note">${esc(t.note)}</p>` : ''}</li>`).join('')}</ol></div>`;
+}
+/* One shop visit. From a replay, tox / replaced / offers are game ids with rarity, with cost, rerolls and rerollSpent (schema in journal/README.md). */
+function shopRow(s, oneC) {
+  const who = s.who === 'opp' ? 'opp' : 'me';
+  const what = s.pass ? 'Passe <span class="muted">(+10 Spamtons)</span>'
+    : s.tox ? `Achète ${toxHtml(s.tox)}${typeof s.cost === 'number' ? ` pour ${nf.format(s.cost)} Spamtons` : ''}${s.on != null && s.on !== '' ? ` sur ${chip(s.on)}` : ''}${s.replaced ? `, à la place de ${toxHtml(s.replaced)}` : ''}`
+    : '<span class="muted">Achat inconnu</span>';
+  const n = +s.rerolls || 0;
+  const rr = typeof s.rerolls === 'number' ? (n ? plural(n, 'relance') + (typeof s.rerollSpent === 'number' ? ` : ${nf.format(s.rerollSpent)} Spamtons` : '') : 'Sans relance') : '';
+  const offers = arr(s.offers).filter(o => arr(o).length), last = offers.length - 1;
+  const bought = !s.pass && s.tox && last >= 0 ? arr(offers[last]).indexOf(s.tox) : -1;
+  return `<li class="sv ${who}">
+    <div class="sv-h"><span class="tn">Tour ${esc(s.t)}</span><b class="who">${who === 'me' ? 'Moi' : 'Adversaire'}</b>${oneC === undefined ? cert(s.c) : ''}</div>
+    <p class="sv-what">${what}</p>${rr ? `<p class="small muted">${rr}</p>` : ''}
+    ${offers.length ? `<details class="offers"><summary>Offres vues (${offers.length})</summary><ol>${offers.map((o, i) => `<li><span class="ol">${i ? 'Relance ' + i : 'Départ'}</span><span class="ox">${arr(o).map((id, j) => toxHtml(id, { price: true, bought: i === last && j === bought })).join(' ')}</span></li>`).join('')}</ol></details>` : ''}
+  </li>`;
+}
+function shopHtml(m) {
+  const shop = arr(m.shop); if (!shop.length) return '';
+  const rich = shop.some(s => typeof s.cost === 'number' || typeof s.rerolls === 'number' || arr(s.offers).length);
+  const oneC = shop.every(s => certNum(s.c) === certNum(shop[0].c)) ? certNum(shop[0].c) : undefined;
+  const total = side => {
+    const l = shop.filter(s => (s.who === 'opp' ? 'opp' : 'me') === side); if (!l.length) return '';
+    const rr = l.reduce((a, s) => a + (+s.rerolls || 0), 0), rs = l.reduce((a, s) => a + (+s.rerollSpent || 0), 0), spent = rs + l.reduce((a, s) => a + (+s.cost || 0), 0);
+    return `<li><b>${side === 'me' ? 'Moi' : 'Adversaire'}</b> : ${plural(l.filter(s => s.tox && !s.pass).length, 'achat')}, ${plural(l.filter(s => s.pass).length, 'passe')}, ${plural(rr, 'relance')} · ${nf.format(spent)} Spamtons dépensés${rs ? `, dont ${nf.format(rs)} en relances` : ''}</li>`;
+  };
+  return `<div class="panel"><div class="sec-head"><h2>Boutique</h2><p>Chaque passage en boutique, aux tours pairs : l'achat et son prix, les relances, les offres vues.${oneC != null ? ` Tous les passages : ${cert(oneC)}` : ''}</p></div>
+    ${rich ? `<ul class="bullets" style="margin-bottom:10px">${total('me')}${total('opp')}</ul>` : ''}
+    <ol class="shop">${shop.map(s => shopRow(s, oneC)).join('')}</ol>
+    ${rich ? `<div class="legend small" style="margin-top:8px">${Object.entries(RAR).map(([k, l]) => `<span><span class="rar ${k}">${k}</span> ${l.toLowerCase()}</span>`).join('')}<span>Dans les offres : le prix en Spamtons.</span></div>` : ''}</div>`;
+}
+/* Match detail: the analysis first (summary, mistakes, lessons), then what the replay brings (shop, turn by turn). */
+function detailHtml(m) {
+  const a = archOf(m), ev = m.evidence || {};
+  const mist = arr(m.mistakes), good = arr(m.goodPlays), less = arr(m.lessons), gaps = arr(m.gaps);
   const first = m.first === true ? 'Joué en premier' : m.first === false ? 'Joué en second' : '';
-  const hasCert = tl.some(t => certNum(t.c) != null);
   const conf = certNum(ev.confidence);
-  const srcs = draft ? S.shots.map(s => s.url) : arr(m.screens).map(blobSrc);
-  const head = draft ? `<div class="sec-head"><h2>Brouillon à vérifier</h2><p>Corrige ce qui est faux avant d'enregistrer. Les pourcentages sont l'estimation de Claude selon le barème ci-dessous, pas une preuve.${conf != null ? ' Certitude globale : ' + cert(conf) : ''}</p></div>
-    ${certLegend()}
-    <div class="fgrid">
-      <label>Résultat ${cert(m.resultCertainty)}<select class="input" id="d-res">${['V', 'D', 'N'].map(r => `<option value="${r}"${m.result === r ? ' selected' : ''}>${RES[r]}</option>`).join('')}<option value=""${!m.result ? ' selected' : ''}>Inconnu</option></select></label>
-      <label>Ordre de jeu ${cert(m.firstCertainty)}<select class="input" id="d-first"><option value="1"${m.first === true ? ' selected' : ''}>Premier</option><option value="0"${m.first === false ? ' selected' : ''}>Second</option><option value=""${m.first == null ? ' selected' : ''}>Inconnu</option></select></label>
-      <label>Nom de mon deck<input class="input" id="d-deck" maxlength="60" value="${esc(m.my && m.my.deck || '')}"></label>
-      <label>Archétype adverse ${cert(m.opp && m.opp.certainty)}<select class="input" id="d-arch"><option value="">Détection automatique</option>${S.arch.map(x => `<option value="${esc(x.id)}"${m.opp && m.opp.archetype === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
-      <label>Mon ban du shop ${cert(m.bans && m.bans.c)}<select class="input" id="d-ban-mine">${toxOptions(m.bans && m.bans.mine)}</select></label>
-      <label>Rareté de mon ban<select class="input" id="d-ban-rar-mine">${rarOptions(bn.rarity && bn.rarity.mine)}</select></label>
-      <label>Ban de l'adversaire<select class="input" id="d-ban-theirs">${toxOptions(m.bans && m.bans.theirs)}</select></label>
-      <label>Rareté de son ban<select class="input" id="d-ban-rar-theirs">${rarOptions(bn.rarity && bn.rarity.theirs)}</select></label>
-      <label>Moment du ban<input class="input" list="dl-ban-phase" id="d-ban-phase" maxlength="80" placeholder="Inconnu" value="${esc(bn.phase || '')}"></label>
-      <label>Ordre des bans<input class="input" list="dl-ban-order" id="d-ban-order" maxlength="60" placeholder="Inconnu" value="${esc(bn.order || '')}"></label>
-      <label>Voyais-tu ses 4 cartes en bannissant ?<select class="input" id="d-ban-saw">${sawOptions(bn.sawOpp)}</select></label>
-      <label>Durée du ban<input class="input" list="dl-ban-lasts" id="d-ban-lasts" maxlength="60" placeholder="Inconnue" value="${esc(bn.lasts || '')}"></label>
-      <label class="wide">Ce que les captures montrent du ban<input class="input" id="d-ban-seen" maxlength="400" placeholder="Écran de ban, ban adverse, boutique suivante…" value="${esc(bn.seen || '')}"></label>
-    </div>`
-    : `<div class="detail-head"><span class="res ${esc(m.result)}">${esc(RES[m.result] || m.result || '?')}</span><h2>${esc(deckLabel(m))}</h2>
-      <span class="muted small">${fmtDate(m.date)}${m.mode ? ' · ' + esc(m.mode) : ''}${first ? ' · ' + first : ''}${m.turns ? ` · ${esc(m.turns)} tours` : ''}</span>${conf != null ? `<span class="small">certitude globale ${cert(conf)}</span>` : ''}</div>`;
-  return `<div class="panel stack ${draft ? 'draft' : ''}">
-    ${head}
+  return `<div class="panel stack">
+    <div class="detail-head"><span class="res ${esc(m.result)}">${esc(RES[m.result] || m.result || '?')}</span><h2>${esc(deckLabel(m))}</h2>
+      <span class="muted small">${fmtDate(m.date)}${m.mode ? ' · ' + esc(m.mode) : ''}${first ? ' · ' + first : ''}${m.turns ? ` · ${esc(m.turns)} tours` : ''}</span>${conf != null ? `<span class="small">certitude globale ${cert(conf)}</span>` : ''}</div>
     <div class="sides">
       <div class="side"><span class="eyebrow">Mon deck</span>${chips(myCards(m).concat(arr(m.my && m.my.unknown)))}${m.my && m.my.notes ? `<p class="small muted">${esc(m.my.notes)}</p>` : ''}</div>
       <div class="side"><span class="eyebrow">Adversaire${m.opp && m.opp.name ? ' · ' + esc(m.opp.name) : ''}</span>${chips(oppCards(m))}
@@ -632,22 +623,19 @@ function detailHtml(m, draft) {
     ${m.turningPoint ? `<div class="note"><b>Tournant :</b> ${esc(m.turningPoint)}</div>` : ''}
     ${m.note ? `<div class="note">${esc(m.note)}</div>` : ''}
   </div>
-  ${tl.length ? `<div class="panel"><div class="sec-head"><h2>Déroulé</h2><p>${hasCert ? 'Chaque tour indique ce qui a été lu sur une capture et ce qui a été déduit, avec la certitude.' : 'Les lignes en italique sont déduites (recharges, PV, bonus) et non vues sur une capture.'}</p></div>
-    <div class="scroll-x"><table class="timeline"><thead><tr><th>Tour</th><th>Moi</th><th>Adversaire</th><th>Remarque</th>${hasCert ? '<th>Certitude</th>' : ''}</tr></thead><tbody>
-    ${tl.map(t => `<tr class="${t.inferred ? 'inferred' : ''}"><td>${esc(t.t)}</td><td>${esc(t.me || '')}</td><td>${esc(t.opp || '')}</td><td>${esc(t.note || '')}</td>${hasCert ? `<td>${cert(t.c)}${t.basis ? `<span class="basis">${esc(t.basis)}</span>` : ''}</td>` : ''}</tr>`).join('')}</tbody></table></div></div>` : ''}
-  ${gaps.length ? `<div class="panel"><div class="sec-head"><h2>Trous comblés</h2><p>Les tours sans capture, et comment ils ont été reconstitués.</p></div><ul class="bullets">${gaps.map(g => `<li><b>Tours ${esc(g.turns)}</b> : ${esc(g.how)} ${cert(g.c)}</li>`).join('')}</ul></div>` : ''}
-  ${shop.length ? `<div class="panel"><div class="sec-head"><h2>Boutique</h2></div><div class="scroll-x"><table><thead><tr><th>Tour</th><th>Qui</th><th>Achat</th><th>Sur</th><th>À la place de</th><th></th></tr></thead><tbody>
-    ${shop.map(s => `<tr><td class="num">${esc(s.t)}</td><td>${s.who === 'opp' ? 'Adversaire' : 'Moi'}</td><td>${esc(s.tox || (s.pass ? 'Passe' : ''))}</td><td>${s.on != null && s.on !== '' ? chip(s.on) : ''}</td><td>${esc(s.replaced || '')}</td><td>${cert(s.c)}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
   ${mist.length || good.length ? `<div class="two">
     <div class="panel stack-s"><h2>Erreurs</h2>${mist.length ? mist.map(x => `<div class="mist ${x.cost === 'élevé' ? 'high' : x.cost === 'faible' ? 'low' : ''}"><span class="row"><span class="badge">${esc(CAT[x.cat] ? CAT[x.cat][0] : x.cat || 'Autre')}</span>${x.t != null ? `<span class="small muted">Tour ${esc(x.t)}</span>` : ''}${x.cost ? `<span class="small muted">· coût ${esc(x.cost)}</span>` : ''}${cert(x.c)}</span><span>${esc(x.what)}</span>${x.better ? `<span class="better">Mieux : ${esc(x.better)}</span>` : ''}</div>`).join('') : '<p class="empty">Aucune erreur relevée.</p>'}</div>
     <div class="panel stack-s"><h2>Bons coups</h2>${good.length ? good.map(g => `<div class="good">${g.t != null ? `<span class="small muted">Tour ${esc(g.t)} · </span>` : ''}${esc(g.what || g)}</div>`).join('') : '<p class="empty">Rien de notable.</p>'}</div>
   </div>` : ''}
   ${less.length ? `<div class="panel"><h2>Leçons</h2><ul class="bullets" style="margin-top:8px">${less.map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>` : ''}
-  ${galleryHtml(srcs)}
-  ${draft ? draftFooter(m) : `<div class="panel row" style="justify-content:space-between">
-    <span class="small muted">${m.source === 'manuel' ? 'Saisie manuelle' : esc([importName(m) && `Import « ${importName(m)} »`, ev.screens ? ev.screens + ' captures' : importName(m) ? '' : 'Captures', ev.coverage].filter(Boolean).join(' · '))} · réf. ${esc(m.id)}</span>
+  ${shopHtml(m)}
+  ${timelineHtml(m)}
+  ${gaps.length ? `<div class="panel"><div class="sec-head"><h2>Trous comblés</h2><p>Les tours que la source ne montre pas, et comment ils ont été reconstitués.</p></div><ul class="bullets">${gaps.map(g => `<li><b>Tours ${esc(g.turns)}</b> : ${esc(g.how)} ${cert(g.c)}</li>`).join('')}</ul></div>` : ''}
+  ${galleryHtml(arr(m.screens).map(blobSrc))}
+  <div class="panel row" style="justify-content:space-between">
+    <span class="small muted">${esc([srcLabel(m), +ev.screens ? plural(+ev.screens, 'capture') : '', ev.coverage].filter(Boolean).join(' · '))} · réf. ${esc(m.id)}</span>
     ${S.db && S.canWrite !== false ? (S.confirmDel === m.id ? `<span class="confirm"><span class="small">Supprimer cette partie du journal ?</span><button class="btn danger" data-del-yes="${esc(m.id)}">Supprimer</button><button class="btn" data-del-no>Annuler</button></span>` : `<button class="btn danger" data-del="${esc(m.id)}">Supprimer</button>`) : ''}
-  </div>`}`;
+  </div>`;
 }
 async function onDetailClick(e) {
   const d = e.target.closest('[data-del]'), y = e.target.closest('[data-del-yes]'), n = e.target.closest('[data-del-no]');
@@ -658,34 +646,6 @@ async function onDetailClick(e) {
     try { await S.db.collection('matches').doc(y.dataset.delYes).delete(); S.confirmDel = null; S.sel = null; }
     catch (err) { y.disabled = false; y.textContent = 'Échec, réessayer'; }
   }
-}
-async function saveManual(e) {
-  e.preventDefault();
-  if (!S.db) return;
-  const pick = p => [0, 1, 2, 3].map(i => $(p + i).value.trim()).filter(Boolean);
-  const resolve = names => { const cards = [], unknown = []; names.forEach(nm => { const c = cardOf(nm); if (c) cards.push(c.n); else unknown.push(nm); }); return { cards, unknown }; };
-  const my = resolve(pick('f-my')), op = resolve(pick('f-op'));
-  if (my.unknown.length || op.unknown.length) { $('f-msg').textContent = 'Carte introuvable : ' + my.unknown.concat(op.unknown).join(', ') + '. Choisis-la dans la liste proposée.'; return; }
-  const dateVal = $('f-date').value; const d = new Date(dateVal);
-  if (isNaN(d)) { $('f-msg').textContent = 'Indique la date de la partie.'; return; }
-  const id = dateVal.slice(0, 10) + '-' + dateVal.slice(11, 16).replace(':', '') + '-m' + Math.random().toString(36).slice(2, 6);
-  const first = $('f-first').value;
-  const doc = { date: d.toISOString(), mode: $('f-mode').value, result: $('f-res').value, first: first === '' ? null : first === '1',
-    turns: $('f-turns').value ? +$('f-turns').value : null, my: { deck: $('f-deck').value.trim(), cards: my.cards }, opp: { cards: op.cards, unknown: [] },
-    note: $('f-note').value.trim(), source: 'manuel', createdAt: new Date().toISOString() };
-  const banMine = $('f-ban-mine').value, banTheirs = $('f-ban-theirs').value, saw = $('f-ban-saw').value;
-  const bans = cleanBans({ mine: banMine, theirs: banTheirs, c: banMine || banTheirs ? 100 : null,
-    rarity: { mine: $('f-ban-rar-mine').value, theirs: $('f-ban-rar-theirs').value },
-    phase: $('f-ban-phase').value, order: $('f-ban-order').value, lasts: $('f-ban-lasts').value, sawOpp: saw === '' ? null : saw === '1' });
-  if (bans) doc.bans = bans;
-  $('f-save').disabled = true; $('f-msg').textContent = 'Enregistrement…';
-  try {
-    await S.db.collection('matches').doc(id).set(doc);
-    $('f-msg').textContent = 'Partie enregistrée.'; S.sel = id;
-    ['f-turns', 'f-note', 'f-op0', 'f-op1', 'f-op2', 'f-op3', 'f-ban-mine', 'f-ban-theirs', 'f-ban-rar-mine', 'f-ban-rar-theirs', 'f-ban-phase', 'f-ban-order', 'f-ban-saw', 'f-ban-lasts'].forEach(k => { $(k).value = ''; });
-  } catch (err) {
-    $('f-msg').textContent = err && err.code === 'quota_exceeded' ? 'Le journal est plein : supprime des parties anciennes.' : 'Échec de l\'enregistrement (' + (err && err.code || 'erreur') + '). Réessaie.';
-  } finally { $('f-save').disabled = false; }
 }
 
 /* Méta */
@@ -716,6 +676,7 @@ function renderMeta() {
   const els = new Map(); all.forEach(m => oppCards(m).forEach(v => { const c = cardOf(v); if (c) els.set(c.el, (els.get(c.el) || 0) + 1); }));
   const elTot = [...els.values()].reduce((a, b) => a + b, 0);
   const banCount = side => { const m = new Map(); all.forEach(x => { const k = x.bans && x.bans[side]; if (!k) return; const o = m.get(k) || { k, n: 0, V: 0, D: 0 }; o.n++; if (x.result === 'V') o.V++; if (x.result === 'D') o.D++; m.set(k, o); }); return [...m.values()].sort((a, b) => b.n - a.n); };
+  const noBan = all.filter(x => x.bans && x.bans.none === true).length;
   const banBars = list => { const mx = list.length ? list[0].n : 1; return list.length ? `<div class="bars">${list.map(o => `<div class="bar-row"><span class="lbl">${esc(toxName(o.k))}</span><span class="track" title="${o.V} victoires, ${o.D} défaites">${o.V ? `<i class="w" style="width:${100 * o.V / mx}%"></i>` : ''}${o.D ? `<i class="l" style="width:${100 * o.D / mx}%"></i>` : ''}${o.n - o.V - o.D > 0 ? `<i class="a" style="width:${100 * (o.n - o.V - o.D) / mx}%"></i>` : ''}</span><span class="num small">${o.n} · ${o.V}-${o.D}</span></div>`).join('')}</div>` : '<p class="empty">Aucun ban relevé pour l\'instant.</p>'; };
   const sig = new Set(); S.arch.forEach(a => arr(a.core).forEach(n => sig.add(n)));
   const watch = S.cards.filter(c => sig.has(c.n)).sort((a, b) => (seen.get(b.n) || { n: 0 }).n - (seen.get(a.n) || { n: 0 }).n || a.name.localeCompare(b.name, 'fr'));
@@ -730,7 +691,7 @@ function renderMeta() {
         ${elTot ? `<div class="bars">${[...els.entries()].sort((a, b) => b[1] - a[1]).map(([e, n]) => `<div class="bar-row"><span class="lbl"><span class="cc"><span class="dot ${e}"></span>${EL[e] || e}</span></span><span class="track"><i style="width:${100 * n / elTot}%;background:var(--el-${e})"></i></span><span class="num small">${pct(100 * n / elTot)}</span></div>`).join('')}</div>` : '<p class="empty">Pas encore de données.</p>'}</div>
     </div>
     <div class="two">
-      <div class="panel"><div class="sec-head"><h2>Ce que bannissent tes adversaires</h2><p>Un élément du shop par joueur, retiré du shop pour les deux. Ton résultat dans ces parties.</p></div>${banBars(banCount('theirs'))}</div>
+      <div class="panel"><div class="sec-head"><h2>Ce que bannissent tes adversaires</h2><p>Un élément du shop par joueur, retiré du shop pour les deux. Ton résultat dans ces parties.${noBan ? ` Aucun ban dans ${plural(noBan, 'partie')} sur ${all.length}.` : ''}</p></div>${banBars(banCount('theirs'))}</div>
       <div class="panel"><div class="sec-head"><h2>Ce que tu bannis</h2><p>Et ce que ça t'a rapporté.</p></div>${banBars(banCount('mine'))}</div>
     </div>
     <div class="panel"><div class="sec-head"><h2>Cartes signature à surveiller</h2><p>Les cartes qui font tourner les archétypes ci-dessus. Celles déjà croisées remontent en tête.</p></div>
@@ -809,281 +770,7 @@ function renderSavoir() {
   if (hadFocus) { s.focus(); s.setSelectionRange(s.value.length, s.value.length); }
 }
 
-/* ---------- Screenshot analysis ---------- */
-const str = (v, n = 600) => v == null ? '' : String(v).slice(0, n);
-let REF = null;
-function refText() {
-  if (REF) return REF;
-  REF = S.cards.map(c => `#${c.n} ${c.name} | ${EL[c.el] || c.el} ${c.rar} | ${c.hp} PV | ${c.spt} Sp | rés ${c.res.join('/')} | `
-    + c.ab.map(a => `${a[0]} (recharge ${a[1]}${a[3] ? ', crit x' + a[3] : ''}) : ${a[2]}`).join(' ; ')
-    + (c.pa.length ? ' | passifs : ' + c.pa.map(p => `${p[0]} : ${p[2]}`).join(' ; ') : '')
-    + (arr(c.tal).length ? ' | talents possibles : ' + c.tal.map(t => `${t[1]} : ${str(t[2], 90)}`).join(' ; ') : '')).join('\n');
-  return REF;
-}
-const anMsg = t => { $('an-msg').textContent = t; };
-function anAvailability() {
-  const ok = !!(S.sample && S.limits && S.limits.images);
-  $('an-body').hidden = !ok;
-  const u = $('an-unavail'); u.hidden = ok;
-  if (!ok) u.textContent = !window.claude ? "L'analyse des captures ne fonctionne que dans la page ouverte sur claude.ai."
-    : S.sample && S.limits && !S.limits.images ? "Cette vue ne peut pas envoyer d'images à Claude. Envoie plutôt tes captures à Claude dans Claude Code."
-    : "L'analyse des captures n'est pas disponible dans cette vue. Tu peux toujours envoyer tes captures à Claude dans Claude Code.";
-  if (ok) {
-    $('an-limit').textContent = `Jusqu'à ${S.limits.images.maxCount} captures par analyse. En priorité : le tour 1, les tours de boutique, les gros coups et l'écran de fin.`;
-    $('an-file').accept = S.limits.images.mediaTypes.join(',');
-  }
-}
-function initAnalyzer() {
-  const drop = $('an-drop'), file = $('an-file');
-  file.addEventListener('change', () => { addShots(file.files); file.value = ''; });
-  ['dragenter', 'dragover'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); }));
-  ['dragleave', 'drop'].forEach(t => drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); }));
-  drop.addEventListener('drop', e => addShots(e.dataTransfer && e.dataTransfer.files));
-  document.addEventListener('paste', e => {
-    if (S.view !== 'parties' || $('an-body').hidden || S.busy) return;
-    const files = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => /^image\//.test(f.type));
-    if (files.length) { e.preventDefault(); addShots(files); }
-  });
-  $('an-shots').addEventListener('click', e => {
-    const b = e.target.closest('[data-shot]'); if (!b || S.busy) return;
-    const i = +b.dataset.i, act = b.dataset.shot, sh = S.shots;
-    if (act === 'rm') { URL.revokeObjectURL(sh[i].url); sh.splice(i, 1); }
-    if (act === 'left' && i > 0) [sh[i - 1], sh[i]] = [sh[i], sh[i - 1]];
-    if (act === 'right' && i < sh.length - 1) [sh[i + 1], sh[i]] = [sh[i], sh[i + 1]];
-    renderShots(); if (S.draft) renderDraft();
-  });
-  $('an-go').addEventListener('click', runAnalysis);
-  $('an-stop').addEventListener('click', () => { if (S.ctl) S.ctl.abort(); });
-  $('an-draft').addEventListener('click', onDraftClick);
-  $('an-draft').addEventListener('change', onDraftChange);
-  document.addEventListener('click', e => { const z = e.target.closest('[data-zoom]'); if (z) openZoom(z.dataset.zoom); });
-}
-function addShots(list) {
-  const lim = S.limits && S.limits.images;
-  const types = lim ? lim.mediaTypes : ['image/png', 'image/jpeg', 'image/webp'];
-  const max = lim ? lim.maxCount : 20, maxBytes = lim ? lim.maxInputBytes : 20e6;
-  const all = [...(list || [])];
-  const incoming = all.filter(f => types.includes(f.type)).sort((a, b) => (a.lastModified - b.lastModified) || a.name.localeCompare(b.name));
-  let added = 0, big = 0, over = 0;
-  for (const f of incoming) {
-    if (f.size > maxBytes) { big++; continue; }
-    if (S.shots.length >= max) { over++; continue; }
-    S.shots.push({ file: f, url: URL.createObjectURL(f), ts: f.lastModified || Date.now() }); added++;
-  }
-  const notes = [];
-  if (all.length - incoming.length) notes.push(`${all.length - incoming.length} fichier(s) ignoré(s) : formats acceptés PNG, JPEG, WebP`);
-  if (big) notes.push(`${big} capture(s) trop lourde(s)`);
-  if (over) notes.push(`${over} capture(s) en trop : ${max} au maximum par analyse, garde les plus parlantes`);
-  anMsg(notes.length ? notes.join('. ') + '.' : added ? `${S.shots.length} capture(s) prête(s).` : '');
-  renderShots();
-}
-function renderShots() {
-  const n = S.shots.length;
-  $('an-shots').innerHTML = S.shots.map((s, i) => `<li class="shot"><img src="${esc(s.url)}" alt="Capture ${i + 1}" data-zoom="${esc(s.url)}">
-    <span class="bar"><b>${i + 1}</b><button class="x" data-shot="left" data-i="${i}" aria-label="Avancer la capture ${i + 1}" ${i === 0 || S.busy ? 'disabled' : ''}>←</button><button class="x" data-shot="right" data-i="${i}" aria-label="Reculer la capture ${i + 1}" ${i === n - 1 || S.busy ? 'disabled' : ''}>→</button><button class="x" data-shot="rm" data-i="${i}" aria-label="Retirer la capture ${i + 1}" ${S.busy ? 'disabled' : ''}>×</button></span></li>`).join('');
-  $('an-go').disabled = S.busy || !n;
-}
-function setBusy(on) { S.busy = on; $('an-stop').hidden = !on; renderShots(); }
-function buildPrompt() {
-  const deck = $('an-deck').value.trim(), hint = $('an-hint').value.trim();
-  const arch = S.arch.map(a => `${a.id} : ${a.name} : ${arr(a.core).join(', ')}`).join('\n');
-  const kn = S.know.filter(k => k.kind !== 'jeu' && k.status !== 'réfuté');
-  const known = kn.filter(k => k.status === 'confirmé').concat(kn.filter(k => k.status !== 'confirmé'))
-    .map(k => `- [${k.status || 'hypothèse'}] ${k.subject} : ${k.text}`).join('\n');
-  return [
-`Tu analyses une partie du jeu de cartes SPAM (jeu Steam de Ticroco, version 1.20 ou 1.21) à partir de ${S.shots.length} capture(s) d'écran prises par le joueur, appelé "moi". Les captures sont jointes dans l'ordre chronologique : la capture 1 est la plus ancienne. Elles ne couvrent pas tous les tours.`,
-`TA MISSION
-1. Lis chaque capture : numéro du tour, cartes des deux camps (noms), PV, recharges affichées, bonus élémentaires, Spamtons, boutique, écran de fin.
-2. Identifie les 4 cartes de chaque camp dans la RÉFÉRENCE ci-dessous, par leur numéro.
-3. Reconstitue la partie tour par tour, y compris les tours sans capture, à partir des recharges, des écarts de PV, des bonus et des Spamtons. Pour chaque tour, indique sur quoi tu t'appuies (champ "basis").
-4. Relève le tournant, les erreurs de "moi" (seulement celles que les captures montrent ou que les chiffres prouvent), les bons coups et 1 à 3 leçons concrètes et réutilisables.`,
-`BARÈME DE CERTITUDE (champ "c", entier de 0 à 100)
-- 100 : lu directement sur une capture.
-- 85 à 99 : déduit, et les chiffres n'admettent qu'une seule explication (recharge revenue, écart de PV exact, bonus).
-- 60 à 84 : l'explication la plus probable parmi plusieurs.
-- moins de 60 : supposition.
-Ne jamais inventer. Un tour impossible à reconstituer : écris "inconnu" avec un c bas. Une carte illisible : mets ce que tu lis dans "unknown".`,
-`RÈGLES UTILES
-- Chaque camp a 4 cartes. Une capacité de recharge n est utilisable tous les n tours. Le premier joueur commence avec toutes ses recharges réduites de 1, le second de 2.
-- Bonus élémentaire : +10 % de dégâts et de soins par point, pour toute la partie.
-- Ordre conseillé dans un tour : générer, puis buffer, puis attaquer.
-- Boutique : tours pairs, 3 Tox, un seul achat ; relance 10 puis +5 ; passer rapporte 10. Revenus par tour : Spamtons des cartes vivantes + numéro du tour ; chaque carte perdue rapporte 50 au joueur qui la perd.
-- Ban du shop : chaque joueur bannit un élément du shop (une Tox) et les deux éléments bannis disparaissent du shop pour les deux joueurs. Relève les bans visibles sur les captures (écran de ban, éléments barrés ou grisés dans le shop). Écris les Tox avec leur nom exact dans cette liste : ${Object.values(S.tox || {}).map(t => t.name).join(', ')}. Une même Tox existe souvent en plusieurs raretés (C commune, R rare, E épique, L légendaire) : note la rareté bannie si elle se lit (bans.rarity), sinon null. Le ban d'une carte du deck n'a jamais été observé : ne le cherche pas.
-- Gel : tout dégât ou soin sur la carte gelée brise la glace et lui inflige 60 dégâts (version 1.21). Provocation force le ciblage adverse. Brut ignore résistance et Provocation. Disparition retire le dernier passif. Immunité : insensible aux effets adverses.`,
-known ? `SAVOIR ACCUMULÉ (chaque ligne commence par son statut)
-- [confirmé] : établi, tu peux t'y fier.
-- [hypothèse] : à vérifier sur les captures, pas à tenir pour acquis. Si tu t'en sers pour combler un trou, dis-le dans "basis" et baisse "c".
-Si une capture appuie ou contredit une hypothèse, ajoute à newKnowledge une entrée avec le même titre (subject) et un texte qui commence par « Appuie : » ou « Contredit : », suivi de ce que montre la capture.
-${known}` : '',
-`RÈGLES ENCORE INCONNUES : À RELEVER QUAND LES CAPTURES LE MONTRENT
-Personne ne connaît encore ces réponses. Ne devine pas : décris ce que tu vois, cite la capture, et laisse vide (ou null) ce qu'aucune capture ne montre.
-Ban du shop (objet "bans") :
-- l'écran de ban : la liste proposée (toutes les Tox, l'offre de la boutique, une sélection ?) et si les 4 cartes adverses y sont déjà visibles (sawOpp : true, false, ou null) ;
-- juste après : le ban adverse est-il visible, et les deux joueurs bannissent-ils en même temps ou l'un après l'autre (order) ;
-- la boutique suivante : la Tox bannie est-elle absente ou grisée, ses autres raretés restent-elles proposées, y a-t-il une nouvelle invite de ban ? D'où : une fois par partie ou à chaque boutique (phase), pour toute la partie ou pour la boutique en cours seulement (lasts) ;
-- résume tout cela dans bans.seen, avec les numéros des captures.
-Absorption (Veuve noire de Tisseuse de Mots, #123 : « Absorbe une carte » ; Avalement de Régent des Abysses, #86, sur une carte alliée) :
-- les PV actuels et max de la carte absorbée juste avant, et ceux de la Tisseuse juste avant et juste après ;
-- si la prime de 50 Spamtons a été versée, et à qui ;
-- si Cimetière, Vengeur ou un effet « à la mort d'un allié » a réagi ;
-- si la Tisseuse a gagné des capacités ou des passifs de la carte absorbée.
-Tour 20 et au-delà (prolongation) : ce qui change à partir du tour 20 (dégâts, soins, PV max, Spamtons, message à l'écran), et à quel tour exactement.
-Note ces observations dans la timeline (champ "note" du tour) et dans newKnowledge (kind "mécanique"), en citant la capture.`,
-`CE QUE LE JOUEUR PRÉCISE : ${hint || 'rien'}${deck ? `\nNom de son deck : ${deck}` : ''}
-Il préfère les decks réguliers, peu dépendants des critiques.`,
-`ARCHÉTYPES CONNUS (id : nom : numéros des cartes signature)
-${arch || 'aucun'}
-Mets l'id dans opp.archetype si l'adversaire joue au moins 2 cartes signature d'un archétype, sinon null.`,
-`CATÉGORIES D'ERREUR (champ "cat") : ordre, ciblage, tempo, boutique, economie, defense, lecture, deck, ban. Coût (champ "cost") : élevé, moyen ou faible.`,
-`RÉFÉRENCE DES CARTES (numéro, nom, élément, rareté, PV, Spamtons par tour, résistances Feu/Eau/Terre/Nature/Lumière/Ombre en %, capacités avec recharge, passifs, talents possibles)
-${refText()}`,
-`RÉPONDS UNIQUEMENT avec un objet JSON, en français, de cette forme :
-{"result":"V"|"D"|"N"|null,"resultCertainty":0-100,"first":true|false|null,"firstCertainty":0-100,"turns":nombre|null,"mode":"classé"|"normal"|"défi"|"inconnu",
-"my":{"deck":"","cards":[numéros],"unknown":["noms lus mais introuvables"]},
-"opp":{"name":"pseudo lu ou vide","cards":[numéros],"unknown":[],"archetype":"id"|null,"certainty":0-100},
-"screensRead":[{"i":1,"turn":1,"shows":"ce que montre la capture"}],
-"timeline":[{"t":1,"me":"ce que j'ai fait","opp":"ce qu'a fait l'adversaire","note":"PV, bonus, morts","inferred":false,"c":100,"basis":"capture 1"}],
-"gaps":[{"turns":"3-4","how":"comment ces tours ont été reconstitués","c":80}],
-"shop":[{"t":2,"who":"me"|"opp","tox":"nom de la Tox ou vide","pass":false,"on":numéro de carte|null,"replaced":"ligne remplacée ou vide","c":100}],
-"turningPoint":"une phrase","summary":"2 à 4 phrases",
-"mistakes":[{"t":5,"cat":"ciblage","what":"ce qui s'est passé","better":"ce qu'il fallait faire","cost":"élevé","c":90}],
-"goodPlays":[{"t":3,"what":"..."}],
-"lessons":["..."],
-"newKnowledge":[{"kind":"carte"|"mécanique"|"adversaire"|"tox"|"économie","subject":"titre court","text":"fait observé dans cette partie et absent du savoir accumulé","cards":[numéros]}],
-"bans":{"mine":"nom de la Tox"|null,"theirs":"nom de la Tox"|null,"rarity":{"mine":"C"|"R"|"E"|"L"|null,"theirs":"C"|"R"|"E"|"L"|null},"c":0-100,"phase":"une fois avant le tour 1, une fois à la première boutique, à chaque boutique, ou vide","order":"simultané, moi d'abord, l'adversaire d'abord, ou vide","sawOpp":true|false|null,"lasts":"toute la partie, la boutique en cours seulement, ou vide","seen":"ce que les captures montrent du ban, avec leurs numéros"},
-"evidence":{"coverage":"tours vus : 1, 2, 5, 9","confidence":0-100}}`
-  ].filter(Boolean).join('\n\n');
-}
-function sampleErr(e) {
-  const c = e && e.code;
-  return ({
-    cancelled: 'Analyse arrêtée.',
-    not_granted: "L'accès à Claude a été refusé pour cette page. Recharge la page pour qu'il te soit redemandé.",
-    rate_limited: "Limite d'utilisation de Claude atteinte. Réessaie plus tard.",
-    image_rejected: 'Une capture a été refusée (format ou taille). Retire-la et relance.',
-    images_unavailable: "Cette vue ne peut pas envoyer d'images à Claude.",
-    invalid_json: "La réponse de Claude n'était pas exploitable. Relance l'analyse.",
-    prompt_too_large: 'Trop de données pour une seule analyse : retire quelques captures.',
-    refused: "Claude n'a pas voulu analyser ces images.",
-    session_expired: 'Ta session claude.ai a expiré : reconnecte-toi puis relance.',
-    sampling_disabled: "Claude n'est pas disponible pour ce compte."
-  })[c] || `L'analyse a échoué (${c || 'erreur inconnue'}). Relance-la.`;
-}
-async function runAnalysis() {
-  if (S.busy || !S.sample) return;
-  if (!S.shots.length) { anMsg('Ajoute au moins une capture.'); return; }
-  S.ctl = new AbortController(); setBusy(true);
-  anMsg('Claude regarde les captures… compte une à deux minutes.');
-  try {
-    const out = await S.sample.json(buildPrompt(), { images: S.shots.map(s => s.file), modelTier: 'complex', signal: S.ctl.signal, onText: () => anMsg('Claude rédige l\'analyse…') });
-    S.draft = normalize(out);
-    anMsg('Analyse terminée : vérifie le brouillon ci-dessous.');
-    renderDraft();
-    $('an-draft').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  } catch (e) {
-    anMsg(sampleErr(e));
-  } finally { S.ctl = null; setBusy(false); }
-}
-const unk = (v, n) => { const s = str(v, n).trim(); return /^(inconnue?|vide|aucune?|null|n\/a|\?|-)$/i.test(s) ? '' : s; };
-const yesNo = v => v === true || /^oui$/i.test(v) ? true : v === false || /^non$/i.test(v) ? false : null;
-const sufRar = v => { const m = /_([CREL])$/.exec(String(v == null ? '' : v).trim()); return m ? m[1] : null; };
-function normalize(o) {
-  if (!o || typeof o !== 'object' || Array.isArray(o)) throw { code: 'invalid_json' };
-  const nums = v => [...new Set(arr(v).map(Number).filter(n => S.byN.has(n)))].slice(0, 4);
-  const strs = v => arr(v).map(x => str(x, 60)).filter(Boolean).slice(0, 4);
-  const my = o.my || {}, op = o.opp || {}, ev = o.evidence || {};
-  const ts = Math.min(...S.shots.map(s => s.ts));
-  return {
-    date: new Date(isFinite(ts) ? ts : Date.now()).toISOString(),
-    mode: ['classé', 'normal', 'défi', 'inconnu'].includes(o.mode) ? o.mode : 'inconnu',
-    result: ['V', 'D', 'N'].includes(o.result) ? o.result : null, resultCertainty: certNum(o.resultCertainty),
-    first: typeof o.first === 'boolean' ? o.first : null, firstCertainty: certNum(o.firstCertainty),
-    turns: +o.turns > 0 ? Math.round(+o.turns) : null,
-    my: { deck: str($('an-deck').value.trim() || my.deck, 60), cards: nums(my.cards), unknown: strs(my.unknown) },
-    opp: { name: str(op.name, 60), cards: nums(op.cards), unknown: strs(op.unknown), archetype: S.arch.some(a => a.id === op.archetype) ? op.archetype : null, certainty: certNum(op.certainty) },
-    screensRead: arr(o.screensRead).slice(0, 40).map(s => ({ i: +s.i || null, turn: +s.turn || null, shows: str(s.shows, 300) })),
-    timeline: arr(o.timeline).slice(0, 80).map(t => ({ t: str(t.t, 10), me: str(t.me), opp: str(t.opp), note: str(t.note, 300), inferred: !!t.inferred, c: certNum(t.c), basis: str(t.basis, 300) })),
-    gaps: arr(o.gaps).slice(0, 20).map(g => ({ turns: str(g.turns, 20), how: str(g.how), c: certNum(g.c) })),
-    shop: arr(o.shop).slice(0, 40).map(s => ({ t: str(s.t, 10), who: s.who === 'opp' ? 'opp' : 'me', tox: str(s.tox, 60), pass: !!s.pass, on: S.byN.has(+s.on) ? +s.on : null, replaced: str(s.replaced, 80), c: certNum(s.c) })),
-    turningPoint: str(o.turningPoint), summary: str(o.summary, 1200),
-    mistakes: arr(o.mistakes).slice(0, 20).map(x => ({ t: str(x.t, 10), cat: CAT[x.cat] ? x.cat : 'lecture', what: str(x.what), better: str(x.better), cost: COST[x.cost] ? x.cost : 'moyen', c: certNum(x.c) })),
-    goodPlays: arr(o.goodPlays).slice(0, 20).map(g => ({ t: str(g && g.t, 10), what: str(g && g.what || g) })),
-    lessons: arr(o.lessons).slice(0, 6).map(l => str(l, 400)).filter(Boolean),
-    newKnowledge: arr(o.newKnowledge).slice(0, 8).map(k => ({ kind: KIND[k.kind] ? k.kind : 'carte', subject: str(k.subject, 80), text: str(k.text, 600), cards: nums(k.cards), keep: true })).filter(k => k.subject && k.text),
-    bans: (() => { const b = o.bans || {}, r = b.rarity || {};
-      return cleanBans({ mine: toxFam(b.mine) || unk(b.mine, 60) || null, theirs: toxFam(b.theirs) || unk(b.theirs, 60) || null, c: b.c,
-        rarity: { mine: rarOf(r.mine) || sufRar(b.mine), theirs: rarOf(r.theirs) || sufRar(b.theirs) },
-        phase: unk(b.phase, 80), order: unk(b.order, 60), lasts: unk(b.lasts, 60), seen: unk(b.seen, 400), sawOpp: yesNo(b.sawOpp) }); })(),
-    evidence: { coverage: str(ev.coverage, 200), confidence: certNum(ev.confidence) }
-  };
-}
-function renderDraft() {
-  const box = $('an-draft'); box.hidden = !S.draft;
-  box.innerHTML = S.draft ? detailHtml(S.draft, true) : '';
-}
-function draftFooter(m) {
-  const kn = arr(m.newKnowledge);
-  const canSave = S.db && S.canWrite !== false && !S.saving;
-  return `<div class="panel stack-s">
-    ${kn.length ? `<h3>À ajouter au Savoir, en hypothèse</h3>${kn.map((k, i) => `<label class="kn-pick"><input type="checkbox" data-kn="${i}"${k.keep !== false ? ' checked' : ''}><span><b>${esc(k.subject)}</b> · ${esc(k.text)}</span></label>`).join('')}` : ''}
-    <div class="row" style="justify-content:space-between;margin-top:8px">
-      <span class="small muted">${S.shots.length} capture(s)${S.assets ? ' enregistrée(s) avec la partie' : ' non conservée(s) : cette vue ne peut pas stocker d\'images'}</span>
-      <span class="row"><button class="btn" type="button" data-draft="drop">Abandonner</button><button class="btn primary" type="button" data-draft="save"${canSave ? '' : ' disabled'}>Enregistrer dans le journal</button></span>
-    </div>
-    <span class="small muted" id="d-msg" role="status">${!S.db ? 'Journal indisponible dans cette vue.' : S.canWrite === false ? 'Tu peux consulter le journal mais pas y écrire.' : ''}</span>
-  </div>`;
-}
-function onDraftChange(e) {
-  const d = S.draft; if (!d) return; const t = e.target;
-  if (t.id === 'd-res') { d.result = t.value || null; d.resultCertainty = 100; }
-  if (t.id === 'd-first') { d.first = t.value === '' ? null : t.value === '1'; d.firstCertainty = 100; }
-  if (t.id === 'd-deck') d.my.deck = t.value.trim();
-  if (t.id === 'd-arch') { d.opp.archetype = t.value || null; d.opp.certainty = t.value ? 100 : d.opp.certainty; renderDraft(); }
-  if (/^d-ban-/.test(t.id)) {
-    const b = d.bans = Object.assign({ mine: null, theirs: null, c: null }, d.bans), k = t.id.slice(6), v = String(t.value || '').trim();
-    if (k === 'mine' || k === 'theirs') { b[k] = v || null; b.c = 100; }
-    else if (k === 'rar-mine' || k === 'rar-theirs') { b.rarity = Object.assign({ mine: null, theirs: null }, b.rarity); b.rarity[k.slice(4)] = v || null; }
-    else if (k === 'saw') b.sawOpp = v === '' ? null : v === '1';
-    else b[k] = v; // phase, order, lasts, seen
-  }
-  if (t.dataset.kn != null) { const k = d.newKnowledge[+t.dataset.kn]; if (k) k.keep = t.checked; }
-}
-function onDraftClick(e) {
-  const b = e.target.closest('[data-draft]'); if (!b) return;
-  if (b.dataset.draft === 'drop') { S.draft = null; renderDraft(); anMsg('Brouillon abandonné. Les captures restent prêtes pour une nouvelle analyse.'); }
-  if (b.dataset.draft === 'save') saveDraft(b);
-}
-async function saveDraft(btn) {
-  const d = S.draft; if (!d || S.saving || !S.db) return;
-  const dm = t => { const el = $('d-msg'); if (el) el.textContent = t; };
-  S.saving = true; btn.disabled = true;
-  const id = `${d.date.slice(0, 10)}-${d.date.slice(11, 16).replace(':', '')}-c${Math.random().toString(36).slice(2, 6)}`;
-  const screens = []; let failed = 0;
-  if (S.assets) {
-    for (let i = 0; i < S.shots.length; i++) {
-      dm(`Enregistrement des captures (${i + 1}/${S.shots.length})…`);
-      try { screens.push((await S.assets.upload(S.shots[i].file)).id); } catch (err) { failed++; }
-    }
-  }
-  dm('Enregistrement de la partie…');
-  const { newKnowledge, ...rest } = d;
-  const doc = Object.assign({}, rest, { screens, evidence: Object.assign({}, d.evidence, { screens: S.shots.length }), source: 'captures', createdAt: new Date().toISOString() });
-  const bans = cleanBans(d.bans); if (bans) doc.bans = bans; else delete doc.bans;
-  try {
-    await S.db.collection('matches').doc(id).set(doc);
-    for (const k of arr(newKnowledge).filter(k => k.keep !== false)) {
-      await S.db.collection('knowledge').doc().set({ kind: k.kind, subject: k.subject, text: k.text, cards: k.cards, status: 'hypothèse', source: 'analyse de captures', evidence: [id], createdAt: new Date().toISOString() });
-    }
-    S.shots.forEach(s => URL.revokeObjectURL(s.url)); S.shots = [];
-    S.draft = null; S.sel = id; S.resFilter = 'all'; S.deckFilter = '';
-    $('an-hint').value = '';
-    renderDraft(); renderShots(); renderParties();
-    anMsg('Partie enregistrée' + (failed ? `, mais ${failed} capture(s) n'ont pas pu être conservées` : '') + '.');
-  } catch (err) {
-    dm(err && err.code === 'quota_exceeded' ? 'Le journal est plein : supprime des parties anciennes.' : `Échec de l'enregistrement (${err && err.code || 'erreur'}). Réessaie.`);
-    btn.disabled = false;
-  } finally { S.saving = false; }
-}
+/* ---------- Screenshots of older matches ---------- */
 function openZoom(src) {
   const b = document.createElement('button');
   b.type = 'button'; b.className = 'lightbox'; b.setAttribute('aria-label', 'Fermer la capture');

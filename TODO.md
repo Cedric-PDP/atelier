@@ -20,7 +20,7 @@ Pages : [Atelier](https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE) · [Journal
 - [ ] À long terme : le moteur du wiki fait jouer un adversaire qui se contente d'une courbe de dégâts fixe. Le recaler sur de vraies parties dès qu'il y en aura.
 - [x] 1.21 rev2 (2026-10-09) : le wiki a révisé sa notation sous le même numéro (même jeu, scores en baisse de 10 à 14 %). Patcher de L porté (une table de noms par révision), données recalculées, Atelier republié ; le changelog l'explique en tête.
 
-## Règles du jeu à vérifier (replays, sinon captures F12)
+## Règles du jeu à vérifier (dans les replays)
 
 - [ ] **Ban de shop** : a-t-il lieu une fois par partie ou à chaque shop ? Voit-on déjà les 4 cartes adverses au moment de bannir ? Les deux bans sont-ils simultanés ? Bannit-on une famille de Tox ou une seule rareté ? Le Tox disparaît-il pour toute la partie ? Le wiki n'en dit rien (recherche du 2026-10-09). Replays : aucun ban dans les 2 premières parties. Pour trancher : bannir quelque chose dans une partie et envoyer son replay.
 - [ ] **Absorption (Veuve noire de la Tisseuse de Mots)** : en grande partie RÉPONDU par le replay de la partie `2026-10-09-1546-7144` (2026-10-09) : 100 % des PV de la carte prise (le moteur en compte 50 %), et c'est une mort (message de mort, prime de 50 au propriétaire, élimination pour la Tisseuse). Reste : PV max ou actuels d'une carte blessée ; effets « à la mort d'un allié » (Cimetière, Vengeur).
@@ -35,12 +35,12 @@ Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` por
 - [x] Replays `.srpl` décodés entièrement (2026-10-09) : `scripts/replay/read_srpl.js`. Les 2 parties du Journal sont complètes (déroulé, boutique, bans, erreurs, leçons).
 - [ ] Commande PowerShell qui exporte du registre les réglages du jeu (PlayerPrefs Unity, qui peuvent contenir des jetons de connexion) : préparée puis écartée, le contrôle de sécurité d'une session l'a refusée. Décision de l'utilisateur ; peu utile si les replays suffisent.
 - [ ] Le Journal sur le PC perso : en faire aussi une copie hors ligne (lecture seule, instantané de la base) ? Décision de l'utilisateur.
-- [ ] Si le décodage des replays marche, les parties viendront seulement des replays : plus besoin de mécanisme ni de page pour en ajouter (décision de l'utilisateur, 2026-10-09). Cela vise l'analyse de captures et la saisie manuelle du Journal, et le Pont. Le décodage marche : page du Journal en cours d'adaptation (session de l'orchestratrice).
+- [ ] Si le décodage des replays marche, les parties viendront seulement des replays : plus besoin de mécanisme ni de page pour en ajouter (décision de l'utilisateur, 2026-10-09). Cela vise l'analyse de captures et la saisie manuelle du Journal, et le Pont. Le décodage marche : fait pour le Journal (2026-10-09) ; le Pont reste publié tant que l'utilisateur ne demande pas sa suppression.
 - [ ] Page Pont : plus nécessaire (ligne ci-dessus). La supprimer seulement si l'utilisateur le demande.
 
 ## Journal
 
-- [ ] Page du Journal sans analyse de captures ni saisie manuelle (les parties viennent des replays), qui affiche ce que les replays apportent (boutique avec relances et offres, « aucun ban ») : en cours.
+- [x] Page du Journal sans analyse de captures ni saisie manuelle (2026-10-09) : les parties viennent des replays ; elle affiche la boutique (noms des Tox, coût, relances, offres), « Aucun ban » (`bans.none`) et le déroulé par tour.
 - [ ] Méta : les archétypes et les bans conseillés sont des hypothèses, à confirmer ou corriger avec les vraies parties.
 
 ## Decks

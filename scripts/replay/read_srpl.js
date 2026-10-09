@@ -922,7 +922,7 @@ function journalDraft(out, toxRef, starterSide) {
   const anyBan = b && (nonEmpty(b.me) || nonEmpty(b.opp) || nonEmpty(b.bannedInShops.me) || nonEmpty(b.bannedInShops.opp));
   let bans = null;
   if (b && anyBan) bans = { mine: null, theirs: null, c: 50, seen: 'Ban présent dans les stats serveur, format encore inconnu : ' + JSON.stringify({ me: b.me, opp: b.opp, shops: b.bannedInShops }) };
-  else if (b) bans = { mine: null, theirs: null, c: 95, seen: `Aucun ban dans cette partie : les statistiques de fin de partie du serveur (dans le replay) ont « bans: [] » pour les deux joueurs et un champ « banned » vide à chacun des ${visits('me')} passages en boutique de mon côté et des ${visits('opp')} de l'adversaire ; aucun message de ban dans le flux.` };
+  else if (b) bans = { none: true, mine: null, theirs: null, c: 100, seen: `Aucun ban dans cette partie : les statistiques de fin de partie du serveur (dans le replay) ont « bans: [] » pour les deux joueurs et un champ « banned » vide à chacun des ${visits('me')} passages en boutique de mon côté et des ${visits('opp')} de l'adversaire ; aucun message de ban dans le flux.` };
   const parts = new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(H.StartUtc));
   const g = k => (parts.find(x => x.type === k) || {}).value;
   const digits = String(H.GameUid || '').replace(/\D/g, '');
