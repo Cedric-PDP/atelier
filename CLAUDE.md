@@ -38,7 +38,7 @@ branche GitHub `pc-perso` (section « Le PC perso » ci-dessous).
   là-bas (compte d'organisation). Il reste publié mais ne sert plus et n'évolue plus ; son mode d'emploi (chemins,
   commande PowerShell, fichiers exclus) est repris dans le README de la branche `pc-perso`.
 - Verdict Steam : le compte n'apporte presque rien (Steam ne voit pas les parties, une page ne peut pas appeler
-  Steam). L'inconnue est de savoir si le jeu garde l'**historique des parties en local** : le premier envoi le dira.
+  Steam). Le jeu, lui, garde un **replay de chaque partie en local** (premier envoi du 2026-10-09, voir « Le PC perso »).
 
 ## Le PC perso : la branche GitHub `pc-perso`
 
@@ -65,8 +65,18 @@ dans `main`.
      pousser ;
   4. vers le Journal : `source` = `pc-perso@<sha7 du commit d'envoi>`, cartes en numéros ; une capture s'ajoute
      aux assets du Journal par `Artifact` publish `url` du Journal + `asset: true` + `file_path` du fichier extrait.
-- Quand le format des fichiers du jeu sera connu, écrire un lecteur en script Node dans `scripts/` (plus dans le
-  Pont).
+- **Les fichiers du jeu** (premier envoi, 2026-10-09) sont dans `%USERPROFILE%\AppData\LocalLow\Ticroco\Spam\` (Unity
+  6000.3, moteur « TcgEngine », serveurs `*.crocodyle.fr`).
+  - `replays/<serveur>/<id de compte>/index.json` : une entrée par partie, avec `MyCards` / `OpponentCards` (uuid =
+    `id` des cartes de `model.json`), `WinnerId` (à comparer à `AccountId`), `OpponentName`, `GameMode` (0 = Casual,
+    « normal »), `Seat`, `TurnCount`, `DurationMs`, `StartUtc`.
+  - `match-<n>.srpl` : gzip de `SRPL` + version + le même en-tête JSON + environ 1 000 messages réseau binaires
+    (chaînes précédées d'un varint zigzag de longueur + 1). Tours, attaques, boutique et bans y sont : **pas encore
+    décodés**. Le lecteur sera un script Node dans `scripts/`.
+  - `Player.log` (dernière session ; `Player-prev.log`, la précédente) : achats en boutique
+    (`OnInGameShopBuyItemResponse: card=<uuid>, modificatorUID=<uuid propre à la partie>`) et abandon
+    (`Client resign`).
+  - L'index et le journal contiennent des `ticket` de partie : ne pas les recopier dans le Journal.
 
 ## Le joueur
 
@@ -188,8 +198,8 @@ puis les 5 souhaités. Quand la collection change :
   **et** WebFetch) ; spamgame-wiki.com passe en `curl -s -L --max-time 30`. steamdb et gamefaqs sont bloqués aussi,
   Reddit ne sert qu'un mur anti-robots.
 - Aucune source publique de matchs réels (ladder, replays, API) : le wiki et metabot ne font que simuler.
-  Le jeu affiche un historique des parties (taux de victoire par deck) ; s'il est stocké **en local** sur le PC
-  perso, le premier envoi sur la branche `pc-perso` le dira.
+  Mais le jeu garde un replay de chaque partie sur le PC perso (voir « Le PC perso ») : c'est la source des vraies
+  parties.
 
 ## Plan du dépôt
 

@@ -29,10 +29,8 @@ Pages : [Atelier](https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE) · [Journal
 
 Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` porte l'Atelier hors ligne, le mode d'emploi des envois et nos réponses (voir CLAUDE.md, « Le PC perso »).
 
-- [ ] Premier envoi depuis le PC perso : dossier du jeu dans `AppData\LocalLow`, captures F12, sauvegarde cloud. Il dira si le jeu garde l'historique des parties en local.
-- [ ] Après ce premier envoi :
-  - écrire un lecteur (script Node dans `scripts/`) pour le format trouvé ;
-  - transférer les captures et les parties vers le Journal, avec `source` = `pc-perso@<commit>` et les cartes en numéros, selon `journal/README.md`.
+- [x] Premier envoi (2026-10-09, `Ticroco.zip`) : le jeu garde un replay de chaque partie (`LocalLow\Ticroco\Spam\replays`). Les 2 parties sont dans le Journal (en-tête seulement, `source` = `pc-perso@31362e4`).
+- [ ] Décoder les messages binaires des replays `.srpl` (script Node dans `scripts/`) : tours, attaques, boutique, bans, absorption. Puis compléter les parties du Journal (`timeline`, `shop`, `bans`) et répondre aux règles à vérifier ci-dessus.
 - [ ] Le Journal sur le PC perso : en faire aussi une copie hors ligne (lecture seule, instantané de la base) ? Décision de l'utilisateur.
 - [ ] Page Pont : la garder telle quelle, la supprimer, ou la réduire à un renvoi vers GitHub ? Décision de l'utilisateur.
 
