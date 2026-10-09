@@ -159,6 +159,7 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
 .fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin-top: 12px; }
 .fgrid label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--ink-2); min-width: 0; }
 .fgrid .wide { grid-column: 1 / -1; }
+.fgrid .fsub { margin: 6px 0 -4px; }
 .confirm { display: inline-flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 
 /* Méta */
@@ -277,8 +278,16 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
             <label>Mode<select class="input" id="f-mode"><option value="classé">Classé</option><option value="normal">Normal</option><option value="défi">Défi</option><option value="inconnu">Autre</option></select></label>
             <label>Nombre de tours<input class="input" type="number" min="1" max="60" id="f-turns"></label>
             <label>Nom de mon deck<input class="input" type="text" id="f-deck" maxlength="60" placeholder="deck chimere"></label>
-            <label>Mon ban du shop<select class="input" id="f-ban-mine"></select></label>
+            <p class="wide eyebrow fsub">Ban du shop (facultatif)</p>
+            <label>Mon ban<select class="input" id="f-ban-mine"></select></label>
+            <label>Rareté de mon ban<select class="input" id="f-ban-rar-mine"></select></label>
             <label>Ban de l'adversaire<select class="input" id="f-ban-theirs"></select></label>
+            <label>Rareté de son ban<select class="input" id="f-ban-rar-theirs"></select></label>
+            <label>Moment du ban<input class="input" list="dl-ban-phase" id="f-ban-phase" maxlength="80" placeholder="Je ne sais plus"></label>
+            <label>Ordre des bans<input class="input" list="dl-ban-order" id="f-ban-order" maxlength="60" placeholder="Je ne sais plus"></label>
+            <label>Voyais-tu ses 4 cartes en bannissant ?<select class="input" id="f-ban-saw"></select></label>
+            <label>Durée du ban (le Tox est-il revenu ?)<input class="input" list="dl-ban-lasts" id="f-ban-lasts" maxlength="60" placeholder="Je ne sais plus"></label>
+            <p class="wide eyebrow fsub">Les cartes</p>
             <label>Mes cartes 1 à 4<input class="input" list="dl-cards" id="f-my0"></label>
             <label>&nbsp;<input class="input" list="dl-cards" id="f-my1" aria-label="Ma carte 2"></label>
             <label>&nbsp;<input class="input" list="dl-cards" id="f-my2" aria-label="Ma carte 3"></label>
@@ -293,6 +302,9 @@ details.add summary { cursor: pointer; font-family: var(--font-display); font-we
         </form>
         <datalist id="dl-cards"></datalist>
       </details>
+      <datalist id="dl-ban-phase"><option value="une fois, avant le tour 1"><option value="une fois, à la première boutique"><option value="à chaque boutique"></datalist>
+      <datalist id="dl-ban-order"><option value="simultané"><option value="moi d'abord"><option value="l'adversaire d'abord"></datalist>
+      <datalist id="dl-ban-lasts"><option value="toute la partie"><option value="la boutique en cours seulement"></datalist>
     </div>
     <div class="log">
       <aside class="panel stack-s">
@@ -378,12 +390,36 @@ function toxFam(v) {
   const low = s.toLowerCase(); return Object.keys(t).find(k => t[k].name.toLowerCase() === low) || null;
 }
 const toxName = v => { if (!v) return ''; const t = (S.tox || {})[v]; return t ? t.name : String(v); };
+/* Optional ban details (schema in journal/README.md): rarity {mine, theirs} as C/R/E/L, phase, order, sawOpp (bool|null), lasts, seen. */
+const RAR = { C: 'Commune', R: 'Rare', E: 'Épique', L: 'Légendaire' };
+const rarOf = v => { const s = String(v == null ? '' : v).trim(); if (/^[CREL]$/i.test(s)) return s.toUpperCase(); const low = s.toLowerCase(); return low ? Object.keys(RAR).find(k => low.startsWith(RAR[k].toLowerCase().slice(0, 4))) || null : null; };
+const rarOptions = sel => '<option value="">Rareté inconnue</option>' + Object.entries(RAR).map(([k, l]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${l}</option>`).join('');
+const sawOptions = v => [['', 'Je ne sais pas', null], ['1', 'Oui, ses 4 cartes', true], ['0', 'Non, pas toutes', false]].map(([k, l, b]) => `<option value="${k}"${b === (typeof v === 'boolean' ? v : null) ? ' selected' : ''}>${l}</option>`).join('');
+/* Keeps only the ban fields that carry something; null when nothing is known. */
+function cleanBans(b) {
+  if (!b) return null;
+  const o = { mine: b.mine || null, theirs: b.theirs || null, c: certNum(b.c) };
+  const r = b.rarity || {};
+  if (RAR[r.mine] || RAR[r.theirs]) o.rarity = { mine: RAR[r.mine] ? r.mine : null, theirs: RAR[r.theirs] ? r.theirs : null };
+  ['phase', 'order', 'lasts', 'seen'].forEach(k => { const v = String(b[k] == null ? '' : b[k]).trim(); if (v) o[k] = v; });
+  if (typeof b.sawOpp === 'boolean') o.sawOpp = b.sawOpp;
+  return o.mine || o.theirs || Object.keys(o).length > 3 ? o : null;
+}
 const toxOptions = sel => '<option value="">Aucun ou inconnu</option>' + (sel && !(S.tox || {})[sel] ? `<option value="${esc(sel)}" selected>${esc(sel)} (lu tel quel, non reconnu)</option>` : '') + Object.entries(S.tox || {}).sort((a, b) => a[1].name.localeCompare(b[1].name, 'fr')).map(([id, t]) => `<option value="${esc(id)}"${id === sel ? ' selected' : ''}>${esc(t.name)}</option>`).join('');
 function bansHtml(m) {
-  const b = m.bans; if (!b || (!b.mine && !b.theirs)) return '';
-  const extra = [b.phase, b.order].filter(Boolean).join(' · ');
-  return `<div class="note small"><b>Bans du shop</b> · moi : ${esc(toxName(b.mine) || '?')} · adversaire : ${esc(toxName(b.theirs) || '?')} ${cert(b.c)}${extra ? `<span class="basis">${esc(extra)}</span>` : ''}</div>`;
+  const b = m.bans; if (!b) return '';
+  const r = b.rarity || {};
+  const side = (v, k) => (toxName(v) || '?') + (RAR[k] ? ' (' + RAR[k].toLowerCase() + ')' : '');
+  const extra = [b.phase && 'moment : ' + b.phase, b.order && 'ordre : ' + b.order,
+    b.sawOpp === true ? 'ses 4 cartes étaient visibles au moment du ban' : b.sawOpp === false ? "ses 4 cartes n'étaient pas toutes visibles au moment du ban" : '',
+    b.lasts && 'durée : ' + b.lasts, b.seen && 'sur les captures : ' + b.seen].filter(Boolean).join(' · ');
+  if (!b.mine && !b.theirs && !extra) return '';
+  return `<div class="note small"><b>Bans du shop</b> · moi : ${esc(side(b.mine, r.mine))} · adversaire : ${esc(side(b.theirs, r.theirs))} ${cert(b.c)}${extra ? `<span class="basis">${esc(extra)}</span>` : ''}</div>`;
 }
+/* Where a match comes from: "captures" (this page), "manuel" (the form), or the name of a Pont import. */
+const importName = m => m.source && m.source !== 'captures' && m.source !== 'manuel' ? String(m.source) : '';
+/* screens holds asset ids (shown as "/_blob/<id>"), or a URL kept as given by a server-side copy (anything with / or :). */
+const blobSrc = id => /[/:]/.test(String(id)) ? String(id) : '/_blob/' + encodeURIComponent(id);
 
 /* ---------- Boot ---------- */
 async function boot() {
@@ -391,6 +427,7 @@ async function boot() {
     S.cards = JSON.parse($('cards-data').textContent).cards;
     try { S.tox = JSON.parse($('tox-data').textContent); } catch (err) { S.tox = {}; }
     $('f-ban-mine').innerHTML = toxOptions(null); $('f-ban-theirs').innerHTML = toxOptions(null);
+    $('f-ban-rar-mine').innerHTML = rarOptions(null); $('f-ban-rar-theirs').innerHTML = rarOptions(null); $('f-ban-saw').innerHTML = sawOptions(null);
   } catch (e) { $('view-bilan').innerHTML = `<p class="note warn sec">Les cartes n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</p>`; return; }
   S.cards.forEach(c => { S.byN.set(c.n, c); S.byName.set(c.name.toLowerCase(), c); if (c.en) S.byName.set(c.en.toLowerCase(), c); });
   $('dl-cards').innerHTML = S.cards.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr')).map(c => `<option value="${esc(c.name)}">`).join('');
@@ -517,7 +554,7 @@ function matchItem(m) {
   return `<li><button class="mitem" data-open="${esc(m.id)}" aria-current="${S.sel === m.id}">
     <span class="res ${esc(m.result)}">${esc(m.result || '?')}</span>
     <span class="l1">${esc(deckLabel(m))}</span>
-    <span class="l2">${fmtDate(m.date)} · contre ${esc(a ? a.name : (m.opp && m.opp.name) || 'adversaire')}${m.turns ? ` · ${m.turns} tours` : ''}${m.source === 'manuel' ? ' · saisie manuelle' : ''}</span>
+    <span class="l2">${fmtDate(m.date)} · contre ${esc(a ? a.name : (m.opp && m.opp.name) || 'adversaire')}${m.turns ? ` · ${m.turns} tours` : ''}${m.source === 'manuel' ? ' · saisie manuelle' : importName(m) ? ` · import « ${esc(importName(m))} »` : ''}</span>
   </button></li>`;
 }
 function initParties() {
@@ -558,12 +595,12 @@ function galleryHtml(srcs) {
   return srcs.length ? `<div class="panel"><div class="sec-head"><h2>Captures</h2></div><div class="gallery">${srcs.map((s, i) => `<button type="button" data-zoom="${esc(s)}" aria-label="Agrandir la capture ${i + 1}"><img src="${esc(s)}" alt="Capture ${i + 1}" loading="lazy"></button>`).join('')}</div></div>` : '';
 }
 function detailHtml(m, draft) {
-  const a = archOf(m), ev = m.evidence || {};
+  const a = archOf(m), ev = m.evidence || {}, bn = m.bans || {};
   const tl = arr(m.timeline), shop = arr(m.shop), mist = arr(m.mistakes), good = arr(m.goodPlays), less = arr(m.lessons), gaps = arr(m.gaps);
   const first = m.first === true ? 'Joué en premier' : m.first === false ? 'Joué en second' : '';
   const hasCert = tl.some(t => certNum(t.c) != null);
   const conf = certNum(ev.confidence);
-  const srcs = draft ? S.shots.map(s => s.url) : arr(m.screens).map(id => '/_blob/' + encodeURIComponent(id));
+  const srcs = draft ? S.shots.map(s => s.url) : arr(m.screens).map(blobSrc);
   const head = draft ? `<div class="sec-head"><h2>Brouillon à vérifier</h2><p>Corrige ce qui est faux avant d'enregistrer. Les pourcentages sont l'estimation de Claude selon le barème ci-dessous, pas une preuve.${conf != null ? ' Certitude globale : ' + cert(conf) : ''}</p></div>
     ${certLegend()}
     <div class="fgrid">
@@ -572,7 +609,14 @@ function detailHtml(m, draft) {
       <label>Nom de mon deck<input class="input" id="d-deck" maxlength="60" value="${esc(m.my && m.my.deck || '')}"></label>
       <label>Archétype adverse ${cert(m.opp && m.opp.certainty)}<select class="input" id="d-arch"><option value="">Détection automatique</option>${S.arch.map(x => `<option value="${esc(x.id)}"${m.opp && m.opp.archetype === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>
       <label>Mon ban du shop ${cert(m.bans && m.bans.c)}<select class="input" id="d-ban-mine">${toxOptions(m.bans && m.bans.mine)}</select></label>
+      <label>Rareté de mon ban<select class="input" id="d-ban-rar-mine">${rarOptions(bn.rarity && bn.rarity.mine)}</select></label>
       <label>Ban de l'adversaire<select class="input" id="d-ban-theirs">${toxOptions(m.bans && m.bans.theirs)}</select></label>
+      <label>Rareté de son ban<select class="input" id="d-ban-rar-theirs">${rarOptions(bn.rarity && bn.rarity.theirs)}</select></label>
+      <label>Moment du ban<input class="input" list="dl-ban-phase" id="d-ban-phase" maxlength="80" placeholder="Inconnu" value="${esc(bn.phase || '')}"></label>
+      <label>Ordre des bans<input class="input" list="dl-ban-order" id="d-ban-order" maxlength="60" placeholder="Inconnu" value="${esc(bn.order || '')}"></label>
+      <label>Voyais-tu ses 4 cartes en bannissant ?<select class="input" id="d-ban-saw">${sawOptions(bn.sawOpp)}</select></label>
+      <label>Durée du ban<input class="input" list="dl-ban-lasts" id="d-ban-lasts" maxlength="60" placeholder="Inconnue" value="${esc(bn.lasts || '')}"></label>
+      <label class="wide">Ce que les captures montrent du ban<input class="input" id="d-ban-seen" maxlength="400" placeholder="Écran de ban, ban adverse, boutique suivante…" value="${esc(bn.seen || '')}"></label>
     </div>`
     : `<div class="detail-head"><span class="res ${esc(m.result)}">${esc(RES[m.result] || m.result || '?')}</span><h2>${esc(deckLabel(m))}</h2>
       <span class="muted small">${fmtDate(m.date)}${m.mode ? ' · ' + esc(m.mode) : ''}${first ? ' · ' + first : ''}${m.turns ? ` · ${esc(m.turns)} tours` : ''}</span>${conf != null ? `<span class="small">certitude globale ${cert(conf)}</span>` : ''}</div>`;
@@ -601,7 +645,7 @@ function detailHtml(m, draft) {
   ${less.length ? `<div class="panel"><h2>Leçons</h2><ul class="bullets" style="margin-top:8px">${less.map(l => `<li>${esc(l)}</li>`).join('')}</ul></div>` : ''}
   ${galleryHtml(srcs)}
   ${draft ? draftFooter(m) : `<div class="panel row" style="justify-content:space-between">
-    <span class="small muted">${m.source === 'manuel' ? 'Saisie manuelle' : `${ev.screens ? esc(ev.screens) + ' captures' : 'Captures'}${ev.coverage ? ' · ' + esc(ev.coverage) : ''}`} · réf. ${esc(m.id)}</span>
+    <span class="small muted">${m.source === 'manuel' ? 'Saisie manuelle' : esc([importName(m) && `Import « ${importName(m)} »`, ev.screens ? ev.screens + ' captures' : importName(m) ? '' : 'Captures', ev.coverage].filter(Boolean).join(' · '))} · réf. ${esc(m.id)}</span>
     ${S.db && S.canWrite !== false ? (S.confirmDel === m.id ? `<span class="confirm"><span class="small">Supprimer cette partie du journal ?</span><button class="btn danger" data-del-yes="${esc(m.id)}">Supprimer</button><button class="btn" data-del-no>Annuler</button></span>` : `<button class="btn danger" data-del="${esc(m.id)}">Supprimer</button>`) : ''}
   </div>`}`;
 }
@@ -629,13 +673,16 @@ async function saveManual(e) {
   const doc = { date: d.toISOString(), mode: $('f-mode').value, result: $('f-res').value, first: first === '' ? null : first === '1',
     turns: $('f-turns').value ? +$('f-turns').value : null, my: { deck: $('f-deck').value.trim(), cards: my.cards }, opp: { cards: op.cards, unknown: [] },
     note: $('f-note').value.trim(), source: 'manuel', createdAt: new Date().toISOString() };
-  const banMine = $('f-ban-mine').value, banTheirs = $('f-ban-theirs').value;
-  if (banMine || banTheirs) doc.bans = { mine: banMine || null, theirs: banTheirs || null, c: 100 };
+  const banMine = $('f-ban-mine').value, banTheirs = $('f-ban-theirs').value, saw = $('f-ban-saw').value;
+  const bans = cleanBans({ mine: banMine, theirs: banTheirs, c: banMine || banTheirs ? 100 : null,
+    rarity: { mine: $('f-ban-rar-mine').value, theirs: $('f-ban-rar-theirs').value },
+    phase: $('f-ban-phase').value, order: $('f-ban-order').value, lasts: $('f-ban-lasts').value, sawOpp: saw === '' ? null : saw === '1' });
+  if (bans) doc.bans = bans;
   $('f-save').disabled = true; $('f-msg').textContent = 'Enregistrement…';
   try {
     await S.db.collection('matches').doc(id).set(doc);
     $('f-msg').textContent = 'Partie enregistrée.'; S.sel = id;
-    ['f-turns', 'f-note', 'f-op0', 'f-op1', 'f-op2', 'f-op3', 'f-ban-mine', 'f-ban-theirs'].forEach(k => { $(k).value = ''; });
+    ['f-turns', 'f-note', 'f-op0', 'f-op1', 'f-op2', 'f-op3', 'f-ban-mine', 'f-ban-theirs', 'f-ban-rar-mine', 'f-ban-rar-theirs', 'f-ban-phase', 'f-ban-order', 'f-ban-saw', 'f-ban-lasts'].forEach(k => { $(k).value = ''; });
   } catch (err) {
     $('f-msg').textContent = err && err.code === 'quota_exceeded' ? 'Le journal est plein : supprime des parties anciennes.' : 'Échec de l\'enregistrement (' + (err && err.code || 'erreur') + '). Réessaie.';
   } finally { $('f-save').disabled = false; }
@@ -840,7 +887,9 @@ function setBusy(on) { S.busy = on; $('an-stop').hidden = !on; renderShots(); }
 function buildPrompt() {
   const deck = $('an-deck').value.trim(), hint = $('an-hint').value.trim();
   const arch = S.arch.map(a => `${a.id} : ${a.name} : ${arr(a.core).join(', ')}`).join('\n');
-  const known = S.know.filter(k => k.kind !== 'jeu' && k.status !== 'réfuté').map(k => `- ${k.subject} : ${k.text}`).join('\n');
+  const kn = S.know.filter(k => k.kind !== 'jeu' && k.status !== 'réfuté');
+  const known = kn.filter(k => k.status === 'confirmé').concat(kn.filter(k => k.status !== 'confirmé'))
+    .map(k => `- [${k.status || 'hypothèse'}] ${k.subject} : ${k.text}`).join('\n');
   return [
 `Tu analyses une partie du jeu de cartes SPAM (jeu Steam de Ticroco, version 1.20 ou 1.21) à partir de ${S.shots.length} capture(s) d'écran prises par le joueur, appelé "moi". Les captures sont jointes dans l'ordre chronologique : la capture 1 est la plus ancienne. Elles ne couvrent pas tous les tours.`,
 `TA MISSION
@@ -858,9 +907,28 @@ Ne jamais inventer. Un tour impossible à reconstituer : écris "inconnu" avec u
 - Chaque camp a 4 cartes. Une capacité de recharge n est utilisable tous les n tours. Le premier joueur commence avec toutes ses recharges réduites de 1, le second de 2.
 - Bonus élémentaire : +10 % de dégâts et de soins par point, pour toute la partie.
 - Ordre conseillé dans un tour : générer, puis buffer, puis attaquer.
-- Boutique : tours pairs, 3 Tox, un seul achat ; relance 10 puis +5 ; passer rapporte 10. Revenus par tour : Spamtons des cartes vivantes + numéro du tour ; une carte perdue rapporte 50.
-- Ban du shop : chaque joueur bannit un élément du shop (une Tox) et les deux éléments bannis disparaissent du shop pour les deux joueurs. Relève les bans visibles sur les captures (écran de ban, éléments barrés ou grisés dans le shop), à quel moment ils ont lieu (phase) et si les deux joueurs bannissent en même temps ou l'un après l'autre (order). Écris les Tox avec leur nom exact dans cette liste : ${Object.values(S.tox || {}).map(t => t.name).join(', ')}. Le ban d'une carte du deck n'a jamais été observé : ne le cherche pas.
-- Gel : tout dégât ou soin sur la carte gelée brise la glace et lui inflige 60 dégâts (version 1.21). Provocation force le ciblage adverse. Brut ignore résistance et Provocation. Disparition retire le dernier passif. Immunité : insensible aux effets adverses.${known ? '\nSavoir accumulé :\n' + known : ''}`,
+- Boutique : tours pairs, 3 Tox, un seul achat ; relance 10 puis +5 ; passer rapporte 10. Revenus par tour : Spamtons des cartes vivantes + numéro du tour ; chaque carte perdue rapporte 50 au joueur qui la perd.
+- Ban du shop : chaque joueur bannit un élément du shop (une Tox) et les deux éléments bannis disparaissent du shop pour les deux joueurs. Relève les bans visibles sur les captures (écran de ban, éléments barrés ou grisés dans le shop). Écris les Tox avec leur nom exact dans cette liste : ${Object.values(S.tox || {}).map(t => t.name).join(', ')}. Une même Tox existe souvent en plusieurs raretés (C commune, R rare, E épique, L légendaire) : note la rareté bannie si elle se lit (bans.rarity), sinon null. Le ban d'une carte du deck n'a jamais été observé : ne le cherche pas.
+- Gel : tout dégât ou soin sur la carte gelée brise la glace et lui inflige 60 dégâts (version 1.21). Provocation force le ciblage adverse. Brut ignore résistance et Provocation. Disparition retire le dernier passif. Immunité : insensible aux effets adverses.`,
+known ? `SAVOIR ACCUMULÉ (chaque ligne commence par son statut)
+- [confirmé] : établi, tu peux t'y fier.
+- [hypothèse] : à vérifier sur les captures, pas à tenir pour acquis. Si tu t'en sers pour combler un trou, dis-le dans "basis" et baisse "c".
+Si une capture appuie ou contredit une hypothèse, ajoute à newKnowledge une entrée avec le même titre (subject) et un texte qui commence par « Appuie : » ou « Contredit : », suivi de ce que montre la capture.
+${known}` : '',
+`RÈGLES ENCORE INCONNUES : À RELEVER QUAND LES CAPTURES LE MONTRENT
+Personne ne connaît encore ces réponses. Ne devine pas : décris ce que tu vois, cite la capture, et laisse vide (ou null) ce qu'aucune capture ne montre.
+Ban du shop (objet "bans") :
+- l'écran de ban : la liste proposée (toutes les Tox, l'offre de la boutique, une sélection ?) et si les 4 cartes adverses y sont déjà visibles (sawOpp : true, false, ou null) ;
+- juste après : le ban adverse est-il visible, et les deux joueurs bannissent-ils en même temps ou l'un après l'autre (order) ;
+- la boutique suivante : la Tox bannie est-elle absente ou grisée, ses autres raretés restent-elles proposées, y a-t-il une nouvelle invite de ban ? D'où : une fois par partie ou à chaque boutique (phase), pour toute la partie ou pour la boutique en cours seulement (lasts) ;
+- résume tout cela dans bans.seen, avec les numéros des captures.
+Absorption (Veuve noire de Tisseuse de Mots, #123 : « Absorbe une carte » ; Avalement de Régent des Abysses, #86, sur une carte alliée) :
+- les PV actuels et max de la carte absorbée juste avant, et ceux de la Tisseuse juste avant et juste après ;
+- si la prime de 50 Spamtons a été versée, et à qui ;
+- si Cimetière, Vengeur ou un effet « à la mort d'un allié » a réagi ;
+- si la Tisseuse a gagné des capacités ou des passifs de la carte absorbée.
+Tour 20 et au-delà (prolongation) : ce qui change à partir du tour 20 (dégâts, soins, PV max, Spamtons, message à l'écran), et à quel tour exactement.
+Note ces observations dans la timeline (champ "note" du tour) et dans newKnowledge (kind "mécanique"), en citant la capture.`,
 `CE QUE LE JOUEUR PRÉCISE : ${hint || 'rien'}${deck ? `\nNom de son deck : ${deck}` : ''}
 Il préfère les decks réguliers, peu dépendants des critiques.`,
 `ARCHÉTYPES CONNUS (id : nom : numéros des cartes signature)
@@ -882,9 +950,9 @@ ${refText()}`,
 "goodPlays":[{"t":3,"what":"..."}],
 "lessons":["..."],
 "newKnowledge":[{"kind":"carte"|"mécanique"|"adversaire"|"tox"|"économie","subject":"titre court","text":"fait observé dans cette partie et absent du savoir accumulé","cards":[numéros]}],
-"bans":{"mine":"nom de la Tox"|null,"theirs":"nom de la Tox"|null,"c":0-100,"phase":"moment du ban, ou inconnu","order":"simultané, l'un après l'autre, ou inconnu"},
+"bans":{"mine":"nom de la Tox"|null,"theirs":"nom de la Tox"|null,"rarity":{"mine":"C"|"R"|"E"|"L"|null,"theirs":"C"|"R"|"E"|"L"|null},"c":0-100,"phase":"une fois avant le tour 1, une fois à la première boutique, à chaque boutique, ou vide","order":"simultané, moi d'abord, l'adversaire d'abord, ou vide","sawOpp":true|false|null,"lasts":"toute la partie, la boutique en cours seulement, ou vide","seen":"ce que les captures montrent du ban, avec leurs numéros"},
 "evidence":{"coverage":"tours vus : 1, 2, 5, 9","confidence":0-100}}`
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 }
 function sampleErr(e) {
   const c = e && e.code;
@@ -916,6 +984,9 @@ async function runAnalysis() {
     anMsg(sampleErr(e));
   } finally { S.ctl = null; setBusy(false); }
 }
+const unk = (v, n) => { const s = str(v, n).trim(); return /^(inconnue?|vide|aucune?|null|n\/a|\?|-)$/i.test(s) ? '' : s; };
+const yesNo = v => v === true || /^oui$/i.test(v) ? true : v === false || /^non$/i.test(v) ? false : null;
+const sufRar = v => { const m = /_([CREL])$/.exec(String(v == null ? '' : v).trim()); return m ? m[1] : null; };
 function normalize(o) {
   if (!o || typeof o !== 'object' || Array.isArray(o)) throw { code: 'invalid_json' };
   const nums = v => [...new Set(arr(v).map(Number).filter(n => S.byN.has(n)))].slice(0, 4);
@@ -939,8 +1010,10 @@ function normalize(o) {
     goodPlays: arr(o.goodPlays).slice(0, 20).map(g => ({ t: str(g && g.t, 10), what: str(g && g.what || g) })),
     lessons: arr(o.lessons).slice(0, 6).map(l => str(l, 400)).filter(Boolean),
     newKnowledge: arr(o.newKnowledge).slice(0, 8).map(k => ({ kind: KIND[k.kind] ? k.kind : 'carte', subject: str(k.subject, 80), text: str(k.text, 600), cards: nums(k.cards), keep: true })).filter(k => k.subject && k.text),
-    bans: (() => { const b = o.bans || {}; const mine = toxFam(b.mine) || str(b.mine, 60) || null, theirs = toxFam(b.theirs) || str(b.theirs, 60) || null;
-      return mine || theirs ? { mine, theirs, c: certNum(b.c), phase: str(b.phase, 80), order: str(b.order, 60) } : null; })(),
+    bans: (() => { const b = o.bans || {}, r = b.rarity || {};
+      return cleanBans({ mine: toxFam(b.mine) || unk(b.mine, 60) || null, theirs: toxFam(b.theirs) || unk(b.theirs, 60) || null, c: b.c,
+        rarity: { mine: rarOf(r.mine) || sufRar(b.mine), theirs: rarOf(r.theirs) || sufRar(b.theirs) },
+        phase: unk(b.phase, 80), order: unk(b.order, 60), lasts: unk(b.lasts, 60), seen: unk(b.seen, 400), sawOpp: yesNo(b.sawOpp) }); })(),
     evidence: { coverage: str(ev.coverage, 200), confidence: certNum(ev.confidence) }
   };
 }
@@ -966,7 +1039,13 @@ function onDraftChange(e) {
   if (t.id === 'd-first') { d.first = t.value === '' ? null : t.value === '1'; d.firstCertainty = 100; }
   if (t.id === 'd-deck') d.my.deck = t.value.trim();
   if (t.id === 'd-arch') { d.opp.archetype = t.value || null; d.opp.certainty = t.value ? 100 : d.opp.certainty; renderDraft(); }
-  if (t.id === 'd-ban-mine' || t.id === 'd-ban-theirs') { d.bans = Object.assign({ mine: null, theirs: null, c: null }, d.bans); d.bans[t.id === 'd-ban-mine' ? 'mine' : 'theirs'] = t.value || null; d.bans.c = 100; }
+  if (/^d-ban-/.test(t.id)) {
+    const b = d.bans = Object.assign({ mine: null, theirs: null, c: null }, d.bans), k = t.id.slice(6), v = String(t.value || '').trim();
+    if (k === 'mine' || k === 'theirs') { b[k] = v || null; b.c = 100; }
+    else if (k === 'rar-mine' || k === 'rar-theirs') { b.rarity = Object.assign({ mine: null, theirs: null }, b.rarity); b.rarity[k.slice(4)] = v || null; }
+    else if (k === 'saw') b.sawOpp = v === '' ? null : v === '1';
+    else b[k] = v; // phase, order, lasts, seen
+  }
   if (t.dataset.kn != null) { const k = d.newKnowledge[+t.dataset.kn]; if (k) k.keep = t.checked; }
 }
 function onDraftClick(e) {
@@ -989,6 +1068,7 @@ async function saveDraft(btn) {
   dm('Enregistrement de la partie…');
   const { newKnowledge, ...rest } = d;
   const doc = Object.assign({}, rest, { screens, evidence: Object.assign({}, d.evidence, { screens: S.shots.length }), source: 'captures', createdAt: new Date().toISOString() });
+  const bans = cleanBans(d.bans); if (bans) doc.bans = bans; else delete doc.bans;
   try {
     await S.db.collection('matches').doc(id).set(doc);
     for (const k of arr(newKnowledge).filter(k => k.keep !== false)) {
