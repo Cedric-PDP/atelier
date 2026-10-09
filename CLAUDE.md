@@ -75,10 +75,14 @@ qui dit s'il marche.
   6000.3, moteur « TcgEngine », serveurs `*.crocodyle.fr`).
   - `replays/<serveur>/<id de compte>/index.json` : une entrée par partie, avec `MyCards` / `OpponentCards` (uuid =
     `id` des cartes de `model.json`), `WinnerId` (à comparer à `AccountId`), `OpponentName`, `GameMode` (0 = Casual,
-    « normal »), `Seat`, `TurnCount`, `DurationMs`, `StartUtc`.
+    « normal »), `Seat` (numéro du joueur dans la partie, **pas** l'ordre de jeu), `TurnCount`, `DurationMs`, `StartUtc`.
   - `match-<n>.srpl` : gzip de `SRPL` + version + le même en-tête JSON + environ 1 000 messages réseau binaires
-    (chaînes précédées d'un varint zigzag de longueur + 1). Tours, attaques, boutique et bans y sont : **pas encore
-    décodés**. Le lecteur sera un script Node dans `scripts/`.
+    (chaînes précédées d'un varint zigzag de longueur + 1). **Décodés entièrement** (2026-10-09) par
+    `node scripts/replay/read_srpl.js <match.srpl> [--index <index.json>]` (format, certitudes, limites :
+    [scripts/replay/README.md](scripts/replay/README.md)) : déroulé tour par tour avec PV avant/après, premier joueur,
+    boutique des deux camps (offres, relances, achats, Tox remplacé), Spamtons, morts, absorptions, bans, et les
+    statistiques de fin de partie du serveur. Sa sortie `journal` est le brouillon du document `matches/<id>` du
+    Journal. À chaque première fois (ban, talent, Classé, prolongation, Gel, Renvoi…), lire `checks` (codes inconnus).
   - `Player.log` (dernière session ; `Player-prev.log`, la précédente) : achats en boutique
     (`OnInGameShopBuyItemResponse: card=<uuid>, modificatorUID=<uuid propre à la partie>`) et abandon
     (`Client resign`).
@@ -106,7 +110,13 @@ qui dit s'il marche.
   élément de la boutique, retiré pour les deux ; il fait partie des stratégies (robustesse du plan d'achat d'un
   deck au ban adverse, choix de notre ban ; `bansPerPlayer:1` est probablement celui-là). Encore inconnus : le
   moment du ban (une fois par partie ou à chaque boutique) et ce qu'on sait de l'adversaire à ce moment. Le
-  **ban d'une carte** du deck n'a jamais été observé (peut-être en Classé) : ne rien modéliser.
+  **ban d'une carte** du deck n'a jamais été observé (peut-être en Classé) : ne rien modéliser. Dans les replays des
+  2 premières parties (mode normal), personne n'a banni : le serveur garde des `bans` par joueur et un champ `banned`
+  à chaque passage en boutique, tous vides.
+- **Absorption = mort** (replay de la partie `2026-10-09-1546-7144`) : Veuve noire de Tisseuse de Mots (#123) a pris
+  la Chimère (238, 525/525 PV) ; la Tisseuse gagne **100 %** de ses PV (+525 PV max et +525 PV ; le moteur du wiki
+  compte 50 %), un message de mort part, la prime de 50 va tout de suite au propriétaire et l'élimination est
+  créditée à la Tisseuse. Encore inconnus : PV max ou actuels d'une carte blessée ; effets « à la mort d'un allié ».
 
 ## Le moteur : un instantané du wiki PAR VERSION du jeu (`spam/versions/<v>/`)
 
@@ -142,7 +152,9 @@ qui dit s'il marche.
   retombe sur l'ancienne fausse carte `dead-card` de 1 PV et l'écrit dans `meta.lostMethod`. ⚠️ Cette fausse
   carte MEURT au tour 1 : ça déclenche les effets à la mort des alliés (Vengeur inné de Dragon Ciel, Cimetière,
   Vitalité des Âmes) et gonfle L de ~+977 points sur les decks avec Dragon Ciel (audit du 2026-10-09 ; ex.
-  117-156-180-238 : 5 220 au lieu de 3 519 en rev1 ; 3 041 en rev2), contre −15 ailleurs.
+  117-156-180-238 : 5 220 au lieu de 3 519 en rev1 ; 3 041 en rev2), contre −15 ailleurs. ⚠️ Depuis le replay du
+  2026-10-09, on sait qu'une absorption **est** une mort (prime de 50 au propriétaire ; effets à la mort probables) :
+  le « sans mourir » de L est à revoir (bascule `absorb.bounty` d'`engine_stress.js`), voir TODO.md.
 - Exécuté dans un `vm` Node isolé (ni `require` ni `fs` dedans) : `scripts/sim_lab2.js <engine>
   "x1=<model>;x0=<model>" <driver.js> <out.json>`. Le driver est du JS évalué dans le contexte du moteur :
   globals `MODELS`, `OUT` (écrit dans out.json), `ht` (fabrique d'évaluateur) ; les données doivent être
