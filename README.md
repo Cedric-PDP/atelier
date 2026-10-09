@@ -31,7 +31,7 @@ sur Entrée. Elle ne fait que lire et liste les fichiers liés à SPAM, les plus
 ailleurs (par exemple `D:\SteamLibrary`), change ce chemin dans la commande.
 
 ```powershell
-Get-ChildItem "$env:USERPROFILE\AppData\LocalLow","$env:APPDATA","$env:LOCALAPPDATA","${env:ProgramFiles(x86)}\Steam\userdata","${env:ProgramFiles(x86)}\Steam\steamapps" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'spam|ticroco|2902720' -and $_.FullName -notmatch 'antispam' } | Sort-Object LastWriteTime -Descending | Select-Object -First 60 -ExpandProperty FullName
+Get-ChildItem "$env:USERPROFILE\AppData\LocalLow","$env:APPDATA","$env:LOCALAPPDATA",([Environment]::GetFolderPath('MyDocuments')),"$env:USERPROFILE\Saved Games","${env:ProgramFiles(x86)}\Steam\userdata","${env:ProgramFiles(x86)}\Steam\steamapps" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match 'spam|ticroco|2902720' -and $_.FullName -notmatch 'antispam' } | Sort-Object LastWriteTime -Descending | Select-Object -First 60 -ExpandProperty FullName
 ```
 
 ### 2. Ne jamais envoyer
