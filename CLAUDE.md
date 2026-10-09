@@ -1,8 +1,9 @@
 # spam-atelier — atelier de decks SPAM (projet perso)
 
-> **Projet personnel, sans aucun lien avec O'Work / OCI.** Ne jamais y mêler le travail : pas d'email
-> `@oci.fr` dans les commits (le dépôt a sa propre identité git locale, adresse noreply GitHub), pas
-> d'outils, de MCP ni de mémoire O'Work (cicd-live, rag, SCRIPTS_V2…). Ouvrir Claude Code **dans ce dossier**.
+> **Projet personnel, sans aucun lien avec O'Work / OCI.** Ce qui compte pour l'utilisateur : **aucune trace de ce
+> projet côté O'Work** (dépôts, outils, MCP, mémoire O'Work : cicd-live, rag, SCRIPTS_V2…), et rien d'O'Work ici.
+> Le dépôt a sa propre identité git locale (adresse noreply GitHub) ; un commit qui porte quand même `@oci.fr`
+> (envoi par l'interface web de GitHub) n'est pas grave (2026-10-09). Ouvrir Claude Code **dans ce dossier**.
 > Dépôt **privé** : il contient un instantané du moteur et des textes de spamgame-wiki.com (contenu tiers).
 
 L'utilisateur joue à **SPAM** (jeu de cartes Steam de Ticroco, appid Steam `2902720`). Ce dépôt contient les
@@ -47,6 +48,11 @@ entre les deux PC : la branche **orpheline** `pc-perso` du dépôt privé `Cedri
 perso), qu'il ouvre dans son navigateur. Ici, elle est extraite dans le worktree `.pc-perso/` (ignoré par `main` ;
 s'il manque : `git fetch origin pc-perso && git worktree add .pc-perso pc-perso`). Rien de cette branche ne va
 dans `main`.
+
+**Rien du jeu n'est sur le PC du travail** (ni le jeu, ni ses fichiers, ni sa clé de registre) : une commande ou un
+script destiné au PC perso ne peut pas être essayé ici. Le lancer ici ne prouverait rien, et lire le registre de ce
+PC est refusé. Il part dans le README **marqué non testé**, et c'est le retour de l'utilisateur ou l'envoi suivant
+qui dit s'il marche.
 
 - `README.md` : son mode d'emploi, affiché par GitHub (ouvrir l'Atelier, trouver, compresser et déposer les
   fichiers du jeu, ce qu'il ne faut jamais envoyer). C'est lui qu'il lit sur le PC perso : le garder à jour.
