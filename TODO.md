@@ -16,7 +16,7 @@ Pages : [Atelier](https://claude.ai/artifact/3a61vyiop6v5cLPs9H19iE) · [Journal
   - Le prototype est dans le scratchpad de la session « SPAM cartes disponibles » : `spam/audit/ban/`.
   - Le ban reste un levier secondaire : au plus 10 % du score, et surestimé, contre 25 à 75 % pour les menaces des cartes.
 - [ ] Renommer `site/` en `atelier/`, seulement si l'utilisateur le veut. Il faut alors adapter `recompute.sh`, `build_core`, `smoke_page`, CLAUDE.md et README.
-- [x] **Métrique L (« Sans sa carte clé »)** (2026-10-09) : L = « absorbée au tour 1, elle meurt » (`meta.lostMethod` = `absorb-death`, gestionnaire de mort du moteur, sans retour possible), données recalculées. Prime de 50 = +15 partout ; seuls les decks avec Dragon Ciel (Vengeur) ou Naissance d'Aldrin (Cimetière) bougent plus ; les 5 decks sauvegardés ne prennent que +15 sur leur pire cas. Reste à republier l'Atelier.
+- [x] **Métrique L (« Sans sa carte clé »)** (2026-10-09) : L = « absorbée au tour 1, elle meurt » (`meta.lostMethod` = `absorb-death`, gestionnaire de mort du moteur, sans retour possible), données recalculées. Prime de 50 = +15 partout ; seuls les decks avec Dragon Ciel (Vengeur) ou Naissance d'Aldrin (Cimetière) bougent plus ; les 5 decks sauvegardés ne prennent que +15 sur leur pire cas. Atelier republié (version 6).
 - [ ] À long terme : le moteur du wiki fait jouer un adversaire qui se contente d'une courbe de dégâts fixe. Le recaler sur de vraies parties dès qu'il y en aura.
 - [x] 1.21 rev2 (2026-10-09) : le wiki a révisé sa notation sous le même numéro (même jeu, scores en baisse de 10 à 14 %). Patcher de L porté (une table de noms par révision), données recalculées, Atelier republié ; le changelog l'explique en tête.
 
