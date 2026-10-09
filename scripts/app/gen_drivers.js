@@ -11,7 +11,7 @@ const KINDS=opt.chunks?{pre:+opt.chunks,lost:+opt.chunks,shop:+opt.chunks}:{pre:
 fs.mkdirSync(OUTD,{recursive:true});
 const pool=fs.readFileSync(path.join(D,'pool_order.json'),'utf8').trim();
 const keysFile=opt.keys||path.join(D,'shop_keys.json');
-// A kind can name its template: "lost:lostabs" writes drv_lost_<i>.js from drv_lostabs_0.js (L by absorb).
+// A kind can name its template: "lost:lostabs" writes drv_lost_<i>.js from drv_lostabs_0.js (L by absorb-death).
 for(const spec of only.length?only:Object.keys(KINDS)){
   const [kind,tpl=kind]=spec.split(':');
   const n=KINDS[kind];if(!n)throw new Error('unknown kind '+kind);

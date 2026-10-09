@@ -371,7 +371,8 @@ const R = {
 };
 const owned = r => idxOfKey(R.key(r)).every(i => S.data.cards[i].own);
 const critShare = r => Math.max(0, Math.min(1, 1 - R.s0(r) / R.s1(r)));
-/* Score when the opponent takes one card (that card is lost from turn 1): worst case, average loss, and the key card. */
+/* Score when the opponent takes one card (absorbed at the start of turn 1, it dies: bounty and on-death effects, see
+   data.meta.lostMethod): worst case, average loss, and the key card. */
 function lossInfo(r) {
   const L = R.L(r), s = R.s1(r), ids = idxOfKey(R.key(r)); let p = 0;
   L.forEach((v, k) => { if (v < L[p]) p = k; });

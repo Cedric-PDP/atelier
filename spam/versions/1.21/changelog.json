@@ -118,7 +118,7 @@
   "Deck sauvegardé « Deck Aleera (à obtenir) » : 12 847 → 13 415 (+4,4 %).",
   "Plus forte hausse parmi tes bons decks : Naissance d'Aldrin · Keria · L'Inventeur · Dragon Ciel (+182,6 %).",
   "Méta du wiki : 46 decks dans la tier list 1.21, dont 35 nouveaux ; 37 decks de la 1.20 en sortent. Plus forte hausse : Aidan · Souverain des Chutes d'Éther · L'Œil des montagnes · Zombie Floral (+103,6 %).",
-  "Mesure « sans sa carte clé » corrigée : la carte est maintenant retirée au tour 1 sans mourir. Avant, une fausse carte de 1 PV mourait à sa place et déclenchait les effets à la mort des alliés (Vengeur de Dragon Ciel, Cimetière, Vitalité des Âmes), ce qui gonflait ce score sur ces decks.",
+  "Mesure « sans sa carte clé » : la carte est absorbée au tour 1 et elle meurt, comme dans le replay du 9 octobre. Tu touches donc la prime de 50 Spamtons et les effets à la mort de tes autres cartes se déclenchent (Vengeur de Dragon Ciel, Cimetière), mais la carte ne revient pas (ni Phénix, ni Résurrection).",
   "Tox que l'adversaire a intérêt à bannir contre toi : Cœur de nature (acheté dans 12 de tes 18 decks de référence, jusqu'à +43,5 % de score), Berserk (acheté dans 10 de tes 18 decks de référence, jusqu'à +39,3 % de score), Cœur d'eau (acheté dans 5 de tes 18 decks de référence, jusqu'à +25,7 % de score)."
  ],
  "cards": [

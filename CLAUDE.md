@@ -97,7 +97,8 @@ qui dit s'il marche.
 - **N'aime pas les decks qui dépendent des critiques** (trop aléatoire). Les adversaires sont de vrais
   joueurs, qui peuvent avoir des talents.
 - Incident fondateur : en vrai match, *Tisseuse de Mots* (#123, Veuve noire = `absorbAny`) a absorbé notre
-  *Chimère Brasse-chair* → d'où la métrique « carte perdue » `L` (score si une carte disparaît au tour 1).
+  *Chimère Brasse-chair* → d'où la métrique « carte perdue » `L` (score si une carte est absorbée, donc meurt, au
+  tour 1).
 - **Pas de tier des cartes, nulle part** (demande de l'utilisateur).
 
 ## Règles à ne pas confondre (vérifiées dans le moteur et l'audit)
@@ -116,7 +117,8 @@ qui dit s'il marche.
 - **Absorption = mort** (replay de la partie `2026-10-09-1546-7144`) : Veuve noire de Tisseuse de Mots (#123) a pris
   la Chimère (238, 525/525 PV) ; la Tisseuse gagne **100 %** de ses PV (+525 PV max et +525 PV ; le moteur du wiki
   compte 50 %), un message de mort part, la prime de 50 va tout de suite au propriétaire et l'élimination est
-  créditée à la Tisseuse. Encore inconnus : PV max ou actuels d'une carte blessée ; effets « à la mort d'un allié ».
+  créditée à la Tisseuse. Encore inconnus : PV max ou actuels d'une carte blessée ; effets « à la mort d'un allié »
+  (tenus pour probables : la métrique L les déclenche).
 
 ## Le moteur : un instantané du wiki PAR VERSION du jeu (`spam/versions/<v>/`)
 
@@ -141,20 +143,37 @@ qui dit s'il marche.
   et l'audit ; le pipeline de la page ne s'en sert plus.
 - 1.21 : `bestDecks` prend `[{id, talents:[]}]` (plus une liste d'ids) et ne rend que 3 decks ; `evaluate`
   est inchangé.
-- **Métrique « carte perdue » L** (« Sans sa carte clé » dans la page) : depuis 1.21, la carte est **retirée au
-  tour 1 sans mourir** (absorption), via `js/engine_stress.js` = moteur + bascules de l'audit (`globalThis.STRESS`,
-  éteintes par défaut, scores identiques à l'octet) + `__lostAbsorb(model, ids)`. Construit par
-  `scripts/app/stress/make_engine_<v>.js` (ancres et noms minifiés **propres à chaque moteur** : à porter à
-  chaque patch du jeu, en partant de celui de la version précédente, **et à chaque reconstruction du moteur par
-  le wiki sous le même numéro** — `make_engine_1.21.js` a une table de noms par révision, reconnue par signature :
-  rev1 et rev2 ci-dessous ; un nouveau moteur fait planter `binding check …` → ajouter une ligne à la table, puis
-  vérifier STRESS éteint = sorties d'`evaluate` identiques à l'octet). Sans patcher pour la version, `recompute.sh`
-  retombe sur l'ancienne fausse carte `dead-card` de 1 PV et l'écrit dans `meta.lostMethod`. ⚠️ Cette fausse
-  carte MEURT au tour 1 : ça déclenche les effets à la mort des alliés (Vengeur inné de Dragon Ciel, Cimetière,
-  Vitalité des Âmes) et gonfle L de ~+977 points sur les decks avec Dragon Ciel (audit du 2026-10-09 ; ex.
-  117-156-180-238 : 5 220 au lieu de 3 519 en rev1 ; 3 041 en rev2), contre −15 ailleurs. ⚠️ Depuis le replay du
-  2026-10-09, on sait qu'une absorption **est** une mort (prime de 50 au propriétaire ; effets à la mort probables) :
-  le « sans mourir » de L est à revoir (bascule `absorb.bounty` d'`engine_stress.js`), voir TODO.md.
+- **Métrique « carte perdue » L** (« Sans sa carte clé » dans la page ; `meta.lostMethod` = `absorb-death` depuis
+  le 2026-10-09 au soir) : chaque carte du deck, à tour de rôle, est **absorbée au début du tour 1 et meurt**, comme
+  la Chimère prise par Veuve noire dans le replay `2026-10-09-1546-7144`. Elle passe par le gestionnaire de mort du
+  moteur (`me()`, celui d'une carte tuée par des dégâts), sans gain de PV pour l'absorbeur (`gain:false`).
+  - **Sûr** (replay) : la prime de 50 Spamtons va tout de suite au propriétaire (+15 points de score partout).
+  - **Hypothèse** (le jeu passe par son message de mort normal, mais aucune carte de la partie n'avait d'effet de
+    mort) : les effets « à la mort d'une carte » des **autres** cartes se déclenchent (Vengeur inné de Dragon Ciel :
+    ses attaques sont prêtes dès le tour 1 ; Cimetière de Naissance d'Aldrin : +5 à tous les bonus élémentaires ;
+    talents Vitalité des Âmes, One man army, Armure des Âmes), ainsi que les effets « quand cette carte est tuée » de
+    la carte perdue (Revanche, Bomba ; talents Héritage, Virage 360, Heure Funeste, Dernier souffle).
+  - **Choix** : la carte absorbée ne revient pas (Phénix, Plume de Phénix, Transition et notre Résurrection
+    ignorés pour elle) ; elle est marquée absorbée avant le gestionnaire de mort, donc son propre Cimetière ne compte
+    pas sa propre mort (dans le moteur, une mort par dégâts le compte : Aldrin perdu vaudrait alors 800 à 1 600
+    points de plus) ; puis elle quitte le plateau (`__stRemove` : auras, Cœurs, Cimetière aux morts suivantes coupés).
+  - L est sans talent ni boutique : aujourd'hui, seuls jouent la prime, Vengeur (Dragon Ciel, 180) et Cimetière
+    (Naissance d'Aldrin, 30). Recalcul du 2026-10-09 contre `absorb` : 82 % des valeurs de L font exactement +15 ;
+    les autres sont toutes dans des decks avec 180 ou 30 (jusqu'à +2 677 sur le pire cas d'un deck ; 88 decks
+    baissent, au plus −596, quand Vengeur au tour 1 décale les recharges ou quand Cimetière renforce un soin qui
+    affaiblit une attaque « PV manquants ») ; la carte clé change pour 1 728 decks sur 31 465. Les 5 decks
+    sauvegardés ne prennent que +15 sur leur pire cas (« Essai Dragon Ciel » : sa carte clé reste Dragon Ciel).
+    Méthodes précédentes : `absorb` (retirée sans mourir, encore disponible :
+    `__lostAbsorb(M, ids, {death:false})`), et avant elle `dead-card`, une fausse carte de 1 PV qui meurt au premier
+    coup adverse (effets à la mort plus tardifs pour le premier joueur) : c'est le repli de `recompute.sh` quand la
+    version n'a pas de patcher, signalé dans `meta.lostMethod`.
+  - Moteur : `js/engine_stress.js` = moteur + bascules de l'audit (`globalThis.STRESS`, éteintes par défaut, sorties
+    d'`evaluate` identiques à l'octet) + `__lostAbsorb(model, ids)`, construit par
+    `scripts/app/stress/make_engine_<v>.js` (ancres et noms minifiés **propres à chaque moteur** : à porter à
+    chaque patch du jeu, en partant de celui de la version précédente, **et à chaque reconstruction du moteur par
+    le wiki sous le même numéro** — `make_engine_1.21.js` a une table de noms par révision, reconnue par signature :
+    rev1 et rev2 ci-dessous ; un nouveau moteur fait planter `binding check …` → ajouter une ligne à la table, puis
+    vérifier STRESS éteint = sorties d'`evaluate` identiques à l'octet).
 - Exécuté dans un `vm` Node isolé (ni `require` ni `fs` dedans) : `scripts/sim_lab2.js <engine>
   "x1=<model>;x0=<model>" <driver.js> <out.json>`. Le driver est du JS évalué dans le contexte du moteur :
   globals `MODELS`, `OUT` (écrit dans out.json), `ht` (fabrique d'évaluateur) ; les données doivent être
@@ -166,7 +185,7 @@ qui dit s'il marche.
 - Repères sans talent (`model.noTalent`) : 1.20 baseline 4 714,7 / meilleur 15 336,6 ; 1.21 rev2 baseline
   4 216,7 / meilleur 15 327,5 (rev1 : 4 865 / 15 327,5). Deck chimere (103-117-156-238) = 8 018 en 1.20 (48 % des
   dégâts viennent des critiques), 8 011 en 1.21 rev1, **7 235 en 1.21 rev2** (sans critiques 3 630, sans sa carte
-  clé 1 722 — sans la Chimère).
+  clé 1 737 — sans la Chimère).
 - 1.21 en bref (détail : `spam/versions/1.21/CHANGELOG.md`) : Dragon Ciel (AoE + Nature +4) passe en tête de la
   collection, meilleur deck possédé Esprit Nature · Lame de la forêt · Keria · Dragon Ciel (3-103-117-180) =
   **8 512** en rev2 (8 934 en rev1), devant Lame de la forêt · Keria · L'Œil des montagnes · Dragon Ciel (8 029).

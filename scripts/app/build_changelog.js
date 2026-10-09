@@ -165,8 +165,13 @@ for(const s of saved)notes.push(`Deck sauvegardé « ${s.name} » : ${fmt(s.o1)}
 if(risers[0]&&risers[0].dp>0)notes.push(`Plus forte hausse parmi tes bons decks : ${risers[0].names.join(' · ')} (${sp(risers[0].dp)}).`);
 const entered=meta.filter(m=>m.rankNew&&!m.rankOld).length,left=meta.filter(m=>m.rankOld&&!m.rankNew).length;
 notes.push(`Méta du wiki : ${listNew.length} decks dans la tier list ${VER}, dont ${entered} nouveaux ; ${left} decks de la ${PREV} en sortent.${metaTop&&metaTop.dp>0?` Plus forte hausse : ${dn(metaTop.d)} (${sp(metaTop.dp)}).`:''}`);
+// How the « sans sa carte clé » score (L, meta.lostMethod) is measured, said once when it differs from the previous version's.
 const lmOld=prevScores.lostMethod||'dead-card',lmNew=data.meta.lostMethod||'dead-card';
-if(lmOld!==lmNew)notes.push(lmNew==='absorb'?`Mesure « sans sa carte clé » corrigée : la carte est maintenant retirée au tour 1 sans mourir. Avant, une fausse carte de 1 PV mourait à sa place et déclenchait les effets à la mort des alliés (Vengeur de Dragon Ciel, Cimetière, Vitalité des Âmes), ce qui gonflait ce score sur ces decks.`:`Mesure « sans sa carte clé » : retour à la fausse carte de 1 PV (pas de moteur de retrait pour la ${VER}) ; elle peut être gonflée sur les decks à effets de mort (Vengeur, Cimetière).`);
+const LOST_NOTE={
+  'absorb-death':`Mesure « sans sa carte clé » : la carte est absorbée au tour 1 et elle meurt, comme dans le replay du 9 octobre. Tu touches donc la prime de 50 Spamtons et les effets à la mort de tes autres cartes se déclenchent (Vengeur de Dragon Ciel, Cimetière), mais la carte ne revient pas (ni Phénix, ni Résurrection).`,
+  'absorb':`Mesure « sans sa carte clé » : la carte est retirée au tour 1 sans mourir (ni prime de 50 Spamtons, ni effets à la mort).`,
+  'dead-card':`Mesure « sans sa carte clé » : une fausse carte de 1 PV joue à la place de la carte et meurt au premier coup adverse (pas de moteur d'absorption pour la ${VER}) ; les effets à la mort (Vengeur, Cimetière) arrivent donc un peu plus tard que pour une absorption au tour 1.`};
+if(lmOld!==lmNew)notes.push(LOST_NOTE[lmNew]||`Mesure « sans sa carte clé » : méthode ${lmNew}.`);
 if(toxChanges.length)notes.push(`Boutique : ${toxChanges.map(x=>x.name+' ('+x.changes.join(', ')+')').join(' ; ')}.`);
 if(ban)notes.push(`Tox que l'adversaire a intérêt à bannir contre toi : ${ban.list.slice(0,3).map(x=>`${x.name} (acheté dans ${x.decks} de tes ${ban.decks} decks de référence, jusqu'à +${String(x.max).replace('.',',')} % de score)`).join(', ')}.`);
 

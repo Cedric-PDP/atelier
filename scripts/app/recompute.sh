@@ -49,17 +49,19 @@ one() { # <name> <models spec> <driver> [engine]: a single run -> $A/<name>.json
 
 variants "$JS"
 M1="$JS/model.json"; M0="$JS/model_nocrit.json"
-# Lost-card metric L: ABSORB (card removed at turn 1 without dying) when this version has a stress-engine patcher;
-# otherwise the 1-HP 'dead-card', whose death fires the allies' on-death effects (Vengeur, Cimetière…) and inflates L
-# on those decks — flagged in meta.lostMethod. A new version needs scripts/app/stress/make_engine_<v>.js (port).
+# Lost-card metric L (meta.lostMethod): ABSORB-DEATH when this version has a stress-engine patcher — the card is absorbed
+# at the start of turn 1 and DIES (replay 2026-10-09: 50-Spamton bounty to us, on-death effects of the other cards such
+# as Vengeur or Cimetière, its own "when killed" effects), with no revival. Otherwise the 1-HP 'dead-card' put in its
+# place, which dies too but only at the opponent's first hit (Vengeur and Cimetière come later for the first player):
+# close to absorb-death, not the same. A new version needs scripts/app/stress/make_engine_<v>.js (port).
 if [ -f "$S/stress/make_engine_$VER.js" ]; then
-  node "$S/stress/make_engine_$VER.js" "$E" "$JS/engine_stress.js"; LOST=absorb
+  node "$S/stress/make_engine_$VER.js" "$E" "$JS/engine_stress.js"; LOST=absorb-death
 else
-  LOST=dead-card; echo "⚠ pas de scripts/app/stress/make_engine_$VER.js : L par dead-card (gonflé sur les decks à effets de mort)" >&2
+  LOST=dead-card; echo "⚠ pas de scripts/app/stress/make_engine_$VER.js : L par dead-card (fausse carte de 1 PV qui meurt au premier coup adverse, effets à la mort plus tardifs)" >&2
 fi
-if [ "$LOST" = absorb ]; then LOSTSPEC=lost:lostabs; else LOSTSPEC=lost; fi
+if [ "$LOST" = dead-card ]; then LOSTSPEC=lost; else LOSTSPEC=lost:lostabs; fi
 lost_step() {
-  if [ "$LOST" = absorb ]; then run lost "$N" "x1=$M1" "$JS/engine_stress.js"; else run lost "$N" "x1=$JS/model_dead.json"; fi
+  if [ "$LOST" = dead-card ]; then run lost "$N" "x1=$JS/model_dead.json"; else run lost "$N" "x1=$M1" "$JS/engine_stress.js"; fi
   echo "$LOST" > "$A/lost_method.txt"
 }
 if [ "$ONLY_LOST" = 1 ]; then

@@ -55,7 +55,8 @@ if(V){
   if(fs.existsSync(me)){const b=JP(me).rows.filter(r=>r.s1!=null).sort((a,b)=>b.s1-a.s1)[0];if(b)bestDeck={names:b.d.map(nameOf),score:Math.round(b.s1)}}
   if(!bestDeck){const i=order[0];bestDeck={names:cols.k[i].split('').map(c=>cards[parseInt(c,32)].name),score:cols.s1[i]}}
   meta={game:model.version,built:new Date().toISOString().slice(0,10),baseline:nt.baseline,best:nt.best,tiers:[['S',th(.9)],['A',th(.8)],['B',th(.7)],['C',th(.5)]],
-    // L method: absorb (card removed turn 1, no death) or dead-card (its death fires on-death effects: L inflated on those decks)
+    // L method: absorb-death (card absorbed at the start of turn 1: it dies, bounty + on-death effects, no revival),
+    // absorb (removed without dying, until 2026-10-09) or dead-card (a 1-HP placeholder that dies at the first enemy hit)
     lostMethod:fs.existsSync(path.join(P.app,'lost_method.txt'))?fs.readFileSync(path.join(P.app,'lost_method.txt'),'utf8').trim():'dead-card',
     bestDeck,nOwn:NOWN,mu:['neutral','fragile','tank','anti-fire','anti-water','anti-earth','anti-nature','anti-shadow','anti-light']};
 }else{

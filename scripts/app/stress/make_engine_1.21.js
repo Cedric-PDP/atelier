@@ -1,8 +1,15 @@
 // Builds spam/versions/1.21/js/engine_stress.js = the wiki engine 1.21 + the "threat" toggles of the mechanics audit
 // (globalThis.STRESS, default OFF: identical scores) + __lostAbsorb(model, ids), used by recompute.sh for the
-// "lost card" metric L: each card in turn is REMOVED at the start of turn 1 (absorb, no HP given to the enemy) instead
-// of being replaced by the 1-HP 'dead-card', whose death on turn 1 fired the allies' on-death effects (Vengeur innate
-// on Dragon Ciel, Cimetière, Vitalité des Âmes) and inflated L by ~+977 points on Dragon Ciel decks (audit 2026-10-09).
+// "lost card" metric L (meta.lostMethod = "absorb-death"): each card in turn is ABSORBED at the start of turn 1, and an
+// absorption is a DEATH (replay 2026-10-09-1546-7144: death message, 50-Spamton bounty paid at once to the card's owner,
+// kill credited to the absorber). So the card goes through the engine's own death handler (ownDeath below): its "when
+// killed" effects (Revanche, Bomba, talents Héritage, Virage 360, Heure Funeste, Dernier souffle), the bounty, then the
+// on-death cascade of the OTHER cards (Cimetière, Vengeur, Vitalité des Âmes, One man army, Armure des Âmes) — without
+// any way back (Phénix and Transition cleared first, our Résurrection skips absorbed cards), and without its own
+// Cimetière counting its own death; then it leaves the board (__stRemove: its auras, Cœurs and other per-turn passives
+// stop). No HP is given to the enemy (gain:false). Details and hypotheses: see __stAbsorb.
+// Before 2026-10-09 evening L removed the card WITHOUT death ("absorb", still available: __lostAbsorb(M, ids, {death:false})),
+// and before that it put a 1-HP 'dead-card' in its place ("dead-card", recompute.sh's fallback without a patcher).
 // Ported from the audit session's make_engine121.js. The anchors use the engine's MINIFIED names, which change with
 // every rebuild of the wiki: a new game version needs its own make_engine_<v>.js (recompute.sh falls back to
 // dead-card, flagged, when there is none), and the wiki may also rebuild the engine under the SAME game version.
@@ -18,9 +25,10 @@
 const fs = require('fs');
 const [SRC, OUT] = process.argv.slice(2); if (!OUT) throw new Error('usage: make_engine_1.21.js <simulation.js> <out.js>');
 let s = fs.readFileSync(SRC, 'utf8');
-// Minified names per engine revision. curHp, profile, focus, consts, cfg: bindings the appended helpers call;
+// Minified names per engine revision. curHp, profile, focus, consts, cfg, ownDeath: bindings the appended helpers call
+// (ownDeath = the death handler of OUR cards, called by the damage function when a card's HP reach 0);
 // enemyKill/onDeath/enemyAct/resurrect/allyKeys: patched functions; match/score/mean/profiles/entries: API of __lostAbsorb.
-const base = { curHp: 'O', profile: 'T', focus: 'w', consts: 'g', cfg: 'o', resurrect: '_e', allyKeys: 'be',
+const base = { curHp: 'O', profile: 'T', focus: 'w', consts: 'g', cfg: 'o', ownDeath: 'me', resurrect: '_e', allyKeys: 'be',
   match: 'J', score: 'Y', mean: 'X', profiles: 'd', entries: 'pt' };
 const REVS = {
   rev1: { ...base, enemyKill: 'ce', onDeath: 'se', enemyAct: 'le' },
@@ -30,6 +38,10 @@ const defsOf = N => [
   `const ${N.curHp}=e=>e.hpMax-e.dmgTaken;`,
   `function ${N.enemyKill}(e,t,n,r){e.enemyDeaths+=1,`,
   `function ${N.onDeath}(e,t,n,r){for(let r of e.cards){if(r.cimetiere)`,
+  `function ${N.ownDeath}(e,t,n){if(n.revenge&&`,
+  `return n.dmgTaken=n.hpMax,${N.ownDeath}(e,t,n),a}`,
+  `n.phoenix>0?(n.dmgTaken=n.hpMax*(1-Math.min(1,n.phoenix))`,
+  `:n.metamorphOnDeath?(n.metamorphOnDeath=!1,n.dmgTaken=0,`,
   `function ${N.profile}(e){let t=y(0);for(let{card:n}of e)`,
   `function ${N.focus}(e){let t=e.opts.focus;return e.enemies.filter(e=>e.hp>0)`,
   `,${N.consts}={stunPerTargetTurn:60,`,
@@ -127,9 +139,19 @@ function __stAbsorb(s,turn){
   const en=s.enemies.filter(e=>e.hp>0);
   if(!en.length)return;
   const gain=tgt.hpMax;
+  // death:true = an absorption is a death (replay 2026-10-09-1546-7144). The card dies through the engine's own death
+  // handler, as when its HP reach 0 (HP set to 0 first): Revanche, Bomba, the bounty to its owner, its "when killed"
+  // talents (Héritage, Virage 360, Heure Funeste, Dernier souffle), then the on-death loop of the OTHER cards (Cimetière,
+  // Vengeur, Vitalité des Âmes, One man army, Armure des Âmes). Two departures from a death by damage, both because the
+  // card is taken: no way back (Phénix, Plume de Phénix and Transition cleared; our Résurrection skips absorbed cards,
+  // patch 6), and it is flagged absorbed BEFORE the handler, so the on-death loop skips its own passives (patch 10): its
+  // own Cimetière does not count its own death (a death by damage does, in the engine). The removal below then takes the
+  // card off the board: none of its passives play afterwards (Cœurs, auras, Cimetière on later deaths).
+  if(C.death){tgt.phoenix=0;tgt.metamorphOnDeath=false;tgt.dmgTaken=tgt.hpMax;tgt.absorbed=true;${N.ownDeath}(s,turn,tgt);st.info.died=(st.info.died||0)+1;}
   __stRemove(s,tgt,turn);st.info.absorbed++;s.stAbs=(s.stAbs||0)+1;
   if(!C.keepProfile)s.profile=${N.profile}(s.cards.filter(c=>!c.absorbed));
-  if(C.bounty){s.totals.spamton+=${N.cfg}.deathBounty;s.spamtonByTurn[turn-1]=(s.spamtonByTurn[turn-1]??0)+${N.cfg}.deathBounty;${N.onDeath}(s,turn,null,null);}
+  // bounty:true (audit cross-check, superseded by death:true) = only the bounty + the cascade of the OTHER cards
+  if(C.bounty&&!C.death){s.totals.spamton+=${N.cfg}.deathBounty;s.spamtonByTurn[turn-1]=(s.spamtonByTurn[turn-1]??0)+${N.cfg}.deathBounty;${N.onDeath}(s,turn,null,null);}
   if(C.gain!==false){
     const ab=C.absorber==='focus'?${N.focus}(s)[0]:en.reduce((b,e)=>(e.hp>b.hp+1e-9||(Math.abs(e.hp-b.hp)<=1e-9&&e.index>b.index))?e:b);
     ab.hp+=gain;ab.hpMax=(ab.hpMax??s.opp.cardHp)+gain;s.stHp+=gain;st.addedByTurn[turn-1]+=gain;
@@ -177,9 +199,10 @@ function __stRevive(e,t,n,r,i){
 `;
 const { match: J, score: Y, mean: X, profiles: d, entries: pt } = N;
 s += `
-/* ===== lost-card metric: remove card p at the start of turn 1 (no death, no on-death trigger) ===== */
-globalThis.__lostAbsorb=function(M,ids){const entries=${pt}(ids.map(id=>({id,talentId:null})),M.cards);const out=[];
-  for(let p=0;p<ids.length;p++){globalThis.STRESS={absorb:{turn:1,pos:p,at:'start',gain:false}};const ms=[];
+/* ===== lost-card metric L: card p is absorbed at the start of turn 1 and DIES (death:true, the default: bounty, on-death
+   effects, no revival), or with {death:false} is only removed (the "absorb" method used until 2026-10-09 evening) ===== */
+globalThis.__lostAbsorb=function(M,ids,o){const death=!(o&&o.death===false);const entries=${pt}(ids.map(id=>({id,talentId:null})),M.cards);const out=[];
+  for(let p=0;p<ids.length;p++){globalThis.STRESS={absorb:{turn:1,pos:p,at:'start',gain:false,death}};const ms=[];
     try{for(const prof of ${d})for(const pl of [1,2])ms.push(${Y}(${J}(entries,{opponent:prof,player:pl})))}finally{globalThis.STRESS=null}
     out.push(${X}(ms))}
   return out};
