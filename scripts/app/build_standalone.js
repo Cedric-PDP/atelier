@@ -20,11 +20,17 @@ const swap = (from, to) => {
 };
 // JSON inside a <script>: escape "<" so no "</script>" can close it early.
 const js = v => JSON.stringify(v).replace(/</g, '\\u003c');
-// Injected at the top of the page's single script (smoke_page.js reads one <script> block).
+// Injected at the top of the page's single script (smoke_page.js reads one <script> block). Each rebuild adds the
+// snapshot decks this browser has never received (by id), so a deck the user deleted does not come back.
 swap('<script>', `<script>
-const __SPAM_LOCAL__ = { data: ${js(data)}, shop: ${js(shop)} };
+const __SPAM_LOCAL__ = { data: ${js(data)}, shop: ${js(shop)}, saved: ${js(saved)} };
 const __local = k => Promise.resolve({ ok: true, json: async () => __SPAM_LOCAL__[k] });
-try { if (localStorage.getItem('spam-saved-local') == null) localStorage.setItem('spam-saved-local', ${JSON.stringify(js(saved))}); } catch (e) {}
+try {
+  const seeded = JSON.parse(localStorage.getItem('spam-seeded-ids') || '[]'), mine = JSON.parse(localStorage.getItem('spam-saved-local') || '[]');
+  const fresh = __SPAM_LOCAL__.saved.filter(d => !seeded.includes(d.id) && !mine.some(m => m.id === d.id));
+  if (fresh.length) localStorage.setItem('spam-saved-local', JSON.stringify(fresh.concat(mine)));
+  localStorage.setItem('spam-seeded-ids', JSON.stringify([...new Set(seeded.concat(__SPAM_LOCAL__.saved.map(d => d.id)))]));
+} catch (e) {}
 `);
 swap("fetch('data.json')", "__local('data')");
 swap("fetch('shop.json')", "__local('shop')");
