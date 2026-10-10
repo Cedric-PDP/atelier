@@ -68,7 +68,13 @@ const sections = []; let cur = { h: null, blocks: [] };
 for (const b of rest) { if (b.type === 'h' && b.level === 2) { if (cur.h || cur.blocks.length) sections.push(cur); cur = { h: b, blocks: [] }; } else cur.blocks.push(b); }
 if (cur.h || cur.blocks.length) sections.push(cur);
 const built = fmtWhen(new Date());
-fs.writeFileSync(path.join(out, 'nouvelles.html'), hubPage({
+// Keeps a hub page as it is when only its build date would change, so a rebuild leaves no noise in git.
+const writePage = (file, html) => {
+  const undated = t => t.replace(/\r\n/g, '\n').replace(/(construite le |mis à jour le )[^<.]+/g, '$1');
+  try { if (undated(fs.readFileSync(file, 'utf8')) === undated(html)) return; } catch (e) {}
+  fs.writeFileSync(file, html);
+};
+writePage(path.join(out, 'nouvelles.html'), hubPage({
   file: 'nouvelles.html', title: 'Nouvelles · SPAM', h1: 'Les <b>nouvelles</b> de Claude',
   sub: newsDate ? `Mises à jour le ${esc(newsDate)}` : '',
   main: `<article class="panel prose">\n${md.render(rest)}\n</article>`,
@@ -77,7 +83,7 @@ fs.writeFileSync(path.join(out, 'nouvelles.html'), hubPage({
 
 /* ---------- Envoyer ---------- */
 log('Envoyer…');
-fs.writeFileSync(path.join(out, 'envoyer.html'), hubPage({
+writePage(path.join(out, 'envoyer.html'), hubPage({
   file: 'envoyer.html', title: 'Envoyer tes parties · SPAM', h1: 'Envoyer tes <b>parties</b>',
   sub: 'Après chaque session de jeu',
   main: `<div class="stack">
@@ -123,7 +129,7 @@ const first = sections.find(s => s.h) || sections[0];
 const others = sections.filter(s => s.h && s !== first);
 const latest = first ? `${first.h ? `<h2 id="${esc(first.h.id)}">${md.inline(first.h.text)}</h2>\n` : ''}${md.render(first.blocks)}` : '<p class="muted">Pas encore de nouvelles.</p>';
 const card = (href, title, text, facts) => `<a class="card" href="${href}"><h3>${title}</h3><p>${text}</p><p class="facts">${facts}</p></a>`;
-fs.writeFileSync(path.join(out, 'index.html'), hubPage({
+writePage(path.join(out, 'index.html'), hubPage({
   file: 'index.html', title: 'Mon SPAM', h1: 'Mon <b>SPAM</b>',
   sub: `Site mis à jour le ${esc(built)}`,
   main: `<div class="stack">
