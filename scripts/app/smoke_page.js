@@ -6,7 +6,7 @@ class El{constructor(id){this.id=id;this.innerHTML='';this.textContent='';this.v
  addEventListener(t,f){(this.listeners[t]=this.listeners[t]||[]).push(f)} setAttribute(){} getAttribute(){return null}
  querySelectorAll(){return []} querySelector(){return null} closest(){return null}
  insertAdjacentHTML(p,h){this.innerHTML=h+this.innerHTML} getBoundingClientRect(){return{left:0,top:0,width:10,height:10}}}
-const els={};const document={getElementById:id=>els[id]||(els[id]=new El(id))};
+const els={};const document={getElementById:id=>els[id]||(els[id]=new El(id)),addEventListener(){}};
 const ls={};const localStorage={getItem:k=>k in ls?ls[k]:null,setItem:(k,v)=>{ls[k]=String(v)}};
 const win={addEventListener(){},innerWidth:1200,scrollTo(){},claude:undefined};
 const fetchF=async f=>{const p=path.join(siteDir,f);if(!fs.existsSync(p))return{ok:false,status:404};return{ok:true,json:async()=>JSON.parse(fs.readFileSync(p,'utf8'))}};

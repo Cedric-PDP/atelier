@@ -95,6 +95,10 @@ button { cursor: pointer; }
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; display: inline-block; background: var(--muted); }
 .dot.fire { background: var(--el-fire); } .dot.water { background: var(--el-water); } .dot.earth { background: var(--el-earth); }
 .dot.nature { background: var(--el-nature); } .dot.light { background: var(--el-light); } .dot.shadow { background: var(--el-shadow); } .dot.divine { background: var(--el-divine); }
+/* Card art: the ring keeps the element color that the dot showed. */
+.av { width: 22px; height: 22px; max-width: none; border-radius: 50%; object-fit: cover; object-position: 50% 25%; flex: none; background: var(--surface-2); box-shadow: 0 0 0 2px var(--el, var(--muted)); }
+.av.big { width: 44px; height: 44px; border-radius: var(--r-s); grid-row: 1 / 3; }
+.slot .banner { display: block; width: calc(100% + 24px); max-width: none; margin: -12px -12px 2px; aspect-ratio: 16 / 10; object-fit: cover; object-position: 50% 25%; border-radius: calc(var(--r) - 1px) calc(var(--r) - 1px) 0 0; background: var(--surface-2); border-bottom: 3px solid var(--el, var(--line)); }
 .badge { display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; padding: 2px 7px; border-radius: 4px; background: var(--surface-2); color: var(--ink-2); }
 .badge.wish { background: var(--warn-soft); color: var(--warn); }
 .badge.tier { font-family: var(--font-display); }
@@ -354,7 +358,8 @@ const store = {
 const S = {
   data: null, shop: null, keyIdx: new Map(), n: 0, ownSorted: null, globBins: null, collBins: null,
   deck: [], elFilter: 'all', showWish: false, search: '', view: 'atelier',
-  saved: [], savedReady: false, db: null, compare: new Set(), confirmDel: null
+  saved: [], savedReady: false, db: null, compare: new Set(), confirmDel: null,
+  art: {}, artBad: new Set()
 };
 
 /* ---------- Data access ---------- */
@@ -369,6 +374,22 @@ const R = {
   plan: r => S.data.decks.plan[r], key: r => S.data.decks.k.substr(r * 4, 4),
   L: r => S.data.decks.L.slice(r * 4, r * 4 + 4)
 };
+/* Card art: img.json maps a card number to {src, by} (files published next to the page; the offline copy inlines
+   them). Without it, or when an image fails to load, the element dot stays. */
+const artOf = c => (!S.artBad.has(c.n) && S.art[c.n]) || null;
+function ico(c, big) {
+  const a = artOf(c); if (!a) return `<span class="dot ${c.el}"></span>`;
+  return `<img class="av${big ? ' big' : ''}" src="${esc(a.src)}" alt="" loading="lazy" style="--el:var(--el-${c.el})" data-art="${c.n}" data-el="${c.el}">`;
+}
+function banner(c) {
+  const a = artOf(c); if (!a) return '';
+  return `<img class="banner" src="${esc(a.src)}" alt="${esc(c.name)}" loading="lazy" style="--el:var(--el-${c.el})" data-art="${c.n}"${a.by ? ` title="Illustration : ${esc(a.by)}"` : ''}>`;
+}
+document.addEventListener('error', e => {
+  const t = e.target; if (!t || !t.dataset || !t.dataset.art) return;
+  S.artBad.add(+t.dataset.art);
+  if (t.dataset.el) t.outerHTML = `<span class="dot ${t.dataset.el}"></span>`; else t.remove();
+}, true);
 const owned = r => idxOfKey(R.key(r)).every(i => S.data.cards[i].own);
 const critShare = r => Math.max(0, Math.min(1, 1 - R.s0(r) / R.s1(r)));
 /* Score when the opponent takes one card (absorbed at the start of turn 1, it dies: bounty and on-death effects, see
@@ -417,9 +438,11 @@ function decodePlan(r, idxs) {
 
 /* ---------- Load ---------- */
 async function load() {
+  const art = fetch('img.json').then(r => r.ok ? r.json() : null).catch(() => null);
   try {
     const res = await fetch('data.json'); if (!res.ok) throw new Error('HTTP ' + res.status);
     S.data = await res.json();
+    S.art = (await art) || {};
   } catch (e) {
     $('analysis').innerHTML = `<p class="note warn">Les données n'ont pas pu être chargées (${esc(e.message)}). Recharge la page.</p>`; return;
   }
@@ -468,7 +491,7 @@ function renderCollection() {
   list.innerHTML = items.map(({ c, i }) => {
     const inDeck = S.deck.includes(i);
     return `<li><button class="card-item" data-i="${i}" aria-pressed="${inDeck}">
-      <span class="dot ${c.el}" title="${EL[c.el] || c.el}"></span>
+      ${artOf(c) ? ico(c, true) : `<span class="dot ${c.el}" title="${EL[c.el] || c.el}"></span>`}
       <span class="nm">${esc(c.name)} ${c.own ? '' : '<span class="badge wish">À obtenir</span>'}</span>
       <span class="act">${inDeck ? 'Retirer' : 'Ajouter'}</span>
       <span class="meta">${EL[c.el] || c.el} · ${RAR[c.rar] || c.rar} · ${fmt(c.hp)} PV · ${c.spt} Spamtons/tour</span>
@@ -492,7 +515,7 @@ function renderSlots() {
     const i = S.deck[s];
     if (i == null) { html.push(`<div class="slot empty-slot">Emplacement ${s + 1}<br><span class="small">Ajoute une carte depuis ta collection</span></div>`); continue; }
     const c = card(i); const loss = li ? li.byCard.get(i) : null;
-    html.push(`<div class="slot">
+    html.push(`<div class="slot">${banner(c)}
       <div class="head"><div><div class="nm">${esc(c.name)}</div>
         <div class="sub"><span class="dot ${c.el}"></span>${EL[c.el] || c.el} · ${RAR[c.rar] || c.rar}${c.own ? '' : ' <span class="badge wish">À obtenir</span>'}</div></div>
         <button class="x" data-rm="${i}" aria-label="Retirer ${esc(c.name)}">×</button></div>
@@ -629,7 +652,7 @@ function completionsHtml() {
   const chars = have.map(i => i.toString(32));
   for (let r = 0; r < S.n && res.length < 400; r++) { const k = R.key(r); if (chars.every(ch => k.includes(ch))) res.push(r); }
   const ownRes = res.filter(owned).slice(0, 8); const wish = res.filter(r => !owned(r)).slice(0, 3);
-  const rowHtml = r => { const add = idxOfKey(R.key(r)).filter(i => !have.includes(i)); return `<tr><td>${add.map(i => `<span class="row" style="gap:5px;display:inline-flex"><span class="dot ${card(i).el}"></span>${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('<br>')}</td><td class="n">${fmt(R.s1(r))}</td><td class="n">${pct0(100 * critShare(r))}</td><td><button class="btn" data-open="${R.key(r)}">Utiliser</button></td></tr>`; };
+  const rowHtml = r => { const add = idxOfKey(R.key(r)).filter(i => !have.includes(i)); return `<tr><td>${add.map(i => `<span class="row" style="gap:5px;display:inline-flex">${ico(card(i))}${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('<br>')}</td><td class="n">${fmt(R.s1(r))}</td><td class="n">${pct0(100 * critShare(r))}</td><td><button class="btn" data-open="${R.key(r)}">Utiliser</button></td></tr>`; };
   return `<div class="panel"><div class="sec-head"><h2>Compléter le deck</h2><p>Il manque ${need} carte${need > 1 ? 's' : ''}. Voici les meilleures façons de le compléter.</p></div>
     <div class="scroll-x"><table><thead><tr><th>Cartes à ajouter</th><th class="n">Score</th><th class="n">Critiques</th><th></th></tr></thead><tbody>${ownRes.map(rowHtml).join('') || '<tr><td colspan="4" class="muted">Aucune combinaison avec tes cartes.</td></tr>'}</tbody></table></div>
     ${wish.length ? `<h3 style="margin-top:14px">Avec une carte à obtenir</h3><div class="scroll-x"><table><tbody>${wish.map(rowHtml).join('')}</tbody></table></div>` : ''}</div>`;
@@ -723,7 +746,7 @@ function renderTop() {
   if (by !== 's1') rows.sort((a, b) => val(b) - val(a));
   $('top-summary').textContent = `${fmt(rows.length)} decks correspondent. Les 60 premiers sont affichés.`;
   $('top-table').innerHTML = `<thead><tr><th class="n">#</th><th>Cartes</th><th class="n">Score</th><th class="n">Sans critiques</th><th class="n">Critiques</th><th class="n">Sans sa carte clé</th><th class="n">Tours</th><th class="n">Mieux que</th><th></th></tr></thead><tbody>${rows.slice(0, 60).map((r, k) => `<tr>
-    <td class="n">${k + 1}</td><td><div class="deck-names">${idxOfKey(R.key(r)).map(i => `<span><span class="dot ${card(i).el}"></span>${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('')}</div></td>
+    <td class="n">${k + 1}</td><td><div class="deck-names">${idxOfKey(R.key(r)).map(i => `<span>${ico(card(i))}${esc(card(i).name)}${card(i).own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>`).join('')}</div></td>
     <td class="n">${fmt(R.s1(r))}</td><td class="n">${fmt(R.s0(r))}</td><td class="n">${pct0(100 * critShare(r))}</td><td class="n">${fmt(li.get(r).worst)}<br><span class="muted small">sans ${esc(card(li.get(r).keyCard).name)}</span></td><td class="n">${nf1.format(R.ttk(r))}</td><td class="n">${pct1(globalPct(R.s1(r)))}</td>
     <td><button class="btn" data-open="${R.key(r)}">Ouvrir</button></td></tr>`).join('')}</tbody>`;
   bindOpenButtons($('top-table'));
@@ -769,7 +792,7 @@ function renderSaved() {
   const box = $('saved-list');
   if (!S.saved.length) { box.innerHTML = '<p class="empty">Aucun deck enregistré. Construis un deck dans l\'atelier puis clique sur « Enregistrer ».</p>'; renderCompare(); return; }
   box.innerHTML = S.saved.map(d => {
-    const r = savedRow(d); const names = (d.cards || []).map(n => { const c = S.data.cards.find(x => x.n === n); return c ? `<span><span class="dot ${c.el}"></span>${esc(c.name)}</span>` : `<span>carte n°${n}</span>`; }).join('');
+    const r = savedRow(d); const names = (d.cards || []).map(n => { const c = S.data.cards.find(x => x.n === n); return c ? `<span>${ico(c)}${esc(c.name)}</span>` : `<span>carte n°${n}</span>`; }).join('');
     const checked = S.compare.has(d.id);
     return `<div class="saved-item">
       <input type="checkbox" id="cmp-${esc(d.id)}" data-cmp="${esc(d.id)}" ${checked ? 'checked' : ''} ${r == null ? 'disabled' : ''} aria-label="Comparer ${esc(d.name)}">
@@ -834,7 +857,7 @@ function prevLine(r) {
 /* Card numbers -> names; pool cards get their element dot and the « à obtenir » badge. */
 function numsHtml(nums, names) {
   return `<div class="deck-names">${nums.map((n, k) => { const c = S.data.cards.find(x => x.n === n);
-    return c ? `<span><span class="dot ${c.el}"></span>${esc(c.name)}${c.own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>` : `<span>${esc(names ? names[k] : '#' + n)}</span>`; }).join('')}</div>`;
+    return c ? `<span>${ico(c)}${esc(c.name)}${c.own ? '' : ' <span class="badge wish">À obtenir</span>'}</span>` : `<span>${esc(names ? names[k] : '#' + n)}</span>`; }).join('')}</div>`;
 }
 function renderNews() {
   const c = S.data && S.data.changelog; const box = $('news'); if (!c) { box.innerHTML = '<p class="empty">Pas de changement de version enregistré.</p>'; return; }
