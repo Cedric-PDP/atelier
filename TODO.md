@@ -34,7 +34,8 @@ Les pages claude.ai ne s'ouvrent pas sur le PC perso : la branche `pc-perso` por
 - [x] Premier envoi (2026-10-09, `Ticroco.zip`) : le jeu garde un replay de chaque partie (`LocalLow\Ticroco\Spam\replays`). Les 2 parties sont dans le Journal (en-tête seulement, `source` = `pc-perso@bbfb1ca`).
 - [x] Replays `.srpl` décodés entièrement (2026-10-09) : `scripts/replay/read_srpl.js`. Les 2 parties du Journal sont complètes (déroulé, boutique, bans, erreurs, leçons).
 - [ ] Commande PowerShell qui exporte du registre les réglages du jeu (PlayerPrefs Unity, qui peuvent contenir des jetons de connexion) : préparée puis écartée, le contrôle de sécurité d'une session l'a refusée. Décision de l'utilisateur ; peu utile si les replays suffisent.
-- [ ] Le Journal sur le PC perso : en faire aussi une copie hors ligne (lecture seule, instantané de la base) ? Décision de l'utilisateur.
+- [x] Un seul site pour tout (2026-10-10, demande de l'utilisateur) : `interface/` de pc-perso = Accueil, Atelier, Journal en lecture seule, Nouvelles (`REPONSE.md`), Envoyer ; hébergé par Cloudflare Pages, réservé à son compte GitHub (middleware fermé par défaut).
+- [ ] Installation du site par l'utilisateur, depuis le PC perso, en suivant `SITE.md` (OAuth App GitHub, projet Cloudflare Pages, 4 variables, aperçus désactivés, Fail closed). Puis vérifier avec lui : connexion OK, fenêtre privée refusée, illustrations des cartes affichées (non vérifiables depuis le PC du travail).
 - [ ] Si le décodage des replays marche, les parties viendront seulement des replays : plus besoin de mécanisme ni de page pour en ajouter (décision de l'utilisateur, 2026-10-09). Cela vise l'analyse de captures et la saisie manuelle du Journal, et le Pont. Le décodage marche : fait pour le Journal (2026-10-09) ; le Pont reste publié tant que l'utilisateur ne demande pas sa suppression.
 - [ ] Page Pont : plus nécessaire (ligne ci-dessus). La supprimer seulement si l'utilisateur le demande.
 

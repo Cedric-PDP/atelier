@@ -64,13 +64,30 @@ qui dit s'il marche.
 
 - `README.md` : son mode d'emploi, affiché par GitHub (ouvrir l'Atelier, trouver, compresser et déposer les
   fichiers du jeu, ce qu'il ne faut jamais envoyer). C'est lui qu'il lit sur le PC perso : le garder à jour.
-- `interface/atelier-spam.html` : l'Atelier **hors ligne**, construit par
+- **`interface/` = son site SPAM** (2026-10-10), hébergé par Cloudflare Pages (gratuit, relié au dépôt privé :
+  branche de production `pc-perso`, dossier racine `interface`, aperçus désactivés) et **réservé à son compte
+  GitHub** : `interface/functions/_middleware.js` (source : `scripts/hub/site/`) fait l'OAuth GitHub et n'accepte que
+  l'id `171561900` ; sans ses 4 variables (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `SESSION_SECRET`,
+  `ALLOWED_GITHUB_ID`), il répond 503 à tout (fermé par défaut). Pages : `index.html` (accueil),
+  `atelier-spam.html`, `journal-spam.html` (Journal en lecture seule, instantané de la base), `nouvelles.html`
+  (`REPONSE.md` rendu), `envoyer.html`. Installation côté utilisateur : `SITE.md` de la branche. Tests : `node
+  scripts/hub/test_middleware.js` (doit finir par `MIDDLEWARE OK`).
+  **Reconstruire et pousser le site après chaque changement** de l'Atelier (page, données, version), du Journal
+  (base ou page), de `REPONSE.md` ou du middleware : (1) `git -C .pc-perso pull` ; (2) si le Journal a changé,
+  instantané : `ArtifactData` `list` de `matches`, `knowledge`, `archetypes` (`query {limit:1000}`, même `out_dir`,
+  chemin long sous le scratchpad : le chemin court `CPEROU~1` est refusé) ; (3) `node scripts/hub/build_site.js
+  [<dossier instantané>]` doit finir par `SITE OK` (sans instantané, il garde celui déjà dans la page) ; (4) `git -C
+  .pc-perso add` des fichiers de `interface/` nommés, commit, `git -C .pc-perso push origin pc-perso` : Cloudflare
+  republie tout seul.
+- `interface/atelier-spam.html` : l'Atelier **hors ligne** (avec la barre du site), construit par
   `node scripts/app/build_standalone.js .pc-perso/interface/atelier-spam.html` (`data.json` et `shop.json`
   intégrés, decks sauvegardés repris de [spam/decks.json](spam/decks.json) puis gardés dans son navigateur).
   Smoke : `node scripts/app/smoke_page.js .pc-perso/interface/atelier-spam.html <dossier>`, où `<dossier>` contient
   une copie de `site/data.json` (le smoke la relit) et reçoit `_analysis.html` : prendre le scratchpad, pas
   `site/`. À reconstruire et pousser à chaque nouvelle version du jeu ou changement de la page.
 - `REPONSE.md` : nos réponses (remplace `orchestrator/status` du Pont) : date, ce qu'on sait, ce qu'on attend de lui.
+  Il les lit dans l'onglet « Nouvelles » du site (liens `interface/x` réécrits en pages du site, autres liens
+  relatifs vers GitHub) : reconstruire le site après chaque réponse.
 - Ses envois arrivent à la racine par l'interface web de GitHub (« Upload files » : zip de 25 Mo au plus, 100
   fichiers par envoi) ; **la description du commit est son message**. Quand il dit « j'ai envoyé un import » :
   1. `git -C .pc-perso pull`, puis `git -C .pc-perso log` pour repérer ses commits non traités ;
@@ -277,7 +294,8 @@ puis les 5 souhaités. Quand la collection change :
 | `site/` | la page Atelier + `data.json` / `shop.json` de la version courante (copiés par `recompute.sh`) |
 | `journal/` | la page Journal : `journal-spam.html` (à publier), `page/` (source, build, smoke), `ref/` (127 cartes 1.21 FR/EN, Tox, collection) ; `README.md` = procédure + contrat de la base |
 | `pont/` | la page Pont SPAM (`pont-spam.html`, autonome) ; ne sert plus, remplacée par la branche `pc-perso` |
-| `.pc-perso/` | worktree de la branche orpheline `pc-perso` (ignoré par `main`) : Atelier hors ligne, mode d'emploi et envois du PC perso |
+| `.pc-perso/` | worktree de la branche orpheline `pc-perso` (ignoré par `main`) : son site (`interface/`, `SITE.md`), mode d'emploi, `REPONSE.md` et envois du PC perso |
+| `scripts/hub/` | construction du site du PC perso (`build_site.js`, `build_journal_static.js`, `nav.js`, `markdown.js`), middleware de connexion GitHub (`site/`) et ses tests |
 | `spam/versions/<v>/` | une version du jeu : `js/` (moteur + modèle), `cards_fr.json`, `builder_fr.txt`, `meta_decks.json`, `scores.json`, `global.json`, `changelog.json`, `CHANGELOG.md`, `revision.json` (si le wiki a changé de moteur sous ce numéro) ; `app/`, `drv/`, `data.json`, `shop.json` non versionnés |
 | `scripts/sim_lab*.js`, `run_sim.js` | lanceurs du moteur dans un `vm` |
 | `scripts/app/` | pipeline de la page (`new_version.sh`, `fetch_version`, `make_variants`, `recompute.sh`, `gen_drivers`, `gen_global_drivers`, `gen_eval_driver`, `extract_meta_decks`, `pick_shop_keys`, `build_*`, `smoke_page`) ; `drv_*_N.js` de ce dossier = drivers 1.20, **générés** depuis `drv_*_0.js` (les modèles) |
