@@ -1,9 +1,11 @@
 // Builds a self-contained copy of the Atelier page for the personal PC, where claude.ai pages cannot be opened:
 // data.json and shop.json are inlined (a page opened from a local file cannot fetch), and the saved decks start
 // from spam/decks.json, then live in that browser (the page already falls back to localStorage without
-// window.claude). The result is pushed to the `pc-perso` branch (see CLAUDE.md).
-// Usage: node scripts/app/build_standalone.js <out.html>
+// window.claude). The result is pushed to the `pc-perso` branch (see CLAUDE.md), where it is also the « Atelier »
+// page of the personal-PC site: it gets that site's navigation bar and a document skeleton (scripts/hub/nav.js).
+// Usage: node scripts/app/build_standalone.js <out.html>   (the whole site: node scripts/hub/build_site.js)
 const fs = require('fs'), path = require('path');
+const { injectNav } = require('../hub/nav.js');
 const root = path.join(__dirname, '..', '..');
 const out = process.argv[2];
 if (!out) { console.error('usage: node scripts/app/build_standalone.js <out.html>'); process.exit(1); }
@@ -56,6 +58,8 @@ swap("fetch('shop.json')", "__local('shop')");
 swap("fetch('img.json')", "__local('img')");
 swap('Stockage en ligne indisponible ici : tes decks sont gardés dans ce navigateur seulement.',
   'Version hors ligne : tes decks sont gardés dans ce navigateur, sur ce PC.');
+
+html = injectNav(html, 'atelier-spam.html');
 
 fs.mkdirSync(path.dirname(path.resolve(out)), { recursive: true });
 fs.writeFileSync(out, html);
