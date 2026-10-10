@@ -1,5 +1,15 @@
 # SPAM — depuis le PC perso
 
+## Ton site SPAM
+
+Tous tes outils sur un seul site privé, réservé à ton compte GitHub : Accueil, Atelier, Journal (en lecture seule),
+Nouvelles et Envoyer. Pour l'installer, une fois pour toutes (20 minutes dans le navigateur) : suis
+[SITE.md](SITE.md). Ensuite, ouvre simplement ton adresse `https://<ton-projet>.pages.dev`.
+
+**REPONSE.md**, ce sont les messages de Claude : après chaque envoi, il y écrit ce qu'il a vu dans tes parties et ce
+qu'il attend de toi. Tu n'as rien à en faire, juste à le lire : sur le site, ce sont les **Nouvelles** (les
+dernières sont aussi sur l'Accueil). Tant que le site n'est pas installé, tout ce qui suit marche comme avant.
+
 Les pages claude.ai ne s'ouvrent pas sur ce PC. Cette branche les remplace : tu y trouves l'**Atelier de decks** à
 ouvrir dans ton navigateur, tu y **déposes** les replays de tes parties, et Claude te **répond** dans
 [REPONSE.md](REPONSE.md). Il n'y a rien à installer : un navigateur, ton compte GitHub et ce que Windows a déjà.
