@@ -1,13 +1,6 @@
 # Réponse de Claude
 
-*Mis à jour le 9 octobre 2026, 20 h.*
-
-## Atelier mis à jour : retélécharge-le
-
-Le wiki a révisé sa façon de noter les decks, sans que le jeu change : tous les scores baissent d'environ 10 à 14 %.
-Le deck chimère passe à 7 235, « Essai Dragon Ciel » à 7 795 (4e de ta collection), et le meilleur deck que tu
-possèdes, Esprit Nature, Lame de la forêt, Keria, Dragon Ciel, fait 8 512. Retélécharge
-[`interface/atelier-spam.html`](interface/atelier-spam.html) : tes decks enregistrés restent.
+*Mis à jour le 10 octobre 2026, 8 h 40.*
 
 ## Tes 2 parties du 9 octobre
 
@@ -56,3 +49,18 @@ Joue en alternance, 10 parties chacun :
 
 Les deux sont dans tes decks enregistrés de l'Atelier. À chaque partie, bannis **Renvoi** dans la boutique : les
 replays montreront enfin comment marche le ban.
+
+## Ton site SPAM et l'Atelier
+
+Tous tes outils sont maintenant réunis sur un site privé, réservé à ton compte GitHub : Accueil, Atelier, Journal de
+tes parties (en lecture seule), ces Nouvelles et Envoyer. Pour l'installer, une fois pour toutes, suis
+[SITE.md](SITE.md) : environ 20 minutes dans le navigateur. Ensuite, l'Atelier est dans l'onglet **Atelier**, et tu
+n'as plus rien à télécharger.
+
+Les decks que tu as enregistrés dans le fichier téléchargé n'apparaîtront pas sur le site : pour le navigateur, ce
+sont deux adresses différentes. Réenregistre ceux qui comptent ; les 5 decks de départ, dont « Essai Dragon Ciel »,
+y sont déjà. Tant que le site n'est pas installé, le fichier téléchargé marche comme avant.
+
+Les scores ont changé : le wiki a révisé sa façon de noter les decks, sans que le jeu change, et tous baissent
+d'environ 10 à 14 %. Le deck chimère passe à 7 235, « Essai Dragon Ciel » à 7 795 (4e de ta collection), et le
+meilleur deck que tu possèdes, Esprit Nature, Lame de la forêt, Keria, Dragon Ciel, fait 8 512.
