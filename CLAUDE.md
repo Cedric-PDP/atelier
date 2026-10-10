@@ -31,6 +31,13 @@ branche GitHub `pc-perso` (section « Le PC perso » ci-dessous).
 - **Atelier** : avant de republier, `node scripts/app/smoke_page.js site/atelier-spam.html site` (faux DOM, doit
   finir par `NO RUNTIME ERRORS`), puis supprimer `site/_analysis.html`. Après chaque changement de la page ou de
   ses données, reconstruire aussi la copie hors ligne du PC perso (section « Le PC perso »).
+  **Illustrations des cartes** : la page lit `img.json` à côté d'elle (`{numéro: {src, by}}`) ; sans lui, ou si une
+  image ne charge pas, elle garde les pastilles d'élément. Les images ne sont que sur spamgame.com (bloqué par le
+  proxy, et une page claude.ai ne charge aucune image externe) : il faut un zip des 127 `<slug>.<hash>.webp` du wiki
+  envoyé par le PC perso, rangé par `node scripts/app/import_art.js <dossier>` (`spam/img/<n>.webp`, puis
+  `site/img/` + `site/img.json` pour les cartes de la page ; sans argument, refait `site/img/` après un changement
+  de collection). Republier alors avec les `files` qu'il affiche. Pas encore reçues au 2026-10-10 : ne pas
+  republier pour ça avant. La copie hors ligne les intègre, ou à défaut les charge depuis spamgame.com.
 - **Journal** : le seul journal de parties (pas de second journal dans l'Atelier). Les parties viennent
   seulement des replays (pas d'analyse de captures ni de saisie dans la page) : import, barème de certitude et
   schéma dans [journal/README.md](journal/README.md) ; smoke =
