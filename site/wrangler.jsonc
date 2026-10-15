@@ -15,7 +15,7 @@
   },
   // La base D1 « classeur » : database_id = l'identifiant affiché sur sa page (Storage & Databases, D1).
   "d1_databases": [
-    { "binding": "DB", "database_name": "classeur", "database_id": "A-REMPLACER-PAR-L-IDENTIFIANT-DE-LA-BASE" }
+    { "binding": "DB", "database_name": "classeur", "database_id": "f5a592f3-e7fa-42f3-a65f-40a2dce56449" }
   ],
   // Garde les variables posées dans le tableau de bord (MAX_USERS…) ; les secrets (COOKIE_SECRET, SIGNUP_CODE)
   // ne sont jamais touchés par un déploiement.
