@@ -4,6 +4,17 @@ Site multi-utilisateur (l'utilisateur et ses amis) pour suivre une collection Wi
 articles de Wikipédia FR) **hors du jeu** : étiquettes personnelles, collections à compléter. Inspiré de
 wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
 
+**Vocabulaire de l'interface** (à respecter partout) :
+- **Collections** : les listes créées par l'utilisateur, surtout par le favori depuis une recherche de la « Collection
+  globale » du jeu (source `wm:<recherche>`), ou à la main dans « Nouvelle collection » (mots-clés, liste d'articles),
+  et les anciennes ajoutées du catalogue (`catalog:…`) : toutes dans « Mes collections ».
+- **Catégories** : les catégories de Wikipédia (pages `https://fr.wikipedia.org/wiki/Catégorie:Violet`). Une catégorie
+  **suivie** est une collection à compléter de source `wp:<nom>`, rangée dans « Mes catégories » (jamais dans « Mes
+  collections »).
+
+Le catalogue de collections proposées tirées de Wikidata (`catalog.json`, 59 thèmes) a été **retiré** le 2026-10-16 :
+l'interface ne le demande plus, et il n'est plus servi.
+
 Hébergement : **Worker Cloudflare** (Workers Builds, branche `wikimasters`, dossier racine `site/`, `npx wrangler
 deploy` avec `site/wrangler.jsonc` et `site/worker.js`) ou, au choix, projet **Pages** (dossier publié `public`, Pages
 Functions dans `site/functions/`). Dans les deux cas seul `site/public/` est servi, jamais `functions/`, `schema.sql` ni
@@ -17,7 +28,6 @@ avec `node:sqlite`).
 | Chemin | Rôle | Écrit par |
 |---|---|---|
 | `site/public/index.html`, `site/public/assets/*` | l'interface (Vue 3 depuis cdnjs, pas de build) | agent interface |
-| `site/public/catalog.json` | collections proposées (Wikidata), statique | Claude principal |
 | `site/public/_headers` | en-têtes de sécurité (CSP) | agent interface |
 | `site/functions/api/[[path]].js` + `site/functions/_lib/*` | l'API | agent serveur |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement : `CREATE TABLE IF NOT EXISTS` au premier appel) | agent serveur |
@@ -93,8 +103,8 @@ autre format (voir « Le favori »).
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
-| `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier : `hidden_catalog` = ids du catalogue retirés, `hide_catalog` = propositions masquées ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
+| `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
@@ -113,16 +123,18 @@ autre format (voir « Le favori »).
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url}], part, next_part}` : pages de 1 000 cartes, sans étiquettes |
-| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (les siennes, et celles du catalogue qu'il a ajoutées), réduites au nom et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
+| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (ses collections et ses catégories suivies), réduites au nom, à leur nature (`kind` : `category` pour une catégorie de Wikipédia suivie, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?}], source, created_at,
 updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
 diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par titre, puis par qid
 (`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
 vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (au plus 3 000 éléments,
-100 collections par utilisateur). `source` = `catalog:<id>` quand elle vient de `catalog.json`, `wp:<nom de la
-catégorie>` quand elle vient d'une catégorie de Wikipédia proposée (`site/public/assets/propose.js` : catégories des cartes
-de l'utilisateur dont il possède au moins 5 % et 2 cartes, hors catégories de rangement et de temps), `wd` ou `cat` quand
+100 collections par utilisateur). `source` = `catalog:<id>` pour une collection ajoutée jadis depuis le catalogue
+(retiré le 2026-10-16 ; elle reste une collection comme les autres), `wp:<nom de la catégorie>` pour une **catégorie de
+Wikipédia suivie** (« Suivre cette catégorie » dans son album, ou « Suivre » une proposition de
+`site/public/assets/propose.js` : catégories des cartes de l'utilisateur dont il possède au moins 5 % et 2 cartes, hors
+catégories de rangement et de temps ; nom sans « Catégorie: », première lettre en majuscule), `wd` ou `cat` quand
 elle vient de la recherche par mots-clés (requête Wikidata ou catégorie de Wikipédia), `wm:<recherche>` quand le favori
 l'a créée depuis une recherche de la Collection globale du jeu (`POST /api/targets/from-game`, titres = `wikipedia_title`
 du jeu, non revérifiés sur Wikipédia). `rarity` (facultatif, C | PC | R | SR | UR | L, gardé seulement s'il est connu,
@@ -150,7 +162,11 @@ mêmes étiquettes, synchro rapide sans nouveauté) ne la fait pas avancer. Chaq
 changement (`cards.rev`, données ou étiquettes) ; une carte retirée par un import laisse une trace (`cards_gone`, avec
 la révision du retrait), effacée si elle revient. L'interface garde la `rev` de la première page de sa lecture
 complète (lue **avant** les cartes : un changement fait pendant la lecture revient au delta suivant), surveille
-`cards_rev` dans `GET /api/me`, et quand elle change appelle `GET /api/cards?since=<rev gardée>` : `cards` = cartes
+`cards_rev` dans `GET /api/me` (au retour sur l'onglet, puis toutes les 60 s tant qu'il reste visible ; rien quand il
+est caché ni pendant la fenêtre « Mettre à jour avec le favori », qui relit déjà toutes les 4 s ; `GET /api/me` = une
+requête SQL, une ligne lue : le compte, par l'index unique de sa clé ; un envoi arrivé pendant que l'onglet est visible
+s'annonce « Mis à jour depuis wiki-masters.com : 3 nouvelles cartes (1 053 cartes). »), et quand elle change appelle
+`GET /api/cards?since=<rev gardée>` : `cards` = cartes
 dont `rev > R` (au format Carte, avec leurs étiquettes : à remplacer ou ajouter), `gone` = cartes retirées depuis
 (à enlever), puis elle garde la nouvelle `rev`. Réponse `{rev, delta:false}` (tout recharger) si `R > rev` (révision
 inconnue : base recréée), si `R` est sous le plancher des retraits connus (`users.cards_gone_floor`) ou s'il y a plus
@@ -255,11 +271,12 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
 - **Collections à compléter : second réglage, à part** (Réglages, « et mes collections à compléter », sous le premier et
   seulement quand il est coché ; `PATCH /api/me {shared_targets:true|false}` ; `users.shared_targets` 0/1, désactivé par
   défaut). Il n'existe qu'avec le partage des cartes : `400` sans lui, et couper le partage des cartes le coupe aussi (à
-  rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (les siennes
-  et celles du catalogue qu'il a ajoutées ; pas les propositions qu'il n'a pas ajoutées ni celles qu'il a retirées), leur
-  nom et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions, images, statuts, leur source
-  (recherche tapée, catégorie, id du catalogue) ni leurs dates ; les éléments introuvables ou d'homonymie sont omis
-  (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre et la date du dernier changement.
+  rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (ses
+  collections et ses catégories suivies ; pas les propositions qu'il ne suit pas), leur nom, leur nature (catégorie de
+  Wikipédia ou collection, `kind`) et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions,
+  images, statuts, leur source (recherche tapée, nom de la catégorie, id du catalogue) ni leurs dates ; les éléments
+  introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre
+  et la date du dernier changement.
 - **Identifiant public** (`users.public_id`) : un membre est désigné par un identifiant aléatoire, tiré à chaque
   activation du partage et effacé à sa désactivation (un ancien identifiant mène alors à `404`) ; l'id interne du compte
   sert aussi de clé du cache des cartes dans le navigateur et n'est jamais montré aux autres. `users.shared` (0/1) dit
@@ -273,25 +290,26 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre et au qid ; une réponse reste sous
   ~1 Mo (une collection fait 600 Ko rangés au plus), même pour un compte à 5 Mo de collections.
 - **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
-  partage pas ses collections ») ; « Échanges possibles » (résumé, puis sa page, ci-dessous) ; « Pour compléter tes
-  collections » = pour chaque collection (les tiennes et les proposées affichées), les cases vides qu'au moins un ami
-  peut remplir, avec qui les a et en combien d'exemplaires (en double d'abord : les plus faciles à échanger), les
-  collections où les amis remplissent le plus de cases d'abord ; « Ce qui pourrait intéresser tes amis » = tes cartes
-  (tes doubles d'abord) qui remplissent une case vide de leurs collections quand ils les montrent, sinon (badge
-  « estimation ») des **collections du catalogue** qu'ils ont commencées (au moins 5 %, comme leurs propositions) ;
-  classeur d'un ami en lecture seule (filtre « Me manquent », recherche, tri). Dans un album, une case vide qu'un ami
+  partage pas ses collections », et le nombre de catégories parmi elles une fois lues) ; « Échanges possibles »
+  (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection et catégorie suivie
+  (badge « catégorie »), les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
+  double d'abord : les plus faciles à échanger), les collections où les amis remplissent le plus de cases d'abord ;
+  « Ce qui pourrait intéresser tes amis » = tes cartes (tes doubles d'abord) qui remplissent une case vide des
+  collections qu'ils montrent ; **rien pour un ami qui ne les montre pas** (« Rien pour Léa, qui ne partage pas ses
+  collections » ; plus d'estimation par le catalogue) ; classeur d'un ami en lecture seule (filtre « Me manquent »,
+  recherche, tri). Dans un album, une case vide qu'un ami
   peut remplir porte un badge (« chez Paul ×2 », « +1 » s'il y en a d'autres) ; sa fiche dit « Chez : Paul (×2), Léa ».
   Rapprochement carte ↔ élément comme pour les tiennes : titre, puis qid (`match.js` ; les titres des cartes des amis que
   tu n'as pas, et ceux des éléments sans qid des collections qu'ils montrent et qui leur manquent — 2 000 au plus par
   lecture —, sont résolus dans le même cache).
 - **Page « Échanges possibles »** (sous-page de l'onglet) : « telle carte de X pourrait compléter telle collection de
   Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
-  compléter tes collections » ; celles qu'un ami montre ; pour un ami qui ne les montre pas, l'estimation par le
-  catalogue ci-dessus, signalée (« Léa ne partage pas ses collections », badge « estimation », bloc en pointillés). Une
-  ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les collections de Z qu'elle complète
-  (un même article dans deux collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut
-  compléter 5 cases chez Léa, dont 3 en double » ; ordre : vraies collections avant les estimations, puis les couples
-  qui ont le plus de doubles, puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
+  compléter tes collections » ; celles qu'un ami montre ; aucune pour un ami qui ne les montre pas (on ne sait pas ce
+  qui lui manque : « Léa ne partage pas ses collections : impossible de savoir ce qui lui manque », ses cartes comptent
+  quand même pour les autres). Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
+  collections de Z qu'elle complète, chaque catégorie suivie suivie de « (catégorie) » (un même article dans deux
+  collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
+  en double » ; ordre : les couples qui ont le plus de doubles, puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
   plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Ce qui me
   concerne » (tu donnes ou tu reçois, par défaut), « Tout le monde », ou un membre (il donne ou il reçoit). Une ligne de
   ta carte ouvre sa fiche ; une ligne pour toi ouvre la fiche de la case vide ; entre deux amis, rien à ouvrir. Calcul
@@ -304,6 +322,58 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   dernier changement a bougé. Pendant la résolution des qids des amis, les recalculs sont limités à un par seconde.
 - **Règles du jeu** : le classeur ne fait que montrer qui a quoi. Les échanges se font dans le jeu, par les joueurs ;
   rien n'est automatisé vers le jeu.
+
+## Onglet « Collections » (interface)
+
+Deux zones, dans cet ordre :
+
+1. **« Mes collections »** : les collections à compléter dont la source ne commence pas par `wp:` (favori depuis la
+   Collection globale du jeu, « Nouvelle collection » par mots-clés ou liste d'articles, anciennes du catalogue), avec
+   « Nouvelle collection ». Vide : une phrase explique comment en créer une avec le favori (recherche dans la
+   « Collection globale », puis le favori), et « Installer le favori » s'il n'y en a pas encore.
+2. **« Catégories »** (catégories de Wikipédia) :
+   - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
+     catégories de Wikipédia : 250 ms après la dernière frappe (2 caractères au moins, « Catégorie: » retiré), une
+     requête `action=query&generator=prefixsearch&gpsnamespace=14&gpslimit=20&prop=categoryinfo` (préfixe et taille
+     dans la même réponse), complétée par `generator=search&gsrnamespace=14&gsrlimit=20&prop=categoryinfo` (plein
+     texte) quand le préfixe donne moins de 5 catégories utiles ; écartées : catégories cachées (`categoryinfo.hidden`),
+     de maintenance (ébauches, homonymies, pages à…), vides ; **8 suggestions au plus**, chacune avec son nombre
+     d'articles (`categoryinfo.pages`), ses sous-catégories, « suivie » si c'est le cas. Une seule requête à la fois
+     (file des requêtes Wikipédia de la page, 300 ms d'écart, 429/5xx : attente de `Retry-After` puis nouvel essai), la
+     recherche précédente abandonnée (`AbortController`), réponses gardées en mémoire pendant la visite (60 au plus).
+     En attendant les suggestions d'un nouveau texte, celles du précédent restent, estompées ; Entrée ouvre la
+     suggestion active si la liste est celle du texte tapé (ou choisie aux flèches), sinon la recherche part aussitôt et
+     sa première suggestion s'ouvre à son arrivée.
+   - **Album d'une catégorie** (choisie dans les suggestions ou les propositions ; déjà suivie : l'album de la
+     catégorie suivie) : ses articles (`list=categorymembers`, espace principal, 3 000 au plus ; « inclure les
+     sous-catégories (1 niveau : N) » si elle en a), la progression avec tes cartes (titre puis qid), la rareté estimée
+     des cases vides d'après les vues, comme les autres albums, de A à Z sans numéros ; « Voir sur Wikipédia » ;
+     **« Suivre cette catégorie »** = `POST /api/targets/save {name, items, source:'wp:<nom>'}` (articles lus, avec ceux
+     des sous-catégories si la case est cochée ; impossible au-delà de 3 000 articles). Suivie : badge « catégorie
+     suivie », **« Ne plus suivre »** (`POST /api/targets/delete`) ; l'album reste ouvert comme une catégorie non suivie,
+     d'où « Suivre » la reprend.
+   - **« Mes catégories »** : les catégories suivies (source `wp:…`), mêmes lignes que les collections.
+   - **« Proposées d'après tes cartes »** (`propose.js`) : catégories de tes cartes dont tu as au moins 5 % et 2 cartes,
+     ni suivies ni retirées, **sans les sous-catégories** d'un thème déjà là (règles appliquées à l'affichage, sans
+     requête, `ClasseurPropose.prune`) :
+     1. **couverte** : au moins 80 % des cartes qui la rendent proposable (celles comptées pour les 5 % et les 2 cartes)
+        sont déjà dans **une même** de tes collections ou catégories suivies (rapprochement titre puis qid, comme les
+        albums) → pas proposée (une collection « Couleurs » qui a tes cartes rouges : « Rouge » n'est pas proposée) ;
+     2. **hiérarchie** : les catégories parentes visibles de chaque proposition sont relevées au calcul
+        (`action=query&prop=categories&clshow=!hidden&cllimit=max` sur les pages de l'espace 14, 50 par requête, même
+        file et cache de 14 jours que le reste, `classeur-catparents` ; un incident ici n'empêche pas les propositions) ;
+        une catégorie dont une parente est **suivie** n'est pas proposée ; une catégorie dont une parente est **elle-même
+        proposée** non plus (la parente seule reste ; d'une chaîne, la plus haute ; deux catégories parentes l'une de
+        l'autre : la plus grande) ; si la parente n'est pas proposable (seuils, retirée, couverte), les filles restent.
+     Chaque proposition dit pourquoi elle est là (« Tu as : Coquelicot, Fraise et 3 autres » : les cartes comptées).
+     Le nom ouvre l'album, « Suivre » (on reste sur la liste, elle passe dans « Mes catégories »), « Retirer »
+     (`prefs.hidden_proposals`), « Voir sur Wikipédia » ; « Chercher de nouvelles propositions », « Rétablir les
+     propositions retirées », « Masquer les propositions » (`prefs.hide_proposals` : plus rien n'est cherché sur
+     Wikipédia tant qu'elles sont masquées).
+
+Bandeau : « N collections » = le nombre de collections de « Mes collections » (sans les catégories suivies, sans
+total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » et « Dans tes catégories » (catégories suivies
+qui contiennent la carte, par titre ou qid).
 
 ## Le favori (bookmarklet)
 
@@ -322,6 +392,71 @@ pas la ranger » (pas « relance », qui n'y changerait rien) ; « relance le fa
 `complete:false`. Une page sans liste `collection` est une erreur (rien n'est envoyé), pas la fin de la collection.
 Ailleurs : « Ouvre wiki-masters.com et connecte-toi ». 401/403 du jeu : « Connecte-toi à WikiMasters » ; 403
 `automation_limit` (ou 429) : « Le jeu limite les lectures automatiques : réessaie plus tard ».
+
+**Mode relié** (le favori reste dans la page) : après son clic, le favori reste actif dans la page du jeu jusqu'à ce
+qu'elle soit rechargée (le jeu est une application Next.js : y naviguer ne la recharge pas) ; sans `URL` ni `fetch`, il
+reste ponctuel, comme avant (bouton « Fermer »). Il enveloppe `window.fetch` **pour regarder** les requêtes que la page
+fait d'elle-même : la requête part d'abord, telle quelle (mêmes arguments, même `this`), et la page reçoit la promesse
+même du `fetch` d'origine ; le favori ne lit que la méthode et l'adresse (jamais le corps de la requête, ni celui de la
+réponse : seul son `ok`, une fois reçue), n'ajoute ni ne change aucun en-tête, et avale ses propres erreurs. Ses propres
+requêtes (jeu et classeur) passent par le `fetch` d'avant lui : jamais observées. `XMLHttpRequest` n'est pas enveloppé :
+le code du jeu relevé n'en contient que dans un polyfill de `fetch`, et les extensions tierces lisent les actions du jeu
+dans `fetch`.
+
+- Une action qui change la collection (tableau ci-dessous, réponse 2xx) programme la **synchro rapide** existante 5 s
+  après la dernière action (30 s au plus après la première d'une rafale), jamais moins d'une minute après la fin de la
+  précédente, **20 automatiques par heure** au plus. Une relecture complète automatique (compteurs qui ne collent plus
+  après une défausse, une mise aux enchères…) a lieu au plus **toutes les 15 minutes** ; sinon elle est reportée et
+  annoncée (« Relecture complète prévue à 14:50 (…) : « Synchroniser » la lance tout de suite »). Une action pendant une
+  synchro en programme une autre après. Sans action en attente, aucune minuterie : rien n'est lu.
+- Encart : messages comme avant, puis réduit en badge 15 s après une synchro réussie lancée d'un clic : « Classeur relié
+  · dernière synchro à 14:32 » (ou « synchro dans un instant (paquet ouvert) », « synchro à 14:35 (paquet ouvert ; une
+  par minute au plus) », « relecture complète à 14:50 (…) », « synchro en cours… »). Boutons « Synchroniser » (tout de
+  suite, hors limites des synchros automatiques), « Réduire » / « Détails », « Arrêter » (rend `window.fetch` d'origine ;
+  si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
+  main ; encart retiré). L'encart est remis dans la page si le jeu l'en retire en se redessinant.
+- Erreur d'une synchro automatique : encart déplié avec le message. Une erreur qui arrête tout (session, limite de
+  lectures automatiques du jeu, favori périmé) ou trois de suite mettent les synchros automatiques **en pause** jusqu'à
+  un « Synchroniser » réussi.
+- Nouveau clic dans la même page : pendant une synchro, il déplie seulement l'encart ; sinon l'ancien favori est arrêté
+  (son `fetch` rendu) et le nouveau repart de zéro avec sa clé (`window.__classeurRelie` = `{show, stop}`, sans la clé).
+- **Script Tampermonkey / Violentmonkey** (facultatif ; onglet « Mettre à jour », replié sous le favori) : le même code,
+  `"__START__"` remplacé par `"load"`, sous l'en-tête `@match https://www.wiki-masters.com/*` et
+  `https://wiki-masters.com/*`, `@grant none` (il doit tourner dans la page pour voir son `fetch`), `@run-at
+  document-idle`, `@noframes`. Relié dès le chargement de chaque page du jeu, en badge réduit ; **rien n'est lu avant une
+  action** du joueur, et pas de choix sur la Collection globale. Il porte la clé d'import comme le favori (si le
+  gestionnaire synchronise ses scripts, la clé part avec) ; régénérer le favori l'arrête aussi.
+
+**Actions observées** (méthode et chemin d'une requête de la page vers l'API du jeu, même origine, réponse 2xx), d'après
+des sources tierces lues sans rien exécuter — `docs/api.md` du client qpautrat/wikimasters-cli et le code d'extensions
+du Chrome Web Store — et **pas vérifiées sur le jeu** :
+
+| Requête de la page | Effet sur la collection | Favori relié | Sources |
+|---|---|---|---|
+| `POST /api/packs/open` (et `/api/packs/special`, `/pro-daily`, `/grace` : tout `POST /api/packs/…`) | ajoute les cartes tirées : lignes neuves datées de l'ouverture ; réponse `{cards, packs_remaining, packs_last_regen_at, owned_copies}` | synchro rapide | WikiMasters+ (`inject.js`, les 4 chemins), WikiMasters Toolbox (`network.js`), WikiRemastered (`pack-cards.js`, `network.js`), Wiki Master Toolkit (`bridge/core.js`) |
+| `POST /api/user-cards/bulk-discard` `{card_ids: [user_cards.id]}` → `{balance, discarded_count, failed}` | retire les exemplaires défaussés (HTTP 200 même si tout est refusé) | synchro rapide, puis relecture complète (compteurs) | `docs/api.md` ; WikiMasters QoL (`api.js`), Toolkit (`discard.js`), WikiRemastered (`api.js`), Pulls Monitor (`collection.js`) |
+| `POST /api/user-cards/<id>/discard` | retire un exemplaire | idem | WikiSpeeder (`content.js`), WikiRemastered (`api.js`), Collection+ (`review-*.js`) |
+| `POST /api/marketplace` `{card_id: user_cards.id, base_amount, duration_minutes}` → `{auction_id}` | mise aux enchères : la ligne de l'exemplaire est supprimée | idem | `docs/api.md` |
+| `DELETE /api/marketplace/<id d'enchère>` → `{status: "cancelled"}` | annulation : la carte revient, nouvelle ligne datée de l'annulation | synchro rapide (simple nouveauté) | `docs/api.md` |
+| toute requête d'écriture vers `/api/trades` ou `/api/trades/…` | échange : cartes données et reçues ; chemins d'écriture **inconnus** (seul `GET /api/trades` est relevé) | synchro rapide (relecture complète si une carte part) | `GET /api/trades` : Toolkit, Toolbox, WikiRemastered ; écritures : Collection+ les range sous « trade » sans les nommer |
+| `POST /api/achievements/claim` `{achievement_id}` | récompense : des wikibidous d'après les sources ; une carte ou un paquet, pas exclu | synchro rapide (« Rien de nouveau » si rien n'a bougé) | QoL (`api.js`), Toolkit (`ACTIVITY.md`, `activity.js`) |
+| `POST /api/marketplace/<id>/bid` | aucun : une enchère gagnée n'arrive qu'à sa clôture, côté serveur | rien | `docs/api.md` |
+| `POST /api/human-check`, `POST /api/achievements/check`, toute lecture (`GET`), Supabase (`PATCH user_cards` : étoile ; étiquettes ; liste de souhaits), statut hors 2xx | aucun sur ce que le classeur garde | rien | `docs/api.md` ; Toolkit (`pack-verification.js`, `ACTIVITY.md`) ; WikiMasters+ (`inject.js`) |
+
+**Ce qu'il ne voit pas** (rattrapé par un clic, la relecture complète hebdomadaire ou « Tout relire ») : une enchère
+gagnée (la carte arrive à la clôture, sans requête du joueur à ce moment) ; un échange accepté par l'autre joueur ; ce
+qui se passe dans un autre onglet ou appareil non relié ; une action faite par une extension qui garde le `fetch` d'avant
+le favori, ou par une « server action » Next.js (`POST` sur une page, non observé) ; une requête que le jeu ferait avec
+une référence à `fetch` prise avant le clic (à vérifier dans le jeu : le badge doit annoncer « synchro dans un instant
+(paquet ouvert) » après une ouverture de paquet) ; une étoile ou une brillance changée (angle mort de la synchro rapide).
+
+**Retraits, plus économes ?** La défausse (`card_ids` = ids d'exemplaires, `discarded_count`, `failed`) et la mise aux
+enchères (`card_id` = id d'exemplaire) disent exactement quels exemplaires partent, mais le classeur ne garde que les
+cartes (`card.id`) et leurs totaux, pas les ids d'exemplaires. Il faudrait les apprendre dans les réponses `my-collection`
+que la page affiche (donc lire leurs corps) et un mode « retraits » de la synchro rapide côté serveur (compteurs ; carte
+encore possédée dans une autre rareté, brillante ou plus ancienne : rareté, brillance et date inconnues ; exemplaire de
+`last_at` parti). Pas fait : la relecture complète automatique bornée (une par quart d'heure) suffit tant que les
+défausses restent occasionnelles.
 
 **Sur la page « Collection globale »** (`/global-collection`, même favori) : l'encart propose deux choix, rien n'est lu
 avant. « Mettre à jour mon classeur » = la synchro ci-dessus, inchangée. « Créer une collection avec cette recherche
@@ -346,9 +481,25 @@ avant.
 Les règles de WikiMasters interdisent les outils qui jouent ou **interagissent à la place du joueur**. Le classeur ne
 fait que **lire** la collection (mêmes requêtes que la page « Collection » du site ; et, sur demande, une recherche de la
 « Collection globale » avec les requêtes de cette page, pages de 50, pause de 300 ms) : jamais d'écriture dans le jeu,
-jamais d'étiquette posée dans le jeu, pas de rafraîchissement automatique en tâche de fond (toujours un geste de
-l'utilisateur). Pas de lien vers le marché du jeu : il ne lit aucune recherche dans son adresse (sa recherche
-appelle `GET /api/marketplace?q=…`) et remplir son champ demanderait un script sur la page du jeu. À la place,
-« Copier le nom » (fiche d'une carte, fiche et icône d'une case vide) met le titre dans le presse-papiers ; c'est le
-joueur qui le colle dans la recherche du jeu. Toute la case vide ouvre la fiche de la carte manquante (description,
-rareté estimée, vues, collections, « Copier le nom » si l'article est vérifié, Wikipédia).
+jamais d'étiquette posée dans le jeu, jamais de lecture automatique quand il ne se passe rien. Toute lecture du jeu suit
+un geste du joueur : le clic sur le favori, « Synchroniser », ou — favori relié — **une action qu'il vient de faire
+lui-même dans le jeu** (ouvrir un paquet, défausser, mettre aux enchères ou annuler, échanger, réclamer une récompense).
+La synchro qui suit est celle qu'il aurait lancée d'un clic (2 lectures pour la synchro rapide), au plus une par minute
+et 20 par heure, une relecture complète au plus tous les quarts d'heure. Le favori relié ne joue pas, ne clique rien,
+n'envoie au jeu aucune autre requête que ces lectures, et ne modifie ni les requêtes de la page ni leurs réponses. Pas
+de lien vers le marché du jeu : il ne lit aucune recherche dans son adresse (sa recherche appelle
+`GET /api/marketplace?q=…`) et remplir son champ demanderait un script sur la page du jeu. À la place, « Copier le nom »
+(fiche d'une carte, fiche et icône d'une case vide) met le titre dans le presse-papiers ; c'est le joueur qui le colle
+dans la recherche du jeu. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues,
+collections, « Copier le nom » si l'article est vérifié, Wikipédia).
+
+**Ce qui change avec le mode relié** (2026-10-16) : avant, le favori ne faisait plus rien après son message ; il reste
+maintenant dans la page, `window.fetch` enveloppé, jusqu'à son rechargement ou « Arrêter ». **Risques** : (1) c'est
+visible pour le jeu, et le favori ne s'en cache pas : `window.fetch` n'est plus la fonction native
+(`window.fetch.toString()` ne dit plus `[native code]`) et le badge est dans la page. Plusieurs extensions publiques du
+jeu (WikiMasters+, Toolbox, Wiki Master Toolkit, Collection+, WikiRemastered…) enveloppent déjà `fetch` de la même façon
+pour lire les ouvertures de paquets ; le jeu pourrait détecter ces enveloppes, rien de connu ne dit qu'il le fait. (2) Les
+lectures automatiques suivent le rythme du joueur : très actif, il peut atteindre 20 synchros rapides par heure
+(≈ 40 lectures, plus une relecture complète par quart d'heure s'il défausse) ; une limite de lectures automatiques du jeu
+(`automation_limit`, 429) met le mode relié en pause. (3) Le script Tampermonkey se relie à chaque page du jeu sans clic :
+il ne lit rien avant une action, mais il n'y a plus de geste explicite pour le démarrer.

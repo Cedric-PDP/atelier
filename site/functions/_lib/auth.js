@@ -69,12 +69,17 @@ export function publicUser(user) {
 // GET /api/me
 export async function getMe(env, user) {
   // Nombre de cartes : gardé par chaque import et chaque synchro rapide (sync_state.count), sans relire les cartes (D1
-  // compte une ligne lue par carte). Classeur importé avant ce compteur : compté une fois de plus, jusqu'au prochain import.
+  // compte une ligne lue par carte). Classeur importé avant ce compteur (sync_state absent, ou sans unit, invalid ni
+  // count : jamais de synchro rapide) : compté une fois, puis gardé dans sync_state, seulement s'il n'a pas changé depuis
+  // la lecture du compte (un import fini entre-temps a écrit le sien) — la page relit GET /api/me toutes les minutes.
   const state = syncState(user);
   let count = state && Number.isInteger(state.count) ? state.count : null;
   if (count === null) {
     const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?1').bind(user.id).first();
     count = row ? row.n : 0;
+    await env.DB.prepare(
+      "UPDATE users SET sync_state = json_set(CASE WHEN json_valid(sync_state) THEN sync_state ELSE '{}' END, '$.count', ?2) WHERE id = ?1 AND sync_state IS ?3",
+    ).bind(user.id, count, user.sync_state ?? null).run();
   }
   return {
     user: publicUser(user),

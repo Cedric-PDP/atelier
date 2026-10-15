@@ -27,34 +27,39 @@
  *   const ctrl = new AbortController();
  *   const exclude = [
  *     ...targets.map((t) => t.source).filter((s) => typeof s === 'string' && s.startsWith('wp:')),   // déjà ajoutées
- *     ...S.prefs.hidden_catalog.filter((s) => s.startsWith('wp:')),                                  // retirées
+ *     ...S.prefs.hidden_proposals,                                                                   // retirées
  *   ];
  *   const list = await proposer.compute(cards.map((c) => c.title), {
  *     signal: ctrl.signal, exclude,
  *     onProgress: ({ step, done, total, label }) => { ... },   // step : 'categories' | 'sizes' | 'done'
  *   });
  *   // list : [{key:'wp:Kampen', title:'Catégorie:Kampen', name:'Kampen', url, size:26, owned:2, ratio:0.077,
- *   //          cards:['titre possédé', …], subcats:1, partial:false}], triées par ratio puis owned décroissants.
+ *   //          cards:['titre possédé', …], subcats:1, partial:false, parents:['Commune d'Overijssel', …]}], triées par
+ *   //          ratio puis owned décroissants ; parents = catégories parentes visibles de la proposition (sans préfixe).
+ *   // Puis, à l'affichage (sans requête) : P.prune(list, {followed, covered}) écarte les sous-catégories (voir prune).
  *   // Erreurs : rejet avec un Error au message français lisible tel quel ; err.name === 'AbortError' si annulé
  *   // (ne rien afficher).
  *
- * Affichage : un groupe « D'après tes cartes (catégories Wikipédia) » dans les collections proposées. Barre de
+ * Affichage : « Proposées d'après tes cartes », dans la zone « Catégories » de l'onglet Collections. Barre de
  * progression : `<progress max=total value=done>` + `label` (« Catégories de tes cartes : 300 sur 1 043 », puis
  * « Taille des catégories »). Par proposition : `name`, `owned` sur `size` et le pourcentage (`ratio`), quelques
  * titres de `cards` (déjà possédés), lien `url` ; si `partial` : « (avec sous-catégories) » (seuls les articles
- * directement dans la catégorie sont comptés). Masquées avec le reste si `prefs.hide_catalog`.
+ * directement dans la catégorie sont comptés). Masquées si `prefs.hide_proposals`.
  *
- * « Ajouter à mes collections » :
+ * Avant l'affichage : `P.prune(list, { followed: sources 'wp:' des collections, covered: (p) => … })` (voir prune, en
+ * bas : propositions couvertes par une collection, sous-catégories d'une catégorie suivie ou proposée).
+ *
+ * « Suivre » (la catégorie rejoint « Mes catégories ») :
  *   const members = await proposer.loadMembers(p.title, { signal });     // [{title}] (3 000 au plus, articles seuls)
  *   const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
  *   const name = p.name.length > 80 ? p.name.slice(0, 79) + '…' : p.name;            // le serveur : 80 caractères au plus
  *   await api('POST', '/api/targets/save', { name, items, source: p.key });           // source = 'wp:<nom>' (≤ 200)
  *   (les titres viennent de Wikipédia : pas besoin de les revérifier ; la proposition disparaît au calcul suivant,
  *    ou tout de suite si on la retire de la liste affichée.)
- * « Retirer des propositions » : `savePrefs({ hidden_catalog: [...S.prefs.hidden_catalog, p.key] })`, comme pour le
- * catalogue. Les clés n'ont pas le préfixe « Catégorie: » pour ménager les 4 Ko de `prefs` (~80 retraits possibles).
- * `exclude` accepte 'wp:<nom>', 'wp:Catégorie:<nom>' et 'Catégorie:<nom>' ; les ids du catalogue (sans préfixe) y
- * sont ignorés.
+ * « Retirer des propositions » : `savePrefs({ hidden_proposals: [...S.prefs.hidden_proposals, p.key] })`. Les clés
+ * n'ont pas le préfixe « Catégorie: » pour ménager les 4 Ko de `prefs` (~80 retraits possibles).
+ * `exclude` accepte 'wp:<nom>', 'wp:Catégorie:<nom>' et 'Catégorie:<nom>' ; un texte sans préfixe (ancien id du
+ * catalogue) y est ignoré.
  * --------------------------------------------------------------------------------------------------------------------
  */
 (function () {
@@ -66,11 +71,13 @@
   const TTL = 14 * DAY;
   const LS_CATS = 'classeur-cats'; // titre de carte -> [date, [catégories sans le préfixe, bruit déjà retiré]]
   const LS_INFO = 'classeur-catinfo'; // nom de catégorie -> [date, [articles directs, sous-catégories]]
+  const LS_PARENTS = 'classeur-catparents'; // nom de catégorie proposée -> [date, [catégories parentes visibles, sans le préfixe]]
   // Bornes des caches (caractères JSON) : localStorage est partagé avec le reste du classeur (~5 Mo en tout).
   // 1 043 cartes ≈ 145 000 caractères de catégories : la borne tient ~7 000 cartes, au-delà les plus vieilles sont
   // redemandées au calcul suivant.
   const MAX_CATS_CHARS = 1000000;
   const MAX_INFO_CHARS = 300000;
+  const MAX_PARENTS_CHARS = 200000;
   const BATCH = 50; // titres par requête (limite de l'API pour un compte anonyme)
   const MAX_URL_TITLES = 6000; // longueur encodée des titres d'une requête (adresse raisonnable)
   const MAX_MEMBERS = 3000; // une collection à compléter a 3 000 éléments au plus
@@ -229,6 +236,7 @@
     const api = o.api || API;
     const cats = makeCache(storage, LS_CATS, TTL, o.maxCatsChars || MAX_CATS_CHARS, now);
     const info = makeCache(storage, LS_INFO, TTL, o.maxInfoChars || MAX_INFO_CHARS, now);
+    const parents = makeCache(storage, LS_PARENTS, TTL, o.maxParentsChars || MAX_PARENTS_CHARS, now);
 
     // Une requête à la fois (tous les calculs de ce module passent par la même file).
     let chain = Promise.resolve();
@@ -334,6 +342,23 @@
       for (const n of names) if (!out.has(n)) out.set(n, [0, 0]);
       return out;
     }
+    // 5. Catégories parentes (visibles) de catégories : prop=categories sur les pages de l'espace 14.
+    async function fetchParents(names, signal) {
+      const out = new Map();
+      const norm = new Map();
+      await apiAll({ action: 'query', prop: 'categories', clshow: '!hidden', cllimit: 'max', redirects: '1', titles: names.map((n) => NS + n).join('|') }, signal, (q) => {
+        for (const n of q.normalized || []) norm.set(n.to, n.from);
+        for (const p of q.pages || []) {
+          if (!p || typeof p.title !== 'string') continue;
+          const k = displayName(norm.get(p.title) || p.title);
+          let set = out.get(k);
+          if (!set) { set = new Set(); out.set(k, set); }
+          for (const c of p.categories || []) if (c && typeof c.title === 'string') set.add(displayName(c.title)); // morceaux successifs : on cumule
+        }
+      });
+      for (const n of names) if (!out.has(n)) out.set(n, new Set());
+      return out;
+    }
 
     function cleanTitles(titles) {
       const seen = new Set();
@@ -437,6 +462,23 @@
         out.push({ key: 'wp:' + c, title, name: c, url: wikiUrl(title), size, owned: owned.length, ratio, cards: owned.slice(),
           subcats: v[1], partial: v[1] > 0 && v[1] * 4 >= v[0] });
       }
+      // 5. Catégories parentes des propositions (cache, puis Wikipédia) : de quoi écarter à l'affichage une
+      // sous-catégorie d'une catégorie suivie ou proposée (prune). Un incident ici ne prive pas des propositions.
+      const todoParents = out.map((r) => r.name).filter((n) => !Array.isArray(parents.get(n)));
+      const label3 = (d) => 'Catégories parentes : ' + d.toLocaleString('fr-FR') + ' sur ' + todoParents.length.toLocaleString('fr-FR');
+      report('parents', 0, todoParents.length, label3(0));
+      done = 0;
+      try {
+        for (const batch of batches(todoParents, BATCH, MAX_URL_TITLES)) {
+          const got = await fetchParents(batch, signal);
+          for (const [c, v] of got) if (batch.includes(c)) parents.set(c, [...v]);
+          done += batch.length;
+          report('parents', done, todoParents.length, label3(done));
+        }
+      } catch (e) {
+        if ((signal && signal.aborted) || (e && e.name === 'AbortError')) throw e;
+      } finally { parents.save(); }
+      for (const r of out) { const v = parents.get(r.name); r.parents = Array.isArray(v) ? v.slice() : []; }
       out.sort((a, b) => b.ratio - a.ratio || b.owned - a.owned || a.name.localeCompare(b.name, 'fr'));
       report('done', out.length, out.length, out.length ? out.length + (out.length > 1 ? ' propositions' : ' proposition') : 'Aucune proposition');
       return out;
@@ -458,11 +500,36 @@
       return out;
     }
 
-    function clearCache() { cats.clear(); info.clear(); }
+    function clearCache() { cats.clear(); info.clear(); parents.clear(); }
 
     return { compute, loadMembers, uncached, clearCache };
   }
 
-  const exported = { createProposer, displayName, keyOf, categoryTitle, isNoise, noiseReason };
+  // ------------------------------------------------------------------------------------------------ à l'affichage
+  // Propositions à montrer, sans aucune requête (les sous-catégories d'un même thème ne sont pas proposées une à une) :
+  //  - « couverte » : covered(p) vrai (l'interface le calcule : au moins 80 % des cartes qui rendent la catégorie
+  //    proposable, p.cards, sont déjà dans une même collection ou catégorie suivie) → écartée ;
+  //  - une catégorie parente (p.parents) est suivie (followed : clés 'wp:<nom>' ou noms) → écartée ;
+  //  - une catégorie parente est elle-même proposée (dans la liste, après les deux règles ci-dessus) → écartée, la
+  //    parente reste (d'une chaîne, seule la plus haute reste) ; si la parente n'est pas proposable, les filles restent.
+  //    Deux catégories parentes l'une de l'autre : la plus grande reste.
+  // Rend la liste filtrée, dans le même ordre.
+  function prune(list, options) {
+    const op = options || {};
+    const followed = new Set();
+    for (const f of op.followed || []) if (typeof f === 'string' && f.trim()) followed.add(displayName(f));
+    const covered = typeof op.covered === 'function' ? op.covered : () => false;
+    const parentsOf = (p) => (Array.isArray(p.parents) ? p.parents.map(displayName).filter((n) => n && n !== p.name) : []);
+    const kept = (Array.isArray(list) ? list : []).filter((p) => p && !covered(p) && !parentsOf(p).some((n) => followed.has(n)));
+    const byName = new Map(kept.map((p) => [p.name, p]));
+    const above = (p) => parentsOf(p).filter((n) => byName.has(n));
+    return kept.filter((p) => !above(p).some((n) => {
+      const q = byName.get(n);
+      if (!above(q).includes(p.name)) return true;
+      return q.size > p.size || (q.size === p.size && q.name.localeCompare(p.name, 'fr') < 0);
+    }));
+  }
+
+  const exported = { createProposer, prune, displayName, keyOf, categoryTitle, isNoise, noiseReason };
   if (typeof window !== 'undefined') window.ClasseurPropose = exported;
 })();

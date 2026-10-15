@@ -16,7 +16,7 @@
  *   précédente (AbortController). La première fois, tous les titres des cartes sont résolus (50 par requête, une à la
  *   fois), ensuite le cache suffit. Les qids déjà connus (suggestions : champ q) : resolver.remember([[titre, qid]]).
  * - Envoyer qid dans les items enregistrés (POST /api/targets/save ; à la vérification, ppprop=disambiguation|wikibase_item).
- *   Les items du catalogue ont déjà leur qid.
+ *   Les items des collections créées par Wikidata ont déjà leur qid.
  */
 (function (root) {
   'use strict';
@@ -329,7 +329,7 @@
       return out;
     }
 
-    // Qids connus par ailleurs (suggestions, catalogue) : [[titre, qid | null, horodatage?]…].
+    // Qids connus par ailleurs (suggestions des tags) : [[titre, qid | null, horodatage?]…].
     function remember(pairs) {
       const t = now();
       let n = 0;

@@ -1992,6 +1992,44 @@ await test('lecture incrémentale : plan de SQLite (index par révision, jamais 
   await call('DELETE', 'me', { key: pat.key });
 });
 
+await test('GET /api/me (relu toutes les minutes par la page visible) : une requête, une ligne (le compte, par sa clé) ; ancien classeur sans compteur : compté une seule fois', async () => {
+  const kim = await signup('Kim');
+  await upload(kim.key, mini(40));
+  const seen = [];
+  let during = null; // écriture faite pendant le COUNT (import concurrent simulé)
+  const spy = { ...env, DB: { prepare: (sql) => { seen.push(sql); if (during && /COUNT\(\*\)/.test(sql)) { during(); during = null; } return env.DB.prepare(sql); }, batch: (s) => env.DB.batch(s) } };
+  const me = async () => { seen.length = 0; return (await call('GET', 'me', { key: kim.key, e: spy })).json; };
+  await me(); // schéma appliqué une fois par base et par instance (ensureSchema), pas à chaque appel
+  assert.equal((await me()).card_count, 40);
+  assert.equal(seen.length, 1, seen.join('\n'));
+  const plan = env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${seen[0]}`).all().map((r) => r.detail);
+  assert.deepEqual(plan.length, 1, plan.join('\n'));
+  assert.match(plan[0], /^SEARCH users USING INDEX sqlite_autoindex_users_\d \(key_hash=\?\)$/);
+  // Classeur importé avant le compteur (sync_state absent, ou ancien format sans unit, invalid ni count) : compté une
+  // fois, puis gardé ; le reste de l'état est intact et la synchro rapide reste coupée (relecture complète).
+  const setState = (v) => env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(v, kim.user.id);
+  const stateOf = () => rows('SELECT sync_state FROM users WHERE id = ?', kim.user.id)[0].sync_state;
+  const old = JSON.stringify({ stats: { total: 40, totalUnique: 40, rarityCounts: null }, last_at: '2026-10-01T00:00:00.000Z', full_at: new Date().toISOString() });
+  for (const before of [null, old]) {
+    setState(before);
+    let m = await me();
+    assert.deepEqual([m.card_count, m.next_full], [40, true]);
+    assert.ok(seen.some((s) => /COUNT\(\*\)/.test(s)), 'compté une fois');
+    m = await me();
+    assert.deepEqual([m.card_count, m.next_full, seen.length], [40, true, 1], 'compteur gardé : plus de COUNT');
+    const st = JSON.parse(stateOf());
+    assert.equal(st.count, 40);
+    if (before) assert.deepEqual({ ...st, count: undefined }, { ...JSON.parse(before), count: undefined });
+    assert.equal((await call('POST', 'import', { key: kim.key, body: { mode: 'state' } })).json.quick, false);
+  }
+  // Un import fini pendant le COUNT a écrit son état : il n'est pas écrasé (comparer-échanger).
+  setState(null);
+  during = () => setState('{"tok":"import-concurrent"}');
+  assert.equal((await me()).card_count, 40);
+  assert.equal(stateOf(), '{"tok":"import-concurrent"}');
+  await call('DELETE', 'me', { key: kim.key });
+});
+
 await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
   const e3 = makeEnv({ REFRESH_PAUSE_MS: '0' });
   const runs = {
@@ -2320,16 +2358,16 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
 
-  // Ce qu'Ana voit : le nom de chaque collection (y compris celle du catalogue) et, pour chaque élément vérifié, son
-  // titre et son qid ; ni description, ni image, ni statut, ni source, ni dates ; les éléments introuvables ou
-  // d'homonymie sont omis (aucune carte ne peut les remplir).
+  // Ce qu'Ana voit : le nom de chaque collection (y compris celle du catalogue), sa nature (catégorie de Wikipédia
+  // suivie ou collection) et, pour chaque élément vérifié, son titre et son qid ; ni description, ni image, ni statut,
+  // ni source, ni dates ; les éléments introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir).
   r = await targetsOf(ana, benPub, '0');
   assert.equal(r.status, 200);
   assert.deepEqual(Object.keys(r.json), ['member', 'targets', 'part', 'next_part']);
   assert.deepEqual([r.json.member, r.json.part, r.json.next_part], [{ id: benPub, name: 'Ben' }, '0', null]);
   const expected = [
-    { id: planets.id, name: 'Planètes', items: [{ title: 'Mars (planète)', qid: 'Q111' }, { title: 'Vénus (planète)' }] },
-    { id: cat.id, name: 'Dieux grecs', items: [{ title: 'Zeus', qid: 'Q34201' }, { title: 'Héra' }] },
+    { id: planets.id, name: 'Planètes', kind: 'category', items: [{ title: 'Mars (planète)', qid: 'Q111' }, { title: 'Vénus (planète)' }] },
+    { id: cat.id, name: 'Dieux grecs', kind: 'collection', items: [{ title: 'Zeus', qid: 'Q34201' }, { title: 'Héra' }] },
   ].sort((a, b) => (a.id < b.id ? -1 : 1));
   assert.deepEqual(r.json.targets, expected);
   assert.deepEqual((await targetsOf(ana, benPub)).json, r.json, 'sans part : la première page');

@@ -440,12 +440,13 @@ const rejectsAbort = async (p) => assert.rejects(p, (e) => e && e.name === 'Abor
   assert.deepEqual([...bare.missingQidTitles(items)], []);
 }
 
-// ------------------------------------------------------------------ le cas réel : « Éléments chimiques » du catalogue
+// ------------------------------------------------------------------ le cas réel : « Éléments chimiques », items avec qid
+// (extrait de l'ancien catalogue Wikidata, retiré de l'interface le 2026-10-16 : les collections créées par Wikidata
+// gardent ainsi le qid de chaque article).
 {
-  const catalog = JSON.parse(fs.readFileSync(path.join(here, '..', 'site', 'public', 'catalog.json'), 'utf8'));
-  for (const col of catalog) for (const it of col.items) assert.ok(/^Q[1-9]\d*$/.test(it.qid), `qid de ${col.id} / ${it.title}`);
-  const col = catalog.find((c) => c.id && c.name === 'Éléments chimiques');
-  assert.ok(col, 'collection Éléments chimiques');
+  const col = { name: 'Éléments chimiques', items: [['Hydrogène', 'Q556'], ['Hélium', 'Q560'], ['Lithium', 'Q568'], ['Carbone', 'Q623'], ['Oxygène', 'Q629'],
+    ['Fer', 'Q677'], ['Cuivre', 'Q753'], ['Mercure (chimie)', 'Q925'], ['Fermium', 'Q1896']].map(([title, qid]) => ({ title, qid })) };
+  for (const it of col.items) assert.ok(/^Q[1-9]\d*$/.test(it.qid), `qid de ${it.title}`);
   const fer = col.items.find((i) => i.qid === 'Q677');
   assert.ok(fer && fer.title === 'Fer');
   assert.ok(col.items.some((i) => i.title === 'Mercure (chimie)' && i.qid === 'Q925'));

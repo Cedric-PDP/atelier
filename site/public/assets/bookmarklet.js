@@ -5,41 +5,81 @@
 // récent au plus ancien, arrêt à l'exemplaire daté de la dernière synchro) ; si quelque chose ne colle pas (tri, carte
 // la plus récente partie, compteurs du jeu : carte vendue, mise aux enchères…), relecture complète aussitôt, avec la
 // raison affichée.
+// Mode relié : après le clic, le favori reste actif dans la page jusqu'à ce qu'elle soit rechargée (le jeu est une
+// application Next.js : y changer de page ne la recharge pas). Il regarde passer, sans y toucher, les requêtes que la
+// page du jeu fait d'elle-même (window.fetch enveloppé : mêmes arguments, même promesse rendue à la page, aucun corps
+// lu, aucune requête ajoutée), repère les actions du joueur qui changent sa collection (paquet ouvert, carte défaussée,
+// mise aux enchères ou enchère annulée, échange, récompense réclamée : ACTIONS) et relance alors la synchro rapide,
+// 5 s après la dernière action, au plus une par minute et 20 par heure ; une relecture complète automatique au plus
+// toutes les 15 minutes. Quand il ne se passe rien, rien n'est lu. Encart réductible en badge (« Classeur relié ·
+// dernière synchro à 14:32 »), avec « Synchroniser » et « Arrêter » (qui rend window.fetch d'origine).
 // L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
-// principale : elle ne permet que d'envoyer des cartes), puis met ce fichier sur une ligne : chaque instruction finit
-// donc par un point-virgule et les commentaires restent sur des lignes à part.
+// principale : elle ne permet que d'envoyer des cartes), et "__START__" par "load" dans le script Tampermonkey (relié
+// dès le chargement de chaque page du jeu, sans rien lire avant une action du joueur ; sinon : clic sur le favori), puis
+// met ce fichier sur une ligne : chaque instruction finit donc par un point-virgule et les commentaires restent sur des
+// lignes à part.
 (function () {
   var SITE = "__SITE__";
   var KEY = "__KEY__";
+  var START = "__START__";
   var BOX_ID = "classeur-favori";
   var PART = 500;
+  // Déjà relié dans cette page : pendant une synchro, le clic déplie seulement l'encart ; sinon l'ancien favori est
+  // arrêté (window.fetch rendu, encart retiré) et ce clic repart de zéro, avec sa clé à lui.
+  var prev = window.__classeurRelie;
   if (window.__classeurFavori) {
+    if (prev && typeof prev.show === "function") {
+      prev.show();
+    }
     return;
+  }
+  if (prev && typeof prev.stop === "function") {
+    try {
+      prev.stop();
+    } catch (e) {
+      prev = null;
+    }
   }
   var old = document.getElementById(BOX_ID);
   if (old) {
     old.remove();
   }
+  var WIDE = "position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(340px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:#131615;color:#f2f4f3;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid #2e3431";
+  var SMALL = "position:fixed;z-index:2147483647;right:16px;bottom:16px;max-width:calc(100vw - 32px);padding:4px 10px 8px;border-radius:10px;background:#131615;color:#f2f4f3;font:12.5px/1.4 system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.4);border:1px solid #2e3431;opacity:.94";
   var box = document.createElement("div");
   box.id = BOX_ID;
   box.setAttribute("role", "status");
   box.setAttribute("aria-live", "polite");
-  box.style.cssText = "position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(340px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:#131615;color:#f2f4f3;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid #2e3431";
+  box.style.cssText = WIDE;
   var title = document.createElement("div");
   title.textContent = "Le classeur";
   title.style.cssText = "font-weight:700;margin-bottom:4px";
   var text = document.createElement("div");
   var extra = document.createElement("div");
-  var close = document.createElement("button");
-  close.type = "button";
-  close.textContent = "Fermer";
-  close.style.cssText = "margin-top:10px;padding:4px 10px;border-radius:7px;border:1px solid #2e3431;background:#1b1f1d;color:#f2f4f3;font:inherit;font-size:12.5px;cursor:pointer";
-  close.onclick = function () {
-    box.remove();
+  // Pied : « Fermer » (favori ponctuel), ou la ligne d'état et les boutons du mode relié.
+  var foot = document.createElement("div");
+  var button = function (caption, onClick) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.textContent = caption;
+    b.style.cssText = "margin:10px 6px 0 0;padding:4px 10px;border-radius:7px;border:1px solid #2e3431;background:#1b1f1d;color:#f2f4f3;font:inherit;font-size:12.5px;cursor:pointer";
+    b.addEventListener("click", onClick);
+    return b;
   };
-  box.append(title, text, extra, close);
+  foot.appendChild(button("Fermer", function () {
+    box.remove();
+  }));
+  box.append(title, text, extra, foot);
   document.body.appendChild(box);
+  // Mode relié (null : favori ponctuel). keep() remet l'encart dans la page si le jeu l'en a retiré en se redessinant.
+  var live = null;
+  var keep = function () {
+    if (live && live.on && document.documentElement && !document.documentElement.contains(box)) {
+      document.body.appendChild(box);
+    }
+  };
   var say = function (message, withLink) {
+    keep();
     text.textContent = message;
     extra.textContent = "";
     if (withLink) {
@@ -62,9 +102,16 @@
   };
   var host = location.hostname;
   if (host !== "www.wiki-masters.com" && host !== "wiki-masters.com") {
+    if (START === "load") {
+      box.remove();
+      return;
+    }
     say("Ouvre wiki-masters.com et connecte-toi, puis clique à nouveau ce favori.");
     return;
   }
+  // Requêtes du favori lui-même (jeu et classeur) : par window.fetch tel qu'il est avant le mode relié, donc jamais vues
+  // par l'observateur, qui ne regarde que celles de la page.
+  var net = window.fetch;
   // Erreur qui arrête tout (session, limite de lectures du jeu) : pas de relecture complète derrière.
   var stop = function (message) {
     var e = new Error(message);
@@ -73,7 +120,7 @@
   };
   // Lecture d'une adresse de l'API du jeu, avec la session du navigateur (même origine).
   var read = async function (path) {
-    var r = await fetch(path, { credentials: "include", headers: { Accept: "application/json" } });
+    var r = await net.call(window, path, { credentials: "include", headers: { Accept: "application/json" } });
     if (r.status === 403 || r.status === 429) {
       var refused = await r.json().catch(function () {
         return null;
@@ -206,7 +253,7 @@
     return { why: "Plus de 500 exemplaires obtenus depuis ta dernière synchro : relecture complète. " };
   };
   var send = async function (body) {
-    var r = await fetch(SITE + "/api/import", {
+    var r = await net.call(window, SITE + "/api/import", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Classeur-Key": KEY },
       body: JSON.stringify(body)
@@ -230,7 +277,9 @@
     too_many: "Plus de 500 nouvelles cartes : relecture complète. ",
     max_cards: "Ton classeur dépasserait 20 000 cartes : relecture complète. "
   };
-  var run = async function () {
+  // Synchro : rapide si possible, sinon relecture complète. auto = true (mode relié, après une action du joueur) : une
+  // relecture complète moins de FULL_GAP après la précédente est reportée ({later: true}, rien n'est lu de plus).
+  var run = async function (auto) {
     say("Lecture de ta collection…");
     var stats = await read("/api/my-collection/stats?sort=rarity");
     var state = null;
@@ -263,13 +312,20 @@
             } else {
               say(num(news.rows) + (news.rows > 1 ? " exemplaires obtenus" : " exemplaire obtenu") + " depuis ta dernière synchro, " + num(added) + (added > 1 ? " nouvelles cartes" : " nouvelle carte") + " : ton classeur est à jour (" + num(quick.count) + " cartes).", true);
             }
-            return;
+            return { quick: true };
           }
           why = WHY[quick.reason] || WHY.counts;
         }
       }
-      say(why + "Lecture de ta collection…");
     }
+    if (auto === true && live && Date.now() - live.fullAt < FULL_GAP) {
+      say(why.replace(/ : relecture complète\. $/, ". ") + "Relecture complète prévue à " + hhmm(live.fullAt + FULL_GAP) + " (une relecture automatique toutes les 15 minutes au plus) : « Synchroniser » la lance tout de suite.", true);
+      return { later: true };
+    }
+    if (live) {
+      live.fullAt = Date.now();
+    }
+    say(why + "Lecture de ta collection…");
     var entries = [];
     for (var page = 0; page < 2000; page++) {
       var data = await read("/api/my-collection?sort=rarity&page=" + page + "&stats=0");
@@ -311,6 +367,7 @@
       message += " Il en manque par rapport au total du jeu (ta collection a sans doute bougé pendant la lecture) : relance le favori dans un moment.";
     }
     say(message, true);
+    return { full: true };
   };
   // Page « Collection globale » du jeu : le favori propose aussi de créer une collection du classeur avec la recherche
   // affichée. Mêmes requêtes que la page (GET /api/cards?page=N&q=…, lecture seule), triées par nom, au plus MAX_PAGES
@@ -428,7 +485,7 @@
       return;
     }
     say("Envoi au classeur… " + num(n) + " cartes");
-    var r = await fetch(SITE + "/api/targets/from-game", {
+    var r = await net.call(window, SITE + "/api/targets/from-game", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Classeur-Key": KEY },
       body: JSON.stringify({ name: name, query: q, items: got.cards })
@@ -447,15 +504,289 @@
     }
     say(message, true);
   };
-  var start = function (task) {
-    window.__classeurFavori = true;
-    task().catch(function (e) {
-      say(e && e.message ? e.message : "Le favori n'a pas pu lire ta collection.");
-    }).finally(function () {
-      window.__classeurFavori = false;
+  // ---------------------------------------------------------------- mode relié
+  // Synchro automatique AFTER après la dernière action (le jeu finit d'écrire), au plus AFTER_MAX après la première d'une
+  // rafale ; jamais moins de GAP après la fin de la précédente (automatique ou non), PER_HOUR automatiques par heure au
+  // plus ; une relecture complète automatique au plus toutes les FULL_GAP (sinon reportée, « Synchroniser » la lance).
+  var AFTER = 5000;
+  var AFTER_MAX = 30000;
+  var GAP = 60000;
+  var PER_HOUR = 20;
+  var HOUR = 3600000;
+  var FULL_GAP = 15 * 60000;
+  var two = function (n) {
+    return (n < 10 ? "0" : "") + n;
+  };
+  var hhmm = function (t) {
+    var d = new Date(t);
+    return two(d.getHours()) + ":" + two(d.getMinutes());
+  };
+  // Actions du joueur qui changent sa collection : [méthode ("*" : toute sauf GET), chemin de l'API du jeu, ce que le
+  // badge en dit]. Relevées dans docs/api.md de qpautrat/wikimasters-cli et dans le code d'extensions tierces (tableau
+  // dans SPEC.md). Toute autre requête (lecture, Supabase, autre site, enchère posée, statut hors 2xx) ne déclenche rien.
+  var ACTIONS = [
+    ["POST", /^\/api\/packs\/[^/]+/, "paquet ouvert"],
+    ["POST", /^\/api\/user-cards\/(bulk-discard|[^/]+\/discard)$/, "carte défaussée"],
+    ["POST", /^\/api\/marketplace$/, "carte mise aux enchères"],
+    ["DELETE", /^\/api\/marketplace\/[^/]+$/, "enchère annulée"],
+    ["*", /^\/api\/trades(\/|$)/, "échange"],
+    ["POST", /^\/api\/achievements\/claim$/, "récompense réclamée"]
+  ];
+  var actionOf = function (method, path) {
+    for (var i = 0; i < ACTIONS.length; i++) {
+      if ((ACTIONS[i][0] === "*" || ACTIONS[i][0] === method) && ACTIONS[i][1].test(path)) {
+        return ACTIONS[i][2];
+      }
+    }
+    return null;
+  };
+  // Une requête de la page : seuls sa méthode et son adresse sont lus (jamais son corps) ; sa réponse n'est regardée que
+  // par son statut, une fois reçue par la page, et jamais lue.
+  var watch = function (args, p) {
+    var input = args[0];
+    var init = args[1];
+    var method = String((init && init.method) || (input && typeof input === "object" && input.method) || "GET").toUpperCase();
+    if (method === "GET" || method === "HEAD") {
+      return;
+    }
+    var u = new URL(typeof input === "string" ? input : input && typeof input.url === "string" ? input.url : String(input), location.href);
+    if (u.origin !== location.origin) {
+      return;
+    }
+    var what = actionOf(method, u.pathname);
+    if (!what || !p || typeof p.then !== "function") {
+      return;
+    }
+    p.then(function (r) {
+      try {
+        if (r && r.ok === true) {
+          noticed(what);
+        }
+      } catch (e) {
+        return;
+      }
+    }, function () {
+      return;
     });
   };
-  if (/^\/global-collection\/?$/.test(String(location.pathname || ""))) {
+  // window.fetch enveloppé : la requête part d'abord, telle quelle (mêmes arguments, même this), et la page reçoit la
+  // promesse même du fetch d'origine ; l'observation vient après, et ses erreurs sont avalées.
+  var install = function () {
+    var base = window.fetch;
+    if (typeof base !== "function" || typeof URL !== "function" || !location.origin || !location.href) {
+      return false;
+    }
+    var spy = function () {
+      var p = base.apply(this, arguments);
+      if (live && live.on) {
+        try {
+          watch(arguments, p);
+        } catch (e) {
+          // L'observateur ne casse jamais la requête de la page.
+        }
+      }
+      return p;
+    };
+    live = { on: true, wanted: false, first: 0, last: 0, what: "", hold: "", plan: 0, due: 0, end: 0, okAt: 0, autos: [], fullAt: 0, later: false, paused: false, fails: 0, foldPlan: 0 };
+    // Arrêt : window.fetch d'origine rendu ; si un autre script l'a enveloppé à son tour, il est laissé en place et
+    // celui-ci ne fait plus que passer la main (live.on = false).
+    live.restore = function () {
+      if (window.fetch === spy) {
+        window.fetch = base;
+      }
+    };
+    window.fetch = spy;
+    return true;
+  };
+  var status = document.createElement("div");
+  status.style.cssText = "margin-top:10px;font-size:12.5px;color:#b8c2bd";
+  status.title = "Le favori reste actif dans cette page : après tes actions dans le jeu (paquet ouvert, carte défaussée, mise aux enchères, échange), il relit tes nouvelles cartes et les envoie au classeur. Il ne fait que lire. « Arrêter », ou recharger la page, le coupe.";
+  var folded = false;
+  var foldBtn = null;
+  // Encart réduit en badge (true) ou déplié.
+  var fold = function (yes) {
+    folded = yes;
+    live.foldPlan += 1;
+    title.style.display = yes ? "none" : "";
+    text.style.display = yes ? "none" : "";
+    extra.style.display = yes ? "none" : "";
+    box.style.cssText = yes ? SMALL : WIDE;
+    status.style.marginTop = yes ? "4px" : "10px";
+    foldBtn.textContent = yes ? "Détails" : "Réduire";
+    keep();
+  };
+  var badge = function () {
+    if (!live || !live.on) {
+      return;
+    }
+    var s = "synchro après ta prochaine action dans le jeu";
+    if (window.__classeurFavori) {
+      s = "synchro en cours…";
+    } else if (live.paused) {
+      s = "synchro automatique en pause : clique « Synchroniser »";
+    } else if (live.wanted) {
+      s = (live.later ? "relecture complète" : "synchro") + (live.due - Date.now() > AFTER_MAX ? " à " + hhmm(live.due) : " dans un instant") + " (" + live.what + (live.hold ? " ; " + live.hold : "") + ")";
+    } else if (live.okAt) {
+      s = "dernière synchro à " + hhmm(live.okAt);
+    }
+    status.textContent = "Classeur relié · " + s;
+    keep();
+  };
+  // Prochaine synchro automatique, si une action l'attend (et ni pause ni synchro en cours : sa fin rappelle schedule).
+  var schedule = function () {
+    if (!live || !live.on || !live.wanted || live.paused || window.__classeurFavori) {
+      badge();
+      return;
+    }
+    var now = Date.now();
+    live.autos = live.autos.filter(function (t) {
+      return now - t < HOUR;
+    });
+    var at = Math.min(live.last + AFTER, live.first + AFTER_MAX);
+    live.hold = "";
+    if (live.end && live.end + GAP > at) {
+      at = live.end + GAP;
+      live.hold = "une par minute au plus";
+    }
+    if (live.autos.length >= PER_HOUR && live.autos[live.autos.length - PER_HOUR] + HOUR > at) {
+      at = live.autos[live.autos.length - PER_HOUR] + HOUR;
+      live.hold = PER_HOUR + " synchros automatiques par heure au plus";
+    }
+    if (live.later && live.fullAt + FULL_GAP > at) {
+      at = live.fullAt + FULL_GAP;
+      live.hold = "une relecture complète automatique toutes les 15 minutes au plus";
+    }
+    live.due = at;
+    live.plan += 1;
+    var id = live.plan;
+    setTimeout(function () {
+      if (live.on && id === live.plan && live.wanted && !live.paused && !window.__classeurFavori) {
+        live.autos.push(Date.now());
+        start(run, true);
+      }
+    }, Math.max(0, at - now));
+    badge();
+  };
+  // Action du joueur vue (réponse 2xx reçue par la page).
+  var noticed = function (what) {
+    if (!live || !live.on) {
+      return;
+    }
+    var now = Date.now();
+    if (!live.wanted) {
+      live.first = now;
+    }
+    live.wanted = true;
+    live.last = now;
+    live.what = what;
+    schedule();
+  };
+  // Lance une synchro (run) ou la création d'une collection ; auto = true : synchro déclenchée par une action du joueur.
+  // Une synchro couvre les actions d'avant son début ; une erreur qui arrête tout (session, limite de lectures du jeu,
+  // favori périmé), ou trois de suite, met les synchros automatiques en pause jusqu'à un « Synchroniser » réussi.
+  var start = function (task, auto) {
+    var sync = task === run;
+    window.__classeurFavori = true;
+    if (live && sync) {
+      live.wanted = false;
+      live.later = false;
+      live.plan += 1;
+    }
+    badge();
+    task(auto).then(function (res) {
+      if (!live) {
+        return;
+      }
+      if (sync) {
+        live.fails = 0;
+        if (res && res.later) {
+          live.later = true;
+          live.wanted = true;
+          live.first = Date.now();
+          live.last = live.first;
+          return;
+        }
+        live.okAt = Date.now();
+        live.paused = false;
+      }
+      if (!auto) {
+        var plan = live.foldPlan;
+        setTimeout(function () {
+          if (live.on && plan === live.foldPlan && !window.__classeurFavori) {
+            fold(true);
+          }
+        }, 15000);
+      }
+    }).catch(function (e) {
+      say(e && e.message ? e.message : "Le favori n'a pas pu lire ta collection.");
+      if (live) {
+        if (sync) {
+          live.fails += 1;
+          if (auto && ((e && (e.stop || e.status === 401 || e.status === 403)) || live.fails >= 3)) {
+            live.paused = true;
+          }
+        }
+        fold(false);
+      }
+    }).finally(function () {
+      window.__classeurFavori = false;
+      if (live) {
+        if (sync) {
+          live.end = Date.now();
+        }
+        schedule();
+      }
+    });
+  };
+  var stopLive = function () {
+    if (live) {
+      live.on = false;
+      live.plan += 1;
+      live.restore();
+    }
+    if (window.__classeurRelie === handle) {
+      window.__classeurRelie = null;
+    }
+    box.remove();
+  };
+  var handle = {
+    show: function () {
+      if (live && live.on) {
+        fold(false);
+      }
+    },
+    stop: stopLive
+  };
+  // Mode relié installé (sinon, navigateur sans URL ou sans fetch : favori ponctuel, comme avant) : ligne d'état et
+  // boutons à la place de « Fermer ».
+  var relier = function () {
+    if (!install()) {
+      return false;
+    }
+    window.__classeurRelie = handle;
+    foldBtn = button("Réduire", function () {
+      fold(!folded);
+    });
+    foot.textContent = "";
+    foot.append(status, button("Synchroniser", function () {
+      if (!window.__classeurFavori) {
+        start(run, false);
+      }
+    }), foldBtn, button("Arrêter", stopLive));
+    badge();
+    return true;
+  };
+  var linked = relier();
+  if (START === "load") {
+    // Script Tampermonkey : relié dès le chargement, rien n'est lu avant une action du joueur (ni le choix de la
+    // Collection globale).
+    if (!linked) {
+      box.remove();
+      return;
+    }
+    text.textContent = "Relié à ton classeur : après tes actions dans le jeu (paquet ouvert, carte défaussée, mise aux enchères, échange), il relit tes nouvelles cartes et les lui envoie. Rien n'est lu avant.";
+    fold(true);
+  } else if (/^\/global-collection\/?$/.test(String(location.pathname || ""))) {
     var shown = searchOf();
     var label = shown.q.length > 40 ? shown.q.slice(0, 39) + "…" : shown.q;
     say("Collection globale : que veux-tu faire ?");
@@ -466,7 +797,7 @@
       b.style.cssText = "display:block;width:100%;margin-top:8px;padding:7px 10px;border-radius:8px;border:1px solid #2e3431;background:#1b1f1d;color:#f2f4f3;font:inherit;text-align:left;cursor:pointer";
       b.addEventListener("click", function () {
         if (!window.__classeurFavori) {
-          start(task);
+          start(task, false);
         }
       });
       extra.appendChild(b);
@@ -474,6 +805,6 @@
     choice("Mettre à jour mon classeur", run);
     choice(shown.q && shown.sure ? "Créer une collection avec cette recherche (« " + label + " »)" : "Créer une collection avec une recherche…", createFromSearch);
   } else {
-    start(run);
+    start(run, false);
   }
 })();

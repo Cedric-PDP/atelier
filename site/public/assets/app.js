@@ -206,8 +206,14 @@
   // ================================================================ état
   const S = reactive({
     boot: 'loading', // loading | welcome | app
-    showEmptyProposed: false, // collections proposées à 0 : masquées par défaut (demande de l'utilisateur)
-    propSearch: { q: '', open: false, active: 0 }, // recherche dans les collections proposées (suggestions)
+    // « Catégories » (onglet Collections) : recherche d'une catégorie de Wikipédia avec suggestions au fil de la frappe
+    // (list : [{title, name, pages, subcats}], done : texte pour lequel list a été reçue, nav : flèches utilisées depuis
+    // la dernière frappe, enter : Entrée pressée avant l'arrivée des suggestions) ; catégorie ouverte sans être suivie
+    // (catView : {key, title, name, size, subcats, withSubs, loading, error, items, total, busy}) ; catBusy : « Ne plus
+    // suivre » en cours.
+    catSearch: { q: '', open: false, active: 0, list: [], loading: false, error: '', done: '', nav: false, enter: false },
+    catView: null,
+    catBusy: false,
     key: (() => { const k = store.get(LS.key); return k && KEY_RE.test(k) ? k : null; })(),
     keyNotSaved: false,
     health: null,
@@ -223,7 +229,7 @@
     fetchedAt: null,
     loadingCards: false,
     tab: 'collections', // collections | cartes | maj | reglages
-    album: null, // {kind: 'target' | 'catalog', id} : collection ouverte
+    album: null, // {kind: 'target', id} : collection ou catégorie suivie ouverte ; {kind: 'category', id: 'wp:<nom>'} : catégorie ouverte sans être suivie (S.catView)
     albumFilter: 'all',
     albumSort: 'order',
     albumLimit: ALBUM_PAGE,
@@ -250,14 +256,13 @@
     modal: null, // editor | confirm | tag | switch | link | arrange | sync
     session: { cookie: '', busy: false, error: '' },
     editor: null,
-    catalog: { list: null, error: '', busy: {}, loading: false },
     confirm: null,
     tagEdit: null,
     settings: { name: '', busy: false, error: '', saved: false },
     copied: '',
     bm: { src: null, error: '', clicked: false, importKey: null, busy: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
-    prefs: { hidden_catalog: [], hide_catalog: false }, // préférences du compte (GET/PATCH /api/me)
+    prefs: { hidden_proposals: [], hide_proposals: false }, // préférences du compte (GET/PATCH /api/me) : propositions retirées, masquées
     tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
     bulkCat: '',
     wp: { list: [], running: false, done: 0, total: 0, label: '', error: '', busy: {} }, // propositions d'après les catégories Wikipédia
@@ -722,48 +727,46 @@
   });
   const visibleCards = computed(() => filtered.value.slice(0, S.limit));
 
-  // Collections : les tiennes (targets) et celles du catalogue que tu n'as pas encore ajoutées.
-  const catalogById = computed(() => new Map((S.catalog.list || []).map((e) => [e.id, e])));
+  // Collections à compléter du serveur (targets), en deux familles : les collections (créées par le favori depuis la
+  // Collection globale du jeu, à la main dans « Nouvelle collection », ou jadis ajoutées du catalogue : sources wm:, wd,
+  // cat, links, def, catalog:… ou aucune) et les catégories de Wikipédia suivies (source « wp:<nom> »).
+  const isCatSource = (s) => typeof s === 'string' && s.startsWith('wp:');
   const collections = computed(() => {
-    const cat = catalogById.value;
-    const mine = targets.value.map((t) => {
-      const src = typeof t.source === 'string' && t.source.startsWith('catalog:') ? cat.get(t.source.slice(8)) : null;
-      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: src ? !!src.ordered : true, t };
+    // Une catégorie n'a pas d'ordre à elle (celui de Wikipédia suit des clés de tri) : de A à Z, sans numéros.
+    const all = targets.value.map((t) => {
+      const cat = isCatSource(t.source);
+      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat, cat, t };
     });
-    const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
-    const hidden = new Set(S.prefs.hidden_catalog);
-    const proposed = (S.catalog.list || []).filter((e) => !added.has('catalog:' + e.id) && !hidden.has(e.id)).map((e) => ({
-      kind: 'catalog', id: e.id, key: 'catalog:' + e.id, name: e.name,
-      items: e.items.map((i) => ({ title: String(i.title), description: i.description || null, image: null, status: 'ok', qid: i.qid || null })), ordered: !!e.ordered, e,
-    }));
-    return { mine, proposed, visible: S.prefs.hide_catalog ? [] : proposed };
+    return { all, mine: all.filter((c) => !c.cat), cats: all.filter((c) => c.cat) };
   });
   // Progression d'une collection : possédées, répartition par rareté, trois cartes pour l'éventail.
-  const progress = computed(() => {
-    const owned = byTitle.value;
-    const out = new Map();
-    for (const col of [...collections.value.mine, ...collections.value.proposed]) {
-      let own = 0;
-      const byR = {};
-      const sample = [];
-      for (const it of col.items) {
-        const c = findCard(it);
-        if (!c) continue;
-        own++;
-        byR[c.rarity] = (byR[c.rarity] || 0) + 1;
-        sample.push(c);
-      }
-      sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
-      out.set(col.key, { own, total: col.items.length, byR, sample: sample.slice(0, 3) });
+  function progressFor(col) {
+    let own = 0;
+    const byR = {};
+    const sample = [];
+    for (const it of col.items) {
+      const c = findCard(it);
+      if (!c) continue;
+      own++;
+      byR[c.rarity] = (byR[c.rarity] || 0) + 1;
+      sample.push(c);
     }
-    return out;
+    sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
+    return { own, total: col.items.length, byR, sample: sample.slice(0, 3) };
+  }
+  const progress = computed(() => new Map(collections.value.all.map((col) => [col.key, progressFor(col)])));
+  // Catégorie ouverte sans être suivie : ses articles, lus sur Wikipédia (S.catView), montrés comme un album.
+  const catAlbum = computed(() => {
+    const cv = S.catView;
+    return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: false, cat: true, cv } : null;
   });
-  const progressOf = (col) => progress.value.get(col.key) || { own: 0, total: col.items.length, byR: {}, sample: [] };
+  const catProgress = computed(() => (catAlbum.value ? progressFor(catAlbum.value) : null));
+  const progressOf = (col) => (col.kind === 'category' ? catProgress.value : progress.value.get(col.key)) || { own: 0, total: col.items.length, byR: {}, sample: [] };
   const activeAlbum = computed(() => {
     const a = S.album;
     if (!a) return null;
-    const list = a.kind === 'target' ? collections.value.mine : collections.value.proposed;
-    return list.find((c) => c.id === a.id) || null;
+    if (a.kind === 'category') return catAlbum.value && catAlbum.value.id === a.id ? catAlbum.value : null;
+    return collections.value.all.find((c) => c.id === a.id) || null;
   });
   // Album : cartes possédées et cases vides dans l'ordre de la collection, filtrées et triées.
   const albumSlots = computed(() => {
@@ -808,17 +811,15 @@
     for (const c of cards.value) if (!seen.has(c.title)) { seen.add(c.title); if (!hasSugg(c.title)) n++; }
     return n;
   });
-  // Collections qui contiennent une carte (pour la fiche).
+  // Collections et catégories suivies qui contiennent une carte (pour la fiche).
   function membershipsOf(card) {
-    const k = normTitle(card.title);
-    const all = [...collections.value.mine, ...collections.value.visible];
-    return all.filter((col) => col.items.some((it) => { const f = findCard(it); return !!f && f.id === card.id; }));
+    return collections.value.all.filter((col) => col.items.some((it) => { const f = findCard(it); return !!f && f.id === card.id; }));
   }
-  // Collections qui contiennent un article que tu n'as pas (fiche d'une case vide) : même titre, ou même qid.
+  // Collections et catégories suivies qui contiennent un article que tu n'as pas (fiche d'une case vide) : même titre,
+  // ou même qid.
   function membershipsOfItem(item) {
     const k = normTitle(item.title);
-    const all = [...collections.value.mine, ...collections.value.visible];
-    return all.filter((col) => col.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)));
+    return collections.value.all.filter((col) => col.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)));
   }
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
@@ -848,15 +849,11 @@
     return out.length > 1 ? out.sort((a, b) => b.count - a.count || COLLATOR.compare(friendName(a), friendName(b))) : out;
   }
   const holdersText = (list) => list.map((x) => friendName(x) + (x.count > 1 ? ` (×${fmt(x.count)})` : '')).join(', ');
-  // Collections où chercher chez les amis : les tiennes et les proposées affichées dans l'onglet Collections (au moins
-  // 5 %, ou toutes si tu parcours tout le catalogue).
-  const friendCols = computed(() => {
-    const { mine, visible } = collections.value;
-    return [...mine, ...visible.filter((col) => {
-      const p = progressOf(col);
-      return S.showEmptyProposed || (p.own > 0 && p.own / Math.max(1, p.total) >= PROPOSE_MIN);
-    })];
-  });
+  // Collections où chercher chez les amis : toutes les tiennes, catégories suivies comprises.
+  const friendCols = computed(() => collections.value.all);
+  // Noms des collections d'une ligne (« Échanges possibles », « Ce qui pourrait intéresser tes amis ») : une catégorie
+  // suivie est signalée comme telle.
+  const colsText = (cols, sep) => cols.map((c) => (c.cat ? c.name + ' (catégorie)' : c.name)).join(sep);
   // Pour chacune : ses cases vides qu'au moins un ami peut remplir (en double chez lui d'abord), et les collections où
   // les amis remplissent le plus de cases en premier.
   const friendHighlights = computed(() => {
@@ -882,8 +879,8 @@
   });
   // « Échanges possibles » : pour chaque couple (X a la carte C, Z a la collection Y où C remplit une case vide), une
   // ligne, X et Z pris parmi toi et les amis dont les cartes sont lues. Collections de Z : les tiennes comme dans « Pour
-  // compléter tes collections » ; celles qu'un ami montre ; pour un ami qui ne les montre pas, une estimation : les
-  // collections du catalogue qu'il a commencées (au moins 5 %, comme ses propositions). Une ligne par carte et par couple
+  // compléter tes collections » (catégories suivies comprises) ; celles qu'un ami montre ; rien pour un ami qui ne les
+  // montre pas (on ne sait pas ce qui lui manque : il est seulement nommé). Une ligne par carte et par couple
   // (X → Z), avec toutes les collections de Z qu'elle complète ; rapprochement titre puis qid (match.js), comme ailleurs.
   // Calculé une fois par chargement (et quand un qid est appris), filtré à part (tradeView).
   const ME = ''; // « toi » dans les échanges (un identifiant public n'est jamais vide)
@@ -897,30 +894,22 @@
     const people = [{ id: ME, me: true, name: (S.me.user && S.me.user.name) || '', index: { findCard }, f: null }];
     for (const f of friendList.value) if (f.cards) people.push({ id: f.id, me: false, name: f.name, index: indexOf.get(f.id) || none, f });
     if (people.length < 2) return empty;
-    const cat = S.catalog.list || [];
     const hidden = [];
     const waiting = [];
-    // Collections de chacun : [{name, items, estimate, kind}].
+    // Collections de chacun : [{name, items, cat}] (cat : catégorie de Wikipédia suivie).
     function colsOf(p) {
-      if (p.me) return friendCols.value.map((col) => ({ name: col.name, items: col.items, estimate: false, proposed: col.kind === 'catalog' }));
-      if (p.f.tshare && p.f.targets) return p.f.targets.map((t) => ({ name: t.name, items: t.items, estimate: false, proposed: false }));
-      if (p.f.tshare) { waiting.push(p); return []; }
-      hidden.push(p);
-      const out = [];
-      for (const e of cat) {
-        if (!e.items.length) continue;
-        let own = 0;
-        for (const it of e.items) if (p.index.findCard(it)) own++;
-        if (own && own / e.items.length >= PROPOSE_MIN) out.push({ name: e.name, items: e.items, estimate: true, proposed: true });
-      }
-      return out;
+      if (p.me) return friendCols.value.map((col) => ({ name: col.name, items: col.items, cat: !!col.cat }));
+      if (p.f.tshare && p.f.targets) return p.f.targets.map((t) => ({ name: t.name, items: t.items, cat: !!t.cat }));
+      if (p.f.tshare) waiting.push(p); else hidden.push(p);
+      return [];
     }
+    const sameCol = (a, b) => a.name === b.name && a.cat === b.cat;
     const pairs = [];
     for (const z of people) {
       // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
       const holes = new Map();
-      let estimate = false;
       for (const col of colsOf(z)) {
+        const c = { name: col.name, cat: col.cat };
         for (const it of col.items) {
           if (!it || (it.status && it.status !== 'ok')) continue;
           const k = normTitle(it.title);
@@ -929,9 +918,8 @@
             hole = z.index.findCard(it) ? null : { item: it, cols: [] };
             holes.set(k, hole);
           }
-          if (hole && !hole.cols.includes(col.name)) hole.cols.push(col.name);
+          if (hole && !hole.cols.some((x) => sameCol(x, c))) hole.cols.push(c);
         }
-        if (col.estimate) estimate = true;
       }
       if (!holes.size) continue;
       for (const x of people) {
@@ -942,20 +930,20 @@
           const c = x.index.findCard(hole.item);
           if (!c) continue;
           const row = byCard.get(c.id);
-          if (row) { for (const n of hole.cols) if (!row.cols.includes(n)) row.cols.push(n); continue; }
+          if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
           const count = Math.max(1, Number(c.count) || 1);
           byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
         }
         if (!byCard.size) continue;
         const rows = [...byCard.values()].sort((a, b) => (b.dup - a.dup) || (a.dup ? b.count - a.count : 0) || b.cols.length - a.cols.length
           || rarityRank(a.card.rarity) - rarityRank(b.card.rarity) || COLLATOR.compare(a.card.title, b.card.title));
-        pairs.push({ key: x.id + '>' + z.id, x, z, rows, dup: rows.filter((r) => r.dup).length, estimate });
+        pairs.push({ key: x.id + '>' + z.id, x, z, rows, dup: rows.filter((r) => r.dup).length });
       }
     }
-    // Les vraies collections avant les estimations ; puis les couples qui ont le plus de doubles (les plus faciles à
-    // donner), puis le plus de cases ; à égalité, par prénoms (toi d'abord).
+    // Les couples qui ont le plus de doubles (les plus faciles à donner), puis le plus de cases ; à égalité, par
+    // prénoms (toi d'abord).
     const who = (p) => (p.me ? '' : friendName(p));
-    pairs.sort((a, b) => (a.estimate - b.estimate) || b.dup - a.dup || b.rows.length - a.rows.length
+    pairs.sort((a, b) => b.dup - a.dup || b.rows.length - a.rows.length
       || COLLATOR.compare(who(a.x), who(b.x)) || COLLATOR.compare(who(a.z), who(b.z)));
     return { pairs, hidden: hidden.map((p) => p.f), waiting: waiting.map((p) => p.f) };
   });
@@ -967,9 +955,9 @@
     if (t === 'me' || !friendList.value.some((f) => f.id === t)) return all.filter((p) => p.x.me || p.z.me);
     return all.filter((p) => p.x.id === t || p.z.id === t);
   });
-  // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent leurs collections (les vraies quand ils les
-  // montrent, sinon l'estimation), tes doubles d'abord.
-  const friendWants = computed(() => trades.value.pairs.filter((p) => p.x.me).map((p) => ({ f: p.z.f, rows: p.rows, dup: p.dup, estimate: p.estimate })));
+  // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent les collections qu'ils montrent, tes doubles
+  // d'abord (rien pour ceux qui ne les montrent pas).
+  const friendWants = computed(() => trades.value.pairs.filter((p) => p.x.me).map((p) => ({ f: p.z.f, rows: p.rows, dup: p.dup })));
   // Par ami : ses cartes qui te manquent, et combien il en a en double.
   const friendStats = computed(() => {
     void qidVersion.value;
@@ -1058,6 +1046,9 @@
     S.bm.importKey = null;
     S.prefs = normPrefs({});
     S.arrange = null;
+    stopCategory(); // catégorie ouverte (lecture de ses articles) et recherche de catégories : celles de l'autre classeur
+    stopCatSearch();
+    S.catBusy = false;
     pvToken++;
     suggToken++;
     S.sugg.running = false;
@@ -1083,6 +1074,7 @@
     if (resolver) resolver.clear();
     if (proposer) proposer.clearCache();
     cancelProposals();
+    catSuggCache.clear();
     S.wp.list = [];
     S.key = null;
     S.known = [];
@@ -1260,27 +1252,12 @@
     };
     cacheTimer = setTimeout(() => { cacheTimer = null; if (cacheWrite) cacheWrite(); }, 1500);
   }
-  async function loadCatalog() {
-    if (S.catalog.list || S.catalog.loading) return;
-    S.catalog.loading = true;
-    S.catalog.error = '';
-    try {
-      const r = await fetch('/catalog.json', { headers: { Accept: 'application/json' } });
-      if (!r.ok) throw new Error(`Le catalogue n'a pas pu être chargé (${r.status}).`);
-      const list = await r.json();
-      S.catalog.list = markRaw(Array.isArray(list) ? list.filter((x) => x && x.id && Array.isArray(x.items)) : []);
-    } catch (e) {
-      S.catalog.error = e instanceof SyntaxError ? 'Le catalogue est illisible.' : e.message || "Le catalogue n'a pas pu être chargé.";
-    } finally {
-      S.catalog.loading = false;
-    }
-  }
   const prepTarget = (t) => markRaw({ ...t, items: Array.isArray(t.items) ? t.items : [] });
-  // Après chaque chargement des cartes : qids manquants (toutes les collections), propositions d'après les catégories.
+  // Après chaque chargement des cartes : qids manquants (collections et catégories suivies), propositions d'après les
+  // catégories de tes cartes (sauf si tu les as masquées).
   function afterCards() {
-    const items = [...collections.value.mine, ...collections.value.proposed].flatMap((c) => c.items);
-    resolveQids(items, false);
-    computeProposals(false);
+    resolveQids(collections.value.all.flatMap((c) => c.items), false);
+    if (!S.prefs.hide_proposals) computeProposals(false);
   }
   async function loadTargets() {
     const gen = cardsGen;
@@ -1375,7 +1352,7 @@
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
-    const side = Promise.all([loadTargets().catch((e) => { if (!stale()) notify(e.message, true); }), loadCatalog()]);
+    const side = loadTargets().catch((e) => { if (!stale()) notify(e.message, true); });
     // Cartes gardées dans ce navigateur d'abord (tout de suite), puis seulement ce qui a changé depuis.
     if (await queueCards(() => showCachedCards(S.me)).catch(() => false) && !stale()) S.loadingCards = false;
     await Promise.all([syncCards(S.me).catch((e) => { if (!stale()) notify(e.message, true); }), side]);
@@ -1623,6 +1600,7 @@
     Object.assign(S, { q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [] });
   }
   function openAlbum(kind, id) {
+    if (kind !== 'category') stopCategory();
     S.album = { kind, id };
     S.tab = 'collections';
     Object.assign(S, { albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, lastClicked: null });
@@ -1630,7 +1608,7 @@
     ensureFriends(); // badges « chez Paul » des cases vides
     toTop();
   }
-  function closeAlbum() { S.album = null; S.selected.clear(); toTop(); }
+  function closeAlbum() { stopCategory(); S.album = null; S.selected.clear(); toTop(); }
   function openTarget(id) { openAlbum('target', id); }
   function toggleTagFilter(name, ev) {
     // Clic simple : ce tag seul (ou plus aucun) ; Ctrl/⌘+clic : combiner.
@@ -1910,27 +1888,6 @@
       },
     });
   }
-  async function addCatalog(entry) {
-    if (S.catalog.busy[entry.id]) return;
-    S.catalog.busy[entry.id] = true;
-    S.catalog.error = '';
-    try {
-      const items = entry.items.slice(0, 3000).map((i) => {
-        const it = { title: String(i.title), description: i.description || null, image: null, status: 'ok' };
-        if (i.qid) it.qid = i.qid;
-        return it;
-      });
-      const r = await api('POST', '/api/targets/save', { name: entry.name, items, source: 'catalog:' + entry.id });
-      if (r.target) upsertTarget(r.target); else await loadTargets();
-      const mine = targets.value.find((t) => t.source === 'catalog:' + entry.id);
-      if (mine && S.album && S.album.kind === 'catalog' && S.album.id === entry.id) S.album = { kind: 'target', id: mine.id };
-      notify(`« ${entry.name} » ajoutée à tes collections.`);
-    } catch (e) {
-      S.catalog.error = e.message;
-    } finally {
-      S.catalog.busy[entry.id] = false;
-    }
-  }
 
   // ---------------------------------------------------------------- fenêtres, réglages, favori
   function closeModal() {
@@ -2087,12 +2044,24 @@
       after: () => { openFavori(); notify('Nouveau favori prêt : remplace l\'ancien dans ta barre de favoris.'); },
     });
   }
-  // Met bookmarklet.js sur une ligne (commentaires en lignes à part, instructions finies par « ; »), y place l'adresse
-  // du classeur et la clé, et en fait une adresse javascript: (encodeURI, plus « # » qui couperait l'adresse).
-  function makeBookmarklet(src, site, key) {
-    const code = src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
+  // Met bookmarklet.js sur une ligne (commentaires en lignes à part, instructions finies par « ; ») et y place l'adresse
+  // du classeur et la clé.
+  function favoriCode(src, site, key) {
+    return src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
       .replace('"__SITE__"', JSON.stringify(site)).replace('"__KEY__"', JSON.stringify(key));
-    return 'javascript:' + encodeURI(code).replace(/#/g, '%23');
+  }
+  // Le favori : une adresse javascript: (encodeURI, plus « # » qui couperait l'adresse).
+  function makeBookmarklet(src, site, key) {
+    return 'javascript:' + encodeURI(favoriCode(src, site, key)).replace(/#/g, '%23');
+  }
+  // Le script Tampermonkey / Violentmonkey (facultatif) : le même code, avec "__START__" = "load" (relié dès le
+  // chargement de chaque page du jeu, rien n'est lu avant une action du joueur), sous l'en-tête du gestionnaire.
+  // @grant none : il tourne dans la page, comme le favori (il doit voir le window.fetch de la page).
+  function makeUserscript(src, site, key) {
+    return ['// ==UserScript==', '// @name         Le classeur, relié à WikiMasters', `// @namespace    ${site}`, '// @version      1',
+      '// @description  Après tes actions dans le jeu (paquet, défausse, enchère, échange), relit tes nouvelles cartes et les envoie à ton classeur. Lecture seule.',
+      '// @match        https://www.wiki-masters.com/*', '// @match        https://wiki-masters.com/*', '// @run-at       document-idle',
+      '// @grant        none', '// @noframes', '// ==/UserScript==', favoriCode(src, site, key).replace('"__START__"', '"load"'), ''].join('\n');
   }
   async function copy(text, id) {
     let ok = false;
@@ -2117,10 +2086,16 @@
   }
 
   // ---------------------------------------------------------------- préférences du compte (propositions retirées ou masquées)
+  // hidden_proposals : catégories proposées retirées (« wp:<nom> ») ; hide_proposals : propositions masquées. Anciennes
+  // préférences (avant le retrait du catalogue, 2026-10-16) : hidden_catalog (ids du catalogue et « wp:<nom> ») et
+  // hide_catalog sont encore lus, repris ici (les ids du catalogue n'ont plus d'usage) et ne sont plus réécrits.
   function normPrefs(p) {
     const o = p && typeof p === 'object' && !Array.isArray(p) ? { ...p } : {};
-    o.hidden_catalog = Array.isArray(o.hidden_catalog) ? [...new Set(o.hidden_catalog.filter((x) => typeof x === 'string'))] : [];
-    o.hide_catalog = !!o.hide_catalog;
+    const list = [...(Array.isArray(o.hidden_proposals) ? o.hidden_proposals : []), ...(Array.isArray(o.hidden_catalog) ? o.hidden_catalog : [])];
+    o.hidden_proposals = [...new Set(list.filter((x) => typeof x === 'string' && x.startsWith('wp:')))];
+    o.hide_proposals = typeof o.hide_proposals === 'boolean' ? o.hide_proposals : !!o.hide_catalog;
+    delete o.hidden_catalog;
+    delete o.hide_catalog;
     return o;
   }
   // Remplace les préférences (objet entier) ; gardées en mémoire même si le serveur refuse, et l'erreur est affichée.
@@ -2136,29 +2111,19 @@
       return false;
     }
   }
-  function askHideProposal(col) {
-    openConfirm({
-      title: `Retirer « ${col.name} » des propositions ?`,
-      text: 'Elle ne s\'affichera plus dans les collections proposées ni dans les fiches. Tu pourras la rétablir dans les Réglages.',
-      ok: 'Retirer des propositions',
-      run: async () => {
-        await savePrefs({ hidden_catalog: [...S.prefs.hidden_catalog, col.id] });
-        if (S.album && S.album.kind === 'catalog' && S.album.id === col.id) S.album = null;
-      },
-      after: () => notify(`« ${col.name} » retirée des propositions.`),
-    });
+  // Masquer ou afficher les propositions (rien n'est cherché sur Wikipédia tant qu'elles sont masquées).
+  async function setHideProposals(hide) {
+    await savePrefs({ hide_proposals: !!hide });
+    if (!hide) computeProposals(false);
   }
-  const setHideCatalog = (hide) => savePrefs({ hide_catalog: !!hide });
-  const restoreProposals = async () => { await savePrefs({ hidden_catalog: [] }); computeProposals(true); };
+  const restoreProposals = async () => { await savePrefs({ hidden_proposals: [] }); computeProposals(true); };
 
   // ---------------------------------------------------------------- propositions d'après les catégories Wikipédia (propose.js)
   const Propose = window.ClasseurPropose || null;
   const proposer = Propose ? Propose.createProposer({}) : null;
   let wpCtrl = null;
-  const wpExclude = () => [
-    ...targets.value.map((t) => t.source).filter((x) => typeof x === 'string' && x.startsWith('wp:')),
-    ...S.prefs.hidden_catalog.filter((x) => x.startsWith('wp:')),
-  ];
+  // Déjà suivies ou retirées : jamais proposées.
+  const wpExclude = () => [...targets.value.map((t) => t.source).filter(isCatSource), ...S.prefs.hidden_proposals];
   // Automatique au plus une fois par semaine, ou quand presque tout est déjà en cache ; à la main avec le bouton.
   async function computeProposals(manual) {
     if (!proposer || !cards.value.length) return;
@@ -2184,26 +2149,54 @@
     }
   }
   function cancelProposals() { if (wpCtrl) wpCtrl.abort(); wpCtrl = null; S.wp.running = false; }
-  // Propositions affichées : ni masquées, ni retirées, ni déjà ajoutées.
+  // Propositions affichées : ni masquées, ni retirées, ni déjà suivies.
+  // Puis, sans requête (propose.js, prune) : ni celles déjà « couvertes » par une de tes collections ou catégories
+  // suivies (au moins 80 % des cartes qui la rendent proposable y sont déjà), ni les sous-catégories d'une catégorie
+  // suivie ou d'une catégorie elle-même proposée (la parente seule reste).
+  const COVERED_MIN = 0.8;
   const wpVisible = computed(() => {
-    if (S.prefs.hide_catalog) return [];
-    const hidden = new Set(S.prefs.hidden_catalog);
+    if (S.prefs.hide_proposals) return [];
+    const hidden = new Set(S.prefs.hidden_proposals);
     const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
-    return S.wp.list.filter((p) => !hidden.has(p.key) && !added.has(p.key));
+    const list = S.wp.list.filter((p) => !hidden.has(p.key) && !added.has(p.key));
+    if (!Propose || typeof Propose.prune !== 'function') return list;
+    return Propose.prune(list, { followed: targets.value.map((t) => t.source).filter(isCatSource), covered: (p) => !!coveringCol(p) });
   });
-  async function addWp(p) {
+  // Cartes de chaque collection et catégorie suivie (ids des cartes qui y remplissent une case, titre puis qid).
+  const colCardIds = computed(() => {
+    void qidVersion.value;
+    return collections.value.all.map((col) => {
+      const ids = new Set();
+      for (const it of col.items) { const c = findCard(it); if (c) ids.add(c.id); }
+      return { col, ids };
+    });
+  });
+  // Collection (ou catégorie suivie) qui contient déjà au moins 80 % des cartes qui rendent une proposition
+  // proposable (p.cards : celles comptées pour les 5 % et les 2 cartes) ; null sinon.
+  function coveringCol(p) {
+    const ids = [...new Set((p.cards || []).map((t) => { const l = byTitle.value.get(normTitle(t)); return l ? l[0].id : null; }).filter(Boolean))];
+    if (!ids.length) return null;
+    for (const { col, ids: inCol } of colCardIds.value) {
+      let n = 0;
+      for (const id of ids) if (inCol.has(id)) n++;
+      if (n >= COVERED_MIN * ids.length) return col;
+    }
+    return null;
+  }
+  // « Suivre » une proposition : ses articles (directement dans la catégorie, 3 000 au plus) deviennent une collection à
+  // compléter de source « wp:<nom> », rangée dans « Mes catégories ». On reste sur la liste.
+  async function followWp(p) {
     if (S.wp.busy[p.key] || !proposer) return;
     S.wp.busy[p.key] = true;
     try {
       const members = await proposer.loadMembers(p.title, {});
       if (!members.length) throw new Error('Cette catégorie ne contient plus d\'articles.');
       const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
-      const r = await api('POST', '/api/targets/save', { name: p.name, items, source: p.key });
+      const name = p.name.length > 80 ? p.name.slice(0, 79) + '…' : p.name;
+      const r = await api('POST', '/api/targets/save', { name, items, source: p.key });
       if (r.target) upsertTarget(r.target); else await loadTargets();
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
-      const mine = targets.value.find((t) => t.source === p.key);
-      if (mine) openTarget(mine.id);
-      notify(`« ${p.name} » ajoutée à tes collections : ${fmt(items.length)} articles.`);
+      notify(`Tu suis « ${name} » : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}, dans « Mes catégories ».`);
     } catch (e) {
       notify(e.message, true);
     } finally {
@@ -2213,14 +2206,232 @@
   function askHideWp(p) {
     openConfirm({
       title: `Retirer « ${p.name} » des propositions ?`,
-      text: 'Cette catégorie ne te sera plus proposée. Tu pourras la rétablir dans les Réglages.',
+      text: 'Cette catégorie ne te sera plus proposée. Tu pourras la rétablir sous « Proposées d\'après tes cartes », ou la retrouver avec la recherche des catégories.',
       ok: 'Retirer des propositions',
       run: async () => {
-        await savePrefs({ hidden_catalog: [...S.prefs.hidden_catalog, p.key] });
+        await savePrefs({ hidden_proposals: [...S.prefs.hidden_proposals, p.key] });
         S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
       },
       after: () => notify(`« ${p.name} » retirée des propositions.`),
     });
+  }
+
+  // ---------------------------------------------------------------- « Catégories » : recherche, album d'une catégorie, suivi
+  // Une catégorie de Wikipédia (« Catégorie:Violet ») se cherche par son nom, au fil de la frappe : par préfixe d'abord
+  // (generator=prefixsearch dans l'espace 14, avec categoryinfo dans la même requête), complété par la recherche plein
+  // texte (generator=search) quand le préfixe en donne peu ; catégories cachées, de maintenance ou vides écartées,
+  // CAT_MAX au plus, chacune avec son nombre d'articles. 250 ms après la dernière frappe, dans la file de Wikipédia
+  // (wikiQ : une requête à la fois, 429 et Retry-After respectés), la recherche précédente abandonnée ; réponses gardées
+  // en mémoire le temps de la visite. Ouverte, une catégorie montre ses articles (categoryMembers) comme un album ;
+  // « Suivre cette catégorie » en fait une collection à compléter de source « wp:<nom> » (« Mes catégories »).
+  const CAT_NS = 'Catégorie:';
+  const CAT_MAX = 8;
+  const CAT_MORE = 5; // moins de résultats par préfixe : la recherche plein texte complète
+  const catName = (t) => (Propose ? Propose.displayName(t)
+    : cap(String(t || '').replace(/^wp:/, '').replace(/_/g, ' ').replace(/^(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim()));
+  // Texte cherché : sans « Catégorie: » (on cherche déjà dans l'espace des catégories).
+  const catQuery = (q) => String(q || '').replace(/_/g, ' ').replace(/^\s*(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim();
+  const followedOf = (key) => targets.value.find((t) => t.source === key) || null;
+  const pagesOf = (j) => ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
+  const catSuggCache = new Map(); // texte replié -> suggestions
+  let catSugCtrl = null;
+  let catSugTimer = null;
+  let catCtrl = null;
+  async function suggestCategories(q, signal) {
+    const out = [];
+    const seen = new Set();
+    const take = (j) => {
+      for (const p of pagesOf(j)) {
+        if (out.length >= CAT_MAX) return;
+        const t = p && typeof p.title === 'string' ? p.title : '';
+        if (!t || seen.has(t)) continue;
+        seen.add(t);
+        const ci = p.categoryinfo || {};
+        const pages = Number(ci.pages) || 0;
+        const subcats = Number(ci.subcats) || 0;
+        if (ci.hidden || isMaintenanceCategory(t) || (!pages && !subcats)) continue;
+        out.push({ title: t, name: catName(t), pages, subcats });
+      }
+    };
+    take(await getJson(wikiQ, wpUrl({ action: 'query', generator: 'prefixsearch', gpssearch: q, gpsnamespace: '14', gpslimit: '20', prop: 'categoryinfo' }), 4, null, signal));
+    if (out.length < CAT_MORE) {
+      take(await getJson(wikiQ, wpUrl({ action: 'query', generator: 'search', gsrsearch: q, gsrnamespace: '14', gsrlimit: '20', prop: 'categoryinfo' }), 4, null, signal));
+    }
+    return out;
+  }
+  function catSearchInput(value) {
+    const cs = S.catSearch;
+    Object.assign(cs, { q: value, open: true, active: 0, error: '', nav: false, enter: false, loading: catQuery(value).length >= 2 });
+    clearTimeout(catSugTimer);
+    catSugTimer = setTimeout(runCatSuggest, 250);
+  }
+  // Entrée : la suggestion active si la liste est celle du texte tapé (ou choisie aux flèches) ; sinon (suggestions pas
+  // encore arrivées, ou celles d'un texte précédent) la recherche part tout de suite et la première suggestion s'ouvre
+  // à son arrivée.
+  function catSearchEnter() {
+    const cs = S.catSearch;
+    const list = cs.list;
+    const act = Math.max(0, Math.min(cs.active, list.length - 1));
+    if (list[act] && (cs.done === cs.q || (cs.open && cs.nav))) { chooseCat(list[act]); return; }
+    if (catQuery(cs.q).length < 2 || (cs.done === cs.q && !catSugTimer)) return; // aucune catégorie pour ce texte
+    cs.open = true;
+    cs.enter = true;
+    // Frappe encore en attente : la recherche part tout de suite ; requête en cours : c'est celle de ce texte.
+    if (catSugTimer || !catSugCtrl) runCatSuggest();
+  }
+  function chooseCat(m) {
+    stopCatSearch();
+    openCategory(m.title, m);
+  }
+  // Suggestions arrivées pour le texte tapé : si Entrée a été pressée entre-temps, la première s'ouvre.
+  function catSuggested(list) {
+    const cs = S.catSearch;
+    if (!cs.enter) return;
+    cs.enter = false;
+    if (list.length) chooseCat(list[0]);
+  }
+  async function runCatSuggest() {
+    clearTimeout(catSugTimer);
+    catSugTimer = null;
+    const cs = S.catSearch;
+    const raw = cs.q;
+    const q = catQuery(raw);
+    if (catSugCtrl) catSugCtrl.abort();
+    catSugCtrl = null;
+    if (q.length < 2) { Object.assign(cs, { list: [], loading: false, error: '', done: '' }); return; }
+    const k = fold(q);
+    const hit = catSuggCache.get(k);
+    if (hit) { Object.assign(cs, { list: hit, loading: false, error: '', done: raw, active: 0, nav: false }); catSuggested(hit); return; }
+    const ctrl = new AbortController();
+    catSugCtrl = ctrl;
+    Object.assign(cs, { loading: true, error: '' });
+    try {
+      const list = markRaw(await suggestCategories(q, ctrl.signal));
+      if (catSugCtrl !== ctrl) return;
+      catSuggCache.set(k, list);
+      if (catSuggCache.size > 60) catSuggCache.delete(catSuggCache.keys().next().value);
+      Object.assign(cs, { list, done: raw, active: 0, nav: false, loading: false });
+      catSugCtrl = null;
+      catSuggested(list);
+    } catch (e) {
+      if (catSugCtrl === ctrl && e.name !== 'AbortError') Object.assign(cs, { list: [], error: e.message, enter: false });
+    } finally {
+      if (catSugCtrl === ctrl) { catSugCtrl = null; cs.loading = false; }
+    }
+  }
+  function stopCatSearch() {
+    clearTimeout(catSugTimer);
+    catSugTimer = null;
+    if (catSugCtrl) catSugCtrl.abort();
+    catSugCtrl = null;
+    Object.assign(S.catSearch, { q: '', open: false, active: 0, list: [], loading: false, error: '', done: '', nav: false, enter: false });
+  }
+  function stopCategory() {
+    if (catCtrl) catCtrl.abort();
+    catCtrl = null;
+    S.catView = null;
+  }
+  // Ouvre une catégorie (suggestion, proposition) : son album si tu la suis déjà, sinon ses articles lus sur Wikipédia.
+  // info : {pages, subcats} quand on les connaît déjà (categoryinfo).
+  function openCategory(title, info) {
+    const name = catName(title);
+    if (!name) return;
+    const key = 'wp:' + name;
+    const t = followedOf(key);
+    if (t) { openAlbum('target', t.id); return; }
+    stopCategory();
+    const num = (v) => (v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
+    S.catView = { key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: false,
+      loading: true, error: '', items: null, total: 0, busy: false };
+    openAlbum('category', key);
+    loadCategory(false);
+  }
+  // Taille (categoryinfo) si on ne la connaît pas, puis, sauf infoOnly, les articles (avec ceux des sous-catégories
+  // directes si withSubs) : 3 000 au plus, total = ce qui a été lu (plus de 3 000 : trop grande pour être suivie).
+  async function loadCategory(infoOnly) {
+    const cv = S.catView;
+    if (!cv) return;
+    if (catCtrl) catCtrl.abort();
+    const ctrl = new AbortController();
+    catCtrl = ctrl;
+    const stale = () => catCtrl !== ctrl || S.catView !== cv;
+    if (!infoOnly) cv.loading = true;
+    cv.error = '';
+    try {
+      if (cv.size === null || cv.subcats === null) {
+        const j = await getJson(wikiQ, wpUrl({ action: 'query', prop: 'categoryinfo', titles: cv.title }), 3, null, ctrl.signal);
+        if (stale()) return;
+        const ci = (pagesOf(j)[0] || {}).categoryinfo || {};
+        cv.size = Number(ci.pages) || 0;
+        cv.subcats = Number(ci.subcats) || 0;
+        // Catégorie qui n'est plus suivie (ses articles repris de la collection) : plus d'articles qu'elle n'en a
+        // directement, c'est qu'ils venaient aussi de ses sous-catégories.
+        if (infoOnly && cv.subcats && cv.items && cv.items.length > cv.size) cv.withSubs = true;
+      }
+      if (!infoOnly) {
+        const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal);
+        if (stale()) return;
+        cv.total = list.length;
+        cv.items = markRaw(list.slice(0, 3000).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
+      }
+    } catch (e) {
+      if (!stale() && e.name !== 'AbortError') cv.error = e.message;
+    } finally {
+      if (!stale()) { catCtrl = null; cv.loading = false; }
+    }
+  }
+  function toggleCatSubs() {
+    const cv = S.catView;
+    if (!cv || cv.busy) return;
+    cv.withSubs = !cv.withSubs;
+    loadCategory(false);
+  }
+  // « Suivre cette catégorie » : ses articles lus (avec les sous-catégories si la case est cochée) deviennent une
+  // collection à compléter de source « wp:<nom> » ; l'album reste ouvert, devenu celui de la catégorie suivie.
+  async function followCategory() {
+    const cv = S.catView;
+    if (!cv || cv.busy || cv.loading || !cv.items || !cv.items.length) return;
+    if (cv.total > 3000) { notify('Cette catégorie a plus de 3 000 articles : trop grande pour être suivie.', true); return; }
+    if (cv.key.length > 200) { notify('Le nom de cette catégorie est trop long pour qu\'elle soit suivie.', true); return; }
+    cv.busy = true;
+    try {
+      const name = cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
+      const items = cv.items.map((it) => ({ title: it.title, description: null, image: null, status: 'ok' }));
+      const r = await api('POST', '/api/targets/save', { name, items, source: cv.key });
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+      S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== cv.key));
+      const t = followedOf(cv.key);
+      if (t && S.catView === cv) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
+      notify(`Tu suis « ${name} » : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${cv.withSubs ? ', sous-catégories comprises' : ''}.`);
+    } catch (e) {
+      notify(e.message, true);
+    } finally {
+      cv.busy = false;
+    }
+  }
+  // « Ne plus suivre » : la collection de la catégorie est supprimée ; l'album reste ouvert, comme une catégorie non
+  // suivie (mêmes articles), d'où « Suivre » la reprend.
+  async function unfollowCategory(col) {
+    const t = col && col.t;
+    if (!t || S.catBusy) return;
+    S.catBusy = true;
+    try {
+      await api('POST', '/api/targets/delete', { id: t.id });
+      targets.value = targets.value.filter((x) => x.id !== t.id);
+      if (S.album && S.album.kind === 'target' && S.album.id === t.id) {
+        const name = catName(t.source);
+        stopCategory();
+        S.catView = { key: 'wp:' + name, title: CAT_NS + name, name, size: null, subcats: null, withSubs: false, loading: false, error: '',
+          items: markRaw(t.items.slice()), total: t.items.length, busy: false };
+        S.album = { kind: 'category', id: 'wp:' + name };
+        loadCategory(true);
+      }
+      notify(`Tu ne suis plus « ${t.name} ».`);
+    } catch (e) {
+      notify(e.message, true);
+    } finally {
+      S.catBusy = false;
+    }
   }
 
   // ---------------------------------------------------------------- nouvelle collection par mots-clés
@@ -2341,8 +2552,8 @@
   // Catégories de maintenance de Wikipédia (ébauches, portails, homonymies, pages à…) : jamais des collections.
   // Reprend le filtre du module de propositions quand il est chargé.
   function isMaintenanceCategory(title) {
-    const name = String(title).replace(/^Catégories*:s*/i, '');
-    if (/^(Wikipédia|Portail|Projet|Modèle|Aide)s*:/i.test(name) || /ébauche|homonymie|maintenance|à (vérifier|sourcer|wikifier|recycler)|page(s)? (utilisant|avec|à)|article(s)? (à|avec|utilisant)/i.test(name)) return true;
+    const name = String(title).replace(/^Catégorie\s*:\s*/i, '');
+    if (/^(Wikipédia|Portail|Projet|Modèle|Aide)\s*:/i.test(name) || /ébauche|homonymie|maintenance|à (vérifier|sourcer|wikifier|recycler)|page(s)? (utilisant|avec|à)|article(s)? (à|avec|utilisant)/i.test(name)) return true;
     const P = window.ClasseurPropose;
     try { return !!(P && P.isNoise && P.isNoise(title) && /^(Wikipédia|Page|Article|Portail|Projet|Ébauche|Homonymie)/i.test(name)); } catch (e) { return false; }
   }
@@ -2857,12 +3068,13 @@
     }
     return out;
   }
-  // Collection qu'un ami montre : son nom et, pour chaque élément, le titre et le qid (rien d'autre n'est gardé).
+  // Collection qu'un ami montre : son nom, si c'est une catégorie de Wikipédia qu'il suit (kind), et pour chaque
+  // élément, le titre et le qid (rien d'autre n'est gardé).
   const QID_RE = /^Q[1-9]\d{0,11}$/;
   function prepFriendTarget(t) {
     const items = (Array.isArray(t.items) ? t.items : []).filter((it) => it && typeof it.title === 'string' && it.title)
       .map((it) => (typeof it.qid === 'string' && QID_RE.test(it.qid) ? { title: it.title, qid: it.qid } : { title: it.title }));
-    return markRaw({ id: String(t.id), name: String(t.name || 'Sans nom'), items });
+    return markRaw({ id: String(t.id), name: String(t.name || 'Sans nom'), cat: t.kind === 'category', items });
   }
   async function readMemberTargets(id, gen) {
     const out = [];
@@ -2929,7 +3141,7 @@
             got = await readMemberTargets(f.id, gen);
           } catch (e) {
             if (gen !== friendsGen) return;
-            // A cessé de montrer ses collections entre la liste et cette lecture : on revient à l'estimation pour lui.
+            // A cessé de montrer ses collections entre la liste et cette lecture : il redevient « ne partage pas ».
             if (e.status === 404) { friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, tshare: false, tmark: null, targets: null }) : x)); continue; }
             throw e;
           }
@@ -3227,14 +3439,14 @@
       ]);
     }
     const counts = rarityCount.value;
-    const all = [...collections.value.mine, ...collections.value.visible];
-    const started = all.filter((c) => progressOf(c).own > 0).length;
+    // Nombre de collections de « Mes collections » (ni les catégories suivies, ni de total à atteindre).
+    const nCol = collections.value.mine.length;
     const nL = counts.L || 0;
     return h('div', { class: 'summary' }, [
       h('div', { class: 'figures' }, [
         h('div', { class: 'figure' }, [h('b', null, fmt(total)), h('span', null, 'cartes différentes')]),
         copies.value !== total ? h('div', { class: 'figure' }, [h('b', null, fmt(copies.value)), h('span', null, 'exemplaires')]) : null,
-        h('div', { class: 'figure' }, [h('b', null, `${fmt(started)} / ${fmt(all.length)}`), h('span', null, 'collections commencées')]),
+        h('div', { class: 'figure' }, [h('b', null, fmt(nCol)), h('span', null, plural(nCol, 'collection', 'collections'))]),
         h('div', { class: 'figure' }, [h('b', null, fmt(nL)), h('span', null, plural(nL, 'légendaire', 'légendaires'))]),
       ]),
       h('div', { class: 'rbar' }, [
@@ -3254,7 +3466,7 @@
     return h('header', { class: 'top' }, [h('div', { class: 'wrap' }, [
       h('div', { class: 'headline' }, [
         h('div', null, [h('p', { class: 'eyebrow' }, 'Collections WikiMasters'), h('h1', null, name ? `Le classeur de ${name}` : 'Le classeur')]),
-        h('p', { class: 'note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes de Wikidata.'),
+        h('p', { class: 'note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes et les catégories de Wikipédia et de Wikidata.'),
       ]),
       viewSummary(),
       h('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'Sections' }, TABS.map(([id, label]) => h('button', {
@@ -3265,8 +3477,8 @@
   }
 
   // ================================================================ rendu : onglet Collections
-  // Une collection proposée n'apparaît que si tu en as au moins 5 % ; les autres restent dans « Parcourir tout le catalogue ».
-  const PROPOSE_MIN = 0.05;
+  // Deux zones : « Mes collections » (favori depuis la Collection globale du jeu, ou à la main), puis « Catégories »
+  // (recherche d'une catégorie de Wikipédia, « Mes catégories » suivies, propositions d'après tes cartes).
   function viewWpRow(p) {
     const owned = p.cards.map((t) => byTitle.value.get(normTitle(t))).filter(Boolean).map((l) => l[0]);
     const byR = {};
@@ -3276,134 +3488,124 @@
     return h('div', { class: ['row', 'wp'], key: p.key }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, sample.length ? sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
-        h('span', { class: 'name' }, p.name),
+        h('button', { class: 'name row-open', type: 'button', title: 'Ouvrir la catégorie', onClick: () => openCategory(p.title, { pages: p.size, subcats: p.subcats }) }, p.name),
         rarityBar(byR, p.size),
-        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.owned)), ` sur ${fmt(p.size)}${p.partial ? ' (avec sous-catégories)' : ''} · Catégorie Wikipédia`]),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.owned)), ` sur ${fmt(p.size)}${p.partial ? ' (avec sous-catégories)' : ''}`]),
           h('span', null, pct(p.owned, p.size))]),
+        // Pourquoi elle est proposée : les cartes qui la rendent proposable.
+        h('span', { class: 'row-why' }, 'Tu as : ' + (p.cards.length > 3
+          ? `${p.cards.slice(0, 3).join(', ')} et ${fmt(p.cards.length - 3)} ${plural(p.cards.length - 3, 'autre', 'autres')}`
+          : p.cards.length > 1 ? `${p.cards.slice(0, -1).join(', ')} et ${p.cards[p.cards.length - 1]}` : p.cards.join(''))),
         h('span', { class: 'row-actions' }, [
-          h('button', { class: 'btn small primary', type: 'button', disabled: busy, 'aria-label': `Ajouter « ${p.name} » à mes collections`, onClick: () => addWp(p) },
-            busy ? 'Ajout…' : 'Ajouter à mes collections'),
+          h('button', { class: 'btn small primary', type: 'button', disabled: busy, 'aria-label': `Suivre « ${p.name} »`, onClick: () => followWp(p) },
+            busy ? 'Un instant…' : 'Suivre'),
           h('button', { class: 'btn small ghost', type: 'button', 'aria-label': `Retirer « ${p.name} » des propositions`, onClick: () => askHideWp(p) }, 'Retirer'),
-          h('a', { class: 'small', href: p.url, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la catégorie ↗'),
+          h('a', { class: 'small', href: p.url, target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗'),
         ]),
       ]),
     ]);
   }
+  // « Proposées d'après tes cartes » : catégories de Wikipédia de tes cartes dont tu as au moins 5 % (et 2 cartes).
   function viewWpGroup() {
     if (!proposer) return null;
+    const hidden = !!S.prefs.hide_proposals;
     const list = wpVisible.value;
-    return h('div', { class: 'subgroup', key: 'g:wp' }, [
-      h('h3', { class: 'subhead' }, "D'après tes cartes (catégories Wikipédia)"),
+    const retired = S.prefs.hidden_proposals.length;
+    const head = h('div', { class: 'subhead-line' }, [
+      h('h3', { class: 'subhead', id: 'h-wp' }, "Proposées d'après tes cartes"),
+      h('button', { class: 'linkish', type: 'button', onClick: () => setHideProposals(!hidden) }, hidden ? 'Afficher les propositions' : 'Masquer les propositions'),
+    ]);
+    if (hidden) return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [head, h('p', { class: 'small muted' }, 'Propositions masquées.')]);
+    return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [
+      head,
       S.wp.running ? h('div', { class: 'wp-progress', role: 'status' }, [
         h('progress', { max: Math.max(1, S.wp.total), value: Math.min(S.wp.done, Math.max(1, S.wp.total)), 'aria-label': 'Recherche de propositions' }),
         h('span', null, S.wp.label), h('button', { class: 'linkish', type: 'button', onClick: cancelProposals }, 'Annuler'),
       ]) : null,
       errLine(S.wp.error),
       list.length ? h('div', { class: 'rows' }, list.map(viewWpRow))
-        : !S.wp.running ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
-      S.wp.running ? null : h('div', null, [h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions')]),
+        : !S.wp.running ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia de tes cartes est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
+      S.wp.running ? null : h('div', { class: 'row-actions' }, [
+        h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions'),
+        retired ? h('button', { class: 'linkish', type: 'button', onClick: restoreProposals },
+          `Rétablir ${retired > 1 ? 'les ' + fmt(retired) + ' propositions retirées' : 'la proposition retirée'}`) : null,
+      ]),
     ]);
   }
-  // Recherche dans les collections proposées : par nom, puis par carte contenue (« Khéops » → Pharaons). Noms et
-  // articles du catalogue repliés une fois par catalogue ; 8 suggestions au plus.
-  const catalogIndex = computed(() => new Map((S.catalog.list || []).map((e) => [e.id, { name: fold(e.name), items: e.items.map((i) => fold(i.title)) }])));
-  function proposedMatches(q) {
-    const f = fold(q.trim());
-    if (f.length < 2) return [];
-    const idx = catalogIndex.value;
-    const byName = [];
-    const byItem = [];
-    for (const col of collections.value.proposed) {
-      const x = idx.get(col.id);
-      if (!x) continue;
-      if (x.name.includes(f)) byName.push({ col, item: null, starts: x.name.startsWith(f) || x.name.includes(' ' + f) ? 1 : 0 });
-      else {
-        const k = x.items.findIndex((t) => t.includes(f));
-        if (k >= 0) byItem.push({ col, item: col.items[k].title });
-      }
+  // Recherche d'une catégorie de Wikipédia (combobox) : suggestions au fil de la frappe (suggestCategories), ↑ ↓ pour
+  // choisir, Entrée pour ouvrir, Échap pour fermer la liste.
+  function viewCatSearch() {
+    const cs = S.catSearch;
+    const list = cs.list;
+    const q = catQuery(cs.q);
+    const open = cs.open && q.length >= 2 && list.length > 0;
+    const act = Math.max(0, Math.min(cs.active, list.length - 1));
+    const stale = cs.done !== cs.q; // suggestions d'un texte précédent, montrées en attendant (estompées)
+    let status = null;
+    if (cs.open && q.length >= 2 && !open) {
+      if (cs.error) status = cs.error;
+      else if (cs.loading) status = 'Recherche des catégories…';
+      else if (cs.done === cs.q) status = 'Aucune catégorie de Wikipédia ne correspond.';
     }
-    byName.sort((a, b) => b.starts - a.starts || a.col.name.localeCompare(b.col.name, 'fr'));
-    byItem.sort((a, b) => a.col.name.localeCompare(b.col.name, 'fr'));
-    return [...byName, ...byItem].slice(0, 8);
-  }
-  function viewProposedSearch() {
-    const ps = S.propSearch;
-    const list = proposedMatches(ps.q);
-    const open = ps.open && list.length > 0;
-    const act = Math.max(0, Math.min(ps.active, list.length - 1));
-    const choose = (m) => { ps.q = ''; ps.open = false; ps.active = 0; openAlbum('catalog', m.col.id); };
     return h('div', { class: 'prop-search' }, [
-      h('label', { class: 'sr', for: 'prop-q' }, 'Chercher une collection proposée'),
+      h('label', { class: 'sr', for: 'cat-q' }, 'Chercher une catégorie de Wikipédia'),
       h('input', {
-        id: 'prop-q', class: 'field full', type: 'search', value: ps.q, autocomplete: 'off', spellcheck: 'false',
-        placeholder: 'Chercher une collection proposée : son nom ou une carte (« pharaons », « Khéops »…)',
-        role: 'combobox', 'aria-expanded': String(open), 'aria-controls': 'prop-list', 'aria-autocomplete': 'list',
-        'aria-activedescendant': open ? 'prop-opt-' + act : null,
-        onInput: (e) => { ps.q = e.target.value; ps.open = true; ps.active = 0; },
-        onFocus: () => { ps.open = true; },
-        onBlur: () => { setTimeout(() => { ps.open = false; }, 150); },
+        id: 'cat-q', class: 'field full', type: 'search', value: cs.q, autocomplete: 'off', spellcheck: 'false',
+        placeholder: 'Chercher une catégorie de Wikipédia : « violet », « races bovines », « footballeur »…',
+        role: 'combobox', 'aria-expanded': String(open), 'aria-controls': 'cat-list', 'aria-autocomplete': 'list',
+        'aria-activedescendant': open ? 'cat-opt-' + act : null, 'aria-busy': String(!!cs.loading),
+        onInput: (e) => catSearchInput(e.target.value),
+        onFocus: () => { cs.open = true; },
+        onBlur: () => { setTimeout(() => { cs.open = false; }, 150); },
         onKeydown: (e) => {
-          if (e.key === 'ArrowDown') { e.preventDefault(); ps.open = true; ps.active = Math.min(act + 1, Math.max(0, list.length - 1)); }
-          else if (e.key === 'ArrowUp') { e.preventDefault(); ps.active = Math.max(act - 1, 0); }
-          else if (e.key === 'Enter' && open && list[act]) { e.preventDefault(); choose(list[act]); }
-          else if (e.key === 'Escape' && ps.open) { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); ps.open = false; }
+          if (e.key === 'ArrowDown') { e.preventDefault(); cs.open = true; cs.nav = true; cs.active = Math.min(act + 1, Math.max(0, list.length - 1)); }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); cs.nav = true; cs.active = Math.max(act - 1, 0); }
+          else if (e.key === 'Enter') { e.preventDefault(); catSearchEnter(); }
+          else if (e.key === 'Escape' && cs.open) { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); cs.open = false; }
         },
       }),
-      open ? h('ul', { id: 'prop-list', class: 'prop-list', role: 'listbox', 'aria-label': 'Collections proposées' }, list.map((m, i) => {
-        const p = progressOf(m.col);
-        return h('li', {
-          id: 'prop-opt-' + i, key: m.col.key, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
-          onMousedown: (e) => { e.preventDefault(); choose(m); }, onMouseenter: () => { ps.active = i; },
-        }, [
-          h('span', { class: 'prop-list__name' }, m.col.name),
-          h('span', { class: 'prop-list__hint' }, m.item ? `contient « ${m.item} »` : ''),
-          h('span', { class: 'prop-list__count num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
-        ]);
-      })) : ps.open && fold(ps.q.trim()).length >= 2 ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, 'Aucune collection proposée ne correspond.') : null,
+      open ? h('ul', { id: 'cat-list', class: ['prop-list', { 'prop-list--stale': stale }], role: 'listbox', 'aria-label': 'Catégories de Wikipédia' }, list.map((m, i) => h('li', {
+        id: 'cat-opt-' + i, key: m.title, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
+        onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
+      }, [
+        h('span', { class: 'prop-list__name' }, m.name),
+        h('span', { class: 'prop-list__hint' }, followedOf('wp:' + m.name) ? 'suivie'
+          : m.subcats ? `${fmt(m.subcats)} ${plural(m.subcats, 'sous-catégorie', 'sous-catégories')}` : ''),
+        h('span', { class: 'prop-list__count num' }, `${fmt(m.pages)} ${plural(m.pages, 'article', 'articles')}`),
+      ]))) : status ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, status) : null,
     ]);
   }
   function viewCollections() {
-    const { mine, visible } = collections.value;
-    const ranked = visible.map((col, i) => ({ col, p: progressOf(col), i }));
-    const enough = (x) => x.p.own > 0 && x.p.own / Math.max(1, x.p.total) >= PROPOSE_MIN;
-    const shown = ranked.filter((x) => S.showEmptyProposed || enough(x))
-      .sort((a, b) => (b.p.own / Math.max(1, b.p.total)) - (a.p.own / Math.max(1, a.p.total)) || a.i - b.i);
-    const others = ranked.length - ranked.filter(enough).length;
-    let proposedBody;
-    if (S.prefs.hide_catalog) {
-      proposedBody = [h('p', { class: 'muted small' }, ['Propositions masquées · ', h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(false) }, 'Afficher')])];
-    } else {
-      proposedBody = [
-        h('div', { class: 'section-head' }, [
-          h('h2', { id: 'h-proposed' }, 'Collections proposées'),
-          h('small', null, 'tirées de Wikipédia et Wikidata, celles dont tu as déjà au moins 5 % ; ouvre-en une, puis ajoute-la à tes collections'),
-          h('span', { class: 'spacer' }),
-          h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(true) }, 'Masquer toutes les propositions'),
-        ]),
-        S.catalog.list && ranked.length ? viewProposedSearch() : null,
-        !S.catalog.list ? (S.catalog.error ? errLine(S.catalog.error) : h('p', { class: 'muted', role: 'status' }, 'Chargement du catalogue…')) : null,
-        shown.length ? h('div', { class: 'rows' }, shown.map((x) => viewRow(x.col))) : null,
-        S.catalog.list && !shown.length && ranked.length && !wpVisible.value.length && !S.wp.running ? h('p', { class: 'muted' }, 'Aucune collection proposée ne te concerne encore : une proposition apparaît quand tu en as au moins 5 %.') : null,
-        S.catalog.list && (others || S.showEmptyProposed) ? h('div', { class: 'show-more' }, [
-          h('button', { class: 'linkish', type: 'button', id: 'toggle-empty', onClick: () => { S.showEmptyProposed = !S.showEmptyProposed; } },
-            S.showEmptyProposed ? 'Ne montrer que celles dont tu as au moins 5 %' : `Parcourir tout le catalogue (${fmt(others)} autres collections)`),
-        ]) : null,
-        S.catalog.list && !ranked.length ? h('p', { class: 'muted' }, 'Tu as déjà ajouté ou retiré toutes les collections proposées.') : null,
-        viewWpGroup(),
-      ];
-    }
+    const { mine, cats } = collections.value;
+    const hasFavori = !!storedImportKey() || !!(S.me && S.me.has_import_key);
     return h('div', { class: 'groups' }, [
       h('section', { class: 'group', 'aria-labelledby': 'h-mine' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-mine' }, 'Mes collections'),
-          h('small', null, 'les tiennes, à compléter'),
+          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, ou à la main'),
           h('span', { class: 'spacer' }),
           h('button', { class: 'btn', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), 'Nouvelle collection']),
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
-          : h('p', { class: 'empty-box' }, 'Aucune collection pour l\'instant : crée la tienne (par mots-clés ou avec une liste d\'articles), ou ajoute une collection proposée.'),
+          : h('div', { class: 'empty-box' }, [
+            h('p', null, "Aucune collection pour l'instant. Le plus simple : sur wiki-masters.com, ouvre la « Collection globale », fais une recherche (« vache »…) puis clique ton favori : il propose d'en faire une collection, avec la rareté de chaque carte dans le jeu."),
+            h('p', null, "Tu peux aussi en créer une ici, par mots-clés ou avec une liste d'articles : « Nouvelle collection »."),
+            hasFavori ? null : h('button', { class: 'btn small', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+          ]),
       ]),
-      h('section', { class: 'group', 'aria-labelledby': S.prefs.hide_catalog ? null : 'h-proposed', 'aria-label': S.prefs.hide_catalog ? 'Collections proposées' : null }, proposedBody),
+      h('section', { class: 'group', 'aria-labelledby': 'h-cats' }, [
+        h('div', { class: 'section-head' }, [
+          h('h2', { id: 'h-cats' }, 'Catégories'),
+          h('small', null, 'les catégories de Wikipédia (« Catégorie:Violet »…) : cherches-en une, ouvre-la, suis-la pour la compléter'),
+        ]),
+        viewCatSearch(),
+        h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-mycats' }, [
+          h('h3', { class: 'subhead', id: 'h-mycats' }, 'Mes catégories'),
+          cats.length ? h('div', { class: 'rows' }, cats.map(viewRow))
+            : h('p', { class: 'small muted' }, 'Tu ne suis aucune catégorie : cherches-en une ci-dessus, ou suis une proposition ci-dessous.'),
+        ]),
+        viewWpGroup(),
+      ]),
     ]);
   }
   function seg(label, pressed, onClick) {
@@ -3414,9 +3616,11 @@
     if (!col) {
       return h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
-        h('p', { class: 'muted' }, S.catalog.loading ? 'Chargement…' : "Cette collection n'existe plus."),
+        h('p', { class: 'muted' }, "Cette collection n'existe plus."),
       ]);
     }
+    const cv = col.kind === 'category' ? col.cv : null; // catégorie ouverte sans être suivie
+    const reading = !!cv && (cv.loading || !cv.items);
     const p = progressOf(col);
     void S.pv.version;
     const missR = {};
@@ -3451,26 +3655,43 @@
     else if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
     else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
-    const actions = col.kind === 'target' ? [
-      h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
-      h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
-    ] : [
-      h('button', { class: 'btn primary', type: 'button', disabled: !!S.catalog.busy[col.id], onClick: () => addCatalog(col.e) },
-        [icon('plus', 'sm'), S.catalog.busy[col.id] ? 'Ajout…' : 'Ajouter à mes collections']),
-      h('button', { class: 'btn ghost', type: 'button', onClick: () => askHideProposal(col) }, 'Retirer des propositions'),
-    ];
+    // Catégorie : « Voir sur Wikipédia » ; suivie : « Ne plus suivre » ; pas encore suivie : « Suivre cette catégorie ».
+    const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
+    const tooBig = !!cv && cv.total > 3000;
+    let actions;
+    if (cv) {
+      actions = [
+        h('button', { class: 'btn primary', type: 'button', disabled: cv.busy || reading || !cv.items.length || tooBig, onClick: followCategory },
+          [icon('plus', 'sm'), cv.busy ? 'Un instant…' : 'Suivre cette catégorie']),
+        wpLink(cv.title),
+      ];
+    } else if (col.cat) {
+      actions = [
+        h('button', { class: 'btn danger', type: 'button', disabled: S.catBusy, onClick: () => unfollowCategory(col) }, S.catBusy ? 'Un instant…' : 'Ne plus suivre'),
+        wpLink(CAT_NS + catName(col.t.source)),
+      ];
+    } else {
+      actions = [
+        h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
+        h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
+      ];
+    }
     const total = albumSlots.value.length;
     const shown = visibleSlots.value.length;
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
-        h('div', { class: 'album-title' }, [h('h2', null, col.name), h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
-          col.kind === 'catalog' ? h('span', { class: 'badge' }, 'proposée') : null]),
-        rarityBar(p.byR, p.total, 'bar big'),
-        ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
-        h('div', { class: 'missing-sum' }, missLine),
-        missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
-        errLine(S.catalog.error && S.album && S.album.kind === 'catalog' ? S.catalog.error : ''),
+        h('div', { class: 'album-title' }, [h('h2', null, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+          col.cat ? h('span', { class: 'badge' }, cv ? 'catégorie' : 'catégorie suivie') : null]),
+        cv && cv.subcats ? h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: cv.withSubs, disabled: cv.loading || cv.busy, onChange: toggleCatSubs }),
+          ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
+        reading ? (cv.error ? null : h('p', { class: 'hint', role: 'status' }, 'Lecture des articles de la catégorie sur Wikipédia…')) : rarityBar(p.byR, p.total, 'bar big'),
+        cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory(false) }, 'Réessayer')]) : null,
+        tooBig ? h('p', { class: 'warn' }, 'Plus de 3 000 articles : trop grande pour être suivie. Seuls les 3 000 premiers sont montrés.') : null,
+        !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
+        reading ? null : h('div', { class: 'missing-sum' }, missLine),
+        !reading && missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', S.albumFilter === 'all', () => { S.albumFilter = 'all'; }),
@@ -3485,9 +3706,9 @@
           ...actions,
         ]),
       ]),
-      total ? h(AlbumGrid) : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : [
+      total ? h(AlbumGrid) : reading ? null : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : col.cat ? 'Cette catégorie ne contient aucun article.' : [
         'Ajoute des articles Wikipédia pour la remplir. ',
-        col.kind === 'target' ? h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, 'Modifier la collection') : null,
+        h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, 'Modifier la collection'),
       ]),
       shown < total ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { S.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, total - shown))} suivantes (${fmt(total - shown)} restantes)`)]) : null,
@@ -3614,6 +3835,21 @@
       h('button', { class: 'btn', type: 'button', disabled: !value, onClick: () => copy(value, id) }, [icon(S.copied === id ? 'check' : 'copy', 'sm'), S.copied === id ? 'Copié' : 'Copier']),
     ]);
   }
+  // Le même favori en script Tampermonkey (makeUserscript), proposé replié sous le favori.
+  const userscriptText = computed(() => (S.bm.src && S.bm.importKey ? makeUserscript(S.bm.src, location.origin, S.bm.importKey) : ''));
+  function viewUserscript() {
+    const us = userscriptText.value;
+    if (!us) return null;
+    return h('details', { class: 'userscript' }, [
+      h('summary', null, 'Sans cliquer à chaque fois : le script Tampermonkey (facultatif)'),
+      h('p', { class: 'small muted' }, "Avec l'extension Tampermonkey ou Violentmonkey, ce script relie le classeur à chaque page du jeu que tu ouvres, sans clic : rien n'est lu avant ta première action (paquet, défausse, enchère, échange). Installation : dans l'extension, « Créer un nouveau script », remplace tout par ce texte, puis enregistre."),
+      h('p', { class: 'small warn' }, "À savoir : il tourne sur toutes les pages du jeu sans geste de ta part (le favori, lui, attend ton clic). Il porte la clé d'import, comme le favori : si ton extension synchronise tes scripts (Google Drive, Dropbox…), la clé y part aussi. Régénérer le favori arrête aussi ce script : recolle-le alors."),
+      h('div', { class: 'copy-row' }, [
+        h('textarea', { id: 'us-code', class: 'field', rows: 3, readonly: true, value: us, spellcheck: 'false', 'aria-label': 'Script Tampermonkey', onFocus: (e) => e.target.select() }),
+        h('button', { class: 'btn', type: 'button', onClick: () => copy(us, 'us-code') }, [icon(S.copied === 'us-code' ? 'check' : 'copy', 'sm'), S.copied === 'us-code' ? 'Copié' : 'Copier']),
+      ]),
+    ]);
+  }
   function viewFavori() {
     const url = bookmarkletUrl.value;
     const hasKey = !!S.bm.importKey;
@@ -3640,6 +3876,7 @@
         h('li', null, 'Ouvre wiki-masters.com, avec ta session ouverte.'),
         h('li', null, 'Clique le favori : un encart montre la lecture, puis le nombre de cartes envoyées. Reviens ici : le classeur se met à jour.'),
       ]),
+      h('p', null, "Ensuite, le favori reste relié à la page du jeu jusqu'à ce que tu la recharges : après tes actions (paquet ouvert, carte défaussée, mise aux enchères, échange), il renvoie tout seul tes nouvelles cartes, et ce classeur se met à jour pendant qu'il est ouvert. Il ne fait toujours que lire : il regarde passer les requêtes que la page du jeu fait d'elle-même, sans en envoyer ni en modifier, puis relit tes nouvelles cartes (au plus une fois par minute). Il ne joue pas et ne clique rien. Le badge « Classeur relié » le rappelle ; « Arrêter » le coupe."),
       h('p', { class: 'small muted' }, "Sur la page « Collection globale » du jeu, fais une recherche (« vache »…) puis clique le favori : il propose aussi d'en faire une collection à compléter, avec la vraie rareté de chaque carte dans le jeu."),
       h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
@@ -3647,6 +3884,7 @@
       hasKey ? h('p', { class: 'small muted' }, "Sur téléphone, ou si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci. Sur téléphone, tape ensuite « Classeur » dans la barre d'adresse sur wiki-masters.com et choisis le favori.") : null,
       hasKey ? copyRow('bm-url', url, 'Adresse du favori') : null,
       hasKey ? h('p', { class: 'small muted' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur ou y créer des collections, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
+      hasKey ? viewUserscript() : null,
     ]);
   }
   function viewCookie() {
@@ -3753,21 +3991,12 @@
         sharing() ? h('label', { class: 'check check--sub' }, [
           h('input', { type: 'checkbox', id: 'set-shared-targets', checked: sharingTargets(), disabled: S.friends.shareBusy,
             onChange: (e) => { const want = e.target.checked; e.target.checked = sharingTargets(); setSharedTargets(want); } }),
-          'et mes collections à compléter',
+          'et mes collections à compléter (catégories suivies comprises)',
         ]) : null,
         h('p', { class: 'small muted' }, 'Réciproque : tu ne vois les cartes des autres membres (onglet « Entre amis ») que si tu montres les tiennes. Désactivé par défaut.'),
         h('p', { class: 'small muted' }, SHARE_WHAT),
         sharing() ? h('p', { class: 'small muted' }, SHARE_TARGETS_WHAT) : null,
         errLine(S.friends.shareError),
-      ]),
-      section('Collections proposées', [
-        h('p', null, ['Collections proposées : ', h('b', null, S.prefs.hide_catalog ? 'masquées' : 'affichées'),
-          S.prefs.hide_catalog ? '.' : ' (celles dont tu as au moins 5 %).']),
-        h('div', { class: 'actions' }, [
-          h('button', { class: 'btn', type: 'button', onClick: () => setHideCatalog(!S.prefs.hide_catalog) }, S.prefs.hide_catalog ? 'Afficher les propositions' : 'Masquer les propositions'),
-          S.prefs.hidden_catalog.length ? h('button', { class: 'btn', type: 'button', onClick: restoreProposals },
-            `Rétablir ${S.prefs.hidden_catalog.length > 1 ? 'les ' + fmt(S.prefs.hidden_catalog.length) + ' propositions retirées' : 'la proposition retirée'}`) : null,
-        ]),
       ]),
       section('Ce navigateur', [
         h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé et tout ce qu'il garde du classeur. Ton classeur reste intact : ton lien le rouvre."),
@@ -3782,7 +4011,7 @@
 
   // ================================================================ rendu : onglet Entre amis
   const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni ta session WikiMasters ; tes collections à compléter seulement si tu le choisis en plus.';
-  const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
+  const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections et de tes catégories suivies (signalées comme catégories) et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
   const TRADE_NOTE = 'Le classeur ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre vous.';
   const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
   const syncedOn = (f) => (f.fetched_at ? `synchro du ${dateDay(f.fetched_at)}` : 'pas encore synchronisé');
@@ -3809,6 +4038,11 @@
       h('p', { class: 'small muted' }, TRADE_NOTE),
     ]);
   }
+  // « dont 2 catégories » : catégories de Wikipédia parmi les collections qu'un ami montre (une fois lues).
+  function catCountText(f) {
+    const n = f.targets ? f.targets.filter((t) => t.cat).length : 0;
+    return n ? ` (dont ${fmt(n)} ${plural(n, 'catégorie', 'catégories')})` : '';
+  }
   function viewMemberRow(f) {
     const st = friendStats.value.get(f.id);
     return h('div', { class: 'row member', key: f.id }, [
@@ -3819,7 +4053,7 @@
         st ? h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
           st.dup ? h('span', null, [h('b', null, fmt(st.dup)), ' en double']) : null]) : null,
         h('span', { class: 'line' }, [f.tshare
-          ? h('span', null, ['partage ses collections : ', h('b', null, fmt(f.tcount))])
+          ? h('span', null, ['partage ses collections : ', h('b', null, fmt(f.tcount)), catCountText(f)])
           : h('span', null, 'ne partage pas ses collections')]),
         h('span', { class: 'row-actions' }, [h('button', { class: 'btn small', type: 'button', disabled: !f.cards, onClick: () => openFriendBinder(f.id),
           'aria-label': `Parcourir le classeur de ${friendName(f)}` }, f.cards ? 'Parcourir son classeur' : 'Lecture…')]),
@@ -3832,8 +4066,8 @@
     const p = progressOf(x.col);
     return h('article', { class: 'fcol', key: x.col.key }, [
       h('div', { class: 'fcol__head' }, [
-        h('button', { class: 'fcol__name', type: 'button', title: 'Ouvrir la collection', onClick: () => openAlbum(x.col.kind, x.col.id) }, x.col.name),
-        x.col.kind === 'catalog' ? h('span', { class: 'badge' }, 'proposée') : null,
+        h('button', { class: 'fcol__name', type: 'button', title: x.col.cat ? 'Ouvrir la catégorie' : 'Ouvrir la collection', onClick: () => openAlbum(x.col.kind, x.col.id) }, x.col.name),
+        x.col.cat ? h('span', { class: 'badge' }, 'catégorie') : null,
         h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` ${plural(x.rows.length, 'case', 'cases')} à remplir chez tes amis`,
           ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' en double'] : []), ` · tu en as ${fmt(p.own)} sur ${fmt(p.total)}`]),
       ]),
@@ -3851,15 +4085,14 @@
     return h('article', { class: 'fcol', key }, [
       h('div', { class: 'fcol__head' }, [
         h('span', { class: 'fcol__name' }, friendName(x.f)),
-        x.estimate ? h('span', { class: 'badge badge--est', title: `${friendName(x.f)} ne partage pas ses collections` }, 'estimation') : null,
-        h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` de tes cartes ${plural(x.rows.length, 'complète', 'complètent')} ${x.estimate ? `les collections proposées que ${friendName(x.f)} a commencées` : 'ses collections'}`,
+        h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` de tes cartes ${plural(x.rows.length, 'complète', 'complètent')} ses collections`,
           ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' que tu as en double'] : [])]),
       ]),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [
-        h('button', { class: 'fitem', type: 'button', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${r.cols.join(', ')}). Ouvrir ta carte`, onClick: (e) => openCardFrom(r.card.id, e) }, [
+        h('button', { class: 'fitem', type: 'button', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${colsText(r.cols, ', ')}). Ouvrir ta carte`, onClick: (e) => openCardFrom(r.card.id, e) }, [
           pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
           r.card.count > 1 ? h('span', { class: 'holder dup' }, ['tu en as ', h('b', null, '×' + fmt(r.card.count))]) : null,
-          h('span', { class: 'fitem__cols' }, r.cols.join(' · ')),
+          h('span', { class: 'fitem__cols' }, colsText(r.cols, ' · ')),
         ]),
       ]))),
       moreToggle(key, x.rows.length),
@@ -3880,11 +4113,11 @@
   function viewTradeRow(p, r) {
     const z = personOf(p.z);
     const from = p.x.me ? 'à toi' : 'de ' + friendName(p.x.f);
-    const label = `${r.card.title}, ${RARITY_NAME[okRarity(r.card.rarity)] || 'rareté inconnue'}${r.dup ? `, ×${fmt(r.count)}` : ''}, ${from} : pourrait compléter ${r.cols.join(', ')} ${p.z.me ? 'chez toi' : 'de ' + z}`;
+    const label = `${r.card.title}, ${RARITY_NAME[okRarity(r.card.rarity)] || 'rareté inconnue'}${r.dup ? `, ×${fmt(r.count)}` : ''}, ${from} : pourrait compléter ${colsText(r.cols, ', ')} ${p.z.me ? 'chez toi' : 'de ' + z}`;
     const body = [
       pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
       r.dup ? h('span', { class: 'holder dup', title: `${p.x.me ? 'Tu en as' : friendName(p.x.f) + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null,
-      h('span', { class: 'fitem__cols' }, ['→ ', r.cols.join(' · ')]),
+      h('span', { class: 'fitem__cols' }, ['→ ', colsText(r.cols, ' · ')]),
     ];
     if (p.x.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir ta carte', onClick: (e) => openCardFrom(r.card.id, e) }, body);
     if (p.z.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir la fiche', onClick: (e) => openMissingFrom(r.item, e) }, body);
@@ -3893,18 +4126,17 @@
   function viewTradePair(p) {
     const key = 'trade:' + p.key;
     const rows = S.friends.more[key] ? p.rows : p.rows.slice(0, FRIEND_ROWS);
-    return h('article', { class: ['fcol', 'trade', { 'trade--est': p.estimate }], key: p.key }, [
+    return h('article', { class: ['fcol', 'trade'], key: p.key }, [
       h('div', { class: 'fcol__head' }, [
         h('span', { class: 'fcol__name' }, [personOf(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personOf(p.z)]),
-        p.estimate ? h('span', { class: 'badge badge--est', title: `${friendName(p.z.f)} ne partage pas ses collections` }, 'estimation') : null,
-        h('span', { class: 'fcol__sum' }, [tradeSum(p),
-          p.estimate ? `. ${friendName(p.z.f)} ne partage pas ses collections : estimation d'après les collections proposées déjà commencées.` : '']),
+        h('span', { class: 'fcol__sum' }, tradeSum(p)),
       ]),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
       moreToggle(key, p.rows.length),
     ]);
   }
-  // Ce que disent les échanges : les membres qui ne partagent pas leurs collections (estimation), ceux en lecture.
+  // Ce que disent les échanges : les membres qui ne partagent pas leurs collections (on ne sait pas ce qui leur
+  // manque), ceux en lecture.
   function tradeNotes() {
     const t = trades.value;
     const out = [];
@@ -3912,11 +4144,11 @@
       const names = andList(t.hidden.map(friendName));
       const many = t.hidden.length > 1;
       out.push(h('p', { class: 'trade-note', key: 'hidden' }, [h('b', null, names), many ? ' ne partagent pas leurs collections' : ' ne partage pas ses collections',
-        ` : ce qu'on peut ${many ? 'leur' : 'lui'} donner est estimé d'après les collections proposées déjà commencées (au moins 5 %).`]));
+        ` : impossible de savoir ce qui ${many ? 'leur' : 'lui'} manque (${many ? 'leurs' : 'ses'} cartes peuvent quand même compléter les collections des autres).`]));
     }
     if (t.waiting.length) out.push(h('p', { class: 'small muted', role: 'status', key: 'waiting' }, `Lecture des collections de ${andList(t.waiting.map(friendName))}…`));
     if (!sharingTargets()) {
-      out.push(h('p', { class: 'trade-note', key: 'mine' }, ['Tes amis ne voient pas tes collections : de leur côté, ce que tu cherches est estimé. ',
+      out.push(h('p', { class: 'trade-note', key: 'mine' }, ['Tes amis ne voient pas tes collections ni tes catégories : ils ne savent pas ce qui te manque. ',
         h('button', { class: 'linkish', type: 'button', disabled: S.friends.shareBusy, onClick: () => setSharedTargets(true) }, 'Partager aussi mes collections à compléter')]));
     }
     return out;
@@ -4047,15 +4279,17 @@
       ]) : null,
       list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-fill' }, [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-fill' }, 'Pour compléter tes collections'),
-          h('small', null, 'les cartes qui te manquent et que tes amis ont ; en double chez eux : les plus faciles à échanger')]),
+          h('small', null, 'les cartes qui manquent à tes collections et à tes catégories, et que tes amis ont ; en double chez eux : les plus faciles à échanger')]),
         fill.length ? h('div', { class: 'fcols' }, fill.map(viewFillCol))
-          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections (les tiennes et les proposées affichées)."),
+          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections et à tes catégories."),
       ]) : null,
       list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-wants' }, [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-wants' }, 'Ce qui pourrait intéresser tes amis'),
-          h('small', null, "tes cartes qui manquent à leurs collections, quand ils les partagent ; sinon, estimé d'après les collections proposées qu'ils ont commencées (au moins 5 %)")]),
+          h('small', null, "tes cartes qui manquent aux collections et catégories qu'ils partagent")]),
         wants.length ? h('div', { class: 'fcols' }, wants.map(viewWant))
-          : h('p', { class: 'empty-box' }, loadingAll || !S.catalog.list ? 'Recherche…' : 'Aucune de tes cartes ne manque aux collections de tes amis.'),
+          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche…' : !list.some((f) => f.tshare) ? 'Aucun de tes amis ne partage ses collections : impossible de savoir ce qui leur manque.'
+            : 'Aucune de tes cartes ne manque aux collections de tes amis.'),
+        wants.length && trades.value.hidden.length ? h('p', { class: 'small muted' }, `Rien pour ${andList(trades.value.hidden.map(friendName))}, qui ne ${trades.value.hidden.length > 1 ? 'partagent pas leurs' : 'partage pas ses'} collections.`) : null,
       ]) : null,
     ]);
   }
@@ -4120,8 +4354,8 @@
   function fact(label, value) { return h('div', { class: 'fact' }, [h('span', null, label), h('b', null, value)]); }
   function viewFiche(c, closeRef, boxRef) {
     const member = membershipsOf(c);
-    const mine = member.filter((m) => m.kind === 'target');
-    const prop = member.filter((m) => m.kind === 'catalog');
+    const mine = member.filter((m) => !m.cat);
+    const cats = member.filter((m) => m.cat);
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
     const memberList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
       const p = progressOf(col);
@@ -4158,7 +4392,7 @@
         ]),
         viewSuggestions(c),
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
-        prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
+        cats.length ? h('div', null, [h('h3', null, 'Dans tes catégories'), memberList(cats)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
@@ -4183,8 +4417,8 @@
     const real = ok ? realRarity(item) : null; // rareté donnée par le jeu : pas d'estimation
     const est = ok && !real ? estRarity(views) : null;
     const member = membershipsOfItem(item);
-    const mine = member.filter((m) => m.kind === 'target');
-    const prop = member.filter((m) => m.kind === 'catalog');
+    const mine = member.filter((m) => !m.cat);
+    const cats = member.filter((m) => m.cat);
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
     const memberList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
       const p = progressOf(col);
@@ -4212,7 +4446,7 @@
         ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
-        prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
+        cats.length ? h('div', null, [h('h3', null, 'Dans tes catégories'), memberList(cats)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
@@ -4608,23 +4842,48 @@
       if (q) { e.preventDefault(); q.focus(); }
     }
   }
-  // Retour sur l'onglet : cards_rev (GET /api/me) dit si quelque chose a changé (envoi du favori, tags modifiés sur un
-  // autre appareil) ; sans lui (ancien serveur), seul un nouvel envoi (fetched_at) recharge, comme avant.
-  async function onVisible() {
+  // Retour sur l'onglet, puis toutes les 60 s tant qu'il reste visible (LIVE_EVERY) : cards_rev (GET /api/me) dit si
+  // quelque chose a changé (envoi du favori, cliqué ou relié à la page du jeu ; tags modifiés sur un autre appareil), et
+  // les cartes ne sont relues (?since) que dans ce cas. Sans lui (ancien serveur), seul un nouvel envoi (fetched_at)
+  // recharge, comme avant. GET /api/me ne lit qu'une ligne de la base (le compte, par l'index unique de sa clé). Onglet
+  // caché : minuterie arrêtée, aucune requête. poll = true : relecture périodique, sautée si une autre est en cours, si
+  // les cartes se chargent ou si la fenêtre du favori (qui relit déjà toutes les 4 s) est ouverte.
+  const LIVE_EVERY = 60 * 1000;
+  let liveTimer = null;
+  let livePolling = false;
+  async function checkRemote(poll) {
     if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running || S.modal === 'sync') return;
-    const before = S.me && S.me.fetched_at;
-    try { await loadMe(); } catch (e) { return; }
-    const me = S.me;
-    const imported = !!(me && me.fetched_at && me.fetched_at !== before);
-    if (!(imported || (me && Number.isInteger(me.cards_rev) && me.cards_rev !== cardsRev))) return;
+    if (poll && (livePolling || S.loadingCards)) return;
+    if (poll) livePolling = true;
     try {
-      const changed = await syncCards(me);
-      if (imported) notify(`Collection mise à jour : ${cards$(cards.value.length)}.`);
-      if (changed) {
-        startPageviews();
-        afterCards();
-      }
-    } catch (e) { notify(e.message, true); }
+      const before = S.me && S.me.fetched_at;
+      try { await loadMe(); } catch (e) { return; }
+      const me = S.me;
+      const imported = !!(me && me.fetched_at && me.fetched_at !== before);
+      if (!(imported || (me && Number.isInteger(me.cards_rev) && me.cards_rev !== cardsRev))) return;
+      try {
+        const changed = await syncCards(me);
+        if (imported && poll) {
+          const n = Array.isArray(me.new_ids) ? me.new_ids.length : 0;
+          notify(`Mis à jour depuis wiki-masters.com${n ? ` : ${fmt(n)} ${plural(n, 'nouvelle carte', 'nouvelles cartes')}` : ''} (${cards$(cards.value.length)}).`);
+        } else if (imported) notify(`Collection mise à jour : ${cards$(cards.value.length)}.`);
+        if (changed) {
+          startPageviews();
+          afterCards();
+        }
+      } catch (e) { notify(e.message, true); }
+    } finally {
+      if (poll) livePolling = false;
+    }
+  }
+  function setLive() {
+    const on = document.visibilityState === 'visible';
+    if (on && !liveTimer) liveTimer = setInterval(() => checkRemote(true), LIVE_EVERY);
+    if (!on && liveTimer) { clearInterval(liveTimer); liveTimer = null; }
+  }
+  function onVisible() {
+    setLive();
+    return checkRemote(false);
   }
 
   const Root = {
@@ -4634,6 +4893,7 @@
         window.addEventListener('keydown', onKey);
         window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); });
         document.addEventListener('visibilitychange', onVisible);
+        setLive();
         boot(LINK_KEY);
       });
       return () => {
@@ -4648,7 +4908,7 @@
 
   watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
-  // Collection ouverte (ou catalogue arrivé après coup) : vues sur 30 jours des articles qui manquent.
+  // Collection ouverte (ou articles d'une catégorie arrivés après coup) : vues sur 30 jours des articles qui manquent.
   watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => {
     startPageviews();
     if (activeAlbum.value) resolveQids(activeAlbum.value.items, false);

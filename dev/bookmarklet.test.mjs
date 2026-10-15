@@ -1,7 +1,9 @@
 // Test du favori de bout en bout : le vrai site/public/assets/bookmarklet.js (mis sur une ligne comme le fait
 // l'interface), le vrai serveur (onRequest, D1 simulée en mémoire) et un jeu simulé dont la collection change d'une
 // synchro à l'autre : lecture complète, synchro rapide (seulement les nouveautés), rien de nouveau, carte partie, et
-// les cas où la synchro rapide doit céder la place à une relecture complète (avec la raison affichée).
+// les cas où la synchro rapide doit céder la place à une relecture complète (avec la raison affichée). Puis le mode
+// relié : la page simulée fait ses propres requêtes (paquet, défausse, enchère, échange, lectures…) par window.fetch,
+// horloge virtuelle ; réponses rendues telles quelles, synchro 5 s après une action, limites, « Arrêter », erreurs.
 //   node dev/bookmarklet.test.mjs      → doit finir par « FAVORI OK »
 
 import assert from 'node:assert/strict';
@@ -19,7 +21,8 @@ const root = path.resolve(here, '..');
 const { onRequest } = await import(pathToFileURL(path.join(root, 'site', 'functions', 'api', '[[path]].js')).href);
 
 const SITE = 'https://classeur.example';
-const env = { DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation' };
+const GAME = 'https://www.wiki-masters.com';
+const env ={ DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation' };
 
 async function api(method, route, { body, key, origin } = {}) {
   const headers = new Headers();
@@ -34,8 +37,9 @@ async function api(method, route, { body, key, origin } = {}) {
 
 // Le favori tel qu'installé : une ligne, adresse du classeur et clé d'import en place (comme makeBookmarklet).
 const src = await readFile(path.join(root, 'site', 'public', 'assets', 'bookmarklet.js'), 'utf8');
-const oneLine = (key) => src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
-  .replace('"__SITE__"', JSON.stringify(SITE)).replace('"__KEY__"', JSON.stringify(key));
+const oneLine = (key, start) => src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
+  .replace('"__SITE__"', JSON.stringify(SITE)).replace('"__KEY__"', JSON.stringify(key))
+  .replace('"__START__"', JSON.stringify(start || '__START__')); // "load" : script Tampermonkey (makeUserscript)
 
 // Un compte neuf, sa clé d'import et son favori (chaque scénario indépendant repart de là).
 let account;
@@ -58,7 +62,8 @@ const cardOf = async (id) => (await cardsOf()).find((c) => c.id === id);
 let collection = [];
 let gameCalls = [];
 const game = {};
-const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null });
+// Mode relié (openGame) : game.offline (échec réseau), game.weird(res) (réponse altérée), game.packRefused (429).
+const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null });
 resetGame();
 const at = (h) => new Date(Date.UTC(2026, 9, 1) + h * 3600_000).toISOString();
 const entry = (n, hour, extra = {}, card = {}) => ({
@@ -109,10 +114,13 @@ async function click() {
     calls.push(url);
     return gameFetch(url);
   };
-  const ctx = { document: doc, location: { hostname: 'www.wiki-masters.com' }, fetch: pageFetch, setTimeout: (f) => setImmediate(f), Promise, JSON, Math, Date, Number, String, Array, Object, Error, console };
+  // Adresse complète et URL : le favori se met en mode relié (sans action de la page ici, il ne relit rien de plus).
+  const ctx = { document: doc, location: { hostname: 'www.wiki-masters.com', origin: GAME, href: GAME + '/collection', pathname: '/collection', search: '' }, fetch: pageFetch,
+    setTimeout: (f) => setImmediate(f), URL, Promise, JSON, Math, Date, Number, String, Array, Object, Error, console };
   ctx.window = ctx;
   vm.createContext(ctx);
   vm.runInContext(code, ctx);
+  assert.equal(typeof ctx.__classeurRelie?.stop, 'function', 'mode relié attendu');
   const box = () => doc.getElementById('classeur-favori').textContent.replace(/[  ]/g, ' ');
   for (let i = 0; i < 20000; i++) {
     const t = box();
@@ -544,6 +552,447 @@ await test('Collection globale : trop de résultats (20 pages, 3 000 cartes), au
   }
   resetSearch();
   assert.equal((await targetsOf()).length, 1);
+});
+
+// --- Mode relié : le favori reste dans la page et regarde passer les requêtes que la page du jeu fait elle-même -------
+
+// Page du jeu simulée, avec horloge virtuelle (Date, setTimeout ; advance(ms) la fait avancer en déclenchant les
+// minuteries échues). fetch « du navigateur » (base) : les lectures du favori vont au jeu simulé (gameFetch, notées dans
+// calls avec leur heure), ses envois au vrai serveur ; les requêtes de la page (page(url, init), qui passe par
+// window.fetch, donc par le favori) reçoivent de vraies Response et changent la collection comme le ferait le jeu.
+// start : "click" (favori) ou "load" (script Tampermonkey).
+async function openGame({ start = 'click', pathname = '/collection', answers = [] } = {}) {
+  const { doc } = makeDom();
+  let now = gameClock; // l'heure continue d'une page à l'autre (les dates des paquets ouverts restent croissantes)
+  let seq = 0;
+  let timers = [];
+  let busy = 0;
+  let ticks = 0;
+  class FakeDate extends Date {
+    constructor(...a) { super(...(a.length ? a : [now])); }
+    static now() { return now; }
+  }
+  const key = importKey;
+  const calls = [];
+  const posts = [];
+  const sent = []; // [promesse rendue par base, Response] de chaque requête de la page
+  let fromPage = false;
+  const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } });
+  // Ce que fait le jeu pour une requête de la page (sa collection change comme sur le vrai site) ; adresse et méthode
+  // lues une seule fois, par base.
+  function pageAnswer(url, method, init) {
+    const u = new URL(url, GAME);
+    if (game.offline) throw new TypeError('Failed to fetch');
+    if (u.origin !== GAME) return new Response(null, { status: 204 }); // Supabase (étoile, étiquettes…)
+    const body = init && typeof init.body === 'string' ? JSON.parse(init.body) : {};
+    const p = u.pathname;
+    if (method === 'POST' && p === '/api/packs/open') {
+      if (game.packRefused) return json({ error: 'Trop de paquets', rate_limited: true }, 429);
+      const fresh = Array.from({ length: 5 }, () => {
+        packSeq += 1;
+        return entry(0, 0, { id: `pack-${packSeq}`, card_id: `pk${packSeq}`, obtained_at: new Date(now).toISOString() }, { id: `pk${packSeq}`, wikipedia_title: `Paquet ${packSeq}` });
+      });
+      collection.push(...fresh);
+      return json({ cards: fresh.map((e) => e.card), packs_remaining: 3, packs_last_regen_at: new Date(now).toISOString(), owned_copies: fresh.map((e) => ({ id: e.id, card_id: e.card_id, is_shiny: false })) });
+    }
+    if (method === 'POST' && p === '/api/user-cards/bulk-discard') {
+      const gone = collection.filter((e) => body.card_ids.includes(e.id));
+      collection = collection.filter((e) => !body.card_ids.includes(e.id));
+      return json({ balance: 100 + gone.length, discarded_count: gone.length, failed: [] });
+    }
+    if (method === 'POST' && p === '/api/marketplace') {
+      const e = collection.find((x) => x.id === body.card_id);
+      collection = collection.filter((x) => x !== e);
+      game.auctioned = e;
+      return json({ auction_id: 'a1' });
+    }
+    if (method === 'DELETE' && p === '/api/marketplace/a1') {
+      collection.push({ ...game.auctioned, id: game.auctioned.id + '-retour', obtained_at: new Date(now).toISOString() });
+      return json({ status: 'cancelled' });
+    }
+    if (method === 'POST' && /^\/api\/marketplace\/[^/]+\/bid$/.test(p)) return json({ auction_id: 'x', current_bid: 12, bidder_balance: 88 });
+    if (method === 'POST' && p === '/api/trades/t1/accept') return json({ status: 'accepted' });
+    if (method === 'POST') return json({ ok: true }); // human-check, achievements/check…
+    return json({ collection: collection.slice(0, 50).map((e) => ({ ...e })) }); // lecture de la page elle-même
+  }
+  function base(input, init) {
+    ticks += 1;
+    const page = fromPage;
+    fromPage = false;
+    const url = typeof input === 'string' ? input : input.url;
+    if (page) {
+      let res;
+      try {
+        const method = String((init && init.method) || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
+        res = pageAnswer(url, method, init);
+      } catch (e) {
+        const p = Promise.reject(e);
+        sent.push([p, null]);
+        return p;
+      }
+      const p = Promise.resolve(game.weird ? game.weird(res) : res);
+      sent.push([p, res]);
+      return p;
+    }
+    if (url.startsWith(SITE + '/api/')) {
+      assert.equal(init.headers['X-Classeur-Key'], key);
+      const route = url.slice(SITE.length + 5);
+      const body = JSON.parse(init.body);
+      posts.push({ route, body, at: now });
+      busy += 1;
+      return api('POST', route, { body, key, origin: GAME }).then((r) => {
+        busy -= 1;
+        ticks += 1;
+        return { ok: r.status >= 200 && r.status < 300, status: r.status, json: async () => r.json };
+      });
+    }
+    calls.push({ url, at: now });
+    return Promise.resolve(searchFetch(url)); // jeu simulé, Collection globale comprise
+  }
+  const ctx = {
+    document: doc, location: { hostname: 'www.wiki-masters.com', origin: GAME, href: GAME + pathname, pathname, search: '' }, fetch: base,
+    setTimeout: (f, ms) => { seq += 1; ticks += 1; timers.push({ at: now + Math.max(0, Number(ms) || 0), seq, f }); return seq; },
+    URL, URLSearchParams, Date: FakeDate, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console,
+    prompt: () => (answers.length ? answers.shift() : null),
+  };
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  const run = () => vm.runInContext(oneLine(key, start), ctx);
+  // Calme : plus d'envoi au classeur en cours, plus rien qui bouge pendant 40 tours de boucle.
+  const idle = async () => {
+    for (let i = 0, still = 0, last = -1; i < 100000 && (busy > 0 || still < 40); i++) {
+      await new Promise((r) => setImmediate(r));
+      if (ticks === last) still += 1; else { still = 0; last = ticks; }
+    }
+  };
+  const advance = async (ms) => {
+    const end = now + ms;
+    await idle();
+    for (;;) {
+      timers.sort((a, b) => a.at - b.at || a.seq - b.seq);
+      if (!timers.length || timers[0].at > end) break;
+      const t = timers.shift();
+      now = Math.max(now, t.at);
+      t.f();
+      await idle();
+    }
+    now = end;
+    gameClock = Math.max(gameClock, now);
+    await idle();
+  };
+  // Requête faite par la page elle-même (comme un clic du joueur dans le jeu).
+  const page = (input, init) => {
+    fromPage = true;
+    return ctx.window.fetch(input, init);
+  };
+  const boxEl = () => doc.getElementById('classeur-favori');
+  const text = () => (boxEl() ? boxEl().textContent.replace(/[  ]/g, ' ') : '');
+  // Ligne d'état du mode relié (« Classeur relié · … »).
+  const status = () => {
+    const el = boxEl() && boxEl().querySelectorAll('div').find((d) => d.childNodes.length === 1 && d.childNodes[0].nodeType === 3 && d.textContent.startsWith('Classeur relié · '));
+    return el ? el.textContent : '';
+  };
+  const press = (label) => {
+    const b = boxEl().querySelectorAll('button').find((x) => x.textContent === label || x.textContent.startsWith(label + ' '));
+    assert.ok(b, `bouton « ${label} » absent : ${text()}`);
+    b.click();
+  };
+  run();
+  await advance(0);
+  return { ctx, base, calls, posts, sent, page, advance, text, status, press, run, boxes: () => doc.querySelectorAll('#classeur-favori').length,
+    get now() { return now; }, since: (n) => calls.slice(n).map((c) => c.url) };
+}
+let gameClock = Date.UTC(2026, 9, 16, 10, 0, 0); // horloge virtuelle des pages du jeu (openGame)
+let packSeq = 0; // cartes des paquets ouverts par les pages (pk1, pk2…), uniques pour tous les tests
+const pad2 = (n) => String(n).padStart(2, '0');
+const hhmm = (t) => { const d = new Date(t); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const QUICK = ['/api/my-collection/stats?sort=rarity', '/api/my-collection?sort=added&page=0&stats=0'];
+const POST_JSON = (body) => ({ method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(body) });
+const unhandled = [];
+process.on('unhandledRejection', (e) => { unhandled.push(e); });
+
+// La page envoie sa requête et lit sa réponse : même promesse que le fetch d'origine, même Response, corps intact.
+async function samePage(g, input, init, check) {
+  const before = g.sent.length;
+  const p = g.page(input, init);
+  assert.equal(g.sent.length, before + 1, 'la requête de la page doit partir une fois, aussitôt');
+  const [orig, res] = g.sent[before];
+  assert.equal(p, orig, 'la page doit recevoir la promesse même du fetch d\'origine');
+  const got = await p;
+  assert.equal(got, res, 'la page doit recevoir la Response d\'origine');
+  assert.equal(got.bodyUsed, false, 'le corps de la réponse ne doit pas avoir été lu');
+  if (got.status !== 204) {
+    const data = await got.json();
+    if (check) check(data, got);
+  }
+  return got;
+}
+
+await test('relié : la page reçoit ses réponses telles quelles ; seules ses actions sur la collection relancent la synchro rapide, 5 s après', async () => {
+  await fresh60();
+  const g = await openGame();
+  assert.match(g.text(), /Rien de nouveau depuis ta dernière synchro/, g.text());
+  assert.deepEqual(g.since(0), QUICK);
+  assert.notEqual(g.ctx.window.fetch, g.base, 'window.fetch enveloppé');
+  assert.equal(g.status(), `Classeur relié · dernière synchro à ${hhmm(g.now)}`);
+  // Requêtes de la page sans effet sur la collection : lectures, enchère posée, vérification humaine, succès vérifiés,
+  // Supabase (étoile), paquet refusé (429). Rien n'est relu, même 10 minutes après.
+  let n = g.calls.length;
+  await samePage(g, '/api/my-collection?sort=rarity&page=0&stats=0', { credentials: 'include' }, (d) => assert.equal(d.collection.length, 50));
+  await samePage(g, new Request(GAME + '/api/my-collection/stats?sort=rarity'));
+  await samePage(g, '/api/marketplace/0d6c0f4e-1111-4111-8111-111111111111/bid', POST_JSON({ amount: 12 }), (d) => assert.equal(d.current_bid, 12));
+  await samePage(g, '/api/human-check', POST_JSON({ token: 'x' }));
+  await samePage(g, '/api/achievements/check', POST_JSON({ event: 'achievements_sync' }));
+  await samePage(g, 'https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/user_cards?id=eq.e3', { method: 'PATCH', body: '{"starred":true}' });
+  game.packRefused = true;
+  await samePage(g, '/api/packs/open', POST_JSON({}), (d, r) => assert.equal(r.status, 429));
+  game.packRefused = false;
+  await g.advance(10 * 60_000);
+  assert.deepEqual(g.since(n), [], 'aucune lecture du jeu sans action sur la collection');
+  // Paquet ouvert : synchro rapide 5 s après la réponse, pas avant.
+  n = g.calls.length;
+  await samePage(g, '/api/packs/open', POST_JSON({}), (d) => assert.equal(d.cards.length, 5));
+  await g.advance(4_000);
+  assert.deepEqual(g.since(n), []);
+  assert.match(g.status(), /Classeur relié · synchro dans un instant \(paquet ouvert\)/);
+  await g.advance(1_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.match(g.text(), /5 exemplaires obtenus depuis ta dernière synchro, 5 nouvelles cartes : ton classeur est à jour \(65 cartes\)/, g.text());
+  assert.equal((await cardsOf()).length, 65);
+  assert.equal(g.status(), `Classeur relié · dernière synchro à ${hhmm(g.now)}`);
+  // Adresse absolue, objet URL, Request : reconnus pareil (échange accepté).
+  n = g.calls.length;
+  await samePage(g, new Request(GAME + '/api/trades/t1/accept', { method: 'POST' }));
+  await g.advance(65_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.deepEqual(unhandled, []);
+});
+
+await test('relié : rafales et limites — 5 s après la dernière action (30 s au plus), une synchro par minute, 20 par heure', async () => {
+  await fresh60();
+  let g = await openGame();
+  const syncs = (from) => g.calls.slice(from).filter((c) => c.url === QUICK[0]).map((c) => c.at);
+  // Un paquet juste après la synchro du clic attend la minute ; puis deux paquets à 10 s d'écart : le second attend une
+  // minute après la fin de la synchro du premier.
+  let n = g.calls.length;
+  let t = g.now;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(0);
+  assert.match(g.status(), new RegExp(`synchro à ${hhmm(t + 60_000)} \\(paquet ouvert ; une par minute au plus\\)`), g.status());
+  await g.advance(61_000);
+  assert.deepEqual(syncs(n).map((x) => x - t), [60_000]);
+  await g.advance(60_000);
+  n = g.calls.length;
+  t = g.now;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(10_000);
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(0);
+  assert.match(g.status(), new RegExp(`synchro à ${hhmm(t + 5_000 + 60_000)} \\(paquet ouvert ; une par minute au plus\\)`), g.status());
+  await g.advance(60_000);
+  assert.deepEqual(syncs(n).map((x) => x - t), [5_000, 65_000]);
+  // Rafale : un paquet toutes les 4 s pendant 40 s → une synchro 30 s après le premier, une autre une minute plus tard.
+  await g.advance(5 * 60_000);
+  n = g.calls.length;
+  const r0 = g.now;
+  for (let i = 0; i < 11; i++) {
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(4_000);
+  }
+  await g.advance(2 * 60_000);
+  assert.deepEqual(syncs(n).map((x) => x - r0), [30_000, 90_000]);
+  assert.equal((await cardsOf()).length, 60 + 14 * 5);
+  // 20 synchros automatiques par heure au plus (nouvelle page, même compte) : la 21e attend que la plus ancienne ait une
+  // heure, puis rattrape tout d'un coup.
+  g = await openGame();
+  await g.advance(60_000);
+  n = g.calls.length;
+  const h0 = g.now;
+  for (let i = 0; i < 24; i++) {
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(61_000);
+  }
+  const first = syncs(n);
+  assert.equal(first.length, 20, `20 synchros attendues dans l'heure, ${first.length}`);
+  assert.match(g.status(), new RegExp(`synchro à ${hhmm(first[0] + 3_600_000)} \\(paquet ouvert ; 20 synchros automatiques par heure au plus\\)`), g.status());
+  await g.advance(first[0] + 3_600_000 - g.now + 1_000);
+  const all = syncs(n);
+  assert.equal(all.length, 21);
+  assert.equal(all[20], first[0] + 3_600_000);
+  assert.ok(all.every((x, i) => !i || x - all[i - 1] >= 60_000), 'jamais deux synchros à moins d\'une minute');
+  assert.equal((await cardsOf()).length, 60 + 14 * 5 + 24 * 5);
+  assert.equal(first[0], h0 + 5_000);
+});
+
+await test('relié : défausse, mise aux enchères → relecture complète, au plus une automatique par quart d\'heure ; annulation → synchro rapide', async () => {
+  await fresh60();
+  const g = await openGame();
+  await g.advance(60_000);
+  const full = (from) => g.calls.slice(from).some((c) => c.url.includes('sort=rarity&page=0'));
+  // Défausse : les compteurs ne collent plus → relecture complète aussitôt (aucune n'a eu lieu dans cette page).
+  let n = g.calls.length;
+  await g.page('/api/user-cards/bulk-discard', POST_JSON({ card_ids: ['e3', 'e4'] }));
+  await g.advance(6_000);
+  assert.ok(full(n), g.since(n).join(', '));
+  assert.ok(!(await cardOf('c3')) && !(await cardOf('c4')) && (await cardsOf()).length === 58);
+  const fullAt = g.calls.find((c, i) => i >= n && c.url === '/api/my-collection?sort=rarity&page=0&stats=0').at;
+  // Mise aux enchères 2 minutes plus tard : relecture reportée à 15 minutes après la précédente, dite dans l'encart.
+  await g.advance(2 * 60_000);
+  n = g.calls.length;
+  await g.page('/api/marketplace', POST_JSON({ card_id: 'e10', base_amount: 5, duration_minutes: 60 }));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK, 'synchro rapide seulement');
+  assert.match(g.text(), new RegExp(`Les compteurs du jeu ne collent pas avec tes nouveautés \\(carte vendue, échangée ou mise aux enchères, exemplaire ajouté à une carte déjà là…\\)\\. Relecture complète prévue à ${hhmm(fullAt + 15 * 60_000)}`), g.text());
+  assert.match(g.status(), new RegExp(`relecture complète à ${hhmm(fullAt + 15 * 60_000)} \\(carte mise aux enchères ; une relecture complète automatique toutes les 15 minutes au plus\\)`), g.status());
+  // Un paquet entre-temps n'avance pas l'heure (la synchro rapide échouerait de même).
+  await g.page('/api/packs/open', POST_JSON({}));
+  const pack = 'pk' + packSeq;
+  await g.advance(fullAt + 15 * 60_000 - g.now - 1_000);
+  assert.deepEqual(g.since(n), QUICK);
+  await g.advance(2_000);
+  assert.ok(full(n + 2), g.since(n).join(', '));
+  assert.ok(!(await cardOf('c10')) && (await cardOf(pack)) && (await cardsOf()).length === 62);
+  // Enchère annulée : la carte revient avec une nouvelle date → simple nouveauté, synchro rapide.
+  await g.advance(2 * 60_000);
+  n = g.calls.length;
+  await g.page('/api/marketplace/a1', { method: 'DELETE' });
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.match(g.text(), /1 exemplaire obtenu depuis ta dernière synchro, 1 nouvelle carte/, g.text());
+  assert.ok(await cardOf('c10'));
+});
+
+await test('relié : « Arrêter » rend window.fetch d\'origine ; enveloppé par-dessus par un autre script, il ne fait plus que passer la main', async () => {
+  await fresh60();
+  let g = await openGame();
+  g.press('Arrêter');
+  assert.equal(g.ctx.window.fetch, g.base, 'window.fetch d\'origine rendu');
+  assert.equal(g.boxes(), 0, 'encart retiré');
+  assert.ok(!g.ctx.__classeurRelie);
+  let n = g.calls.length;
+  await samePage(g, '/api/packs/open', POST_JSON({}));
+  await g.advance(5 * 60_000);
+  assert.deepEqual(g.since(n), []);
+  // Un autre script a enveloppé window.fetch après le favori : il reste en place, la requête passe toujours, sans synchro.
+  g = await openGame();
+  const theirs = g.ctx.window.fetch;
+  const outer = function (...a) { return theirs.apply(this, a); };
+  g.ctx.window.fetch = outer;
+  g.press('Arrêter');
+  assert.equal(g.ctx.window.fetch, outer);
+  n = g.calls.length;
+  await samePage(g, '/api/packs/open', POST_JSON({}), (d) => assert.equal(d.cards.length, 5));
+  await g.advance(5 * 60_000);
+  assert.deepEqual(g.since(n), []);
+});
+
+await test('relié : une erreur de l\'observateur ne casse jamais la requête de la page (ni rejet non géré)', async () => {
+  await fresh60();
+  const g = await openGame();
+  const n = g.calls.length;
+  // init dont la méthode ne se lit qu'une fois (le fetch d'origine la lit d'abord) : l'observateur échoue, la page a sa réponse.
+  let reads = 0;
+  const init = { body: '{}', get method() { reads += 1; if (reads > 1) throw new Error('lecture refusée'); return 'POST'; } };
+  await samePage(g, '/api/packs/open', init, (d) => assert.equal(d.cards.length, 5));
+  // Adresse d'un objet qui ne se lit qu'une fois.
+  let urlReads = 0;
+  await samePage(g, { get url() { urlReads += 1; if (urlReads > 1) throw new Error('adresse refusée'); return '/api/packs/open'; }, method: 'POST' }, { method: 'POST' });
+  // Réponse étrange (ok qui lève) : la page la reçoit telle quelle.
+  game.weird = (res) => Object.defineProperty(res, 'ok', { get() { throw new Error('ok illisible'); } });
+  const p = g.page('/api/packs/open', POST_JSON({}));
+  assert.equal(p, g.sent.at(-1)[0]);
+  assert.equal(await p, g.sent.at(-1)[1]);
+  game.weird = null;
+  // Échec réseau : la page reçoit le même rejet, l'observateur ne dit rien.
+  game.offline = true;
+  const before = g.sent.length;
+  const failed = g.page('/api/packs/open', POST_JSON({}));
+  assert.equal(failed, g.sent[before][0]);
+  await assert.rejects(failed, (e) => e instanceof TypeError && e.message === 'Failed to fetch');
+  game.offline = false;
+  await g.advance(5 * 60_000);
+  assert.deepEqual(g.since(n), [], 'aucune synchro : aucune action vue comme réussie');
+  assert.deepEqual(unhandled, [], 'aucun rejet non géré');
+});
+
+await test('relié : nouveau clic dans la même page → l\'ancien favori s\'arrête ; un seul encart, une seule synchro par action', async () => {
+  await fresh60();
+  const g = await openGame();
+  g.run();
+  await g.advance(61_000);
+  assert.equal(g.boxes(), 1);
+  const n = g.calls.length;
+  const before = g.sent.length;
+  await samePage(g, '/api/packs/open', POST_JSON({}));
+  assert.equal(g.sent.length, before + 1, 'une seule requête de la page (pas d\'enveloppe en double)');
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK, 'une seule synchro');
+  g.press('Arrêter');
+  assert.equal(g.ctx.window.fetch, g.base, 'window.fetch d\'origine rendu après deux clics');
+});
+
+await test('relié : erreur du jeu pendant une synchro automatique → pause et encart déplié ; « Synchroniser » relance', async () => {
+  await fresh60();
+  const g = await openGame();
+  await g.advance(14_000);
+  assert.match(g.text(), /Réduire/);
+  await g.advance(47_000);
+  assert.match(g.text(), /Détails/, 'encart réduit en badge 15 s après la synchro du clic');
+  game.status = (url) => (url.includes('stats') ? reply({ code: 'automation_limit', error: 'Trop de requêtes' }, 403) : null);
+  let n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.match(g.text(), /Le jeu limite les lectures automatiques : réessaie plus tard/, g.text());
+  assert.match(g.text(), /Réduire/, 'encart déplié');
+  assert.match(g.status(), /synchro automatique en pause : clique « Synchroniser »/);
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(10 * 60_000);
+  assert.deepEqual(g.since(n), [QUICK[0]], 'plus rien d\'automatique pendant la pause');
+  game.status = null;
+  n = g.calls.length;
+  g.press('Synchroniser');
+  await g.advance(0);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.match(g.text(), /10 exemplaires obtenus/, g.text());
+  n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(65_000);
+  assert.deepEqual(g.since(n), QUICK, 'synchros automatiques reprises');
+});
+
+await test("relié sur la Collection globale : une action en attente n'est pas perdue pendant « Créer une collection »", async () => {
+  await fresh60();
+  resetSearch();
+  catalogue = vaches();
+  const g = await openGame({ pathname: '/global-collection', answers: ['vache', 'Mes vaches'] });
+  assert.match(g.text(), /Collection globale : que veux-tu faire \?/);
+  assert.deepEqual(g.since(0), [], "rien n'est lu avant un choix");
+  await g.page('/api/packs/open', POST_JSON({}));
+  g.press('Créer une collection avec une recherche…');
+  await g.advance(1_000);
+  assert.match(g.text(), /Collection « Mes vaches » créée dans ton classeur : 87 cartes/, g.text());
+  assert.match(g.status(), /synchro dans un instant \(paquet ouvert\)/, g.status());
+  await g.advance(5_000);
+  assert.deepEqual(g.since(0).filter((u) => !u.startsWith('/api/cards')), QUICK);
+  assert.equal((await cardsOf()).length, 65);
+  assert.equal((await targetsOf()).length, 1);
+});
+
+await test('script Tampermonkey (« load ») : relié dès le chargement, rien de lu avant une action, ni choix sur la Collection globale', async () => {
+  await fresh60();
+  let g = await openGame({ start: 'load' });
+  await g.advance(10 * 60_000);
+  assert.deepEqual(g.since(0), []);
+  assert.deepEqual(g.posts, []);
+  assert.equal(g.status(), 'Classeur relié · synchro après ta prochaine action dans le jeu');
+  assert.match(g.text(), /Détails/);
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(0), QUICK);
+  assert.equal((await cardsOf()).length, 65);
+  g = await openGame({ start: 'load', pathname: '/global-collection' });
+  assert.ok(!/que veux-tu faire/.test(g.text()) && !/Créer une collection/.test(g.text()), g.text());
+  assert.deepEqual(g.since(0), []);
 });
 
 console.log(`${results.length} tests`);

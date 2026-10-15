@@ -260,7 +260,7 @@ function scenario() {
   for (let i = 1; i < list.length; i++) assert.ok(list[i - 1].ratio > list[i].ratio || (list[i - 1].ratio === list[i].ratio && list[i - 1].owned >= list[i].owned));
   ok('tri par part puis nombre possédé');
   // Paquets de 50, une requête à la fois.
-  const catCalls = wiki.calls.filter((p) => p.prop === 'categories');
+  const catCalls = wiki.calls.filter((p) => p.prop === 'categories' && !p.titles.startsWith('Catégorie:')); // celles des cartes (pas les parentes)
   assert.ok(catCalls.every((p) => p.titles.split('|').length <= 50));
   assert.equal(new Set(catCalls.map((p) => p.titles)).size, 5, '207 titres → 5 paquets');
   assert.equal(wiki.maxInflight, 1);
@@ -295,6 +295,59 @@ function scenario() {
   const infoAsked = wiki.calls.filter((p) => p.prop === 'categoryinfo').flatMap((p) => p.titles.split('|'));
   assert.ok(!infoAsked.includes(C('Kampen')), 'pas de taille demandée pour une catégorie exclue');
   ok('exclusion (wp:, Catégorie:, ids du catalogue ignorés)');
+}
+
+// ------------------------------------------------------------------------------------------------ catégories parentes, prune
+{
+  const sc = scenario();
+  sc.pages[C('Petit lot')] = [C('Grand ensemble'), C('Lot')];
+  sc.pages[C('Félin')] = [C('Animal de compagnie'), C('Mammifère')];
+  sc.pages[C('Kampen')] = [C("Commune d'Overijssel")];
+  const wiki = makeWiki({ ...sc, chunk: 3 });
+  const { proposer, storage } = mk(wiki);
+  const steps = [];
+  const list = await proposer.compute(sc.titles, { onProgress: (p) => steps.push(p) });
+  const by = Object.fromEntries(list.map((r) => [r.name, r]));
+  assert.deepEqual(by['Petit lot'].parents, ['Grand ensemble', 'Lot']);
+  assert.deepEqual(by['Félin'].parents, ['Animal de compagnie', 'Mammifère'], 'parentes arrivées en plusieurs morceaux');
+  assert.deepEqual(by['Kampen'].parents, ["Commune d'Overijssel"]);
+  assert.deepEqual(by['Animal de compagnie'].parents, []);
+  const parentCalls = wiki.calls.filter((p) => p.prop === 'categories' && p.titles.startsWith('Catégorie:'));
+  assert.ok(parentCalls.length >= 2 && parentCalls.every((p) => p.clshow === '!hidden' && p.titles.split('|').length <= 50), 'parentes : prop=categories, clshow=!hidden, 50 au plus');
+  assert.deepEqual([...new Set(parentCalls.flatMap((p) => p.titles.split('|')))].sort(), list.map((r) => C(r.name)).sort(), 'parentes demandées : celles des propositions seulement');
+  assert.ok(steps.some((x) => x.step === 'parents' && x.done === x.total && x.total === list.length) && steps.at(-1).step === 'done');
+  assert.ok(storage.m.has('classeur-catparents'));
+  const n = wiki.calls.length;
+  assert.deepEqual(await proposer.compute(sc.titles), list);
+  assert.equal(wiki.calls.length, n, 'parentes en cache : aucune requête');
+  // Un incident sur les parentes ne prive pas des propositions (sans parentes).
+  const wiki2 = makeWiki(sc);
+  const base = wiki2.fetch;
+  const parentsOnly = (url) => { const q = new URL(url).searchParams; return q.get('prop') === 'categories' && q.get('titles').startsWith('Catégorie:'); };
+  wiki2.fetch = async (url, init) => (parentsOnly(url) ? json({}, 404) : base(url, init)); // les parentes : 404
+  const { proposer: p2 } = mk(wiki2);
+  const l2 = await p2.compute(sc.titles);
+  assert.deepEqual(l2.map((r) => r.name), list.map((r) => r.name));
+  assert.ok(l2.every((r) => Array.isArray(r.parents)));
+  ok('catégories parentes des propositions (espace 14, continuation, cache, incident sans effet sur la liste)');
+
+  // prune : rien n'est demandé, l'ordre est gardé.
+  const names = (l, o) => Array.from(P.prune(l, o), (r) => r.name); // tableau de ce contexte (pas celui du vm)
+  // Liste : Animal de compagnie, Kampen, Félin (fille d'Animal de compagnie), Énorme exact, Grand ensemble, Petit lot
+  // (fille de Grand ensemble).
+  assert.deepEqual(names(list), ['Animal de compagnie', 'Kampen', 'Énorme exact', 'Grand ensemble'], 'parente proposée : la fille est écartée');
+  const sansGrand = list.filter((r) => r.name !== 'Grand ensemble'); // retirée par l'utilisateur
+  assert.deepEqual(names(sansGrand), ['Animal de compagnie', 'Kampen', 'Énorme exact', 'Petit lot'], 'parente non proposée : la fille reste');
+  assert.deepEqual(names(sansGrand, { followed: ['wp:Lot', 'wp:Catégorie:Mammifère'] }), ['Animal de compagnie', 'Kampen', 'Énorme exact'], 'parente suivie : écartée');
+  // Couvertes écartées ; Félin reste alors (sa parente, couverte, n'est plus proposée).
+  assert.deepEqual(names(list, { covered: (r) => r.name === 'Kampen' || r.name === 'Animal de compagnie' }), ['Félin', 'Énorme exact', 'Grand ensemble'], 'couvertes écartées');
+  // Chaîne et cycle.
+  const r = (name, size, parents) => ({ name, key: 'wp:' + name, size, parents });
+  assert.deepEqual(names([r('Couleur', 60, ['Optique']), r('Violet', 30, ['Couleur']), r('Nuance de violet', 12, ['Violet']), r('Rose', 20, [])]), ['Couleur', 'Rose'], 'chaîne : la plus haute reste');
+  assert.deepEqual(names([r('A', 10, ['B']), r('B', 30, ['A'])]), ['B'], 'cycle : la plus grande reste');
+  assert.deepEqual(names([r('Violet', 30, ['Couleur', 'Catégorie:Couleur']), r('Brun', 20, ['Couleur'])], { followed: ['wp:Couleur'] }), [], 'filles d\'une catégorie suivie');
+  assert.deepEqual(names(null), []);
+  ok('prune : couvertes, parente suivie, parente proposée (la plus haute reste), parente non proposée, cycle');
 }
 
 // ------------------------------------------------------------------------------------------------ autres seuils
@@ -525,6 +578,10 @@ if (existsSync(CACHE) && existsSync(OWNED)) {
   const missingInfo = [];
   const offline = async (url) => {
     const p = Object.fromEntries(new URL(url).searchParams);
+    // Catégories parentes des propositions : absentes du vieux cache, rendues vides.
+    if (p.prop === 'categories' && p.titles.split('|').every((t) => t.startsWith('Catégorie:'))) {
+      return json({ query: { pages: p.titles.split('|').map((t) => ({ ns: 14, title: t, missing: true })) } });
+    }
     assert.notEqual(p.prop, 'categories', 'hors ligne : catégories toutes en cache');
     assert.equal(p.prop, 'categoryinfo');
     missingInfo.push(...p.titles.split('|'));

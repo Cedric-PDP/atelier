@@ -7,7 +7,8 @@
 // effacé à sa désactivation).
 // Second réglage, à part (users.shared_targets, seulement avec le premier) : montrer aussi ses collections à compléter,
 // réduites au nom de chaque collection et, pour chaque élément vérifié, à son titre et à son qid (GET
-// /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée, catégorie) ni dates.
+// /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée, catégorie) ni dates :
+// seulement si c'est une catégorie de Wikipédia suivie (kind).
 // Le site ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre joueurs.
 
 import { HttpError, raw } from './http.js';
@@ -130,9 +131,10 @@ const MEMBER_T = 'SELECT public_id AS id, name, shared_targets AS st FROM users 
 // Une page de collections par clé (id > dernière lue) : `before` = taille rangée des collections qui la précèdent dans
 // la page ; on garde celles qui commencent sous TARGETS_PAGE_BYTES (la première toujours), et la suivante revient sans
 // contenu (j NULL) pour dire qu'il en reste. Chaque collection est réduite en SQL : nom, puis pour chaque élément vérifié
-// (status ok) son titre et son qid s'il en a un ; rien d'autre ne sort de targets (ni source, ni dates, ni descriptions).
+// (status ok) son titre et son qid s'il en a un ; rien d'autre ne sort de targets (ni source, ni dates, ni descriptions),
+// sauf sa nature (kind) : 'category' pour une catégorie de Wikipédia suivie (source « wp:… »), sinon 'collection'.
 const MEMBER_TARGETS = `WITH page AS (
-    SELECT t.id, t.name, t.items,
+    SELECT t.id, t.name, t.items, t.source,
       COALESCE(SUM(length(CAST(t.items AS BLOB))) OVER (ORDER BY t.id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS before
     FROM targets AS t
     WHERE t.user_id = (SELECT id FROM users WHERE public_id = ?1 AND shared = 1 AND shared_targets = 1) AND t.id > ?2
@@ -140,6 +142,7 @@ const MEMBER_TARGETS = `WITH page AS (
   SELECT p.id, CASE WHEN p.before < ?3 THEN json_object(
       'id', p.id,
       'name', p.name,
+      'kind', CASE WHEN substr(coalesce(p.source, ''), 1, 3) = 'wp:' THEN 'category' ELSE 'collection' END,
       'items', (SELECT json_group_array(json(CASE WHEN json_extract(e.value, '$.qid') IS NULL
           THEN json_object('title', json_extract(e.value, '$.title'))
           ELSE json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid')) END))

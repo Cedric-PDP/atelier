@@ -7,7 +7,14 @@ Wikipédia en français), pour l'utilisateur **et ses amis**. **Sans lien avec l
 Inspiré de wikimaster-one.vercel.app (« Le classeur ») : reliure avec intercalaires, cartes en pochettes, étiquettes
 personnelles avec suggestions, sélection multiple, collections à compléter avec cases vides. Réécrit avec notre code
 (licence de la référence inconnue). En plus : comptes par code d'invitation et lien personnel, favori de
-rafraîchissement, catalogue de collections proposées, rareté estimée des cartes manquantes.
+rafraîchissement (et de création de collections depuis la « Collection globale » du jeu), catégories de Wikipédia à
+suivre (recherche avec suggestions, propositions d'après tes cartes), rareté estimée des cartes manquantes, partage
+entre amis.
+
+Vocabulaire de l'interface : les **collections** sont les listes de l'utilisateur (créées surtout par le favori depuis
+une recherche de la Collection globale du jeu, sinon à la main dans « Nouvelle collection ») ; les **catégories** sont
+les catégories de Wikipédia (« Catégorie:Violet ») qu'il suit. Les deux sont des « collections à compléter » du
+serveur (une catégorie suivie a la source `wp:<nom>`).
 
 - **Mise en ligne** (Worker Cloudflare + D1, une fois, ~10 min) : [SETUP.md](SETUP.md). Le même dossier `site/` se
   déploie aussi en projet Pages.
@@ -17,14 +24,13 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 
 | Chemin | Contenu |
 |---|---|
-| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `catalog.json` (avec un `qid` par article), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
+| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
 | `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
 | `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `bookmarklet.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
-| `config/themes.json`, `scripts/build_catalog.js` | catalogue des collections proposées (motifs SPARQL Wikidata) → `site/public/catalog.json` |
-| `data/`, autres `scripts/`, `lib/`, `page/` | ancienne page claude.ai « Collections WikiMasters » (abandonnée, voir plus bas) |
+| `data/`, `config/themes.json`, `scripts/`, `lib/`, `page/` | ancienne page claude.ai « Collections WikiMasters » (abandonnée, voir plus bas) |
 
 ## Développer et tester
 
@@ -38,8 +44,13 @@ node dev/propose.test.mjs                   # propositions d'après les catégor
 node dev/server.mjs                         # http://localhost:8788 (code d'invitation : dev ; PORT, DB_PATH, SIGNUP_CODE, COOKIE_SECRET)
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js                 # interface sur API simulée -> UI OK
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js --server=http://localhost:8788   # sur le serveur local
-node scripts/build_catalog.js               # refait site/public/catalog.json (Wikidata, débit limité, cache dans cache/)
 ```
+
+**Catalogue retiré (2026-10-16)** : les 59 collections proposées tirées de Wikidata (`site/public/catalog.json`, fait par
+`scripts/build_catalog.js` d'après `config/themes.json`) ont quitté l'interface, remplacées par les catégories de
+Wikipédia. Le fichier et son script sont supprimés (ils restent dans l'historique git, jusqu'au commit 0efecd9) ;
+`config/themes.json` reste, lu par `scripts/build_reference.js` de l'ancienne page. Les collections déjà ajoutées depuis
+le catalogue (source `catalog:…`) restent des collections comme les autres.
 
 Avec `--server`, le test de l'interface colle un faux cookie : le serveur local fait alors **un** vrai appel en
 lecture à wiki-masters.com, qui répond 401.
