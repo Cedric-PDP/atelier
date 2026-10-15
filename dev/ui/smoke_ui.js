@@ -269,10 +269,14 @@ async function main() {
   needButton("C'est noté").click();
   await settle(60);
 
-  // 2. Classeur vide : invitation à utiliser le favori ou le cookie
-  check(has('Ton classeur est vide') && has('Installer le favori') && has('Coller le cookie'), 'invitation du classeur vide absente');
-  needButton('Installer le favori').click();
-  await settle(60);
+  // 2. Classeur vide : bandeau, onglets, et l'onglet « Mettre à jour » ouvert sur le favori
+  const h1 = () => text(doc.body.querySelector('h1'));
+  const tabBtn = (id) => byId('tab-' + id);
+  const goTab = async (id) => { tabBtn(id).click(); await settle(); };
+  check(h1() === 'Le classeur de Cédric' && has('Collections WikiMasters'), 'bandeau absent');
+  check(has('Ton classeur est vide'), 'le bandeau ne dit pas que le classeur est vide');
+  check(tabBtn('maj') && tabBtn('maj').getAttribute('aria-selected') === 'true', "un classeur vide doit s'ouvrir sur « Mettre à jour »");
+  check(has('Le favori, le chemin conseillé') && has('En secours'), "l'onglet Mettre à jour ne présente pas le favori d'abord");
   // Le favori n'a pas encore de clé d'import : il faut la créer (POST /api/import-key).
   check(!all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet')).length && has("clé d'import"), "le favori ne passe pas par une clé d'import");
   needButton('Créer mon favori').click();
@@ -288,13 +292,10 @@ async function main() {
   check(bmCode.includes('"' + ORIGIN + '"') && bmCode.includes('"' + importKey + '"'), "clé d'import ou origine absente du favori");
   check(!bmCode.includes(ls.get('classeur-key')), 'la clé principale ne doit jamais être dans le favori');
   try { new vm.Script(bmCode); } catch (e) { fail('favori : code invalide une fois sur une ligne : ' + e.message); }
-  check(byId('bm-url') && byId('bm-url').value === href, "texte du favori à copier absent");
+  check(byId('bm-url') && byId('bm-url').value === href, 'texte du favori à copier absent');
   bm.dispatch('click');
   await settle();
   check(has('Pas ici'), 'clic sur le favori dans le classeur non intercepté');
-  win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
-  await settle(400);
-  check(!one('modal'), 'Échap ne ferme pas la fenêtre');
 
   // 3. Le favori sur wiki-masters.com : lecture simulée, regroupement, envoi par morceaux
   const imports = await runBookmarklet(bmCode, ctx.fetch, importKey);
@@ -308,30 +309,32 @@ async function main() {
   for (const f of doc.listeners.visibilitychange || []) await f();
   await settle(80);
   check(has('Collection mise à jour'), "le retour sur l'onglet ne recharge pas la collection");
-  check(cls('sleeve').length === 120, `120 pochettes attendues, ${cls('sleeve').length} affichées`);
-  check(has('Afficher plus'), 'bouton Afficher plus absent');
+  check(has('cartes différentes') && has('collections commencées') && cls('track').length === 1, 'tuiles de chiffres ou barre de répartition absentes');
+  await goTab('cartes');
+  check(cls('cell').length === 120 && cls('card').length === 120, `120 cartes attendues, ${cls('cell').length} affichées`);
   needButton('Afficher plus').click();
   await settle();
-  check(cls('sleeve').length > 120, 'Afficher plus sans effet');
+  check(cls('cell').length > 120, 'Afficher plus sans effet');
 
-  // 4. Barre d'outils : recherche, rareté, tri
+  // 4. Mes cartes : recherche, rareté, tri
   const q = byId('q');
   type(q, 'rihanna');
   await settle();
-  check(cls('sleeve').length === 1 && has('Rihanna'), 'la recherche ne filtre pas');
+  check(cls('cell').length === 1 && has('Rihanna'), 'la recherche ne filtre pas');
+  check(cls('card__sheen').length === 1 && cls('card__star').length === 0, 'légendaire sans brillance');
   type(q, '');
-  const pills = cls('rpill');
-  check(pills.length === 6 && text(pills[0]).startsWith('L'), 'pastilles de rareté absentes');
-  pills[0].dispatch('click', { ctrlKey: true });
+  const rp = cls('rpill');
+  check(rp.length === 6 && text(rp[0]).startsWith('C'), 'pastilles de rareté absentes');
+  rp.find((b) => text(b).includes('Légendaire')).dispatch('click', { ctrlKey: true });
   await settle();
-  check(cls('sleeve').every((s) => text(s.querySelector('.rar')).startsWith('L')), 'Ctrl+clic sur une rareté ne l\'isole pas');
+  check(cls('cell').length === 1 && cls('cell').every((c) => text(c.querySelector('.pill')) === 'L'), 'Ctrl+clic sur une rareté ne l\'isole pas');
   needButton('Réinitialiser les filtres').click();
   await settle();
-  const sel = all((n) => n.tagName === 'SELECT')[0];
+  const sel = byId('sort');
   sel.value = 'title';
   sel.dispatch('change');
   await settle();
-  const titles = cls('face').map((f) => text(f.querySelector('.title')));
+  const titles = cls('card__title').map(text);
   check(titles.slice(0, 5).join('|') === titles.slice(0, 5).sort((a, b) => a.localeCompare(b, 'fr', { numeric: true, sensitivity: 'base' })).join('|'), 'tri par titre incorrect : ' + titles.slice(0, 5).join(' | '));
 
   // 5. Sélection (Maj+clic) et bande de sélection
@@ -341,12 +344,14 @@ async function main() {
   picks[4].click({ shiftKey: true });
   await settle();
   check(one('bulk') && text(one('bulk').querySelector('.count')) === '5', 'Maj+clic : 5 cartes attendues, ' + text(one('bulk') && one('bulk').querySelector('.count')));
+  check(one('cardgrid').classList.contains('selecting'), 'mode sélection non signalé à la grille');
   type(byId('bulk-tag'), '  À  échanger ');
   needButton('Ajouter').click();
   await settle();
   check(has('« À échanger » ajouté à 5 cartes.'), 'ajout groupé sans confirmation');
   if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.card_ids.length === 5 && b.add[0] === 'À échanger'), 'appel tags/bulk incorrect');
-  check(all((n) => n.classList.contains('tab') && text(n).includes('À échanger')).length === 1, 'le tag n\'apparaît pas dans le dos');
+  check(all((n) => n.classList.contains('chip') && text(n).includes('À échanger')).length === 1, 'le tag n\'apparaît pas dans la colonne des tags');
+  check(cls('cell__tags').filter((t) => text(t).includes('À échanger')).length === 5, 'les tags ne sont pas affichés sous les cartes');
   // Quota ou base pleine : le 503 du serveur s'affiche tel quel.
   if (!SERVER) {
     type(byId('bulk-tag'), 'QUOTA');
@@ -359,43 +364,41 @@ async function main() {
   check(!one('bulk'), 'la bande de sélection reste');
 
   // 6. Filtre par tag, renommage
-  const tagTab = all((n) => n.classList.contains('tag-row') && text(n).includes('À échanger'))[0];
-  tagTab.querySelector('.open').click();
+  all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && text(n).includes('À échanger'))[0].click();
   await settle();
-  check(text(all((n) => n.tagName === 'H2' && n.parentNode.classList.contains('titles'))[0]) === 'À échanger' && cls('sleeve').length === 5, 'le filtre par tag ne marche pas');
-  tagTab.querySelector('.edit').dispatch('click');
+  check(cls('cell').length === 5 && text(one('count-line')).includes('5 cartes'), 'le filtre par tag ne marche pas');
+  needButton('Renommer ou supprimer « À échanger »').click();
   await settle();
   type(byId('tag-to'), 'Échange');
   all((n) => n.tagName === 'BUTTON' && text(n) === 'Renommer')[0].click();
   await settle();
-  check(has('renommé en « Échange »') && cls('sleeve').length === 5, 'renommage du tag incorrect');
-  showAlbum: {
-    all((n) => n.tagName === 'BUTTON' && text(n).includes("Tout l'album"))[0].dispatch('click');
-    await settle();
-  }
+  check(has('renommé en « Échange »') && cls('cell').length === 5, 'renommage du tag incorrect');
+  needButton('Réinitialiser les filtres').click();
+  await settle();
 
-  // 7. Fiche : tags, suggestions Wikidata (métier au féminin, pays), validation
+  // 7. Fiche : tags, suggestions Wikidata (métier au féminin, pays), validation, collections
   type(q, 'rihanna');
   await settle();
-  one('face').dispatch('click');
+  one('card').dispatch('click');
   await settle(120);
-  const drawer = one('drawer');
-  check(drawer && text(drawer).includes('Rihanna') && text(drawer).includes('Légendaire (L)'), 'fiche absente');
-  check(text(drawer).includes('Chanteuse') && text(drawer).includes('Barbade'), 'suggestions Wikidata absentes : ' + text(drawer).slice(-200));
-  check(!text(drawer).includes('Être humain'), '« être humain » ne doit pas être suggéré');
-  one('drawer').querySelectorAll('button').filter((b) => text(b).includes('Valider les suggestions'))[0].click();
+  const fiche = () => one('fiche');
+  check(fiche() && text(fiche()).includes('Rihanna') && text(fiche()).includes('Légendaire') && text(fiche()).includes('Vues par mois'), 'fiche absente');
+  check(fiche().querySelector('.card') && fiche().querySelector('.card').classList.contains('big'), 'grande carte absente de la fiche');
+  check(text(fiche()).includes('Chanteuse') && text(fiche()).includes('Barbade'), 'suggestions Wikidata absentes : ' + text(fiche()).slice(-200));
+  check(!text(fiche()).includes('Être humain'), '« être humain » ne doit pas être suggéré');
+  fiche().querySelectorAll('button').filter((b) => text(b).includes('Valider les suggestions'))[0].click();
   await settle();
   if (!SERVER) check(JSON.stringify(api.st.tags.get('c0')) === '["Chanteuse","Barbade"]', 'tags/set après validation : ' + JSON.stringify(api.st.tags.get('c0')));
   type(byId('new-tag'), 'Musique');
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
   await settle();
-  check(text(one('drawer')).includes('Musique'), 'ajout de tag dans la fiche sans effet');
+  check(text(fiche()).includes('Musique'), 'ajout de tag dans la fiche sans effet');
   win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(500);
-  check(!one('drawer'), 'Échap ne ferme pas la fiche');
+  check(!fiche(), 'Échap ne ferme pas la fiche');
   type(q, '');
 
-  // 8. Suggestions pour toute la collection (vue Tags)
+  // 8. Suggestions pour toute la collection (colonne des tags)
   needButton('Calculer les suggestions pour toute la collection').click();
   await settle(400);
   check(has('Suggestions : ') && has('sur 1 049 cartes'), 'progression des suggestions absente');
@@ -403,18 +406,26 @@ async function main() {
   await settle();
   check(has('Calculer les suggestions pour toute la collection'), 'Arrêter sans effet');
 
-  // 9. Catalogue : ajout d'une collection proposée, ouverture, cases vides
-  needButton('Collections proposées').click();
+  // 9. Collections : catalogue en lignes, album d'une collection proposée, ajout à mes collections
+  await goTab('collections');
+  // Les collections proposées à 0 sont masquées par défaut (demande de l'utilisateur) : un bouton les affiche.
+  check(has('Mes collections') && has('Collections proposées'), 'vue d\'ensemble des collections absente');
+  check(!has('Races bovines'), 'une collection proposée à 0 est affichée par défaut');
+  needButton('collections pas encore commencées').click(); await settle();
+  check(has('Bêtes et terroir') && has('Races bovines'), 'le bouton n\'affiche pas les collections proposées à 0');
+  check(cls('row').length > 10 && cls('fan').length === cls('row').length, 'lignes de collections (éventail) absentes');
+  const planetRow = all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Planètes du Système solaire'))[0];
+  check(planetRow, 'ligne « Planètes du Système solaire » absente');
+  planetRow.click();
   await settle(80);
-  check(has('Bêtes et terroir') && has('Races bovines'), 'catalogue non affiché');
-  const addBtn = all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Ajouter la collection Planètes du Système solaire')[0];
-  check(addBtn, 'bouton Ajouter du catalogue absent');
-  addBtn.click();
+  check(has('proposée') && has("Il t'en manque") && cls('slot').length === 9, "l'album d'une collection proposée ne s'ouvre pas");
+  needButton('Ajouter à mes collections').click();
   await settle(80);
   if (!SERVER) check(api.st.targets.some((t) => t.source === 'catalog:planetes' && t.items.length === 9), 'collection du catalogue mal enregistrée');
-  needButton('Ouvrir').click();
-  await settle(80);
-  check(has('il en manque') && cls('empty').length > 0, 'cases vides absentes');
+  check(has('Modifier') && !has('Ajouter à mes collections'), "l'album ne passe pas à la collection ajoutée");
+  needButton('← Toutes les collections').click();
+  await settle();
+  check(all((n) => n.classList.contains('row') && text(n).includes('Planètes')).length === 1, 'collection ajoutée en double ou absente');
 
   // 10. Nouvelle collection : vérification sur Wikipédia (redirection, homonymie, introuvable)
   needButton('Nouvelle collection').click();
@@ -422,27 +433,34 @@ async function main() {
   type(byId('ed-name'), "Dieux de l'Olympe");
   type(byId('ed-text'), 'zeus\nPoseidon\nhttps://fr.wikipedia.org/wiki/H%C3%A9ra\nMercure\nInexistant\nRihanna\n');
   needButton('Enregistrer').click();
-for (let i = 0; i < 100 && !has('posent problème'); i++) await sleep(50);
+  for (let i = 0; i < 100 && !has('posent problème'); i++) await sleep(50);
   await settle(200);
   check(has('2 articles posent problème') && has('Mercure') && has('Inexistant'), "les problèmes de vérification ne s'affichent pas");
   needButton('Enregistrer quand même').click();
-for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50);
+  for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50);
   await settle(200);
   if (!SERVER) {
     const t = api.st.targets.find((x) => x.name === "Dieux de l'Olympe");
     check(t && t.items.map((i) => i.title + ':' + i.status).join(',') === 'Zeus:ok,Poséidon:ok,Héra:ok,Mercure:disambiguation,Inexistant:missing,Rihanna:ok', 'items enregistrés : ' + (t && JSON.stringify(t.items)));
     check(t.items[0].image === 'https://upload.wikimedia.org/z.jpg' && t.items[0].description === 'dieu grec', 'description ou vignette perdue');
   }
-  check(has('1 sur 6 cartes') && has('il en manque 5'), 'en-tête de la collection incorrect');
+  check(text(one('album-title')).includes('1 sur 6') && has("Il t'en manque 5"), 'en-tête de la collection incorrect');
   for (let i = 0; i < 40 && has('Rareté estimée des cases vides'); i++) await sleep(100);
   check(pvContinueSeen, 'la continuation des vues (pvipcontinue) n\'est pas suivie');
-  const ests = cls('est').map(text);
-  check(ests.includes('≈L') && ests.includes('≈SR') && ests.includes('≈R'), 'raretés estimées : ' + ests.join(' '));
+  const ests = cls('slot').map((s) => text(s.querySelector('.pill')));
+  check(ests.includes('≈ L') && ests.includes('≈ SR') && ests.includes('≈ R'), 'raretés estimées : ' + ests.join(' '));
   check(has("Page d'homonymie : précise le titre") && has('Article introuvable sur Wikipédia'), 'avertissements des cases vides absents');
-  check(has('Cases vides · 5'), 'séparateur des cases vides absent');
+  check(cls('slot').length === 5 && cls('slot__no').length === 5 && cls('cell').length === 1, 'cases vides numérotées absentes');
+  check(has('40 000 vues / 30 j') || has('40 000 vues / 30 j'), 'vues sur 30 jours absentes des cases vides');
   await sleep(1600);
   const pvCache = JSON.parse(ls.get('classeur-pv') || '{}');
   check(pvCache.Zeus && pvCache.Zeus[1][0] === 40000, 'cache des vues non écrit');
+  all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Rareté')[0].click();
+  await settle();
+  { const g = cls('cardgrid')[0].childNodes.filter((n) => n.nodeType === 1); check(text(g[0]).includes('Zeus') && text(g[1]).includes('Rihanna') && text(g[2]).includes('Héra'), 'tri par rareté : ' + g.slice(0, 3).map((n) => text(n).slice(0, 20)).join(' | ')); }
+  all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Manquantes')[0].click();
+  await settle();
+  check(cls('cell').length === 0 && cls('slot').length === 5, 'filtre Manquantes incorrect');
 
   // 11. Supprimer la collection (confirmation dans la page)
   all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Supprimer')[0].click();
@@ -450,20 +468,20 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
   check(has('Supprimer « Dieux de l\'Olympe » ?'), 'confirmation de suppression absente');
   needButton('Supprimer la collection').click();
   await settle(400);
-  check(!all((n) => n.classList.contains('set') && text(n).includes('Dieux')).length, 'collection non supprimée');
+  check(has('Mes collections') && !cls('group')[0].querySelectorAll('.row').some((n) => text(n).includes('Dieux')), 'collection non supprimée');
 
-  // 12. Rafraîchir sans session -> fenêtre « Mettre à jour » (favori d'abord, cookie en secours) ; cookie -> boucle
+  // 12. Rafraîchir sans session -> onglet « Mettre à jour » (favori d'abord, cookie en secours) ; cookie -> boucle
   needButton('Rafraîchir la collection').click();
   await settle();
-  check(byId('cookie-input'), 'la fenêtre Session ne s\'ouvre pas');
+  check(byId('cookie-input') && tabBtn('maj').getAttribute('aria-selected') === 'true', 'sans session, Rafraîchir doit mener à « Mettre à jour »');
   check(has('Le favori, le chemin conseillé') && has('Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
-    'la fenêtre Session ne présente pas le cookie comme un secours, avec son avertissement');
+    'la page ne présente pas le cookie comme un secours, avec son avertissement');
   type(byId('cookie-input'), 'Cookie: sb-a=1; sb-b=2');
   needButton('Enregistrer le cookie et rafraîchir').click();
-  for (let i = 0; i < 300 && !(text(doc.body.querySelector('.status')).match(/expir|répond|cartes ·|nouvelle|robot/) && !has('Rafraîchissement…')); i++) await sleep(100);
+  for (let i = 0; i < 300 && !(text(doc.body.querySelector('.refresh-line')).match(/expir|répond|cartes ·|nouvelle|robot/) && !has('Rafraîchissement…')); i++) await sleep(100);
   for (let i = 0; i < 300 && has('Rafraîchissement…'); i++) await sleep(100);
   await settle(100);
-  if (SERVER) { console.log('rafraîchissement par cookie (faux cookie) : ' + text(doc.body.querySelector('.status'))); }
+  if (SERVER) console.log('rafraîchissement par cookie (faux cookie) : ' + text(doc.body.querySelector('.refresh-line')));
   await settle(200);
   if (!SERVER) {
     check(api.st.lastSession && api.st.lastSession.cookie === 'sb-a=1; sb-b=2', 'cookie mal envoyé : ' + JSON.stringify(api.st.lastSession));
@@ -471,14 +489,19 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
     check(pages === '0,10,20', 'pages du rafraîchissement : ' + pages);
     check(has('1 nouvelle'), 'résumé du rafraîchissement absent');
     check(has('2 ignorées'), 'entrées ignorées (skipped) du rafraîchissement non affichées');
-    check(has('Nouvelles du dernier rafraîchissement'), 'intercalaire des nouvelles absent');
     check(api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
+    await goTab('cartes');
+    check(has('Nouvelles du dernier rafraîchissement'), 'raccourci des nouvelles absent');
+    all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && text(n).includes('Nouvelles du dernier rafraîchissement'))[0].click();
+    await settle();
+    check(cls('cell').length === 1 && cls('card__new').length === 1 && has('Nouvelle carte'), 'ruban « Nouvelle » ou raccourci des nouvelles incorrect');
+    needButton('Réinitialiser les filtres').click();
+    await settle();
   }
 
   // 13. HAR : seuls l'adresse et le cookie des requêtes vers le jeu partent
   if (!SERVER) {
-    needButton('Mettre à jour').click();
-    await settle();
+    await goTab('maj');
     const fileInput = all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'file')[0];
     const har = { log: { entries: [
       { request: { url: 'https://www.wiki-masters.com/api/my-collection?page=0', headers: [{ name: 'cookie', value: 'sb=har' }, { name: 'authorization', value: 'secret' }] }, response: { content: { text: 'PRIVÉ' } } },
@@ -490,7 +513,6 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
     const sent = JSON.stringify(api.st.lastSession);
     check(sent === '{"har":{"log":{"entries":[{"request":{"url":"https://www.wiki-masters.com/api/my-collection?page=0","headers":[{"name":"Cookie","value":"sb=har"}]}}]}}}', 'HAR envoyé : ' + sent);
   }
-  win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(200);
 
   const openLink = async (key) => {
@@ -500,6 +522,8 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
     await settle(100);
   };
   const exactButton = (t) => { const b = all((n) => n.tagName === 'BUTTON' && text(n).trim() === t)[0]; if (!b) fail('bouton absent : ' + t + '\n' + text(doc.body).slice(-600)); return b; };
+  const modalButton = (t) => { const m = one('modal'); const b = m && m.querySelectorAll('button').filter((n) => text(n).trim() === t)[0]; if (!b) fail('bouton absent de la fenêtre : ' + t); return b; };
+  const waitH1 = async (name) => { for (let i = 0; i < 200 && !h1().includes(name); i++) await settle(25); };
   const myKey = ls.get('classeur-key');
 
   // 14. Lien d'un autre classeur : vérifié, puis demandé ; la clé gardée n'est pas écrasée sans accord
@@ -510,18 +534,17 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
   check(ls.get('classeur-key') === myKey, 'clé écrasée avant confirmation');
   exactButton('Garder le mien').click();
   await settle(100);
-  check(ls.get('classeur-key') === myKey && has('Classeur de Cédric') && !one('modal'), '« Garder le mien » ne garde pas le classeur');
+  check(ls.get('classeur-key') === myKey && h1().includes('Cédric') && !one('modal'), '« Garder le mien » ne garde pas le classeur');
   await openLink(otherKey);
-  exactButton('Ouvrir').click();
-  for (let i = 0; i < 200 && !text(one('me-block')).includes('Classeur de Bob'); i++) await settle(25);
-  check(ls.get('classeur-key') === otherKey && has('Classeur de Bob'), "« Ouvrir » n'ouvre pas l'autre classeur");
+  modalButton('Ouvrir').click();
+  await waitH1('Bob');
+  check(ls.get('classeur-key') === otherKey && h1() === 'Le classeur de Bob', "« Ouvrir » n'ouvre pas l'autre classeur");
   check(JSON.parse(ls.get('classeur-known') || '[]').length === 2, 'liste des classeurs connus incomplète');
-  needButton('Changer de classeur').click();
-  await settle();
+  await goTab('reglages');
   check(has('Autres classeurs ouverts dans ce navigateur') && has('Classeur de Cédric'), 'retour à son classeur absent des Réglages');
   exactButton('Ouvrir').click();
-  for (let i = 0; i < 200 && !text(one('me-block')).includes('Classeur de Cédric'); i++) await settle(25);
-  check(ls.get('classeur-key') === myKey && text(one('me-block')).includes('Classeur de Cédric'), 'retour à son classeur impossible');
+  await waitH1('Cédric');
+  check(ls.get('classeur-key') === myKey && h1().includes('Cédric'), 'retour à son classeur impossible');
 
   // 15. Lien tronqué ou inconnu : refusé avec un message clair, jamais enregistré
   await openLink(myKey.slice(0, 20));
@@ -532,13 +555,12 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
   check(!(ls.get('classeur-known') || '').includes(unknownKey), 'clé inconnue enregistrée');
 
   // 16. Changer ma clé : nouveau lien montré, ancienne clé oubliée
-  needButton('Réglages').click();
-  await settle();
+  await goTab('reglages');
   check(has("Un lien ouvert reste dans l'historique du navigateur"), "l'avertissement sur l'historique manque");
   needButton('Changer ma clé').click();
   await settle();
   check(has('Changer ma clé ?'), 'confirmation de changement de clé absente');
-  exactButton('Changer ma clé').click();
+  modalButton('Changer ma clé').click();
   await settle(SERVER ? 300 : 80);
   const rotated = ls.get('classeur-key');
   check(rotated && rotated !== myKey && byId('new-key-link') && byId('new-key-link').value === ORIGIN + '/#cle=' + rotated, 'nouveau lien absent après changement de clé');
@@ -550,26 +572,22 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
 
   // 17. Régénérer le favori : nouvelle clé d'import, nouveau favori
   const oldImport = importKey;
-  needButton('Réglages').click();
-  await settle();
   needButton('Régénérer le favori').click();
   await settle();
-  exactButton('Régénérer le favori').click();
+  modalButton('Régénérer le favori').click();
   await settle(SERVER ? 300 : 80);
   const newImport = JSON.parse(ls.get('classeur-import-key') || '{}').key;
   const bm2 = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
   check(newImport && newImport !== oldImport && bm2 && decodeURI(bm2.getAttribute('href').slice(11)).includes('"' + newImport + '"'), 'favori non régénéré');
-  win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
-  await settle(200);
+  check(tabBtn('maj').getAttribute('aria-selected') === 'true', "après régénération, l'onglet du favori doit s'ouvrir");
 
   // 18. Oublier ce navigateur : clé, classeurs connus, clé d'import, caches de Wikipédia
   await sleep(1600);
   check(ls.get('classeur-pv') && ls.get('classeur-sugg'), 'caches attendus avant l\'oubli');
-  needButton('Réglages').click();
-  await settle();
+  await goTab('reglages');
   needButton('Oublier ce navigateur').click();
   await settle();
-  exactButton('Oublier ce navigateur').click();
+  modalButton('Oublier ce navigateur').click();
   await settle(100);
   check(has("J'ai déjà un lien"), "oublier ce navigateur ne ramène pas à l'accueil");
   const left = ['classeur-key', 'classeur-pv', 'classeur-sugg', 'classeur-import-key', 'classeur-known', 'classeur-target'].filter((k) => ls.has(k));
@@ -577,7 +595,9 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
 
   // 19. Lien personnel sans clé gardée : vérifié puis adopté sans question, fragment effacé
   await openLink(rotated);
-  check(ctx.location.hash === '' && ls.get('classeur-key') === rotated && has("Tout l'album"), 'le lien personnel n\'ouvre pas le classeur');
+  await waitH1('Cédric');
+  check(ctx.location.hash === '' && ls.get('classeur-key') === rotated && h1() === 'Le classeur de Cédric' && has('Mes collections'), 'le lien personnel n\'ouvre pas le classeur');
+
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));
   check(!missing.length, 'icônes absentes du sprite : ' + missing.join(', '));

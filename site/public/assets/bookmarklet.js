@@ -20,7 +20,7 @@
   box.id = BOX_ID;
   box.setAttribute("role", "status");
   box.setAttribute("aria-live", "polite");
-  box.style.cssText = "position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(340px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:#231a15;color:#f3e7d6;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid #46382e";
+  box.style.cssText = "position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(340px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:#131615;color:#f2f4f3;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid #2e3431";
   var title = document.createElement("div");
   title.textContent = "Le classeur";
   title.style.cssText = "font-weight:700;margin-bottom:4px";
@@ -29,7 +29,7 @@
   var close = document.createElement("button");
   close.type = "button";
   close.textContent = "Fermer";
-  close.style.cssText = "margin-top:10px;padding:4px 10px;border-radius:7px;border:1px solid #46382e;background:#2e231c;color:#f3e7d6;font:inherit;font-size:12.5px;cursor:pointer";
+  close.style.cssText = "margin-top:10px;padding:4px 10px;border-radius:7px;border:1px solid #2e3431;background:#1b1f1d;color:#f2f4f3;font:inherit;font-size:12.5px;cursor:pointer";
   close.onclick = function () {
     box.remove();
   };
@@ -44,7 +44,7 @@
       a.target = "_blank";
       a.rel = "noopener";
       a.textContent = "Ouvrir le classeur";
-      a.style.cssText = "display:inline-block;margin-top:8px;color:#edba78;font-weight:600";
+      a.style.cssText = "display:inline-block;margin-top:8px;color:#6ee7b7;font-weight:600";
       extra.appendChild(a);
     }
   };
