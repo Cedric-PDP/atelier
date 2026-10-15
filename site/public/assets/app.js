@@ -44,8 +44,11 @@
   // Marché du jeu (enchères entre joueurs) : route lue dans le code public de wiki-masters.com (notifications
   // « marketplace_* » → /marketplace ou /marketplace/<enchère>). Sa page n'est servie qu'aux joueurs connectés : rien
   // ne dit qu'elle lit une recherche dans l'adresse, donc on l'ouvre telle quelle et on copie le titre (marketLink).
+  // Revu le 2026-10-15 : sa recherche n'appelle que GET /api/marketplace?q=… (doc de qpautrat/wikimasters-cli) ; aucune
+  // extension publique ni archive ne montre un /marketplace?<recherche> (elles tapent dans le champ ou appellent l'API).
   const MARKET_URL = 'https://www.wiki-masters.com/marketplace';
   const MARKET_TAB = 'wikimasters';
+  const MARKET_HINT = 'Le classeur ne peut pas remplir la recherche du jeu à ta place : le titre est copié, colle-le (Ctrl+V, ⌘+V sur Mac) dans la recherche du marché qui s\'ouvre.';
   const SPARQL = 'https://query.wikidata.org/sparql';
   const GROUPS = { vivant: 'Le vivant', sciences: 'Sciences', geo: 'Géographie', histoire: 'Histoire', sport: 'Sport' };
   // Natures Wikidata qui ne disent rien du sujet : être humain (remplacé par le métier), pages techniques.
@@ -188,6 +191,7 @@
     bulkBusy: false,
     bulkError: '',
     openId: null,
+    openMissing: null, // élément d'une collection qui te manque, ouvert dans sa fiche (case vide)
     drawer: { newTag: '', newCat: '', busy: false, error: '' },
     tagSearch: '',
     tagsAll: false,
@@ -736,6 +740,12 @@
     const all = [...collections.value.mine, ...collections.value.visible];
     return all.filter((col) => col.items.some((it) => { const f = findCard(it); return !!f && f.id === card.id; }));
   }
+  // Collections qui contiennent un article que tu n'as pas (fiche d'une case vide) : même titre, ou même qid.
+  function membershipsOfItem(item) {
+    const k = normTitle(item.title);
+    const all = [...collections.value.mine, ...collections.value.visible];
+    return all.filter((col) => col.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)));
+  }
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
   const bookmarkletUrl = computed(() => (S.bm.src && S.bm.importKey ? makeBookmarklet(S.bm.src, location.origin, S.bm.importKey) : ''));
@@ -782,7 +792,7 @@
     cards.value = [];
     targets.value = [];
     newIds.value = [];
-    Object.assign(S, { me: null, fetchedAt: null, openId: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
+    Object.assign(S, { me: null, fetchedAt: null, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
       q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
@@ -1302,6 +1312,7 @@
   }
   function openCardById(id) {
     if (S.modal) closeModal();
+    S.openMissing = null;
     S.openId = id;
     S.drawer.error = '';
     S.drawer.newTag = '';
@@ -1313,8 +1324,16 @@
     lastFocus = ev && ev.currentTarget ? ev.currentTarget : document.activeElement;
     openCardById(id);
   }
+  // Case vide d'une collection : fiche de la carte qui te manque (description, rareté estimée, marché, Wikipédia).
+  function openMissingFrom(item, ev) {
+    lastFocus = ev && ev.currentTarget ? ev.currentTarget : document.activeElement;
+    if (S.modal) closeModal();
+    S.openId = null;
+    S.openMissing = markRaw({ ...item }); // copie figée : la fiche lit les vues et la vignette dans le cache, en direct
+  }
   function closeCard() {
     S.openId = null;
+    S.openMissing = null;
     const el = lastFocus;
     lastFocus = null;
     if (el && document.contains(el)) nextTick(() => el.focus());
@@ -1623,6 +1642,7 @@
   function openFavori() {
     if (S.modal) closeModal();
     S.openId = null;
+    S.openMissing = null;
     S.tab = 'maj';
     prepareFavori();
     toTop();
@@ -2344,17 +2364,20 @@
       onClick: () => copyForMarket(title),
     }, compact ? [icon('search')] : [icon('search', 'sm'), 'Chercher sur le marché']);
   }
-  // Case vide d'une collection : la carte qui te manque.
+  // Case vide d'une collection : la carte qui te manque. Toute la case ouvre sa fiche : un bouton étendu sur la case
+  // (frère de la loupe du marché, jamais parent : pas de contrôle dans un contrôle), la loupe passe au-dessus.
   function viewSlot(s, col) {
     const it = s.item;
     const img = it.image || s.thumb;
     let views = '';
     if (it.status === 'ok') views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
-    return h('div', { class: 'slot', key: s.key }, [
+    return h('div', { class: ['slot', { pulled: !!S.openMissing && S.openMissing.title === it.title }], key: s.key }, [
       img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
       col.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
+      h('button', { class: 'slot__open', type: 'button', title: 'Pas encore dans ta collection : ouvrir la fiche',
+        'aria-label': `${it.title} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
       h('div', { class: 'slot__top' }, it.status === 'ok' ? [pill(s.est, true), marketLink(it.title, true)] : []),
-      h('h3', null, [h('a', { href: wikiUrl(it.title), target: '_blank', rel: 'noopener noreferrer', title: "Pas encore dans ta collection : ouvrir l'article" }, it.title)]),
+      h('h3', null, it.title),
       it.description ? h('p', null, it.description) : null,
       it.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia') : null,
       it.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre") : null,
@@ -2965,7 +2988,53 @@
           marketLink(c.title),
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
-        h('p', { class: 'small muted' }, 'Le marché du jeu s\'ouvre dans un autre onglet et le titre est copié : colle-le dans sa recherche.'),
+        h('p', { class: 'small muted' }, MARKET_HINT),
+      ]),
+    ]);
+  }
+  // Fiche d'une carte qui te manque (case vide) : ce qu'en dit Wikipédia, sa rareté estimée d'après ses vues,
+  // les collections où elle figure, le marché du jeu (article vérifié seulement) et l'article.
+  function viewMissing(item, closeRef, boxRef) {
+    void S.pv.version;
+    const info = pvCache.get(item.title);
+    const views = info ? info[0] : null;
+    const img = item.image || (info ? info[1] : null);
+    const ok = item.status === 'ok';
+    const est = ok ? estRarity(views) : null;
+    const member = membershipsOfItem(item);
+    const mine = member.filter((m) => m.kind === 'target');
+    const prop = member.filter((m) => m.kind === 'catalog');
+    const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
+    const memberList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
+      const p = progressOf(col);
+      return h('button', { key: col.key, type: 'button', onClick: () => goto(col) }, [col.name, h('span', null, `${fmt(p.own)} / ${fmt(p.total)}`)]);
+    }));
+    return h('div', { class: 'sheet fiche fiche--missing', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'detail-title', tabindex: '-1', ref: boxRef,
+      onKeydown: (e) => trapTab(e, boxRef.value) }, [
+      h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
+      h('div', { class: 'slot big', 'aria-hidden': 'true' }, [
+        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken }) : null,
+        h('div', { class: 'slot__top' }, ok ? [pill(est, true)] : []),
+        h('p', { class: 'slot__name' }, item.title),
+      ]),
+      h('div', { class: 'info' }, [
+        h('h2', { id: 'detail-title' }, item.title),
+        item.description ? h('p', { class: 'muted lead' }, item.description) : null,
+        h('p', { class: 'missing-note' }, 'Pas encore dans ta collection'),
+        item.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
+        item.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre dans la collection.") : null,
+        ok ? h('div', { class: 'facts' }, [
+          fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running ? '…' : '?'),
+          fact('Vues sur 30 jours', views != null ? fmt(views) : S.pv.running ? '…' : '?'),
+        ]) : null,
+        ok ? h('p', { class: 'small muted' }, "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
+        mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
+        prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
+        h('div', { class: 'actions' }, [
+          ok ? marketLink(item.title) : null,
+          h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
+        ]),
+        ok ? h('p', { class: 'small muted' }, MARKET_HINT) : null,
       ]),
     ]);
   }
@@ -3318,12 +3387,12 @@
       const closeRef = ref(null);
       const boxRef = ref(null);
       let downOnVeil = false;
-      watch(() => S.openId, (id, old) => { if (id && !old) nextTick(() => { if (closeRef.value) closeRef.value.focus(); }); });
-      return () => h(Transition, { name: 'fade' }, () => (openCard.value ? h('div', {
+      watch(() => S.openId || S.openMissing, (id, old) => { if (id && !old) nextTick(() => { if (closeRef.value) closeRef.value.focus(); }); });
+      return () => h(Transition, { name: 'fade' }, () => (openCard.value || S.openMissing ? h('div', {
         class: 'overlay', key: 'fiche',
         onPointerdown: (e) => { downOnVeil = e.target === e.currentTarget; },
         onClick: (e) => { if (downOnVeil && e.target === e.currentTarget) closeCard(); downOnVeil = false; },
-      }, [viewFiche(openCard.value, closeRef, boxRef)]) : null));
+      }, [openCard.value ? viewFiche(openCard.value, closeRef, boxRef) : viewMissing(S.openMissing, closeRef, boxRef)]) : null));
     },
   };
   const Modals = { name: 'Modals', setup: () => () => h(Transition, { name: 'fade' }, () => (S.modal && MODALS[S.modal] ? MODALS[S.modal]() : null)) };
@@ -3341,7 +3410,7 @@
     if (S.boot !== 'app') return;
     if (e.key === 'Escape') {
       if (S.modal) { e.preventDefault(); closeModal(); return; }
-      if (S.openId) { e.preventDefault(); closeCard(); return; }
+      if (S.openId || S.openMissing) { e.preventDefault(); closeCard(); return; }
       return;
     }
     const tag = (document.activeElement && document.activeElement.tagName) || '';

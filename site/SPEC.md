@@ -156,6 +156,9 @@ wiki-masters.com et connecte-toi ». 401 du jeu : « Connecte-toi à WikiMasters
 Les règles de WikiMasters interdisent les outils qui jouent ou **interagissent à la place du joueur**. Le classeur ne
 fait que **lire** la collection (mêmes requêtes que la page « Collection » du site) : jamais d'écriture dans le jeu,
 jamais d'étiquette posée dans le jeu, pas de rafraîchissement automatique en tâche de fond (toujours un geste de
-l'utilisateur). « Chercher sur le marché » (fiche, cases vides d'une collection) n'est qu'un lien vers
+l'utilisateur). « Chercher sur le marché » (fiche d'une carte, fiche et loupe d'une case vide) n'est qu'un lien vers
 `https://www.wiki-masters.com/marketplace` (onglet nommé `wikimasters`) qui copie le titre de la carte : c'est le
-joueur qui le colle dans la recherche du marché.
+joueur qui le colle dans la recherche du marché. Le marché ne lit aucune recherche connue dans son adresse (sa
+recherche appelle `GET /api/marketplace?q=…`), et remplir son champ demanderait un script sur la page du jeu : pas
+fait. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues, collections,
+marché si l'article est vérifié, Wikipédia).

@@ -765,6 +765,47 @@ async function main() {
     check(copied[copied.length - 1] === 'Zeus' && has('« Zeus » copié'), 'le titre de la case vide n\'est pas copié pour le marché');
   }
   check(has('40 000 vues / 30 j') || has('40 000 vues / 30 j'), 'vues sur 30 jours absentes des cases vides');
+  // Toute la case vide ouvre la fiche de la carte manquante (bouton étendu, frère de la loupe) : description, rareté
+  // estimée, vues, collections, marché et Wikipédia ; sans marché pour une homonymie ou un article introuvable.
+  {
+    const opener = (t) => cls('slot__open').filter((b) => (b.getAttribute('aria-label') || '').startsWith(t + ' : '))[0];
+    check(cls('slot__open').length === 5 && cls('slot__open').every((b) => b.tagName === 'BUTTON' && b.getAttribute('type') === 'button' && !b.querySelector('a, button')),
+      'boutons d\'ouverture des cases vides : ' + cls('slot__open').length);
+    check(cls('slot').every((s) => s.querySelectorAll('h3').every((t) => !t.querySelector('a'))), 'le titre d\'une case vide ne doit plus être un lien (la case entière ouvre la fiche)');
+    const zeusBtn = opener('Zeus');
+    check(zeusBtn, 'bouton d\'ouverture de « Zeus » absent');
+    zeusBtn.focus();
+    zeusBtn.click();
+    await settle(120);
+    const f = one('fiche');
+    check(f && f.classList.contains('fiche--missing') && text(f.querySelector('h2')) === 'Zeus', 'la case vide n\'ouvre pas la fiche de la carte manquante');
+    const ft = text(f);
+    check(ft.includes('Pas encore dans ta collection') && ft.includes('dieu grec') && ft.includes('≈ Légendaire') && ft.includes('40 000'),
+      'contenu de la fiche manquante : ' + ft.slice(0, 400));
+    check(f.querySelector('.slot__bg') && f.querySelector('.slot__bg').getAttribute('src') === 'https://upload.wikimedia.org/z.jpg', 'vignette absente de la fiche manquante');
+    check(ft.includes('Dans tes collections') && f.querySelector('.memberships') && f.querySelector('.memberships').querySelectorAll('button').some((b) => text(b).includes("Dieux de l'Olympe")), 'collections de la carte manquante absentes');
+    const wp = f.querySelectorAll('a').filter((a) => text(a).includes("Lire l'article sur Wikipédia"))[0];
+    check(wp && wp.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Zeus' && wp.getAttribute('target') === '_blank', 'lien Wikipédia absent de la fiche manquante');
+    const m = f.querySelectorAll('a').filter((a) => text(a).includes('Chercher sur le marché'))[0];
+    check(m && m.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && m.getAttribute('target') === 'wikimasters', 'bouton du marché absent de la fiche manquante');
+    const n = copied.length;
+    check(!m.click().defaultPrevented, 'le lien du marché de la fiche manquante ne doit pas bloquer l\'onglet');
+    await settle();
+    check(copied.length === n + 1 && copied[n] === 'Zeus' && one('fiche'), 'le marché de la fiche manquante ne copie pas le titre (ou ferme la fiche)');
+    win.listeners.keydown.forEach((fn) => fn({ key: 'Escape', preventDefault() {} }));
+    await settle(500);
+    check(!one('fiche'), 'Échap ne ferme pas la fiche de la carte manquante');
+    check(doc.activeElement === opener('Zeus'), 'le focus ne revient pas sur la case vide après la fiche');
+    // Homonymie : la fiche s'ouvre, avec l'avertissement et Wikipédia, sans marché.
+    opener('Mercure').click();
+    await settle(120);
+    const g = one('fiche');
+    check(g && text(g.querySelector('h2')) === 'Mercure' && text(g).includes("Page d'homonymie") && text(g).includes("Lire l'article sur Wikipédia")
+      && !g.querySelectorAll('a').some((a) => text(a).includes('Chercher sur le marché')), 'fiche d\'une homonymie : ' + text(g).slice(0, 300));
+    g.querySelector('.close').click();
+    await settle(500);
+    check(!one('fiche'), 'le bouton Fermer ne ferme pas la fiche de la carte manquante');
+  }
   await sleep(1600);
   const pvCache = JSON.parse(ls.get('classeur-pv') || '{}');
   check(pvCache.Zeus && pvCache.Zeus[1][0] === 40000, 'cache des vues non écrit');
