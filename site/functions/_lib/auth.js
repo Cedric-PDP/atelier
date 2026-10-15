@@ -52,7 +52,11 @@ export async function authenticate(request, env, { importKey = false } = {}) {
   const user = await env.DB.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE ${where}`)
     .bind(await sha256Hex(key))
     .first();
-  if (!user) throw new HttpError(401, 'Clé inconnue : ce lien ne correspond à aucun compte.');
+  if (!user) {
+    throw new HttpError(401, importKey
+      ? "Favori périmé : sa clé ne correspond plus à aucun classeur (un favori plus récent l'a remplacé, ou le classeur a été supprimé). Ouvre ton classeur, onglet « Mettre à jour », et remplace le favori de ta barre."
+      : 'Clé inconnue : ce lien ne correspond à aucun compte.');
+  }
   return user;
 }
 

@@ -760,10 +760,17 @@
   }
   function forgetKnown(key) { S.known = S.known.filter((x) => x.key !== key); saveKnown(); }
   // Clé d'import gardée pour un compte donné : {user, key}. Celle d'un autre classeur ne compte pas.
-  function storedImportKey() {
+  // Clés d'import gardées par compte : {<id du compte>: clé} (l'ancien format {user, key} est encore lu).
+  function importKeys() {
     const v = store.json(LS.importKey);
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+    if (typeof v.user === 'string') return typeof v.key === 'string' && v.key ? { [v.user]: v.key } : {};
+    return v;
+  }
+  function storedImportKey() {
     const me = S.me && S.me.user;
-    return v && me && v.user === me.id && typeof v.key === 'string' && v.key ? v.key : null;
+    const k = me ? importKeys()[me.id] : null;
+    return typeof k === 'string' && k ? k : null;
   }
 
   function resetData() {
@@ -785,6 +792,9 @@
   }
   const STALE_KEY = "La clé gardée dans ce navigateur ne correspond plus à aucun classeur : il a peut-être été supprimé, ou sa clé a été changée sur un autre appareil. Ouvre ton lien personnel le plus récent.";
   function lostKey(msg) {
+    // Un autre onglet a changé de clé (« Changer ma clé ») ou de classeur : on reprend celle qu'il a gardée.
+    const saved = store.get(LS.key);
+    if (saved && saved !== S.key && KEY_RE.test(saved)) { S.key = saved; boot(); return; }
     resetData();
     S.bootError = msg;
     S.bootHint = STALE_KEY;
@@ -1621,7 +1631,7 @@
       const r = await api('POST', '/api/import-key');
       if (!r.import_key || typeof r.import_key !== 'string') throw new Error("Le classeur n'a pas renvoyé de clé d'import : réessaie.");
       const me = S.me && S.me.user;
-      store.set(LS.importKey, JSON.stringify({ user: me ? me.id : null, key: r.import_key }));
+      if (me) store.set(LS.importKey, JSON.stringify({ ...importKeys(), [me.id]: r.import_key }));
       S.bm.importKey = r.import_key;
       if (S.me) S.me.has_import_key = true;
       return true;

@@ -371,7 +371,7 @@ async function main() {
   check(href && href.startsWith('javascript:'), 'favori sans adresse javascript:');
   check(!/[\s#"<>]/.test(href.slice(11)), 'adresse du favori mal échappée');
   const bmCode = decodeURI(href.slice(11));
-  const importKey = JSON.parse(ls.get('classeur-import-key') || '{}').key;
+  const importKey = Object.values(JSON.parse(ls.get('classeur-import-key') || '{}'))[0];
   check(importKey && importKey !== ls.get('classeur-key'), "clé d'import non gardée (classeur-import-key)");
   check(bmCode.includes('"' + ORIGIN + '"') && bmCode.includes('"' + importKey + '"'), "clé d'import ou origine absente du favori");
   check(!bmCode.includes(ls.get('classeur-key')), 'la clé principale ne doit jamais être dans le favori');
@@ -888,7 +888,7 @@ async function main() {
   await settle();
   modalButton('Régénérer le favori').click();
   await settle(SERVER ? 300 : 80);
-  const newImport = JSON.parse(ls.get('classeur-import-key') || '{}').key;
+  const newImport = Object.values(JSON.parse(ls.get('classeur-import-key') || '{}'))[0];
   const bm2 = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
   check(newImport && newImport !== oldImport && bm2 && decodeURI(bm2.getAttribute('href').slice(11)).includes('"' + newImport + '"'), 'favori non régénéré');
   check(tabBtn('maj').getAttribute('aria-selected') === 'true', "après régénération, l'onglet du favori doit s'ouvrir");
