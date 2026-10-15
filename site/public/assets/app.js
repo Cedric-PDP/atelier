@@ -187,7 +187,7 @@
     tagSearch: '',
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
-    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false }, // fenêtre « Mettre à jour avec le favori »
+    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null }, // fenêtre « Mettre à jour avec le favori »
     notice: null,
     modal: null, // editor | confirm | tag | switch | link | arrange | sync
     session: { cookie: '', busy: false, error: '' },
@@ -1031,7 +1031,15 @@
   function openSync() {
     if (S.modal) closeModal();
     const sess = (S.me && S.me.session) || {};
-    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key) });
+    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key), others: {}, elsewhere: null });
+    // Les autres classeurs connus de ce navigateur (un ami, un second compte) : le favori envoie vers le classeur pour
+    // lequel il a été créé, qui n'est pas forcément celui ouvert ici. On note leur dernier envoi pour repérer le bon.
+    const others = S.known.filter((k) => k.key !== S.key).slice(0, 6);
+    for (const k of others) {
+      api('GET', '/api/me', undefined, { key: k.key })
+        .then((m) => { if (S.modal === 'sync') S.sync.others[k.key] = { name: (m.user && m.user.name) || k.name || '', at: m.fetched_at || null }; })
+        .catch(() => {});
+    }
     S.modal = 'sync';
     stopSync();
     const started = Date.now();
@@ -1043,6 +1051,13 @@
       try {
         await loadMe();
         const now = S.me && S.me.fetched_at;
+        // Envoi arrivé dans un autre classeur de ce navigateur ?
+        if (!(now && now !== S.sync.before) && !S.sync.elsewhere) {
+          for (const [k, o] of Object.entries(S.sync.others)) {
+            const m = await api('GET', '/api/me', undefined, { key: k }).catch(() => null);
+            if (m && m.fetched_at && m.fetched_at !== o.at) { S.sync.elsewhere = { key: k, name: (m.user && m.user.name) || o.name || '' }; break; }
+          }
+        }
         if (now && now !== S.sync.before) {
           stopSync();
           const newCount = Array.isArray(S.me.new_ids) ? S.me.new_ids.length : 0;
@@ -2418,6 +2433,10 @@
       if (est) missR[est] = (missR[est] || 0) + 1; else unknown++;
     }
     const missing = p.total - p.own;
+    const ownLine = p.own > 0 && missing > 0 ? [
+      h('span', null, `Tu en as ${fmt(p.own)} :`),
+      ...RAR_UP.slice().reverse().filter((r) => p.byR[r]).map((r) => h('span', { key: r }, [pill(r), ' ', h('b', { class: 'num' }, fmt(p.byR[r]))])),
+    ] : null;
     const missLine = missing > 0 ? [
       h('span', null, `Il t'en manque ${fmt(missing)} :`),
       ...RAR_UP.slice().reverse().filter((r) => missR[r]).map((r) => h('span', { key: r }, [pill(r, true), ' ', h('b', { class: 'num' }, fmt(missR[r]))])),
@@ -2443,6 +2462,7 @@
         h('div', { class: 'album-title' }, [h('h2', null, col.name), h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
           col.kind === 'catalog' ? h('span', { class: 'badge' }, 'proposée') : null]),
         rarityBar(p.byR, p.total, 'bar big'),
+        ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
         h('div', { class: 'missing-sum' }, missLine),
         missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
         errLine(S.catalog.error && S.album && S.album.kind === 'catalog' ? S.catalog.error : ''),
@@ -3047,6 +3067,12 @@
     }
     return h(Modal, { key: 'sync', title: 'Mettre à jour ta collection', onClose: close }, () => [
       h('p', null, "Le classeur ne peut pas lire le jeu tout seul : c'est ton favori, cliqué sur wiki-masters.com où tu es connecté, qui lui envoie ta collection."),
+      h('p', { class: 'note' }, ['Classeur ouvert ici : ', h('strong', null, (S.me && S.me.user && S.me.user.name) ? 'celui de ' + S.me.user.name : 'sans nom'),
+        S.known.some((k) => k.key !== S.key) ? '. Le favori envoie dans le classeur pour lequel il a été créé : si ce n\x27est pas celui-ci, change de classeur dans les Réglages.' : '.']),
+      y.elsewhere ? h('p', { class: 'warn', role: 'alert' }, [
+        `Tes cartes sont arrivées dans le classeur ${y.elsewhere.name ? 'de ' + y.elsewhere.name : 'd\x27un autre compte'}, pas dans celui ouvert ici. `,
+        h('button', { class: 'btn small primary', type: 'button', onClick: () => { const k = y.elsewhere.key; closeModal(); switchTo(k); } }, `Ouvrir ${y.elsewhere.name ? 'le classeur de ' + y.elsewhere.name : 'ce classeur'}`),
+      ]) : null,
       h('ol', { class: 'steps' }, [
         h('li', null, [h('a', { class: 'btn primary small', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener' }, 'Ouvrir wiki-masters.com')]),
         h('li', null, ['Clique ton favori « Classeur WikiMasters » dans la barre de favoris (', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' pour l\x27afficher). Un encart montre la lecture, puis l\x27envoi.']),

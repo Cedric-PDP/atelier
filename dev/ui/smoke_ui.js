@@ -677,7 +677,7 @@ async function main() {
     check(t.items[0].image === 'https://upload.wikimedia.org/z.jpg' && t.items[0].description === 'dieu grec', 'description ou vignette perdue');
     check(t.items[0].qid === 'Q34201' && !('qid' in t.items[4]), "qid de la vérification sur Wikipédia non envoyé");
   }
-  check(text(one('album-title')).includes('1 sur 6') && has("Il t'en manque 5"), 'en-tête de la collection incorrect');
+  check(text(one('album-title')).includes('1 sur 6') && has("Il t'en manque 5") && has('Tu en as 1 :'), 'en-tête de la collection incorrect');
   for (let i = 0; i < 40 && has('Rareté estimée des cases vides'); i++) await sleep(100);
   check(pvContinueSeen, 'la continuation des vues (pvipcontinue) n\'est pas suivie');
   const ests = cls('slot').map((s) => text(s.querySelector('.pill')));
