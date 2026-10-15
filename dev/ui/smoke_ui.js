@@ -135,6 +135,18 @@ const WIKI = {
 // Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
 const LINKS = { 'Charolaise': 'Q900101', 'Limousine (race bovine)': 'Q900102', 'Salers (race bovine)': 'Q900103', France: 'Q142', 'Massif central': 'Q900104' };
 const REDIRECTS = { 'Poseidon': 'Poséidon' };
+// « Définition Wikipédia » : articles qui citent « est une maladie » (texte d'ouverture de l'index, bandeaux compris).
+// Gardés : Grippe (après l'infobox), Phtiriase (après un bandeau), Malabsorption du fructose (sans texte : description).
+// Écartés : Freddie Mercury (formule plus loin), Plèvre (sa définition dit « membrane »), une homonymie.
+const DEF_MALADIE = [
+  { title: 'Freddie Mercury', open: 'Pour les articles homonymes, voir Mercury. Freddie Mercury, né le 5 septembre 1946 à Stone Town, est un chanteur britannique. Pour lui, l’amour est une maladie.', q: 'Q15869' },
+  { title: 'Grippe', open: 'Grippe Virus de la grippe. Mise en garde médicale modifier - modifier le code - voir Wikidata (aide) La grippe ou l\'influenza est une maladie infectieuse et contagieuse fréquente.', desc: 'maladie infectieuse', q: 'Q2840' },
+  { title: 'Hépatite (homonymie)', open: 'L’hépatite est une maladie du foie. Hépatite peut désigner :', disamb: true },
+  { title: 'Malabsorption du fructose', open: '', desc: 'maladie intestinale', q: 'Q1047897' },
+  { title: 'Phtiriase', open: 'Cet article est une ébauche concernant la médecine. Vous pouvez partager vos connaissances en l’améliorant. La phtiriase (ou phthiriase) est une maladie infectieuse de la peau due au pou du pubis.', q: 'Q1474' },
+  { title: 'Plèvre', open: 'En anatomie, la plèvre est une membrane séreuse. Le cancer de la plèvre est une maladie grave.', desc: 'membrane séreuse', q: 'Q193266' },
+];
+const defCalls = [];
 let wikiCalls = 0;
 const propose = { categories: 0 };
 const wdSearches = [];
@@ -184,6 +196,36 @@ function wikiHandle(url) {
   }
   const p = Object.fromEntries(u.searchParams);
   if (p.origin !== '*' || p.format !== 'json' || p.formatversion !== '2') throw new Error('paramètres Wikipédia manquants : ' + url);
+  if (p.list === 'search' && p.srnamespace === '0' && /^"est un /.test(p.srsearch)) {
+    // Recherche de la formule (« Définition Wikipédia ») : seulement son nombre d'articles et quelques extraits.
+    if (p.srsearch.length > 300 || p.srinfo !== 'totalhits') throw new Error('recherche de la formule incorrecte : ' + p.srsearch);
+    const hl = (s) => s.replace(/\b(est|une|maladie|cathédrale)\b/g, '<span class="searchmatch">$1</span>');
+    if (p.srsearch.includes('"est une maladie"~1') && p.srsearch.includes('"sont des maladies"~1')) {
+      return { query: { searchinfo: { totalhits: DEF_MALADIE.length }, search: [{ title: 'Grippe', snippet: hl('La grippe ou l&#039;influenza est une maladie infectieuse et contagieuse') }] } };
+    }
+    if (p.srsearch.includes('"est une cathédrale"~1')) return { query: { searchinfo: { totalhits: 4200 }, search: [{ title: 'Cathédrale 1', snippet: hl('La cathédrale 1 est une cathédrale gothique') }] } };
+    return { query: { searchinfo: { totalhits: 0 }, search: [] } };
+  }
+  if (p.generator === 'search') {
+    if (p.gsrnamespace !== '0' || p.prop !== 'cirrusdoc|description|pageprops' || p.cdincludes !== 'opening_text' || !/wikibase_item/.test(p.ppprop) || !/disambiguation/.test(p.ppprop)) throw new Error('lecture des définitions incorrecte : ' + url);
+    defCalls.push({ q: p.gsrsearch, sort: p.gsrsort, offset: Number(p.gsroffset), limit: Number(p.gsrlimit) });
+    const page = (d, i) => ({ title: d.title, index: i + 1, ...(d.desc ? { description: d.desc } : {}), pageprops: { ...(d.q ? { wikibase_item: d.q } : {}), ...(d.disamb ? { disambiguation: '' } : {}) },
+      cirrusdoc: [{ index: 'frwiki_content', id: String(i + 1), source: d.open ? { opening_text: d.open } : {} }] });
+    if (p.gsrsearch.includes('"est une maladie"~1')) {
+      if (p.gsrsort !== 'title_natural_asc') throw new Error('tous les articles : tri par titre attendu (pages stables)');
+      return { batchcomplete: true, query: { pages: DEF_MALADIE.map(page).reverse() } }; // dans le désordre : l'interface trie par index
+    }
+    if (p.gsrsearch.includes('"est une cathédrale"~1')) {
+      if (p.gsrsort !== 'incoming_links_desc') throw new Error('les plus connus : tri par liens entrants attendu');
+      const from = Number(p.gsroffset) || 0;
+      const to = Math.min(4200, from + Number(p.gsrlimit));
+      const docs = [];
+      for (let i = from; i < to; i++) docs.push(i % 4 === 3 ? { title: `Ville ${i + 1}`, open: `Ville ${i + 1} est une ville de France.`, q: 'Q' + (950000 + i) }
+        : { title: `Cathédrale ${i + 1}`, open: `La cathédrale ${i + 1} est une cathédrale gothique.`, desc: 'cathédrale', q: 'Q' + (950000 + i) });
+      return { ...(to < 4200 ? { continue: { gsroffset: to, continue: 'gsroffset||' } } : {}), query: { pages: docs.map((d, k) => page(d, from + k)) } };
+    }
+    throw new Error('formule inattendue : ' + p.gsrsearch);
+  }
   if (p.list === 'search' && p.srnamespace === '0') {
     if (!/^intitle:liste /.test(p.srsearch)) throw new Error('recherche de listes sans intitle : ' + p.srsearch);
     return { query: { search: /bovin/i.test(p.srsearch) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }] : [] } };
@@ -724,6 +766,55 @@ async function main() {
   for (let i = 0; i < 100 && !(cls('cand').length && !has('Recherche…')); i++) await sleep(50);
   await settle();
   check(cls('cand').length === 1 && text(cls('cand')[0]).includes('Races bovines de France'), 'adresse collée : ' + cls('cand').map(text).join(' / '));
+  modalBtn('Annuler').click();
+  await settle();
+
+  // 9 quinquies. « Définition Wikipédia » : les articles dont la première phrase dit « … est une maladie … » (formule
+  // cherchée dans Wikipédia, puis début de chaque article lu : bandeaux et infobox sautés, homonymies écartées)
+  needButton('Nouvelle collection').click();
+  await settle();
+  type(byId('kw'), 'maladie');
+  byId('kw').dispatch('keydown', { key: 'Enter' });
+  for (let i = 0; i < 100 && !(has('Interprétation') && !has('Recherche…')); i++) await sleep(50);
+  await settle();
+  const defCands = cls('cand').map(text);
+  check(defCands.length === 1 && defCands[0].includes('Maladies') && defCands[0].includes('6 articles citent la formule, triés à l\'ouverture · Définition Wikipédia')
+    && defCands[0].includes('Articles dont la première phrase dit « … est une maladie … »'), 'candidat « Définition » : ' + defCands.join(' / '));
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Choisir Maladies')[0].click();
+  for (let i = 0; i < 100 && !cls('preview').length; i++) await sleep(50);
+  const defPreview = () => cls('preview')[0].querySelectorAll('li').map(text).join('|');
+  check(defPreview() === 'Grippe|Malabsorption du fructose|Phtiriase', 'définitions mal triées : ' + defPreview());
+  check(has('Définition Wikipédia · articles dont la première phrase dit « … est une maladie … »') && has('3 retenus sur 6 articles lus, par ordre alphabétique'),
+    'note de l\'aperçu des définitions : ' + text(one('modal')).slice(0, 500));
+  check(byId('kw-name').value === 'Maladies', 'nom proposé pour les définitions : ' + byId('kw-name').value);
+  modalBtn('Enregistrer').click();
+  for (let i = 0; i < 60 && !has('« Maladies » enregistrée : 3 articles'); i++) await sleep(50);
+  await settle();
+  if (!SERVER) {
+    const t = api.st.targets.find((x) => x.name === 'Maladies');
+    check(t && t.items.length === 3 && t.items[0].title === 'Grippe' && t.items[0].qid === 'Q2840' && t.items[0].description === 'maladie infectieuse'
+      && t.items[1].qid === 'Q1047897' && t.items.every((i) => i.status === 'ok'), 'collection « Définition » mal enregistrée : ' + JSON.stringify(t && t.items));
+  }
+  needButton('← Toutes les collections').click();
+  await settle();
+  // Trop d'articles pour tous les lire : seulement les plus liés depuis Wikipédia, lus jusqu'à en avoir assez.
+  needButton('Nouvelle collection').click();
+  await settle();
+  type(byId('kw'), 'cathédrales');
+  byId('kw').dispatch('keydown', { key: 'Enter' });
+  for (let i = 0; i < 100 && !(has('Interprétation') && !has('Recherche…')); i++) await sleep(50);
+  await settle();
+  const bigDef = cls('cand').filter((c) => text(c).includes('Définition Wikipédia'))[0];
+  check(bigDef && text(bigDef).includes('plus de 3 000 articles (4 200 citent la formule)') && text(bigDef).includes('Garder les plus connus') && !text(bigDef).includes('Choisir'),
+    'grand candidat « Définition » : ' + (bigDef ? text(bigDef) : cls('cand').map(text).join(' / ')));
+  bigDef.querySelectorAll('button').filter((b) => b.getAttribute('aria-label') === 'Garder les 100 plus connus')[0].click();
+  for (let i = 0; i < 100 && !cls('preview').length; i++) await sleep(50);
+  const bigItems = cls('preview')[0].querySelectorAll('li').map(text);
+  check(byId('kw-name').value === 'Cathédrales (les 100 plus connus)' && bigItems.length === 20 && has('… et 80 autres') && bigItems[0] === 'Cathédrale 1' && !bigItems.some((x) => x.startsWith('Ville')),
+    'plus connus de la définition : ' + text(one('modal')).slice(0, 500));
+  check(has('100 retenus sur 180 articles lus, les plus liés depuis Wikipédia d\'abord'), 'note des plus connus : ' + text(one('modal')).slice(0, 600));
+  const linked = defCalls.filter((x) => x.sort === 'incoming_links_desc');
+  check(linked.length === 2 && linked[0].limit === 130 && linked[1].offset === 130 && linked[1].limit === 50, 'lecture des plus connus : ' + JSON.stringify(linked));
   modalBtn('Annuler').click();
   await settle();
 

@@ -1814,8 +1814,9 @@
   }
 
   // ---------------------------------------------------------------- nouvelle collection par mots-clés
-  // Deux sources de candidats, interrogées dans le navigateur, une requête à la fois : les catégories de Wikipédia
-  // et une requête Wikidata construite d'après les mots (métier ou nature, nationalité, pays, lieu, auteur…).
+  // Sources de candidats, interrogées dans le navigateur, une requête à la fois : les pages « Liste de… », les catégories
+  // de Wikipédia, les définitions (« … est une maladie … », plus bas) et une requête Wikidata construite d'après les mots
+  // (métier ou nature, nationalité, pays, lieu, auteur…).
   const KW_STOP = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'l', 'd', 'en', 'et', 'au', 'aux', 'a', 'à']);
   const singular = (w) => {
     if (w.length <= 3) return w;
@@ -2050,6 +2051,142 @@
     }
     return { items, top };
   }
+  // « Définition Wikipédia » : les articles dont la première phrase dit « … est une maladie … ». Deux temps :
+  // 1. recherche de la formule dans le texte de Wikipédia (CirrusSearch, phrases à un mot près, « est un », « est une »,
+  //    féminin, « sont des », « était un ») : le nombre d'articles qui la citent, quelque part ;
+  // 2. à l'ouverture, le texte d'ouverture de chaque article (prop=cirrusdoc, 500 par requête) : on garde ceux dont la
+  //    phrase de définition (sujet = le titre, puis « est un(e) ») a le nom cherché juste après le verbe.
+  // Mesuré le 2026-10-15 : « maladie » 1 744 articles citent la formule, 1 041 la disent en ouverture (le résumé
+  // TextExtracts dit pareil pour 99 % d'entre eux), 4 requêtes, ≈ 45 s ; « cathédrale » 598 → 558 ; « footballeur »
+  // 49 676 → seulement les plus liés (436 sur les 500 premiers). Les résumés (prop=extracts, 20 par requête) coûtent
+  // vingt fois plus de requêtes et Wikipédia répond 429 au bout d'une dizaine.
+  const DEF_MAX = 3000;
+  const DEF_ART = new Set(['le', 'la', 'les', "l'", 'un', 'une', 'des']);
+  const DEF_PREP = new Set(['de', 'du', 'des', "d'", 'en', 'à', 'a', 'au', 'aux', 'pour', 'sur', 'dans', 'chez', 'par', 'avec', 'sans', 'contre', 'entre', 'et', 'ou', 'qui', 'que', 'dont']);
+  const DEF_SKIP = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'l', 'd', 'en', 'et', 'au', 'aux', 'a', 'un', 'une', 'sur', 'pour', 'par', 'dans', 'the', 'of', 'saint', 'sainte', 'st']);
+  // Féminin, seulement pour des finales sûres (footballeur -> footballeuse, acteur -> actrice) ; adjectif : + e.
+  function defFem(w, adj) {
+    for (const [a, bs] of [['teur', ['trice', 'teuse']], ['eur', ['euse']], ['ien', ['ienne']], ['ier', ['ière']], ['er', ['ère']], ['on', ['onne']], ['el', ['elle']],
+      ['eux', ['euse']], ['if', ['ive']], ['ais', ['aise']], ['ois', ['oise']], ['ain', ['aine']], ['in', ['ine']], ['ant', ['ante']], ['ent', ['ente']], ['and', ['ande']]]) {
+      if (w.length > a.length + 1 && w.endsWith(a)) return bs.map((b) => w.slice(0, -a.length) + b);
+    }
+    return adj ? [/e$/.test(w) ? w : w + 'e'] : [];
+  }
+  const defPl = (w) => (/[sxz]$/.test(w) ? w : /(eau|au|eu)$/.test(w) ? w + 'x' : /al$/.test(w) ? w.slice(0, -2) + 'aux' : w + 's');
+  const defJoin = (ws) => ws.join(' ').replace(/([dl]') /g, '$1');
+  // Préfixe commun (genre, nombre) : « français » ~ « française », « bovine » ~ « bovins ».
+  const defNear = (a, b) => a === b || (a.length >= 4 && b.length >= 4 && (a.startsWith(b.slice(0, Math.max(4, b.length - 2))) || b.startsWith(a.slice(0, Math.max(4, a.length - 2)))));
+  // « races bovines » -> formule « est une race bovine » (et ses variantes), nom « race » sous toutes ses formes, autres mots
+  // (« bovine », « vigne » de « maladie de la vigne ») à retrouver dans la phrase de définition. null si ça n'y ressemble pas.
+  function defTerms(q) {
+    const words = String(q).toLowerCase().replace(/[’ʼ]/g, "'").replace(/(^|\s)([dl])'\s*/g, "$1$2' ").replace(/[«»"()]/g, ' ').split(/\s+/).filter(Boolean);
+    while (words.length > 1 && DEF_ART.has(words[0])) words.shift();
+    let cut = words.findIndex((w, i) => i > 0 && DEF_PREP.has(w));
+    if (cut < 0) cut = words.length;
+    const np = words.slice(0, cut).map(singular);
+    const rest = words.slice(cut);
+    if (!np.length || np.length > 4 || words.length > 8 || np[0].length < 3 || !/^[\p{L}-]+$/u.test(np[0])) return null;
+    const head = np[0];
+    const fems = defFem(head, false).map((f) => [f, ...np.slice(1).map((a) => defFem(a, true)[0])]);
+    const R = rest.length ? ' ' + defJoin(rest) : '';
+    const NP = defJoin(np) + R;
+    const PL = defJoin(np.map(defPl)) + R;
+    const phrases = [...new Set([`est un ${NP}`, `est une ${NP}`, ...fems.map((f) => `est une ${defJoin(f)}${R}`), `sont des ${PL}`, `était un ${NP}`, `était une ${NP}`,
+      ...fems.map((f) => `était une ${defJoin(f)}${R}`), ...fems.map((f) => `sont des ${defJoin(f.map(defPl))}${R}`)])];
+    // CirrusSearch refuse les recherches de plus de 300 caractères : les variantes les moins utiles sautent d'abord.
+    let query = '';
+    for (const p of phrases) {
+      const next = (query ? query + ' OR ' : '') + `"${p}"~1`;
+      if (next.length > 300) break;
+      query = next;
+    }
+    if (!query) return null;
+    const heads = [head, defPl(head), head + 's', ...defFem(head, false).flatMap((f) => [f, defPl(f)])];
+    const quals = [...np.slice(1), ...rest.filter((w) => !DEF_PREP.has(w) && !DEF_ART.has(w) && w.length > 1)];
+    return { query, phrases, forms: [...new Set(heads.map(fold))], quals: quals.map(fold), name: cap(PL) };
+  }
+  // Fins de phrase d'un texte (en minuscules), sauf après une abréviation ou une initiale (« St. », « J. », « av. »).
+  function defBounds(t) {
+    const out = [];
+    for (const m of t.matchAll(/[.!?]\s+/g)) if (!/(?:^|[\s(])(?:st|ste|av|apr|env|cf|ex|no|vol|mgr|dr|mr|mme|[a-z]|j\.-c)$/.test(t.slice(Math.max(0, m.index - 6), m.index))) out.push([m.index, m.index + m[0].length]);
+    return out;
+  }
+  const DEF_COP = /(?:^|[\s,;)»"])(?:est|sont|etait|etaient|fut|furent|reste|demeure|devient|designe|designent)\s+(?:(?:aujourd'hui|actuellement|egalement|aussi|avant tout|principalement|essentiellement|surtout|souvent|generalement|historiquement|desormais|alors|d'abord)\s+)?(?:(?:l'une? des|une? des|l'une?|une?|des|les?|la)\s+|l')/g;
+  // Phrase de définition d'un article (texte d'ouverture : bandeaux, homonymies et légende de l'infobox compris) : la
+  // première phrase « <sujet> est un(e) … » dont le sujet reprend un mot du titre (ou le nom cherché). Elle convient si
+  // le nom cherché vient juste après (à deux mots près : « est un ancien footballeur ») et si les autres mots y sont.
+  function defCheck(text, title, T) {
+    let t = fold(text).replace(/[’ʼ]/g, "'").replace(/\s+/g, ' ');
+    const k = t.lastIndexOf('voir wikidata (aide)', 6000); // fin de l'infobox (« modifier le code - voir Wikidata (aide) »)
+    if (k >= 0) t = t.slice(k + 20);
+    t = t.slice(0, 4000);
+    const toks = fold(String(title).replace(/\s*\([^)]*\)\s*$/, '')).split(/[^a-z0-9]+/).filter((w) => w && !DEF_SKIP.has(w) && !T.forms.has(w));
+    const bounds = defBounds(t);
+    const re = new RegExp(DEF_COP.source, 'g');
+    let m;
+    for (let n = 0; n < 15 && (m = re.exec(t)); n++) {
+      const startB = bounds.filter((b) => b[1] <= m.index + 1).pop();
+      const subject = t.slice(startB ? startB[1] : 0, m.index + 1).split(/[^a-z0-9]+/).filter(Boolean);
+      if (!subject.some((w) => T.forms.has(w) || toks.some((x) => defNear(w, x)))) continue;
+      const from = m.index + m[0].length;
+      const endB = bounds.find((b) => b[0] >= from);
+      const pred = t.slice(from, endB ? endB[0] : t.length).split(/[^a-z0-9'-]+/).filter(Boolean);
+      if (pred[0] === 'nom' && !T.forms.has('nom')) continue; // « Andrés Iniesta Luján est un nom espagnol » (bandeau)
+      return pred.slice(0, 3).some((w) => T.forms.has(w)) && T.quals.every((q) => pred.some((w) => defNear(w, q)));
+    }
+    return false;
+  }
+  // Sans texte d'ouverture (rare) : la description Wikidata (« maladie intestinale »).
+  function defDescOk(desc, T) {
+    const w = fold(desc).split(/[^a-z0-9'-]+/).filter(Boolean);
+    return w.slice(0, 3).some((x) => T.forms.has(x)) && T.quals.every((q) => w.some((x) => defNear(x, q)));
+  }
+  async function searchDefinition(q, signal) {
+    const t = defTerms(q);
+    if (!t) return null;
+    const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'search', srsearch: t.query, srnamespace: '0', srlimit: '5', srinfo: 'totalhits', srprop: 'snippet' }), 3, null, signal);
+    const n = Number(j && j.query && j.query.searchinfo && j.query.searchinfo.totalhits) || 0;
+    if (!n) return null;
+    // Formule montrée : la variante qu'on lit dans les premiers résultats (« est une maladie » plutôt que « est un maladie »).
+    const snips = ((j.query && j.query.search) || []).map((r) => fold(String(r.snippet || '').replace(/<[^>]*>/g, '')).replace(/\s+/g, ' '));
+    const loose = (p) => new RegExp(fold(p).split(' ').map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join(' (?:\\S+ )?')); // à un mot près, comme la recherche
+    const shown = t.phrases.find((p) => { const re = loose(p); return snips.some((s) => re.test(s)); }) || t.phrases[0].replace(/^est un /, 'est un(e) ');
+    const interp = `articles dont la première phrase dit « … ${shown} … »`;
+    return { id: 'def:' + t.query, source: 'def', name: t.name, size: n, tooBig: n > DEF_MAX, query: t.query, interp,
+      terms: markRaw({ forms: t.forms, quals: t.quals }) };
+  }
+  // Articles du candidat « Définition » : tous (au plus 3 000 résultats), ou les top plus liés depuis Wikipédia. Tri
+  // explicite : par pertinence, les pages de 500 se recouvrent (mesuré : 15 doublons et autant d'absents sur 2 025) ;
+  // par titre, aucun ; par liens entrants, 3.
+  async function defPages(cand, top, signal, onProgress) {
+    const T = { forms: new Set(cand.terms.forms), quals: cand.terms.quals };
+    const items = [];
+    const seen = new Set();
+    let checked = 0;
+    let offset = 0;
+    for (let guard = 0; guard < 10 && offset < 10000; guard++) {
+      const want = top ? Math.min(500, Math.max(50, Math.ceil((top - items.length) * 1.3))) : 500;
+      const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'search', gsrsearch: cand.query, gsrnamespace: '0', gsrlimit: String(want), gsroffset: String(offset),
+        gsrsort: top ? 'incoming_links_desc' : 'title_natural_asc', prop: 'cirrusdoc|description|pageprops', cdincludes: 'opening_text', ppprop: 'wikibase_item|disambiguation' }), 3, null, signal);
+      const pages = ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
+      for (const p of pages) {
+        checked++;
+        if (p.missing || p.invalid || seen.has(p.title)) continue;
+        seen.add(p.title);
+        const pp = p.pageprops || {};
+        if ('disambiguation' in pp) continue;
+        const doc = p.cirrusdoc && p.cirrusdoc[0] && p.cirrusdoc[0].source;
+        const open = (doc && doc.opening_text) || '';
+        if (open.trim() ? defCheck(open, p.title, T) : defDescOk(p.description, T)) items.push({ title: p.title, description: p.description || null, qid: pp.wikibase_item || null });
+      }
+      if (onProgress) onProgress(checked, items.length);
+      if (top && items.length >= top) break;
+      const next = Number(j && j.continue && j.continue.gsroffset);
+      if (!next || next <= offset) break;
+      offset = next;
+    }
+    return { items: top ? items.slice(0, top) : items, checked };
+  }
   let kwCtrl = null;
   let kwTimer = null;
   function kwAbort() { if (kwCtrl) kwCtrl.abort(); kwCtrl = null; clearTimeout(kwTimer); }
@@ -2078,10 +2215,16 @@
         const cats = await searchCategories(q, ctrl.signal);
         if (stale()) return;
         ed.kw.cands = [...pages, ...cats];
+        // Un incident sur la recherche de la formule ne doit pas priver des autres candidats.
+        let def = null;
+        try { def = await searchDefinition(q, ctrl.signal); } catch (e) { if (e.name === 'AbortError') throw e; }
+        if (stale()) return;
+        const defs = def ? [def] : [];
+        ed.kw.cands = [...pages, ...defs, ...cats];
         const wd = await searchWikidata(q, ctrl.signal);
         if (stale()) return;
         ed.kw.interp = wd.interp;
-        if (wd.cand) ed.kw.cands = [...pages, wd.cand, ...cats];
+        if (wd.cand) ed.kw.cands = [...pages, wd.cand, ...defs, ...cats];
       }
       ed.kw.searched = q;
     } catch (e) {
@@ -2092,10 +2235,11 @@
   }
   async function kwChoose(ed, cand, top) {
     if (kwCtrl) kwCtrl.abort();
+    ed.kw.searching = false; // la recherche en cours (Wikidata, souvent la plus lente) s'arrête ici
     const ctrl = new AbortController();
     kwCtrl = ctrl;
     const ch = { candId: cand.id, source: cand.source, title: cand.title || null, subcats: cand.subcats || 0, withSubs: false, top: top || null,
-      name: top ? `${cand.name} (les ${top} plus connus)` : cand.name, loading: true, error: '', items: null, total: 0, interp: cand.interp || '' };
+      name: top ? `${cand.name} (les ${top} plus connus)` : cand.name, loading: true, error: '', items: null, total: 0, interp: cand.interp || '', progress: '', checked: 0 };
     ed.kw.chosen = ch;
     await kwLoad(ed, cand, ctrl);
   }
@@ -2115,6 +2259,13 @@
         }
         const { top } = ch.links;
         items = top && !ch.allLinks ? ch.links.items.filter((i) => i.classes.includes(top.id)) : ch.links.items;
+      } else if (cand.source === 'def') {
+        const r = await defPages(cand, ch.top, ctrl.signal, (done, kept) => {
+          if (!stale()) ch.progress = ch.top ? `${fmt(kept)} sur ${fmt(ch.top)} trouvés (${fmt(done)} lus)…` : `${fmt(done)} sur ${fmt(cand.size)} lus, ${fmt(kept)} retenus…`;
+        });
+        if (stale()) return;
+        ch.checked = r.checked;
+        items = r.items;
       } else items = await categoryMembers(cand.title, ch.withSubs, ctrl.signal);
       if (stale()) return;
       ch.total = items.length;
@@ -3078,23 +3229,26 @@
   const closeBtn = (label) => h('button', { class: 'btn ghost', type: 'button', onClick: closeModal }, label || 'Fermer');
 
   // ---------------------------------------------------------------- fenêtres gardées (collection, tag, confirmation, autre classeur, nouveau lien)
-  const SOURCE_LABEL = { cat: 'Catégorie Wikipédia', wd: 'Wikidata', links: 'Page Wikipédia' };
+  const SOURCE_LABEL = { cat: 'Catégorie Wikipédia', wd: 'Wikidata', links: 'Page Wikipédia', def: 'Définition Wikipédia' };
   const wpPageUrl = (t) => 'https://fr.wikipedia.org/wiki/' + encodeURIComponent(t.replace(/ /g, '_'));
   function viewCandidate(ed, c) {
     const big = c.tooBig;
-    const size = c.source === 'links' ? 'ses liens, triés à l\'ouverture' : big ? 'plus de 3 000 articles'
-      : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
+    // Définition : le nombre d'articles qui citent la formule ; ceux qui la disent en ouverture sont triés au choix.
+    const size = c.source === 'links' ? 'ses liens, triés à l\'ouverture'
+      : c.source === 'def' ? (big ? `plus de 3 000 articles (${fmt(c.size)} citent la formule)` : `${fmt(c.size)} ${plural(c.size, 'article cite', 'articles citent')} la formule, triés à l'ouverture`)
+        : big ? 'plus de 3 000 articles'
+          : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
     let action;
     if (!big) action = h('button', { class: 'btn small primary', type: 'button', 'aria-label': 'Choisir ' + c.name, onClick: () => kwChoose(ed, c) }, 'Choisir');
-    else if (c.source === 'wd') {
+    else if (c.source === 'wd' || c.source === 'def') {
       action = h('div', { class: 'actions' }, [h('span', { class: 'small muted' }, 'Garder les plus connus :'),
         ...[100, 200, 500].map((n) => h('button', { key: n, class: 'btn small', type: 'button', 'aria-label': `Garder les ${n} plus connus`, onClick: () => kwChoose(ed, c, n) }, String(n)))]);
     } else action = h('span', { class: 'small muted' }, 'trop grande : précise ta recherche');
-    return h('li', { class: ['cand', { disabled: big && c.source !== 'wd' }], key: c.id }, [
+    return h('li', { class: ['cand', { disabled: big && c.source !== 'wd' && c.source !== 'def' }], key: c.id }, [
       h('div', { class: 'what' }, [
         h('b', null, c.name),
         h('span', null, `${size} · ${SOURCE_LABEL[c.source]}`),
-        c.source === 'wd' && c.interp ? h('span', { class: 'interp' }, c.interp) : null,
+        (c.source === 'wd' || c.source === 'def') && c.interp ? h('span', { class: 'interp' }, cap(c.interp)) : null,
       ]),
       action,
     ]);
@@ -3106,14 +3260,19 @@
       const cand = kw.cands.find((x) => x.id === ch.candId);
       const extra = ch.items && ch.items.length > 20 ? ch.items.length - 20 : 0;
       return [
-        h('button', { class: 'back', type: 'button', onClick: () => { kw.chosen = null; } }, '← Autres candidats'),
+        h('button', { class: 'back', type: 'button', onClick: () => { kwAbort(); kw.chosen = null; } }, '← Autres candidats'), // arrête un chargement en cours
         h('label', { class: 'field' }, [h('span', null, 'Nom de la collection'),
           h('input', { id: 'kw-name', class: 'field full', value: ch.name, maxlength: 120, autocomplete: 'off', onInput: (e) => { ch.name = e.target.value; } })]),
         h('p', { class: 'note' }, [
           ch.source === 'cat' ? `Catégorie Wikipédia : ${ch.title.replace(/^Catégorie\s*:\s*/i, '')}`
             : ch.source === 'links' ? ['Liens de la page ', h('a', { href: wpPageUrl(ch.title), target: '_blank', rel: 'noopener noreferrer' }, ch.title)]
-              : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
-          ' · ', ch.loading ? (ch.source === 'links' ? 'lecture des liens et de leur nature sur Wikidata…' : 'chargement des articles…') : `${fmt(ch.total)} ${plural(ch.total, 'article', 'articles')}`]),
+              : ch.source === 'def' ? 'Définition Wikipédia · ' + ch.interp
+                : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
+          ' · ', ch.loading ? (ch.source === 'links' ? 'lecture des liens et de leur nature sur Wikidata…'
+            : ch.source === 'def' ? 'lecture du début des articles' + (ch.progress ? ' : ' + ch.progress : '…') : 'chargement des articles…')
+            : `${fmt(ch.total)} ${plural(ch.total, 'article', 'articles')}`]),
+        ch.source === 'def' && !ch.loading && ch.items ? h('p', { class: 'note' }, `${fmt(ch.total)} ${plural(ch.total, 'retenu', 'retenus')} sur ${fmt(ch.checked)} ${plural(ch.checked, 'article lu', 'articles lus')}`
+          + (ch.top ? ', les plus liés depuis Wikipédia d\'abord' : ', par ordre alphabétique') + ' : les autres citent la formule plus loin, ou leur première phrase dit autre chose.') : null,
         ch.source === 'cat' && ch.subcats && cand ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: ch.withSubs, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
           ` inclure les sous-catégories (1 niveau : ${fmt(ch.subcats)})`]) : null,
@@ -3138,7 +3297,7 @@
       h('input', { id: 'kw', class: 'field full', type: 'search', value: kw.q, autocomplete: 'off', spellcheck: 'false',
         placeholder: 'races bovines, footballeur français, cathédrales de France, films de Miyazaki…',
         onInput: (e) => kwInput(ed, e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); kwSearch(ed); } } }),
-      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens forment la collection), des catégories, et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
+      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens forment la collection), des catégories, les articles dont la première phrase dit « … est une maladie … » (un nom suffit : « maladie »), et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
       kw.searching ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche…') : null,
       errLine(kw.error),
       kw.interp ? h('p', { class: 'interp-line' }, ['Interprétation : ', h('b', null, kw.interp)]) : null,
