@@ -703,8 +703,29 @@ async function main() {
   await settle(400);
   check(has('Mes collections') && !cls('group')[0].querySelectorAll('.row').some((n) => text(n).includes('Dieux')), 'collection non supprimée');
 
-  // 12. Rafraîchir sans session -> onglet « Mettre à jour » (favori d'abord, cookie en secours) ; cookie -> boucle
-  needButton('Rafraîchir la collection').click();
+  // 12. Sans session, le bouton devient « Mettre à jour avec le favori » : fenêtre guidée qui attend l'envoi du favori
+  // et recharge la collection toute seule quand il arrive ; puis le cookie en secours, depuis « Mettre à jour ».
+  needButton('Mettre à jour avec le favori').click();
+  await settle();
+  check(has('Mettre à jour ta collection') && has('En attente de ton favori'), 'fenêtre « Mettre à jour avec le favori » absente');
+  check(all((n) => n.tagName === 'A' && text(n).includes('Ouvrir wiki-masters.com')).length === 1, 'lien « Ouvrir wiki-masters.com » absent');
+  {
+    // Le favori envoie la collection avec une carte de plus (simulé, comme depuis wiki-masters.com).
+    const key = ls.get('classeur-key');
+    const cur = (await rawApi('GET', '/api/cards', key)).body.cards.map(({ tags, ...c }) => c);
+    const extra = { ...cur[0], id: 'carte-du-favori', title: 'Carte du favori', count: 1 };
+    const all2 = [...cur, extra];
+    const up = 'favori-' + Date.now();
+    for (let i = 0, part = 0; i < all2.length; i += 500, part++) {
+      await rawApi('POST', '/api/import', key, { upload_id: up, part, last: i + 500 >= all2.length, cards: all2.slice(i, i + 500), source: 'bookmarklet' });
+    }
+  }
+  for (let i = 0; i < 120 && !has('Collection mise à jour :'); i++) await sleep(100);
+  check(has('Collection mise à jour :') && has('1 nouvelle'), 'la fenêtre n\'a pas vu l\'envoi du favori');
+  needButton('Fermer').click();
+  await settle();
+  // Le cookie, en secours : « Mettre à jour » (favori d'abord), puis l'enregistrement et la boucle de rafraîchissement.
+  goTab('maj');
   await settle();
   check(byId('cookie-input') && tabBtn('maj').getAttribute('aria-selected') === 'true', 'sans session, Rafraîchir doit mener à « Mettre à jour »');
   check(has('Le favori, le chemin conseillé') && has('Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),

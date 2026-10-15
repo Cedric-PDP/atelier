@@ -187,8 +187,9 @@
     tagSearch: '',
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
+    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false }, // fenêtre « Mettre à jour avec le favori »
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link | arrange
+    modal: null, // editor | confirm | tag | switch | link | arrange | sync
     session: { cookie: '', busy: false, error: '' },
     editor: null,
     catalog: { list: null, error: '', busy: {}, loading: false },
@@ -1019,8 +1020,41 @@
   async function refreshCollection() {
     if (S.refresh.running) return;
     const sess = (S.me && S.me.session) || {};
-    if (!sess.has_cookie || sess.expired) { openSession(); return; }
+    if (!sess.has_cookie || sess.expired) { openSync(); return; }
     await runRefresh();
+  }
+  // Sans cookie, le classeur ne peut pas lire le jeu : c'est le favori, cliqué sur wiki-masters.com, qui envoie les
+  // cartes. La fenêtre guide l'utilisateur, puis surveille l'arrivée de l'envoi (GET /api/me toutes les 4 s, 15 min au
+  // plus, seulement pendant qu'elle est ouverte) et recharge la collection dès qu'il est là.
+  let syncTimer = null;
+  function stopSync() { if (syncTimer) { clearInterval(syncTimer); syncTimer = null; } }
+  function openSync() {
+    if (S.modal) closeModal();
+    const sess = (S.me && S.me.session) || {};
+    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key) });
+    S.modal = 'sync';
+    stopSync();
+    const started = Date.now();
+    let busy = false;
+    syncTimer = setInterval(async () => {
+      if (S.modal !== 'sync' || S.sync.done || Date.now() - started > 15 * 60 * 1000) { stopSync(); return; }
+      if (busy) return;
+      busy = true;
+      try {
+        await loadMe();
+        const now = S.me && S.me.fetched_at;
+        if (now && now !== S.sync.before) {
+          stopSync();
+          const newCount = Array.isArray(S.me.new_ids) ? S.me.new_ids.length : 0;
+          await loadCards();
+          startPageviews();
+          afterCards();
+          S.sync.done = true;
+          S.sync.msg = `Collection mise à jour : ${cards$(cards.value.length)}${newCount ? ', ' + fmt(newCount) + ' ' + plural(newCount, 'nouvelle', 'nouvelles') : ''}.`;
+          notify(S.sync.msg);
+        }
+      } catch (e) { /* le prochain tour réessaie */ } finally { busy = false; }
+    }, 4000);
   }
   async function runRefresh() {
     if (S.refresh.running) return;
@@ -1456,6 +1490,7 @@
     if (m === 'switch') S.switchAsk = null;
     if (m === 'editor') kwAbort();
     if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
+    if (m === 'sync') stopSync();
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -2222,7 +2257,7 @@
     const sess = (S.me && S.me.session) || {};
     const refreshBits = [
       h('button', { class: 'btn small', type: 'button', disabled: S.refresh.running, onClick: refreshCollection },
-        [icon('refresh', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : 'Rafraîchir la collection']),
+        [icon('refresh', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : (sess.has_cookie && !sess.expired ? 'Rafraîchir la collection' : 'Mettre à jour avec le favori')]),
       h('span', { class: ['status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, S.refresh.msg),
       S.refresh.error && !S.refresh.running ? h('button', { class: 'linkish', type: 'button', onClick: openFavori }, 'Passer par le favori') : null,
     ];
@@ -3001,7 +3036,32 @@
     ]);
   }
 
-  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange };
+  function modalSync() {
+    const y = S.sync;
+    const close = () => closeModal();
+    if (y.done) {
+      return h(Modal, { key: 'sync', title: 'Collection mise à jour', onClose: close }, () => [
+        h('p', { class: 'ok', role: 'status' }, y.msg),
+        foot([h('button', { class: 'btn primary', type: 'button', onClick: close }, 'Fermer')]),
+      ]);
+    }
+    return h(Modal, { key: 'sync', title: 'Mettre à jour ta collection', onClose: close }, () => [
+      h('p', null, "Le classeur ne peut pas lire le jeu tout seul : c'est ton favori, cliqué sur wiki-masters.com où tu es connecté, qui lui envoie ta collection."),
+      h('ol', { class: 'steps' }, [
+        h('li', null, [h('a', { class: 'btn primary small', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener' }, 'Ouvrir wiki-masters.com')]),
+        h('li', null, ['Clique ton favori « Classeur WikiMasters » dans la barre de favoris (', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' pour l\x27afficher). Un encart montre la lecture, puis l\x27envoi.']),
+        h('li', null, 'Reviens ici : le classeur se met à jour tout seul.'),
+      ]),
+      h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'), ' En attente de ton favori…']),
+      y.expired ? h('p', { class: 'note' }, 'Ta session collée a expiré : le favori la remplace, sans rien coller.') : null,
+      !y.hasFavori ? h('p', { class: 'note' }, ['Pas encore de favori ? ', h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openFavori(); } }, 'Installer le favori')]) : null,
+      foot([
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openFavori(); } }, 'Voir le favori et les autres façons'),
+        h('button', { class: 'btn', type: 'button', onClick: close }, 'Fermer'),
+      ]),
+    ]);
+  }
+  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {
@@ -3123,7 +3183,7 @@
     }
   }
   async function onVisible() {
-    if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running) return;
+    if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running || S.modal === 'sync') return;
     const before = S.me && S.me.fetched_at;
     try { await loadMe(); } catch (e) { return; }
     if (S.me && S.me.fetched_at && S.me.fetched_at !== before) {
