@@ -148,6 +148,15 @@ main.wrap { padding-block: 26px 110px; }
 .section-head h2 { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
 .section-head small { color: var(--muted); font-size: 12.5px; }
 .section-head .btn { align-self: center; }
+/* Recherche dans les collections proposées : suggestions sous le champ. */
+.prop-search { position: relative; margin: 2px 0 14px; }
+.prop-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); max-height: 340px; overflow-y: auto; }
+.prop-list li { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 8px; cursor: pointer; min-width: 0; }
+.prop-list li.active { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.prop-list__name { font-weight: 600; color: var(--fg); flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prop-list__hint { flex: 1; min-width: 0; color: var(--muted); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prop-list__count { flex: none; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
+.prop-list--empty { padding: 10px 12px; color: var(--muted); font-size: 13px; }
 .subhead { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin: 18px 0 8px; }
 .empty-box { padding: 30px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; display: grid; gap: 12px; justify-items: center; }
 .empty-box.big h2 { font-size: 1.35rem; font-weight: 600; color: var(--fg); }
@@ -466,3 +475,53 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .wait-line { display: flex; align-items: center; gap: 8px; color: var(--muted); margin: 6px 0 0; }
 .wait-line .ic { color: var(--accent); }
 p.ok { color: var(--accent); font-weight: 600; }
+
+/* ------------------------------------------------------------------ entre amis (partage entre membres) */
+.friends-intro { max-width: 720px; }
+.row.member { grid-template-columns: 44px minmax(0, 1fr); cursor: default; }
+.row.member:hover { border-color: var(--border); }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 700 18px var(--f-head); color: var(--accent-fg); background: var(--accent); }
+.fcols { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 12px; align-items: start; }
+@media (max-width: 420px) { .fcols { grid-template-columns: minmax(0, 1fr); } }
+.fcol { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; min-width: 0; }
+.fcol > .linkish { justify-self: start; }
+.fcol__head { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.fcol__name { border: 0; background: none; padding: 0; font: 600 15.5px/1.25 var(--f-head); color: var(--fg); text-align: left; overflow-wrap: anywhere; }
+button.fcol__name:hover { color: var(--link); text-decoration: underline; }
+.fcol__sum { flex-basis: 100%; font-size: 12px; color: var(--muted); }
+.fcol__sum b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.fitems { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.fitem { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; text-align: left; border: 1px solid transparent; background: var(--surface-2); border-radius: 9px; padding: 6px 10px; color: var(--fg); font-size: 13px; }
+.fitem:hover, .fitem:focus-visible { border-color: var(--accent); }
+.fitem__title { flex: 1 1 9rem; min-width: 0; overflow-wrap: anywhere; font-weight: 600; }
+.fitem__cols { flex-basis: 100%; font-size: 11.5px; color: var(--faint); }
+.holders { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.holder { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+.holder.dup { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); font-weight: 600; }
+.slot__friends { position: relative; align-self: flex-start; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; font-weight: 600; line-height: 1.6; color: var(--link); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); border-radius: 99px; padding: 0 7px; background: var(--surface); }
+.slot__friends.dup { color: var(--accent-fg); background: var(--accent); border-color: var(--accent); }
+.friends-note { font-size: 13.5px; }
+.card--friend { cursor: default; }
+.card--friend:hover { transform: none; box-shadow: 0 14px 30px -14px var(--shadow); }
+.card--friend.have { opacity: 0.55; }
+.card__mark { position: absolute; left: 8px; top: 45%; transform: translateY(-120%); z-index: 3; font: 700 10.5px var(--f-body); color: var(--accent-fg); background: var(--accent); padding: 1px 7px; border-radius: 99px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+.card__mark.have { color: #fff; background: rgba(0, 0, 0, 0.55); box-shadow: none; }
+.cell__link { justify-self: start; font-size: 12px; }
+#fq { flex: 1 1 200px; }
+.friends-trade { margin-top: 10px; }
+/* Second réglage du partage (« et mes collections à compléter ») : sous le premier, en retrait. */
+.check--sub { display: flex; margin: 6px 0 0 24px; }
+/* Échanges possibles : résumé dans l'onglet, page avec filtres, blocs « X → Z », estimations à part. */
+.trade-sum { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.trade-sum p { margin: 0; flex: 1 1 260px; font-size: 13.5px; }
+.trade-sum b { font-variant-numeric: tabular-nums; }
+.trade-note { font-size: 13px; color: var(--muted); margin: 8px 0 0; max-width: 80ch; }
+.trade-note b { color: var(--fg); }
+.trade-note .linkish { font-size: 13px; }
+.album-head + .trade-note, .trade-note + .fcols, .trade-note + .empty-box { margin-bottom: 12px; }
+.trade__arrow { color: var(--accent); font-weight: 700; }
+.trade--est { border-style: dashed; }
+.badge--est { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, var(--border)); }
+.fitem--static { cursor: default; }
+.fitem--static:hover { border-color: transparent; }
+#trade-member { flex: 0 1 200px; }

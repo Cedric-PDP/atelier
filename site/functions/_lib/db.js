@@ -16,7 +16,10 @@ export const SCHEMA = [
     prefs TEXT NOT NULL DEFAULT '{}',
     sync_state TEXT,
     cards_rev INTEGER NOT NULL DEFAULT 0,
-    cards_gone_floor INTEGER NOT NULL DEFAULT 0
+    cards_gone_floor INTEGER NOT NULL DEFAULT 0,
+    shared INTEGER NOT NULL DEFAULT 0,
+    public_id TEXT,
+    shared_targets INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -68,6 +71,7 @@ export const SCHEMA = [
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
   `CREATE INDEX IF NOT EXISTS cards_gone_by_rev ON cards_gone (user_id, rev)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id)`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.
@@ -77,6 +81,9 @@ const ADDED_COLUMNS = [
   ['users', 'sync_state', 'TEXT'],
   ['users', 'cards_rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'cards_gone_floor', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'shared', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'public_id', 'TEXT'],
+  ['users', 'shared_targets', 'INTEGER NOT NULL DEFAULT 0'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],

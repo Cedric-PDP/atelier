@@ -2,10 +2,12 @@
 // Clé principale : toutes les routes. Clé d'import (celle du favori) : POST /api/import seulement.
 
 import { HttpError, json, raw } from './http.js';
+import { quickSyncAllowed, syncState } from './import.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
+import { patchSharing } from './members.js';
 
 const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
-  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor';
+  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -66,15 +68,25 @@ export function publicUser(user) {
 
 // GET /api/me
 export async function getMe(env, user) {
-  const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?1').bind(user.id).first();
+  // Nombre de cartes : gardé par chaque import et chaque synchro rapide (sync_state.count), sans relire les cartes (D1
+  // compte une ligne lue par carte). Classeur importé avant ce compteur : compté une fois de plus, jusqu'au prochain import.
+  const state = syncState(user);
+  let count = state && Number.isInteger(state.count) ? state.count : null;
+  if (count === null) {
+    const row = await env.DB.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?1').bind(user.id).first();
+    count = row ? row.n : 0;
+  }
   return {
     user: publicUser(user),
     fetched_at: user.fetched_at,
-    card_count: row ? row.n : 0,
+    card_count: count,
+    next_full: !quickSyncAllowed(state), // la prochaine mise à jour (favori ou rafraîchissement) relira toute la collection
     cards_rev: user.cards_rev, // change à chaque changement de la liste des cartes : la page relit alors ?since=…
     new_ids: raw(user.new_ids || '[]'), // texte JSON écrit par la finalisation d'import
     has_import_key: !!user.import_key_hash,
     prefs: raw(user.prefs || '{}'), // objet JSON rangé tel quel par PATCH /api/me
+    shared: !!user.shared, // montre ses cartes aux autres membres (partage entre membres, members.js)
+    shared_targets: !!(user.shared && user.shared_targets), // et ses collections à compléter (réglage à part)
     session: {
       has_cookie: !!user.cookie_enc,
       expired: !!user.session_expired,
@@ -83,12 +95,19 @@ export async function getMe(env, user) {
   };
 }
 
-// PATCH /api/me {name?, prefs?} : `prefs` (objet JSON de 4 Ko au plus) remplace les préférences entières ; son
+// PATCH /api/me {name?, prefs?, shared?, shared_targets?} : `shared` (booléen) active ou coupe le partage entre membres,
+// `shared_targets` (booléen, seulement avec `shared`) celui des collections à compléter (members.js) ; `prefs` (objet JSON de 4 Ko au plus) remplace les préférences entières ; son
 // contenu n'est pas vérifié (l'interface y range ce qu'elle veut).
 export async function patchMe(env, user, body) {
   const hasName = Object.hasOwn(body, 'name');
   const hasPrefs = Object.hasOwn(body, 'prefs');
-  if (!hasName && !hasPrefs) throw new HttpError(400, 'Rien à modifier : indique un nom ou des préférences.');
+  const sharing = patchSharing(user, body);
+  const hasShared = sharing.touched;
+  // force_full: true (clé principale seulement) : la prochaine mise à jour relira toute la collection (seul remède à ce
+  // que la synchro rapide ne voit pas : échange de cartes de même rareté, favori retiré dans le jeu…).
+  const hasForce = Object.hasOwn(body, 'force_full');
+  if (hasForce && body.force_full !== true) throw new HttpError(400, 'force_full vaut true (relire toute la collection à la prochaine mise à jour).');
+  if (!hasName && !hasPrefs && !hasShared && !hasForce) throw new HttpError(400, 'Rien à modifier : indique un nom, des préférences, le partage ou une relecture complète.');
   const name = hasName ? cleanName(body.name) : user.name;
   let prefs = user.prefs || '{}';
   if (hasPrefs) {
@@ -99,8 +118,19 @@ export async function patchMe(env, user, body) {
       throw new HttpError(413, 'Préférences trop volumineuses : 4 Ko au plus.');
     }
   }
-  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2 WHERE id = ?3').bind(name, prefs, user.id).run();
-  return { user: publicUser({ ...user, name }), prefs: raw(prefs) };
+  // Partage entre membres (choisi, désactivé par défaut ; identifiant public tiré à chaque activation) : patchSharing.
+  const { shared, publicId, sharedTargets } = sharing;
+  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5 WHERE id = ?6')
+    .bind(name, prefs, shared, publicId, sharedTargets, user.id)
+    .run();
+  // Relecture complète demandée : la synchro rapide n'est plus armée (full_at effacé ; une synchro rapide en cours,
+  // partie de l'ancien état, échoue aussi).
+  if (hasForce) {
+    await env.DB.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.full_at', NULL) WHERE id = ?1 AND json_valid(sync_state)")
+      .bind(user.id)
+      .run();
+  }
+  return { user: publicUser({ ...user, name }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets };
 }
 
 // POST /api/import-key : nouvelle clé d'import (le favori qui portait l'ancienne cesse de marcher).

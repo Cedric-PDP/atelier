@@ -11,7 +11,11 @@
 -- (JSON : compteurs du jeu, date du plus récent exemplaire lu, date de la dernière lecture complète), pour ne lire
 -- ensuite que les nouveautés. cards_rev = révision de la liste des cartes (+1 par opération qui la change : import,
 -- synchro rapide, étiquettes) ; cards_gone_floor = plus basse révision à partir de laquelle les cartes retirées
--- (cards_gone) sont toutes connues (relevée quand les plus anciennes sont élaguées).
+-- (cards_gone) sont toutes connues (relevée quand les plus anciennes sont élaguées). shared = 1 si le membre montre
+-- ses cartes aux autres membres (partage choisi, réciproque) ; public_id = son identifiant pour les autres membres
+-- (aléatoire, tiré à chaque activation du partage, NULL quand il ne partage pas), jamais l'id interne.
+-- shared_targets = 1 s'il montre aussi ses collections à compléter (réglage à part, seulement avec shared = 1 ; remis
+-- à 0 quand il cesse de montrer ses cartes).
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT,
@@ -26,7 +30,10 @@ CREATE TABLE IF NOT EXISTS users (
     prefs TEXT NOT NULL DEFAULT '{}',
     sync_state TEXT,
     cards_rev INTEGER NOT NULL DEFAULT 0,
-    cards_gone_floor INTEGER NOT NULL DEFAULT 0
+    cards_gone_floor INTEGER NOT NULL DEFAULT 0,
+    shared INTEGER NOT NULL DEFAULT 0,
+    public_id TEXT,
+    shared_targets INTEGER NOT NULL DEFAULT 0
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -98,3 +105,5 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)
 CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev);
 
 CREATE INDEX IF NOT EXISTS cards_gone_by_rev ON cards_gone (user_id, rev);
+
+CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id);

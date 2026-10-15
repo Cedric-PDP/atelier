@@ -45,7 +45,6 @@
   // GET /api/marketplace?q=…, doc de qpautrat/wikimasters-cli) et remplir son champ serait agir à la place du joueur :
   // le classeur propose seulement de copier le nom de la carte (copyNameButton), que le joueur colle lui-même.
   const SPARQL = 'https://query.wikidata.org/sparql';
-  const GROUPS = { vivant: 'Le vivant', sciences: 'Sciences', geo: 'Géographie', histoire: 'Histoire', sport: 'Sport' };
   // Natures Wikidata qui ne disent rien du sujet : être humain (remplacé par le métier), pages techniques.
   const SKIP_NATURES = new Set(['Q5', 'Q4167410', 'Q22808320', 'Q13406463', 'Q4167836', 'Q11266439']);
   const TAXON = 'Q16521';
@@ -109,6 +108,8 @@
     for (const [limit, r] of PV_STEPS) if (views < limit) return r;
     return 'L';
   };
+  // Rareté relevée dans le jeu (collection créée par le favori depuis la Collection globale), sinon null.
+  const realRarity = (item) => (item && RARITIES.includes(item.rarity) ? item.rarity : null);
   const addTo = (tags, tag) => (tags.includes(tag) || tags.length >= 30 ? tags : [...tags, tag]);
   const dateOf = (iso) => { const d = new Date(iso); return iso && !Number.isNaN(d.getTime()) ? d : null; };
   const dateLong = (iso) => { const d = dateOf(iso); return d ? d.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' }) : '—'; };
@@ -206,6 +207,7 @@
   const S = reactive({
     boot: 'loading', // loading | welcome | app
     showEmptyProposed: false, // collections proposées à 0 : masquées par défaut (demande de l'utilisateur)
+    propSearch: { q: '', open: false, active: 0 }, // recherche dans les collections proposées (suggestions)
     key: (() => { const k = store.get(LS.key); return k && KEY_RE.test(k) ? k : null; })(),
     keyNotSaved: false,
     health: null,
@@ -261,11 +263,24 @@
     wp: { list: [], running: false, done: 0, total: 0, label: '', error: '', busy: {} }, // propositions d'après les catégories Wikipédia
     arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
+    // « Entre amis » : lecture des membres (busy, loading = carte en cours), activation du partage, classeur parcouru.
+    // page : 'trades' = « Échanges possibles » (sous-page) ; trade : filtre de cette page ('me' = ce qui me concerne,
+    // 'all' = tout le monde, sinon l'identifiant public d'un membre).
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'me' },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
   const targets = shallowRef([]);
   const newIds = shallowRef([]);
+  // Membres qui montrent leurs cartes (« Entre amis ») : [{id (public), name, count, fetched_at, cards | null, tshare
+  // (montre aussi ses collections), tmark (leur nombre et dernier changement), targets ([{id, name, items:[{title, qid?}]}]
+  // | null)}], figés. En mémoire seulement, jamais dans IndexedDB (cardCache ne garde que ton classeur). friendsGen change à chaque
+  // remise à zéro (classeur changé, partage coupé) : une lecture partie avant est écartée.
+  const friendList = shallowRef([]);
+  let friendsGen = 0;
+  let friendsJob = null;
+  let friendsAt = 0;
+  let friendQidCtrl = null;
   // Révision des cartes affichées (`rev` de GET /api/cards, null = inconnue : relecture complète). cardsGen change avec
   // le classeur (resetData) : une réponse arrivée après coup est écartée.
   let cardsRev = null;
@@ -718,7 +733,7 @@
     const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
     const hidden = new Set(S.prefs.hidden_catalog);
     const proposed = (S.catalog.list || []).filter((e) => !added.has('catalog:' + e.id) && !hidden.has(e.id)).map((e) => ({
-      kind: 'catalog', id: e.id, key: 'catalog:' + e.id, name: e.name, group: e.group, groupName: e.group_name || GROUPS[e.group] || cap(e.group || 'autres'),
+      kind: 'catalog', id: e.id, key: 'catalog:' + e.id, name: e.name,
       items: e.items.map((i) => ({ title: String(i.title), description: i.description || null, image: null, status: 'ok', qid: i.qid || null })), ordered: !!e.ordered, e,
     }));
     return { mine, proposed, visible: S.prefs.hide_catalog ? [] : proposed };
@@ -760,12 +775,14 @@
       const card = findCard(item);
       const info = card ? null : pvCache.get(item.title);
       const views = info ? info[0] : null;
-      return { i: i + 1, key: card ? card.id + ':' + i : 'vide:' + i + ':' + item.title, item, card, views, est: card || item.status !== 'ok' ? null : estRarity(views), thumb: info ? info[1] : null };
+      // real : rareté donnée par le jeu (pastille sans « ≈ ») ; est : estimée d'après les vues, pour les autres.
+      const real = card ? null : realRarity(item);
+      return { i: i + 1, key: card ? card.id + ':' + i : 'vide:' + i + ':' + item.title, item, card, views, real, est: card || real || item.status !== 'ok' ? null : estRarity(views), thumb: info ? info[1] : null };
     });
     if (S.albumFilter === 'owned') slots = slots.filter((s) => s.card);
     if (S.albumFilter === 'missing') slots = slots.filter((s) => !s.card);
     if (S.albumSort === 'rarity') {
-      const rank = (s) => RANK[s.card ? s.card.rarity : s.est] ?? 9;
+      const rank = (s) => RANK[s.card ? s.card.rarity : s.real || s.est] ?? 9;
       const views = (s) => (s.card ? s.card.pageviews : s.views) || 0;
       slots = slots.slice().sort((a, b) => rank(a) - rank(b) || views(b) - views(a));
     } else if (!col.ordered) slots = slots.slice().sort((a, b) => COLLATOR.compare(a.item.title, b.item.title));
@@ -806,6 +823,182 @@
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
   const bookmarkletUrl = computed(() => (S.bm.src && S.bm.importKey ? makeBookmarklet(S.bm.src, location.origin, S.bm.importKey) : ''));
+
+  // ---------------------------------------------------------------- « Entre amis » : qui a quoi
+  const sharing = () => !!(S.me && S.me.shared);
+  const sharingTargets = () => !!(S.me && S.me.shared && S.me.shared_targets); // et ses collections à compléter
+  const friendName = (f) => f.name || 'Sans prénom';
+  // Index des cartes de chaque ami : par titre, puis par identifiant Wikidata, comme pour les tiennes (match.js).
+  function makeFriendIndex(list) {
+    if (Match) return Match.createIndex(list, resolver);
+    const m = new Map();
+    for (const c of list) { const k = normTitle(c.title); if (!m.has(k)) m.set(k, c); }
+    return { findCard: (it) => (it ? m.get(normTitle(typeof it === 'string' ? it : it.title)) || null : null) };
+  }
+  const friendIndexes = computed(() => (sharing() ? friendList.value.filter((f) => f.cards && f.cards.length).map((f) => ({ f, index: makeFriendIndex(f.cards) })) : []));
+  // Amis qui ont la carte d'un élément de collection : les doubles d'abord (les plus faciles à échanger), puis par prénom.
+  function holdersOf(item) {
+    void qidVersion.value;
+    if (!item || (item.status && item.status !== 'ok')) return [];
+    const out = [];
+    for (const { f, index } of friendIndexes.value) {
+      const c = index.findCard(item);
+      if (c) out.push({ id: f.id, name: f.name, count: c.count || 1, rarity: c.rarity });
+    }
+    return out.length > 1 ? out.sort((a, b) => b.count - a.count || COLLATOR.compare(friendName(a), friendName(b))) : out;
+  }
+  const holdersText = (list) => list.map((x) => friendName(x) + (x.count > 1 ? ` (×${fmt(x.count)})` : '')).join(', ');
+  // Collections où chercher chez les amis : les tiennes et les proposées affichées dans l'onglet Collections (au moins
+  // 5 %, ou toutes si tu parcours tout le catalogue).
+  const friendCols = computed(() => {
+    const { mine, visible } = collections.value;
+    return [...mine, ...visible.filter((col) => {
+      const p = progressOf(col);
+      return S.showEmptyProposed || (p.own > 0 && p.own / Math.max(1, p.total) >= PROPOSE_MIN);
+    })];
+  });
+  // Pour chacune : ses cases vides qu'au moins un ami peut remplir (en double chez lui d'abord), et les collections où
+  // les amis remplissent le plus de cases en premier.
+  const friendHighlights = computed(() => {
+    if (!friendIndexes.value.length) return [];
+    void qidVersion.value;
+    const out = [];
+    for (const col of friendCols.value) {
+      const rows = [];
+      const seen = new Set();
+      col.items.forEach((it, i) => {
+        if (it.status !== 'ok' || findCard(it)) return;
+        const k = normTitle(it.title);
+        if (seen.has(k)) return;
+        seen.add(k);
+        const holders = holdersOf(it);
+        if (holders.length) rows.push({ item: it, holders, dup: holders[0].count >= 2, i });
+      });
+      if (!rows.length) continue;
+      rows.sort((a, b) => (b.dup - a.dup) || (a.dup ? b.holders[0].count - a.holders[0].count : 0) || b.holders.length - a.holders.length || a.i - b.i);
+      out.push({ col, rows, dup: rows.filter((r) => r.dup).length });
+    }
+    return out.sort((a, b) => b.rows.length - a.rows.length || b.dup - a.dup || COLLATOR.compare(a.col.name, b.col.name));
+  });
+  // « Échanges possibles » : pour chaque couple (X a la carte C, Z a la collection Y où C remplit une case vide), une
+  // ligne, X et Z pris parmi toi et les amis dont les cartes sont lues. Collections de Z : les tiennes comme dans « Pour
+  // compléter tes collections » ; celles qu'un ami montre ; pour un ami qui ne les montre pas, une estimation : les
+  // collections du catalogue qu'il a commencées (au moins 5 %, comme ses propositions). Une ligne par carte et par couple
+  // (X → Z), avec toutes les collections de Z qu'elle complète ; rapprochement titre puis qid (match.js), comme ailleurs.
+  // Calculé une fois par chargement (et quand un qid est appris), filtré à part (tradeView).
+  const ME = ''; // « toi » dans les échanges (un identifiant public n'est jamais vide)
+  const rarityRank = (r) => RANK[r] ?? 9;
+  const trades = computed(() => {
+    const empty = { pairs: [], hidden: [], waiting: [] };
+    if (!sharing() || !S.me) return empty;
+    void qidVersion.value;
+    const indexOf = new Map(friendIndexes.value.map(({ f, index }) => [f.id, index]));
+    const none = { findCard: () => null };
+    const people = [{ id: ME, me: true, name: (S.me.user && S.me.user.name) || '', index: { findCard }, f: null }];
+    for (const f of friendList.value) if (f.cards) people.push({ id: f.id, me: false, name: f.name, index: indexOf.get(f.id) || none, f });
+    if (people.length < 2) return empty;
+    const cat = S.catalog.list || [];
+    const hidden = [];
+    const waiting = [];
+    // Collections de chacun : [{name, items, estimate, kind}].
+    function colsOf(p) {
+      if (p.me) return friendCols.value.map((col) => ({ name: col.name, items: col.items, estimate: false, proposed: col.kind === 'catalog' }));
+      if (p.f.tshare && p.f.targets) return p.f.targets.map((t) => ({ name: t.name, items: t.items, estimate: false, proposed: false }));
+      if (p.f.tshare) { waiting.push(p); return []; }
+      hidden.push(p);
+      const out = [];
+      for (const e of cat) {
+        if (!e.items.length) continue;
+        let own = 0;
+        for (const it of e.items) if (p.index.findCard(it)) own++;
+        if (own && own / e.items.length >= PROPOSE_MIN) out.push({ name: e.name, items: e.items, estimate: true, proposed: true });
+      }
+      return out;
+    }
+    const pairs = [];
+    for (const z of people) {
+      // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
+      const holes = new Map();
+      let estimate = false;
+      for (const col of colsOf(z)) {
+        for (const it of col.items) {
+          if (!it || (it.status && it.status !== 'ok')) continue;
+          const k = normTitle(it.title);
+          let hole = holes.get(k);
+          if (hole === undefined) {
+            hole = z.index.findCard(it) ? null : { item: it, cols: [] };
+            holes.set(k, hole);
+          }
+          if (hole && !hole.cols.includes(col.name)) hole.cols.push(col.name);
+        }
+        if (col.estimate) estimate = true;
+      }
+      if (!holes.size) continue;
+      for (const x of people) {
+        if (x === z) continue;
+        const byCard = new Map();
+        for (const hole of holes.values()) {
+          if (!hole) continue;
+          const c = x.index.findCard(hole.item);
+          if (!c) continue;
+          const row = byCard.get(c.id);
+          if (row) { for (const n of hole.cols) if (!row.cols.includes(n)) row.cols.push(n); continue; }
+          const count = Math.max(1, Number(c.count) || 1);
+          byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
+        }
+        if (!byCard.size) continue;
+        const rows = [...byCard.values()].sort((a, b) => (b.dup - a.dup) || (a.dup ? b.count - a.count : 0) || b.cols.length - a.cols.length
+          || rarityRank(a.card.rarity) - rarityRank(b.card.rarity) || COLLATOR.compare(a.card.title, b.card.title));
+        pairs.push({ key: x.id + '>' + z.id, x, z, rows, dup: rows.filter((r) => r.dup).length, estimate });
+      }
+    }
+    // Les vraies collections avant les estimations ; puis les couples qui ont le plus de doubles (les plus faciles à
+    // donner), puis le plus de cases ; à égalité, par prénoms (toi d'abord).
+    const who = (p) => (p.me ? '' : friendName(p));
+    pairs.sort((a, b) => (a.estimate - b.estimate) || b.dup - a.dup || b.rows.length - a.rows.length
+      || COLLATOR.compare(who(a.x), who(b.x)) || COLLATOR.compare(who(a.z), who(b.z)));
+    return { pairs, hidden: hidden.map((p) => p.f), waiting: waiting.map((p) => p.f) };
+  });
+  // Filtre de la page : ce qui me concerne (je donne ou je reçois), tout le monde, ou un membre (qui donne ou reçoit).
+  const tradeView = computed(() => {
+    const t = S.friends.trade;
+    const all = trades.value.pairs;
+    if (t === 'all') return all;
+    if (t === 'me' || !friendList.value.some((f) => f.id === t)) return all.filter((p) => p.x.me || p.z.me);
+    return all.filter((p) => p.x.id === t || p.z.id === t);
+  });
+  // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent leurs collections (les vraies quand ils les
+  // montrent, sinon l'estimation), tes doubles d'abord.
+  const friendWants = computed(() => trades.value.pairs.filter((p) => p.x.me).map((p) => ({ f: p.z.f, rows: p.rows, dup: p.dup, estimate: p.estimate })));
+  // Par ami : ses cartes qui te manquent, et combien il en a en double.
+  const friendStats = computed(() => {
+    void qidVersion.value;
+    const m = new Map();
+    for (const f of friendList.value) {
+      if (!f.cards) continue;
+      let missing = 0;
+      let dup = 0;
+      for (const c of f.cards) if (!findCard(c)) { missing++; if (c.count >= 2) dup++; }
+      m.set(f.id, { missing, dup });
+    }
+    return m;
+  });
+  // Classeur d'un ami parcouru (lecture seule) : recherche, « Me manquent », tri.
+  const openFriend = computed(() => (S.friends.open ? friendList.value.find((f) => f.id === S.friends.open) || null : null));
+  const FRIEND_SORTS = {
+    rarity: (a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || COLLATOR.compare(a.title, b.title),
+    count: (a, b) => b.count - a.count || (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || COLLATOR.compare(a.title, b.title),
+    title: (a, b) => COLLATOR.compare(a.title, b.title),
+  };
+  const friendCardsView = computed(() => {
+    const f = openFriend.value;
+    if (!f || !f.cards) return [];
+    void qidVersion.value;
+    const q = fold(S.friends.q.trim());
+    let list = q ? f.cards.filter((c) => c._k.includes(q)) : f.cards.slice();
+    if (S.friends.filter === 'missing') list = list.filter((c) => !findCard(c));
+    return list.sort(FRIEND_SORTS[S.friends.sort] || FRIEND_SORTS.rarity);
+  });
 
   // ================================================================ actions
   let noticeSeq = 0;
@@ -856,7 +1049,7 @@
     cardsRev = null;
     cardsGen++;
     cardsJob = Promise.resolve();
-    Object.assign(S, { me: null, fetchedAt: null, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
+    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
       q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
@@ -868,6 +1061,7 @@
     pvToken++;
     suggToken++;
     S.sugg.running = false;
+    clearFriends(); // cartes des amis : celles de l'autre classeur ne servent plus
   }
   const STALE_KEY = "La clé gardée dans ce navigateur ne correspond plus à aucun classeur : il a peut-être été supprimé, ou sa clé a été changée sur un autre appareil. Ouvre ton lien personnel le plus récent.";
   function lostKey(msg) {
@@ -920,7 +1114,9 @@
     }
   }
   async function loadMe() {
+    const gen = cardsGen;
     const me = await api('GET', '/api/me');
+    if (gen !== cardsGen) return me; // classeur changé entre-temps (resetData) : réponse de l'ancien, écartée
     S.me = me;
     if (S.key && me.user) remember(S.key, me.user.name || '');
     if (me.prefs !== undefined) S.prefs = normPrefs(me.prefs);
@@ -1087,7 +1283,9 @@
     computeProposals(false);
   }
   async function loadTargets() {
+    const gen = cardsGen;
     const r = await api('GET', '/api/targets');
+    if (gen !== cardsGen) return; // collections de l'ancien classeur : écartées
     targets.value = (Array.isArray(r.targets) ? r.targets : []).map(prepTarget);
     if (S.album && S.album.kind === 'target' && !targets.value.some((t) => t.id === S.album.id)) S.album = null;
   }
@@ -1107,13 +1305,15 @@
     S.linkError = '';
     if (!raw || !KEY_RE.test(raw)) { S.linkError = BAD_LINK; return; }
     if (raw === S.key) return;
+    const gen = cardsGen; // un autre boot (lien suivant, changement de classeur) l'emporte sur celui-ci
     let me;
     try {
       me = await api('GET', '/api/me', undefined, { key: raw });
     } catch (e) {
-      S.linkError = e.status === 401 ? UNKNOWN_LINK : e.message;
+      if (gen === cardsGen) S.linkError = e.status === 401 ? UNKNOWN_LINK : e.message;
       return;
     }
+    if (gen !== cardsGen) return;
     const name = (me.user && me.user.name) || '';
     if (S.key) {
       let mine = null;
@@ -1122,6 +1322,7 @@
       } catch (e) {
         if (e.status !== 401) mine = { user: null };
       }
+      if (gen !== cardsGen) return;
       if (mine) {
         S.switchAsk = { key: raw, name, mine: (mine.user && mine.user.name) || '' };
         return;
@@ -1144,32 +1345,41 @@
     await boot();
   }
 
+  // Un boot qui en suit un autre (changement de classeur, lien ouvert pendant le chargement) l'emporte : le premier
+  // s'arrête à son prochain await (cardsGen a changé avec resetData), sans toucher à l'état du nouveau classeur.
   async function boot(linkKey) {
     S.boot = 'loading';
     resetData();
+    const gen = cardsGen;
+    const stale = () => gen !== cardsGen;
     loadKnown();
     await loadHealth();
+    if (stale()) return;
     if (linkKey != null) await adoptLinkKey(linkKey);
+    if (stale()) return;
     const ask = S.switchAsk;
     if (!S.key) { S.boot = 'welcome'; return; }
     try {
       await loadMe();
     } catch (e) {
+      if (stale()) return;
       S.bootError = e.message;
       S.bootHint = e.status === 401 ? STALE_KEY : '';
       S.boot = 'welcome';
       return;
     }
+    if (stale()) return;
     S.bootError = '';
     S.bootHint = '';
     S.boot = 'app';
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
-    const side = Promise.all([loadTargets().catch((e) => notify(e.message, true)), loadCatalog()]);
+    const side = Promise.all([loadTargets().catch((e) => { if (!stale()) notify(e.message, true); }), loadCatalog()]);
     // Cartes gardées dans ce navigateur d'abord (tout de suite), puis seulement ce qui a changé depuis.
-    if (await queueCards(() => showCachedCards(S.me)).catch(() => false)) S.loadingCards = false;
-    await Promise.all([syncCards(S.me).catch((e) => notify(e.message, true)), side]);
+    if (await queueCards(() => showCachedCards(S.me)).catch(() => false) && !stale()) S.loadingCards = false;
+    await Promise.all([syncCards(S.me).catch((e) => { if (!stale()) notify(e.message, true); }), side]);
+    if (stale()) return;
     S.loadingCards = false;
     afterCards();
     // Classeur vide : on commence par « Mettre à jour » (le favori).
@@ -1230,7 +1440,11 @@
   }
   // Sans cookie, le classeur ne peut pas lire le jeu : c'est le favori, cliqué sur wiki-masters.com, qui envoie les
   // cartes. La fenêtre guide l'utilisateur, puis surveille l'arrivée de l'envoi (GET /api/me toutes les 4 s, 15 min au
-  // plus, seulement pendant qu'elle est ouverte) et recharge la collection dès qu'il est là.
+  // plus, seulement pendant qu'elle est ouverte) et recharge la collection dès qu'il est là. Les autres classeurs connus
+  // ne sont relus qu'à l'ouverture, puis toutes les 30 s pendant les 3 premières minutes : chaque GET /api/me compte les
+  // cartes de son compte sur le serveur (lignes lues, sur le quota quotidien de la base).
+  const SYNC_OTHERS_EVERY = 30 * 1000;
+  const SYNC_OTHERS_FOR = 3 * 60 * 1000;
   let syncTimer = null;
   function stopSync() { if (syncTimer) { clearInterval(syncTimer); syncTimer = null; } }
   function openSync() {
@@ -1248,6 +1462,7 @@
     S.modal = 'sync';
     stopSync();
     const started = Date.now();
+    let othersAt = started; // dernière relecture des autres classeurs (la première : à l'ouverture, ci-dessus)
     let busy = false;
     syncTimer = setInterval(async () => {
       if (S.modal !== 'sync' || S.sync.done || Date.now() - started > 15 * 60 * 1000) { stopSync(); return; }
@@ -1256,8 +1471,10 @@
       try {
         await loadMe();
         const now = S.me && S.me.fetched_at;
-        // Envoi arrivé dans un autre classeur de ce navigateur ?
-        if (!(now && now !== S.sync.before) && !S.sync.elsewhere) {
+        // Envoi arrivé dans un autre classeur de ce navigateur ? (toutes les 30 s, pendant 3 min)
+        const t = Date.now();
+        if (!(now && now !== S.sync.before) && !S.sync.elsewhere && t - started <= SYNC_OTHERS_FOR && t - othersAt >= SYNC_OTHERS_EVERY) {
+          othersAt = t;
           for (const [k, o] of Object.entries(S.sync.others)) {
             const m = await api('GET', '/api/me', undefined, { key: k }).catch(() => null);
             if (m && m.fetched_at && m.fetched_at !== o.at) { S.sync.elsewhere = { key: k, name: (m.user && m.user.name) || o.name || '' }; break; }
@@ -1283,7 +1500,8 @@
       let page = 0;
       let res = null;
       for (let guard = 0; guard < 5000; guard++) {
-        res = await api('POST', '/api/refresh', { page });
+        // Relecture complète demandée (onglet « Mettre à jour ») : jamais de synchro rapide.
+        res = await api('POST', '/api/refresh', page === 0 && S.me && S.me.next_full ? { page, full: true } : { page });
         if (res.done) break;
         const next = Number(res.next_page);
         if (!Number.isFinite(next) || next <= page) throw new Error('Réponse inattendue du classeur pendant le rafraîchissement : relance-le.');
@@ -1398,6 +1616,7 @@
     S.tab = tab;
     if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false });
     if (tab === 'maj') prepareFavori();
+    if (tab === 'amis') loadFriends(true);
     toTop();
   }
   function resetFilters() {
@@ -1408,6 +1627,7 @@
     S.tab = 'collections';
     Object.assign(S, { albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, lastClicked: null });
     S.selected.clear();
+    ensureFriends(); // badges « chez Paul » des cases vides
     toTop();
   }
   function closeAlbum() { S.album = null; S.selected.clear(); toTop(); }
@@ -1512,6 +1732,7 @@
     if (S.modal) closeModal();
     S.openId = null;
     S.openMissing = markRaw({ ...item }); // copie figée : la fiche lit les vues et la vignette dans le cache, en direct
+    ensureFriends(); // « Chez : Paul (×2), Léa »
   }
   function closeCard() {
     S.openId = null;
@@ -1648,6 +1869,7 @@
         kept.add(it.title);
         const item = { title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' };
         if (it.qid) item.qid = it.qid;
+        if (realRarity(it)) item.rarity = it.rarity; // rareté du jeu (collection créée par le favori) : gardée
         items.push(item);
       }
       const issues = items.filter((i) => i.status !== 'ok');
@@ -1778,10 +2000,14 @@
         await api('DELETE', '/api/me');
         forgetKnown(key);
         const others = S.known.slice();
+        // Clés d'import (favoris) des autres comptes : gardées ; seule celle du classeur supprimé part.
+        const favoris = user ? importKeys() : {};
+        if (user) delete favoris[user];
         forgetKey(user || undefined);
-        // Les autres classeurs ouverts dans ce navigateur restent connus.
+        // Les autres classeurs ouverts dans ce navigateur restent connus, avec leur favori.
         S.known = others;
         saveKnown();
+        if (Object.keys(favoris).length) store.set(LS.importKey, JSON.stringify(favoris));
         notify('Ton classeur a été supprimé.');
       },
     });
@@ -2596,6 +2822,226 @@
     }
   }
 
+  // ================================================================ « Entre amis » : partage entre membres
+  // Le partage est un choix (désactivé par défaut) et il est réciproque : on ne voit les cartes des autres membres que
+  // si on montre les siennes (PATCH /api/me {shared}). Leurs cartes sont lues à la demande (onglet « Entre amis »,
+  // ouverture d'une collection ou d'une case vide), par pages de 1 000, et gardées en mémoire pendant la visite ; elles
+  // ne sont relues que si leur synchro ou leur nombre a changé. Le classeur ne fait que montrer qui a quoi : les
+  // échanges se font dans le jeu, entre joueurs.
+  const FRIENDS_TTL = 10 * 60 * 1000; // liste des membres relue au plus toutes les 10 min (sauf onglet ou « Actualiser »)
+  function clearFriends() {
+    friendsGen++;
+    friendsJob = null;
+    friendsAt = 0;
+    if (friendQidCtrl) { friendQidCtrl.abort(); friendQidCtrl = null; }
+    friendList.value = [];
+    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'me' });
+  }
+  // Carte d'un ami (champs montrés par le serveur, rien d'autre) ; adresses vérifiées avant d'en faire des liens.
+  function prepFriendCard(c) {
+    const title = String(c.title || '');
+    const link = (v) => (typeof v === 'string' && /^https?:\/\//i.test(v) ? v : null);
+    return markRaw({ id: String(c.id), title, rarity: RARITY_NAME[c.rarity] ? c.rarity : null, count: Math.max(1, Number(c.count) || 1),
+      shiny: c.shiny === true, image: link(c.image), url: link(c.url), _k: fold(title) });
+  }
+  async function readMemberCards(id, gen) {
+    const out = [];
+    let part = '0';
+    for (let guard = 0; guard < 100; guard++) {
+      const r = await api('GET', '/api/members/' + encodeURIComponent(id) + '/cards?part=' + encodeURIComponent(String(part)));
+      if (gen !== friendsGen) return null;
+      for (const c of Array.isArray(r.cards) ? r.cards : []) if (c && c.id != null && c.title) out.push(prepFriendCard(c));
+      const next = r.next_part;
+      if (next === null || next === undefined || next === '' || next === part) break;
+      part = next;
+    }
+    return out;
+  }
+  // Collection qu'un ami montre : son nom et, pour chaque élément, le titre et le qid (rien d'autre n'est gardé).
+  const QID_RE = /^Q[1-9]\d{0,11}$/;
+  function prepFriendTarget(t) {
+    const items = (Array.isArray(t.items) ? t.items : []).filter((it) => it && typeof it.title === 'string' && it.title)
+      .map((it) => (typeof it.qid === 'string' && QID_RE.test(it.qid) ? { title: it.title, qid: it.qid } : { title: it.title }));
+    return markRaw({ id: String(t.id), name: String(t.name || 'Sans nom'), items });
+  }
+  async function readMemberTargets(id, gen) {
+    const out = [];
+    let part = '0';
+    for (let guard = 0; guard < 60; guard++) {
+      const r = await api('GET', '/api/members/' + encodeURIComponent(id) + '/targets?part=' + encodeURIComponent(String(part)));
+      if (gen !== friendsGen) return null;
+      for (const t of Array.isArray(r.targets) ? r.targets : []) if (t && t.id != null) out.push(prepFriendTarget(t));
+      const next = r.next_part;
+      if (next === null || next === undefined || next === '' || next === part) break;
+      part = next;
+    }
+    return out;
+  }
+  // Liste des membres (GET /api/members), puis les cartes de ceux qui ont changé, puis les collections de ceux qui les
+  // montrent et dont le nombre ou le dernier changement a bougé. force : relire la liste même récente.
+  function loadFriends(force) {
+    if (!sharing()) return Promise.resolve();
+    if (friendsJob) return friendsJob;
+    if (!force && friendsAt && Date.now() - friendsAt < FRIENDS_TTL) return Promise.resolve();
+    const gen = friendsGen;
+    const fr = S.friends;
+    const job = (async () => {
+      fr.busy = true;
+      fr.error = '';
+      if (!friendList.value.length) fr.status = 'loading';
+      try {
+        const r = await api('GET', '/api/members');
+        if (gen !== friendsGen) return;
+        const prev = new Map(friendList.value.map((f) => [f.id, f]));
+        const list = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.id === 'string' && m.id).map((m) => {
+          const p = prev.get(m.id);
+          const count = Number(m.count) || 0;
+          const same = p && p.cards && p.fetched_at === (m.fetched_at || null) && p.count === count;
+          const tg = m.targets && typeof m.targets === 'object' ? m.targets : null;
+          const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
+          const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
+          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
+            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null });
+        }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
+        friendList.value = list;
+        if (fr.open && !list.some((f) => f.id === fr.open)) fr.open = null;
+        fr.status = 'ready';
+        for (const f of list) {
+          if (f.cards) continue;
+          fr.loading = `Lecture des cartes de ${friendName(f)}…`;
+          let got;
+          try {
+            got = await readMemberCards(f.id, gen);
+          } catch (e) {
+            if (gen !== friendsGen) return;
+            // A cessé de partager entre la liste et ses cartes : il disparaît de la liste.
+            if (e.status === 404) { friendList.value = friendList.value.filter((x) => x.id !== f.id); continue; }
+            throw e;
+          }
+          if (got === null || gen !== friendsGen) return;
+          friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, cards: got }) : x));
+        }
+        for (const f of friendList.value) {
+          if (!f.tshare || f.targets) continue;
+          fr.loading = `Lecture des collections de ${friendName(f)}…`;
+          let got;
+          try {
+            got = await readMemberTargets(f.id, gen);
+          } catch (e) {
+            if (gen !== friendsGen) return;
+            // A cessé de montrer ses collections entre la liste et cette lecture : on revient à l'estimation pour lui.
+            if (e.status === 404) { friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, tshare: false, tmark: null, targets: null }) : x)); continue; }
+            throw e;
+          }
+          if (got === null || gen !== friendsGen) return;
+          friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, targets: got }) : x));
+        }
+        friendsAt = Date.now();
+        resolveFriendQids();
+      } catch (e) {
+        if (gen !== friendsGen) return;
+        // Partage coupé ailleurs (autre appareil) : la page revient à l'invitation à partager.
+        if (e.status === 403 && S.me) { S.me.shared = false; S.me.shared_targets = false; clearFriends(); return; }
+        fr.status = 'error';
+        fr.error = e.message;
+      } finally {
+        if (gen === friendsGen) { fr.busy = false; fr.loading = ''; friendsJob = null; }
+      }
+    })();
+    friendsJob = job;
+    return job;
+  }
+  const ensureFriends = () => { if (sharing()) loadFriends(false); };
+  // Titres des cartes des amis que tu n'as pas : leur identifiant Wikidata (même cache que les tiennes, 30 jours) fait
+  // reconnaître une carte dont le titre diffère de celui d'une collection (renommage, homonymie). De même pour les
+  // éléments sans qid des collections qu'ils montrent et qui leur manquent (2 000 au plus par lecture : le cache se
+  // complète d'une visite à l'autre), par lots de 50 dans la même file que les tiens.
+  const FRIEND_ITEM_QIDS = 2000;
+  function resolveFriendQids() {
+    if (!resolver || !Match) return;
+    const t = resolver.now();
+    const titles = new Map();
+    for (const f of friendList.value) {
+      for (const c of f.cards || []) {
+        const k = Match.normTitle(c.title);
+        if (!k || titles.has(k) || resolver.knownKey(k, t) !== undefined || findCard(c)) continue;
+        titles.set(k, c.title);
+      }
+    }
+    const indexOf = new Map(friendIndexes.value.map(({ f, index }) => [f.id, index]));
+    let items = 0;
+    for (const f of friendList.value) {
+      const index = indexOf.get(f.id);
+      for (const tg of f.targets || []) {
+        for (const it of tg.items) {
+          if (items >= FRIEND_ITEM_QIDS) break;
+          if (it.qid) continue;
+          const k = Match.normTitle(it.title);
+          if (!k || titles.has(k) || resolver.knownKey(k, t) !== undefined || (index && index.findCard(it))) continue;
+          titles.set(k, it.title);
+          items++;
+        }
+      }
+    }
+    if (!titles.size) return;
+    if (friendQidCtrl) friendQidCtrl.abort();
+    const ctrl = new AbortController();
+    friendQidCtrl = ctrl;
+    resolver.resolve([...titles.values()], { signal: ctrl.signal, onProgress: () => { qidVersion.value++; } })
+      .then(() => { qidVersion.value++; })
+      .catch(() => { /* annulée, ou Wikipédia indisponible : le rapprochement par titre reste */ })
+      .finally(() => { if (friendQidCtrl === ctrl) friendQidCtrl = null; });
+  }
+  async function setShared(on) {
+    const fr = S.friends;
+    if (fr.shareBusy) return;
+    fr.shareBusy = true;
+    fr.shareError = '';
+    try {
+      const r = await api('PATCH', '/api/me', { shared: !!on });
+      const now = r && typeof r.shared === 'boolean' ? r.shared : !!on;
+      if (S.me) { S.me.shared = now; S.me.shared_targets = !!(now && r && r.shared_targets === true); }
+      clearFriends();
+      if (now) {
+        notify('Tes cartes sont montrées aux autres membres qui montrent les leurs.');
+        loadFriends(true);
+      } else notify('Tes cartes ne sont plus montrées aux autres membres.');
+    } catch (e) {
+      fr.shareError = e.message;
+    } finally {
+      fr.shareBusy = false;
+    }
+  }
+  // Second réglage, seulement quand on montre ses cartes : montrer aussi ses collections à compléter (PATCH
+  // /api/me {shared_targets}). Ne change rien à ce que tu vois des autres.
+  async function setSharedTargets(on) {
+    const fr = S.friends;
+    if (fr.shareBusy || !sharing()) return;
+    fr.shareBusy = true;
+    fr.shareError = '';
+    try {
+      const r = await api('PATCH', '/api/me', { shared_targets: !!on });
+      const now = r && typeof r.shared_targets === 'boolean' ? r.shared_targets : !!on;
+      if (S.me) S.me.shared_targets = now;
+      notify(now ? 'Tes collections à compléter sont montrées aux membres qui montrent leurs cartes.' : 'Tes collections à compléter ne sont plus montrées aux autres membres.');
+    } catch (e) {
+      fr.shareError = e.message;
+    } finally {
+      fr.shareBusy = false;
+    }
+  }
+  function openFriendBinder(id) {
+    Object.assign(S.friends, { open: id, q: '', filter: 'all', limit: PAGE, page: null });
+    toTop();
+  }
+  function closeFriendBinder() { S.friends.open = null; toTop(); }
+  // « Échanges possibles » : sous-page de l'onglet, avec son filtre (ce qui me concerne par défaut).
+  function openTrades(filter) {
+    Object.assign(S.friends, { page: 'trades', open: null, trade: filter || 'me' });
+    toTop();
+  }
+  function closeTrades() { S.friends.page = null; toTop(); }
+
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
   const hideBroken = (e) => { if (e && e.target) e.target.classList.add('broken'); };
@@ -2711,13 +3157,22 @@
       col.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: 'Pas encore dans ta collection : ouvrir la fiche',
         'aria-label': `${it.title} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
-      h('div', { class: 'slot__top' }, it.status === 'ok' ? [pill(s.est, true), copyNameButton(it.title, true)] : []),
+      h('div', { class: 'slot__top' }, it.status === 'ok' ? [s.real ? pill(s.real) : pill(s.est, true), copyNameButton(it.title, true)] : []),
       h('h3', null, it.title),
       it.description ? h('p', null, it.description) : null,
       it.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia') : null,
       it.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre") : null,
+      friendBadge(it),
       views ? h('span', { class: 'views' }, views) : null,
     ]);
+  }
+  // Case vide qu'un ami peut remplir (partage entre membres) : « chez Paul ×2 », « +1 » s'il y en a d'autres.
+  function friendBadge(item) {
+    const list = holdersOf(item);
+    if (!list.length) return null;
+    const first = list[0];
+    const label = `chez ${friendName(first)}${first.count > 1 ? ' ×' + fmt(first.count) : ''}${list.length > 1 ? ' +' + (list.length - 1) : ''}`;
+    return h('span', { class: ['slot__friends', { dup: first.count > 1 }], title: 'Chez : ' + holdersText(list) }, label);
   }
   function viewMini(c, i) {
     const r = okRarity(c.rarity) || 'C';
@@ -2741,7 +3196,7 @@
   }
 
   // ================================================================ rendu : bandeau et onglets
-  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['maj', 'Mettre à jour'], ['reglages', 'Réglages']];
+  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['maj', 'Mettre à jour'], ['reglages', 'Réglages']];
   function onTabKey(e) {
     const i = TABS.findIndex(([id]) => id === S.tab);
     let j = -1;
@@ -2848,6 +3303,64 @@
       S.wp.running ? null : h('div', null, [h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions')]),
     ]);
   }
+  // Recherche dans les collections proposées : par nom, puis par carte contenue (« Khéops » → Pharaons). Noms et
+  // articles du catalogue repliés une fois par catalogue ; 8 suggestions au plus.
+  const catalogIndex = computed(() => new Map((S.catalog.list || []).map((e) => [e.id, { name: fold(e.name), items: e.items.map((i) => fold(i.title)) }])));
+  function proposedMatches(q) {
+    const f = fold(q.trim());
+    if (f.length < 2) return [];
+    const idx = catalogIndex.value;
+    const byName = [];
+    const byItem = [];
+    for (const col of collections.value.proposed) {
+      const x = idx.get(col.id);
+      if (!x) continue;
+      if (x.name.includes(f)) byName.push({ col, item: null, starts: x.name.startsWith(f) || x.name.includes(' ' + f) ? 1 : 0 });
+      else {
+        const k = x.items.findIndex((t) => t.includes(f));
+        if (k >= 0) byItem.push({ col, item: col.items[k].title });
+      }
+    }
+    byName.sort((a, b) => b.starts - a.starts || a.col.name.localeCompare(b.col.name, 'fr'));
+    byItem.sort((a, b) => a.col.name.localeCompare(b.col.name, 'fr'));
+    return [...byName, ...byItem].slice(0, 8);
+  }
+  function viewProposedSearch() {
+    const ps = S.propSearch;
+    const list = proposedMatches(ps.q);
+    const open = ps.open && list.length > 0;
+    const act = Math.max(0, Math.min(ps.active, list.length - 1));
+    const choose = (m) => { ps.q = ''; ps.open = false; ps.active = 0; openAlbum('catalog', m.col.id); };
+    return h('div', { class: 'prop-search' }, [
+      h('label', { class: 'sr', for: 'prop-q' }, 'Chercher une collection proposée'),
+      h('input', {
+        id: 'prop-q', class: 'field full', type: 'search', value: ps.q, autocomplete: 'off', spellcheck: 'false',
+        placeholder: 'Chercher une collection proposée : son nom ou une carte (« pharaons », « Khéops »…)',
+        role: 'combobox', 'aria-expanded': String(open), 'aria-controls': 'prop-list', 'aria-autocomplete': 'list',
+        'aria-activedescendant': open ? 'prop-opt-' + act : null,
+        onInput: (e) => { ps.q = e.target.value; ps.open = true; ps.active = 0; },
+        onFocus: () => { ps.open = true; },
+        onBlur: () => { setTimeout(() => { ps.open = false; }, 150); },
+        onKeydown: (e) => {
+          if (e.key === 'ArrowDown') { e.preventDefault(); ps.open = true; ps.active = Math.min(act + 1, Math.max(0, list.length - 1)); }
+          else if (e.key === 'ArrowUp') { e.preventDefault(); ps.active = Math.max(act - 1, 0); }
+          else if (e.key === 'Enter' && open && list[act]) { e.preventDefault(); choose(list[act]); }
+          else if (e.key === 'Escape' && ps.open) { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); ps.open = false; }
+        },
+      }),
+      open ? h('ul', { id: 'prop-list', class: 'prop-list', role: 'listbox', 'aria-label': 'Collections proposées' }, list.map((m, i) => {
+        const p = progressOf(m.col);
+        return h('li', {
+          id: 'prop-opt-' + i, key: m.col.key, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
+          onMousedown: (e) => { e.preventDefault(); choose(m); }, onMouseenter: () => { ps.active = i; },
+        }, [
+          h('span', { class: 'prop-list__name' }, m.col.name),
+          h('span', { class: 'prop-list__hint' }, m.item ? `contient « ${m.item} »` : ''),
+          h('span', { class: 'prop-list__count num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+        ]);
+      })) : ps.open && fold(ps.q.trim()).length >= 2 ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, 'Aucune collection proposée ne correspond.') : null,
+    ]);
+  }
   function viewCollections() {
     const { mine, visible } = collections.value;
     const ranked = visible.map((col, i) => ({ col, p: progressOf(col), i }));
@@ -2855,8 +3368,6 @@
     const shown = ranked.filter((x) => S.showEmptyProposed || enough(x))
       .sort((a, b) => (b.p.own / Math.max(1, b.p.total)) - (a.p.own / Math.max(1, a.p.total)) || a.i - b.i);
     const others = ranked.length - ranked.filter(enough).length;
-    const groups = new Map();
-    for (const x of shown) { const g = x.col.groupName; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(x.col); }
     let proposedBody;
     if (S.prefs.hide_catalog) {
       proposedBody = [h('p', { class: 'muted small' }, ['Propositions masquées · ', h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(false) }, 'Afficher')])];
@@ -2868,18 +3379,16 @@
           h('span', { class: 'spacer' }),
           h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(true) }, 'Masquer toutes les propositions'),
         ]),
-        viewWpGroup(),
+        S.catalog.list && ranked.length ? viewProposedSearch() : null,
         !S.catalog.list ? (S.catalog.error ? errLine(S.catalog.error) : h('p', { class: 'muted', role: 'status' }, 'Chargement du catalogue…')) : null,
-        ...[...groups].map(([name, list]) => h('div', { class: 'subgroup', key: 'g:' + name }, [
-          h('h3', { class: 'subhead' }, name),
-          h('div', { class: 'rows' }, list.map(viewRow)),
-        ])),
+        shown.length ? h('div', { class: 'rows' }, shown.map((x) => viewRow(x.col))) : null,
         S.catalog.list && !shown.length && ranked.length && !wpVisible.value.length && !S.wp.running ? h('p', { class: 'muted' }, 'Aucune collection proposée ne te concerne encore : une proposition apparaît quand tu en as au moins 5 %.') : null,
         S.catalog.list && (others || S.showEmptyProposed) ? h('div', { class: 'show-more' }, [
           h('button', { class: 'linkish', type: 'button', id: 'toggle-empty', onClick: () => { S.showEmptyProposed = !S.showEmptyProposed; } },
             S.showEmptyProposed ? 'Ne montrer que celles dont tu as au moins 5 %' : `Parcourir tout le catalogue (${fmt(others)} autres collections)`),
         ]) : null,
         S.catalog.list && !ranked.length ? h('p', { class: 'muted' }, 'Tu as déjà ajouté ou retiré toutes les collections proposées.') : null,
+        viewWpGroup(),
       ];
     }
     return h('div', { class: 'groups' }, [
@@ -2910,11 +3419,16 @@
     const p = progressOf(col);
     void S.pv.version;
     const missR = {};
+    const missG = {}; // rareté donnée par le jeu (pastille sans « ≈ »)
     let unknown = 0;
     let problems = 0;
+    let estimated = 0;
     for (const it of col.items) {
       if (findCard(it)) continue;
       if (it.status !== 'ok') { problems++; continue; }
+      const real = realRarity(it);
+      if (real) { missG[real] = (missG[real] || 0) + 1; continue; }
+      estimated++;
       const info = pvCache.get(it.title);
       const est = estRarity(info ? info[0] : null);
       if (est) missR[est] = (missR[est] || 0) + 1; else unknown++;
@@ -2926,13 +3440,16 @@
     ] : null;
     const missLine = missing > 0 ? [
       h('span', null, `Il t'en manque ${fmt(missing)} :`),
+      ...RAR_UP.slice().reverse().filter((r) => missG[r]).map((r) => h('span', { key: 'g' + r }, [pill(r), ' ', h('b', { class: 'num' }, fmt(missG[r]))])),
       ...RAR_UP.slice().reverse().filter((r) => missR[r]).map((r) => h('span', { key: r }, [pill(r, true), ' ', h('b', { class: 'num' }, fmt(missR[r]))])),
       unknown ? h('span', { key: '?' }, [pill(null), ' ', h('b', { class: 'num' }, fmt(unknown))]) : null,
       problems ? h('span', { key: '!' }, `· ${fmt(problems)} à vérifier`) : null,
     ] : [h('span', null, p.total ? 'Collection complète.' : 'Cette collection est vide.')];
     let hint = '≈ : rareté estimée d\'après les vues de l\'article sur Wikipédia ces 30 derniers jours.';
-    if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
+    if (!estimated && Object.keys(missG).length) hint = 'Rareté des cases vides : celle du jeu, relevée dans sa Collection globale.';
+    else if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
+    else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
     const actions = col.kind === 'target' ? [
       h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
       h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
@@ -3122,12 +3639,13 @@
         h('li', null, 'Ouvre wiki-masters.com, avec ta session ouverte.'),
         h('li', null, 'Clique le favori : un encart montre la lecture, puis le nombre de cartes envoyées. Reviens ici : le classeur se met à jour.'),
       ]),
+      h('p', { class: 'small muted' }, "Sur la page « Collection globale » du jeu, fais une recherche (« vache »…) puis clique le favori : il propose aussi d'en faire une collection à compléter, avec la vraie rareté de chaque carte dans le jeu."),
       h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
       hasKey ? h('h3', null, 'Le créer à la main') : null,
       hasKey ? h('p', { class: 'small muted' }, "Sur téléphone, ou si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci. Sur téléphone, tape ensuite « Classeur » dans la barre d'adresse sur wiki-masters.com et choisis le favori.") : null,
       hasKey ? copyRow('bm-url', url, 'Adresse du favori') : null,
-      hasKey ? h('p', { class: 'small muted' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
+      hasKey ? h('p', { class: 'small muted' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur ou y créer des collections, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
     ]);
   }
   function viewCookie() {
@@ -3161,8 +3679,32 @@
       ]),
     ]);
   }
+  // Relecture complète à la prochaine mise à jour (PATCH /api/me {force_full}) : seul remède à ce que la synchro rapide
+  // ne voit pas (échange de deux cartes de même rareté, carte retirée des favoris dans le jeu…).
+  const fullNext = reactive({ busy: false, error: '' });
+  async function armFullRead() {
+    Object.assign(fullNext, { busy: true, error: '' });
+    try {
+      await api('PATCH', '/api/me', { force_full: true });
+      if (S.me) S.me.next_full = true;
+    } catch (e) {
+      fullNext.error = e.message;
+    } finally {
+      fullNext.busy = false;
+    }
+  }
+  function viewFullNext() {
+    const armed = !!(S.me && S.me.next_full);
+    return h('div', { class: 'panel', style: { gridColumn: '1 / -1' } }, [
+      h('h3', null, 'Tout relire'),
+      h('p', { class: 'small muted' }, "D'habitude, le favori et le rafraîchissement ne lisent que tes nouvelles cartes. Un échange de deux cartes de même rareté, ou une carte retirée de tes favoris dans le jeu, peut leur échapper jusqu'à la relecture complète de la semaine."),
+      armed ? h('p', { class: 'small', role: 'status' }, [icon('check', 'sm'), ' La prochaine mise à jour relira toute ta collection.'])
+        : h('button', { class: 'btn small', type: 'button', disabled: fullNext.busy, onClick: armFullRead }, 'La prochaine mise à jour relira toute ta collection'),
+      errLine(fullNext.error),
+    ]);
+  }
   function viewUpdate() {
-    return h('div', { class: 'update' }, [viewFavori(), viewCookie()]);
+    return h('div', { class: 'update' }, [viewFavori(), viewCookie(), viewFullNext()]);
   }
 
   // ================================================================ rendu : onglet Réglages
@@ -3201,6 +3743,22 @@
           h('button', { class: 'btn small ghost', type: 'button', 'aria-label': 'Retirer de la liste : ' + knownLabel(k), onClick: () => forgetKnown(k.key) }, 'Retirer'),
         ]))),
       ]) : null,
+      section('Partage entre membres', [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-shared', checked: sharing(), disabled: S.friends.shareBusy,
+            onChange: (e) => { const want = e.target.checked; e.target.checked = sharing(); setShared(want); } }),
+          'Montrer mes cartes aux autres membres du classeur',
+        ]),
+        sharing() ? h('label', { class: 'check check--sub' }, [
+          h('input', { type: 'checkbox', id: 'set-shared-targets', checked: sharingTargets(), disabled: S.friends.shareBusy,
+            onChange: (e) => { const want = e.target.checked; e.target.checked = sharingTargets(); setSharedTargets(want); } }),
+          'et mes collections à compléter',
+        ]) : null,
+        h('p', { class: 'small muted' }, 'Réciproque : tu ne vois les cartes des autres membres (onglet « Entre amis ») que si tu montres les tiennes. Désactivé par défaut.'),
+        h('p', { class: 'small muted' }, SHARE_WHAT),
+        sharing() ? h('p', { class: 'small muted' }, SHARE_TARGETS_WHAT) : null,
+        errLine(S.friends.shareError),
+      ]),
       section('Collections proposées', [
         h('p', null, ['Collections proposées : ', h('b', null, S.prefs.hide_catalog ? 'masquées' : 'affichées'),
           S.prefs.hide_catalog ? '.' : ' (celles dont tu as au moins 5 %).']),
@@ -3221,12 +3779,293 @@
     ]);
   }
 
+  // ================================================================ rendu : onglet Entre amis
+  const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni ta session WikiMasters ; tes collections à compléter seulement si tu le choisis en plus.';
+  const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
+  const TRADE_NOTE = 'Le classeur ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre vous.';
+  const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
+  const syncedOn = (f) => (f.fetched_at ? `synchro du ${dateDay(f.fetched_at)}` : 'pas encore synchronisé');
+  function holderChips(list) {
+    return h('span', { class: 'holders' }, list.map((x) => h('span', { key: x.id, class: ['holder', { dup: x.count > 1 }] },
+      x.count > 1 ? [friendName(x), h('b', null, ' ×' + fmt(x.count))] : friendName(x))));
+  }
+  function moreToggle(key, total) {
+    if (total <= FRIEND_ROWS) return null;
+    const open = !!S.friends.more[key];
+    return h('button', { class: 'linkish', type: 'button', 'aria-expanded': String(open), onClick: () => { S.friends.more = { ...S.friends.more, [key]: !open }; } },
+      open ? 'Réduire' : `Voir les ${fmt(total)}`);
+  }
+  function viewShareOff() {
+    const fr = S.friends;
+    return h('section', { class: 'panel friends-intro', 'aria-labelledby': 'h-friends' }, [
+      h('h2', { id: 'h-friends' }, 'Entre amis'),
+      h('p', null, 'Vois quelles cartes les autres membres du classeur ont pour compléter tes collections, et lesquelles des tiennes complètent les leurs.'),
+      h('p', null, [h('b', null, 'Le partage est réciproque : '), 'tu ne vois les cartes des autres que si tu montres les tiennes. Tu peux arrêter quand tu veux, dans les Réglages.']),
+      h('div', { class: 'actions' }, [h('button', { class: 'btn primary', type: 'button', disabled: fr.shareBusy, onClick: () => setShared(true) },
+        fr.shareBusy ? 'Activation…' : 'Montrer mes cartes aux autres membres')]),
+      errLine(fr.shareError),
+      h('p', { class: 'small muted' }, SHARE_WHAT),
+      h('p', { class: 'small muted' }, TRADE_NOTE),
+    ]);
+  }
+  function viewMemberRow(f) {
+    const st = friendStats.value.get(f.id);
+    return h('div', { class: 'row member', key: f.id }, [
+      h('span', { class: 'avatar', 'aria-hidden': 'true' }, initialOf(friendName(f))),
+      h('span', { class: 'info' }, [
+        h('span', { class: 'name' }, friendName(f)),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(f.count)), ' ' + plural(f.count, 'carte', 'cartes')]), h('span', null, syncedOn(f))]),
+        st ? h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
+          st.dup ? h('span', null, [h('b', null, fmt(st.dup)), ' en double']) : null]) : null,
+        h('span', { class: 'line' }, [f.tshare
+          ? h('span', null, ['partage ses collections : ', h('b', null, fmt(f.tcount))])
+          : h('span', null, 'ne partage pas ses collections')]),
+        h('span', { class: 'row-actions' }, [h('button', { class: 'btn small', type: 'button', disabled: !f.cards, onClick: () => openFriendBinder(f.id),
+          'aria-label': `Parcourir le classeur de ${friendName(f)}` }, f.cards ? 'Parcourir son classeur' : 'Lecture…')]),
+      ]),
+    ]);
+  }
+  function viewFillCol(x) {
+    const key = 'col:' + x.col.key;
+    const rows = S.friends.more[key] ? x.rows : x.rows.slice(0, FRIEND_ROWS);
+    const p = progressOf(x.col);
+    return h('article', { class: 'fcol', key: x.col.key }, [
+      h('div', { class: 'fcol__head' }, [
+        h('button', { class: 'fcol__name', type: 'button', title: 'Ouvrir la collection', onClick: () => openAlbum(x.col.kind, x.col.id) }, x.col.name),
+        x.col.kind === 'catalog' ? h('span', { class: 'badge' }, 'proposée') : null,
+        h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` ${plural(x.rows.length, 'case', 'cases')} à remplir chez tes amis`,
+          ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' en double'] : []), ` · tu en as ${fmt(p.own)} sur ${fmt(p.total)}`]),
+      ]),
+      h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.i }, [
+        h('button', { class: 'fitem', type: 'button', 'aria-label': `${r.item.title} : chez ${holdersText(r.holders)}. Ouvrir la fiche`, onClick: (e) => openMissingFrom(r.item, e) }, [
+          pill(r.holders[0].rarity), h('span', { class: 'fitem__title' }, r.item.title), holderChips(r.holders),
+        ]),
+      ]))),
+      moreToggle(key, x.rows.length),
+    ]);
+  }
+  function viewWant(x) {
+    const key = 'want:' + x.f.id;
+    const rows = S.friends.more[key] ? x.rows : x.rows.slice(0, FRIEND_ROWS);
+    return h('article', { class: 'fcol', key }, [
+      h('div', { class: 'fcol__head' }, [
+        h('span', { class: 'fcol__name' }, friendName(x.f)),
+        x.estimate ? h('span', { class: 'badge badge--est', title: `${friendName(x.f)} ne partage pas ses collections` }, 'estimation') : null,
+        h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` de tes cartes ${plural(x.rows.length, 'complète', 'complètent')} ${x.estimate ? `les collections proposées que ${friendName(x.f)} a commencées` : 'ses collections'}`,
+          ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' que tu as en double'] : [])]),
+      ]),
+      h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [
+        h('button', { class: 'fitem', type: 'button', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${r.cols.join(', ')}). Ouvrir ta carte`, onClick: (e) => openCardFrom(r.card.id, e) }, [
+          pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
+          r.card.count > 1 ? h('span', { class: 'holder dup' }, ['tu en as ', h('b', null, '×' + fmt(r.card.count))]) : null,
+          h('span', { class: 'fitem__cols' }, r.cols.join(' · ')),
+        ]),
+      ]))),
+      moreToggle(key, x.rows.length),
+    ]);
+  }
+  // ---------------------------------------------------------------- « Échanges possibles »
+  const personOf = (p) => (p.me ? 'Toi' : friendName(p.f));
+  const andList = (names) => (names.length > 1 ? names.slice(0, -1).join(', ') + ' et ' + names[names.length - 1] : names[0] || '');
+  // « Paul peut compléter 5 cases chez Léa, dont 3 en double » (une case = une carte qui manque, dans une ou plusieurs
+  // de ses collections).
+  function tradeSum(p) {
+    const n = p.rows.length;
+    return `${p.x.me ? 'Tu peux' : friendName(p.x.f) + ' peut'} compléter ${fmt(n)} ${plural(n, 'case', 'cases')} ${p.z.me ? 'chez toi' : 'chez ' + friendName(p.z.f)}`
+      + (p.dup ? `, dont ${fmt(p.dup)} en double` : '');
+  }
+  // Une ligne : la carte de X (rareté, ×n si X l'a en double) → la ou les collections de Z qu'elle complète. Ta carte :
+  // sa fiche ; une case vide chez toi : sa fiche de carte manquante ; entre deux amis : rien à ouvrir.
+  function viewTradeRow(p, r) {
+    const z = personOf(p.z);
+    const from = p.x.me ? 'à toi' : 'de ' + friendName(p.x.f);
+    const label = `${r.card.title}, ${RARITY_NAME[okRarity(r.card.rarity)] || 'rareté inconnue'}${r.dup ? `, ×${fmt(r.count)}` : ''}, ${from} : pourrait compléter ${r.cols.join(', ')} ${p.z.me ? 'chez toi' : 'de ' + z}`;
+    const body = [
+      pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
+      r.dup ? h('span', { class: 'holder dup', title: `${p.x.me ? 'Tu en as' : friendName(p.x.f) + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null,
+      h('span', { class: 'fitem__cols' }, ['→ ', r.cols.join(' · ')]),
+    ];
+    if (p.x.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir ta carte', onClick: (e) => openCardFrom(r.card.id, e) }, body);
+    if (p.z.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir la fiche', onClick: (e) => openMissingFrom(r.item, e) }, body);
+    return h('div', { class: 'fitem fitem--static', role: 'group', 'aria-label': label }, body);
+  }
+  function viewTradePair(p) {
+    const key = 'trade:' + p.key;
+    const rows = S.friends.more[key] ? p.rows : p.rows.slice(0, FRIEND_ROWS);
+    return h('article', { class: ['fcol', 'trade', { 'trade--est': p.estimate }], key: p.key }, [
+      h('div', { class: 'fcol__head' }, [
+        h('span', { class: 'fcol__name' }, [personOf(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personOf(p.z)]),
+        p.estimate ? h('span', { class: 'badge badge--est', title: `${friendName(p.z.f)} ne partage pas ses collections` }, 'estimation') : null,
+        h('span', { class: 'fcol__sum' }, [tradeSum(p),
+          p.estimate ? `. ${friendName(p.z.f)} ne partage pas ses collections : estimation d'après les collections proposées déjà commencées.` : '']),
+      ]),
+      h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
+      moreToggle(key, p.rows.length),
+    ]);
+  }
+  // Ce que disent les échanges : les membres qui ne partagent pas leurs collections (estimation), ceux en lecture.
+  function tradeNotes() {
+    const t = trades.value;
+    const out = [];
+    if (t.hidden.length) {
+      const names = andList(t.hidden.map(friendName));
+      const many = t.hidden.length > 1;
+      out.push(h('p', { class: 'trade-note', key: 'hidden' }, [h('b', null, names), many ? ' ne partagent pas leurs collections' : ' ne partage pas ses collections',
+        ` : ce qu'on peut ${many ? 'leur' : 'lui'} donner est estimé d'après les collections proposées déjà commencées (au moins 5 %).`]));
+    }
+    if (t.waiting.length) out.push(h('p', { class: 'small muted', role: 'status', key: 'waiting' }, `Lecture des collections de ${andList(t.waiting.map(friendName))}…`));
+    if (!sharingTargets()) {
+      out.push(h('p', { class: 'trade-note', key: 'mine' }, ['Tes amis ne voient pas tes collections : de leur côté, ce que tu cherches est estimé. ',
+        h('button', { class: 'linkish', type: 'button', disabled: S.friends.shareBusy, onClick: () => setSharedTargets(true) }, 'Partager aussi mes collections à compléter')]));
+    }
+    return out;
+  }
+  function viewTrades() {
+    const fr = S.friends;
+    const list = tradeView.value;
+    const all = trades.value.pairs;
+    const member = friendList.value.find((f) => f.id === fr.trade) || null;
+    const loading = fr.busy || friendList.value.some((f) => !f.cards || (f.tshare && !f.targets));
+    const n = list.reduce((a, p) => a + p.rows.length, 0);
+    return h('div', null, [
+      h('div', { class: 'album-head' }, [
+        h('button', { class: 'back', type: 'button', onClick: closeTrades }, '← Entre amis'),
+        h('div', { class: 'album-title' }, [h('h2', null, 'Échanges possibles'),
+          h('span', { class: 'num' }, `${fmt(n)} ${plural(n, 'carte', 'cartes')} à donner · ${fmt(list.length)} ${plural(list.length, 'groupe', 'groupes')} « qui → à qui »`)]),
+        h('p', { class: 'hint' }, "Telle carte de l'un pourrait compléter telle collection de l'autre. Les doubles d'abord : ce sont les plus faciles à donner. " + TRADE_NOTE),
+        h('div', { class: 'toolbar' }, [
+          h('div', { class: 'seg', role: 'group', 'aria-label': 'Échanges à montrer' }, [
+            seg('Ce qui me concerne', fr.trade === 'me' || (fr.trade !== 'all' && !member), () => { fr.trade = 'me'; }),
+            seg('Tout le monde', fr.trade === 'all', () => { fr.trade = 'all'; }),
+          ]),
+          h('label', { class: 'sr', for: 'trade-member' }, 'Les échanges d\'un membre'),
+          h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'me'; } },
+            [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, friendName(f)))]),
+        ]),
+      ]),
+      ...tradeNotes(),
+      list.length ? h('div', { class: 'fcols' }, list.map(viewTradePair))
+        : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
+          : all.length ? 'Aucun échange possible avec ce filtre : essaie « Tout le monde ».' : "Aucun échange possible pour l'instant : personne n'a de carte qui manque aux collections d'un autre."),
+    ]);
+  }
+  // Carte d'un ami (lecture seule) : pas de fiche ni de sélection ; « Te manque » si tu ne l'as pas.
+  function viewFriendCard(c) {
+    const r = okRarity(c.rarity) || 'C';
+    const have = !!findCard(c);
+    return h('div', { class: 'cell', key: c.id }, [
+      h('article', { class: ['card', 'card--friend', 'r' + r, { shiny: c.shiny, have }],
+        'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}, ${have ? "tu l'as" : 'te manque'}` }, [
+        h('div', { class: 'card__art' }, [
+          h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
+          c.image ? h('img', { src: c.image, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+        ]),
+        pill(r),
+        c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires` }, '×' + fmt(c.count)) : null,
+        h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
+        h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
+        r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
+      ]),
+      c.url ? h('a', { class: 'cell__link', href: c.url, target: '_blank', rel: 'noopener noreferrer' }, 'Wikipédia ↗') : null,
+    ]);
+  }
+  function viewFriendBinder(f) {
+    const fr = S.friends;
+    const st = friendStats.value.get(f.id);
+    const list = friendCardsView.value;
+    const shown = list.slice(0, fr.limit);
+    return h('div', null, [
+      h('div', { class: 'album-head' }, [
+        h('button', { class: 'back', type: 'button', onClick: closeFriendBinder }, '← Entre amis'),
+        h('div', { class: 'album-title' }, [h('h2', null, `Le classeur de ${friendName(f)}`), h('span', { class: 'num' }, `${cards$(f.count)} · ${syncedOn(f)}`),
+          h('span', { class: 'badge' }, 'lecture seule')]),
+        st ? h('div', { class: 'missing-sum' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
+          st.dup ? h('span', null, ['· dont ', h('b', null, fmt(st.dup)), ` en double chez ${friendName(f)}`]) : null]) : null,
+        h('p', { class: 'hint' }, TRADE_NOTE),
+        h('div', { class: 'toolbar' }, [
+          h('label', { class: 'sr', for: 'fq' }, 'Chercher dans ce classeur'),
+          h('input', { id: 'fq', class: 'field', type: 'search', value: fr.q, autocomplete: 'off', placeholder: 'Chercher un titre', onInput: (e) => { fr.q = e.target.value; fr.limit = PAGE; } }),
+          h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
+            seg('Toutes', fr.filter === 'all', () => { fr.filter = 'all'; fr.limit = PAGE; }),
+            seg('Me manquent', fr.filter === 'missing', () => { fr.filter = 'missing'; fr.limit = PAGE; }),
+          ]),
+          h('label', { class: 'sr', for: 'fsort' }, 'Trier'),
+          h('select', { id: 'fsort', class: 'field', value: fr.sort, onChange: (e) => { fr.sort = e.target.value; } },
+            [['rarity', 'Rareté'], ['count', 'Exemplaires'], ['title', 'Titre']].map(([v, l]) => h('option', { key: v, value: v }, l))),
+        ]),
+      ]),
+      !f.cards ? h('p', { class: 'muted', role: 'status' }, 'Lecture de ses cartes…')
+        : list.length ? h('div', { class: 'cardgrid' }, shown.map(viewFriendCard))
+          : h('div', { class: 'empty-box' }, fr.filter === 'missing' && !fr.q.trim() ? `Tu as déjà toutes les cartes de ${friendName(f)}.` : 'Aucune carte ne correspond.'),
+      shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.limit += PAGE; } },
+        `Afficher plus (${fmt(list.length - shown.length)} restantes)`)]) : null,
+    ]);
+  }
+  function viewFriends() {
+    if (!sharing()) return viewShareOff();
+    const fr = S.friends;
+    const open = openFriend.value;
+    if (fr.open && open) return viewFriendBinder(open);
+    if (fr.page === 'trades') return viewTrades();
+    const list = friendList.value;
+    const loadingAll = fr.busy || list.some((f) => !f.cards || (f.tshare && !f.targets));
+    const fill = friendHighlights.value;
+    const wants = friendWants.value;
+    // Résumé des échanges qui te concernent (la page « Échanges possibles » les détaille, pour tout le monde aussi).
+    const pairs = trades.value.pairs;
+    const give = pairs.filter((p) => p.x.me).reduce((a, p) => a + p.rows.length, 0);
+    const get = pairs.filter((p) => p.z.me).reduce((a, p) => a + p.rows.length, 0);
+    const others = pairs.filter((p) => !p.x.me && !p.z.me).reduce((a, p) => a + p.rows.length, 0);
+    return h('div', { class: 'groups' }, [
+      h('section', { class: 'group', 'aria-labelledby': 'h-friends' }, [
+        h('div', { class: 'section-head' }, [
+          h('h2', { id: 'h-friends' }, 'Entre amis'),
+          h('small', null, 'les membres du classeur qui montrent leurs cartes'),
+          h('span', { class: 'spacer' }),
+          h('button', { class: 'btn small', type: 'button', disabled: fr.busy, onClick: () => loadFriends(true) }, [icon('refresh', fr.busy ? 'sm spin' : 'sm'), 'Actualiser']),
+        ]),
+        fr.loading ? h('p', { class: 'small muted', role: 'status' }, fr.loading) : null,
+        errLine(fr.error),
+        list.length ? h('div', { class: 'rows' }, list.map(viewMemberRow))
+          : fr.status === 'loading' || fr.busy ? h('p', { class: 'muted', role: 'status' }, 'Lecture des membres…')
+            : fr.status === 'ready' ? h('p', { class: 'empty-box' }, "Personne d'autre ne montre encore ses cartes : propose à tes amis d'activer « Montrer mes cartes aux autres membres » dans leurs Réglages.") : null,
+        h('p', { class: 'small muted friends-trade' }, TRADE_NOTE),
+      ]),
+      list.length ? h('section', { class: 'group trades-intro', 'aria-labelledby': 'h-trades' }, [
+        h('div', { class: 'section-head' }, [h('h2', { id: 'h-trades' }, 'Échanges possibles'),
+          h('small', null, "telle carte de l'un pourrait compléter telle collection de l'autre")]),
+        h('div', { class: 'trade-sum' }, [
+          h('p', null, pairs.length || !loadingAll ? [
+            h('b', null, fmt(give)), ` de tes cartes ${plural(give, 'peut', 'peuvent')} compléter les collections de tes amis ; `,
+            h('b', null, fmt(get)), ` de leurs cartes ${plural(get, 'peut', 'peuvent')} compléter les tiennes`,
+            others ? ['. Entre eux : ', h('b', null, fmt(others)), '.'] : '.',
+          ] : 'Recherche dans les classeurs…'),
+          h('button', { class: 'btn primary', type: 'button', onClick: () => openTrades('me') }, 'Voir les échanges possibles'),
+        ]),
+        ...tradeNotes(),
+      ]) : null,
+      list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-fill' }, [
+        h('div', { class: 'section-head' }, [h('h2', { id: 'h-fill' }, 'Pour compléter tes collections'),
+          h('small', null, 'les cartes qui te manquent et que tes amis ont ; en double chez eux : les plus faciles à échanger')]),
+        fill.length ? h('div', { class: 'fcols' }, fill.map(viewFillCol))
+          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections (les tiennes et les proposées affichées)."),
+      ]) : null,
+      list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-wants' }, [
+        h('div', { class: 'section-head' }, [h('h2', { id: 'h-wants' }, 'Ce qui pourrait intéresser tes amis'),
+          h('small', null, "tes cartes qui manquent à leurs collections, quand ils les partagent ; sinon, estimé d'après les collections proposées qu'ils ont commencées (au moins 5 %)")]),
+        wants.length ? h('div', { class: 'fcols' }, wants.map(viewWant))
+          : h('p', { class: 'empty-box' }, loadingAll || !S.catalog.list ? 'Recherche…' : 'Aucune de tes cartes ne manque aux collections de tes amis.'),
+      ]) : null,
+    ]);
+  }
+
   // ================================================================ rendu : contenu, bande de sélection
   function viewMain() {
     let panel;
     if (S.tab === 'cartes') panel = viewCards();
     else if (S.tab === 'maj') panel = viewUpdate();
     else if (S.tab === 'reglages') panel = viewSettings();
+    else if (S.tab === 'amis') panel = viewFriends();
     else panel = S.album ? viewAlbum() : viewCollections();
     return h('main', { class: 'wrap', id: 'main' }, [
       h('section', { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
@@ -3325,6 +4164,13 @@
       ]),
     ]);
   }
+  // Amis qui ont la carte d'une case vide (partage entre membres) : « Chez : Paul (×2), Léa ».
+  function viewMissingFriends(item) {
+    if (!sharing()) return null;
+    const list = holdersOf(item);
+    if (!list.length) return S.friends.busy ? h('p', { class: 'small muted', role: 'status' }, 'Recherche chez tes amis…') : null;
+    return h('p', { class: 'friends-note' }, [h('b', null, 'Chez : '), holdersText(list), h('span', { class: 'muted' }, ' · à échanger dans le jeu, entre vous')]);
+  }
   // Fiche d'une carte qui te manque (case vide) : ce qu'en dit Wikipédia, sa rareté estimée d'après ses vues,
   // les collections où elle figure, le marché du jeu (article vérifié seulement) et l'article.
   function viewMissing(item, closeRef, boxRef) {
@@ -3333,7 +4179,8 @@
     const views = info ? info[0] : null;
     const img = item.image || (info ? info[1] : null);
     const ok = item.status === 'ok';
-    const est = ok ? estRarity(views) : null;
+    const real = ok ? realRarity(item) : null; // rareté donnée par le jeu : pas d'estimation
+    const est = ok && !real ? estRarity(views) : null;
     const member = membershipsOfItem(item);
     const mine = member.filter((m) => m.kind === 'target');
     const prop = member.filter((m) => m.kind === 'catalog');
@@ -3347,20 +4194,22 @@
       h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
       h('div', { class: 'slot big', 'aria-hidden': 'true' }, [
         img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken }) : null,
-        h('div', { class: 'slot__top' }, ok ? [pill(est, true)] : []),
+        h('div', { class: 'slot__top' }, ok ? [real ? pill(real) : pill(est, true)] : []),
         h('p', { class: 'slot__name' }, item.title),
       ]),
       h('div', { class: 'info' }, [
         ficheTitle(item.title, ok),
         item.description ? h('p', { class: 'muted lead' }, item.description) : null,
         h('p', { class: 'missing-note' }, 'Pas encore dans ta collection'),
+        viewMissingFriends(item),
         item.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
         item.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre dans la collection.") : null,
         ok ? h('div', { class: 'facts' }, [
-          fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running ? '…' : '?'),
+          real ? fact('Rareté dans le jeu', RARITY_NAME[real]) : fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running ? '…' : '?'),
           fact('Vues sur 30 jours', views != null ? fmt(views) : S.pv.running ? '…' : '?'),
         ]) : null,
-        ok ? h('p', { class: 'small muted' }, "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
+        ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
+          : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
         h('div', { class: 'actions' }, [

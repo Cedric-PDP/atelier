@@ -66,15 +66,56 @@ function mockApi() {
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
-          ...(self.noRev ? {} : { cards_rev: st.rev }) });
+          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }) });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
           if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 4096) return json(400, { error: 'Préférences invalides.' });
           st.prefs = body.prefs;
         }
+        if ('shared' in body) {
+          // Partage entre membres : identifiant public tiré à chaque activation, effacé à la désactivation.
+          if (typeof body.shared !== 'boolean') return json(400, { error: 'Le partage (shared) vaut true ou false.' });
+          if (!body.shared) { st.shared = false; st.pub = null; st.sharedTargets = false; } else if (!st.shared) { st.shared = true; st.pub = 'pub' + ++seq; }
+        }
+        if ('shared_targets' in body) {
+          // Second réglage : montrer aussi ses collections, seulement si l'on montre ses cartes.
+          if (typeof body.shared_targets !== 'boolean') return json(400, { error: 'Le partage des collections (shared_targets) vaut true ou false.' });
+          if (body.shared_targets && !st.shared) return json(400, { error: "Pour montrer tes collections à compléter, montre d'abord tes cartes." });
+          st.sharedTargets = body.shared_targets;
+        }
         if ('name' in body) st.name = body.name;
-        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {} });
+        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets) });
+      }
+      // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
+      // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
+      if (p === '/api/members' || p.startsWith('/api/members/')) {
+        if (method !== 'GET') return json(405, { error: 'Méthode non autorisée.' });
+        if (!st.shared) return json(403, { error: "Pour voir les cartes des autres membres, montre d'abord les tiennes : Réglages, « Partage entre membres »." });
+        if (p === '/api/members') {
+          return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, count: u.cards.length, fetched_at: u.fetched_at,
+            targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null })) });
+        }
+        // Collections d'un membre qui les montre : une par page ici, réduites au titre et au qid des éléments vérifiés.
+        const mt = p.match(/^\/api\/members\/([^/?]+)\/targets(?:\?part=(.*))?$/);
+        if (mt) {
+          const u = users.find((x) => x.shared && x.pub === mt[1]);
+          if (!u) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses cartes.' });
+          if (!u.sharedTargets) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses collections à compléter.' });
+          const part = mt[2] === undefined ? '0' : decodeURIComponent(mt[2]);
+          const n = part === '0' ? 0 : Number(part.replace(/^tpage-/, ''));
+          const page = u.targets.slice(n, n + 1).map((t) => ({ id: t.id, name: t.name,
+            items: t.items.filter((i) => (i.status || 'ok') === 'ok').map((i) => (i.qid ? { title: i.title, qid: i.qid } : { title: i.title })) }));
+          return json(200, { member: { id: u.pub, name: u.name }, targets: page, part, next_part: n + 1 < u.targets.length ? 'tpage-' + (n + 1) : null });
+        }
+        const m = p.match(/^\/api\/members\/([^/?]+)\/cards(?:\?part=(.*))?$/);
+        const u = m && users.find((x) => x.shared && x.pub === m[1]);
+        if (!u) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses cartes.' });
+        const part = m[2] === undefined ? '0' : decodeURIComponent(m[2]);
+        const n = part === '0' ? 0 : Number(part.replace(/^page-/, ''));
+        const sorted = u.cards.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+        const page = sorted.slice(n * 2, n * 2 + 2).map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: !!c.shiny, image: c.image ?? null, url: c.url ?? null }));
+        return json(200, { member: { id: u.pub, name: u.name, fetched_at: u.fetched_at }, cards: page, part, next_part: (n + 1) * 2 < sorted.length ? 'page-' + (n + 1) : null });
       }
       if (p === '/api/me' && method === 'DELETE') { users.splice(users.indexOf(st), 1); return json(200, { ok: true }); }
       if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); return json(200, { import_key: st.importKey }); }
@@ -142,9 +183,10 @@ function mockApi() {
         let t = body.id ? st.targets.find((x) => x.id === body.id) : null;
         if (!t) { t = { id: 't' + (st.targets.length + 1), created_at: 'x' }; st.targets.push(t); }
         Object.assign(t, { name: body.name, items: body.items, source: body.source || null, updated_at: 'y' });
+        st.targetsRev = (st.targetsRev || 0) + 1; // dernier changement, vu par les autres membres (GET /api/members)
         return json(200, { target: t });
       }
-      if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); return json(200, { ok: true }); }
+      if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); st.targetsRev = (st.targetsRev || 0) + 1; return json(200, { ok: true }); }
       return json(404, { error: 'introuvable' });
     },
   };
@@ -215,6 +257,7 @@ const WIKI = {
   Rihanna: { q: 'Q36844', desc: 'chanteuse barbadienne', pv: 30000 },
   'Abeille domestique': { q: 'Q30034', desc: "espèce d'insectes", pv: 100 },
   'Hydrogène (élément)': { q: 'Q556' },
+  Neptune: { q: 'Q332' }, // carte de Léa (Entre amis) : même élément que « Neptune (planète) » du catalogue
   'Liste de races bovines': { q: 'Q900100' },
   'Liste des races bovines de France': { q: 'Q900110' },
 };
@@ -382,14 +425,16 @@ async function main() {
   const copied = [];
   const idb = fakeIndexedDB();
   const apiLog = []; // appels à /api/ de toutes les pages, « GET /api/cards?since=3 »
+  const apiKeyLog = []; // les mêmes, avec la clé envoyée et l'heure : {call, key, at}
   // Contexte d'une page du classeur ; toutes les pages sont dans le même navigateur (localStorage, IndexedDB, API).
   // opts.idb : 'absent' (pas d'IndexedDB) ou 'refusé' (son accès lève une erreur, comme un stockage bloqué) ;
-  // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API.
+  // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API ; opts.hash : fragment de l'adresse
+  // (« #cle=… ») ; opts.speed : horloge de la page (minuteries et Date) accélérée d'autant, pour les longues attentes.
   function makeCtx(doc, win, opts = {}) {
     const ctx = {
       console: { log: console.log, warn: (...a) => { errors.push('warn: ' + a.join(' ')); }, error: (...a) => { errors.push('error: ' + a.map((x) => (x && x.stack) || x).join(' ')); } },
       document: doc, window: null, navigator: { clipboard: { writeText: async (t) => { copied.push(t); } } },
-      location: { origin: ORIGIN, pathname: '/', search: '', hash: '', hostname: 'classeur.example' },
+      location: { origin: ORIGIN, pathname: '/', search: '', hash: opts.hash || '', hostname: 'classeur.example' },
       history: { replaceState: (a, b, url) => { ctx.location.hash = ''; ctx.lastReplace = url; } },
       localStorage: { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) },
       setTimeout, clearTimeout, setInterval, clearInterval, Promise, Date, Math, JSON, Map, Set, WeakMap, WeakSet, Symbol, Proxy, Reflect, Object, Array, Number, String, Boolean, RegExp, Error, TypeError, SyntaxError,
@@ -404,6 +449,14 @@ async function main() {
     };
     ctx.window = ctx;
     ctx.self = ctx;
+    if (opts.speed) {
+      const k = opts.speed;
+      const t0 = Date.now();
+      const now = () => t0 + (Date.now() - t0) * k;
+      ctx.setTimeout = (f, ms, ...a) => setTimeout(f, (Number(ms) || 0) / k, ...a);
+      ctx.setInterval = (f, ms, ...a) => setInterval(f, (Number(ms) || 0) / k, ...a);
+      ctx.Date = class extends Date { constructor(...a) { super(...(a.length ? a : [now()])); } static now() { return now(); } };
+    }
     ctx.addEventListener = win.addEventListener;
     ctx.removeEventListener = win.removeEventListener;
     ctx.fetch = async (url, init = {}) => {
@@ -422,6 +475,7 @@ async function main() {
       }
       if (!url.startsWith('/api/')) throw new Error('adresse inattendue : ' + url);
       apiLog.push(method + ' ' + url);
+      apiKeyLog.push({ call: method + ' ' + url, key: headers['X-Classeur-Key'] || '', at: Date.now() });
       if (SERVER) {
         if (opts.hold) await opts.hold(url);
         const r = await fetch(SERVER + url, { method, headers, body: init.body });
@@ -753,7 +807,7 @@ async function main() {
   check(planetRow && text(planetRow).includes('1 sur 9'), 'les Planètes (1 sur 9, plus de 5 %) devraient être proposées');
   needButton('Parcourir tout le catalogue').click();
   await settle();
-  check(has('Bêtes et terroir') && has('Races bovines'), 'le lien « Parcourir tout le catalogue » n\'affiche pas le reste');
+  check(has('Races bovines') && !has('Bêtes et terroir'), 'le lien « Parcourir tout le catalogue » n\'affiche pas le reste');
   check(cls('row').length > 10 && cls('fan').length === cls('row').length, 'lignes de collections (éventail) absentes');
   // Retirer une proposition (confirmation dans la page), puis la rétablir dans les Réglages.
   all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Races bovines'))[0].click();
@@ -821,6 +875,39 @@ async function main() {
   needButton('← Toutes les collections').click();
   await settle();
   check(!wpRow('Exemples de test'), 'la proposition ajoutée reste proposée');
+
+  // 9 bis (avant). Recherche dans les collections proposées : par nom, puis par carte contenue ; clavier ; ouverture.
+  // Plus de rubriques « Le vivant », « Sport », « Géographie »… : une seule liste.
+  {
+    check(!cls('subhead').some((n) => /Le vivant|Sport|Géographie|Histoire|Sciences/.test(text(n))), 'les rubriques thématiques doivent avoir disparu');
+    const q = byId('prop-q');
+    check(q && q.getAttribute('role') === 'combobox' && q.getAttribute('aria-controls') === 'prop-list', 'champ de recherche des collections proposées absent');
+    const opts = () => all((n) => n.getAttribute && n.getAttribute('role') === 'option');
+    type(q, 'pharaon');
+    await settle();
+    check(opts().length >= 1 && text(opts()[0]).includes('Pharaons') && text(opts()[0]).includes('sur'), 'suggestion « Pharaons » : ' + opts().map(text).join(' / '));
+    type(q, 'kheops');
+    await settle();
+    const names = opts().map(text);
+    check(names.length === 2 && names[0].includes('Pharaons') && names[0].includes('contient « Khéops »') && names[1].includes('Sept Merveilles du monde'),
+      'recherche par carte (sans accent) : ' + names.join(' / '));
+    q.dispatch('keydown', { key: 'ArrowDown' });
+    await settle();
+    check(q.getAttribute('aria-activedescendant') === 'prop-opt-1', 'flèche bas sans effet');
+    q.dispatch('keydown', { key: 'ArrowUp' });
+    await settle();
+    type(q, 'zzzz introuvable');
+    await settle();
+    check(!opts().length && has('Aucune collection proposée ne correspond.'), 'recherche sans résultat');
+    type(q, 'kheops');
+    await settle();
+    q.dispatch('keydown', { key: 'Enter' });
+    await settle();
+    check(text(one('album-title')).includes('Pharaons') && text(one('album-title')).includes('proposée'), "Entrée n'ouvre pas la collection proposée choisie");
+    needButton('← Toutes les collections').click();
+    await settle();
+    check(byId('prop-q') && byId('prop-q').value === '', 'le champ de recherche doit être vidé après le choix');
+  }
 
   // 9 bis. Nouvelle collection par mots-clés : catégories Wikipédia et requête Wikidata
   needButton('Nouvelle collection').click();
@@ -1352,6 +1439,427 @@ async function main() {
         'ancien serveur : un nouvel envoi doit tout relire, ' + cardCalls(mark).join(', '));
       api.noRev = false;
     }
+  }
+
+  // 25 à 27 : plusieurs classeurs dans ce navigateur (pages à part ; localStorage remis comme avant à la fin).
+  {
+    const savedLs = ['classeur-key', 'classeur-known', 'classeur-import-key'].map((k) => [k, ls.get(k)]);
+    const mkCards = (prefix, n) => Array.from({ length: n }, (_, i) => ({ id: prefix + i, title: prefix.toUpperCase() + ' carte ' + i, rarity: 'C', atk: 1, def: 1, quality: 1,
+      pageviews: 10, category: 'x', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }));
+    const tabOf = (d) => { const t = d.querySelectorAll('button').find((n) => (n.getAttribute('id') || '').startsWith('tab-') && n.getAttribute('aria-selected') === 'true'); return t ? t.getAttribute('id') : null; };
+    const bmIn = (d) => d.querySelectorAll('a').find((n) => n.classList.contains('bookmarklet')) || null;
+    const bmHas = (d, k) => { const b = bmIn(d); return !!b && decodeURI(b.getAttribute('href').slice(11)).includes('"' + k + '"') && !text(d.body).includes('Créer un nouveau favori'); };
+    const modalBtnIn = (d, t) => { const m = d.querySelectorAll('.modal')[0]; return (m && m.querySelectorAll('button').filter((n) => text(n).trim() === t).pop()) || null; };
+    const keyA = await makeOtherAccount('Alice');
+    const keyB = await makeOtherAccount('Bob');
+    await sendImport(keyA, mkCards('a', 500));
+    await sendImport(keyB, mkCards('b', 30));
+    await rawApi('POST', '/api/targets/save', keyA, { name: 'Rangement Alice', items: [{ title: 'Zeus', status: 'ok' }] });
+    const idA = (await rawApi('GET', '/api/me', keyA)).body.user.id;
+    const idB = (await rawApi('GET', '/api/me', keyB)).body.user.id;
+    const fav = { [idA]: (await rawApi('POST', '/api/import-key', keyA)).body.import_key, [idB]: (await rawApi('POST', '/api/import-key', keyB)).body.import_key };
+
+    // 25. Changement de classeur pendant le chargement du premier : lien du classeur de Bob ouvert dans un navigateur qui
+    // garde celui d'Alice, « Ouvrir » cliqué avant que les cartes d'Alice soient lues. La fin du premier chargement ne
+    // touche pas au classeur de Bob : ni l'onglet (« Mettre à jour », celui d'un classeur vide), ni le favori (clé d'import
+    // lue sans compte : « Créer un nouveau favori »), ni les collections (celles d'Alice, arrivées après coup).
+    for (const when of ['cartes', 'santé', 'collections']) {
+      ls.set('classeur-import-key', JSON.stringify(fav));
+      ls.set('classeur-key', keyA);
+      ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alice' }]));
+      // Réponses retenues : les cartes ; GET /api/health du second chargement (« santé ») ; les collections d'Alice.
+      const gate = { cards: [], health: [], targets: [] };
+      const hold = { cards: true, health: false, targets: when === 'collections' };
+      const p = openPage({ idb: 'absent', hash: '#cle=' + keyB, hold: (url) => {
+        const k = url.startsWith('/api/cards') ? 'cards' : url === '/api/health' ? 'health' : url === '/api/targets' ? 'targets' : null;
+        if (!k || !hold[k]) return null;
+        if (k === 'targets') hold.targets = false;
+        return new Promise((r) => gate[k].push(r));
+      } });
+      check(await waitFor(() => text(p.doc.body).includes('Ouvrir le classeur de Bob à la place du tien ?') && gate.cards.length === 1),
+        `changement pendant le chargement (${when}) : question et lecture des cartes d'Alice attendues`);
+      if (when === 'santé') hold.health = true;
+      modalBtnIn(p.doc, 'Ouvrir').click();
+      if (when === 'santé') {
+        check(await waitFor(() => gate.health.length === 1), 'changement pendant le chargement (santé) : second chargement attendu sur GET /api/health');
+        gate.cards[0](); // cartes d'Alice, arrivées pendant le second chargement
+        await settle(60);
+        hold.health = false;
+        gate.health[0]();
+      }
+      check(await waitFor(() => gate.cards.length === 2), `changement pendant le chargement (${when}) : lecture des cartes de Bob attendue`);
+      if (when !== 'santé') { gate.cards[0](); await settle(60); }
+      hold.cards = false;
+      gate.cards[1]();
+      check(await waitFor(() => p.count() === 30), `changement pendant le chargement (${when}) : cartes de Bob absentes (${p.count()})`);
+      if (when === 'collections') gate.targets[0]();
+      await settle(200);
+      const h = text(p.doc.querySelector('h1'));
+      check(h === 'Le classeur de Bob' && tabOf(p.doc) === 'tab-collections' && p.count() === 30,
+        `changement pendant le chargement (${when}) : classeur de Bob sur « Mes collections » attendu, ${h} / ${tabOf(p.doc)} / ${p.count()} cartes`);
+      check(!text(p.doc.body).includes('Rangement Alice'), `changement pendant le chargement (${when}) : une collection d'Alice est arrivée dans le classeur de Bob`);
+      p.doc.getElementById('tab-maj').click();
+      await settle(100);
+      check(bmHas(p.doc, fav[idB]), `changement pendant le chargement (${when}) : le favori de Bob (clé gardée) doit être prêt`);
+    }
+
+    // 26. « Supprimer mon classeur » : seule la clé du favori du classeur supprimé est oubliée ; celles des autres
+    // classeurs de ce navigateur restent, comme eux (sinon leur favori, toujours installé, serait à recréer).
+    {
+      ls.set('classeur-import-key', JSON.stringify(fav));
+      ls.set('classeur-key', keyB);
+      ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alice' }, { key: keyB, name: 'Bob' }]));
+      const p = openPage({ idb: 'absent' });
+      check(await waitFor(() => p.count() === 30), 'suppression : classeur de Bob non ouvert');
+      p.doc.getElementById('tab-reglages').click();
+      await settle();
+      p.doc.querySelectorAll('button').find((n) => text(n).trim() === 'Supprimer mon classeur').click();
+      await settle();
+      modalBtnIn(p.doc, 'Supprimer mon classeur').click();
+      check(await waitFor(() => !ls.has('classeur-key')) && text(p.doc.body).includes("J'ai déjà un lien"), 'suppression : classeur de Bob non supprimé');
+      check(ls.get('classeur-import-key') === JSON.stringify({ [idA]: fav[idA] }), 'suppression : clés de favori gardées ' + ls.get('classeur-import-key') + ", au lieu de celle d'Alice seule");
+      check(ls.get('classeur-known') === JSON.stringify([{ key: keyA, name: 'Alice' }]), 'suppression : classeurs connus ' + ls.get('classeur-known'));
+      ls.set('classeur-key', keyA);
+      const p2 = openPage({ idb: 'absent' });
+      check(await waitFor(() => p2.count() === 500), "suppression : classeur d'Alice non rouvert");
+      p2.doc.getElementById('tab-maj').click();
+      await settle(100);
+      check(bmHas(p2.doc, fav[idA]), "suppression : le favori d'Alice doit rester prêt");
+    }
+
+    // 27. Fenêtre « Mettre à jour avec le favori » : les autres classeurs connus ne sont relus (GET /api/me, qui compte
+    // les cartes du compte sur le serveur) qu'à son ouverture, puis toutes les 30 s pendant 3 min ; le classeur ouvert,
+    // toutes les 4 s. Un envoi arrivé dans l'un d'eux est quand même signalé. Horloge de la page accélérée (×100).
+    if (!SERVER) {
+      const SPEED = 100;
+      const keyD = await makeOtherAccount('Dora');
+      const keyE = await makeOtherAccount('Eva');
+      const keyF = await makeOtherAccount('Fred');
+      for (const [k, n] of [[keyD, 'd'], [keyE, 'e'], [keyF, 'f']]) await sendImport(k, mkCards(n, 3));
+      ls.set('classeur-key', keyD);
+      ls.set('classeur-known', JSON.stringify([keyD, keyE, keyF].map((key) => ({ key, name: '' }))));
+      const p = openPage({ idb: 'absent', speed: SPEED });
+      check(await waitFor(() => p.count() === 3), 'fenêtre du favori : classeur de Dora non ouvert');
+      const openSyncIn = () => p.doc.querySelectorAll('button').find((n) => text(n).includes('Mettre à jour avec le favori')).click();
+      // Heures (secondes de la page, depuis t0) des GET /api/me faits avec la clé k depuis la position `from` du journal.
+      const meAt = (k, from, t0) => apiKeyLog.slice(from).filter((x) => x.call === 'GET /api/me' && x.key === k).map((x) => (x.at - t0) * SPEED / 1000);
+      const fmtS = (s) => s.map((x) => Math.round(x) + ' s').join(', ');
+      let from = apiKeyLog.length;
+      let t0 = Date.now();
+      openSyncIn();
+      await sleep(240 * 1000 / SPEED); // 4 min de la page, sans envoi
+      for (const k of [keyE, keyF]) {
+        const s = meAt(k, from, t0);
+        check(s.length >= 4 && s.length <= 7 && s[0] < 5 && s.every((x, i) => !i || x - s[i - 1] >= 25) && s[s.length - 1] <= 190,
+          `fenêtre du favori : autre classeur relu ${s.length} fois en 4 min (${fmtS(s)}) ; attendu : à l'ouverture, puis toutes les 30 s pendant 3 min`);
+      }
+      const own = meAt(keyD, from, t0);
+      check(own.length >= 30, `fenêtre du favori : le classeur ouvert doit être relu toutes les 4 s (${own.length} fois en 4 min)`);
+      modalBtnIn(p.doc, 'Fermer').click();
+      await settle();
+      // Le favori a envoyé dans le classeur d'Eva : signalé à la première relecture (30 s).
+      from = apiKeyLog.length;
+      t0 = Date.now();
+      openSyncIn();
+      await sleep(50);
+      await sendImport(keyE, mkCards('e', 4));
+      check(await waitFor(() => text(p.doc.body).includes("Tes cartes sont arrivées dans le classeur de Eva, pas dans celui ouvert ici.")),
+        "fenêtre du favori : envoi dans le classeur d'Eva non signalé");
+      const s = meAt(keyE, from, t0);
+      check(s.length === 2 && s[1] >= 25 && s[1] <= 45, `fenêtre du favori : classeur d'Eva relu à ${fmtS(s)} (attendu : à l'ouverture, puis à 30 s)`);
+      modalBtnIn(p.doc, 'Fermer').click();
+      await settle();
+    }
+    for (const [k, v] of savedLs) if (v == null) ls.delete(k); else ls.set(k, v);
+  }
+
+  // 28. Entre amis : partage choisi et réciproque ; deux amis (Paul, Léa), Zoé qui ne partage pas ; mise en avant des
+  // cases vides que les amis remplissent (doubles d'abord, rapprochement par qid), badge d'une case vide, fiche,
+  // classeur d'un ami en lecture seule (« Me manquent »), l'inverse (tes cartes pour leurs collections), désactivation.
+  // Sur la page principale (classeur de Cédric).
+  {
+    const myKey3 = ls.get('classeur-key');
+    const fc = (id, title, rarity, count, extra) => ({ id, title, rarity, atk: 10, def: 10, quality: 50, pageviews: 100, category: 'test', image: null,
+      url: 'https://fr.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_')), count, shiny: false, starred: false, obtained_at: '2026-10-01T10:00:00Z', ...extra });
+    const paulKey = await makeOtherAccount('Paul');
+    const leaKey = await makeOtherAccount('Léa');
+    const zoeKey = await makeOtherAccount('Zoé');
+    await sendImport(paulKey, [fc('p-mars', 'Mars (planète)', 'UR', 2), fc('p-jup', 'Jupiter (planète)', 'UR', 1), fc('p-a5', 'Article 5', 'C', 1),
+      fc('p-pluton', 'Pluton', 'R', 1, { shiny: true }), fc('p-a1', 'Article 1', 'PC', 3)]);
+    await sendImport(leaKey, [fc('l-jup', 'Jupiter (planète)', 'UR', 1), fc('l-sat', 'Saturne (planète)', 'SR', 3), fc('l-nep', 'Neptune', 'SR', 1), fc('l-a7', 'Article 7', 'C', 1)]);
+    await sendImport(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
+    for (const k of [paulKey, leaKey]) check((await rawApi('PATCH', '/api/me', k, { shared: true })).status === 200, 'partage des amis refusé');
+    // Sans partager soi-même : 403 (réciprocité), et l'onglet invite à partager sans rien lire des autres.
+    check((await rawApi('GET', '/api/members', myKey3)).status === 403, 'sans partage, GET /api/members doit répondre 403');
+    mark = apiLog.length;
+    await goTab('amis');
+    check(tabBtn('amis') && text(tabBtn('amis')) === 'Entre amis', 'onglet « Entre amis » absent');
+    check(has('Montrer mes cartes aux autres membres') && has('Le partage est réciproque') && has('Jamais tes tags'), 'Entre amis : invitation au partage absente');
+    check(!apiLog.slice(mark).some((x) => x.includes('/api/members')), 'sans partage, la page ne doit pas lire les membres : ' + apiLog.slice(mark).join(', '));
+    needButton('Montrer mes cartes aux autres membres').click();
+    const fcol = (name) => cls('fcol').find((n) => text(n.querySelector('.fcol__name')) === name) || null;
+    const titlesIn = (n) => n.querySelectorAll('.fitem__title').map(text);
+    check(await waitFor(() => has('Paul') && has('Léa') && fcol('Planètes du Système solaire'), 5000), 'Entre amis : membres ou mise en avant absents');
+    check(apiLog.slice(mark).includes('PATCH /api/me') && !has('Zoé') && !has('Bob'), 'seuls les membres qui partagent doivent apparaître');
+    if (!SERVER) {
+      // Cartes lues par pages (2 par page dans l'API simulée) : Paul 5 cartes = 3 pages, Léa 4 = 2 pages ; jamais Zoé.
+      const reads = apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/'));
+      check(reads.length === 5 && reads.every((x) => /\/cards\?part=/.test(x)), 'cartes des amis : 5 pages attendues, ' + reads.join(', '));
+    }
+    // Neptune (titre différent, même qid Q332) : reconnu une fois les qids des cartes des amis résolus.
+    check(await waitFor(() => fcol('Planètes du Système solaire') && titlesIn(fcol('Planètes du Système solaire')).includes('Neptune (planète)'), 10000),
+      'mise en avant : « Neptune » de Léa doit compter pour « Neptune (planète) » (qid) : ' + text(fcol('Planètes du Système solaire')));
+    {
+      const col = fcol('Planètes du Système solaire');
+      check(titlesIn(col).join(' | ') === 'Saturne (planète) | Mars (planète) | Jupiter (planète) | Neptune (planète)', 'ordre : doubles d\'abord, ' + titlesIn(col).join(' | '));
+      check(text(col).includes('4 cases à remplir chez tes amis') && text(col).includes('2 en double'), 'résumé de la collection : ' + text(col));
+      check(cls('fcol')[0] === col, 'la collection où les amis remplissent le plus de cases vient en premier');
+      const jup = col.querySelectorAll('.fitem').find((n) => text(n).includes('Jupiter'));
+      check(jup.querySelectorAll('.holder').map(text).join(',') === 'Léa,Paul' && text(col.querySelectorAll('.fitem')[0]).includes('Léa ×3'), 'qui a quoi : ' + text(col));
+      check(fcol('Exemples de test') && titlesIn(fcol('Exemples de test')).join() === 'Article 5', 'Exemples de test : Article 5 (chez Paul) attendu');
+    }
+    // Membres : nombre de cartes et cartes qui me manquent.
+    const paulRow = cls('member').find((n) => text(n).includes('Paul'));
+    check(paulRow && text(paulRow).includes('5 cartes') && text(paulRow).includes('4 cartes que tu n\'as pas') && text(paulRow).includes('1 en double'), 'ligne de Paul : ' + text(paulRow));
+    // L'inverse : Terre (que j'ai) manque aux Planètes que Paul et Léa ont commencées.
+    {
+      const want = fcol('Paul');
+      check(want && titlesIn(want).includes('Terre') && text(want).includes('Planètes du Système solaire'), 'tes cartes pour Paul : ' + (want ? text(want) : 'absent'));
+      check(fcol('Léa') && titlesIn(fcol('Léa')).includes('Terre'), 'tes cartes pour Léa : Terre attendue');
+    }
+    // Rien des amis dans IndexedDB (le cache ne garde que mon classeur).
+    await sleep(1600);
+    check(!JSON.stringify(cachedCards()).includes('p-mars') && !JSON.stringify(cachedCards()).includes('Pluton'), 'les cartes des amis ne doivent pas aller dans IndexedDB');
+
+    // Album : badge discret sur les cases vides qu'un ami peut remplir ; fiche de la case vide : « Chez : … ».
+    fcol('Planètes du Système solaire').querySelector('.fcol__name').click();
+    await settle(80);
+    check(has("Il t'en manque") && tabBtn('collections').getAttribute('aria-selected') === 'true', 'le nom de la collection doit ouvrir son album');
+    const slotOf = (t) => cls('slot').find((n) => text(n.querySelector('h3')) === t);
+    const badge = (t) => { const s = slotOf(t); const b = s && s.querySelector('.slot__friends'); return b ? text(b) : null; };
+    check(badge('Mars (planète)') === 'chez Paul ×2' && badge('Saturne (planète)') === 'chez Léa ×3' && badge('Jupiter (planète)') === 'chez Léa +1'
+      && badge('Neptune (planète)') === 'chez Léa' && badge('Mercure (planète)') === null,
+      'badges des cases vides : ' + ['Mars', 'Saturne', 'Jupiter', 'Neptune', 'Mercure'].map((p) => p + '=' + badge(p + ' (planète)')).join(', '));
+    check(slotOf('Mars (planète)').querySelector('.slot__friends').classList.contains('dup'), 'un double doit ressortir');
+    slotOf('Jupiter (planète)').querySelector('.slot__open').click();
+    await settle();
+    check(one('fiche--missing') && text(one('fiche--missing')).includes('Chez : Léa, Paul'), 'fiche de la case vide : « Chez : Léa, Paul » attendu : ' + text(one('fiche--missing')));
+    one('fiche--missing').querySelector('.close').click();
+    await settle();
+    slotOf('Mars (planète)').querySelector('.slot__open').click();
+    await settle();
+    check(text(one('fiche--missing')).includes('Chez : Paul (×2)'), 'fiche : « Chez : Paul (×2) » attendu');
+    one('fiche--missing').querySelector('.close').click();
+    await settle();
+
+    // Classeur de Paul en lecture seule : toutes ses cartes, puis « Me manquent », recherche.
+    mark = apiLog.length;
+    await goTab('amis');
+    if (!SERVER) check(apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/')).length === 0, 'cartes des amis relues sans changement : ' + apiLog.slice(mark).join(', '));
+    all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de Paul')[0].click();
+    await settle();
+    check(has('Le classeur de Paul') && has('lecture seule') && cls('card--friend').length === 5, 'classeur de Paul : 5 cartes attendues, ' + cls('card--friend').length);
+    check(cls('card--friend').filter((n) => n.classList.contains('have')).map((n) => text(n.querySelector('.card__title'))).join() === 'Article 1', 'seule « Article 1 » est déjà à moi');
+    check(!cls('card--friend').some((n) => n.getAttribute('role') === 'button' || n.parentNode.querySelector('input')), 'cartes d\'un ami : ni fiche ni sélection');
+    exactButton('Me manquent').click();
+    await settle();
+    check(cls('card--friend').length === 4 && !cls('card--friend').some((n) => n.classList.contains('have')), '« Me manquent » : 4 cartes attendues');
+    type(byId('fq'), 'pluton');
+    await settle();
+    check(cls('card--friend').length === 1 && cls('card--friend')[0].classList.contains('shiny'), 'recherche dans le classeur d\'un ami');
+    needButton('← Entre amis').click();
+    await settle();
+    check(has('Pour compléter tes collections'), 'retour à la vue d\'ensemble');
+
+    // 29. Échanges possibles : Paul montre aussi ses collections (deux), Léa non (estimation d'après le catalogue), Zoé
+    // ne montre rien. Une ligne « carte de X → collection(s) de Z » par carte, groupées par couple ; vraies collections
+    // avant les estimations, puis doubles, puis nombre de cases ; filtres « Ce qui me concerne » (défaut), « Tout le
+    // monde », par membre ; « Ce qui pourrait intéresser tes amis » sur les vraies collections de Paul ; second réglage.
+    {
+      // Paul : « Article 1 », « Mars » et « Pluton » sont à lui ; « Neptune (planète) » (qid Q332) = « Neptune » de Léa ;
+      // « Article 7 » est dans ses deux collections ; des éléments que personne n'a, ou introuvables.
+      for (const t of [
+        { name: 'Les préférées de Paul', items: [
+          { title: 'Terre', description: 'planète', image: null, status: 'ok', qid: 'Q2' }, { title: 'Rihanna', description: null, image: null, status: 'ok' },
+          { title: 'Article 60', description: null, image: null, status: 'ok' }, { title: 'Saturne (planète)', description: null, image: null, status: 'ok' },
+          { title: 'Neptune (planète)', description: null, image: null, status: 'ok', qid: 'Q332' }, { title: 'Article 7', description: null, image: null, status: 'ok' },
+          { title: 'Livre introuvable', description: null, image: null, status: 'ok' }, { title: 'Article 1', description: null, image: null, status: 'ok' },
+          { title: 'Mars (planète)', description: null, image: null, status: 'ok' }, { title: 'Article 40', description: null, image: null, status: 'missing' },
+        ] },
+        { name: 'Exemples de Paul', items: [{ title: 'Article 7', description: null, image: null, status: 'ok' }, { title: 'Pluton', description: null, image: null, status: 'ok' }] },
+      ]) check((await rawApi('POST', '/api/targets/save', paulKey, t)).status === 200, 'collection de Paul refusée');
+      const pubOf = async (name, key) => ((await rawApi('GET', '/api/members', key)).body.members.find((m) => m.name === name) || {}).id;
+      const paulPub = await pubOf('Paul', myKey3);
+      check((await rawApi('GET', '/api/members/' + paulPub + '/targets', myKey3)).status === 404, 'collections de Paul visibles sans son accord');
+      check((await rawApi('PATCH', '/api/me', paulKey, { shared_targets: 'oui' })).status === 400, 'shared_targets non booléen accepté');
+      check((await rawApi('PATCH', '/api/me', zoeKey, { shared_targets: true })).status === 400, 'Zoé ne montre pas ses cartes : ses collections non plus (400)');
+      check((await rawApi('PATCH', '/api/me', paulKey, { shared_targets: true })).body.shared_targets === true, 'Paul : partage des collections refusé');
+      check((await rawApi('GET', '/api/members/' + paulPub + '/targets', zoeKey)).status === 403, 'Zoé ne montre pas ses cartes : 403 attendu');
+      {
+        const r = await rawApi('GET', '/api/members/' + paulPub + '/targets', myKey3);
+        const s = JSON.stringify(r.body);
+        check(r.status === 200 && s.includes('Les préférées de Paul') && !s.includes('"description"') && !s.includes('Article 40') && !s.includes('"status"'),
+          'collections de Paul vues par l\'API : ' + s.slice(0, 300));
+      }
+      mark = apiLog.length;
+      needButton('Actualiser').click();
+      const row = (name) => cls('member').find((n) => text(n.querySelector('.name')) === name);
+      check(await waitFor(() => row('Paul') && text(row('Paul')).includes('partage ses collections : 2'), 5000), 'ligne de Paul : ' + text(row('Paul')));
+      check(text(row('Léa')).includes('ne partage pas ses collections'), 'ligne de Léa : ' + text(row('Léa')));
+      const tsum = () => (one('trade-sum') ? text(one('trade-sum')) : '');
+      check(await waitFor(() => tsum().includes('5 de tes cartes peuvent compléter les collections de tes amis ; 6 de leurs cartes peuvent compléter les tiennes. Entre eux : 4.'), 8000),
+        'résumé des échanges : ' + tsum());
+      if (!SERVER) {
+        const reads = apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/'));
+        check(reads.length === 2 && reads.every((x) => x.startsWith('GET /api/members/' + paulPub + '/targets?part=')), 'collections lues : celles de Paul seulement, 2 pages : ' + reads.join(', '));
+      }
+      check(has('Léa ne partage pas ses collections') && has('Tes amis ne voient pas tes collections'), 'notes des échanges absentes');
+      // « Ce qui pourrait intéresser tes amis » : les vraies collections de Paul, l'estimation pour Léa.
+      check(fcol('Paul') && titlesIn(fcol('Paul')).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && !fcol('Paul').querySelector('.badge--est'),
+        'tes cartes pour Paul (ses collections) : ' + (fcol('Paul') ? text(fcol('Paul')) : 'absent'));
+      check(fcol('Léa') && titlesIn(fcol('Léa')).join() === 'Terre' && fcol('Léa').querySelector('.badge--est'), 'tes cartes pour Léa (estimation) : ' + (fcol('Léa') ? text(fcol('Léa')) : 'absent'));
+      // La page : « Ce qui me concerne » par défaut.
+      needButton('Voir les échanges possibles').click();
+      await settle();
+      const pairs = () => cls('trade').map((n) => text(n.querySelector('.fcol__name')).replace(' pour ', ''));
+      const pair = (name) => cls('trade').find((n) => text(n.querySelector('.fcol__name')).replace(' pour ', '') === name) || null;
+      const pressed = () => one('seg') ? one('seg').querySelectorAll('button').filter((b) => b.getAttribute('aria-pressed') === 'true').map(text).join() : '';
+      check(has('Échanges possibles') && pressed() === 'Ce qui me concerne', 'page des échanges : filtre par défaut ' + pressed());
+      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Paul → Toi | Toi → Léa', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
+      {
+        const p = pair('Toi → Paul');
+        check(titlesIn(p).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60', 'Toi → Paul : ' + titlesIn(p).join(' | '));
+        check(text(p).includes('Tu peux compléter 4 cases chez Paul, dont 3 en double'), 'résumé Toi → Paul : ' + text(p.querySelector('.fcol__sum')));
+        const a7 = p.querySelectorAll('.fitem')[0];
+        check(text(a7).includes('×2') && text(a7).includes('Les préférées de Paul') && text(a7).includes('Exemples de Paul'), 'Article 7 : ses deux collections attendues : ' + text(a7));
+        check(!text(p.querySelectorAll('.fitem')[3]).includes('×'), 'Article 60 : un seul exemplaire, pas de ×');
+        check(titlesIn(pair('Léa → Toi')).join(' | ') === 'Saturne (planète) | Jupiter (planète) | Neptune' && text(pair('Léa → Toi')).includes('Léa peut compléter 3 cases chez toi, dont 1 en double'),
+          'Léa → Toi : ' + text(pair('Léa → Toi')));
+        check(titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5', 'Paul → Toi : ' + text(pair('Paul → Toi')));
+        const est = pair('Toi → Léa');
+        check(est.classList.contains('trade--est') && est.querySelector('.badge--est') && text(est).includes('Léa ne partage pas ses collections')
+          && titlesIn(est).join() === 'Terre' && text(est).includes('Planètes du Système solaire'), 'Toi → Léa (estimation) : ' + text(est));
+        // Ta carte : sa fiche ; une case vide chez toi : la fiche de la carte manquante.
+        a7.click();
+        await settle();
+        check(fiche() && text(fiche()).includes('Article 7') && !one('fiche--missing'), 'clic sur ta carte : sa fiche attendue');
+        fiche().querySelector('.close').click();
+        await settle();
+        pair('Paul → Toi').querySelectorAll('.fitem')[0].click();
+        await settle();
+        check(one('fiche--missing') && text(one('fiche--missing')).includes('Mars (planète)'), 'clic sur une carte de Paul pour toi : fiche de la case vide attendue');
+        one('fiche--missing').querySelector('.close').click();
+        await settle();
+      }
+      exactButton('Tout le monde').click();
+      await settle();
+      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi | Toi → Léa | Paul → Léa', 'couples (tout le monde) : ' + pairs().join(' | '));
+      {
+        const p = pair('Léa → Paul');
+        check(titlesIn(p).join(' | ') === 'Saturne (planète) | Article 7 | Neptune' && text(p).includes('Léa peut compléter 3 cases chez Paul, dont 1 en double'), 'Léa → Paul : ' + text(p));
+        check(!p.querySelectorAll('.fitem').some((n) => n.tagName === 'BUTTON'), 'entre deux amis : rien à ouvrir');
+        check(pair('Paul → Léa') && titlesIn(pair('Paul → Léa')).join() === 'Mars (planète)' && pair('Paul → Léa').querySelector('.badge--est'), 'Paul → Léa (estimation) : ' + text(pair('Paul → Léa')));
+      }
+      const sel = byId('trade-member');
+      sel.value = paulPub;
+      sel.dispatch('change');
+      await settle();
+      check(pairs().join(' | ') === 'Toi → Paul | Léa → Paul | Paul → Toi | Paul → Léa' && pressed() === '', 'couples (Paul) : ' + pairs().join(' | ') + ' / ' + pressed());
+      exactButton('Ce qui me concerne').click();
+      await settle();
+      check(pairs().length === 4 && byId('trade-member').value === '', 'retour à « Ce qui me concerne »');
+      // Rien des amis dans IndexedDB ; rien de relu en revenant sur l'onglet quand rien n'a changé.
+      await sleep(1600);
+      check(!JSON.stringify(cachedCards()).includes('Les préférées de Paul'), 'les collections des amis ne doivent pas aller dans IndexedDB');
+      needButton('← Entre amis').click();
+      await settle();
+      mark = apiLog.length;
+      await goTab('collections');
+      await goTab('amis');
+      if (!SERVER) check(apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/')).length === 0, 'collections de Paul relues sans changement : ' + apiLog.slice(mark).join(', '));
+      // Second réglage, seulement quand on montre ses cartes : Paul voit alors mes collections (titres et qids seulement).
+      await goTab('reglages');
+      const cbt = byId('set-shared-targets');
+      check(cbt && !cbt.checked && has('et mes collections à compléter'), 'second réglage absent ou coché');
+      cbt.checked = true;
+      cbt.dispatch('change');
+      await settle(80);
+      check(byId('set-shared-targets').checked && has('Tes collections à compléter sont montrées'), 'partage des collections sans effet');
+      {
+        const mine = (await rawApi('GET', '/api/members', paulKey)).body.members.find((m) => m.name === 'Cédric');
+        check(mine && mine.targets && mine.targets.count === 6, 'Paul doit voir que je montre mes 6 collections : ' + JSON.stringify(mine));
+        const r = await rawApi('GET', '/api/members/' + mine.id + '/targets', paulKey);
+        const all2 = [];
+        let part = '0';
+        for (let g = 0; g < 10; g++) {
+          const x = await rawApi('GET', '/api/members/' + mine.id + '/targets?part=' + encodeURIComponent(part), paulKey);
+          all2.push(...x.body.targets);
+          if (!x.body.next_part) break;
+          part = x.body.next_part;
+        }
+        check(r.status === 200 && all2.some((t) => t.name === 'Planètes du Système solaire') && !JSON.stringify(all2).includes('"description"'), 'mes collections vues par Paul : ' + JSON.stringify(all2).slice(0, 200));
+      }
+      await goTab('amis');
+      check(!has('Tes amis ne voient pas tes collections'), 'la note « Tes amis ne voient pas tes collections » doit disparaître');
+    }
+
+    // Désactivation dans les Réglages : l'onglet invite de nouveau à partager ; Paul ne me voit plus.
+    check((await rawApi('GET', '/api/members', paulKey)).body.members.some((m) => m.name === 'Cédric'), 'Paul doit me voir');
+    await goTab('reglages');
+    const cb = byId('set-shared');
+    check(has('Partage entre membres') && cb && cb.checked, 'réglage du partage absent ou décoché');
+    cb.checked = false;
+    cb.dispatch('change');
+    await settle(80);
+    check(!byId('set-shared').checked && has('ne sont plus montrées'), 'désactivation du partage sans effet');
+    // Le partage des collections tombe avec celui des cartes (à rechoisir) : le second réglage disparaît.
+    check(!byId('set-shared-targets') && (await rawApi('GET', '/api/me', myKey3)).body.shared_targets === false, 'partage des collections encore actif après la désactivation');
+    check(!(await rawApi('GET', '/api/members', paulKey)).body.members.some((m) => m.name === 'Cédric'), 'Paul me voit encore après la désactivation');
+    await goTab('amis');
+    check(has('Montrer mes cartes aux autres membres') && !cls('fcol').length && !has('Pour compléter tes collections'), 'après désactivation : invitation au partage attendue');
+    await goTab('collections');
+  }
+
+  // Collection créée par le favori depuis une recherche de la Collection globale du jeu (source wm:…) : la rareté du jeu
+  // s'affiche sans « ≈ » (case vide, fiche de la carte manquante, « Il t'en manque ») ; l'estimation reste pour les autres.
+  {
+    const keyG = await makeOtherAccount('Gaston');
+    await sendImport(keyG, [{ id: 'g1', title: 'Vache normande', rarity: 'PC', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'race bovine', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }]);
+    await rawApi('POST', '/api/targets/save', keyG, { name: 'Vaches', source: 'wm:vache', items: [
+      { title: 'Vache', description: 'mammifère domestique', image: null, status: 'ok', rarity: 'R' },
+      { title: 'Vache Highland', description: null, image: null, status: 'ok', rarity: 'UR' },
+      { title: 'Vache normande', description: 'race bovine', image: null, status: 'ok', rarity: 'PC' },
+      { title: 'Zeus', description: 'dieu grec', image: null, status: 'ok' }, // sans rareté du jeu : estimée (vues gardées en cache)
+    ] });
+    ls.set('classeur-key', keyG);
+    ls.set('classeur-known', JSON.stringify([{ key: keyG, name: 'Gaston' }]));
+    const p = openPage({ idb: 'absent' });
+    check(await waitFor(() => p.count() === 1), 'collection du jeu : classeur de Gaston non ouvert');
+    p.doc.getElementById('tab-collections').click();
+    await settle();
+    const row = p.doc.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith('Vaches'));
+    check(row, 'collection du jeu : « Vaches » absente de « Mes collections »');
+    row.click();
+    await settle(80);
+    const slotOf = (t) => p.doc.querySelectorAll('.slot').find((s) => s.querySelector('h3') && text(s.querySelector('h3')) === t);
+    const pillOf = (t) => { const s = slotOf(t); return s && s.querySelector('.pill') ? text(s.querySelector('.pill')) : null; };
+    check(await waitFor(() => pillOf('Zeus') === '≈ L'), 'collection du jeu : rareté estimée de « Zeus » attendue, ' + pillOf('Zeus'));
+    check(pillOf('Vache') === 'R' && pillOf('Vache Highland') === 'UR', 'collection du jeu : raretés du jeu sans « ≈ » attendues, ' + pillOf('Vache') + ' / ' + pillOf('Vache Highland'));
+    check(!slotOf('Vache').querySelector('.pill').classList.contains('est'), 'collection du jeu : pastille estimée pour une rareté du jeu');
+    const missBox = p.doc.querySelectorAll('.missing-sum').find((n) => text(n).includes("Il t'en manque 3 :"));
+    const missPills = missBox ? missBox.querySelectorAll('.pill').map(text) : [];
+    check(missPills.join(',') === 'UR,R,≈ L' && text(missBox).includes('Tu en as') === false,
+      "collection du jeu : « Il t'en manque » : " + p.doc.querySelectorAll('.missing-sum').map(text).join(' | '));
+    check(await waitFor(() => text(p.doc.body).includes('Sans « ≈ » : rareté relevée dans le jeu.')), 'collection du jeu : explication des pastilles sans « ≈ » absente');
+    slotOf('Vache').querySelector('.slot__open').click();
+    await settle(120);
+    const f = p.doc.querySelectorAll('.fiche--missing')[0];
+    const ft = f ? text(f) : '';
+    check(ft.includes('Rareté dans le jeu') && ft.includes('Rare') && !ft.includes('≈') && ft.includes('mammifère domestique') && text(f.querySelector('.pill')) === 'R',
+      'collection du jeu : fiche de la carte manquante : ' + ft.slice(0, 300));
+    f.querySelector('.close').click();
+    await settle(400);
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.

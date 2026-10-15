@@ -10,6 +10,8 @@ const MAX_ITEMS_BYTES = 600 * 1024; // éléments d'une collection, en JSON
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
 const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
 const QID = /^Q[1-9][0-9]{0,11}$/;
+// Rareté d'une carte dans le jeu (élément d'une collection créée depuis une recherche du jeu).
+const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
 
 // Collection telle que stockée : `items` recopié en texte JSON, sans être relu.
 function toTarget(row, items = row.items) {
@@ -44,10 +46,12 @@ function cleanItem(item, i) {
   const image = typeof item.image === 'string' && item.image.length <= 1000 && /^https?:\/\//i.test(item.image)
     ? item.image
     : null;
+  const out = { title, description, image, status };
   // Identifiant Wikidata facultatif (reconnaît une carte même si son titre diffère) ; gardé seulement s'il est valide.
-  return typeof item.qid === 'string' && QID.test(item.qid)
-    ? { title, description, image, status, qid: item.qid }
-    : { title, description, image, status };
+  if (typeof item.qid === 'string' && QID.test(item.qid)) out.qid = item.qid;
+  // Rareté relevée dans le jeu (collection créée depuis sa Collection globale) ; gardée seulement si elle est connue.
+  if (RARITIES.has(item.rarity)) out.rarity = item.rarity;
+  return out;
 }
 
 // GET /api/targets
@@ -62,6 +66,44 @@ export async function listTargets(env, user) {
 
 // POST /api/targets/save {id?, name, items, source?} : crée, ou remplace celle qui a cet id.
 export async function saveTarget(env, user, body) {
+  const { row, itemsJson } = await storeTarget(env, user, body);
+  return { target: raw(jsonText(toTarget(row, itemsJson))) };
+}
+
+// POST /api/targets/from-game {name, query, items:[{title, rarity, card_id, category?, image?}]} : collection créée
+// par le favori depuis une recherche de la Collection globale du jeu. Accepte la clé d'import (celle du favori) : ne
+// fait que CRÉER une collection (jamais de remplacement ni de suppression), dans les mêmes quotas que saveTarget.
+export async function saveGameTarget(env, user, body) {
+  const query = typeof body.query === 'string' ? cleanText(body.query) : '';
+  if (!query || query.length > 100) throw new HttpError(400, 'La recherche (« query ») fait de 1 à 100 caractères.');
+  if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
+  if (!body.items.length) throw new HttpError(400, 'Aucune carte : la recherche ne donne rien à ranger.');
+  if (body.items.length > MAX_ITEMS) throw new HttpError(400, `${MAX_ITEMS} éléments au plus par collection.`);
+  const seen = new Set();
+  const items = [];
+  body.items.forEach((item, i) => {
+    if (!item || typeof item !== 'object') throw new HttpError(400, `Carte n° ${i + 1} invalide.`);
+    const id = item.card_id;
+    if (typeof id !== 'string' || !id || id.length > 100) {
+      throw new HttpError(400, `Carte n° ${i + 1} : identifiant du jeu (card_id) manquant ou invalide.`);
+    }
+    if (!RARITIES.has(item.rarity)) {
+      throw new HttpError(400, `Carte n° ${i + 1} : rareté inconnue (C, PC, R, SR, UR ou L).`);
+    }
+    if (seen.has(id)) return; // la même carte lue deux fois (pages qui se chevauchent)
+    seen.add(id);
+    // La catégorie du jeu (description Wikidata) tient lieu de description ; titre et image vérifiés par storeTarget.
+    items.push({ title: item.title, description: typeof item.category === 'string' ? item.category : null,
+      image: item.image, status: 'ok', rarity: item.rarity });
+  });
+  // Grande recherche : sans les images si elles font dépasser 600 Ko (la page retrouve les vignettes sur Wikipédia).
+  if (byteLength(JSON.stringify(items)) > MAX_ITEMS_BYTES) for (const it of items) it.image = null;
+  const { row, count } = await storeTarget(env, user, { name: body.name, items, source: `wm:${query}` });
+  return { target: { id: row.id, name: row.name, source: row.source, count, created_at: row.created_at, updated_at: row.updated_at } };
+}
+
+// Range une collection (créée, ou remplacée si body.id existe déjà) après validation et contrôle des quotas.
+async function storeTarget(env, user, body) {
   const db = env.DB;
   const name = typeof body.name === 'string' ? cleanText(body.name) : '';
   if (!name || name.length > 80) throw new HttpError(400, 'Le nom de la collection fait de 1 à 80 caractères.');
@@ -109,7 +151,7 @@ export async function saveTarget(env, user, body) {
   )
     .bind(user.id, id, name, itemsJson, source, now)
     .first();
-  return { target: raw(jsonText(toTarget(row, itemsJson))) };
+  return { row, itemsJson, count: items.length };
 }
 
 // POST /api/targets/delete {id}

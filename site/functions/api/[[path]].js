@@ -9,10 +9,12 @@ import { importRoute } from '../_lib/import.js';
 import { deleteSession, saveSession } from '../_lib/session.js';
 import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
-import { deleteTarget, listTargets, saveTarget } from '../_lib/targets.js';
+import { deleteTarget, listTargets, saveGameTarget, saveTarget } from '../_lib/targets.js';
+import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 
-// Seul POST /api/import accepte ces origines (le favori lancé depuis le jeu, sous ses deux noms).
+// Seuls les points d'accès du favori (lancé depuis le jeu, sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
+const CORS_PATHS = new Set(['import', 'targets/from-game']);
 const CORS_HEADERS = {
   'access-control-allow-methods': 'POST, OPTIONS',
   'access-control-allow-headers': 'content-type, x-classeur-key',
@@ -37,7 +39,13 @@ const ROUTES = {
   targets: { GET: [listTargets, 'main'] },
   'targets/save': { POST: [saveTarget, 'main'] },
   'targets/delete': { POST: [deleteTarget, 'main'] },
+  'targets/from-game': { POST: [saveGameTarget, 'import'] }, // favori : crée une collection depuis une recherche du jeu
+  members: { GET: [listMembers, 'main'] },
+  'members/*/cards': { GET: [memberCards, 'main'] }, // members/<identifiant public>/cards
+  'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
 };
+// Chemins avec un paramètre → leur entrée dans ROUTES.
+const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets']];
 
 // Corps plus petits que la limite générale (5 Mo).
 const BODY_LIMITS = { account: 4 * 1024 };
@@ -58,8 +66,10 @@ async function handle(request, env, path) {
   if (!env.DB && path !== 'health') {
     throw new HttpError(503, "Le classeur n'est pas encore configuré : la base D1 n'est pas liée (variable DB).");
   }
-  if (!Object.hasOwn(ROUTES, path)) throw new HttpError(404, "Ce point d'accès n'existe pas.");
-  const route = ROUTES[path];
+  const pattern = PATTERNS.find(([re]) => re.test(path));
+  const key = pattern ? pattern[1] : path;
+  if (!Object.hasOwn(ROUTES, key)) throw new HttpError(404, "Ce point d'accès n'existe pas.");
+  const route = ROUTES[key];
   if (!Object.hasOwn(route, request.method)) throw new HttpError(405, "Méthode non autorisée pour ce point d'accès.");
   const [handler, keyKind] = route[request.method];
 
@@ -77,10 +87,10 @@ export async function onRequest(context) {
   const { request, env } = context;
   const path = new URL(request.url).pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
   const origin = request.headers.get('origin');
-  const cors = path === 'import' && GAME_ORIGINS.has(origin);
+  const cors = CORS_PATHS.has(path) && GAME_ORIGINS.has(origin);
 
   let response;
-  if (path === 'import' && request.method === 'OPTIONS') {
+  if (CORS_PATHS.has(path) && request.method === 'OPTIONS') {
     response = new Response(null, { status: 204 });
   } else {
     try {
@@ -90,7 +100,7 @@ export async function onRequest(context) {
       response = errorResponse(err);
     }
   }
-  if (path === 'import') {
+  if (CORS_PATHS.has(path)) {
     response.headers.append('vary', 'Origin');
     if (cors) {
       response.headers.set('access-control-allow-origin', origin);

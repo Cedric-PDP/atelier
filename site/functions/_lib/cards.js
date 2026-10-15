@@ -7,6 +7,12 @@ import { base64ToBytes, base64url } from './util.js';
 export const MAX_CARDS = 20_000;
 export const MAX_PART_CARDS = 500;
 export const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
+// Raretés de la plus basse à la plus haute : une carte possédée en plusieurs raretés garde la plus haute (import
+// complet, synchro rapide et favori suivent la même règle).
+export const RARITY_ORDER = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
+// Rang SQL (1 à 6, NULL si inconnue) d'une expression texte, et rareté d'un rang.
+export const rankSql = (expr) => `CASE ${expr} ${RARITY_ORDER.map((r, i) => `WHEN '${r}' THEN ${i + 1}`).join(' ')} END`;
+export const rarityOfRankSql = (expr) => `CASE ${expr} ${RARITY_ORDER.map((r, i) => `WHEN ${i + 1} THEN '${r}'`).join(' ')} END`;
 
 const isHttp = (v) => typeof v === 'string' && v.length <= 2000 && /^https?:\/\//i.test(v);
 // Date au format ISO 8601 (comme celles du jeu) : comparées en texte par la finalisation (la plus ancienne gagne).
@@ -94,6 +100,21 @@ export function entryToCard(entry) {
   });
 }
 
+// Entrée (raw = true) ou CarteImport invalide → marque gardée en attente avec les cartes : la finalisation ne la range
+// jamais, mais la compte (cartes distinctes, exemplaires, date) pour vérifier qu'une lecture complète l'est vraiment.
+// Sans identifiant de carte exploitable, elle compte comme exemplaire lu, pas comme carte distincte.
+export function badCard(item, raw) {
+  const o = item && typeof item === 'object' && !Array.isArray(item) ? item : {};
+  let id = raw ? (o.card_id ?? (o.card && typeof o.card === 'object' ? o.card.id : undefined)) : o.id;
+  if (typeof id === 'number') id = String(id);
+  const out = typeof id === 'string' && id && id.length <= 100 ? { id, bad: 1 } : { bad: 1 };
+  const eid = raw ? o.id : undefined;
+  if (typeof eid === 'number' || (typeof eid === 'string' && eid && eid.length <= 100)) out.eid = String(eid);
+  out.count = Number.isInteger(o.count) && o.count >= 1 && o.count <= 1_000_000 ? o.count : 1;
+  if (isDate(o.obtained_at)) out.obtained_at = o.obtained_at;
+  return out;
+}
+
 // Ordre des étiquettes : ordre binaire, le même que celui de SQLite (GET /api/cards les trie en SQL).
 export function sortTags(list) {
   return [...list].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
@@ -154,7 +175,10 @@ const PAGE_CARDS = `WITH page AS (
 // ?since=R : cartes changées depuis la révision R (rev > R, avec leurs étiquettes) et cartes retirées depuis
 // (cards_gone, sauf celles revenues). Lecture par les index (user_id, rev), MAX_DELTA + 1 lignes au plus de chaque
 // côté : le coût ne dépend pas de la taille de la collection. Révision, plancher et changements sont lus dans la même
-// requête (un seul état de la base) ; le Worker ne décode que deux longues chaînes.
+// requête (un seul état de la base), avec fetched_at et new_ids. Première ligne (grp = 0) : révision, plancher, nombre de
+// changements, retraits ; lignes suivantes : les cartes, en morceaux d'environ 1 Mo comme ALL_CARDS (une ligne D1 fait
+// 2 Mo au plus, et 1 001 cartes avec de longues catégories et adresses peuvent dépasser). Le Worker ne décode que
+// quelques longues chaînes.
 const CHANGES = `WITH ch AS (SELECT card_id, data FROM cards WHERE user_id = ?1 AND rev > ?2 LIMIT ${MAX_DELTA + 1}),
   gn AS (
     SELECT g.card_id FROM cards_gone AS g WHERE g.user_id = ?1 AND g.rev > ?2
@@ -166,18 +190,25 @@ const CHANGES = `WITH ch AS (SELECT card_id, data FROM cards WHERE user_id = ?1 
       SELECT ch.card_id, tags.tag FROM ch CROSS JOIN tags ON tags.user_id = ?1 AND tags.card_id = ch.card_id
       ORDER BY ch.card_id, tags.tag
     ) GROUP BY card_id
+  ),
+  j AS (
+    SELECT ch.card_id, substr(ch.data, 1, length(ch.data) - 1) || ',"tags":' || COALESCE(t.tags, '[]') || '}' AS j
+    FROM ch LEFT JOIN t ON t.card_id = ch.card_id
+  ),
+  k AS (
+    SELECT card_id, j, SUM(length(CAST(j AS BLOB))) OVER (ORDER BY card_id) / 1000000 AS grp FROM j
   )
-  SELECT u.cards_rev AS rev, u.cards_gone_floor AS floor, (SELECT COUNT(*) FROM ch) + (SELECT COUNT(*) FROM gn) AS n,
-    (SELECT group_concat(j, ',') FROM (
-      SELECT substr(ch.data, 1, length(ch.data) - 1) || ',"tags":' || COALESCE(t.tags, '[]') || '}' AS j
-      FROM ch LEFT JOIN t ON t.card_id = ch.card_id ORDER BY ch.card_id
-    )) AS cards,
-    (SELECT json_group_array(card_id) FROM gn) AS gone
-  FROM users AS u WHERE u.id = ?1`;
+  SELECT 0 AS grp, u.cards_rev AS rev, u.cards_gone_floor AS floor, (SELECT COUNT(*) FROM ch) + (SELECT COUNT(*) FROM gn) AS n,
+    (SELECT json_group_array(card_id) FROM gn) AS gone, u.fetched_at AS fetched_at, u.new_ids AS new_ids, NULL AS part
+  FROM users AS u WHERE u.id = ?1
+  UNION ALL
+  SELECT 1 + grp, NULL, NULL, NULL, NULL, NULL, NULL, group_concat(j, ',') FROM (SELECT j, grp FROM k ORDER BY card_id) GROUP BY grp
+  ORDER BY 1`;
 
-const encodeCursor = (cardId) => base64url(new TextEncoder().encode(cardId));
+// Curseur de lecture par pages (?part=…) : aussi celui des cartes d'un autre membre (members.js).
+export const encodeCursor = (cardId) => base64url(new TextEncoder().encode(cardId));
 
-function decodeCursor(part) {
+export function decodeCursor(part) {
   if (part === '' || part === '0') return '';
   try {
     if (!/^[A-Za-z0-9_-]{2,200}$/.test(part)) throw new Error();
@@ -196,17 +227,18 @@ async function listChanges(env, user, since) {
   if (since === user.cards_rev) {
     return { rev: since, delta: true, cards: [], gone: [], fetched_at: user.fetched_at, new_ids: newIds };
   }
-  const row = await env.DB.prepare(CHANGES).bind(user.id, since).first();
+  const { results } = await env.DB.prepare(CHANGES).bind(user.id, since).all();
+  const row = results[0] && results[0].grp === 0 ? results[0] : null;
   if (!row || since > row.rev || since < row.floor || row.n > MAX_DELTA) {
     return { rev: row ? row.rev : user.cards_rev, delta: false };
   }
   return {
     rev: row.rev,
     delta: true,
-    cards: raw(`[${row.cards ?? ''}]`),
+    cards: raw(`[${results.slice(1).map((r) => r.part).join(',')}]`),
     gone: raw(row.gone || '[]'),
-    fetched_at: user.fetched_at,
-    new_ids: newIds,
+    fetched_at: row.fetched_at,
+    new_ids: raw(row.new_ids || '[]'),
   };
 }
 
