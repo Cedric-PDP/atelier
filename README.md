@@ -9,7 +9,8 @@ personnelles avec suggestions, sélection multiple, collections à compléter av
 (licence de la référence inconnue). En plus : comptes par code d'invitation et lien personnel, favori de
 rafraîchissement, catalogue de collections proposées, rareté estimée des cartes manquantes.
 
-- **Mise en ligne** (Cloudflare Pages + D1, une fois, ~10 min) : [SETUP.md](SETUP.md).
+- **Mise en ligne** (Worker Cloudflare + D1, une fois, ~10 min) : [SETUP.md](SETUP.md). Le même dossier `site/` se
+  déploie aussi en projet Pages.
 - **Contrat interface / serveur** (routes, formes, limites) : [site/SPEC.md](site/SPEC.md).
 
 ## Arborescence
@@ -17,7 +18,8 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 | Chemin | Contenu |
 |---|---|
 | `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `catalog.json`, `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
-| `site/functions/` | l'API (Cloudflare Pages Functions) : `api/[[path]].js` (routeur), `_lib/*` |
+| `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
+| `site/worker.js`, `site/wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
 | `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
@@ -28,6 +30,8 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 
 ```bash
 node dev/api.test.mjs                       # l'API, avec mesures de CPU ; doit finir par API OK
+node dev/worker.test.mjs                    # le point d'entrée Worker ; doit finir par WORKER OK
+(cd site && npx wrangler deploy --dry-run --outdir <dossier>)   # vérifie la configuration et l'assemblage, sans rien déployer
 node dev/server.mjs                         # http://localhost:8788 (code d'invitation : dev ; PORT, DB_PATH, SIGNUP_CODE, COOKIE_SECRET)
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js                 # interface sur API simulée -> UI OK
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js --server=http://localhost:8788   # sur le serveur local
@@ -37,7 +41,7 @@ node scripts/build_catalog.js               # refait site/public/catalog.json (W
 Avec `--server`, le test de l'interface colle un faux cookie : le serveur local fait alors **un** vrai appel en
 lecture à wiki-masters.com, qui répond 401.
 
-Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le projet créé, voir SETUP.md).
+Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Worker créé, voir SETUP.md).
 
 ## Limites de Cloudflare gratuit (à respecter dans le code)
 

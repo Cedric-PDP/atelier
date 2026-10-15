@@ -1,0 +1,24 @@
+// Déploiement comme Worker Cloudflare (« Workers Builds » relié à la branche wikimasters, dossier racine `site`,
+// commande de déploiement `npx wrangler deploy`). Voir SETUP.md. Un projet Pages ignore ce fichier.
+{
+  // Doit être exactement le nom du Worker créé dans le tableau de bord Cloudflare.
+  "name": "classeur-wm",
+  "main": "worker.js",
+  "compatibility_date": "2025-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  // Fichiers statiques : public/ seulement (jamais functions/, schema.sql ni SPEC.md). /api/* passe par le Worker.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  // La base D1 « classeur » : database_id = l'identifiant affiché sur sa page (Storage & Databases, D1).
+  "d1_databases": [
+    { "binding": "DB", "database_name": "classeur", "database_id": "A-REMPLACER-PAR-L-IDENTIFIANT-DE-LA-BASE" }
+  ],
+  // Garde les variables posées dans le tableau de bord (MAX_USERS…) ; les secrets (COOKIE_SECRET, SIGNUP_CODE)
+  // ne sont jamais touchés par un déploiement.
+  "keep_vars": true,
+  "observability": { "enabled": true }
+}

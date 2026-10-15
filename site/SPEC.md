@@ -4,8 +4,10 @@ Site multi-utilisateur (l'utilisateur et ses amis) pour suivre une collection Wi
 articles de Wikipédia FR) **hors du jeu** : étiquettes personnelles, collections à compléter. Inspiré de
 wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
 
-Hébergement : **Cloudflare Pages** (projet à part, branche `wikimasters`, dossier racine `site/`, dossier publié
-`public` : seul `site/public/` est servi, jamais `functions/`, `schema.sql` ni ce fichier ; aucune commande de build) + **Pages Functions** (`site/functions/`) + **D1** (lié sous le nom `DB`). Variables d'environnement :
+Hébergement : **Worker Cloudflare** (Workers Builds, branche `wikimasters`, dossier racine `site/`, `npx wrangler
+deploy` avec `site/wrangler.jsonc` et `site/worker.js`) ou, au choix, projet **Pages** (dossier publié `public`, Pages
+Functions dans `site/functions/`). Dans les deux cas seul `site/public/` est servi, jamais `functions/`, `schema.sql` ni
+ce fichier. Base **D1** liée sous le nom `DB`. Variables d'environnement :
 `COOKIE_SECRET` (chiffrement des cookies WikiMasters, AES-GCM), `SIGNUP_CODE` (code d'invitation ; vide = inscription
 fermée). Développement local : `node dev/server.mjs` (sert `site/public/`, route `/api/*` vers les fonctions, D1 simulée
 avec `node:sqlite`).
