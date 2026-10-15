@@ -1,0 +1,33 @@
+{
+  "_doc": "Collections thématiques à compléter. where = motif SPARQL qui lie ?item ; ord = motif optionnel qui lie ?ord (ordre de l'album, sinon alphabétique). Seuls les éléments qui ont un article sur Wikipédia en français comptent.",
+  "groups": [
+    { "id": "vivant", "name": "Bêtes et terroir" },
+    { "id": "sciences", "name": "Sciences" },
+    { "id": "geo", "name": "Géographie" },
+    { "id": "histoire", "name": "Histoire" },
+    { "id": "sport", "name": "Sport" }
+  ],
+  "themes": [
+    { "id": "vaches", "name": "Races bovines", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q12045585 ." },
+    { "id": "chiens", "name": "Races de chiens", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q39367 ." },
+    { "id": "chats", "name": "Races de chats", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q43577 ." },
+    { "id": "chevaux", "name": "Races de chevaux", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q1160573 ." },
+    { "id": "cepages", "name": "Cépages", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q958314 ." },
+    { "id": "fromages", "name": "Fromages", "group": "vivant", "where": "?item wdt:P31/wdt:P279* wd:Q10943 ." },
+    { "id": "elements", "name": "Éléments chimiques", "group": "sciences", "where": "?item wdt:P31 wd:Q11344 ; wdt:P1086 ?z . FILTER(?z <= 118)", "ord": "BIND(?z AS ?ord)" },
+    { "id": "planetes", "name": "Planètes du Système solaire", "group": "sciences", "where": "?item wdt:P31/wdt:P279* wd:Q634 ; wdt:P397 wd:Q525 .", "ord": "OPTIONAL { ?item wdt:P2233 ?ord }" },
+    { "id": "constellations", "name": "Constellations", "group": "sciences", "where": "?item wdt:P31 wd:Q8928 ." },
+    { "id": "pays", "name": "États souverains", "group": "geo", "where": "?item wdt:P31 wd:Q3624078 . FILTER NOT EXISTS { ?item wdt:P576 ?fin }" },
+    { "id": "departements", "name": "Départements français", "group": "geo", "where": "{ ?item wdt:P31 wd:Q6465 } UNION { ?item wdt:P31 wd:Q202216 } FILTER NOT EXISTS { ?item wdt:P576 ?fin }" },
+    { "id": "regions", "name": "Régions françaises", "group": "geo", "where": "?item wdt:P31 wd:Q36784 . FILTER NOT EXISTS { ?item wdt:P576 ?fin }" },
+    { "id": "presidents", "name": "Présidents de la République", "group": "histoire", "where": "?item wdt:P39 wd:Q191954 .", "ord": "OPTIONAL { ?item p:P39 ?st . ?st ps:P39 wd:Q191954 ; pq:P580 ?ord }" },
+    { "id": "rois", "name": "Rois de France", "group": "histoire", "where": "?item wdt:P39 wd:Q18384454 .", "ord": "OPTIONAL { ?item p:P39 ?st . ?st ps:P39 wd:Q18384454 ; pq:P580 ?ord }" },
+    { "id": "empereurs", "name": "Empereurs romains", "group": "histoire", "where": "?item wdt:P39 wd:Q842606 .", "ord": "OPTIONAL { ?item p:P39 ?st . ?st ps:P39 wd:Q842606 ; pq:P580 ?ord }" },
+    { "id": "pharaons", "name": "Pharaons", "group": "histoire", "where": "?item wdt:P39 wd:Q37110 .", "ord": "OPTIONAL { ?item p:P39 ?st . ?st ps:P39 wd:Q37110 ; pq:P580 ?ord }" },
+    { "id": "papes", "name": "Papes", "group": "histoire", "where": "?item wdt:P39 wd:Q19546 .", "ord": "OPTIONAL { ?item p:P39 ?st . ?st ps:P39 wd:Q19546 ; pq:P580 ?ord }" },
+    { "id": "merveilles", "name": "Sept Merveilles du monde", "group": "histoire", "where": "?item wdt:P361 wd:Q489772 ." },
+    { "id": "jo", "name": "Jeux olympiques d'été", "group": "sport", "where": "?item wdt:P3450 wd:Q159821 .", "ord": "OPTIONAL { ?item wdt:P585 ?ord }" }
+  ],
+  "naturesSkip": ["Q5", "Q16521", "Q4167410", "Q22808320", "Q13406463", "Q4167836", "Q11266439"],
+  "naturesFullLimit": 1000
+}

@@ -1,0 +1,7 @@
+# Les exports du navigateur peuvent contenir la session de connexion : jamais dans git.
+*.har
+# Réponses de Wikidata et Wikipédia, documents préparés pour la base : se refont.
+cache/
+# Page construite (se refait avec scripts/build_page.js).
+dist/
+node_modules/
