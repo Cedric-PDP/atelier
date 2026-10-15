@@ -93,8 +93,8 @@ autre format (voir « Le favori »).
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
-| `PATCH /api/me` | `{name?, prefs?, shared?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier : `hidden_catalog` = ids du catalogue retirés, `hide_catalog` = propositions masquées ; `shared` : booléen, sinon `400` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
+| `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier : `hidden_catalog` = ids du catalogue retirés, `hide_catalog` = propositions masquées ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
@@ -111,8 +111,9 @@ autre format (voir « Le favori »).
 | `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
-| `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro |
+| `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url}], part, next_part}` : pages de 1 000 cartes, sans étiquettes |
+| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (les siennes, et celles du catalogue qu'il a ajoutées), réduites au nom et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?}], source, created_at,
 updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
@@ -247,9 +248,18 @@ autres que si l'on montre les siennes (Réglages, « Montrer mes cartes aux autr
 l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale seulement).
 
 - **Ce qui est montré** : le prénom (nom du classeur), le nombre de cartes, la date de la dernière synchro, et pour
-  chaque carte `id, title, rarity, count` (exemplaires), `shiny, image, url`. **Jamais** les étiquettes, les collections
-  à compléter, les préférences, les clés (principale ou d'import), le cookie du jeu, ni l'id interne du compte. Le
-  serveur n'a pas de qid des cartes (ils sont résolus dans le navigateur) : il n'en montre pas.
+  chaque carte `id, title, rarity, count` (exemplaires), `shiny, image, url`. **Jamais** les étiquettes, les
+  préférences, les clés (principale ou d'import), le cookie du jeu, ni l'id interne du compte ; les collections à
+  compléter seulement avec le second réglage ci-dessous. Le serveur n'a pas de qid des cartes (ils sont résolus dans le
+  navigateur) : il n'en montre pas.
+- **Collections à compléter : second réglage, à part** (Réglages, « et mes collections à compléter », sous le premier et
+  seulement quand il est coché ; `PATCH /api/me {shared_targets:true|false}` ; `users.shared_targets` 0/1, désactivé par
+  défaut). Il n'existe qu'avec le partage des cartes : `400` sans lui, et couper le partage des cartes le coupe aussi (à
+  rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (les siennes
+  et celles du catalogue qu'il a ajoutées ; pas les propositions qu'il n'a pas ajoutées ni celles qu'il a retirées), leur
+  nom et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions, images, statuts, leur source
+  (recherche tapée, catégorie, id du catalogue) ni leurs dates ; les éléments introuvables ou d'homonymie sont omis
+  (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre et la date du dernier changement.
 - **Identifiant public** (`users.public_id`) : un membre est désigné par un identifiant aléatoire, tiré à chaque
   activation du partage et effacé à sa désactivation (un ancien identifiant mène alors à `404`) ; l'id interne du compte
   sert aussi de clé du cache des cartes dans le navigateur et n'est jamais montré aux autres. `users.shared` (0/1) dit
@@ -258,19 +268,40 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   `(user_id, card_id)`). `GET /api/members/<id>/cards` = le membre (index unique `users_by_public_id`) et une page de
   1 000 cartes par clé (`card_id > curseur`), réduites en SQL aux champs montrés (liste blanche, `json_object`), dans la
   même transaction ; les étiquettes ne sont jamais lues. Aucun JavaScript proportionnel à la taille de la collection.
-- **Interface** (onglet « Entre amis ») : liste des membres qui partagent ; « Pour compléter tes collections » = pour
-  chaque collection (les tiennes et les proposées affichées), les cases vides qu'au moins un ami peut remplir, avec qui
-  les a et en combien d'exemplaires (en double d'abord : les plus faciles à échanger), les collections où les amis
-  remplissent le plus de cases d'abord ; « Ce qui pourrait intéresser tes amis » = tes cartes (tes doubles d'abord) qui
-  remplissent une case vide des **collections du catalogue** qu'un ami a commencées (au moins 5 %, comme ses
-  propositions) — ses propres collections à compléter ne sont pas partagées ; classeur d'un ami en lecture seule (filtre
-  « Me manquent », recherche, tri). Dans un album, une case vide qu'un ami peut remplir porte un badge (« chez Paul ×2 »,
-  « +1 » s'il y en a d'autres) ; sa fiche dit « Chez : Paul (×2), Léa ». Rapprochement carte ↔ élément comme pour les
-  tiennes : titre, puis qid (`match.js` ; les titres des cartes des amis que tu n'as pas sont résolus dans le même cache).
+  `GET /api/members/<id>/targets` = le membre et une page de collections par la clé primaire `(user_id, id)` (`id >
+  curseur`) : une somme cumulée (`SUM … OVER`) de leur taille rangée garde celles qui commencent sous 512 Ko (la première
+  toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre et au qid ; une réponse reste sous
+  ~1 Mo (une collection fait 600 Ko rangés au plus), même pour un compte à 5 Mo de collections.
+- **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
+  partage pas ses collections ») ; « Échanges possibles » (résumé, puis sa page, ci-dessous) ; « Pour compléter tes
+  collections » = pour chaque collection (les tiennes et les proposées affichées), les cases vides qu'au moins un ami
+  peut remplir, avec qui les a et en combien d'exemplaires (en double d'abord : les plus faciles à échanger), les
+  collections où les amis remplissent le plus de cases d'abord ; « Ce qui pourrait intéresser tes amis » = tes cartes
+  (tes doubles d'abord) qui remplissent une case vide de leurs collections quand ils les montrent, sinon (badge
+  « estimation ») des **collections du catalogue** qu'ils ont commencées (au moins 5 %, comme leurs propositions) ;
+  classeur d'un ami en lecture seule (filtre « Me manquent », recherche, tri). Dans un album, une case vide qu'un ami
+  peut remplir porte un badge (« chez Paul ×2 », « +1 » s'il y en a d'autres) ; sa fiche dit « Chez : Paul (×2), Léa ».
+  Rapprochement carte ↔ élément comme pour les tiennes : titre, puis qid (`match.js` ; les titres des cartes des amis que
+  tu n'as pas, et ceux des éléments sans qid des collections qu'ils montrent et qui leur manquent — 2 000 au plus par
+  lecture —, sont résolus dans le même cache).
+- **Page « Échanges possibles »** (sous-page de l'onglet) : « telle carte de X pourrait compléter telle collection de
+  Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
+  compléter tes collections » ; celles qu'un ami montre ; pour un ami qui ne les montre pas, l'estimation par le
+  catalogue ci-dessus, signalée (« Léa ne partage pas ses collections », badge « estimation », bloc en pointillés). Une
+  ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les collections de Z qu'elle complète
+  (un même article dans deux collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut
+  compléter 5 cases chez Léa, dont 3 en double » ; ordre : vraies collections avant les estimations, puis les couples
+  qui ont le plus de doubles, puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
+  plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Ce qui me
+  concerne » (tu donnes ou tu reçois, par défaut), « Tout le monde », ou un membre (il donne ou il reçoit). Une ligne de
+  ta carte ouvre sa fiche ; une ligne pour toi ouvre la fiche de la case vide ; entre deux amis, rien à ouvrir. Calcul
+  dans le navigateur (`trades`, propriété calculée : refait quand les cartes, les collections ou les qids changent ;
+  ~120 ms pour 6 personnes de 5 000 cartes et 30 000 éléments de collection), filtre à part.
 - **Chargement** : à la demande (ouverture de l'onglet, d'un album ou d'une case vide, si tu partages), par pages de
   1 000, gardé en mémoire le temps de la visite, **jamais dans IndexedDB** ; la liste des membres est relue à chaque
   ouverture de l'onglet (sinon au plus toutes les 10 min) et les cartes d'un ami ne le sont que si sa synchro ou son
-  nombre de cartes a changé.
+  nombre de cartes a changé ; ses collections (après ses cartes) seulement s'il les montre et si leur nombre ou leur
+  dernier changement a bougé. Pendant la résolution des qids des amis, les recalculs sont limités à un par seconde.
 - **Règles du jeu** : le classeur ne fait que montrer qui a quoi. Les échanges se font dans le jeu, par les joueurs ;
   rien n'est automatisé vers le jeu.
 

@@ -2,8 +2,9 @@
 // défaut) voit celles des autres membres qui les montrent aussi : c'est réciproque. Ce qui est montré : le prénom, le
 // nombre de cartes, la date de la dernière synchro, et pour chaque carte son id, son titre, sa rareté, le nombre
 // d'exemplaires, si elle est brillante, son illustration et son adresse Wikipédia. Jamais les étiquettes, les
-// collections à compléter, les préférences, les clés, le cookie du jeu ni l'id interne du compte : un membre est désigné
-// par son identifiant public (users.public_id, tiré à chaque activation du partage, effacé à sa désactivation).
+// préférences, les clés, le cookie du jeu ni l'id interne du compte (ni les collections à compléter, sauf second réglage
+// ci-dessous) : un membre est désigné par son identifiant public (users.public_id, tiré à chaque activation du partage,
+// effacé à sa désactivation).
 // Second réglage, à part (users.shared_targets, seulement avec le premier) : montrer aussi ses collections à compléter,
 // réduites au nom de chaque collection et, pour chaque élément vérifié, à son titre et à son qid (GET
 // /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée, catégorie) ni dates.

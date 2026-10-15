@@ -2987,7 +2987,11 @@
     if (friendQidCtrl) friendQidCtrl.abort();
     const ctrl = new AbortController();
     friendQidCtrl = ctrl;
-    resolver.resolve([...titles.values()], { signal: ctrl.signal, onProgress: () => { qidVersion.value++; } })
+    // Une fois par seconde au plus pendant la résolution (et à la fin) : les échanges possibles se recalculent à chaque
+    // qid appris, en O(personnes² × cases vides).
+    let bumped = 0;
+    const onProgress = () => { const now = Date.now(); if (now - bumped >= 1000) { bumped = now; qidVersion.value++; } };
+    resolver.resolve([...titles.values()], { signal: ctrl.signal, onProgress })
       .then(() => { qidVersion.value++; })
       .catch(() => { /* annulée, ou Wikipédia indisponible : le rapprochement par titre reste */ })
       .finally(() => { if (friendQidCtrl === ctrl) friendQidCtrl = null; });
