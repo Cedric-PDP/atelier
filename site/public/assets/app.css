@@ -263,10 +263,10 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .slot__bg.broken { display: none; }
 .slot__no { position: absolute; inset: 0 0 auto; top: 30%; text-align: center; font: 700 2.6rem/1 var(--f-head); color: var(--border); pointer-events: none; }
 .slot__top { position: relative; min-height: 18px; }
-.slot__market { position: absolute; z-index: 2; top: -4px; right: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
-.slot__market:hover { color: var(--accent); border-color: var(--accent); }
+.slot__copy { padding: 0; cursor: pointer; position: absolute; z-index: 2; top: -4px; right: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+.slot__copy:hover, .slot__copy:focus-visible { color: var(--accent); border-color: var(--accent); }
 .slot h3 { margin-top: auto; font: 600 13.5px/1.25 var(--f-head); color: var(--fg); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; position: relative; }
-/* Toute la case ouvre la fiche : bouton étendu sous la loupe du marché (z-index 2). */
+/* Toute la case ouvre la fiche : bouton étendu sous le bouton « Copier le nom » (z-index 2). */
 .slot__open { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; padding: 0; border: 0; border-radius: inherit; background: none; cursor: pointer; }
 .slot__open:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
 .slot:hover, .slot.pulled { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }

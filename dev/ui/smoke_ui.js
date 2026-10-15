@@ -685,15 +685,16 @@ async function main() {
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
   await settle();
   check(text(fiche()).includes('Musique'), 'ajout de tag dans la fiche sans effet');
-  // « Chercher sur le marché » : lien vers le marché du jeu (onglet nommé) qui copie le titre de la carte.
+  // « Copier le nom » : le titre de la carte dans le presse-papiers (plus de lien vers le marché du jeu).
   {
-    const m = fiche().querySelectorAll('a').filter((a) => text(a).includes('Chercher sur le marché'))[0];
-    check(m && m.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && m.getAttribute('target') === 'wikimasters', 'lien vers le marché absent de la fiche');
+    check(!fiche().querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'la fiche ne doit plus mener au marché');
+    const b = fiche().querySelectorAll('button').filter((x) => text(x).includes('Copier le nom'))[0];
+    check(b, 'bouton « Copier le nom » absent de la fiche');
     const n = copied.length;
-    check(!m.click().defaultPrevented, 'le lien du marché ne doit pas bloquer l\'ouverture de l\'onglet');
+    b.click();
     await settle();
-    check(copied.length === n + 1 && copied[n] === 'Rihanna' && has('« Rihanna » copié : colle-le dans la recherche du marché'), 'le titre n\'est pas copié pour le marché : ' + JSON.stringify(copied.slice(n)));
-    check(fiche(), 'le lien du marché ne doit pas fermer la fiche');
+    check(copied.length === n + 1 && copied[n] === 'Rihanna', 'le nom n\'est pas copié : ' + JSON.stringify(copied.slice(n)));
+    check(fiche() && fiche().querySelectorAll('button').some((x) => text(x).includes('Nom copié')), 'pas de « Nom copié » après la copie (ou fiche fermée)');
   }
   win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(500);
@@ -980,16 +981,17 @@ async function main() {
   check(ests.includes('≈ L') && ests.includes('≈ SR') && ests.includes('≈ R'), 'raretés estimées : ' + ests.join(' '));
   check(has("Page d'homonymie : précise le titre") && has('Article introuvable sur Wikipédia'), 'avertissements des cases vides absents');
   check(cls('slot').length === 5 && cls('slot__no').length === 5 && cls('cell').length === 1, 'cases vides numérotées absentes');
-  // Cases vides : lien vers le marché sur les articles vérifiés (ni homonymie ni article introuvable), clavier compris.
+  // Cases vides : bouton « Copier le nom » sur les articles vérifiés (ni homonymie ni article introuvable).
   {
-    const links = cls('slot__market');
-    check(links.length === 3 && links.every((a) => a.tagName === 'A' && a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && a.getAttribute('target') === 'wikimasters'),
-      'liens vers le marché des cases vides : ' + links.length);
-    const zeus = links.filter((a) => (a.getAttribute('aria-label') || '').includes('« Zeus »'))[0];
-    check(zeus, 'lien du marché de « Zeus » sans nom accessible');
+    const buttons = cls('slot__copy');
+    check(buttons.length === 3 && buttons.every((b) => b.tagName === 'BUTTON' && b.getAttribute('type') === 'button') && !cls('slot__market').length,
+      'boutons « Copier le nom » des cases vides : ' + buttons.length);
+    const zeus = buttons.filter((b) => (b.getAttribute('aria-label') || '').includes('« Zeus »'))[0];
+    check(zeus, 'bouton « Copier le nom » de « Zeus » sans nom accessible');
     zeus.click();
     await settle();
-    check(copied[copied.length - 1] === 'Zeus' && has('« Zeus » copié'), 'le titre de la case vide n\'est pas copié pour le marché');
+    check(copied[copied.length - 1] === 'Zeus', 'le nom de la case vide n\'est pas copié');
+    check(cls('slot__copy').some((b) => b.getAttribute('aria-label') === 'Nom « Zeus » copié'), 'pas de confirmation sur le bouton de la case');
   }
   check(has('40 000 vues / 30 j') || has('40 000 vues / 30 j'), 'vues sur 30 jours absentes des cases vides');
   // Toute la case vide ouvre la fiche de la carte manquante (bouton étendu, frère de la loupe) : description, rareté
@@ -1013,22 +1015,22 @@ async function main() {
     check(ft.includes('Dans tes collections') && f.querySelector('.memberships') && f.querySelector('.memberships').querySelectorAll('button').some((b) => text(b).includes("Dieux de l'Olympe")), 'collections de la carte manquante absentes');
     const wp = f.querySelectorAll('a').filter((a) => text(a).includes("Lire l'article sur Wikipédia"))[0];
     check(wp && wp.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Zeus' && wp.getAttribute('target') === '_blank', 'lien Wikipédia absent de la fiche manquante');
-    const m = f.querySelectorAll('a').filter((a) => text(a).includes('Chercher sur le marché'))[0];
-    check(m && m.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && m.getAttribute('target') === 'wikimasters', 'bouton du marché absent de la fiche manquante');
+    const m = f.querySelectorAll('button').filter((b) => text(b).includes('Copier le nom') || text(b).includes('Nom copié'))[0];
+    check(m && !f.querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'bouton « Copier le nom » absent de la fiche manquante (ou lien du marché resté)');
     const n = copied.length;
-    check(!m.click().defaultPrevented, 'le lien du marché de la fiche manquante ne doit pas bloquer l\'onglet');
+    m.click();
     await settle();
-    check(copied.length === n + 1 && copied[n] === 'Zeus' && one('fiche'), 'le marché de la fiche manquante ne copie pas le titre (ou ferme la fiche)');
+    check(copied.length === n + 1 && copied[n] === 'Zeus' && one('fiche'), 'la fiche manquante ne copie pas le nom (ou se ferme)');
     win.listeners.keydown.forEach((fn) => fn({ key: 'Escape', preventDefault() {} }));
     await settle(500);
     check(!one('fiche'), 'Échap ne ferme pas la fiche de la carte manquante');
     check(doc.activeElement === opener('Zeus'), 'le focus ne revient pas sur la case vide après la fiche');
-    // Homonymie : la fiche s'ouvre, avec l'avertissement et Wikipédia, sans marché.
+    // Homonymie : la fiche s'ouvre, avec l'avertissement et Wikipédia, sans « Copier le nom ».
     opener('Mercure').click();
     await settle(120);
     const g = one('fiche');
     check(g && text(g.querySelector('h2')) === 'Mercure' && text(g).includes("Page d'homonymie") && text(g).includes("Lire l'article sur Wikipédia")
-      && !g.querySelectorAll('a').some((a) => text(a).includes('Chercher sur le marché')), 'fiche d\'une homonymie : ' + text(g).slice(0, 300));
+      && !g.querySelectorAll('button').some((b) => text(b).includes('Copier le nom')), 'fiche d\'une homonymie : ' + text(g).slice(0, 300));
     g.querySelector('.close').click();
     await settle(500);
     check(!one('fiche'), 'le bouton Fermer ne ferme pas la fiche de la carte manquante');

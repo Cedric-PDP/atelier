@@ -41,14 +41,10 @@
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
   const WP_API = 'https://fr.wikipedia.org/w/api.php';
-  // Marché du jeu (enchères entre joueurs) : route lue dans le code public de wiki-masters.com (notifications
-  // « marketplace_* » → /marketplace ou /marketplace/<enchère>). Sa page n'est servie qu'aux joueurs connectés : rien
-  // ne dit qu'elle lit une recherche dans l'adresse, donc on l'ouvre telle quelle et on copie le titre (marketLink).
-  // Revu le 2026-10-15 : sa recherche n'appelle que GET /api/marketplace?q=… (doc de qpautrat/wikimasters-cli) ; aucune
-  // extension publique ni archive ne montre un /marketplace?<recherche> (elles tapent dans le champ ou appellent l'API).
-  const MARKET_URL = 'https://www.wiki-masters.com/marketplace';
-  const MARKET_TAB = 'wikimasters';
-  const MARKET_HINT = 'Le classeur ne peut pas remplir la recherche du jeu à ta place : le titre est copié, colle-le (Ctrl+V, ⌘+V sur Mac) dans la recherche du marché qui s\'ouvre.';
+  // Le marché du jeu ne lit aucune recherche dans son adresse (2026-10-15 : sa recherche n'appelle que
+  // GET /api/marketplace?q=…, doc de qpautrat/wikimasters-cli) et remplir son champ serait agir à la place du joueur :
+  // le classeur propose seulement de copier le nom de la carte (copyNameButton), que le joueur colle lui-même.
+  const COPY_HINT = 'Colle le nom dans la recherche du marché du jeu (Ctrl+V, ⌘+V sur Mac).';
   const SPARQL = 'https://query.wikidata.org/sparql';
   const GROUPS = { vivant: 'Le vivant', sciences: 'Sciences', geo: 'Géographie', histoire: 'Histoire', sport: 'Sport' };
   // Natures Wikidata qui ne disent rien du sujet : être humain (remplacé par le métier), pages techniques.
@@ -1885,11 +1881,13 @@
       setTimeout(() => { if (S.copied === id) S.copied = ''; }, 2000);
     } else notify('Copie impossible ici : le texte est sélectionné, copie-le avec Ctrl+C (⌘+C sur Mac).', true);
   }
-  // Clic sur « Chercher sur le marché » : copie le titre pendant le clic, avant que l'onglet du jeu ne prenne la main
-  // (le presse-papiers veut un geste et une page active). Le message attend le joueur à son retour sur le classeur.
-  function copyForMarket(title) {
-    const done = (ok) => notify(ok ? `« ${title} » copié : colle-le dans la recherche du marché (Ctrl+V, ⌘+V sur Mac).`
-      : `Copie impossible ici : cherche « ${title} » dans le marché.`, !ok);
+  // « Copier le nom » : le titre de la carte dans le presse-papiers ; le bouton affiche « Nom copié » 2 secondes.
+  function copyName(title, id) {
+    const done = (ok) => {
+      if (!ok) { notify(`Copie impossible ici : le nom de la carte est « ${title} ».`, true); return; }
+      S.copied = id;
+      setTimeout(() => { if (S.copied === id) S.copied = ''; }, 2000);
+    };
     try { navigator.clipboard.writeText(title).then(() => done(true), () => done(false)); } catch (e) { done(false); }
   }
 
@@ -2688,22 +2686,19 @@
       tags.length ? h('div', { class: 'cell__tags', title: auto ? 'Suggestions de Wikidata (à valider dans la fiche)' : null }, chipList(tags, auto)) : null,
     ]);
   }
-  // Lien ordinaire vers le marché du jeu, cliqué par le joueur (rien n'est automatisé dans le jeu), qui copie le titre.
-  // Onglet nommé « wikimasters » : un navigateur ne réutilise que l'onglet ouvert sous ce nom par cette page, jamais
-  // un onglet ouvert à la main. Et avec la COOP same-origin du classeur (_headers), l'onglet du jeu part dans un autre
-  // groupe, perd son nom et n'est plus retrouvé : chaque clic ouvre un onglet (vérifié dans Chrome 154). Seule la COOP
-  // same-origin-allow-popups le réutiliserait, mais l'onglet du jeu garderait alors window.opener sur le classeur.
-  // Pas de rel=noopener : la COOP coupe déjà ce lien, et Referrer-Policy: no-referrer cache l'adresse du classeur.
-  function marketLink(title, compact) {
-    return h('a', {
-      class: compact ? 'slot__market' : 'btn small', href: MARKET_URL, target: MARKET_TAB,
-      title: `Ouvre le marché de WikiMasters et copie « ${title} » : colle-le dans sa recherche`,
-      'aria-label': compact ? `Chercher « ${title} » sur le marché de WikiMasters (titre copié)` : null,
-      onClick: () => copyForMarket(title),
-    }, compact ? [icon('search')] : [icon('search', 'sm'), 'Chercher sur le marché']);
+  // Bouton « Copier le nom » (fiches, et en icône sur les cases vides) : à coller dans la recherche du jeu.
+  function copyNameButton(title, compact) {
+    const id = 'nom:' + title;
+    const done = S.copied === id;
+    return h('button', {
+      class: compact ? 'slot__copy' : 'btn small', type: 'button',
+      title: done ? 'Nom copié' : `Copier « ${title} » pour le coller dans la recherche du jeu`,
+      'aria-label': compact ? (done ? `Nom « ${title} » copié` : `Copier le nom « ${title} »`) : null,
+      onClick: () => copyName(title, id),
+    }, compact ? [icon(done ? 'check' : 'copy')] : [icon(done ? 'check' : 'copy', 'sm'), done ? 'Nom copié' : 'Copier le nom']);
   }
   // Case vide d'une collection : la carte qui te manque. Toute la case ouvre sa fiche : un bouton étendu sur la case
-  // (frère de la loupe du marché, jamais parent : pas de contrôle dans un contrôle), la loupe passe au-dessus.
+  // (frère du bouton « Copier le nom », jamais parent : pas de contrôle dans un contrôle), qui passe au-dessus.
   function viewSlot(s, col) {
     const it = s.item;
     const img = it.image || s.thumb;
@@ -2714,7 +2709,7 @@
       col.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: 'Pas encore dans ta collection : ouvrir la fiche',
         'aria-label': `${it.title} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
-      h('div', { class: 'slot__top' }, it.status === 'ok' ? [pill(s.est, true), marketLink(it.title, true)] : []),
+      h('div', { class: 'slot__top' }, it.status === 'ok' ? [pill(s.est, true), copyNameButton(it.title, true)] : []),
       h('h3', null, it.title),
       it.description ? h('p', null, it.description) : null,
       it.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia') : null,
@@ -3323,10 +3318,10 @@
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
         h('div', { class: 'actions' }, [
-          marketLink(c.title),
+          copyNameButton(c.title),
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
-        h('p', { class: 'small muted' }, MARKET_HINT),
+        h('p', { class: 'small muted' }, COPY_HINT),
       ]),
     ]);
   }
@@ -3369,10 +3364,10 @@
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
         h('div', { class: 'actions' }, [
-          ok ? marketLink(item.title) : null,
+          ok ? copyNameButton(item.title) : null,
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
-        ok ? h('p', { class: 'small muted' }, MARKET_HINT) : null,
+        ok ? h('p', { class: 'small muted' }, COPY_HINT) : null,
       ]),
     ]);
   }
