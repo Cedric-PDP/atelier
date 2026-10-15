@@ -688,13 +688,13 @@ async function main() {
   // « Copier le nom » : le titre de la carte dans le presse-papiers (plus de lien vers le marché du jeu).
   {
     check(!fiche().querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'la fiche ne doit plus mener au marché');
-    const b = fiche().querySelectorAll('button').filter((x) => text(x).includes('Copier le nom'))[0];
-    check(b, 'bouton « Copier le nom » absent de la fiche');
+    const b = fiche().querySelectorAll('button').filter((x) => x.getAttribute('aria-label') === 'Copier le nom « Rihanna »')[0];
+    check(b && b.classList.contains('copy-name') && b.parentNode.classList.contains('fiche__title'), 'icône « Copier le nom » absente à côté du titre de la fiche');
     const n = copied.length;
     b.click();
     await settle();
     check(copied.length === n + 1 && copied[n] === 'Rihanna', 'le nom n\'est pas copié : ' + JSON.stringify(copied.slice(n)));
-    check(fiche() && fiche().querySelectorAll('button').some((x) => text(x).includes('Nom copié')), 'pas de « Nom copié » après la copie (ou fiche fermée)');
+    check(fiche() && fiche().querySelectorAll('button').some((x) => x.getAttribute('aria-label') === 'Nom « Rihanna » copié'), 'pas de « Nom copié » après la copie (ou fiche fermée)');
   }
   win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(500);
@@ -1015,7 +1015,7 @@ async function main() {
     check(ft.includes('Dans tes collections') && f.querySelector('.memberships') && f.querySelector('.memberships').querySelectorAll('button').some((b) => text(b).includes("Dieux de l'Olympe")), 'collections de la carte manquante absentes');
     const wp = f.querySelectorAll('a').filter((a) => text(a).includes("Lire l'article sur Wikipédia"))[0];
     check(wp && wp.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Zeus' && wp.getAttribute('target') === '_blank', 'lien Wikipédia absent de la fiche manquante');
-    const m = f.querySelectorAll('button').filter((b) => text(b).includes('Copier le nom') || text(b).includes('Nom copié'))[0];
+    const m = f.querySelectorAll('button').filter((b) => /^(Copier le nom|Nom) « Zeus »/.test(b.getAttribute('aria-label') || '') && b.classList.contains('copy-name'))[0];
     check(m && !f.querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'bouton « Copier le nom » absent de la fiche manquante (ou lien du marché resté)');
     const n = copied.length;
     m.click();
@@ -1030,7 +1030,7 @@ async function main() {
     await settle(120);
     const g = one('fiche');
     check(g && text(g.querySelector('h2')) === 'Mercure' && text(g).includes("Page d'homonymie") && text(g).includes("Lire l'article sur Wikipédia")
-      && !g.querySelectorAll('button').some((b) => text(b).includes('Copier le nom')), 'fiche d\'une homonymie : ' + text(g).slice(0, 300));
+      && !g.querySelectorAll('button').some((b) => (b.getAttribute('aria-label') || '').startsWith('Copier le nom')), 'fiche d\'une homonymie : ' + text(g).slice(0, 300));
     g.querySelector('.close').click();
     await settle(500);
     check(!one('fiche'), 'le bouton Fermer ne ferme pas la fiche de la carte manquante');

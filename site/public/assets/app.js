@@ -44,7 +44,6 @@
   // Le marché du jeu ne lit aucune recherche dans son adresse (2026-10-15 : sa recherche n'appelle que
   // GET /api/marketplace?q=…, doc de qpautrat/wikimasters-cli) et remplir son champ serait agir à la place du joueur :
   // le classeur propose seulement de copier le nom de la carte (copyNameButton), que le joueur colle lui-même.
-  const COPY_HINT = 'Colle le nom dans la recherche du marché du jeu (Ctrl+V, ⌘+V sur Mac).';
   const SPARQL = 'https://query.wikidata.org/sparql';
   const GROUPS = { vivant: 'Le vivant', sciences: 'Sciences', geo: 'Géographie', histoire: 'Histoire', sport: 'Sport' };
   // Natures Wikidata qui ne disent rien du sujet : être humain (remplacé par le métier), pages techniques.
@@ -2686,17 +2685,20 @@
       tags.length ? h('div', { class: 'cell__tags', title: auto ? 'Suggestions de Wikidata (à valider dans la fiche)' : null }, chipList(tags, auto)) : null,
     ]);
   }
-  // Bouton « Copier le nom » (fiches, et en icône sur les cases vides) : à coller dans la recherche du jeu.
-  function copyNameButton(title, compact) {
+  // Icône « Copier le nom » : à côté du titre des fiches, en haut à droite des cases vides (slot). Le nom copié se
+  // colle dans la recherche du jeu.
+  function copyNameButton(title, slot) {
     const id = 'nom:' + title;
     const done = S.copied === id;
     return h('button', {
-      class: compact ? 'slot__copy' : 'btn small', type: 'button',
-      title: done ? 'Nom copié' : `Copier « ${title} » pour le coller dans la recherche du jeu`,
-      'aria-label': compact ? (done ? `Nom « ${title} » copié` : `Copier le nom « ${title} »`) : null,
+      class: slot ? 'slot__copy' : 'copy-name', type: 'button',
+      title: done ? 'Nom copié' : `Copier « ${title} » pour le coller dans la recherche du jeu (Ctrl+V, ⌘+V sur Mac)`,
+      'aria-label': done ? `Nom « ${title} » copié` : `Copier le nom « ${title} »`,
       onClick: () => copyName(title, id),
-    }, compact ? [icon(done ? 'check' : 'copy')] : [icon(done ? 'check' : 'copy', 'sm'), done ? 'Nom copié' : 'Copier le nom']);
+    }, [icon(done ? 'check' : 'copy', slot ? '' : 'sm')]);
   }
+  // Titre d'une fiche, avec l'icône « Copier le nom » à côté (sauf article à vérifier).
+  const ficheTitle = (title, copy) => h('div', { class: 'fiche__title' }, [h('h2', { id: 'detail-title' }, title), copy ? copyNameButton(title) : null]);
   // Case vide d'une collection : la carte qui te manque. Toute la case ouvre sa fiche : un bouton étendu sur la case
   // (frère du bouton « Copier le nom », jamais parent : pas de contrôle dans un contrôle), qui passe au-dessus.
   function viewSlot(s, col) {
@@ -3290,7 +3292,7 @@
       h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
       viewCard(c, true),
       h('div', { class: 'info' }, [
-        h('h2', { id: 'detail-title' }, c.title),
+        ficheTitle(c.title, true),
         c.category ? h('p', { class: 'muted lead' }, c.category) : null,
         h('div', { class: 'facts' }, [
           fact('Rareté', RARITY_NAME[c.rarity] || c.rarity || '?'),
@@ -3318,10 +3320,8 @@
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
         h('div', { class: 'actions' }, [
-          copyNameButton(c.title),
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
-        h('p', { class: 'small muted' }, COPY_HINT),
       ]),
     ]);
   }
@@ -3351,7 +3351,7 @@
         h('p', { class: 'slot__name' }, item.title),
       ]),
       h('div', { class: 'info' }, [
-        h('h2', { id: 'detail-title' }, item.title),
+        ficheTitle(item.title, ok),
         item.description ? h('p', { class: 'muted lead' }, item.description) : null,
         h('p', { class: 'missing-note' }, 'Pas encore dans ta collection'),
         item.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
@@ -3364,10 +3364,8 @@
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         prop.length ? h('div', null, [h('h3', null, 'Dans les collections proposées'), memberList(prop)]) : null,
         h('div', { class: 'actions' }, [
-          ok ? copyNameButton(item.title) : null,
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
-        ok ? h('p', { class: 'small muted' }, COPY_HINT) : null,
       ]),
     ]);
   }
