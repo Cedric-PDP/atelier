@@ -3120,19 +3120,16 @@
       r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
     ]);
   }
-  // Une carte dans une grille : la carte, sa case de sélection, et les tags sous la carte.
+  // Une carte dans une grille : la carte et sa case de sélection. Ses tags (et les suggestions) ne sont que dans la
+  // fiche, ouverte d'un clic sur la carte (demande de l'utilisateur, 2026-10-16).
   function viewCell(c) {
     const sel = S.selected.has(c.id);
-    let tags = c.tags;
-    let auto = false;
-    if (!tags.length) { const s = suggestionsFor(c); if (s && s.length) { tags = s; auto = true; } }
     return h('div', { class: ['cell', { selected: sel, pulled: S.openId === c.id }] }, [
       viewCard(c, false),
       h('label', { class: 'pick', title: 'Sélectionner (Maj+clic : une plage)' }, [
         h('input', { type: 'checkbox', checked: sel, 'aria-label': 'Sélectionner ' + c.title, onClick: (e) => toggleSelect(c.id, e) }),
         icon('check'),
       ]),
-      tags.length ? h('div', { class: 'cell__tags', title: auto ? 'Suggestions de Wikidata (à valider dans la fiche)' : null }, chipList(tags, auto)) : null,
     ]);
   }
   // Icône « Copier le nom » : à côté du titre des fiches, en haut à droite des cases vides (slot). Le nom copié se
@@ -3509,7 +3506,7 @@
     const left = unsuggested.value;
     return [
       h('p', { class: 'small muted' }, left ? 'Tags suggérés d\'après Wikidata (nature, métier, pays), gardés dans ce navigateur. Tu les valides dans les fiches.'
-        : 'Suggestions calculées pour toute la collection : elles apparaissent en pointillés sous les cartes sans tag.'),
+        : "Suggestions calculées pour toute la collection : elles s'affichent dans la fiche de chaque carte sans tag."),
       errLine(S.sugg.error),
       left ? h('button', { class: 'btn small', type: 'button', onClick: computeAllSuggestions }, `Calculer les suggestions pour toute la collection (${fmt(left)})`) : null,
     ];

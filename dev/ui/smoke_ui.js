@@ -668,7 +668,7 @@ async function main() {
   await settle();
   check(has('« À échanger » ajouté à 5 cartes.'), 'ajout groupé sans confirmation');
   if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.card_ids.length === 5 && b.add[0] === 'À échanger'), 'appel tags/bulk incorrect');
-  check(cls('cell__tags').filter((t) => text(t).includes('À échanger')).length === 5, 'les tags ne sont pas affichés sous les cartes');
+  check(!cls('cell__tags').length && !cls('cardgrid')[0].querySelectorAll('.tag').length, 'les tags ne doivent plus être affichés sous les cartes (seulement dans la fiche)');
   // Une étiquette sans « / » est rangée dans « Autres », catégorie repliée par défaut.
   const catChip = (name) => cls('tagcat').map((n) => n.querySelector('.chip')).find((b) => b && text(b.querySelector('.chip__label')) === name);
   const subChip = (name) => all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && n.parentNode.classList.contains('tagcat__subs') && text(n.querySelector('.chip__label')) === name)[0];
@@ -683,8 +683,7 @@ async function main() {
   needButton('Ajouter').click();
   await settle();
   if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.add[0] === 'Pays/Brésil' && b.card_ids.length === 4), 'tag rangé mal envoyé');
-  const bresil = all((n) => n.classList.contains('tag') && text(n) === 'Brésil');
-  check(bresil.length === 4 && bresil[0].getAttribute('title') === 'Pays › Brésil', 'la sous-catégorie seule (catégorie en info-bulle) attendue sous les cartes');
+  check(!cls('cardgrid')[0].querySelectorAll('.tag').length, 'aucun tag sous les cartes (seulement dans la fiche)');
   check(catChip('Pays') && text(catChip('Pays').querySelector('.n')) === '4', 'catégorie « Pays » absente du menu');
   // Quota ou base pleine : le 503 du serveur s'affiche tel quel.
   if (!SERVER) {
@@ -1218,7 +1217,7 @@ async function main() {
     check(cls('cell').length === 0, 'la carte retirée reste affichée');
     type(q, 'ailleurs');
     await settle();
-    check(cls('cell').length === 1 && text(one('cell')).includes('Ailleurs'), 'le tag posé sur un autre appareil n\'est pas arrivé');
+    check(cls('cell').length === 1, 'le tag posé sur un autre appareil n\'est pas arrivé');
 
     // 12 ter. Tags changés ailleurs, sans envoi : cards_rev le dit, ?since les rapporte. Un tag posé ici pendant cette
     // lecture n'est pas écrasé par sa réponse, calculée avant lui ; la lecture suivante rapporte l'état du serveur.
