@@ -99,6 +99,24 @@ export function sortTags(list) {
   return [...list].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
+// ---------------------------------------------------------------- révisions (lecture incrémentale)
+// users.cards_rev = révision de la liste des cartes. Une opération qui la change (import, synchro rapide, étiquettes)
+// écrit ses cartes (cards.rev) et ses retraits (cards_gone.rev) avec la révision suivante, NEXT_REV, puis commitRev
+// avance d'un cran, seulement si quelque chose porte cette révision : une opération qui ne change rien ne la fait pas
+// avancer. Toujours dans le même lot (transaction D1), ?1 = user_id dans toutes ces requêtes.
+export const NEXT_REV = '(SELECT cards_rev + 1 FROM users WHERE id = ?1)';
+
+export function commitRev(db, userId) {
+  return db.prepare(
+    `UPDATE users SET cards_rev = cards_rev + 1 WHERE id = ?1
+       AND (EXISTS (SELECT 1 FROM cards WHERE user_id = ?1 AND rev = users.cards_rev + 1)
+         OR EXISTS (SELECT 1 FROM cards_gone WHERE user_id = ?1 AND rev = users.cards_rev + 1))`,
+  ).bind(userId);
+}
+
+// Au-delà de 1 000 cartes changées ou retirées depuis la révision demandée, la page recharge tout.
+export const MAX_DELTA = 1000;
+
 // GET /api/cards : la réponse est assemblée par D1, en morceaux d'environ 1 Mo (une ligne D1 fait 2 Mo au plus) :
 // les Cartes stockées (texte JSON) reçoivent leurs étiquettes en SQL et sont recollées telles quelles. Le Worker ne
 // décode que quelques longues chaînes, au lieu d'une ligne par carte.
@@ -119,18 +137,43 @@ const ALL_CARDS = `WITH t AS (
 
 // ?part=… : lecture par pages de 1 000 cartes, par clé (card_id > dernière carte lue) : seules ces cartes et leurs
 // étiquettes sont lues. part = « 0 » (ou vide) pour la première page, puis le curseur next_part (texte opaque).
+// CROSS JOIN : la page d'abord, puis ses étiquettes par clé (sinon SQLite parcourt toutes celles du compte).
 const PAGE_SIZE = 1000;
 const PAGE_CARDS = `WITH page AS (
     SELECT card_id, data FROM cards WHERE user_id = ?1 AND card_id > ?2 ORDER BY card_id LIMIT ${PAGE_SIZE + 1}
   ),
   t AS (
     SELECT card_id, json_group_array(tag) AS tags FROM (
-      SELECT tags.card_id, tags.tag FROM tags JOIN page ON page.card_id = tags.card_id
-      WHERE tags.user_id = ?1 ORDER BY tags.card_id, tags.tag
+      SELECT page.card_id, tags.tag FROM page CROSS JOIN tags ON tags.user_id = ?1 AND tags.card_id = page.card_id
+      ORDER BY page.card_id, tags.tag
     ) GROUP BY card_id
   )
   SELECT page.card_id, substr(page.data, 1, length(page.data) - 1) || ',"tags":' || COALESCE(t.tags, '[]') || '}' AS j
   FROM page LEFT JOIN t ON t.card_id = page.card_id ORDER BY page.card_id`;
+
+// ?since=R : cartes changées depuis la révision R (rev > R, avec leurs étiquettes) et cartes retirées depuis
+// (cards_gone, sauf celles revenues). Lecture par les index (user_id, rev), MAX_DELTA + 1 lignes au plus de chaque
+// côté : le coût ne dépend pas de la taille de la collection. Révision, plancher et changements sont lus dans la même
+// requête (un seul état de la base) ; le Worker ne décode que deux longues chaînes.
+const CHANGES = `WITH ch AS (SELECT card_id, data FROM cards WHERE user_id = ?1 AND rev > ?2 LIMIT ${MAX_DELTA + 1}),
+  gn AS (
+    SELECT g.card_id FROM cards_gone AS g WHERE g.user_id = ?1 AND g.rev > ?2
+      AND NOT EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND c.card_id = g.card_id)
+    LIMIT ${MAX_DELTA + 1}
+  ),
+  t AS (
+    SELECT card_id, json_group_array(tag) AS tags FROM (
+      SELECT ch.card_id, tags.tag FROM ch CROSS JOIN tags ON tags.user_id = ?1 AND tags.card_id = ch.card_id
+      ORDER BY ch.card_id, tags.tag
+    ) GROUP BY card_id
+  )
+  SELECT u.cards_rev AS rev, u.cards_gone_floor AS floor, (SELECT COUNT(*) FROM ch) + (SELECT COUNT(*) FROM gn) AS n,
+    (SELECT group_concat(j, ',') FROM (
+      SELECT substr(ch.data, 1, length(ch.data) - 1) || ',"tags":' || COALESCE(t.tags, '[]') || '}' AS j
+      FROM ch LEFT JOIN t ON t.card_id = ch.card_id ORDER BY ch.card_id
+    )) AS cards,
+    (SELECT json_group_array(card_id) FROM gn) AS gone
+  FROM users AS u WHERE u.id = ?1`;
 
 const encodeCursor = (cardId) => base64url(new TextEncoder().encode(cardId));
 
@@ -145,18 +188,51 @@ function decodeCursor(part) {
   }
 }
 
-export async function listCards(env, user, _body, request) {
-  const part = new URL(request.url).searchParams.get('part');
+// GET /api/cards?since=R. {rev, delta:false} (rien d'autre) quand la page doit tout recharger : révision inconnue
+// (R > rev, base recréée), retraits plus anciens élagués (R < plancher), plus de MAX_DELTA changements.
+async function listChanges(env, user, since) {
   const newIds = raw(user.new_ids || '[]');
+  if (since > user.cards_rev) return { rev: user.cards_rev, delta: false };
+  if (since === user.cards_rev) {
+    return { rev: since, delta: true, cards: [], gone: [], fetched_at: user.fetched_at, new_ids: newIds };
+  }
+  const row = await env.DB.prepare(CHANGES).bind(user.id, since).first();
+  if (!row || since > row.rev || since < row.floor || row.n > MAX_DELTA) {
+    return { rev: row ? row.rev : user.cards_rev, delta: false };
+  }
+  return {
+    rev: row.rev,
+    delta: true,
+    cards: raw(`[${row.cards ?? ''}]`),
+    gone: raw(row.gone || '[]'),
+    fetched_at: user.fetched_at,
+    new_ids: newIds,
+  };
+}
+
+// `rev` = users.cards_rev lu à l'authentification, donc AVANT les cartes : un changement fait pendant la lecture
+// (entre deux pages) sera renvoyé par la lecture incrémentale suivante. La page garde celui de la première page.
+export async function listCards(env, user, _body, request) {
+  const params = new URL(request.url).searchParams;
+  const part = params.get('part');
+  const since = params.get('since');
+  if (since !== null) {
+    if (part !== null) throw new HttpError(400, '« since » et « part » ne vont pas ensemble.');
+    if (!/^\d{1,15}$/.test(since)) throw new HttpError(400, 'Révision (since) invalide : un entier positif ou nul.');
+    return listChanges(env, user, Number(since));
+  }
+  const newIds = raw(user.new_ids || '[]');
+  const rev = user.cards_rev;
   if (part === null) {
     const { results } = await env.DB.prepare(ALL_CARDS).bind(user.id).all();
-    return { fetched_at: user.fetched_at, cards: raw(`[${results.map((r) => r.part).join(',')}]`), new_ids: newIds };
+    return { rev, fetched_at: user.fetched_at, cards: raw(`[${results.map((r) => r.part).join(',')}]`), new_ids: newIds };
   }
   const after = decodeCursor(part);
   const { results } = await env.DB.prepare(PAGE_CARDS).bind(user.id, after).all();
   const more = results.length > PAGE_SIZE;
   const rows = more ? results.slice(0, PAGE_SIZE) : results;
   return {
+    rev,
     fetched_at: user.fetched_at,
     cards: raw(`[${rows.map((r) => r.j).join(',')}]`),
     new_ids: newIds,

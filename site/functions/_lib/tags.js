@@ -1,7 +1,9 @@
 // Étiquettes du classeur (jamais reposées dans le jeu).
+// Une carte du classeur dont les étiquettes changent prend la révision suivante (lecture incrémentale, cards.js) ;
+// un appel qui ne change rien ne fait pas avancer la révision.
 
 import { HttpError } from './http.js';
-import { MAX_CARDS, sortTags } from './cards.js';
+import { MAX_CARDS, NEXT_REV, commitRev, sortTags } from './cards.js';
 import { cleanText } from './util.js';
 
 const MAX_TAG_LENGTH = 60; // deux niveaux dans le nom : « Culture et œuvres/Groupe de musique »
@@ -49,10 +51,18 @@ export async function setTags(env, user, body) {
     .first();
   if (!state.owned) throw new HttpError(404, "Cette carte n'est pas dans ton classeur.");
   if (state.total - state.mine + tags.length > MAX_TAGS_PER_USER) throw new HttpError(400, TOO_MANY);
+  const list = JSON.stringify(tags);
   await db.batch([
+    // Avant l'écriture : révision de la carte si ses étiquettes (triées) ne sont pas déjà celles-là.
+    db.prepare(
+      `UPDATE cards SET rev = ${NEXT_REV} WHERE user_id = ?1 AND card_id = ?2
+         AND (SELECT json_group_array(tag) FROM (SELECT tag FROM tags WHERE user_id = ?1 AND card_id = ?2 ORDER BY tag))
+           IS NOT (SELECT json_group_array(value) FROM (SELECT value FROM json_each(?3) ORDER BY value))`,
+    ).bind(user.id, cardId, list),
     db.prepare('DELETE FROM tags WHERE user_id = ?1 AND card_id = ?2').bind(user.id, cardId),
     db.prepare('INSERT OR IGNORE INTO tags (user_id, card_id, tag) SELECT ?1, ?2, value FROM json_each(?3)')
-      .bind(user.id, cardId, JSON.stringify(tags)),
+      .bind(user.id, cardId, list),
+    commitRev(db, user.id),
   ]);
   return { tags: sortTags(tags) };
 }
@@ -97,7 +107,18 @@ export async function bulkTags(env, user, body) {
   }
   if (state.total + state.added - state.removed > MAX_TAGS_PER_USER) throw new HttpError(400, TOO_MANY);
 
-  const stmts = [];
+  const stmts = [
+    // Avant l'écriture : révision des cartes du classeur qui changent, c'est-à-dire qui ont une étiquette retirée (et
+    // pas remise) ou à qui manque une étiquette ajoutée.
+    db.prepare(
+      `UPDATE cards SET rev = ${NEXT_REV}
+       WHERE user_id = ?1 AND card_id IN (SELECT value FROM json_each(?2))
+         AND (EXISTS (SELECT 1 FROM tags AS t WHERE t.user_id = ?1 AND t.card_id = cards.card_id
+                AND t.tag IN (SELECT value FROM json_each(?3)) AND t.tag NOT IN (SELECT value FROM json_each(?4)))
+           OR EXISTS (SELECT 1 FROM json_each(?4) AS a WHERE NOT EXISTS
+                (SELECT 1 FROM tags AS t WHERE t.user_id = ?1 AND t.card_id = cards.card_id AND t.tag = a.value)))`,
+    ).bind(user.id, ids, removeJson, addJson),
+  ];
   if (remove.length) {
     stmts.push(
       db.prepare(
@@ -116,6 +137,7 @@ export async function bulkTags(env, user, body) {
       ).bind(user.id, ids, addJson),
     );
   }
+  stmts.push(commitRev(db, user.id));
   await db.batch(stmts);
   return { ok: true };
 }
@@ -128,10 +150,15 @@ export async function renameTag(env, user, body) {
   if (!from || !to) throw new HttpError(400, "Indique l'étiquette à renommer et son nouveau nom.");
   if (from === to) return { ok: true };
   await db.batch([
+    // Révision des cartes du classeur qui portent l'étiquette renommée.
+    db.prepare(
+      `UPDATE cards SET rev = ${NEXT_REV} WHERE user_id = ?1 AND card_id IN (SELECT card_id FROM tags WHERE user_id = ?1 AND tag = ?2)`,
+    ).bind(user.id, from),
     db.prepare(
       'INSERT OR IGNORE INTO tags (user_id, card_id, tag) SELECT user_id, card_id, ?2 FROM tags WHERE user_id = ?1 AND tag = ?3',
     ).bind(user.id, to, from),
     db.prepare('DELETE FROM tags WHERE user_id = ?1 AND tag = ?2').bind(user.id, from),
+    commitRev(db, user.id),
   ]);
   return { ok: true };
 }

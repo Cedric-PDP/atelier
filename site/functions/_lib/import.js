@@ -4,7 +4,7 @@
 
 import { HttpError, raw } from './http.js';
 import { purgeStaging } from './db.js';
-import { MAX_CARDS, MAX_PART_CARDS, checkCard, entryToCard, isDate } from './cards.js';
+import { MAX_CARDS, MAX_DELTA, MAX_PART_CARDS, NEXT_REV, checkCard, commitRev, entryToCard, isDate } from './cards.js';
 import { byteLength, nowIso, randomToken } from './util.js';
 
 // Quotas d'un envoi en attente (D1 gratuit : 500 Mo en tout, 100 000 lignes écrites par jour).
@@ -46,6 +46,24 @@ function collectionCte(source) {
     FROM d GROUP BY card_id
   )`;
 }
+
+// Cartes retirées (cards_gone, lecture incrémentale). Une carte écrite par l'opération (nouvelle, revenue ou modifiée,
+// donc cards.rev = NEXT_REV) n'est plus retirée.
+const clearGone = (db, userId) => db.prepare(
+  `DELETE FROM cards_gone WHERE user_id = ?1 AND card_id IN (SELECT card_id FROM cards WHERE user_id = ?1 AND rev = ${NEXT_REV})`,
+).bind(userId);
+
+// Élagage : seuls les retraits des révisions les plus récentes sont gardés, MAX_DELTA au plus. Un plus ancien ne
+// servirait qu'à une lecture incrémentale qui compterait de toute façon plus de MAX_DELTA changements (refusée) ; le
+// plancher (cards_gone_floor) monte à la plus récente révision effacée, et GET /api/cards?since=R refuse R < plancher.
+const pruneGone = (db, userId) => [
+  db.prepare(
+    `WITH x AS (SELECT rev FROM cards_gone WHERE user_id = ?1 ORDER BY rev DESC LIMIT 1 OFFSET ${MAX_DELTA})
+     UPDATE users SET cards_gone_floor = (SELECT rev FROM x) WHERE id = ?1 AND (SELECT rev FROM x) > cards_gone_floor`,
+  ).bind(userId),
+  db.prepare('DELETE FROM cards_gone WHERE user_id = ?1 AND rev <= (SELECT cards_gone_floor FROM users WHERE id = ?1)')
+    .bind(userId),
+];
 
 export const IMPORT_SOURCE =
   'SELECT cards AS j FROM import_staging WHERE user_id = ?1 AND upload_id = ?2 AND part >= 0';
@@ -94,7 +112,8 @@ export async function deltaFits(db, user, { text, stats, rows, copies }) {
 }
 
 // Ajoute les nouveautés à la collection en place : carte nouvelle insérée, carte déjà là additionnée (exemplaires,
-// brillante ou favorite si l'un l'est, plus ancienne date d'obtention). Rien n'est retiré.
+// brillante ou favorite si l'un l'est, plus ancienne date d'obtention). Rien n'est retiré. Les cartes écrites prennent
+// la révision suivante (aucune nouveauté : la révision ne bouge pas).
 export async function writeDelta(db, user, { text, stats, lastAt, clear = [] }) {
   const state = syncState(user) || {};
   const cte = collectionCte(DELTA_SOURCE);
@@ -109,14 +128,16 @@ export async function writeDelta(db, user, { text, stats, lastAt, clear = [] }) 
        WHERE id = ?1 RETURNING new_ids`,
     ).bind(user.id, text, nowIso(), next),
     db.prepare(
-      `${cte} INSERT INTO cards (user_id, card_id, data) SELECT ?1, g.card_id, g.data FROM g WHERE true
-       ON CONFLICT (user_id, card_id) DO UPDATE SET data = json_set(cards.data,
+      `${cte} INSERT INTO cards (user_id, card_id, data, rev) SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g WHERE true
+       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev, data = json_set(cards.data,
          '$.count', ${old('count')} + ${add('count')},
          '$.shiny', json(CASE WHEN ${old('shiny')} OR ${add('shiny')} THEN 'true' ELSE 'false' END),
          '$.starred', json(CASE WHEN ${old('starred')} OR ${add('starred')} THEN 'true' ELSE 'false' END),
          '$.obtained_at', CASE WHEN ${old('obtained_at')} IS NULL OR ${add('obtained_at')} < ${old('obtained_at')}
            THEN ${add('obtained_at')} ELSE ${old('obtained_at')} END)`,
     ).bind(user.id, text),
+    clearGone(db, user.id),
+    commitRev(db, user.id),
     ...clear,
   ]);
   const total = await db.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?1').bind(user.id).first();
@@ -146,6 +167,8 @@ async function deltaRoute(db, user, body) {
 }
 
 // Remplace la collection par celle de la table d'attente, en n'écrivant que les différences, dans une transaction.
+// Les cartes ajoutées, revenues ou modifiées et les retraits prennent la révision suivante ; une collection identique
+// à celle en place ne fait pas avancer la révision.
 // `clear` = requêtes qui vident la table d'attente (passées dans la même transaction) ; `skipped` = cartes ignorées
 // (invalides), recopié dans la réponse.
 // lastAt = obtained_at du plus récent exemplaire lu (envoyé par le favori) ; sinon le plus récent de la table d'attente.
@@ -173,15 +196,23 @@ export async function finalizeImport(db, user, { source, key, stats, lastAt = nu
     ).bind(user.id, key, nowIso(), state),
     // Nouvelles et modifiées.
     db.prepare(
-      `${cte} INSERT INTO cards (user_id, card_id, data)
-       SELECT ?1, g.card_id, g.data FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
+      `${cte} INSERT INTO cards (user_id, card_id, data, rev)
+       SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
        WHERE c.data IS NULL OR c.data <> g.data
-       ON CONFLICT (user_id, card_id) DO UPDATE SET data = excluded.data`,
+       ON CONFLICT (user_id, card_id) DO UPDATE SET data = excluded.data, rev = excluded.rev`,
     ).bind(user.id, key),
-    // Disparues (leurs étiquettes restent).
+    clearGone(db, user.id),
+    // Disparues : marquées retirées, puis effacées par cette marque (leurs étiquettes restent).
     db.prepare(
-      `${cte} DELETE FROM cards WHERE user_id = ?1 AND card_id NOT IN (SELECT card_id FROM e)`,
+      `${cte} INSERT INTO cards_gone (user_id, card_id, rev)
+       SELECT ?1, card_id, ${NEXT_REV} FROM cards WHERE user_id = ?1 AND card_id NOT IN (SELECT card_id FROM e)
+       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev`,
     ).bind(user.id, key),
+    db.prepare(
+      `DELETE FROM cards WHERE user_id = ?1 AND card_id IN (SELECT card_id FROM cards_gone WHERE user_id = ?1 AND rev = ${NEXT_REV})`,
+    ).bind(user.id),
+    commitRev(db, user.id),
+    ...pruneGone(db, user.id),
     ...clear,
   ]);
 

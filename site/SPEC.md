@@ -77,12 +77,13 @@ sert à vérifier qu'un export est complet. La dernière page a moins de 50 entr
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, new_ids, session:{has_cookie, expired, updated_at}}` |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, cards_rev, new_ids, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale ») |
 | `PATCH /api/me` | `{name?, prefs?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier : `hidden_catalog` = ids du catalogue retirés, `hide_catalog` = propositions masquées) | `{user}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
-| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, étiquettes, collections, cookie) et le compte |
+| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
-| `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page) ; sans `part` : tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
+| `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{rev, fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page ; `rev` : révision lue avant les cartes, garder celle de la page `0`) ; sans `part` : `{rev, fetched_at, cards, new_ids}`, tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
+| `GET /api/cards?since=R` | `R` : entier ≥ 0, la `rev` gardée (sinon `400`, et `400` avec `part`) | `{rev, delta:true, cards:[Carte], gone:[id…], fetched_at, new_ids}` : cartes changées (données ou étiquettes) et cartes retirées depuis `R` ; ou `{rev, delta:false}` : tout recharger (voir « Lecture incrémentale ») |
 | `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards`) | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped}` (`complete` = `stats.totalUnique === count`, ou `null` sans stats) ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at}`, `{mode:'delta', cards, stats, rows, copies, last_at}` → `{count, new_ids, complete, skipped:0, quick:true}` ou `{needs_full:true}` (rien d'écrit) |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` | `{ok:true}` ; extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`), le chiffre et le garde |
 | `DELETE /api/session` | | `{ok:true}` |
@@ -116,6 +117,21 @@ comparaison avec la collection en place (ajouts, retraits, modifications, `new_i
 **Import et nouveautés** : un import (favori ou rafraîchissement) remplace la collection ; on n'écrit que les
 différences (cartes ajoutées, retirées, modifiées). `new_ids` = cartes présentes après mais pas avant ; **vide au
 tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées (elle peut revenir).
+
+**Lecture incrémentale** (ne relire que ce qui a changé) : `users.cards_rev` = révision de la liste des cartes du
+classeur, +1 par opération qui la change : import complet (favori ou fin de `/api/refresh`), synchro rapide,
+`tags/set`, `tags/bulk`, `tags/rename` sur des cartes présentes. Une opération qui ne change rien (même collection,
+mêmes étiquettes, synchro rapide sans nouveauté) ne la fait pas avancer. Chaque carte garde la révision de son dernier
+changement (`cards.rev`, données ou étiquettes) ; une carte retirée par un import laisse une trace (`cards_gone`, avec
+la révision du retrait), effacée si elle revient. L'interface garde la `rev` de la première page de sa lecture
+complète (lue **avant** les cartes : un changement fait pendant la lecture revient au delta suivant), surveille
+`cards_rev` dans `GET /api/me`, et quand elle change appelle `GET /api/cards?since=<rev gardée>` : `cards` = cartes
+dont `rev > R` (au format Carte, avec leurs étiquettes : à remplacer ou ajouter), `gone` = cartes retirées depuis
+(à enlever), puis elle garde la nouvelle `rev`. Réponse `{rev, delta:false}` (tout recharger) si `R > rev` (révision
+inconnue : base recréée), si `R` est sous le plancher des retraits connus (`users.cards_gone_floor`) ou s'il y a plus
+de 1 000 changements (cartes changées + retirées). Seuls les retraits des révisions les plus récentes sont gardés,
+1 000 au plus : un plus ancien ne servirait qu'à un delta de plus de 1 000 changements, refusé de toute façon. Lecture
+par l'index `(user_id, rev)`, 1 001 lignes au plus : le coût ne dépend pas de la taille de la collection.
 
 **Synchro rapide (seulement les nouveautés)** : après une lecture complète, `users.sync_state` garde les compteurs du
 jeu (`total`, `totalUnique`), l'`obtained_at` du plus récent exemplaire lu (`last_at`, envoyé par le favori ou pris dans

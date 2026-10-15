@@ -4,8 +4,8 @@
 import { HttpError, json, raw } from './http.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 
-const USER_COLUMNS =
-  'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, import_key_hash, prefs, sync_state';
+const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
+  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -71,6 +71,7 @@ export async function getMe(env, user) {
     user: publicUser(user),
     fetched_at: user.fetched_at,
     card_count: row ? row.n : 0,
+    cards_rev: user.cards_rev, // change à chaque changement de la liste des cartes : la page relit alors ?since=…
     new_ids: raw(user.new_ids || '[]'), // texte JSON écrit par la finalisation d'import
     has_import_key: !!user.import_key_hash,
     prefs: raw(user.prefs || '{}'), // objet JSON rangé tel quel par PATCH /api/me
@@ -122,7 +123,7 @@ export async function rotateKey(env, user) {
 export async function deleteMe(env, user) {
   const db = env.DB;
   await db.batch(
-    ['cards', 'tags', 'targets', 'refresh_staging', 'import_staging'].map((t) =>
+    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
     ).concat(db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );
