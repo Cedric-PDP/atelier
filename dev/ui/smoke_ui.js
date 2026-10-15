@@ -17,6 +17,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ------------------------------------------------------------------ API simulée (contrat SPEC.md), plusieurs comptes
 // Clés de 43 caractères comme les vraies ; `api.st` = le premier compte (celui que crée le parcours).
+// Révision des cartes par compte (`rev`, `changed` : carte -> révision de son dernier changement, retrait compris) :
+// GET /api/cards?since=R, `rev` des pages, `cards_rev` de GET /api/me. `api.noRev = true` : ancien serveur (sans rien de cela).
 function mockApi() {
   const users = [];
   const calls = [];
@@ -25,19 +27,25 @@ function mockApi() {
   const json = (status, body) => ({ status, body });
   function makeUser(name) {
     const u = { id: 'u' + ++seq, key: mk('cle' + seq), importKey: null, name: name || null, cards: [], tags: new Map(), targets: [], fetched_at: null,
-      new_ids: [], cookie: false, expired: false, uploads: new Map(), calls };
+      new_ids: [], cookie: false, expired: false, uploads: new Map(), calls, rev: 1, changed: new Map() };
     users.push(u);
     return u;
   }
+  // Comme le serveur : la révision n'avance que si une carte change (un envoi identique ne change que fetched_at).
+  const bump = (st, ids) => { if (!ids.length) return; st.rev++; for (const id of ids) st.changed.set(id, st.rev); };
   function importCards(st, list, stats) {
-    const before = new Set(st.cards.map((c) => c.id));
+    const before = new Map(st.cards.map((c) => [c.id, JSON.stringify(c)]));
     const first = st.fetched_at === null;
+    const now = new Set(list.map((c) => c.id));
+    bump(st, [...list.filter((c) => before.get(c.id) !== JSON.stringify(c)).map((c) => c.id), ...[...before.keys()].filter((id) => !now.has(id))]);
     st.cards = list;
     st.fetched_at = new Date().toISOString();
     st.new_ids = first ? [] : list.filter((c) => !before.has(c.id)).map((c) => c.id);
     return { count: list.length, new_ids: st.new_ids, complete: stats ? stats.totalUnique === list.length : null };
   }
-  return {
+  const self = {
+    noRev: false,
+    calls,
     get st() { return users[0]; },
     users,
     makeUser,
@@ -57,7 +65,8 @@ function mockApi() {
       const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
-          has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null } });
+          has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
+          ...(self.noRev ? {} : { cards_rev: st.rev }) });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -72,14 +81,29 @@ function mockApi() {
       if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
       if (p === '/api/cards' || p.startsWith('/api/cards?')) {
         // Lecture par morceaux comme le vrai serveur, avec un curseur opaque (chaîne) : 400 cartes par morceau ici.
-        const q = new URL('http://x' + p).searchParams.get('part');
+        const sp = new URL('http://x' + p).searchParams;
+        const q = sp.get('part');
+        const rev = self.noRev ? {} : { rev: st.rev };
+        const since = self.noRev ? null : sp.get('since');
+        if (since !== null) {
+          // Ce qui a changé depuis R ; delta:false si R est inconnue (plus grande que la révision : base recréée) ou s'il
+          // y a plus de 1 000 changements.
+          if (!/^\d+$/.test(since)) return json(400, { error: 'Révision invalide.' });
+          const R = Number(since);
+          if (R > st.rev) return json(200, { rev: st.rev, delta: false });
+          const ids = [...st.changed].filter(([, r]) => r > R).map(([id]) => id);
+          if (ids.length > 1000) return json(200, { rev: st.rev, delta: false });
+          const present = new Map(st.cards.map((c) => [c.id, c]));
+          return json(200, { rev: st.rev, delta: true, cards: ids.filter((id) => present.has(id)).map((id) => cardOut(present.get(id))),
+            gone: ids.filter((id) => !present.has(id)), fetched_at: st.fetched_at, new_ids: st.new_ids });
+        }
         const all = st.cards.map(cardOut);
-        if (q === null) return json(200, { fetched_at: st.fetched_at, cards: all, new_ids: st.new_ids });
+        if (q === null) return json(200, { ...rev, fetched_at: st.fetched_at, cards: all, new_ids: st.new_ids });
         const n = q === '0' ? 0 : Number(String(q).replace(/^curseur-/, ''));
         if (!Number.isInteger(n)) return json(400, { error: 'curseur invalide' });
         const size = 400, last = Math.max(0, Math.ceil(all.length / size) - 1);
         calls.push('cards part ' + q);
-        return json(200, { fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: q, next_part: n < last ? 'curseur-' + (n + 1) : null });
+        return json(200, { ...rev, fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: q, next_part: n < last ? 'curseur-' + (n + 1) : null });
       }
       if (p === '/api/import' && body.mode === 'state') return json(200, { quick: false, last_at: null, full_at: null });
       if (p === '/api/import') {
@@ -96,16 +120,22 @@ function mockApi() {
       if (p === '/api/refresh') {
         if (!st.cookie) return json(401, { error: "Aucune session WikiMasters : colle d'abord ton cookie.", needs_session: true });
         if (body.page < 20) return json(200, { done: false, next_page: body.page + 10, fetched: (body.page + 10) * 50, total: 1500 });
-        const list = st.cards.concat([{ id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false, obtained_at: '2026-10-15T09:00:00Z' }]);
+        const list = st.cards.filter((c) => c.id !== 'new1').concat([{ id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false, obtained_at: '2026-10-15T09:00:00Z' }]);
         return json(200, { done: true, ...importCards(st, list, { totalUnique: list.length + 1 }), skipped: 2 });
       }
-      if (p === '/api/tags/set') { st.tags.set(body.card_id, body.tags); return json(200, { tags: body.tags }); }
+      if (p === '/api/tags/set') { st.tags.set(body.card_id, body.tags); bump(st, [body.card_id]); return json(200, { tags: body.tags }); }
       if (p === '/api/tags/bulk') {
         if (body.add.includes('QUOTA')) return json(503, { error: 'La base du classeur est pleine pour aujourd\'hui (quota gratuit atteint) : réessaie demain.' });
         for (const id of body.card_ids) { let t = st.tags.get(id) || []; t = t.filter((x) => !body.remove.includes(x)); for (const a of body.add) if (!t.includes(a)) t.push(a); st.tags.set(id, t); }
+        bump(st, body.card_ids);
         return json(200, { ok: true });
       }
-      if (p === '/api/tags/rename') { for (const [id, t] of st.tags) st.tags.set(id, [...new Set(t.map((x) => (x === body.from ? body.to : x)))]); return json(200, { ok: true }); }
+      if (p === '/api/tags/rename') {
+        const ids = [...st.tags].filter(([, t]) => t.includes(body.from)).map(([id]) => id);
+        for (const [id, t] of st.tags) st.tags.set(id, [...new Set(t.map((x) => (x === body.from ? body.to : x)))]);
+        bump(st, ids);
+        return json(200, { ok: true });
+      }
       if (p === '/api/targets') return json(200, { targets: st.targets });
       if (p === '/api/targets/save') {
         if (!Array.isArray(body.items) || !body.items.every((i) => typeof i.title === 'string' && ['ok', 'missing', 'disambiguation'].includes(i.status))) return json(400, { error: 'items invalides' });
@@ -117,6 +147,62 @@ function mockApi() {
       if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); return json(200, { ok: true }); }
       return json(404, { error: 'introuvable' });
     },
+  };
+  return self;
+}
+
+// ------------------------------------------------------------------ IndexedDB simulé (ce que lit le cache des cartes)
+// Un seul pour tout le test : les pages ouvertes l'une après l'autre sont celles d'un même navigateur. Valeurs copiées
+// comme par le vrai (structuredClone), requêtes et fin de transaction asynchrones, dans l'ordre de création.
+function fakeIndexedDB() {
+  const dbs = new Map();
+  const later = (f) => setTimeout(f, 0);
+  function makeDb(d) {
+    return {
+      createObjectStore(n) { if (!d.stores.has(n)) d.stores.set(n, new Map()); return {}; },
+      close() {},
+      transaction(name, mode) {
+        const store = d.stores.get(name);
+        if (!store) throw new Error('NotFoundError : ' + name);
+        const tx = { oncomplete: null, onerror: null, onabort: null };
+        let pending = 0;
+        let ended = false;
+        const end = () => later(() => { if (!pending && !ended) { ended = true; if (tx.oncomplete) tx.oncomplete({ target: tx }); } });
+        const op = (write, fn) => {
+          if (ended) throw new Error('TransactionInactiveError');
+          if (write && mode !== 'readwrite') throw new Error('ReadOnlyError');
+          const rq = { result: undefined, onsuccess: null, onerror: null };
+          pending++;
+          later(() => { rq.result = fn(); if (rq.onsuccess) rq.onsuccess({ target: rq }); pending--; end(); });
+          return rq;
+        };
+        tx.objectStore = () => ({
+          get: (k) => op(false, () => (store.has(k) ? structuredClone(store.get(k)) : undefined)),
+          getAll: () => op(false, () => [...store.values()].map((v) => structuredClone(v))),
+          put: (v, k) => { const c = structuredClone(v); return op(true, () => { store.set(k, c); return k; }); },
+          delete: (k) => op(true, () => { store.delete(k); }),
+          clear: () => op(true, () => { store.clear(); }),
+        });
+        end();
+        return tx;
+      },
+    };
+  }
+  return {
+    open(name, version) {
+      const req = { result: null, error: null, onsuccess: null, onerror: null, onupgradeneeded: null, onblocked: null };
+      later(() => {
+        let d = dbs.get(name);
+        if (!d) { d = { version: 0, stores: new Map() }; dbs.set(name, d); }
+        req.result = makeDb(d);
+        if ((version || 1) > d.version) { d.version = version || 1; if (req.onupgradeneeded) req.onupgradeneeded({ target: req }); }
+        if (req.onsuccess) req.onsuccess({ target: req });
+      });
+      return req;
+    },
+    // Pour les vérifications : les enregistrements du magasin `store` (copie), ou null.
+    dump(name, store) { const d = dbs.get(name); return d && d.stores.get(store) ? new Map(d.stores.get(store)) : null; },
+    wipe(name, store, key) { const d = dbs.get(name); if (d && d.stores.get(store)) d.stores.get(store).delete(key); },
   };
 }
 
@@ -294,50 +380,65 @@ async function main() {
   const errors = [];
   const ls = new Map();
   const copied = [];
-  const ctx = {
-    console: { log: console.log, warn: (...a) => { errors.push('warn: ' + a.join(' ')); }, error: (...a) => { errors.push('error: ' + a.map((x) => (x && x.stack) || x).join(' ')); } },
-    document: doc, window: null, navigator: { clipboard: { writeText: async (t) => { copied.push(t); } } },
-    location: { origin: ORIGIN, pathname: '/', search: '', hash: '', hostname: 'classeur.example' },
-    history: { replaceState: (a, b, url) => { ctx.location.hash = ''; ctx.lastReplace = url; } },
-    localStorage: { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) },
-    setTimeout, clearTimeout, setInterval, clearInterval, Promise, Date, Math, JSON, Map, Set, WeakMap, WeakSet, Symbol, Proxy, Reflect, Object, Array, Number, String, Boolean, RegExp, Error, TypeError, SyntaxError,
-    Intl, URL, URLSearchParams, encodeURIComponent, decodeURIComponent, encodeURI, decodeURI, isNaN, parseInt, parseFloat, Infinity, NaN, undefined,
-    requestAnimationFrame: (f) => setTimeout(f, 0), getComputedStyle: () => ({}),
-    matchMedia: () => ({ matches: false }),
-    scrollTo: () => {},
-    SVGElement: function SVGElement() {},
-    Element: function Element() {},
-    Node: function Node() {},
-    queueMicrotask, AbortController,
-  };
-  ctx.window = ctx;
-  ctx.self = ctx;
-  ctx.addEventListener = win.addEventListener;
-  ctx.removeEventListener = win.removeEventListener;
-  ctx.fetch = async (url, init = {}) => {
-    const headers = init.headers || {};
-    const method = init.method || 'GET';
-    const body = init.body ? JSON.parse(init.body) : undefined;
-    if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
-      if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
-      const data = wikiHandle(url);
-      return { ok: true, status: 200, headers: { get: () => null }, json: async () => data };
-    }
-    if (url === '/catalog.json' || url === '/assets/bookmarklet.js') {
-      const file = path.join(PUB, url);
-      const text = fs.readFileSync(file, 'utf8');
-      return { ok: true, status: 200, headers: { get: () => null }, json: async () => JSON.parse(text), text: async () => text };
-    }
-    if (!url.startsWith('/api/')) throw new Error('adresse inattendue : ' + url);
-    if (SERVER) {
-      const r = await fetch(SERVER + url, { method, headers, body: init.body });
-      const text = await r.text();
-      return { ok: r.ok, status: r.status, headers: r.headers, json: async () => JSON.parse(text) };
-    }
-    const r = api.handle(method, url, headers, body);
-    return { ok: r.status < 400, status: r.status, headers: { get: () => null }, json: async () => JSON.parse(JSON.stringify(r.body)) };
-  };
-  vm.createContext(ctx);
+  const idb = fakeIndexedDB();
+  const apiLog = []; // appels à /api/ de toutes les pages, « GET /api/cards?since=3 »
+  // Contexte d'une page du classeur ; toutes les pages sont dans le même navigateur (localStorage, IndexedDB, API).
+  // opts.idb : 'absent' (pas d'IndexedDB) ou 'refusé' (son accès lève une erreur, comme un stockage bloqué) ;
+  // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API.
+  function makeCtx(doc, win, opts = {}) {
+    const ctx = {
+      console: { log: console.log, warn: (...a) => { errors.push('warn: ' + a.join(' ')); }, error: (...a) => { errors.push('error: ' + a.map((x) => (x && x.stack) || x).join(' ')); } },
+      document: doc, window: null, navigator: { clipboard: { writeText: async (t) => { copied.push(t); } } },
+      location: { origin: ORIGIN, pathname: '/', search: '', hash: '', hostname: 'classeur.example' },
+      history: { replaceState: (a, b, url) => { ctx.location.hash = ''; ctx.lastReplace = url; } },
+      localStorage: { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) },
+      setTimeout, clearTimeout, setInterval, clearInterval, Promise, Date, Math, JSON, Map, Set, WeakMap, WeakSet, Symbol, Proxy, Reflect, Object, Array, Number, String, Boolean, RegExp, Error, TypeError, SyntaxError,
+      Intl, URL, URLSearchParams, encodeURIComponent, decodeURIComponent, encodeURI, decodeURI, isNaN, parseInt, parseFloat, Infinity, NaN, undefined,
+      requestAnimationFrame: (f) => setTimeout(f, 0), getComputedStyle: () => ({}),
+      matchMedia: () => ({ matches: false }),
+      scrollTo: () => {},
+      SVGElement: function SVGElement() {},
+      Element: function Element() {},
+      Node: function Node() {},
+      queueMicrotask, AbortController,
+    };
+    ctx.window = ctx;
+    ctx.self = ctx;
+    ctx.addEventListener = win.addEventListener;
+    ctx.removeEventListener = win.removeEventListener;
+    ctx.fetch = async (url, init = {}) => {
+      const headers = init.headers || {};
+      const method = init.method || 'GET';
+      const body = init.body ? JSON.parse(init.body) : undefined;
+      if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
+        if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
+        const data = wikiHandle(url);
+        return { ok: true, status: 200, headers: { get: () => null }, json: async () => data };
+      }
+      if (url === '/catalog.json' || url === '/assets/bookmarklet.js') {
+        const file = path.join(PUB, url);
+        const text = fs.readFileSync(file, 'utf8');
+        return { ok: true, status: 200, headers: { get: () => null }, json: async () => JSON.parse(text), text: async () => text };
+      }
+      if (!url.startsWith('/api/')) throw new Error('adresse inattendue : ' + url);
+      apiLog.push(method + ' ' + url);
+      if (SERVER) {
+        if (opts.hold) await opts.hold(url);
+        const r = await fetch(SERVER + url, { method, headers, body: init.body });
+        const text = await r.text();
+        return { ok: r.ok, status: r.status, headers: r.headers, json: async () => JSON.parse(text) };
+      }
+      const r = api.handle(method, url, headers, body);
+      if (opts.hold) await opts.hold(url); // réponse calculée à l'appel, rendue plus tard (réseau lent)
+      return { ok: r.status < 400, status: r.status, headers: { get: () => null }, json: async () => JSON.parse(JSON.stringify(r.body)) };
+    };
+    if (opts.idb === 'refusé') Object.defineProperty(ctx, 'indexedDB', { get() { throw new Error('SecurityError : stockage refusé'); } });
+    else if (opts.idb !== 'absent') ctx.indexedDB = idb;
+    vm.createContext(ctx);
+    return ctx;
+  }
+  const mainOpts = {};
+  const ctx = makeCtx(doc, win, mainOpts);
 
   const html = fs.readFileSync(path.join(PUB, 'index.html'), 'utf8');
   // L'index charge Vue depuis cdnjs (avec SRI) puis /assets/app.js.
@@ -375,6 +476,33 @@ async function main() {
     if (r.status !== 201) fail('second compte : ' + JSON.stringify(r.body));
     return r.body.key;
   };
+  // Lectures des cartes (GET /api/cards…) faites par les pages depuis `mark` (position dans apiLog).
+  const cardCalls = (mark) => apiLog.slice(mark).filter((x) => x.startsWith('GET /api/cards'));
+  // Nombre de cartes du bandeau d'une page (« 1 050 cartes différentes »), ou null s'il n'est pas affiché.
+  const countIn = (d) => {
+    const f = d.querySelectorAll('.figure').find((n) => text(n).includes('cartes différentes'));
+    return f ? Number(text(f.querySelector('b')).replace(/\D/g, '')) : null;
+  };
+  const waitFor = async (cond, ms = 3000) => { for (let t = 0; t < ms && !cond(); t += 25) await sleep(25); return cond(); };
+  // Envoi du favori simulé (CarteImport : les cartes sans leurs tags), par morceaux de 500.
+  const sendImport = async (key, list) => {
+    const up = 'favori-' + Math.random().toString(36).slice(2);
+    const rows = list.map(({ tags, ...c }) => c);
+    for (let i = 0, part = 0; i < rows.length || part === 0; i += 500, part++) {
+      await rawApi('POST', '/api/import', key, { upload_id: up, part, last: i + 500 >= rows.length, cards: rows.slice(i, i + 500), source: 'bookmarklet' });
+    }
+  };
+  // Le classeur rouvert dans une autre page du même navigateur (localStorage, IndexedDB et API partagés).
+  const openPage = (opts) => {
+    const p = makeDom();
+    const c = makeCtx(p.doc, p.win, opts);
+    const box = p.doc.createElement('div');
+    box.setAttribute('id', 'app');
+    p.doc.body.appendChild(box);
+    for (const file of [VUE, ...['match.js', 'propose.js', 'app.js'].map((m) => path.join(PUB, 'assets', m))]) vm.runInContext(fs.readFileSync(file, 'utf8'), c, { filename: path.basename(file) });
+    return { doc: p.doc, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); } };
+  };
+  const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
 
   await settle(60);
   // 1. Accueil
@@ -433,10 +561,17 @@ async function main() {
     check(api.st.lastImportKey === importKey, "l'import n'a pas utilisé la clé d'import");
   }
   console.log(`favori : ${imports.parts} morceaux, ${imports.cards} cartes, message « ${imports.message} »`);
-  // Retour sur l'onglet du classeur : il se met à jour tout seul.
+  // Retour sur l'onglet du classeur : il se met à jour tout seul. Plus de 1 000 changements depuis la révision lue à
+  // l'ouverture : le serveur répond delta:false à ?since, et la page relit tout, par morceaux.
+  let mark = apiLog.length;
   for (const f of doc.listeners.visibilitychange || []) await f();
   await settle(80);
   check(has('Collection mise à jour'), "le retour sur l'onglet ne recharge pas la collection");
+  {
+    const got = cardCalls(mark);
+    check(got.length >= 2 && /^GET \/api\/cards\?since=\d+$/.test(got[0]) && got[1] === 'GET /api/cards?part=0' && got.slice(1).every((x) => x.includes('?part=')),
+      'delta:false : ?since puis relecture complète attendus : ' + got.join(', '));
+  }
   check(has('cartes différentes') && has('collections commencées') && cls('track').length === 1, 'tuiles de chiffres ou barre de répartition absentes');
   await goTab('cartes');
   check(cls('cell').length === 120 && cls('card').length === 120, `120 cartes attendues, ${cls('cell').length} affichées`);
@@ -922,6 +1057,7 @@ async function main() {
   await settle();
   check(has('Mettre à jour ta collection') && has('En attente de ton favori'), 'fenêtre « Mettre à jour avec le favori » absente');
   check(all((n) => n.tagName === 'A' && text(n).includes('Ouvrir wiki-masters.com')).length === 1, 'lien « Ouvrir wiki-masters.com » absent');
+  mark = apiLog.length;
   {
     // Le favori envoie la collection avec une carte de plus (simulé, comme depuis wiki-masters.com).
     const key = ls.get('classeur-key');
@@ -935,6 +1071,9 @@ async function main() {
   }
   for (let i = 0; i < 120 && !has('Collection mise à jour :'); i++) await sleep(100);
   check(has('Collection mise à jour :') && has('1 nouvelle'), 'la fenêtre n\'a pas vu l\'envoi du favori');
+  // Seulement ce qui a changé depuis l'ouverture (la carte du favori, les tags posés ici) : ?since, aucune page part=.
+  check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]) && countIn(doc) === 1051,
+    'envoi vu par la fenêtre : un seul ?since attendu, ' + cardCalls(mark).join(', ') + ' ; ' + countIn(doc) + ' cartes');
   needButton('Fermer').click();
   await settle();
   // Le cookie, en secours : « Mettre à jour » (favori d'abord), puis l'enregistrement et la boucle de rafraîchissement.
@@ -944,6 +1083,7 @@ async function main() {
   check(has('Le favori, le chemin conseillé') && has('Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
     'la page ne présente pas le cookie comme un secours, avec son avertissement');
   type(byId('cookie-input'), 'Cookie: sb-a=1; sb-b=2');
+  mark = apiLog.length;
   needButton('Enregistrer le cookie et rafraîchir').click();
   for (let i = 0; i < 300 && !(text(doc.body.querySelector('.refresh-line')).match(/expir|répond|cartes ·|nouvelle|robot/) && !has('Rafraîchissement…')); i++) await sleep(100);
   for (let i = 0; i < 300 && has('Rafraîchissement…'); i++) await sleep(100);
@@ -957,12 +1097,71 @@ async function main() {
     check(has('1 nouvelle'), 'résumé du rafraîchissement absent');
     check(has('2 ignorées'), 'entrées ignorées (skipped) du rafraîchissement non affichées');
     check(api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
+    check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]), 'après le rafraîchissement : un seul ?since attendu, ' + cardCalls(mark).join(', '));
     await goTab('cartes');
     check(has('Nouvelles du dernier rafraîchissement'), 'raccourci des nouvelles absent');
     all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && text(n).includes('Nouvelles du dernier rafraîchissement'))[0].click();
     await settle();
     check(cls('cell').length === 1 && cls('card__new').length === 1 && has('Nouvelle carte'), 'ruban « Nouvelle » ou raccourci des nouvelles incorrect');
     needButton('Réinitialiser les filtres').click();
+    await settle();
+
+    // 12 bis. Envoi sans deux cartes (retirées du jeu) et tags changés sur un autre appareil : au retour sur l'onglet,
+    // seul ?since est lu ; les cartes retirées disparaissent, avec la fiche ouverte et la sélection qui les montraient.
+    const key = ls.get('classeur-key');
+    type(q, 'mirna');
+    await settle();
+    check(cls('cell').length === 1, 'carte « (11194) Mirna » introuvable');
+    all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox')[0].click();
+    await settle();
+    one('card').dispatch('click');
+    await settle(120);
+    check(one('fiche') && one('bulk'), 'fiche ou sélection absente avant le retrait');
+    const cur = (await rawApi('GET', '/api/cards', key)).body.cards;
+    await rawApi('POST', '/api/tags/set', key, { card_id: 'c10', tags: [...cur.find((c) => c.id === 'c10').tags, 'Ailleurs'] });
+    await sendImport(key, cur.filter((c) => c.id !== 'c2' && c.id !== 'c1000'));
+    mark = apiLog.length;
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(500);
+    check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]), 'retour sur l\'onglet : un seul ?since attendu, ' + cardCalls(mark).join(', '));
+    check(!one('fiche') && !one('bulk'), 'la carte retirée reste ouverte ou sélectionnée');
+    check(has('Collection mise à jour : 1 050 cartes.') && countIn(doc) === 1050, 'cartes retirées : 1 050 cartes attendues, ' + countIn(doc));
+    check(cls('cell').length === 0, 'la carte retirée reste affichée');
+    type(q, 'ailleurs');
+    await settle();
+    check(cls('cell').length === 1 && text(one('cell')).includes('Ailleurs'), 'le tag posé sur un autre appareil n\'est pas arrivé');
+
+    // 12 ter. Tags changés ailleurs, sans envoi : cards_rev le dit, ?since les rapporte. Un tag posé ici pendant cette
+    // lecture n'est pas écrasé par sa réponse, calculée avant lui ; la lecture suivante rapporte l'état du serveur.
+    type(q, 'terre');
+    await settle();
+    check(cls('cell').length === 1, 'carte « Terre » introuvable');
+    one('card').dispatch('click');
+    await settle(120);
+    const ficheTags = () => one('fiche').querySelectorAll('.tag.own').map(text).join('|');
+    const expected = [ficheTags(), 'Local'].filter(Boolean).join('|');
+    await rawApi('POST', '/api/tags/set', key, { card_id: 'c5', tags: ['Distant'] });
+    let release = null;
+    mainOpts.hold = (url) => (url.startsWith('/api/cards') ? new Promise((r) => { release = r; }) : null);
+    mark = apiLog.length;
+    const back = Promise.all([...(doc.listeners.visibilitychange || [])].map((f) => f()));
+    check(await waitFor(() => !!release), 'tags changés ailleurs : ?since non demandé au retour sur l\'onglet');
+    mainOpts.hold = null;
+    type(byId('new-tag'), 'Local');
+    all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
+    await settle();
+    release();
+    await back;
+    await settle();
+    check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]), 'tags changés ailleurs : un seul ?since attendu, ' + cardCalls(mark).join(', '));
+    check(ficheTags() === expected, 'tag posé pendant la lecture écrasé par sa réponse : ' + ficheTags() + ' au lieu de ' + expected);
+    mark = apiLog.length;
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle();
+    check(cardCalls(mark).length === 1 && ficheTags() === expected && api.st.tags.get('c5').includes('Local') && !api.st.tags.get('c5').includes('Distant'),'lecture suivante : ' + ficheTags() + ', ' + cardCalls(mark).join(', '));
+    win.listeners.keydown.forEach((fn) => fn({ key: 'Escape', preventDefault() {} }));
+    await settle(500);
+    type(q, '');
     await settle();
   }
 
@@ -1009,9 +1208,18 @@ async function main() {
   check(JSON.parse(ls.get('classeur-known') || '[]').length === 2, 'liste des classeurs connus incomplète');
   await goTab('reglages');
   check(has('Autres classeurs ouverts dans ce navigateur') && has('Classeur de Cédric'), 'retour à son classeur absent des Réglages');
+  mark = apiLog.length;
   exactButton('Ouvrir').click();
   await waitH1('Cédric');
   check(ls.get('classeur-key') === myKey && h1().includes('Cédric'), 'retour à son classeur impossible');
+  {
+    // Ses cartes, gardées dans ce navigateur au changement de classeur, sont à jour (même cards_rev) : rien à relire.
+    await settle(100);
+    const n = (await rawApi('GET', '/api/cards', myKey)).body.cards.length;
+    check(countIn(doc) === n && !cardCalls(mark).length, 'retour à son classeur : cartes du cache sans lecture attendues, ' + countIn(doc) + ' cartes, ' + cardCalls(mark).join(', '));
+    check(cachedCards().length === 2 && cachedCards().every((r) => r.v === 1 && Number.isInteger(r.rev) && Array.isArray(r.cards) && !('_k' in (r.cards[0] || {}))),
+      'cache : un enregistrement par classeur, cartes telles que l\'API les renvoie');
+  }
 
   // 15. Lien tronqué ou inconnu : refusé avec un message clair, jamais enregistré
   await openLink(myKey.slice(0, 20));
@@ -1059,11 +1267,90 @@ async function main() {
   check(has("J'ai déjà un lien"), "oublier ce navigateur ne ramène pas à l'accueil");
   const left = ['classeur-key', 'classeur-pv', 'classeur-sugg', 'classeur-import-key', 'classeur-known', 'classeur-target', 'classeur-qid', 'classeur-cats', 'classeur-catinfo', 'classeur-propose-at', 'classeur-natgroup', 'classeur-tagcats'].filter((k) => ls.has(k));
   check(!left.length, 'encore gardé après « Oublier ce navigateur » : ' + left.join(', '));
+  await sleep(1700);
+  check(!cachedCards().length, 'cartes encore gardées (IndexedDB) après « Oublier ce navigateur » : ' + cachedCards().length);
 
   // 19. Lien personnel sans clé gardée : vérifié puis adopté sans question, fragment effacé
+  mark = apiLog.length;
   await openLink(rotated);
   await waitH1('Cédric');
   check(ctx.location.hash === '' && ls.get('classeur-key') === rotated && h1() === 'Le classeur de Cédric' && has('Mes collections'), 'le lien personnel n\'ouvre pas le classeur');
+  check(cardCalls(mark)[0] === 'GET /api/cards?part=0', 'sans cache, relecture complète attendue : ' + cardCalls(mark).join(', '));
+
+  // 20. Le classeur rouvert dans une autre page (même navigateur) : cartes du cache affichées avant toute réponse de
+  // /api/cards, puis seulement ce qui a changé entre-temps (une carte retirée, un tag posé ailleurs).
+  {
+    await sleep(1700); // écriture du cache (regroupée)
+    const key = ls.get('classeur-key');
+    const me = (await rawApi('GET', '/api/me', key)).body;
+    const cur = (await rawApi('GET', '/api/cards', key)).body.cards;
+    const n0 = cur.length;
+    const rec = cachedCards().find((r) => r.user === me.user.id);
+    check(rec && rec.rev === me.cards_rev && rec.cards.length === n0, 'cache non écrit après la relecture : ' + (rec ? rec.rev + ' / ' + me.cards_rev + ', ' + rec.cards.length + ' / ' + n0 : 'absent'));
+    await rawApi('POST', '/api/tags/set', key, { card_id: 'c11', tags: ['Vu ailleurs'] });
+    await sendImport(key, cur.filter((c) => c.id !== 'c12'));
+    let open = null;
+    const gate = new Promise((r) => { open = r; });
+    mark = apiLog.length;
+    const p2 = openPage({ hold: (url) => (url.startsWith('/api/cards') ? gate : null) });
+    check(await waitFor(() => p2.count() === n0), 'deuxième page : les cartes du cache ne s\'affichent pas avant la réponse de /api/cards (' + p2.count() + ')');
+    check(cardCalls(mark).length === 1 && cardCalls(mark)[0] === 'GET /api/cards?since=' + rec.rev, 'deuxième page : ?since=' + rec.rev + ' attendu, ' + cardCalls(mark).join(', '));
+    open();
+    check(await waitFor(() => p2.count() === n0 - 1), 'deuxième page : la carte retirée reste (' + p2.count() + ')');
+    await settle(100);
+    check(cardCalls(mark).length === 1, 'deuxième page : lectures en trop, ' + cardCalls(mark).join(', '));
+    p2.doc.getElementById('tab-cartes').click();
+    await settle();
+    const q2 = p2.doc.getElementById('q');
+    q2.value = 'vu ailleurs';
+    q2.dispatch('input');
+    await settle();
+    check(p2.doc.querySelectorAll('.cell').length === 1, 'deuxième page : le tag posé ailleurs n\'est pas arrivé');
+
+    // 21. Rien n'a changé depuis : aucune lecture des cartes, tout vient du cache.
+    await sleep(1700);
+    mark = apiLog.length;
+    const p3 = openPage();
+    check(await waitFor(() => p3.count() === n0 - 1), 'troisième page : cartes du cache absentes (' + p3.count() + ')');
+    await settle(200);
+    check(!cardCalls(mark).length, 'troisième page : rien n\'a changé, aucune lecture attendue : ' + cardCalls(mark).join(', '));
+
+    // 22. Base recréée (cards_rev plus petit que la révision gardée) : cache ignoré et effacé, relecture complète.
+    if (!SERVER) {
+      api.st.rev = 1;
+      api.st.changed = new Map();
+      mark = apiLog.length;
+      const p4 = openPage({ hold: (url) => (url.startsWith('/api/cards') ? sleep(300) : null) });
+      await sleep(150);
+      check(p4.count() === null, 'base recréée : les cartes du cache ne doivent pas s\'afficher (' + p4.count() + ')');
+      check(await waitFor(() => p4.count() === n0 - 1) && cardCalls(mark)[0] === 'GET /api/cards?part=0' && !cardCalls(mark).some((x) => x.includes('since')),
+        'base recréée : relecture complète attendue, ' + cardCalls(mark).join(', '));
+      check(await waitFor(() => (cachedCards().find((r) => r.user === api.st.id) || {}).rev === 1), 'base recréée : cache non réécrit avec la nouvelle révision');
+    }
+
+    // 23. IndexedDB absent ou refusé (navigation privée, stockage bloqué) : la page lit tout au serveur, comme avant.
+    for (const mode of ['absent', 'refusé']) {
+      mark = apiLog.length;
+      const p = openPage({ idb: mode });
+      check(await waitFor(() => p.count() === n0 - 1) && cardCalls(mark)[0] === 'GET /api/cards?part=0', `IndexedDB ${mode} : relecture complète attendue, ` + cardCalls(mark).join(', '));
+    }
+
+    // 24. Ancien serveur (ni rev ni cards_rev) : pas de cache ni de ?since ; un nouvel envoi (fetched_at) au retour sur
+    // l'onglet relit tout, comme avant.
+    if (!SERVER) {
+      api.noRev = true;
+      mark = apiLog.length;
+      const p5 = openPage();
+      check(await waitFor(() => p5.count() === n0 - 1) && cardCalls(mark).every((x) => x.includes('?part=')) && cardCalls(mark).length === 3, 'ancien serveur : relecture complète attendue, ' + cardCalls(mark).join(', '));
+      const cur2 = (await rawApi('GET', '/api/cards', key)).body.cards;
+      await sendImport(key, [...cur2, { ...cur2[0], id: 'ancien-serveur', title: 'Carte de l\'ancien serveur' }]);
+      mark = apiLog.length;
+      await p5.visible();
+      check(await waitFor(() => p5.count() === n0) && cardCalls(mark)[0] === 'GET /api/cards?part=0' && !cardCalls(mark).some((x) => x.includes('since')),
+        'ancien serveur : un nouvel envoi doit tout relire, ' + cardCalls(mark).join(', '));
+      api.noRev = false;
+    }
+  }
 
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));

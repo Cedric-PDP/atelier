@@ -155,6 +155,58 @@
   const suggCache = makeCache(LS.sugg, 30 * DAY); // titre -> {v: 2, q, n: [[nature, classe]], m: métiers, p: pays}
   const natGroupCache = makeCache(LS.natGroup, 90 * DAY); // classe Wikidata -> catégorie de tags
 
+  // Cartes gardées dans IndexedDB (localStorage est trop petit pour 20 000 cartes) : un enregistrement par classeur,
+  // rangé sous l'id du compte (pas sous la clé : « Changer ma clé » le garde), {v, user, keyTag, rev, fetched_at,
+  // new_ids, cards (telles que l'API les renvoie)}. Le classeur s'ouvre dessus, puis ne demande que ce qui a changé.
+  // Tout est facultatif : IndexedDB absent, refusé (navigation privée, stockage bloqué) ou muet, chaque accès rend
+  // undefined et la page lit tout au serveur, comme avant.
+  const cardCache = (() => {
+    const STORE = 'cards';
+    let dbp = null;
+    const within = (p, ms) => new Promise((resolve) => { setTimeout(() => resolve(undefined), ms); p.then(resolve, () => resolve(undefined)); });
+    function open() {
+      if (!dbp) {
+        dbp = within(new Promise((resolve) => {
+          const req = indexedDB.open('classeur', 1);
+          req.onupgradeneeded = () => { req.result.createObjectStore(STORE); };
+          req.onsuccess = () => {
+            const db = req.result;
+            db.onversionchange = () => { try { db.close(); } catch (e) { /* déjà fermée */ } dbp = null; };
+            resolve(db);
+          };
+          req.onerror = () => resolve(null);
+          req.onblocked = () => resolve(null);
+        }), 2000).then((db) => db || null);
+      }
+      return dbp;
+    }
+    async function run(mode, fn) {
+      const db = await open();
+      if (!db) return undefined;
+      return within(new Promise((resolve) => {
+        const tx = db.transaction(STORE, mode);
+        let out;
+        fn(tx.objectStore(STORE), (v) => { out = v; });
+        tx.oncomplete = () => resolve(out);
+        tx.onerror = () => resolve(undefined);
+        tx.onabort = () => resolve(undefined);
+      }), 10000);
+    }
+    return {
+      get: (user) => run('readonly', (st, out) => { const r = st.get(user); r.onsuccess = () => out(r.result); }),
+      put: (rec) => run('readwrite', (st) => { st.put(rec, rec.user); }),
+      del: (user) => run('readwrite', (st) => { st.delete(user); }),
+      clear: () => run('readwrite', (st) => { st.clear(); }),
+      // « Oublier cette clé » : le compte n'a pas pu être lu, on retrouve ses cartes par l'empreinte de la clé.
+      dropKey: (tag) => run('readwrite', (st) => {
+        const r = st.getAll();
+        r.onsuccess = () => { for (const x of r.result || []) if (x && x.keyTag === tag) st.delete(x.user); };
+      }),
+    };
+  })();
+  // Empreinte de la clé gardée avec les cartes (jamais la clé elle-même).
+  const keyTag = (k) => { let x = 0x811c9dc5; for (let i = 0; i < k.length; i++) x = Math.imul(x ^ k.charCodeAt(i), 0x01000193); return (x >>> 0).toString(36); };
+
   // ================================================================ état
   const S = reactive({
     boot: 'loading', // loading | welcome | app
@@ -219,6 +271,16 @@
   const cards = shallowRef([]);
   const targets = shallowRef([]);
   const newIds = shallowRef([]);
+  // Révision des cartes affichées (`rev` de GET /api/cards, null = inconnue : relecture complète). cardsGen change avec
+  // le classeur (resetData) : une réponse arrivée après coup est écartée.
+  let cardsRev = null;
+  let cardsGen = 0;
+  let cardsJob = Promise.resolve();
+  let cacheTimer = null;
+  let cacheWrite = null; // écriture du cache en attente (saveCardCache)
+  // Lectures de cartes en cours : chacune note les cartes dont les tags changent ici entre-temps, pour ne pas les
+  // écraser par une réponse partie avant (la lecture suivante les rapporte : le serveur a fait avancer sa révision).
+  const tagWatch = new Set();
 
   // ================================================================ API du classeur
   class ApiError extends Error {
@@ -789,9 +851,16 @@
   }
 
   function resetData() {
+    // Écriture du cache en attente : faite tout de suite, avec les cartes du classeur qu'on quitte.
+    clearTimeout(cacheTimer);
+    cacheTimer = null;
+    if (cacheWrite) cacheWrite();
     cards.value = [];
     targets.value = [];
     newIds.value = [];
+    cardsRev = null;
+    cardsGen++;
+    cardsJob = Promise.resolve();
     Object.assign(S, { me: null, fetchedAt: null, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
       q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
@@ -815,8 +884,9 @@
     S.bootHint = STALE_KEY;
     S.boot = 'welcome';
   }
-  // « Oublier ce navigateur » : la clé, les classeurs connus, la clé d'import et les caches de Wikipédia.
-  function forgetKey() {
+  // « Oublier ce navigateur » : la clé, les classeurs connus, la clé d'import, les caches de Wikipédia et les cartes
+  // gardées (toutes, ou seulement celles du compte `user` : classeur supprimé).
+  function forgetKey(user) {
     for (const k of Object.values(LS)) store.del(k);
     pvCache.clear();
     suggCache.clear();
@@ -828,6 +898,7 @@
     S.key = null;
     S.known = [];
     resetData();
+    if (user) cardCache.del(user); else cardCache.clear();
     S.bootError = '';
     S.bootHint = '';
     S.linkError = '';
@@ -837,7 +908,7 @@
 
   // Clé gardée qui n'ouvre plus rien (accueil) : on l'oublie, sans toucher aux autres classeurs connus.
   function dropStaleKey() {
-    if (S.key) forgetKnown(S.key);
+    if (S.key) { forgetKnown(S.key); cardCache.dropKey(keyTag(S.key)); }
     store.del(LS.key);
     S.key = null;
     S.bootError = '';
@@ -864,24 +935,139 @@
     const tags = Array.isArray(c.tags) ? c.tags.map(String) : [];
     return markRaw({ ...c, title: String(c.title || ''), tags, _k: fold(`${c.title || ''} ${c.category || ''}`) });
   }
+  // Relecture complète. Rend true si les cartes ont été remplacées (false : classeur changé entre-temps).
   async function loadCards() {
     // Lecture par morceaux (?part=0, puis next_part renvoyé tel quel jusqu'à null) : une grosse collection d'un coup
     // dépasserait le temps de calcul d'un Worker gratuit. next_part peut être un nombre ou une chaîne opaque.
-    const all = [];
-    let r = null;
-    let part = 0;
-    for (let guard = 0; guard < 500; guard++) {
-      r = await api('GET', '/api/cards?part=' + encodeURIComponent(String(part)));
-      if (Array.isArray(r.cards)) all.push(...r.cards);
-      const next = r.next_part;
-      if (next === null || next === undefined || next === '' || next === part) break;
-      part = next;
+    const gen = cardsGen;
+    const edited = new Set();
+    tagWatch.add(edited);
+    try {
+      const all = [];
+      let r = null;
+      let part = 0;
+      let rev = null;
+      for (let guard = 0; guard < 500; guard++) {
+        r = await api('GET', '/api/cards?part=' + encodeURIComponent(String(part)));
+        if (gen !== cardsGen) return false;
+        if (guard === 0) rev = r.rev; // révision lue avant les cartes : celle de la première page
+        if (Array.isArray(r.cards)) all.push(...r.cards);
+        const next = r.next_part;
+        if (next === null || next === undefined || next === '' || next === part) break;
+        part = next;
+      }
+      cards.value = all.map((c) => prepCard(keepLocalTags(c, edited)));
+      newIds.value = Array.isArray(r.new_ids) ? r.new_ids : [];
+      S.fetchedAt = r.fetched_at || null;
+      cardsRev = Number.isInteger(rev) ? rev : null;
+      purgeGone();
+      saveCardCache();
+      return true;
+    } finally {
+      tagWatch.delete(edited);
     }
-    cards.value = all.map(prepCard);
-    newIds.value = Array.isArray(r.new_ids) ? r.new_ids : [];
-    S.fetchedAt = r.fetched_at || null;
+  }
+  function purgeGone() {
     if (S.openId && !cardById.value.has(S.openId)) S.openId = null;
     for (const id of [...S.selected]) if (!cardById.value.has(id)) S.selected.delete(id);
+  }
+  function keepLocalTags(raw, edited) {
+    const cur = raw && edited.has(String(raw.id)) ? cardById.value.get(raw.id) : null;
+    return cur ? { ...raw, tags: cur.tags } : raw;
+  }
+  // Les lectures de cartes passent l'une après l'autre ; celles d'un autre classeur (resetData entre-temps) sont sautées.
+  function queueCards(fn) {
+    const gen = cardsGen;
+    const run = cardsJob.then(() => (gen === cardsGen ? fn() : false));
+    cardsJob = run.catch(() => {});
+    return run;
+  }
+  // Mise à jour des cartes déjà chargées : seulement ce qui a changé depuis la révision connue (GET /api/cards?since=).
+  // Relecture complète (loadCards) sans révision (premier chargement, ancien serveur), si le serveur répond delta:false
+  // (révision inconnue ou trop ancienne, plus de 1 000 changements), en cas d'erreur, ou si `me` (réponse de GET
+  // /api/me, facultative) annonce une révision plus petite que la nôtre (base recréée). Même cards_rev et même
+  // fetched_at que les cartes affichées : rien à demander. Rend true si les cartes ont changé.
+  const syncCards = (me) => queueCards(() => doSyncCards(me));
+  async function doSyncCards(me) {
+    const gen = cardsGen;
+    const srv = me && Number.isInteger(me.cards_rev) ? me.cards_rev : null;
+    if (cardsRev !== null && srv === cardsRev && (me.fetched_at || null) === (S.fetchedAt || null)) return false;
+    if (cardsRev !== null && (srv === null || srv >= cardsRev)) {
+      const from = cardsRev;
+      const edited = new Set();
+      tagWatch.add(edited);
+      try {
+        const r = await api('GET', '/api/cards?since=' + encodeURIComponent(String(from)));
+        if (gen !== cardsGen) return false;
+        if (r && r.delta === true && Number.isInteger(r.rev) && r.rev >= from) {
+          const before = S.fetchedAt;
+          const changed = applyDelta(r, edited);
+          if (Array.isArray(r.new_ids)) newIds.value = r.new_ids;
+          if ('fetched_at' in r) S.fetchedAt = r.fetched_at || null;
+          cardsRev = r.rev;
+          if (changed) purgeGone();
+          if (changed || r.rev !== from || S.fetchedAt !== before) saveCardCache();
+          return changed;
+        }
+      } catch (e) {
+        if (gen !== cardsGen) return false; // sinon : relecture complète ci-dessous
+      } finally {
+        tagWatch.delete(edited);
+      }
+    }
+    return loadCards();
+  }
+  // Delta : cartes ajoutées ou modifiées (remplacées à leur place, les nouvelles à la fin), cartes retirées (`gone`).
+  function applyDelta(r, edited) {
+    const gone = new Set((Array.isArray(r.gone) ? r.gone : []).map(String));
+    const incoming = new Map();
+    for (const c of Array.isArray(r.cards) ? r.cards : []) if (c && c.id != null) incoming.set(String(c.id), c);
+    if (!gone.size && !incoming.size) return false;
+    const next = [];
+    for (const c of cards.value) {
+      const k = String(c.id);
+      const n = incoming.get(k);
+      if (n) { next.push(prepCard(keepLocalTags(n, edited))); incoming.delete(k); } else if (!gone.has(k)) next.push(c);
+    }
+    for (const n of incoming.values()) next.push(prepCard(n));
+    cards.value = next;
+    return true;
+  }
+  // Ouverture : les cartes gardées dans ce navigateur s'affichent avant toute lecture au serveur, si celui-ci annonce
+  // une révision (cards_rev) qui n'est pas plus petite que celle du cache (sinon, base recréée : cache effacé).
+  async function showCachedCards(me) {
+    const user = me && me.user && me.user.id;
+    if (!user || !Number.isInteger(me.cards_rev)) return false;
+    const gen = cardsGen;
+    const rec = await cardCache.get(user);
+    if (gen !== cardsGen || !rec || rec.v !== 1 || rec.user !== user || !Number.isInteger(rec.rev) || !Array.isArray(rec.cards)) return false;
+    if (rec.rev > me.cards_rev) { cardCache.del(user); return false; }
+    try {
+      cards.value = rec.cards.filter((c) => c && c.id != null).map(prepCard);
+    } catch (e) {
+      cards.value = [];
+      return false;
+    }
+    newIds.value = Array.isArray(rec.new_ids) ? rec.new_ids : [];
+    S.fetchedAt = rec.fetched_at || null;
+    cardsRev = rec.rev;
+    return true;
+  }
+  // Cache écrit après chaque chargement ou delta, regroupé (1,5 s), jamais à chaque tag : la lecture suivante rapporte
+  // les cartes modifiées ici (leur modification fait avancer la révision du serveur).
+  function saveCardCache() {
+    const user = S.me && S.me.user && S.me.user.id;
+    if (!user || cardsRev === null || !S.key) return;
+    const gen = cardsGen;
+    const tag = keyTag(S.key);
+    clearTimeout(cacheTimer);
+    cacheWrite = () => {
+      cacheWrite = null;
+      if (gen !== cardsGen || cardsRev === null) return;
+      const list = cards.value.map(({ _k, ...c }) => c);
+      cardCache.put({ v: 1, user, keyTag: tag, rev: cardsRev, fetched_at: S.fetchedAt, new_ids: newIds.value.slice(), saved_at: new Date().toISOString(), cards: list });
+    };
+    cacheTimer = setTimeout(() => { cacheTimer = null; if (cacheWrite) cacheWrite(); }, 1500);
   }
   async function loadCatalog() {
     if (S.catalog.list || S.catalog.loading) return;
@@ -985,11 +1171,10 @@
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
-    await Promise.all([
-      loadCards().catch((e) => notify(e.message, true)),
-      loadTargets().catch((e) => notify(e.message, true)),
-      loadCatalog(),
-    ]);
+    const side = Promise.all([loadTargets().catch((e) => notify(e.message, true)), loadCatalog()]);
+    // Cartes gardées dans ce navigateur d'abord (tout de suite), puis seulement ce qui a changé depuis.
+    if (await queueCards(() => showCachedCards(S.me)).catch(() => false)) S.loadingCards = false;
+    await Promise.all([syncCards(S.me).catch((e) => notify(e.message, true)), side]);
     S.loadingCards = false;
     afterCards();
     // Classeur vide : on commence par « Mettre à jour » (le favori).
@@ -1086,7 +1271,7 @@
         if (now && now !== S.sync.before) {
           stopSync();
           const newCount = Array.isArray(S.me.new_ids) ? S.me.new_ids.length : 0;
-          await loadCards();
+          await syncCards(S.me);
           startPageviews();
           afterCards();
           S.sync.done = true;
@@ -1120,7 +1305,7 @@
         S.refresh.warn = true;
         S.refresh.msg += ' · il en manque par rapport au total du jeu : relance dans un moment';
       }
-      await Promise.all([loadCards(), loadMe()]);
+      await Promise.all([syncCards(), loadMe()]);
       startPageviews();
       afterCards();
     } catch (e) {
@@ -1269,8 +1454,10 @@
 
   function applyTags(ids, fn) {
     const set = new Set(ids);
+    for (const w of tagWatch) for (const id of ids) w.add(String(id));
     cards.value = cards.value.map((c) => (set.has(c.id) ? markRaw({ ...c, tags: fn(c.tags) }) : c));
   }
+  const renameLocal = (from, to) => applyTags(cards.value.filter((c) => c.tags.includes(from)).map((c) => c.id), (tags) => [...new Set(tags.map((t) => (t === from ? to : t)))]);
   async function bulk(mode) {
     const tag = composeTag(S.bulkTag, S.bulkCat);
     if (!tag || S.bulkBusy) return;
@@ -1351,8 +1538,7 @@
     te.error = '';
     try {
       await api('POST', '/api/tags/rename', { from: te.from, to });
-      cards.value = cards.value.map((c) => (c.tags.includes(te.from)
-        ? markRaw({ ...c, tags: [...new Set(c.tags.map((t) => (t === te.from ? to : t)))] }) : c));
+      renameLocal(te.from, to);
       S.tagFilter = [...new Set(S.tagFilter.map((t) => (t === te.from ? to : t)))];
       closeModal();
       notify(`Tag « ${tagTitle(te.from)} » renommé en « ${tagTitle(to)} ».`);
@@ -1593,10 +1779,11 @@
       danger: true,
       run: async () => {
         const key = S.key;
+        const user = S.me && S.me.user && S.me.user.id;
         await api('DELETE', '/api/me');
         forgetKnown(key);
         const others = S.known.slice();
-        forgetKey();
+        forgetKey(user || undefined);
         // Les autres classeurs ouverts dans ce navigateur restent connus.
         S.known = others;
         saveKnown();
@@ -2399,7 +2586,7 @@
         if (to.length > 60 || to === row.from || !to.includes('/')) { skipped++; continue; }
         ar.progress = `Rangement : ${fmt(++done)} sur ${fmt(todo.length)}…`;
         await api('POST', '/api/tags/rename', { from: row.from, to });
-        cards.value = cards.value.map((c) => (c.tags.includes(row.from) ? markRaw({ ...c, tags: [...new Set(c.tags.map((t) => (t === row.from ? to : t)))] }) : c));
+        renameLocal(row.from, to);
         S.tagFilter = [...new Set(S.tagFilter.map((t) => (t === row.from ? to : t)))];
       }
       closeModal();
@@ -3578,18 +3765,23 @@
       if (q) { e.preventDefault(); q.focus(); }
     }
   }
+  // Retour sur l'onglet : cards_rev (GET /api/me) dit si quelque chose a changé (envoi du favori, tags modifiés sur un
+  // autre appareil) ; sans lui (ancien serveur), seul un nouvel envoi (fetched_at) recharge, comme avant.
   async function onVisible() {
     if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running || S.modal === 'sync') return;
     const before = S.me && S.me.fetched_at;
     try { await loadMe(); } catch (e) { return; }
-    if (S.me && S.me.fetched_at && S.me.fetched_at !== before) {
-      try {
-        await loadCards();
-        notify(`Collection mise à jour : ${cards$(cards.value.length)}.`);
+    const me = S.me;
+    const imported = !!(me && me.fetched_at && me.fetched_at !== before);
+    if (!(imported || (me && Number.isInteger(me.cards_rev) && me.cards_rev !== cardsRev))) return;
+    try {
+      const changed = await syncCards(me);
+      if (imported) notify(`Collection mise à jour : ${cards$(cards.value.length)}.`);
+      if (changed) {
         startPageviews();
         afterCards();
-      } catch (e) { notify(e.message, true); }
-    }
+      }
+    } catch (e) { notify(e.message, true); }
   }
 
   const Root = {
