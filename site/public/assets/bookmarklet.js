@@ -1,6 +1,9 @@
 // Favori du classeur, à cliquer sur wiki-masters.com (avec ou sans www) quand tu y es connecté.
 // Il lit ta collection avec les mêmes requêtes que la page « Collection » du jeu (lecture seule : rien n'est écrit
 // dans le jeu), regroupe les exemplaires par carte, puis envoie les cartes à ton classeur par morceaux de 500.
+// Synchro rapide d'abord : seulement les exemplaires obtenus depuis la dernière synchro (collection triée du plus
+// récent au plus ancien, arrêt à la date gardée par le classeur) ; si les compteurs du jeu ne collent pas (carte
+// vendue, mise aux enchères…), le classeur demande une relecture complète, faite aussitôt.
 // L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
 // principale : elle ne permet que d'envoyer des cartes), puis met ce fichier sur une ligne : chaque instruction finit
 // donc par un point-virgule et les commentaires restent sur des lignes à part.
@@ -76,12 +79,15 @@
     return typeof v === "string" && v.length <= 2000 && /^https?:\/\//i.test(v) ? v : null;
   };
   // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu. Un exemplaire vu
-  // deux fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part.
+  // deux fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part. rows / copies :
+  // exemplaires lus et leur nombre total (contrôlés par le classeur avec les compteurs du jeu).
   var group = function (entries) {
     var byId = {};
     var seen = {};
     var bad = {};
     var list = [];
+    var rows = 0;
+    var copies = 0;
     entries.forEach(function (e, i) {
       if (e && e.id !== undefined && e.id !== null) {
         if (seen[e.id]) {
@@ -89,6 +95,8 @@
         }
         seen[e.id] = true;
       }
+      rows += 1;
+      copies += e && Math.trunc(Number(e.count)) > 0 ? Math.trunc(Number(e.count)) : 1;
       var c = e && e.card;
       var id = e && (e.card_id || (c && c.id));
       var title = c && c.wikipedia_title;
@@ -112,7 +120,46 @@
         card.obtained_at = e.obtained_at;
       }
     });
-    return { list: list, ignored: Object.keys(bad).length };
+    return { list: list, ignored: Object.keys(bad).length, rows: rows, copies: copies };
+  };
+  // Date du plus récent exemplaire lu (texte ISO du jeu, comparé tel quel).
+  var newest = function (entries) {
+    var last = null;
+    entries.forEach(function (e) {
+      if (e && typeof e.obtained_at === "string" && (last === null || e.obtained_at > last)) {
+        last = e.obtained_at;
+      }
+    });
+    return last;
+  };
+  // Exemplaires obtenus après lastAt : collection lue du plus récent au plus ancien, 10 pages au plus. null si l'ordre
+  // n'est pas celui attendu ou s'il y en a trop (relecture complète).
+  var readNew = async function (lastAt) {
+    var fresh = [];
+    var prev = null;
+    for (var page = 0; page < 10; page++) {
+      var data = await read("/api/my-collection?sort=added&page=" + page + "&stats=0");
+      var list = Array.isArray(data.collection) ? data.collection : null;
+      if (!list) {
+        return null;
+      }
+      for (var i = 0; i < list.length; i++) {
+        var at = list[i] && list[i].obtained_at;
+        if (typeof at !== "string" || (prev !== null && at > prev)) {
+          return null;
+        }
+        prev = at;
+        if (at <= lastAt) {
+          return fresh;
+        }
+        fresh.push(list[i]);
+      }
+      if (list.length < 50) {
+        return fresh;
+      }
+      await wait(300);
+    }
+    return null;
   };
   var send = async function (body) {
     var r = await fetch(SITE + "/api/import", {
@@ -131,12 +178,41 @@
   var run = async function () {
     say("Lecture de ta collection…");
     var stats = await read("/api/my-collection/stats?sort=rarity");
+    var state = null;
+    // Raison d'une relecture complète, gardée en tête des messages de progression.
+    var why = "";
+    try {
+      state = await send({ mode: "state" });
+    } catch (e) {
+      state = null;
+    }
+    if (state && state.quick && state.last_at) {
+      say("Recherche de tes nouvelles cartes…");
+      var fresh = await readNew(state.last_at);
+      if (fresh) {
+        var news = group(fresh);
+        var quick = await send({ mode: "delta", cards: news.list, stats: stats, rows: news.rows, copies: news.copies, last_at: newest(fresh), source: "bookmarklet" });
+        if (!quick.needs_full) {
+          var added = Array.isArray(quick.new_ids) ? quick.new_ids.length : 0;
+          if (!news.rows) {
+            say("Rien de nouveau depuis ta dernière synchro : ton classeur est à jour (" + num(quick.count) + " cartes).", true);
+          } else {
+            say(num(news.rows) + (news.rows > 1 ? " exemplaires obtenus" : " exemplaire obtenu") + " depuis ta dernière synchro, " + num(added) + (added > 1 ? " nouvelles cartes" : " nouvelle carte") + " : ton classeur est à jour (" + num(quick.count) + " cartes).", true);
+          }
+          return;
+        }
+        why = "Des cartes ont bougé depuis la dernière fois (vente, enchère…) : relecture complète. ";
+      } else {
+        why = "Beaucoup de nouveautés : relecture complète. ";
+      }
+      say(why + "Lecture de ta collection…");
+    }
     var entries = [];
     for (var page = 0; page < 2000; page++) {
       var data = await read("/api/my-collection?sort=rarity&page=" + page + "&stats=0");
       var list = Array.isArray(data.collection) ? data.collection : [];
       entries = entries.concat(list);
-      say("Lecture de ta collection… " + num(entries.length) + (stats && stats.total ? " sur " + num(stats.total) : "") + " exemplaires");
+      say(why + "Lecture de ta collection… " + num(entries.length) + (stats && stats.total ? " sur " + num(stats.total) : "") + " exemplaires");
       if (list.length < 50) {
         break;
       }
@@ -152,6 +228,7 @@
       var body = { upload_id: upload, part: i, last: i === parts - 1, cards: cards.slice(i * PART, (i + 1) * PART), source: "bookmarklet" };
       if (i === 0) {
         body.stats = stats;
+        body.last_at = newest(entries);
       }
       res = await send(body);
     }

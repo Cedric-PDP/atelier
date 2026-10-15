@@ -13,7 +13,8 @@ export const SCHEMA = [
     cookie_enc TEXT,
     cookie_updated_at TEXT,
     session_expired INTEGER NOT NULL DEFAULT 0,
-    prefs TEXT NOT NULL DEFAULT '{}'
+    prefs TEXT NOT NULL DEFAULT '{}',
+    sync_state TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -62,6 +63,7 @@ export const SCHEMA = [
 const ADDED_COLUMNS = [
   ['users', 'import_key_hash', 'TEXT'],
   ['users', 'prefs', "TEXT NOT NULL DEFAULT '{}'"],
+  ['users', 'sync_state', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['import_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],

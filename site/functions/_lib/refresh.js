@@ -1,10 +1,11 @@
-// POST /api/refresh {page} : lit la collection sur WikiMasters avec le cookie gardé, 10 pages au plus par appel.
+// POST /api/refresh {page, full?} : lit la collection sur WikiMasters avec le cookie gardé, 10 pages au plus par appel.
 // Lecture seule, mêmes requêtes que la page « Collection » du jeu ; toujours lancé par un geste de l'utilisateur.
+// Synchro rapide d'abord (page 0, sans full) : seulement les exemplaires plus récents que la dernière synchro (import.js).
 
 import { purgeStaging } from './db.js';
 import { HttpError } from './http.js';
 import { entryToCard } from './cards.js';
-import { REFRESH_SOURCE, finalizeImport, pickStats } from './import.js';
+import { REFRESH_SOURCE, deltaFits, finalizeImport, pickStats, quickSyncAllowed, syncState, writeDelta } from './import.js';
 import { GAME_HOST, decryptCookie, encryptCookie, mergeSetCookies, setCookiesOf } from './session.js';
 import { nowIso, sleep } from './util.js';
 
@@ -19,6 +20,48 @@ const EXPIRED = 'Ta session WikiMasters a expiré : colle un nouveau cookie.';
 
 const STAGE = `INSERT OR REPLACE INTO refresh_staging (user_id, page, entries, skipped, created_at)
   VALUES (?1, ?2, ?3, ?4, ?5)`;
+
+// Exemplaires plus récents que lastAt, en lisant la collection du plus récent au plus ancien (sort=added, 10 pages au
+// plus). null si l'ordre n'est pas celui attendu (tri non respecté) ou s'il y en a trop : relecture complète.
+async function readNewest(gameGet, lastAt) {
+  const fresh = [];
+  let prev = null;
+  for (let p = 0; p < PAGES_PER_CALL; p++) {
+    const data = await gameGet(`/api/my-collection?sort=added&page=${p}&stats=0`);
+    const list = data && Array.isArray(data.collection) ? data.collection : null;
+    if (!list) return null;
+    for (const entry of list) {
+      const at = entry && entry.obtained_at;
+      if (typeof at !== 'string' || (prev !== null && at > prev)) return null;
+      prev = at;
+      if (at <= lastAt) return fresh;
+      fresh.push(entry);
+    }
+    if (list.length < PAGE_SIZE) return fresh;
+  }
+  return null;
+}
+
+// Nouveautés → {text, rows, copies, lastAt} pour deltaFits / writeDelta ; null si une entrée est inexploitable.
+function deltaOf(fresh) {
+  const seen = new Set();
+  const cards = [];
+  let rows = 0;
+  let copies = 0;
+  for (const entry of fresh) {
+    const eid = entry.id ?? null;
+    if (eid !== null) {
+      if (seen.has(eid)) continue;
+      seen.add(eid);
+    }
+    const card = entryToCard(entry);
+    if (!card) return null;
+    cards.push(card);
+    rows++;
+    copies += card.count;
+  }
+  return { text: JSON.stringify(cards), rows, copies, lastAt: fresh.length ? fresh[0].obtained_at : null };
+}
 
 export async function refresh(env, user, body) {
   const db = env.DB;
@@ -86,13 +129,20 @@ export async function refresh(env, user, body) {
 
   const staged = []; // [page, JSON des cartes partielles, entrées ignorées] ; page -1 = statistiques
   let done = false;
+  let quick = null; // synchro rapide validée : {text, stats, lastAt}
   let failure = null;
   try {
     if (page === 0) {
       const stats = pickStats(await gameGet('/api/my-collection/stats?sort=rarity'));
       staged.push([-1, JSON.stringify(stats ?? {}), 0]);
+      const state = syncState(user);
+      if (body.full !== true && stats && quickSyncAllowed(state)) {
+        const fresh = await readNewest(gameGet, state.last_at);
+        const delta = fresh && deltaOf(fresh);
+        if (delta && (await deltaFits(db, user, { ...delta, stats }))) quick = { text: delta.text, stats, lastAt: delta.lastAt };
+      }
     }
-    for (let p = page; p < page + PAGES_PER_CALL; p++) {
+    for (let p = page; !quick && p < page + PAGES_PER_CALL; p++) {
       if (p > MAX_PAGE) throw new HttpError(502, 'WikiMasters renvoie trop de pages : rafraîchissement arrêté.');
       const data = await gameGet(`/api/my-collection?sort=rarity&page=${p}&stats=0`);
       const list = data && Array.isArray(data.collection) ? data.collection : null;
@@ -126,6 +176,10 @@ export async function refresh(env, user, body) {
     await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?${params.length}`).bind(...params).run();
   }
   if (failure) throw failure;
+  if (quick) {
+    const result = await writeDelta(db, user, { ...quick, clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)] });
+    return { done: true, ...result };
+  }
   const now = nowIso();
   await db.batch(staged.map(([p, text, skipped]) => db.prepare(STAGE).bind(user.id, p, text, skipped, now)));
 

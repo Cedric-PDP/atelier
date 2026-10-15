@@ -5,7 +5,7 @@ import { HttpError, json, raw } from './http.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 
 const USER_COLUMNS =
-  'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, import_key_hash, prefs';
+  'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, import_key_hash, prefs, sync_state';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 

@@ -22,7 +22,7 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
-| `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
+| `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `bookmarklet.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
 | `config/themes.json`, `scripts/build_catalog.js` | catalogue des collections proposées (motifs SPARQL Wikidata) → `site/public/catalog.json` |
 | `data/`, autres `scripts/`, `lib/`, `page/` | ancienne page claude.ai « Collections WikiMasters » (abandonnée, voir plus bas) |
 
@@ -30,6 +30,7 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 
 ```bash
 node dev/api.test.mjs                       # l'API, avec mesures de CPU ; doit finir par API OK
+node dev/bookmarklet.test.mjs               # le favori de bout en bout (synchro rapide, relecture complète) ; FAVORI OK
 node dev/worker.test.mjs                    # le point d'entrée Worker ; doit finir par WORKER OK
 node dev/match.test.mjs                     # rapprochement par identifiant Wikidata ; MATCH OK
 node dev/propose.test.mjs                   # propositions d'après les catégories ; PROPOSE OK

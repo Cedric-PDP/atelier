@@ -83,10 +83,10 @@ sert à vérifier qu'un export est complet. La dernière page a moins de 50 entr
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
 | `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page) ; sans `part` : tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
-| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards`) | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped}` (`complete` = `stats.totalUnique === count`, ou `null` sans stats) |
+| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards`) | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped}` (`complete` = `stats.totalUnique === count`, ou `null` sans stats) ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at}`, `{mode:'delta', cards, stats, rows, copies, last_at}` → `{count, new_ids, complete, skipped:0, quick:true}` ou `{needs_full:true}` (rien d'écrit) |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` | `{ok:true}` ; extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`), le chiffre et le garde |
 | `DELETE /api/session` | | `{ok:true}` |
-| `POST /api/refresh` | `{page?}` (0 au départ) | `{done:false, next_page, fetched, total, skipped}` puis, à la fin, `{done:true, count, new_ids, complete, skipped}` ; `401 {error, needs_session:true}` si pas de cookie ou session expirée |
+| `POST /api/refresh` | `{page?, full?}` (0 au départ ; `full:true` = jamais de synchro rapide) | `{done:false, next_page, fetched, total, skipped}` puis, à la fin, `{done:true, count, new_ids, complete, skipped}` (`quick:true` en plus si la synchro rapide a suffi) ; `401 {error, needs_session:true}` si pas de cookie ou session expirée |
 | `POST /api/tags/set` | `{card_id, tags:[…]}` | `{tags}` |
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
@@ -117,6 +117,19 @@ comparaison avec la collection en place (ajouts, retraits, modifications, `new_i
 différences (cartes ajoutées, retirées, modifiées). `new_ids` = cartes présentes après mais pas avant ; **vide au
 tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées (elle peut revenir).
 
+**Synchro rapide (seulement les nouveautés)** : après une lecture complète, `users.sync_state` garde les compteurs du
+jeu (`total`, `totalUnique`), l'`obtained_at` du plus récent exemplaire lu (`last_at`, envoyé par le favori ou pris dans
+les exemplaires lus) et la date de la lecture complète. Ensuite, le favori (et `/api/refresh` à la page 0) lit
+`my-collection?sort=added` (tri « Ajout » du jeu, du plus récent au plus ancien), s'arrête au premier exemplaire
+d'au plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'une par tranche de 50 exemplaires.
+Le classeur ne les ajoute (cartes nouvelles insérées, exemplaires additionnés aux cartes déjà là, rien retiré) que si
+elles expliquent à elles seules l'évolution des compteurs : `totalUnique` + nombre de cartes nouvelles, `total` +
+nombre d'exemplaires lus (entrées ou exemplaires, le jeu comptant l'un ou l'autre). Sinon (carte vendue, mise aux
+enchères, échangée, défaussée ; exemplaire ajouté à une entrée existante ; tri non respecté ; plus de 10 pages de
+nouveautés ; carte invalide), `needs_full` et relecture complète aussitôt. Lecture complète forcée au moins une fois
+par semaine. Le tri `added` vient de la page profil du jeu (`rarity`, `name`, `added`) ; s'il n'était pas respecté,
+la vérification de l'ordre des dates le détecte et tout repasse par la lecture complète.
+
 **Rafraîchissement par cookie** : `/api/refresh` lit au plus 10 pages par appel (limites de calcul et de sous-requêtes
 des Workers gratuits), stocke les pages lues dans une table d'attente, et termine quand une page a moins de 50 entrées ; l'interface
 rappelle avec `next_page` jusqu'à `done:true`. Redirections non suivies (une redirection = session expirée) ;
@@ -146,9 +159,11 @@ avec un message lisible.
 
 Source commentée : `site/public/assets/bookmarklet.js` ; l'interface la met sur une ligne et y insère l'origine du site et
 la clé de l'utilisateur. Sur `www.wiki-masters.com` (utilisateur connecté) : petit encart de progression, lecture de
-`my-collection/stats` puis de toutes les pages `my-collection` (pause de 300 ms), regroupement des exemplaires en
-**CarteImport**, envoi `POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last`, `stats` au
-premier), puis « 1 043 cartes envoyées au classeur, 12 nouvelles » et un lien vers le classeur. Ailleurs : « Ouvre
+`my-collection/stats`, état de la synchro (`mode:'state'`), puis synchro rapide si possible (pages `sort=added`
+jusqu'à `last_at`, envoi `mode:'delta'` : « 3 exemplaires obtenus depuis ta dernière synchro, 2 nouvelles cartes »,
+ou « Rien de nouveau ») ; sinon lecture de toutes les pages `my-collection` (pause de 300 ms), regroupement des
+exemplaires en **CarteImport**, envoi `POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last`,
+`stats` et `last_at` au premier), puis « 1 043 cartes envoyées au classeur, 12 nouvelles » et un lien vers le classeur. Ailleurs : « Ouvre
 wiki-masters.com et connecte-toi ». 401 du jeu : « Connecte-toi à WikiMasters ».
 
 ## Règles du jeu

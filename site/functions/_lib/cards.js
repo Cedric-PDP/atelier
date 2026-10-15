@@ -10,7 +10,7 @@ export const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
 
 const isHttp = (v) => typeof v === 'string' && v.length <= 2000 && /^https?:\/\//i.test(v);
 // Date au format ISO 8601 (comme celles du jeu) : comparées en texte par la finalisation (la plus ancienne gagne).
-const isDate = (v) => typeof v === 'string' && v.length <= 40 && /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(v);
+export const isDate = (v) => typeof v === 'string' && v.length <= 40 && /^\d{4}-\d\d-\d\dT\d\d:\d\d/.test(v);
 const isNum = (v) => v === null || (typeof v === 'number' && Number.isFinite(v));
 const isText = (v, max) => v === null || (typeof v === 'string' && v.length <= max);
 

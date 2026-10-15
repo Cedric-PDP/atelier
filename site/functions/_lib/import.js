@@ -4,7 +4,7 @@
 
 import { HttpError, raw } from './http.js';
 import { purgeStaging } from './db.js';
-import { MAX_CARDS, MAX_PART_CARDS, checkCard, entryToCard } from './cards.js';
+import { MAX_CARDS, MAX_PART_CARDS, checkCard, entryToCard, isDate } from './cards.js';
 import { byteLength, nowIso, randomToken } from './util.js';
 
 // Quotas d'un envoi en attente (D1 gratuit : 500 Mo en tout, 100 000 lignes écrites par jour).
@@ -50,14 +50,113 @@ function collectionCte(source) {
 export const IMPORT_SOURCE =
   'SELECT cards AS j FROM import_staging WHERE user_id = ?1 AND upload_id = ?2 AND part >= 0';
 export const REFRESH_SOURCE = 'SELECT entries AS j FROM refresh_staging WHERE user_id = ?1 AND page >= ?2';
+// Nouveautés d'une synchro rapide : ?2 = le tableau JSON des cartes partielles lui-même.
+const DELTA_SOURCE = 'SELECT ?2 AS j';
+
+// ---------------------------------------------------------------- synchro rapide (seulement les nouveautés)
+// users.sync_state (JSON) : {stats, last_at, full_at} = compteurs du jeu à la dernière synchro, obtained_at du plus
+// récent exemplaire lu, date de la dernière lecture complète. Le favori (ou /api/refresh) lit alors la collection
+// triée du plus récent au plus ancien (sort=added) et s'arrête à last_at. Les nouveautés ne sont ajoutées que si
+// elles expliquent à elles seules l'évolution des compteurs du jeu : une carte partie entre-temps (vente, enchère,
+// échange, défausse) ou un exemplaire ajouté à une carte déjà là fait échouer ce contrôle → relecture complète.
+const FULL_EVERY_MS = 7 * 86400_000; // une lecture complète au moins une fois par semaine
+
+export function syncState(user) {
+  try {
+    const s = JSON.parse(user.sync_state || 'null');
+    return s && typeof s === 'object' && !Array.isArray(s) ? s : null;
+  } catch {
+    return null;
+  }
+}
+
+const countsOk = (s) => !!s && Number.isInteger(s.total) && Number.isInteger(s.totalUnique);
+
+// Synchro rapide possible : une lecture complète récente, avec les compteurs du jeu et la date du dernier exemplaire.
+export function quickSyncAllowed(state) {
+  if (!state || !countsOk(state.stats) || !isDate(state.last_at) || !isDate(state.full_at)) return false;
+  const age = Date.now() - Date.parse(state.full_at);
+  return age >= 0 && age < FULL_EVERY_MS;
+}
+
+// Les nouveautés (JSON de cartes partielles) expliquent-elles l'évolution des compteurs du jeu depuis la dernière
+// synchro ? rows / copies = exemplaires lus et leur nombre total (le jeu compte l'un ou l'autre dans `total`).
+export async function deltaFits(db, user, { text, stats, rows, copies }) {
+  const prev = syncState(user)?.stats;
+  if (!countsOk(prev) || !countsOk(stats)) return false;
+  const fresh = await db.prepare(
+    `${collectionCte(DELTA_SOURCE)} SELECT COUNT(*) AS n FROM g WHERE card_id NOT IN (SELECT card_id FROM cards WHERE user_id = ?1)`,
+  )
+    .bind(user.id, text)
+    .first();
+  const total = stats.total - prev.total;
+  return stats.totalUnique - prev.totalUnique === (fresh ? fresh.n : -1) && (total === rows || total === copies);
+}
+
+// Ajoute les nouveautés à la collection en place : carte nouvelle insérée, carte déjà là additionnée (exemplaires,
+// brillante ou favorite si l'un l'est, plus ancienne date d'obtention). Rien n'est retiré.
+export async function writeDelta(db, user, { text, stats, lastAt, clear = [] }) {
+  const state = syncState(user) || {};
+  const cte = collectionCte(DELTA_SOURCE);
+  const next = JSON.stringify({ stats: pickStats(stats), last_at: lastAt && lastAt > state.last_at ? lastAt : state.last_at, full_at: state.full_at });
+  const old = (f) => `json_extract(cards.data, '$.${f}')`;
+  const add = (f) => `json_extract(excluded.data, '$.${f}')`;
+  const [updated] = await db.batch([
+    db.prepare(
+      `${cte} UPDATE users SET
+         new_ids = (SELECT json_group_array(card_id) FROM g WHERE card_id NOT IN (SELECT card_id FROM cards WHERE user_id = ?1)),
+         fetched_at = ?3, sync_state = ?4
+       WHERE id = ?1 RETURNING new_ids`,
+    ).bind(user.id, text, nowIso(), next),
+    db.prepare(
+      `${cte} INSERT INTO cards (user_id, card_id, data) SELECT ?1, g.card_id, g.data FROM g WHERE true
+       ON CONFLICT (user_id, card_id) DO UPDATE SET data = json_set(cards.data,
+         '$.count', ${old('count')} + ${add('count')},
+         '$.shiny', json(CASE WHEN ${old('shiny')} OR ${add('shiny')} THEN 'true' ELSE 'false' END),
+         '$.starred', json(CASE WHEN ${old('starred')} OR ${add('starred')} THEN 'true' ELSE 'false' END),
+         '$.obtained_at', CASE WHEN ${old('obtained_at')} IS NULL OR ${add('obtained_at')} < ${old('obtained_at')}
+           THEN ${add('obtained_at')} ELSE ${old('obtained_at')} END)`,
+    ).bind(user.id, text),
+    ...clear,
+  ]);
+  const total = await db.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?1').bind(user.id).first();
+  const count = total ? total.n : 0;
+  return { count, new_ids: raw(updated.results[0]?.new_ids || '[]'), complete: stats.totalUnique === count, skipped: 0, quick: true };
+}
+
+// POST /api/import {mode: 'delta', cards, stats, rows, copies, last_at} (favori) : nouveautés seulement, en un envoi.
+// {needs_full: true} (rien d'écrit) quand la synchro rapide n'est pas possible ou que les compteurs ne collent pas.
+async function deltaRoute(db, user, body) {
+  const list = Array.isArray(body.cards) ? body.cards : null;
+  if (!list) throw new HttpError(400, 'Il manque les cartes (champ « cards »).');
+  const nat = (v) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
+  if (!nat(body.rows) || !nat(body.copies)) throw new HttpError(400, 'Les champs « rows » et « copies » doivent être des entiers positifs.');
+  if (body.last_at !== undefined && body.last_at !== null && !isDate(body.last_at)) throw new HttpError(400, 'Le champ « last_at » doit être une date.');
+  const stats = pickStats(body.stats);
+  if (list.length > MAX_PART_CARDS || !quickSyncAllowed(syncState(user)) || !countsOk(stats)) return { needs_full: true };
+  const cards = [];
+  for (const item of list) {
+    const card = checkCard(item);
+    if (card) cards.push(card);
+  }
+  if (cards.length !== list.length) return { needs_full: true };
+  const text = JSON.stringify(cards);
+  if (!(await deltaFits(db, user, { text, stats, rows: body.rows, copies: body.copies }))) return { needs_full: true };
+  return writeDelta(db, user, { text, stats, lastAt: body.last_at ?? null });
+}
 
 // Remplace la collection par celle de la table d'attente, en n'écrivant que les différences, dans une transaction.
 // `clear` = requêtes qui vident la table d'attente (passées dans la même transaction) ; `skipped` = cartes ignorées
 // (invalides), recopié dans la réponse.
-export async function finalizeImport(db, user, { source, key, stats, clear, skipped = 0 }) {
+// lastAt = obtained_at du plus récent exemplaire lu (envoyé par le favori) ; sinon le plus récent de la table d'attente.
+export async function finalizeImport(db, user, { source, key, stats, lastAt = null, clear, skipped = 0 }) {
   const cte = collectionCte(source);
-  const total = await db.prepare(`${cte} SELECT COUNT(DISTINCT card_id) AS n FROM e`).bind(user.id, key).first();
+  const total = await db.prepare(
+    `${cte} SELECT COUNT(DISTINCT card_id) AS n, MAX(json_extract(v, '$.obtained_at')) AS last FROM e`,
+  ).bind(user.id, key).first();
   const count = total ? total.n : 0;
+  const counts = pickStats(stats);
+  const state = JSON.stringify({ stats: countsOk(counts) ? counts : null, last_at: lastAt || total?.last || null, full_at: nowIso() });
   if (count > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
   if (count === 0) throw new HttpError(400, "Collection vide : rien n'a été importé (ton classeur est inchangé).");
 
@@ -69,9 +168,9 @@ export async function finalizeImport(db, user, { source, key, stats, clear, skip
            (SELECT json_group_array(card_id) FROM (SELECT DISTINCT card_id FROM e
               WHERE card_id NOT IN (SELECT card_id FROM cards WHERE user_id = ?1)))
          END,
-         fetched_at = ?3
+         fetched_at = ?3, sync_state = ?4
        WHERE id = ?1 RETURNING new_ids`,
-    ).bind(user.id, key, nowIso()),
+    ).bind(user.id, key, nowIso(), state),
     // Nouvelles et modifiées.
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data)
@@ -105,6 +204,13 @@ export function pickStats(s) {
 // Sans upload_id : import en un seul morceau. `source` est accepté mais pas stocké (aucune colonne prévue).
 export async function importRoute(env, user, body) {
   const db = env.DB;
+  if (body.mode === 'state') {
+    const state = syncState(user);
+    return { quick: quickSyncAllowed(state), last_at: state?.last_at ?? null, full_at: state?.full_at ?? null };
+  }
+  if (body.mode === 'delta') return deltaRoute(db, user, body);
+  if (body.mode !== undefined) throw new HttpError(400, "Mode d'import inconnu (« state », « delta » ou rien).");
+  if (body.last_at !== undefined && body.last_at !== null && !isDate(body.last_at)) throw new HttpError(400, 'Le champ « last_at » doit être une date.');
   const single = body.upload_id === undefined || body.upload_id === null;
   let uploadId;
   let part = 0;
@@ -164,7 +270,8 @@ export async function importRoute(env, user, body) {
     ...purgeStaging(db),
     db.prepare('DELETE FROM import_staging WHERE user_id = ?1 AND upload_id <> ?2').bind(user.id, uploadId),
     db.prepare(put).bind(user.id, uploadId, part, text, skipped, now),
-    ...(stats ? [db.prepare(put).bind(user.id, uploadId, -1, JSON.stringify(stats), 0, now)] : []),
+    // Morceau -1 : compteurs du jeu et date du plus récent exemplaire lu (favori), relus à la finalisation.
+    ...(stats || body.last_at ? [db.prepare(put).bind(user.id, uploadId, -1, JSON.stringify({ ...(stats || {}), last_at: body.last_at ?? null }), 0, now)] : []),
   ]);
 
   const received = (others.received ?? 0) + cards.length;
@@ -180,10 +287,12 @@ export async function importRoute(env, user, body) {
   )
     .bind(user.id, uploadId)
     .first();
+  const meta = statsRow ? JSON.parse(statsRow.cards) : null;
   return finalizeImport(db, user, {
     source: IMPORT_SOURCE,
     key: uploadId,
-    stats: statsRow ? JSON.parse(statsRow.cards) : null,
+    stats: meta,
+    lastAt: meta && isDate(meta.last_at) ? meta.last_at : null,
     clear: [db.prepare('DELETE FROM import_staging WHERE user_id = ?1').bind(user.id)],
     skipped: skippedTotal,
   });

@@ -81,6 +81,7 @@ function mockApi() {
         calls.push('cards part ' + q);
         return json(200, { fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: q, next_part: n < last ? 'curseur-' + (n + 1) : null });
       }
+      if (p === '/api/import' && body.mode === 'state') return json(200, { quick: false, last_at: null, full_at: null });
       if (p === '/api/import') {
         const u = st.uploads.get(body.upload_id) || { parts: [], stats: null };
         st.uploads.set(body.upload_id, u);
@@ -1024,7 +1025,8 @@ async function runBookmarklet(code, classeurFetch, key) {
     if (url === ORIGIN + '/api/import') {
       if (init.headers['X-Classeur-Key'] !== key) throw new Error('clé absente');
       const body = JSON.parse(init.body);
-      posts.push(body);
+      // Demande d'état de la synchro (mode state) : pas un morceau d'import.
+      if (body.mode !== 'state') posts.push(body);
       return classeurFetch('/api/import', init);
     }
     throw new Error('favori : adresse inattendue ' + url);

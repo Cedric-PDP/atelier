@@ -742,12 +742,17 @@ await test('session : HAR avec cookie (préférence my-collection, casse, HTTP/2
 
 // --- Rafraîchissement par cookie ------------------------------------------------------------------------------
 
-// Jeu simulé : stats + pages de 50 entrées ; options pour Set-Cookie, statuts d'erreur (corps JSON), réponses
-// brutes [statut, corps, type] (redirection, page HTML), panne réseau.
+// Jeu simulé : stats + pages de 50 entrées (sort=added : de la plus récente à la plus ancienne) ; options pour
+// Set-Cookie, statuts d'erreur (corps JSON), réponses brutes [statut, corps, type] (redirection, page HTML), panne réseau.
 function mockGame(entries, { stats, setCookie = {}, status = {}, raw = {}, down = false } = {}) {
   const calls = [];
   const pages = [];
-  for (let p = 0; p * 50 <= entries.length; p++) pages.push(JSON.stringify({ collection: entries.slice(p * 50, p * 50 + 50) }));
+  const added = [];
+  const recent = [...entries].sort((a, b) => (a.obtained_at < b.obtained_at ? 1 : a.obtained_at > b.obtained_at ? -1 : 0));
+  for (let p = 0; p * 50 <= entries.length; p++) {
+    pages.push(JSON.stringify({ collection: entries.slice(p * 50, p * 50 + 50) }));
+    added.push(JSON.stringify({ collection: recent.slice(p * 50, p * 50 + 50) }));
+  }
   globalThis.fetch = async (url, init = {}) => {
     const u = new URL(url);
     const h = new Headers(init.headers);
@@ -766,7 +771,7 @@ function mockGame(entries, { stats, setCookie = {}, status = {}, raw = {}, down 
     if (status[page]) return new Response(JSON.stringify({ error: 'non' }), { status: status[page], headers });
     const body = isStats
       ? JSON.stringify(stats ?? { total: entries.length, totalUnique: new Set(entries.map((e) => e.card_id)).size, rarityCounts: {}, tagOptions: ['TagDuJeu'] })
-      : (pages[page] ?? '{"collection":[]}');
+      : ((u.searchParams.get('sort') === 'added' ? added : pages)[page] ?? '{"collection":[]}');
     return new Response(body, { status: 200, headers });
   };
   return calls;
@@ -953,9 +958,134 @@ await test('refresh : redirection = session expirée, 403 non JSON = anti-robots
       return env.DB.batch(sts);
     },
   };
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 }, e: { ...env, DB: full } });
+  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0, full: true }, e: { ...env, DB: full } });
   assert.equal(r.status, 503);
   assert.equal(await storedCookie(bob), 'sid=apres');
+  globalThis.fetch = realFetch;
+});
+
+// --- Synchro rapide (seulement les nouveautés) ------------------------------------------------------------------
+
+await test('import : synchro rapide du favori (state, delta additionné, compteurs du jeu contrôlés, needs_full)', async () => {
+  const dave = await signup('Dave');
+  const state = async () => (await call('POST', 'import', { key: dave.key, body: { mode: 'state' } })).json;
+  assert.deepEqual(await state(), { quick: false, last_at: null, full_at: null });
+  // Sans lecture complète d'abord : pas de synchro rapide.
+  let r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 0, totalUnique: 0 }, rows: 0, copies: 0 } });
+  assert.deepEqual(r.json, { needs_full: true });
+  // Lecture complète : 30 cartes, compteurs et date du plus récent exemplaire gardés.
+  const base30 = synth(30);
+  r = await call('POST', 'import', { key: dave.key, body: { upload_id: 'complet', part: 0, last: true, cards: base30, stats: { total: 30, totalUnique: 30, rarityCounts: {} }, last_at: '2026-10-15T09:00:00.000Z', source: 'favori' } });
+  assert.equal(r.json.count, 30);
+  let st = await state();
+  assert.equal(st.quick, true);
+  assert.equal(st.last_at, '2026-10-15T09:00:00.000Z');
+  // Deux nouveautés : une carte nouvelle, un exemplaire (brillant) de plus d'une carte déjà là.
+  const before = (await call('GET', 'cards', { key: dave.key })).json.cards.find((c) => c.id === base30[0].id);
+  const fresh = [{ ...carte(owned[40], 'nouvelle-carte'), count: 1, obtained_at: '2026-10-15T10:00:00.000Z' },
+    { ...base30[0], count: 1, shiny: true, obtained_at: '2026-10-15T10:00:00.000Z' }];
+  const writes = countCardWrites(true);
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: fresh, stats: { total: 32, totalUnique: 31, rarityCounts: {} }, rows: 2, copies: 2, last_at: '2026-10-15T10:00:00.000Z' } });
+  assert.deepEqual(r.json, { count: 31, new_ids: ['nouvelle-carte'], complete: true, skipped: 0, quick: true });
+  assert.equal(writes(), 2, 'deux écritures seulement');
+  countCardWrites(false);
+  const cards = (await call('GET', 'cards', { key: dave.key })).json.cards;
+  const after = cards.find((c) => c.id === base30[0].id);
+  assert.equal(after.count, before.count + 1);
+  assert.equal(after.shiny, true);
+  assert.equal(after.obtained_at, before.obtained_at, 'la plus ancienne date reste');
+  assert.equal(after.title, before.title);
+  const added = cards.find((c) => c.id === 'nouvelle-carte');
+  assert.equal(added.count, 1);
+  assert.equal(added.starred, owned[40].f);
+  st = await state();
+  assert.equal(st.last_at, '2026-10-15T10:00:00.000Z');
+  // Rien de nouveau, compteurs inchangés : rien d'écrit dans les cartes, synchro datée.
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 32, totalUnique: 31 }, rows: 0, copies: 0 } });
+  assert.deepEqual(r.json, { count: 31, new_ids: [], complete: true, skipped: 0, quick: true });
+  assert.equal((await state()).last_at, '2026-10-15T10:00:00.000Z', 'last_at ne recule pas');
+  // Une carte partie (vente, enchère) : les compteurs ne collent plus → relecture complète, rien d'écrit.
+  const snapshot = JSON.stringify(rows('SELECT * FROM cards WHERE user_id = ? ORDER BY card_id', dave.user.id));
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 31, totalUnique: 30 }, rows: 0, copies: 0 } });
+  assert.deepEqual(r.json, { needs_full: true });
+  // Une vente et un achat de même rareté : total inchangé, mais une nouveauté lue → relecture complète.
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [{ ...carte(owned[41], 'autre-carte'), count: 1 }], stats: { total: 32, totalUnique: 31 }, rows: 1, copies: 1 } });
+  assert.deepEqual(r.json, { needs_full: true });
+  // Un exemplaire ajouté à une carte déjà là sans nouvelle entrée (total +1, rien lu) → relecture complète.
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 33, totalUnique: 31 }, rows: 0, copies: 0 } });
+  assert.deepEqual(r.json, { needs_full: true });
+  // Carte invalide dans les nouveautés → relecture complète (les compteurs ne pourraient pas être vérifiés).
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [{ id: 'x', title: '', rarity: 'C', count: 1 }], stats: { total: 33, totalUnique: 32 }, rows: 1, copies: 1 } });
+  assert.deepEqual(r.json, { needs_full: true });
+  assert.equal(JSON.stringify(rows('SELECT * FROM cards WHERE user_id = ? ORDER BY card_id', dave.user.id)), snapshot, 'rien d\'écrit');
+  // Requêtes mal formées.
+  for (const body of [{ mode: 'autre' }, { mode: 'delta', stats: {}, rows: 0, copies: 0 }, { mode: 'delta', cards: [], rows: -1, copies: 0 },
+    { mode: 'delta', cards: [], rows: 0, copies: 0, last_at: 'hier' }, { cards: [], last_at: 12 }]) {
+    r = await call('POST', 'import', { key: dave.key, body });
+    assert.equal(r.status, 400, JSON.stringify(body));
+  }
+  // La clé d'import du favori suffit (state et delta passent par /api/import).
+  const imp = (await call('POST', 'import-key', { key: dave.key })).json.import_key;
+  r = await call('POST', 'import', { key: imp, body: { mode: 'state' } });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.quick, true);
+  // Plus d'une semaine sans lecture complète : synchro rapide refusée.
+  env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.full_at', '2026-01-01T00:00:00.000Z') WHERE id = ?").run(dave.user.id);
+  assert.equal((await state()).quick, false);
+  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 32, totalUnique: 31 }, rows: 0, copies: 0 } });
+  assert.deepEqual(r.json, { needs_full: true });
+});
+
+await test('refresh : synchro rapide (sort=added, arrêt à la dernière synchro), relecture complète si une carte est partie', async () => {
+  const e3 = makeEnv({ REFRESH_PAUSE_MS: '0' });
+  const erin = await signup('Erin', e3);
+  await call('POST', 'session', { key: erin.key, body: { cookie: 'sid=erin' }, e: e3 });
+  const at = (i) => `2026-10-${String(1 + Math.floor(i / 24)).padStart(2, '0')}T${String(i % 24).padStart(2, '0')}:00:00.000Z`;
+  const entries = base.slice(0, 120).map((c, i) => rawEntry(c, { obtained_at: at(i) }));
+  // Première fois : lecture complète (aucune synchro connue).
+  let calls = mockGame(entries);
+  let r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
+  assert.equal(r.json.done, true);
+  assert.equal(r.json.count, 120);
+  assert.ok(!calls.some((c) => c.url.includes('sort=added')));
+  // Trois nouveautés : deux cartes nouvelles, un exemplaire de plus d'une carte déjà là (entrée à part).
+  const more = [...entries,
+    rawEntry(base[120], { obtained_at: '2026-10-20T10:00:00.000Z' }),
+    rawEntry(base[121], { obtained_at: '2026-10-20T11:00:00.000Z' }),
+    rawEntry(base[5], { id: 'second-exemplaire', count: 1, obtained_at: '2026-10-20T12:00:00.000Z' })];
+  calls = mockGame(more);
+  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.quick, true);
+  assert.equal(r.json.count, 122);
+  assert.deepEqual([...r.json.new_ids].sort(), [base[120].id, base[121].id].sort());
+  assert.deepEqual(calls.map((c) => c.url), [
+    'https://www.wiki-masters.com/api/my-collection/stats?sort=rarity',
+    'https://www.wiki-masters.com/api/my-collection?sort=added&page=0&stats=0',
+  ]);
+  const five = (await call('GET', 'cards', { key: erin.key, e: e3 })).json.cards.find((c) => c.id === base[5].id);
+  assert.equal(five.count, base[5].n + 1);
+  // Une carte vendue entre-temps : contrôle des compteurs en échec → relecture complète dans le même appel.
+  const sold = more.filter((e) => e.card_id !== base[7].id);
+  calls = mockGame(sold);
+  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
+  assert.equal(r.json.done, true);
+  assert.equal(r.json.quick, undefined);
+  assert.equal(r.json.count, 121);
+  assert.ok(calls.some((c) => c.url.includes('sort=added')) && calls.some((c) => c.url.includes('sort=rarity&page=0')));
+  // full: true → jamais de synchro rapide.
+  calls = mockGame(sold);
+  r = await call('POST', 'refresh', { key: erin.key, body: { full: true }, e: e3 });
+  assert.equal(r.json.count, 121);
+  assert.ok(!calls.some((c) => c.url.includes('sort=added')));
+  // Un tri que le jeu ne respecterait pas (ordre croissant) : refusé, relecture complète.
+  const late = [...sold, rawEntry(base[122], { obtained_at: '2026-10-21T10:00:00.000Z' })];
+  calls = mockGame(late);
+  const realMock = globalThis.fetch;
+  globalThis.fetch = async (url, init) => realMock(String(url).replace('sort=added', 'sort=rarity'), init);
+  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
+  assert.equal(r.json.count, 122);
+  assert.equal(r.json.quick, undefined);
   globalThis.fetch = realFetch;
 });
 
