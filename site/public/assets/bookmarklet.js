@@ -1,8 +1,9 @@
-// Favori du classeur, à cliquer sur www.wiki-masters.com quand tu y es connecté.
+// Favori du classeur, à cliquer sur wiki-masters.com (avec ou sans www) quand tu y es connecté.
 // Il lit ta collection avec les mêmes requêtes que la page « Collection » du jeu (lecture seule : rien n'est écrit
 // dans le jeu), regroupe les exemplaires par carte, puis envoie les cartes à ton classeur par morceaux de 500.
-// L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et ta clé, puis met ce fichier sur une
-// ligne : chaque instruction finit donc par un point-virgule et les commentaires restent sur des lignes à part.
+// L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
+// principale : elle ne permet que d'envoyer des cartes), puis met ce fichier sur une ligne : chaque instruction finit
+// donc par un point-virgule et les commentaires restent sur des lignes à part.
 (function () {
   var SITE = "__SITE__";
   var KEY = "__KEY__";
@@ -72,16 +73,28 @@
     return r.json();
   };
   var web = function (v) {
-    return typeof v === "string" && /^https?:\/\//i.test(v) ? v : null;
+    return typeof v === "string" && v.length <= 2000 && /^https?:\/\//i.test(v) ? v : null;
   };
-  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu.
+  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu. Un exemplaire vu
+  // deux fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part.
   var group = function (entries) {
     var byId = {};
+    var seen = {};
+    var bad = {};
     var list = [];
-    entries.forEach(function (e) {
+    entries.forEach(function (e, i) {
+      if (e && e.id !== undefined && e.id !== null) {
+        if (seen[e.id]) {
+          return;
+        }
+        seen[e.id] = true;
+      }
       var c = e && e.card;
       var id = e && (e.card_id || (c && c.id));
-      if (!c || !id || typeof c.wikipedia_title !== "string" || !c.wikipedia_title || ["C", "PC", "R", "SR", "UR", "L"].indexOf(c.rarity) < 0) {
+      var title = c && c.wikipedia_title;
+      var longCat = c && typeof c.category === "string" && c.category.length > 500;
+      if (!c || !id || typeof title !== "string" || !title || title.length > 500 || longCat || ["C", "PC", "R", "SR", "UR", "L"].indexOf(c.rarity) < 0) {
+        bad[id ? "c" + id : "e" + i] = true;
         return;
       }
       id = String(id);
@@ -99,7 +112,7 @@
         card.obtained_at = e.obtained_at;
       }
     });
-    return list;
+    return { list: list, ignored: Object.keys(bad).length };
   };
   var send = async function (body) {
     var r = await fetch(SITE + "/api/import", {
@@ -129,7 +142,8 @@
       }
       await wait(300);
     }
-    var cards = group(entries);
+    var grouped = group(entries);
+    var cards = grouped.list;
     var upload = Date.now().toString(36) + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     var parts = Math.max(1, Math.ceil(cards.length / PART));
     var res = null;
@@ -143,6 +157,10 @@
     }
     var fresh = Array.isArray(res.new_ids) ? res.new_ids.length : 0;
     var message = num(res.count) + " cartes envoyées au classeur, " + num(fresh) + (fresh > 1 ? " nouvelles." : " nouvelle.");
+    var ignored = grouped.ignored + (Number(res.skipped) || 0);
+    if (ignored > 0) {
+      message += " " + num(ignored) + (ignored > 1 ? " cartes ignorées" : " carte ignorée") + " (sans titre ou rareté inconnue).";
+    }
     if (res.complete === false) {
       message += " Il en manque par rapport au total du jeu : relance le favori dans un moment.";
     }

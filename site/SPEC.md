@@ -29,6 +29,11 @@ avec `node:sqlite`).
 - Lien personnel : `https://<site>/#cle=<clé>` ; à l'ouverture, l'interface range la clé dans `localStorage` et efface
   le fragment de l'adresse (`history.replaceState`).
 - Clé absente ou inconnue → `401 {error}`.
+- **Clé d'import** (facultative) : `POST /api/import` accepte la clé principale **ou** la clé d'import ; toutes les
+  autres routes exigent la clé principale. Le favori n'embarque que la clé d'import : s'il fuit (il s'exécute dans
+  la page du jeu), on ne peut qu'envoyer des cartes, et on la régénère.
+- **Lien d'un autre classeur** : l'interface n'écrase jamais une clé gardée sans vérifier la nouvelle (`GET /api/me`)
+  et demander confirmation.
 
 ## Format des erreurs
 
@@ -72,12 +77,14 @@ sert à vérifier qu'un export est complet. La dernière page a moins de 50 entr
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
 | `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, new_ids, session:{has_cookie, expired, updated_at}}` |
 | `PATCH /api/me` | `{name}` | `{user}` |
-| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, étiquettes, collections, cookie) |
-| `GET /api/cards?part=N` | (`part` facultatif ; l'interface lit toujours par morceaux, 0, 1… jusqu'à `next_part: null`) | `{fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` ; sans `part` : tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
-| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards`) | morceau intermédiaire : `{ok:true, received}` (cumulé ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete}` (`complete` = `stats.totalUnique === count`, ou `null` sans stats) |
+| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, étiquettes, collections, cookie) et le compte |
+| `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
+| `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
+| `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page) ; sans `part` : tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
+| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards`) | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped}` (`complete` = `stats.totalUnique === count`, ou `null` sans stats) |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` | `{ok:true}` ; extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`), le chiffre et le garde |
 | `DELETE /api/session` | | `{ok:true}` |
-| `POST /api/refresh` | `{page?}` (0 au départ) | `{done:false, next_page, fetched, total}` puis, à la fin, `{done:true, count, new_ids, complete}` ; `401 {error, needs_session:true}` si pas de cookie ou session expirée |
+| `POST /api/refresh` | `{page?}` (0 au départ) | `{done:false, next_page, fetched, total, skipped}` puis, à la fin, `{done:true, count, new_ids, complete, skipped}` ; `401 {error, needs_session:true}` si pas de cookie ou session expirée |
 | `POST /api/tags/set` | `{card_id, tags:[…]}` | `{tags}` |
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
@@ -105,16 +112,27 @@ tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées 
 
 **Rafraîchissement par cookie** : `/api/refresh` lit au plus 10 pages par appel (limites de calcul et de sous-requêtes
 des Workers gratuits), stocke les pages lues dans une table d'attente, et termine quand une page a moins de 50 entrées ; l'interface
-rappelle avec `next_page` jusqu'à `done:true`. Pause de 250 ms entre deux pages. En-têtes envoyés au jeu : `Cookie`,
+rappelle avec `next_page` jusqu'à `done:true`. Redirections non suivies (une redirection = session expirée) ;
+un 403 qui n'est pas du JSON = refus anti-robots, `502` sans expirer la session.
+
+**Limite du cookie collé** : la session du jeu (Supabase) renouvelle son jeton. Si le serveur la renouvelle, le
+navigateur du joueur garde l'ancien jeton : le jeu peut le déconnecter, et le rafraîchissement par cookie ne marche
+en général qu'environ une heure après le collage. Le favori est donc le chemin principal ; le cookie est un secours. Pause de 250 ms entre deux pages. En-têtes envoyés au jeu : `Cookie`,
 `Accept: application/json`, `User-Agent` d'un navigateur courant n'est PAS imité (on garde celui de la plateforme). Un
 `Set-Cookie` dans une réponse du jeu met à jour le cookie stocké. 401/403 du jeu → session marquée expirée,
 `401 {needs_session:true}`.
 
-**CORS** : seul `POST /api/import` (et son `OPTIONS`) accepte l'origine `https://www.wiki-masters.com`
+**CORS** : seul `POST /api/import` (et son `OPTIONS`) accepte les origines `https://www.wiki-masters.com` et
+`https://wiki-masters.com`
 (`Access-Control-Allow-Headers: content-type, x-classeur-key`). Le reste est même origine.
 
-**Limites** : 20 000 cartes par utilisateur ; étiquette = texte nettoyé (espaces), 40 caractères au plus, 30 par carte ;
-corps JSON de 5 Mo au plus.
+**Limites et quotas** (D1 gratuit : 500 Mo, 100 000 lignes écrites par jour, partagés par tous) : `MAX_USERS` comptes
+(variable, 50 par défaut) ; 20 000 cartes par utilisateur ; étiquette = texte nettoyé, 40 caractères au plus, 30 par
+carte, 50 000 par compte, 5 000 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par
+compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente ; corps JSON
+de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
+longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`. Quota ou base pleine : `503`
+avec un message lisible.
 
 ## Le favori (bookmarklet)
 

@@ -14,12 +14,21 @@ const ORIGIN = 'https://classeur.example';
 const fail = (m) => { console.error('ÉCHEC :', m); process.exit(1); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// ------------------------------------------------------------------ API simulée (contrat SPEC.md)
+// ------------------------------------------------------------------ API simulée (contrat SPEC.md), plusieurs comptes
+// Clés de 43 caractères comme les vraies ; `api.st` = le premier compte (celui que crée le parcours).
 function mockApi() {
-  const st = { key: null, name: null, cards: [], tags: new Map(), targets: [], fetched_at: null, new_ids: [], cookie: false, expired: false, uploads: new Map(), calls: [] };
+  const users = [];
+  const calls = [];
+  let seq = 0;
+  const mk = (p) => (p + '_'.repeat(43)).slice(0, 43);
   const json = (status, body) => ({ status, body });
-  const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
-  function importCards(list, stats) {
+  function makeUser(name) {
+    const u = { id: 'u' + ++seq, key: mk('cle' + seq), importKey: null, name: name || null, cards: [], tags: new Map(), targets: [], fetched_at: null,
+      new_ids: [], cookie: false, expired: false, uploads: new Map(), calls };
+    users.push(u);
+    return u;
+  }
+  function importCards(st, list, stats) {
     const before = new Set(st.cards.map((c) => c.id));
     const first = st.fetched_at === null;
     st.cards = list;
@@ -28,35 +37,50 @@ function mockApi() {
     return { count: list.length, new_ids: st.new_ids, complete: stats ? stats.totalUnique === list.length : null };
   }
   return {
-    st,
+    get st() { return users[0]; },
+    users,
+    makeUser,
     handle(method, p, headers, body) {
-      st.calls.push([method, p, body]);
+      calls.push([method, p, body]);
       if (p === '/api/health') return json(200, { ok: true, db: true, cookie_secret: true, signup_open: true });
       if (p === '/api/account' && method === 'POST') {
         if (body.code !== 'dev') return json(403, { error: "Code d'invitation incorrect." });
-        st.key = 'K'.repeat(43); st.name = body.name || null;
-        return json(201, { key: st.key, user: { id: 1, name: st.name } });
+        const u = makeUser(body.name);
+        return json(201, { key: u.key, user: { id: u.id, name: u.name } });
       }
-      if (headers['X-Classeur-Key'] !== st.key || !st.key) return json(401, { error: 'Clé inconnue.' });
-      if (p === '/api/me' && method === 'GET') return json(200, { user: { id: 1, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null } });
-      if (p === '/api/me' && method === 'PATCH') { st.name = body.name; return json(200, { user: { id: 1, name: st.name } }); }
-      if (p === '/api/me' && method === 'DELETE') { st.key = null; return json(200, { ok: true }); }
+      const key = headers['X-Classeur-Key'];
+      let st = users.find((u) => u.key === key);
+      // Seul /api/import accepte aussi la clé d'import (celle du favori).
+      if (!st && p === '/api/import') st = users.find((u) => u.importKey && u.importKey === key);
+      if (!st) return json(401, { error: key ? 'Clé inconnue : ce classeur a peut-être été supprimé.' : 'Clé absente : ouvre ton lien personnel du classeur.' });
+      const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
+      if (p === '/api/me' && method === 'GET') {
+        return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
+          has_import_key: !!st.importKey, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null } });
+      }
+      if (p === '/api/me' && method === 'PATCH') { st.name = body.name; return json(200, { user: { id: st.id, name: st.name } }); }
+      if (p === '/api/me' && method === 'DELETE') { users.splice(users.indexOf(st), 1); return json(200, { ok: true }); }
+      if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); return json(200, { import_key: st.importKey }); }
+      if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
       if (p === '/api/cards' || p.startsWith('/api/cards?')) {
-        // Lecture par morceaux comme le vrai serveur (?part=N, next_part null au dernier) : 400 cartes par morceau ici.
+        // Lecture par morceaux comme le vrai serveur, avec un curseur opaque (chaîne) : 400 cartes par morceau ici.
         const q = new URL('http://x' + p).searchParams.get('part');
         const all = st.cards.map(cardOut);
         if (q === null) return json(200, { fetched_at: st.fetched_at, cards: all, new_ids: st.new_ids });
-        const n = Number(q), size = 400, last = Math.max(0, Math.ceil(all.length / size) - 1);
-        st.calls.push('cards part ' + n);
-        return json(200, { fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: n, next_part: n < last ? n + 1 : null });
+        const n = q === '0' ? 0 : Number(String(q).replace(/^curseur-/, ''));
+        if (!Number.isInteger(n)) return json(400, { error: 'curseur invalide' });
+        const size = 400, last = Math.max(0, Math.ceil(all.length / size) - 1);
+        calls.push('cards part ' + q);
+        return json(200, { fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: q, next_part: n < last ? 'curseur-' + (n + 1) : null });
       }
       if (p === '/api/import') {
         const u = st.uploads.get(body.upload_id) || { parts: [], stats: null };
         st.uploads.set(body.upload_id, u);
         u.parts[body.part] = body.cards;
         if (body.stats) u.stats = body.stats;
+        st.lastImportKey = key;
         if (!body.last) return json(200, { ok: true, received: u.parts.flat().length });
-        return json(200, importCards(u.parts.flat(), u.stats));
+        return json(200, importCards(st, u.parts.flat(), u.stats));
       }
       if (p === '/api/session' && method === 'POST') { if (!body.cookie && !body.har) return json(400, { error: 'Cookie manquant.' }); st.cookie = true; st.expired = false; st.lastSession = body; return json(200, { ok: true }); }
       if (p === '/api/session' && method === 'DELETE') { st.cookie = false; return json(200, { ok: true }); }
@@ -64,10 +88,11 @@ function mockApi() {
         if (!st.cookie) return json(401, { error: "Aucune session WikiMasters : colle d'abord ton cookie.", needs_session: true });
         if (body.page < 20) return json(200, { done: false, next_page: body.page + 10, fetched: (body.page + 10) * 50, total: 1500 });
         const list = st.cards.concat([{ id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false, obtained_at: '2026-10-15T09:00:00Z' }]);
-        return json(200, { done: true, ...importCards(list, { totalUnique: list.length + 1 }) });
+        return json(200, { done: true, ...importCards(st, list, { totalUnique: list.length + 1 }), skipped: 2 });
       }
       if (p === '/api/tags/set') { st.tags.set(body.card_id, body.tags); return json(200, { tags: body.tags }); }
       if (p === '/api/tags/bulk') {
+        if (body.add.includes('QUOTA')) return json(503, { error: 'La base du classeur est pleine pour aujourd\'hui (quota gratuit atteint) : réessaie demain.' });
         for (const id of body.card_ids) { let t = st.tags.get(id) || []; t = t.filter((x) => !body.remove.includes(x)); for (const a of body.add) if (!t.includes(a)) t.push(a); st.tags.set(id, t); }
         return json(200, { ok: true });
       }
@@ -210,6 +235,18 @@ async function main() {
   const has = (t) => text(doc.body).includes(t);
   const check = (cond, m) => { if (!cond) fail(m + '\n--- page ---\n' + text(doc.body).slice(0, 1200)); };
   const usedIcons = () => all((n) => n.localName === 'use').map((n) => n.getAttribute('href').slice(1));
+  // Appel direct de l'API (hors interface), simulée ou réelle.
+  const rawApi = async (method, p, key, body) => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (key) headers['X-Classeur-Key'] = key;
+    if (SERVER) { const r = await fetch(SERVER + p, { method, headers, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json() }; }
+    return api.handle(method, p, headers, body || {});
+  };
+  const makeOtherAccount = async (name) => {
+    const r = await rawApi('POST', '/api/account', null, { code: SERVER ? (process.env.SIGNUP_CODE || 'dev') : 'dev', name });
+    if (r.status !== 201) fail('second compte : ' + JSON.stringify(r.body));
+    return r.body.key;
+  };
 
   await settle(60);
   // 1. Accueil
@@ -236,13 +273,20 @@ async function main() {
   check(has('Ton classeur est vide') && has('Installer le favori') && has('Coller le cookie'), 'invitation du classeur vide absente');
   needButton('Installer le favori').click();
   await settle(60);
+  // Le favori n'a pas encore de clé d'import : il faut la créer (POST /api/import-key).
+  check(!all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet')).length && has("clé d'import"), "le favori ne passe pas par une clé d'import");
+  needButton('Créer mon favori').click();
+  await settle(SERVER ? 300 : 60);
   const bm = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
   check(bm, 'bouton du favori absent');
   const href = bm.getAttribute('href') || bm.href;
   check(href && href.startsWith('javascript:'), 'favori sans adresse javascript:');
   check(!/[\s#"<>]/.test(href.slice(11)), 'adresse du favori mal échappée');
   const bmCode = decodeURI(href.slice(11));
-  check(bmCode.includes('"' + ORIGIN + '"') && bmCode.includes('"' + ls.get('classeur-key') + '"'), 'clé ou origine absente du favori');
+  const importKey = JSON.parse(ls.get('classeur-import-key') || '{}').key;
+  check(importKey && importKey !== ls.get('classeur-key'), "clé d'import non gardée (classeur-import-key)");
+  check(bmCode.includes('"' + ORIGIN + '"') && bmCode.includes('"' + importKey + '"'), "clé d'import ou origine absente du favori");
+  check(!bmCode.includes(ls.get('classeur-key')), 'la clé principale ne doit jamais être dans le favori');
   try { new vm.Script(bmCode); } catch (e) { fail('favori : code invalide une fois sur une ligne : ' + e.message); }
   check(byId('bm-url') && byId('bm-url').value === href, "texte du favori à copier absent");
   bm.dispatch('click');
@@ -253,10 +297,11 @@ async function main() {
   check(!one('modal'), 'Échap ne ferme pas la fenêtre');
 
   // 3. Le favori sur wiki-masters.com : lecture simulée, regroupement, envoi par morceaux
-  const imports = await runBookmarklet(bmCode, ctx.fetch, ls.get('classeur-key'));
+  const imports = await runBookmarklet(bmCode, ctx.fetch, importKey);
   if (!SERVER) {
     const ups = [...api.st.uploads.values()];
     check(ups.length === 1, 'un seul envoi attendu');
+    check(api.st.lastImportKey === importKey, "l'import n'a pas utilisé la clé d'import");
   }
   console.log(`favori : ${imports.parts} morceaux, ${imports.cards} cartes, message « ${imports.message} »`);
   // Retour sur l'onglet du classeur : il se met à jour tout seul.
@@ -302,6 +347,13 @@ async function main() {
   check(has('« À échanger » ajouté à 5 cartes.'), 'ajout groupé sans confirmation');
   if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.card_ids.length === 5 && b.add[0] === 'À échanger'), 'appel tags/bulk incorrect');
   check(all((n) => n.classList.contains('tab') && text(n).includes('À échanger')).length === 1, 'le tag n\'apparaît pas dans le dos');
+  // Quota ou base pleine : le 503 du serveur s'affiche tel quel.
+  if (!SERVER) {
+    type(byId('bulk-tag'), 'QUOTA');
+    needButton('Ajouter').click();
+    await settle();
+    check(has("La base du classeur est pleine pour aujourd'hui (quota gratuit atteint) : réessaie demain."), "le 503 (quota) ne s'affiche pas tel quel");
+  }
   needButton('Vider la sélection').click();
   await settle(400);
   check(!one('bulk'), 'la bande de sélection reste');
@@ -400,24 +452,27 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
   await settle(400);
   check(!all((n) => n.classList.contains('set') && text(n).includes('Dieux')).length, 'collection non supprimée');
 
-  // 12. Rafraîchir sans session -> fenêtre Session ; cookie -> rafraîchissement en boucle
+  // 12. Rafraîchir sans session -> fenêtre « Mettre à jour » (favori d'abord, cookie en secours) ; cookie -> boucle
   needButton('Rafraîchir la collection').click();
   await settle();
-  check(has('Session WikiMasters') && byId('cookie-input'), 'la fenêtre Session ne s\'ouvre pas');
+  check(byId('cookie-input'), 'la fenêtre Session ne s\'ouvre pas');
+  check(has('Le favori, le chemin conseillé') && has('Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
+    'la fenêtre Session ne présente pas le cookie comme un secours, avec son avertissement');
   type(byId('cookie-input'), 'Cookie: sb-a=1; sb-b=2');
-  needButton('Enregistrer et rafraîchir').click();
-  for (let i = 0; i < 300 && !(text(doc.body.querySelector('.status')).match(/expir|répond|cartes ·|nouvelle/) && !has('Rafraîchissement…')); i++) await sleep(100);
+  needButton('Enregistrer le cookie et rafraîchir').click();
+  for (let i = 0; i < 300 && !(text(doc.body.querySelector('.status')).match(/expir|répond|cartes ·|nouvelle|robot/) && !has('Rafraîchissement…')); i++) await sleep(100);
   for (let i = 0; i < 300 && has('Rafraîchissement…'); i++) await sleep(100);
   await settle(100);
-  if (SERVER) { console.log('rafraîchissement par cookie (faux cookie) : ' + text(doc.body.querySelector('.status'))); check(byId('cookie-input'), 'la fenêtre Session ne se rouvre pas après un refus du jeu'); }
+  if (SERVER) { console.log('rafraîchissement par cookie (faux cookie) : ' + text(doc.body.querySelector('.status'))); }
   await settle(200);
   if (!SERVER) {
     check(api.st.lastSession && api.st.lastSession.cookie === 'sb-a=1; sb-b=2', 'cookie mal envoyé : ' + JSON.stringify(api.st.lastSession));
     const pages = api.st.calls.filter(([, p]) => p === '/api/refresh').map(([, , b]) => b.page).join(',');
     check(pages === '0,10,20', 'pages du rafraîchissement : ' + pages);
     check(has('1 nouvelle'), 'résumé du rafraîchissement absent');
+    check(has('2 ignorées'), 'entrées ignorées (skipped) du rafraîchissement non affichées');
     check(has('Nouvelles du dernier rafraîchissement'), 'intercalaire des nouvelles absent');
-    check(one('ribbon') || true, '');
+    check(api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
   }
 
   // 13. HAR : seuls l'adresse et le cookie des requêtes vers le jeu partent
@@ -435,31 +490,117 @@ for (let i = 0; i < 100 && !has('Collection enregistrée'); i++) await sleep(50)
     const sent = JSON.stringify(api.st.lastSession);
     check(sent === '{"har":{"log":{"entries":[{"request":{"url":"https://www.wiki-masters.com/api/my-collection?page=0","headers":[{"name":"Cookie","value":"sb=har"}]}}]}}}', 'HAR envoyé : ' + sent);
   }
+  win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
+  await settle(200);
 
-  // 14. Réglages : lien, oublier ce navigateur
+  const openLink = async (key) => {
+    ctx.location.hash = '#cle=' + key;
+    for (const f of win.listeners.hashchange || []) f();
+    for (let i = 0; i < 40; i++) { await settle(25); if (!has('Ouverture du classeur')) break; }
+    await settle(100);
+  };
+  const exactButton = (t) => { const b = all((n) => n.tagName === 'BUTTON' && text(n).trim() === t)[0]; if (!b) fail('bouton absent : ' + t + '\n' + text(doc.body).slice(-600)); return b; };
+  const myKey = ls.get('classeur-key');
+
+  // 14. Lien d'un autre classeur : vérifié, puis demandé ; la clé gardée n'est pas écrasée sans accord
+  const otherKey = await makeOtherAccount('Bob');
+  await openLink(otherKey);
+  check(ctx.location.hash === '', 'fragment #cle= non effacé');
+  check(has('Ouvrir le classeur de Bob à la place du tien ?'), 'pas de question avant d\'ouvrir un autre classeur');
+  check(ls.get('classeur-key') === myKey, 'clé écrasée avant confirmation');
+  exactButton('Garder le mien').click();
+  await settle(100);
+  check(ls.get('classeur-key') === myKey && has('Classeur de Cédric') && !one('modal'), '« Garder le mien » ne garde pas le classeur');
+  await openLink(otherKey);
+  exactButton('Ouvrir').click();
+  for (let i = 0; i < 200 && !text(one('me-block')).includes('Classeur de Bob'); i++) await settle(25);
+  check(ls.get('classeur-key') === otherKey && has('Classeur de Bob'), "« Ouvrir » n'ouvre pas l'autre classeur");
+  check(JSON.parse(ls.get('classeur-known') || '[]').length === 2, 'liste des classeurs connus incomplète');
+  needButton('Changer de classeur').click();
+  await settle();
+  check(has('Autres classeurs ouverts dans ce navigateur') && has('Classeur de Cédric'), 'retour à son classeur absent des Réglages');
+  exactButton('Ouvrir').click();
+  for (let i = 0; i < 200 && !text(one('me-block')).includes('Classeur de Cédric'); i++) await settle(25);
+  check(ls.get('classeur-key') === myKey && text(one('me-block')).includes('Classeur de Cédric'), 'retour à son classeur impossible');
+
+  // 15. Lien tronqué ou inconnu : refusé avec un message clair, jamais enregistré
+  await openLink(myKey.slice(0, 20));
+  check(has('incomplet ou abîmé') && ls.get('classeur-key') === myKey, 'lien tronqué mal géré');
+  const unknownKey = 'Z'.repeat(43);
+  await openLink(unknownKey);
+  check(has('ne correspond à aucun classeur') && ls.get('classeur-key') === myKey, 'lien inconnu mal géré');
+  check(!(ls.get('classeur-known') || '').includes(unknownKey), 'clé inconnue enregistrée');
+
+  // 16. Changer ma clé : nouveau lien montré, ancienne clé oubliée
   needButton('Réglages').click();
   await settle();
-  check(byId('my-link') && byId('my-link').value.includes('#cle='), 'lien personnel absent des réglages');
-  needButton('Oublier ce navigateur').click();
+  check(has("Un lien ouvert reste dans l'historique du navigateur"), "l'avertissement sur l'historique manque");
+  needButton('Changer ma clé').click();
+  await settle();
+  check(has('Changer ma clé ?'), 'confirmation de changement de clé absente');
+  exactButton('Changer ma clé').click();
+  await settle(SERVER ? 300 : 80);
+  const rotated = ls.get('classeur-key');
+  check(rotated && rotated !== myKey && byId('new-key-link') && byId('new-key-link').value === ORIGIN + '/#cle=' + rotated, 'nouveau lien absent après changement de clé');
+  check(!(ls.get('classeur-known') || '').includes(myKey), 'ancienne clé encore connue');
+  exactButton("C'est noté").click();
+  await settle();
+  const st1 = await rawApi('GET', '/api/me', myKey);
+  check(st1.status === 401, "l'ancienne clé marche encore (" + st1.status + ')');
+
+  // 17. Régénérer le favori : nouvelle clé d'import, nouveau favori
+  const oldImport = importKey;
+  needButton('Réglages').click();
+  await settle();
+  needButton('Régénérer le favori').click();
+  await settle();
+  exactButton('Régénérer le favori').click();
+  await settle(SERVER ? 300 : 80);
+  const newImport = JSON.parse(ls.get('classeur-import-key') || '{}').key;
+  const bm2 = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
+  check(newImport && newImport !== oldImport && bm2 && decodeURI(bm2.getAttribute('href').slice(11)).includes('"' + newImport + '"'), 'favori non régénéré');
+  win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
+  await settle(200);
+
+  // 18. Oublier ce navigateur : clé, classeurs connus, clé d'import, caches de Wikipédia
+  await sleep(1600);
+  check(ls.get('classeur-pv') && ls.get('classeur-sugg'), 'caches attendus avant l\'oubli');
+  needButton('Réglages').click();
   await settle();
   needButton('Oublier ce navigateur').click();
+  await settle();
+  exactButton('Oublier ce navigateur').click();
   await settle(100);
-  check(has("J'ai déjà un lien") && !ls.get('classeur-key'), "oublier ce navigateur ne ramène pas à l'accueil");
+  check(has("J'ai déjà un lien"), "oublier ce navigateur ne ramène pas à l'accueil");
+  const left = ['classeur-key', 'classeur-pv', 'classeur-sugg', 'classeur-import-key', 'classeur-known', 'classeur-target'].filter((k) => ls.has(k));
+  check(!left.length, 'encore gardé après « Oublier ce navigateur » : ' + left.join(', '));
 
-  // 15. Lien personnel dans l'adresse : clé rangée, fragment effacé
-  ctx.location.hash = '#cle=' + (SERVER ? 'inconnue' : api.st.key);
-  for (const f of win.listeners.hashchange || []) f();
-  await settle(100);
-  check(ctx.location.hash === '' && ls.get('classeur-key'), 'clé du fragment non rangée ou fragment non effacé');
-  if (!SERVER) check(has('Tout l\'album'), 'le lien personnel n\'ouvre pas le classeur');
-
+  // 19. Lien personnel sans clé gardée : vérifié puis adopté sans question, fragment effacé
+  await openLink(rotated);
+  check(ctx.location.hash === '' && ls.get('classeur-key') === rotated && has("Tout l'album"), 'le lien personnel n\'ouvre pas le classeur');
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));
   check(!missing.length, 'icônes absentes du sprite : ' + missing.join(', '));
   if (errors.length) fail('erreurs pendant le rendu :\n' + errors.join('\n'));
+  noVue();
   console.log(`appels Wikimedia simulés : ${wikiCalls}`);
   console.log('UI OK');
   process.exit(0);
+}
+
+// Sans Vue (cdnjs bloqué) : le fragment #cle= est quand même effacé, et la page le dit.
+function noVue() {
+  const { doc } = makeDom();
+  const box = doc.createElement('div');
+  box.setAttribute('id', 'app');
+  doc.body.appendChild(box);
+  const ctx = { document: doc, location: { hash: '#cle=' + 'Q'.repeat(43), pathname: '/', search: '' }, console };
+  ctx.history = { replaceState: () => { ctx.location.hash = ''; } };
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', 'app.js'), 'utf8'), ctx, { filename: 'app.js' });
+  if (ctx.location.hash !== '') fail('sans Vue, le fragment #cle= reste dans la barre d\'adresse');
+  if (!/Vue/.test(box.textContent)) fail('sans Vue, aucun message : ' + box.textContent);
 }
 
 // Exécute le favori dans une fausse page wiki-masters.com : 1 100 exemplaires (1 050 cartes), envoi par morceaux.
@@ -474,6 +615,11 @@ async function runBookmarklet(code, classeurFetch, key) {
       card: { id, atk: 100 + i, def: 50, lang: 'fr', rarity: special ? special.rarity : ['C', 'PC', 'R', 'SR', 'UR'][i % 5], q_score: 12.5, category: special ? special.cat : 'catégorie ' + (i % 7), image_url: i % 3 ? null : 'https://upload.wikimedia.org/x' + i + '.jpg', pageviews: i * 3, created_at: 'x', hide_image: i === 3, wikipedia_url: 'https://fr.wikipedia.org/wiki/A' + i, wikipedia_title: special ? special.title : (i < 1050 ? 'Article ' + i : 'Article ' + (i - 1050)) } });
   }
   entries[2].card.wikipedia_title = '(11194) Mirna';
+  // Exemplaires relus (même entry.id) : comptés une seule fois. Entrées inexploitables : ignorées et annoncées.
+  for (let i = 0; i < 5; i++) entries.push(JSON.parse(JSON.stringify(entries[i])));
+  entries.push({ id: 'x1', card_id: 'bad1', count: 1, card: { id: 'bad1', wikipedia_title: '', rarity: 'C' } });
+  entries.push({ id: 'x2', card_id: 'bad2', count: 1, card: { id: 'bad2', wikipedia_title: 'Truc', rarity: 'X' } });
+  entries.push({ id: 'x3', count: 1 });
   const pageFetch = async (url, init = {}) => {
     if (url === '/api/my-collection/stats?sort=rarity') return { ok: true, status: 200, json: async () => ({ total: 1100, totalUnique: 1050, rarityCounts: {}, tagOptions: [] }) };
     const m = url.match(/^\/api\/my-collection\?sort=rarity&page=(\d+)&stats=0$/);
@@ -487,13 +633,15 @@ async function runBookmarklet(code, classeurFetch, key) {
     throw new Error('favori : adresse inattendue ' + url);
   };
   const realSet = setTimeout;
-  const ctx = { document: doc, location: { hostname: 'www.wiki-masters.com' }, fetch: pageFetch, setTimeout: (f) => realSet(f, 0), Promise, JSON, Math, Date, Number, String, Array, Error, console };
+  const ctx = { document: doc, location: { hostname: 'wiki-masters.com' }, fetch: pageFetch, setTimeout: (f) => realSet(f, 0), Promise, JSON, Math, Date, Number, String, Array, Error, console };
   ctx.window = ctx;
   vm.createContext(ctx);
   vm.runInContext(code, ctx);
   for (let i = 0; i < 300 && !/envoyées|répondu|Connecte|n'a pas/.test(doc.getElementById('classeur-favori').textContent); i++) await new Promise((r) => realSet(r, 5));
   const box = doc.getElementById('classeur-favori').textContent;
-  if (!/1 050 cartes envoyées au classeur/.test(box.replace(/ | /g, ' '))) fail('favori : message final inattendu : ' + box);
+  const flat = box.replace(/[  ]/g, ' ');
+  if (!/1 050 cartes envoyées au classeur/.test(flat)) fail('favori : message final inattendu : ' + box);
+  if (!/3 cartes ignorées/.test(flat)) fail('favori : entrées ignorées non annoncées : ' + box);
   if (posts.length !== 3) fail('favori : 3 morceaux attendus, ' + posts.length);
   const ids = new Set();
   posts.forEach((b, i) => {

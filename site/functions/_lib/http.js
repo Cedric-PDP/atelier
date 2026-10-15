@@ -46,18 +46,30 @@ export function json(data, status = 200, headers = {}) {
   return new Response(toText(data), { status, headers: { ...JSON_HEADERS, ...headers } });
 }
 
+// Erreurs de D1 dues à la place ou aux quotas (base pleine, quota du jour atteint, ligne trop grosse).
+function isDbFull(err) {
+  const msg = String(err && err.message);
+  return /SQLITE_FULL|SQLITE_TOOBIG|disk is full|database is full|too big/i.test(msg)
+    || (/D1|SQLITE/i.test(msg) && /full|exceeded|quota|limit/i.test(msg));
+}
+
 export function errorResponse(err) {
   if (err instanceof HttpError) return json({ error: err.message, ...err.extra }, err.status);
   console.error(err);
+  if (isDbFull(err)) {
+    return json({
+      error: 'La base du classeur est pleine ou a atteint son quota du jour : réessaie demain, ou préviens la personne qui le gère.',
+    }, 503);
+  }
   return json({ error: 'Erreur interne du serveur.' }, 500);
-}
-
-function tooBig() {
-  return new HttpError(413, 'Requête trop volumineuse : 5 Mo au plus.');
 }
 
 // Lit un corps JSON (objet) en s'arrêtant dès que la limite est dépassée. Corps vide = {}.
 export async function readJson(request, limit = MAX_BODY) {
+  const tooBig = () => new HttpError(
+    413,
+    `Requête trop volumineuse : ${limit >= 1024 * 1024 ? `${limit / (1024 * 1024)} Mo` : `${Math.round(limit / 1024)} Ko`} au plus.`,
+  );
   const declared = Number(request.headers.get('content-length'));
   if (declared > limit) throw tooBig();
   if (!request.body) return {};

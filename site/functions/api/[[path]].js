@@ -1,9 +1,9 @@
 // API du classeur : routeur unique pour /api/* (Cloudflare Pages Functions).
-// Contrat : site/SPEC.md. Bindings : DB (D1), COOKIE_SECRET, SIGNUP_CODE.
+// Contrat : site/SPEC.md. Bindings : DB (D1), COOKIE_SECRET, SIGNUP_CODE, MAX_USERS (facultatif).
 
-import { HttpError, errorResponse, json, readJson } from '../_lib/http.js';
+import { HttpError, MAX_BODY, errorResponse, json, readJson } from '../_lib/http.js';
 import { ensureSchema } from '../_lib/db.js';
-import { authenticate, createAccount, deleteMe, getMe, patchMe } from '../_lib/auth.js';
+import { authenticate, createAccount, deleteMe, getMe, newImportKey, patchMe, rotateKey } from '../_lib/auth.js';
 import { listCards } from '../_lib/cards.js';
 import { importRoute } from '../_lib/import.js';
 import { deleteSession, saveSession } from '../_lib/session.js';
@@ -11,31 +11,36 @@ import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
 import { deleteTarget, listTargets, saveTarget } from '../_lib/targets.js';
 
-// Seul POST /api/import accepte cette origine (le favori lancé depuis le jeu).
-const GAME_ORIGIN = 'https://www.wiki-masters.com';
+// Seul POST /api/import accepte ces origines (le favori lancé depuis le jeu, sous ses deux noms).
+const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
 const CORS_HEADERS = {
-  'access-control-allow-origin': GAME_ORIGIN,
   'access-control-allow-methods': 'POST, OPTIONS',
   'access-control-allow-headers': 'content-type, x-classeur-key',
   'access-control-max-age': '86400',
 };
 
-// chemin → méthode → [gestionnaire, authentification exigée]
+// chemin → méthode → [gestionnaire, clé exigée]. Clé : false (aucune), 'main' (clé principale seulement) ou
+// 'import' (clé principale ou clé d'import du favori).
 const ROUTES = {
   health: { GET: [health, false] },
   account: { POST: [(env, _user, body) => createAccount(env, body), false] },
-  me: { GET: [getMe, true], PATCH: [patchMe, true], DELETE: [deleteMe, true] },
-  cards: { GET: [listCards, true] },
-  import: { POST: [importRoute, true] },
-  session: { POST: [saveSession, true], DELETE: [deleteSession, true] },
-  refresh: { POST: [refresh, true] },
-  'tags/set': { POST: [setTags, true] },
-  'tags/bulk': { POST: [bulkTags, true] },
-  'tags/rename': { POST: [renameTag, true] },
-  targets: { GET: [listTargets, true] },
-  'targets/save': { POST: [saveTarget, true] },
-  'targets/delete': { POST: [deleteTarget, true] },
+  me: { GET: [getMe, 'main'], PATCH: [patchMe, 'main'], DELETE: [deleteMe, 'main'] },
+  'import-key': { POST: [newImportKey, 'main'] },
+  'key/rotate': { POST: [rotateKey, 'main'] },
+  cards: { GET: [listCards, 'main'] },
+  import: { POST: [importRoute, 'import'] },
+  session: { POST: [saveSession, 'main'], DELETE: [deleteSession, 'main'] },
+  refresh: { POST: [refresh, 'main'] },
+  'tags/set': { POST: [setTags, 'main'] },
+  'tags/bulk': { POST: [bulkTags, 'main'] },
+  'tags/rename': { POST: [renameTag, 'main'] },
+  targets: { GET: [listTargets, 'main'] },
+  'targets/save': { POST: [saveTarget, 'main'] },
+  'targets/delete': { POST: [deleteTarget, 'main'] },
 };
+
+// Corps plus petits que la limite générale (5 Mo).
+const BODY_LIMITS = { account: 4 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 function health(env) {
@@ -53,28 +58,30 @@ async function handle(request, env, path) {
   if (!env.DB && path !== 'health') {
     throw new HttpError(503, "Le classeur n'est pas encore configuré : la base D1 n'est pas liée (variable DB).");
   }
+  if (!Object.hasOwn(ROUTES, path)) throw new HttpError(404, "Ce point d'accès n'existe pas.");
   const route = ROUTES[path];
-  if (!route) throw new HttpError(404, "Ce point d'accès n'existe pas.");
-  const entry = route[request.method];
-  if (!entry) throw new HttpError(405, "Méthode non autorisée pour ce point d'accès.");
-  const [handler, needsAuth] = entry;
+  if (!Object.hasOwn(route, request.method)) throw new HttpError(405, "Méthode non autorisée pour ce point d'accès.");
+  const [handler, keyKind] = route[request.method];
 
   if (path === 'health') return handler(env);
   await ensureSchema(env.DB);
   // La clé d'abord : un corps n'est lu que pour un compte connu (ou pour l'inscription).
-  const user = needsAuth ? await authenticate(request, env) : null;
-  const body = request.method === 'POST' || request.method === 'PATCH' ? await readJson(request) : {};
+  const user = keyKind ? await authenticate(request, env, { importKey: keyKind === 'import' }) : null;
+  const body = request.method === 'POST' || request.method === 'PATCH'
+    ? await readJson(request, Object.hasOwn(BODY_LIMITS, path) ? BODY_LIMITS[path] : MAX_BODY)
+    : {};
   return handler(env, user, body, request);
 }
 
 export async function onRequest(context) {
   const { request, env } = context;
   const path = new URL(request.url).pathname.replace(/^\/api\/?/, '').replace(/\/+$/, '');
-  const cors = path === 'import' && request.headers.get('origin') === GAME_ORIGIN;
+  const origin = request.headers.get('origin');
+  const cors = path === 'import' && GAME_ORIGINS.has(origin);
 
   let response;
   if (path === 'import' && request.method === 'OPTIONS') {
-    response = new Response(null, { status: 204, headers: cors ? { ...CORS_HEADERS } : {} });
+    response = new Response(null, { status: 204 });
   } else {
     try {
       const result = await handle(request, env, path);
@@ -85,7 +92,10 @@ export async function onRequest(context) {
   }
   if (path === 'import') {
     response.headers.append('vary', 'Origin');
-    if (cors) for (const [k, v] of Object.entries(CORS_HEADERS)) response.headers.set(k, v);
+    if (cors) {
+      response.headers.set('access-control-allow-origin', origin);
+      for (const [k, v] of Object.entries(CORS_HEADERS)) response.headers.set(k, v);
+    }
   }
   return response;
 }

@@ -405,6 +405,10 @@ button.chip:hover { border-color: var(--brass); color: var(--ink); }
 .settings-section:first-of-type { border-top: none; padding-top: 4px; }
 .settings-section h4 { margin: 0 0 8px; }
 .settings-section .line .field { flex: 1 1 200px; }
+.known { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 6px; }
+.known li { margin: 0; }
+.known-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.modal h4.flush, h4.flush { margin-top: 0; }
 
 /* Catalogue */
 .catalog-group h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin: 18px 0 8px; font-family: var(--text); }

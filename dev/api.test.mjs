@@ -119,10 +119,15 @@ async function upload(key, cards, { e = env, stats, size = 500 } = {}) {
       e,
       body: { upload_id: uploadId, part: p, last, cards: cards.slice(p * size, (p + 1) * size), stats: last ? stats : undefined, source: 'favori' },
     });
-    if (!last) assert.deepEqual(r.json, { ok: true, received: (p + 1) * size }, JSON.stringify(r.json));
+    if (!last) assert.deepEqual(r.json, { ok: true, received: (p + 1) * size, skipped: 0 }, JSON.stringify(r.json));
   }
   return r;
 }
+
+// CarteImport minimales (~80 octets) : pour les très grandes collections (l'attente d'un import fait 8 Mo au plus).
+const mini = (n, from = 0) => Array.from({ length: n }, (_, k) => ({
+  id: `mini-${String(from + k).padStart(5, '0')}`, title: `Carte ${from + k}`, rarity: 'C', count: 1,
+}));
 
 // Mesure du coût d'un appel. process.cpuUsage() n'avance que par pas de 15,6 ms sous Windows, et le shim
 // node:sqlite tourne dans le même fil que le gestionnaire. Donc :
@@ -183,8 +188,15 @@ const report = (label, runs) => {
 };
 
 const results = [];
+let cleanups = [];
+const after = (fn) => cleanups.push(fn);
 async function test(name, fn) {
-  await fn();
+  try {
+    await fn();
+  } finally {
+    for (const f of cleanups) f();
+    cleanups = [];
+  }
   results.push(name);
   console.log(`ok  ${name}`);
 }
@@ -222,6 +234,34 @@ await test('health et 503 sans base', async () => {
   r = await call('GET', 'health', { e: { DB: env.DB, SIGNUP_CODE: '  ' } });
   assert.deepEqual(r.json, { ok: true, db: true, cookie_secret: false, signup_open: false });
   assert.equal(r.headers.get('cache-control'), 'no-store');
+  // Les noms hérités d'Object ne sont ni des chemins ni des méthodes.
+  for (const p of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    assert.equal((await call('GET', p)).status, 404, p);
+  }
+  assert.equal((await call('constructor', 'me')).status, 405);
+});
+
+await test('erreurs de D1 (base pleine, quota, ligne trop grosse) → 503 lisible', async () => {
+  const quiet = console.error;
+  console.error = () => {}; // le serveur journalise ces erreurs : pas dans la sortie des tests
+  after(() => { console.error = quiet; });
+  for (const message of [
+    'D1_ERROR: database or disk is full: SQLITE_FULL',
+    'D1_ERROR: string or blob too big: SQLITE_TOOBIG',
+    'D1_ERROR: Exceeded maximum DB size',
+    'D1 DB storage operation exceeded timeout which caused object to be reset.'.replace('timeout', 'quota'),
+  ]) {
+    const broken = { prepare: (sql) => env.DB.prepare(sql), batch: async () => { throw new Error(message); } };
+    const r = await call('GET', 'health', { e: { ...env, DB: broken } });
+    assert.equal(r.status, 200);
+    const r2 = await call('POST', 'account', { body: { code: 'invitation' }, e: { ...env, DB: broken } });
+    assert.equal(r2.status, 503, message);
+    assert.match(r2.json.error, /^La base du classeur est pleine ou a atteint son quota du jour/);
+  }
+  const bug = { prepare: (sql) => env.DB.prepare(sql), batch: async () => { throw new TypeError('x is not a function'); } };
+  const r = await call('POST', 'account', { body: { code: 'invitation' }, e: { ...env, DB: bug } });
+  assert.equal(r.status, 500);
+  assert.equal(r.json.error, 'Erreur interne du serveur.');
 });
 
 // --- Inscription et authentification ----------------------------------------------------------------------------
@@ -249,6 +289,24 @@ await test('inscription : fermée, code faux, code bon', async () => {
   assert.ok(!JSON.stringify(rows('SELECT * FROM users')).includes(alice.key), 'clé en clair stockée');
   r = await call('POST', 'account', { body: { code: 'invitation', name: 'x'.repeat(61) } });
   assert.equal(r.status, 400);
+  // Corps de 4 Ko au plus.
+  r = await call('POST', 'account', { body: { code: 'invitation', name: 'x', pad: 'y'.repeat(4096) } });
+  assert.equal(r.status, 413);
+  assert.match(r.json.error, /4 Ko/);
+  // Nombre de comptes plafonné par MAX_USERS (50 par défaut).
+  const small = makeEnv({ MAX_USERS: '2' });
+  for (let i = 0; i < 2; i++) assert.equal((await call('POST', 'account', { body: { code: 'invitation' }, e: small })).status, 201);
+  r = await call('POST', 'account', { body: { code: 'invitation' }, e: small });
+  assert.equal(r.status, 403);
+  assert.equal(r.json.error, 'Le classeur est complet : demande à la personne qui le gère.');
+  assert.equal(small.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM users').get().n, 2);
+  const dflt = makeEnv();
+  dflt.DB.sqlite.exec('CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT, key_hash TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL, fetched_at TEXT, new_ids TEXT NOT NULL DEFAULT \'[]\', cookie_enc TEXT, cookie_updated_at TEXT, session_expired INTEGER NOT NULL DEFAULT 0)');
+  dflt.DB.sqlite.exec("WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 50) INSERT INTO users (id, key_hash, created_at) SELECT 'u' || i, 'h' || i, '2026' FROM n");
+  r = await call('POST', 'account', { body: { code: 'invitation' }, e: dflt });
+  assert.equal(r.status, 403, '50 comptes par défaut');
+  // Base créée par une version précédente (sans import_key_hash) : la colonne est ajoutée au premier appel.
+  assert.ok(dflt.DB.sqlite.prepare('PRAGMA table_info(users)').all().some((c) => c.name === 'import_key_hash'));
 });
 
 await test('authentification et /api/me', async () => {
@@ -264,6 +322,7 @@ await test('authentification et /api/me', async () => {
   assert.equal(r.json.fetched_at, null);
   assert.deepEqual(r.json.new_ids, []);
   assert.deepEqual(r.json.session, { has_cookie: false, expired: false, updated_at: null });
+  assert.equal(r.json.has_import_key, false);
   r = await call('PATCH', 'me', { key: alice.key, body: { name: ' Alice ' } });
   assert.equal(r.status, 200);
   assert.equal(r.json.user.name, 'Alice');
@@ -274,6 +333,35 @@ await test('authentification et /api/me', async () => {
   r = await call('POST', 'import', { key: alice.key, raw: '{pas du json', headers: { 'content-type': 'application/json' } });
   assert.equal(r.status, 400);
   assert.match(r.json.error, /JSON/);
+});
+
+await test("clé d'import (favori) et renouvellement de la clé principale", async () => {
+  const hana = await signup('Hana');
+  let r = await call('POST', 'import-key', { key: hana.key });
+  assert.equal(r.status, 200);
+  const first = r.json.import_key;
+  assert.match(first, /^[A-Za-z0-9_-]{43}$/);
+  assert.equal((await call('GET', 'me', { key: hana.key })).json.has_import_key, true);
+  assert.ok(!JSON.stringify(rows('SELECT * FROM users')).includes(first), "clé d'import en clair stockée");
+  // La clé d'import ne sert qu'à POST /api/import.
+  r = await call('POST', 'import', { key: first, body: { cards: synth(3) } });
+  assert.deepEqual(r.json, { count: 3, new_ids: [], complete: null, skipped: 0 });
+  for (const [m, p, body] of [['GET', 'me'], ['GET', 'cards'], ['POST', 'import-key', {}], ['POST', 'key/rotate', {}],
+    ['POST', 'tags/set', { card_id: synth(1)[0].id, tags: ['x'] }], ['DELETE', 'me'], ['POST', 'session', { cookie: 'a=1' }]]) {
+    assert.equal((await call(m, p, { key: first, body })).status, 401, `${m} ${p}`);
+  }
+  // Une nouvelle clé d'import remplace l'ancienne.
+  const second = (await call('POST', 'import-key', { key: hana.key })).json.import_key;
+  assert.notEqual(second, first);
+  assert.equal((await call('POST', 'import', { key: first, body: { cards: synth(3) } })).status, 401);
+  assert.equal((await call('POST', 'import', { key: second, body: { cards: synth(4) } })).status, 200);
+  // Nouvelle clé principale : l'ancienne ne marche plus, la clé d'import reste.
+  r = await call('POST', 'key/rotate', { key: hana.key });
+  assert.match(r.json.key, /^[A-Za-z0-9_-]{43}$/);
+  assert.equal((await call('GET', 'me', { key: hana.key })).status, 401);
+  assert.equal((await call('GET', 'me', { key: r.json.key })).json.card_count, 4);
+  assert.equal((await call('POST', 'import', { key: second, body: { cards: synth(2) } })).status, 200);
+  assert.equal((await call('DELETE', 'me', { key: r.json.key })).status, 200);
 });
 
 // --- Import ---------------------------------------------------------------------------------------------------
@@ -295,7 +383,7 @@ await test('premier import : regroupement, hide_image, sans user_id, new_ids vid
     body: { collection: entries, stats: { total: 123, totalUnique: 120, rarityCounts: {} }, source: 'favori' },
   });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { count: 120, new_ids: [], complete: true });
+  assert.deepEqual(r.json, { count: 120, new_ids: [], complete: true, skipped: 2 });
 
   const cards = (await call('GET', 'cards', { key: alice.key })).json;
   assert.equal(cards.cards.length, 120);
@@ -343,7 +431,7 @@ await test('second import : nouveautés, suppressions, seules les différences �
   assert.ok(!ids.has(base[0].id) && ids.has(base[125].id));
   assert.equal(cards.cards.find((c) => c.id === base[20].id).count, base[20].n + 1);
   const again = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(next), stats: { totalUnique: 999 } } });
-  assert.deepEqual(again.json, { count: 120, new_ids: [], complete: false });
+  assert.deepEqual(again.json, { count: 120, new_ids: [], complete: false, skipped: 0 });
   const bad = await call('POST', 'import', { key: alice.key, body: { collection: 'non' } });
   assert.equal(bad.status, 400);
   const empty = await call('POST', 'import', { key: alice.key, body: { collection: [] } });
@@ -452,25 +540,49 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   }
   r = await call('POST', 'targets/save', { key: alice.key, body: { name: 'x'.repeat(80), items: Array.from({ length: 3000 }, (_, i) => ({ title: `Article ${i}`, status: 'ok' })) } });
   assert.equal(r.status, 200);
-  for (let i = 2; i < 100; i++) {
+  for (let i = 2; i < 50; i++) {
     r = await call('POST', 'targets/save', { key: alice.key, body: { id: `c${i}`, name: `Collection ${i}`, items: [] } });
     assert.equal(r.status, 200);
   }
-  r = await call('POST', 'targets/save', { key: alice.key, body: { name: 'La 101e', items: [] } });
+  r = await call('POST', 'targets/save', { key: alice.key, body: { name: 'La 51e', items: [] } });
   assert.equal(r.status, 400);
-  assert.match(r.json.error, /100 collections/);
-  r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'c50', name: 'Mise à jour permise', items: [] } });
+  assert.match(r.json.error, /50 collections/);
+  r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'c40', name: 'Mise à jour permise', items: [] } });
   assert.equal(r.status, 200);
 
   r = await call('GET', 'targets', { key: alice.key });
-  assert.equal(r.json.targets.length, 100);
+  assert.equal(r.json.targets.length, 50);
   assert.equal(r.json.targets[0].id, t.id);
-  for (let i = 2; i < 100; i++) await call('POST', 'targets/delete', { key: alice.key, body: { id: `c${i}` } });
+  for (let i = 2; i < 50; i++) await call('POST', 'targets/delete', { key: alice.key, body: { id: `c${i}` } });
   r = await call('POST', 'targets/delete', { key: alice.key, body: { id: t.id } });
   assert.deepEqual(r.json, { ok: true });
   r = await call('GET', 'targets', { key: alice.key });
   assert.equal(r.json.targets.length, 1);
   assert.equal(r.json.targets[0].items.length, 3000);
+});
+
+await test('collections à compléter : 600 Ko par collection, 5 Mo par compte', async () => {
+  const ivy = await signup('Ivy');
+  // ~560 Ko d'éléments : 1 000 éléments avec une description de 500 caractères.
+  const heavy = Array.from({ length: 1000 }, (_, i) => ({ title: `Article ${i}`, description: 'd'.repeat(500), status: 'ok' }));
+  let r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'Trop', items: [...heavy, ...heavy.slice(0, 100)] } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /600 Ko/);
+  // Les descriptions sont coupées à 500 caractères, sans séparer un emoji.
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'Coupe', items: [{ title: 'A', description: `${'e'.repeat(499)}😀z` }] } });
+  assert.equal(r.json.target.items[0].description, 'e'.repeat(499));
+  await call('POST', 'targets/delete', { key: ivy.key, body: { id: r.json.target.id } });
+  for (let i = 0; i < 9; i++) {
+    r = await call('POST', 'targets/save', { key: ivy.key, body: { id: `lourde${i}`, name: `Lourde ${i}`, items: heavy } });
+    assert.equal(r.status, 200, `collection ${i}`);
+  }
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { id: 'lourde9', name: 'Lourde 9', items: heavy } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /5 Mo/);
+  // Remplacer une collection existante ne compte pas deux fois sa taille.
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { id: 'lourde3', name: 'Lourde 3 bis', items: heavy } });
+  assert.equal(r.status, 200);
+  await call('DELETE', 'me', { key: ivy.key });
 });
 
 // --- Session WikiMasters --------------------------------------------------------------------------------------
@@ -523,6 +635,10 @@ await test('session : HAR avec cookie (préférence my-collection, casse, HTTP/2
   let r = await call('POST', 'session', { key: alice.key, body: { har } });
   assert.deepEqual(r.json, { ok: true });
   assert.equal(await storedCookie(alice), 'sid=collection; prefs=1');
+  // Le jeu sans « www » compte aussi.
+  r = await call('POST', 'session', { key: alice.key, body: { har: { log: { entries: [req('https://wiki-masters.com/api/my-collection?page=0', [{ name: 'Cookie', value: 'sid=nu' }])] } } } });
+  assert.equal(r.status, 200);
+  assert.equal(await storedCookie(alice), 'sid=nu');
   // HAR passé en texte, cookie seulement dans request.cookies
   const har2 = { log: { entries: [req('https://www.wiki-masters.com/api/my-collection?page=1', [], [{ name: 'sid', value: 'tableau' }])] } };
   r = await call('POST', 'session', { key: alice.key, body: { har: JSON.stringify(har2) } });
@@ -537,7 +653,7 @@ await test('session : HAR avec cookie (préférence my-collection, casse, HTTP/2
   assert.match(r.json.error, /en-tête Cookie/);
   r = await call('POST', 'session', { key: alice.key, body: { har: { log: { entries: [req('https://example.com/', [{ name: 'Cookie', value: 'a=1' }])] } } } });
   assert.equal(r.status, 400);
-  assert.match(r.json.error, /aucune requête vers www\.wiki-masters\.com/);
+  assert.match(r.json.error, /aucune requête vers wiki-masters\.com/);
   r = await call('POST', 'session', { key: alice.key, body: { har: { pas: 'un har' } } });
   assert.equal(r.status, 400);
   r = await call('POST', 'session', { key: alice.key, body: {} });
@@ -547,20 +663,27 @@ await test('session : HAR avec cookie (préférence my-collection, casse, HTTP/2
 
 // --- Rafraîchissement par cookie ------------------------------------------------------------------------------
 
-// Jeu simulé : stats + pages de 50 entrées ; options pour Set-Cookie, statuts d'erreur, panne réseau.
-function mockGame(entries, { stats, setCookie = {}, status = {}, down = false } = {}) {
+// Jeu simulé : stats + pages de 50 entrées ; options pour Set-Cookie, statuts d'erreur (corps JSON), réponses
+// brutes [statut, corps, type] (redirection, page HTML), panne réseau.
+function mockGame(entries, { stats, setCookie = {}, status = {}, raw = {}, down = false } = {}) {
   const calls = [];
   const pages = [];
   for (let p = 0; p * 50 <= entries.length; p++) pages.push(JSON.stringify({ collection: entries.slice(p * 50, p * 50 + 50) }));
   globalThis.fetch = async (url, init = {}) => {
     const u = new URL(url);
     const h = new Headers(init.headers);
-    calls.push({ url: String(url), cookie: h.get('cookie'), accept: h.get('accept'), at: performance.now() });
+    calls.push({ url: String(url), cookie: h.get('cookie'), accept: h.get('accept'), redirect: init.redirect, at: performance.now() });
     if (down) throw new TypeError('fetch failed');
     const isStats = u.pathname === '/api/my-collection/stats';
     const page = isStats ? 'stats' : Number(u.searchParams.get('page'));
     const headers = [['content-type', 'application/json']];
     for (const v of setCookie[page] || []) headers.push(['set-cookie', v]);
+    if (raw[page]) {
+      const [st, body, type] = raw[page];
+      headers[0][1] = type;
+      if (st >= 300 && st < 400) headers.push(['location', 'https://www.wiki-masters.com/login']);
+      return new Response(body, { status: st, headers });
+    }
     if (status[page]) return new Response(JSON.stringify({ error: 'non' }), { status: status[page], headers });
     const body = isStats
       ? JSON.stringify(stats ?? { total: entries.length, totalUnique: new Set(entries.map((e) => e.card_id)).size, rarityCounts: {}, tagOptions: ['TagDuJeu'] })
@@ -588,14 +711,17 @@ await test('refresh : 3 pages, en-têtes, pause de 250 ms, Set-Cookie fusionné,
   });
   const r = await call('POST', 'refresh', { key: bob.key, body: {} });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { done: true, count: 120, new_ids: [], complete: true });
+  assert.deepEqual(r.json, { done: true, count: 120, new_ids: [], complete: true, skipped: 0 });
   assert.deepEqual(calls.map((c) => c.url), [
     'https://www.wiki-masters.com/api/my-collection/stats?sort=rarity',
     'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=0&stats=0',
     'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=1&stats=0',
     'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=2&stats=0',
   ]);
-  for (const c of calls) assert.equal(c.accept, 'application/json');
+  for (const c of calls) {
+    assert.equal(c.accept, 'application/json');
+    assert.equal(c.redirect, 'manual');
+  }
   assert.equal(calls[2].cookie, 'sid=ancien; vieux=x; autre=2');
   assert.equal(calls[3].cookie, 'sid=nouveau; autre=2; ajout=1');
   for (let i = 1; i < calls.length; i++) assert.ok(calls[i].at - calls[i - 1].at >= 240, `pause ${i}`);
@@ -621,10 +747,13 @@ await test('refresh par appels de 10 pages (42 pages), progression, reprise impo
   // deux exemplaires d'une même carte sur deux pages sont additionnés.
   entries[50] = { ...entries[49] };
   entries[100] = { ...tiny(99), id: 'autre-exemplaire', count: 2 };
+  // Entrées invalides (mêmes règles que le favori) : ignorées et comptées.
+  entries[3] = { ...tiny(3), card: { ...tiny(3).card, rarity: 'Z' } };
+  entries[620] = { ...tiny(620), card: { ...tiny(620).card, wikipedia_title: 't'.repeat(501) } };
   let calls = mockGame(entries);
   r = await call('POST', 'refresh', { key: carol.key, body: { page: 0 }, e: e2 });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { done: false, next_page: 10, fetched: 500, total: 2060 });
+  assert.deepEqual(r.json, { done: false, next_page: 10, fetched: 500, total: 2060, skipped: 1 });
   assert.equal(calls.length, 11); // stats + 10 pages
   const responses = [r.json];
   while (!r.json.done) {
@@ -634,12 +763,13 @@ await test('refresh par appels de 10 pages (42 pages), progression, reprise impo
   }
   assert.equal(responses.length, 5);
   assert.deepEqual(responses.slice(1, 4).map((x) => x.fetched), [1000, 1500, 2000]);
-  assert.deepEqual(r.json, { done: true, count: 2058, new_ids: [], complete: true });
+  assert.deepEqual(r.json, { done: true, count: 2056, new_ids: [], complete: false, skipped: 2 });
   assert.equal(calls.length, 43);
   assert.equal(calls.filter((c) => c.url.includes('/stats')).length, 1);
   assert.equal(e2.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM refresh_staging').get().n, 0);
   const cards = (await call('GET', 'cards', { key: carol.key, e: e2 })).json.cards;
-  assert.equal(cards.length, 2058);
+  assert.equal(cards.length, 2056);
+  assert.ok(!cards.some((c) => c.id === 'c3' || c.id === 'c620'));
   assert.equal(cards.find((c) => c.id === 'c49').count, 1);
   assert.equal(cards.find((c) => c.id === 'c99').count, 3);
 
@@ -648,7 +778,7 @@ await test('refresh par appels de 10 pages (42 pages), progression, reprise impo
   calls = mockGame(entries);
   r = await call('POST', 'refresh', { key: carol.key, body: {}, e: e2 });
   while (!r.json.done) r = await call('POST', 'refresh', { key: carol.key, body: { page: r.json.next_page }, e: e2 });
-  assert.deepEqual(r.json, { done: true, count: 2059, new_ids: ['c5000'], complete: true });
+  assert.deepEqual(r.json, { done: true, count: 2057, new_ids: ['c5000'], complete: false, skipped: 2 });
 
   // Pages en attente depuis plus d'une heure : effacées, la reprise est refusée.
   r = await call('POST', 'refresh', { key: carol.key, body: {}, e: e2 });
@@ -694,9 +824,65 @@ await test('refresh : 401 du jeu → session expirée ; 5xx et panne → 502 san
   globalThis.fetch = realFetch;
 });
 
+await test('refresh : redirection = session expirée, 403 non JSON = anti-robots, Set-Cookie filtrés, cookie écrit avant les pages', async () => {
+  const entries = entriesFor(base.slice(0, 60));
+  const expired = async () => (await call('GET', 'me', { key: bob.key })).json.session.expired;
+  // Redirection (vers la page de connexion) : pas suivie, session expirée.
+  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1' } });
+  let calls = mockGame(entries, { raw: { 0: [302, null, 'text/html'] } });
+  let r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
+  assert.equal(r.status, 401);
+  assert.equal(r.json.needs_session, true);
+  assert.equal(await expired(), true);
+  assert.ok(calls.every((c) => c.redirect === 'manual'));
+  // 403 avec une page HTML (protection anti-robots) : 502, la session n'est pas touchée.
+  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1' } });
+  mockGame(entries, { raw: { stats: [403, '<html><title>Just a moment...</title></html>', 'text/html'] } });
+  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
+  assert.equal(r.status, 502);
+  assert.match(r.json.error, /anti-robots/);
+  assert.equal(r.json.needs_session, undefined);
+  assert.equal(await expired(), false);
+  // 403 en JSON : le jeu refuse la session.
+  mockGame(entries, { raw: { 0: [403, '{"error":"Unauthorized"}', 'application/json'] } });
+  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
+  assert.equal(r.status, 401);
+  assert.equal(await expired(), true);
+
+  // Set-Cookie : seuls ceux du jeu (sans Domain, ou Domain wiki-masters.com) sont gardés.
+  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1; b=2' } });
+  mockGame(entries, {
+    setCookie: {
+      stats: ['sid=2; Domain=.wiki-masters.com; Path=/', 'pub=1; Domain=ads.example.com', 'b=3; domain=WWW.wiki-masters.com'],
+      0: ['autre=x; Domain=wiki-masters.com.evil.example'],
+    },
+  });
+  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(await storedCookie(bob), 'sid=2; b=3');
+
+  // Écriture des pages en échec (base pleine) : le cookie renouvelé est quand même gardé.
+  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=avant' } });
+  mockGame(entries, { setCookie: { stats: ['sid=apres; Path=/'] } });
+  const quiet = console.error;
+  console.error = () => {};
+  after(() => { console.error = quiet; });
+  const full = {
+    prepare: (sql) => env.DB.prepare(sql),
+    batch: async (sts) => {
+      if (sts.some((s) => s.sql.includes('INSERT OR REPLACE INTO refresh_staging'))) throw new Error('D1_ERROR: database or disk is full: SQLITE_FULL');
+      return env.DB.batch(sts);
+    },
+  };
+  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 }, e: { ...env, DB: full } });
+  assert.equal(r.status, 503);
+  assert.equal(await storedCookie(bob), 'sid=apres');
+  globalThis.fetch = realFetch;
+});
+
 // --- CORS et limites ------------------------------------------------------------------------------------------
 
-await test('CORS de /api/import uniquement pour www.wiki-masters.com', async () => {
+await test('CORS de /api/import uniquement pour wiki-masters.com (avec ou sans www)', async () => {
   const origin = { origin: 'https://www.wiki-masters.com' };
   let r = await call('OPTIONS', 'import', {
     headers: { ...origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type, x-classeur-key' },
@@ -722,6 +908,12 @@ await test('CORS de /api/import uniquement pour www.wiki-masters.com', async () 
   r = await call('OPTIONS', 'me', { headers: origin });
   assert.equal(r.status, 405);
   assert.equal(r.headers.get('access-control-allow-origin'), null);
+  // Le jeu sans « www » : même accord, l'origine est renvoyée telle quelle.
+  r = await call('OPTIONS', 'import', { headers: { origin: 'https://wiki-masters.com' } });
+  assert.equal(r.headers.get('access-control-allow-origin'), 'https://wiki-masters.com');
+  r = await call('OPTIONS', 'import', { headers: { origin: 'http://wiki-masters.com' } });
+  assert.equal(r.headers.get('access-control-allow-origin'), null);
+  assert.match(r.headers.get('vary'), /Origin/);
 });
 
 await test('import par morceaux (CarteImport) : réponses, stats, nouveautés', async () => {
@@ -729,7 +921,7 @@ await test('import par morceaux (CarteImport) : réponses, stats, nouveautés', 
   const cards = synth(1200);
   let r = await upload(erin.key, cards, { stats: { total: 1300, totalUnique: 1200, rarityCounts: {}, tagOptions: ['x'] } });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { count: 1200, new_ids: [], complete: true });
+  assert.deepEqual(r.json, { count: 1200, new_ids: [], complete: true, skipped: 0 });
   let got = (await call('GET', 'cards', { key: erin.key })).json.cards;
   assert.equal(got.length, 1200);
   assert.deepEqual(got[0], { ...cards[0], tags: [] });
@@ -751,26 +943,37 @@ await test('import par morceaux (CarteImport) : réponses, stats, nouveautés', 
 
   // Envoi sans upload_id = un seul morceau (compatibilité).
   r = await call('POST', 'import', { key: erin.key, body: { cards: next.slice(0, 500) } });
-  assert.deepEqual(r.json, { count: 500, new_ids: [], complete: null });
+  assert.deepEqual(r.json, { count: 500, new_ids: [], complete: null, skipped: 0 });
 });
 
-await test('import par morceaux : validation, morceaux manquants, un envoi à la fois, purge', async () => {
+await test('import par morceaux : cartes invalides ignorées, morceaux manquants, un envoi à la fois, quotas, purge', async () => {
   const frank = await signup('Frank');
   const ok = synth(1)[0];
   const bad = [
     { ...ok, id: '' }, { ...ok, id: 42 }, { ...ok, title: '' }, { ...ok, title: 'x'.repeat(501) },
     { ...ok, rarity: 'XL' }, { ...ok, rarity: null }, { ...ok, atk: '12' }, { ...ok, quality: 'beaucoup' },
-    { ...ok, image: 'javascript:alert(1)' }, { ...ok, url: 'ftp://x' }, { ...ok, count: 0 }, { ...ok, count: 1.5 },
-    { ...ok, shiny: 'oui' }, { ...ok, obtained_at: 'hier' }, { ...ok, category: 12 }, 'texte', null,
+    { ...ok, image: 'javascript:alert(1)' }, { ...ok, url: 'ftp://x' }, { ...ok, url: `https://x/${'y'.repeat(2000)}` },
+    { ...ok, count: 0 }, { ...ok, count: 1.5 }, { ...ok, shiny: 'oui' }, { ...ok, obtained_at: 'hier' },
+    { ...ok, category: 12 }, { ...ok, category: 'c'.repeat(501) }, 'texte', null,
   ];
-  for (const c of bad) {
-    const r = await call('POST', 'import', { key: frank.key, body: { cards: [ok, c] } });
-    assert.equal(r.status, 400, JSON.stringify(c).slice(0, 60));
-    assert.match(r.json.error, /^Carte n° 2 :/);
-  }
-  let r = await call('POST', 'import', { key: frank.key, body: { cards: [{ ...ok, extra: 'ignoré', tags: ['x'] }] } });
+  // Favori (CarteImport) : les cartes invalides sont ignorées et comptées, les autres importées.
+  let r = await call('POST', 'import', { key: frank.key, body: { cards: [ok, ...bad, { ...ok, id: 'autre', extra: 'ignoré', tags: ['x'] }] } });
+  assert.deepEqual(r.json, { count: 2, new_ids: [], complete: null, skipped: bad.length });
+  assert.ok(!rows('SELECT data FROM cards WHERE user_id = ?', frank.user.id).some((x) => x.data.includes('ignoré')));
+  // Entrées brutes : mêmes règles (titre, catégorie, adresses, rareté, identifiants d'exemplaire).
+  const good = rawEntry(base[0]);
+  const rawBad = [
+    { ...good, card: { ...good.card, wikipedia_title: 't'.repeat(501) } },
+    { ...good, card: { ...good.card, category: 'c'.repeat(501) } },
+    { ...good, card: { ...good.card, image_url: `https://x/${'y'.repeat(2000)}` } },
+    { ...good, card: { ...good.card, rarity: 'XL' } },
+    { ...good, id: 'e'.repeat(101) },
+    { foo: 1 },
+  ];
+  r = await call('POST', 'import', { key: frank.key, body: { collection: [good, ...rawBad] } });
+  assert.deepEqual(r.json, { count: 1, new_ids: [base[0].id], complete: null, skipped: rawBad.length });
+  r = await call('POST', 'import', { key: frank.key, body: { cards: [ok] } });
   assert.equal(r.status, 200);
-  assert.ok(!rows('SELECT data FROM cards WHERE user_id = ?', frank.user.id)[0].data.includes('ignoré'));
 
   r = await call('POST', 'import', { key: frank.key, body: { cards: synth(501) } });
   assert.equal(r.status, 400);
@@ -780,7 +983,7 @@ await test('import par morceaux : validation, morceaux manquants, un envoi à la
   for (const body of [
     { upload_id: 'a b', part: 0, cards: [ok] },
     { upload_id: 'a', part: -1, cards: [ok] },
-    { upload_id: 'a', part: 100, cards: [ok] },
+    { upload_id: 'a', part: 40, cards: [ok] },
     { upload_id: 'a', part: 0, last: 'oui', cards: [ok] },
     { upload_id: 'a', part: 0 },
     { cards: [ok], stats: [1] },
@@ -795,21 +998,39 @@ await test('import par morceaux : validation, morceaux manquants, un envoi à la
   assert.equal(r.status, 409);
   // Un nouvel envoi remplace celui en cours.
   await call('POST', 'import', { key: frank.key, body: { upload_id: 'A', part: 0, last: false, cards: synth(10) } });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'B', part: 0, last: false, cards: synth(10, 10) } });
-  assert.deepEqual(r.json, { ok: true, received: 10 });
+  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'B', part: 0, last: false, cards: [...synth(10, 10), null] } });
+  assert.deepEqual(r.json, { ok: true, received: 10, skipped: 1 });
   r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'A', part: 1, last: true, cards: synth(10, 20) } });
   assert.equal(r.status, 409);
   // Un morceau renvoyé (nouvel essai) remplace le précédent au lieu de s'ajouter.
   await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 0, last: false, cards: synth(10) } });
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 0, last: false, cards: synth(10) } });
+  await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 0, last: false, cards: [...synth(10), 'x'] } });
   r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 1, last: true, cards: synth(5, 10) } });
   assert.equal(r.json.count, 15);
+  assert.equal(r.json.skipped, 1);
   assert.deepEqual([...r.json.new_ids].sort(), synth(14, 1).map((c) => c.id));
   assert.equal((await call('GET', 'cards', { key: frank.key })).json.cards.find((c) => c.id === ok.id).count, ok.count);
+
+  // 8 Mo au plus en attente pour un envoi : des cartes lourdes (catégorie de 450 caractères, ~600 octets en attente)
+  // dépassent la limite vers le 28e morceau, bien avant les 40 morceaux permis.
+  const big = synth(20_000).map((c) => ({ ...c, category: 'c'.repeat(450) }));
+  let status = 200;
+  let p = 0;
+  for (; p < 40 && status === 200; p++) {
+    r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'gros', part: p, last: false, cards: big.slice(p * 500, (p + 1) * 500) } });
+    status = r.status;
+  }
+  assert.equal(status, 413, `morceau ${p - 1}`);
+  assert.ok(p - 1 >= 12, `refusé dès le morceau ${p - 1}`);
+  assert.match(r.json.error, /8 Mo/);
+  const staged = rows("SELECT SUM(length(CAST(cards AS BLOB))) AS b FROM import_staging WHERE upload_id = 'gros'")[0].b;
+  assert.ok(staged <= 8 * 1024 * 1024 && staged > 7 * 1024 * 1024, String(staged));
+
   // Morceaux de plus d'une heure (de n'importe qui) : effacés au premier import venu.
-  env.DB.sqlite.prepare("INSERT INTO import_staging VALUES ('quelqu-un', 'vieux', 0, '[]', '2000-01-01T00:00:00.000Z')").run();
+  env.DB.sqlite.prepare("INSERT INTO import_staging (user_id, upload_id, part, cards, created_at) VALUES ('quelqu-un', 'vieux', 0, '[]', '2000-01-01T00:00:00.000Z')").run();
   await call('POST', 'import', { key: frank.key, body: { upload_id: 'D', part: 0, last: false, cards: [ok] } });
   assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE user_id = 'quelqu-un'")[0].n, 0);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE upload_id = 'gros'")[0].n, 0, "l'envoi D remplace l'envoi en cours");
 });
 
 await test("import par morceaux (entrées brutes) : exemplaires regroupés d'un morceau à l'autre", async () => {
@@ -821,9 +1042,9 @@ await test("import par morceaux (entrées brutes) : exemplaires regroupés d'un 
     rawEntry(a, { id: 'x1', count: 1, obtained_at: '2026-05-01T00:00:00.000Z' }), // même exemplaire, déjà vu
   ];
   let r = await call('POST', 'import', { key: gina.key, body: { upload_id: 'brut', part: 0, last: false, collection: part0 } });
-  assert.deepEqual(r.json, { ok: true, received: 2 });
+  assert.deepEqual(r.json, { ok: true, received: 2, skipped: 0 });
   r = await call('POST', 'import', { key: gina.key, body: { upload_id: 'brut', part: 1, last: true, collection: part1, stats: { totalUnique: 2 } } });
-  assert.deepEqual(r.json, { count: 2, new_ids: [], complete: true });
+  assert.deepEqual(r.json, { count: 2, new_ids: [], complete: true, skipped: 0 });
   const card = (await call('GET', 'cards', { key: gina.key })).json.cards.find((c) => c.id === a.id);
   assert.equal(card.count, 3);
   assert.equal(card.shiny, true);
@@ -831,7 +1052,7 @@ await test("import par morceaux (entrées brutes) : exemplaires regroupés d'un 
   assert.ok(!JSON.stringify(rows('SELECT * FROM cards')).includes(GAME_USER));
 });
 
-await test('corps trop gros (5 Mo), 20 000 cartes au plus', async () => {
+await test('corps trop gros (5 Mo), 20 000 cartes au plus, lecture par pages', async () => {
   const big = JSON.stringify({ collection: [], pad: 'x'.repeat(5 * 1024 * 1024) });
   let r = await call('POST', 'import', { key: alice.key, raw: big, headers: { 'content-type': 'application/json' } });
   assert.equal(r.status, 413);
@@ -839,44 +1060,104 @@ await test('corps trop gros (5 Mo), 20 000 cartes au plus', async () => {
   r = await call('POST', 'import', { key: alice.key, raw: '{}', headers: { 'content-length': String(6 * 1024 * 1024) } });
   assert.equal(r.status, 413);
 
+  // 20 000 cartes : 40 morceaux de 500 (cartes minimales).
   const dave = await signup('Dave');
-  r = await upload(dave.key, synth(20_001));
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /20 000 cartes/);
-  r = await upload(dave.key, synth(20_000), { stats: { totalUnique: 20_000 } });
-  assert.deepEqual(r.json, { count: 20_000, new_ids: [], complete: true });
+  r = await upload(dave.key, mini(20_000), { stats: { totalUnique: 20_000 } });
+  assert.deepEqual(r.json, { count: 20_000, new_ids: [], complete: true, skipped: 0 });
   const all = (await call('GET', 'cards', { key: dave.key })).json;
   assert.equal(all.cards.length, 20_000);
-  // Lecture par morceaux (?part=N) : mêmes cartes, morceaux d'environ 1 Mo.
+
+  // 20 001 cartes : possible seulement par le rafraîchissement (plus de 40 morceaux) ; refusé à la fin.
+  const e4 = makeEnv({ REFRESH_PAUSE_MS: '0' });
+  const zed = await signup('Zed', e4);
+  await call('POST', 'session', { key: zed.key, e: e4, body: { cookie: 'sid=z' } });
+  mockGame(Array.from({ length: 20_001 }, (_, i) => tiny(i)));
+  r = await call('POST', 'refresh', { key: zed.key, e: e4, body: {} });
+  while (r.status === 200 && !r.json.done) r = await call('POST', 'refresh', { key: zed.key, e: e4, body: { page: r.json.next_page } });
+  globalThis.fetch = realFetch;
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /20 000 cartes/);
+
+  // Lecture par pages de 1 000 (curseur opaque) : mêmes cartes, dans le même ordre, avec leurs étiquettes.
+  for (let k = 0; k < 4; k++) {
+    r = await call('POST', 'tags/bulk', { key: dave.key, body: { card_ids: mini(5000, k * 5000).map((c) => c.id), add: ['Tout'] } });
+    assert.equal(r.status, 200);
+  }
+  assert.equal(rows("SELECT COUNT(*) AS n FROM tags WHERE tag = 'Tout'")[0].n, 20_000);
   const ids = [];
-  let part = 0;
+  let part = '0';
+  let pages = 0;
   for (;;) {
-    const r2 = await call('GET', `cards?part=${part}`, { key: dave.key });
-    assert.equal(r2.status, 200);
+    const r2 = await call('GET', `cards?part=${encodeURIComponent(part)}`, { key: dave.key });
+    assert.equal(r2.status, 200, JSON.stringify(r2.json));
     assert.equal(r2.json.part, part);
-    assert.ok(JSON.stringify(r2.json.cards).length < 1_100_000);
+    assert.ok(r2.json.cards.length <= 1000);
+    assert.ok(r2.json.cards.every((c) => c.tags.length === 1 && c.tags[0] === 'Tout'));
     for (const c of r2.json.cards) ids.push(c.id);
+    pages++;
     if (r2.json.next_part === null) break;
-    assert.equal(r2.json.next_part, part + 1);
+    assert.equal(typeof r2.json.next_part, 'string');
     part = r2.json.next_part;
   }
-  assert.ok(part >= 5);
+  assert.equal(pages, 20);
   assert.deepEqual(ids, all.cards.map((c) => c.id));
-  assert.deepEqual((await call('GET', `cards?part=${part + 1}`, { key: dave.key })).json.cards, []);
+  assert.equal((await call('GET', 'cards?part=!!', { key: dave.key })).status, 400);
   assert.equal((await call('GET', 'cards?part=-1', { key: dave.key })).status, 400);
   const nobody = await signup('Personne');
-  assert.deepEqual((await call('GET', 'cards?part=0', { key: nobody.key })).json, { fetched_at: null, cards: [], new_ids: [], part: 0, next_part: null });
+  assert.deepEqual((await call('GET', 'cards?part=0', { key: nobody.key })).json, { fetched_at: null, cards: [], new_ids: [], part: '0', next_part: null });
+  assert.deepEqual((await call('GET', 'cards?part=', { key: nobody.key })).json.cards, []);
   assert.deepEqual((await call('GET', 'cards', { key: nobody.key })).json, { fetched_at: null, cards: [], new_ids: [] });
-  r = await call('POST', 'tags/bulk', { key: dave.key, body: { card_ids: synth(20_000).map((c) => c.id), add: ['Tout'] } });
-  assert.equal(r.status, 200);
-  assert.equal(rows("SELECT COUNT(*) AS n FROM tags WHERE tag = 'Tout'")[0].n, 20_000);
   r = await call('DELETE', 'me', { key: dave.key });
   assert.deepEqual(r.json, { ok: true });
+  await call('DELETE', 'me', { key: nobody.key });
+});
+
+await test('étiquettes : 5 000 changements par appel, 50 000 par compte (orphelines comprises)', async () => {
+  const jo = await signup('Jo');
+  await upload(jo.key, mini(6000));
+  const ids = mini(6000).map((c) => c.id);
+  let r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: ids.slice(0, 5001), add: ['a'] } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /5 000 changements/);
+  r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: ids.slice(0, 2500), add: ['a'], remove: ['b'] } });
+  assert.equal(r.status, 200);
+  r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: ids.slice(0, 2501), add: ['a'], remove: ['b'] } });
+  assert.equal(r.status, 400);
+  // 50 000 étiquettes : on remplit avec des étiquettes de cartes disparues (orphelines), qui comptent aussi.
+  env.DB.sqlite.prepare(
+    "WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i < 47499) INSERT INTO tags (user_id, card_id, tag) SELECT ?, 'disparue-' || i, 'x' FROM n",
+  ).run(jo.user.id);
+  const count = () => rows('SELECT COUNT(*) AS n FROM tags WHERE user_id = ?', jo.user.id)[0].n;
+  assert.equal(count(), 49_999);
+  r = await call('POST', 'tags/set', { key: jo.key, body: { card_id: ids[3000], tags: ['un', 'deux'] } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /50\s000 étiquettes/);
+  r = await call('POST', 'tags/set', { key: jo.key, body: { card_id: ids[3000], tags: ['un'] } });
+  assert.equal(r.status, 200);
+  assert.equal(count(), 50_000);
+  r = await call('POST', 'tags/set', { key: jo.key, body: { card_id: ids[3000], tags: ['autre'] } });
+  assert.equal(r.status, 200, 'remplacer sans ajouter reste permis');
+  r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: [ids[3001]], add: ['b'] } });
+  assert.equal(r.status, 400);
+  // Retirer et ajouter dans le même appel : le total ne bouge pas.
+  r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: ids.slice(0, 10), add: ['c'], remove: ['a'] } });
+  assert.equal(r.status, 200);
+  assert.equal(count(), 50_000);
+  await call('DELETE', 'me', { key: jo.key });
 });
 
 await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
   const e3 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const runs = { part: [], refresh: [], fin1k: [], fin5k: [], fin20k: [], cards1k: [], cards20k: [], cardsPart: [], bulk: [] };
+  const runs = {
+    part: [], refresh: [], fin1k: [], fin5k: [], fin20k: [], cards1k: [], cards20k: [], cardsPage: [], bulk: [], target: [],
+  };
+  // Collection à compléter réaliste : 3 000 éléments (titre, description, une image sur deux), un peu d'accents.
+  const items = Array.from({ length: 3000 }, (_, i) => ({
+    title: i % 7 ? `Article numéro ${i}` : `Élément ${i}`,
+    description: i % 3 ? `description courte de l'article ${i}` : `commune française du département ${i % 95}`,
+    image: i % 2 ? null : `https://upload.wikimedia.org/x/${i}.jpg`,
+    status: i % 50 ? 'ok' : 'missing',
+  }));
   mockGame(entriesFor(owned.slice(0, 1043)));
   for (let k = 0; k < 8; k++) {
     // Un morceau intermédiaire de 500 cartes.
@@ -887,40 +1168,47 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
     const m = await profile('POST', 'refresh', { key: u.key, e: e3, body: { page: 0 } });
     assert.equal(m.json.fetched, 500);
     runs.refresh.push(m);
+    // Une collection à compléter de 3 000 éléments.
+    const t = await profile('POST', 'targets/save', { key: u.key, e: e3, body: { id: 'mesure', name: 'Mesure', items, source: 'catalog:x' } });
+    assert.equal(t.status, 200, JSON.stringify(t.json).slice(0, 200));
+    runs.target.push(t);
   }
   globalThis.fetch = realFetch;
-  // Finalisations : le dernier morceau est vide, on ne mesure que la finalisation.
-  for (const [n, slot, times] of [[1000, 'fin1k', 6], [5000, 'fin5k', 4], [20_000, 'fin20k', 3]]) {
+  // Finalisations : le dernier morceau est vide, on ne mesure que la finalisation. 20 000 : cartes minimales.
+  for (const [n, slot, times, make] of [[1000, 'fin1k', 6, synth], [5000, 'fin5k', 4, synth], [20_000, 'fin20k', 3, mini]]) {
     for (let k = 0; k < times; k++) {
       const v = await signup(`Fin ${n} ${k}`, e3);
-      const cards = synth(n);
+      const cards = make(n);
       for (let p = 0; p * 500 < n; p++) {
         await call('POST', 'import', { key: v.key, e: e3, body: { upload_id: 'f', part: p, last: false, cards: cards.slice(p * 500, (p + 1) * 500) } });
       }
-      const m = await profile('POST', 'import', { key: v.key, e: e3, body: { upload_id: 'f', part: n / 500, last: true, cards: [] } });
+      const m = await profile('POST', 'import', { key: v.key, e: e3, body: { upload_id: 'f', part: n / 500 - 1, last: true, cards: cards.slice(n - 500) } });
       assert.equal(m.json.count, n);
       runs[slot].push(m);
       if (n === 1000) runs.cards1k.push(await profile('GET', 'cards', { key: v.key, e: e3 }));
       if (n === 20_000) {
         runs.cards20k.push(await profile('GET', 'cards', { key: v.key, e: e3 }));
-        runs.cardsPart.push(await profile('GET', 'cards?part=3', { key: v.key, e: e3 }));
-        runs.bulk.push(await profile('POST', 'tags/bulk', { key: v.key, e: e3, body: { card_ids: cards.map((c) => c.id), add: [`t${k}`] } }));
+        const first = (await call('GET', 'cards?part=0', { key: v.key, e: e3 })).json.next_part;
+        runs.cardsPage.push(await profile('GET', `cards?part=${first}`, { key: v.key, e: e3 }));
+        runs.bulk.push(await profile('POST', 'tags/bulk', { key: v.key, e: e3, body: { card_ids: cards.slice(0, 5000).map((c) => c.id), add: [`t${k}`] } }));
       }
+      await call('DELETE', 'me', { key: v.key, e: e3 });
     }
   }
   report('morceau de 500 cartes', runs.part);
   report('refresh, stats + 10 pages', runs.refresh);
-  report('finalisation 1 000 cartes', runs.fin1k);
-  report('finalisation 5 000 cartes', runs.fin5k);
-  report('finalisation 20 000 cartes', runs.fin20k);
+  report('targets/save, 3 000 éléments', runs.target);
+  report('dernier morceau + finalisation, 1 000 cartes', runs.fin1k);
+  report('dernier morceau + finalisation, 5 000 cartes', runs.fin5k);
+  report('dernier morceau + finalisation, 20 000 cartes', runs.fin20k);
   report('GET /api/cards, 1 000 cartes', runs.cards1k);
-  report('GET /api/cards, 20 000 cartes', runs.cards20k);
-  report('GET /api/cards?part=3, 20 000 cartes', runs.cardsPart);
-  report('tags/bulk sur 20 000 cartes', runs.bulk);
+  report('GET /api/cards, 20 000 cartes (minimales)', runs.cards20k);
+  report('GET /api/cards?part=…, une page de 1 000', runs.cardsPage);
+  report('tags/bulk, 5 000 cartes', runs.bulk);
   // Décodage par le Worker de la réponse de D1 (absent du rejeu) : ordre de grandeur, en décodant une charge JSON de
   // même taille (les morceaux de la réponse, échappés dans des chaînes).
-  const sizes = [runs.cards1k[0].size, runs.cards20k[0].size, runs.cardsPart[0].size];
-  const decode = [runs.cards1k[0], runs.cards20k[0], runs.cardsPart[0]].map((r) => {
+  const sizes = [runs.cards1k[0].size, runs.cards20k[0].size, runs.cardsPage[0].size];
+  const decode = [runs.cards1k[0], runs.cards20k[0], runs.cardsPage[0]].map((r) => {
     const wire = JSON.stringify([{ part: r.text }]);
     const t0 = performance.now();
     for (let k = 0; k < 5; k++) JSON.parse(wire);
@@ -930,7 +1218,7 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
   // Aucun chemin de finalisation ne doit faire de JavaScript proportionnel au nombre de cartes.
   const js = (rs) => mean(rs.map((r) => r.js));
   assert.ok(js(runs.fin20k) < js(runs.fin1k) + 2, 'finalisation proportionnelle au nombre de cartes ?');
-  assert.ok(js(runs.part) < 10 && js(runs.fin20k) < 10 && js(runs.cardsPart) < 10);
+  assert.ok(js(runs.part) < 10 && js(runs.fin20k) < 10 && js(runs.cardsPage) < 10 && js(runs.target) < 10);
 });
 
 await test('DELETE /api/me efface tout', async () => {

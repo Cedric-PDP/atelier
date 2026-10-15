@@ -17,7 +17,8 @@ const PAUSE_MS = 250;
 const NO_SESSION = "Aucune session WikiMasters : colle d'abord ton cookie.";
 const EXPIRED = 'Ta session WikiMasters a expiré : colle un nouveau cookie.';
 
-const STAGE = 'INSERT OR REPLACE INTO refresh_staging (user_id, page, entries, created_at) VALUES (?1, ?2, ?3, ?4)';
+const STAGE = `INSERT OR REPLACE INTO refresh_staging (user_id, page, entries, skipped, created_at)
+  VALUES (?1, ?2, ?3, ?4, ?5)`;
 
 export async function refresh(env, user, body) {
   const db = env.DB;
@@ -52,12 +53,26 @@ export async function refresh(env, user, body) {
     if (calls++ > 0) await sleep(pause);
     let res;
     try {
-      res = await fetch(GAME + path, { headers: { Cookie: cookie, Accept: 'application/json' } });
+      // Pas de redirection suivie : une redirection (vers la connexion) veut dire que la session a expiré.
+      res = await fetch(GAME + path, { headers: { Cookie: cookie, Accept: 'application/json' }, redirect: 'manual' });
     } catch {
       throw new HttpError(502, 'WikiMasters ne répond pas : réessaie dans un moment.');
     }
     cookie = mergeSetCookies(cookie, setCookiesOf(res.headers));
-    if (res.status === 401 || res.status === 403) {
+    const redirected = res.type === 'opaqueredirect' || (res.status >= 300 && res.status < 400);
+    if (res.status === 401 || redirected) {
+      expired = true;
+      throw new HttpError(401, EXPIRED, { needs_session: true });
+    }
+    if (res.status === 403) {
+      // 403 en JSON : le jeu refuse la session. Autre chose (page HTML) : sans doute la protection anti-robots
+      // devant le site, la session n'y est pour rien.
+      const text = await res.text().catch(() => '');
+      try {
+        JSON.parse(text);
+      } catch {
+        throw new HttpError(502, 'WikiMasters a refusé la requête (protection anti-robots ?) : réessaie plus tard.');
+      }
       expired = true;
       throw new HttpError(401, EXPIRED, { needs_session: true });
     }
@@ -69,13 +84,13 @@ export async function refresh(env, user, body) {
     }
   };
 
-  const staged = []; // [page, JSON des cartes partielles] ; page -1 = statistiques
+  const staged = []; // [page, JSON des cartes partielles, entrées ignorées] ; page -1 = statistiques
   let done = false;
   let failure = null;
   try {
     if (page === 0) {
       const stats = pickStats(await gameGet('/api/my-collection/stats?sort=rarity'));
-      staged.push([-1, JSON.stringify(stats ?? {})]);
+      staged.push([-1, JSON.stringify(stats ?? {}), 0]);
     }
     for (let p = page; p < page + PAGES_PER_CALL; p++) {
       if (p > MAX_PAGE) throw new HttpError(502, 'WikiMasters renvoie trop de pages : rafraîchissement arrêté.');
@@ -87,7 +102,7 @@ export async function refresh(env, user, body) {
         const card = entryToCard(entry);
         if (card) cards.push(card);
       }
-      staged.push([p, JSON.stringify(cards)]);
+      staged.push([p, JSON.stringify(cards), list.length - cards.length]);
       if (list.length < PAGE_SIZE) {
         done = true;
         break;
@@ -97,25 +112,27 @@ export async function refresh(env, user, body) {
     failure = err;
   }
 
-  // Même en cas d'erreur, on garde le cookie renouvelé par le jeu et l'état de la session.
-  const writes = [];
-  if (cookie !== original) {
-    writes.push(
-      db.prepare('UPDATE users SET cookie_enc = ?1, cookie_updated_at = ?2 WHERE id = ?3')
-        .bind(await encryptCookie(env, user.id, cookie), nowIso(), user.id),
-    );
+  // Même en cas d'erreur, le cookie renouvelé par le jeu et l'état de la session sont gardés, dans une requête à
+  // part et avant les pages (si l'écriture des pages échoue, le cookie est quand même à jour).
+  if (cookie !== original || expired) {
+    const sets = [];
+    const params = [];
+    if (cookie !== original) {
+      params.push(await encryptCookie(env, user.id, cookie), nowIso());
+      sets.push(`cookie_enc = ?${params.length - 1}`, `cookie_updated_at = ?${params.length}`);
+    }
+    if (expired) sets.push('session_expired = 1');
+    params.push(user.id);
+    await db.prepare(`UPDATE users SET ${sets.join(', ')} WHERE id = ?${params.length}`).bind(...params).run();
   }
-  if (expired) writes.push(db.prepare('UPDATE users SET session_expired = 1 WHERE id = ?1').bind(user.id));
-  if (!failure) {
-    const now = nowIso();
-    for (const [p, text] of staged) writes.push(db.prepare(STAGE).bind(user.id, p, text, now));
-  }
-  if (writes.length) await db.batch(writes);
   if (failure) throw failure;
+  const now = nowIso();
+  await db.batch(staged.map(([p, text, skipped]) => db.prepare(STAGE).bind(user.id, p, text, skipped, now)));
 
   if (!done) {
     const progress = await db.prepare(
-      `SELECT SUM(CASE WHEN page >= 0 THEN json_array_length(entries) END) AS fetched,
+      `SELECT SUM(CASE WHEN page >= 0 THEN json_array_length(entries) + skipped END) AS fetched,
+              SUM(CASE WHEN page >= 0 THEN skipped END) AS skipped,
               MAX(CASE WHEN page < 0 THEN json_extract(entries, '$.total') END) AS total
        FROM refresh_staging WHERE user_id = ?1`,
     )
@@ -126,18 +143,23 @@ export async function refresh(env, user, body) {
       next_page: page + PAGES_PER_CALL,
       fetched: progress?.fetched ?? 0,
       total: typeof progress?.total === 'number' ? progress.total : null,
+      skipped: progress?.skipped ?? 0,
     };
   }
 
   // Dernière page lue : finalisation en SQL (comme un import), puis table d'attente vidée (même transaction).
-  const statsRow = await db.prepare('SELECT entries FROM refresh_staging WHERE user_id = ?1 AND page = -1')
+  const info = await db.prepare(
+    `SELECT MAX(CASE WHEN page = -1 THEN entries END) AS stats, SUM(CASE WHEN page >= 0 THEN skipped END) AS skipped
+     FROM refresh_staging WHERE user_id = ?1`,
+  )
     .bind(user.id)
     .first();
   const result = await finalizeImport(db, user, {
     source: REFRESH_SOURCE,
     key: 0,
-    stats: statsRow ? JSON.parse(statsRow.entries) : null,
+    stats: info?.stats ? JSON.parse(info.stats) : null,
     clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)],
+    skipped: info?.skipped ?? 0,
   });
   return { done: true, ...result };
 }

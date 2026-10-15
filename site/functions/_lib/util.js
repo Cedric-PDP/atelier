@@ -46,14 +46,18 @@ export async function safeEqual(a, b) {
   return diff === 0;
 }
 
-// Texte nettoyé : forme NFC, espaces (y compris insécables et retours) réduits à un seul, bords retirés.
-export function cleanText(value) {
-  return String(value).normalize('NFC').replace(/\s+/g, ' ').trim();
-}
+// Texte nettoyé : espaces (y compris insécables et retours) réduits à un seul, bords retirés ; forme NFC seulement
+// si le texte contient un signe combinant (accent séparé de sa lettre) ou des jamos coréens, seuls cas où NFC change
+// quelque chose en pratique : normalize coûte cher sur de longues listes, ASCII et lettres accentuées précomposées
+// (« é ») passent sans. Le remplacement des espaces n'est fait que s'il y a quelque chose à changer (deux espaces,
+// espace au bord, ou autre blanc qu'une espace simple). Longueurs en .length.
+const NEEDS_NFC = /[\p{M}ᄀ-ᇿ]/u;
+const NEEDS_SPACES = /\s\s|^\s|\s$|[^\S ]/;
 
-// Longueur en caractères (et non en unités UTF-16).
-export function charLength(text) {
-  return [...text].length;
+export function cleanText(value) {
+  let text = String(value);
+  if (NEEDS_NFC.test(text)) text = text.normalize('NFC');
+  return NEEDS_SPACES.test(text) ? text.replace(/\s+/g, ' ').trim() : text;
 }
 
 export function byteLength(text) {

@@ -1,39 +1,46 @@
 // Collections à compléter : rangées telles que l'interface les a vérifiées sur Wikipédia.
 
 import { HttpError, jsonText, raw } from './http.js';
-import { byteLength, charLength, cleanText, nowIso, randomToken } from './util.js';
+import { byteLength, cleanText, nowIso, randomToken } from './util.js';
 
+// Quotas par compte (D1 gratuit : 500 Mo en tout).
 const MAX_ITEMS = 3000;
-const MAX_TARGETS = 100;
-const MAX_ITEMS_BYTES = 1_800_000; // une ligne D1 fait 2 Mo au plus
+const MAX_TARGETS = 50;
+const MAX_ITEMS_BYTES = 600 * 1024; // éléments d'une collection, en JSON
+const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
 const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
 
 // Collection telle que stockée : `items` recopié en texte JSON, sans être relu.
-function toTarget(row) {
+function toTarget(row, items = row.items) {
   return {
     id: row.id,
     name: row.name,
-    items: raw(row.items),
+    items: raw(items),
     source: row.source,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
 }
 
+// Coupe à n unités sans séparer une paire de substitution (emoji…).
+function cut(text, n) {
+  if (text.length <= n) return text;
+  const code = text.charCodeAt(n - 1);
+  return text.slice(0, code >= 0xd800 && code <= 0xdbff ? n - 1 : n);
+}
+
 function cleanItem(item, i) {
   if (!item || typeof item !== 'object') throw new HttpError(400, `Élément n° ${i + 1} invalide.`);
   const title = typeof item.title === 'string' ? cleanText(item.title) : '';
-  if (!title || charLength(title) > 300) {
+  if (!title || title.length > 300) {
     throw new HttpError(400, `Élément n° ${i + 1} : titre manquant ou trop long (300 caractères au plus).`);
   }
   const status = item.status ?? 'ok';
   if (!STATUSES.has(status)) {
     throw new HttpError(400, `Élément n° ${i + 1} : statut inconnu (ok, missing ou disambiguation).`);
   }
-  const description = typeof item.description === 'string' && item.description.trim()
-    ? [...cleanText(item.description)].slice(0, 500).join('')
-    : null;
-  const image = typeof item.image === 'string' && /^https?:\/\//i.test(item.image) && item.image.length <= 1000
+  const description = typeof item.description === 'string' ? cut(cleanText(item.description), 500) || null : null;
+  const image = typeof item.image === 'string' && item.image.length <= 1000 && /^https?:\/\//i.test(item.image)
     ? item.image
     : null;
   return { title, description, image, status };
@@ -53,12 +60,13 @@ export async function listTargets(env, user) {
 export async function saveTarget(env, user, body) {
   const db = env.DB;
   const name = typeof body.name === 'string' ? cleanText(body.name) : '';
-  if (!name || charLength(name) > 80) throw new HttpError(400, 'Le nom de la collection fait de 1 à 80 caractères.');
+  if (!name || name.length > 80) throw new HttpError(400, 'Le nom de la collection fait de 1 à 80 caractères.');
   if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
   if (body.items.length > MAX_ITEMS) throw new HttpError(400, `${MAX_ITEMS} éléments au plus par collection.`);
   const items = body.items.map(cleanItem);
   const itemsJson = JSON.stringify(items);
-  if (byteLength(itemsJson) > MAX_ITEMS_BYTES) throw new HttpError(400, 'Collection trop volumineuse.');
+  const size = itemsJson.length > MAX_ITEMS_BYTES ? Infinity : byteLength(itemsJson);
+  if (size > MAX_ITEMS_BYTES) throw new HttpError(400, 'Collection trop volumineuse : 600 Ko au plus.');
 
   let source = null;
   if (body.source !== undefined && body.source !== null) {
@@ -74,12 +82,18 @@ export async function saveTarget(env, user, body) {
     throw new HttpError(400, 'Identifiant de collection invalide.');
   }
 
-  const counts = await db.prepare(
-    'SELECT COUNT(*) AS n, SUM(id = ?2) AS mine FROM targets WHERE user_id = ?1',
+  // Les autres collections du compte (celle-ci, si elle existe, est remplacée).
+  const others = await db.prepare(
+    `SELECT COUNT(*) AS n, SUM(id = ?2) AS mine,
+            COALESCE(SUM(CASE WHEN id <> ?2 THEN length(CAST(items AS BLOB)) END), 0) AS bytes
+     FROM targets WHERE user_id = ?1`,
   )
     .bind(user.id, id)
     .first();
-  if (!counts.mine && counts.n >= MAX_TARGETS) throw new HttpError(400, `${MAX_TARGETS} collections au plus.`);
+  if (!others.mine && others.n >= MAX_TARGETS) throw new HttpError(400, `${MAX_TARGETS} collections au plus.`);
+  if (others.bytes + size > MAX_TOTAL_BYTES) {
+    throw new HttpError(400, 'Tes collections à compléter dépassent 5 Mo en tout : supprimes-en une avant.');
+  }
 
   const now = nowIso();
   const row = await db.prepare(
@@ -87,11 +101,11 @@ export async function saveTarget(env, user, body) {
      VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)
      ON CONFLICT (user_id, id) DO UPDATE SET
        name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at
-     RETURNING id, name, items, source, created_at, updated_at`,
+     RETURNING id, name, source, created_at, updated_at`,
   )
     .bind(user.id, id, name, itemsJson, source, now)
     .first();
-  return { target: raw(jsonText(toTarget(row))) };
+  return { target: raw(jsonText(toTarget(row, itemsJson))) };
 }
 
 // POST /api/targets/delete {id}

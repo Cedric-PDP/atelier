@@ -4,6 +4,8 @@ import { HttpError } from './http.js';
 import { base64ToBytes, bytesToBase64, nowIso } from './util.js';
 
 export const GAME_HOST = 'www.wiki-masters.com';
+// Le jeu répond sous les deux noms : un HAR peut contenir l'un ou l'autre, un cookie peut viser l'un ou l'autre.
+export const GAME_HOSTS = new Set(['www.wiki-masters.com', 'wiki-masters.com']);
 
 const encoder = new TextEncoder();
 const MAX_COOKIE = 16_384;
@@ -26,7 +28,7 @@ export function cleanCookie(raw) {
   return cookie;
 }
 
-// En-tête Cookie d'une requête vers www.wiki-masters.com, de préférence /api/my-collection (puis /api/…, puis
+// En-tête Cookie d'une requête vers (www.)wiki-masters.com, de préférence /api/my-collection (puis /api/…, puis
 // n'importe quelle page) ; à rang égal, la plus récente.
 export function cookieFromHar(har) {
   if (typeof har === 'string') {
@@ -49,7 +51,7 @@ export function cookieFromHar(har) {
     } catch {
       continue;
     }
-    if (url.hostname !== GAME_HOST) continue;
+    if (!GAME_HOSTS.has(url.hostname)) continue;
     seen = true;
     const headers = Array.isArray(req.headers) ? req.headers : [];
     // En HTTP/2, le navigateur peut envoyer plusieurs en-têtes cookie : on les recolle.
@@ -68,7 +70,7 @@ export function cookieFromHar(har) {
     const rank = url.pathname.startsWith('/api/my-collection') ? 2 : url.pathname.startsWith('/api/') ? 1 : 0;
     if (!best || rank >= best.rank) best = { rank, cookie };
   }
-  if (!seen) throw new HttpError(400, 'Ce HAR ne contient aucune requête vers www.wiki-masters.com.');
+  if (!seen) throw new HttpError(400, 'Ce HAR ne contient aucune requête vers wiki-masters.com.');
   if (!best) {
     throw new HttpError(
       400,
@@ -164,13 +166,17 @@ export function mergeSetCookies(cookie, setCookies) {
     const name = pair.slice(0, i).trim();
     const value = pair.slice(i + 1).trim();
     let expired = false;
+    let foreign = false;
     for (const attr of attrs) {
       const [k, ...rest] = attr.split('=');
       const v = rest.join('=').trim();
       const key = k.trim().toLowerCase();
       if (key === 'max-age' && Number(v) <= 0) expired = true;
       if (key === 'expires' && Date.parse(v) < Date.now()) expired = true;
+      // Comme un navigateur : un cookie posé pour un autre domaine que celui du jeu est ignoré.
+      if (key === 'domain' && !GAME_HOSTS.has(v.toLowerCase().replace(/^\./, ''))) foreign = true;
     }
+    if (foreign) continue;
     if (expired) jar.delete(name);
     else jar.set(name, value);
   }

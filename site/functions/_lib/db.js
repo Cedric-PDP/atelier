@@ -6,6 +6,7 @@ export const SCHEMA = [
     id TEXT PRIMARY KEY,
     name TEXT,
     key_hash TEXT NOT NULL UNIQUE,
+    import_key_hash TEXT,
     created_at TEXT NOT NULL,
     fetched_at TEXT,
     new_ids TEXT NOT NULL DEFAULT '[]',
@@ -25,7 +26,6 @@ export const SCHEMA = [
     tag TEXT NOT NULL,
     PRIMARY KEY (user_id, card_id, tag)
   )`,
-  `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE TABLE IF NOT EXISTS targets (
     user_id TEXT NOT NULL,
     id TEXT NOT NULL,
@@ -40,6 +40,7 @@ export const SCHEMA = [
     user_id TEXT NOT NULL,
     page INTEGER NOT NULL,
     entries TEXT NOT NULL,
+    skipped INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, page)
   )`,
@@ -48,9 +49,20 @@ export const SCHEMA = [
     upload_id TEXT NOT NULL,
     part INTEGER NOT NULL,
     cards TEXT NOT NULL,
+    skipped INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, upload_id, part)
   )`,
+  `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
+];
+
+// Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.
+const ADDED_COLUMNS = [
+  ['users', 'import_key_hash', 'TEXT'],
+  ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
+  ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
+  ['import_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
 ];
 
 // Les morceaux en attente depuis plus d'une heure (import ou rafraîchissement abandonné) sont effacés.
@@ -62,13 +74,28 @@ export function purgeStaging(db) {
   ];
 }
 
+// Tables, puis colonnes manquantes, puis index (un index sur une colonne ajoutée viendrait trop tôt sinon).
+async function applySchema(db) {
+  const tables = SCHEMA.filter((sql) => sql.startsWith('CREATE TABLE'));
+  const indexes = SCHEMA.filter((sql) => !sql.startsWith('CREATE TABLE'));
+  await db.batch(tables.map((sql) => db.prepare(sql)));
+  for (const table of new Set(ADDED_COLUMNS.map(([t]) => t))) {
+    const { results } = await db.prepare(`PRAGMA table_info(${table})`).all();
+    const have = new Set(results.map((r) => r.name));
+    for (const [t, column, type] of ADDED_COLUMNS) {
+      if (t === table && !have.has(column)) await db.prepare(`ALTER TABLE ${t} ADD COLUMN ${column} ${type}`).run();
+    }
+  }
+  await db.batch(indexes.map((sql) => db.prepare(sql)));
+}
+
 // Une seule application du schéma par base et par instance (relancée si elle a échoué).
 const ready = new WeakMap();
 
 export function ensureSchema(db) {
   let p = ready.get(db);
   if (!p) {
-    p = db.batch(SCHEMA.map((sql) => db.prepare(sql))).catch((err) => {
+    p = applySchema(db).catch((err) => {
       ready.delete(db);
       throw err;
     });

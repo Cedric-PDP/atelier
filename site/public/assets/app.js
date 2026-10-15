@@ -5,6 +5,23 @@
 (function () {
   'use strict';
 
+  // Lien personnel (#cle=…) : lu puis effacé de la barre d'adresse avant toute autre chose, même si Vue ne charge pas.
+  // La clé n'est gardée qu'après vérification auprès du serveur (adoptLinkKey).
+  function takeHashKey() {
+    const m = String(location.hash || '').match(/(?:^#|&)cle=([^&]*)/);
+    if (!m) return null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
+    let raw = m[1];
+    try { raw = decodeURIComponent(raw); } catch (e) { /* gardé tel quel, la vérification dira s'il est bon */ }
+    return raw.trim();
+  }
+  const LINK_KEY = takeHashKey();
+
+  if (typeof Vue === 'undefined') {
+    const box = document.getElementById('app');
+    if (box) box.textContent = "Le classeur n'a pas pu se charger : la bibliothèque Vue (cdnjs.cloudflare.com) est inaccessible. Recharge la page, ou essaie un autre réseau.";
+    return;
+  }
   const { createApp, h, reactive, shallowRef, ref, computed, watch, nextTick, Transition, onMounted, onBeforeUnmount, markRaw } = Vue;
 
   // ================================================================ constantes et petits outils
@@ -15,7 +32,10 @@
   const PV_STEPS = [[50, 'C'], [250, 'PC'], [1000, 'R'], [5000, 'SR'], [20000, 'UR']];
   const SORTS = [['rarity', 'Rareté'], ['atk', 'Attaque'], ['def', 'Défense'], ['pageviews', 'Vues'], ['obtained', 'Obtenue récemment'], ['title', 'Titre']];
   const PAGE = 120;
-  const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg' };
+  const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
+    importKey: 'classeur-import-key', known: 'classeur-known' };
+  // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
+  const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
   const WP_API = 'https://fr.wikipedia.org/w/api.php';
   const SPARQL = 'https://query.wikidata.org/sparql';
@@ -83,6 +103,7 @@
       get: (k) => (map.has(k) ? map.get(k)[1] : undefined),
       set(k, v) { map.set(k, [Date.now(), v]); if (!timer) timer = setTimeout(save, 1500); },
       size: () => map.size,
+      clear() { map.clear(); if (timer) { clearTimeout(timer); timer = null; } store.del(name); },
     };
   }
   const pvCache = makeCache(LS.pv, 7 * DAY); // titre -> [vues sur 30 jours | null, vignette | null]
@@ -91,13 +112,17 @@
   // ================================================================ état
   const S = reactive({
     boot: 'loading', // loading | welcome | app
-    key: store.get(LS.key),
+    key: (() => { const k = store.get(LS.key); return k && KEY_RE.test(k) ? k : null; })(),
     keyNotSaved: false,
     health: null,
     healthError: '',
     bootError: '',
     bootHint: '',
     welcome: { code: '', name: '', link: '', busy: false, error: '', linkError: '', created: null },
+    linkError: '', // lien personnel refusé (tronqué, inconnu) : la clé gardée n'est pas touchée
+    switchAsk: null, // {key, name, mine} : lien d'un autre classeur, à confirmer
+    known: [], // classeurs ouverts dans ce navigateur : [{key, name}]
+    newLink: '', // lien après « Changer ma clé »
     me: null,
     fetchedAt: null,
     loadingCards: false,
@@ -121,7 +146,7 @@
     tagsFolded: store.get(LS.folded) === '1' || (store.get(LS.folded) == null && isNarrow()),
     refresh: { running: false, msg: '', error: false, warn: false },
     notice: null,
-    modal: null, // session | editor | catalog | settings | favori | confirm | tag
+    modal: null, // session | editor | catalog | settings | favori | confirm | tag | switch | link
     session: { cookie: '', busy: false, error: '' },
     editor: null,
     catalog: { list: null, error: '', busy: {} },
@@ -129,7 +154,7 @@
     tagEdit: null,
     settings: { name: '', busy: false, error: '', saved: false },
     copied: '',
-    bm: { src: null, error: '', clicked: false },
+    bm: { src: null, error: '', clicked: false, importKey: null, busy: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
   });
@@ -143,10 +168,12 @@
     constructor(status, message, data) { super(message); this.status = status; this.data = data || {}; }
   }
 
-  async function api(method, path, body) {
+  // opts.key : appel avec une autre clé que celle gardée (vérifier un lien avant de l'adopter).
+  async function api(method, path, body, opts) {
     const headers = { Accept: 'application/json' };
     const keyed = path !== '/api/account' && path !== '/api/health';
-    if (keyed && S.key) headers['X-Classeur-Key'] = S.key;
+    const key = (opts && opts.key) || S.key;
+    if (keyed && key) headers['X-Classeur-Key'] = key;
     const init = { method, headers, credentials: 'same-origin' };
     if (body !== undefined) { headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(body); }
     let r;
@@ -156,7 +183,7 @@
     if (!r.ok) {
       const msg = (data && typeof data.error === 'string' && data.error) || `Le classeur a répondu ${r.status}.`;
       // Clé inconnue (classeur supprimé, lien erroné) : retour à l'accueil. Une session WikiMasters expirée n'est pas concernée.
-      if (r.status === 401 && keyed && !(data && data.needs_session) && S.boot === 'app') lostKey(msg);
+      if (r.status === 401 && keyed && !(opts && opts.key) && !(data && data.needs_session) && S.boot === 'app') lostKey(msg);
       throw new ApiError(r.status, msg, data);
     }
     return data || {};
@@ -528,7 +555,8 @@
     return n;
   });
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
-  const bookmarkletUrl = computed(() => (S.bm.src && S.key ? makeBookmarklet(S.bm.src, location.origin, S.key) : ''));
+  // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
+  const bookmarkletUrl = computed(() => (S.bm.src && S.bm.importKey ? makeBookmarklet(S.bm.src, location.origin, S.bm.importKey) : ''));
 
   // ================================================================ actions
   let noticeSeq = 0;
@@ -538,46 +566,73 @@
     setTimeout(() => { if (S.notice && S.notice.id === id) S.notice = null; }, error ? 12000 : 6000);
   }
 
+  // ---------------------------------------------------------------- clés : la sienne, les classeurs connus, la clé d'import
   function setKey(k) {
     S.key = k;
     S.keyNotSaved = !store.set(LS.key, k);
   }
-  function readKeyFromHash() {
-    const m = location.hash.match(/(?:^#|&)cle=([A-Za-z0-9_-]+)/);
-    if (!m) return false;
-    setKey(m[1]);
-    history.replaceState(null, '', location.pathname + location.search);
-    return true;
+  function loadKnown() {
+    const list = store.json(LS.known);
+    S.known = Array.isArray(list) ? list.filter((x) => x && typeof x.key === 'string' && KEY_RE.test(x.key)).map((x) => ({ key: x.key, name: String(x.name || '') })) : [];
   }
+  function saveKnown() { store.set(LS.known, JSON.stringify(S.known)); }
+  function remember(key, name) {
+    const i = S.known.findIndex((x) => x.key === key);
+    if (i >= 0) S.known[i].name = name || S.known[i].name; else S.known.push({ key, name: name || '' });
+    saveKnown();
+  }
+  function forgetKnown(key) { S.known = S.known.filter((x) => x.key !== key); saveKnown(); }
+  // Clé d'import gardée pour un compte donné : {user, key}. Celle d'un autre classeur ne compte pas.
+  function storedImportKey() {
+    const v = store.json(LS.importKey);
+    const me = S.me && S.me.user;
+    return v && me && v.user === me.id && typeof v.key === 'string' && v.key ? v.key : null;
+  }
+
   function resetData() {
     cards.value = [];
     targets.value = [];
     newIds.value = [];
-    Object.assign(S, { me: null, fetchedAt: null, openId: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null,
+    Object.assign(S, { me: null, fetchedAt: null, openId: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null,
       q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [...RARITIES], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
     S.refresh.error = false;
     S.refresh.warn = false;
+    S.bm.importKey = null;
     pvToken++;
     suggToken++;
     S.sugg.running = false;
   }
+  const STALE_KEY = "La clé gardée dans ce navigateur ne correspond plus à aucun classeur : il a peut-être été supprimé, ou sa clé a été changée sur un autre appareil. Ouvre ton lien personnel le plus récent.";
   function lostKey(msg) {
     resetData();
     S.bootError = msg;
-    S.bootHint = "Ce lien ne correspond à aucun classeur : il a peut-être été supprimé, ou le lien est incomplet.";
+    S.bootHint = STALE_KEY;
     S.boot = 'welcome';
   }
+  // « Oublier ce navigateur » : la clé, les classeurs connus, la clé d'import et les caches de Wikipédia.
   function forgetKey() {
-    store.del(LS.key);
-    store.del(LS.target);
+    for (const k of Object.values(LS)) store.del(k);
+    pvCache.clear();
+    suggCache.clear();
     S.key = null;
+    S.known = [];
     resetData();
     S.bootError = '';
     S.bootHint = '';
+    S.linkError = '';
     S.welcome.created = null;
     S.boot = 'welcome';
+  }
+
+  // Clé gardée qui n'ouvre plus rien (accueil) : on l'oublie, sans toucher aux autres classeurs connus.
+  function dropStaleKey() {
+    if (S.key) forgetKnown(S.key);
+    store.del(LS.key);
+    S.key = null;
+    S.bootError = '';
+    S.bootHint = '';
   }
 
   async function loadHealth() {
@@ -592,6 +647,7 @@
   async function loadMe() {
     const me = await api('GET', '/api/me');
     S.me = me;
+    if (S.key && me.user) remember(S.key, me.user.name || '');
     return me;
   }
   function prepCard(c) {
@@ -599,13 +655,17 @@
     return markRaw({ ...c, title: String(c.title || ''), tags, _k: fold(`${c.title || ''} ${c.category || ''}`) });
   }
   async function loadCards() {
-    // Lecture par morceaux (?part=N) : une grosse collection d'un coup dépasserait le temps de calcul d'un Worker gratuit.
+    // Lecture par morceaux (?part=0, puis next_part renvoyé tel quel jusqu'à null) : une grosse collection d'un coup
+    // dépasserait le temps de calcul d'un Worker gratuit. next_part peut être un nombre ou une chaîne opaque.
     const all = [];
     let r = null;
-    for (let part = 0, guard = 0; part !== null && guard < 200; guard++) {
-      r = await api('GET', `/api/cards?part=${part}`);
+    let part = 0;
+    for (let guard = 0; guard < 500; guard++) {
+      r = await api('GET', '/api/cards?part=' + encodeURIComponent(String(part)));
       if (Array.isArray(r.cards)) all.push(...r.cards);
-      part = Number.isInteger(r.next_part) ? r.next_part : null;
+      const next = r.next_part;
+      if (next === null || next === undefined || next === '' || next === part) break;
+      part = next;
     }
     cards.value = all.map(prepCard);
     newIds.value = Array.isArray(r.new_ids) ? r.new_ids : [];
@@ -627,23 +687,73 @@
     targets.value = list;
   }
 
-  async function boot() {
+  const BAD_LINK = "Ce lien personnel est incomplet ou abîmé : après « #cle= », il doit avoir une suite de 43 lettres, chiffres, « - » ou « _ ». Copie-le à nouveau, en entier.";
+  const UNKNOWN_LINK = "Ce lien ne correspond à aucun classeur : il est peut-être incomplet, sa clé a été changée, ou le classeur a été supprimé.";
+  // Lien personnel ouvert : la clé n'est gardée qu'une fois vérifiée (GET /api/me). Si une autre clé valable est déjà
+  // gardée, on demande avant de changer de classeur ; l'ancienne reste dans la liste des classeurs connus.
+  async function adoptLinkKey(raw) {
+    S.linkError = '';
+    if (!raw || !KEY_RE.test(raw)) { S.linkError = BAD_LINK; return; }
+    if (raw === S.key) return;
+    let me;
+    try {
+      me = await api('GET', '/api/me', undefined, { key: raw });
+    } catch (e) {
+      S.linkError = e.status === 401 ? UNKNOWN_LINK : e.message;
+      return;
+    }
+    const name = (me.user && me.user.name) || '';
+    if (S.key) {
+      let mine = null;
+      try {
+        mine = await api('GET', '/api/me', undefined, { key: S.key });
+      } catch (e) {
+        if (e.status !== 401) mine = { user: null };
+      }
+      if (mine) {
+        S.switchAsk = { key: raw, name, mine: (mine.user && mine.user.name) || '' };
+        return;
+      }
+      forgetKnown(S.key); // la clé gardée n'ouvre plus rien : on prend la nouvelle sans demander
+    }
+    setKey(raw);
+    remember(raw, name);
+  }
+  async function switchTo(key) {
+    if (key === S.key) { closeModal(); return; }
+    try {
+      await api('GET', '/api/me', undefined, { key });
+    } catch (e) {
+      if (e.status === 401) { forgetKnown(key); notify(UNKNOWN_LINK, true); } else notify(e.message, true);
+      return;
+    }
+    setKey(key);
+    S.target = null;
+    store.del(LS.target);
+    await boot();
+  }
+
+  async function boot(linkKey) {
     S.boot = 'loading';
-    readKeyFromHash();
     resetData();
+    loadKnown();
     await loadHealth();
+    if (linkKey != null) await adoptLinkKey(linkKey);
+    const ask = S.switchAsk;
     if (!S.key) { S.boot = 'welcome'; return; }
     try {
       await loadMe();
     } catch (e) {
       S.bootError = e.message;
-      S.bootHint = e.status === 401 ? "Ce lien ne correspond à aucun classeur : il a peut-être été supprimé, ou le lien est incomplet." : '';
+      S.bootHint = e.status === 401 ? STALE_KEY : '';
       S.boot = 'welcome';
       return;
     }
     S.bootError = '';
     S.bootHint = '';
     S.boot = 'app';
+    if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
+    if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
     await Promise.all([
       loadCards().catch((e) => notify(e.message, true)),
@@ -664,8 +774,9 @@
       const body = { code };
       if (w.name.trim()) body.name = w.name.trim();
       const r = await api('POST', '/api/account', body);
-      if (!r.key) throw new Error("Le classeur n'a pas renvoyé de clé : réessaie.");
+      if (!r.key || !KEY_RE.test(r.key)) throw new Error("Le classeur n'a pas renvoyé de clé valable : réessaie.");
       setKey(r.key);
+      remember(r.key, (r.user && r.user.name) || '');
       w.created = { link: location.origin + '/#cle=' + r.key, name: (r.user && r.user.name) || '' };
       w.code = '';
     } catch (e) {
@@ -677,13 +788,13 @@
   function useLink() {
     const w = S.welcome;
     const raw = w.link.trim();
-    const m = raw.match(/[#&?]cle=([A-Za-z0-9_-]+)/);
-    const key = m ? m[1] : /^[A-Za-z0-9_-]{20,}$/.test(raw) ? raw : null;
-    if (!key) { w.linkError = 'Colle ton lien personnel en entier : il contient « #cle= ».'; return; }
+    const m = raw.match(/[#&?]cle=([^&\s]*)/);
+    let key = m ? m[1] : raw;
+    try { key = decodeURIComponent(key); } catch (e) { /* tel quel */ }
+    if (!KEY_RE.test(key)) { w.linkError = BAD_LINK; return; }
     w.linkError = '';
     w.link = '';
-    setKey(key);
-    boot();
+    boot(key);
   }
 
   // ---------------------------------------------------------------- rafraîchissement
@@ -692,6 +803,9 @@
     const parts = [cards$(res.count)];
     if (n) parts.push(`${fmt(n)} ${plural(n, 'nouvelle', 'nouvelles')}`);
     else parts.push('aucune nouvelle');
+    // Entrées du jeu ignorées par le serveur (sans titre, rareté inconnue, champs trop longs).
+    const skipped = Number(res.skipped) || 0;
+    if (skipped > 0) parts.push(`${fmt(skipped)} ${plural(skipped, 'ignorée', 'ignorées')} (sans titre ou rareté inconnue)`);
     return parts.join(' · ');
   }
   async function refreshCollection() {
@@ -1122,9 +1236,11 @@
     if (m === 'editor') S.editor = null;
     if (m === 'confirm') S.confirm = null;
     if (m === 'tag') S.tagEdit = null;
+    if (m === 'switch') S.switchAsk = null;
   }
   function openConfirm(o) {
-    S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), busy: false, error: '', progress: '' };
+    S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
+      busy: false, error: '', progress: '' };
     S.modal = 'confirm';
   }
   async function runConfirm(cf) {
@@ -1133,7 +1249,7 @@
     cf.error = '';
     try {
       await cf.run(cf);
-      if (S.confirm === cf) closeModal();
+      if (S.confirm === cf) { closeModal(); if (cf.after) cf.after(); }
     } catch (e) {
       cf.error = e.message;
     } finally {
@@ -1153,6 +1269,7 @@
     try {
       const r = await api('PATCH', '/api/me', { name: st.name.trim() });
       if (S.me) S.me.user = r.user || { ...S.me.user, name: st.name.trim() };
+      remember(S.key, (S.me && S.me.user && S.me.user.name) || '');
       st.saved = true;
     } catch (e) {
       st.error = e.message;
@@ -1163,7 +1280,7 @@
   function askForget() {
     openConfirm({
       title: 'Oublier ce navigateur ?',
-      text: "Ce navigateur oubliera la clé de ton classeur. Tu pourras revenir avec ton lien personnel : vérifie que tu l'as bien gardé.",
+      text: "Ce navigateur oubliera la clé de ton classeur, les autres classeurs ouverts ici, la clé de ton favori et les données gardées de Wikipédia. Ton classeur reste intact : ton lien personnel le rouvre (vérifie que tu l'as bien gardé). Le favori déjà installé continue de marcher.",
       ok: 'Oublier ce navigateur',
       run: async () => { forgetKey(); },
     });
@@ -1174,12 +1291,38 @@
       text: "Tes cartes rangées, tes tags, tes collections à compléter et ta session WikiMasters seront effacés du classeur, et ton lien ne marchera plus. C'est définitif. Ta collection dans le jeu n'est pas touchée.",
       ok: 'Supprimer mon classeur',
       danger: true,
-      run: async () => { await api('DELETE', '/api/me'); forgetKey(); notify('Ton classeur a été supprimé.'); },
+      run: async () => {
+        const key = S.key;
+        await api('DELETE', '/api/me');
+        forgetKnown(key);
+        const others = S.known.slice();
+        forgetKey();
+        // Les autres classeurs ouverts dans ce navigateur restent connus.
+        S.known = others;
+        saveKnown();
+        notify('Ton classeur a été supprimé.');
+      },
     });
   }
-  async function openFavori() {
-    S.modal = 'favori';
-    S.bm.clicked = false;
+  // « Changer ma clé » : nouvelle clé principale, l'ancien lien cesse de marcher partout.
+  function askRotate() {
+    openConfirm({
+      title: 'Changer ma clé ?',
+      text: "Ton classeur reçoit une nouvelle clé, donc un nouveau lien personnel. L'ancien lien cessera de marcher partout : sur tes autres appareils, il faudra ouvrir le nouveau. À faire si ton lien a pu être vu par quelqu'un d'autre.",
+      ok: 'Changer ma clé',
+      run: async () => {
+        const r = await api('POST', '/api/key/rotate');
+        if (!r.key || !KEY_RE.test(r.key)) throw new Error("Le classeur n'a pas renvoyé de nouvelle clé valable : réessaie.");
+        const name = (S.me && S.me.user && S.me.user.name) || '';
+        forgetKnown(S.key);
+        setKey(r.key);
+        remember(r.key, name);
+        S.newLink = location.origin + '/#cle=' + r.key;
+      },
+      after: () => { S.modal = 'link'; },
+    });
+  }
+  async function loadBookmarkletSource() {
     if (S.bm.src != null) return;
     S.bm.error = '';
     try {
@@ -1189,6 +1332,45 @@
     } catch (e) {
       S.bm.error = "Le favori n'a pas pu être préparé : recharge la page, puis réessaie.";
     }
+  }
+  async function openFavori() {
+    S.modal = 'favori';
+    S.bm.clicked = false;
+    S.bm.error = '';
+    S.bm.importKey = storedImportKey();
+    await loadBookmarkletSource();
+  }
+  // Nouvelle clé d'import (POST /api/import-key) : l'ancien favori, où qu'il soit, cesse de marcher.
+  async function createImportKey() {
+    if (S.bm.busy) return false;
+    S.bm.busy = true;
+    S.bm.error = '';
+    try {
+      const r = await api('POST', '/api/import-key');
+      if (!r.import_key || typeof r.import_key !== 'string') throw new Error("Le classeur n'a pas renvoyé de clé d'import : réessaie.");
+      const me = S.me && S.me.user;
+      store.set(LS.importKey, JSON.stringify({ user: me ? me.id : null, key: r.import_key }));
+      S.bm.importKey = r.import_key;
+      if (S.me) S.me.has_import_key = true;
+      return true;
+    } catch (e) {
+      S.bm.error = e.message;
+      return false;
+    } finally {
+      S.bm.busy = false;
+    }
+  }
+  function askRegenerate() {
+    openConfirm({
+      title: 'Régénérer le favori ?',
+      text: "Le favori reçoit une nouvelle clé d'import. L'ancien favori cessera de marcher partout : il faudra remplacer celui de ta barre de favoris, et sur tes autres navigateurs. À faire si ton favori a pu être vu ou copié par quelqu'un d'autre.",
+      ok: 'Régénérer le favori',
+      run: async () => {
+        if (!(await createImportKey())) throw new Error(S.bm.error || "Le favori n'a pas pu être régénéré.");
+        await loadBookmarkletSource();
+      },
+      after: () => { S.modal = 'favori'; S.bm.clicked = false; notify('Nouveau favori prêt : remplace l\'ancien dans ta barre de favoris.'); },
+    });
   }
   // Met bookmarklet.js sur une ligne (commentaires en lignes à part, instructions finies par « ; »), y place l'adresse
   // du classeur et la clé, et en fait une adresse javascript: (encodeURI, plus « # » qui couperait l'adresse).
@@ -1250,6 +1432,8 @@
           [icon('refresh', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : 'Rafraîchir la collection']),
         h('div', { class: 'status' }, [
           h('p', { class: { err: S.refresh.error, warn: S.refresh.warn }, 'aria-live': 'polite' }, S.refresh.msg),
+          S.refresh.error && !S.refresh.running ? h('p', null, [h('button', { class: 'linklike', type: 'button', onClick: openFavori }, 'Passer par le favori'),
+            ' : il lit ta collection depuis ton navigateur.']) : null,
           h('p', { class: 'line' }, [h('span', { class: ['dot', dot] }), h('span', null, sessLabel),
             h('button', { class: 'linklike', type: 'button', onClick: () => openSession() }, 'Mettre à jour')]),
           S.keyNotSaved ? h('p', { class: 'warn' }, 'Ce navigateur ne garde pas ta clé : rouvre ton lien personnel à chaque visite.') : null,
@@ -1276,6 +1460,7 @@
         S.me && S.me.user && S.me.user.name ? h('p', { class: 'muted' }, `Classeur de ${S.me.user.name}`) : null,
         h('button', { class: 'btn ghost small', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Le favori']),
         h('button', { class: 'btn ghost small', type: 'button', onClick: openSettings }, [icon('gear', 'sm'), 'Réglages : mon lien, ce navigateur']),
+        S.known.length > 1 ? h('button', { class: 'btn ghost small', type: 'button', onClick: openSettings }, [icon('album', 'sm'), 'Changer de classeur']) : null,
       ]),
     ]);
   }
@@ -1626,16 +1811,22 @@
     const sess = (S.me && S.me.session) || {};
     const noSecret = !!(S.health && S.health.cookie_secret === false);
     const off = noSecret || ss.busy;
-    return h(Modal, { key: 'session', title: sess.expired ? 'Ta session WikiMasters a expiré' : 'Session WikiMasters', onClose: closeModal }, () => [
-      h('p', null, "Pour « Rafraîchir la collection », le classeur lit ta collection sur WikiMasters avec ta session (ton cookie de connexion). Il la garde chiffrée et ne s'en sert que pour lire, quand tu le demandes."),
-      h('p', null, ['Plus simple, sans cookie : ', h('button', { class: 'linklike', type: 'button', onClick: openFavori }, 'le favori'), ', à cliquer sur wiki-masters.com.']),
+    return h(Modal, { key: 'session', title: sess.expired ? 'Ta session WikiMasters a expiré' : 'Mettre à jour ta collection', onClose: closeModal }, () => [
+      h('div', { class: 'panel' }, [
+        h('h4', { class: 'flush' }, 'Le favori, le chemin conseillé'),
+        h('p', null, 'Sur wiki-masters.com, un clic sur le favori lit ta collection et l\'envoie au classeur. Il se sert de ta session dans ton navigateur : rien à copier, rien qui expire.'),
+        h('button', { class: 'btn primary', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+      ]),
+      h('h4', null, 'En secours : coller ton cookie WikiMasters'),
+      h('p', null, "Le classeur garde alors ta session chiffrée et s'en sert pour lire ta collection quand tu cliques « Rafraîchir la collection »."),
+      h('p', { class: 'warn' }, 'Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
       noSecret ? h('p', { class: 'warn' }, "Le collage du cookie est désactivé sur ce classeur : l'administrateur n'a pas encore réglé sa clé de chiffrement (COOKIE_SECRET). Utilise le favori.") : null,
       h('ol', null, [
         h('li', null, 'Sur wiki-masters.com, avec ta session ouverte, ouvre les outils de développement (F12), onglet Réseau, puis recharge ta page Collection.'),
         h('li', null, ['Clique la requête ', h('code', null, 'my-collection'), ', puis dans les en-têtes de la requête, copie la valeur de ', h('code', null, 'Cookie'), '.']),
       ]),
       h('label', { class: 'sr', for: 'cookie-input' }, 'Valeur de l\'en-tête Cookie'),
-      h('textarea', { id: 'cookie-input', class: 'field full', rows: 4, value: ss.cookie, disabled: off, spellcheck: 'false', autocomplete: 'off',
+      h('textarea', { id: 'cookie-input', class: 'field full', rows: 3, value: ss.cookie, disabled: off, spellcheck: 'false', autocomplete: 'off',
         placeholder: 'sb-…-auth-token.0=…; sb-…-auth-token.1=…', onInput: (e) => { ss.cookie = e.target.value; } }),
       h('p', { class: 'note' }, '… ou dépose un export HAR de l\'onglet Réseau :'),
       h('label', { class: ['drop', { disabled: noSecret }] }, [icon('upload'), h('span', null, 'Choisir ou déposer le fichier .har'),
@@ -1645,7 +1836,7 @@
       foot([
         sess.has_cookie ? h('button', { class: 'btn ghost danger left', type: 'button', disabled: ss.busy, onClick: forgetSession }, 'Oublier la session') : null,
         closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: off || !ss.cookie.trim(), onClick: submitCookie }, ss.busy ? 'Enregistrement…' : 'Enregistrer et rafraîchir'),
+        h('button', { class: 'btn', type: 'button', disabled: off || !ss.cookie.trim(), onClick: submitCookie }, ss.busy ? 'Enregistrement…' : 'Enregistrer le cookie et rafraîchir'),
       ]),
     ]);
   }
@@ -1712,8 +1903,10 @@
       foot([closeBtn()]),
     ]);
   }
+  function knownLabel(k) { return k.name ? `Classeur de ${k.name}` : 'Classeur sans prénom'; }
   function modalSettings() {
     const st = S.settings;
+    const others = S.known.filter((k) => k.key !== S.key);
     return h(Modal, { key: 'settings', title: 'Réglages', onClose: closeModal }, () => [
       h('section', { class: 'settings-section' }, [
         h('h4', null, 'Ton prénom'),
@@ -1729,15 +1922,28 @@
         h('h4', null, 'Ton lien personnel'),
         h('p', null, "C'est la clé de ton classeur : il l'ouvre sur n'importe quel appareil, sans mot de passe. Garde-le pour toi (dans tes favoris ou un gestionnaire de mots de passe) et ne le partage pas."),
         copyRow('my-link', personalLink.value, 'Ton lien personnel'),
+        h('p', { class: 'note' }, "Un lien ouvert reste dans l'historique du navigateur : sur un appareil partagé, efface-le de l'historique, ou change ta clé."),
+        h('button', { class: 'btn', type: 'button', onClick: askRotate }, [icon('key', 'sm'), 'Changer ma clé']),
       ]),
       h('section', { class: 'settings-section' }, [
         h('h4', null, 'Le favori'),
-        h('p', null, 'Pour envoyer ta collection au classeur depuis wiki-masters.com, en un clic.'),
-        h('button', { class: 'btn', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+        h('p', null, "Pour envoyer ta collection au classeur depuis wiki-masters.com, en un clic. Il a sa propre clé, qui ne sert qu'à envoyer des cartes."),
+        h('div', { class: 'line' }, [
+          h('button', { class: 'btn', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+          S.me && S.me.has_import_key ? h('button', { class: 'btn', type: 'button', onClick: askRegenerate }, [icon('refresh', 'sm'), 'Régénérer le favori']) : null,
+        ]),
       ]),
+      others.length ? h('section', { class: 'settings-section' }, [
+        h('h4', null, 'Autres classeurs ouverts dans ce navigateur'),
+        h('ul', { class: 'known' }, others.map((k) => h('li', { key: k.key, class: 'line' }, [
+          h('span', { class: 'known-name' }, knownLabel(k)),
+          h('button', { class: 'btn small', type: 'button', onClick: () => switchTo(k.key) }, 'Ouvrir'),
+          h('button', { class: 'btn small ghost', type: 'button', 'aria-label': 'Retirer de la liste : ' + knownLabel(k), onClick: () => forgetKnown(k.key) }, 'Retirer'),
+        ]))),
+      ]) : null,
       h('section', { class: 'settings-section' }, [
         h('h4', null, 'Ce navigateur'),
-        h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé. Ton classeur reste intact : ton lien le rouvre."),
+        h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé et tout ce qu'il garde du classeur. Ton classeur reste intact : ton lien le rouvre."),
         h('button', { class: 'btn', type: 'button', onClick: askForget }, 'Oublier ce navigateur'),
       ]),
       h('section', { class: 'settings-section' }, [
@@ -1750,14 +1956,24 @@
   }
   function modalFavori() {
     const url = bookmarkletUrl.value;
+    const hasKey = !!S.bm.importKey;
+    const elsewhere = !!(S.me && S.me.has_import_key);
+    let step1;
+    if (!hasKey) {
+      step1 = h('div', { class: 'panel' }, [
+        h('p', null, "Pour fabriquer ton favori, le classeur crée une clé d'import : elle ne sert qu'à envoyer des cartes, jamais à ouvrir ton classeur."),
+        elsewhere ? h('p', { class: 'warn' }, 'Tu as déjà un favori (sur un autre navigateur, ou avant que celui-ci ne l\'oublie) : en créer un ici le remplace, et l\'ancien cessera de marcher.') : null,
+        h('button', { class: 'btn primary', type: 'button', disabled: S.bm.busy, onClick: createImportKey }, S.bm.busy ? 'Création…' : elsewhere ? 'Créer un nouveau favori' : 'Créer mon favori'),
+        errLine(S.bm.error),
+      ]);
+    } else if (url) {
+      step1 = h('p', null, [h('a', { class: 'bookmarklet', href: url, title: 'Glisse-moi dans ta barre de favoris',
+        onClick: (e) => { e.preventDefault(); S.bm.clicked = true; } }, [icon('bookmark'), 'Classeur WikiMasters'])]);
+    } else step1 = S.bm.error ? errLine(S.bm.error) : h('p', { class: 'progress-msg', role: 'status' }, 'Préparation du favori…');
     return h(Modal, { key: 'favori', title: 'Le favori du classeur', onClose: closeModal }, () => [
       h('p', null, "Le favori lit ta collection sur wiki-masters.com, comme la page « Collection » du jeu, et l'envoie à ton classeur. Il ne fait que lire : rien n'est écrit dans le jeu."),
-      h('ol', null, [
-        h('li', null, 'Glisse ce bouton dans ta barre de favoris :'),
-      ]),
-      url ? h('p', null, [h('a', { class: 'bookmarklet', href: url, title: 'Glisse-moi dans ta barre de favoris',
-        onClick: (e) => { e.preventDefault(); S.bm.clicked = true; } }, [icon('bookmark'), 'Classeur WikiMasters'])])
-        : S.bm.error ? errLine(S.bm.error) : h('p', { class: 'progress-msg', role: 'status' }, 'Préparation du favori…'),
+      h('ol', null, [h('li', null, 'Glisse ce bouton dans ta barre de favoris :')]),
+      step1,
       S.bm.clicked ? h('p', { class: 'warn', role: 'status' }, 'Pas ici : glisse le bouton dans ta barre de favoris, puis clique-le sur wiki-masters.com.') : null,
       h('ol', { start: 2 }, [
         h('li', null, 'Ouvre wiki-masters.com, avec ta session ouverte.'),
@@ -1765,11 +1981,36 @@
       ]),
       h('p', { class: 'note' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
-      h('h4', null, 'Le créer à la main'),
-      h('p', { class: 'note' }, "Sur téléphone, ou si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci. Sur téléphone, tape ensuite « Classeur » dans la barre d'adresse sur wiki-masters.com et choisis le favori."),
-      copyRow('bm-url', url, 'Adresse du favori'),
-      h('p', { class: 'warn' }, 'Le favori contient la clé de ton classeur : ne le partage pas.'),
+      hasKey ? h('h4', null, 'Le créer à la main') : null,
+      hasKey ? h('p', { class: 'note' }, "Sur téléphone, ou si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci. Sur téléphone, tape ensuite « Classeur » dans la barre d'adresse sur wiki-masters.com et choisis le favori.") : null,
+      hasKey ? copyRow('bm-url', url, 'Adresse du favori') : null,
+      hasKey ? h('p', { class: 'note' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
       foot([closeBtn()]),
+    ]);
+  }
+  // Lien d'un autre classeur ouvert alors qu'une clé est déjà gardée : on demande.
+  function modalSwitch() {
+    const ask = S.switchAsk;
+    if (!ask) return null;
+    const who = ask.name ? `de ${ask.name}` : "d'une autre personne";
+    const mine = ask.mine ? `celui de ${ask.mine}` : 'le tien';
+    const keep = () => { S.switchAsk = null; closeModal(); };
+    return h(Modal, { key: 'switch', title: 'Un autre classeur', onClose: keep }, () => [
+      h('p', null, `Ce lien ouvre le classeur ${who}. Ouvrir le classeur ${who} à la place du tien ?`),
+      h('p', { class: 'note' }, `Ce navigateur se souviendra des deux : tu pourras revenir à ${mine} depuis les Réglages.`),
+      foot([
+        h('button', { class: 'btn', type: 'button', onClick: keep }, 'Garder le mien'),
+        h('button', { class: 'btn primary', type: 'button', onClick: () => { S.switchAsk = null; remember(ask.key, ask.name); switchTo(ask.key); } }, 'Ouvrir'),
+      ]),
+    ]);
+  }
+  // Nouveau lien après « Changer ma clé ».
+  function modalLink() {
+    return h(Modal, { key: 'link', title: 'Ton nouveau lien personnel', onClose: closeModal }, () => [
+      h('p', null, "Ta clé a changé : l'ancien lien ne marche plus. Garde celui-ci à la place (favoris, gestionnaire de mots de passe), et ouvre-le sur tes autres appareils."),
+      copyRow('new-key-link', S.newLink, 'Ton nouveau lien personnel'),
+      h('p', { class: 'warn' }, 'Garde-le pour toi : quiconque a ce lien ouvre ton classeur.'),
+      foot([closeBtn("C'est noté")]),
     ]);
   }
   function modalTag() {
@@ -1805,13 +2046,15 @@
       ]),
     ]);
   }
-  const MODALS = { session: modalSession, editor: modalEditor, catalog: modalCatalog, settings: modalSettings, favori: modalFavori, tag: modalTag, confirm: modalConfirm };
+  const MODALS = { session: modalSession, editor: modalEditor, catalog: modalCatalog, settings: modalSettings, favori: modalFavori, tag: modalTag, confirm: modalConfirm,
+    switch: modalSwitch, link: modalLink };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {
     const w = S.welcome;
     const hl = S.health;
     const notConfigured = !!(hl && hl.db === false);
+    const known = S.known.filter((k) => k.key !== S.key);
     const closed = !!(hl && hl.signup_open === false);
     const brand = h('div', { class: 'welcome-brand' }, [
       h('h1', null, 'Le classeur'),
@@ -1863,12 +2106,18 @@
         h('div', null, [h('button', { class: 'btn', type: 'submit' }, 'Ouvrir mon classeur')]),
       ]));
       main = [
+        S.linkError ? h('div', { class: 'banner error', role: 'alert' }, [h('p', null, S.linkError)]) : null,
         S.bootError ? h('div', { class: 'banner error', role: 'alert' }, [
           h('p', null, S.bootError), S.bootHint ? h('p', null, S.bootHint) : null,
-          S.key ? h('button', { class: 'btn small', type: 'button', onClick: forgetKey }, 'Oublier la clé de ce navigateur') : null,
+          S.key ? h('button', { class: 'btn small', type: 'button', onClick: dropStaleKey }, 'Oublier cette clé') : null,
         ]) : null,
         S.healthError ? h('div', { class: 'banner error', role: 'alert' }, [h('p', null, S.healthError),
-          h('button', { class: 'btn small', type: 'button', onClick: boot }, 'Réessayer')]) : null,
+          h('button', { class: 'btn small', type: 'button', onClick: () => boot() }, 'Réessayer')]) : null,
+        known.length ? h('div', { class: 'banner' }, [
+          h('h2', null, 'Classeurs ouverts dans ce navigateur'),
+          h('ul', { class: 'known' }, known.map((k) => h('li', { key: k.key, class: 'line' }, [h('span', { class: 'known-name' }, knownLabel(k)),
+            h('button', { class: 'btn small', type: 'button', onClick: () => switchTo(k.key) }, 'Ouvrir')]))),
+        ]) : null,
         ...(notConfigured ? [h('div', { class: 'banner' }, [
           h('h2', null, "Le classeur n'est pas encore configuré"),
           h('p', null, "L'administrateur doit lier la base de données D1 au projet Cloudflare Pages (voir SETUP.md), puis redéployer le site."),
@@ -1942,9 +2191,9 @@
     setup() {
       onMounted(() => {
         window.addEventListener('keydown', onKey);
-        window.addEventListener('hashchange', () => { if (/cle=/.test(location.hash)) boot(); });
+        window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); });
         document.addEventListener('visibilitychange', onVisible);
-        boot();
+        boot(LINK_KEY);
       });
       return () => {
         let main;

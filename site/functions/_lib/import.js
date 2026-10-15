@@ -5,9 +5,12 @@
 import { HttpError, raw } from './http.js';
 import { purgeStaging } from './db.js';
 import { MAX_CARDS, MAX_PART_CARDS, checkCard, entryToCard } from './cards.js';
-import { nowIso, randomToken } from './util.js';
+import { byteLength, nowIso, randomToken } from './util.js';
 
-const MAX_PARTS = 100;
+// Quotas d'un envoi en attente (D1 gratuit : 500 Mo en tout, 100 000 lignes écrites par jour).
+const MAX_PARTS = 40;
+// 8 Mo : une carte réelle pèse ~370 octets en forme compacte, donc ~20 000 cartes (la limite de la collection).
+const MAX_STAGING_BYTES = 8 * 1024 * 1024;
 
 // Collection à importer, recalculée en SQL à partir de la table d'attente (`source` : requête qui rend une colonne
 // `j` = tableau JSON de cartes partielles ; paramètres ?1 = user_id, ?2 = clé de l'envoi).
@@ -49,8 +52,9 @@ export const IMPORT_SOURCE =
 export const REFRESH_SOURCE = 'SELECT entries AS j FROM refresh_staging WHERE user_id = ?1 AND page >= ?2';
 
 // Remplace la collection par celle de la table d'attente, en n'écrivant que les différences, dans une transaction.
-// `clear` = requêtes qui vident la table d'attente (passées dans la même transaction).
-export async function finalizeImport(db, user, { source, key, stats, clear }) {
+// `clear` = requêtes qui vident la table d'attente (passées dans la même transaction) ; `skipped` = cartes ignorées
+// (invalides), recopié dans la réponse.
+export async function finalizeImport(db, user, { source, key, stats, clear, skipped = 0 }) {
   const cte = collectionCte(source);
   const total = await db.prepare(`${cte} SELECT COUNT(DISTINCT card_id) AS n FROM e`).bind(user.id, key).first();
   const count = total ? total.n : 0;
@@ -87,6 +91,7 @@ export async function finalizeImport(db, user, { source, key, stats, clear }) {
     count,
     new_ids: raw(updated.results[0]?.new_ids || '[]'),
     complete: typeof unique === 'number' ? unique === count : null,
+    skipped,
   };
 }
 
@@ -122,45 +127,52 @@ export async function importRoute(env, user, body) {
     throw new HttpError(400, 'Le champ « source » doit être un texte.');
   }
 
-  let cards;
-  if (Array.isArray(body.cards)) {
-    if (body.cards.length > MAX_PART_CARDS) throw new HttpError(400, `${MAX_PART_CARDS} cartes au plus par morceau.`);
-    cards = body.cards.map(checkCard);
-  } else if (Array.isArray(body.collection)) {
-    if (body.collection.length > MAX_PART_CARDS) throw new HttpError(400, `${MAX_PART_CARDS} cartes au plus par morceau.`);
-    cards = [];
-    for (const entry of body.collection) {
-      const card = entryToCard(entry);
-      if (card) cards.push(card);
-    }
-  } else {
-    throw new HttpError(400, 'Il manque les cartes (champ « cards », ou « collection » pour les entrées du jeu).');
+  // Cartes invalides (favori ou entrées brutes, mêmes règles) : ignorées et comptées.
+  const list = Array.isArray(body.cards) ? body.cards : Array.isArray(body.collection) ? body.collection : null;
+  if (!list) throw new HttpError(400, 'Il manque les cartes (champ « cards », ou « collection » pour les entrées du jeu).');
+  if (list.length > MAX_PART_CARDS) throw new HttpError(400, `${MAX_PART_CARDS} cartes au plus par morceau.`);
+  const convert = list === body.cards ? checkCard : entryToCard;
+  const cards = [];
+  for (const item of list) {
+    const card = convert(item);
+    if (card) cards.push(card);
   }
+  const skipped = list.length - cards.length;
   if (body.stats !== undefined && body.stats !== null && (typeof body.stats !== 'object' || Array.isArray(body.stats))) {
     throw new HttpError(400, 'Le champ « stats » doit être un objet.');
   }
   const stats = pickStats(body.stats);
 
+  // Les autres morceaux de cet envoi déjà en attente (celui-ci peut être un nouvel essai : il remplace l'ancien).
+  const text = JSON.stringify(cards);
+  const others = await db.prepare(
+    `SELECT COUNT(*) AS n, MAX(part) AS top, SUM(json_array_length(cards)) AS received, SUM(skipped) AS skipped,
+            SUM(length(CAST(cards AS BLOB))) AS bytes
+     FROM import_staging WHERE user_id = ?1 AND upload_id = ?2 AND part >= 0 AND part <> ?3`,
+  )
+    .bind(user.id, uploadId, part)
+    .first();
+  if ((others.bytes ?? 0) + byteLength(text) > MAX_STAGING_BYTES) {
+    throw new HttpError(413, "Envoi trop volumineux : 8 Mo au plus en attente pour un import. Rien n'a été importé.");
+  }
+
   // Un seul envoi à la fois par utilisateur : un nouvel upload_id remplace l'envoi en cours.
   const now = nowIso();
-  const put = 'INSERT OR REPLACE INTO import_staging (user_id, upload_id, part, cards, created_at) VALUES (?1, ?2, ?3, ?4, ?5)';
+  const put = `INSERT OR REPLACE INTO import_staging (user_id, upload_id, part, cards, skipped, created_at)
+    VALUES (?1, ?2, ?3, ?4, ?5, ?6)`;
   await db.batch([
     ...purgeStaging(db),
     db.prepare('DELETE FROM import_staging WHERE user_id = ?1 AND upload_id <> ?2').bind(user.id, uploadId),
-    db.prepare(put).bind(user.id, uploadId, part, JSON.stringify(cards), now),
-    ...(stats ? [db.prepare(put).bind(user.id, uploadId, -1, JSON.stringify(stats), now)] : []),
+    db.prepare(put).bind(user.id, uploadId, part, text, skipped, now),
+    ...(stats ? [db.prepare(put).bind(user.id, uploadId, -1, JSON.stringify(stats), 0, now)] : []),
   ]);
 
-  const parts = await db.prepare(
-    `SELECT COUNT(*) AS n, MAX(part) AS top, SUM(json_array_length(cards)) AS received
-     FROM import_staging WHERE user_id = ?1 AND upload_id = ?2 AND part >= 0`,
-  )
-    .bind(user.id, uploadId)
-    .first();
-  if (!last) return { ok: true, received: parts.received ?? 0 };
+  const received = (others.received ?? 0) + cards.length;
+  const skippedTotal = (others.skipped ?? 0) + skipped;
+  if (!last) return { ok: true, received, skipped: skippedTotal };
 
   // Dernier morceau : tous les précédents doivent être là (morceaux envoyés dans l'ordre, le dernier à la fin).
-  if (parts.n !== part + 1 || parts.top !== part) {
+  if (others.n !== part || (part > 0 && others.top !== part - 1)) {
     throw new HttpError(409, "Import incomplet : des morceaux manquent. Recommence l'envoi depuis le début.");
   }
   const statsRow = await db.prepare(
@@ -173,5 +185,6 @@ export async function importRoute(env, user, body) {
     key: uploadId,
     stats: statsRow ? JSON.parse(statsRow.cards) : null,
     clear: [db.prepare('DELETE FROM import_staging WHERE user_id = ?1').bind(user.id)],
+    skipped: skippedTotal,
   });
 }
