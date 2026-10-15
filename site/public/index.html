@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<meta name="referrer" content="no-referrer">
+<meta name="description" content="Le classeur : ta collection WikiMasters rangée hors du jeu, avec tes tags et tes collections à compléter.">
+<title>Le classeur · WikiMasters</title>
+<link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600..800&amp;display=swap">
+<link rel="stylesheet" href="/assets/app.css">
+<!-- Vue 3 sans compilateur de gabarits : l'interface est écrite en fonctions de rendu, la CSP n'a pas besoin de 'unsafe-eval'. -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.4.38/vue.runtime.global.prod.min.js" integrity="sha384-BP0+iSMflQVPL6LFUFwUC8zBQKUZkKbXGxdZNWvx6YUDjEk/ueLCJzPnaLK+QFlR" crossorigin="anonymous"></script>
+<script defer src="/assets/app.js"></script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M19.5 9.5A8 8 0 0 0 5.2 7.4"/><path d="M4.5 3.8v4.1h4.1"/><path d="M4.5 14.5a8 8 0 0 0 14.3 2.1"/><path d="M19.5 20.2v-4.1h-4.1"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4.5 19.5l1-4.2L15.8 5a2.1 2.1 0 0 1 3 3L8.5 18.3z"/><path d="M13.8 7l3.2 3.2"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.8 12s3.4-6.2 9.2-6.2 9.2 6.2 9.2 6.2-3.4 6.2-9.2 6.2S2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.6"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3.5l1.9 6.6 6.6 1.9-6.6 1.9L12 20.5l-1.9-6.6L3.5 12l6.6-1.9z"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.5 15.5l4.5 4.5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5.5 12.5l4.2 4.2 8.8-9.4"/></symbol>
+  <symbol id="i-out" viewBox="0 0 24 24"><path d="M13.5 4.5h6v6"/><path d="M19.5 4.5l-8.5 8.5"/><path d="M17.5 13.5v5a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1h5"/></symbol>
+  <symbol id="i-album" viewBox="0 0 24 24"><rect x="4.5" y="3.5" width="15" height="17" rx="2"/><path d="M8.5 3.5v17"/><path d="M11.5 8h4.5M11.5 11.5h4.5"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15"/><path d="M9.5 7V4.5h5V7"/><path d="M6.5 7l.9 12a1 1 0 0 0 1 .9h7.2a1 1 0 0 0 1-.9l.9-12"/><path d="M10.2 10.8v5.4M13.8 10.8v5.4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8.5" y="8.5" width="11" height="11" rx="1.8"/><path d="M15.5 8.5V5.8a1.3 1.3 0 0 0-1.3-1.3H5.8a1.3 1.3 0 0 0-1.3 1.3v8.4a1.3 1.3 0 0 0 1.3 1.3h2.7"/></symbol>
+  <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6.5 4.5h11v15.5L12 16.2 6.5 20z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6 6l1.6 1.6M16.4 16.4L18 18M6 18l1.6-1.6M16.4 7.6L18 6"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15.5v-11"/><path d="M7.5 9L12 4.5 16.5 9"/><path d="M4.5 15.5v3a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="3.5"/><path d="M10.5 13l8-8M15.5 8l2.5 2.5M17.5 6l1.5 1.5"/></symbol>
+</svg>
+<div id="app"><p class="boot">Ouverture du classeur…</p></div>
+<noscript><p class="boot">Le classeur a besoin de JavaScript pour s'ouvrir.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# En-têtes des fichiers statiques (Cloudflare Pages). Les réponses de l'API viennent des Functions, qui posent les leurs.
+# CSP sans 'unsafe-eval' ni 'unsafe-inline' : l'interface utilise la version d'exécution de Vue (fonctions de rendu,
+# aucun gabarit compilé dans le navigateur) et ne pose les styles que par le CSSOM (variables CSS).
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https://upload.wikimedia.org https://thumb.wikimedia.org; connect-src 'self' https://fr.wikipedia.org https://query.wikidata.org; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
+
+/assets/*
+  Cache-Control: public, max-age=300, must-revalidate
