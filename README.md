@@ -17,7 +17,7 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 
 | Chemin | Contenu |
 |---|---|
-| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `catalog.json`, `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
+| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `catalog.json` (avec un `qid` par article), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
 | `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
@@ -31,6 +31,8 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 ```bash
 node dev/api.test.mjs                       # l'API, avec mesures de CPU ; doit finir par API OK
 node dev/worker.test.mjs                    # le point d'entrée Worker ; doit finir par WORKER OK
+node dev/match.test.mjs                     # rapprochement par identifiant Wikidata ; MATCH OK
+node dev/propose.test.mjs                   # propositions d'après les catégories ; PROPOSE OK
 (cd site && npx wrangler deploy --dry-run --outdir <dossier>)   # vérifie la configuration et l'assemblage, sans rien déployer
 node dev/server.mjs                         # http://localhost:8788 (code d'invitation : dev ; PORT, DB_PATH, SIGNUP_CODE, COOKIE_SECRET)
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js                 # interface sur API simulée -> UI OK

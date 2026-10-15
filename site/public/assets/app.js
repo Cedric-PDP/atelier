@@ -36,7 +36,7 @@
   // Ordre d'affichage des légendes : de la plus commune à la plus rare, comme dans le jeu.
   const RAR_UP = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
-    importKey: 'classeur-import-key', known: 'classeur-known' };
+    importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at' };
   // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
@@ -46,6 +46,18 @@
   // Natures Wikidata qui ne disent rien du sujet : être humain (remplacé par le métier), pages techniques.
   const SKIP_NATURES = new Set(['Q5', 'Q4167410', 'Q22808320', 'Q13406463', 'Q4167836', 'Q11266439']);
   const TAXON = 'Q16521';
+  // Tags à deux niveaux au plus : « Catégorie/Sous-catégorie ». Une étiquette sans « / » est rangée dans « Autres ».
+  const TAG_CATS = ['Pays', 'Métiers', 'Lieux', 'Culture et œuvres', 'Sciences et nature', 'Histoire et événements', 'Organisations', 'Autres'];
+  const OTHER = 'Autres';
+  // Groupe d'une nature Wikidata, d'après ses superclasses (P279*), dans cet ordre de priorité.
+  const NATURE_GROUPS = [
+    ['Lieux', ['Q2221906', 'Q17334923', 'Q618123', 'Q811979', 'Q41176']],
+    ['Culture et œuvres', ['Q17537576', 'Q838948', 'Q2188189', 'Q7725634', 'Q11424', 'Q7889', 'Q5398426', 'Q215380']],
+    ['Sciences et nature', ['Q16521', 'Q6999', 'Q11344', 'Q12136']],
+    ['Histoire et événements', ['Q1656682', 'Q1190554', 'Q178561', 'Q27020041']],
+    ['Organisations', ['Q43229']],
+  ];
+  const COUNTRY_CLASSES = ['Q6256', 'Q3624078'];
   const FEMALE = 'Q6581072';
   const MALE = 'Q6581097';
   const FEMININE = /^(?:une |la )?[a-zà-ÿœ-]+(?:euse|rice|ienne|ète|ère|esse|ive|ante|ine|enne)(?![a-zà-ÿ])/;
@@ -62,7 +74,30 @@
   const chunks = (list, n) => { const out = []; for (let i = 0; i < list.length; i += n) out.push(list.slice(i, i + n)); return out; };
   const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
   const fold = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const cleanTag = (t) => String(t || '').replace(/\s+/g, ' ').trim().slice(0, 40);
+// Étiquette nettoyée : espaces, un seul « / » (deux niveaux au plus), 60 caractères au plus.
+  const cleanTag = (t) => {
+    let x = String(t || '').replace(/\s+/g, ' ').trim();
+    const i = x.indexOf('/');
+    if (i >= 0) {
+      const cat = x.slice(0, i).trim();
+      const sub = x.slice(i + 1).replace(/\//g, ' ').replace(/\s+/g, ' ').trim();
+      x = cat && sub ? cat + '/' + sub : sub || cat;
+    }
+    return x.slice(0, 60);
+  };
+  const splitTag = (t) => {
+    const i = String(t).indexOf('/');
+    return i > 0 && i < t.length - 1 ? { cat: t.slice(0, i), sub: t.slice(i + 1) } : { cat: null, sub: String(t) };
+  };
+  const tagCat = (t) => splitTag(t).cat || OTHER;
+  const tagSub = (t) => splitTag(t).sub;
+  const tagTitle = (t) => { const p = splitTag(t); return p.cat ? p.cat + ' › ' + p.sub : t; };
+  // Étiquette tapée + catégorie choisie : « Brésil » + Pays -> « Pays/Brésil » (une étiquette déjà rangée reste telle quelle).
+  const composeTag = (text, cat) => {
+    const t = cleanTag(text);
+    if (!t || t.includes('/') || !cat || cat === OTHER) return t;
+    return cleanTag(cat + '/' + t);
+  };
   const normTitle = (t) => cap(String(t || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim());
   const wikiUrl = (title) => 'https://fr.wikipedia.org/wiki/' + encodeURIComponent(title.replace(/ /g, '_')).replace(/%2F/g, '/').replace(/%3A/g, ':');
   const qid = (uri) => uri.slice(uri.lastIndexOf('/') + 1);
@@ -109,7 +144,8 @@
     };
   }
   const pvCache = makeCache(LS.pv, 7 * DAY); // titre -> [vues sur 30 jours | null, vignette | null]
-  const suggCache = makeCache(LS.sugg, 30 * DAY); // titre -> {n: natures, m: métiers, p: pays}
+  const suggCache = makeCache(LS.sugg, 30 * DAY); // titre -> {v: 2, q, n: [[nature, classe]], m: métiers, p: pays}
+  const natGroupCache = makeCache(LS.natGroup, 90 * DAY); // classe Wikidata -> catégorie de tags
 
   // ================================================================ état
   const S = reactive({
@@ -147,12 +183,12 @@
     bulkBusy: false,
     bulkError: '',
     openId: null,
-    drawer: { newTag: '', busy: false, error: '' },
+    drawer: { newTag: '', newCat: '', busy: false, error: '' },
     tagSearch: '',
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link
+    modal: null, // editor | confirm | tag | switch | link | arrange
     session: { cookie: '', busy: false, error: '' },
     editor: null,
     catalog: { list: null, error: '', busy: {}, loading: false },
@@ -162,6 +198,11 @@
     copied: '',
     bm: { src: null, error: '', clicked: false, importKey: null, busy: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
+    prefs: { hidden_catalog: [], hide_catalog: false }, // préférences du compte (GET/PATCH /api/me)
+    tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
+    bulkCat: '',
+    wp: { list: [], running: false, done: 0, total: 0, label: '', error: '', busy: {} }, // propositions d'après les catégories Wikipédia
+    arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
@@ -201,6 +242,8 @@
   function makeQueue(gap) { return { gap, last: 0, busy: false, tasks: [] }; }
   const wikiQ = makeQueue(300);
   const dataQ = makeQueue(500);
+  const wdApiQ = makeQueue(300);
+  const abortError = () => { const e = new Error('Recherche annulée.'); e.name = 'AbortError'; return e; };
 
   function enqueue(q, fn, prio) {
     return new Promise((resolve, reject) => {
@@ -224,13 +267,15 @@
       }
     } finally { q.busy = false; }
   }
-  function getJson(q, url, prio, accept) {
-    const who = url.startsWith(SPARQL) ? 'Wikidata' : 'Wikipédia';
+  // signal : AbortController d'une recherche, pour abandonner une requête périmée (même en attente dans la file).
+  function getJson(q, url, prio, accept, signal) {
+    const who = /wikidata\.org/.test(url) ? 'Wikidata' : 'Wikipédia';
     return enqueue(q, async () => {
       let delay = 2000;
       for (let attempt = 0; attempt < 7; attempt++) {
+        if (signal && signal.aborted) throw abortError();
         let r = null;
-        try { r = await fetch(url, { headers: { Accept: accept || 'application/json' }, credentials: 'omit' }); } catch (e) { r = null; }
+        try { r = await fetch(url, { headers: { Accept: accept || 'application/json' }, credentials: 'omit', signal }); } catch (e) { if (signal && signal.aborted) throw abortError(); r = null; }
         if (r && r.ok) return r.json();
         if (r && r.status !== 429 && r.status < 500) throw new Error(`${who} a répondu ${r.status}.`);
         const retry = r ? Number(r.headers.get('retry-after')) : NaN;
@@ -241,8 +286,40 @@
     }, prio);
   }
   const wpUrl = (params) => WP_API + '?' + new URLSearchParams({ format: 'json', formatversion: '2', origin: '*', ...params });
-  const sparql = (query, prio) => getJson(dataQ, SPARQL + '?format=json&query=' + encodeURIComponent(query), prio, 'application/sparql-results+json')
+  const sparql = (query, prio, signal) => getJson(dataQ, SPARQL + '?format=json&query=' + encodeURIComponent(query), prio, 'application/sparql-results+json', signal)
     .then((j) => (j && j.results && j.results.bindings) || []);
+  const WD_API = 'https://www.wikidata.org/w/api.php';
+  // Éléments Wikidata dont le libellé ou un alias correspond (français).
+  const wdSearch = (text, signal, limit) => getJson(wdApiQ, WD_API + '?' + new URLSearchParams({ action: 'wbsearchentities', search: text, language: 'fr', uselang: 'fr',
+    type: 'item', limit: String(limit || 7), format: 'json', origin: '*' }), 3, null, signal).then((j) => (j && Array.isArray(j.search) ? j.search : []));
+  const truthy = (b) => !!b && (b.value === 'true' || b.value === '1');
+  // Nature d'éléments : pays, métier (quelqu'un l'exerce), classe (quelque chose en est une instance), personne.
+  async function classifyItems(ids, prio, signal) {
+    const out = new Map();
+    if (!ids.length) return out;
+    const rows = await sparql(`SELECT ?c ?country ?occ ?cls ?human WHERE { VALUES ?c { ${ids.map((id) => 'wd:' + id).join(' ')} }
+      BIND(EXISTS { ?c wdt:P31 ?t . FILTER(?t IN (${COUNTRY_CLASSES.map((x) => 'wd:' + x).join(', ')})) } AS ?country)
+      BIND(EXISTS { ?x wdt:P106 ?c } AS ?occ) BIND(EXISTS { ?y wdt:P31 ?c } AS ?cls) BIND(EXISTS { ?c wdt:P31 wd:Q5 } AS ?human) }`, prio, signal);
+    for (const r of rows) out.set(qid(r.c.value), { country: truthy(r.country), occ: truthy(r.occ), cls: truthy(r.cls), human: truthy(r.human) });
+    return out;
+  }
+  // Catégorie de tags d'une nature (classe Wikidata) d'après ses superclasses ; gardée dans ce navigateur.
+  async function resolveGroups(classIds, prio, signal) {
+    const todo = [...new Set(classIds)].filter((c) => c && c !== TAXON && !natGroupCache.has(c));
+    const targets = NATURE_GROUPS.flatMap(([, ids]) => ids);
+    for (const batch of chunks(todo, 80)) {
+      const rows = await sparql(`SELECT ?c ?g WHERE { VALUES ?c { ${batch.map((id) => 'wd:' + id).join(' ')} }
+        VALUES ?g { ${targets.map((id) => 'wd:' + id).join(' ')} } ?c wdt:P279* ?g . }`, prio, signal);
+      const hits = new Map();
+      for (const r of rows) { const c = qid(r.c.value); if (!hits.has(c)) hits.set(c, new Set()); hits.get(c).add(qid(r.g.value)); }
+      for (const c of batch) {
+        const got = hits.get(c) || new Set();
+        const g = NATURE_GROUPS.find(([, ids]) => ids.some((id) => got.has(id)));
+        natGroupCache.set(c, g ? g[0] : OTHER);
+      }
+    }
+  }
+  const natGroupOf = (c) => (c === TAXON ? 'Sciences et nature' : natGroupCache.get(c) || OTHER);
   // Titres renommés par l'API (normalisation, redirections) : from -> to.
   const aliasOf = (q) => {
     const a = {};
@@ -262,7 +339,7 @@
       const alias = {};
       let cont = {};
       for (let guard = 0; guard < 20; guard++) {
-        const j = await getJson(wikiQ, wpUrl({ action: 'query', redirects: '1', prop: 'pageprops|description|pageimages', ppprop: 'disambiguation',
+        const j = await getJson(wikiQ, wpUrl({ action: 'query', redirects: '1', prop: 'pageprops|description|pageimages', ppprop: 'disambiguation|wikibase_item',
           piprop: 'thumbnail', pithumbsize: '330', pilimit: '50', titles: batch.join('|'), ...cont }), 2);
         const q = (j && j.query) || {};
         Object.assign(alias, aliasOf(q));
@@ -278,6 +355,7 @@
           description: p.description || null,
           image: (p.thumbnail && p.thumbnail.source) || null,
           status: p.pageprops && 'disambiguation' in p.pageprops ? 'disambiguation' : 'ok',
+          qid: (p.pageprops && p.pageprops.wikibase_item) || null,
         });
       }
       done += batch.length;
@@ -323,8 +401,7 @@
     S.pv.error = '';
     const st = activeAlbum.value;
     if (!st || S.boot !== 'app') return;
-    const owned = byTitle.value;
-    const titles = st.items.filter((it) => it.status === 'ok' && !owned.has(normTitle(it.title)) && !pvCache.has(it.title)).map((it) => it.title);
+    const titles = st.items.filter((it) => it.status === 'ok' && !findCard(it) && !pvCache.has(it.title)).map((it) => it.title);
     if (!titles.length) return;
     Object.assign(S.pv, { running: true, done: 0, total: titles.length });
     loadPageviews(titles, token)
@@ -358,10 +435,15 @@
     const human = it.P31.includes('Q5');
     const female = it.P21.includes(FEMALE) || (human && !it.P21.length && FEMININE.test(desc.toLowerCase()));
     const male = !female && it.P21.includes(MALE);
-    const natures = it.P31.filter((c) => !SKIP_NATURES.has(c) && !sup.has(c)).map((c) => (c === TAXON ? taxonGroup(desc) : labels[c]));
+    const natures = [];
+    const seen = new Set();
+    for (const c of it.P31.filter((x) => !SKIP_NATURES.has(x) && !sup.has(x))) {
+      const label = tidy([c === TAXON ? taxonGroup(desc) : labels[c]], 1)[0];
+      if (label && !seen.has(label.toLowerCase())) { seen.add(label.toLowerCase()); natures.push([label, c]); }
+    }
     const jobs = it.P106.map((m) => (female && forms.f[m]) || (male && forms.m[m]) || labels[m]);
     const lands = [...it.P27, ...it.P17].map((c) => labels[c]);
-    return { n: tidy(natures, 2), m: tidy(jobs, 3), p: tidy(lands, 2) };
+    return { v: 2, q: it.id || null, n: natures.slice(0, 2), m: tidy(jobs, 3), p: tidy(lands, 2) };
   }
   // Calcule (et garde) les suggestions des titres donnés : titre -> élément (50 par requête), puis SPARQL par lots de 150.
   async function ensureSuggestions(titles, prio, onProgress, cancelled) {
@@ -395,7 +477,7 @@
           const id = qid(r.item.value);
           const p = qid(r.p.value);
           const v = qid(r.v.value);
-          if (!items.has(id)) items.set(id, { P31: [], P106: [], P27: [], P17: [], P21: [] });
+          if (!items.has(id)) items.set(id, { id, P31: [], P106: [], P27: [], P17: [], P21: [] });
           const it = items.get(id);
           if (it[p] && !it[p].includes(v)) it[p].push(v);
           if (r.l) labels[v] = r.l.value;
@@ -417,30 +499,46 @@
         }
       }
       if (stop()) return;
+      const built = new Map();
       for (const t of batch) {
         const id = qidOf.get(t);
         const it = id && items.get(id);
-        suggCache.set(t, it ? buildSuggestion(cardOf.get(t), it, labels, forms, sup.get(id) || new Set()) : { n: [], m: [], p: [] });
+        built.set(t, it ? buildSuggestion(cardOf.get(t), it, labels, forms, sup.get(id) || new Set()) : { v: 2, q: id || null, n: [], m: [], p: [] });
       }
+      // Catégorie des natures (Lieux, Culture et œuvres…) avant de montrer les suggestions.
+      try { await resolveGroups([...built.values()].flatMap((b) => b.n.map((x) => x[1])), prio); } catch (e) { /* elles iront dans « Autres » */ }
+      if (stop()) return;
+      for (const [t, b] of built) suggCache.set(t, b);
+      if (resolver) { const known = [...built].filter(([, b]) => b.q).map(([t, b]) => [t, b.q]); if (known.length && resolver.remember(known)) qidVersion.value++; }
       done += batch.length;
       S.sugg.version++;
       if (onProgress) onProgress(done);
     }
   }
   // Suggestions d'une carte qui ne sont pas déjà dans ses tags ; null = pas encore calculées.
+  // Suggestions déjà calculées dans le format actuel (les anciennes, sans catégories, sont recalculées).
+  const hasSugg = (title) => { const s = suggCache.get(title); return !!s && s.v === 2; };
+  // Suggestions rangées (« Pays/France », « Métiers/Footballeur », « Lieux/Commune française »…) qui ne sont pas
+  // déjà dans les tags de la carte (comparées sur la sous-catégorie) ; null = pas encore calculées.
   function suggestionsFor(card) {
     void S.sugg.version;
     const s = suggCache.get(card.title);
-    if (!s) return null;
-    const own = new Set(card.tags.map((t) => t.toLowerCase()));
+    if (!s || s.v !== 2) return null;
+    const own = new Set(card.tags.map((t) => tagSub(t).toLowerCase()));
     const out = [];
-    for (const t of [...(s.n || []), ...(s.m || []), ...(s.p || [])]) if (!own.has(t.toLowerCase()) && !out.includes(t)) out.push(t);
+    const push = (t) => {
+      const key = tagSub(t).toLowerCase();
+      if (t.length <= 60 && !own.has(key) && !out.some((x) => tagSub(x).toLowerCase() === key)) out.push(t);
+    };
+    for (const [label, c] of s.n || []) push(natGroupOf(c) + '/' + label);
+    for (const l of s.m || []) push('Métiers/' + l);
+    for (const l of s.p || []) push('Pays/' + l);
     return out;
   }
   let suggToken = 0;
   async function computeAllSuggestions() {
     if (S.sugg.running) return;
-    const titles = [...new Set(cards.value.map((c) => c.title))].filter((t) => !suggCache.has(t));
+    const titles = [...new Set(cards.value.map((c) => c.title))].filter((t) => !hasSugg(t));
     if (!titles.length) return;
     const token = ++suggToken;
     Object.assign(S.sugg, { running: true, done: 0, total: titles.length, error: '' });
@@ -468,6 +566,33 @@
   }
 
   // ================================================================ données dérivées
+  // Une carte compte pour un élément d'une collection si leurs titres sont égaux, sinon s'ils désignent le même élément
+  // Wikidata (match.js) ; les qids manquants sont résolus à la demande, le compteur fait recalculer.
+  const Match = window.ClasseurMatch || null;
+  const resolver = Match ? Match.createResolver() : null;
+  const qidVersion = ref(0);
+  const cardIndex = computed(() => (Match ? Match.createIndex(cards.value, resolver) : null));
+  function findCard(item) {
+    void qidVersion.value;
+    if (!item) return null;
+    if (cardIndex.value) return cardIndex.value.findCard(item);
+    const list = byTitle.value.get(normTitle(item.title));
+    return list ? list[0] : null;
+  }
+  let matchCtrl = null;
+  function resolveQids(items, allCards) {
+    if (!resolver || !cardIndex.value) return;
+    let titles = [];
+    try { titles = cardIndex.value.missingQidTitles(items, { allCards: !!allCards }); } catch (e) { return; }
+    if (!titles.length) return;
+    if (matchCtrl) matchCtrl.abort();
+    const ctrl = new AbortController();
+    matchCtrl = ctrl;
+    resolver.resolve(titles, { signal: ctrl.signal, onProgress: () => { qidVersion.value++; } })
+      .then(() => { qidVersion.value++; })
+      .catch(() => { /* annulée, ou Wikipédia indisponible : le rapprochement par titre reste */ })
+      .finally(() => { if (matchCtrl === ctrl) matchCtrl = null; });
+  }
   const cardById = computed(() => new Map(cards.value.map((c) => [c.id, c])));
   const byTitle = computed(() => {
     const m = new Map();
@@ -510,7 +635,7 @@
       && (!q || c._k.includes(q) || c.tags.some((t) => fold(t).includes(q)))
       && (!S.untaggedOnly || !c.tags.length)
       && (!S.newOnly || fresh.has(c.id))
-      && tags.every((t) => c.tags.includes(t)));
+      && tags.every((tok) => (tok.endsWith('/') ? c.tags.some((t) => tagCat(t) === tok.slice(0, -1)) : c.tags.includes(tok))));
     return out.sort(SORTERS[S.sort] || SORTERS.rarity);
   });
   const visibleCards = computed(() => filtered.value.slice(0, S.limit));
@@ -524,11 +649,12 @@
       return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: src ? !!src.ordered : true, t };
     });
     const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
-    const proposed = (S.catalog.list || []).filter((e) => !added.has('catalog:' + e.id)).map((e) => ({
+    const hidden = new Set(S.prefs.hidden_catalog);
+    const proposed = (S.catalog.list || []).filter((e) => !added.has('catalog:' + e.id) && !hidden.has(e.id)).map((e) => ({
       kind: 'catalog', id: e.id, key: 'catalog:' + e.id, name: e.name, group: e.group, groupName: e.group_name || GROUPS[e.group] || cap(e.group || 'autres'),
-      items: e.items.map((i) => ({ title: String(i.title), description: i.description || null, image: null, status: 'ok' })), ordered: !!e.ordered, e,
+      items: e.items.map((i) => ({ title: String(i.title), description: i.description || null, image: null, status: 'ok', qid: i.qid || null })), ordered: !!e.ordered, e,
     }));
-    return { mine, proposed };
+    return { mine, proposed, visible: S.prefs.hide_catalog ? [] : proposed };
   });
   // Progression d'une collection : possédées, répartition par rareté, trois cartes pour l'éventail.
   const progress = computed(() => {
@@ -539,10 +665,9 @@
       const byR = {};
       const sample = [];
       for (const it of col.items) {
-        const list = owned.get(normTitle(it.title));
-        if (!list) continue;
+        const c = findCard(it);
+        if (!c) continue;
         own++;
-        const c = list[0];
         byR[c.rarity] = (byR[c.rarity] || 0) + 1;
         sample.push(c);
       }
@@ -565,8 +690,7 @@
     void S.pv.version;
     const owned = byTitle.value;
     let slots = col.items.map((item, i) => {
-      const list = owned.get(normTitle(item.title));
-      const card = list ? list[0] : null;
+      const card = findCard(item);
       const info = card ? null : pvCache.get(item.title);
       const views = info ? info[0] : null;
       return { i: i + 1, key: card ? card.id + ':' + i : 'vide:' + i + ':' + item.title, item, card, views, est: card || item.status !== 'ok' ? null : estRarity(views), thumb: info ? info[1] : null };
@@ -597,14 +721,14 @@
     void S.sugg.version;
     let n = 0;
     const seen = new Set();
-    for (const c of cards.value) if (!seen.has(c.title)) { seen.add(c.title); if (!suggCache.has(c.title)) n++; }
+    for (const c of cards.value) if (!seen.has(c.title)) { seen.add(c.title); if (!hasSugg(c.title)) n++; }
     return n;
   });
   // Collections qui contiennent une carte (pour la fiche).
   function membershipsOf(card) {
     const k = normTitle(card.title);
-    const all = [...collections.value.mine, ...collections.value.proposed];
-    return all.filter((col) => col.items.some((it) => normTitle(it.title) === k));
+    const all = [...collections.value.mine, ...collections.value.visible];
+    return all.filter((col) => col.items.some((it) => { const f = findCard(it); return !!f && f.id === card.id; }));
   }
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
@@ -652,6 +776,8 @@
     S.refresh.error = false;
     S.refresh.warn = false;
     S.bm.importKey = null;
+    S.prefs = normPrefs({});
+    S.arrange = null;
     pvToken++;
     suggToken++;
     S.sugg.running = false;
@@ -668,6 +794,11 @@
     for (const k of Object.values(LS)) store.del(k);
     pvCache.clear();
     suggCache.clear();
+    natGroupCache.clear();
+    if (resolver) resolver.clear();
+    if (proposer) proposer.clearCache();
+    cancelProposals();
+    S.wp.list = [];
     S.key = null;
     S.known = [];
     resetData();
@@ -700,6 +831,7 @@
     const me = await api('GET', '/api/me');
     S.me = me;
     if (S.key && me.user) remember(S.key, me.user.name || '');
+    if (me.prefs !== undefined) S.prefs = normPrefs(me.prefs);
     return me;
   }
   function prepCard(c) {
@@ -741,6 +873,12 @@
     }
   }
   const prepTarget = (t) => markRaw({ ...t, items: Array.isArray(t.items) ? t.items : [] });
+  // Après chaque chargement des cartes : qids manquants (toutes les collections), propositions d'après les catégories.
+  function afterCards() {
+    const items = [...collections.value.mine, ...collections.value.proposed].flatMap((c) => c.items);
+    resolveQids(items, false);
+    computeProposals(false);
+  }
   async function loadTargets() {
     const r = await api('GET', '/api/targets');
     targets.value = (Array.isArray(r.targets) ? r.targets : []).map(prepTarget);
@@ -827,6 +965,7 @@
       loadCatalog(),
     ]);
     S.loadingCards = false;
+    afterCards();
     // Classeur vide : on commence par « Mettre à jour » (le favori).
     if (!cards.value.length && S.tab === 'collections' && !S.album) openFavori();
     startPageviews();
@@ -909,6 +1048,7 @@
       }
       await Promise.all([loadCards(), loadMe()]);
       startPageviews();
+      afterCards();
     } catch (e) {
       S.refresh.error = true;
       S.refresh.msg = e.message;
@@ -1058,7 +1198,7 @@
     cards.value = cards.value.map((c) => (set.has(c.id) ? markRaw({ ...c, tags: fn(c.tags) }) : c));
   }
   async function bulk(mode) {
-    const tag = cleanTag(S.bulkTag);
+    const tag = composeTag(S.bulkTag, S.bulkCat);
     if (!tag || S.bulkBusy) return;
     const ids = [...S.selected];
     S.bulkBusy = true;
@@ -1067,7 +1207,7 @@
       await api('POST', '/api/tags/bulk', { card_ids: ids, add: mode === 'add' ? [tag] : [], remove: mode === 'remove' ? [tag] : [] });
       applyTags(ids, (tags) => (mode === 'add' ? addTo(tags, tag) : tags.filter((t) => t !== tag)));
       S.bulkTag = '';
-      notify(mode === 'add' ? `« ${tag} » ajouté à ${cards$(ids.length)}.` : `« ${tag} » retiré de ${cards$(ids.length)}.`);
+      notify(mode === 'add' ? `« ${tagTitle(tag)} » ajouté à ${cards$(ids.length)}.` : `« ${tagTitle(tag)} » retiré de ${cards$(ids.length)}.`);
     } catch (e) {
       S.bulkError = e.message;
     } finally {
@@ -1090,7 +1230,7 @@
     }
   }
   async function addTag(card) {
-    const t = cleanTag(S.drawer.newTag);
+    const t = composeTag(S.drawer.newTag, S.drawer.newCat);
     if (!t) return;
     if (card.tags.includes(t)) { S.drawer.newTag = ''; return; }
     if (card.tags.length >= 30) { S.drawer.error = '30 tags au plus par carte.'; return; }
@@ -1102,7 +1242,7 @@
     S.drawer.error = '';
     S.drawer.newTag = '';
     const c = cardById.value.get(id);
-    if (c && !suggCache.has(c.title)) loadCardSuggestions(c);
+    if (c && !hasSugg(c.title)) loadCardSuggestions(c);
   }
   let lastFocus = null;
   function openCardFrom(id, ev) {
@@ -1117,11 +1257,11 @@
   }
 
   function openTagEdit(name) {
-    S.tagEdit = { from: name, to: name, busy: false, error: '', confirmDelete: false };
+    S.tagEdit = { from: name, to: tagSub(name), cat: tagCat(name), busy: false, error: '', confirmDelete: false };
     S.modal = 'tag';
   }
   async function renameTag(te) {
-    const to = cleanTag(te.to);
+    const to = composeTag(te.to, te.cat);
     if (!to) { te.error = 'Donne un nom au tag.'; return; }
     if (to === te.from) { closeModal(); return; }
     te.busy = true;
@@ -1132,7 +1272,7 @@
         ? markRaw({ ...c, tags: [...new Set(c.tags.map((t) => (t === te.from ? to : t)))] }) : c));
       S.tagFilter = [...new Set(S.tagFilter.map((t) => (t === te.from ? to : t)))];
       closeModal();
-      notify(`Tag « ${te.from} » renommé en « ${to} ».`);
+      notify(`Tag « ${tagTitle(te.from)} » renommé en « ${tagTitle(to)} ».`);
     } catch (e) {
       te.error = e.message;
     } finally {
@@ -1201,6 +1341,8 @@
       source: t ? t.source || null : null,
       known: markRaw(new Map(t ? t.items.map((i) => [i.title, i]) : [])),
       busy: false, progress: '', error: '', issues: null,
+      mode: t ? 'liste' : 'mots',
+      kw: { q: '', searching: false, error: '', interp: '', cands: [], chosen: null, searched: '' },
     };
     S.modal = 'editor';
   }
@@ -1240,7 +1382,9 @@
         if (it.title !== t) redirected++;
         if (kept.has(it.title)) continue;
         kept.add(it.title);
-        items.push({ title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' });
+        const item = { title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' };
+        if (it.qid) item.qid = it.qid;
+        items.push(item);
       }
       const issues = items.filter((i) => i.status !== 'ok');
       if (issues.length && !force) {
@@ -1285,7 +1429,11 @@
     S.catalog.busy[entry.id] = true;
     S.catalog.error = '';
     try {
-      const items = entry.items.slice(0, 3000).map((i) => ({ title: String(i.title), description: i.description || null, image: null, status: 'ok' }));
+      const items = entry.items.slice(0, 3000).map((i) => {
+        const it = { title: String(i.title), description: i.description || null, image: null, status: 'ok' };
+        if (i.qid) it.qid = i.qid;
+        return it;
+      });
       const r = await api('POST', '/api/targets/save', { name: entry.name, items, source: 'catalog:' + entry.id });
       if (r.target) upsertTarget(r.target); else await loadTargets();
       const mine = targets.value.find((t) => t.source === 'catalog:' + entry.id);
@@ -1306,6 +1454,8 @@
     if (m === 'confirm') S.confirm = null;
     if (m === 'tag') S.tagEdit = null;
     if (m === 'switch') S.switchAsk = null;
+    if (m === 'editor') kwAbort();
+    if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -1464,6 +1614,468 @@
     } else notify('Copie impossible ici : le texte est sélectionné, copie-le avec Ctrl+C (⌘+C sur Mac).', true);
   }
 
+  // ---------------------------------------------------------------- préférences du compte (propositions retirées ou masquées)
+  function normPrefs(p) {
+    const o = p && typeof p === 'object' && !Array.isArray(p) ? { ...p } : {};
+    o.hidden_catalog = Array.isArray(o.hidden_catalog) ? [...new Set(o.hidden_catalog.filter((x) => typeof x === 'string'))] : [];
+    o.hide_catalog = !!o.hide_catalog;
+    return o;
+  }
+  // Remplace les préférences (objet entier) ; gardées en mémoire même si le serveur refuse, et l'erreur est affichée.
+  async function savePrefs(patch) {
+    S.prefs = normPrefs({ ...S.prefs, ...patch });
+    try {
+      const r = await api('PATCH', '/api/me', { prefs: S.prefs });
+      const back = (r && r.prefs) || (r && r.user && r.user.prefs);
+      if (back) S.prefs = normPrefs(back);
+      return true;
+    } catch (e) {
+      notify(e.message, true);
+      return false;
+    }
+  }
+  function askHideProposal(col) {
+    openConfirm({
+      title: `Retirer « ${col.name} » des propositions ?`,
+      text: 'Elle ne s\'affichera plus dans les collections proposées ni dans les fiches. Tu pourras la rétablir dans les Réglages.',
+      ok: 'Retirer des propositions',
+      run: async () => {
+        await savePrefs({ hidden_catalog: [...S.prefs.hidden_catalog, col.id] });
+        if (S.album && S.album.kind === 'catalog' && S.album.id === col.id) S.album = null;
+      },
+      after: () => notify(`« ${col.name} » retirée des propositions.`),
+    });
+  }
+  const setHideCatalog = (hide) => savePrefs({ hide_catalog: !!hide });
+  const restoreProposals = async () => { await savePrefs({ hidden_catalog: [] }); computeProposals(true); };
+
+  // ---------------------------------------------------------------- propositions d'après les catégories Wikipédia (propose.js)
+  const Propose = window.ClasseurPropose || null;
+  const proposer = Propose ? Propose.createProposer({}) : null;
+  let wpCtrl = null;
+  const wpExclude = () => [
+    ...targets.value.map((t) => t.source).filter((x) => typeof x === 'string' && x.startsWith('wp:')),
+    ...S.prefs.hidden_catalog.filter((x) => x.startsWith('wp:')),
+  ];
+  // Automatique au plus une fois par semaine, ou quand presque tout est déjà en cache ; à la main avec le bouton.
+  async function computeProposals(manual) {
+    if (!proposer || !cards.value.length) return;
+    if (wpCtrl) { if (!manual) return; wpCtrl.abort(); }
+    const titles = cards.value.map((c) => c.title);
+    if (!manual) {
+      const at = Number(store.get(LS.proposeAt)) || 0;
+      if (Date.now() - at < 7 * DAY && proposer.uncached(titles) > 500) return;
+    }
+    const ctrl = new AbortController();
+    wpCtrl = ctrl;
+    Object.assign(S.wp, { running: true, done: 0, total: 0, label: 'Recherche de propositions…', error: '' });
+    try {
+      const list = await proposer.compute(titles, { signal: ctrl.signal, exclude: wpExclude(),
+        onProgress: (p) => { if (wpCtrl === ctrl) Object.assign(S.wp, { done: p.done || 0, total: p.total || 0, label: p.label || '' }); } });
+      if (wpCtrl !== ctrl) return;
+      S.wp.list = markRaw(list);
+      store.set(LS.proposeAt, String(Date.now()));
+    } catch (e) {
+      if (wpCtrl === ctrl && e.name !== 'AbortError') S.wp.error = e.message;
+    } finally {
+      if (wpCtrl === ctrl) { wpCtrl = null; S.wp.running = false; }
+    }
+  }
+  function cancelProposals() { if (wpCtrl) wpCtrl.abort(); wpCtrl = null; S.wp.running = false; }
+  // Propositions affichées : ni masquées, ni retirées, ni déjà ajoutées.
+  const wpVisible = computed(() => {
+    if (S.prefs.hide_catalog) return [];
+    const hidden = new Set(S.prefs.hidden_catalog);
+    const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
+    return S.wp.list.filter((p) => !hidden.has(p.key) && !added.has(p.key));
+  });
+  async function addWp(p) {
+    if (S.wp.busy[p.key] || !proposer) return;
+    S.wp.busy[p.key] = true;
+    try {
+      const members = await proposer.loadMembers(p.title, {});
+      if (!members.length) throw new Error('Cette catégorie ne contient plus d\'articles.');
+      const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
+      const r = await api('POST', '/api/targets/save', { name: p.name, items, source: p.key });
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+      S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
+      const mine = targets.value.find((t) => t.source === p.key);
+      if (mine) openTarget(mine.id);
+      notify(`« ${p.name} » ajoutée à tes collections : ${fmt(items.length)} articles.`);
+    } catch (e) {
+      notify(e.message, true);
+    } finally {
+      S.wp.busy[p.key] = false;
+    }
+  }
+  function askHideWp(p) {
+    openConfirm({
+      title: `Retirer « ${p.name} » des propositions ?`,
+      text: 'Cette catégorie ne te sera plus proposée. Tu pourras la rétablir dans les Réglages.',
+      ok: 'Retirer des propositions',
+      run: async () => {
+        await savePrefs({ hidden_catalog: [...S.prefs.hidden_catalog, p.key] });
+        S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
+      },
+      after: () => notify(`« ${p.name} » retirée des propositions.`),
+    });
+  }
+
+  // ---------------------------------------------------------------- nouvelle collection par mots-clés
+  // Deux sources de candidats, interrogées dans le navigateur, une requête à la fois : les catégories de Wikipédia
+  // et une requête Wikidata construite d'après les mots (métier ou nature, nationalité, pays, lieu, auteur…).
+  const KW_STOP = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'l', 'd', 'en', 'et', 'au', 'aux', 'a', 'à']);
+  const singular = (w) => {
+    if (w.length <= 3) return w;
+    if (/aux$/.test(w)) return w.slice(0, -3) + 'al';
+    if (/[sx]$/.test(w) && !/(ais|ois|us|ss)$/.test(w)) return w.slice(0, -1);
+    return w;
+  };
+  // « cathédrales de France » -> « cathédrale France » (pour une deuxième recherche de catégories).
+  const simplify = (q) => q.toLowerCase().replace(/[’']/g, ' ').split(/\s+/).filter((w) => w && !KW_STOP.has(w)).map(singular).join(' ');
+  // Formes d'un adjectif de nationalité : « françaises » -> français, « italienne » -> italien…
+  function adjForms(word) {
+    const w = fold(word).replace(/[^a-z-]/g, '');
+    const out = new Set([w]);
+    for (const [a, b] of [['aises', 'ais'], ['aise', 'ais'], ['iennes', 'ien'], ['ienne', 'ien'], ['ennes', 'en'], ['enne', 'en'], ['ines', 'in'], ['ine', 'in'],
+      ['oises', 'ois'], ['oise', 'ois'], ['aines', 'ain'], ['aine', 'ain'], ['ques', 'que'], ['es', 'e'], ['ees', 'e'], ['ee', 'e'], ['aux', 'al'], ['s', ''], ['e', '']]) {
+      if (w.endsWith(a) && w.length > a.length + 2) out.add(w.slice(0, -a.length) + b);
+    }
+    return [...out].filter(Boolean);
+  }
+  // Expression régulière insensible aux accents (Wikidata ne sait pas les enlever).
+  const accentRe = (w) => w.replace(/a/g, '[aàâä]').replace(/e/g, '[eéèêë]').replace(/i/g, '[iîï]').replace(/o/g, '[oôö]').replace(/u/g, '[uùûü]').replace(/c/g, '[cç]');
+  async function findDemonym(word, signal) {
+    const forms = adjForms(word);
+    if (!forms.length) return null;
+    const re = '^(' + forms.map(accentRe).join('|') + ')$';
+    const rows = await sparql(`SELECT ?c ?cl ?isCountry WHERE { ?c wdt:P1549 ?g . FILTER(LANG(?g) = "fr") FILTER(REGEX(LCASE(STR(?g)), "${re}"))
+      BIND(EXISTS { ?c wdt:P31 ?t . FILTER(?t IN (${COUNTRY_CLASSES.map((x) => 'wd:' + x).join(', ')})) } AS ?isCountry)
+      OPTIONAL { ?c rdfs:label ?cl . FILTER(LANG(?cl) = "fr") } } LIMIT 20`, 3, signal);
+    if (!rows.length) return null;
+    const pick = rows.find((r) => truthy(r.isCountry)) || rows[0];
+    return { id: qid(pick.c.value), label: pick.cl ? pick.cl.value : qid(pick.c.value), country: truthy(pick.isCountry) };
+  }
+  // Premier élément trouvé pour des mots, avec sa nature (classe, métier, pays, personne).
+  async function resolveTerm(text, signal, want) {
+    const tries = [...new Set([text.split(/\s+/).map(singular).join(' '), text])];
+    for (const t of tries) {
+      const found = await wdSearch(t, signal, 7);
+      if (!found.length) continue;
+      const kinds = await classifyItems(found.map((x) => x.id), 3, signal);
+      for (const f of found) {
+        const k = kinds.get(f.id) || {};
+        if (want(k)) return { id: f.id, label: f.label || f.id, ...k };
+      }
+    }
+    return null;
+  }
+  const FR_ARTICLE = '?a schema:about ?item ; schema:isPartOf <https://fr.wikipedia.org/> ; schema:name ?title .';
+  const rowsToItems = (rows) => {
+    const by = new Map();
+    for (const r of rows) {
+      if (!r.item || !r.title) continue;
+      const id = qid(r.item.value);
+      if (!by.has(id)) by.set(id, { title: r.title.value, description: r.desc ? r.desc.value : null, qid: id });
+    }
+    return [...by.values()];
+  };
+  async function searchWikidata(q, signal) {
+    const text = q.trim();
+    let noun = text;
+    let rest = null;
+    const m = text.match(/^(.+?)\s+(?:(?:de la|de l['’]|du|des|de|en|au|aux)\s+|d['’])(.+)$/i);
+    if (m) { noun = m[1]; rest = m[2]; }
+    const parts = [];
+    let place = null;
+    let nat = null;
+    if (!rest) {
+      const words = text.split(/\s+/);
+      if (words.length >= 2) {
+        nat = await findDemonym(words[words.length - 1], signal);
+        if (nat) noun = words.slice(0, -1).join(' ');
+      }
+    }
+    const head = await resolveTerm(noun, signal, (k) => k.occ || k.cls);
+    if (!head) return { interp: `Wikidata : je n'ai pas reconnu « ${noun} ».`, cand: null };
+    const person = head.occ || head.id === 'Q5';
+    const where = [];
+    if (head.occ) { where.push(`?item wdt:P106 wd:${head.id} .`); parts.push(`Métier : ${head.label}`); }
+    else parts.push(`Nature : ${head.label}`);
+    if (rest) {
+      place = await resolveTerm(rest, signal, () => true);
+      if (!place) return { interp: parts.join(' · ') + ` · je n'ai pas reconnu « ${rest} ».`, cand: null };
+    }
+    const narrowed = !!(nat || place);
+    if (!head.occ) where.push(`?item wdt:P31${narrowed ? '/wdt:P279*' : ''} wd:${head.id} .`);
+    if (nat) {
+      where.push(person ? `?item wdt:P27 wd:${nat.id} .` : `?item wdt:P17 wd:${nat.id} .`);
+      parts.push(`${person ? 'Nationalité' : 'Pays'} : ${nat.label}`);
+    }
+    if (place) {
+      if (place.country) { where.push(person ? `?item wdt:P27 wd:${place.id} .` : `?item wdt:P17 wd:${place.id} .`); parts.push(`${person ? 'Nationalité' : 'Pays'} : ${place.label}`); }
+      else if (place.human) {
+        where.push(['P57', 'P50', 'P86', 'P170', 'P175', 'P162'].map((p) => `{ ?item wdt:${p} wd:${place.id} . }`).join(' UNION '));
+        parts.push(`Œuvres de : ${place.label}`);
+      } else if (person) { where.push(`?item wdt:P19/wdt:P131* wd:${place.id} .`); parts.push(`Né à : ${place.label}`); }
+      else { where.push(`?item wdt:P131* wd:${place.id} .`); parts.push(`Lieu : ${place.label}`); }
+    }
+    const body = where.join(' ');
+    const rows = await sparql(`SELECT ?item ?title ?desc WHERE { ${body} ${FR_ARTICLE} OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } } LIMIT 3001`, 3, signal);
+    const items = rowsToItems(rows);
+    const interp = parts.join(' · ');
+    return {
+      interp,
+      cand: { id: 'wd', source: 'wd', name: cap(text), size: items.length, tooBig: items.length > 3000, where: body, interp,
+        items: items.length > 3000 ? null : markRaw(items) },
+    };
+  }
+  async function wdTop(where, n, signal) {
+    const rows = await sparql(`SELECT ?item ?title ?desc ?sl WHERE { ${where} ?item wikibase:sitelinks ?sl . ${FR_ARTICLE}
+      OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } } ORDER BY DESC(?sl) LIMIT ${n}`, 3, signal);
+    return rowsToItems(rows);
+  }
+  // Catégories de maintenance de Wikipédia (ébauches, portails, homonymies, pages à…) : jamais des collections.
+  // Reprend le filtre du module de propositions quand il est chargé.
+  function isMaintenanceCategory(title) {
+    const name = String(title).replace(/^Catégories*:s*/i, '');
+    if (/^(Wikipédia|Portail|Projet|Modèle|Aide)s*:/i.test(name) || /ébauche|homonymie|maintenance|à (vérifier|sourcer|wikifier|recycler)|page(s)? (utilisant|avec|à)|article(s)? (à|avec|utilisant)/i.test(name)) return true;
+    const P = window.ClasseurPropose;
+    try { return !!(P && P.isNoise && P.isNoise(title) && /^(Wikipédia|Page|Article|Portail|Projet|Ébauche|Homonymie)/i.test(name)); } catch (e) { return false; }
+  }
+  async function searchCategories(q, signal) {
+    const titles = [];
+    for (const v of [...new Set([q, simplify(q)])].filter(Boolean)) {
+      const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'search', srnamespace: '14', srsearch: v, srlimit: '10' }), 3, null, signal);
+      for (const r of (j && j.query && j.query.search) || []) if (r.title && !titles.includes(r.title) && !isMaintenanceCategory(r.title)) titles.push(r.title);
+    }
+    if (!titles.length) return [];
+    const j = await getJson(wikiQ, wpUrl({ action: 'query', prop: 'categoryinfo', titles: titles.slice(0, 20).join('|') }), 3, null, signal);
+    const info = new Map(((j && j.query && j.query.pages) || []).map((p) => [p.title, p.categoryinfo || {}]));
+    return titles.slice(0, 20).map((t) => {
+      const ci = info.get(t) || {};
+      const size = Number(ci.pages) || 0;
+      return { id: 'cat:' + t, source: 'cat', title: t, name: cap(t.replace(/^Catégorie\s*:\s*/i, '')), size, subcats: Number(ci.subcats) || 0, tooBig: size > 3000 };
+    }).filter((c) => c.size > 0 || c.subcats > 0).slice(0, 12);
+  }
+  // Articles d'une catégorie (et de ses sous-catégories directes) ; s'arrête au-delà de 3 000.
+  async function categoryMembers(title, withSubs, signal) {
+    const out = new Map();
+    const read = async (cat, type) => {
+      const found = [];
+      let cont = {};
+      for (let guard = 0; guard < 40; guard++) {
+        const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'categorymembers', cmtitle: cat, cmtype: type, cmlimit: '500', ...(type === 'page' ? { cmnamespace: '0' } : {}), ...cont }), 3, null, signal);
+        for (const m of (j && j.query && j.query.categorymembers) || []) found.push(m.title);
+        if (!j.continue || (type === 'page' && out.size + found.length > 3000)) break;
+        cont = j.continue;
+      }
+      return found;
+    };
+    for (const t of await read(title, 'page')) out.set(t, { title: t, description: null, qid: null });
+    if (withSubs) {
+      for (const sub of await read(title, 'subcat')) {
+        if (out.size > 3000) break;
+        for (const t of await read(sub, 'page')) if (!out.has(t)) out.set(t, { title: t, description: null, qid: null });
+      }
+    }
+    return [...out.values()];
+  }
+  let kwCtrl = null;
+  let kwTimer = null;
+  function kwAbort() { if (kwCtrl) kwCtrl.abort(); kwCtrl = null; clearTimeout(kwTimer); }
+  function kwInput(ed, value) {
+    ed.kw.q = value;
+    clearTimeout(kwTimer);
+    kwTimer = setTimeout(() => kwSearch(ed), 600);
+  }
+  async function kwSearch(ed) {
+    clearTimeout(kwTimer);
+    if (kwCtrl) kwCtrl.abort();
+    const ctrl = new AbortController();
+    kwCtrl = ctrl;
+    const stale = () => kwCtrl !== ctrl || S.editor !== ed;
+    const q = ed.kw.q.trim();
+    Object.assign(ed.kw, { cands: [], interp: '', error: '', chosen: null, searched: '' });
+    if (q.length < 3) { ed.kw.searching = false; return; }
+    ed.kw.searching = true;
+    try {
+      const cats = await searchCategories(q, ctrl.signal);
+      if (stale()) return;
+      ed.kw.cands = cats;
+      const wd = await searchWikidata(q, ctrl.signal);
+      if (stale()) return;
+      ed.kw.interp = wd.interp;
+      if (wd.cand) ed.kw.cands = [wd.cand, ...ed.kw.cands];
+      ed.kw.searched = q;
+    } catch (e) {
+      if (!stale() && e.name !== 'AbortError') ed.kw.error = e.message;
+    } finally {
+      if (!stale()) ed.kw.searching = false;
+    }
+  }
+  async function kwChoose(ed, cand, top) {
+    if (kwCtrl) kwCtrl.abort();
+    const ctrl = new AbortController();
+    kwCtrl = ctrl;
+    const ch = { candId: cand.id, source: cand.source, title: cand.title || null, subcats: cand.subcats || 0, withSubs: false, top: top || null,
+      name: top ? `${cand.name} (les ${top} plus connus)` : cand.name, loading: true, error: '', items: null, total: 0, interp: cand.interp || '' };
+    ed.kw.chosen = ch;
+    await kwLoad(ed, cand, ctrl);
+  }
+  async function kwLoad(ed, cand, ctrl) {
+    const ch = ed.kw.chosen;
+    const stale = () => kwCtrl !== ctrl || S.editor !== ed || ed.kw.chosen !== ch;
+    ch.loading = true;
+    ch.error = '';
+    try {
+      let items;
+      if (cand.source === 'wd') items = ch.top ? await wdTop(cand.where, ch.top, ctrl.signal) : cand.items || [];
+      else items = await categoryMembers(cand.title, ch.withSubs, ctrl.signal);
+      if (stale()) return;
+      ch.total = items.length;
+      ch.items = markRaw(items.slice(0, 3000));
+    } catch (e) {
+      if (!stale() && e.name !== 'AbortError') ch.error = e.message;
+    } finally {
+      if (!stale()) ch.loading = false;
+    }
+  }
+  function kwToggleSubs(ed, cand) {
+    const ch = ed.kw.chosen;
+    ch.withSubs = !ch.withSubs;
+    if (kwCtrl) kwCtrl.abort();
+    const ctrl = new AbortController();
+    kwCtrl = ctrl;
+    kwLoad(ed, cand, ctrl);
+  }
+  async function kwSave(ed) {
+    const ch = ed.kw.chosen;
+    if (!ch || !ch.items || ed.busy) return;
+    const name = ch.name.trim();
+    if (!name) { ed.error = 'Donne un nom à ta collection.'; return; }
+    if (ch.total > 3000) { ed.error = 'Trop grande (plus de 3 000 articles) : précise ta recherche.'; return; }
+    ed.busy = true;
+    ed.error = '';
+    try {
+      const items = ch.items.map((i) => {
+        const it = { title: i.title, description: i.description || null, image: null, status: 'ok' };
+        if (i.qid) it.qid = i.qid;
+        return it;
+      });
+      const r = await api('POST', '/api/targets/save', { name, items });
+      if (S.editor !== ed) return;
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+      closeModal();
+      if (r.target) openTarget(r.target.id);
+      startPageviews();
+      notify(`Collection « ${name} » enregistrée : ${fmt(items.length)} articles.`);
+    } catch (e) {
+      if (S.editor === ed) ed.error = e.message;
+    } finally {
+      ed.busy = false;
+    }
+  }
+
+  // ---------------------------------------------------------------- tags à deux niveaux : menu, rangement
+  const tokenLabel = (tok) => (tok.endsWith('/') ? tok.slice(0, -1) + ' (toute la catégorie)' : tagTitle(tok));
+  function toggleTagCat(cat) {
+    const open = new Set(S.tagCatsOpen);
+    if (open.has(cat)) open.delete(cat); else open.add(cat);
+    S.tagCatsOpen = [...open];
+    store.set(LS.tagCats, JSON.stringify(S.tagCatsOpen));
+  }
+  // « Ranger mes tags » : une catégorie proposée pour chaque étiquette sans « / ».
+  let arrangeCtrl = null;
+  async function openArrange() {
+    if (arrangeCtrl) arrangeCtrl.abort();
+    const ctrl = new AbortController();
+    arrangeCtrl = ctrl;
+    const flat = tagList.value.filter((t) => !splitTag(t.name).cat);
+    S.arrange = { rows: flat.map((t) => ({ from: t.name, count: t.count, cat: OTHER, why: '' })), loading: true, busy: false, progress: '', error: '' };
+    S.modal = 'arrange';
+    const ar = S.arrange; // l'objet réactif : c'est lui qu'on modifie
+    const stale = () => arrangeCtrl !== ctrl || S.arrange !== ar;
+    // 1. Ce que disent les suggestions des cartes qui portent l'étiquette (pays, métier, nature). On les calcule d'abord
+    // pour quelques cartes de chaque étiquette si ce navigateur ne les a pas encore : c'est la source la plus sûre.
+    const byTag = new Map();
+    for (const c of cards.value) for (const t of c.tags) { if (!byTag.has(t)) byTag.set(t, []); byTag.get(t).push(c); }
+    const sample = [...new Set(ar.rows.flatMap((r) => (byTag.get(r.from) || []).slice(0, 4).map((c) => c.title)))].filter((t) => !hasSugg(t));
+    if (sample.length) {
+      ar.progress = `Lecture des cartes sur Wikidata : 0 sur ${fmt(sample.length)}…`;
+      try {
+        await ensureSuggestions(sample, 3, (done) => { if (!stale()) ar.progress = `Lecture des cartes sur Wikidata : ${fmt(done)} sur ${fmt(sample.length)}…`; }, stale);
+      } catch (e) { if (e.name === 'AbortError') return; }
+      if (stale()) return;
+    }
+    for (const row of ar.rows) {
+      const key = row.from.toLowerCase();
+      for (const c of byTag.get(row.from) || []) {
+        const sg = suggCache.get(c.title);
+        if (!sg || sg.v !== 2) continue;
+        if ((sg.p || []).some((x) => x.toLowerCase() === key)) { row.cat = 'Pays'; row.why = 'pays d\'une carte'; break; }
+        if ((sg.m || []).some((x) => x.toLowerCase() === key)) { row.cat = 'Métiers'; row.why = 'métier d\'une carte'; break; }
+        const n = (sg.n || []).find((x) => x[0].toLowerCase() === key);
+        if (n) { row.cat = natGroupOf(n[1]); row.why = 'nature d\'une carte'; break; }
+      }
+    }
+    // 2. Les autres : ce que Wikidata dit de l'étiquette elle-même.
+    const rest = ar.rows.filter((r) => !r.why);
+    try {
+      const found = new Map();
+      let i = 0;
+      for (const row of rest) {
+        if (stale()) return;
+        ar.progress = `Recherche sur Wikidata : ${fmt(++i)} sur ${fmt(rest.length)}…`;
+        const hits = await wdSearch(row.from, ctrl.signal, 3);
+        if (hits.length) found.set(row.from, hits[0].id);
+      }
+      const kinds = await classifyItems([...new Set(found.values())], 3, ctrl.signal);
+      const classes = [...new Set([...found.values()].filter((id) => (kinds.get(id) || {}).cls))];
+      await resolveGroups(classes, 3, ctrl.signal);
+      if (stale()) return;
+      // Un mot libre (« Musique », « Sport ») trouve souvent un concept large sur Wikidata, mal rangé : on ne retient
+      // que les pays, sûrs ; le reste devient une suggestion à confirmer et reste dans « Autres » par défaut.
+      for (const row of rest) {
+        const id = found.get(row.from);
+        const k = (id && kinds.get(id)) || {};
+        if (k.country) { row.cat = 'Pays'; row.why = 'pays (Wikidata)'; }
+        else if (k.occ) row.why = 'peut-être un métier : à toi de voir';
+        else if (k.cls) row.why = `peut-être « ${natGroupOf(id)} » : à toi de voir`;
+      }
+    } catch (e) {
+      if (!stale() && e.name !== 'AbortError') ar.error = e.message;
+    } finally {
+      if (!stale()) { ar.loading = false; ar.progress = ''; }
+    }
+  }
+  async function applyArrange(ar) {
+    if (ar.busy) return;
+    const todo = ar.rows.filter((r) => r.cat !== OTHER);
+    ar.busy = true;
+    ar.error = '';
+    let done = 0;
+    let skipped = 0;
+    try {
+      for (const row of todo) {
+        if (S.arrange !== ar) return;
+        const to = cleanTag(row.cat + '/' + row.from);
+        if (to.length > 60 || to === row.from || !to.includes('/')) { skipped++; continue; }
+        ar.progress = `Rangement : ${fmt(++done)} sur ${fmt(todo.length)}…`;
+        await api('POST', '/api/tags/rename', { from: row.from, to });
+        cards.value = cards.value.map((c) => (c.tags.includes(row.from) ? markRaw({ ...c, tags: [...new Set(c.tags.map((t) => (t === row.from ? to : t)))] }) : c));
+        S.tagFilter = [...new Set(S.tagFilter.map((t) => (t === row.from ? to : t)))];
+      }
+      closeModal();
+      notify(`Tags rangés : ${fmt(done)}${skipped ? ` (${fmt(skipped)} trop longs, laissés dans « Autres »)` : ''}.`);
+    } catch (e) {
+      ar.error = e.message;
+    } finally {
+      ar.busy = false;
+      ar.progress = '';
+    }
+  }
+
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
   const hideBroken = (e) => { if (e && e.target) e.target.classList.add('broken'); };
@@ -1482,10 +2094,27 @@
     return (p >= 10 || p === 0 ? String(Math.round(p)) : p.toFixed(1).replace('.', ',')) + ' %';
   };
   function chipList(tags, auto) {
-    const shown = tags.slice(0, 3).map((t) => h('span', { class: ['tag', { auto }], key: t }, t));
-    if (tags.length > 3) shown.push(h('span', { class: 'tag more', key: '+', title: tags.slice(3).join(', ') }, '+' + (tags.length - 3)));
+    const shown = tags.slice(0, 3).map((t) => h('span', { class: ['tag', { auto }], key: t, title: tagTitle(t) }, tagSub(t)));
+    if (tags.length > 3) shown.push(h('span', { class: 'tag more', key: '+', title: tags.slice(3).map(tagTitle).join(', ') }, '+' + (tags.length - 3)));
     return shown;
   }
+  // Liste déroulante des catégories de tags (facultative quand on tape un tag).
+  function catSelect(id, value, onChange, label, withEmpty) {
+    const opts = withEmpty ? [h('option', { key: '', value: '' }, 'Catégorie…')] : [];
+    const list = TAG_CATS.includes(value) || !value ? TAG_CATS : [...TAG_CATS, value];
+    return h('select', { id: id || null, class: 'field cat-select', value: value || '', 'aria-label': label, onChange: (e) => onChange(e.target.value) },
+      [...opts, ...list.map((c) => h('option', { key: c, value: c }, c))]);
+  }
+  // Menu des tags : catégories larges, puis sous-catégories (deux niveaux au plus).
+  const tagTree = computed(() => {
+    const groups = new Map();
+    for (const t of tagList.value) { const cat = tagCat(t.name); if (!groups.has(cat)) groups.set(cat, []); groups.get(cat).push(t); }
+    const perCat = new Map();
+    for (const c of cards.value) for (const cat of new Set(c.tags.map(tagCat))) perCat.set(cat, (perCat.get(cat) || 0) + 1);
+    const extra = [...groups.keys()].filter((c) => !TAG_CATS.includes(c)).sort(COLLATOR.compare);
+    const order = [...TAG_CATS.filter((c) => c !== OTHER && groups.has(c)), ...extra, ...(groups.has(OTHER) ? [OTHER] : [])];
+    return order.map((cat) => ({ cat, tags: groups.get(cat), count: perCat.get(cat) || 0 }));
+  });
 
   // ---------------------------------------------------------------- la carte de jeu (5:7)
   function viewCard(c, big) {
@@ -1605,7 +2234,7 @@
       ]);
     }
     const counts = rarityCount.value;
-    const all = [...collections.value.mine, ...collections.value.proposed];
+    const all = [...collections.value.mine, ...collections.value.visible];
     const started = all.filter((c) => progressOf(c).own > 0).length;
     const nL = counts.L || 0;
     return h('div', { class: 'summary' }, [
@@ -1643,22 +2272,79 @@
   }
 
   // ================================================================ rendu : onglet Collections
+  // Une collection proposée n'apparaît que si tu en as au moins 5 % ; les autres restent dans « Parcourir tout le catalogue ».
+  const PROPOSE_MIN = 0.05;
+  function viewWpRow(p) {
+    const owned = p.cards.map((t) => byTitle.value.get(normTitle(t))).filter(Boolean).map((l) => l[0]);
+    const byR = {};
+    for (const c of owned) byR[c.rarity] = (byR[c.rarity] || 0) + 1;
+    const sample = owned.slice().sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0)).slice(0, 3);
+    const busy = !!S.wp.busy[p.key];
+    return h('div', { class: ['row', 'wp'], key: p.key }, [
+      h('span', { class: 'fan', 'aria-hidden': 'true' }, sample.length ? sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
+      h('span', { class: 'info' }, [
+        h('span', { class: 'name' }, p.name),
+        rarityBar(byR, p.size),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.owned)), ` sur ${fmt(p.size)}${p.partial ? ' (avec sous-catégories)' : ''} · Catégorie Wikipédia`]),
+          h('span', null, pct(p.owned, p.size))]),
+        h('span', { class: 'row-actions' }, [
+          h('button', { class: 'btn small primary', type: 'button', disabled: busy, 'aria-label': `Ajouter « ${p.name} » à mes collections`, onClick: () => addWp(p) },
+            busy ? 'Ajout…' : 'Ajouter à mes collections'),
+          h('button', { class: 'btn small ghost', type: 'button', 'aria-label': `Retirer « ${p.name} » des propositions`, onClick: () => askHideWp(p) }, 'Retirer'),
+          h('a', { class: 'small', href: p.url, target: '_blank', rel: 'noopener noreferrer' }, 'Voir la catégorie ↗'),
+        ]),
+      ]),
+    ]);
+  }
+  function viewWpGroup() {
+    if (!proposer) return null;
+    const list = wpVisible.value;
+    return h('div', { class: 'subgroup', key: 'g:wp' }, [
+      h('h3', { class: 'subhead' }, "D'après tes cartes (catégories Wikipédia)"),
+      S.wp.running ? h('div', { class: 'wp-progress', role: 'status' }, [
+        h('progress', { max: Math.max(1, S.wp.total), value: Math.min(S.wp.done, Math.max(1, S.wp.total)), 'aria-label': 'Recherche de propositions' }),
+        h('span', null, S.wp.label), h('button', { class: 'linkish', type: 'button', onClick: cancelProposals }, 'Annuler'),
+      ]) : null,
+      errLine(S.wp.error),
+      list.length ? h('div', { class: 'rows' }, list.map(viewWpRow))
+        : !S.wp.running ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
+      S.wp.running ? null : h('div', null, [h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions')]),
+    ]);
+  }
   function viewCollections() {
-    const { mine, proposed } = collections.value;
+    const { mine, visible } = collections.value;
+    const ranked = visible.map((col, i) => ({ col, p: progressOf(col), i }));
+    const enough = (x) => x.p.own > 0 && x.p.own / Math.max(1, x.p.total) >= PROPOSE_MIN;
+    const shown = ranked.filter((x) => S.showEmptyProposed || enough(x))
+      .sort((a, b) => (b.p.own / Math.max(1, b.p.total)) - (a.p.own / Math.max(1, a.p.total)) || a.i - b.i);
+    const others = ranked.length - ranked.filter(enough).length;
     const groups = new Map();
-    for (const col of proposed) {
-      if (!groups.has(col.groupName)) groups.set(col.groupName, []);
-      groups.get(col.groupName).push(col);
+    for (const x of shown) { const g = x.col.groupName; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(x.col); }
+    let proposedBody;
+    if (S.prefs.hide_catalog) {
+      proposedBody = [h('p', { class: 'muted small' }, ['Propositions masquées · ', h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(false) }, 'Afficher')])];
+    } else {
+      proposedBody = [
+        h('div', { class: 'section-head' }, [
+          h('h2', { id: 'h-proposed' }, 'Collections proposées'),
+          h('small', null, 'tirées de Wikipédia et Wikidata, celles dont tu as déjà au moins 5 % ; ouvre-en une, puis ajoute-la à tes collections'),
+          h('span', { class: 'spacer' }),
+          h('button', { class: 'linkish', type: 'button', onClick: () => setHideCatalog(true) }, 'Masquer toutes les propositions'),
+        ]),
+        viewWpGroup(),
+        !S.catalog.list ? (S.catalog.error ? errLine(S.catalog.error) : h('p', { class: 'muted', role: 'status' }, 'Chargement du catalogue…')) : null,
+        ...[...groups].map(([name, list]) => h('div', { class: 'subgroup', key: 'g:' + name }, [
+          h('h3', { class: 'subhead' }, name),
+          h('div', { class: 'rows' }, list.map(viewRow)),
+        ])),
+        S.catalog.list && !shown.length && ranked.length && !wpVisible.value.length && !S.wp.running ? h('p', { class: 'muted' }, 'Aucune collection proposée ne te concerne encore : une proposition apparaît quand tu en as au moins 5 %.') : null,
+        S.catalog.list && (others || S.showEmptyProposed) ? h('div', { class: 'show-more' }, [
+          h('button', { class: 'linkish', type: 'button', id: 'toggle-empty', onClick: () => { S.showEmptyProposed = !S.showEmptyProposed; } },
+            S.showEmptyProposed ? 'Ne montrer que celles dont tu as au moins 5 %' : `Parcourir tout le catalogue (${fmt(others)} autres collections)`),
+        ]) : null,
+        S.catalog.list && !ranked.length ? h('p', { class: 'muted' }, 'Tu as déjà ajouté ou retiré toutes les collections proposées.') : null,
+      ];
     }
-    // Dans chaque groupe proposé : d'abord celles où tu as déjà des cartes (les plus avancées en tête).
-    // Une collection proposée à 0 ne dit rien : on ne montre que celles où tu as déjà des cartes, les autres derrière
-    // un bouton (tes propres collections, elles, restent toujours visibles).
-    let hidden = 0;
-    const ordered = (list) => list.map((col, i) => ({ col, p: progressOf(col), i }))
-      .filter((x) => { if (S.showEmptyProposed || x.p.own > 0) return true; hidden++; return false; })
-      .sort((a, b) => (b.p.own > 0) - (a.p.own > 0) || (b.p.own / Math.max(1, b.p.total)) - (a.p.own / Math.max(1, a.p.total)) || a.i - b.i)
-      .map((x) => x.col);
-    const shownGroups = [...groups].map(([name, list]) => [name, ordered(list)]).filter(([, list]) => list.length);
     return h('div', { class: 'groups' }, [
       h('section', { class: 'group', 'aria-labelledby': 'h-mine' }, [
         h('div', { class: 'section-head' }, [
@@ -1668,25 +2354,9 @@
           h('button', { class: 'btn', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), 'Nouvelle collection']),
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
-          : h('p', { class: 'empty-box' }, 'Aucune collection pour l\'instant : crée la tienne (une liste d\'articles Wikipédia), ou ajoute une collection proposée ci-dessous.'),
+          : h('p', { class: 'empty-box' }, 'Aucune collection pour l\'instant : crée la tienne (par mots-clés ou avec une liste d\'articles), ou ajoute une collection proposée.'),
       ]),
-      h('section', { class: 'group', 'aria-labelledby': 'h-proposed' }, [
-        h('div', { class: 'section-head' }, [
-          h('h2', { id: 'h-proposed' }, 'Collections proposées'),
-          h('small', null, 'tirées de Wikidata, articles en français seulement ; ouvre-en une, puis ajoute-la à tes collections'),
-        ]),
-        !S.catalog.list ? (S.catalog.error ? errLine(S.catalog.error) : h('p', { class: 'muted', role: 'status' }, 'Chargement du catalogue…')) : null,
-        ...shownGroups.map(([name, list]) => h('div', { class: 'subgroup', key: 'g:' + name }, [
-          h('h3', { class: 'subhead' }, name),
-          h('div', { class: 'rows' }, list.map(viewRow)),
-        ])),
-        S.catalog.list && proposed.length && !shownGroups.length ? h('p', { class: 'muted' }, 'Aucune collection proposée commencée pour l\x27instant.') : null,
-        S.catalog.list && (hidden || S.showEmptyProposed) ? h('div', { class: 'show-more' }, [
-          h('button', { class: 'btn', type: 'button', id: 'toggle-empty', onClick: () => { S.showEmptyProposed = !S.showEmptyProposed; } },
-            S.showEmptyProposed ? 'Masquer les collections pas encore commencées' : `Afficher aussi les ${fmt(hidden)} collections pas encore commencées`),
-        ]) : null,
-        S.catalog.list && !proposed.length ? h('p', { class: 'muted' }, 'Tu as déjà ajouté toutes les collections proposées.') : null,
-      ]),
+      h('section', { class: 'group', 'aria-labelledby': S.prefs.hide_catalog ? null : 'h-proposed', 'aria-label': S.prefs.hide_catalog ? 'Collections proposées' : null }, proposedBody),
     ]);
   }
   function seg(label, pressed, onClick) {
@@ -1706,7 +2376,7 @@
     let unknown = 0;
     let problems = 0;
     for (const it of col.items) {
-      if (byTitle.value.has(normTitle(it.title))) continue;
+      if (findCard(it)) continue;
       if (it.status !== 'ok') { problems++; continue; }
       const info = pvCache.get(it.title);
       const est = estRarity(info ? info[0] : null);
@@ -1728,6 +2398,7 @@
     ] : [
       h('button', { class: 'btn primary', type: 'button', disabled: !!S.catalog.busy[col.id], onClick: () => addCatalog(col.e) },
         [icon('plus', 'sm'), S.catalog.busy[col.id] ? 'Ajout…' : 'Ajouter à mes collections']),
+      h('button', { class: 'btn ghost', type: 'button', onClick: () => askHideProposal(col) }, 'Retirer des propositions'),
     ];
     const total = albumSlots.value.length;
     const shown = visibleSlots.value.length;
@@ -1782,8 +2453,26 @@
   }
   function viewFacets() {
     const q = fold(S.tagSearch.trim());
-    const list = q ? tagList.value.filter((t) => fold(t.name).includes(q)) : tagList.value;
-    const shown = q || S.tagsAll ? list : list.slice(0, 40);
+    const open = new Set(S.tagCatsOpen);
+    const tree = tagTree.value;
+    let matches = 0;
+    const nodes = tree.map((node) => {
+      const subs = q ? node.tags.filter((t) => fold(t.name).includes(q)) : node.tags;
+      if (q && !subs.length && !fold(node.cat).includes(q)) return null;
+      matches += subs.length;
+      const isOpen = q ? true : open.has(node.cat);
+      const tok = node.cat + '/';
+      return h('div', { class: 'tagcat', key: 'cat:' + node.cat }, [
+        h('div', { class: 'tagcat__head' }, [
+          h('button', { class: ['fold', { open: isOpen }], type: 'button', 'aria-expanded': String(isOpen), disabled: !!q,
+            'aria-label': (isOpen ? 'Replier ' : 'Déplier ') + node.cat, onClick: () => toggleTagCat(node.cat) }, [icon('chev', 'sm')]),
+          facetChip('cat:' + node.cat, node.cat, node.count, S.tagFilter.includes(tok), (e) => toggleTagFilter(tok, e),
+            'Toutes les cartes de cette catégorie · Ctrl/⌘+clic : combiner'),
+        ]),
+        isOpen ? h('div', { class: 'chips tagcat__subs' }, (q ? subs : node.tags).map((t) => facetChip('tag:' + t.name, tagSub(t.name), t.count,
+          S.tagFilter.includes(t.name), (e) => toggleTagFilter(t.name, e), tagTitle(t.name) + ' · Ctrl/⌘+clic : combiner'))) : null,
+      ]);
+    }).filter(Boolean);
     return h('aside', { class: 'facets', 'aria-label': 'Tags' }, [
       h('div', { class: 'facet' }, [
         h('h3', null, 'Raccourcis'),
@@ -1794,12 +2483,12 @@
       ]),
       h('div', { class: 'facet' }, [
         h('h3', null, ['Tes tags', h('span', { class: 'hint-inline' }, 'Ctrl/⌘+clic : combiner')]),
+        tagList.value.length ? h('div', { class: 'actions' }, [h('button', { class: 'btn small', type: 'button', onClick: openArrange }, [icon('grid', 'sm'), 'Ranger mes tags'])]) : null,
         tagList.value.length > 8 ? h('label', { class: 'tag-search' }, [sr('Chercher un tag'),
           h('input', { type: 'search', value: S.tagSearch, placeholder: 'Chercher un tag…', autocomplete: 'off', onInput: (e) => { S.tagSearch = e.target.value; } })]) : null,
-        list.length ? h('div', { class: 'chips' }, shown.map((t) => facetChip('tag:' + t.name, t.name, t.count, S.tagFilter.includes(t.name), (e) => toggleTagFilter(t.name, e),
-          'Ctrl/⌘+clic : combiner avec les tags choisis')))
+        nodes.length ? h('div', { class: 'tagtree' }, nodes)
           : h('p', { class: 'small muted' }, tagList.value.length ? 'Aucun tag ne correspond.' : 'Pas encore de tag : sélectionne des cartes, ou ouvre une fiche pour en ajouter.'),
-        list.length > shown.length ? h('button', { class: 'linkish', type: 'button', onClick: () => { S.tagsAll = true; } }, `Afficher les ${fmt(list.length - shown.length)} autres`) : null,
+        q && nodes.length ? h('p', { class: 'small muted', role: 'status' }, `${fmt(matches)} ${plural(matches, 'tag trouvé', 'tags trouvés')}`) : null,
       ]),
       h('div', { class: 'facet' }, [h('h3', null, 'Suggestions'), ...viewSuggBox()]),
     ]);
@@ -1814,12 +2503,12 @@
     const rar = RAR_UP.filter((r) => S.rarities.includes(r));
     return h('div', { class: 'count-line' }, [
       h('span', null, [h('b', null, fmt(n)), ` ${plural(n, 'carte', 'cartes')}`, n !== cards.value.length ? ` sur ${fmt(cards.value.length)}` : '']),
-      ...S.tagFilter.map((t) => filterChip('tag:' + t, t, () => { S.tagFilter = S.tagFilter.filter((x) => x !== t); }, 'Retirer le filtre ' + t)),
+      ...S.tagFilter.map((t) => filterChip('tag:' + t, tokenLabel(t), () => { S.tagFilter = S.tagFilter.filter((x) => x !== t); }, 'Retirer le filtre ' + tokenLabel(t))),
       S.untaggedOnly ? filterChip('untagged', 'Sans tag', () => { S.untaggedOnly = false; }, 'Retirer le filtre Sans tag') : null,
       S.newOnly ? filterChip('new', 'Nouvelles', () => { S.newOnly = false; }, 'Retirer le filtre Nouvelles') : null,
       S.q.trim() ? filterChip('q', `« ${S.q.trim()} »`, () => { S.q = ''; }, 'Effacer la recherche') : null,
       rar.length ? filterChip('rar', 'Raretés : ' + rar.join(', '), () => { S.rarities = []; }, 'Afficher toutes les raretés') : null,
-      S.tagFilter.length === 1 ? h('button', { class: 'linkish', type: 'button', onClick: () => openTagEdit(S.tagFilter[0]) }, `Renommer ou supprimer « ${S.tagFilter[0]} »`) : null,
+      S.tagFilter.length === 1 && !S.tagFilter[0].endsWith('/') ? h('button', { class: 'linkish', type: 'button', onClick: () => openTagEdit(S.tagFilter[0]) }, `Renommer ou supprimer « ${tagSub(S.tagFilter[0])} »`) : null,
       hasFilters.value ? h('button', { class: 'linkish', type: 'button', onClick: resetFilters }, 'Réinitialiser les filtres') : null,
       pending ? h('button', { class: 'btn small', type: 'button', onClick: askAcceptInView }, [icon('check', 'sm'), `Valider les suggestions (${cards$(pending)})`]) : null,
     ]);
@@ -1970,6 +2659,15 @@
           h('button', { class: 'btn small ghost', type: 'button', 'aria-label': 'Retirer de la liste : ' + knownLabel(k), onClick: () => forgetKnown(k.key) }, 'Retirer'),
         ]))),
       ]) : null,
+      section('Collections proposées', [
+        h('p', null, ['Collections proposées : ', h('b', null, S.prefs.hide_catalog ? 'masquées' : 'affichées'),
+          S.prefs.hide_catalog ? '.' : ' (celles dont tu as au moins 5 %).']),
+        h('div', { class: 'actions' }, [
+          h('button', { class: 'btn', type: 'button', onClick: () => setHideCatalog(!S.prefs.hide_catalog) }, S.prefs.hide_catalog ? 'Afficher les propositions' : 'Masquer les propositions'),
+          S.prefs.hidden_catalog.length ? h('button', { class: 'btn', type: 'button', onClick: restoreProposals },
+            `Rétablir ${S.prefs.hidden_catalog.length > 1 ? 'les ' + fmt(S.prefs.hidden_catalog.length) + ' propositions retirées' : 'la proposition retirée'}`) : null,
+        ]),
+      ]),
       section('Ce navigateur', [
         h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé et tout ce qu'il garde du classeur. Ton classeur reste intact : ton lien le rouvre."),
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: askForget }, 'Oublier ce navigateur')]),
@@ -1998,8 +2696,9 @@
     return h('div', { class: 'bulk', role: 'region', 'aria-label': 'Actions sur la sélection' }, [
       h('span', { class: 'count' }, fmt(n)), h('span', null, plural(n, 'sélectionnée', 'sélectionnées')),
       h('label', { class: 'sr', for: 'bulk-tag' }, 'Tag à ajouter ou à retirer'),
-      h('input', { id: 'bulk-tag', class: 'field', list: 'taglist', value: S.bulkTag, maxlength: 40, autocomplete: 'off', placeholder: 'Tag à ajouter ou retirer…',
+      h('input', { id: 'bulk-tag', class: 'field', list: 'taglist', value: S.bulkTag, maxlength: 60, autocomplete: 'off', placeholder: 'Tag à ajouter ou retirer (« Pays/Brésil » ou « Brésil »)…',
         onInput: (e) => { S.bulkTag = e.target.value; }, onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); bulk('add'); } } }),
+      catSelect('bulk-cat', S.bulkCat, (v) => { S.bulkCat = v; }, 'Catégorie du tag (facultatif)', true),
       h('button', { class: 'btn primary', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('add') }, 'Ajouter'),
       h('button', { class: 'btn', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('remove') }, 'Retirer'),
       h('button', { class: 'btn ghost', type: 'button', onClick: clearSelection }, 'Vider la sélection'),
@@ -2029,8 +2728,8 @@
     else if (!list.length) body = [h('p', { class: 'small muted' }, 'Pas d\'autre suggestion pour cette carte.')];
     else {
       body = [
-        h('div', { class: 'tags' }, list.map((t) => h('button', { key: t, class: 'tag auto', type: 'button', title: 'Ajouter ce tag', disabled: S.drawer.busy,
-          onClick: () => setTags(c, addTo(c.tags, t)) }, [icon('plus', 'sm'), t]))),
+        h('div', { class: 'tags' }, list.map((t) => h('button', { key: t, class: 'tag auto', type: 'button', title: `Ajouter « ${tagTitle(t)} »`, disabled: S.drawer.busy,
+          onClick: () => setTags(c, addTo(c.tags, t)) }, [icon('plus', 'sm'), h('span', { class: 'tag__cat' }, tagCat(t) + ' › '), tagSub(t)]))),
         h('div', null, [h('button', { class: 'btn small', type: 'button', disabled: S.drawer.busy, onClick: () => setTags(c, list.reduce(addTo, c.tags)) }, [icon('check', 'sm'), 'Valider les suggestions'])]),
       ];
     }
@@ -2063,13 +2762,14 @@
         ]),
         h('div', null, [
           h('h3', null, 'Tes tags'),
-          h('div', { class: 'tags' }, c.tags.length ? c.tags.map((t) => h('span', { class: 'tag own', key: t }, [t,
-            h('button', { type: 'button', class: 'x', 'aria-label': 'Retirer le tag ' + t, disabled: S.drawer.busy, onClick: () => setTags(c, c.tags.filter((x) => x !== t)) }, [icon('x', 'sm')])]))
+          h('div', { class: 'tags' }, c.tags.length ? c.tags.map((t) => h('span', { class: 'tag own', key: t, title: tagTitle(t) }, [tagSub(t),
+            h('button', { type: 'button', class: 'x', 'aria-label': 'Retirer le tag ' + tagTitle(t), disabled: S.drawer.busy, onClick: () => setTags(c, c.tags.filter((x) => x !== t)) }, [icon('x', 'sm')])]))
             : [h('span', { class: 'small muted' }, "Aucun tag pour l'instant.")]),
           h('form', { class: 'add-row', onSubmit: (e) => { e.preventDefault(); addTag(c); } }, [
             h('label', { class: 'sr', for: 'new-tag' }, 'Ajouter un tag'),
-            h('input', { id: 'new-tag', class: 'field', list: 'taglist', value: S.drawer.newTag, maxlength: 40, autocomplete: 'off', placeholder: 'Ajouter un tag…',
+            h('input', { id: 'new-tag', class: 'field', list: 'taglist', value: S.drawer.newTag, maxlength: 60, autocomplete: 'off', placeholder: 'Ajouter un tag…',
               onInput: (e) => { S.drawer.newTag = e.target.value; } }),
+            catSelect('new-tag-cat', S.drawer.newCat, (v) => { S.drawer.newCat = v; }, 'Catégorie du tag (facultatif)', true),
             h('button', { class: 'btn primary', type: 'submit', disabled: S.drawer.busy || !S.drawer.newTag.trim() }, 'Ajouter'),
           ]),
           errLine(S.drawer.error),
@@ -2121,11 +2821,69 @@
   const closeBtn = (label) => h('button', { class: 'btn ghost', type: 'button', onClick: closeModal }, label || 'Fermer');
 
   // ---------------------------------------------------------------- fenêtres gardées (collection, tag, confirmation, autre classeur, nouveau lien)
-  function modalEditor() {
-    const ed = S.editor;
-    if (!ed) return null;
+  function viewCandidate(ed, c) {
+    const big = c.tooBig;
+    const size = big ? 'plus de 3 000 articles' : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
+    let action;
+    if (!big) action = h('button', { class: 'btn small primary', type: 'button', 'aria-label': 'Choisir ' + c.name, onClick: () => kwChoose(ed, c) }, 'Choisir');
+    else if (c.source === 'wd') {
+      action = h('div', { class: 'actions' }, [h('span', { class: 'small muted' }, 'Garder les plus connus :'),
+        ...[100, 200, 500].map((n) => h('button', { key: n, class: 'btn small', type: 'button', 'aria-label': `Garder les ${n} plus connus`, onClick: () => kwChoose(ed, c, n) }, String(n)))]);
+    } else action = h('span', { class: 'small muted' }, 'trop grande : précise ta recherche');
+    return h('li', { class: ['cand', { disabled: big && c.source !== 'wd' }], key: c.id }, [
+      h('div', { class: 'what' }, [
+        h('b', null, c.name),
+        h('span', null, `${size} · ${c.source === 'cat' ? 'Catégorie Wikipédia' : 'Wikidata'}`),
+        c.source === 'wd' && c.interp ? h('span', { class: 'interp' }, c.interp) : null,
+      ]),
+      action,
+    ]);
+  }
+  function viewKeywords(ed) {
+    const kw = ed.kw;
+    const ch = kw.chosen;
+    if (ch) {
+      const cand = kw.cands.find((x) => x.id === ch.candId);
+      const extra = ch.items && ch.items.length > 20 ? ch.items.length - 20 : 0;
+      return [
+        h('button', { class: 'back', type: 'button', onClick: () => { kw.chosen = null; } }, '← Autres candidats'),
+        h('label', { class: 'field' }, [h('span', null, 'Nom de la collection'),
+          h('input', { id: 'kw-name', class: 'field full', value: ch.name, maxlength: 120, autocomplete: 'off', onInput: (e) => { ch.name = e.target.value; } })]),
+        h('p', { class: 'note' }, [ch.source === 'cat' ? `Catégorie Wikipédia : ${ch.title.replace(/^Catégorie\s*:\s*/i, '')}` : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
+          ' · ', ch.loading ? 'chargement des articles…' : `${fmt(ch.total)} ${plural(ch.total, 'article', 'articles')}`]),
+        ch.source === 'cat' && ch.subcats && cand ? h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: ch.withSubs, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
+          ` inclure les sous-catégories (1 niveau : ${fmt(ch.subcats)})`]) : null,
+        ch.total > 3000 ? h('p', { class: 'warn' }, 'Trop grande (plus de 3 000 articles) : précise ta recherche.') : null,
+        ch.items && ch.items.length ? h('ol', { class: 'preview', 'aria-label': 'Aperçu des premiers articles' }, ch.items.slice(0, 20).map((i) => h('li', { key: i.title }, i.title))) : null,
+        extra ? h('p', { class: 'note' }, `… et ${fmt(extra)} autres`) : null,
+        ch.items && !ch.items.length && !ch.loading ? h('p', { class: 'muted' }, 'Aucun article dans ce candidat.') : null,
+        errLine(ch.error),
+        errLine(ed.error),
+        foot([
+          closeBtn('Annuler'),
+          h('button', { class: 'btn primary', type: 'button', disabled: ed.busy || ch.loading || !ch.items || !ch.items.length || ch.total > 3000 || !ch.name.trim(),
+            onClick: () => kwSave(ed) }, ed.busy ? 'Enregistrement…' : 'Enregistrer'),
+        ]),
+      ];
+    }
+    return [
+      h('label', { class: 'sr', for: 'kw' }, 'Mots-clés'),
+      h('input', { id: 'kw', class: 'field full', type: 'search', value: kw.q, autocomplete: 'off', spellcheck: 'false',
+        placeholder: 'footballeur français, cathédrales de France, peintres impressionnistes, films de Miyazaki…',
+        onInput: (e) => kwInput(ed, e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); kwSearch(ed); } } }),
+      h('p', { class: 'note' }, "Le classeur cherche des catégories de Wikipédia et construit une requête Wikidata d'après tes mots ; choisis un candidat, vérifie l'aperçu, puis enregistre."),
+      kw.searching ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche…') : null,
+      errLine(kw.error),
+      kw.interp ? h('p', { class: 'interp-line' }, ['Interprétation : ', h('b', null, kw.interp)]) : null,
+      kw.cands.length ? h('ul', { class: 'cands', 'aria-label': 'Candidats' }, kw.cands.map((c) => viewCandidate(ed, c)))
+        : kw.searched && !kw.searching ? h('p', { class: 'muted' }, "Aucun candidat : essaie d'autres mots, ou la liste d'articles.") : null,
+      foot([closeBtn('Annuler')]),
+    ];
+  }
+  function viewListMode(ed) {
     const lines = ed.text.split('\n').filter((l) => l.trim()).length;
-    return h(Modal, { key: 'editor', title: ed.id ? 'Modifier la collection' : 'Nouvelle collection à compléter', onClose: closeModal }, () => [
+    return [
       h('label', { class: 'sr', for: 'ed-name' }, 'Nom de la collection'),
       h('input', { id: 'ed-name', class: 'field full', value: ed.name, maxlength: 120, autocomplete: 'off', placeholder: "Nom, par exemple Dieux de l'Olympe",
         onInput: (e) => { ed.name = e.target.value; } }),
@@ -2148,25 +2906,59 @@
         h('button', { class: 'btn primary', type: 'button', disabled: ed.busy || !ed.name.trim() || !ed.text.trim(), onClick: () => saveEditor(ed, false) },
           ed.busy ? 'Vérification…' : 'Enregistrer'),
       ]),
+    ];
+  }
+  function modalEditor() {
+    const ed = S.editor;
+    if (!ed) return null;
+    const tab = (mode, label) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(ed.mode === mode), 'aria-pressed': String(ed.mode === mode),
+      onClick: () => { ed.mode = mode; ed.error = ''; } }, label);
+    return h(Modal, { key: 'editor', wide: ed.mode === 'mots', title: ed.id ? 'Modifier la collection' : 'Nouvelle collection à compléter', onClose: closeModal }, () => [
+      ed.id ? null : h('div', { class: 'seg', role: 'tablist', 'aria-label': 'Façon de créer la collection' }, [tab('mots', 'Par mots-clés'), tab('liste', "Liste d'articles")]),
+      ...(ed.mode === 'mots' && !ed.id ? viewKeywords(ed) : viewListMode(ed)),
     ]);
   }
   function modalTag() {
     const te = S.tagEdit;
     if (!te) return null;
     const n = tagCount.value.get(te.from) || 0;
-    return h(Modal, { key: 'tag', title: `Le tag « ${te.from} »`, onClose: closeModal }, () => [
-      h('p', null, `${cards$(n)} ${plural(n, 'porte', 'portent')} ce tag.`),
-      h('form', { class: 'copy-row', onSubmit: (e) => { e.preventDefault(); renameTag(te); } }, [
-        h('label', { class: 'sr', for: 'tag-to' }, 'Nouveau nom du tag'),
-        h('input', { id: 'tag-to', class: 'field', value: te.to, maxlength: 40, autocomplete: 'off', onInput: (e) => { te.to = e.target.value; } }),
-        h('button', { class: 'btn primary', type: 'submit', disabled: te.busy || !te.to.trim() }, 'Renommer'),
+    return h(Modal, { key: 'tag', title: `Le tag « ${tagSub(te.from)} »`, onClose: closeModal }, () => [
+      h('p', null, `${cards$(n)} ${plural(n, 'porte', 'portent')} ce tag, rangé dans « ${tagCat(te.from)} ».`),
+      h('form', { class: 'tag-form', onSubmit: (e) => { e.preventDefault(); renameTag(te); } }, [
+        h('label', { class: 'field' }, [h('span', null, 'Nom'),
+          h('input', { id: 'tag-to', class: 'field', value: te.to, maxlength: 60, autocomplete: 'off', onInput: (e) => { te.to = e.target.value; } })]),
+        h('label', { class: 'field' }, [h('span', null, 'Catégorie'), catSelect('tag-cat', te.cat, (v) => { te.cat = v; }, 'Catégorie', false)]),
+        h('div', { class: 'actions' }, [h('button', { class: 'btn primary', type: 'submit', disabled: te.busy || !te.to.trim() }, 'Renommer')]),
       ]),
-      h('p', { class: 'note' }, 'Si un tag porte déjà ce nom, les deux sont fusionnés.'),
+      h('p', { class: 'note' }, ['Si un tag porte déjà ce nom, les deux sont fusionnés. Pour ranger tous tes tags d\'un coup : ',
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openArrange(); } }, 'Ranger mes tags'), '.']),
       errLine(te.error),
       foot([
         h('button', { class: ['btn', 'danger', 'left', { solid: te.confirmDelete }], type: 'button', disabled: te.busy, onClick: () => deleteTag(te) },
           te.confirmDelete ? `Confirmer : le retirer de ${cards$(n)}` : [icon('trash', 'sm'), 'Supprimer ce tag']),
         closeBtn(),
+      ]),
+    ]);
+  }
+  function modalArrange() {
+    const ar = S.arrange;
+    if (!ar) return null;
+    const moving = ar.rows.filter((r) => r.cat !== OTHER).length;
+    return h(Modal, { key: 'arrange', wide: true, title: 'Ranger mes tags', onClose: closeModal }, () => [
+      h('p', null, 'Chaque tag sans catégorie en reçoit une, devinée d\'après tes cartes et Wikidata. Vérifie, change si besoin, puis applique : « Autres » laisse le tag tel quel.'),
+      ar.loading ? h('p', { class: 'progress-msg', role: 'status' }, ar.progress || 'Analyse de tes tags…') : null,
+      ar.rows.length ? h('ul', { class: 'arrange' }, ar.rows.map((row) => h('li', { key: row.from }, [
+        h('span', { class: 'from' }, [row.from, h('span', { class: 'n' }, ' · ' + fmt(row.count))]),
+        h('span', { class: 'arrow', 'aria-hidden': 'true' }, '→'),
+        catSelect('', row.cat, (v) => { row.cat = v; }, `Catégorie de « ${row.from} »`, false),
+        h('span', { class: 'why' }, row.cat === OTHER ? (row.why && row.why.startsWith('peut-être') ? 'reste dans Autres (' + row.why + ')' : 'reste dans Autres') : row.why),
+      ]))) : h('p', { class: 'muted' }, 'Tous tes tags sont déjà rangés dans une catégorie.'),
+      !ar.loading && ar.progress ? h('p', { class: 'progress-msg', role: 'status' }, ar.progress) : null,
+      errLine(ar.error),
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: ar.busy || ar.loading || !moving, onClick: () => applyArrange(ar) },
+          ar.busy ? (ar.progress || 'Rangement…') : `Appliquer (${fmt(moving)} ${plural(moving, 'tag', 'tags')})`),
       ]),
     ]);
   }
@@ -2209,7 +3001,7 @@
     ]);
   }
 
-  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink };
+  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {
@@ -2339,6 +3131,7 @@
         await loadCards();
         notify(`Collection mise à jour : ${cards$(cards.value.length)}.`);
         startPageviews();
+        afterCards();
       } catch (e) { notify(e.message, true); }
     }
   }
@@ -2365,7 +3158,10 @@
   watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
   // Collection ouverte (ou catalogue arrivé après coup) : vues sur 30 jours des articles qui manquent.
-  watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => startPageviews());
+  watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => {
+    startPageviews();
+    if (activeAlbum.value) resolveQids(activeAlbum.value.items, false);
+  });
 
   createApp(Root).mount('#app');
 })();

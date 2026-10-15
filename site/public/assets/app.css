@@ -395,3 +395,53 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
   .figure { min-width: 0; flex: 1 1 40%; }
   .sheet, .modal { padding: 18px 16px; }
 }
+
+/* ------------------------------------------------------------------ menu des tags à deux niveaux */
+.tagtree { display: grid; gap: 4px; }
+.tagcat__head { display: flex; align-items: center; gap: 4px; }
+.tagcat__head .chip { flex: 1; justify-content: space-between; }
+.fold { border: 0; background: none; color: var(--muted); width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; padding: 0; flex: none; }
+.fold:hover:not(:disabled) { color: var(--fg); background: var(--surface-2); }
+.fold:disabled { cursor: default; opacity: 0.6; }
+.fold .ic { transition: transform 0.2s var(--ease); }
+.fold.open .ic { transform: rotate(90deg); }
+.tagcat__subs { padding: 4px 0 8px 26px; }
+.tag__cat { color: var(--faint); }
+.cat-select { padding: 7px 8px; font-size: 13px; max-width: 13rem; }
+.bulk .cat-select { background: var(--surface); }
+.add-row .cat-select { max-width: 10rem; }
+.tag-form { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 14rem); gap: 10px; align-items: end; }
+.tag-form .actions { grid-column: 1 / -1; }
+.modal .field { display: grid; gap: 5px; }
+.modal .field > span { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.arrange { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 52vh; overflow-y: auto; }
+.arrange li { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 13rem) minmax(0, 11rem); gap: 10px; align-items: center; padding: 6px 10px; border-radius: 9px; background: var(--surface-2); }
+.arrange .from { font-weight: 600; overflow-wrap: anywhere; color: var(--fg); }
+.arrange .n { font-weight: 400; color: var(--faint); font-size: 12px; }
+.arrange .arrow { color: var(--faint); }
+.arrange .why { font-size: 12px; color: var(--faint); }
+@media (max-width: 640px) { .arrange li { grid-template-columns: minmax(0, 1fr) minmax(0, 12rem); } .arrange .arrow, .arrange .why { display: none; } .tag-form { grid-template-columns: minmax(0, 1fr); } }
+
+/* ------------------------------------------------------------------ nouvelle collection par mots-clés */
+.seg button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }
+.modal .seg { justify-self: start; }
+.cands { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 50vh; overflow-y: auto; }
+.cand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2); }
+.cand .what { flex: 1 1 240px; display: grid; gap: 2px; min-width: 0; }
+.cand .what b { font: 600 14.5px var(--f-head); color: var(--fg); overflow-wrap: anywhere; }
+.cand .what span { font-size: 12px; color: var(--muted); }
+.cand .interp { color: var(--link); }
+.cand.disabled { opacity: 0.55; }
+.interp-line { font-size: 13px; color: var(--muted); }
+.interp-line b { color: var(--link); font-weight: 600; }
+.preview { margin: 0; padding: 8px 12px 8px 34px; max-height: 260px; overflow-y: auto; background: var(--surface-2); border-radius: 8px; font-size: 13px; color: var(--fg); }
+.modal .preview li { color: var(--fg); font-size: 13px; }
+.check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--fg); }
+.check input { accent-color: var(--accent); }
+
+/* ------------------------------------------------------------------ propositions d'après les catégories Wikipédia */
+.row.wp { cursor: default; }
+.row.wp:hover { border-color: var(--border); }
+.row-actions { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 2px; }
+.wp-progress { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+.wp-progress progress { width: min(280px, 100%); height: 8px; accent-color: var(--accent); }

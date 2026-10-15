@@ -1,7 +1,7 @@
 // Catalogue des collections proposées du classeur (site/public/catalog.json), d'après config/themes.json :
 // un motif SPARQL par thème, seuls comptent les éléments qui ont un article sur Wikipédia en français.
 // Réutilise cache/themes.json (mêmes requêtes que build_reference.js) et n'interroge Wikidata que pour les thèmes
-// nouveaux ou modifiés. Usage : node scripts/build_catalog.js [--refresh]
+// nouveaux ou modifiés. Chaque élément : {title, description, qid}. Usage : node scripts/build_catalog.js [--refresh]
 const fs = require('fs');
 const path = require('path');
 const { sparql, qid } = require('../lib/net.js');
@@ -67,7 +67,8 @@ async function main() {
     }
     const list = sortMembers(cache[th.id].list.map((m) => ({ ...m })), !!th.ord);
     if (list.length < 3) { console.log(`ignoré ${th.name} : ${list.length} article(s)`); continue; }
-    out.push({ id: th.id, name: th.name, group: th.group, group_name: groupName[th.group] || th.group, ordered: !!th.ord, items: list.map((m) => ({ title: m.t, description: m.d })) });
+    // qid (élément Wikidata) : l'interface reconnaît une carte possédée même si son titre a changé (site/public/assets/match.js).
+    out.push({ id: th.id, name: th.name, group: th.group, group_name: groupName[th.group] || th.group, ordered: !!th.ord, items: list.map((m) => ({ title: m.t, description: m.d, qid: m.q })) });
     console.log(`${th.name} : ${list.length}`);
   }
   save(path.join(ROOT, 'site', 'public', 'catalog.json'), out);

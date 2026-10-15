@@ -12,6 +12,7 @@ const VUE = process.argv[3];
 const SERVER = (process.argv.find((a) => a.startsWith('--server=')) || '').slice(9) || null;
 const ORIGIN = 'https://classeur.example';
 const fail = (m) => { console.error('ÉCHEC :', m); process.exit(1); };
+const check0 = (c, m) => { if (!c) fail(m); };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 // ------------------------------------------------------------------ API simulée (contrat SPEC.md), plusieurs comptes
@@ -56,9 +57,16 @@ function mockApi() {
       const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
-          has_import_key: !!st.importKey, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null } });
+          has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null } });
       }
-      if (p === '/api/me' && method === 'PATCH') { st.name = body.name; return json(200, { user: { id: st.id, name: st.name } }); }
+      if (p === '/api/me' && method === 'PATCH') {
+        if ('prefs' in body) {
+          if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 4096) return json(400, { error: 'Préférences invalides.' });
+          st.prefs = body.prefs;
+        }
+        if ('name' in body) st.name = body.name;
+        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {} });
+      }
       if (p === '/api/me' && method === 'DELETE') { users.splice(users.indexOf(st), 1); return json(200, { ok: true }); }
       if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); return json(200, { import_key: st.importKey }); }
       if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
@@ -119,16 +127,44 @@ const WIKI = {
   Mercure: { disamb: true },
   Rihanna: { q: 'Q36844', desc: 'chanteuse barbadienne', pv: 30000 },
   'Abeille domestique': { q: 'Q30034', desc: "espèce d'insectes", pv: 100 },
+  'Hydrogène (élément)': { q: 'Q556' },
 };
 const REDIRECTS = { 'Poseidon': 'Poséidon' };
 let wikiCalls = 0;
+const propose = { categories: 0 };
+const wdSearches = [];
+let lastProbe = '';
 let pvContinueSeen = false;
 function wikiHandle(url) {
   wikiCalls++;
   const u = new URL(url);
+  const uri = (id) => ({ type: 'uri', value: 'http://www.wikidata.org/entity/' + id });
+  const lit = (v) => ({ type: 'literal', value: String(v) });
+  const bool = (v) => ({ type: 'literal', datatype: 'http://www.w3.org/2001/XMLSchema#boolean', value: v ? 'true' : 'false' });
+  if (u.hostname === 'www.wikidata.org') {
+    const p = Object.fromEntries(u.searchParams);
+    if (p.action !== 'wbsearchentities' || p.origin !== '*' || p.language !== 'fr') throw new Error('appel Wikidata inattendu : ' + url);
+    const S2 = { footballeur: [{ id: 'Q937857', label: 'footballeur' }], musique: [{ id: 'Q638', label: 'musique' }] };
+    wdSearches.push(p.search);
+    return { search: S2[p.search.toLowerCase()] || [] };
+  }
   if (u.hostname === 'query.wikidata.org') {
     const q = u.searchParams.get('query');
     if (/P279\+/.test(q)) return { results: { bindings: [] } };
+    if (/P1549/.test(q)) return { results: { bindings: q.includes('fr[aàâä]n[cç]') ? [{ c: uri('Q142'), cl: lit('France'), isCountry: bool(true) }] : [] } };
+    if (/AS \?country\)/.test(q)) {
+      const kinds = { Q937857: { occ: true, cls: true }, Q142: { country: true, cls: false }, Q638: { cls: true } };
+      const ids = [...q.matchAll(/wd:(Q\d+)/g)].map((m) => m[1]).filter((id) => kinds[id]);
+      return { results: { bindings: [...new Set(ids)].map((id) => ({ c: uri(id), country: bool(kinds[id].country), occ: bool(kinds[id].occ), cls: bool(kinds[id].cls), human: bool(false) })) } };
+    }
+    if (/wdt:P279\* \?g/.test(q)) return { results: { bindings: /wd:Q638\b/.test(q) ? [{ c: uri('Q638'), g: uri('Q17537576') }] : [] } };
+    if (/wdt:P106 wd:Q937857/.test(q)) {
+      lastProbe = q;
+      const n = /LIMIT 3001/.test(q) ? 3001 : Number((q.match(/LIMIT (\d+)/) || [])[1]) || 0;
+      if (/LIMIT 3001/.test(q) && !/wdt:P27 wd:Q142/.test(q)) throw new Error('nationalité absente de la requête : ' + q);
+      if (!/LIMIT 3001/.test(q) && !/ORDER BY DESC\(\?sl\)/.test(q)) throw new Error('les plus connus doivent être triés par sitelinks');
+      return { results: { bindings: Array.from({ length: n }, (_, i) => ({ item: uri('Q' + (900000 + i)), title: lit('Joueur ' + (i + 1)), desc: lit('footballeur français') })) } };
+    }
     const b = [];
     const add = (item, p, v, l, f) => b.push({ item: { type: 'uri', value: 'http://www.wikidata.org/entity/' + item }, p: { type: 'uri', value: 'http://www.wikidata.org/prop/direct/' + p }, v: { type: 'uri', value: 'http://www.wikidata.org/entity/' + v }, ...(l ? { l: { type: 'literal', value: l } } : {}), ...(f ? { f: { type: 'literal', value: f } } : {}) });
     if (/Q36844/.test(q)) { add('Q36844', 'P31', 'Q5', 'être humain'); add('Q36844', 'P21', 'Q6581072', 'féminin'); add('Q36844', 'P106', 'Q177220', 'chanteur ou chanteuse', 'chanteuse'); add('Q36844', 'P27', 'Q244', 'Barbade'); }
@@ -137,6 +173,31 @@ function wikiHandle(url) {
   }
   const p = Object.fromEntries(u.searchParams);
   if (p.origin !== '*' || p.format !== 'json' || p.formatversion !== '2') throw new Error('paramètres Wikipédia manquants : ' + url);
+  if (p.list === 'search') {
+    if (p.srnamespace !== '14') throw new Error('recherche hors des catégories');
+    return { query: { search: /footballeur/i.test(p.srsearch) ? [{ title: 'Catégorie:Footballeur international français' }, { title: 'Catégorie:Footballeur français' }] : [] } };
+  }
+  if (p.list === 'categorymembers') {
+    const M = { 'Catégorie:Exemples de test': { page: Array.from({ length: 40 }, (_, i) => 'Article ' + (i + 1)), subcat: [] },
+      'Catégorie:Footballeur international français': { page: ['Zinédine Zidane', 'Thierry Henry', 'Kylian Mbappé'], subcat: ['Catégorie:Footballeur international français espoir'] },
+      'Catégorie:Footballeur international français espoir': { page: ['Jeune Espoir', 'Thierry Henry'], subcat: [] } };
+    const m = M[p.cmtitle] || { page: [], subcat: [] };
+    if (p.cmtype === 'page' && p.cmnamespace !== '0') throw new Error('membres hors de l\'espace principal');
+    return { query: { categorymembers: (m[p.cmtype] || []).map((title) => ({ title })) } };
+  }
+  if (p.prop === 'categories') {
+    propose.categories++;
+    return { query: { pages: p.titles.split('|').map((title) => {
+      const n = Number((title.match(/^Article (\d+)$/) || [])[1]);
+      const cat = n >= 1 && n <= 10 ? 'Catégorie:Exemples de test' : n >= 11 && n <= 15 ? 'Catégorie:Autre essai' : null;
+      return { title, categories: cat ? [{ title: cat }] : [] };
+    }) } };
+  }
+  if (p.prop === 'categoryinfo') {
+    const I = { 'Catégorie:Footballeur international français': { pages: 3, subcats: 1 }, 'Catégorie:Footballeur français': { pages: 12000, subcats: 40 },
+      'Catégorie:Exemples de test': { pages: 40, subcats: 0 }, 'Catégorie:Autre essai': { pages: 50, subcats: 0 } };
+    return { query: { pages: p.titles.split('|').map((title) => ({ title, categoryinfo: I[title] || { pages: 0, subcats: 0 } })) } };
+  }
   const titles = p.titles.split('|');
   const normalized = [];
   const redirects = [];
@@ -183,7 +244,7 @@ async function main() {
     SVGElement: function SVGElement() {},
     Element: function Element() {},
     Node: function Node() {},
-    queueMicrotask,
+    queueMicrotask, AbortController,
   };
   ctx.window = ctx;
   ctx.self = ctx;
@@ -193,7 +254,8 @@ async function main() {
     const headers = init.headers || {};
     const method = init.method || 'GET';
     const body = init.body ? JSON.parse(init.body) : undefined;
-    if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org)\//.test(url)) {
+    if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
+      if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
       const data = wikiHandle(url);
       return { ok: true, status: 200, headers: { get: () => null }, json: async () => data };
     }
@@ -221,6 +283,8 @@ async function main() {
   app.setAttribute('id', 'app');
   doc.body.appendChild(app);
   vm.runInContext(fs.readFileSync(VUE, 'utf8'), ctx, { filename: 'vue.js' });
+  for (const m of ['match.js', 'propose.js']) vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', m), 'utf8'), ctx, { filename: m });
+  check0(/assets\/match\.js[\s\S]*assets\/propose\.js[\s\S]*assets\/app\.js/.test(html), 'match.js et propose.js doivent être chargés avant app.js');
   vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', 'app.js'), 'utf8'), ctx, { filename: 'app.js' });
 
   const settle = async (ms = 30) => { const t = SERVER ? Math.max(ms, 250) : ms; for (let i = 0; i < 6; i++) await sleep(t / 6); };
@@ -337,7 +401,8 @@ async function main() {
   const titles = cls('card__title').map(text);
   check(titles.slice(0, 5).join('|') === titles.slice(0, 5).sort((a, b) => a.localeCompare(b, 'fr', { numeric: true, sensitivity: 'base' })).join('|'), 'tri par titre incorrect : ' + titles.slice(0, 5).join(' | '));
 
-  // 5. Sélection (Maj+clic) et bande de sélection
+  const modalBtn = (t) => { const m = one('modal'); const x = m && m.querySelectorAll('button').filter((n) => text(n).trim() === t)[0]; if (!x) fail('bouton absent de la fenêtre : ' + t + ' / ' + text(m).slice(0, 400)); return x; };
+  // 5. Sélection (Maj+clic) et bande de sélection ; tags à deux niveaux (catégorie facultative)
   const picks = all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox');
   picks[0].click();
   await settle();
@@ -350,11 +415,29 @@ async function main() {
   await settle();
   check(has('« À échanger » ajouté à 5 cartes.'), 'ajout groupé sans confirmation');
   if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.card_ids.length === 5 && b.add[0] === 'À échanger'), 'appel tags/bulk incorrect');
-  check(all((n) => n.classList.contains('chip') && text(n).includes('À échanger')).length === 1, 'le tag n\'apparaît pas dans la colonne des tags');
   check(cls('cell__tags').filter((t) => text(t).includes('À échanger')).length === 5, 'les tags ne sont pas affichés sous les cartes');
+  // Une étiquette sans « / » est rangée dans « Autres », catégorie repliée par défaut.
+  const catChip = (name) => cls('tagcat').map((n) => n.querySelector('.chip')).find((b) => b && text(b.querySelector('.chip__label')) === name);
+  const subChip = (name) => all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && n.parentNode.classList.contains('tagcat__subs') && text(n.querySelector('.chip__label')) === name)[0];
+  const unfold = async (cat) => { const b = all((n) => n.classList.contains('fold') && n.getAttribute('aria-label') === 'Déplier ' + cat)[0]; if (b) { b.click(); await settle(); } };
+  check(catChip('Autres') && text(catChip('Autres').querySelector('.n')) === '5' && !subChip('À échanger'), 'catégorie « Autres » (repliée, 5 cartes) absente');
+  // Catégorie choisie dans la bande : « Brésil » + Pays -> « Pays/Brésil » ; la carte n'affiche que « Brésil ».
+  picks[0].click();
+  await settle();
+  type(byId('bulk-tag'), 'Brésil');
+  byId('bulk-cat').value = 'Pays';
+  byId('bulk-cat').dispatch('change');
+  needButton('Ajouter').click();
+  await settle();
+  if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/bulk' && b.add[0] === 'Pays/Brésil' && b.card_ids.length === 4), 'tag rangé mal envoyé');
+  const bresil = all((n) => n.classList.contains('tag') && text(n) === 'Brésil');
+  check(bresil.length === 4 && bresil[0].getAttribute('title') === 'Pays › Brésil', 'la sous-catégorie seule (catégorie en info-bulle) attendue sous les cartes');
+  check(catChip('Pays') && text(catChip('Pays').querySelector('.n')) === '4', 'catégorie « Pays » absente du menu');
   // Quota ou base pleine : le 503 du serveur s'affiche tel quel.
   if (!SERVER) {
     type(byId('bulk-tag'), 'QUOTA');
+    byId('bulk-cat').value = '';
+    byId('bulk-cat').dispatch('change');
     needButton('Ajouter').click();
     await settle();
     check(has("La base du classeur est pleine pour aujourd'hui (quota gratuit atteint) : réessaie demain."), "le 503 (quota) ne s'affiche pas tel quel");
@@ -363,12 +446,21 @@ async function main() {
   await settle(400);
   check(!one('bulk'), 'la bande de sélection reste');
 
-  // 6. Filtre par tag, renommage
-  all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && text(n).includes('À échanger'))[0].click();
+  // 6. Menu à deux niveaux : filtre par catégorie (union), par sous-catégorie, renommage
+  catChip('Pays').click();
+  await settle();
+  check(cls('cell').length === 4 && text(one('count-line')).includes('Pays (toute la catégorie)'), 'le filtre par catégorie ne marche pas');
+  needButton('Réinitialiser les filtres').click();
+  await settle();
+  await unfold('Autres');
+  check(subChip('À échanger'), 'sous-catégorie absente une fois la catégorie dépliée');
+  check(JSON.parse(ls.get('classeur-tagcats') || '[]').includes('Autres'), 'état des catégories dépliées non gardé');
+  subChip('À échanger').click();
   await settle();
   check(cls('cell').length === 5 && text(one('count-line')).includes('5 cartes'), 'le filtre par tag ne marche pas');
   needButton('Renommer ou supprimer « À échanger »').click();
   await settle();
+  check(byId('tag-cat') && byId('tag-cat').value === 'Autres', 'liste des catégories absente de la fenêtre du tag');
   type(byId('tag-to'), 'Échange');
   all((n) => n.tagName === 'BUTTON' && text(n) === 'Renommer')[0].click();
   await settle();
@@ -376,7 +468,7 @@ async function main() {
   needButton('Réinitialiser les filtres').click();
   await settle();
 
-  // 7. Fiche : tags, suggestions Wikidata (métier au féminin, pays), validation, collections
+  // 7. Fiche : tags, suggestions Wikidata (métier au féminin, pays) rangées, validation
   type(q, 'rihanna');
   await settle();
   one('card').dispatch('click');
@@ -384,11 +476,12 @@ async function main() {
   const fiche = () => one('fiche');
   check(fiche() && text(fiche()).includes('Rihanna') && text(fiche()).includes('Légendaire') && text(fiche()).includes('Vues par mois'), 'fiche absente');
   check(fiche().querySelector('.card') && fiche().querySelector('.card').classList.contains('big'), 'grande carte absente de la fiche');
-  check(text(fiche()).includes('Chanteuse') && text(fiche()).includes('Barbade'), 'suggestions Wikidata absentes : ' + text(fiche()).slice(-200));
+  check(text(fiche()).includes('Métiers › Chanteuse') && text(fiche()).includes('Pays › Barbade'), 'suggestions rangées absentes : ' + text(fiche()).slice(-220));
   check(!text(fiche()).includes('Être humain'), '« être humain » ne doit pas être suggéré');
   fiche().querySelectorAll('button').filter((b) => text(b).includes('Valider les suggestions'))[0].click();
   await settle();
-  if (!SERVER) check(JSON.stringify(api.st.tags.get('c0')) === '["Chanteuse","Barbade"]', 'tags/set après validation : ' + JSON.stringify(api.st.tags.get('c0')));
+  if (!SERVER) check(JSON.stringify(api.st.tags.get('c0')) === '["Métiers/Chanteuse","Pays/Barbade"]', 'tags/set après validation : ' + JSON.stringify(api.st.tags.get('c0')));
+  check(fiche().querySelectorAll('.tag.own').map(text).join('|') === 'Chanteuse|Barbade', 'la fiche doit afficher les sous-catégories seules');
   type(byId('new-tag'), 'Musique');
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
   await settle();
@@ -397,6 +490,7 @@ async function main() {
   await settle(500);
   check(!fiche(), 'Échap ne ferme pas la fiche');
   type(q, '');
+  check(text(catChip('Pays').querySelector('.n')) === '5' && catChip('Métiers'), 'les suggestions validées ne sont pas rangées dans le menu');
 
   // 8. Suggestions pour toute la collection (colonne des tags)
   needButton('Calculer les suggestions pour toute la collection').click();
@@ -406,19 +500,77 @@ async function main() {
   await settle();
   check(has('Calculer les suggestions pour toute la collection'), 'Arrêter sans effet');
 
-  // 9. Collections : catalogue en lignes, album d'une collection proposée, ajout à mes collections
+  // 8 bis. « Ranger mes tags » : aperçu (catégorie modifiable), puis application ; déplacer un tag à la main
+  needButton('Ranger mes tags').click();
+  for (let i = 0; i < 300 && (!one('arrange') || has('Analyse de tes tags') || has('Recherche sur Wikidata') || has('Lecture des cartes')); i++) await sleep(50);
+  await settle();
+  const arrRows = () => cls('arrange')[0].childNodes.filter((n) => n.nodeType === 1);
+  const rowOf = (name) => arrRows().find((li) => text(li.querySelector('.from')).startsWith(name));
+  // Un mot libre trouvé seulement sur Wikidata n'est plus rangé d'office (« Musique » pouvait finir en événements) :
+  // il reste dans Autres avec un « peut-être… », et c'est l'utilisateur qui choisit.
+  check(rowOf('Musique') && rowOf('Musique').querySelector('select').value === 'Autres' && text(rowOf('Musique')).includes('peut-être'), 'aperçu : Musique devrait rester dans Autres avec une suggestion');
+  rowOf('Musique').querySelector('select').value = 'Culture et œuvres';
+  rowOf('Musique').querySelector('select').dispatch('change');
+  await settle();
+  check(rowOf('Échange') && rowOf('Échange').querySelector('select').value === 'Autres' && text(rowOf('Échange')).includes('reste dans Autres'), 'aperçu : Échange devrait rester dans Autres');
+  check(!rowOf('Brésil') && !rowOf('Chanteuse'), 'les tags déjà rangés ne doivent pas être proposés');
+  if (!SERVER) check(wdSearches.includes('Musique') && wdSearches.includes('Échange'), 'Wikidata non interrogé sur les libellés : ' + wdSearches.join(', '));
+  needButton('Appliquer (1 tag)').click();
+  await settle(200);
+  if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/rename' && b.from === 'Musique' && b.to === 'Culture et œuvres/Musique'), 'renommage du rangement mal envoyé');
+  check(!one('arrange') && catChip('Culture et œuvres') && has('Tags rangés : 1'), 'rangement non appliqué');
+  await unfold('Autres');
+  subChip('Échange').click();
+  await settle();
+  needButton('Renommer ou supprimer « Échange »').click();
+  await settle();
+  byId('tag-cat').value = 'Organisations';
+  byId('tag-cat').dispatch('change');
+  all((n) => n.tagName === 'BUTTON' && text(n) === 'Renommer')[0].click();
+  await settle();
+  if (!SERVER) check(api.st.calls.some(([m, p, b]) => p === '/api/tags/rename' && b.from === 'Échange' && b.to === 'Organisations/Échange'), 'déplacement à la main mal envoyé');
+  check(catChip('Organisations') && !catChip('Autres'), 'le tag déplacé n\'a pas changé de catégorie');
+  needButton('Réinitialiser les filtres').click();
+  await settle();
+  const cats = cls('tagcat').map((n) => text(n.querySelector('.chip__label')));
+  check(cats.join('|') === 'Pays|Métiers|Culture et œuvres|Organisations', 'ordre des catégories : ' + cats.join(' | '));
+
+  // 9. Collections : propositions à 5 % au moins, catalogue complet derrière un lien, retrait, masquage
   await goTab('collections');
-  // Les collections proposées à 0 sont masquées par défaut (demande de l'utilisateur) : un bouton les affiche.
   check(has('Mes collections') && has('Collections proposées'), 'vue d\'ensemble des collections absente');
-  check(!has('Races bovines'), 'une collection proposée à 0 est affichée par défaut');
-  needButton('collections pas encore commencées').click(); await settle();
-  check(has('Bêtes et terroir') && has('Races bovines'), 'le bouton n\'affiche pas les collections proposées à 0');
-  check(cls('row').length > 10 && cls('fan').length === cls('row').length, 'lignes de collections (éventail) absentes');
+  check(!has('Races bovines'), 'une proposition à moins de 5 % est affichée');
   const planetRow = all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Planètes du Système solaire'))[0];
-  check(planetRow, 'ligne « Planètes du Système solaire » absente');
-  planetRow.click();
+  check(planetRow && text(planetRow).includes('1 sur 9'), 'les Planètes (1 sur 9, plus de 5 %) devraient être proposées');
+  needButton('Parcourir tout le catalogue').click();
+  await settle();
+  check(has('Bêtes et terroir') && has('Races bovines'), 'le lien « Parcourir tout le catalogue » n\'affiche pas le reste');
+  check(cls('row').length > 10 && cls('fan').length === cls('row').length, 'lignes de collections (éventail) absentes');
+  // Retirer une proposition (confirmation dans la page), puis la rétablir dans les Réglages.
+  all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Races bovines'))[0].click();
   await settle(80);
-  check(has('proposée') && has("Il t'en manque") && cls('slot').length === 9, "l'album d'une collection proposée ne s'ouvre pas");
+  needButton('Retirer des propositions').click();
+  await settle();
+  check(has('Retirer « Races bovines » des propositions ?'), 'confirmation du retrait absente');
+  modalBtn('Retirer des propositions').click();
+  await settle(100);
+  if (!SERVER) check(api.st.prefs && api.st.prefs.hidden_catalog.includes('vaches'), 'retrait non enregistré dans prefs : ' + JSON.stringify(api.st.prefs));
+  check(has('Mes collections') && !all((n) => n.classList.contains('row') && text(n).includes('Races bovines')).length, 'la proposition retirée reste affichée');
+  // Masquer toutes les propositions, puis les réafficher.
+  needButton('Masquer toutes les propositions').click();
+  await settle(100);
+  check(has('Propositions masquées') && !has('Planètes du Système solaire') && !cls('subgroup').length, 'les propositions ne sont pas masquées');
+  if (!SERVER) check(api.st.prefs.hide_catalog === true, 'masquage non enregistré');
+  await goTab('reglages');
+  check(has('Collections proposées : masquées') && has('Rétablir la proposition retirée'), 'réglage des propositions absent');
+  needButton('Rétablir la proposition retirée').click();
+  await settle();
+  needButton('Afficher les propositions').click();
+  await settle();
+  if (!SERVER) check(api.st.prefs.hide_catalog === false && api.st.prefs.hidden_catalog.length === 0, 'rétablissement non enregistré : ' + JSON.stringify(api.st.prefs));
+  await goTab('collections');
+  all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Planètes du Système solaire'))[0].click();
+  await settle(80);
+  check(has('proposée') && has("Il t'en manque") && cls('slot').length === 8 && cls('cell').length === 1, "l'album d'une collection proposée ne s'ouvre pas");
   needButton('Ajouter à mes collections').click();
   await settle(80);
   if (!SERVER) check(api.st.targets.some((t) => t.source === 'catalog:planetes' && t.items.length === 9), 'collection du catalogue mal enregistrée');
@@ -427,12 +579,92 @@ async function main() {
   await settle();
   check(all((n) => n.classList.contains('row') && text(n).includes('Planètes')).length === 1, 'collection ajoutée en double ou absente');
 
-  // 10. Nouvelle collection : vérification sur Wikipédia (redirection, homonymie, introuvable)
+  // 9 ter. Rapprochement par identifiant Wikidata : « Hydrogène (élément) » compte pour « Hydrogène » (même qid)
+  for (let i = 0; i < 100 && !(ls.get('classeur-qid') || '').includes('Q556'); i++) await sleep(100);
+  if (buttonByText('Parcourir tout le catalogue')) { needButton('Parcourir tout le catalogue').click(); await settle(); }
+  const elemRow = () => all((n) => n.classList.contains('row') && (n.getAttribute('aria-label') || '').startsWith('Éléments chimiques'))[0];
+  for (let i = 0; i < 40 && !(elemRow() && text(elemRow()).includes('1 sur 118')); i++) await sleep(100);
+  check(elemRow() && text(elemRow()).includes('1 sur 118'), 'la carte « Hydrogène (élément) » doit compter pour « Hydrogène » (qid) : ' + (elemRow() ? text(elemRow()) : 'ligne absente'));
+  elemRow().click();
+  await settle(80);
+  check(cls('cell').length === 1 && cls('slot').length === 117 && text(cls('cell')[0]).includes('Hydrogène (élément)'), "l'album doit montrer la carte à la place de « Hydrogène »");
+  needButton('← Toutes les collections').click();
+  await settle();
+  if (buttonByText('Ne montrer que celles dont tu as au moins 5 %')) { needButton('Ne montrer que celles dont tu as au moins 5 %').click(); await settle(); }
+
+  // 9 quater. Propositions d'après les catégories Wikipédia de tes cartes (au moins 5 % et 2 cartes)
+  for (let i = 0; i < 150 && !has('Exemples de test'); i++) await sleep(100);
+  check(has("D'après tes cartes (catégories Wikipédia)") && has('Exemples de test') && has('Autre essai'), 'propositions d\'après les catégories absentes');
+  check(propose.categories > 0, 'propose.js n\'a pas interrogé Wikipédia');
+  const wpRow = (name) => all((n) => n.classList.contains('row') && n.classList.contains('wp') && text(n.querySelector('.name')) === name)[0];
+  check(text(wpRow('Exemples de test')).includes('7 sur 40') && text(wpRow('Exemples de test')).includes('Catégorie Wikipédia'), 'ligne de proposition incorrecte : ' + text(wpRow('Exemples de test')));
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Retirer « Autre essai » des propositions')[0].click();
+  await settle();
+  modalBtn('Retirer des propositions').click();
+  await settle(100);
+  if (!SERVER) check(api.st.prefs.hidden_catalog.includes('wp:Autre essai'), 'retrait de la proposition non enregistré : ' + JSON.stringify(api.st.prefs));
+  check(!wpRow('Autre essai'), 'la proposition retirée reste affichée');
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Ajouter « Exemples de test » à mes collections')[0].click();
+  for (let i = 0; i < 60 && !has('ajoutée à tes collections : 40 articles'); i++) await sleep(50);
+  if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Exemples de test' && t.items.length === 40 && t.name === 'Exemples de test'), 'proposition mal enregistrée');
+  check(text(one('album-title')).includes('Exemples de test') && text(one('album-title')).includes('7 sur 40'), "l'album de la proposition ajoutée ne s'ouvre pas");
+  needButton('← Toutes les collections').click();
+  await settle();
+  check(!wpRow('Exemples de test'), 'la proposition ajoutée reste proposée');
+
+  // 9 bis. Nouvelle collection par mots-clés : catégories Wikipédia et requête Wikidata
   needButton('Nouvelle collection').click();
+  await settle();
+  check(byId('kw') && all((n) => n.getAttribute('role') === 'tab' && n.getAttribute('aria-selected') === 'true').some((t) => text(t) === 'Par mots-clés'), 'la recherche par mots-clés doit être l\'onglet par défaut');
+  type(byId('kw'), 'footballeur français');
+  for (let i = 0; i < 100 && !(has('Interprétation') && !has('Recherche…')); i++) await sleep(50);
+  await settle();
+  check(has('Interprétation : Métier : footballeur · Nationalité : France'), 'interprétation Wikidata absente : ' + text(one('modal')).slice(0, 400));
+  const candTexts = cls('cand').map(text);
+  check(candTexts.length === 3, 'trois candidats attendus : ' + candTexts.join(' / '));
+  check(candTexts[0].includes('Footballeur français') && candTexts[0].includes('plus de 3 000 articles · Wikidata') && candTexts[0].includes('Garder les plus connus'), 'candidat Wikidata incorrect : ' + candTexts[0]);
+  check(candTexts.some((t) => t.includes('Footballeur international français') && t.includes('3 articles · 1 sous-catégories · Catégorie Wikipédia')), 'candidat catégorie absent');
+  check(cls('cand').some((c) => c.classList.contains('disabled') && text(c).includes('trop grande : précise ta recherche')), 'la catégorie trop grande doit être grisée');
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Garder les 100 plus connus')[0].click();
+  for (let i = 0; i < 60 && !cls('preview').length; i++) await sleep(50);
+  check(byId('kw-name') && byId('kw-name').value === 'Footballeur français (les 100 plus connus)' && cls('preview')[0].querySelectorAll('li').length === 20 && has('… et 80 autres'),
+    'aperçu des plus connus incorrect');
+  if (!SERVER) check(/ORDER BY DESC\(\?sl\)/.test(lastProbe) && /LIMIT 100/.test(lastProbe), 'requête des plus connus incorrecte');
+  type(byId('kw-name'), 'Footballeurs français célèbres');
+  modalBtn('Enregistrer').click();
+  for (let i = 0; i < 60 && !has('enregistrée : 100 articles'); i++) await sleep(50);
+  if (!SERVER) {
+    const t = api.st.targets.find((x) => x.name === 'Footballeurs français célèbres');
+    check(t && t.items.length === 100 && t.items[0].title === 'Joueur 1' && t.items[0].qid === 'Q900000' && t.items[0].status === 'ok', 'collection Wikidata mal enregistrée');
+  }
+  check(text(one('album-title')).includes('Footballeurs français célèbres'), 'l\'album de la nouvelle collection ne s\'ouvre pas');
+  needButton('← Toutes les collections').click();
+  await settle();
+  needButton('Nouvelle collection').click();
+  await settle();
+  type(byId('kw'), 'footballeur français');
+  byId('kw').dispatch('keydown', { key: 'Enter' });
+  for (let i = 0; i < 100 && cls('cand').length < 3; i++) await sleep(50);
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Choisir Footballeur international français')[0].click();
+  for (let i = 0; i < 60 && !cls('preview').length; i++) await sleep(50);
+  check(cls('preview')[0].querySelectorAll('li').length === 3, 'membres de la catégorie absents');
+  all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'))[0].dispatch('change');
+  for (let i = 0; i < 60 && cls('preview')[0].querySelectorAll('li').length !== 4; i++) await sleep(50);
+  check(cls('preview')[0].querySelectorAll('li').map(text).join('|') === 'Zinédine Zidane|Thierry Henry|Kylian Mbappé|Jeune Espoir', 'sous-catégories mal fusionnées : ' + cls('preview')[0].querySelectorAll('li').map(text).join('|'));
+  modalBtn('Enregistrer').click();
+  for (let i = 0; i < 60 && !has('enregistrée : 4 articles'); i++) await sleep(50);
+  if (!SERVER) check(api.st.targets.some((x) => x.name === 'Footballeur international français' && x.items.length === 4), 'collection de catégorie mal enregistrée');
+  needButton('← Toutes les collections').click();
+  await settle();
+
+  // 10. Nouvelle collection (liste d'articles) : vérification sur Wikipédia (redirection, homonymie, introuvable)
+  needButton('Nouvelle collection').click();
+  await settle();
+  all((n) => n.getAttribute('role') === 'tab' && text(n) === "Liste d'articles")[0].click();
   await settle();
   type(byId('ed-name'), "Dieux de l'Olympe");
   type(byId('ed-text'), 'zeus\nPoseidon\nhttps://fr.wikipedia.org/wiki/H%C3%A9ra\nMercure\nInexistant\nRihanna\n');
-  needButton('Enregistrer').click();
+  modalBtn('Enregistrer').click();
   for (let i = 0; i < 100 && !has('posent problème'); i++) await sleep(50);
   await settle(200);
   check(has('2 articles posent problème') && has('Mercure') && has('Inexistant'), "les problèmes de vérification ne s'affichent pas");
@@ -443,6 +675,7 @@ async function main() {
     const t = api.st.targets.find((x) => x.name === "Dieux de l'Olympe");
     check(t && t.items.map((i) => i.title + ':' + i.status).join(',') === 'Zeus:ok,Poséidon:ok,Héra:ok,Mercure:disambiguation,Inexistant:missing,Rihanna:ok', 'items enregistrés : ' + (t && JSON.stringify(t.items)));
     check(t.items[0].image === 'https://upload.wikimedia.org/z.jpg' && t.items[0].description === 'dieu grec', 'description ou vignette perdue');
+    check(t.items[0].qid === 'Q34201' && !('qid' in t.items[4]), "qid de la vérification sur Wikipédia non envoyé");
   }
   check(text(one('album-title')).includes('1 sur 6') && has("Il t'en manque 5"), 'en-tête de la collection incorrect');
   for (let i = 0; i < 40 && has('Rareté estimée des cases vides'); i++) await sleep(100);
@@ -590,7 +823,7 @@ async function main() {
   modalButton('Oublier ce navigateur').click();
   await settle(100);
   check(has("J'ai déjà un lien"), "oublier ce navigateur ne ramène pas à l'accueil");
-  const left = ['classeur-key', 'classeur-pv', 'classeur-sugg', 'classeur-import-key', 'classeur-known', 'classeur-target'].filter((k) => ls.has(k));
+  const left = ['classeur-key', 'classeur-pv', 'classeur-sugg', 'classeur-import-key', 'classeur-known', 'classeur-target', 'classeur-qid', 'classeur-cats', 'classeur-catinfo', 'classeur-propose-at', 'classeur-natgroup', 'classeur-tagcats'].filter((k) => ls.has(k));
   check(!left.length, 'encore gardé après « Oublier ce navigateur » : ' + left.join(', '));
 
   // 19. Lien personnel sans clé gardée : vérifié puis adopté sans question, fragment effacé
@@ -635,6 +868,8 @@ async function runBookmarklet(code, classeurFetch, key) {
       card: { id, atk: 100 + i, def: 50, lang: 'fr', rarity: special ? special.rarity : ['C', 'PC', 'R', 'SR', 'UR'][i % 5], q_score: 12.5, category: special ? special.cat : 'catégorie ' + (i % 7), image_url: i % 3 ? null : 'https://upload.wikimedia.org/x' + i + '.jpg', pageviews: i * 3, created_at: 'x', hide_image: i === 3, wikipedia_url: 'https://fr.wikipedia.org/wiki/A' + i, wikipedia_title: special ? special.title : (i < 1050 ? 'Article ' + i : 'Article ' + (i - 1050)) } });
   }
   entries[2].card.wikipedia_title = '(11194) Mirna';
+  entries[5].card.wikipedia_title = 'Terre';
+  entries[6].card.wikipedia_title = 'Hydrogène (élément)';
   // Exemplaires relus (même entry.id) : comptés une seule fois. Entrées inexploitables : ignorées et annoncées.
   for (let i = 0; i < 5; i++) entries.push(JSON.parse(JSON.stringify(entries[i])));
   entries.push({ id: 'x1', card_id: 'bad1', count: 1, card: { id: 'bad1', wikipedia_title: '', rarity: 'C' } });

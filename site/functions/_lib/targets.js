@@ -9,6 +9,7 @@ const MAX_TARGETS = 50;
 const MAX_ITEMS_BYTES = 600 * 1024; // éléments d'une collection, en JSON
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
 const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
+const QID = /^Q[1-9][0-9]{0,11}$/;
 
 // Collection telle que stockée : `items` recopié en texte JSON, sans être relu.
 function toTarget(row, items = row.items) {
@@ -43,7 +44,10 @@ function cleanItem(item, i) {
   const image = typeof item.image === 'string' && item.image.length <= 1000 && /^https?:\/\//i.test(item.image)
     ? item.image
     : null;
-  return { title, description, image, status };
+  // Identifiant Wikidata facultatif (reconnaît une carte même si son titre diffère) ; gardé seulement s'il est valide.
+  return typeof item.qid === 'string' && QID.test(item.qid)
+    ? { title, description, image, status, qid: item.qid }
+    : { title, description, image, status };
 }
 
 // GET /api/targets

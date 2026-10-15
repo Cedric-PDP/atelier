@@ -4,7 +4,7 @@ import { HttpError } from './http.js';
 import { MAX_CARDS, sortTags } from './cards.js';
 import { cleanText } from './util.js';
 
-const MAX_TAG_LENGTH = 40;
+const MAX_TAG_LENGTH = 60; // deux niveaux dans le nom : « Culture et œuvres/Groupe de musique »
 const MAX_TAGS_PER_CARD = 30;
 const MAX_TAGS_PER_USER = 50_000; // étiquettes des cartes disparues comprises
 const MAX_PAIRS = 5000; // couples carte × étiquette touchés par un appel de tags/bulk

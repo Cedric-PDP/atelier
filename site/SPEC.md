@@ -78,7 +78,7 @@ sert à vérifier qu'un export est complet. La dernière page a moins de 50 entr
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
 | `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, new_ids, session:{has_cookie, expired, updated_at}}` |
-| `PATCH /api/me` | `{name}` | `{user}` |
+| `PATCH /api/me` | `{name?, prefs?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier : `hidden_catalog` = ids du catalogue retirés, `hide_catalog` = propositions masquées) | `{user}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, étiquettes, collections, cookie) et le compte |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
@@ -94,10 +94,15 @@ sert à vérifier qu'un export est complet. La dernière page a moins de 50 entr
 | `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 
-**Collection à compléter** : `{id, name, items:[{title, description, image, status}], source, created_at,
-updated_at}`, `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
+**Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?}], source, created_at,
+updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
+diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par titre, puis par qid
+(`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
 vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (au plus 3 000 éléments,
-100 collections par utilisateur). `source` = `catalog:<id>` quand elle vient de `catalog.json`.
+100 collections par utilisateur). `source` = `catalog:<id>` quand elle vient de `catalog.json`, `wp:<nom de la
+catégorie>` quand elle vient d'une catégorie de Wikipédia proposée (`site/public/assets/propose.js` : catégories des cartes
+de l'utilisateur dont il possède au moins 5 % et 2 cartes, hors catégories de rangement et de temps), `wd` ou `cat` quand
+elle vient de la recherche par mots-clés (requête Wikidata ou catégorie de Wikipédia).
 
 **CarteImport** (ce qu'envoie le favori, déjà regroupée par carte) : la Carte ci-dessus **sans `tags`**. Le favori
 regroupe les exemplaires et ne garde que ces champs : le serveur n'a presque rien à calculer.
@@ -129,8 +134,9 @@ en général qu'environ une heure après le collage. Le favori est donc le chemi
 (`Access-Control-Allow-Headers: content-type, x-classeur-key`). Le reste est même origine.
 
 **Limites et quotas** (D1 gratuit : 500 Mo, 100 000 lignes écrites par jour, partagés par tous) : `MAX_USERS` comptes
-(variable, 50 par défaut) ; 20 000 cartes par utilisateur ; étiquette = texte nettoyé, 40 caractères au plus, 30 par
-carte, 50 000 par compte, 5 000 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par
+(variable, 50 par défaut) ; 20 000 cartes par utilisateur ; étiquette = texte nettoyé, 60 caractères au plus (2 niveaux au plus dans le nom :
+« Catégorie/Sous-catégorie », catégories larges : Pays, Métiers, Lieux, Culture et œuvres, Sciences et nature, Histoire
+et événements, Organisations, Autres), 30 par carte, 50 000 par compte, 5 000 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par
 compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente ; corps JSON
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
 longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`. Quota ou base pleine : `503`

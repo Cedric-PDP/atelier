@@ -2,11 +2,12 @@
 // Clé principale : toutes les routes. Clé d'import (celle du favori) : POST /api/import seulement.
 
 import { HttpError, json, raw } from './http.js';
-import { cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
+import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 
 const USER_COLUMNS =
-  'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, import_key_hash';
+  'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, import_key_hash, prefs';
 const DEFAULT_MAX_USERS = 50;
+const MAX_PREFS_BYTES = 4 * 1024;
 
 // Nom affiché : facultatif, 60 caractères au plus ; vide = aucun.
 export function cleanName(value) {
@@ -68,6 +69,7 @@ export async function getMe(env, user) {
     card_count: row ? row.n : 0,
     new_ids: raw(user.new_ids || '[]'), // texte JSON écrit par la finalisation d'import
     has_import_key: !!user.import_key_hash,
+    prefs: raw(user.prefs || '{}'), // objet JSON rangé tel quel par PATCH /api/me
     session: {
       has_cookie: !!user.cookie_enc,
       expired: !!user.session_expired,
@@ -76,12 +78,24 @@ export async function getMe(env, user) {
   };
 }
 
-// PATCH /api/me {name}
+// PATCH /api/me {name?, prefs?} : `prefs` (objet JSON de 4 Ko au plus) remplace les préférences entières ; son
+// contenu n'est pas vérifié (l'interface y range ce qu'elle veut).
 export async function patchMe(env, user, body) {
-  if (!('name' in body)) throw new HttpError(400, 'Rien à modifier : indique un nom.');
-  const name = cleanName(body.name);
-  await env.DB.prepare('UPDATE users SET name = ?1 WHERE id = ?2').bind(name, user.id).run();
-  return { user: publicUser({ ...user, name }) };
+  const hasName = Object.hasOwn(body, 'name');
+  const hasPrefs = Object.hasOwn(body, 'prefs');
+  if (!hasName && !hasPrefs) throw new HttpError(400, 'Rien à modifier : indique un nom ou des préférences.');
+  const name = hasName ? cleanName(body.name) : user.name;
+  let prefs = user.prefs || '{}';
+  if (hasPrefs) {
+    const p = body.prefs;
+    if (!p || typeof p !== 'object' || Array.isArray(p)) throw new HttpError(400, 'Les préférences doivent être un objet JSON.');
+    prefs = JSON.stringify(p);
+    if (prefs.length > MAX_PREFS_BYTES || byteLength(prefs) > MAX_PREFS_BYTES) {
+      throw new HttpError(413, 'Préférences trop volumineuses : 4 Ko au plus.');
+    }
+  }
+  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2 WHERE id = ?3').bind(name, prefs, user.id).run();
+  return { user: publicUser({ ...user, name }), prefs: raw(prefs) };
 }
 
 // POST /api/import-key : nouvelle clé d'import (le favori qui portait l'ancienne cesse de marcher).
