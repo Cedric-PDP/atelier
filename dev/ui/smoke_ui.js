@@ -128,7 +128,11 @@ const WIKI = {
   Rihanna: { q: 'Q36844', desc: 'chanteuse barbadienne', pv: 30000 },
   'Abeille domestique': { q: 'Q30034', desc: "espèce d'insectes", pv: 100 },
   'Hydrogène (élément)': { q: 'Q556' },
+  'Liste de races bovines': { q: 'Q900100' },
+  'Liste des races bovines de France': { q: 'Q900110' },
 };
+// Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
+const LINKS = { 'Charolaise': 'Q900101', 'Limousine (race bovine)': 'Q900102', 'Salers (race bovine)': 'Q900103', France: 'Q142', 'Massif central': 'Q900104' };
 const REDIRECTS = { 'Poseidon': 'Poséidon' };
 let wikiCalls = 0;
 const propose = { categories: 0 };
@@ -150,6 +154,12 @@ function wikiHandle(url) {
   }
   if (u.hostname === 'query.wikidata.org') {
     const q = u.searchParams.get('query');
+    if (/SELECT \?item \?c \?desc/.test(q)) {
+      const ids = [...q.matchAll(/wd:(Q\d+)/g)].map((m) => m[1]);
+      return { results: { bindings: ids.map((id) => (Number(id.slice(1)) >= 900101 && Number(id.slice(1)) <= 900103
+        ? { item: uri(id), c: uri('Q12045585'), desc: lit('race bovine française') } : { item: uri(id), c: uri(id === 'Q142' ? 'Q6256' : 'Q1620908') })) } };
+    }
+    if (/wd:Q12045585 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('race bovine') }] } };
     if (/P279\+/.test(q)) return { results: { bindings: [] } };
     if (/P1549/.test(q)) return { results: { bindings: q.includes('fr[aàâä]n[cç]') ? [{ c: uri('Q142'), cl: lit('France'), isCountry: bool(true) }] : [] } };
     if (/AS \?country\)/.test(q)) {
@@ -173,6 +183,16 @@ function wikiHandle(url) {
   }
   const p = Object.fromEntries(u.searchParams);
   if (p.origin !== '*' || p.format !== 'json' || p.formatversion !== '2') throw new Error('paramètres Wikipédia manquants : ' + url);
+  if (p.list === 'search' && p.srnamespace === '0') {
+    if (!/^intitle:liste /.test(p.srsearch)) throw new Error('recherche de listes sans intitle : ' + p.srsearch);
+    return { query: { search: /bovin/i.test(p.srsearch) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }] : [] } };
+  }
+  if (p.generator === 'links') {
+    if (p.titles !== 'Liste de races bovines' || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
+    const pages = Object.entries(LINKS).map(([title, q]) => ({ title, pageprops: { wikibase_item: q } }));
+    pages.push({ title: 'Race inconnue', missing: true }, { title: 'Salers', pageprops: { disambiguation: '', wikibase_item: 'Q900105' } });
+    return { batchcomplete: true, query: { pages } };
+  }
   if (p.list === 'search') {
     if (p.srnamespace !== '14') throw new Error('recherche hors des catégories');
     return { query: { search: /footballeur/i.test(p.srsearch) ? [{ title: 'Catégorie:Footballeur international français' }, { title: 'Catégorie:Footballeur français' }] : [] } };
@@ -655,6 +675,44 @@ async function main() {
   for (let i = 0; i < 60 && !has('enregistrée : 4 articles'); i++) await sleep(50);
   if (!SERVER) check(api.st.targets.some((x) => x.name === 'Footballeur international français' && x.items.length === 4), 'collection de catégorie mal enregistrée');
   needButton('← Toutes les collections').click();
+  await settle();
+
+  // 9 ter. Nouvelle collection d'après les liens d'une page « Liste de… » : la nature dominante seulement, ou tous les liens
+  needButton('Nouvelle collection').click();
+  await settle();
+  type(byId('kw'), 'Races_bovines');
+  byId('kw').dispatch('keydown', { key: 'Enter' });
+  for (let i = 0; i < 100 && !(has('Interprétation') && !has('Recherche…')); i++) await sleep(50);
+  await settle();
+  const pageCands = cls('cand').map(text);
+  check(pageCands.length === 2 && pageCands[0].includes('Races bovines') && pageCands[0].includes('Page Wikipédia') && pageCands[1].includes('Races bovines de France'),
+    'pages « Liste de… » absentes : ' + pageCands.join(' / '));
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Choisir Races bovines')[0].click();
+  for (let i = 0; i < 100 && !cls('preview').length; i++) await sleep(50);
+  const linkPreview = () => cls('preview')[0].querySelectorAll('li').map(text).join('|');
+  const linkBox = () => all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'))[0];
+  check(linkPreview() === 'Charolaise|Limousine (race bovine)|Salers (race bovine)' && has('ne garder que les « race bovine » (3 sur 5 articles liés'), 'liens de la page mal filtrés : ' + linkPreview());
+  linkBox().dispatch('change');
+  for (let i = 0; i < 60 && cls('preview')[0].querySelectorAll('li').length !== 5; i++) await sleep(50);
+  check(linkPreview() === 'Charolaise|France|Limousine (race bovine)|Massif central|Salers (race bovine)', 'tous les liens : ' + linkPreview());
+  linkBox().dispatch('change');
+  for (let i = 0; i < 60 && cls('preview')[0].querySelectorAll('li').length !== 3; i++) await sleep(50);
+  modalBtn('Enregistrer').click();
+  for (let i = 0; i < 60 && !has('enregistrée : 3 articles'); i++) await sleep(50);
+  if (!SERVER) {
+    const t = api.st.targets.find((x) => x.name === 'Races bovines');
+    check(t && t.items.length === 3 && t.items[0].qid === 'Q900101' && t.items[0].description === 'race bovine française', 'collection de liens mal enregistrée');
+  }
+  needButton('← Toutes les collections').click();
+  await settle();
+  needButton('Nouvelle collection').click();
+  await settle();
+  type(byId('kw'), 'https://fr.wikipedia.org/wiki/Liste_des_races_bovines_de_France');
+  byId('kw').dispatch('keydown', { key: 'Enter' });
+  for (let i = 0; i < 100 && !(cls('cand').length && !has('Recherche…')); i++) await sleep(50);
+  await settle();
+  check(cls('cand').length === 1 && text(cls('cand')[0]).includes('Races bovines de France'), 'adresse collée : ' + cls('cand').map(text).join(' / '));
+  modalBtn('Annuler').click();
   await settle();
 
   // 10. Nouvelle collection (liste d'articles) : vérification sur Wikipédia (redirection, homonymie, introuvable)

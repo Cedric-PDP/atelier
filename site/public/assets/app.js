@@ -1931,6 +1931,83 @@
     }
     return [...out.values()];
   }
+  // Pages « Liste de… » (ou l'adresse d'une page collée) : leurs liens deviennent la collection.
+  function pageFromUrl(q) {
+    const m = q.match(/^https?:\/\/fr\.(?:m\.)?wikipedia\.org\/wiki\/([^?#]+)/i);
+    if (!m) return null;
+    try { return decodeURIComponent(m[1]).replace(/_/g, ' '); } catch (e) { return m[1].replace(/_/g, ' '); }
+  }
+  const listName = (t) => cap(t.replace(/^Liste\s+(?:de la |de l['’]|des |du |de |d['’])/i, ''));
+  // exact : titre tiré d'une adresse collée, pris tel quel (même si ce n'est pas une liste).
+  async function searchPages(q, signal, exact) {
+    const titles = [exact || q];
+    if (!exact) {
+      const words = simplify(q).split(' ').filter((w) => w.length > 2).map(fold);
+      const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'search', srnamespace: '0', srsearch: 'intitle:liste ' + q, srlimit: '20' }), 3, null, signal);
+      for (const r of (j && j.query && j.query.search) || []) {
+        const t = fold(r.title);
+        if (/^liste /.test(t) && words.every((w) => t.includes(w)) && !titles.includes(r.title)) titles.push(r.title);
+      }
+    }
+    const asked = titles.slice(0, 8);
+    const j = await getJson(wikiQ, wpUrl({ action: 'query', titles: asked.join('|'), redirects: '1', prop: 'pageprops', ppprop: 'disambiguation' }), 3, null, signal);
+    const alias = aliasOf((j && j.query) || {});
+    const byTitle = new Map(((j && j.query && j.query.pages) || []).map((p) => [p.title, p]));
+    const out = [];
+    for (const t of asked) {
+      let to = t;
+      for (let k = 0; k < 3 && alias[to]; k++) to = alias[to];
+      const p = byTitle.get(to);
+      if (!p || p.missing || p.invalid || (p.pageprops && 'disambiguation' in p.pageprops)) continue;
+      if ((!exact && !/^Liste\b/i.test(p.title)) || out.some((c) => c.title === p.title)) continue;
+      out.push({ id: 'links:' + p.title, source: 'links', title: p.title, name: listName(p.title), size: null });
+    }
+    return out.slice(0, 5);
+  }
+  // Articles liés depuis une page, avec leur nature (P31) et leur description Wikidata ; top = la nature la plus
+  // fréquente (dans « Liste de races bovines » : race bovine, 330 liens sur 589 ; le reste = pays, régions…).
+  async function pageLinks(title, signal) {
+    const by = new Map();
+    const drop = new Set();
+    let cont = {};
+    for (let guard = 0; guard < 12 && by.size < 5000; guard++) {
+      const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'links', titles: title, gplnamespace: '0', gpllimit: 'max', redirects: '1',
+        prop: 'pageprops', ppprop: 'wikibase_item|disambiguation', ...cont }), 3, null, signal);
+      for (const p of (j && j.query && j.query.pages) || []) {
+        if (p.missing || p.invalid) continue;
+        const pp = p.pageprops || {};
+        if ('disambiguation' in pp) drop.add(p.title);
+        const cur = by.get(p.title);
+        if (!cur) by.set(p.title, { title: p.title, description: null, qid: pp.wikibase_item || null, classes: [] });
+        else if (!cur.qid && pp.wikibase_item) cur.qid = pp.wikibase_item;
+      }
+      if (!j || !j.continue) break;
+      cont = j.continue;
+    }
+    const items = [...by.values()].filter((i) => !drop.has(i.title) && i.title !== title).sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+    const byQ = new Map(items.filter((i) => i.qid).map((i) => [i.qid, i]));
+    for (const batch of chunks([...byQ.keys()], 200)) {
+      const rows = await sparql(`SELECT ?item ?c ?desc WHERE { VALUES ?item { ${batch.map((id) => 'wd:' + id).join(' ')} }
+        OPTIONAL { ?item wdt:P31 ?c } OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } }`, 3, signal);
+      for (const r of rows) {
+        const it = byQ.get(qid(r.item.value));
+        if (!it) continue;
+        if (r.c) { const c = qid(r.c.value); if (!it.classes.includes(c)) it.classes.push(c); }
+        if (r.desc && !it.description) it.description = r.desc.value;
+      }
+    }
+    const count = new Map();
+    for (const it of items) for (const c of it.classes) count.set(c, (count.get(c) || 0) + 1);
+    let top = null;
+    for (const [c, n] of count) if (!top || n > top.n) top = { id: c, n, label: c };
+    // Filtre seulement s'il y a vraiment une nature dominante et quelque chose à écarter.
+    if (top && (top.n < 3 || top.n < 0.2 * items.length || top.n === items.length)) top = null;
+    if (top) {
+      const rows = await sparql(`SELECT ?l WHERE { wd:${top.id} rdfs:label ?l . FILTER(LANG(?l) = "fr") } LIMIT 1`, 3, signal);
+      if (rows[0] && rows[0].l) top.label = rows[0].l.value;
+    }
+    return { items, top };
+  }
   let kwCtrl = null;
   let kwTimer = null;
   function kwAbort() { if (kwCtrl) kwCtrl.abort(); kwCtrl = null; clearTimeout(kwTimer); }
@@ -1945,18 +2022,25 @@
     const ctrl = new AbortController();
     kwCtrl = ctrl;
     const stale = () => kwCtrl !== ctrl || S.editor !== ed;
-    const q = ed.kw.q.trim();
+    const raw = ed.kw.q.trim();
+    const exact = pageFromUrl(raw);
+    const q = exact || raw.replace(/_/g, ' ');
     Object.assign(ed.kw, { cands: [], interp: '', error: '', chosen: null, searched: '' });
     if (q.length < 3) { ed.kw.searching = false; return; }
     ed.kw.searching = true;
     try {
-      const cats = await searchCategories(q, ctrl.signal);
+      const pages = await searchPages(q, ctrl.signal, exact);
       if (stale()) return;
-      ed.kw.cands = cats;
-      const wd = await searchWikidata(q, ctrl.signal);
-      if (stale()) return;
-      ed.kw.interp = wd.interp;
-      if (wd.cand) ed.kw.cands = [wd.cand, ...ed.kw.cands];
+      ed.kw.cands = pages;
+      if (!exact) {
+        const cats = await searchCategories(q, ctrl.signal);
+        if (stale()) return;
+        ed.kw.cands = [...pages, ...cats];
+        const wd = await searchWikidata(q, ctrl.signal);
+        if (stale()) return;
+        ed.kw.interp = wd.interp;
+        if (wd.cand) ed.kw.cands = [...pages, wd.cand, ...cats];
+      }
       ed.kw.searched = q;
     } catch (e) {
       if (!stale() && e.name !== 'AbortError') ed.kw.error = e.message;
@@ -1981,7 +2065,15 @@
     try {
       let items;
       if (cand.source === 'wd') items = ch.top ? await wdTop(cand.where, ch.top, ctrl.signal) : cand.items || [];
-      else items = await categoryMembers(cand.title, ch.withSubs, ctrl.signal);
+      else if (cand.source === 'links') {
+        if (!ch.links) {
+          const links = await pageLinks(cand.title, ctrl.signal);
+          if (stale()) return;
+          ch.links = markRaw(links);
+        }
+        const { top } = ch.links;
+        items = top && !ch.allLinks ? ch.links.items.filter((i) => i.classes.includes(top.id)) : ch.links.items;
+      } else items = await categoryMembers(cand.title, ch.withSubs, ctrl.signal);
       if (stale()) return;
       ch.total = items.length;
       ch.items = markRaw(items.slice(0, 3000));
@@ -1991,9 +2083,10 @@
       if (!stale()) ch.loading = false;
     }
   }
+  // Catégorie : avec ou sans sous-catégories ; page : seulement la nature dominante, ou tous les liens.
   function kwToggleSubs(ed, cand) {
     const ch = ed.kw.chosen;
-    ch.withSubs = !ch.withSubs;
+    if (cand.source === 'links') ch.allLinks = !ch.allLinks; else ch.withSubs = !ch.withSubs;
     if (kwCtrl) kwCtrl.abort();
     const ctrl = new AbortController();
     kwCtrl = ctrl;
@@ -2876,9 +2969,12 @@
   const closeBtn = (label) => h('button', { class: 'btn ghost', type: 'button', onClick: closeModal }, label || 'Fermer');
 
   // ---------------------------------------------------------------- fenêtres gardées (collection, tag, confirmation, autre classeur, nouveau lien)
+  const SOURCE_LABEL = { cat: 'Catégorie Wikipédia', wd: 'Wikidata', links: 'Page Wikipédia' };
+  const wpPageUrl = (t) => 'https://fr.wikipedia.org/wiki/' + encodeURIComponent(t.replace(/ /g, '_'));
   function viewCandidate(ed, c) {
     const big = c.tooBig;
-    const size = big ? 'plus de 3 000 articles' : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
+    const size = c.source === 'links' ? 'ses liens, triés à l\'ouverture' : big ? 'plus de 3 000 articles'
+      : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
     let action;
     if (!big) action = h('button', { class: 'btn small primary', type: 'button', 'aria-label': 'Choisir ' + c.name, onClick: () => kwChoose(ed, c) }, 'Choisir');
     else if (c.source === 'wd') {
@@ -2888,7 +2984,7 @@
     return h('li', { class: ['cand', { disabled: big && c.source !== 'wd' }], key: c.id }, [
       h('div', { class: 'what' }, [
         h('b', null, c.name),
-        h('span', null, `${size} · ${c.source === 'cat' ? 'Catégorie Wikipédia' : 'Wikidata'}`),
+        h('span', null, `${size} · ${SOURCE_LABEL[c.source]}`),
         c.source === 'wd' && c.interp ? h('span', { class: 'interp' }, c.interp) : null,
       ]),
       action,
@@ -2904,11 +3000,17 @@
         h('button', { class: 'back', type: 'button', onClick: () => { kw.chosen = null; } }, '← Autres candidats'),
         h('label', { class: 'field' }, [h('span', null, 'Nom de la collection'),
           h('input', { id: 'kw-name', class: 'field full', value: ch.name, maxlength: 120, autocomplete: 'off', onInput: (e) => { ch.name = e.target.value; } })]),
-        h('p', { class: 'note' }, [ch.source === 'cat' ? `Catégorie Wikipédia : ${ch.title.replace(/^Catégorie\s*:\s*/i, '')}` : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
-          ' · ', ch.loading ? 'chargement des articles…' : `${fmt(ch.total)} ${plural(ch.total, 'article', 'articles')}`]),
+        h('p', { class: 'note' }, [
+          ch.source === 'cat' ? `Catégorie Wikipédia : ${ch.title.replace(/^Catégorie\s*:\s*/i, '')}`
+            : ch.source === 'links' ? ['Liens de la page ', h('a', { href: wpPageUrl(ch.title), target: '_blank', rel: 'noopener noreferrer' }, ch.title)]
+              : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
+          ' · ', ch.loading ? (ch.source === 'links' ? 'lecture des liens et de leur nature sur Wikidata…' : 'chargement des articles…') : `${fmt(ch.total)} ${plural(ch.total, 'article', 'articles')}`]),
         ch.source === 'cat' && ch.subcats && cand ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: ch.withSubs, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
           ` inclure les sous-catégories (1 niveau : ${fmt(ch.subcats)})`]) : null,
+        ch.source === 'links' && ch.links && ch.links.top && cand ? h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: !ch.allLinks, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
+          ` ne garder que les « ${ch.links.top.label} » (${fmt(ch.links.top.n)} sur ${fmt(ch.links.items.length)} articles liés : pays, régions et autres liens écartés)`]) : null,
         ch.total > 3000 ? h('p', { class: 'warn' }, 'Trop grande (plus de 3 000 articles) : précise ta recherche.') : null,
         ch.items && ch.items.length ? h('ol', { class: 'preview', 'aria-label': 'Aperçu des premiers articles' }, ch.items.slice(0, 20).map((i) => h('li', { key: i.title }, i.title))) : null,
         extra ? h('p', { class: 'note' }, `… et ${fmt(extra)} autres`) : null,
@@ -2925,9 +3027,9 @@
     return [
       h('label', { class: 'sr', for: 'kw' }, 'Mots-clés'),
       h('input', { id: 'kw', class: 'field full', type: 'search', value: kw.q, autocomplete: 'off', spellcheck: 'false',
-        placeholder: 'footballeur français, cathédrales de France, peintres impressionnistes, films de Miyazaki…',
+        placeholder: 'races bovines, footballeur français, cathédrales de France, films de Miyazaki…',
         onInput: (e) => kwInput(ed, e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); kwSearch(ed); } } }),
-      h('p', { class: 'note' }, "Le classeur cherche des catégories de Wikipédia et construit une requête Wikidata d'après tes mots ; choisis un candidat, vérifie l'aperçu, puis enregistre."),
+      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens forment la collection), des catégories, et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
       kw.searching ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche…') : null,
       errLine(kw.error),
       kw.interp ? h('p', { class: 'interp-line' }, ['Interprétation : ', h('b', null, kw.interp)]) : null,
