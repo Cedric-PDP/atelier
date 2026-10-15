@@ -263,6 +263,8 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .slot__bg.broken { display: none; }
 .slot__no { position: absolute; inset: 0 0 auto; top: 30%; text-align: center; font: 700 2.6rem/1 var(--f-head); color: var(--border); pointer-events: none; }
 .slot__top { position: relative; min-height: 18px; }
+.slot__market { position: absolute; top: -4px; right: -4px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); }
+.slot__market:hover { color: var(--accent); border-color: var(--accent); }
 .slot h3 { margin-top: auto; font: 600 13.5px/1.25 var(--f-head); color: var(--fg); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; position: relative; }
 .slot h3 a { color: inherit; }
 .slot p { font-size: 10.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; position: relative; }

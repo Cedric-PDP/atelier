@@ -250,9 +250,10 @@ async function main() {
   const api = SERVER ? null : mockApi();
   const errors = [];
   const ls = new Map();
+  const copied = [];
   const ctx = {
     console: { log: console.log, warn: (...a) => { errors.push('warn: ' + a.join(' ')); }, error: (...a) => { errors.push('error: ' + a.map((x) => (x && x.stack) || x).join(' ')); } },
-    document: doc, window: null, navigator: { clipboard: { writeText: async () => {} } },
+    document: doc, window: null, navigator: { clipboard: { writeText: async (t) => { copied.push(t); } } },
     location: { origin: ORIGIN, pathname: '/', search: '', hash: '', hostname: 'classeur.example' },
     history: { replaceState: (a, b, url) => { ctx.location.hash = ''; ctx.lastReplace = url; } },
     localStorage: { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) },
@@ -506,6 +507,16 @@ async function main() {
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
   await settle();
   check(text(fiche()).includes('Musique'), 'ajout de tag dans la fiche sans effet');
+  // « Chercher sur le marché » : lien vers le marché du jeu (onglet nommé) qui copie le titre de la carte.
+  {
+    const m = fiche().querySelectorAll('a').filter((a) => text(a).includes('Chercher sur le marché'))[0];
+    check(m && m.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && m.getAttribute('target') === 'wikimasters', 'lien vers le marché absent de la fiche');
+    const n = copied.length;
+    check(!m.click().defaultPrevented, 'le lien du marché ne doit pas bloquer l\'ouverture de l\'onglet');
+    await settle();
+    check(copied.length === n + 1 && copied[n] === 'Rihanna' && has('« Rihanna » copié : colle-le dans la recherche du marché'), 'le titre n\'est pas copié pour le marché : ' + JSON.stringify(copied.slice(n)));
+    check(fiche(), 'le lien du marché ne doit pas fermer la fiche');
+  }
   win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(500);
   check(!fiche(), 'Échap ne ferme pas la fiche');
@@ -742,6 +753,17 @@ async function main() {
   check(ests.includes('≈ L') && ests.includes('≈ SR') && ests.includes('≈ R'), 'raretés estimées : ' + ests.join(' '));
   check(has("Page d'homonymie : précise le titre") && has('Article introuvable sur Wikipédia'), 'avertissements des cases vides absents');
   check(cls('slot').length === 5 && cls('slot__no').length === 5 && cls('cell').length === 1, 'cases vides numérotées absentes');
+  // Cases vides : lien vers le marché sur les articles vérifiés (ni homonymie ni article introuvable), clavier compris.
+  {
+    const links = cls('slot__market');
+    check(links.length === 3 && links.every((a) => a.tagName === 'A' && a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace' && a.getAttribute('target') === 'wikimasters'),
+      'liens vers le marché des cases vides : ' + links.length);
+    const zeus = links.filter((a) => (a.getAttribute('aria-label') || '').includes('« Zeus »'))[0];
+    check(zeus, 'lien du marché de « Zeus » sans nom accessible');
+    zeus.click();
+    await settle();
+    check(copied[copied.length - 1] === 'Zeus' && has('« Zeus » copié'), 'le titre de la case vide n\'est pas copié pour le marché');
+  }
   check(has('40 000 vues / 30 j') || has('40 000 vues / 30 j'), 'vues sur 30 jours absentes des cases vides');
   await sleep(1600);
   const pvCache = JSON.parse(ls.get('classeur-pv') || '{}');
