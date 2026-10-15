@@ -34,9 +34,9 @@ pas un secret. (Ou modifie toi-même la ligne `database_id` de ce fichier sur Gi
    - **Project name** (nom du Worker) : `classeur-wm` ;
    - **Build command** : laisse vide ;
    - **Deploy command** : `npx wrangler deploy` ;
-   - **Advanced settings**, **Path** (ou **Root directory**) : `site` (c'est là que sont `wrangler.jsonc` et les
-     pages ; sans ce réglage, Cloudflare cherche à la racine du dépôt et répond « Could not detect a directory
-     containing static files »).
+   - **Advanced settings**, **Path** (ou **Root directory**) : `site`, ou laisse vide : la branche a une
+     configuration `wrangler.jsonc` à sa racine **et** dans `site/`, les deux marchent. (Sans aucune configuration,
+     Cloudflare répondait « Could not detect a directory containing static files ».)
 4. **Create and deploy**.
 
 **Si le Worker existe déjà** (créé sans le bon dossier) : ouvre-le, **Settings**, **Build**, et corrige :

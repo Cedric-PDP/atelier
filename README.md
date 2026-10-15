@@ -19,7 +19,7 @@ rafraîchissement, catalogue de collections proposées, rareté estimée des car
 |---|---|
 | `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `catalog.json`, `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
 | `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
-| `site/worker.js`, `site/wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant |
+| `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
 | `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
