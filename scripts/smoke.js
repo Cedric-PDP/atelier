@@ -57,6 +57,8 @@ api.readText(JSON.stringify(response), 'essai');
 if (api.state.cards.length !== owned.cards.length) fail(`${api.state.cards.length} cartes lues au lieu de ${owned.cards.length}`);
 if (!/cartes différentes/.test(els.summary.innerHTML)) fail('synthèse absente');
 if (!/data-col=/.test(els.collections.innerHTML)) fail('aucune collection rendue');
+if (/class="row zero"/.test(els.collections.innerHTML)) fail('une collection à 0 est affichée par défaut');
+if (!/id="toggle-empty"/.test(els.collections.innerHTML)) fail('pas de bouton pour les collections pas commencées');
 if (!/export est complet/.test(els['import-result'].innerHTML)) fail('le contrôle d\'export complet ne s\'affiche pas');
 
 const cols = api.allCollections();

@@ -360,7 +360,7 @@ textarea { width: 100%; min-height: 110px; padding: 9px 11px; border: 1px solid 
     db: null, dbReady: false, dbError: null,
     cards: [], meta: null, dbMeta: null, loadedRev: null,
     lists: [],
-    tab: 'collections', album: null, albumFilter: 'all', albumSort: 'album', albumShown: PAGE, showAllFine: false,
+    tab: 'collections', album: null, albumFilter: 'all', albumSort: 'album', albumShown: PAGE, showAllFine: false, showEmpty: false,
     q: '', sort: 'rarity', view: 'grid', rar: new Set(), facet: null, cardsShown: CARDS_PAGE,
     pending: null, detail: null,
   };
@@ -516,11 +516,21 @@ textarea { width: 100%; min-height: 110px; padding: 9px 11px; border: 1px solid 
     const groups = [...REF.groups,
       { id: 'cartes', name: 'Tirés de tes cartes', note: 'albums construits autour des cartes que tu as déjà' },
       { id: 'listes', name: 'Mes listes', note: 'tes propres collections, à partir d\'une liste de titres' }];
+    // Une collection à 0 ne dit rien : on ne montre que celles qui sont commencées (sauf tes listes),
+    // les autres restent accessibles par un bouton.
     let html = '<div class="groups">';
+    let empty = 0;
     for (const g of groups) {
       let items = cols.filter((c) => c.group === g.id);
+      if (g.id !== 'listes' && !state.showEmpty) {
+        const started = items.filter((c) => progress(c).own > 0);
+        empty += items.length - started.length;
+        items = started;
+      }
+      if (g.id === 'listes') {
+        html += `<div class="show-more">${empty || state.showEmpty ? `<button class="btn" id="toggle-empty">${state.showEmpty ? 'Masquer les collections pas encore commencées' : `Afficher aussi les ${fmt(empty)} collections pas encore commencées`}</button>` : ''}</div>`;
+      } else if (!items.length) continue;
       if (g.id === 'cartes') {
-        if (!items.length) continue;
         items = items.map((c) => ({ c, p: progress(c) })).sort((a, b) => b.p.own / b.p.total - a.p.own / a.p.total || b.p.own - a.p.own).map((x) => x.c);
       }
       const hidden = g.id === 'cartes' && !state.showAllFine ? Math.max(0, items.length - FINE_SHOWN) : 0;
@@ -871,6 +881,7 @@ textarea { width: 100%; min-height: 110px; padding: 9px 11px; border: 1px solid 
     if (t.dataset.open && !t.classList.contains('big')) { openDetail(t.dataset.open); return; }
     if (t.id === 'back') { closeAlbum(); return; }
     if (t.id === 'fine-more') { state.showAllFine = true; renderCollections(); return; }
+    if (t.id === 'toggle-empty') { state.showEmpty = !state.showEmpty; renderCollections(); return; }
     if (t.dataset.albumfilter) { state.albumFilter = t.dataset.albumfilter; state.albumShown = PAGE; renderAlbum(); return; }
     if (t.dataset.albumsort) { state.albumSort = t.dataset.albumsort; state.albumShown = PAGE; renderAlbum(); return; }
     if (t.id === 'album-more') { state.albumShown += PAGE; renderAlbum(); return; }
