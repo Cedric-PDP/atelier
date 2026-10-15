@@ -2,199 +2,262 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <style>
-/* Mise en page : un classeur. Bandeau de synthèse, onglets, puis les collections en lignes et chaque album en grille d'emplacements. */
+/* Mise en page : une appli de collection sombre, dans l'esprit du jeu. Bandeau de synthèse, onglets en pastilles,
+   grilles de cartes 5:7 (illustration en haut, rareté, titre, description, attaque et défense). Textures maison. */
 :root {
-  --paper: #f4f7fb;
-  --sheet: #ffffff;
-  --ink: #18212e;
-  --muted: #5b6676;
-  --rule: #d8dfe9;
-  --link: #3366cc;
-  --link-soft: #e6eefc;
-  --slot: #eef2f7;
-  --ok: #1f8a4c;
-  --warn: #b25e09;
-  --r-C: #6f7c8b;
-  --r-PC: #23864f;
-  --r-R: #0f84a0;
-  --r-SR: #7b3fe4;
-  --r-UR: #c8701c;
-  --r-L: #c42841;
-  --f-display: "Source Serif 4", "Iowan Old Style", Georgia, serif;
-  --f-body: "Public Sans", "Segoe UI", system-ui, sans-serif;
-  --f-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
-  --radius: 6px;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --paper: #0e131b; --sheet: #161d28; --ink: #e5eaf1; --muted: #98a3b3; --rule: #2a3341;
-    --link: #8fb2ff; --link-soft: #1d2a44; --slot: #121923; --ok: #55c486; --warn: #f0a54d;
-    --r-C: #95a1af; --r-PC: #4fc183; --r-R: #3cc3e0; --r-SR: #ab86ff; --r-UR: #f2a356; --r-L: #ff6d84;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --paper: #0e131b; --sheet: #161d28; --ink: #e5eaf1; --muted: #98a3b3; --rule: #2a3341;
-  --link: #8fb2ff; --link-soft: #1d2a44; --slot: #121923; --ok: #55c486; --warn: #f0a54d;
-  --r-C: #95a1af; --r-PC: #4fc183; --r-R: #3cc3e0; --r-SR: #ab86ff; --r-UR: #f2a356; --r-L: #ff6d84;
+  --bg: #0c0d0c;
+  --surface: #131615;
+  --surface-2: #1b1f1d;
+  --border: #2e3431;
+  --fg: #f2f4f3;
+  --muted: #98a29d;
+  --faint: #6b7570;
+  --accent: #34d399;
+  --link: #6ee7b7;
+  --accent-fg: #0f172a;
+  --glow: rgba(52, 211, 153, 0.07);
+  --shadow: rgba(0, 0, 0, 0.72);
+  --r-C: #b8f2d5;
+  --r-PC: #b1cff2;
+  --r-R: #c6a7f2;
+  --r-SR: #ed6fa3;
+  --r-UR: #fa9931;
+  --r-L: #ffe144;
+  --ink: #0d1117;
+  --atk: #9f0712;
+  --def: #193cb8;
+  --f-head: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Inter", "Segoe UI", system-ui, sans-serif;
   color-scheme: dark;
 }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f7f8f7; --surface: #eef1ef; --surface-2: #e4e8e5; --border: #b4bfb8; --fg: #0f172a; --muted: #56625c;
+    --faint: #7d8983; --accent: #10b981; --link: #047857; --glow: rgba(16, 185, 129, 0.08); --shadow: rgba(15, 23, 42, 0.35);
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f7f8f7; --surface: #eef1ef; --surface-2: #e4e8e5; --border: #b4bfb8; --fg: #0f172a; --muted: #56625c;
+  --faint: #7d8983; --accent: #10b981; --link: #047857; --glow: rgba(16, 185, 129, 0.08); --shadow: rgba(15, 23, 42, 0.35);
+  color-scheme: light;
+}
 * { box-sizing: border-box; }
-body { background: var(--paper); color: var(--ink); font: 15px/1.5 var(--f-body); }
+body { background: linear-gradient(180deg, var(--glow) 0, transparent 460px) var(--bg); color: var(--fg); font: 14px/1.55 var(--f-body); -webkit-font-smoothing: antialiased; }
 a { color: var(--link); text-decoration: none; }
 a:hover { text-decoration: underline; }
-:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
-.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; }
-.num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
-.muted { color: var(--muted); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+h1, h2, h3 { font-family: var(--f-head); text-wrap: balance; margin: 0; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-
-/* Bandeau */
-.top { background: var(--sheet); border-bottom: 1px solid var(--rule); }
-.top .wrap { padding-block: 22px 0; display: grid; gap: 18px; }
-.headline { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; }
-.headline h1 { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.01em; }
-.headline p { margin: 0; font-size: 0.85rem; }
-.summary { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 28px; align-items: end; }
-.summary .figures { display: flex; flex-wrap: wrap; gap: 6px 22px; align-items: baseline; }
-.figure b { font-family: var(--f-display); font-size: 1.6rem; font-weight: 600; margin-right: 6px; font-variant-numeric: tabular-nums; }
-.figure span { color: var(--muted); font-size: 0.9rem; }
-.stamp { font-size: 0.82rem; color: var(--muted); text-align: right; }
-.rbar { grid-column: 1 / -1; display: grid; gap: 6px; }
-.rbar .track { display: flex; height: 10px; border-radius: 3px; overflow: hidden; background: var(--slot); }
-.rbar .track i { display: block; height: 100%; }
-.rlegend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.82rem; color: var(--muted); }
-.rlegend span { display: inline-flex; align-items: center; gap: 6px; }
-.rlegend b { color: var(--ink); font-weight: 500; font-family: var(--f-data); }
-.dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
-
-.tabs { display: flex; gap: 4px; overflow-x: auto; }
-.tabs button { background: none; border: 0; border-bottom: 3px solid transparent; padding: 10px 14px 9px; font-weight: 600; color: var(--muted); white-space: nowrap; }
-.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--link); }
-.tabs button:hover { color: var(--ink); }
-
-main.wrap { padding-block: 24px 64px; }
-.notice { background: var(--link-soft); border-radius: var(--radius); padding: 12px 14px; font-size: 0.9rem; }
-.notice.warn { background: transparent; border: 1px solid var(--warn); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.muted { color: var(--muted); }
+.num { font-variant-numeric: tabular-nums; }
 
 /* Rareté */
-.rar { display: inline-flex; align-items: center; justify-content: center; min-width: 2.1em; height: 1.55em; padding: 0 0.35em; border-radius: 4px; font: 500 0.72rem/1 var(--f-data); color: var(--sheet); background: var(--rc, var(--r-C)); letter-spacing: 0.02em; }
-.rar.est { background: transparent; color: var(--rc, var(--r-C)); box-shadow: inset 0 0 0 1.5px var(--rc, var(--r-C)); }
-.rar.unk { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--rule); }
-.rC { --rc: var(--r-C); } .rPC { --rc: var(--r-PC); } .rR { --rc: var(--r-R); } .rSR { --rc: var(--r-SR); } .rUR { --rc: var(--r-UR); } .rL { --rc: var(--r-L); }
+.rC { --rc: var(--r-C); --tex: radial-gradient(120% 80% at 15% 0%, #e6fbf0 0, transparent 60%), linear-gradient(165deg, #cdf2e1, #b6ebd1); --deep: #2f6b54; }
+.rPC { --rc: var(--r-PC); --tex: repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.3) 0 13px, transparent 13px 29px), linear-gradient(170deg, #b4d1f1, #d4e4f5); --deep: #2f4f7a; }
+.rR { --rc: var(--r-R); --tex: radial-gradient(90% 60% at 80% 100%, #ece3f8 0, transparent 70%), repeating-linear-gradient(160deg, rgba(255, 255, 255, 0.12) 0 2px, transparent 2px 9px), linear-gradient(165deg, #b28cee, #dbcbf3); --deep: #4e2f86; }
+.rSR { --rc: var(--r-SR); --tex: repeating-radial-gradient(circle at 50% 118%, rgba(255, 255, 255, 0.17) 0 3px, transparent 3px 15px), linear-gradient(180deg, #d9558f, #f392b9 50%, #fad6e8); --deep: #7a1f48; }
+.rUR { --rc: var(--r-UR); --tex: repeating-radial-gradient(ellipse at 72% 48%, rgba(255, 255, 255, 0.15) 0 2px, transparent 2px 12px), linear-gradient(180deg, #cc6814, #fca43b 30%, #ffdda4 52%, #fca43b 72%, #cc6814); --deep: #6e3605; }
+.rL { --rc: var(--r-L); --tex: repeating-radial-gradient(ellipse at 24% 40%, rgba(255, 255, 255, 0.17) 0 2px, transparent 2px 13px), linear-gradient(100deg, #c6a115, #f2ee88 30%, #cdb240 55%, #9a6700); --deep: #5c4300; }
+.pill { display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; border-radius: 6px; font: 700 11px/1.1 var(--f-body); background: var(--rc, var(--border)); color: var(--ink); box-shadow: 0 0 10px color-mix(in srgb, var(--rc, transparent) 55%, transparent); white-space: nowrap; }
+.pill.est { background: color-mix(in srgb, var(--rc) 24%, transparent); color: var(--fg); box-shadow: inset 0 0 0 1.5px var(--rc); }
+.pill.unk { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
+
+/* Bandeau */
+.top .wrap { padding-block: 26px 0; display: grid; gap: 18px; }
+.headline { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 24px; }
+.eyebrow { margin: 0 0 4px; font: 600 12px var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.headline h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); font-weight: 600; line-height: 1.04; letter-spacing: -0.03em; }
+.headline p.note { margin: 0; font-size: 12px; color: var(--faint); max-width: 44ch; }
+.summary { display: grid; gap: 14px; }
+.figures { display: flex; flex-wrap: wrap; gap: 10px; }
+.figure { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; min-width: 9.5rem; }
+.figure b { display: block; font: 600 1.55rem/1.15 var(--f-head); font-variant-numeric: tabular-nums; }
+.figure span { font-size: 12px; color: var(--muted); }
+.rbar { display: grid; gap: 8px; }
+.rbar .track { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--surface-2); }
+.rbar .track i { display: block; height: 100%; background: var(--rc); }
+.rlegend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); align-items: center; }
+.rlegend span { display: inline-flex; gap: 6px; align-items: center; }
+.rlegend b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.stamp { font-size: 12px; color: var(--faint); }
+.tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.tabs button { border: 0; background: transparent; color: var(--muted); padding: 7px 15px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
+.tabs button:hover { color: var(--fg); }
+.tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); box-shadow: inset 0 0 0 1px var(--border); }
+
+main.wrap { padding-block: 26px 72px; }
+.section-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 12px; }
+.section-head h2 { font-size: 1.35rem; font-weight: 600; letter-spacing: -0.02em; }
+.section-head small { color: var(--muted); font-size: 12.5px; }
 
 /* Collections */
-.groups { display: grid; gap: 30px; }
-.group h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; display: flex; gap: 10px; align-items: baseline; }
-.group h2 small { font: 400 0.82rem var(--f-body); color: var(--muted); }
-.rows { display: grid; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
-.row { display: grid; grid-template-columns: minmax(0, 1.4fr) 7.5em minmax(90px, 1fr) 3.4em; gap: 14px; align-items: center; padding: 11px 14px; border: 0; border-top: 1px solid var(--rule); background: none; text-align: left; width: 100%; }
-.row:first-child { border-top: 0; }
-.row:hover { background: var(--slot); }
-.row .name { font-family: var(--f-display); font-weight: 600; font-size: 1.02rem; min-width: 0; overflow-wrap: anywhere; }
-.row .name small { display: block; font: 400 0.8rem var(--f-body); color: var(--muted); }
-.row .count { font-family: var(--f-data); font-size: 0.88rem; text-align: right; white-space: nowrap; }
-.row .pct { font-family: var(--f-data); font-size: 0.82rem; color: var(--muted); text-align: right; }
-.bar { height: 8px; background: var(--slot); border-radius: 4px; overflow: hidden; display: flex; }
-.bar i { display: block; height: 100%; }
+.groups { display: grid; gap: 34px; }
+.rows { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 10px; }
+@media (max-width: 420px) { .rows { grid-template-columns: minmax(0, 1fr); } }
+.row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; text-align: left; width: 100%; color: var(--fg); transition: border-color 0.2s, transform 0.2s; }
+.row:hover { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.row .info { display: grid; gap: 6px; min-width: 0; }
+.row .name { font: 600 15.5px/1.25 var(--f-head); overflow-wrap: anywhere; }
+.row .line { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--muted); }
+.row .line b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
 .row.zero .name { color: var(--muted); }
-@media (max-width: 560px) {
-  .row { grid-template-columns: minmax(0, 1fr) auto; }
-  .row .bar { grid-column: 1 / -1; }
-  .row .pct { display: none; }
-}
+.bar { height: 6px; background: var(--surface-2); border-radius: 99px; overflow: hidden; display: flex; }
+.bar i { display: block; height: 100%; background: var(--rc); }
+.fan { position: relative; height: 62px; width: 74px; }
+.mini { position: absolute; top: 4px; width: 38px; aspect-ratio: 5 / 7; border-radius: 5px; overflow: hidden; background: var(--tex); box-shadow: 0 4px 10px -4px var(--shadow); }
+.mini img { width: 100%; height: 48%; object-fit: cover; display: block; }
+.mini.empty { background: transparent; border: 1.5px dashed var(--border); box-shadow: none; }
+.mini:nth-child(1) { left: 2px; transform: rotate(-9deg); }
+.mini:nth-child(2) { left: 18px; transform: rotate(-1deg); z-index: 1; }
+.mini:nth-child(3) { left: 34px; transform: rotate(8deg); z-index: 2; }
+.show-more { margin-top: 12px; }
+
+/* Cartes */
+.cardgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(156px, 1fr)); gap: 16px 14px; }
+@media (max-width: 420px) { .cardgrid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 10px; } }
+.card { position: relative; display: block; aspect-ratio: 5 / 7; width: 100%; max-width: 100%; overflow: hidden; border-radius: 14px; background: var(--tex); color: #000; box-shadow: 0 14px 30px -14px var(--shadow); cursor: pointer; transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s; }
+.card:hover, .card:focus-visible { transform: translateY(-6px); box-shadow: 0 20px 34px -14px var(--shadow), 0 0 18px color-mix(in srgb, var(--rc) 40%, transparent); }
+.card__art { position: absolute; top: 0; left: 0; right: 0; height: 45%; background: rgba(0, 0, 0, 0.2); overflow: hidden; }
+.card__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.card__art::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2.5rem; background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent); }
+.card__noart { position: absolute; inset: 0; display: grid; place-items: center; background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--rc) 55%, var(--deep)) 0, var(--deep) 80%); }
+.card__noart span { font: 700 3.4rem/1 var(--f-head); color: var(--rc); opacity: 0.6; }
+.card .pill { position: absolute; left: 8px; top: 8px; z-index: 3; }
+.card__star { position: absolute; right: 8px; top: 7px; z-index: 3; width: 17px; height: 17px; color: #ffe144; filter: drop-shadow(0 0.5px 2px rgba(0, 0, 0, 0.55)); }
+.card__body { position: absolute; top: 45%; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; padding: 10px 11px 9px; }
+.card__title { font: 700 13.5px/1.25 var(--f-head); color: #000; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card__desc { margin: 4px 0 0; font-size: 10.5px; line-height: 1.375; color: rgba(23, 23, 23, 0.85); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card__stats { margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(0, 0, 0, 0.2); padding-top: 6px; font: 700 10.5px var(--f-body); color: rgba(0, 0, 0, 0.9); font-variant-numeric: tabular-nums; }
+.card__stats span { display: inline-flex; align-items: center; gap: 4px; }
+.card__stats svg { width: 1em; height: 1em; }
+.card__stats .atk svg { color: var(--atk); }
+.card__stats .def svg { color: var(--def); }
+.card__count { position: absolute; right: 8px; top: 45%; transform: translateY(-120%); z-index: 3; font: 700 10.5px var(--f-body); color: #fff; background: rgba(0, 0, 0, 0.55); padding: 1px 6px; border-radius: 99px; }
+.card.shiny { box-shadow: inset 0 0 0 2px #e9c15a, 0 14px 30px -14px var(--shadow), 0 0 16px rgba(233, 193, 90, 0.35); }
+.card.shiny::after { content: ""; position: absolute; inset: 0; z-index: 4; pointer-events: none; border-radius: inherit; box-shadow: inset 0 0 0 2px #e9c15a; background: linear-gradient(125deg, transparent 30%, rgba(255, 246, 208, 0.35) 45%, transparent 60%); mix-blend-mode: soft-light; }
+.card__sheen { position: absolute; inset: 0; z-index: 4; overflow: hidden; pointer-events: none; }
+.card__sheen::before { content: ""; position: absolute; top: 0; left: 0; width: 200%; height: 100%; mix-blend-mode: soft-light; background: linear-gradient(90deg, transparent 0 25%, rgba(255, 242, 200, 0.2) 40%, rgba(255, 218, 150, 0.18) 50%, rgba(255, 242, 200, 0.2) 60%, transparent 75% 100%) repeat-x; background-size: 50% 100%; }
+@media (prefers-reduced-motion: no-preference) { .card__sheen::before { animation: sheen 3s linear infinite; } }
+@keyframes sheen { to { transform: translateX(-50%); } }
+.card.big { width: min(300px, 100%); cursor: default; }
+.card.big:hover { transform: none; }
+.card.big .card__title { font-size: 21px; }
+.card.big .card__desc { font-size: 14px; -webkit-line-clamp: 3; }
+.card.big .card__stats { font-size: 15px; padding-top: 9px; }
+.card.big .card__body { padding: 16px 16px 14px; }
+.card.big .pill { font-size: 13px; padding: 3px 10px; left: 12px; top: 12px; }
+
+/* Emplacement vide d'un album */
+.slot { position: relative; aspect-ratio: 5 / 7; border-radius: 14px; border: 1.5px dashed var(--border); background: color-mix(in srgb, var(--surface) 70%, transparent); display: flex; flex-direction: column; gap: 5px; padding: 11px; min-width: 0; overflow: hidden; }
+.slot__no { position: absolute; inset: 0 0 auto; top: 30%; text-align: center; font: 700 2.6rem/1 var(--f-head); color: var(--border); pointer-events: none; }
+.slot h3 { margin-top: auto; font: 600 13.5px/1.25 var(--f-head); color: var(--fg); overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; position: relative; }
+.slot h3 a { color: inherit; }
+.slot p { margin: 0; font-size: 10.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; position: relative; }
+.slot .views { font-size: 10.5px; color: var(--faint); position: relative; }
 
 /* Album */
-.album-head { display: grid; gap: 12px; margin-bottom: 18px; }
+.album-head { display: grid; gap: 12px; margin-bottom: 20px; }
 .back { justify-self: start; background: none; border: 0; padding: 0; color: var(--link); font-weight: 600; }
-.album-title { display: flex; flex-wrap: wrap; gap: 6px 18px; align-items: baseline; }
-.album-title h2 { font-size: 1.7rem; font-weight: 700; }
-.album-title .num { color: var(--muted); }
-.missing-sum { font-size: 0.9rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
+.album-title { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+.album-title h2 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 600; letter-spacing: -0.02em; }
+.album-title .num { color: var(--muted); font-size: 15px; }
+.missing-sum { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; color: var(--muted); }
+.hint { margin: 0; font-size: 12px; color: var(--faint); max-width: 80ch; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
-.seg { display: inline-flex; border: 1px solid var(--rule); border-radius: var(--radius); overflow: hidden; background: var(--sheet); }
-.seg button { border: 0; background: none; padding: 6px 12px; font-size: 0.88rem; color: var(--muted); }
-.seg button + button { border-left: 1px solid var(--rule); }
-.seg button[aria-pressed="true"] { background: var(--link-soft); color: var(--ink); font-weight: 600; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(178px, 1fr)); gap: 10px; }
-.slot { position: relative; display: grid; align-content: start; gap: 6px; min-height: 120px; padding: 11px 12px 12px; border-radius: var(--radius); background: var(--sheet); border: 1px solid var(--rule); min-width: 0; }
-.slot.missing { background: var(--slot); border: 1px dashed var(--rule); }
-.slot.missing h3 a { color: var(--muted); }
-.slot .top-line { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-.slot .idx { font: 400 0.75rem var(--f-data); color: var(--muted); }
-.slot h3 { font-size: 0.98rem; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
-.slot h3 a { color: var(--ink); }
-.slot p { margin: 0; font-size: 0.8rem; color: var(--muted); overflow-wrap: anywhere; }
-.slot .meta { font: 400 0.75rem var(--f-data); color: var(--muted); margin-top: auto; }
-.more { margin-top: 14px; }
-.btn { border: 1px solid var(--rule); background: var(--sheet); border-radius: var(--radius); padding: 7px 14px; font-weight: 600; }
-.btn:hover { border-color: var(--link); }
-.btn.primary { background: var(--link); border-color: var(--link); color: var(--sheet); }
-.btn.danger { color: var(--r-L); }
+.seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: none; padding: 6px 13px; font-size: 13px; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }
+.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 8px 15px; font-weight: 600; font-size: 13.5px; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 15px -3px color-mix(in srgb, var(--accent) 18%, transparent); }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.danger { color: #f87171; }
 .btn:disabled { opacity: 0.5; cursor: default; }
 
 /* Mes cartes */
-.cards-layout { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 24px; align-items: start; }
-@media (max-width: 820px) { .cards-layout { grid-template-columns: minmax(0, 1fr); } }
+.cards-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 26px; align-items: start; }
+@media (max-width: 860px) { .cards-layout { grid-template-columns: minmax(0, 1fr); } }
 .facets { display: grid; gap: 18px; }
-.facet h3 { font: 600 0.75rem var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+.facet h3 { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 8px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 3px 10px; font-size: 0.82rem; display: inline-flex; gap: 6px; align-items: baseline; }
-.chip .num { font-size: 0.75rem; color: var(--muted); }
-.chip[aria-pressed="true"] { background: var(--link); border-color: var(--link); color: var(--sheet); }
-.chip[aria-pressed="true"] .num { color: var(--sheet); }
+.chip { border: 1px solid var(--border); background: var(--surface); border-radius: 99px; padding: 3px 10px; font-size: 12px; display: inline-flex; gap: 6px; align-items: center; color: var(--fg); }
+.chip .n { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.chip[aria-pressed="true"] .n { color: var(--accent-fg); }
 .search { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
-.search input[type="search"] { flex: 1 1 220px; min-width: 0; padding: 8px 12px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); }
-.search select { padding: 7px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); }
-.list { display: grid; background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); }
-.item { display: grid; grid-template-columns: 2.6em minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 14px; border-top: 1px solid var(--rule); align-items: start; }
+.search input[type="search"] { flex: 1 1 220px; min-width: 0; padding: 9px 13px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); }
+.search select { padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); }
+.count-line { font-size: 13px; color: var(--muted); margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.list { display: grid; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.item { display: grid; grid-template-columns: 2.8em minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 14px; border-top: 1px solid var(--border); align-items: start; cursor: pointer; }
 .item:first-child { border-top: 0; }
-.item h3 { font-size: 1rem; font-weight: 600; overflow-wrap: anywhere; }
-.item h3 a { color: var(--ink); }
-.item p { margin: 0; font-size: 0.84rem; color: var(--muted); overflow-wrap: anywhere; }
-.item .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
-.tag { font-size: 0.74rem; padding: 1px 7px; border-radius: 3px; background: var(--slot); color: var(--muted); }
-.tag.n { color: var(--link); background: var(--link-soft); }
-.item .side { text-align: right; font: 400 0.78rem var(--f-data); color: var(--muted); white-space: nowrap; }
-.count-line { font-size: 0.88rem; color: var(--muted); margin-bottom: 8px; }
+.item:hover { background: var(--surface-2); }
+.item h3 { font: 600 14.5px/1.3 var(--f-head); overflow-wrap: anywhere; }
+.item p { margin: 0; font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+.item .side { text-align: right; font-size: 12px; color: var(--faint); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.tag { font-size: 11.5px; padding: 1px 8px; border-radius: 99px; background: var(--surface-2); color: var(--muted); border: 1px solid var(--border); }
+.tag.n { color: var(--link); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
+.empty { padding: 30px 18px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--border); border-radius: 12px; }
+
+/* Fiche d'une carte */
+.overlay { position: fixed; inset: 0; z-index: 50; background: rgba(5, 6, 6, 0.7); backdrop-filter: blur(6px); display: grid; place-items: center; padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.sheet { position: relative; width: min(860px, 100%); background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 26px; align-items: start; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6); }
+@media (max-width: 640px) { .sheet { grid-template-columns: minmax(0, 1fr); justify-items: center; padding: 18px; } .sheet .info { justify-self: stretch; } }
+.sheet .close { position: absolute; right: 12px; top: 10px; border: 0; background: none; font-size: 26px; line-height: 1; color: var(--muted); padding: 4px 8px; }
+.sheet .close:hover { color: var(--fg); }
+.info { display: grid; gap: 14px; min-width: 0; }
+.info h2 { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; padding-right: 30px; overflow-wrap: anywhere; }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.fact { background: var(--surface-2); border-radius: 10px; padding: 8px 12px; }
+.fact span { display: block; font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+.fact b { font: 600 15px var(--f-head); font-variant-numeric: tabular-nums; }
+.info h3 { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-bottom: 6px; }
+.memberships { display: grid; gap: 6px; }
+.memberships button { display: flex; justify-content: space-between; gap: 10px; text-align: left; border: 1px solid var(--border); background: var(--surface-2); border-radius: 9px; padding: 7px 11px; color: var(--fg); font-size: 13px; }
+.memberships button:hover { border-color: var(--accent); }
+.memberships span { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Mise à jour */
-.update { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
-@media (max-width: 820px) { .update { grid-template-columns: minmax(0, 1fr); } }
+.update { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; align-items: start; }
+@media (max-width: 860px) { .update { grid-template-columns: minmax(0, 1fr); } }
 .steps { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 62ch; }
-.steps li::marker { font-family: var(--f-data); color: var(--muted); }
-kbd { font: 500 0.8em var(--f-data); border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--sheet); }
-code { font: 0.86em var(--f-data); background: var(--slot); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
-.drop { display: grid; gap: 8px; place-items: center; text-align: center; padding: 30px 18px; border: 2px dashed var(--rule); border-radius: var(--radius); background: var(--sheet); cursor: pointer; }
-.drop.over { border-color: var(--link); background: var(--link-soft); }
-.drop strong { font-family: var(--f-display); font-size: 1.15rem; }
-.panel { background: var(--sheet); border: 1px solid var(--rule); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; }
-.panel h3 { font-size: 1.1rem; }
-textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); font: 0.85rem var(--f-data); resize: vertical; }
-.field { display: grid; gap: 4px; }
-.field label { font-size: 0.82rem; font-weight: 600; color: var(--muted); }
-.field input { padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--sheet); }
-.status { font-size: 0.9rem; }
-.status.ok { color: var(--ok); }
-.status.err { color: var(--r-L); }
-.newlist { display: flex; flex-wrap: wrap; gap: 6px; }
-.empty { padding: 28px 18px; text-align: center; color: var(--muted); background: var(--sheet); border: 1px dashed var(--rule); border-radius: var(--radius); }
-@media (prefers-reduced-motion: no-preference) { .bar i, .rbar .track i { transition: width 0.4s ease; } }
+.steps li::marker { color: var(--accent); font-weight: 600; }
+kbd { font: 600 0.82em var(--f-body); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 5px; padding: 0 5px; background: var(--surface-2); }
+code { font: 0.86em ui-monospace, Consolas, monospace; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+.notice { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border)); border-radius: 12px; padding: 12px 14px; font-size: 13px; margin: 0; }
+.drop { display: grid; gap: 6px; place-items: center; text-align: center; padding: 34px 18px; border: 2px dashed var(--border); border-radius: 14px; background: var(--surface); cursor: pointer; }
+.drop.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--surface)); }
+.drop strong { font: 600 1.2rem var(--f-head); }
+.panel { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; display: grid; gap: 12px; }
+.panel h3 { font-size: 1.1rem; font-weight: 600; }
+textarea { width: 100%; min-height: 110px; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); font: 12.5px ui-monospace, Consolas, monospace; resize: vertical; }
+.field { display: grid; gap: 5px; }
+.field label { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.field input { padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface-2); }
+.status { font-size: 13px; }
+.status.ok { color: var(--accent); }
+.status.err { color: #f87171; }
+.newlist { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+@media (prefers-reduced-motion: reduce) { .card, .row { transition: none; } }
 </style>
 
 <header class="top">
   <div class="wrap">
     <div class="headline">
-      <h1>Collections WikiMasters</h1>
-      <p class="muted">Outil personnel, sans lien avec le jeu. Les cartes viennent de tes exports.</p>
+      <div>
+        <p class="eyebrow">Classeur personnel</p>
+        <h1>Collections WikiMasters</h1>
+      </div>
+      <p class="note">Outil personnel, sans lien avec le jeu. Les cartes viennent de tes exports, les illustrations de Wikimedia Commons, les listes de Wikidata.</p>
     </div>
-    <div class="summary" id="summary">
-      <div class="figures"><span class="figure"><b>…</b><span>chargement de ta collection</span></span></div>
-    </div>
+    <div class="summary" id="summary"><div class="figures"><div class="figure"><b>…</b><span>chargement de ta collection</span></div></div></div>
     <nav class="tabs" role="tablist" aria-label="Sections">
       <button id="tab-btn-collections" role="tab" aria-selected="true" data-tab="collections">Collections</button>
       <button id="tab-btn-cartes" role="tab" aria-selected="false" data-tab="cartes">Mes cartes</button>
@@ -206,7 +269,7 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
 <main class="wrap">
   <section id="tab-collections" role="tabpanel" aria-labelledby="tab-btn-collections">
     <div id="collections"></div>
-    <details class="panel" style="margin-top:10px" id="newlist-box">
+    <details class="panel" style="margin-top:12px" id="newlist-box">
       <summary style="cursor:pointer;font-weight:600">Créer une liste</summary>
       <div class="field"><label for="nl-name">Nom de la liste</label><input id="nl-name" maxlength="80" placeholder="Fromages AOP, Pokémon de la 1re génération…"></div>
       <div class="field"><label for="nl-titles">Titres des articles Wikipédia, un par ligne (ou leurs liens)</label><textarea id="nl-titles" placeholder="Camembert de Normandie&#10;Roquefort&#10;https://fr.wikipedia.org/wiki/Comté_(fromage)"></textarea></div>
@@ -225,13 +288,16 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
             <option value="rarity">Rareté</option>
             <option value="views">Vues par mois</option>
             <option value="recent">Plus récentes</option>
+            <option value="atk">Attaque</option>
+            <option value="def">Défense</option>
             <option value="title">Titre</option>
           </select>
+          <div class="seg" role="group" aria-label="Affichage"><button id="view-grid" aria-pressed="true">Cartes</button><button id="view-list" aria-pressed="false">Liste</button></div>
         </div>
         <div class="chips" id="rarity-filter" style="margin-bottom:12px"></div>
         <div class="count-line" id="count-line"></div>
-        <div class="list" id="card-list"></div>
-        <div class="more" id="card-more"></div>
+        <div id="card-list"></div>
+        <div class="show-more" id="card-more"></div>
       </div>
     </div>
   </section>
@@ -239,7 +305,7 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
   <section id="tab-maj" role="tabpanel" aria-labelledby="tab-btn-maj" hidden>
     <div class="update">
       <div style="display:grid;gap:16px">
-        <h2 style="font-size:1.35rem">Exporter ta collection depuis le jeu</h2>
+        <h2 style="font-size:1.35rem;font-weight:600">Exporter ta collection depuis le jeu</h2>
         <ol class="steps">
           <li>Sur wiki-masters.com, connecté, ouvre la page de ta collection.</li>
           <li>Appuie sur <kbd>F12</kbd>, onglet <b>Réseau</b>, coche <b>Conserver le journal</b>, puis recharge la page avec <kbd>F5</kbd>.</li>
@@ -248,7 +314,7 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
           <li>Dépose le fichier ici. La page lit les cartes dans ton navigateur et n'enregistre que la liste des cartes.</li>
         </ol>
         <p class="notice">Le fichier HAR peut contenir ta session de connexion. Ne l'envoie à personne et ne le mets pas sur GitHub : cette page suffit, et elle ne l'envoie nulle part.</p>
-        <p class="muted" style="margin:0;font-size:0.88rem">Tu peux aussi coller des réponses copiées depuis l'onglet Réseau (clic droit sur une requête <code>my-collection</code>, Copier la réponse).</p>
+        <p class="muted" style="margin:0;font-size:13px">Tu peux aussi coller des réponses copiées depuis l'onglet Réseau (clic droit sur une requête <code>my-collection</code>, Copier la réponse).</p>
       </div>
       <div style="display:grid;gap:14px">
         <label class="drop" id="drop" for="file">
@@ -267,6 +333,8 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
   </section>
 </main>
 
+<div class="overlay" id="detail" hidden></div>
+
 <script id="ref" type="application/json">__REF__</script>
 <script>__EXTRACT__</script>
 <script>
@@ -275,23 +343,32 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
   const REF = JSON.parse(document.getElementById('ref').textContent);
   const RAR = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const RAR_NAME = { C: 'Commune', PC: 'Peu commune', R: 'Rare', SR: 'Super rare', UR: 'Ultra rare', L: 'Légendaire' };
-  const FIELDS = ['t', 'r', 'pv', 'c', 'at', 'n', 's', 'f', 'tags'];
+  const FIELDS = ['t', 'r', 'pv', 'c', 'at', 'n', 's', 'f', 'tags', 'img', 'atk', 'def'];
   const CHUNK = 700;
   const PAGE = 240;
+  const CARDS_PAGE = 120;
+  const FINE_SHOWN = 24;
+  // Illustrations : paquets img/b<k>.json publiés à côté de la page ({titre: data URI WebP}).
+  const IMG_BUNDLES = __IMG_BUNDLES__;
+  const IMG = new Map();
+  // Icônes Lucide (licence ISC) : épées, bouclier, étoile.
+  const ICON_ATK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></svg>';
+  const ICON_DEF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>';
+  const ICON_STAR = '<svg class="card__star" viewBox="0 0 24 24" fill="currentColor" aria-label="Favorite"><path d="M11.5 2.3a.6.6 0 0 1 1 0l2.6 5.3 5.8.8a.6.6 0 0 1 .3 1l-4.2 4.1 1 5.8a.6.6 0 0 1-.8.6L12 17.2l-5.2 2.7a.6.6 0 0 1-.8-.6l1-5.8-4.2-4.1a.6.6 0 0 1 .3-1l5.8-.8z"/></svg>';
 
   const state = {
     db: null, dbReady: false, dbError: null,
     cards: [], meta: null, dbMeta: null, loadedRev: null,
     lists: [],
-    tab: 'collections', album: null, albumFilter: 'all', albumSort: 'album', albumShown: PAGE,
-    q: '', sort: 'rarity', rar: new Set(), facet: null, cardsShown: 200,
-    pending: null,
+    tab: 'collections', album: null, albumFilter: 'all', albumSort: 'album', albumShown: PAGE, showAllFine: false,
+    q: '', sort: 'rarity', view: 'grid', rar: new Set(), facet: null, cardsShown: CARDS_PAGE,
+    pending: null, detail: null,
   };
 
   // ---------- outils ----------
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const fmt = (n) => (n === null || n === undefined ? '?' : Number(n).toLocaleString('fr-FR'));
+  const fmt = (n) => (n === null || n === undefined || n === '' ? '?' : Number(n).toLocaleString('fr-FR'));
   const wikiUrl = (t) => 'https://fr.wikipedia.org/wiki/' + encodeURIComponent(String(t).replace(/ /g, '_'));
   const norm = (t) => {
     let s = String(t || '').trim();
@@ -300,6 +377,7 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     s = s.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
     return s ? s.charAt(0).toUpperCase() + s.slice(1) : '';
   };
+  const validR = (r) => (RAR.includes(r) ? r : null);
   function estRarity(v) {
     if (v === null || v === undefined) return null;
     const th = REF.thresholds;
@@ -310,11 +388,15 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     if (v >= th.PC) return 'PC';
     return 'C';
   }
-  const rarBadge = (r, est) => (r && RAR.includes(r) ? `<span class="rar r${r}${est ? ' est' : ''}" title="${est ? 'Rareté estimée : ' : ''}${RAR_NAME[r]}">${est ? '≈' : ''}${r}</span>` : '<span class="rar unk" title="Rareté inconnue">?</span>');
-  const dateFr = (s) => {
+  const pill = (r, est) => {
+    r = validR(r);
+    if (!r) return '<span class="pill unk" title="Rareté inconnue">?</span>';
+    return `<span class="pill r${r}${est ? ' est' : ''}" title="${est ? 'Rareté estimée : ' : ''}${RAR_NAME[r]}">${est ? '≈ ' : ''}${r}</span>`;
+  };
+  const dateFr = (s, long) => {
     if (!s) return '';
     const d = new Date(s.length <= 16 ? s.replace(' ', 'T') + 'Z' : s);
-    return isNaN(d) ? s : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return isNaN(d) ? s : d.toLocaleDateString('fr-FR', long ? { day: 'numeric', month: 'long', year: 'numeric' } : { day: 'numeric', month: 'short' });
   };
   function store(k, v) { try { localStorage.setItem('wmc.' + k, v); } catch (e) { /* stockage indisponible */ } }
   function recall(k) { try { return localStorage.getItem('wmc.' + k); } catch (e) { return null; } }
@@ -326,22 +408,60 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     for (const c of state.cards) byTitle.set(norm(c.t), c);
   }
   const owns = (t) => byTitle.get(norm(t));
+  const imgOf = (t) => IMG.get(norm(t)) || null;
 
+  let colCache = null;
   function allCollections() {
+    if (colCache) return colCache;
     const out = [];
     for (const th of REF.themes) out.push({ key: 'theme:' + th.id, name: th.name, group: th.group, ordered: th.ordered, members: th.members, kind: 'theme' });
-    for (const n of REF.natures) if (n.members) out.push({ key: 'nature:' + n.id, name: n.name, group: 'natures', ordered: false, members: n.members, kind: 'nature' });
+    for (const a of REF.fine || []) out.push({ key: 'fine:' + a.id, name: a.name, group: 'cartes', ordered: false, members: a.members, kind: 'fine' });
+    for (const n of REF.natures) if (n.members) out.push({ key: 'nature:' + n.id, name: n.name, group: 'cartes', ordered: false, members: n.members, kind: 'nature' });
     for (const l of state.lists) out.push({ key: 'list:' + l.id, id: l.id, name: l.name, group: 'listes', ordered: true, members: l.titles.map((t) => [t, null, null]), kind: 'list' });
+    colCache = out;
     return out;
   }
   function progress(col) {
     let own = 0;
     const byR = {};
+    const sample = [];
     for (const m of col.members) {
       const c = owns(m[0]);
-      if (c) { own++; byR[c.r] = (byR[c.r] || 0) + 1; }
+      if (c) { own++; byR[c.r] = (byR[c.r] || 0) + 1; sample.push(c); }
     }
-    return { own, total: col.members.length, byR };
+    sample.sort((a, b) => RAR.indexOf(b.r) - RAR.indexOf(a.r) || (imgOf(b.t) ? 1 : 0) - (imgOf(a.t) ? 1 : 0));
+    return { own, total: col.members.length, byR, sample: sample.slice(0, 3) };
+  }
+
+  // ---------- éléments communs ----------
+  function cardHtml(c, big) {
+    const r = validR(c.r) || 'C';
+    const img = imgOf(c.t);
+    const art = img ? `<img src="${img}" alt="">` : `<div class="card__noart"><span>${esc(c.t.replace(/^[^A-Za-zÀ-ÿ0-9]+/, '').charAt(0) || '?')}</span></div>`;
+    const tag = big ? 'article' : 'article tabindex="0" role="button"';
+    return `<${tag} class="card r${r}${c.s ? ' shiny' : ''}${big ? ' big' : ''}" data-open="${esc(c.t)}" aria-label="${esc(c.t)}, ${RAR_NAME[r]}">
+      <div class="card__art">${art}</div>
+      ${pill(r)}${c.f ? ICON_STAR : ''}${c.n > 1 ? `<span class="card__count">×${c.n}</span>` : ''}
+      <div class="card__body">
+        <h3 class="card__title">${esc(c.t)}</h3>
+        ${c.c ? `<p class="card__desc">${esc(c.c)}</p>` : ''}
+        <div class="card__stats"><span class="atk">${ICON_ATK}${fmt(c.atk)}</span><span class="def">${ICON_DEF}${fmt(c.def)}</span></div>
+      </div>
+      ${r === 'L' ? '<div class="card__sheen"></div>' : ''}
+    </article>`;
+  }
+  function slotHtml(s, col) {
+    return `<div class="slot">
+      ${col.ordered ? `<span class="slot__no">${s.i}</span>` : ''}
+      <div>${pill(s.est, true)}</div>
+      <h3><a href="${wikiUrl(s.t)}" target="_blank" rel="noopener">${esc(s.t)}</a></h3>
+      ${s.d ? `<p>${esc(s.d)}</p>` : ''}
+      <span class="views">${s.pv !== null && s.pv !== undefined ? fmt(s.pv) + ' vues / 30 j' : 'vues inconnues'}</span>
+    </div>`;
+  }
+  function miniHtml(c) {
+    const img = imgOf(c.t);
+    return `<span class="mini r${validR(c.r) || 'C'}">${img ? `<img src="${img}" alt="">` : ''}</span>`;
   }
 
   // ---------- synthèse ----------
@@ -351,69 +471,78 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
       const msg = state.dbReady ? 'Aucune collection enregistrée pour l\'instant. Ouvre l\'onglet Mettre à jour pour déposer ton premier export.'
         : state.dbError ? 'La base de la page ne répond pas : ' + state.dbError + '. Tu peux quand même déposer un export, il ne sera pas gardé.'
         : 'Chargement de ta collection…';
-      el.innerHTML = `<div class="figures"><span class="figure"><span>${esc(msg)}</span></span></div>`;
+      el.innerHTML = `<div class="figures"><div class="figure"><span>${esc(msg)}</span></div></div>`;
       return;
     }
     const counts = {};
     let copies = 0;
     for (const c of state.cards) { counts[c.r] = (counts[c.r] || 0) + 1; copies += c.n || 1; }
-    const cols = allCollections().filter((c) => c.kind !== 'list');
+    const cols = allCollections().filter((c) => c.kind === 'theme');
     const started = cols.filter((c) => progress(c).own > 0).length;
     const total = state.cards.length;
-    const seg = RAR.map((r) => (counts[r] ? `<i class="r${r}" style="width:${(counts[r] / total) * 100}%;background:var(--rc)" title="${RAR_NAME[r]} : ${counts[r]}"></i>` : '')).join('');
-    const legend = RAR.map((r) => `<span><i class="dot r${r}" style="background:var(--rc)"></i>${RAR_NAME[r]} <b>${fmt(counts[r] || 0)}</b></span>`).join('');
+    const seg = RAR.map((r) => (counts[r] ? `<i class="r${r}" style="width:${(counts[r] / total) * 100}%" title="${RAR_NAME[r]} : ${counts[r]}"></i>` : '')).join('');
+    const legend = RAR.map((r) => `<span>${pill(r)} <b>${fmt(counts[r] || 0)}</b></span>`).join('');
     const m = state.meta || {};
     el.innerHTML = `
       <div class="figures">
-        <span class="figure"><b>${fmt(total)}</b><span>cartes différentes</span></span>
-        ${copies !== total ? `<span class="figure"><b>${fmt(copies)}</b><span>exemplaires</span></span>` : ''}
-        <span class="figure"><b>${started}</b><span>collections commencées sur ${cols.length}</span></span>
+        <div class="figure"><b>${fmt(total)}</b><span>cartes différentes</span></div>
+        ${copies !== total ? `<div class="figure"><b>${fmt(copies)}</b><span>exemplaires</span></div>` : ''}
+        <div class="figure"><b>${started} / ${cols.length}</b><span>thèmes commencés</span></div>
+        <div class="figure"><b>${fmt(counts.L || 0)}</b><span>légendaire${(counts.L || 0) > 1 ? 's' : ''}</span></div>
       </div>
-      <div class="stamp">Export du ${esc(m.at ? new Date(m.at).toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '?')}${state.pending ? ' · <b>non enregistré</b>' : ''}</div>
-      <div class="rbar"><div class="track" role="img" aria-label="Répartition par rareté">${seg}</div><div class="rlegend">${legend}</div></div>`;
+      <div class="rbar"><div class="track" role="img" aria-label="Répartition par rareté">${seg}</div>
+        <div class="rlegend">${legend}<span class="stamp">· export du ${esc(m.at ? new Date(m.at).toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : '?')}${state.pending ? ' · <b>non enregistré</b>' : ''}</span></div>
+      </div>`;
   }
 
   // ---------- collections ----------
+  function rowHtml(c) {
+    const p = progress(c);
+    const pct = p.total ? (p.own / p.total) * 100 : 0;
+    const segs = RAR.map((r) => (p.byR[r] ? `<i class="r${r}" style="width:${(p.byR[r] / Math.max(1, p.total)) * 100}%"></i>` : '')).join('');
+    const fan = p.sample.length ? p.sample.map(miniHtml).join('') : '<span class="mini empty"></span>';
+    return `<button class="row${p.own ? '' : ' zero'}" data-col="${esc(c.key)}">
+      <span class="fan" aria-hidden="true">${fan}</span>
+      <span class="info">
+        <span class="name">${esc(c.name)}</span>
+        <span class="bar" aria-hidden="true">${segs}</span>
+        <span class="line"><span><b>${fmt(p.own)}</b> sur ${fmt(p.total)}</span><span>${pct >= 10 || pct === 0 ? Math.round(pct) : pct.toFixed(1).replace('.', ',')} %</span></span>
+      </span>
+    </button>`;
+  }
   function renderCollections() {
     const box = $('collections');
     const cols = allCollections();
-    const groups = [...REF.groups, { id: 'natures', name: 'D\'après tes cartes', note: 'natures de tes cartes qui tiennent dans un album' }, { id: 'listes', name: 'Mes listes', note: 'tes propres collections, à partir d\'une liste de titres' }];
+    const groups = [...REF.groups,
+      { id: 'cartes', name: 'Tirés de tes cartes', note: 'albums construits autour des cartes que tu as déjà' },
+      { id: 'listes', name: 'Mes listes', note: 'tes propres collections, à partir d\'une liste de titres' }];
     let html = '<div class="groups">';
     for (const g of groups) {
-      const items = cols.filter((c) => c.group === g.id);
-      if (g.id === 'natures' && !items.length) continue;
-      html += `<section class="group"><h2>${esc(g.name)}${g.note ? `<small>${esc(g.note)}</small>` : ''}</h2>`;
-      if (items.length) {
-        html += '<div class="rows">';
-        for (const c of items) {
-          const p = progress(c);
-          const pct = p.total ? (p.own / p.total) * 100 : 0;
-          const segs = RAR.map((r) => (p.byR[r] ? `<i class="r${r}" style="width:${(p.byR[r] / Math.max(1, p.total)) * 100}%;background:var(--rc)"></i>` : '')).join('');
-          html += `<button class="row${p.own ? '' : ' zero'}" data-col="${esc(c.key)}">
-            <span class="name">${esc(c.name)}</span>
-            <span class="count">${fmt(p.own)} / ${fmt(p.total)}</span>
-            <span class="bar" aria-hidden="true">${segs}</span>
-            <span class="pct">${pct >= 10 || pct === 0 ? Math.round(pct) : pct.toFixed(1).replace('.', ',')} %</span>
-          </button>`;
-        }
-        html += '</div>';
+      let items = cols.filter((c) => c.group === g.id);
+      if (g.id === 'cartes') {
+        if (!items.length) continue;
+        items = items.map((c) => ({ c, p: progress(c) })).sort((a, b) => b.p.own / b.p.total - a.p.own / a.p.total || b.p.own - a.p.own).map((x) => x.c);
       }
-      if (g.id === 'listes' && !items.length) html += '<p class="muted" style="margin:0;font-size:0.88rem">Aucune liste pour l\'instant.</p>';
+      const hidden = g.id === 'cartes' && !state.showAllFine ? Math.max(0, items.length - FINE_SHOWN) : 0;
+      const shown = hidden ? items.slice(0, FINE_SHOWN) : items;
+      html += `<section class="group"><div class="section-head"><h2>${esc(g.name)}</h2>${g.note ? `<small>${esc(g.note)}</small>` : ''}</div>`;
+      if (shown.length) html += `<div class="rows">${shown.map(rowHtml).join('')}</div>`;
+      if (hidden) html += `<div class="show-more"><button class="btn" id="fine-more">Afficher les ${hidden} autres albums</button></div>`;
+      if (g.id === 'listes' && !items.length) html += '<p class="muted" style="margin:0;font-size:13px">Aucune liste pour l\'instant.</p>';
       html += '</section>';
     }
     html += '</div>';
     box.innerHTML = html;
-    // Le formulaire « Créer une liste » vit hors de #collections : un rendu ne l'efface pas pendant la saisie.
     $('nl-save').disabled = !state.db;
     if (!state.db && !$('nl-status').textContent) $('nl-status').textContent = 'La base de la page est indisponible : impossible d\'enregistrer une liste.';
   }
 
   function openAlbum(key) {
     state.album = key; state.albumShown = PAGE; state.albumFilter = 'all'; state.albumSort = 'album';
+    setTab('collections');
     renderAlbum();
     window.scrollTo({ top: 0 });
   }
-
   function closeAlbum() {
     state.album = null;
     $('album').hidden = true;
@@ -421,13 +550,11 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     $('newlist-box').hidden = false;
     renderCollections();
   }
-
   function renderAlbum() {
     const box = $('album');
-    const list = $('collections');
     const col = allCollections().find((c) => c.key === state.album);
     if (!col) { closeAlbum(); return; }
-    box.hidden = false; list.hidden = true; $('newlist-box').hidden = true;
+    box.hidden = false; $('collections').hidden = true; $('newlist-box').hidden = true;
     const p = progress(col);
     let slots = col.members.map((m, i) => {
       const c = owns(m[0]);
@@ -442,114 +569,144 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     const rank = (s) => RAR.indexOf(s.card ? s.card.r : s.est);
     const views = (s) => (s.card ? s.card.pv : s.pv) || 0;
     if (state.albumSort === 'rarity') slots.sort((a, b) => rank(b) - rank(a) || views(b) - views(a));
-    if (state.albumSort === 'alpha') slots.sort((a, b) => a.t.localeCompare(b.t, 'fr'));
     const shown = slots.slice(0, state.albumShown);
     const seg = (id, val, label) => `<button aria-pressed="${state[id] === val}" data-${id}="${val}">${label}</button>`;
     const missLine = missing.length
-      ? 'Il te manque ' + RAR.slice().reverse().filter((r) => missR[r]).map((r) => `${rarBadge(r, true)} <span class="num">${fmt(missR[r])}</span>`).join(' ') + (unknown ? ` <span class="rar unk">?</span> <span class="num">${fmt(unknown)}</span>` : '')
-      : 'Collection complète.';
+      ? '<span>Il te manque</span> ' + RAR.slice().reverse().filter((r) => missR[r]).map((r) => `<span>${pill(r, true)} <b class="num">${fmt(missR[r])}</b></span>`).join(' ') + (unknown ? ` <span>${pill(null)} <b class="num">${fmt(unknown)}</b></span>` : '')
+      : '<span>Collection complète.</span>';
     box.innerHTML = `
       <div class="album-head">
         <button class="back" id="back">← Toutes les collections</button>
         <div class="album-title"><h2>${esc(col.name)}</h2><span class="num">${fmt(p.own)} sur ${fmt(p.total)}</span></div>
         <div class="missing-sum">${missLine}</div>
-        ${col.kind !== 'list' ? '<p class="muted" style="margin:0;font-size:0.82rem">≈ : rareté estimée d\'après les vues de l\'article sur 30 jours et les seuils observés sur tes cartes. Liste tirée de Wikidata, articles en français seulement.</p>' : ''}
+        ${col.kind !== 'list' ? '<p class="hint">≈ : rareté estimée d\'après les vues de l\'article sur 30 jours et les seuils observés sur tes cartes. Liste tirée de Wikidata, articles en français seulement.</p>' : ''}
         <div class="toolbar">
-          <div class="seg" role="group" aria-label="Filtrer">${seg('albumFilter', 'all', 'Toutes')}${seg('albumFilter', 'missing', 'Manquantes')}${seg('albumFilter', 'owned', 'Possédées')}</div>
+          <div class="seg" role="group" aria-label="Filtrer">${seg('albumFilter', 'all', 'Toutes')}${seg('albumFilter', 'owned', 'Possédées')}${seg('albumFilter', 'missing', 'Manquantes')}</div>
           <div class="seg" role="group" aria-label="Trier">${seg('albumSort', 'album', col.ordered ? 'Ordre' : 'A → Z')}${seg('albumSort', 'rarity', 'Rareté')}</div>
-          ${col.kind === 'list' ? `<span id="del-zone"><button class="btn danger" id="del-list">Supprimer la liste</button></span>` : ''}
+          ${col.kind === 'list' ? '<span id="del-zone"><button class="btn danger" id="del-list">Supprimer la liste</button></span>' : ''}
         </div>
       </div>
-      ${shown.length ? `<div class="grid">${shown.map((s) => slotHtml(s, col)).join('')}</div>` : '<div class="empty">Aucune carte ici.</div>'}
-      ${slots.length > shown.length ? `<div class="more"><button class="btn" id="album-more">Afficher les ${fmt(Math.min(PAGE, slots.length - shown.length))} suivantes (${fmt(slots.length - shown.length)} restantes)</button></div>` : ''}`;
-  }
-
-  function slotHtml(s, col) {
-    const c = s.card;
-    const idx = col.ordered ? `<span class="idx">n° ${s.i}</span>` : '<span></span>';
-    if (c) {
-      return `<article class="slot">
-        <div class="top-line">${idx}${rarBadge(c.r)}</div>
-        <h3><a href="${wikiUrl(c.t)}" target="_blank" rel="noopener">${esc(c.t)}</a></h3>
-        ${c.c || s.d ? `<p>${esc(c.c || s.d)}</p>` : ''}
-        <div class="meta">${c.at ? 'obtenue le ' + esc(dateFr(c.at)) : ''}${c.n > 1 ? ' · ×' + c.n : ''}</div>
-      </article>`;
-    }
-    return `<article class="slot missing">
-      <div class="top-line">${idx}${rarBadge(s.est, true)}</div>
-      <h3><a href="${wikiUrl(s.t)}" target="_blank" rel="noopener">${esc(s.t)}</a></h3>
-      ${s.d ? `<p>${esc(s.d)}</p>` : ''}
-      <div class="meta">${s.pv !== null && s.pv !== undefined ? fmt(s.pv) + ' vues / 30 j' : ''}</div>
-    </article>`;
+      ${shown.length ? `<div class="cardgrid">${shown.map((s) => (s.card ? cardHtml(s.card) : slotHtml(s, col))).join('')}</div>` : '<div class="empty">Aucune carte ici.</div>'}
+      ${slots.length > shown.length ? `<div class="show-more"><button class="btn" id="album-more">Afficher les ${fmt(Math.min(PAGE, slots.length - shown.length))} suivantes (${fmt(slots.length - shown.length)} restantes)</button></div>` : ''}`;
   }
 
   // ---------- mes cartes ----------
   function tagsOf(c) {
-    const t = REF.tags[c.t];
-    return { n: t ? t.n : [], m: t ? t.m : [], p: t ? t.p : [], own: c.tags || [] };
+    const t = REF.tags[c.t] || {};
+    return { n: t.n || [], m: t.m || [], p: t.p || [], l: t.l || [], g: t.g || [], own: c.tags || [] };
   }
+  const FACETS = [['own', 'Tes étiquettes du jeu', 20], ['n', 'Nature', 18], ['m', 'Métier', 14], ['l', 'Lieu', 12], ['p', 'Pays', 12], ['g', 'Genre', 10]];
   function renderFacets() {
-    const count = { n: {}, m: {}, p: {}, own: {} };
+    const count = {};
+    for (const [k] of FACETS) count[k] = {};
     for (const c of state.cards) {
       const t = tagsOf(c);
-      for (const k of ['n', 'm', 'p', 'own']) for (const v of t[k]) count[k][v] = (count[k][v] || 0) + 1;
+      for (const [k] of FACETS) for (const v of t[k]) count[k][v] = (count[k][v] || 0) + 1;
     }
-    const natTotal = {};
-    for (const n of REF.natures) natTotal[n.name] = n.total;
-    const block = (k, title, limit) => {
+    let html = '';
+    for (const [k, title, limit] of FACETS) {
       const entries = Object.entries(count[k]).sort((a, b) => b[1] - a[1]).slice(0, limit);
-      if (!entries.length) return '';
-      return `<div class="facet"><h3>${title}</h3><div class="chips">${entries.map(([v, n]) => {
+      if (!entries.length) continue;
+      html += `<div class="facet"><h3>${title}</h3><div class="chips">${entries.map(([v, n]) => {
         const on = state.facet && state.facet.k === k && state.facet.v === v;
-        const tot = k === 'n' && natTotal[v] ? ` sur ${fmt(natTotal[v])} articles` : '';
-        return `<button class="chip" aria-pressed="${on}" data-fk="${k}" data-fv="${esc(v)}" title="${n} cartes${tot}">${esc(v)}<span class="num">${n}</span></button>`;
+        return `<button class="chip" aria-pressed="${on}" data-fk="${k}" data-fv="${esc(v)}">${esc(v)}<span class="n">${n}</span></button>`;
       }).join('')}</div></div>`;
-    };
-    $('facets').innerHTML = block('own', 'Tes étiquettes du jeu', 20) + block('n', 'Nature', 18) + block('m', 'Métier', 14) + block('p', 'Pays', 14)
-      || '<p class="muted">Les étiquettes automatiques apparaissent une fois la collection chargée.</p>';
+    }
+    $('facets').innerHTML = html || '<p class="muted">Les étiquettes automatiques apparaissent une fois la collection chargée.</p>';
     const rc = {};
     for (const c of state.cards) rc[c.r] = (rc[c.r] || 0) + 1;
-    $('rarity-filter').innerHTML = RAR.filter((r) => rc[r]).map((r) => `<button class="chip" aria-pressed="${state.rar.has(r)}" data-rar="${r}"><span class="rar r${r}">${r}</span>${RAR_NAME[r]}<span class="num">${rc[r]}</span></button>`).join('');
+    $('rarity-filter').innerHTML = RAR.filter((r) => rc[r]).map((r) => `<button class="chip" aria-pressed="${state.rar.has(r)}" data-rar="${r}">${pill(r)} ${RAR_NAME[r]}<span class="n">${rc[r]}</span></button>`).join('');
   }
-
   function filteredCards() {
     const q = state.q.trim().toLowerCase();
-    let list = state.cards.filter((c) => {
+    const list = state.cards.filter((c) => {
       if (state.rar.size && !state.rar.has(c.r)) return false;
       const t = tagsOf(c);
       if (state.facet && !t[state.facet.k].includes(state.facet.v)) return false;
       if (!q) return true;
-      return (c.t + ' ' + (c.c || '') + ' ' + [...t.n, ...t.m, ...t.p, ...t.own].join(' ')).toLowerCase().includes(q);
+      return (c.t + ' ' + (c.c || '') + ' ' + [...t.n, ...t.m, ...t.p, ...t.l, ...t.g, ...t.own].join(' ')).toLowerCase().includes(q);
     });
     const rank = (c) => RAR.indexOf(c.r);
     if (state.sort === 'rarity') list.sort((a, b) => rank(b) - rank(a) || (b.pv || 0) - (a.pv || 0));
     if (state.sort === 'views') list.sort((a, b) => (b.pv || 0) - (a.pv || 0));
     if (state.sort === 'recent') list.sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
+    if (state.sort === 'atk') list.sort((a, b) => (b.atk || 0) - (a.atk || 0));
+    if (state.sort === 'def') list.sort((a, b) => (b.def || 0) - (a.def || 0));
     if (state.sort === 'title') list.sort((a, b) => a.t.localeCompare(b.t, 'fr'));
     return list;
   }
-
+  function itemHtml(c) {
+    const t = tagsOf(c);
+    const tags = [...t.own.map((v) => `<span class="tag">${esc(v)}</span>`), ...t.n.map((v) => `<span class="tag n">${esc(v)}</span>`), ...[...t.m, ...t.l, ...t.p, ...t.g].map((v) => `<span class="tag">${esc(v)}</span>`)].join('');
+    return `<div class="item" data-open="${esc(c.t)}">
+      <div>${pill(c.r)}</div>
+      <div><h3>${esc(c.t)}</h3>${c.c ? `<p>${esc(c.c)}</p>` : ''}${tags ? `<div class="tags">${tags}</div>` : ''}</div>
+      <div class="side">${fmt(c.pv)} vues/mois<br>${esc(dateFr(c.at))}${c.n > 1 ? ' · ×' + c.n : ''}</div>
+    </div>`;
+  }
   function renderCards() {
     if (!state.cards.length) {
-      $('card-list').innerHTML = '<div class="empty">Ta collection apparaîtra ici : titre, rareté, vues par mois et étiquettes automatiques de chaque carte.</div>';
+      $('card-list').innerHTML = '<div class="empty">Ta collection apparaîtra ici : chaque carte avec son illustration, sa rareté, son attaque, sa défense et ses étiquettes automatiques.</div>';
       $('count-line').textContent = ''; $('card-more').innerHTML = ''; $('facets').innerHTML = ''; $('rarity-filter').innerHTML = '';
       return;
     }
     renderFacets();
+    $('view-grid').setAttribute('aria-pressed', String(state.view === 'grid'));
+    $('view-list').setAttribute('aria-pressed', String(state.view === 'list'));
     const list = filteredCards();
     const shown = list.slice(0, state.cardsShown);
     const f = state.facet ? ` · étiquette « ${esc(state.facet.v)} » <button class="chip" data-clearfacet="1">retirer</button>` : '';
-    $('count-line').innerHTML = `${fmt(list.length)} carte${list.length > 1 ? 's' : ''}${f}`;
-    $('card-list').innerHTML = shown.length ? shown.map((c) => {
-      const t = tagsOf(c);
-      const tags = [...t.own.map((v) => `<span class="tag">${esc(v)}</span>`), ...t.n.map((v) => `<span class="tag n">${esc(v)}</span>`), ...t.m.map((v) => `<span class="tag">${esc(v)}</span>`), ...t.p.map((v) => `<span class="tag">${esc(v)}</span>`)].join('');
-      return `<div class="item">
-        <div>${rarBadge(c.r)}</div>
-        <div><h3><a href="${wikiUrl(c.t)}" target="_blank" rel="noopener">${esc(c.t)}</a></h3>${c.c ? `<p>${esc(c.c)}</p>` : ''}${tags ? `<div class="tags">${tags}</div>` : ''}</div>
-        <div class="side">${fmt(c.pv)} vues/mois<br>${esc(dateFr(c.at))}${c.n > 1 ? ' · ×' + c.n : ''}</div>
-      </div>`;
-    }).join('') : '<div class="empty">Aucune carte ne correspond.</div>';
+    $('count-line').innerHTML = `<span>${fmt(list.length)} carte${list.length > 1 ? 's' : ''}${f}</span>`;
+    $('card-list').innerHTML = !shown.length ? '<div class="empty">Aucune carte ne correspond.</div>'
+      : state.view === 'grid' ? `<div class="cardgrid">${shown.map((c) => cardHtml(c)).join('')}</div>`
+      : `<div class="list">${shown.map(itemHtml).join('')}</div>`;
     $('card-more').innerHTML = list.length > shown.length ? `<button class="btn" id="cards-more">Afficher plus (${fmt(list.length - shown.length)} restantes)</button>` : '';
+  }
+
+  // ---------- fiche d'une carte ----------
+  function openDetail(title) {
+    const c = owns(title);
+    if (!c) return;
+    state.detail = c.t;
+    const t = tagsOf(c);
+    const groups = [['Nature', t.n], ['Métier', t.m], ['Lieu', t.l], ['Pays', t.p], ['Genre', t.g], ['Tes étiquettes', t.own]].filter((g) => g[1].length);
+    const key = norm(c.t);
+    const member = allCollections().filter((col) => col.members.some((m) => norm(m[0]) === key));
+    const el = $('detail');
+    el.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <button class="close" id="detail-close" aria-label="Fermer">×</button>
+      ${cardHtml(c, true)}
+      <div class="info">
+        <h2 id="detail-title">${esc(c.t)}</h2>
+        ${c.c ? `<p class="muted" style="margin:0">${esc(c.c)}</p>` : ''}
+        <div class="facts">
+          <div class="fact"><span>Rareté</span><b>${RAR_NAME[validR(c.r)] || '?'}</b></div>
+          <div class="fact"><span>Vues par mois</span><b>${fmt(c.pv)}</b></div>
+          <div class="fact"><span>Obtenue le</span><b>${esc(dateFr(c.at, true)) || '?'}</b></div>
+          <div class="fact"><span>Exemplaires</span><b>${fmt(c.n || 1)}${c.s ? ' · brillante' : ''}</b></div>
+        </div>
+        ${groups.length ? `<div><h3>Étiquettes</h3>${groups.map(([g, vals]) => `<div class="tags" style="margin-top:4px"><span class="muted" style="font-size:12px;min-width:5.5em">${g}</span>${vals.map((v) => `<span class="tag${g === 'Nature' ? ' n' : ''}">${esc(v)}</span>`).join('')}</div>`).join('')}</div>` : ''}
+        ${member.length ? `<div><h3>Dans tes collections</h3><div class="memberships">${member.map((col) => { const p = progress(col); return `<button data-col="${esc(col.key)}">${esc(col.name)}<span>${fmt(p.own)} / ${fmt(p.total)}</span></button>`; }).join('')}</div></div>` : ''}
+        <div><a href="${wikiUrl(c.t)}" target="_blank" rel="noopener">Lire l'article sur Wikipédia ↗</a></div>
+      </div>
+    </div>`;
+    el.hidden = false;
+    $('detail-close').focus();
+  }
+  function closeDetail() { state.detail = null; $('detail').hidden = true; $('detail').innerHTML = ''; }
+
+  // ---------- illustrations ----------
+  async function loadImages() {
+    if (!IMG_BUNDLES || typeof fetch !== 'function') return;
+    for (let k = 0; k < IMG_BUNDLES; k++) {
+      try {
+        const r = await fetch('img/b' + k + '.json');
+        if (!r.ok) continue;
+        const j = await r.json();
+        for (const [t, u] of Object.entries(j)) if (typeof u === 'string' && u.startsWith('data:image/')) IMG.set(norm(t), u);
+        renderAll();
+      } catch (e) { /* paquet indisponible : les cartes gardent leur fond */ }
+    }
   }
 
   // ---------- import ----------
@@ -581,9 +738,9 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
       <h3>${fmt(res.cards.length)} cartes trouvées</h3>
       <p class="status ${complete === false ? 'err' : 'ok'}" style="margin:0">${complete === null ? 'Le site n\'a pas indiqué son total : impossible de dire si l\'export est complet.' : complete ? `Le site annonce ${fmt(res.stats.unique)} cartes différentes : l'export est complet.` : `Le site annonce ${fmt(res.stats.unique)} cartes différentes : il en manque ${fmt(res.stats.unique - res.cards.length)}. Fais défiler toute ta collection avant d'exporter.`}</p>
       ${state.cards.length ? `<p style="margin:0">Par rapport à l'album actuel : <b>${fmt(added.length)}</b> nouvelle${added.length > 1 ? 's' : ''}, <b>${fmt(gone.length)}</b> disparue${gone.length > 1 ? 's' : ''} (échangées ou défaussées).</p>` : ''}
-      ${added.length && state.cards.length ? `<div class="chips">${added.slice(0, 30).map((c) => `<span class="chip">${rarBadge(c.r)} ${esc(c.t)}</span>`).join('')}${added.length > 30 ? `<span class="muted">et ${added.length - 30} autres</span>` : ''}</div>` : ''}
+      ${added.length && state.cards.length ? `<div class="chips">${added.slice(0, 30).map((c) => `<span class="chip">${pill(c.r)} ${esc(c.t)}</span>`).join('')}${added.length > 30 ? `<span class="muted">et ${added.length - 30} autres</span>` : ''}</div>` : ''}
       <div class="newlist"><button class="btn primary" id="save-import" ${state.db ? '' : 'disabled'}>Enregistrer dans l'album</button><span class="status" id="save-status">${state.db ? '' : 'Base indisponible : l\'album s\'affiche avec cet export mais ne le gardera pas.'}</span></div>
-      <p class="muted" style="margin:0;font-size:0.84rem">Les collections se mettent à jour tout de suite. Les étiquettes automatiques des nouvelles cartes arrivent quand Claude recalcule les données.</p>
+      <p class="muted" style="margin:0;font-size:12.5px">Les collections se mettent à jour tout de suite. Les étiquettes et les illustrations des nouvelles cartes arrivent quand Claude recalcule les données.</p>
     </div>`;
     applyCards(res.cards, { at: state.pending.at, total: res.stats ? res.stats.total : null, unique: res.stats ? res.stats.unique : null });
   }
@@ -654,10 +811,10 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
       throw e;
     }
   }
-
   async function loadOwned(meta) {
     state.dbMeta = meta;
     if (!meta || !meta.rev || meta.rev === state.loadedRev) return;
+    const fields = Array.isArray(meta.fields) ? meta.fields : FIELDS;
     const rows = [];
     for (let i = 0; i < meta.chunks; i++) {
       const snap = await getDoc(`owned/${meta.rev}-${i}`);
@@ -668,9 +825,9 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     state.loadedRev = meta.rev;
     if (state.pending) return; // un export déposé mais pas encore enregistré garde la main
     state.meta = meta;
-    applyCards(expand(rows));
+    // Les anciens enregistrements peuvent avoir moins de champs : on lit d'après leur propre liste.
+    applyCards(expand(rows.map((r) => FIELDS.map((k) => { const i = fields.indexOf(k); return i >= 0 ? r[i] : null; }))));
   }
-
   async function connect() {
     let db = null;
     try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
@@ -685,6 +842,7 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
     }, (e) => { state.dbError = e.code || 'erreur'; renderAll(); });
     db.collection('lists').onSnapshot((snap) => {
       state.lists = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((l) => Array.isArray(l.titles)).sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+      colCache = null;
       renderAll();
     }, () => {});
   }
@@ -703,34 +861,41 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
   }
 
   document.addEventListener('click', (ev) => {
-    const t = ev.target.closest('button, [data-col]');
+    if (ev.target === $('detail')) { closeDetail(); return; }
+    if (ev.target.closest('a')) return;
+    const t = ev.target.closest('button, [data-open]');
     if (!t) return;
     if (t.dataset.tab) { setTab(t.dataset.tab); return; }
-    if (t.dataset.col) { openAlbum(t.dataset.col); return; }
+    if (t.dataset.col) { closeDetail(); openAlbum(t.dataset.col); return; }
+    if (t.id === 'detail-close') { closeDetail(); return; }
+    if (t.dataset.open && !t.classList.contains('big')) { openDetail(t.dataset.open); return; }
     if (t.id === 'back') { closeAlbum(); return; }
+    if (t.id === 'fine-more') { state.showAllFine = true; renderCollections(); return; }
     if (t.dataset.albumfilter) { state.albumFilter = t.dataset.albumfilter; state.albumShown = PAGE; renderAlbum(); return; }
     if (t.dataset.albumsort) { state.albumSort = t.dataset.albumsort; state.albumShown = PAGE; renderAlbum(); return; }
     if (t.id === 'album-more') { state.albumShown += PAGE; renderAlbum(); return; }
-    if (t.id === 'cards-more') { state.cardsShown += 200; renderCards(); return; }
-    if (t.dataset.rar) { const r = t.dataset.rar; state.rar.has(r) ? state.rar.delete(r) : state.rar.add(r); state.cardsShown = 200; renderCards(); return; }
-    if (t.dataset.fk) { const f = { k: t.dataset.fk, v: t.dataset.fv }; state.facet = state.facet && state.facet.k === f.k && state.facet.v === f.v ? null : f; state.cardsShown = 200; renderCards(); return; }
+    if (t.id === 'cards-more') { state.cardsShown += CARDS_PAGE; renderCards(); return; }
+    if (t.id === 'view-grid' || t.id === 'view-list') { state.view = t.id === 'view-grid' ? 'grid' : 'list'; store('view', state.view); renderCards(); return; }
+    if (t.dataset.rar) { const r = t.dataset.rar; state.rar.has(r) ? state.rar.delete(r) : state.rar.add(r); state.cardsShown = CARDS_PAGE; renderCards(); return; }
+    if (t.dataset.fk) { const f = { k: t.dataset.fk, v: t.dataset.fv }; state.facet = state.facet && state.facet.k === f.k && state.facet.v === f.v ? null : f; state.cardsShown = CARDS_PAGE; renderCards(); return; }
     if (t.dataset.clearfacet) { state.facet = null; renderCards(); return; }
     if (t.id === 'save-import') { saveImport(); return; }
     if (t.id === 'read-paste') { const v = $('paste').value; if (v.trim()) readText(v, 'le texte collé'); return; }
     if (t.id === 'nl-save') { saveList(); return; }
-    if (t.id === 'del-list') {
-      $('del-zone').innerHTML = '<button class="btn danger" id="del-confirm">Confirmer la suppression</button> <button class="btn" id="del-cancel">Annuler</button>';
-      return;
-    }
+    if (t.id === 'del-list') { $('del-zone').innerHTML = '<button class="btn danger" id="del-confirm">Confirmer la suppression</button> <button class="btn" id="del-cancel">Annuler</button>'; return; }
     if (t.id === 'del-cancel') { renderAlbum(); return; }
     if (t.id === 'del-confirm') {
       const col = allCollections().find((c) => c.key === state.album);
-      if (col && state.db) state.db.doc('lists/' + col.id).delete().then(() => { state.lists = state.lists.filter((l) => l.id !== col.id); closeAlbum(); }).catch(() => { $('del-zone').textContent = 'La suppression a échoué.'; });
+      if (col && state.db) state.db.doc('lists/' + col.id).delete().then(() => { state.lists = state.lists.filter((l) => l.id !== col.id); colCache = null; closeAlbum(); }).catch(() => { $('del-zone').textContent = 'La suppression a échoué.'; });
       return;
     }
   });
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Escape' && state.detail) { closeDetail(); return; }
+    if ((ev.key === 'Enter' || ev.key === ' ') && ev.target && ev.target.dataset && ev.target.dataset.open && !ev.target.classList.contains('big')) { ev.preventDefault(); openDetail(ev.target.dataset.open); }
+  });
 
-  $('q').addEventListener('input', (e) => { state.q = e.target.value; state.cardsShown = 200; renderCards(); });
+  $('q').addEventListener('input', (e) => { state.q = e.target.value; state.cardsShown = CARDS_PAGE; renderCards(); });
   $('sort').addEventListener('change', (e) => { state.sort = e.target.value; renderCards(); });
 
   function readFile(file) {
@@ -746,10 +911,12 @@ textarea { width: 100%; min-height: 110px; padding: 8px 10px; border: 1px solid 
   drop.addEventListener('dragleave', () => drop.classList.remove('over'));
   drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('over'); readFile(e.dataTransfer.files[0]); });
 
+  state.view = recall('view') === 'list' ? 'list' : 'grid';
   const fromHash = { collections: 'collections', cartes: 'cartes', maj: 'maj' }[location.hash.replace('#', '')];
   setTab(fromHash || recall('tab') || 'collections');
   renderAll();
   connect();
-  if (window.__WM_SMOKE__) window.__WM_SMOKE__.api = { readText, state, openAlbum, renderAll, renderAlbum, setTab, allCollections, progress, estRarity };
+  loadImages();
+  if (window.__WM_SMOKE__) window.__WM_SMOKE__.api = { readText, state, openAlbum, openDetail, closeDetail, renderAll, renderAlbum, renderCards, setTab, allCollections, progress, estRarity, IMG };
 })();
 </script>

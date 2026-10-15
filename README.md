@@ -41,14 +41,28 @@ qui sert à vérifier que l'export est complet.
 ```bash
 node scripts/extract_har.js <export.har>   # -> data/owned.json (cartes seules ; dit si l'export est complet)
 node scripts/wikidata.js                   # cartes -> éléments Wikidata, natures (P31) ; cache/wd.json
-node scripts/build_reference.js            # collections, natures, étiquettes, vues des cartes manquantes -> data/reference.json
+node scripts/build_reference.js            # collections, natures, étiquettes -> data/reference.json
+node scripts/pageviews.js                  # vues des cartes manquantes -> cache/pv.json (LENT, en tâche de fond)
+node scripts/build_reference.js            # refaire, pour intégrer les vues
+node scripts/images.js                     # illustrations des cartes possédées -> dist/img/b<k>.json
 node scripts/build_page.js                 # -> dist/collections-wikimasters.html
 node scripts/smoke.js                      # faux DOM + collection d'essai ; doit finir par SMOKE OK
 ```
 
 Sans argument, `build_reference.js` réutilise `cache/` et n'interroge que ce qui manque (`--refresh` refait tout).
 Les API Wikimedia limitent le débit : `lib/net.js` fait une requête à la fois avec une pause et attend en cas de
-refus (429). Depuis le PC du travail, une rafale sans pause s'est fait refuser après une quarantaine de requêtes.
+refus (429). Depuis le PC du travail, une rafale sans pause s'est fait refuser après une quarantaine de requêtes ;
+`api.php` et `upload.wikimedia.org` répondent ensuite 429 avec `Retry-After` (1 à 30 s), d'autant plus que plusieurs
+scripts tournent en même temps. `pageviews.js` suit `pvipcontinue` (l'API rend les vues d'un lot de 50 titres en
+plusieurs morceaux) et reprend où il s'est arrêté ; compter environ une heure pour 10 000 titres.
+
+**Illustrations** (`scripts/images.js` + `scripts/thumbs.py`) : une page claude.ai ne charge aucune image
+extérieure. Le script télécharge la vignette Wikimedia indiquée par le jeu (`image_url`, 330 px ; pour une image
+d'origine, la vignette 330 px, PNG pour un SVG), la réduit en WebP 260 px qualité 68 avec Pillow
+(`python -m pip install --user pillow` ; lancé en `python -E -P`, car `-I` masque le site utilisateur), et regroupe
+les data URI en paquets JSON de 4 Mo au plus, publiés à côté de la page. Au 2026-10-15 : 559 illustrations (sur 560
+cartes illustrées ; les autres articles n'ont pas d'image), 2 paquets, 6,7 Mo. Une carte sans illustration garde
+un fond de sa rareté avec son initiale.
 
 Quand l'utilisateur dépose un nouvel export dans la page, les collections se mettent à jour tout de suite (elles
 comparent les titres). Les étiquettes des **nouvelles** cartes et les nouvelles natures demandent de relancer la
@@ -76,7 +90,7 @@ chaîne ci-dessus : relire la base de la page (`ArtifactData` `list` de `owned`,
 | Document | Contenu |
 |---|---|
 | `owned/meta` | `{rev, chunks, fields, cards, total, unique, at, source}` : l'export en vigueur ; écrit **en dernier** |
-| `owned/<rev>-<i>` | `{rev, i, rows}` : 700 cartes au plus par document (limite 256 Kio), `rows` = tableaux dans l'ordre de `fields` (`t, r, pv, c, at, n, s, f, tags`). Le `rev` est dans le nom : un enregistrement interrompu ne touche pas l'album en vigueur ; les morceaux de l'ancien `rev` sont supprimés après `meta` |
+| `owned/<rev>-<i>` | `{rev, i, rows}` : 700 cartes au plus par document (limite 256 Kio), `rows` = tableaux dans l'ordre de `fields` (`t, r, pv, c, at, n, s, f, tags, img, atk, def` ; la page relit un ancien enregistrement d'après ses propres `fields`). Le `rev` est dans le nom : un enregistrement interrompu ne touche pas l'album en vigueur ; les morceaux de l'ancien `rev` sont supprimés après `meta` |
 | `lists/<id>` | `{name, titles, createdAt}` : listes créées dans la page (« Mes listes ») |
 
 Amorçage ou remplacement par Claude : `node scripts/db_seed.js` prépare `cache/db_seed/` (`<rev>-0.json`…,
@@ -85,6 +99,12 @@ Amorçage ou remplacement par Claude : `node scripts/db_seed.js` prépare `cache
 
 ## Publier
 
-`Artifact` publish de `dist/collections-wikimasters.html` avec `capabilities: {db: {}}` au premier envoi, puis
-**sans `capabilities`** (pour garder celles déclarées) avec le `url` de la page. Dans une nouvelle session, faire
-d'abord `action: "read"` sur l'URL.
+Page : https://claude.ai/artifact/WhJsWuADcAo3Jwef6FVsx6 (« Collections WikiMasters », capacité `db`).
+`Artifact` publish de `dist/collections-wikimasters.html` avec `files: {"img/b0.json": "dist/img/b0.json", …}`
+(un par paquet de `dist/img/`), **sans `capabilities`** (pour garder celles déclarées) et avec le `url` de la page
+depuis une autre session (faire d'abord `action: "read"` sur l'URL).
+
+**Présentation** : dans l'esprit du jeu (sombre par défaut, Outfit et Inter, accent émeraude, cartes 5:7 avec
+illustration en haut, pastille de rareté, titre, description, attaque et défense), mais **textures, fonds et
+icônes maison** (icônes Lucide, licence ISC) : les CGU du jeu (§4) réservent sa marque, son interface et ses
+graphismes. Pas de logo du jeu.

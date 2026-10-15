@@ -177,6 +177,19 @@ async function main() {
     };
   }
 
+  // 7. Catégories fines (scripts/refine.js) : natures sans leurs superclasses, groupes d'espèces, genres, lieux,
+  // et petits albums construits autour des cartes possédées (films d'un réalisateur, communes d'un département…).
+  const refined = load(path.join(ROOT, 'data', 'refined.json'), null);
+  if (refined) {
+    for (const [t, r] of Object.entries(refined.tags || {})) {
+      if (!tags[t]) continue;
+      if (Array.isArray(r.n) && r.n.length) tags[t].n = r.n;
+      if (Array.isArray(r.g) && r.g.length) tags[t].g = r.g;
+      if (Array.isArray(r.l) && r.l.length) tags[t].l = r.l;
+    }
+  }
+  const fine = refined && Array.isArray(refined.albums) ? refined.albums : [];
+
   const pack = (list) => list.map((m) => [m.t, m.d, ownedTitles.has(m.t) ? null : pvCache[m.t] ?? null]);
   const ref = {
     builtAt: new Date().toISOString(),
@@ -186,6 +199,7 @@ async function main() {
     groups: cfg.groups,
     themes: themes.map((th) => ({ id: th.id, name: th.name, group: th.group, ordered: th.ordered, members: pack(th.list) })),
     natures: natures.map((n) => ({ id: n.id, name: n.name, total: n.total, members: n.list ? pack(n.list) : null })),
+    fine: fine.map((a) => ({ id: a.id, name: a.name, basis: a.basis, members: pack(a.members.map(([t, d]) => ({ t, d }))) })),
     tags,
   };
   save(path.join(ROOT, 'data', 'reference.json'), ref);

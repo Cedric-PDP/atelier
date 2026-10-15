@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const FIELDS = ['t', 'r', 'pv', 'c', 'at', 'n', 's', 'f', 'tags'];
+const FIELDS = ['t', 'r', 'pv', 'c', 'at', 'n', 's', 'f', 'tags', 'img', 'atk', 'def'];
 const CHUNK = 700;
 const out = process.argv[2] || path.join(ROOT, 'cache', 'db_seed');
 

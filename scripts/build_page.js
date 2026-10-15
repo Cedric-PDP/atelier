@@ -9,8 +9,11 @@ const extract = fs.readFileSync(path.join(ROOT, 'lib', 'extract.js'), 'utf8');
 
 // Dans un <script>, « </ » fermerait la balise : on l'échappe.
 const refJson = JSON.stringify(ref).replace(/<\//g, '<\\/');
+const imgIndex = path.join(ROOT, 'dist', 'img', 'index.json');
+const bundles = fs.existsSync(imgIndex) ? JSON.parse(fs.readFileSync(imgIndex, 'utf8')).bundles : 0;
 const html = tpl
   .replace('__REF__', () => refJson)
+  .replace('__IMG_BUNDLES__', String(bundles))
   .replace('__EXTRACT__', () => extract.replace(/<\/script/gi, '<\\/script'));
 
 const out = path.join(ROOT, 'dist', 'collections-wikimasters.html');

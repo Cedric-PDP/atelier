@@ -20,7 +20,7 @@ function el(id) {
     id, hidden: false, innerHTML: '', textContent: id === 'ref' ? refText : '', value: '', className: '', dataset: {},
     classList: { add() {}, remove() {} },
     setAttribute() {}, addEventListener(t, f) { listeners[t] = f; }, listeners,
-    closest() { return null; },
+    closest() { return null; }, focus() {},
   };
 }
 const els = Object.fromEntries(ids.map((id) => [id, el(id)]));
@@ -71,8 +71,21 @@ for (const c of cols) {
 api.state.album = null;
 api.setTab('cartes');
 api.renderAll();
+if (!/class="card r/.test(els['card-list'].innerHTML)) fail('grille des cartes vide');
+if (!/card__stats/.test(els['card-list'].innerHTML)) fail('cartes sans attaque ni défense');
+api.state.view = 'list'; api.renderCards();
 if (!/class="item"/.test(els['card-list'].innerHTML)) fail('liste des cartes vide');
+api.state.view = 'grid'; api.renderCards();
 if (!/data-fk=/.test(els.facets.innerHTML)) fail('aucune étiquette automatique');
+// Fiche d'une carte : la plus rare, avec ses collections.
+const best = [...api.state.cards].sort((a, b) => ['C', 'PC', 'R', 'SR', 'UR', 'L'].indexOf(b.r) - ['C', 'PC', 'R', 'SR', 'UR', 'L'].indexOf(a.r))[0];
+api.openDetail(best.t);
+if (!/detail-title/.test(els.detail.innerHTML) || els.detail.hidden) fail('la fiche d\'une carte ne s\'ouvre pas');
+api.closeDetail();
+// Illustrations : une image injectée doit apparaître dans la carte.
+api.IMG.set(best.t, 'data:image/webp;base64,AAAA');
+api.renderCards();
+if (!/data:image\/webp;base64,AAAA/.test(els['card-list'].innerHTML)) fail('illustration non affichée');
 const est = ['C', 'PC', 'R', 'SR', 'UR', 'L'].map((r, i) => api.estRarity([10, 100, 500, 2000, 10000, 50000][i]) === r).every(Boolean);
 if (!est) fail('estimation de rareté incohérente');
 

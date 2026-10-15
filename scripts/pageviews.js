@@ -16,10 +16,10 @@ async function main() {
   const pv = fs.existsSync(PV) ? JSON.parse(fs.readFileSync(PV, 'utf8')) : {};
   const order = [];
   const seen = new Set();
-  for (const list of [...ref.themes.map((t) => t.members), ...ref.natures.map((n) => n.members || [])]) {
+  for (const list of [...ref.themes.map((t) => t.members), ...(ref.fine || []).map((a) => a.members), ...ref.natures.map((n) => n.members || [])]) {
     for (const [t, , v] of list) {
       // v === null et absent du cache : manquante et jamais relevée (les possédées ont leurs vues dans la carte).
-      if (!seen.has(t) && !(t in pv) && v === null && !ref.tags[t]) { seen.add(t); order.push(t); }
+      if (!seen.has(t) && (!(t in pv) || pv[t] === null) && v === null && !ref.tags[t]) { seen.add(t); order.push(t); }
     }
   }
   console.log(`${order.length} articles à relever`);
@@ -29,26 +29,36 @@ async function main() {
   for (let i = 0; i < order.length; ) {
     if (maxMin && Date.now() - t0 > maxMin * 60000) break;
     const batch = order.slice(i, i + 50);
-    const url = 'https://fr.wikipedia.org/w/api.php?' + new URLSearchParams({ action: 'query', prop: 'pageviews', pvipdays: '30', titles: batch.join('|'), redirects: '1', format: 'json', formatversion: '2' });
-    let res;
-    try { res = await fetch(url, { headers: { 'User-Agent': UA } }); } catch (e) { await sleep(15000); continue; }
-    if (res.status === 429 || res.status >= 500) {
-      const wait = (Number(res.headers.get('retry-after')) || 30) * 1000 + 1000;
-      gap = Math.min(Math.round(gap * 1.5), 35000);
-      await sleep(wait);
-      continue;
-    }
-    const j = await res.json();
-    const q = j.query || {};
-    const alias = {};
-    for (const n of q.normalized || []) alias[n.to] = n.from;
-    for (const r of q.redirects || []) alias[r.to] = alias[r.from] || r.from;
+    // L'API rend les vues par morceaux (pvipcontinue) : on suit la continuation jusqu'au bout du lot.
     const got = {};
-    for (const p of q.pages || []) {
-      if (!p.pageviews) continue;
-      const src = alias[p.title] || p.title;
-      got[src] = (got[src] || 0) + Object.values(p.pageviews).reduce((s, x) => s + (x || 0), 0);
+    let cont = {};
+    let refused = false;
+    for (let guard = 0; guard < 30; guard++) {
+      const url = 'https://fr.wikipedia.org/w/api.php?' + new URLSearchParams({ action: 'query', prop: 'pageviews', pvipdays: '30', titles: batch.join('|'), redirects: '1', format: 'json', formatversion: '2', ...cont });
+      let res;
+      try { res = await fetch(url, { headers: { 'User-Agent': UA } }); } catch (e) { refused = true; await sleep(15000); break; }
+      if (res.status === 429 || res.status >= 500) {
+        const wait = (Number(res.headers.get('retry-after')) || 30) * 1000 + 1000;
+        gap = Math.min(Math.round(gap * 1.5), 35000);
+        await sleep(wait);
+        guard--;
+        continue;
+      }
+      const j = await res.json();
+      const q = j.query || {};
+      const alias = {};
+      for (const n of q.normalized || []) alias[n.to] = n.from;
+      for (const r of q.redirects || []) alias[r.to] = alias[r.from] || r.from;
+      for (const p of q.pages || []) {
+        if (!p.pageviews) continue;
+        const src = alias[p.title] || p.title;
+        got[src] = (got[src] || 0) + Object.values(p.pageviews).reduce((s, x) => s + (x || 0), 0);
+      }
+      if (!j.continue) break;
+      cont = j.continue;
+      await sleep(gap);
     }
+    if (refused) continue;
     for (const t of batch) pv[t] = t in got ? got[t] : null;
     fs.writeFileSync(PV, JSON.stringify(pv));
     i += batch.length;
