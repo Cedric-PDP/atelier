@@ -144,7 +144,7 @@ autre format (voir « Le favori »).
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
-| `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url}], part, next_part}` : pages de 1 000 cartes, sans étiquettes |
+| `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url, v?}], part, next_part}` : pages de 1 000 cartes, sans étiquettes ; `v` = la cote de la carte telle que rangée dans le cache commun `prices` (`{"<rareté>[*]": {p, n, w, l, d}}`, voir « Le marché »), seulement quand elle en a une (pas pour `{}`, carte lue sans vente) |
 | `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
 | `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
@@ -305,7 +305,9 @@ ne voit les cartes des autres que si l'on montre les siennes (Réglages, « Mont
 l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale seulement).
 
 - **Ce qui est montré** : le prénom (nom du classeur), le nombre de cartes, la date de la dernière synchro, et pour
-  chaque carte `id, title, rarity, count` (exemplaires), `shiny, image, url`. **Jamais** les étiquettes, les
+  chaque carte `id, title, rarity, count` (exemplaires), `shiny, image, url`, plus sa cote `v` (2026-10-16 : des ventes du
+  jeu, communes à tous, liées à aucun joueur ; de quoi calculer la valeur de son classeur dans la page). **Jamais** le
+  détail de ses exemplaires (`variants`), les étiquettes, les
   préférences, les clés (principale ou d'import), le cookie du jeu, ni l'id interne du compte ; les collections à
   compléter seulement avec le second réglage ci-dessous. Le serveur n'a pas de qid des cartes (ils sont résolus dans le
   navigateur) : il n'en montre pas.
@@ -324,8 +326,9 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   si le membre partage. `DELETE /api/me` efface le compte : il disparaît aussitôt de la liste.
 - **Coût** : `GET /api/members` = une requête (au plus `MAX_USERS` lignes, nombre de cartes compté par la clé primaire
   `(user_id, card_id)`). `GET /api/members/<id>/cards` = le membre (index unique `users_by_public_id`) et une page de
-  1 000 cartes par clé (`card_id > curseur`), réduites en SQL aux champs montrés (liste blanche, `json_object`), dans la
-  même transaction ; les étiquettes ne sont jamais lues. Aucun JavaScript proportionnel à la taille de la collection.
+  1 000 cartes par clé (`card_id > curseur`), réduites en SQL aux champs montrés (liste blanche, `json_object`), et leur
+  cote lue par la clé primaire de `prices` (`LEFT JOIN`), dans la même transaction ; les étiquettes ne sont jamais lues
+  (une page de 1 000 cartes toutes cotées : ~300 Ko, < 1 ms de JavaScript, `v` collé au texte JSON de la carte). Aucun JavaScript proportionnel à la taille de la collection.
   `GET /api/members/<id>/targets` = le membre et une page de collections par la clé primaire `(user_id, id)` (`id >
   curseur`) : une somme cumulée (`SUM … OVER`) de leur taille rangée garde celles qui commencent sous 512 Ko (la première
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre et au qid ; une réponse reste sous
@@ -335,7 +338,10 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
   double d'abord : les plus faciles à échanger), les collections où les amis remplissent le plus de cases d'abord ;
   « Ce qui pourrait intéresser tes amis » = tes cartes (tes doubles d'abord) qui remplissent une case vide des
-  collections qu'ils montrent ; **rien pour un ami qui ne les montre pas** (« Rien pour Léa, qui ne partage pas ses
+  collections qu'ils montrent, résumé par leurs noms (« 3 de tes cartes complètent « A », « B » et « C » · 2 que tu as en
+  double », les plus complétées d'abord ; au-delà de trois, « … et 2 autres ») ; le résumé de l'onglet nomme de même les
+  amis et tes collections les plus concernés (« 4 de tes cartes peuvent compléter les collections de Paul ; 6 de leurs
+  cartes peuvent compléter « Planètes » et « Couleurs ». ») ; **rien pour un ami qui ne les montre pas** (« Rien pour Léa, qui ne partage pas ses
   collections » ; plus d'estimation par le catalogue) ; classeur d'un ami en lecture seule (filtre « Me manquent »,
   recherche, tri, et « Ses collections », ci-dessous). Dans un album, une case vide qu'un ami
   peut remplir porte un badge (« chez Paul ×2 », « +1 » s'il y en a d'autres) ; sa fiche dit « Chez : Paul (×2), Léa ».
@@ -352,7 +358,8 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   sous la carte les noms de tes collections, si elle remplirait une de leurs cases vides) et ses cases vides (« tu l'as »,
   « ×2 en double » si ta carte la remplit : celles que tu pourrais lui donner ; rareté de ta carte, sinon estimée d'après
   les vues) ; numéros, sauf pour une collection tirée d'une catégorie (A → Z) ; « Il lui en manque N », « Tu peux l'aider : N cartes
-  dont M en double » ; filtres « Toutes / Il les a / Lui manquent / Tu peux l'aider », tri par rareté ; « ← Retour au
+  dont M en double » ; filtres « Toutes / Il les a / Lui manquent / Tu peux l'aider », tris par rareté et par prix
+  (« Prix ↑ », « Prix ↓ », voir « Le marché ») ; « ← Retour au
   classeur de Paul » (et « ← Échanges possibles », filtre gardé, quand on vient de là). Une carte ou une case ouvre une
   fiche en lecture seule (qui l'a, rareté, vues, ses autres collections et les tiennes où elle figure, « Copier le nom »,
   Wikipédia), sans tags ni sélection. Rien ne modifie sa collection ; « Créer la même collection chez moi » en fait une
@@ -383,6 +390,18 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   ouverture de l'onglet (sinon au plus toutes les 10 min) et les cartes d'un ami ne le sont que si sa synchro ou son
   nombre de cartes a changé ; ses collections (après ses cartes) seulement s'il les montre et si leur nombre ou leur
   dernier changement a bougé. Pendant la résolution des qids des amis, les recalculs sont limités à un par seconde.
+- **Valeur du classeur d'un ami** (2026-10-16, calculée dans la page) : ses cartes telles qu'il les montre (rareté,
+  exemplaires, brillance : tous ses exemplaires comptés dans la rareté de sa carte, un seul brillant s'il l'est, comme une
+  carte « approchée » du marché) × les cotes fiables venues avec ses cartes (`v`). Sur sa ligne (« valeur 12 500W · 205
+  cartes cotées sur 1 048 »), en haut de son classeur (« Valeur : 12 500W, 205 cartes cotées sur 1 048 », avec la règle),
+  pour chacune de ses collections (ligne et album : ses cartes qui la remplissent, chacune une fois). **Choix : dans la
+  page plutôt que la dernière valeur de `value_history`** : elle n'utilise que ce qu'il montre (`value_history` est
+  calculée avec ses `variants`, jamais montrés), elle suit les cotes du moment (son dernier point peut dater, ou manquer),
+  elle donne aussi la valeur de chacune de ses collections, et elle ne coûte aucune requête de plus (la cote arrive avec
+  ses cartes, par la clé primaire). Limites : elle peut différer un peu de la valeur qu'il voit chez lui (ses exemplaires
+  de rareté plus basse comptés dans la plus haute), et ses cotes restent celles de la lecture de ses cartes pendant la
+  visite (relues quand sa synchro change, ou au rechargement de la page). Seulement pour un membre qui montre ses cartes
+  (sinon `404`, comme ses cartes) ; rien pour un ami dont aucune carte n'est cotée.
 - **Règles du jeu** : le classeur ne fait que montrer qui a quoi. Les échanges se font dans le jeu, par les joueurs ;
   rien n'est automatisé vers le jeu.
 
@@ -826,15 +845,57 @@ renvoyée sans cesse, elle reste. Contrôle simple fait : bornes, raretés connu
 entre membres invités, et il faudrait garder qui a écrit, contraire à « pas de user_id ») : exiger que deux membres
 concordent, garder l'auteur pour effacer ses cotes. Remède : régénérer la clé d'import qui a fuité.
 
-**Interface** : bandeau, tuile « 12 340 W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »** :
-valeur (« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la valeur dès deux jours (SVG dans la page,
-une ligne aux couleurs du thème, sombre ou clair ; survol : le jour le plus proche ; « Voir les valeurs » : le tableau),
-« Bonnes affaires », « Cartes qui bougent » (écart en W sur 7 jours de tes exemplaires, cote fiable maintenant et il y a
-7 jours : 12 hausses, 12 baisses), « Mes enchères » (tes mises, tes ventes), « À savoir » (avertissement des règles du
-jeu). Fiche d'une carte possédée : cote de chacun de tes exemplaires (« 2 × Rare 400 W · 10 ventes · dernière 399 W le
-15 octobre · 7 jours : +33 % », « ~ » sous 3 ventes), total ; fiche d'une carte qui manque : ses cotes connues par
-rareté. Relu à l'ouverture, après chaque changement des cartes, à l'ouverture de l'onglet et au retour sur la page (une
-fois par minute au plus, 20 s pour l'onglet). Rien n'est lu dans le jeu depuis cette page (CSP, et pas de session).
+**Interface** : bandeau, tuile « 12 340W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »**
+(réorganisé le 2026-10-16) : en haut, la valeur (« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la
+valeur dès deux jours (SVG dans la page, une ligne aux couleurs du thème, sombre ou clair ; survol : le jour le plus
+proche ; « Voir les valeurs » : le tableau) ; puis, **côte à côte** (l'une sous l'autre sous 760 px), « Bonnes affaires
+à acheter » (les bonnes affaires ci-dessus) et « Bonnes affaires à vendre » ; puis « Cartes qui bougent » (écart en W sur
+7 jours de tes exemplaires, cote fiable maintenant et il y a 7 jours : toutes les hausses, toutes les baisses), « Mes
+enchères » (tes mises, tes ventes) et « À savoir » (avertissement des règles du jeu). Ces quatre sections sont
+**repliables** (accordéon : un bouton dans le titre, `aria-expanded`, contenu rendu seulement ouvert ; ce qu'elles
+contiennent dit dans le titre, « 2 mises · 1 vente ») : toutes ouvertes par défaut, **sauf « Mes enchères », fermée** ;
+l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-marche` : `{<id du compte>: {open, min}}`,
+accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montre **20 cartes**, puis « Afficher 20 de plus
+(N restantes) ».
+- **« Bonnes affaires à vendre »** : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis
+  qid, comme les albums), et les **exemplaires en trop** de celles qui y servent (une collection n'a besoin que d'un
+  exemplaire de la carte, quel que soit le nombre de collections : on garde le moins coté, cote peu fiable comprise pour
+  en juger, et la ligne dit « 2 en trop ») ; prix d'une ligne = la plus haute cote fiable de ses exemplaires à vendre
+  (rareté et brillance de l'exemplaire), au moins le seuil « Valeur minimale : [100]W » (champ nombre, 100 par défaut,
+  gardé avec l'état des sections ; vidé, il ne change rien) ; de la plus chère à la moins chère. Une ligne : rareté de
+  l'exemplaire, titre (sa fiche), « brillante », « ×3 » ou « 2 en trop », « Copier le nom », cote, ventes, dernière vente.
+  Cartes sans cote fiable : « 12 cartes sans cote fiable : clique « Mettre à jour les cotes » dans l'encart du favori ».
+- **Montants** (2026-10-16) : partout (fiches, albums, lignes des collections, bandeau, onglet « Marché », amis), un
+  montant s'écrit **collé à son W** (« 738W », « 1 234W », séparateur des milliers gardé : espace insécable ordinaire,
+  l'espace fine de fr-FR n'existant pas dans la police des titres) et **en vert** (couleur des liens, celle de « ← Toutes
+  les collections » ; classe `w`, `priceTag` dans `app.js`) ; « ~120W » estompé pour une cote peu fiable (moins de 3
+  ventes) ; « ~5 100W » pour une somme estimée. Exception : les écarts des « Cartes qui bougent » (hausse en vert, baisse
+  en rouge).
+- **Valeur d'une collection** (tes collections, et une catégorie ou une page de Wikipédia ouverte) : tes cartes qui la
+  remplissent, comptées comme la valeur du classeur (cote fiable de la rareté de chaque exemplaire × nombre ; une carte
+  une fois, même nommée par deux cases) : à côté de « N sur M » dans l'album (« Valeur : 2 340W (18 cartes cotées sur
+  25) ») et, discrète, sur sa ligne de « Mes collections » (« valeur 2 340W · pour la compléter ~5 100W », détail au
+  survol et pour les lecteurs d'écran). **« Pour la compléter : ~5 100W (12 cartes cotées sur 30 qui manquent, à la moins
+  chère de leurs cotes) »** : pour chaque carte qui manque (article vérifié, une fois par titre), **la moins chère de ses
+  cotes fiables, toutes raretés d'exemplaire et brillance confondues** (choix : n'importe quel exemplaire remplit la case,
+  et la rareté estimée d'après les vues n'est qu'une estimation) ; sans cote fiable, elle n'est pas comptée. Cotes :
+  celles déjà lues pour le classeur (`GET /api/market/prices` : tes cartes, et les cartes voulues dont le favori a trouvé
+  l'identifiant, rangées par titre `t`), une seule lecture gardée en mémoire (relue au plus une fois par minute, voir
+  ci-dessous) : rien de plus n'est demandé pour une collection. Une carte qui manque n'a de cote que si le favori l'a
+  trouvée dans le jeu (titres des cartes qui manquent, 500 par plan).
+- **Tris par prix** (« Prix ↑ », « Prix ↓ ») : « Mes cartes », albums de tes collections, classeur et albums d'un ami.
+  Prix d'une carte = la plus haute cote de ses exemplaires (rareté, brillance ; ceux d'un ami : la rareté de sa carte) ;
+  d'une case vide = celui de « Pour la compléter » (la moins chère de ses cotes ; dans l'album d'un ami, celle de ta
+  carte si tu l'as). Les cotes peu fiables (« ~ ») viennent **après** les fiables, puis les cartes sans cote, **dans les
+  deux sens** ; à égalité, l'ordre habituel de la vue (rareté, ordre de la collection ou A → Z). Le tri choisi reste
+  celui de la vue, comme les autres. Pas de tri par prix dans « Échanges possibles » ni dans les listes du « Marché »
+  (déjà triées : fin d'enchère, écart, prix).
+- Fiche d'une carte possédée : cote de chacun de tes exemplaires (« 2 × Rare 400W · 10 ventes · dernière 399W le 15
+  octobre · 7 jours : +33 % », « ~ » sous 3 ventes), total ; fiche d'une carte qui manque : ses cotes connues par rareté ;
+  fiche d'une carte d'un ami : sa cote (venue avec ses cartes), sinon celle de ta carte, sinon celle d'une carte qui te
+  manque. Relu à l'ouverture, après chaque changement des cartes, à l'ouverture de l'onglet et au retour sur la page (une
+  fois par minute au plus, 20 s pour l'onglet ; et à la demande d'un tri par prix). Rien n'est lu dans le jeu depuis
+  cette page (CSP, et pas de session).
 
 **Limites** : formats de la base du jeu relevés dans la description de l'ami, **pas vérifiés** (noms des tables et des
 colonnes, statuts `active`/`settled_sold`/`cancelled`/`settled_*`, liens `auction:auctions(…)` et `card:cards(…)`) ; un

@@ -1,7 +1,8 @@
 // Partage entre membres du classeur. Un membre qui montre ses cartes (users.shared = 1 : réglage choisi, désactivé par
 // défaut) voit celles des autres membres qui les montrent aussi : c'est réciproque. Ce qui est montré : le prénom, le
 // nombre de cartes, la date de la dernière synchro, et pour chaque carte son id, son titre, sa rareté, le nombre
-// d'exemplaires, si elle est brillante, son illustration et son adresse Wikipédia. Jamais les étiquettes, les
+// d'exemplaires, si elle est brillante, son illustration et son adresse Wikipédia, et sa cote (cache commun des ventes du
+// jeu, de quoi calculer la valeur de son classeur dans la page). Jamais les étiquettes, les
 // préférences, les clés, le cookie du jeu ni l'id interne du compte (ni les collections à compléter, sauf second réglage
 // ci-dessous) : un membre est désigné par son identifiant public (users.public_id, tiré à chaque activation du partage,
 // effacé à sa désactivation).
@@ -88,6 +89,8 @@ export async function listMembers(env, user) {
 const MEMBER = 'SELECT public_id AS id, name, fetched_at FROM users WHERE public_id = ?1 AND shared = 1';
 // Une page de 1 000 cartes par clé (card_id > dernière carte lue), comme GET /api/cards?part=…, réduites en SQL aux
 // champs montrés (liste blanche : rien d'autre ne sort de cards.data, et les étiquettes ne sont jamais lues).
+// Avec la cote de chaque carte (2026-10-16, valeur du classeur d'un ami) : la ligne du cache commun `prices` (des ventes
+// du jeu, liées à aucun joueur), lue par sa clé primaire, rendue telle quelle dans `v` quand la carte en a une.
 const MEMBER_PAGE = `SELECT c.card_id, json_object(
     'id', c.card_id,
     'title', json_extract(c.data, '$.title'),
@@ -96,10 +99,12 @@ const MEMBER_PAGE = `SELECT c.card_id, json_object(
     'shiny', json(CASE WHEN json_extract(c.data, '$.shiny') THEN 'true' ELSE 'false' END),
     'image', json_extract(c.data, '$.image'),
     'url', json_extract(c.data, '$.url')
-  ) AS j
-  FROM cards AS c
+  ) AS j, CASE WHEN p.data <> '{}' THEN p.data END AS v
+  FROM cards AS c LEFT JOIN prices AS p ON p.card_id = c.card_id
   WHERE c.user_id = (SELECT id FROM users WHERE public_id = ?1 AND shared = 1) AND c.card_id > ?2
   ORDER BY c.card_id LIMIT ${PAGE_SIZE + 1}`;
+// Une carte de la page : l'objet montré, plus sa cote (`v`, JSON rangé par market.js) quand elle en a une.
+const memberCard = (r) => (r.v ? `${r.j.slice(0, -1)},"v":${r.v}}` : r.j);
 
 // GET /api/members/<id>/cards?part=… : part = « 0 » (ou absent) pour la première page, puis le curseur next_part.
 // 404 si ce membre n'existe pas ou ne partage pas (ou plus). Membre et page lus dans la même transaction.
@@ -121,7 +126,7 @@ export async function memberCards(env, user, _body, request) {
   const rows = page.results.length > PAGE_SIZE ? page.results.slice(0, PAGE_SIZE) : page.results;
   return {
     member: { id: who.id, name: who.name, fetched_at: who.fetched_at },
-    cards: raw(`[${rows.map((r) => r.j).join(',')}]`),
+    cards: raw(`[${rows.map(memberCard).join(',')}]`),
     part,
     next_part: page.results.length > PAGE_SIZE ? encodeCursor(rows[rows.length - 1].card_id) : null,
   };

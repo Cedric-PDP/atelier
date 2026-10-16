@@ -702,7 +702,8 @@ await test('collections à compléter : une seule collection par page de Wikipé
   assert.notEqual(r.json.target.id, first.id);
   for (let i = 0; i < 2; i++) assert.equal((await call('POST', 'targets/save', { key: yan.key, body: { name: 'Ancienne', items, source: 'links' } })).status, 200);
   const list = (await call('GET', 'targets', { key: yan.key })).json.targets;
-  assert.deepEqual(list.map((t) => t.source), ['links:Liste de noms de couleur', 'links:Liste de races bovines', 'links', 'links']);
+  // Ordre de la liste non garanti entre collections créées dans la même milliseconde : on compare les sources triées.
+  assert.deepEqual(list.map((t) => t.source).sort(), ['links', 'links', 'links:Liste de noms de couleur', 'links:Liste de races bovines']);
   await call('DELETE', 'me', { key: yan.key });
 });
 
@@ -2299,6 +2300,19 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.deepEqual(r.json.cards, own.map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: c.shiny, image: c.image ?? null, url: c.url ?? null })));
   assert.deepEqual(r.json.cards.map((c) => Object.keys(c).join(',')), own.map(() => 'id,title,rarity,count,shiny,image,url'));
   assert.deepEqual((await pageOf(ana, benPub)).json, r.json, 'sans part : la première page');
+  // Avec la cote de la carte (cache commun des ventes, pour la valeur de son classeur dans la page) : `v` tel que rangé,
+  // seulement pour une carte qui en a une (rien pour une carte lue sans vente, `{}`, ni pour une carte jamais cotée).
+  {
+    const sale = { p: 120, n: 4, w: null, l: 118, d: '2026-10-15T10:00:00.000Z' };
+    const v0 = { [own[0].rarity]: sale, [own[0].rarity + '*']: { ...sale, p: 900, n: 1 } };
+    const sent = await call('POST', 'market/prices', { key: benImport, body: { prices: [{ id: own[0].id, v: v0 }, { id: own[1].id, v: {} }] } });
+    assert.equal(sent.status, 200, JSON.stringify(sent.json));
+    const priced = await pageOf(ana, benPub, '0');
+    assert.deepEqual(priced.json.cards[0], { ...r.json.cards[0], v: v0 });
+    assert.deepEqual(priced.json.cards.slice(1), r.json.cards.slice(1), 'sans cote (ou sans vente) : pas de « v »');
+    env.DB.sqlite.prepare('DELETE FROM prices').run();
+    env.DB.sqlite.prepare("DELETE FROM market WHERE user_id = '*'").run();
+  }
   // Rien de personnel dans les réponses : ni étiquettes, ni collections, ni préférences, ni clés, ni session, ni id interne.
   const text = JSON.stringify([r.json, (await members(ana)).json, (await members(ben)).json]);
   const [benRow] = rows('SELECT * FROM users WHERE id = ?', ben.user.id);
@@ -2361,11 +2375,21 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   const plan = env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((x) => x.detail);
   assert.ok(plan.some((l) => /^SEARCH c USING (INDEX|PRIMARY KEY) .*\(user_id=\? AND card_id>\?\)/.test(l)), plan.join('\n'));
   assert.ok(plan.some((l) => /^SEARCH users USING INDEX users_by_public_id \(public_id=\?\)/.test(l)), plan.join('\n'));
-  assert.ok(!plan.some((l) => /^SCAN (c|cards|tags)\b/.test(l)) && !/\btags\b/.test(sql), plan.join('\n'));
-  // Coût : JavaScript d'une page de 1 000 cartes (rejouée) et de la liste des membres.
+  assert.ok(plan.some((l) => /^SEARCH p USING (INDEX sqlite_autoindex_prices_1|PRIMARY KEY) \(card_id=\?\)/.test(l)), plan.join('\n'));
+  assert.ok(!plan.some((l) => /^SCAN (c|cards|tags|p|prices)\b/.test(l)) && !/\btags\b/.test(sql), plan.join('\n'));
+  // Coût : JavaScript d'une page de 1 000 cartes (rejouée), toutes cotées, et de la liste des membres.
+  const danImport = (await call('POST', 'import-key', { key: dan.key })).json.import_key;
+  const danSale = { p: 50, n: 3, w: 40, l: 49, d: '2026-10-15T10:00:00.000Z' };
+  for (let k = 0; k < 2; k++) {
+    const prices = mini(2500).slice(k * 500, (k + 1) * 500).map((c) => ({ id: c.id, v: { C: danSale, R: { ...danSale, p: 300 }, 'C*': { ...danSale, n: 1 } } }));
+    assert.equal((await call('POST', 'market/prices', { key: danImport, body: { prices } })).status, 200);
+  }
+  assert.equal((await pageOf(ana, danPub, '0')).json.cards.filter((c) => c.v).length, 1000);
   const p = await profile('GET', `members/${danPub}/cards?part=0`, { key: ana.key });
+  env.DB.sqlite.prepare('DELETE FROM prices').run();
+  env.DB.sqlite.prepare("DELETE FROM market WHERE user_id = '*'").run();
   const l = await profile('GET', 'members', { key: ana.key });
-  console.log(`    GET /api/members/<id>/cards, une page de 1 000 : JS ${ms(p.js)} | GET /api/members : JS ${ms(l.js)}`);
+  console.log(`    GET /api/members/<id>/cards, une page de 1 000 cartes cotées (${Math.round(p.size / 1024)} Ko) : JS ${ms(p.js)} | GET /api/members : JS ${ms(l.js)}`);
   assert.ok(p.js < 10 && l.js < 10, 'trop de JavaScript');
 
   // DELETE /api/me : le membre disparaît de la liste et de ses pages.

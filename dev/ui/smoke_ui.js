@@ -156,7 +156,12 @@ function mockApi() {
         const part = m[2] === undefined ? '0' : decodeURIComponent(m[2]);
         const n = part === '0' ? 0 : Number(part.replace(/^page-/, ''));
         const sorted = u.cards.slice().sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-        const page = sorted.slice(n * 2, n * 2 + 2).map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: !!c.shiny, image: c.image ?? null, url: c.url ?? null }));
+        // Avec sa cote (`v`) quand le cache commun en a une (ici : les cotes posées sur un compte par le test), comme le serveur.
+        const priceOf = (id) => users.flatMap((x) => (x.market && x.market.prices) || []).find((q) => q.id === id && q.v && Object.keys(q.v).length);
+        const page = sorted.slice(n * 2, n * 2 + 2).map((c) => {
+          const q = priceOf(c.id);
+          return { id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: !!c.shiny, image: c.image ?? null, url: c.url ?? null, ...(q ? { v: q.v } : {}) };
+        });
         return json(200, { member: { id: u.pub, name: u.name, fetched_at: u.fetched_at }, cards: page, part, next_part: (n + 1) * 2 < sorted.length ? 'page-' + (n + 1) : null });
       }
       if (p === '/api/me' && method === 'DELETE') {
@@ -2141,7 +2146,8 @@ async function main() {
       check(await waitFor(() => row('Paul') && text(row('Paul')).includes('partage ses collections : 2'), 5000), 'ligne de Paul : ' + text(row('Paul')));
       check(text(row('Léa')).includes('ne partage pas ses collections'), 'ligne de Léa : ' + text(row('Léa')));
       const tsum = () => (one('trade-sum') ? text(one('trade-sum')) : '');
-      check(await waitFor(() => tsum().includes('4 de tes cartes peuvent compléter les collections de tes amis ; 6 de leurs cartes peuvent compléter les tiennes. Entre eux : 3.'), 8000),
+      // Les amis et tes collections les plus concernés, nommés (2026-10-16).
+      check(await waitFor(() => tsum().includes('4 de tes cartes peuvent compléter les collections de Paul ; 6 de leurs cartes peuvent compléter « Planète du Système solaire » et « Exemples de test ». Entre eux : 3.'), 8000),
         'résumé des échanges : ' + tsum());
       if (!SERVER) {
         const reads = apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/'));
@@ -2151,6 +2157,9 @@ async function main() {
       // « Ce qui pourrait intéresser tes amis » : les collections que Paul montre ; rien pour Léa, qui ne les montre pas.
       check(fcol('Paul') && titlesIn(fcol('Paul')).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && !fcol('Paul').querySelector('.badge'),
         'tes cartes pour Paul (ses collections) : ' + (fcol('Paul') ? text(fcol('Paul')) : 'absent'));
+      // Le résumé nomme ses collections concernées, les plus complétées d'abord (« Les préférées de Paul » : 4 cartes).
+      check(text(fcol('Paul').querySelector('.fcol__sum')) === '4 de tes cartes complètent « Les préférées de Paul » et « Exemples de Paul » · 3 que tu as en double',
+        'résumé de tes cartes pour Paul : ' + text(fcol('Paul').querySelector('.fcol__sum')));
       check(!fcol('Léa') && has('Rien pour Léa, qui ne partage pas ses collections.'), 'tes cartes pour Léa : rien attendu (elle ne partage pas ses collections)');
       // La page : « Tout le monde » par défaut (demande de l'utilisateur, 2026-10-16), puis « Ce qui me concerne ».
       needButton('Voir les échanges possibles').click();
@@ -2913,9 +2922,17 @@ async function main() {
     const keyM = await makeOtherAccount('Mona');
     const um = api.users.find((u) => u.key === keyM);
     const mc = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null, count, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', ...extra });
-    await sendImport(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } })]);
+    const ventes = Array.from({ length: 24 }, (_, i) => mc('v' + String(i + 1).padStart(2, '0'), 'Vente ' + String(i + 1).padStart(2, '0'), 'C', 1, { variants: { C: 1 } }));
+    await sendImport(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } }),
+      ...ventes, mc('m9', 'Sans cote M', 'C', 1, { variants: { C: 1 } })]);
     const it = (title) => ({ title, description: null, image: null, status: 'ok' });
-    await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1')] });
+    await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1'), it('Marché 2'), it('Marché 3'), it('Voulue B')] });
+    // Nino, un ami qui montre ses cartes et ses collections : Marché 1 (2 exemplaires dont 1 brillant), Voulue A, une carte
+    // jamais cotée ; sa collection « Cotées ». Mona montre les siennes.
+    const keyN = await makeOtherAccount('Nino');
+    await sendImport(keyN, [mc('m1', 'Marché 1', 'R', 2, { shiny: true }), mc('w1', 'Voulue A', 'SR', 1), mc('n3', 'Sans cote', 'C', 1)]);
+    await rawApi('POST', '/api/targets/save', keyN, { name: 'Cotées', items: [it('Marché 1'), it('Voulue A'), it('Absente')] });
+    for (const k of [keyN, keyM]) check((await rawApi('PATCH', '/api/me', k, { shared: true, shared_targets: true })).status === 200, 'partage refusé (marché)');
     const soon = new Date(Date.now() + 3600_000).toISOString();
     const q = (p, n, w = null) => ({ p, n, w, l: p - 1, d: '2026-10-15T10:00:00.000Z' });
     um.market = {
@@ -2932,6 +2949,8 @@ async function main() {
         { id: 'm1', v: { R: q(400, 10, 300), 'R*': q(900, 2) }, at: '2026-10-16T08:00:00.000Z' },
         { id: 'm2', v: { C: q(20, 5, 25) }, at: '2026-10-16T08:00:00.000Z' },
         { id: 'w1', v: { SR: q(100, 5), 'SR*': q(260, 1) }, at: '2026-10-16T08:00:00.000Z', t: 'Voulue A' },
+        { id: 'w2', v: { R: q(50, 1) }, at: '2026-10-16T08:00:00.000Z', t: 'Voulue B' }, // une seule vente : peu fiable
+        ...ventes.map((c, i) => ({ id: c.id, v: { C: q(20 * (i + 1) + 25, 5) }, at: '2026-10-16T08:00:00.000Z' })),
       ],
     };
     ls.set('classeur-key', keyM);
@@ -2940,31 +2959,119 @@ async function main() {
     const d = pm.doc;
     const body = () => text(d.body);
     const btn = (t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
-    check(await waitFor(() => pm.count() === 3), 'classeur de Mona non ouvert');
-    check(await waitFor(() => body().includes('1 234 W') && body().includes('valeur (2 cotées)')), 'valeur absente du bandeau : ' + body().slice(0, 400));
+    check(await waitFor(() => pm.count() === 28), 'classeur de Mona non ouvert');
+    check(await waitFor(() => body().includes('1 234W') && body().includes('valeur (2 cotées)')), 'valeur absente du bandeau : ' + body().slice(0, 400));
+    // Les montants : « 1 234W » (W collé, séparateur des milliers gardé), en vert (classe w) ; la tuile du bandeau aussi.
+    const tile = d.querySelectorAll('.figure').find((n) => text(n).includes('valeur ('));
+    check(tile && tile.querySelector('.w') && text(tile.querySelector('.w')) === '1 234W', 'tuile de la valeur : montant en vert attendu');
+    // Valeur d'une collection : ses cartes cotées (Marché 1 : 2 rares à 400W, la brillante n'a que 2 ventes ; Marché 2 :
+    // approchée, 20W ; Marché 3 : pas de cote), et ce qu'il faudrait pour la compléter (Voulue A : la moins chère de ses
+    // cotes fiables, 100W ; Voulue B : pas de cote).
+    const envies = () => d.querySelectorAll('.row').find((n) => text(n.querySelector('.name')) === 'Envies') || null;
+    check(await waitFor(() => envies() && envies().querySelector('.row-value')), 'ligne de « Envies » : valeur absente');
+    check(text(envies().querySelector('.row-value')) === 'valeur 820W · pour la compléter ~100W' && envies().querySelector('.row-value').querySelectorAll('.w').length === 2
+      && /Valeur : 820W \(2 cartes cotées sur 3\) ; pour la compléter : ~100W \(1 carte cotée sur 2 qui manquent\)/.test((envies().getAttribute('aria-label') || '').replace(/[\u00a0\u202f]/g, ' ')),
+      'ligne de « Envies » : ' + text(envies().querySelector('.row-value')) + ' / ' + envies().getAttribute('aria-label'));
+    envies().click();
+    await settle(60);
+    const head = () => text(d.querySelectorAll('.album-head')[0]);
+    check(head().includes('3 sur 5') && head().includes('Valeur : 820W (2 cartes cotées sur 3)') && head().includes('Pour la compléter : ~100W(1 carte cotée sur 2 qui manquent, à la moins chère de leurs cotes)'),
+      'album « Envies » : ' + head().slice(0, 500));
+    check(d.querySelectorAll('.album-value').length === 1 && d.querySelectorAll('.album-value')[0].querySelectorAll('.w').length === 1 && d.querySelectorAll('.worth-sum')[0].querySelectorAll('.w').length === 1, 'album « Envies » : montants en vert attendus');
+    // Tris par prix de l'album : tes cartes (cote de ton meilleur exemplaire) et les cases vides (celle de « Pour la
+    // compléter ») ; « ~ » (Voulue B, une vente) après les cotes fiables, puis sans cote (Marché 3), dans les deux sens.
+    const gridTitles = () => (d.querySelectorAll('.cardgrid')[0] ? d.querySelectorAll('.cardgrid')[0].childNodes.filter((n) => n.nodeType === 1).map((n) => text(n.querySelector('h3'))) : []);
+    const segBtn = (label) => d.querySelectorAll('button').find((b) => text(b) === label && b.getAttribute('aria-pressed') !== null) || null;
+    segBtn('Prix ↑').click();
+    await settle(40);
+    check(gridTitles().join(' | ') === 'Marché 2 | Voulue A | Marché 1 | Voulue B | Marché 3' && segBtn('Prix ↑').getAttribute('aria-pressed') === 'true', 'album, prix croissant : ' + gridTitles().join(' | '));
+    segBtn('Prix ↓').click();
+    await settle(40);
+    check(gridTitles().join(' | ') === 'Marché 1 | Voulue A | Marché 2 | Voulue B | Marché 3', 'album, prix décroissant : ' + gridTitles().join(' | '));
+    check(segBtn('Prix ↓').getAttribute('aria-label') === 'Prix décroissant', 'tri « Prix ↓ » : libellé lisible attendu');
+    btn('← Toutes les collections').click();
+    await settle(40);
     d.getElementById('tab-marche').click();
     await settle(80);
     const panel = () => text(d.getElementById('panel-marche'));
-    check(/Valeur de ton classeur/.test(panel()) && panel().includes('1 234 W · 2 cartes cotées sur 3') && panel().includes('Dont 1 carte comptée dans sa plus haute rareté'), 'valeur de l\'onglet Marché : ' + panel().slice(0, 300));
+    check(/Valeur de ton classeur/.test(panel()) && panel().includes('1 234W · 2 cartes cotées sur 3') && panel().includes('Dont 1 carte comptée dans sa plus haute rareté'), 'valeur de l\'onglet Marché : ' + panel().slice(0, 300));
     // Graphique : une ligne de 3 points, lisible sans couleur (valeur et date au-dessus, tableau des valeurs).
     const svg = d.querySelectorAll('svg').find((n) => n.classList.contains('chart__svg'));
     check(svg && svg.querySelectorAll('polyline').length === 1 && svg.querySelectorAll('circle').length === 3 && /Valeur du classeur, un point par jour/.test(svg.getAttribute('aria-label') || ''), 'graphique de la valeur absent');
     check(d.querySelectorAll('.chart__table')[0].querySelectorAll('tr').length === 4 && panel().includes('Voir les valeurs'), 'tableau des valeurs absent');
     // Bonnes affaires : carte qui manque, prix demandé, écart à la cote, « finit bientôt », collection qu'elle complète.
-    check(panel().includes('Voulue A') && panel().includes('50 W (prix de départ, sans enchère) · cote 100 W (−50 %)') && panel().includes('finit bientôt') && panel().includes('pour « Envies »'), 'bonnes affaires : ' + panel());
+    check(panel().includes('Voulue A') && panel().includes('50W (prix de départ, sans enchère) · cote 100W (−50 %)') && panel().includes('finit bientôt') && panel().includes('pour « Envies »'), 'bonnes affaires : ' + panel());
     // Cartes qui bougent : m1 (2 rares de 300 à 400 : +200 ; la brillante n'a que 2 ventes), m2 (de 25 à 20 : −5).
     const movers = d.querySelectorAll('.movers').map(text);
-    check(movers.length === 2 && movers[0].includes('Marché 1') && movers[0].includes('+200 W') && movers[0].includes('+33 %') && movers[1].includes('Marché 2') && movers[1].includes('−5 W'), 'cartes qui bougent : ' + movers.join(' | '));
+    check(movers.length === 2 && movers[0].includes('Marché 1') && movers[0].includes('+200W') && movers[0].includes('+33 %') && movers[1].includes('Marché 2') && movers[1].includes('−5W'), 'cartes qui bougent : ' + movers.join(' | '));
+    // Sections : « à acheter » et « à vendre » côte à côte, puis « Cartes qui bougent » et « Mes enchères » sur toute la
+    // largeur ; accordéon, « Mes enchères » fermée par défaut (rien de rendu), état gardé par classeur.
+    const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
+    const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
+    const accBtn = (id) => section(id).querySelector('.acc__btn');
+    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'acheter,vendre,bougent*,encheres*',
+      'sections du Marché : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
+    check(['acheter', 'vendre', 'bougent'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
+      && !text(section('encheres')).includes('Tes mises') && text(accBtn('encheres')).includes('2 mises · 1 vente'), '« Mes enchères » doit être fermée par défaut : ' + text(section('encheres')));
+    check(text(accBtn('acheter')).startsWith('Bonnes affaires à acheter') && text(accBtn('vendre')).startsWith('Bonnes affaires à vendre'), 'titres des deux colonnes');
+    accBtn('encheres').click();
+    await settle(40);
+    check(accBtn('encheres').getAttribute('aria-expanded') === 'true' && text(section('encheres')).includes('Tes mises'), '« Mes enchères » ne s\'ouvre pas');
+    const prefs = () => JSON.parse(ls.get('classeur-marche') || '{}');
+    check(Object.values(prefs()).length === 1 && Object.values(prefs())[0].open.encheres === true && Object.values(prefs())[0].open.acheter === true, 'état des sections non gardé : ' + ls.get('classeur-marche'));
+    accBtn('bougent').click();
+    await settle(40);
+    check(accBtn('bougent').getAttribute('aria-expanded') === 'false' && !section('bougent').querySelector('.movers') && Object.values(prefs())[0].open.bougent === false, '« Cartes qui bougent » ne se ferme pas');
+    accBtn('bougent').click();
+    await settle(40);
+    // « Bonnes affaires à vendre » : seuil 100W par défaut ; 21 « Vente » (105W à 505W) et Marché 1 (dans « Envies » : 3
+    // exemplaires, un gardé, « 2 en trop » à 400W) ; Marché 2 et 3 (un seul exemplaire, dans « Envies ») n'y sont pas ;
+    // du plus cher au moins cher ; 20 lignes puis « Afficher 2 de plus » ; une carte sans cote annoncée.
+    {
+      const sell = () => section('vendre');
+      const rows = () => sell().querySelectorAll('li').map((n) => text(n.querySelector('.lot__title').querySelector('button')));
+      check(d.getElementById('sell-min') && String(d.getElementById('sell-min').value) === '100', 'seuil par défaut : 100 attendu');
+      check(rows().length === 20 && rows().slice(0, 8).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21 | Vente 20 | Vente 19 | Marché 1 | Vente 18' && !rows().some((t) => t === 'Marché 2' || t === 'Marché 3'),
+        'à vendre (20 premières) : ' + rows().join(' | '));
+      const m1 = sell().querySelectorAll('li').find((n) => text(n).includes('Marché 1'));
+      check(text(m1).includes('2 en trop') && text(m1).includes('400W · 10 ventes · dernière 399W le 15 octobre') && m1.querySelector('.copy-name') && m1.querySelector('.w'), 'ligne de Marché 1 : ' + text(m1));
+      check(text(sell()).includes('1 carte sans cote fiable : clique « Mettre à jour les cotes »'), 'cartes sans cote non annoncées : ' + text(sell()));
+      const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
+      check(more && text(more) === 'Afficher 2 de plus (2 restantes)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
+      more.click();
+      await settle(40);
+      check(rows().length === 22 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
+      type(d.getElementById('sell-min'), '450');
+      await settle(40);
+      check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && Object.values(prefs())[0].min === 450, 'seuil 450W : ' + rows().join(' | ') + ' / ' + ls.get('classeur-marche'));
+      type(d.getElementById('sell-min'), '');
+      await settle(40);
+      check(rows().length === 3 && Object.values(prefs())[0].min === 450, 'champ vidé : le seuil ne doit pas bouger');
+      // Une ligne ouvre la fiche de la carte.
+      sell().querySelectorAll('li')[0].querySelector('.lot__title').querySelector('button').click();
+      await settle(60);
+      check(d.querySelectorAll('.fiche').length === 1 && text(d.querySelectorAll('.fiche')[0]).includes('Vente 24'), 'fiche de la carte à vendre absente');
+      d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+      await settle(40);
+    }
     // Mes enchères et mes ventes.
-    check(panel().includes('ta mise 8 W · enchère actuelle 9 W · cote 10 W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
-    check(panel().includes('départ 5 W · vendue 12 W · cote 20 W (−40 %)'), 'mes ventes : ' + panel());
+    check(panel().includes('ta mise 8W · enchère actuelle 9W · cote 10W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
+    check(panel().includes('départ 5W · vendue 12W · cote 20W (−40 %)'), 'mes ventes : ' + panel());
     check(panel().includes('lit directement la base du jeu avec ta session, à ton clic seulement') && panel().includes('à utiliser avec modération'), 'avertissement des règles absent');
+    // Aucun « 12 W » (espace avant le W) ; les montants de l'onglet en vert (classe w), hors écarts (hausse, baisse).
+    check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
+    check(d.getElementById('panel-marche').querySelectorAll('.w').length >= 12 && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W', "montants de l'onglet Marché : classe w attendue");
     // Fiche d'une carte possédée (depuis « Cartes qui bougent ») : cote de chaque exemplaire.
     d.querySelectorAll('.movers')[0].querySelectorAll('button')[0].click();
     await settle(60);
     const fiche = () => text(d.querySelectorAll('.fiche')[0]);
-    check(/Cote/.test(fiche()) && fiche().includes('2 × Rare400 W10 ventes · dernière 399 W le 15 octobre · 7 jours : +33 %') && fiche().includes('Rare, brillante~ 900 W2 ventes'), 'cote de la fiche : ' + fiche());
-    check(fiche().includes('Tes exemplaires cotés : 800 W'), 'total des exemplaires : ' + fiche());
+    check(/Cote/.test(fiche()) && fiche().includes('2 × Rare400W10 ventes · dernière 399W le 15 octobre · 7 jours : +33 %') && fiche().includes('Rare, brillante~900W2 ventes'), 'cote de la fiche : ' + fiche());
+    check(fiche().includes('Tes exemplaires cotés : 800W'), 'total des exemplaires : ' + fiche());
+    {
+      const approx = d.querySelectorAll('.fiche')[0].querySelectorAll('.w').filter((n) => n.classList.contains('approx'));
+      check(approx.length === 1 && text(approx[0]) === '~900W' && d.querySelectorAll('.fiche')[0].querySelectorAll('.cote__row').every((n) => n.querySelector('.w')),
+        'cote peu fiable : « ~900W » estompé attendu');
+    }
     d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
     await settle(40);
     // Carte sans détail de ses exemplaires : approchée, dite.
@@ -2972,22 +3079,98 @@ async function main() {
     await settle(60);
     d.querySelectorAll('.cell').find((n) => text(n).includes('Marché 2')).querySelector('.card').dispatch('click');
     await settle(60);
-    check(fiche().includes('Commune20 W') && fiche().includes('Rareté de tes exemplaires pas encore connue'), 'fiche approchée : ' + fiche());
+    check(fiche().includes('Commune20W') && fiche().includes('Rareté de tes exemplaires pas encore connue'), 'fiche approchée : ' + fiche());
     d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
     await settle(40);
+    // « Mes cartes », tri par prix : Marché 2 (20W), Marché 1 (400W, son meilleur exemplaire coté de façon fiable), puis
+    // Marché 3, sans cote, à la fin dans les deux sens.
+    {
+      const sortSel = d.getElementById('sort');
+      const titles = () => d.querySelectorAll('.cell').map((n) => text(n.querySelector('.card__title')));
+      // Les cartes Marché entre elles, puis les deux sans cote (Marché 3, Sans cote M), toujours les dernières.
+      const order = () => titles().filter((t) => t.startsWith('Marché')).join(' | ') + ' / fin : ' + titles().slice(-2).sort().join(', ');
+      check(sortSel.querySelectorAll('option').map(text).join(',').includes('Prix ↑,Prix ↓'), 'tri « Mes cartes » : options de prix absentes');
+      sortSel.value = 'price-up';
+      sortSel.dispatch('change');
+      await settle(40);
+      check(order() === 'Marché 2 | Marché 1 | Marché 3 / fin : Marché 3, Sans cote M' && titles()[0] === 'Marché 2' && titles()[1] === 'Vente 01', 'Mes cartes, prix croissant : ' + order());
+      sortSel.value = 'price-down';
+      sortSel.dispatch('change');
+      await settle(40);
+      check(order() === 'Marché 1 | Marché 2 | Marché 3 / fin : Marché 3, Sans cote M' && titles()[0] === 'Vente 24', 'Mes cartes, prix décroissant : ' + order());
+      sortSel.value = 'rarity';
+      sortSel.dispatch('change');
+      await settle(40);
+    }
     // Fiche d'une carte qui manque (depuis une bonne affaire) : ses cotes par rareté.
     d.getElementById('tab-marche').click();
     await settle(40);
     d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
     await settle(60);
-    check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100 W5 ventes') && fiche().includes('Super rare, brillante~ 260 W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
+    check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100W5 ventes') && fiche().includes('Super rare, brillante~260W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
     d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+    await settle(40);
+    // Valeur du classeur d'un ami (cotes venues avec ses cartes, rareté de sa carte pour tous ses exemplaires) : Marché 1
+    // (1 rare à 400W, la brillante n'a que 2 ventes), Voulue A (100W), Sans cote : 500W, 2 cartes cotées sur 3.
+    d.getElementById('tab-amis').click();
+    const nino = () => d.querySelectorAll('.member').find((n) => text(n.querySelector('.name')) === 'Nino') || null;
+    check(await waitFor(() => nino() && text(nino()).includes('valeur 500W'), 5000), 'ligne de Nino : valeur absente, ' + (nino() ? text(nino()) : 'absente'));
+    check(text(nino()).includes('valeur 500W2 cartes cotées sur 3') && nino().querySelectorAll('.w').length === 1, 'ligne de Nino : ' + text(nino()));
+    check(!d.querySelectorAll('.member').some((n) => n !== nino() && n.querySelector('.w')), 'valeur affichée pour un ami sans carte cotée');
+    nino().querySelectorAll('button').find((b) => text(b) === 'Parcourir son classeur').click();
+    await settle(60);
+    check(head().includes('Le classeur de Nino') && head().includes('Valeur : 500W, 2 cartes cotées sur 3') && head().includes("le détail de ses exemplaires n'est pas partagé"),
+      'classeur de Nino : ' + head().slice(0, 400));
+    // Ses cartes triées par prix (sa cote) : Sans cote à la fin dans les deux sens.
+    {
+      const fsort = d.getElementById('fsort');
+      const order = () => d.querySelectorAll('.card--friend').map((n) => text(n.querySelector('.card__title'))).join(' | ');
+      fsort.value = 'price-up';
+      fsort.dispatch('change');
+      await settle(40);
+      check(order() === 'Voulue A | Marché 1 | Sans cote', 'classeur de Nino, prix croissant : ' + order());
+      fsort.value = 'price-down';
+      fsort.dispatch('change');
+      await settle(40);
+      check(order() === 'Marché 1 | Voulue A | Sans cote', 'classeur de Nino, prix décroissant : ' + order());
+    }
+    // Sa collection « Cotées » : la valeur de ses cartes qui la remplissent, sur la ligne et dans l'album.
+    const cotees = () => d.querySelectorAll('.row').find((n) => text(n.querySelector('.name')) === 'Cotées') || null;
+    check(await waitFor(() => cotees() && cotees().querySelector('.row-value')), 'ligne de « Cotées » (Nino) : valeur absente');
+    check(text(cotees().querySelector('.row-value')) === 'valeur 500W', 'ligne de « Cotées » : ' + text(cotees()));
+    cotees().click();
+    await settle(60);
+    check(head().includes('Nino en a 2 sur 3') && head().includes('Valeur : 500W (2 cartes cotées sur 2)'), 'album « Cotées » de Nino : ' + head().slice(0, 400));
+    // Son album trié par prix : ses cartes (sa cote), puis « Absente », que personne ne cote.
+    segBtn('Prix ↑').click();
+    await settle(40);
+    check(gridTitles().join(' | ') === 'Voulue A | Marché 1 | Absente', 'album de Nino, prix croissant : ' + gridTitles().join(' | '));
+    segBtn('Prix ↓').click();
+    await settle(40);
+    check(gridTitles().join(' | ') === 'Marché 1 | Voulue A | Absente', 'album de Nino, prix décroissant : ' + gridTitles().join(' | '));
+    // Fiche de sa carte : sa cote, venue avec ses cartes.
+    d.querySelectorAll('.card--fa').find((n) => text(n).includes('Voulue A')).dispatch('click');
+    await settle(60);
+    const ff = () => d.querySelectorAll('.fiche--friend')[0] || null;
+    check(ff() && text(ff()).includes('Cote dans le jeuSuper rare100W5 ventes'), 'fiche de la carte de Nino : ' + (ff() ? text(ff()) : 'absente'));
+    ff().querySelectorAll('button.close')[0].click();
+    await settle(40);
+    d.getElementById('tab-marche').click();
     await settle(40);
     // Classeur sans cote : l'onglet dit comment en avoir, sans valeur dans le bandeau.
     um.market = null;
     btn('Relire').click();
     await settle(80);
     check(panel().includes('Pas encore de cote : sur wiki-masters.com, clique « Mettre à jour les cotes »') && panel().includes('Pas de lecture récente du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    {
+      const pm2 = openPage({ idb: 'absent' });
+      check(await waitFor(() => pm2.count() === 28), 'classeur de Mona non rouvert');
+      pm2.doc.getElementById('tab-marche').click();
+      await settle(80);
+      const btn2 = (id) => pm2.doc.querySelectorAll('section').find((n) => n.getAttribute('data-section') === id).querySelector('.acc__btn');
+      check(btn2('encheres').getAttribute('aria-expanded') === 'true' && btn2('bougent').getAttribute('aria-expanded') === 'true' && String(pm2.doc.getElementById('sell-min').value) === '450',
+        'nouvelle page : état des sections ou seuil non gardés');
+    }
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.

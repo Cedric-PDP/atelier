@@ -587,7 +587,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 /* Collections d'un ami (« Ses collections » de son classeur) et album d'une d'elles, en lecture seule. */
 .back-line { display: flex; flex-wrap: wrap; gap: 4px 18px; }
 .friend-tools { margin-bottom: 16px; }
-/* Quatre filtres (album d'un ami) : jamais un libellé coupé ; sur téléphone, plus serrés, puis sur deux lignes au besoin. */
+/* Quatre boutons (filtres de l'album d'un ami, tris des albums avec « Prix ↑ » / « Prix ↓ ») : jamais un libellé coupé ;
+   sur téléphone, plus serrés, puis sur deux lignes au besoin. */
 .seg--four button { white-space: nowrap; }
 @media (max-width: 480px) { .seg--four { flex-wrap: wrap; } .seg--four button { padding: 6px 9px; } }
 .row .row-help { font-size: 12px; color: var(--link); }
@@ -606,9 +607,31 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .missing-note.on { color: var(--link); border-style: solid; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
 
 /* ------------------------------------------------------------------ onglet « Marché » (cotes, valeur, enchères) */
+/* Prix et valeurs en W (priceTag dans app.js) : couleur des liens, celle de « ← Toutes les collections », partout (fiches,
+   albums, lignes des collections, bandeau, onglet « Marché », amis) ; « ~120W » estompé pour une cote peu fiable (moins de
+   3 ventes). Plus fort que les « b » des lignes, des résumés et des tuiles, qui prennent la couleur du texte. */
+.w, .missing-sum .w, .row .line .w, .chart__read .w, .figure .w { color: var(--link); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.w.approx { color: color-mix(in srgb, var(--link) 60%, var(--faint)); }
+.row .row-value { font-size: 12px; color: var(--muted); }
+.album-value { color: var(--muted); font-size: 15px; }
+.album-value .w, .worth-sum .w { font-weight: 600; }
+/* La valeur en haut ; « à acheter » et « à vendre » côte à côte (une colonne sous 760 px) ; puis « Cartes qui bougent »,
+   « Mes enchères » et « À savoir » sur toute la largeur. */
 .market { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-.market__value, .market__rules { grid-column: 1 / -1; }
-@media (max-width: 860px) { .market { grid-template-columns: minmax(0, 1fr); } }
+.market__value, .market__rules, .market__wide { grid-column: 1 / -1; }
+@media (max-width: 760px) { .market { grid-template-columns: minmax(0, 1fr); } }
+/* Sections repliables (accordéon) : tout le titre est le bouton ; chevron tourné quand la section est ouverte. */
+.acc__btn { display: flex; align-items: center; gap: 8px; width: 100%; padding: 2px 0; background: none; border: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.acc__btn:hover span:first-of-type { color: var(--link); }
+.acc__btn .ic { transition: transform 0.2s var(--ease); color: var(--muted); }
+.acc.open .acc__btn .ic { transform: rotate(90deg); }
+.acc__note { margin-left: auto; font: 500 12.5px var(--f-body); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.acc__body { display: grid; gap: 12px; align-content: start; }
+.acc__body[hidden] { display: none; }
+.acc:not(.open) { gap: 0; }
+.sell-min { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13.5px; }
+.sell-min .field { width: 7.5rem; }
+.market .show-more { margin-top: 4px; }
 .market__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .market__big b { font: 600 2rem/1.1 var(--f-head); font-variant-numeric: tabular-nums; }
 .chart { margin: 0; display: grid; gap: 6px; }
@@ -631,7 +654,6 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .lot__title .linkish { font-size: 13.5px; text-align: left; overflow-wrap: anywhere; }
 .lot__line { font-size: 13px; font-variant-numeric: tabular-nums; }
 .lot__cote { color: var(--muted); }
-.lot__cote.approx, .cote b.approx { color: var(--faint); }
 .lot__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; color: var(--muted); }
 .flag { border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--border)); color: var(--warn); border-radius: 999px; padding: 0 8px; font-size: 11.5px; }
 .flag.ok { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--link); }
