@@ -577,6 +577,13 @@ Deux zones, dans cet ordre :
      au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
      gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source) : **« Ouvrir ta
      collection »**.
+   - **Pendant la lecture** d'une catégorie ou d'une page (une page lit ses liens, puis leur nature sur Wikidata : 5 à
+     15 s mesurés le 2026-10-16 pour « Liste de noms de couleur ») : une ligne d'état avec la roue dit l'étape
+     (« Lecture des liens de la page sur Wikipédia : N articles liés… », « Nature des N articles liés, sur Wikidata
+     (lot k sur n)… » ; catégorie : « … N articles lus… », sous-catégorie k sur n). « Créer une collection » reste
+     cliquable, avec la roue (`aria-busy`) : cliqué, il devient « Créée dès la fin de la lecture… » (grisé) et la
+     collection est créée dès que la lecture finit, sans second clic. Grisé seulement après une erreur de lecture
+     (« Réessayer »), et alors rien n'est créé.
    - **« Proposées d'après tes cartes »** (`propose.js`) : catégories de tes cartes dont tu as au moins 5 % et 2 cartes,
      ni déjà en collection (source `wp:<nom>`) ni retirées, **sans les sous-catégories** d'un thème déjà là (règles
      appliquées à l'affichage, sans requête, `ClasseurPropose.prune`) :

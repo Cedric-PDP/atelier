@@ -1300,6 +1300,31 @@ async function main() {
     check(has('sans nature dominante à filtrer') && !all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check')).length, 'page sans nature dominante : ' + at());
     needButton('← Toutes les collections').click();
     await settle();
+    // Lecture lente (liens de la page retenus) : « Créer une collection » reste cliquable, avec la roue, et la ligne
+    // d'état dit l'étape ; cliqué, il attend (« Créée dès la fin de la lecture… ») et la collection est créée dès que la
+    // lecture finit, sans second clic.
+    {
+      let release = null;
+      mainOpts.wikiHold = (url) => (/generator=links/.test(url) && /Tableau/.test(decodeURIComponent(url)) ? new Promise((r) => { release = r; }) : null);
+      paste('https://fr.wikipedia.org/w/index.php?title=Tableau_p%C3%A9riodique&action=history');
+      check(await waitFor(() => at().includes('Tableau périodique des éléments') && !!release, 5000), 'page lente : album en lecture attendu, ' + at());
+      await settle();
+      const cb = () => buttonByText('Créer une collection') || buttonByText('Créée dès la fin de la lecture');
+      check(cb() && !cb().disabled && cb().getAttribute('aria-busy') === 'true' && has('Lecture des liens de la page sur Wikipédia…'),
+        'pendant la lecture : bouton cliquable (aria-busy) et étape attendus, ' + (cb() ? text(cb()) + ' ' + cb().disabled : 'bouton absent') + ' / ' + text(one('album-head')).slice(0, 300));
+      cb().click();
+      await settle();
+      check(text(cb()).includes('Créée dès la fin de la lecture…') && cb().disabled && has('La collection sera créée à la fin.') && !has('Modifier'),
+        'clic pendant la lecture : attente attendue, ' + text(cb()));
+      mainOpts.wikiHold = null;
+      release();
+      check(await waitFor(() => has('Modifier') && has('Supprimer') && has('Collection « Tableau périodique des éléments » créée : 2 articles (tous les liens de la page), dans « Mes collections ».'), 5000),
+        'création à la fin de la lecture : ' + at());
+      needButton('Supprimer').click();
+      await settle();
+      modalBtn('Supprimer la collection').click();
+      check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Tableau périodique des éléments')), 'collection « Tableau périodique des éléments » non supprimée');
+    }
     // Adresse d'un autre site : rien n'est demandé à Wikipédia ; page absente : la recherche le dit.
     n0 = catSuggest.length;
     type(byId('cat-q'), 'https://en.wikipedia.org/wiki/Color');

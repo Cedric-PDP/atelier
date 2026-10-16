@@ -2685,7 +2685,7 @@
     stopCategory();
     const num = (v) => (v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
     S.catView = { type: 'cat', key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: !!(info && info.withSubs),
-      loading: true, error: '', items: null, total: 0, busy: false };
+      loading: true, error: '', items: null, total: 0, busy: false, step: '', queued: false };
     openAlbum('category', key);
     loadCategory();
   }
@@ -2697,13 +2697,15 @@
     const key = PAGE_SRC + t;
     stopCategory();
     S.catView = { type: 'page', key, title: t, name: pageName(t), size: null, subcats: null, withSubs: false, links: null, allLinks: false,
-      loading: true, error: '', items: null, total: 0, busy: false };
+      loading: true, error: '', items: null, total: 0, busy: false, step: '', queued: false };
     openAlbum('category', key);
     loadCategory();
   }
   // Catégorie : taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes
   // si withSubs). Page : ses liens et leur nature (pageLinks, lus une fois), ceux de la nature dominante seulement sauf
   // si allLinks. 3 000 au plus, total = ce qui a été lu ou gardé (plus de 3 000 : trop grande pour une collection).
+  // cv.step : où en est la lecture (montré pendant l'attente) ; cv.queued : « Créer une collection » cliqué pendant la
+  // lecture, la collection est créée dès qu'elle finit (pas en cas d'erreur).
   async function loadCategory() {
     const cv = S.catView;
     if (!cv) return;
@@ -2711,12 +2713,14 @@
     const ctrl = new AbortController();
     catCtrl = ctrl;
     const stale = () => catCtrl !== ctrl || S.catView !== cv;
+    const onStep = (s) => { if (!stale()) cv.step = s; };
     cv.loading = true;
     cv.error = '';
+    cv.step = '';
     try {
       if (cv.type === 'page') {
         if (!cv.links) {
-          const links = await pageLinks(cv.title, ctrl.signal);
+          const links = await pageLinks(cv.title, ctrl.signal, onStep);
           if (stale()) return;
           cv.links = markRaw(links);
         }
@@ -2737,14 +2741,18 @@
         cv.size = Number(ci.pages) || 0;
         cv.subcats = Number(ci.subcats) || 0;
       }
-      const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal);
+      const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal, onStep);
       if (stale()) return;
       cv.total = list.length;
       cv.items = markRaw(list.slice(0, 3000).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
     } catch (e) {
       if (!stale() && e.name !== 'AbortError') cv.error = e.message;
     } finally {
-      if (!stale()) { catCtrl = null; cv.loading = false; }
+      if (!stale()) {
+        catCtrl = null;
+        cv.loading = false;
+        if (cv.queued) { cv.queued = false; if (!cv.error) createFromCategory(); }
+      }
     }
   }
   function toggleCatSubs() {
@@ -2764,13 +2772,17 @@
   // est cochée ; page : les articles liés gardés, avec leur qid et leur description Wikidata) deviennent une collection à
   // compléter de source « wp:<nom> » ou « links:<titre> », nommée comme la catégorie (page : « Liste de » retiré) ;
   // l'album reste ouvert, devenu celui de la collection (Modifier, Supprimer). Déjà faite, ou « Créer une collection » de
-  // sa proposition en cours (S.wp.busy, partagé) : pas de seconde collection de même source.
+  // sa proposition en cours (S.wp.busy, partagé) : pas de seconde collection de même source. Cliqué pendant la lecture
+  // des articles (une page : ses liens puis leur nature sur Wikidata, plusieurs secondes) : retenu (cv.queued), la
+  // collection est créée dès la fin de la lecture (loadCategory).
   async function createFromCategory() {
     const cv = S.catView;
     if (!cv) return;
     const t0 = collectionFor(cv.key);
     if (t0) { openAlbum('target', t0.id); return; }
-    if (cv.busy || cv.loading || !cv.items || !cv.items.length || S.wp.busy[cv.key]) return;
+    if (cv.busy || S.wp.busy[cv.key]) return;
+    if (cv.loading || !cv.items) { if (!cv.error) cv.queued = true; return; }
+    if (!cv.items.length) return;
     const page = cv.type === 'page';
     if (cv.total > 3000) { notify(page ? 'Cette page lie plus de 3 000 articles : trop pour une collection.' : 'Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
     if (cv.key.length > 200) { notify(page ? 'Le titre de cette page est trop long pour en faire une collection.' : 'Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
@@ -2937,8 +2949,11 @@
     }).filter((c) => c.size > 0 || c.subcats > 0).slice(0, 12);
   }
   // Articles d'une catégorie (et de ses sous-catégories directes) ; s'arrête au-delà de 3 000.
-  async function categoryMembers(title, withSubs, signal) {
+  // onStep(texte) : où en est la lecture (articles lus, sous-catégorie en cours), pour l'album qui attend.
+  async function categoryMembers(title, withSubs, signal, onStep) {
     const out = new Map();
+    const step = onStep || (() => {});
+    let where = '';
     const read = async (cat, type) => {
       const found = [];
       let cont = {};
@@ -2947,14 +2962,19 @@
         for (const m of (j && j.query && j.query.categorymembers) || []) found.push(m.title);
         if (!j.continue || (type === 'page' && out.size + found.length > 3000)) break;
         cont = j.continue;
+        if (type === 'page') step(`Lecture des articles de la catégorie sur Wikipédia${where} : ${fmt(out.size + found.length)} articles lus…`);
       }
       return found;
     };
+    step('Lecture des articles de la catégorie sur Wikipédia…');
     for (const t of await read(title, 'page')) out.set(t, { title: t, description: null, qid: null });
     if (withSubs) {
-      for (const sub of await read(title, 'subcat')) {
+      const subs = await read(title, 'subcat');
+      for (let k = 0; k < subs.length; k++) {
         if (out.size > 3000) break;
-        for (const t of await read(sub, 'page')) if (!out.has(t)) out.set(t, { title: t, description: null, qid: null });
+        where = ` (sous-catégorie ${fmt(k + 1)} sur ${fmt(subs.length)})`;
+        step(`Lecture des articles de la catégorie sur Wikipédia${where} : ${fmt(out.size)} articles lus…`);
+        for (const t of await read(subs[k], 'page')) if (!out.has(t)) out.set(t, { title: t, description: null, qid: null });
       }
     }
     return [...out.values()];
@@ -2994,10 +3014,13 @@
   // 2026-10-16 : « Liste de races bovines », race bovine, 330 directement, 351 avec les sous-classes, 355 avec les
   // descriptions, sur 589 liens (le reste = pays, régions…) ; « Liste de noms de couleur », couleur : 103, 134, 181 sur
   // 247 (beaucoup de noms de couleur sont des « chromonymes » sans nature « couleur »).
-  async function pageLinks(title, signal) {
+  // onStep(texte) : où en est la lecture (liens lus, lot Wikidata en cours), pour l'album qui attend.
+  async function pageLinks(title, signal, onStep) {
+    const step = onStep || (() => {});
     const by = new Map();
     const drop = new Set();
     let cont = {};
+    step('Lecture des liens de la page sur Wikipédia…');
     for (let guard = 0; guard < 12 && by.size < 5000; guard++) {
       const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'links', titles: title, gplnamespace: '0', gpllimit: 'max', redirects: '1',
         prop: 'pageprops', ppprop: 'wikibase_item|disambiguation', ...cont }), 3, null, signal);
@@ -3011,10 +3034,14 @@
       }
       if (!j || !j.continue) break;
       cont = j.continue;
+      step(`Lecture des liens de la page sur Wikipédia : ${fmt(by.size)} articles liés…`);
     }
     const items = [...by.values()].filter((i) => !drop.has(i.title) && i.title !== title).sort((a, b) => a.title.localeCompare(b.title, 'fr'));
     const byQ = new Map(items.filter((i) => i.qid).map((i) => [i.qid, i]));
-    for (const batch of chunks([...byQ.keys()], 200)) {
+    const batches = chunks([...byQ.keys()], 200);
+    for (let k = 0; k < batches.length; k++) {
+      const batch = batches[k];
+      step(`Nature des ${fmt(items.length)} articles liés, sur Wikidata${batches.length > 1 ? ` (lot ${fmt(k + 1)} sur ${fmt(batches.length)})` : ''}…`);
       const rows = await sparql(`SELECT ?item ?c ?desc WHERE { VALUES ?item { ${batch.map((id) => 'wd:' + id).join(' ')} }
         OPTIONAL { ?item wdt:P31 ?c } OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } }`, 3, signal);
       for (const r of rows) {
@@ -3031,6 +3058,7 @@
     // Filtre seulement s'il y a vraiment une nature dominante et quelque chose à écarter.
     if (top && (top.n < 3 || top.n < 0.2 * items.length || top.n === items.length)) top = null;
     if (top) {
+      step(`Nature dominante des ${fmt(items.length)} articles liés, sur Wikidata…`);
       const rows = await sparql(`SELECT ?l WHERE { wd:${top.id} rdfs:label ?l . FILTER(LANG(?l) = "fr") } LIMIT 1`, 3, signal);
       if (rows[0] && rows[0].l) top.label = rows[0].l.value;
       // Sous-classes de la nature dominante parmi les natures vues (« couleur primaire », « couleur du Web » pour « couleur »).
@@ -4459,12 +4487,16 @@
     if (cv) {
       const mineT = collectionFor(cv.key);
       // « Créer une collection » de sa proposition en cours (S.wp.busy) : en attente ici aussi, l'album passera à la
-      // collection créée.
+      // collection créée. Pendant la lecture, le bouton reste cliquable (avec la roue) : la collection est créée dès
+      // qu'elle finit (cv.queued) ; grisé seulement après une erreur de lecture.
       const creating = cv.busy || !!S.wp.busy[cv.key];
+      const queued = reading && cv.queued;
+      const turning = creating || (reading && !cv.error);
       actions = [
         mineT ? h('button', { class: 'btn primary', type: 'button', onClick: () => openAlbum('target', mineT.id) }, 'Ouvrir ta collection')
-          : h('button', { class: 'btn primary', type: 'button', disabled: creating || reading || !cv.items.length || tooBig, onClick: createFromCategory },
-            [icon('plus', 'sm'), creating ? 'Un instant…' : 'Créer une collection']),
+          : h('button', { class: 'btn primary', type: 'button', disabled: creating || tooBig || (reading ? queued || !!cv.error : !cv.items.length), 'aria-busy': turning ? 'true' : null,
+            title: reading && !queued && !cv.error ? 'Lecture en cours : la collection sera créée dès qu\'elle se termine.' : null, onClick: createFromCategory },
+            [icon(turning ? 'refresh' : 'plus', turning ? 'sm spin' : 'sm'), creating ? 'Un instant…' : queued ? 'Créée dès la fin de la lecture…' : 'Créer une collection']),
         wpLink(cv.title),
       ];
     } else {
@@ -4493,7 +4525,9 @@
         pgTop ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: !pg.allLinks, disabled: pg.loading || pg.busy, onChange: toggleAllLinks }),
           ` ne garder que les « ${pgTop.label} » (${fmt(pgTop.n)} sur ${fmt(pg.links.items.length)} articles liés ; décochée : tous les liens)`]) : null,
-        reading ? (cv.error ? null : h('p', { class: 'hint', role: 'status' }, pg ? 'Lecture des liens de la page sur Wikipédia et de leur nature sur Wikidata…' : 'Lecture des articles de la catégorie sur Wikipédia…')) : rarityBar(p.byR, p.total, 'bar big'),
+        reading ? (cv.error ? null : h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'),
+          cv.step || (pg ? 'Lecture des liens de la page sur Wikipédia et de leur nature sur Wikidata…' : 'Lecture des articles de la catégorie sur Wikipédia…'),
+          cv.queued ? ' La collection sera créée à la fin.' : ''])) : rarityBar(p.byR, p.total, 'bar big'),
         cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory() }, 'Réessayer')]) : null,
         tooBig ? h('p', { class: 'warn' }, pg ? `Plus de 3 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 3 000 premiers sont montrés.`
           : 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
