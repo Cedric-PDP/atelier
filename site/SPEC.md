@@ -378,9 +378,12 @@ qui contiennent la carte, par titre ou qid).
 ## Le favori (bookmarklet)
 
 Source commentée : `site/public/assets/bookmarklet.js` ; l'interface la met sur une ligne et y insère l'origine du site et
-la clé de l'utilisateur. Sur `www.wiki-masters.com` (utilisateur connecté) : petit encart de progression, lecture de
-`my-collection/stats`, état de la synchro (`mode:'state'` ; `401` = favori périmé : arrêt aussitôt, avec le message du
-classeur, sans lire la collection), puis synchro rapide si possible (pages `sort=added` jusqu'à `last_at`, envoi
+la clé de l'utilisateur. Sur `www.wiki-masters.com` (utilisateur connecté) : petit encart de progression, état de la
+synchro **d'abord** (`mode:'state'`, avant toute lecture du jeu ; `401` = favori périmé : arrêt aussitôt, avec le message
+du classeur ; classeur injoignable ou en erreur `5xx` : arrêt aussi, « Le classeur ne répond pas (réseau) / (erreur
+500) : réessaie dans un moment », ou le message du classeur pour un `503` (quota du jour de D1, base non liée) — rien
+n'est lu dans le jeu ; autre refus après un clic, classeur plus ancien : lecture complète quand même), lecture de
+`my-collection/stats`, puis synchro rapide si possible (pages `sort=added` jusqu'à `last_at`, envoi
 `mode:'delta'` : « 3 exemplaires obtenus depuis ta dernière synchro, 2 nouvelles cartes », ou « Rien de nouveau ») ;
 sinon lecture de toutes les pages `my-collection` (pause de 300 ms), regroupement des exemplaires en **CarteImport**
 (rareté la plus haute), envoi `POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last` ; `stats`,
@@ -399,9 +402,14 @@ reste ponctuel, comme avant (bouton « Fermer »). Il enveloppe `window.fetch` *
 fait d'elle-même : la requête part d'abord, telle quelle (mêmes arguments, même `this`), et la page reçoit la promesse
 même du `fetch` d'origine ; le favori ne lit que la méthode et l'adresse (jamais le corps de la requête, ni celui de la
 réponse : seul son `ok`, une fois reçue), n'ajoute ni ne change aucun en-tête, et avale ses propres erreurs. Ses propres
-requêtes (jeu et classeur) passent par le `fetch` d'avant lui : jamais observées. `XMLHttpRequest` n'est pas enveloppé :
-le code du jeu relevé n'en contient que dans un polyfill de `fetch`, et les extensions tierces lisent les actions du jeu
-dans `fetch`.
+requêtes (jeu et classeur) passent par le `fetch` d'avant lui : jamais observées, ni par lui ni par un script qui
+envelopperait `fetch` après lui. `XMLHttpRequest` n'est pas enveloppé : le code du jeu relevé n'en contient que dans un
+polyfill de `fetch`, et les extensions tierces lisent les actions du jeu dans `fetch`. **Une différence reste visible
+par la page**, propre à toute observation d'une promesse : pour une requête d'action (tableau ci-dessous, même origine,
+ni `GET` ni `HEAD`), le favori attache un gestionnaire d'échec à la promesse rendue à la page ; si la page ne gère pas
+elle-même l'échec réseau de cette requête, le navigateur ne le signale plus comme rejet non géré (événement
+`unhandledrejection`, console, outil de suivi d'erreurs du jeu). La page reçoit toujours le même rejet ; les autres
+requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un rejet non géré de plus quand la page gère le sien.
 
 - Une action qui change la collection (tableau ci-dessous, réponse 2xx) programme la **synchro rapide** existante 5 s
   après la dernière action (30 s au plus après la première d'une rafale), jamais moins d'une minute après la fin de la
@@ -409,23 +417,44 @@ dans `fetch`.
   après une défausse, une mise aux enchères…) a lieu au plus **toutes les 15 minutes** ; sinon elle est reportée et
   annoncée (« Relecture complète prévue à 14:50 (…) : « Synchroniser » la lance tout de suite »). Une action pendant une
   synchro en programme une autre après. Sans action en attente, aucune minuterie : rien n'est lu.
+- **Ces limites valent pour toutes les pages et tous les onglets du jeu de ce navigateur** (un rechargement, le script
+  Tampermonkey de chaque page, un second onglet ne les remettent pas à zéro) : `localStorage` de wiki-masters.com, une
+  seule clé, `classeur:relie` = `{autos, end, full}` (heures des synchros automatiques de la dernière heure, fin — ou
+  début, pendant qu'elle tourne — de la dernière synchro, début de la dernière relecture complète), jamais une clé du
+  classeur. Lue avant de programmer une synchro et **relue à son échéance** (un autre onglet a pu passer entre-temps) ;
+  une heure à venir est ignorée. Stockage absent ou refusé (navigation privée…) : limites de la page seulement, rien ne
+  casse. Les relectures complètes automatiques suivent en plus **`full_at`** de `mode:'state'` (dernière relecture
+  complète vérifiée par le classeur, heure du serveur, prise au plus à maintenant si l'horloge de l'ordinateur retarde) :
+  une relecture faite il y a moins de 15 minutes, d'un autre navigateur ou d'un clic, reporte aussi l'automatique.
 - Encart : messages comme avant, puis réduit en badge 15 s après une synchro réussie lancée d'un clic : « Classeur relié
   · dernière synchro à 14:32 » (ou « synchro dans un instant (paquet ouvert) », « synchro à 14:35 (paquet ouvert ; une
   par minute au plus) », « relecture complète à 14:50 (…) », « synchro en cours… »). Boutons « Synchroniser » (tout de
   suite, hors limites des synchros automatiques), « Réduire » / « Détails », « Arrêter » (rend `window.fetch` d'origine ;
   si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
-  main ; encart retiré). L'encart est remis dans la page si le jeu l'en retire en se redessinant.
-- Erreur d'une synchro automatique : encart déplié avec le message. Une erreur qui arrête tout (session, limite de
-  lectures automatiques du jeu, favori périmé) ou trois de suite mettent les synchros automatiques **en pause** jusqu'à
-  un « Synchroniser » réussi.
+  main ; encart retiré ; **la synchro en cours s'arrête aussi** : la requête déjà partie finit seule, puis plus rien n'est
+  lu ni envoyé — contrôle avant chaque lecture et chaque envoi, donc entre deux pages ou deux morceaux). L'encart est
+  remis dans la page si le jeu l'en retire en se redessinant.
+- Erreur d'une synchro automatique : encart déplié avec le message. **Classeur injoignable ou en erreur** : la demande
+  d'état échoue, rien n'est lu dans le jeu. Une erreur qui arrête tout (session, limite de lectures automatiques du jeu,
+  favori ou script périmé `401`/`403`, quota du jour du classeur `503`) ou **trois de suite** mettent les synchros
+  automatiques **en pause** jusqu'à un « Synchroniser » réussi ; seule une synchro réussie remet ce compte à zéro (pas une
+  relecture complète reportée). Le badge dit pourquoi : « le classeur ne répond pas, synchros automatiques en pause :
+  clique « Synchroniser » » (réseau, `5xx`, `503`), « favori périmé, synchros automatiques en pause » (`401` ; « script
+  périmé » en Tampermonkey ; `403` : « refusé par le classeur »), sinon « synchro automatique en pause : clique
+  « Synchroniser » ».
 - Nouveau clic dans la même page : pendant une synchro, il déplie seulement l'encart ; sinon l'ancien favori est arrêté
   (son `fetch` rendu) et le nouveau repart de zéro avec sa clé (`window.__classeurRelie` = `{show, stop}`, sans la clé).
+  Clic pendant que se termine la synchro d'un favori arrêté (ou dont l'encart a été fermé) : « Une synchro se termine :
+  clique à nouveau le favori dans un instant (ou recharge la page) », rien n'est lancé.
 - **Script Tampermonkey / Violentmonkey** (facultatif ; onglet « Mettre à jour », replié sous le favori) : le même code,
   `"__START__"` remplacé par `"load"`, sous l'en-tête `@match https://www.wiki-masters.com/*` et
   `https://wiki-masters.com/*`, `@grant none` (il doit tourner dans la page pour voir son `fetch`), `@run-at
   document-idle`, `@noframes`. Relié dès le chargement de chaque page du jeu, en badge réduit ; **rien n'est lu avant une
   action** du joueur, et pas de choix sur la Collection globale. Il porte la clé d'import comme le favori (si le
-  gestionnaire synchronise ses scripts, la clé part avec) ; régénérer le favori l'arrête aussi.
+  gestionnaire synchronise ses scripts, la clé part avec) ; régénérer le favori l'arrête aussi : à sa première action,
+  la demande d'état est refusée (`401`), rien n'est lu dans le jeu, synchros automatiques en pause, et l'encart dit
+  « Script Tampermonkey périmé : … onglet « Mettre à jour », copie le script régénéré (« Sans cliquer à chaque fois ») et
+  remplace l'ancien dans Tampermonkey » (pas « remplace le favori de ta barre », le message du classeur pour le favori).
 
 **Actions observées** (méthode et chemin d'une requête de la page vers l'API du jeu, même origine, réponse 2xx), d'après
 des sources tierces lues sans rien exécuter — `docs/api.md` du client qpautrat/wikimasters-cli et le code d'extensions
@@ -459,7 +488,8 @@ encore possédée dans une autre rareté, brillante ou plus ancienne : rareté, 
 défausses restent occasionnelles.
 
 **Sur la page « Collection globale »** (`/global-collection`, même favori) : l'encart propose deux choix, rien n'est lu
-avant. « Mettre à jour mon classeur » = la synchro ci-dessus, inchangée. « Créer une collection avec cette recherche
+avant. La question et les choix ont leur propre place dans l'encart : une synchro automatique (mode relié) ne les efface
+pas ; ils disparaissent quand l'un d'eux est pris. « Mettre à jour mon classeur » = la synchro ci-dessus, inchangée. « Créer une collection avec cette recherche
 (« vache ») » : la recherche est lue dans l'adresse si la page l'y met (`q`, `search`, `query` ou `recherche`), sinon
 dans son champ (`input` dont le placeholder commence par « Rechercher par titre », celui des pages Collection du jeu) ;
 à défaut le bouton dit « … avec une recherche… » et la recherche est demandée (`prompt()`, prérempli avec un autre champ
@@ -485,7 +515,10 @@ jamais d'étiquette posée dans le jeu, jamais de lecture automatique quand il n
 un geste du joueur : le clic sur le favori, « Synchroniser », ou — favori relié — **une action qu'il vient de faire
 lui-même dans le jeu** (ouvrir un paquet, défausser, mettre aux enchères ou annuler, échanger, réclamer une récompense).
 La synchro qui suit est celle qu'il aurait lancée d'un clic (2 lectures pour la synchro rapide), au plus une par minute
-et 20 par heure, une relecture complète au plus tous les quarts d'heure. Le favori relié ne joue pas, ne clique rien,
+et 20 par heure, une relecture complète au plus tous les quarts d'heure — **toutes pages et onglets du jeu de ce
+navigateur confondus** (rechargements et script Tampermonkey compris ; sauf stockage du navigateur refusé : par page),
+et pour la relecture complète d'après la dernière vérifiée par le classeur, d'où qu'elle vienne. Classeur injoignable ou
+en erreur : rien n'est lu dans le jeu, et les synchros automatiques se mettent en pause. Le favori relié ne joue pas, ne clique rien,
 n'envoie au jeu aucune autre requête que ces lectures, et ne modifie ni les requêtes de la page ni leurs réponses. Pas
 de lien vers le marché du jeu : il ne lit aucune recherche dans son adresse (sa recherche appelle
 `GET /api/marketplace?q=…`) et remplir son champ demanderait un script sur la page du jeu. À la place, « Copier le nom »
@@ -496,10 +529,14 @@ collections, « Copier le nom » si l'article est vérifié, Wikipédia).
 **Ce qui change avec le mode relié** (2026-10-16) : avant, le favori ne faisait plus rien après son message ; il reste
 maintenant dans la page, `window.fetch` enveloppé, jusqu'à son rechargement ou « Arrêter ». **Risques** : (1) c'est
 visible pour le jeu, et le favori ne s'en cache pas : `window.fetch` n'est plus la fonction native
-(`window.fetch.toString()` ne dit plus `[native code]`) et le badge est dans la page. Plusieurs extensions publiques du
+(`window.fetch.toString()` ne dit plus `[native code]`), le badge est dans la page, la clé `classeur:relie` (des heures,
+rien d'autre) est dans le `localStorage` du jeu, et un échec réseau d'une requête d'action que la page ne gère pas
+n'est plus signalé comme rejet non géré (voir « Mode relié »). Plusieurs extensions publiques du
 jeu (WikiMasters+, Toolbox, Wiki Master Toolkit, Collection+, WikiRemastered…) enveloppent déjà `fetch` de la même façon
 pour lire les ouvertures de paquets ; le jeu pourrait détecter ces enveloppes, rien de connu ne dit qu'il le fait. (2) Les
 lectures automatiques suivent le rythme du joueur : très actif, il peut atteindre 20 synchros rapides par heure
-(≈ 40 lectures, plus une relecture complète par quart d'heure s'il défausse) ; une limite de lectures automatiques du jeu
-(`automation_limit`, 429) met le mode relié en pause. (3) Le script Tampermonkey se relie à chaque page du jeu sans clic :
+(≈ 40 lectures, plus une relecture complète par quart d'heure s'il défausse), dans tout le navigateur ; une limite de
+lectures automatiques du jeu (`automation_limit`, 429) met le mode relié en pause. Deux navigateurs (ou appareils)
+reliés ont chacun leurs limites de synchros rapides ; seules les relectures complètes sont bornées entre eux, par
+`full_at` (quand la dernière a été vérifiée complète : sinon `full_at` est vide). (3) Le script Tampermonkey se relie à chaque page du jeu sans clic :
 il ne lit rien avant une action, mais il n'y a plus de geste explicite pour le démarrer.

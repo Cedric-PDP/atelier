@@ -3,7 +3,8 @@
 // synchro à l'autre : lecture complète, synchro rapide (seulement les nouveautés), rien de nouveau, carte partie, et
 // les cas où la synchro rapide doit céder la place à une relecture complète (avec la raison affichée). Puis le mode
 // relié : la page simulée fait ses propres requêtes (paquet, défausse, enchère, échange, lectures…) par window.fetch,
-// horloge virtuelle ; réponses rendues telles quelles, synchro 5 s après une action, limites, « Arrêter », erreurs.
+// horloge virtuelle ; réponses rendues telles quelles, synchro 5 s après une action, limites (aussi entre pages et
+// onglets, et d'après full_at du classeur), « Arrêter » (même en pleine synchro), erreurs, classeur en panne.
 //   node dev/bookmarklet.test.mjs      → doit finir par « FAVORI OK »
 
 import assert from 'node:assert/strict';
@@ -23,6 +24,17 @@ const { onRequest } = await import(pathToFileURL(path.join(root, 'site', 'functi
 const SITE = 'https://classeur.example';
 const GAME = 'https://www.wiki-masters.com';
 const env ={ DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation' };
+
+// Horloge virtuelle, la même pour le serveur et pour les pages simulées du mode relié (openGame) : Date est remplacée
+// dans tout le processus (le serveur date full_at, le favori le compare à son heure) et n'avance que par advance().
+// clock.timers : minuteries (setTimeout) des pages ouvertes ; clock.pages : pages en vie (une page déchargée, par un
+// rechargement, ne déclenche plus rien).
+const RealDate = Date;
+const clock = { now: RealDate.UTC(2026, 9, 16, 10, 0, 0), timers: [], seq: 0, busy: 0, ticks: 0, pages: [] };
+globalThis.Date = class extends RealDate {
+  constructor(...a) { super(...(a.length ? a : [clock.now])); }
+  static now() { return clock.now; }
+};
 
 async function api(method, route, { body, key, origin } = {}) {
   const headers = new Headers();
@@ -62,8 +74,9 @@ const cardOf = async (id) => (await cardsOf()).find((c) => c.id === id);
 let collection = [];
 let gameCalls = [];
 const game = {};
-// Mode relié (openGame) : game.offline (échec réseau), game.weird(res) (réponse altérée), game.packRefused (429).
-const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null });
+// Mode relié (openGame) : game.offline (échec réseau), game.weird(res) (réponse altérée), game.packRefused (429) ; et
+// le classeur : game.siteDown (injoignable), game.siteStatus(body, route) (statut d'erreur rendu à la place du serveur).
+const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null, siteDown: false, siteStatus: null });
 resetGame();
 const at = (h) => new Date(Date.UTC(2026, 9, 1) + h * 3600_000).toISOString();
 const entry = (n, hour, extra = {}, card = {}) => ({
@@ -203,11 +216,11 @@ await test('plus de 10 pages de nouveautés : relecture complète', async () => 
   assert.match(again.text, /1 exemplaire obtenu depuis ta dernière synchro, 1 nouvelle carte/, again.seen);
 });
 
-await test('favori périmé (clé d\'import remplacée) : arrêt dès la demande d\'état, sans lire la collection', async () => {
+await test('favori périmé (clé d\'import remplacée) : arrêt dès la demande d\'état, avant toute lecture du jeu', async () => {
   await api('POST', 'import-key', { key: account.key });
   const r = await click();
-  assert.match(r.text, /Favori périmé/, r.seen);
-  assert.deepEqual(r.calls, ['/api/my-collection/stats?sort=rarity']);
+  assert.match(r.text, /Favori périmé.*remplace le favori de ta barre/, r.seen);
+  assert.deepEqual(r.calls, [], 'rien n\'est lu dans le jeu');
   assert.deepEqual(r.posts.map((b) => b.mode), ['state']);
 });
 
@@ -556,26 +569,58 @@ await test('Collection globale : trop de résultats (20 pages, 3 000 cartes), au
 
 // --- Mode relié : le favori reste dans la page et regarde passer les requêtes que la page du jeu fait elle-même -------
 
-// Page du jeu simulée, avec horloge virtuelle (Date, setTimeout ; advance(ms) la fait avancer en déclenchant les
-// minuteries échues). fetch « du navigateur » (base) : les lectures du favori vont au jeu simulé (gameFetch, notées dans
-// calls avec leur heure), ses envois au vrai serveur ; les requêtes de la page (page(url, init), qui passe par
-// window.fetch, donc par le favori) reçoivent de vraies Response et changent la collection comme le ferait le jeu.
-// start : "click" (favori) ou "load" (script Tampermonkey).
-async function openGame({ start = 'click', pathname = '/collection', answers = [] } = {}) {
-  const { doc } = makeDom();
-  let now = gameClock; // l'heure continue d'une page à l'autre (les dates des paquets ouverts restent croissantes)
-  let seq = 0;
-  let timers = [];
-  let busy = 0;
-  let ticks = 0;
-  class FakeDate extends Date {
-    constructor(...a) { super(...(a.length ? a : [now])); }
-    static now() { return now; }
+// localStorage simulé (keys() : clés écrites).
+function memoryStorage() {
+  const m = new Map();
+  return { getItem: (k) => (m.has(String(k)) ? m.get(String(k)) : null), setItem: (k, v) => { m.set(String(k), String(v)); }, removeItem: (k) => { m.delete(String(k)); }, keys: () => [...m.keys()] };
+}
+// Calme : plus d'envoi au classeur en cours, plus rien qui bouge pendant 40 tours de boucle.
+async function idle() {
+  for (let i = 0, still = 0, last = -1; i < 100000 && (clock.busy > 0 || still < 40); i++) {
+    await new Promise((r) => setImmediate(r));
+    if (clock.ticks === last) still += 1; else { still = 0; last = clock.ticks; }
   }
+}
+// Fait avancer l'horloge virtuelle de ms, en déclenchant dans l'ordre les minuteries échues de toutes les pages en vie.
+async function advance(ms) {
+  const end = clock.now + ms;
+  await idle();
+  for (;;) {
+    clock.timers.sort((a, b) => a.at - b.at || a.seq - b.seq);
+    if (!clock.timers.length || clock.timers[0].at > end) break;
+    const t = clock.timers.shift();
+    clock.now = Math.max(clock.now, t.at);
+    if (t.page.alive) t.f();
+    await idle();
+  }
+  clock.now = Math.max(clock.now, end);
+  await idle();
+}
+// Réponse d'erreur du classeur simulée (game.siteStatus) ; 503 : le message du serveur (http.js) quand D1 est pleine.
+const SITE_ERRORS = { 500: 'Erreur interne du serveur.', 503: 'La base du classeur est pleine ou a atteint son quota du jour : réessaie demain, ou préviens la personne qui le gère.' };
+
+// Page du jeu simulée, sur l'horloge virtuelle (Date, setTimeout ; advance(ms) la fait avancer). fetch « du
+// navigateur » (base) : les lectures du favori vont au jeu simulé (gameFetch, notées dans calls avec leur heure), ses
+// envois au vrai serveur (sauf game.siteDown / game.siteStatus) ; les requêtes de la page (page(url, init), qui passe par
+// window.fetch, donc par le favori) reçoivent de vraies Response et changent la collection comme le ferait le jeu.
+// start : "click" (favori) ou "load" (script Tampermonkey). tab : true = un autre onglet (les pages ouvertes restent
+// en vie) ; sinon les autres pages sont déchargées (rechargement). storage : le localStorage de la page (un neuf par
+// défaut ; le même objet pour deux pages = le même navigateur ; null : absent ; 'refused' : accès refusé).
+// onPost(body, route) : appelé à chaque envoi au classeur, avant sa réponse.
+async function openGame({ start = 'click', pathname = '/collection', answers = [], tab = false, storage = memoryStorage(), onPost = null } = {}) {
+  const { doc } = makeDom();
+  if (!tab) {
+    for (const p of clock.pages) p.alive = false;
+    clock.pages = [];
+    clock.timers = [];
+  }
+  const me = { alive: true };
+  clock.pages.push(me);
   const key = importKey;
   const calls = [];
   const posts = [];
   const sent = []; // [promesse rendue par base, Response] de chaque requête de la page
+  const thisOf = []; // this reçu par le fetch d'origine pour chaque requête de la page
   let fromPage = false;
   const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json' } });
   // Ce que fait le jeu pour une requête de la page (sa collection change comme sur le vrai site) ; adresse et méthode
@@ -590,10 +635,10 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
       if (game.packRefused) return json({ error: 'Trop de paquets', rate_limited: true }, 429);
       const fresh = Array.from({ length: 5 }, () => {
         packSeq += 1;
-        return entry(0, 0, { id: `pack-${packSeq}`, card_id: `pk${packSeq}`, obtained_at: new Date(now).toISOString() }, { id: `pk${packSeq}`, wikipedia_title: `Paquet ${packSeq}` });
+        return entry(0, 0, { id: `pack-${packSeq}`, card_id: `pk${packSeq}`, obtained_at: new Date(clock.now).toISOString() }, { id: `pk${packSeq}`, wikipedia_title: `Paquet ${packSeq}` });
       });
       collection.push(...fresh);
-      return json({ cards: fresh.map((e) => e.card), packs_remaining: 3, packs_last_regen_at: new Date(now).toISOString(), owned_copies: fresh.map((e) => ({ id: e.id, card_id: e.card_id, is_shiny: false })) });
+      return json({ cards: fresh.map((e) => e.card), packs_remaining: 3, packs_last_regen_at: new Date(clock.now).toISOString(), owned_copies: fresh.map((e) => ({ id: e.id, card_id: e.card_id, is_shiny: false })) });
     }
     if (method === 'POST' && p === '/api/user-cards/bulk-discard') {
       const gone = collection.filter((e) => body.card_ids.includes(e.id));
@@ -607,7 +652,7 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
       return json({ auction_id: 'a1' });
     }
     if (method === 'DELETE' && p === '/api/marketplace/a1') {
-      collection.push({ ...game.auctioned, id: game.auctioned.id + '-retour', obtained_at: new Date(now).toISOString() });
+      collection.push({ ...game.auctioned, id: game.auctioned.id + '-retour', obtained_at: new Date(clock.now).toISOString() });
       return json({ status: 'cancelled' });
     }
     if (method === 'POST' && /^\/api\/marketplace\/[^/]+\/bid$/.test(p)) return json({ auction_id: 'x', current_bid: 12, bidder_balance: 88 });
@@ -616,11 +661,12 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
     return json({ collection: collection.slice(0, 50).map((e) => ({ ...e })) }); // lecture de la page elle-même
   }
   function base(input, init) {
-    ticks += 1;
+    clock.ticks += 1;
     const page = fromPage;
     fromPage = false;
     const url = typeof input === 'string' ? input : input.url;
     if (page) {
+      thisOf.push(this);
       let res;
       try {
         const method = String((init && init.method) || (typeof input === 'object' && input.method) || 'GET').toUpperCase();
@@ -638,52 +684,42 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
       assert.equal(init.headers['X-Classeur-Key'], key);
       const route = url.slice(SITE.length + 5);
       const body = JSON.parse(init.body);
-      posts.push({ route, body, at: now });
-      busy += 1;
+      posts.push({ route, body, at: clock.now });
+      if (onPost) onPost(body, route);
+      if (game.siteDown) return Promise.reject(new TypeError('Failed to fetch'));
+      const failed = game.siteStatus && game.siteStatus(body, route);
+      if (failed) return Promise.resolve({ ok: false, status: failed, json: async () => ({ error: SITE_ERRORS[failed] || 'Erreur.' }) });
+      clock.busy += 1;
       return api('POST', route, { body, key, origin: GAME }).then((r) => {
-        busy -= 1;
-        ticks += 1;
+        clock.busy -= 1;
+        clock.ticks += 1;
         return { ok: r.status >= 200 && r.status < 300, status: r.status, json: async () => r.json };
       });
     }
-    calls.push({ url, at: now });
+    calls.push({ url, at: clock.now });
     return Promise.resolve(searchFetch(url)); // jeu simulé, Collection globale comprise
   }
   const ctx = {
     document: doc, location: { hostname: 'www.wiki-masters.com', origin: GAME, href: GAME + pathname, pathname, search: '' }, fetch: base,
-    setTimeout: (f, ms) => { seq += 1; ticks += 1; timers.push({ at: now + Math.max(0, Number(ms) || 0), seq, f }); return seq; },
-    URL, URLSearchParams, Date: FakeDate, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console,
+    setTimeout: (f, ms) => {
+      if (!me.alive) return 0;
+      clock.seq += 1;
+      clock.ticks += 1;
+      clock.timers.push({ at: clock.now + Math.max(0, Number(ms) || 0), seq: clock.seq, f, page: me });
+      return clock.seq;
+    },
+    URL, URLSearchParams, Date, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console,
     prompt: () => (answers.length ? answers.shift() : null),
   };
+  if (storage === 'refused') Object.defineProperty(ctx, 'localStorage', { get() { throw new Error('SecurityError : accès au stockage refusé'); } });
+  else if (storage) ctx.localStorage = storage;
   ctx.window = ctx;
   vm.createContext(ctx);
   const run = () => vm.runInContext(oneLine(key, start), ctx);
-  // Calme : plus d'envoi au classeur en cours, plus rien qui bouge pendant 40 tours de boucle.
-  const idle = async () => {
-    for (let i = 0, still = 0, last = -1; i < 100000 && (busy > 0 || still < 40); i++) {
-      await new Promise((r) => setImmediate(r));
-      if (ticks === last) still += 1; else { still = 0; last = ticks; }
-    }
-  };
-  const advance = async (ms) => {
-    const end = now + ms;
-    await idle();
-    for (;;) {
-      timers.sort((a, b) => a.at - b.at || a.seq - b.seq);
-      if (!timers.length || timers[0].at > end) break;
-      const t = timers.shift();
-      now = Math.max(now, t.at);
-      t.f();
-      await idle();
-    }
-    now = end;
-    gameClock = Math.max(gameClock, now);
-    await idle();
-  };
-  // Requête faite par la page elle-même (comme un clic du joueur dans le jeu).
-  const page = (input, init) => {
+  // Requête faite par la page elle-même (comme un clic du joueur dans le jeu), avec ce this (window par défaut).
+  const page = (input, init, self = ctx.window) => {
     fromPage = true;
-    return ctx.window.fetch(input, init);
+    return ctx.window.fetch.call(self, input, init);
   };
   const boxEl = () => doc.getElementById('classeur-favori');
   const text = () => (boxEl() ? boxEl().textContent.replace(/[  ]/g, ' ') : '');
@@ -699,10 +735,9 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
   };
   run();
   await advance(0);
-  return { ctx, base, calls, posts, sent, page, advance, text, status, press, run, boxes: () => doc.querySelectorAll('#classeur-favori').length,
-    get now() { return now; }, since: (n) => calls.slice(n).map((c) => c.url) };
+  return { ctx, base, calls, posts, sent, thisOf, storage, page, advance, text, status, press, run, boxes: () => doc.querySelectorAll('#classeur-favori').length,
+    get now() { return clock.now; }, since: (n) => calls.slice(n).map((c) => c.url) };
 }
-let gameClock = Date.UTC(2026, 9, 16, 10, 0, 0); // horloge virtuelle des pages du jeu (openGame)
 let packSeq = 0; // cartes des paquets ouverts par les pages (pk1, pk2…), uniques pour tous les tests
 const pad2 = (n) => String(n).padStart(2, '0');
 const hhmm = (t) => { const d = new Date(t); return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
@@ -827,9 +862,10 @@ await test('relié : rafales et limites — 5 s après la dernière action (30 s
 await test('relié : défausse, mise aux enchères → relecture complète, au plus une automatique par quart d\'heure ; annulation → synchro rapide', async () => {
   await fresh60();
   const g = await openGame();
-  await g.advance(60_000);
+  await g.advance(15 * 60_000);
   const full = (from) => g.calls.slice(from).some((c) => c.url.includes('sort=rarity&page=0'));
-  // Défausse : les compteurs ne collent plus → relecture complète aussitôt (aucune n'a eu lieu dans cette page).
+  // Défausse : les compteurs ne collent plus → relecture complète aussitôt (la dernière, celle de fresh60, a un quart
+  // d'heure).
   let n = g.calls.length;
   await g.page('/api/user-cards/bulk-discard', POST_JSON({ card_ids: ['e3', 'e4'] }));
   await g.advance(6_000);
@@ -993,6 +1029,335 @@ await test('script Tampermonkey (« load ») : relié dès le chargement, rien d
   g = await openGame({ start: 'load', pathname: '/global-collection' });
   assert.ok(!/que veux-tu faire/.test(g.text()) && !/Créer une collection/.test(g.text()), g.text());
   assert.deepEqual(g.since(0), []);
+});
+
+const FULL0 = '/api/my-collection?sort=rarity&page=0&stats=0';
+const syncsOf = (g, from = 0) => g.calls.slice(from).filter((c) => c.url === QUICK[0]).map((c) => c.at);
+
+await test('relié : l\'observateur ne regarde que les écritures de la page vers l\'API du jeu ; this transmis ; ses propres requêtes ne passent pas par window.fetch', async () => {
+  await fresh60();
+  const g = await openGame();
+  await g.advance(61_000);
+  // Une enveloppe posée par un autre script après le favori voit les requêtes de la page, jamais celles du favori.
+  const theirs = g.ctx.window.fetch;
+  const other = [];
+  g.ctx.window.fetch = function (input) {
+    other.push(typeof input === 'string' ? input : input.url);
+    return theirs.apply(this, arguments);
+  };
+  let n = g.calls.length;
+  // Lectures d'échanges (GET, HEAD : le chemin est celui d'une action « toute méthode »), écritures vers un autre site
+  // sur des chemins d'action : rien.
+  await samePage(g, '/api/trades', { credentials: 'include' });
+  await samePage(g, new Request(GAME + '/api/trades?status=pending'));
+  await samePage(g, '/api/trades/t1', { method: 'HEAD' });
+  await samePage(g, 'https://autre-site.example/api/packs/open', POST_JSON({}));
+  await samePage(g, 'https://autre-site.example/api/trades/t1/accept', { method: 'POST' });
+  await g.advance(10 * 60_000);
+  assert.deepEqual(g.since(n), [], 'aucune synchro');
+  // Le this de la page arrive tel quel au fetch d'origine.
+  assert.ok(g.thisOf.length === 5 && g.thisOf.every((t) => t === g.ctx.window), 'this = window');
+  const self = { autreThis: true };
+  n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}), self);
+  assert.equal(g.thisOf.at(-1), self, 'this transmis');
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.deepEqual(other, ['/api/trades', GAME + '/api/trades?status=pending', '/api/trades/t1', 'https://autre-site.example/api/packs/open', 'https://autre-site.example/api/trades/t1/accept', '/api/packs/open'],
+    'l\'autre enveloppe ne voit que les requêtes de la page');
+});
+
+await test('relié : classeur injoignable ou en erreur (réseau, 500) → rien n\'est lu dans le jeu ; pause après trois échecs de suite, dite dans le badge', async () => {
+  for (const [mode, said] of [['réseau', /Le classeur ne répond pas \(réseau\) : réessaie dans un moment\./], ['500', /Le classeur ne répond pas \(erreur 500\) : réessaie dans un moment\./]]) {
+    await newAccount();
+    collection = Array.from({ length: 2000 }, (_, i) => entry(i, -i)); // 40 pages, toutes datées d'avant les paquets
+    const g = await openGame(); // compte neuf : relecture complète du clic
+    await g.advance(20 * 60_000);
+    assert.match(g.text(), /2\s000 cartes envoyées au classeur/, g.text());
+    const n = g.calls.length;
+    const p = g.posts.length;
+    if (mode === 'réseau') game.siteDown = true;
+    else game.siteStatus = () => 500;
+    // Deux échecs : encart déplié avec le message, pas encore de pause.
+    for (let i = 0; i < 2; i++) {
+      await g.page('/api/packs/open', POST_JSON({}));
+      await g.advance(120_000);
+    }
+    assert.match(g.text(), said, g.text());
+    assert.match(g.text(), /Réduire/, 'encart déplié');
+    assert.doesNotMatch(g.status(), /pause/, g.status());
+    // Le troisième de suite : pause, dite dans le badge et dans l'encart.
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(120_000);
+    assert.equal(g.status(), 'Classeur relié · le classeur ne répond pas, synchros automatiques en pause : clique « Synchroniser »');
+    assert.match(g.text(), /Synchros automatiques en pause : « Synchroniser » les relance\./, g.text());
+    // Deux heures de jeu pendant la pause : plus rien, ni lecture du jeu ni envoi.
+    for (let i = 0; i < 60; i++) {
+      await g.page('/api/packs/open', POST_JSON({}));
+      await g.advance(120_000);
+    }
+    assert.deepEqual(g.since(n), [], 'aucune lecture du jeu tant que le classeur ne répond pas');
+    assert.deepEqual(g.posts.slice(p).map((x) => x.body.mode), ['state', 'state', 'state'], 'trois demandes d\'état, rien d\'autre');
+    // « Synchroniser » pendant la panne : le message, toujours rien de lu dans le jeu.
+    g.press('Synchroniser');
+    await g.advance(5_000);
+    assert.match(g.text(), said, g.text());
+    assert.deepEqual(g.since(n), []);
+    // Classeur revenu : « Synchroniser » relance, puis les synchros automatiques.
+    game.siteDown = false;
+    game.siteStatus = null;
+    g.press('Synchroniser');
+    await g.advance(5_000);
+    assert.match(g.text(), /315 exemplaires obtenus depuis ta dernière synchro/, g.text());
+    assert.ok(g.since(n)[0] === QUICK[0] && g.since(n).slice(1).every((u) => u.includes('sort=added')), g.since(n).join(', '));
+    const m = g.calls.length;
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(65_000);
+    assert.deepEqual(g.since(m), QUICK, 'synchros automatiques reprises');
+  }
+});
+
+await test('relié : une relecture complète reportée n\'efface pas les échecs d\'avant (seule une synchro réussie le fait)', async () => {
+  await fresh60();
+  const g = await openGame();
+  const t0 = g.now; // relecture complète de fresh60 : la prochaine automatique, pas avant t0 + 15 min
+  await g.advance(60_000);
+  game.siteStatus = () => 500;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(120_000); // échec 1
+  game.siteStatus = null;
+  await g.page('/api/user-cards/bulk-discard', POST_JSON({ card_ids: ['e3'] }));
+  await g.advance(10_000); // relecture complète reportée à t0 + 15 min (le classeur a répondu)
+  assert.match(g.status(), new RegExp(`relecture complète à ${hhmm(t0 + 15 * 60_000)}`), g.status());
+  game.siteStatus = () => 500;
+  await g.advance(t0 + 15 * 60_000 - g.now + 10_000); // échec 2 : la relecture reportée
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(120_000); // échec 3 : pause
+  assert.equal(g.status(), 'Classeur relié · le classeur ne répond pas, synchros automatiques en pause : clique « Synchroniser »');
+});
+
+await test('relié : quota du jour du classeur atteint (503) → pause aussitôt, avec son message', async () => {
+  for (const at of ['delta', 'state']) {
+    await fresh60();
+    const g = await openGame();
+    await g.advance(61_000);
+    const n = g.calls.length;
+    const p = g.posts.length;
+    game.siteStatus = (body) => (at === 'state' || body.mode !== 'state' ? 503 : null);
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(6_000);
+    assert.match(g.text(), /La base du classeur est pleine ou a atteint son quota du jour : réessaie demain/, g.text());
+    assert.equal(g.status(), 'Classeur relié · le classeur ne répond pas, synchros automatiques en pause : clique « Synchroniser »');
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(10 * 60_000);
+    assert.deepEqual(g.since(n), at === 'state' ? [] : QUICK);
+    assert.deepEqual(g.posts.slice(p).map((x) => x.body.mode), at === 'state' ? ['state'] : ['state', 'delta']);
+    resetGame();
+  }
+});
+
+await test('relié : « Arrêter » en pleine synchro → plus rien n\'est lu ni envoyé ; un clic pendant qu\'elle se termine le dit', async () => {
+  await newAccount();
+  collection = Array.from({ length: 2000 }, (_, i) => entry(i, i)); // 40 pages, 4 envois de 500 cartes
+  // Pendant la lecture (compte neuf : relecture complète du clic, arrêtée après sa première page).
+  const g = await openGame();
+  assert.equal(g.calls.filter((c) => c.url.includes('sort=rarity&page=')).length, 1);
+  assert.equal(g.ctx.__classeurFavori, true, 'synchro en cours');
+  g.press('Arrêter');
+  const n = g.calls.length;
+  const p = g.posts.length;
+  // Nouveau clic pendant qu'elle se termine : un encart le dit, rien n'est lancé ni enveloppé.
+  g.run();
+  assert.equal(g.boxes(), 1);
+  assert.match(g.text(), /Une synchro se termine : clique à nouveau le favori dans un instant \(ou recharge la page\)\./, g.text());
+  assert.equal(g.ctx.window.fetch, g.base);
+  await g.advance(60_000);
+  assert.deepEqual([g.since(n), g.posts.length - p], [[], 0], 'plus rien de lu ni d\'envoyé après « Arrêter »');
+  assert.equal(g.ctx.__classeurFavori, false);
+  assert.equal((await cardsOf()).length, 0);
+  // Une fois finie, le clic suivant repart normalement.
+  g.run();
+  await g.advance(60_000);
+  assert.equal(g.boxes(), 1);
+  assert.match(g.text(), /2\s000 cartes envoyées au classeur/, g.text());
+  // Pendant l'envoi : le morceau déjà parti finit, le suivant ne part pas.
+  await newAccount();
+  let h = null;
+  h = await openGame({ onPost: (body) => { if (body.part === 1) h.press('Arrêter'); } });
+  await h.advance(60_000);
+  assert.deepEqual(h.posts.map((x) => (x.body.mode || x.body.part)), ['state', 0, 1]);
+  assert.equal((await cardsOf()).length, 0, 'import inachevé : rien de rangé');
+  assert.equal(h.ctx.__classeurFavori, false);
+});
+
+await test('relié : limites communes aux pages et onglets du jeu (localStorage), et relectures complètes d\'après full_at du classeur', async () => {
+  // Piles (total = lignes) : la synchro rapide est coupée et full_at n'est jamais armé, chaque synchro relit tout.
+  // Script Tampermonkey, une défausse… par page rechargée : une relecture complète automatique par quart d'heure au plus.
+  await newAccount();
+  collection = Array.from({ length: 120 }, (_, i) => entry(i, i, i === 7 ? { count: 2 } : {}));
+  const st = memoryStorage();
+  let g = await openGame({ storage: st });
+  await g.advance(5_000);
+  assert.match(g.text(), /120 cartes envoyées au classeur/, g.text());
+  const t0 = g.calls.find((c) => c.url === FULL0).at;
+  let fulls = 0;
+  for (let i = 0; i < 6; i++) {
+    g = await openGame({ start: 'load', storage: st }); // rechargement : nouveau script, même navigateur
+    const n = g.calls.length;
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(90_000);
+    fulls += g.calls.slice(n).filter((c) => c.url === FULL0).length;
+  }
+  assert.equal(fulls, 0, 'aucune relecture complète automatique dans le quart d\'heure');
+  assert.match(g.status(), new RegExp(`relecture complète à ${hhmm(t0 + 15 * 60_000)} \\(paquet ouvert ; une relecture complète automatique toutes les 15 minutes au plus\\)`), g.status());
+  let n = g.calls.length;
+  await g.advance(t0 + 15 * 60_000 - g.now + 5_000);
+  assert.deepEqual(g.calls.slice(n).filter((c) => c.url === FULL0).map((c) => c.at), [t0 + 15 * 60_000]);
+  // Un autre onglet pendant qu'une synchro (ici une relecture complète, avec ses pauses entre pages) tourne dans le
+  // premier : il attend la minute après elle, et ne relit pas tout derrière.
+  const other = await openGame({ start: 'load', storage: st, tab: true });
+  await g.advance(16 * 60_000);
+  n = g.calls.length;
+  const nOther = other.calls.length;
+  const t2 = g.now;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(300);
+  await other.page('/api/packs/open', POST_JSON({}));
+  await g.advance(5 * 60_000);
+  const pagesA = g.calls.slice(n).filter((c) => c.url.includes('sort=rarity&page='));
+  assert.ok(pagesA.length >= 3 && pagesA[0].at === t2 + 5_000, 'relecture complète du premier onglet, sur plusieurs pages');
+  const firstOther = syncsOf(other, nOther);
+  assert.equal(firstOther.length, 1);
+  assert.ok(firstOther[0] >= pagesA.at(-1).at + 60_000, `l'autre onglet attend la minute après la fin de la synchro en cours (${firstOther[0] - t2} ms)`);
+  assert.ok(!other.since(nOther).includes(FULL0), 'et ne relit pas tout derrière');
+  // Ce que garde le localStorage du jeu : une seule clé « classeur:… », des heures, jamais une clé du classeur.
+  assert.deepEqual(st.keys(), ['classeur:relie']);
+  const kept = st.getItem('classeur:relie');
+  assert.ok(!kept.includes(importKey) && !kept.includes(account.key), kept);
+  assert.deepEqual(Object.keys(JSON.parse(kept)).sort(), ['autos', 'end', 'full']);
+
+  // Deux onglets ouverts en même temps : une synchro par minute au plus, tous onglets confondus, même quand leurs deux
+  // actions tombent au même moment.
+  await fresh60();
+  const both = memoryStorage();
+  const a = await openGame({ start: 'load', storage: both });
+  const b = await openGame({ start: 'load', storage: both, tab: true });
+  await a.advance(60_000);
+  for (const together of [false, true]) {
+    const na = a.calls.length;
+    const nb = b.calls.length;
+    const t = a.now;
+    await a.page('/api/packs/open', POST_JSON({}));
+    if (!together) {
+      await a.advance(10_000);
+      await b.page('/api/packs/open', POST_JSON({}));
+      await a.advance(0);
+      assert.match(b.status(), new RegExp(`synchro à ${hhmm(t + 5_000 + 60_000)} \\(paquet ouvert ; une par minute au plus\\)`), b.status());
+    } else {
+      await b.page('/api/packs/open', POST_JSON({}));
+    }
+    await a.advance(2 * 60_000);
+    assert.deepEqual([syncsOf(a, na).map((x) => x - t), syncsOf(b, nb).map((x) => x - t)], [[5_000], [65_000]], together ? 'actions au même moment' : 'à 10 s d\'écart');
+  }
+  assert.equal((await cardsOf()).length, 60 + 4 * 5);
+
+  // 20 synchros automatiques par heure, rechargement compris : la 21e attend que la plus ancienne ait une heure.
+  const hour = memoryStorage();
+  g = await openGame({ start: 'load', storage: hour });
+  await g.advance(60_000);
+  n = g.calls.length;
+  for (let i = 0; i < 20; i++) {
+    await g.page('/api/packs/open', POST_JSON({}));
+    await g.advance(61_000);
+  }
+  const first = syncsOf(g, n);
+  assert.equal(first.length, 20);
+  g = await openGame({ start: 'load', storage: hour });
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(0);
+  assert.match(g.status(), new RegExp(`synchro à ${hhmm(first[0] + 3_600_000)} \\(paquet ouvert ; 20 synchros automatiques par heure au plus\\)`), g.status());
+  await g.advance(first[0] + 3_600_000 - g.now + 1_000);
+  assert.deepEqual(syncsOf(g), [first[0] + 3_600_000]);
+
+  // full_at du classeur : relecture complète il y a 2 minutes (le clic de fresh60), page neuve sans rien en mémoire
+  // (autre navigateur, stockage vidé) : la relecture complète automatique attend quand même le quart d'heure.
+  await fresh60();
+  const t1 = g.now;
+  g = await openGame({ start: 'load' });
+  await g.advance(2 * 60_000);
+  n = g.calls.length;
+  await g.page('/api/user-cards/bulk-discard', POST_JSON({ card_ids: ['e3'] }));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK, 'synchro rapide seulement');
+  assert.match(g.text(), new RegExp(`Relecture complète prévue à ${hhmm(t1 + 15 * 60_000)} \\(une relecture automatique toutes les 15 minutes au plus\\) : « Synchroniser » la lance tout de suite\\.`), g.text());
+  // « Synchroniser » la lance tout de suite.
+  n = g.calls.length;
+  g.press('Synchroniser');
+  await g.advance(5_000);
+  assert.ok(g.since(n).includes(FULL0), g.since(n).join(', '));
+  assert.match(g.text(), /59 cartes envoyées au classeur/, g.text());
+
+  // localStorage refusé (navigation privée…) : rien ne casse, limites de cette page seulement.
+  g = await openGame({ storage: 'refused' });
+  assert.match(g.text(), /Rien de nouveau depuis ta dernière synchro/, g.text());
+  n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(0);
+  assert.match(g.status(), /synchro à .* \(paquet ouvert ; une par minute au plus\)/, g.status());
+  await g.advance(65_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.deepEqual(unhandled, []);
+});
+
+await test('relié sur la Collection globale : une synchro automatique n\'efface ni la question ni les deux choix', async () => {
+  await fresh60();
+  resetSearch();
+  catalogue = vaches();
+  const g = await openGame({ pathname: '/global-collection', answers: ['vache', 'Mes vaches'] });
+  const CHOICES = ['Mettre à jour mon classeur', 'Créer une collection avec une recherche…'];
+  const buttons = () => g.ctx.document.getElementById('classeur-favori').querySelectorAll('button').map((x) => x.textContent);
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Réduire', 'Arrêter']);
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.match(g.text(), /5 exemplaires obtenus depuis ta dernière synchro/, g.text());
+  assert.match(g.text(), /Collection globale : que veux-tu faire \?/, g.text());
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Réduire', 'Arrêter']);
+  g.press('Créer une collection avec une recherche…');
+  await g.advance(1_000);
+  assert.match(g.text(), /Collection « Mes vaches » créée dans ton classeur : 87 cartes/, g.text());
+  assert.deepEqual(buttons(), ['Synchroniser', 'Réduire', 'Arrêter'], 'choix retirés une fois l\'un d\'eux pris');
+});
+
+await test('script Tampermonkey périmé (favori régénéré) : rien n\'est lu dans le jeu, message propre au script, pause aussitôt', async () => {
+  await fresh60();
+  await api('POST', 'import-key', { key: account.key }); // nouveau favori : importKey (celle du script) ne vaut plus
+  const g = await openGame({ start: 'load' });
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(0), [], 'rien n\'est lu dans le jeu');
+  assert.match(g.text(), /Script Tampermonkey périmé : .*onglet « Mettre à jour », copie le script régénéré .* et remplace l'ancien dans Tampermonkey\. Synchros automatiques en pause\./, g.text());
+  assert.doesNotMatch(g.text(), /favori de ta barre/);
+  assert.match(g.text(), /Réduire/, 'encart déplié');
+  assert.equal(g.status(), 'Classeur relié · script périmé, synchros automatiques en pause');
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(10 * 60_000);
+  assert.deepEqual(g.posts.map((x) => x.body.mode), ['state'], 'une seule demande d\'état, puis la pause');
+  assert.deepEqual(g.since(0), []);
+});
+
+await test('classeur plus ancien (« state » refusé, 400) : après un clic, lecture complète quand même ; en automatique, une erreur', async () => {
+  await fresh60();
+  game.siteStatus = (body) => (body.mode === 'state' ? 400 : null);
+  const g = await openGame();
+  await g.advance(5_000);
+  assert.match(g.text(), /60 cartes envoyées au classeur/, g.text());
+  assert.ok(g.since(0).includes(FULL0));
+  await g.advance(15 * 60_000);
+  const n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), [], 'rien n\'est lu dans le jeu en automatique');
+  assert.match(g.text(), /Erreur\./, g.text());
 });
 
 console.log(`${results.length} tests`);

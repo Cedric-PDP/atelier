@@ -11,8 +11,13 @@
 // lu, aucune requête ajoutée), repère les actions du joueur qui changent sa collection (paquet ouvert, carte défaussée,
 // mise aux enchères ou enchère annulée, échange, récompense réclamée : ACTIONS) et relance alors la synchro rapide,
 // 5 s après la dernière action, au plus une par minute et 20 par heure ; une relecture complète automatique au plus
-// toutes les 15 minutes. Quand il ne se passe rien, rien n'est lu. Encart réductible en badge (« Classeur relié ·
-// dernière synchro à 14:32 »), avec « Synchroniser » et « Arrêter » (qui rend window.fetch d'origine).
+// toutes les 15 minutes. Ces limites valent pour toutes les pages et tous les onglets du jeu de ce navigateur (heures
+// gardées dans son localStorage, clé "classeur:relie", jamais la clé d'import) et, pour les relectures complètes, d'après
+// la dernière vue par le classeur (full_at). Quand il ne se passe rien, rien n'est lu. Classeur injoignable ou en
+// erreur : rien n'est lu dans le jeu, et trois échecs de suite (ou un favori périmé, ou le quota du jour du classeur)
+// mettent les synchros automatiques en pause. Encart réductible en badge (« Classeur relié · dernière synchro à
+// 14:32 »), avec « Synchroniser » et « Arrêter » (qui rend window.fetch d'origine, et coupe la synchro en cours : plus
+// rien n'est lu ni envoyé).
 // L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
 // principale : elle ne permet que d'envoyer des cartes), et "__START__" par "load" dans le script Tampermonkey (relié
 // dès le chargement de chaque page du jeu, sans rien lire avant une action du joueur ; sinon : clic sur le favori), puis
@@ -25,13 +30,19 @@
   var BOX_ID = "classeur-favori";
   var PART = 500;
   // Déjà relié dans cette page : pendant une synchro, le clic déplie seulement l'encart ; sinon l'ancien favori est
-  // arrêté (window.fetch rendu, encart retiré) et ce clic repart de zéro, avec sa clé à lui.
+  // arrêté (window.fetch rendu, encart retiré) et ce clic repart de zéro, avec sa clé à lui. Synchro d'un favori arrêté
+  // (ou dont l'encart a été fermé) qui se termine : sa requête en cours finit seule, et ce clic le dit sans rien lancer.
   var prev = window.__classeurRelie;
+  var ending = false;
   if (window.__classeurFavori) {
     if (prev && typeof prev.show === "function") {
       prev.show();
+      return;
     }
-    return;
+    if (document.getElementById(BOX_ID)) {
+      return;
+    }
+    ending = true;
   }
   if (prev && typeof prev.stop === "function") {
     try {
@@ -56,6 +67,8 @@
   title.style.cssText = "font-weight:700;margin-bottom:4px";
   var text = document.createElement("div");
   var extra = document.createElement("div");
+  // Choix de la Collection globale : à part, pour qu'aucun message (synchro automatique comprise) ne les efface.
+  var menu = document.createElement("div");
   // Pied : « Fermer » (favori ponctuel), ou la ligne d'état et les boutons du mode relié.
   var foot = document.createElement("div");
   var button = function (caption, onClick) {
@@ -69,10 +82,12 @@
   foot.appendChild(button("Fermer", function () {
     box.remove();
   }));
-  box.append(title, text, extra, foot);
+  box.append(title, text, extra, menu, foot);
   document.body.appendChild(box);
   // Mode relié (null : favori ponctuel). keep() remet l'encart dans la page si le jeu l'en a retiré en se redessinant.
   var live = null;
+  // « Arrêter » : plus aucune lecture du jeu ni aucun envoi au classeur, même au milieu d'une synchro.
+  var halted = false;
   var keep = function () {
     if (live && live.on && document.documentElement && !document.documentElement.contains(box)) {
       document.body.appendChild(box);
@@ -100,6 +115,10 @@
       setTimeout(resolve, ms);
     });
   };
+  if (ending) {
+    say("Une synchro se termine : clique à nouveau le favori dans un instant (ou recharge la page).");
+    return;
+  }
   var host = location.hostname;
   if (host !== "www.wiki-masters.com" && host !== "wiki-masters.com") {
     if (START === "load") {
@@ -112,15 +131,26 @@
   // Requêtes du favori lui-même (jeu et classeur) : par window.fetch tel qu'il est avant le mode relié, donc jamais vues
   // par l'observateur, qui ne regarde que celles de la page.
   var net = window.fetch;
-  // Erreur qui arrête tout (session, limite de lectures du jeu) : pas de relecture complète derrière.
+  // Erreur qui arrête tout (session, limite de lectures du jeu, « Arrêter ») : pas de relecture complète derrière.
   var stop = function (message) {
     var e = new Error(message);
     e.stop = true;
     return e;
   };
+  // Avant chaque lecture et chaque envoi (donc entre deux pages) : rien de plus après « Arrêter ».
+  var halt = function () {
+    if (halted) {
+      var e = stop("Favori arrêté.");
+      e.halted = true;
+      throw e;
+    }
+  };
   // Lecture d'une adresse de l'API du jeu, avec la session du navigateur (même origine).
   var read = async function (path) {
-    var r = await net.call(window, path, { credentials: "include", headers: { Accept: "application/json" } });
+    halt();
+    var r = await net.call(window, path, { credentials: "include", headers: { Accept: "application/json" } }).catch(function () {
+      throw new Error("WikiMasters ne répond pas (réseau) : réessaie dans un moment.");
+    });
     if (r.status === 403 || r.status === 429) {
       var refused = await r.json().catch(function () {
         return null;
@@ -252,21 +282,43 @@
     }
     return { why: "Plus de 500 exemplaires obtenus depuis ta dernière synchro : relecture complète. " };
   };
-  var send = async function (body) {
-    var r = await net.call(window, SITE + "/api/import", {
+  // Message d'un refus du classeur : le sien (favori périmé…), sauf script Tampermonkey périmé (401 en mode « load » :
+  // c'est le script qu'il faut reprendre, pas le favori) et erreur du serveur (5xx ; 503 : quota du jour ou base non
+  // liée, avec son message).
+  var refusal = function (status, res) {
+    var said = res && typeof res.error === "string" && res.error ? res.error : "";
+    if (status === 401 && START === "load") {
+      return "Script Tampermonkey périmé : sa clé ne correspond plus à ton classeur (un favori plus récent l'a remplacée). Ouvre ton classeur, onglet « Mettre à jour », copie le script régénéré (« Sans cliquer à chaque fois ») et remplace l'ancien dans Tampermonkey.";
+    }
+    if (status >= 500) {
+      return status === 503 && said ? said : "Le classeur ne répond pas (erreur " + status + ") : réessaie dans un moment.";
+    }
+    return said || "Le classeur a répondu " + status + ".";
+  };
+  // Envoi au classeur (route : /api/import ou /api/targets/from-game). Erreur : e.status (refus) ou e.down (réseau).
+  var post = async function (route, body) {
+    halt();
+    var r = await net.call(window, SITE + route, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Classeur-Key": KEY },
       body: JSON.stringify(body)
+    }).catch(function () {
+      var down = new Error("Le classeur ne répond pas (réseau) : réessaie dans un moment.");
+      down.down = true;
+      throw down;
     });
     var res = await r.json().catch(function () {
       return {};
     });
     if (!r.ok) {
-      var e = new Error((res && res.error) || "Le classeur a répondu " + r.status + ".");
+      var e = new Error(refusal(r.status, res));
       e.status = r.status;
       throw e;
     }
     return res;
+  };
+  var send = function (body) {
+    return post("/api/import", body);
   };
   // Raisons d'une relecture complète demandée par le classeur (réponse needs_full à une synchro rapide).
   var WHY = {
@@ -281,20 +333,21 @@
   // relecture complète moins de FULL_GAP après la précédente est reportée ({later: true}, rien n'est lu de plus).
   var run = async function (auto) {
     say("Lecture de ta collection…");
-    var stats = await read("/api/my-collection/stats?sort=rarity");
     var state = null;
     // Raison d'une relecture complète, gardée en tête des messages de progression.
     var why = "";
+    // L'état de la synchro d'abord : sans réponse du classeur, rien n'est lu dans le jeu.
     try {
       state = await send({ mode: "state" });
     } catch (e) {
-      // Favori périmé (clé d'import remplacée) ou refusé : inutile de lire toute la collection pour rien. Autre erreur
-      // (classeur plus ancien, réseau) : lecture complète quand même.
-      if (e.status === 401 || e.status === 403) {
+      // Favori périmé (clé d'import remplacée) ou refusé, classeur injoignable ou en erreur (réseau, 5xx), « Arrêter », ou
+      // synchro automatique : erreur, rien n'est lu. Autre refus après un clic (classeur plus ancien) : lecture complète.
+      if (auto === true || e.stop || e.down || e.status === 401 || e.status === 403 || e.status >= 500) {
         throw e;
       }
       state = null;
     }
+    var stats = await read("/api/my-collection/stats?sort=rarity");
     if (state && state.quick && state.last_at) {
       say("Recherche de tes nouvelles cartes…");
       var got = await readNew(state.last_at);
@@ -318,12 +371,22 @@
         }
       }
     }
-    if (auto === true && live && Date.now() - live.fullAt < FULL_GAP) {
-      say(why.replace(/ : relecture complète\. $/, ". ") + "Relecture complète prévue à " + hhmm(live.fullAt + FULL_GAP) + " (une relecture automatique toutes les 15 minutes au plus) : « Synchroniser » la lance tout de suite.", true);
-      return { later: true };
+    if (auto === true && live) {
+      // Dernière relecture complète : celle des pages de ce navigateur (share), ou celle que le classeur a vérifiée
+      // (full_at, heure du serveur ; prise au plus à maintenant si l'horloge de l'ordinateur retarde).
+      share(false);
+      var server = state && typeof state.full_at === "string" ? Date.parse(state.full_at) : NaN;
+      if (server > live.fullAt) {
+        live.fullAt = Math.min(server, Date.now());
+      }
+      if (Date.now() - live.fullAt < FULL_GAP) {
+        say(why.replace(/ : relecture complète\. $/, ". ") + "Relecture complète prévue à " + hhmm(live.fullAt + FULL_GAP) + " (une relecture automatique toutes les 15 minutes au plus) : « Synchroniser » la lance tout de suite.", true);
+        return { later: true };
+      }
     }
     if (live) {
       live.fullAt = Date.now();
+      share(true);
     }
     say(why + "Lecture de ta collection…");
     var entries = [];
@@ -485,17 +548,7 @@
       return;
     }
     say("Envoi au classeur… " + num(n) + " cartes");
-    var r = await net.call(window, SITE + "/api/targets/from-game", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "X-Classeur-Key": KEY },
-      body: JSON.stringify({ name: name, query: q, items: got.cards })
-    });
-    var res = await r.json().catch(function () {
-      return {};
-    });
-    if (!r.ok) {
-      throw new Error((res && res.error) || "Le classeur a répondu " + r.status + ".");
-    }
+    var res = await post("/api/targets/from-game", { name: name, query: q, items: got.cards });
     var made = res && res.target ? res.target : {};
     var count = typeof made.count === "number" ? made.count : n;
     var message = "Collection « " + (made.name || name) + " » créée dans ton classeur : " + num(count) + (count > 1 ? " cartes" : " carte") + ", avec leur rareté dans le jeu.";
@@ -514,6 +567,48 @@
   var PER_HOUR = 20;
   var HOUR = 3600000;
   var FULL_GAP = 15 * 60000;
+  // Limites communes à toutes les pages et tous les onglets du jeu de ce navigateur (un rechargement ou un autre onglet
+  // ne les remet pas à zéro) : localStorage de wiki-masters.com, clé MEMO, {autos: heures des synchros automatiques de
+  // la dernière heure, end: fin (ou début, pendant qu'elle tourne) de la dernière synchro, full: début de la dernière
+  // relecture complète}. Rien d'autre (jamais la clé). Stockage absent ou refusé (navigation privée…) : limites de cette
+  // page seulement. Une heure à venir (horloge changée) est ignorée.
+  var MEMO = "classeur:relie";
+  var share = function (write) {
+    if (!live) {
+      return;
+    }
+    var now = Date.now();
+    var m = null;
+    try {
+      m = JSON.parse(window.localStorage.getItem(MEMO) || "null");
+    } catch (e) {
+      m = null;
+    }
+    var at = function (t) {
+      return typeof t === "number" && isFinite(t) && t <= now ? t : 0;
+    };
+    if (m && typeof m === "object") {
+      (Array.isArray(m.autos) ? m.autos.slice(-PER_HOUR) : []).forEach(function (t) {
+        if (at(t) && live.autos.indexOf(t) < 0) {
+          live.autos.push(t);
+        }
+      });
+      live.end = Math.max(live.end, at(m.end));
+      live.fullAt = Math.max(live.fullAt, at(m.full));
+    }
+    live.autos = live.autos.filter(function (t) {
+      return now - t < HOUR;
+    }).sort(function (a, b) {
+      return a - b;
+    });
+    if (write) {
+      try {
+        window.localStorage.setItem(MEMO, JSON.stringify({ autos: live.autos.slice(-PER_HOUR), end: live.end, full: live.fullAt }));
+      } catch (e) {
+        // Stockage plein ou refusé : limites de cette page seulement.
+      }
+    }
+  };
   var two = function (n) {
     return (n < 10 ? "0" : "") + n;
   };
@@ -587,7 +682,7 @@
       }
       return p;
     };
-    live = { on: true, wanted: false, first: 0, last: 0, what: "", hold: "", plan: 0, due: 0, end: 0, okAt: 0, autos: [], fullAt: 0, later: false, paused: false, fails: 0, foldPlan: 0 };
+    live = { on: true, wanted: false, first: 0, last: 0, what: "", hold: "", plan: 0, due: 0, end: 0, okAt: 0, autos: [], fullAt: 0, later: false, paused: false, pauseWhy: "", fails: 0, foldPlan: 0 };
     // Arrêt : window.fetch d'origine rendu ; si un autre script l'a enveloppé à son tour, il est laissé en place et
     // celui-ci ne fait plus que passer la main (live.on = false).
     live.restore = function () {
@@ -610,6 +705,7 @@
     title.style.display = yes ? "none" : "";
     text.style.display = yes ? "none" : "";
     extra.style.display = yes ? "none" : "";
+    menu.style.display = yes ? "none" : "";
     box.style.cssText = yes ? SMALL : WIDE;
     status.style.marginTop = yes ? "4px" : "10px";
     foldBtn.textContent = yes ? "Détails" : "Réduire";
@@ -623,7 +719,7 @@
     if (window.__classeurFavori) {
       s = "synchro en cours…";
     } else if (live.paused) {
-      s = "synchro automatique en pause : clique « Synchroniser »";
+      s = live.pauseWhy || "synchro automatique en pause : clique « Synchroniser »";
     } else if (live.wanted) {
       s = (live.later ? "relecture complète" : "synchro") + (live.due - Date.now() > AFTER_MAX ? " à " + hhmm(live.due) : " dans un instant") + " (" + live.what + (live.hold ? " ; " + live.hold : "") + ")";
     } else if (live.okAt) {
@@ -632,16 +728,9 @@
     status.textContent = "Classeur relié · " + s;
     keep();
   };
-  // Prochaine synchro automatique, si une action l'attend (et ni pause ni synchro en cours : sa fin rappelle schedule).
-  var schedule = function () {
-    if (!live || !live.on || !live.wanted || live.paused || window.__classeurFavori) {
-      badge();
-      return;
-    }
-    var now = Date.now();
-    live.autos = live.autos.filter(function (t) {
-      return now - t < HOUR;
-    });
+  // Heure de la prochaine synchro automatique (live.hold : ce qui la retient), limites de toutes les pages comprises.
+  var when = function () {
+    share(false);
     var at = Math.min(live.last + AFTER, live.first + AFTER_MAX);
     live.hold = "";
     if (live.end && live.end + GAP > at) {
@@ -656,15 +745,29 @@
       at = live.fullAt + FULL_GAP;
       live.hold = "une relecture complète automatique toutes les 15 minutes au plus";
     }
+    return at;
+  };
+  // Prochaine synchro automatique, si une action l'attend (et ni pause ni synchro en cours : sa fin rappelle schedule).
+  var schedule = function () {
+    if (!live || !live.on || !live.wanted || live.paused || window.__classeurFavori) {
+      badge();
+      return;
+    }
+    var at = when();
     live.due = at;
     live.plan += 1;
     var id = live.plan;
     setTimeout(function () {
       if (live.on && id === live.plan && live.wanted && !live.paused && !window.__classeurFavori) {
+        // Une autre page du jeu a pu synchroniser entre-temps : l'heure est recalculée avant de lire quoi que ce soit.
+        if (when() > Date.now()) {
+          schedule();
+          return;
+        }
         live.autos.push(Date.now());
         start(run, true);
       }
-    }, Math.max(0, at - now));
+    }, Math.max(0, at - Date.now()));
     badge();
   };
   // Action du joueur vue (réponse 2xx reçue par la page).
@@ -682,8 +785,10 @@
     schedule();
   };
   // Lance une synchro (run) ou la création d'une collection ; auto = true : synchro déclenchée par une action du joueur.
-  // Une synchro couvre les actions d'avant son début ; une erreur qui arrête tout (session, limite de lectures du jeu,
-  // favori périmé), ou trois de suite, met les synchros automatiques en pause jusqu'à un « Synchroniser » réussi.
+  // Une synchro couvre les actions d'avant son début. Une erreur qui arrête tout (session, limite de lectures du jeu,
+  // favori périmé, quota du jour du classeur), ou trois de suite (classeur injoignable…), met les synchros automatiques
+  // en pause jusqu'à un « Synchroniser » réussi ; seule une synchro réussie remet le compte des échecs à zéro (pas une
+  // relecture complète reportée). Après « Arrêter », plus rien : ni message, ni pause, ni synchro suivante.
   var start = function (task, auto) {
     var sync = task === run;
     window.__classeurFavori = true;
@@ -691,14 +796,16 @@
       live.wanted = false;
       live.later = false;
       live.plan += 1;
+      // Synchro en cours : les autres pages du jeu attendent aussi la minute.
+      live.end = Math.max(live.end, Date.now());
+      share(true);
     }
     badge();
     task(auto).then(function (res) {
-      if (!live) {
+      if (!live || halted) {
         return;
       }
       if (sync) {
-        live.fails = 0;
         if (res && res.later) {
           live.later = true;
           live.wanted = true;
@@ -706,8 +813,10 @@
           live.last = live.first;
           return;
         }
+        live.fails = 0;
         live.okAt = Date.now();
         live.paused = false;
+        live.pauseWhy = "";
       }
       if (!auto) {
         var plan = live.foldPlan;
@@ -718,27 +827,44 @@
         }, 15000);
       }
     }).catch(function (e) {
-      say(e && e.message ? e.message : "Le favori n'a pas pu lire ta collection.");
-      if (live) {
-        if (sync) {
-          live.fails += 1;
-          if (auto && ((e && (e.stop || e.status === 401 || e.status === 403)) || live.fails >= 3)) {
-            live.paused = true;
+      if (halted) {
+        return;
+      }
+      var message = e && e.message ? e.message : "Le favori n'a pas pu lire ta collection.";
+      if (live && sync) {
+        live.fails += 1;
+        var code = e ? e.status : undefined;
+        if (auto && ((e && (e.stop || e.status === 401 || e.status === 403)) || code === 503 || live.fails >= 3)) {
+          live.paused = true;
+          var hint = " Synchros automatiques en pause : « Synchroniser » les relance.";
+          if (e && (e.down || code >= 500)) {
+            live.pauseWhy = "le classeur ne répond pas, synchros automatiques en pause : clique « Synchroniser »";
+          } else if (code === 401 || code === 403) {
+            live.pauseWhy = (code === 403 ? "refusé par le classeur" : START === "load" ? "script périmé" : "favori périmé") + ", synchros automatiques en pause";
+            hint = " Synchros automatiques en pause.";
+          } else {
+            live.pauseWhy = "";
           }
+          message += hint;
         }
+      }
+      say(message);
+      if (live) {
         fold(false);
       }
     }).finally(function () {
       window.__classeurFavori = false;
-      if (live) {
+      if (live && !halted) {
         if (sync) {
           live.end = Date.now();
+          share(true);
         }
         schedule();
       }
     });
   };
   var stopLive = function () {
+    halted = true;
     if (live) {
       live.on = false;
       live.plan += 1;
@@ -789,7 +915,10 @@
   } else if (/^\/global-collection\/?$/.test(String(location.pathname || ""))) {
     var shown = searchOf();
     var label = shown.q.length > 40 ? shown.q.slice(0, 39) + "…" : shown.q;
-    say("Collection globale : que veux-tu faire ?");
+    // La question et les deux choix restent dans menu (une synchro automatique ne les efface pas) jusqu'au choix.
+    var ask = document.createElement("div");
+    ask.textContent = "Collection globale : que veux-tu faire ?";
+    menu.appendChild(ask);
     var choice = function (caption, task) {
       var b = document.createElement("button");
       b.type = "button";
@@ -797,10 +926,11 @@
       b.style.cssText = "display:block;width:100%;margin-top:8px;padding:7px 10px;border-radius:8px;border:1px solid #2e3431;background:#1b1f1d;color:#f2f4f3;font:inherit;text-align:left;cursor:pointer";
       b.addEventListener("click", function () {
         if (!window.__classeurFavori) {
+          menu.textContent = "";
           start(task, false);
         }
       });
-      extra.appendChild(b);
+      menu.appendChild(b);
     };
     choice("Mettre à jour mon classeur", run);
     choice(shown.q && shown.sure ? "Créer une collection avec cette recherche (« " + label + " »)" : "Créer une collection avec une recherche…", createFromSearch);
