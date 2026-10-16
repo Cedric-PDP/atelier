@@ -439,11 +439,15 @@ await test('premier import : regroupement, hide_image, sans user_id, new_ids vid
   assert.equal(cards.cards.length, 120);
   assert.ok(cards.fetched_at);
   const keys = ['id', 'title', 'rarity', 'atk', 'def', 'quality', 'pageviews', 'category', 'image', 'url', 'count',
-    'shiny', 'starred', 'obtained_at', 'tags'];
+    'shiny', 'starred', 'obtained_at', 'variants', 'tags'];
   for (const c of cards.cards) assert.deepEqual(Object.keys(c), keys);
   const byId = new Map(cards.cards.map((c) => [c.id, c]));
   const d = byId.get(dup.id);
   assert.equal(d.count, dup.n + 3);
+  // Exemplaires par rareté et brillance (marché) : additionnés sur les trois entrées, clés dans l'ordre binaire.
+  const want = {};
+  for (const [k, n] of [[dup.r + (dup.s ? '*' : ''), dup.n], [dup.r + '*', 2], [dup.r, 1]]) want[k] = (want[k] || 0) + n;
+  assert.deepEqual(d.variants, Object.fromEntries(Object.entries(want).sort()));
   assert.equal(d.shiny, true);
   assert.equal(d.starred, true);
   assert.equal(d.obtained_at, '2026-01-02T10:00:00.000Z');
@@ -2064,8 +2068,10 @@ await test('GET /api/me (relu toutes les minutes par la page visible) : une requ
   assert.equal((await me()).card_count, 40);
   assert.equal(seen.length, 1, seen.join('\n'));
   const plan = env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${seen[0]}`).all().map((r) => r.detail);
-  assert.deepEqual(plan.length, 1, plan.join('\n'));
+  // Le compte par sa clé, et le dernier numéro du chat (badge des non-lus) : MAX sur la clé primaire, une ligne.
+  assert.deepEqual(plan.length, 3, plan.join('\n'));
   assert.match(plan[0], /^SEARCH users USING INDEX sqlite_autoindex_users_\d \(key_hash=\?\)$/);
+  assert.deepEqual(plan.slice(1), ['SCALAR SUBQUERY 1', 'SEARCH chat_messages'], plan.join('\n'));
   // Classeur importé avant le compteur (sync_state absent, ou ancien format sans unit, invalid ni count) : compté une
   // fois, puis gardé ; le reste de l'état est intact et la synchro rapide reste coupée (relecture complète).
   const setState = (v) => env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(v, kim.user.id);
@@ -2557,6 +2563,525 @@ await test('partage entre membres : base existante (colonnes ajoutées, index un
   old.DB.close();
   again.DB.close();
   await rm(file, { force: true });
+});
+
+// --- Chat (un salon pour tous les classeurs) ------------------------------------------------------------------------
+
+// Chaque test du chat a sa propre base (le salon est commun à tous les comptes d'une base).
+function chatEnv() {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const say = (key, text) => call('POST', 'chat', { key, e, body: { text } });
+  const read = (key, qs = '') => call('GET', 'chat' + qs, { key, e });
+  const del = (key, id) => call('DELETE', `chat/${id}`, { key, e });
+  // Messages en vrac, écrits directement en base (au-delà des limites d'envoi) : n lignes de `user`, datées `at`.
+  const bulk = (n, user, at, size = 0) => e.DB.sqlite.exec(`WITH RECURSIVE k(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM k WHERE i < ${n})
+    INSERT INTO chat_messages (user_id, text, created_at, deleted, rev)
+    SELECT '${user}', 'vrac ' || i || substr(printf('%.${size}c', 'x'), 1, ${size}), '${at}', 0, (SELECT COALESCE(MAX(rev), 0) FROM chat_messages) + i FROM k`);
+  return { e, q, say, read, del, bulk };
+}
+const hoursAgo = (h) => new Date(Date.now() - h * 3600_000).toISOString();
+
+await test('chat : envoi, lecture (100 plus récents, ?after, ?before), auteur = nom actuel du classeur, texte nettoyé, 400', async () => {
+  const { e, q, say, read } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  let r = await read(ben.key);
+  assert.deepEqual([r.status, r.json], [200, { messages: [], rev: 0, last_id: 0, older: false }]);
+  r = await say(ana.key, '  Bonjour\r\n\r\n\r\n\r\nça\tva ?  \nhttps://fr.wikipedia.org/wiki/Mercure_(planète) ‮abc  ');
+  assert.equal(r.status, 201, JSON.stringify(r.json));
+  const m1 = r.json.message;
+  assert.deepEqual({ ...m1, id: 0, created_at: 0 }, { id: 0, author: 'Ana', mine: true, text: 'Bonjour\n\nça va ?\nhttps://fr.wikipedia.org/wiki/Mercure_(planète) abc', created_at: 0 });
+  assert.ok(Number.isInteger(m1.id) && m1.id > 0 && !Number.isNaN(Date.parse(m1.created_at)));
+  r = await read(ben.key);
+  assert.deepEqual(r.json.messages, [{ ...m1, mine: false }]);
+  assert.deepEqual([r.json.rev, r.json.last_id, r.json.older], [1, m1.id, false]);
+  assert.ok(!JSON.stringify(r.json).includes(ana.user.id), "jamais l'id interne de l'auteur");
+  // Le nom est lu à chaque lecture : un classeur renommé l'est aussi dans ses anciens messages.
+  await call('PATCH', 'me', { key: ana.key, e, body: { name: 'Anaïs' } });
+  r = await read(ben.key);
+  assert.equal(r.json.messages[0].author, 'Anaïs');
+  const rev = r.json.rev;
+  // ?after : seulement ce qui a changé depuis.
+  assert.deepEqual((await read(ben.key, `?after=${rev}`)).json, { messages: [], deleted: [], rev, last_id: m1.id, more: false });
+  const head = 'Salut 👋 (500 car. pile) ';
+  const m2 = (await say(ben.key, head + 'x'.repeat(500 - head.length))).json.message;
+  assert.equal(m2.text.length, 500);
+  r = await read(ana.key, `?after=${rev}`);
+  assert.deepEqual(r.json, { messages: [{ ...m2, mine: false }], deleted: [], rev: rev + 1, last_id: m2.id, more: false });
+  // GET /api/me : numéro du dernier message (badge des non-lus).
+  assert.equal((await call('GET', 'me', { key: ana.key, e })).json.last_chat_id, m2.id);
+  // Révision inconnue (base recréée) : tout relire.
+  assert.deepEqual((await read(ana.key, '?after=999')).json, { reset: true, rev: rev + 1, last_id: m2.id });
+  // ?before : les plus anciens, par pages de 100, du plus ancien au plus récent.
+  for (let i = 0; i < 120; i++) e.DB.sqlite.prepare("INSERT INTO chat_messages (user_id, text, created_at, deleted, rev) VALUES (?, ?, ?, 0, (SELECT MAX(rev) FROM chat_messages) + 1)")
+    .run(ben.user.id, `n° ${i}`, hoursAgo(30));
+  r = await read(ana.key);
+  assert.equal(r.json.messages.length, 100);
+  assert.equal(r.json.older, true);
+  assert.deepEqual(r.json.messages.map((m) => m.id), [...r.json.messages.map((m) => m.id)].sort((a, b) => a - b), 'du plus ancien au plus récent');
+  assert.equal(r.json.messages.at(-1).text, 'n° 119');
+  const first = r.json.messages[0].id;
+  r = await read(ana.key, `?before=${first}`);
+  assert.deepEqual([r.json.messages.length, r.json.older, r.json.messages.at(-1).id < first], [22, false, true]);
+  assert.deepEqual(Object.keys(r.json), ['messages', 'older']);
+  // Plus de 100 changements : more, et la révision du dernier rendu.
+  r = await read(ana.key, '?after=0');
+  assert.deepEqual([r.json.messages.length, r.json.more, r.json.rev], [100, true, 100]);
+  // Requêtes invalides.
+  for (const qs of ['?after=abc', '?after=-1', '?after=1.5', '?before=x', '?after=1&before=2', '?after=1234567890123456']) {
+    assert.equal((await read(ana.key, qs)).status, 400, qs);
+  }
+  for (const [body, re] of [[{}, /un texte/], [{ text: 42 }, /un texte/], [{ text: ' \n\t ' }, /vide/], [{ text: 'y'.repeat(501) }, /500 caractères au plus/],
+    [{ text: 'mon lien https://classeur.example/#cle=' + 'A'.repeat(43) }, /lien personnel/]]) {
+    r = await call('POST', 'chat', { key: ana.key, e, body });
+    assert.equal(r.status, 400, JSON.stringify(body));
+    assert.match(r.json.error, re);
+  }
+  assert.equal((await call('POST', 'chat', { key: ana.key, e, raw: JSON.stringify({ text: 'z'.repeat(9000) }), headers: { 'content-type': 'application/json' } })).status, 413);
+  // Classeur sans prénom : il faut en donner un (c'est lui que les autres voient).
+  const anon = await signup(undefined, e);
+  r = await say(anon.key, 'Coucou');
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /prénom/);
+  assert.equal(q('SELECT COUNT(*) AS n FROM chat_messages WHERE user_id = ?', anon.user.id)[0].n, 0);
+  e.DB.close();
+});
+
+await test("chat : suppression par l'auteur seulement (403 sur celui d'un autre, 404), propagée aux pages ouvertes par ?after", async () => {
+  const { e, q, say, read, del } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const a1 = (await say(ana.key, 'Message 1')).json.message;
+  const a2 = (await say(ana.key, 'Message 2')).json.message;
+  const b1 = (await say(ben.key, 'Réponse')).json.message;
+  const { rev } = (await read(ben.key)).json;
+  let r = await del(ben.key, a1.id);
+  assert.deepEqual([r.status, r.json.error], [403, 'Tu ne peux supprimer que tes propres messages.']);
+  r = await del(ana.key, a1.id);
+  assert.deepEqual([r.status, r.json], [200, { ok: true }]);
+  assert.deepEqual((await del(ana.key, a1.id)).json, { ok: true }, 'déjà supprimé par son auteur : ok');
+  assert.equal((await del(ben.key, a1.id)).status, 404, 'supprimé : 404 pour les autres');
+  assert.equal((await del(ana.key, 999)).status, 404);
+  // Le texte est effacé aussitôt ; la marque fait disparaître le message des pages ouvertes.
+  assert.deepEqual(q('SELECT text, deleted FROM chat_messages WHERE id = ?', a1.id), [{ text: '', deleted: 1 }]);
+  r = await read(ben.key, `?after=${rev}`);
+  assert.deepEqual(r.json, { messages: [], deleted: [a1.id], rev: rev + 1, last_id: b1.id, more: false });
+  assert.deepEqual((await read(ben.key)).json.messages.map((m) => m.id), [a2.id, b1.id]);
+  // Chemins et méthodes.
+  assert.equal((await call('DELETE', 'chat/abc', { key: ana.key, e })).status, 404);
+  assert.equal((await call('DELETE', 'chat', { key: ana.key, e })).status, 405);
+  assert.equal((await call('GET', `chat/${a2.id}`, { key: ana.key, e })).status, 405);
+  assert.equal((await call('POST', `chat/${a2.id}`, { key: ana.key, e, body: {} })).status, 405);
+  e.DB.close();
+});
+
+await test("chat : clé principale seulement (la clé d'import du favori n'y a pas accès), même origine", async () => {
+  const { e, say, read, del } = chatEnv();
+  const ana = await signup('Ana', e);
+  const m = (await say(ana.key, 'Privé')).json.message;
+  const imp = (await call('POST', 'import-key', { key: ana.key, e })).json.import_key;
+  for (const r of [await read(imp), await say(imp, 'Depuis le favori'), await del(imp, m.id), await read(undefined), await say(undefined, 'x')]) {
+    assert.equal(r.status, 401, JSON.stringify(r.json));
+    assert.ok(!JSON.stringify(r.json).includes('Privé'));
+  }
+  assert.equal((await read(ana.key)).json.messages.length, 1, 'rien envoyé ni supprimé avec la clé du favori');
+  const r = await call('GET', 'chat', { key: ana.key, e, headers: { origin: 'https://www.wiki-masters.com' } });
+  assert.equal(r.headers.get('access-control-allow-origin'), null, 'pas de CORS pour le jeu');
+  e.DB.close();
+});
+
+await test('chat : limites (10 par minute, 300 par 24 h et par classeur, 1 000 pour le salon), 429 lisible ; une suppression ne rend rien', async () => {
+  const { e, q, say, del, bulk } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const sent = [];
+  for (let i = 0; i < 10; i++) {
+    const r = await say(ana.key, `n° ${i}`);
+    assert.equal(r.status, 201, JSON.stringify(r.json));
+    sent.push(r.json.message.id);
+  }
+  let r = await say(ana.key, 'un de trop');
+  assert.equal(r.status, 429);
+  assert.match(r.json.error, /^Doucement : 10 messages par minute au plus\. Réessaie dans \d+ s\.$/);
+  assert.ok(r.json.retry_after >= 1 && r.json.retry_after <= 60, String(r.json.retry_after));
+  for (const id of sent) await del(ana.key, id);
+  assert.equal((await say(ana.key, 'après suppression')).status, 429, 'supprimer ne rend pas de message');
+  assert.equal((await say(ben.key, 'Ben, lui, peut')).status, 201, 'limite par classeur');
+  // 300 en 24 h (les dix de la dernière minute vieillis de 2 minutes, 290 de plus il y a 3 heures).
+  e.DB.sqlite.prepare('UPDATE chat_messages SET created_at = ? WHERE user_id = ?').run(hoursAgo(0.04), ana.user.id);
+  bulk(290, ana.user.id, hoursAgo(3));
+  r = await say(ana.key, 'trois cent unième');
+  assert.equal(r.status, 429);
+  assert.match(r.json.error, /300 messages en 24 heures/);
+  assert.ok(r.json.retry_after > 20 * 3600, String(r.json.retry_after));
+  // Vieillis de plus de 24 h : de nouveau permis.
+  e.DB.sqlite.prepare('UPDATE chat_messages SET created_at = ? WHERE user_id = ?').run(hoursAgo(25), ana.user.id);
+  assert.equal((await say(ana.key, 'le lendemain')).status, 201);
+  // Salon : 1 000 messages en 24 h, toutes personnes confondues.
+  bulk(1000, 'quelqu-un', hoursAgo(1));
+  r = await say(ben.key, 'salon plein');
+  assert.equal(r.status, 429);
+  assert.match(r.json.error, /Le chat a reçu 1\s000 messages en 24 heures/);
+  e.DB.sqlite.prepare("UPDATE chat_messages SET created_at = ? WHERE user_id = 'quelqu-un'").run(hoursAgo(25));
+  assert.equal((await say(ben.key, 'de nouveau')).status, 201);
+  assert.equal(q("SELECT COUNT(*) AS n FROM chat_messages WHERE text LIKE '%de trop%' OR text = 'salon plein'")[0].n, 0, 'rien écrit pour un envoi refusé');
+  e.DB.close();
+});
+
+await test('chat : purge (les 2 000 plus récents gardés, à chaque envoi), numéros jamais réutilisés', async () => {
+  const { e, q, say, read, bulk } = chatEnv();
+  const ana = await signup('Ana', e);
+  bulk(1995, 'ancien', hoursAgo(48));
+  const ids = [];
+  for (let i = 0; i < 8; i++) ids.push((await say(ana.key, `récent ${i}`)).json.message.id);
+  const [{ n, lo, hi }] = q('SELECT COUNT(*) AS n, MIN(id) AS lo, MAX(id) AS hi FROM chat_messages');
+  assert.deepEqual([n, hi - lo + 1, hi], [2000, 2000, 2003]);
+  assert.deepEqual(ids, [1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003]);
+  assert.equal(q("SELECT COUNT(*) AS n FROM chat_messages WHERE text IN ('vrac 1', 'vrac 2', 'vrac 3')")[0].n, 0, 'les plus anciens sont partis');
+  // Le plus récent n'est jamais effacé : le numéro suivant ne revient pas en arrière.
+  const r = await read(ana.key);
+  assert.deepEqual([r.json.last_id, r.json.messages.at(-1).text, r.json.older], [2003, 'récent 7', true]);
+  e.DB.close();
+});
+
+await test("chat : DELETE /api/me vide ses messages et oublie l'auteur (retirés des pages ouvertes), ceux des autres restent", async () => {
+  const { e, q, say, read } = chatEnv();
+  const ana = await signup('Ana', e);
+  const cleo = await signup('Cléo', e);
+  const c1 = (await say(cleo.key, 'Je pars bientôt')).json.message;
+  const a1 = (await say(ana.key, 'Dommage !')).json.message;
+  const c2 = (await say(cleo.key, 'Au revoir')).json.message;
+  const { rev } = (await read(ana.key)).json;
+  assert.deepEqual((await call('DELETE', 'me', { key: cleo.key, e })).json, { ok: true });
+  assert.deepEqual(q('SELECT id, user_id, text, deleted FROM chat_messages ORDER BY id'), [
+    { id: c1.id, user_id: '', text: '', deleted: 1 }, { id: a1.id, user_id: ana.user.id, text: 'Dommage !', deleted: 0 }, { id: c2.id, user_id: '', text: '', deleted: 1 }]);
+  const r = (await read(ana.key, `?after=${rev}`)).json;
+  assert.deepEqual([r.messages, r.deleted.sort((x, y) => x - y), r.more], [[], [c1.id, c2.id], false]);
+  assert.equal(new Set(q('SELECT rev FROM chat_messages').map((x) => x.rev)).size, 3, 'révisions uniques');
+  assert.deepEqual((await read(ana.key)).json.messages.map((m) => m.text), ['Dommage !']);
+  e.DB.close();
+});
+
+await test('chat : coût (index chat_by_rev pour ?after, MAX en une ligne, limites par chat_by_user, purge par la clé primaire, CPU)', async () => {
+  const { e, say, read, bulk } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  bulk(1890, ben.user.id, hoursAgo(48));
+  bulk(100, ana.user.id, hoursAgo(47), 490); // la page la plus lourde : 100 messages de ~500 caractères
+  for (let i = 0; i < 5; i++) await say(ana.key, 'x'.repeat(480) + i);
+  const { rev } = (await read(ben.key)).json;
+  const seen = [];
+  const spy = { ...e, DB: { prepare: (sql) => { seen.push(sql); return e.DB.prepare(sql); }, batch: (s) => e.DB.batch(s) } };
+  const planOf = (sql) => e.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((x) => x.detail);
+  await call('GET', 'me', { key: ben.key, e: spy }); // schéma appliqué une fois pour cette base espionnée
+  seen.length = 0;
+  // Relecture d'une page ouverte (toutes les 12 s) : le compte, puis MAX(rev), MAX(id) et les changements par l'index.
+  await call('GET', `chat?after=${rev}`, { key: ben.key, e: spy });
+  assert.equal(seen.length, 3, seen.join('\n'));
+  assert.deepEqual(planOf(seen[1]), ['SCAN CONSTANT ROW', 'SCALAR SUBQUERY 1', 'SEARCH chat_messages USING COVERING INDEX chat_by_rev', 'SCALAR SUBQUERY 2', 'SEARCH chat_messages']);
+  const after = planOf(seen[2]);
+  assert.match(after[0], /^SEARCH m USING INDEX chat_by_rev \(rev>\?\)$/, after.join('\n'));
+  assert.match(after[1], /^SEARCH u USING INDEX sqlite_autoindex_users_1 \(id=\?\)( LEFT-JOIN)?$/, after.join('\n'));
+  assert.equal(after.length, 2, after.join('\n'));
+  // Première lecture : les plus récents dans l'ordre de la clé primaire (sans tri), arrêt après 101.
+  seen.length = 0;
+  await call('GET', 'chat', { key: ben.key, e: spy });
+  const latest = planOf(seen[2]);
+  assert.deepEqual(latest.map((l) => l.replace(/ \(.*$/, '')), ['SCAN m', 'SEARCH u USING INDEX sqlite_autoindex_users_1'], latest.join('\n'));
+  seen.length = 0;
+  await call('GET', 'chat?before=500', { key: ben.key, e: spy });
+  assert.match(planOf(seen[1])[0], /^SEARCH m USING INTEGER PRIMARY KEY \(rowid<\?\)$/);
+  // Envoi : limites par l'index (user_id, created_at), rien de parcouru en entier ; purge par la clé primaire.
+  seen.length = 0;
+  await call('POST', 'chat', { key: ana.key, e: spy, body: { text: 'mesure' } });
+  const ins = planOf(seen.find((s) => s.startsWith('INSERT INTO chat_messages')));
+  assert.ok(ins.filter((l) => /chat_messages/.test(l)).every((l) => /^SEARCH chat_messages USING (COVERING INDEX chat_by_(user|rev)\b|INTEGER PRIMARY KEY )|^SEARCH chat_messages$/.test(l)), ins.join('\n'));
+  assert.ok(ins.some((l) => /COVERING INDEX chat_by_user \(user_id=\? AND created_at>\?\)/.test(l)), ins.join('\n'));
+  const purge = planOf(seen.find((s) => s.startsWith('DELETE FROM chat_messages')));
+  assert.ok(purge.some((l) => /^SEARCH chat_messages USING INTEGER PRIMARY KEY \(rowid<\?\)$/.test(l)), purge.join('\n'));
+  // Seuls parcours : la ligne constante du SELECT et les sous-requêtes bornées par leur LIMIT (10 et 300 lignes au plus).
+  assert.ok(!purge.concat(ins).some((l) => /^SCAN (?!CONSTANT ROW$|\(subquery-\d+\)$)/.test(l)), 'aucun parcours complet : ' + ins.join(' / '));
+  // Effacement des messages d'un compte (DELETE /api/me) : par l'index de l'auteur.
+  assert.ok(planOf("UPDATE chat_messages SET text = '' WHERE user_id = ?1").some((l) => /USING INDEX chat_by_user \(user_id=\?\)/.test(l)));
+  // JavaScript : rejeu des appels enregistrés (voir profile).
+  const poll = await profile('GET', `chat?after=${rev}`, { key: ben.key, e, n: 200 });
+  const first = await profile('GET', 'chat', { key: ben.key, e, n: 200 });
+  const post = await profile('POST', 'chat', { key: ben.key, e, body: { text: 'y'.repeat(500) }, n: 200 });
+  const me = await profile('GET', 'me', { key: ben.key, e, n: 200 });
+  assert.deepEqual([poll.status, first.status, post.status, me.status], [200, 200, 201, 200]);
+  assert.equal(first.json.messages.length, 100);
+  console.log(`    chat : relecture ?after JS ${ms(poll.js)} | 100 messages JS ${ms(first.js)} (${Math.round(first.size / 1024)} Ko) | envoi JS ${ms(post.js)} | GET /api/me JS ${ms(me.js)}`);
+  assert.ok(poll.js < 10 && first.js < 10 && post.js < 10 && me.js < 10, 'trop de JavaScript');
+  e.DB.close();
+});
+
+// --- Marché : cotes (cache commun), plan du favori, valeur jour par jour, lecture du marché -----------------------
+
+// Compte neuf dans une base à part (e), avec sa clé d'import.
+async function marketAccount(e, name) {
+  const u = (await call('POST', 'account', { body: { code: 'invitation', name }, e })).json;
+  u.importKey = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
+  return u;
+}
+const gameOrigin = { origin: 'https://www.wiki-masters.com' };
+const cote = (p, n, extra = {}) => ({ p, n, w: null, l: p, d: '2026-10-15T10:00:00.000Z', ...extra });
+const mcard = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, count, ...extra });
+const todayUtc = () => new Date().toISOString().slice(0, 10);
+
+await test('marché : exemplaires par rareté et brillance (variants) gardés à l\'import, additionnés en synchro rapide', async () => {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const u = await marketAccount(e, 'Vic');
+  const data = (id) => JSON.parse(q('SELECT data FROM cards WHERE user_id = ? AND card_id = ?', u.user.id, id)[0].data);
+  // CarteImport du favori : variants rangé (clés dans l'ordre binaire) ; somme fausse ou rareté inconnue : oublié, la carte reste.
+  let r = await call('POST', 'import', { key: u.importKey, e, body: { cards: [
+    mcard('a', 'Alpha', 'R', 3, { variants: { R: 2, 'C*': 1 } }),
+    mcard('b', 'Bêta', 'C', 2, { variants: { C: 1 } }),
+    mcard('c', 'Gamma', 'C', 1, { variants: { X: 1 } }),
+    mcard('d', 'Delta', 'L', 1),
+  ], stats: { total: 7, totalUnique: 4 }, rows: 7, copies: 7, last_at: '2026-10-15T09:00:00.000Z' } });
+  assert.equal(r.json.count, 4);
+  assert.deepEqual(data('a').variants, { 'C*': 1, R: 2 });
+  assert.deepEqual(Object.keys(data('a')).slice(-1), ['variants'], 'variants en dernier');
+  for (const id of ['b', 'c', 'd']) assert.equal('variants' in data(id), false, id);
+  // Synchro rapide : additionnés quand les deux côtés les ont ; sinon la carte n'en a plus (jamais « variants: null »).
+  r = await call('POST', 'import', { key: u.importKey, e, body: { mode: 'delta', rows: 3, copies: 3, stats: { total: 10, totalUnique: 5 }, last_at: '2026-10-16T09:00:00.000Z', cards: [
+    mcard('a', 'Alpha', 'R', 1, { variants: { 'R*': 1 } }), mcard('d', 'Delta', 'L', 1, { variants: { L: 1 } }), mcard('e', 'Epsilon', 'SR', 1, { variants: { SR: 1 } }),
+  ] } });
+  assert.equal(r.json.quick, true, JSON.stringify(r.json));
+  assert.deepEqual(data('a').variants, { 'C*': 1, R: 2, 'R*': 1 });
+  assert.equal(data('a').count, 4);
+  assert.equal('variants' in data('d'), false, 'une carte sans détail ne le reçoit pas à moitié');
+  assert.equal(data('d').count, 2);
+  assert.deepEqual(data('e').variants, { SR: 1 });
+  // Entrées brutes (rafraîchissement par cookie, ancien favori) : la rareté de l'exemplaire est son snapshot_rarity.
+  const rawE = (id, n, extra, card = {}) => ({ id, card_id: 'z', count: n, is_shiny: false, obtained_at: '2026-10-01T00:00:00.000Z', ...extra,
+    card: { id: 'z', wikipedia_title: 'Zêta', rarity: 'UR', ...card } });
+  r = await call('POST', 'import', { key: u.key, e, body: { collection: [rawE('z1', 2, { snapshot_rarity: 'R' }), rawE('z2', 1, { is_shiny: true }), rawE('z3', 1, { snapshot_rarity: 'X' })] } });
+  assert.equal(r.json.count, 1);
+  assert.deepEqual(data('z').variants, { R: 2, UR: 1, 'UR*': 1 });
+  assert.equal(data('z').rarity, 'UR');
+  e.DB.close();
+});
+
+await test('marché : cotes validées, sans user_id, clé d\'import (CORS du jeu), quotas du jour par classeur et pour le site', async () => {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const u = await marketAccount(e, 'Mia');
+  const post = (body, key = u.importKey, headers = gameOrigin) => call('POST', 'market/prices', { key, e, body, headers });
+  // Membres seulement : sans clé ou clé inconnue, 401 ; la clé d'import n'ouvre ni la valeur ni les cotes du classeur.
+  for (const [m, p, key] of [['POST', 'market/prices', null], ['POST', 'market/prices', 'x'.repeat(43)], ['POST', 'market/plan', null], ['POST', 'market/live', null],
+    ['GET', 'market', null], ['GET', 'market', u.importKey], ['GET', 'market/prices', u.importKey], ['GET', 'market/prices', null]]) {
+    assert.equal((await call(m, p, { key, e, body: m === 'POST' ? { prices: [] } : undefined })).status, 401, `${m} ${p} ${key ? 'clé' : 'sans clé'}`);
+  }
+  // Formes refusées en entier (400, rien d'écrit).
+  const ok = { id: 'carte-1', v: { R: cote(120, 5), 'R*': cote(800, 1) } };
+  for (const [why, prices] of [
+    ['rareté inconnue', [{ id: 'carte-1', v: { X: cote(1, 3) } }]],
+    ['montant négatif', [{ id: 'carte-1', v: { R: cote(-1, 3) } }]],
+    ['montant démesuré', [{ id: 'carte-1', v: { R: cote(2e9, 3) } }]],
+    ['aucune vente', [{ id: 'carte-1', v: { R: cote(5, 0) } }]],
+    ['ventes non entières', [{ id: 'carte-1', v: { R: cote(5, 2.5) } }]],
+    ['date', [{ id: 'carte-1', v: { R: cote(5, 3, { d: 'hier' }) } }]],
+    ['date à venir', [{ id: 'carte-1', v: { R: cote(5, 3, { d: '2099-01-01T00:00:00.000Z' }) } }]],
+    ['identifiant', [{ id: 'a b', v: {} }]],
+    ['deux fois', [ok, ok]],
+    ['trop', Array.from({ length: 501 }, (_, i) => ({ id: `m${i}`, v: {} }))],
+    ['trop de raretés', [{ id: 'carte-1', v: Object.fromEntries(['C', 'PC', 'R', 'SR', 'UR', 'L'].flatMap((x) => [[x, cote(1, 3)], [x + '*', cote(1, 3)], [x + '**', cote(1, 3)]])) }]],
+  ]) {
+    const r = await post({ prices });
+    assert.equal(r.status, 400, why);
+    assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com', `CORS sur l'erreur (${why})`);
+  }
+  assert.equal(q('SELECT COUNT(*) AS n FROM prices')[0].n, 0);
+  let r = await post({ prices: [ok, { id: 'carte-2', v: {} }] });
+  assert.deepEqual([r.status, r.json.written], [200, 2], JSON.stringify(r.json));
+  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
+  r = await call('OPTIONS', 'market/prices', { e, headers: { ...gameOrigin, 'access-control-request-method': 'POST' } });
+  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [204, 'https://www.wiki-masters.com']);
+  r = await call('OPTIONS', 'market/plan', { e, headers: { origin: 'https://evil.example' } });
+  assert.equal(r.headers.get('access-control-allow-origin'), null);
+  // Une cote n'est liée à aucun classeur : pas de user_id, rien de l'utilisateur dans la table.
+  assert.deepEqual(Object.keys(q('SELECT * FROM prices')[0]), ['card_id', 'data', 'read_at']);
+  assert.ok(!JSON.stringify(q('SELECT * FROM prices')).includes(u.user.id));
+  assert.deepEqual(JSON.parse(q("SELECT data FROM prices WHERE card_id = 'carte-1'")[0].data), { R: cote(120, 5), 'R*': cote(800, 1) });
+  // Quota du classeur : 3 000 cotes par jour (2 déjà) ; au-delà 429, rien d'écrit pour cet envoi.
+  for (let k = 0; k < 5; k++) {
+    r = await post({ prices: Array.from({ length: 500 }, (_, i) => ({ id: `q${k}-${i}`, v: {} })) });
+    assert.equal(r.status, 200, JSON.stringify(r.json));
+  }
+  assert.equal(r.json.quota, 498);
+  r = await post({ prices: Array.from({ length: 499 }, (_, i) => ({ id: `q9-${i}`, v: {} })) });
+  assert.equal(r.status, 429);
+  assert.match(r.json.error, /Quota du jour des cotes atteint/);
+  assert.equal(q("SELECT COUNT(*) AS n FROM prices WHERE card_id LIKE 'q9-%'")[0].n, 0);
+  assert.equal((await post({ prices: Array.from({ length: 498 }, (_, i) => ({ id: `q9-${i}`, v: {} })) })).status, 200);
+  assert.equal((await post({ prices: [{ id: 'encore', v: {} }] })).status, 429);
+  // Le lendemain, le compte repart de zéro.
+  e.DB.sqlite.prepare("UPDATE market SET quota_day = '2000-01-01'").run();
+  assert.equal((await post({ prices: [{ id: 'lendemain', v: {} }] })).status, 200);
+  // Quota du site (tous les classeurs) : un autre classeur est refusé aussi quand il est atteint.
+  const v = await marketAccount(e, 'Noé');
+  e.DB.sqlite.prepare("UPDATE market SET quota_n = 29999, quota_day = ? WHERE user_id = '*'").run(todayUtc());
+  assert.equal((await post({ prices: [{ id: 'n1', v: {} }, { id: 'n2', v: {} }] }, v.importKey)).status, 429);
+  assert.equal((await post({ prices: [{ id: 'n1', v: {} }] }, v.importKey)).status, 200);
+  // La clé principale marche aussi (comme pour /api/import).
+  e.DB.sqlite.prepare('UPDATE market SET quota_n = 0').run();
+  assert.equal((await post({ prices: [{ id: 'n3', v: {} }] }, v.key, {})).status, 200);
+  e.DB.close();
+});
+
+await test('marché : plan du favori (cotes les plus anciennes d\'abord, cartes voulues d\'après les collections)', async () => {
+  const e = makeEnv();
+  const u = await marketAccount(e, 'Paz');
+  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('own-a', 'Alpha', 'C', 1), mcard('own-b', 'Bêta', 'C', 1), mcard('own-c', 'Gamma', 'C', 1), mcard('own-d', 'Delta', 'C', 1)] } });
+  const item = (title, status = 'ok') => ({ title, description: null, image: null, status });
+  await call('POST', 'targets/save', { key: u.key, e, body: { name: 'Ancienne', items: [item('Alpha'), item('Omega'), item('Introuvable', 'missing')] } });
+  await call('POST', 'targets/save', { key: u.key, e, body: { name: 'Récente', items: [item('Psi'), item('Bêta'), item('Omega'), item('Chi')] } });
+  e.DB.sqlite.prepare("UPDATE targets SET updated_at = '2026-01-01T00:00:00.000Z' WHERE name = 'Ancienne'").run();
+  // Cotes : own-a fraîche (pas relue), own-b de plus de 12 h, own-c lue il y a très longtemps, own-d jamais.
+  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: ['own-a', 'own-b', 'own-c'].map((id) => ({ id, v: {} })) } });
+  e.DB.sqlite.prepare("UPDATE prices SET read_at = '2026-10-15T00:00:00.000Z' WHERE card_id = 'own-b'").run();
+  e.DB.sqlite.prepare("UPDATE prices SET read_at = '2026-09-01T00:00:00.000Z' WHERE card_id = 'own-c'").run();
+  let r = await call('POST', 'market/plan', { key: u.importKey, e, body: {}, headers: gameOrigin });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
+  assert.deepEqual(r.json, { cards: ['own-d', 'own-c', 'own-b'], stale: 3, fresh: 1, wanted: ['Psi', 'Omega', 'Chi'], ids: {}, quota: 3000 - 3 });
+  // Titres résolus par le favori (live) : les voulus connus entrent au plan (après les possédées à égalité).
+  r = await call('POST', 'market/live', { key: u.importKey, e, headers: gameOrigin, body: { ids: { Psi: 'w-psi', Chi: '', Ailleurs: 'w-x' } } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  r = await call('POST', 'market/plan', { key: u.importKey, e, body: {} });
+  assert.deepEqual([r.json.cards, r.json.ids], [['own-d', 'w-psi', 'w-x', 'own-c', 'own-b'], { Psi: 'w-psi', Chi: '' }]);
+  // La clé d'import ne lit que ce plan : rien d'autre du classeur (ni noms des collections, ni titres des cartes possédées).
+  assert.ok(!JSON.stringify(r.json).includes('Ancienne') && !JSON.stringify(r.json).includes('Alpha'));
+  e.DB.close();
+});
+
+await test('marché : valeur du classeur (cotes fiables × exemplaires, un point par jour), après les cotes et les imports', async () => {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const u = await marketAccount(e, 'Rui');
+  const market = async () => (await call('GET', 'market', { key: u.key, e })).json;
+  // Sans cote : valeur 0, aucun point écrit.
+  await call('POST', 'import', { key: u.key, e, body: { cards: [
+    mcard('a', 'Alpha', 'R', 3, { variants: { R: 2, 'R*': 1 } }),
+    mcard('b', 'Bêta', 'C', 2, { shiny: true }), // sans détail : approchée (1 brillante, le reste dans sa rareté)
+    mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } }), // pas encore cotée
+  ] } });
+  let m = await market();
+  assert.deepEqual([m.value, m.history, m.live], [{ value: 0, priced: 0, cards: 3, approx: 1 }, [], null]);
+  assert.equal(q('SELECT COUNT(*) AS n FROM value_history')[0].n, 0);
+  // Cotes : R* n'a que 2 ventes (pas fiable, hors valeur).
+  const r = await call('POST', 'market/prices', { key: u.importKey, e, body: { last: true, prices: [
+    { id: 'a', v: { R: cote(100, 5), 'R*': cote(500, 2) } }, { id: 'b', v: { C: cote(10, 3), 'C*': cote(50, 4) } },
+  ] } });
+  assert.equal(r.status, 200);
+  const points = () => q('SELECT date, value, priced, cards, at FROM value_history WHERE user_id = ?', u.user.id);
+  const todayPoint = () => points().find((p) => p.date === todayUtc());
+  assert.deepEqual(points().map(({ at, ...p }) => p), [{ date: todayUtc(), value: 2 * 100 + 10 + 50, priced: 2, cards: 3 }]);
+  m = await market();
+  assert.deepEqual(m.value, { value: 260, priced: 2, cards: 3, approx: 1 });
+  assert.equal(m.history.length, 1);
+  // Le dernier calcul du jour remplace le précédent (un point par jour) ; un jour passé reste.
+  e.DB.sqlite.prepare("INSERT INTO value_history (user_id, date, value, priced, cards, at) VALUES (?, '2026-10-10', 111, 1, 3, '2026-10-10T20:00:00.000Z')").run(u.user.id);
+  await call('POST', 'market/prices', { key: u.importKey, e, body: { last: true, prices: [{ id: 'c', v: { L: cote(1000, 3) } }] } });
+  m = await market();
+  assert.deepEqual(m.history.map((p) => [p.date, p.value]), [['2026-10-10', 111], [todayUtc(), 1260]]);
+  assert.equal(points().length, 2);
+  // Cotes relues par un autre membre : GET /api/market recalcule et met le point du jour à jour.
+  const v = await marketAccount(e, 'Sol');
+  await call('POST', 'market/prices', { key: v.importKey, e, body: { prices: [{ id: 'a', v: { R: cote(200, 5) } }] } });
+  m = await market();
+  assert.equal(m.value.value, 2 * 200 + 60 + 1000);
+  assert.equal(todayPoint().value, 1460);
+  // Après un import : recalculée au plus une fois par heure.
+  const at0 = todayPoint().at;
+  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('a', 'Alpha', 'R', 4, { variants: { R: 4 } }), mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } })] } });
+  assert.equal(todayPoint().at, at0, "moins d'une heure : pas recalculée");
+  e.DB.sqlite.prepare("UPDATE value_history SET at = '2026-01-01T00:00:00.000Z' WHERE date <> '2026-10-10'").run();
+  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('a', 'Alpha', 'R', 5, { variants: { R: 5 } }), mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } })] } });
+  assert.deepEqual([todayPoint().value, todayPoint().cards], [5 * 200 + 1000, 2]);
+  e.DB.close();
+});
+
+await test('marché : lecture du marché du favori (validée, montrée par GET /api/market, oubliée au bout de 24 h)', async () => {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const u = await marketAccount(e, 'Tom');
+  const base = { a: 'enchere-1', id: 'carte-9', t: 'Neuf', r: 'SR', s: false, img: 'https://upload.wikimedia.org/x.jpg', end: '2026-10-16T12:00:00.000Z', cote: 300, n: 7 };
+  const live = {
+    deals: [{ ...base, ask: 200, bid: true, lead: false }],
+    bids: [{ ...base, a: 'enchere-2', mine: 150, cur: 180, lead: false, st: 'run' }],
+    sales: [{ ...base, a: 'enchere-3', img: null, cote: null, n: null, base: 100, cur: null, bid: false, st: 'unsold' }],
+  };
+  let r = await call('POST', 'market/live', { key: u.importKey, e, headers: gameOrigin, body: live });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  let m = (await call('GET', 'market', { key: u.key, e })).json;
+  assert.deepEqual(m.live, live);
+  assert.ok(m.live_at);
+  for (const [why, body] of [
+    ['état inconnu', { bids: [{ ...live.bids[0], st: 'gagné' }] }],
+    ['image non https', { deals: [{ ...live.deals[0], img: 'javascript:alert(1)' }] }],
+    ['montant', { deals: [{ ...live.deals[0], ask: -5 }] }],
+    ['trop', { deals: Array.from({ length: 51 }, () => live.deals[0]) }],
+    ['ids', { ids: { Titre: 'a b' } }],
+  ]) {
+    assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body })).status, 400, why);
+  }
+  // Rien de l'identité du joueur dans le jeu : les champs inconnus sont oubliés.
+  await call('POST', 'market/live', { key: u.importKey, e, body: { bids: [{ ...live.bids[0], bidder_id: GAME_USER }] } });
+  assert.ok(!q('SELECT live FROM market')[0].live.includes(GAME_USER));
+  // Plus de 24 h : plus montrée, et effacée au passage d'un autre favori.
+  e.DB.sqlite.prepare("UPDATE market SET live_at = '2026-01-01T00:00:00.000Z' WHERE user_id = ?").run(u.user.id);
+  m = (await call('GET', 'market', { key: u.key, e })).json;
+  assert.equal(m.live, null);
+  const v = await marketAccount(e, 'Ugo');
+  await call('POST', 'market/live', { key: v.importKey, e, body: {} });
+  assert.deepEqual(q('SELECT live, live_at FROM market WHERE user_id = ?', u.user.id), [{ live: null, live_at: null }]);
+  // Supprimer son classeur efface sa lecture du marché et sa valeur ; les cotes (communes) restent.
+  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [{ id: 'carte-9', v: { SR: cote(300, 7) } }] } });
+  e.DB.sqlite.prepare("INSERT INTO value_history (user_id, date, value, priced, cards, at) VALUES (?, '2026-10-10', 1, 1, 1, 'x')").run(u.user.id);
+  await call('DELETE', 'me', { key: u.key, e });
+  for (const t of ['market', 'value_history']) assert.equal(q(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`, u.user.id)[0].n, 0, t);
+  assert.equal(q("SELECT COUNT(*) AS n FROM prices WHERE card_id = 'carte-9'")[0].n, 1);
+  e.DB.close();
+});
+
+await test('marché : GET /api/market/prices (cotes de mes cartes et des cartes voulues, par pages) et mesures de CPU', async () => {
+  const e = makeEnv();
+  const u = await marketAccount(e, 'Val');
+  const cards = mini(1500);
+  for (let p = 0; p * 500 < cards.length; p++) {
+    await call('POST', 'import', { key: u.key, e, body: { upload_id: 'v', part: p, last: (p + 1) * 500 >= cards.length, cards: cards.slice(p * 500, (p + 1) * 500) } });
+  }
+  const entries = (list) => list.map((c, i) => ({ id: c.id, v: i % 3 ? { C: cote(10 + i, 5, { w: 9 }), 'C*': cote(99, 1) } : {} }));
+  const runs = [];
+  for (let p = 0; p < 3; p++) runs.push(await profile('POST', 'market/prices', { key: u.importKey, e, body: { prices: entries(cards.slice(p * 500, (p + 1) * 500)), last: p === 2 } }));
+  await call('POST', 'market/live', { key: u.importKey, e, body: { ids: { 'Voulue 1': 'voulue-1', 'Voulue 2': 'voulue-2' } } });
+  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [{ id: 'voulue-1', v: { R: cote(70, 4) } }] } });
+  const all = [];
+  const pages = [];
+  let part = '0';
+  for (let guard = 0; guard < 10 && part !== null; guard++) {
+    const r = await profile('GET', `market/prices?part=${encodeURIComponent(part)}`, { key: u.key, e });
+    assert.equal(r.status, 200, r.text.slice(0, 200));
+    pages.push(r);
+    all.push(...r.json.prices);
+    part = r.json.next_part;
+  }
+  assert.equal(pages.length, 2);
+  assert.equal(all.length, 1501);
+  const w = all.find((x) => x.id === 'voulue-1');
+  assert.deepEqual(w, { id: 'voulue-1', v: { R: cote(70, 4) }, at: w.at, t: 'Voulue 1' });
+  assert.deepEqual(all.find((x) => x.id === cards[1].id).v, { C: cote(11, 5, { w: 9 }), 'C*': cote(99, 1) });
+  const plan = await profile('POST', 'market/plan', { key: u.importKey, e, body: {} });
+  const value = await profile('GET', 'market', { key: u.key, e });
+  assert.equal(value.json.value.cards, 1500);
+  const js = (list) => mean(list.map((x) => x.js));
+  console.log(`    marché : 500 cotes JS ${ms(js(runs))} | page de 1 000 cotes JS ${ms(pages[0].js)} | plan JS ${ms(plan.js)} | valeur JS ${ms(value.js)} (SQLite ${ms(value.sql)})`);
+  assert.ok(js(runs) < 10 && pages[0].js < 10 && plan.js < 10 && value.js < 10, 'trop de JavaScript');
+  e.DB.close();
 });
 
 await test('DELETE /api/me efface tout', async () => {

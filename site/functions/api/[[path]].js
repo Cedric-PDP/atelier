@@ -11,10 +11,13 @@ import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
 import { deleteTarget, listTargets, saveGameTarget, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
+import { deleteChat, listChat, postChat } from '../_lib/chat.js';
+import { getMarket, listPrices, marketPlan, postLive, postPrices } from '../_lib/market.js';
 
 // Seuls les points d'accès du favori (lancé depuis le jeu, sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
-const CORS_PATHS = new Set(['import', 'targets/from-game']);
+// Marché : le favori lit son plan et envoie les cotes et sa lecture du marché (market.js).
+const CORS_PATHS = new Set(['import', 'targets/from-game', 'market/plan', 'market/prices', 'market/live']);
 const CORS_HEADERS = {
   'access-control-allow-methods': 'POST, OPTIONS',
   'access-control-allow-headers': 'content-type, x-classeur-key',
@@ -43,12 +46,18 @@ const ROUTES = {
   members: { GET: [listMembers, 'main'] },
   'members/*/cards': { GET: [memberCards, 'main'] }, // members/<identifiant public>/cards
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
+  chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs ; jamais la clé d'import
+  'chat/*': { DELETE: [deleteChat, 'main'] }, // chat/<numéro du message> : par son auteur
+  market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
+  'market/prices': { GET: [listPrices, 'main'], POST: [postPrices, 'import'] }, // cotes : lues par la page, envoyées par le favori
+  'market/plan': { POST: [marketPlan, 'import'] }, // favori : cartes à coter, titres des cartes voulues
+  'market/live': { POST: [postLive, 'import'] }, // favori : bonnes affaires, enchères et ventes du joueur
 };
 // Chemins avec un paramètre → leur entrée dans ROUTES.
-const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets']];
+const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'market/plan': 1024, 'market/prices': 512 * 1024, 'market/live': 128 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 function health(env) {
@@ -76,7 +85,8 @@ async function handle(request, env, path) {
   if (path === 'health') return handler(env);
   await ensureSchema(env.DB);
   // La clé d'abord : un corps n'est lu que pour un compte connu (ou pour l'inscription).
-  const user = keyKind ? await authenticate(request, env, { importKey: keyKind === 'import' }) : null;
+  // GET /api/me lit aussi, dans la même requête, le numéro du dernier message du chat (badge des non-lus).
+  const user = keyKind ? await authenticate(request, env, { importKey: keyKind === 'import', chat: key === 'me' && request.method === 'GET' }) : null;
   const body = request.method === 'POST' || request.method === 'PATCH'
     ? await readJson(request, Object.hasOwn(BODY_LIMITS, path) ? BODY_LIMITS[path] : MAX_BODY)
     : {};

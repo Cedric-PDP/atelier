@@ -51,7 +51,13 @@ avec `node:sqlite`).
   cartes du classeur, comme un import) et **créer** des collections à compléter, dans les quotas (50 collections,
   600 Ko chacune, 5 Mo en tout, 3 000 éléments) ; on ne peut rien lire (ni cartes, ni étiquettes, ni collections), ni
   modifier ou supprimer une collection existante, ni toucher au compte. On la régénère (l'ancien favori cesse de
-  marcher) et on supprime les collections en trop.
+  marcher) et on supprime les collections en trop. **Marché** (2026-10-16, voir « Le marché ») : la clé d'import ouvre
+  aussi `POST /api/market/plan`, `POST /api/market/prices` et `POST /api/market/live`. C'est **sa seule lecture** : le
+  plan, soit des identifiants de cartes du jeu (les tiennes à coter) et les titres des cartes qui manquent à tes
+  collections (500 au plus, avec leur card_id quand le favori l'a trouvé) ; jamais les étiquettes, les noms des
+  collections ni le reste du classeur. Une clé d'import qui fuit permet donc en plus de lire ces titres, d'envoyer de
+  fausses cotes (cache commun à tous les classeurs, dans les quotas) et de remplacer la lecture du marché de ce
+  classeur (ses bonnes affaires et enchères affichées).
 - **Lien d'un autre classeur** : l'interface n'écrase jamais une clé gardée sans vérifier la nouvelle (`GET /api/me`)
   et demander confirmation.
 
@@ -78,9 +84,21 @@ route sauf `/api/health` répond `503 {error:"Le classeur n'est pas encore confi
   "shiny": false,                // au moins un exemplaire is_shiny
   "starred": false,              // au moins un exemplaire starred
   "obtained_at": "2026-10-14T16:24:39.011Z",  // plus ancien obtained_at des exemplaires
+  "variants": {"L": 1},          // facultatif : exemplaires par rareté d'exemplaire et brillance (voir ci-dessous)
   "tags": ["Musique", "à échanger"]           // étiquettes de l'utilisateur dans le classeur (jamais celles du jeu)
 }
 ```
+
+`variants` (2026-10-16, pour coter chaque exemplaire, voir « Le marché ») : `{"<rareté>[*]": nombre}`, « * » =
+brillant, clés dans l'ordre binaire, somme = `count`. Rareté d'un exemplaire = son `snapshot_rarity` (rareté quand il a
+été obtenu, celle des ventes du marché) s'il est dans l'entrée du jeu, sinon `card.rarity` (format de `my-collection`
+**pas vérifié** : si le jeu n'y met pas `snapshot_rarity`, toutes les raretés d'exemplaire sont celle de la carte).
+Envoyé par le favori dans chaque CarteImport et calculé par le rafraîchissement par cookie ; additionné en SQL à
+l'import complet (gardé seulement s'il compte tous les exemplaires de la carte) et en synchro rapide (si l'ancienne carte
+et les nouveautés l'ont ; sinon retiré jusqu'à la relecture complète suivante) ; forme invalide (rareté inconnue, somme
+fausse) : seulement oublié. Absent (carte importée avant, favori plus ancien) : la cote de la carte est approchée (tous
+ses exemplaires dans `rarity`, un seul brillant si `shiny`). `rarity`, `shiny` et la synchro rapide (compteurs
+`rarityCounts` comparés à `rarity`) ne changent pas. Jamais montré aux autres membres.
 
 **Entrée brute du jeu** (réponse `GET https://www.wiki-masters.com/api/my-collection?sort=rarity&page=N&stats=0`,
 50 par page, champ `collection`) : `{id, card:{id, atk, def, lang, rarity, q_score, category, image_url, pageviews,
@@ -107,9 +125,9 @@ autre format (voir « Le favori »).
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, session:{has_cookie, expired, updated_at}}` (`cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, last_chat_id, session:{has_cookie, expired, updated_at}}` (`last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
 | `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
-| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte |
+| `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte ; ses messages du chat sont vidés et perdent leur auteur (voir « Chat ») |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
 | `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{rev, fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page ; `rev` : révision lue avant les cartes, garder celle de la page `0`) ; sans `part` : `{rev, fetched_at, cards, new_ids}`, tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
@@ -128,6 +146,18 @@ autre format (voir « Le favori »).
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url}], part, next_part}` : pages de 1 000 cartes, sans étiquettes |
 | `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
+| `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
+| `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
+| `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
+| `POST /api/market/plan` | (clé principale **ou clé d'import**, CORS du jeu ; corps ignoré, 1 Ko au plus) | `{cards:[card_id…], stale, fresh, wanted:[titre…], ids:{titre: card_id \| ""}, quota}` : cartes à coter (les tiennes, puis les cartes voulues dont le card_id est connu ; cote absente puis la plus ancienne d'abord, plus de 12 h ; 3 000 au plus), `stale`/`fresh` = à coter / cotées depuis moins de 12 h, `wanted` = titres des cartes qui manquent à tes collections (500 au plus), `ids` = ce que ton favori en a trouvé, `quota` = cotes encore acceptées aujourd'hui. Voir « Le marché » |
+| `POST /api/market/prices` | (clé principale **ou clé d'import**, CORS du jeu ; 512 Ko au plus) `{prices:[{id, v:{"<rareté>[*]": {p, n, w, l, d}}}], last?}` : 500 au plus, tout l'envoi refusé (`400`) sur une forme invalide | `{written, quota}` ; `429 {error, quota}` au-delà du quota du jour (rien d'écrit) ; `last:true` : la valeur du jour de ce classeur est recalculée |
+| `POST /api/market/live` | (clé principale **ou clé d'import**, CORS du jeu ; 128 Ko au plus) `{ids?, deals?, bids?, sales?}` | `{ok:true, known}` : remplace la lecture du marché de ce classeur (64 Ko au plus, gardée 24 h) et ajoute les titres trouvés à `ids` (2 000 au plus) |
+| `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 24 h |
+| `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
+
+**Message** (chat) : `{id, author, mine, text, created_at}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
+**actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
+du compte.
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?}], source, created_at,
 updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
@@ -250,8 +280,8 @@ en général qu'environ une heure après le collage. Le favori est donc le chemi
 `Set-Cookie` dans une réponse du jeu met à jour le cookie stocké. 401/403 du jeu (hors limite de lectures
 automatiques) → session marquée expirée, `401 {needs_session:true}`.
 
-**CORS** : seuls `POST /api/import` et `POST /api/targets/from-game` (et leur `OPTIONS`), les deux routes du favori,
-acceptent les origines `https://www.wiki-masters.com` et `https://wiki-masters.com`
+**CORS** : seuls `POST /api/import`, `POST /api/targets/from-game` et `POST /api/market/plan`, `/prices`, `/live` (et
+leur `OPTIONS`), les routes du favori, acceptent les origines `https://www.wiki-masters.com` et `https://wiki-masters.com`
 (`Access-Control-Allow-Headers: content-type, x-classeur-key`). Le reste est même origine.
 
 **Limites et quotas** (D1 gratuit : 500 Mo, 100 000 lignes écrites par jour, partagés par tous) : `MAX_USERS` comptes
@@ -262,7 +292,8 @@ compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par e
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
 longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`, et comptées comme cartes
 distinctes (quand elles ont un identifiant de carte) pour dire si une lecture est complète. Quota ou base pleine :
-`503` avec un message lisible.
+`503` avec un message lisible. Marché : 3 000 cotes par classeur et par jour, 30 000 pour tout le site (`429`), voir
+« Le marché ».
 
 ## Partage entre membres
 
@@ -355,6 +386,95 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
 - **Règles du jeu** : le classeur ne fait que montrer qui a quoi. Les échanges se font dans le jeu, par les joueurs ;
   rien n'est automatisé vers le jeu.
 
+## Chat
+
+Un seul salon pour **tous les classeurs du site** (onglet « Chat », demande de l'utilisateur du 2026-10-16 : « où tout le
+monde peut parler »), lisible par tous les membres, qu'ils partagent leurs cartes ou non ; l'onglet le dit (« Visible par
+tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `chat_messages`.
+
+- **Messages** : texte brut, 500 caractères au plus (unités UTF-16, comme le `maxlength` du champ), retours à la ligne
+  gardés ; le serveur unifie les fins de ligne, change les tabulations en espaces, retire les caractères de contrôle et
+  les forçages de sens d'écriture (U+202A–202E, U+2066–2069), les espaces de fin de ligne et les bords, et réduit trois
+  lignes vides ou plus à une. **Jamais de HTML** : le texte passe tel quel à Vue (échappé) ; seuls les liens
+  `http(s)://` deviennent des liens (`target=_blank`, `rel="noopener noreferrer nofollow ugc"`, ponctuation finale hors
+  du lien sauf une parenthèse qui en ferme une du lien : `…/Mercure_(planète)`). Un message qui contient un lien
+  personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
+  que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
+  à chaque lecture (jointure sur `users`) : un renommage vaut pour les anciens messages ; jamais l'id interne du compte
+  (seulement `mine`).
+- **Suppression** : par son auteur seulement (`403` sinon), après confirmation dans la page. Le texte est vidé aussitôt et
+  la ligne reste comme **marque** (`deleted = 1`, nouvelle révision) pour que les pages ouvertes retirent le message à leur
+  relecture suivante. Pas de modération par l'administrateur dans la page (console D1, ci-dessous).
+- **DELETE /api/me** : les messages du compte sont **effacés**, pas anonymisés : texte vidé, auteur oublié (`user_id =
+  ''`), nouvelle révision ; ils disparaissent aussi des pages ouvertes. Il ne reste qu'une ligne vide (numéro, date),
+  purgée avec les plus anciennes. Choix : « Supprimer mon classeur » efface tout ; la conversation perd ces messages.
+- **Clé** : principale seulement ; la clé d'import du favori n'y a pas accès (`401`) ; même origine (pas de CORS).
+- **Limites** (`429 {error, retry_after}`, en secondes) : 10 messages par minute et 300 par 24 h glissantes par classeur
+  (les messages supprimés comptent), 1 000 par 24 h pour tout le salon (garde le quota d'écritures de D1, voir « Coût »).
+  Contrôlées dans l'`INSERT` même : deux envois simultanés ne passent pas tous deux au-delà.
+- **Conservation** : les **2 000** derniers messages (marques comprises). Chaque envoi purge dans le même lot ceux d'au-delà
+  (`DELETE … WHERE id <= MAX(id) - 2000`, par la clé primaire : le plus ancien). Les numéros ne sont jamais réutilisés (le
+  plus récent n'est jamais effacé).
+- **Révisions** : `chat_messages.rev`, unique (index `chat_by_rev`) et croissante, donnée à la création puis à la
+  suppression (`MAX(rev) + 1` ; `MAX(rev) + id` pour tous les messages d'un compte supprimé, uniques aussi) ;
+  `GET /api/chat?after=<rev>` rend les lignes de révision plus grande : les nouveaux messages et les numéros supprimés.
+  Curseur et messages sont lus dans le même lot (transaction) : un changement fait entre les deux revient à la lecture
+  suivante.
+- **Coût D1** (gratuit : 5 M de lignes lues et 100 000 écrites par jour pour toute l'instance ; plans vérifiés par
+  `dev/api.test.mjs`) :
+  - relecture d'un chat ouvert sans nouveauté : le compte (1 ligne, index de sa clé), `MAX(rev)` et `MAX(id)` (1 ligne
+    chacun : optimisation min/max de SQLite), les changements par l'index `chat_by_rev` (aucune ligne) ≈ **3 lignes
+    lues** ; avec k changements, 2k de plus (le message et son auteur, par la clé primaire de `users`) ;
+  - `GET /api/me` (toutes les 60 s, page visible) : une ligne de plus (`MAX(id)` dans la même requête que le compte) ;
+  - première lecture : au plus 101 messages et leurs auteurs (≈ 200 lignes, plus les marques de suppression traversées),
+    une fois par visite, à l'ouverture de l'onglet ou quand `last_chat_id` dépasse le dernier lu ;
+  - envoi : limites lues par l'index `chat_by_user` (10 et 300 lignes au plus), limite du salon et `MAX` (1 ligne
+    chacune) ; écrit le message et ses deux index (3 lignes), et la purge du plus ancien (3 lignes) une fois les 2 000
+    atteints ;
+  - ordre de grandeur : 6 personnes, chat ouvert 1 h par jour chacune → 1 800 relectures ≈ 5 400 lignes lues ; 200
+    messages par jour ≈ 1 200 lignes écrites (≈ 1 % du quota) ; au pire (limite du salon) 1 000 messages ≈ 6 000 lignes
+    écrites (6 %). Requêtes : 300 par heure de chat ouvert et par personne (Workers gratuit : 100 000 par jour) ;
+  - JavaScript : moins de 1 ms par requête (100 messages de 500 caractères : 0,2 ms, `dev/api.test.mjs`).
+- **Interface** (onglet « Chat ») :
+  - fil (`role="log"`) puis champ de saisie ; à l'ouverture, la page défile pour que le bas du chat soit visible. Bulles :
+    les tiennes à droite, en émeraude, avec « (toi) » et « Supprimer » ; nom, heure (« 14:32 », « hier, 14:32 », « 15 oct.,
+    14:32 ») et date complète en info-bulle ;
+  - **Entrée** envoie, **Maj+Entrée** va à la ligne (pas pendant une saisie IME) ; le brouillon reste si l'envoi échoue
+    (message du serveur affiché, `429` compris) ; il est vidé à l'envoi réussi, sauf s'il a été modifié entre-temps ;
+  - relecture `?after=` toutes les **12 s** tant que l'onglet est ouvert et la page visible (30 s après 5 min sans nouveau
+    message ni geste dans le chat), tout de suite au retour sur la page ; rien quand l'onglet est fermé ou la page cachée.
+    Plus de 100 changements ou révision inconnue : relecture des plus récents ;
+  - ailleurs, **badge des non-lus** sur l'onglet (« 3 », « 99+ » au-delà ; texte « 3 messages non lus » pour les lecteurs
+    d'écran) : `last_chat_id` de `GET /api/me` (déjà relu toutes les 60 s) ; la page ne lit le chat que s'il a changé
+    (chat déjà chargé) ou s'il dépasse le dernier lu. Non lus = messages des **autres** au-delà du dernier lu, parmi ceux
+    que la page a lus ; tes propres messages (d'un autre appareil) ne comptent pas ;
+  - dernier message lu : `localStorage` `classeur-chat-lu` = `{<id du compte>: numéro}` (accès protégés ; refusé : en
+    mémoire seulement ; oublié par « Oublier ce navigateur ») ; il avance quand le chat est sous les yeux ou quand rien de
+    nouveau ne vient des autres ; base recréée (`last_chat_id` plus petit) : ramené à `last_chat_id` ;
+  - défilement : en bas à l'ouverture, après ton envoi, ou à l'arrivée de messages si tu y étais déjà ; remonté dans le
+    fil, il ne bouge pas et « Nouveaux messages ↓ » y ramène. « Charger les messages plus anciens » : 100 de plus, position
+    de lecture gardée ;
+  - téléphone (390 px) : bulles à 90 % de la largeur, raccourcis clavier masqués, champ en 16 px (pas de zoom sur iPhone).
+  - Courses : changement de classeur pendant une lecture ou un envoi : la réponse est écartée (`chatGen`), messages,
+    brouillon et dernier lu sont ceux du nouveau classeur.
+- **Modération par l'administrateur** (console D1 : `npx wrangler d1 execute <base> --remote --command "…"`) :
+
+  ```sql
+  -- les 50 derniers messages, avec leur auteur
+  SELECT m.id, u.name, m.created_at, m.text FROM chat_messages AS m LEFT JOIN users AS u ON u.id = m.user_id
+    WHERE m.deleted = 0 ORDER BY m.id DESC LIMIT 50;
+  -- supprimer le message 42 (il disparaît aussi des pages ouvertes)
+  UPDATE chat_messages SET text = '', deleted = 1, rev = (SELECT MAX(rev) FROM chat_messages) + 1
+    WHERE id = 42 AND deleted = 0;
+  -- supprimer tous les messages d'un classeur, par son prénom
+  UPDATE chat_messages SET text = '', deleted = 1, rev = (SELECT MAX(rev) FROM chat_messages) + id
+    WHERE deleted = 0 AND user_id IN (SELECT id FROM users WHERE name = 'Paul');
+  -- vider tout le salon (les pages ouvertes repartent de zéro)
+  DELETE FROM chat_messages;
+  ```
+
+  Pas de `DELETE` d'un seul message : une page ouverte ne le verrait pas partir (seule une nouvelle révision le lui dit).
+
 ## Onglet « Collections » (interface)
 
 Deux zones, dans cet ordre :
@@ -421,6 +541,23 @@ Deux zones, dans cet ordre :
      « Mes collections »). Tu en as déjà une (source `wp:<nom>`) : **« Ouvrir ta collection »** à la place.
      « Créer une collection » de sa proposition en cours : le bouton attend (« Un instant… »), puis l'album passe à la
      collection créée ; jamais deux collections de même source (voir aussi `targets/save`).
+   - **Album d'une page** (suggestion « Pages de liste », adresse collée), badge « page de Wikipédia » : les articles
+     qu'elle lie (`generator=links&gplnamespace=0&gpllimit=max&redirects=1&prop=pageprops`, liens rouges, pages
+     d'homonymie et la page elle-même écartés, 5 000 liens lus au plus), avec leur nature (P31) et leur description
+     Wikidata (SPARQL par 200), comme les pages « Liste de… » de « Nouvelle collection » (même lecture, `pageLinks`).
+     **Nature dominante** : la nature la plus fréquente, si elle concerne au moins 3 liens et 20 % d'entre eux sans
+     les concerner tous ; un article en est s'il a cette nature, une de ses **sous-classes** (une requête SPARQL
+     `?c wdt:P279+ wd:<nature>` sur les natures vues : « couleur primaire » pour « couleur ») ou, sinon, une
+     **description** Wikidata qui la nomme dans ses quatre premiers mots (« nom de couleur »). Case « ne garder que les
+     « <nature> » (N sur M articles liés ; décochée : tous les liens) », cochée d'emblée (les liens déjà lus : sans
+     requête) ; sans nature dominante, la page le dit et garde tous les liens. Mesuré le 2026-10-16 : « Liste de noms de
+     couleur » lie 247 articles, 181 gardés (103 par la nature « couleur » seule, 134 avec ses sous-classes) ;
+     « Liste de races bovines » : 355 sur 589 (330 par la nature seule). Progression, rareté estimée, de A à Z sans
+     numéros, « Voir sur Wikipédia » (la page) ; **« Créer une collection »** = `POST /api/targets/save {name, items,
+     source:'links:<titre>'}` (nom : le titre sans « Liste de / des / d' », première lettre en majuscule, 80 caractères
+     au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
+     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source) : **« Ouvrir ta
+     collection »**.
    - **« Proposées d'après tes cartes »** (`propose.js`) : catégories de tes cartes dont tu as au moins 5 % et 2 cartes,
      ni déjà en collection (source `wp:<nom>`) ni retirées, **sans les sous-catégories** d'un thème déjà là (règles
      appliquées à l'affichage, sans requête, `ClasseurPropose.prune`) :
@@ -515,25 +652,10 @@ requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un reje
 - Encart : messages comme avant, puis réduit en badge 15 s après une synchro réussie lancée d'un clic : « Classeur relié
   · dernière synchro à 14:32 » (ou « synchro dans un instant (paquet ouvert) », « synchro à 14:35 (paquet ouvert ; une
   par minute au plus) », « relecture complète à 14:50 (…) », « synchro en cours… »). Boutons « Synchroniser » (tout de
-  suite, hors limites des synchros automatiques), « Réduire » / « Détails », « Arrêter » (rend `window.fetch` d'origine ;
+  suite, hors limites des synchros automatiques), « Mettre à jour les cotes » (voir « Le marché » ; avec, encart déplié,
+  un avertissement court des règles du jeu ; badge « lecture des cotes… » pendant la lecture), « Réduire » / « Détails »,
+  « Arrêter » (rend `window.fetch` d'origine ;
   si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
-   - **Album d'une page** (suggestion « Pages de liste », adresse collée), badge « page de Wikipédia » : les articles
-     qu'elle lie (`generator=links&gplnamespace=0&gpllimit=max&redirects=1&prop=pageprops`, liens rouges, pages
-     d'homonymie et la page elle-même écartés, 5 000 liens lus au plus), avec leur nature (P31) et leur description
-     Wikidata (SPARQL par 200), comme les pages « Liste de… » de « Nouvelle collection » (même lecture, `pageLinks`).
-     **Nature dominante** : la nature la plus fréquente, si elle concerne au moins 3 liens et 20 % d'entre eux sans
-     les concerner tous ; un article en est s'il a cette nature, une de ses **sous-classes** (une requête SPARQL
-     `?c wdt:P279+ wd:<nature>` sur les natures vues : « couleur primaire » pour « couleur ») ou, sinon, une
-     **description** Wikidata qui la nomme dans ses quatre premiers mots (« nom de couleur »). Case « ne garder que les
-     « <nature> » (N sur M articles liés ; décochée : tous les liens) », cochée d'emblée (les liens déjà lus : sans
-     requête) ; sans nature dominante, la page le dit et garde tous les liens. Mesuré le 2026-10-16 : « Liste de noms de
-     couleur » lie 247 articles, 181 gardés (103 par la nature « couleur » seule, 134 avec ses sous-classes) ;
-     « Liste de races bovines » : 355 sur 589 (330 par la nature seule). Progression, rareté estimée, de A à Z sans
-     numéros, « Voir sur Wikipédia » (la page) ; **« Créer une collection »** = `POST /api/targets/save {name, items,
-     source:'links:<titre>'}` (nom : le titre sans « Liste de / des / d' », première lettre en majuscule, 80 caractères
-     au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
-     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source) : **« Ouvrir ta
-     collection »**.
   main ; encart retiré ; **la synchro en cours s'arrête aussi** : la requête déjà partie finit seule, puis plus rien n'est
   lu ni envoyé — contrôle avant chaque lecture et chaque envoi, donc entre deux pages ou deux morceaux). L'encart est
   remis dans la page si le jeu l'en retire en se redessinant.
@@ -609,6 +731,117 @@ seulement écartée (« 1 carte écartée (rareté inconnue du classeur) »). En
 category, image}` (image `null` si `hide_image`), rien d'autre. Ailleurs dans le jeu, la synchro part aussitôt, comme
 avant.
 
+## Le marché (cotes, valeur, bonnes affaires)
+
+Demande du 2026-10-16, d'après la description de l'outil d'un ami (Python, Vercel), reprise avec d'autres choix :
+**aucune session du jeu sur le serveur** (ni jeton d'accès ni jeton de renouvellement gardés, aucun appel du serveur au
+jeu ni à sa base, aucune tâche planifiée). Code : `site/public/assets/bookmarklet.js` (« cotes et marché »),
+`functions/_lib/market.js`, onglet « Marché » de `app.js`.
+
+**Qui lit quoi.** Seul le favori lit le marché, dans la page du jeu, **au clic du joueur sur « Mettre à jour les
+cotes »** (encart du favori relié, script Tampermonkey compris) ; jamais pendant une synchro, automatique ou non, ni au
+chargement. Il lit directement la base du jeu (Supabase, `https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/`, tables
+`auctions`, `cards`, `auction_bids`, que la page du jeu lit déjà) avec la clé publique `anon` du jeu (livrée dans le code
+de sa page ; embarquée dans le favori : seule, elle n'ouvre rien) et la session que la page a déjà (`apikey` et
+`Authorization: Bearer <jeton d'accès>`). **Jamais** les routes `/api/marketplace/…` du site du jeu (30 requêtes par
+minute puis `403 automation_limit` pour les ventes d'une carte ; ~3 s et limitée pour une enchère).
+
+- **Jeton** : relu dans la page avant chaque requête (la page renouvelle elle-même sa session : le favori prend le
+  nouveau jeton), dans le cookie `sb-cyrxjeppjqsxxjayfrur-auth-token` (`base64-` puis du JSON en base64url, ou JSON
+  encodé pour l'adresse ; découpé en `.0`, `.1`… s'il est long), sinon dans le `localStorage` du même nom :
+  `access_token`, `expires_at`, `user.id` (sinon `exp` et `sub` du jeton). **Pas vérifié sur le jeu** (format relevé dans
+  la description de l'ami) : si le cookie n'est pas lisible en JavaScript (`HttpOnly`) ni le `localStorage`, le favori dit
+  « Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, recharge la page, puis réessaie. Rien n'a
+  été lu. ». Jeton expiré (ou à moins de 30 s), ou refusé (`401`) en route : « Ta session du jeu a expiré dans cette
+  page : recharge la page du jeu, puis clique à nouveau « Mettre à jour les cotes » (le favori ne la renouvelle jamais
+  lui-même). » ; **jamais de renouvellement** (`POST /auth/v1/token`) : un jeton de renouvellement ne sert qu'une fois,
+  le réutiliser fermerait la session du joueur. Le jeton ne va qu'à la base du jeu, en en-tête : ni au classeur, ni dans
+  l'encart, ni dans un stockage. L'identifiant du joueur dans le jeu ne sert qu'aux filtres de ses enchères et ventes
+  (`bidder_id`, `seller_id`, et pour écarter ses propres enchères des bonnes affaires) : jamais envoyé au classeur.
+- **Rythme** : une requête par seconde au plus, **30 par clic** ; le clic suivant reprend aux cotes les plus anciennes.
+  Arrêt aussitôt, avec la raison, sur `401` (ou clé publique refusée : « le favori doit être mis à jour »), `403`, `429`
+  ou `automation_limit` (« Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard. ») et sur toute
+  autre erreur ; les cotes déjà lues sont envoyées quand même, pas la lecture du marché (incomplète).
+- **Un clic** : 1. `POST /api/market/plan` (classeur injoignable : rien n'est lu dans le jeu ; quota du jour atteint :
+  rien n'est lu) ; 2. tes mises (`auction_bids?bidder_id=eq.<toi>`, 14 derniers jours, avec l'enchère et sa carte) et tes
+  ventes (`auctions?seller_id=eq.<toi>`, fin dans les 14 derniers jours ou à venir) ; 3. titres des cartes qui te
+  manquent → cartes du jeu (`cards?wikipedia_title=in.("…","…")`, 80 titres par requête, 320 par clic ; carte `lang`
+  `fr` préférée ; gardés par le classeur, `""` quand aucune carte n'a ce titre) ; 4. enchères en cours sur ces cartes
+  (`auctions?status=eq.active&end_at=gt.<maintenant>&card_id=in.(…)&order=end_at`, 100 cartes par requête, 500 cartes au
+  plus) ; 5. cotes des cartes de ces enchères et de tes enchères et ventes (toujours relues), puis des cartes du plan
+  (les plus anciennes d'abord), par lots de 100 : `auctions?status=eq.settled_sold&settled_at=gte.<il y a 90 jours>&
+  card_id=in.(…)&order=card_id,settled_at.desc,id&limit=1000&offset=…` (pages de 1 000 dans un ordre stable ; plafond
+  atteint au milieu d'un lot : seules les cartes lues en entier sont gardées), dans la limite du quota du jour ; 6.
+  `POST /api/market/prices` par 500 (`last:true` au dernier), puis `POST /api/market/live`. Message : « Cotes lues : 312
+  cartes (il en reste 736 : reclique plus tard, les plus anciennes d'abord). 4 bonnes affaires, 2 de tes enchères en
+  cours : onglet « Marché » du classeur. » et le lien vers le classeur.
+- **Cote**, calculée dans le favori, par carte, **rareté d'exemplaire** (`snapshot_rarity`) et brillance (`is_shiny`) :
+  clé `R` ou `R*`, `{p, n, w, l, d}` = médiane des 30 ventes les plus récentes (90 derniers jours), ventes lues, la même
+  médiane sur les ventes de plus de 7 jours (3 au moins, sinon `null`), prix et date de la dernière vente. **Fiable à
+  partir de 3 ventes** (`n ≥ 3`) ; en dessous, montrée avec « ~ » et jamais comptée. Carte sans vente lue : `{}`, datée
+  quand même (pas relue tout de suite). La fenêtre de 90 jours borne le nombre de pages : une carte vendue plus rarement
+  n'a pas de cote.
+- **Bonnes affaires** (dans le favori, avec les cotes **qu'il vient de lire**, jamais celles du cache commun) : enchère en
+  cours sur une carte qui te manque, d'un autre vendeur, avec une cote fiable de la rareté de l'exemplaire, demandée
+  (enchère actuelle, sinon prix de départ) à 80 % de la cote au plus, ou « finit bientôt » (sans enchère, moins de 2 h,
+  départ ≤ cote) ; de la fin la plus proche à la plus lointaine, 50 au plus. **Tes enchères** : regroupées par enchère
+  (ta plus haute mise) : `run` (en cours ; `lead` : tu mènes), `won` / `lost` (vendue à toi, à un autre), `off`.
+  **Tes ventes** : `run`, `sold`, `unsold` (close sans vente), `off` (annulée). Chacune avec la cote de la rareté de son
+  exemplaire (lue au même clic).
+
+**Où vont les données (le plus simple).** Les cotes vont au **cache commun** `prices` (une ligne par carte, **sans
+user_id** : des ventes du marché, liées à aucun joueur, qui servent à tous les membres). La lecture du marché (bonnes
+affaires, tes enchères, tes ventes) va aussi au serveur, **une ligne par classeur** (`market.live`), remplacée à chaque
+clic et **oubliée au bout de 24 h** (plus montrée, puis effacée au passage d'un favori) : c'est la plus simple des deux
+voies pour avoir un onglet « Marché » complet (fiches, collections concernées, « Copier le nom » : l'encart du favori,
+étroit et dans la page du jeu, n'en montre qu'un résumé), pour une ligne écrite par clic et rien de gardé au-delà ; les
+titres trouvés (`market.ids`, 2 000 au plus) évitent de les rechercher à chaque clic.
+
+**Serveur** (`market.js`, routes dans « Points d'accès ») :
+- **Plan** : cartes possédées et cartes voulues dont le card_id est connu, cote absente puis la plus ancienne d'abord,
+  sans celles lues depuis moins de 12 h ; cartes voulues = titres des éléments vérifiés des collections absents des
+  titres des cartes (en SQL ; le serveur n'a pas les qids : une carte possédée sous un autre titre peut y figurer), des
+  collections changées le plus récemment d'abord, 500 au plus.
+- **Cotes validées** (`400`, rien d'écrit) : identifiant `[A-Za-z0-9_-]` (100 au plus), clés `C|PC|R|SR|UR|L` + `*`
+  (12 au plus), montants de 0 à 10⁹, ventes entières de 1 à 10⁶, date ISO pas dans le futur, une carte une fois par
+  envoi, 500 par envoi ; arrondies au centime ; remplacées en entier (`read_at` = maintenant).
+- **Quotas du jour** (UTC) : 3 000 cotes par classeur, 30 000 pour tout le site (ligne `market` de user_id `'*'`) : une
+  cote = une ligne écrite (pas d'index sur `prices`), D1 gratuit = 100 000 par jour pour tout ; au-delà `429`, à quelques
+  envois simultanés près.
+- **Valeur** (`value_history`, un point par classeur et par jour UTC, le dernier calcul du jour remplaçant les
+  précédents, 400 jours) : somme, sur les exemplaires (`variants` ; sinon approchés), de la cote fiable de leur rareté et
+  brillance × leur nombre ; `priced` = cartes avec au moins un exemplaire coté, `cards` = cartes, `approx` = cartes sans
+  détail de leurs exemplaires. Calculée en SQL dans D1 (aucun JavaScript proportionnel aux cartes) et écrite : à la fin
+  d'un envoi de cotes de ce classeur (`last:true`) ; après un import ou une synchro rapide (au plus une fois par heure, et
+  seulement si des cotes existent) ; à `GET /api/market` si elle a changé (cotes relues par un autre membre). Aucun point
+  tant qu'aucune carte n'est cotée.
+- `DELETE /api/me` efface la ligne `market` et l'historique du classeur ; les cotes, communes, restent.
+
+**Fausses cotes.** Un membre (ou quiconque a sa clé d'import) peut envoyer des cotes fausses pour n'importe quelle carte,
+dans ses quotas : cela fausse chez tous la valeur des classeurs, les cotes des fiches et les « Cartes qui bougent ». Cela
+ne touche ni les cartes ni les collections de personne, ni les **bonnes affaires** et les écarts de tes enchères, calculés
+par ton favori avec ses propres lectures (une cote fausse dans le cache n'y entre pas, et les cartes de ces enchères sont
+relues et réécrites à chaque clic). Une cote fausse dure jusqu'à ce qu'un membre la relise (plus de 12 h après) ;
+renvoyée sans cesse, elle reste. Contrôle simple fait : bornes, raretés connues, taille, quotas. Pas fait (pas rentable
+entre membres invités, et il faudrait garder qui a écrit, contraire à « pas de user_id ») : exiger que deux membres
+concordent, garder l'auteur pour effacer ses cotes. Remède : régénérer la clé d'import qui a fuité.
+
+**Interface** : bandeau, tuile « 12 340 W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »** :
+valeur (« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la valeur dès deux jours (SVG dans la page,
+une ligne aux couleurs du thème, sombre ou clair ; survol : le jour le plus proche ; « Voir les valeurs » : le tableau),
+« Bonnes affaires », « Cartes qui bougent » (écart en W sur 7 jours de tes exemplaires, cote fiable maintenant et il y a
+7 jours : 12 hausses, 12 baisses), « Mes enchères » (tes mises, tes ventes), « À savoir » (avertissement des règles du
+jeu). Fiche d'une carte possédée : cote de chacun de tes exemplaires (« 2 × Rare 400 W · 10 ventes · dernière 399 W le
+15 octobre · 7 jours : +33 % », « ~ » sous 3 ventes), total ; fiche d'une carte qui manque : ses cotes connues par
+rareté. Relu à l'ouverture, après chaque changement des cartes, à l'ouverture de l'onglet et au retour sur la page (une
+fois par minute au plus, 20 s pour l'onglet). Rien n'est lu dans le jeu depuis cette page (CSP, et pas de session).
+
+**Limites** : formats de la base du jeu relevés dans la description de l'ami, **pas vérifiés** (noms des tables et des
+colonnes, statuts `active`/`settled_sold`/`cancelled`/`settled_*`, liens `auction:auctions(…)` et `card:cards(…)`) ; un
+favori installé avant le 2026-10-16 n'a ni le bouton ni `variants` (le glisser à nouveau) ; le favori fait ~60 000
+caractères une fois en adresse `javascript:` (Firefox refuse un favori au-delà de 65 536) ; la première relecture
+complète après la mise en place réécrit toutes les cartes une fois (`variants` ajouté).
+
 ## Règles du jeu
 
 Les règles de WikiMasters interdisent les outils qui jouent ou **interagissent à la place du joueur**. Le classeur ne
@@ -643,3 +876,19 @@ lectures automatiques du jeu (`automation_limit`, 429) met le mode relié en pau
 reliés ont chacun leurs limites de synchros rapides ; seules les relectures complètes sont bornées entre eux, par
 `full_at` (quand la dernière a été vérifiée complète : sinon `full_at` est vide). (3) Le script Tampermonkey se relie à chaque page du jeu sans clic :
 il ne lit rien avant une action, mais il n'y a plus de geste explicite pour le démarrer.
+
+**Ce qui change avec « Mettre à jour les cotes »** (2026-10-16, voir « Le marché ») : le favori lit maintenant aussi,
+au clic du joueur seulement, la base du jeu directement (Supabase : tables `auctions`, `cards`, `auction_bids`), avec la
+session que la page du jeu a déjà, à son rythme : une requête par seconde au plus, 30 par clic, arrêt sur `401`, `403`,
+`429` ou `automation_limit`. Rien d'automatique, jamais d'écriture, jamais de session gardée ni renouvelée ailleurs que
+par la page du jeu. **À dire franchement** : l'ami dont l'outil a inspiré cette partie lit la base directement pour
+contourner la limite de 30 requêtes par minute de la route des ventes du jeu (`/api/marketplace/cards/<id>/sales`),
+une mesure anti-automatisation du jeu ; passer par la base au lieu de ses pages, c'est faire ce que cette limite vise à
+empêcher, donc un **risque plus élevé** que la synchro de la collection (qui reprend les requêtes de la page
+« Collection »), même si le jeu laisse ces tables lisibles par la session du joueur. On reste bien en dessous de ce que
+l'ami fait et de ce que la limite visait : 30 requêtes par clic au plus, seulement quand le joueur le demande, chacune
+pour 100 cartes (la route des ventes, elle, sert une carte par requête). Pendant un clic, le rythme d'une requête par
+seconde dépasse celui de la route (60 par minute contre 30) pendant une trentaine de secondes ; en moyenne, un clic de
+temps en temps reste très en dessous. Le jeu peut voir ces lectures (clé publique, jeton du joueur, en-têtes du
+navigateur) et les juger contraires à ses règles. Un avertissement court l'accompagne là où est le bouton (encart du
+favori) et dans l'onglet « Marché » (« À savoir »).

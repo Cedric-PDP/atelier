@@ -179,7 +179,9 @@
   // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu. Un exemplaire vu
   // deux fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part (ignored), et
   // parmi elles les cartes distinctes que le jeu compte dans totalUnique (unknown). rows / copies : exemplaires lus et
-  // leur nombre total, invalides compris (contrôlés par le classeur avec les compteurs du jeu).
+  // leur nombre total, invalides compris (contrôlés par le classeur avec les compteurs du jeu). variants : exemplaires
+  // par rareté d'exemplaire (snapshot_rarity s'il est là, celle des ventes du marché ; sinon celle de la carte) et
+  // brillance (« R* »), pour coter chacun.
   var group = function (entries) {
     var byId = {};
     var seen = {};
@@ -208,12 +210,14 @@
       id = String(id);
       var card = byId[id];
       if (!card) {
-        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null };
+        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null, variants: {} };
         byId[id] = card;
         list.push(card);
       } else if (RANKS.indexOf(c.rarity) > RANKS.indexOf(card.rarity)) {
         card.rarity = c.rarity;
       }
+      var copy = (RANKS.indexOf(e.snapshot_rarity) >= 0 ? e.snapshot_rarity : c.rarity) + (e.is_shiny ? "*" : "");
+      card.variants[copy] = (card.variants[copy] || 0) + n;
       card.count += n;
       card.shiny = card.shiny || !!e.is_shiny;
       card.starred = card.starred || !!e.starred;
@@ -557,6 +561,399 @@
     }
     say(message, true);
   };
+  // ---------------------------------------------------------------- cotes et marché (« Mettre à jour les cotes »)
+  // À ton clic seulement : lecture directe de la base du jeu (Supabase : tables auctions, cards et auction_bids, celles
+  // que la page du jeu lit déjà avec ta session), jamais ses routes /api/marketplace (limitées). Une requête par seconde
+  // au plus, SUPA_MAX par clic (le clic suivant reprend aux cotes les plus anciennes) ; arrêt sur 401, 403 ou 429. Le
+  // jeton de ta session est lu dans la page à chaque requête et ne la quitte pas (ni le classeur ni l'encart ne le
+  // voient) ; le favori ne le renouvelle jamais : un jeton de renouvellement ne sert qu'une fois, le réutiliser fermerait
+  // ta session. Le classeur reçoit les cotes calculées ici (médiane des 30 ventes les plus récentes par rareté
+  // d'exemplaire et brillance, sur 90 jours ; fiable dès 3 ventes ; celle d'il y a 7 jours ; la dernière vente), et ta
+  // lecture du marché (bonnes affaires, tes enchères et tes ventes), jamais ton identifiant dans le jeu.
+  var SUPA = "https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/";
+  // Clé publique de la base du jeu (rôle « anon », livrée dans le code de sa page) : seule, elle n'ouvre rien.
+  var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5cnhqZXBwanFzeHhqYXlmcnVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODAzMzksImV4cCI6MjA4OTQ1NjMzOX0.BZluyXygNxuQGDPxFX1zG5i-cqp10CVK-8GGtuak4Rg";
+  var SESSION = "sb-cyrxjeppjqsxxjayfrur-auth-token";
+  var SUPA_GAP = 1000;
+  var SUPA_MAX = 30;
+  var DAY = 86400000;
+  var EXPIRED = "Ta session du jeu a expiré dans cette page : recharge la page du jeu, puis clique à nouveau « Mettre à jour les cotes » (le favori ne la renouvelle jamais lui-même).";
+  var NO_SESSION = "Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, recharge la page, puis réessaie. Rien n'a été lu.";
+  var unb64 = function (s) {
+    var b = String(s).replace(/-/g, "+").replace(/_/g, "/");
+    while (b.length % 4) {
+      b += "=";
+    }
+    var bin = atob(b);
+    try {
+      return decodeURIComponent(bin.replace(/[\s\S]/g, function (c) {
+        return "%" + ("0" + c.charCodeAt(0).toString(16)).slice(-2);
+      }));
+    } catch (e) {
+      return bin;
+    }
+  };
+  // Session de la page : cookie SESSION (« base64- » puis du JSON en base64url, parfois découpé en .0, .1…), sinon le
+  // localStorage du même nom. {token, uid} ou {why}. Jeton expiré (ou à moins de 30 s) : pas de lecture.
+  var session = function () {
+    var jar = {};
+    var raw;
+    var data = null;
+    try {
+      String(document.cookie || "").split(";").forEach(function (p) {
+        var i = p.indexOf("=");
+        if (i > 0) {
+          jar[p.slice(0, i).trim()] = p.slice(i + 1).trim();
+        }
+      });
+    } catch (e) {
+      jar = {};
+    }
+    raw = jar[SESSION];
+    if (raw === undefined && jar[SESSION + ".0"] !== undefined) {
+      raw = "";
+      for (var j = 0; j < 20 && jar[SESSION + "." + j] !== undefined; j++) {
+        raw += jar[SESSION + "." + j];
+      }
+    }
+    try {
+      raw = raw || window.localStorage.getItem(SESSION) || "";
+      try {
+        raw = decodeURIComponent(raw);
+      } catch (e) {
+        raw = String(raw);
+      }
+      data = raw ? JSON.parse(raw.indexOf("base64-") === 0 ? unb64(raw.slice(7)) : raw) : null;
+    } catch (e) {
+      data = null;
+    }
+    data = data && data.currentSession ? data.currentSession : data;
+    var token = data && typeof data.access_token === "string" ? data.access_token : "";
+    if (!token) {
+      return { why: NO_SESSION };
+    }
+    var claims = {};
+    try {
+      claims = JSON.parse(unb64(token.split(".")[1])) || {};
+    } catch (e) {
+      claims = {};
+    }
+    var exp = typeof data.expires_at === "number" ? data.expires_at : claims.exp;
+    if (typeof exp === "number" && exp * 1000 < Date.now() + 30000) {
+      return { why: EXPIRED };
+    }
+    var uid = data.user && typeof data.user.id === "string" ? data.user.id : claims.sub;
+    return { token: token, uid: typeof uid === "string" ? uid : "" };
+  };
+  // Compte des requêtes du clic en cours (n) et heure de la dernière (last) : rythme et plafond.
+  var mk = { n: 0, last: 0 };
+  var room = function () {
+    return mk.n < SUPA_MAX;
+  };
+  var supa = async function (path) {
+    halt();
+    if (mk.last + SUPA_GAP > Date.now()) {
+      await wait(mk.last + SUPA_GAP - Date.now());
+    }
+    halt();
+    var s = session();
+    if (!s.token) {
+      throw stop(s.why);
+    }
+    mk.n += 1;
+    mk.last = Date.now();
+    var r = await net.call(window, SUPA + path, { headers: { apikey: ANON, Authorization: "Bearer " + s.token, Accept: "application/json" } }).catch(function () {
+      throw stop("La base du jeu ne répond pas (réseau) : cotes arrêtées, réessaie dans un moment.");
+    });
+    mk.last = Date.now();
+    if (r.status === 401 || r.status === 403 || r.status === 429) {
+      var said = await r.json().catch(function () {
+        return null;
+      });
+      if (r.status === 429 || (said && said.code === "automation_limit")) {
+        throw stop("Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard.");
+      }
+      if (r.status === 401 && said && /api ?key/i.test(String(said.message || said.msg || ""))) {
+        throw stop("La clé publique de la base du jeu a changé : le favori doit être mis à jour pour lire les cotes.");
+      }
+      throw stop(r.status === 401 ? EXPIRED : "La base du jeu refuse cette lecture (403) : cotes arrêtées.");
+    }
+    if (!r.ok) {
+      throw stop("La base du jeu a répondu " + r.status + " : cotes arrêtées, réessaie dans un moment.");
+    }
+    var rows = await r.json().catch(function () {
+      return null;
+    });
+    if (!Array.isArray(rows)) {
+      throw stop("La base du jeu a répondu dans un format inattendu : cotes arrêtées.");
+    }
+    return rows;
+  };
+  // Liste PostgREST « in.(…) » de textes entre guillemets (titres avec virgules ou parenthèses compris).
+  var inList = function (xs) {
+    return encodeURIComponent("(" + xs.map(function (x) {
+      return "\"" + String(x).replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\"";
+    }).join(",") + ")");
+  };
+  var iso = function (t) {
+    return encodeURIComponent(new Date(t).toISOString());
+  };
+  var vkey = function (r, shiny) {
+    return RANKS.indexOf(r) >= 0 ? r + (shiny ? "*" : "") : null;
+  };
+  var median = function (xs) {
+    var a = xs.slice().sort(function (x, y) {
+      return x - y;
+    });
+    var m = a.length >> 1;
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  };
+  var px = function (x) {
+    return x.p;
+  };
+  // Ventes d'une carte -> {"R": {p, n, w, l, d}, "R*": …}.
+  var cotes = function (rows) {
+    var by = {};
+    var out = {};
+    var week = Date.now() - 7 * DAY;
+    rows.forEach(function (x) {
+      var k = vkey(x.snapshot_rarity, x.is_shiny);
+      var p = Number(x.final_price);
+      var t = Date.parse(x.settled_at);
+      if (k && isFinite(p) && p >= 0 && p <= 1e9 && isFinite(t)) {
+        (by[k] = by[k] || []).push({ p: p, t: t, d: x.settled_at });
+      }
+    });
+    Object.keys(by).forEach(function (k) {
+      var s = by[k].sort(function (a, b) {
+        return b.t - a.t;
+      });
+      var old = s.filter(function (x) {
+        return x.t < week;
+      }).slice(0, 30);
+      out[k] = { p: median(s.slice(0, 30).map(px)), n: s.length, w: old.length >= 3 ? median(old.map(px)) : null, l: s[0].p, d: s[0].d };
+    });
+    return out;
+  };
+  // Cotes d'un lot de 100 cartes au plus : ventes des 90 derniers jours, pages de 1 000 dans un ordre stable. Plafond
+  // atteint au milieu : seules les cartes lues en entier (toutes sauf la dernière vue) sont rendues. [{id, v}].
+  var readCotes = async function (ids) {
+    var rows = [];
+    var done = false;
+    for (var off = 0; room(); off += 1000) {
+      var page = await supa("auctions?select=card_id,snapshot_rarity,final_price,settled_at,is_shiny&status=eq.settled_sold&settled_at=gte." + iso(Date.now() - 90 * DAY) + "&card_id=in." + inList(ids) + "&order=card_id,settled_at.desc,id&limit=1000&offset=" + off);
+      rows = rows.concat(page);
+      if (page.length < 1000) {
+        done = true;
+        break;
+      }
+    }
+    var by = {};
+    rows.forEach(function (x) {
+      (by[x.card_id] = by[x.card_id] || []).push(x);
+    });
+    var last = rows.length ? rows[rows.length - 1].card_id : null;
+    return ids.filter(function (id) {
+      return done || (by[id] && id !== last);
+    }).map(function (id) {
+      return { id: id, v: by[id] ? cotes(by[id]) : {} };
+    });
+  };
+  var https = function (v) {
+    return typeof v === "string" && v.length <= 2000 && /^https:\/\//i.test(v) ? v : null;
+  };
+  var money = function (v) {
+    var n = Number(v);
+    return v !== null && v !== undefined && isFinite(n) && n >= 0 && n <= 1e9 ? n : null;
+  };
+  // Ce que la page du classeur montre d'une enchère : carte, rareté de l'exemplaire, image, fin, cote (fiable ou non).
+  // null si une valeur ne passerait pas les contrôles du classeur (qui refuserait toute la lecture du marché).
+  var lot = function (a, fresh, title) {
+    var r = a.snapshot_rarity;
+    var c = a.card || {};
+    if (RANKS.indexOf(r) < 0 || !/^[A-Za-z0-9_-]{1,64}$/.test(String(a.id)) || !CARD_ID.test(String(a.card_id)) || typeof a.end_at !== "string" || a.end_at.length > 40 || !isFinite(Date.parse(a.end_at))) {
+      return null;
+    }
+    var k = vkey(r, a.is_shiny);
+    var q = fresh[a.card_id] && fresh[a.card_id][k];
+    return { a: String(a.id), id: String(a.card_id), t: String(title || c.wikipedia_title || "?").slice(0, 300), r: r, s: !!a.is_shiny, img: c.hide_image ? null : https(c.image_url), end: String(a.end_at), cote: q ? q.p : null, n: q ? q.n : null };
+  };
+  var CARD = "card:cards(wikipedia_title,image_url,hide_image)";
+  // Identifiant de carte accepté par le classeur (sinon tout l'envoi serait refusé).
+  var CARD_ID = /^[A-Za-z0-9_-]{1,100}$/;
+  // Le clic : plan du classeur (cartes à coter, cartes qui manquent à tes collections), tes enchères et tes ventes,
+  // titres -> cartes du jeu, enchères en cours sur les cartes voulues, cotes de ces cartes, puis des tiennes (les plus
+  // anciennes d'abord) tant que le plafond le permet. Les cotes lues sont envoyées même si une erreur arrête tout.
+  var market = async function () {
+    say("Lecture des cotes…");
+    var me = session();
+    if (!me.token) {
+      say(me.why);
+      return;
+    }
+    var plan = await post("/api/market/plan", {});
+    if (!(plan.quota > 0)) {
+      say("Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : réessaie demain. Rien n'a été lu.");
+      return;
+    }
+    mk.n = 0;
+    var cards = Array.isArray(plan.cards) ? plan.cards : [];
+    var ids = plan.ids && typeof plan.ids === "object" ? plan.ids : {};
+    var wanted = Array.isArray(plan.wanted) ? plan.wanted : [];
+    var fresh = {};
+    var sent = [];
+    var found = {};
+    var live = { ids: {}, deals: [], bids: [], sales: [] };
+    var fail = null;
+    var take = async function (list) {
+      for (var i = 0; i < list.length && room() && sent.length < plan.quota; i += 100) {
+        (await readCotes(list.slice(i, i + 100))).forEach(function (x) {
+          if (!fresh[x.id] && sent.length < plan.quota && CARD_ID.test(x.id)) {
+            fresh[x.id] = x.v;
+            sent.push(x);
+          }
+        });
+      }
+    };
+    try {
+      var now = Date.now();
+      var mine = [];
+      var bids = me.uid ? await supa("auction_bids?select=amount,placed_at,auction:auctions(id,card_id,status,end_at,current_bid,current_bidder_id,final_price,winner_id,snapshot_rarity,is_shiny," + CARD + ")&bidder_id=eq." + encodeURIComponent(me.uid) + "&placed_at=gte." + iso(now - 14 * DAY) + "&order=placed_at.desc&limit=200") : [];
+      var sales = me.uid ? await supa("auctions?select=id,card_id,status,end_at,base_amount,current_bid,current_bidder_id,final_price,snapshot_rarity,is_shiny," + CARD + "&seller_id=eq." + encodeURIComponent(me.uid) + "&end_at=gte." + iso(now - 14 * DAY) + "&order=end_at.desc&limit=100") : [];
+      say("Lecture des cotes… recherche des cartes qui te manquent");
+      var unknown = wanted.filter(function (t) {
+        return typeof ids[t] !== "string";
+      }).slice(0, 320);
+      for (var i = 0; i < unknown.length && room(); i += 80) {
+        var part = unknown.slice(i, i + 80);
+        (await supa("cards?select=id,wikipedia_title,lang&wikipedia_title=in." + inList(part) + "&order=id&limit=1000")).forEach(function (c) {
+          if (c && CARD_ID.test(String(c.id)) && (!found[c.wikipedia_title] || c.lang === "fr")) {
+            found[c.wikipedia_title] = String(c.id);
+          }
+        });
+        part.forEach(function (t) {
+          live.ids[t] = found[t] || "";
+          ids[t] = live.ids[t];
+        });
+      }
+      var titleOf = {};
+      var want = wanted.filter(function (t) {
+        return ids[t];
+      }).map(function (t) {
+        titleOf[ids[t]] = t;
+        return ids[t];
+      });
+      var auctions = [];
+      for (var k = 0; k < want.length && room() && k < 500; k += 100) {
+        auctions = auctions.concat(await supa("auctions?select=id,card_id,seller_id,snapshot_rarity,current_bid,current_bidder_id,base_amount,end_at,is_shiny," + CARD + "&status=eq.active&end_at=gt." + iso(now) + "&card_id=in." + inList(want.slice(k, k + 100)) + "&order=end_at&limit=1000"));
+      }
+      auctions = auctions.filter(function (a) {
+        return a && a.id && a.card_id && a.seller_id !== me.uid;
+      });
+      bids.forEach(function (b) {
+        var a = b && b.auction;
+        if (a && a.id && a.card_id) {
+          mine.push(a.card_id);
+        }
+      });
+      sales.forEach(function (a) {
+        if (a && a.card_id && a.status === "active") {
+          mine.push(a.card_id);
+        }
+      });
+      say("Lecture des cotes…");
+      var first = auctions.map(function (a) {
+        return String(a.card_id);
+      }).concat(mine.map(String)).filter(function (id, n, all) {
+        return all.indexOf(id) === n;
+      }).slice(0, 300);
+      await take(first);
+      await take(cards.filter(function (id) {
+        return !fresh[id];
+      }));
+      auctions.forEach(function (a) {
+        var x = lot(a, fresh, titleOf[a.card_id]);
+        if (!x) {
+          return;
+        }
+        var bid = !!a.current_bidder_id;
+        var ask = money(bid ? a.current_bid : a.base_amount);
+        var base = money(a.base_amount);
+        var left = Date.parse(a.end_at) - Date.now();
+        if (x.cote !== null && x.n >= 3 && ask !== null && (ask <= 0.8 * x.cote || (!bid && left < 2 * 3600000 && base !== null && base <= x.cote))) {
+          x.ask = ask;
+          x.bid = bid;
+          x.lead = !!me.uid && a.current_bidder_id === me.uid;
+          live.deals.push(x);
+        }
+      });
+      live.deals = live.deals.sort(function (a, b) {
+        return Date.parse(a.end) - Date.parse(b.end);
+      }).slice(0, 50);
+      var seen = {};
+      bids.forEach(function (b) {
+        var a = b && b.auction;
+        var amount = money(b && b.amount);
+        if (!a || !a.id || !a.card_id || amount === null) {
+          return;
+        }
+        if (seen[a.id]) {
+          seen[a.id].mine = Math.max(seen[a.id].mine, amount);
+          return;
+        }
+        var x = lot(a, fresh);
+        if (!x) {
+          return;
+        }
+        var run = a.status === "active";
+        x.mine = amount;
+        x.cur = money(run ? a.current_bid : a.final_price);
+        x.lead = run && a.current_bidder_id === me.uid;
+        x.st = run ? "run" : a.status === "settled_sold" ? (a.winner_id === me.uid ? "won" : "lost") : "off";
+        seen[a.id] = x;
+        live.bids.push(x);
+      });
+      live.bids = live.bids.slice(0, 100);
+      sales.forEach(function (a) {
+        if (!a || !a.id || !a.card_id || money(a.base_amount) === null) {
+          return;
+        }
+        var x = lot(a, fresh);
+        if (!x) {
+          return;
+        }
+        var st = String(a.status || "");
+        x.base = money(a.base_amount);
+        x.bid = !!a.current_bidder_id;
+        x.cur = money(st === "settled_sold" ? a.final_price : x.bid ? a.current_bid : null);
+        x.st = st === "active" ? "run" : st === "settled_sold" ? "sold" : st.indexOf("settled") === 0 ? "unsold" : "off";
+        live.sales.push(x);
+      });
+    } catch (e) {
+      fail = e;
+    }
+    if (halted) {
+      throw fail || stop("Favori arrêté.");
+    }
+    for (var p = 0; p * 500 < sent.length || p === 0; p++) {
+      await post("/api/market/prices", { prices: sent.slice(p * 500, (p + 1) * 500), last: (p + 1) * 500 >= sent.length });
+    }
+    if (fail) {
+      throw new Error(fail.message + (sent.length ? " " + num(sent.length) + " cotes lues avant l'arrêt ont été envoyées au classeur." : ""));
+    }
+    await post("/api/market/live", live);
+    var planned = {};
+    cards.forEach(function (id) {
+      planned[id] = true;
+    });
+    var left = Math.max(0, (Number(plan.stale) || 0) - sent.filter(function (x) {
+      return planned[x.id];
+    }).length);
+    var running = live.bids.filter(function (x) {
+      return x.st === "run";
+    }).length;
+    say("Cotes lues : " + num(sent.length) + (sent.length > 1 ? " cartes" : " carte") + (left ? " (il en reste " + num(left) + " : reclique plus tard, les plus anciennes d'abord)" : ", tes cotes sont à jour") + ". " + num(live.deals.length) + (live.deals.length > 1 ? " bonnes affaires" : " bonne affaire") + ", " + num(running) + " de tes enchères en cours : onglet « Marché » du classeur.", true);
+  };
   // ---------------------------------------------------------------- mode relié
   // Synchro automatique AFTER après la dernière action (le jeu finit d'écrire), au plus AFTER_MAX après la première d'une
   // rafale ; jamais moins de GAP après la fin de la précédente (automatique ou non), PER_HOUR automatiques par heure au
@@ -698,6 +1095,12 @@
   status.title = "Le favori reste actif dans cette page : après tes actions dans le jeu (paquet ouvert, carte défaussée, mise aux enchères, échange), il relit tes nouvelles cartes et les envoie au classeur. Il ne fait que lire. « Arrêter », ou recharger la page, le coupe.";
   var folded = false;
   var foldBtn = null;
+  // Ce que dit le badge pendant une lecture (synchro ou cotes).
+  var busy = "synchro en cours…";
+  // Sous les boutons, déplié : ce que fait « Mettre à jour les cotes » (règles du jeu, SPEC.md).
+  var mnote = document.createElement("div");
+  mnote.style.cssText = "margin-top:8px;font-size:11.5px;line-height:1.35;color:#98a29d";
+  mnote.textContent = "Cotes : lecture directe de la base du jeu avec ta session, à ton clic seulement (1 requête/s, 30 au plus), sans passer par les pages du marché, qui limitent les outils. Plus risqué qu'une synchro : avec modération.";
   // Encart réduit en badge (true) ou déplié.
   var fold = function (yes) {
     folded = yes;
@@ -706,6 +1109,7 @@
     text.style.display = yes ? "none" : "";
     extra.style.display = yes ? "none" : "";
     menu.style.display = yes ? "none" : "";
+    mnote.style.display = yes ? "none" : "";
     box.style.cssText = yes ? SMALL : WIDE;
     status.style.marginTop = yes ? "4px" : "10px";
     foldBtn.textContent = yes ? "Détails" : "Réduire";
@@ -717,7 +1121,7 @@
     }
     var s = "synchro après ta prochaine action dans le jeu";
     if (window.__classeurFavori) {
-      s = "synchro en cours…";
+      s = busy;
     } else if (live.paused) {
       s = live.pauseWhy || "synchro automatique en pause : clique « Synchroniser »";
     } else if (live.wanted) {
@@ -791,6 +1195,7 @@
   // relecture complète reportée). Après « Arrêter », plus rien : ni message, ni pause, ni synchro suivante.
   var start = function (task, auto) {
     var sync = task === run;
+    busy = task === market ? "lecture des cotes…" : "synchro en cours…";
     window.__classeurFavori = true;
     if (live && sync) {
       live.wanted = false;
@@ -898,7 +1303,11 @@
       if (!window.__classeurFavori) {
         start(run, false);
       }
-    }), foldBtn, button("Arrêter", stopLive));
+    }), button("Mettre à jour les cotes", function () {
+      if (!window.__classeurFavori) {
+        start(market, false);
+      }
+    }), foldBtn, button("Arrêter", stopLive), mnote);
     badge();
     return true;
   };

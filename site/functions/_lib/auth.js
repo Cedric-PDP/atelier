@@ -5,6 +5,7 @@ import { HttpError, json, raw } from './http.js';
 import { quickSyncAllowed, syncState } from './import.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 import { patchSharing } from './members.js';
+import { eraseChatOf } from './chat.js';
 
 const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
   + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets';
@@ -48,11 +49,14 @@ export async function createAccount(env, body) {
 }
 
 // Utilisateur de la requête (en-tête X-Classeur-Key), ou 401. `importKey` : la clé d'import est acceptée aussi.
-export async function authenticate(request, env, { importKey = false } = {}) {
+// `chat` (GET /api/me) : numéro du dernier message du chat lu dans la même requête (last_chat_id ; MAX sur la clé
+// primaire : une ligne lue).
+export async function authenticate(request, env, { importKey = false, chat = false } = {}) {
   const key = (request.headers.get('x-classeur-key') || '').trim();
   if (!key) throw new HttpError(401, 'Clé absente : ouvre ton lien personnel du classeur.');
   const where = importKey ? 'key_hash = ?1 OR import_key_hash = ?1' : 'key_hash = ?1';
-  const user = await env.DB.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE ${where}`)
+  const extra = chat ? ', (SELECT MAX(id) FROM chat_messages) AS last_chat_id' : '';
+  const user = await env.DB.prepare(`SELECT ${USER_COLUMNS}${extra} FROM users WHERE ${where}`)
     .bind(await sha256Hex(key))
     .first();
   if (!user) {
@@ -93,6 +97,7 @@ export async function getMe(env, user) {
     prefs: raw(user.prefs || '{}'), // objet JSON rangé tel quel par PATCH /api/me
     shared: !!user.shared, // montre ses cartes aux autres membres (partage entre membres, members.js)
     shared_targets: !!(user.shared && user.shared_targets), // et ses collections à compléter (réglage à part)
+    last_chat_id: user.last_chat_id ?? 0, // dernier message du chat (supprimé ou non) : la page en déduit le badge des non-lus
     session: {
       has_cookie: !!user.cookie_enc,
       expired: !!user.session_expired,
@@ -155,13 +160,16 @@ export async function rotateKey(env, user) {
   return { key };
 }
 
-// DELETE /api/me : efface le compte et tout ce qui s'y rattache.
+// DELETE /api/me : efface le compte et tout ce qui s'y rattache. Messages du chat : texte vidé et auteur oublié
+// (eraseChatOf : ils disparaissent aussi des pages ouvertes).
 export async function deleteMe(env, user) {
   const db = env.DB;
   await db.batch(
-    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging'].map((t) =>
+    // Marché : sa lecture du marché et ses quotas (market), l'historique de sa valeur ; les cotes (prices), communes et
+    // liées à aucun classeur, restent.
+    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging', 'market', 'value_history'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
-    ).concat(db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
+    ).concat(eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );
   return { ok: true };
 }

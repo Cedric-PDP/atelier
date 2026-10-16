@@ -36,7 +36,8 @@
   // Ordre d'affichage des légendes : de la plus commune à la plus rare, comme dans le jeu.
   const RAR_UP = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
-    importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at' };
+    importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at',
+    chatRead: 'classeur-chat-lu' };
   // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
@@ -277,6 +278,10 @@
     // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
     friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'all', tradeDup: true,
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
+    // « Chat » (un salon pour tous les classeurs) : user = compte dont `read` (dernier message lu, aussi dans
+    // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
+    // messages plus anciens ; newBelow = nouveaux messages arrivés sous la zone lue (on n'était pas en bas).
+    chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
@@ -1190,6 +1195,8 @@
     suggToken++;
     S.sugg.running = false;
     clearFriends(); // cartes des amis : celles de l'autre classeur ne servent plus
+    resetMarket(); // cotes, valeur et lecture du marché : celles de l'autre classeur
+    resetChat(); // messages, brouillon et dernier lu : ceux de l'autre classeur
   }
   const STALE_KEY = "La clé gardée dans ce navigateur ne correspond plus à aucun classeur : il a peut-être été supprimé, ou sa clé a été changée sur un autre appareil. Ouvre ton lien personnel le plus récent.";
   function lostKey(msg) {
@@ -1249,6 +1256,7 @@
     if (gen !== cardsGen) return me; // classeur changé entre-temps (resetData) : réponse de l'ancien, écartée
     S.me = me;
     if (S.key && me.user) remember(S.key, me.user.name || '');
+    chatNote(me); // dernier message du chat (badge des non-lus)
     // Préférences changées ici (savePrefs) avant la réponse, ou encore en route à l'envoi : la réponse peut les précéder,
     // elle ne les remplace pas.
     if (me.prefs !== undefined && pg === prefsGen && !prefsPending) S.prefs = normPrefs(me.prefs);
@@ -1398,6 +1406,7 @@
   function afterCards() {
     resolveQids(collections.value.all.flatMap((c) => c.items), false, 'all'); // à part de celle de l'album ouvert
     if (!S.prefs.hide_proposals) computeProposals(false);
+    loadMarket(false); // valeur et cotes (les cartes ont pu changer)
   }
   async function loadTargets() {
     const gen = cardsGen;
@@ -1735,6 +1744,7 @@
     if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false });
     if (tab === 'maj') prepareFavori();
     if (tab === 'amis') loadFriends(true);
+    if (tab === 'marche') loadMarket(Date.now() - M.at > 20000); // les cotes ont pu être relues dans le jeu entre-temps
     toTop();
   }
   function resetFilters() {
@@ -2090,7 +2100,7 @@
   function askDeleteAccount() {
     openConfirm({
       title: 'Supprimer ton classeur ?',
-      text: "Tes cartes rangées, tes tags, tes collections à compléter et ta session WikiMasters seront effacés du classeur, et ton lien ne marchera plus. C'est définitif. Ta collection dans le jeu n'est pas touchée.",
+      text: "Tes cartes rangées, tes tags, tes collections à compléter et ta session WikiMasters seront effacés du classeur, tes messages du chat aussi (pour tout le monde), et ton lien ne marchera plus. C'est définitif. Ta collection dans le jeu n'est pas touchée.",
       ok: 'Supprimer mon classeur',
       danger: true,
       run: async () => {
@@ -3653,6 +3663,110 @@
     }
   }
 
+  // ================================================================ marché : cotes, valeur, bonnes affaires (SPEC.md, « Le marché »)
+  // Tout ce qui vient du jeu est lu par le favori, dans la page du jeu, à son clic « Mettre à jour les cotes » (cette page
+  // ne peut pas lire la base du jeu : CSP, et pas de session) ; ici, on montre ce que le serveur a rangé : la valeur du
+  // classeur et son historique (GET /api/market), la dernière lecture du marché (bonnes affaires, tes enchères et tes
+  // ventes, 24 h au plus), et les cotes de tes cartes et des cartes qui te manquent (GET /api/market/prices, communes à
+  // tous les classeurs). Relu à l'ouverture, après chaque changement des cartes et à l'ouverture de l'onglet « Marché »,
+  // une fois par minute au plus (sauf demande).
+  const M = reactive({ loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, at: 0, hover: -1 });
+  const prices = shallowRef(new Map()); // card_id -> {id, v: {"R": {p, n, w, l, d}, "R*": …}, at}
+  const wantedPrices = shallowRef(new Map()); // titre (normTitle) d'une carte qui te manque -> la même chose
+  let marketJob = null;
+  const VARIANT_RE = /^(C|PC|R|SR|UR|L)\*?$/;
+  function resetMarket() {
+    Object.assign(M, { loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, at: 0, hover: -1 });
+    prices.value = new Map();
+    wantedPrices.value = new Map();
+  }
+  function loadMarket(force) {
+    if (S.boot !== 'app' || !S.key) return Promise.resolve();
+    if (marketJob) return marketJob;
+    if (!force && M.at && Date.now() - M.at < 60000) return Promise.resolve();
+    const gen = cardsGen;
+    M.busy = true;
+    marketJob = (async () => {
+      try {
+        const m = await api('GET', '/api/market');
+        const list = [];
+        for (let part = '0', guard = 0; part !== null && part !== undefined && part !== '' && guard < 200; guard++) {
+          const r = await api('GET', '/api/market/prices?part=' + encodeURIComponent(String(part)));
+          if (gen !== cardsGen) return;
+          if (Array.isArray(r.prices)) list.push(...r.prices);
+          part = r.next_part === part ? null : r.next_part;
+        }
+        if (gen !== cardsGen) return;
+        const byId = new Map();
+        const byTitle = new Map();
+        for (const p of list) {
+          if (!p || p.id == null || !p.v || typeof p.v !== 'object') continue;
+          const x = markRaw({ id: String(p.id), v: p.v, at: p.at || null });
+          byId.set(x.id, x);
+          if (typeof p.t === 'string') byTitle.set(normTitle(p.t), x);
+        }
+        prices.value = byId;
+        wantedPrices.value = byTitle;
+        const live = m.live && typeof m.live === 'object' ? m.live : null;
+        Object.assign(M, { value: m.value || null, history: Array.isArray(m.history) ? m.history : [], live, liveAt: m.live_at || null, loaded: true, error: '' });
+      } catch (e) {
+        if (gen === cardsGen) M.error = e.message;
+      } finally {
+        if (gen === cardsGen) { M.busy = false; M.at = Date.now(); }
+        marketJob = null;
+      }
+    })();
+    return marketJob;
+  }
+  // Exemplaires d'une carte par rareté d'exemplaire et brillance (« R* ») : son détail (variants) si le favori l'a
+  // envoyé, sinon approché comme le fait le serveur (tous dans sa plus haute rareté, un seul brillant si elle l'est).
+  function variantsOf(c) {
+    const v = c && c.variants && typeof c.variants === 'object' ? Object.entries(c.variants).filter(([k, n]) => VARIANT_RE.test(k) && n > 0) : null;
+    if (v && v.length) return { list: v, approx: false };
+    const n = Math.max(1, Number(c && c.count) || 1);
+    const r = (c && c.rarity) || 'C';
+    return { list: c && c.shiny ? [[r + '*', 1], ...(n > 1 ? [[r, n - 1]] : [])] : [[r, n]], approx: true };
+  }
+  const reliable = (q) => !!q && Number(q.n) >= 3;
+  const wfmt = (n) => (n == null || !Number.isFinite(Number(n)) ? '—' : (Math.abs(n) >= 100 ? NUM.format(Math.round(n)) : NUM2.format(n)) + ' W');
+  const variantName = (k) => (RARITY_NAME[k.replace('*', '')] || k) + (k.endsWith('*') ? ', brillante' : '');
+  const variantOrder = (a, b) => rarityRank(a.replace('*', '')) - rarityRank(b.replace('*', '')) || (a < b ? -1 : a > b ? 1 : 0);
+  const pctOf = (p, w) => { const d = Math.round(((p - w) / w) * 100); return (d > 0 ? '+' : d < 0 ? '−' : '') + NUM.format(Math.abs(d)) + ' %'; };
+  // « Cartes qui bougent » : écart en W sur 7 jours de tes exemplaires (cote fiable maintenant et il y a 7 jours), les 12
+  // plus fortes hausses et les 12 plus fortes baisses.
+  const movers = computed(() => {
+    const map = prices.value;
+    const all = [];
+    if (!map.size) return { up: [], down: [] };
+    for (const c of cards.value) {
+      const p = map.get(String(c.id));
+      if (!p) continue;
+      let delta = 0;
+      let now = 0;
+      let then = 0;
+      for (const [k, n] of variantsOf(c).list) {
+        const q = p.v[k];
+        if (!reliable(q) || q.w == null || !(q.w > 0)) continue;
+        delta += (q.p - q.w) * n;
+        now += q.p * n;
+        then += q.w * n;
+      }
+      if (delta) all.push({ c, delta, pct: pctOf(now, then) });
+    }
+    return {
+      up: all.filter((x) => x.delta > 0).sort((a, b) => b.delta - a.delta).slice(0, 12),
+      down: all.filter((x) => x.delta < 0).sort((a, b) => a.delta - b.delta).slice(0, 12),
+    };
+  });
+  const leftText = (end) => {
+    const ms = Date.parse(end) - Date.now();
+    if (!(ms > 0)) return 'se termine';
+    const m = Math.round(ms / 60000);
+    if (m < 60) return `encore ${m} min`;
+    if (m < 2880) return `encore ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`;
+    return `encore ${Math.round(m / 1440)} jours`;
+  };
+
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
   const hideBroken = (e) => { if (e && e.target) e.target.classList.add('broken'); };
@@ -3811,7 +3925,7 @@
   }
 
   // ================================================================ rendu : bandeau et onglets
-  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['maj', 'Mettre à jour'], ['reglages', 'Réglages']];
+  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['marche', 'Marché'], ['chat', 'Chat'], ['maj', 'Mettre à jour'], ['reglages', 'Réglages']];
   function onTabKey(e) {
     const i = TABS.findIndex(([id]) => id === S.tab);
     let j = -1;
@@ -3850,6 +3964,8 @@
         copies.value !== total ? h('div', { class: 'figure' }, [h('b', null, fmt(copies.value)), h('span', null, 'exemplaires')]) : null,
         h('div', { class: 'figure' }, [h('b', null, fmt(nCol)), h('span', null, plural(nCol, 'collection', 'collections'))]),
         h('div', { class: 'figure' }, [h('b', null, fmt(nL)), h('span', null, plural(nL, 'légendaire', 'légendaires'))]),
+        M.value && M.value.priced ? h('div', { class: 'figure', title: `${fmt(M.value.priced)} ${plural(M.value.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(M.value.cards)} : onglet « Marché »` },
+          [h('b', null, wfmt(M.value.value)), h('span', null, `valeur (${fmt(M.value.priced)} ${plural(M.value.priced, 'cotée', 'cotées')})`)]) : null,
       ]),
       h('div', { class: 'rbar' }, [
         h('div', { class: 'track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
@@ -3874,7 +3990,7 @@
       h('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'Sections' }, TABS.map(([id, label]) => h('button', {
         key: id, id: 'tab-' + id, type: 'button', role: 'tab', 'aria-selected': String(S.tab === id), 'aria-controls': 'panel-' + id,
         tabindex: S.tab === id ? '0' : '-1', onClick: () => setTab(id), onKeydown: onTabKey,
-      }, label))),
+      }, id === 'chat' ? chatTabLabel(label) : label))),
     ])]);
   }
 
@@ -4325,6 +4441,7 @@
       ]),
       h('p', null, "Ensuite, le favori reste relié à la page du jeu jusqu'à ce que tu la recharges : après tes actions (paquet ouvert, carte défaussée, mise aux enchères, échange), il renvoie tout seul tes nouvelles cartes, et ce classeur se met à jour pendant qu'il est ouvert. Il ne fait toujours que lire : il regarde passer les requêtes que la page du jeu fait d'elle-même, sans en envoyer ni en modifier, puis relit tes nouvelles cartes (au plus une fois par minute). Il ne joue pas et ne clique rien. Le badge « Classeur relié » le rappelle ; « Arrêter » le coupe."),
       h('p', { class: 'small muted' }, "Sur la page « Collection globale » du jeu, fais une recherche (« vache »…) puis clique le favori : il propose aussi d'en faire une collection à compléter, avec la vraie rareté de chaque carte dans le jeu."),
+      h('p', { class: 'small muted' }, "« Mettre à jour les cotes », dans l'encart du favori : il lit les cotes du marché, les bonnes affaires et tes enchères pour l'onglet « Marché », directement dans la base du jeu avec ta session, à ton clic seulement (voir « À savoir » dans cet onglet). Un favori installé avant le 16 octobre 2026 n'a pas ce bouton : glisse à nouveau celui-ci dans ta barre."),
       h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
       hasKey ? h('h3', null, 'Le créer à la main') : null,
@@ -4450,7 +4567,7 @@
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: askForget }, 'Oublier ce navigateur')]),
       ]),
       section('Supprimer mon classeur', [
-        h('p', null, 'Efface définitivement tes cartes rangées, tes tags, tes collections et ta session WikiMasters.'),
+        h('p', null, 'Efface définitivement tes cartes rangées, tes tags, tes collections, ta session WikiMasters et tes messages du chat.'),
         h('div', { class: 'actions' }, [h('button', { class: 'btn danger', type: 'button', onClick: askDeleteAccount }, [icon('trash', 'sm'), 'Supprimer mon classeur'])]),
       ], 'danger-zone'),
     ]);
@@ -4946,6 +5063,555 @@
     ]);
   }
 
+  // ================================================================ chat : un salon pour tous les classeurs
+  // Contrat : SPEC.md, « Chat ». Messages gardés en mémoire le temps de la visite (chatMsgs : figés, triés par numéro) ;
+  // chatRev = révision du serveur jusqu'où tout a été lu (null : rien lu), chatLastId = dernier numéro du serveur à cette
+  // lecture. Onglet ouvert et page visible : relecture ?after=<rev> toutes les 12 s (30 s après 5 min sans nouveau
+  // message ni geste dans le chat). Ailleurs : GET /api/me (relu toutes les 60 s, page visible) donne last_chat_id, et
+  // les nouveaux messages ne sont lus que s'il change : badge des non-lus sur l'onglet. Dernier message lu : localStorage
+  // (classeur-chat-lu = {<id du compte>: numéro}, accès protégés ; refusé : en mémoire seulement). Jamais de HTML : le
+  // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener).
+  const CHAT_MAX = 500;
+  const CHAT_EVERY = 12 * 1000;
+  const CHAT_IDLE_EVERY = 30 * 1000;
+  const CHAT_IDLE_AFTER = 5 * 60 * 1000;
+  const CHAT_KEY_LINK = /#cle=[A-Za-z0-9_-]{20,}/;
+  const CHAT_URL = /\bhttps?:\/\/[^\s<>"«»]+/gi;
+  const chatMsgs = shallowRef([]);
+  let chatRev = null;
+  let chatLastId = 0;
+  let chatGen = 0; // change avec le classeur (resetChat) : une réponse arrivée après coup est écartée
+  let chatJob = null;
+  let chatAgain = false;
+  let chatTimer = null;
+  let chatActive = 0; // dernier geste dans le chat ou dernier nouveau message (relecture ralentie au-delà de 5 min)
+  let chatAtBottom = true; // fil défilé jusqu'en bas (mesuré au défilement, avant l'arrivée des nouveaux messages)
+
+  const chatSeen = () => S.boot === 'app' && S.tab === 'chat' && document.visibilityState === 'visible';
+  const chatBox = () => document.getElementById('chat-scroll');
+  const byChatId = (a, b) => a.id - b.id;
+  function chatReadOf(user) {
+    const v = store.json(LS.chatRead);
+    const n = v && typeof v === 'object' && !Array.isArray(v) ? Number(v[user]) : 0;
+    return Number.isInteger(n) && n > 0 ? n : 0;
+  }
+  function setChatRead(n) {
+    const user = S.chat.user;
+    if (!user || !Number.isInteger(n) || n < 0 || n === S.chat.read) return;
+    S.chat.read = n;
+    const v = store.json(LS.chatRead);
+    const map = v && typeof v === 'object' && !Array.isArray(v) ? v : {};
+    map[user] = n;
+    store.set(LS.chatRead, JSON.stringify(map));
+  }
+  // Non lus : messages des autres au-delà du dernier lu, parmi ceux que la page a lus (les 100 plus récents, plus ceux
+  // chargés en remontant).
+  const chatUnread = computed(() => {
+    const read = S.chat.read;
+    let n = 0;
+    for (const m of chatMsgs.value) if (m.id > read && !m.mine) n++;
+    return n;
+  });
+  function markChatRead() {
+    const list = chatMsgs.value;
+    setChatRead(Math.max(S.chat.read, chatLastId, list.length ? list[list.length - 1].id : 0));
+  }
+  // Texte d'un message en morceaux : texte brut et liens http(s) (ponctuation finale laissée hors du lien, sauf une
+  // parenthèse fermante qui en ferme une du lien : « …/Mercure_(planète) »).
+  function linkify(text) {
+    const out = [];
+    let last = 0;
+    for (const m of text.matchAll(CHAT_URL)) {
+      let url = m[0];
+      while (/[.,;:!?'’)\]}]$/.test(url)) {
+        if (url.endsWith(')') && (url.match(/\(/g) || []).length >= (url.match(/\)/g) || []).length) break;
+        url = url.slice(0, -1);
+      }
+      let href = null;
+      try { const u = new URL(url); if ((u.protocol === 'https:' || u.protocol === 'http:') && u.hostname) href = u.href; } catch (e) { href = null; }
+      if (!href) continue;
+      if (m.index > last) out.push({ text: text.slice(last, m.index) });
+      out.push({ text: url, url: href });
+      last = m.index + url.length;
+    }
+    if (last < text.length) out.push({ text: text.slice(last) });
+    return out;
+  }
+  function prepChatMsg(m) {
+    const id = Number(m && m.id);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    const text = String(m.text || '');
+    return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''), parts: linkify(text) });
+  }
+  // Heure du message : « 14:32 » aujourd'hui, « hier, 14:32 », sinon « 15 oct., 14:32 » (l'année si ce n'est pas celle-ci).
+  function chatWhen(iso) {
+    const d = dateOf(iso);
+    if (!d) return '';
+    const now = new Date();
+    const time = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const day0 = (x) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const days = Math.round((day0(now) - day0(d)) / DAY);
+    if (days === 0) return time;
+    if (days === 1) return 'hier, ' + time;
+    return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', ...(d.getFullYear() !== now.getFullYear() ? { year: 'numeric' } : {}) }) + ', ' + time;
+  }
+
+  // Réponse de GET /api/me : dernier numéro du chat (ancien serveur, sans last_chat_id : rien).
+  function chatNote(me) {
+    const last = me && Number.isInteger(me.last_chat_id) ? me.last_chat_id : null;
+    const user = me && me.user && me.user.id;
+    if (last === null || !user) return;
+    if (S.chat.user !== user) { S.chat.user = user; S.chat.read = chatReadOf(user); }
+    if (last < S.chat.read) setChatRead(last); // base recréée : les numéros sont repartis de zéro
+    if (last !== chatLastId && (chatRev !== null || last > S.chat.read)) refreshChat();
+  }
+  // Une lecture à la fois ; demandée pendant une autre, elle repart juste après.
+  function refreshChat() {
+    if (chatJob) { chatAgain = true; return chatJob; }
+    const gen = chatGen;
+    const job = (async () => {
+      try {
+        do {
+          chatAgain = false;
+          if (chatRev === null) await loadChat(gen); else await pollChat(gen);
+        } while (chatAgain && gen === chatGen);
+      } catch (e) {
+        if (gen === chatGen) {
+          S.chat.error = e.message;
+          if (S.chat.status !== 'ready') S.chat.status = 'error';
+        }
+      } finally {
+        if (chatJob === job) chatJob = null;
+      }
+    })();
+    chatJob = job;
+    return job;
+  }
+  async function loadChat(gen) {
+    if (S.chat.status !== 'ready') S.chat.status = 'loading';
+    const r = await api('GET', '/api/chat');
+    if (gen !== chatGen) return;
+    chatMsgs.value = (Array.isArray(r.messages) ? r.messages : []).map(prepChatMsg).filter(Boolean).sort(byChatId);
+    chatRev = Number.isInteger(r.rev) ? r.rev : 0;
+    chatLastId = Number.isInteger(r.last_id) ? r.last_id : 0;
+    Object.assign(S.chat, { older: !!r.older, status: 'ready', error: '' });
+    afterChat(true, false);
+  }
+  async function pollChat(gen) {
+    const r = await api('GET', '/api/chat?after=' + encodeURIComponent(String(chatRev)));
+    if (gen !== chatGen) return;
+    // Révision inconnue (base recréée) ou plus de 100 changements : on relit les plus récents.
+    if (r.reset || r.more || !Number.isInteger(r.rev)) { chatRev = null; await loadChat(gen); return; }
+    const map = new Map(chatMsgs.value.map((m) => [m.id, m]));
+    let added = 0;
+    let changed = false;
+    for (const id of Array.isArray(r.deleted) ? r.deleted : []) if (map.delete(Number(id))) changed = true;
+    for (const raw of Array.isArray(r.messages) ? r.messages : []) {
+      const m = prepChatMsg(raw);
+      if (!m) continue;
+      if (!map.has(m.id)) added++;
+      map.set(m.id, m);
+      changed = true;
+    }
+    if (changed) chatMsgs.value = [...map.values()].sort(byChatId);
+    chatRev = r.rev;
+    if (Number.isInteger(r.last_id)) chatLastId = r.last_id;
+    Object.assign(S.chat, { status: 'ready', error: '' });
+    if (added) chatActive = Date.now();
+    afterChat(false, added > 0);
+  }
+  // Après une lecture : lu si le chat est sous les yeux (ou si rien de nouveau ne vient des autres), puis défilement :
+  // en bas à l'ouverture ou si on y était déjà, sinon « Nouveaux messages » pour y descendre.
+  function afterChat(jump, added) {
+    if (chatSeen() || !chatUnread.value) markChatRead();
+    if (S.tab !== 'chat') return;
+    if (jump || chatAtBottom) nextTick(chatToBottom);
+    else if (added) S.chat.newBelow = true;
+  }
+  function chatToBottom() {
+    S.chat.newBelow = false;
+    chatAtBottom = true;
+    const b = chatBox();
+    if (b && typeof b.scrollHeight === 'number') b.scrollTop = b.scrollHeight;
+  }
+  function onChatScroll(e) {
+    const b = e.target;
+    if (!b || typeof b.scrollHeight !== 'number') return;
+    chatAtBottom = b.scrollHeight - b.scrollTop - b.clientHeight < 48;
+    if (chatAtBottom) S.chat.newBelow = false;
+    chatTouch();
+  }
+  // Messages d'avant le plus ancien affiché (100 de plus) ; la position de lecture ne bouge pas.
+  async function loadOlderChat() {
+    const c = S.chat;
+    if (c.olderBusy || !chatMsgs.value.length) return;
+    const gen = chatGen;
+    const b0 = chatBox();
+    const h0 = b0 && typeof b0.scrollHeight === 'number' ? b0.scrollHeight : 0;
+    const t0 = b0 && typeof b0.scrollTop === 'number' ? b0.scrollTop : 0;
+    c.olderBusy = true;
+    chatTouch();
+    try {
+      const r = await api('GET', '/api/chat?before=' + chatMsgs.value[0].id);
+      if (gen !== chatGen) return;
+      const map = new Map(chatMsgs.value.map((m) => [m.id, m]));
+      for (const raw of Array.isArray(r.messages) ? r.messages : []) { const m = prepChatMsg(raw); if (m && !map.has(m.id)) map.set(m.id, m); }
+      chatMsgs.value = [...map.values()].sort(byChatId);
+      c.older = !!r.older;
+      nextTick(() => { const b = chatBox(); if (b && typeof b.scrollHeight === 'number') b.scrollTop = t0 + (b.scrollHeight - h0); });
+    } catch (e) {
+      if (gen === chatGen) notify(e.message, true);
+    } finally {
+      if (gen === chatGen) c.olderBusy = false;
+    }
+  }
+  // Minuterie de relecture : seulement l'onglet ouvert et la page visible.
+  function setChatLive() {
+    if (!chatSeen()) { if (chatTimer) { clearTimeout(chatTimer); chatTimer = null; } return; }
+    if (chatTimer) return;
+    const wait = Date.now() - chatActive > CHAT_IDLE_AFTER ? CHAT_IDLE_EVERY : CHAT_EVERY;
+    chatTimer = setTimeout(async () => {
+      chatTimer = null;
+      if (!chatSeen()) return;
+      await refreshChat();
+      setChatLive();
+    }, wait);
+  }
+  function chatTouch() {
+    const idle = Date.now() - chatActive > CHAT_IDLE_AFTER;
+    chatActive = Date.now();
+    if (idle && chatTimer) { clearTimeout(chatTimer); chatTimer = null; setChatLive(); }
+  }
+  function openChat() {
+    chatActive = Date.now();
+    chatAtBottom = true;
+    Object.assign(S.chat, { newBelow: false, sendError: '' });
+    if (chatRev !== null) markChatRead(); // ce qui est déjà là est sous les yeux
+    refreshChat();
+    setChatLive();
+    nextTick(() => { chatToBottom(); chatIntoView(); });
+  }
+  // Onglet ouvert : le bas du chat (derniers messages et champ de saisie) visible sans avoir à faire défiler la page.
+  function chatIntoView() {
+    const el = document.querySelector('.chat');
+    if (!el || typeof el.getBoundingClientRect !== 'function' || typeof window.innerHeight !== 'number') return;
+    if (el.getBoundingClientRect().bottom > window.innerHeight) el.scrollIntoView({ block: 'end' });
+  }
+  function chatVisibility() {
+    if (chatSeen()) { chatActive = Date.now(); refreshChat(); }
+    setChatLive();
+  }
+  watch(() => S.boot === 'app' && S.tab === 'chat', (on) => { if (on) openChat(); else setChatLive(); });
+  function resetChat() {
+    chatGen++;
+    chatJob = null;
+    chatAgain = false;
+    if (chatTimer) { clearTimeout(chatTimer); chatTimer = null; }
+    chatMsgs.value = [];
+    chatRev = null;
+    chatLastId = 0;
+    chatAtBottom = true;
+    Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false });
+  }
+  async function sendChat(fromKey) {
+    const c = S.chat;
+    const text = c.draft.replace(/\r\n?/g, '\n').trim();
+    if (!text || c.sending) return;
+    if (text.length > CHAT_MAX) { c.sendError = `Message trop long : ${CHAT_MAX} caractères au plus.`; return; }
+    if (CHAT_KEY_LINK.test(text)) {
+      c.sendError = "Ce message contient un lien personnel de classeur (#cle=…) : il ouvrirait ton classeur à tous ceux qui le liraient. Retire-le avant d'envoyer.";
+      return;
+    }
+    const gen = chatGen;
+    c.sending = true;
+    c.sendError = '';
+    chatTouch();
+    try {
+      const r = await api('POST', '/api/chat', { text });
+      if (gen !== chatGen) return;
+      if (c.draft.replace(/\r\n?/g, '\n').trim() === text) c.draft = ''; // tapé de nouveau pendant l'envoi : gardé
+      const m = prepChatMsg(r.message);
+      if (m && !chatMsgs.value.some((x) => x.id === m.id)) chatMsgs.value = [...chatMsgs.value, m].sort(byChatId);
+      afterChat(true, false);
+      refreshChat(); // et les messages des autres arrivés entre-temps
+    } catch (e) {
+      if (gen === chatGen) c.sendError = e.message;
+    } finally {
+      if (gen === chatGen) c.sending = false;
+      if (fromKey) nextTick(() => { const t = document.getElementById('chat-input'); if (t) t.focus(); });
+    }
+  }
+  // Entrée envoie, Maj+Entrée va à la ligne (le navigateur s'en charge) ; pas pendant une saisie en cours (IME).
+  function onChatKey(e) {
+    chatTouch();
+    if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+    e.preventDefault();
+    sendChat(true);
+  }
+  function askDeleteChat(m) {
+    const short = m.text.replace(/\s+/g, ' ');
+    openConfirm({
+      title: 'Supprimer ce message ?',
+      text: `« ${short.length > 80 ? short.slice(0, 80).trimEnd() + '…' : short} » disparaîtra du chat pour tout le monde. C'est définitif.`,
+      ok: 'Supprimer',
+      danger: true,
+      run: async () => {
+        const gen = chatGen;
+        try { await api('DELETE', '/api/chat/' + m.id); } catch (e) { if (e.status !== 404) throw e; } // 404 : déjà parti
+        if (gen !== chatGen) return;
+        chatMsgs.value = chatMsgs.value.filter((x) => x.id !== m.id);
+        refreshChat();
+      },
+    });
+  }
+
+  // ---------------------------------------------------------------- rendu du chat
+  function chatTabLabel(label) {
+    const n = S.tab === 'chat' ? 0 : chatUnread.value;
+    if (!n) return label;
+    return [label, h('span', { class: 'tab-badge' }, [n > 99 ? '99+' : String(n), sr(' ' + plural(n, 'message non lu', 'messages non lus'))])];
+  }
+  function viewChatMsg(m) {
+    // Les miens : mon prénom actuel (renommé dans Réglages, il change aussitôt) ; ceux des autres : à la lecture.
+    const who = (m.mine && S.me && S.me.user && S.me.user.name) || m.author || 'Sans prénom';
+    return h('div', { key: m.id, class: ['chat-msg', { mine: m.mine }] }, [
+      h('div', { class: 'chat-msg__head' }, [
+        h('span', { class: 'chat-msg__who' }, who),
+        m.mine ? h('span', { class: 'chat-msg__me' }, '(toi)') : null,
+        h('time', { class: 'chat-msg__time', datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
+        m.mine ? h('button', { class: 'chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
+          [icon('trash', 'sm'), h('span', { class: 'chat-msg__del-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
+      ]),
+      h('p', { class: 'chat-msg__text' }, m.parts.map((p) => (p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
+    ]);
+  }
+  function viewChatForm() {
+    const c = S.chat;
+    const n = c.draft.length;
+    return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
+      h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
+      h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint',
+        onInput: (e) => { c.draft = e.target.value; if (c.sendError) c.sendError = ''; chatTouch(); }, onKeydown: onChatKey }),
+      h('div', { class: 'chat-form__foot' }, [
+        h('span', { id: 'chat-hint', class: 'chat-hint' }, [h('kbd', null, 'Entrée'), ' envoie, ', h('kbd', null, 'Maj'), ' + ', h('kbd', null, 'Entrée'), ' va à la ligne']),
+        n >= CHAT_MAX - 100 ? h('span', { class: ['chat-count', { full: n >= CHAT_MAX }] }, `${fmt(n)} / ${fmt(CHAT_MAX)}`) : null,
+        h('button', { class: 'btn primary', type: 'submit', disabled: c.sending || !c.draft.trim() }, c.sending ? 'Envoi…' : 'Envoyer'),
+      ]),
+      errLine(c.sendError),
+    ]);
+  }
+  function viewChat() {
+    const c = S.chat;
+    const list = chatMsgs.value;
+    const named = !!(S.me && S.me.user && S.me.user.name);
+    const empty = c.status === 'error' ? "Le chat n'a pas pu être lu." : c.status === 'ready' ? "Aucun message pour l'instant : écris le premier !" : 'Chargement des messages…';
+    return h('div', { class: 'chat' }, [
+      h('div', { class: 'section-head' }, [h('h2', { id: 'h-chat' }, 'Chat'), h('small', null, 'Visible par tous les membres du classeur')]),
+      h('p', { class: 'chat-note' }, "Un seul salon pour tous les classeurs du site. Texte seulement, 500 caractères au plus ; les liens deviennent cliquables, et tu peux supprimer tes messages. N'y colle jamais ton lien personnel."),
+      h('div', { class: 'chat-box' }, [
+        h('div', { id: 'chat-scroll', class: 'chat-scroll', role: 'log', 'aria-label': 'Messages du chat', tabindex: '0', onScroll: onChatScroll }, [
+          c.older ? h('div', { class: 'chat-older' }, [h('button', { class: 'btn small', type: 'button', disabled: c.olderBusy, onClick: loadOlderChat },
+            c.olderBusy ? 'Chargement…' : 'Charger les messages plus anciens')]) : null,
+          h('div', { class: 'chat-list' }, list.length ? list.map(viewChatMsg) : [h('p', { class: 'chat-empty' }, empty)]),
+        ]),
+        c.newBelow ? h('button', { class: 'chat-below', type: 'button', onClick: chatToBottom }, 'Nouveaux messages ↓') : null,
+      ]),
+      c.error ? h('div', { class: 'chat-error' }, [h('p', { class: 'status err', role: 'alert' }, c.error),
+        h('button', { class: 'btn small', type: 'button', onClick: () => { c.error = ''; refreshChat(); } }, 'Réessayer')]) : null,
+      named ? viewChatForm() : h('div', { class: 'notice' }, [
+        h('p', null, "Pour écrire, donne d'abord un prénom à ton classeur : c'est lui que les autres membres verront."),
+        h('div', { class: 'actions' }, [h('button', { class: 'btn small', type: 'button', onClick: openSettings }, 'Choisir mon prénom')]),
+      ]),
+    ]);
+  }
+
+  // ================================================================ rendu : onglet Marché, cotes des fiches
+  const MARKET_RULES = "Les cotes et la lecture du marché viennent de ton favori, sur wiki-masters.com : « Mettre à jour les cotes » lit directement la base du jeu avec ta session, à ton clic seulement (une requête par seconde, 30 au plus par clic), sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : à utiliser avec modération. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
+  const MARKET_HOW = "Pas encore de cote : sur wiki-masters.com, clique « Mettre à jour les cotes » dans l'encart du favori (favori installé avant le 16 octobre 2026 : glisse à nouveau le favori dans ta barre, onglet « Mettre à jour »).";
+  // Valeur jour par jour : une ligne (SVG dans la page), survol = le jour le plus proche, tableau des valeurs à part.
+  function viewValueChart(hist) {
+    const pts = hist.filter((p) => p && typeof p.date === 'string' && Number.isFinite(Number(p.value)) && Number.isFinite(Date.parse(p.date)));
+    if (pts.length < 2) return h('p', { class: 'small muted' }, 'Le graphique de la valeur apparaît à partir de deux jours de cotes.');
+    const W = 640;
+    const H = 200;
+    const L = 64;
+    const R = 14;
+    const T = 12;
+    const B = 28;
+    const vals = pts.map((p) => Number(p.value));
+    let lo = Math.min(...vals);
+    let hi = Math.max(...vals);
+    if (lo === hi) { lo = Math.max(0, lo - 1); hi += 1; }
+    const pad = (hi - lo) * 0.1;
+    lo = Math.max(0, lo - pad);
+    hi += pad;
+    const t0 = Date.parse(pts[0].date);
+    const span = Math.max(1, Date.parse(pts[pts.length - 1].date) - t0);
+    const x = (p) => L + ((Date.parse(p.date) - t0) / span) * (W - L - R);
+    const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+    const xy = pts.map((p) => [x(p), y(Number(p.value))]);
+    const line = xy.map(([a, b]) => `${a.toFixed(1)},${b.toFixed(1)}`).join(' ');
+    const area = `M${xy[0][0].toFixed(1)},${H - B} ` + xy.map(([a, b]) => `L${a.toFixed(1)},${b.toFixed(1)}`).join(' ') + ` L${xy[xy.length - 1][0].toFixed(1)},${H - B} Z`;
+    const hov = M.hover >= 0 && M.hover < pts.length ? M.hover : -1;
+    const onMove = (e) => {
+      const el = e.currentTarget;
+      if (!el || typeof el.getBoundingClientRect !== 'function') return;
+      const box = el.getBoundingClientRect();
+      if (!box.width) return;
+      const px = ((e.clientX - box.left) / box.width) * W;
+      let best = 0;
+      xy.forEach(([a], i) => { if (Math.abs(a - px) < Math.abs(xy[best][0] - px)) best = i; });
+      M.hover = best;
+    };
+    const first = pts[0];
+    const last = pts[pts.length - 1];
+    const sel = hov >= 0 ? pts[hov] : last;
+    return h('figure', { class: 'chart' }, [
+      h('figcaption', { class: 'chart__read', 'aria-live': 'polite' }, [h('b', null, wfmt(sel.value)), ` le ${dateDay(sel.date)} · ${fmt(sel.priced)} ${plural(sel.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(sel.cards)}`]),
+      h('svg', { class: 'chart__svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Valeur du classeur, un point par jour : ${wfmt(first.value)} le ${dateDay(first.date)}, ${wfmt(last.value)} le ${dateDay(last.date)}.`,
+        onPointermove: onMove, onPointerleave: () => { M.hover = -1; } }, [
+        ...[lo, (lo + hi) / 2, hi].flatMap((v, i) => [
+          h('line', { key: 'g' + i, class: 'chart__grid', x1: L, x2: W - R, y1: y(v).toFixed(1), y2: y(v).toFixed(1) }),
+          h('text', { key: 't' + i, class: 'chart__tick', x: L - 8, y: (y(v) + 4).toFixed(1), 'text-anchor': 'end' }, compact(Math.round(v))),
+        ]),
+        h('path', { class: 'chart__area', d: area }),
+        h('polyline', { class: 'chart__line', points: line }),
+        hov >= 0 ? h('line', { class: 'chart__cross', x1: xy[hov][0].toFixed(1), x2: xy[hov][0].toFixed(1), y1: T, y2: H - B }) : null,
+        ...xy.map(([a, b], i) => h('circle', { key: 'p' + i, class: ['chart__dot', { on: i === hov }], cx: a.toFixed(1), cy: b.toFixed(1), r: i === hov ? 5 : 3 },
+          [h('title', null, `${dateDay(pts[i].date)} : ${wfmt(pts[i].value)}`)])),
+        h('text', { class: 'chart__tick', x: L, y: H - 8 }, dateDay(first.date)),
+        h('text', { class: 'chart__tick', x: W - R, y: H - 8, 'text-anchor': 'end' }, dateDay(last.date)),
+      ]),
+      h('details', { class: 'chart__table' }, [
+        h('summary', null, 'Voir les valeurs'),
+        h('table', null, [
+          h('thead', null, [h('tr', null, [h('th', null, 'Jour'), h('th', null, 'Valeur'), h('th', null, 'Cartes cotées')])]),
+          h('tbody', null, pts.slice().reverse().map((p) => h('tr', { key: p.date }, [h('td', null, dateDay(p.date)), h('td', { class: 'num' }, wfmt(p.value)), h('td', { class: 'num' }, `${fmt(p.priced)} sur ${fmt(p.cards)}`)]))),
+        ]),
+      ]),
+    ]);
+  }
+  // Une enchère (bonne affaire, mise, vente) : rareté de l'exemplaire, titre (ouvre sa fiche), brillance.
+  function lotTitle(x, extra) {
+    const mine = cardById.value.get(x.id) || null;
+    const open = (e) => (mine ? openCardFrom(mine.id, e) : openMissingFrom({ title: x.t, description: null, image: x.img || null, status: 'ok', rarity: x.r }, e));
+    return h('span', { class: 'lot__title' }, [pill(x.r), ' ', h('button', { class: 'linkish', type: 'button', onClick: open }, x.t), x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null, extra || null]);
+  }
+  const vsCote = (amount, x) => (x.cote != null && amount != null ? h('span', { class: ['lot__cote', { approx: !(x.n >= 3) }] },
+    ` · cote ${x.n >= 3 ? '' : '~ '}${wfmt(x.cote)} (${pctOf(amount, x.cote)})`) : h('span', { class: 'lot__cote' }, ' · pas de cote'));
+  function viewDeals(live) {
+    if (!live) return h('p', { class: 'muted' }, "Pas de lecture récente du marché (elle est gardée 24 h) : sur wiki-masters.com, clique « Mettre à jour les cotes » dans l'encart du favori.");
+    const list = Array.isArray(live.deals) ? live.deals : [];
+    if (!list.length) return h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.');
+    return h('ul', { class: 'lots' }, list.map((x) => {
+      const soon = !x.bid && Date.parse(x.end) - Date.now() < 2 * 3600000;
+      const cols = membershipsOfItem({ title: x.t });
+      return h('li', { key: x.a, class: 'lot' }, [
+        lotTitle(x, copyNameButton(x.t)),
+        h('span', { class: 'lot__line' }, [h('b', null, wfmt(x.ask)), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', vsCote(x.ask, x)]),
+        h('span', { class: 'lot__meta small' }, [soon ? h('span', { class: 'flag' }, 'finit bientôt') : null, x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : null, leftText(x.end),
+          cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '']),
+      ]);
+    }));
+  }
+  const BID_STATE = { won: 'gagnée', lost: 'perdue', off: 'terminée' };
+  const SALE_STATE = { sold: 'vendue', unsold: 'invendue', off: 'annulée ou terminée' };
+  function viewMine(live) {
+    if (!live) return h('p', { class: 'muted' }, 'Tes mises et tes ventes des 14 derniers jours apparaissent ici après « Mettre à jour les cotes ».');
+    const bids = Array.isArray(live.bids) ? live.bids : [];
+    const sales = Array.isArray(live.sales) ? live.sales : [];
+    return h('div', { class: 'mine' }, [
+      h('h3', null, 'Tes mises'),
+      bids.length ? h('ul', { class: 'lots' }, bids.map((x) => h('li', { key: x.a, class: 'lot' }, [
+        lotTitle(x),
+        h('span', { class: 'lot__line' }, [`ta mise ${wfmt(x.mine)}`, x.cur != null ? ` · ${x.st === 'run' ? 'enchère actuelle' : 'prix final'} ${wfmt(x.cur)}` : '', vsCote(x.cur != null ? x.cur : x.mine, x)]),
+        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.lead }] }, x.lead ? 'tu mènes' : 'dépassée'), leftText(x.end)]
+          : [h('span', { class: ['flag', { ok: x.st === 'won' }] }, BID_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
+      ]))) : h('p', { class: 'small muted' }, 'Aucune mise ces 14 derniers jours.'),
+      h('h3', null, 'Tes ventes'),
+      sales.length ? h('ul', { class: 'lots' }, sales.map((x) => h('li', { key: x.a, class: 'lot' }, [
+        lotTitle(x),
+        h('span', { class: 'lot__line' }, [`départ ${wfmt(x.base)}`, x.cur != null ? ` · ${x.st === 'sold' ? 'vendue' : 'enchère'} ${wfmt(x.cur)}` : '', vsCote(x.cur != null ? x.cur : x.base, x)]),
+        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end)]
+          : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
+      ]))) : h('p', { class: 'small muted' }, 'Aucune vente ces 14 derniers jours.'),
+    ]);
+  }
+  function viewMovers() {
+    const mv = movers.value;
+    if (!mv.up.length && !mv.down.length) return h('p', { class: 'muted' }, "Pas encore assez de ventes pour comparer à il y a 7 jours (3 ventes au moins, maintenant et avant).");
+    const col = (title, list) => h('div', null, [h('h3', null, title), list.length ? h('ol', { class: 'movers' }, list.map((x) => h('li', { key: x.c.id }, [
+      pill(x.c.rarity), ' ', h('button', { class: 'linkish', type: 'button', onClick: (e) => openCardFrom(x.c.id, e) }, x.c.title),
+      h('b', { class: ['delta', x.delta > 0 ? 'up' : 'down'] }, `${x.delta > 0 ? '+' : '−'}${wfmt(Math.abs(x.delta))}`), h('span', { class: 'small muted' }, ` ${x.pct}`),
+    ]))) : h('p', { class: 'small muted' }, 'Aucune.')]);
+    return h('div', { class: 'movers-cols' }, [col('En hausse', mv.up), col('En baisse', mv.down)]);
+  }
+  function viewMarket() {
+    const v = M.value;
+    const stamp = M.liveAt ? `lue par ton favori le ${dateShort(M.liveAt)}` : '';
+    return h('div', { class: 'market' }, [
+      h('section', { class: 'panel market__value' }, [
+        h('div', { class: 'market__head' }, [h('h2', null, 'Valeur de ton classeur'),
+          h('button', { class: 'btn small', type: 'button', disabled: M.busy, onClick: () => loadMarket(true) }, [icon('refresh', M.busy ? 'spin' : ''), M.busy ? 'Lecture…' : 'Relire'])]),
+        !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
+        M.loaded && v ? h('p', { class: 'market__big' }, [h('b', null, wfmt(v.value)), h('span', { class: 'muted' }, ` · ${fmt(v.priced)} ${plural(v.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(v.cards)}`)]) : null,
+        M.loaded && v && v.approx ? h('p', { class: 'small muted' }, `Dont ${fmt(v.approx)} ${plural(v.approx, 'carte comptée', 'cartes comptées')} dans sa plus haute rareté : le détail de leurs exemplaires arrive avec la prochaine relecture complète du favori.`) : null,
+        M.loaded && v && !v.priced ? h('p', { class: 'muted' }, MARKET_HOW) : null,
+        M.loaded ? viewValueChart(M.history) : null,
+        h('p', { class: 'small muted' }, 'Valeur = somme des cotes fiables (3 ventes au moins) de chacun de tes exemplaires, selon sa rareté et s\'il est brillant ; cote = médiane des 30 dernières ventes sur 90 jours. Un point par jour.'),
+        M.loaded && M.error ? errLine(M.error) : null,
+      ]),
+      h('section', { class: 'panel' }, [h('h2', null, 'Bonnes affaires'),
+        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections : au plus 80 % de la cote, ou « finit bientôt » (sans enchère, moins de 2 h, départ sous la cote).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
+        viewDeals(M.live)]),
+      h('section', { class: 'panel' }, [h('h2', null, 'Cartes qui bougent'),
+        h('p', { class: 'small muted' }, 'Écart de la cote de tes exemplaires sur 7 jours, en W.'), viewMovers()]),
+      h('section', { class: 'panel' }, [h('h2', null, 'Mes enchères'), viewMine(M.live)]),
+      h('section', { class: 'panel market__rules' }, [h('h2', null, 'À savoir'),
+        h('p', { class: 'notice warn-box' }, MARKET_RULES),
+        h('p', { class: 'small muted' }, 'Les cotes sont communes à tous les classeurs du site (des ventes du jeu, liées à aucun joueur) : une cote lue il y a plus de 12 h est relue au clic suivant d\'un membre qui a la carte.')]),
+    ]);
+  }
+  // Fiche d'une carte possédée : cote de chacun de tes exemplaires (rareté, brillance), « ~ » si moins de 3 ventes.
+  function viewCote(c) {
+    if (!M.loaded) return null;
+    const p = prices.value.get(String(c.id));
+    if (!p) return h('div', { class: 'cote' }, [h('h3', null, 'Cote'), h('p', { class: 'small muted' }, M.value && M.value.priced ? "Pas encore lue : « Mettre à jour les cotes » dans l'encart du favori la lira (les plus anciennes d'abord)." : MARKET_HOW)]);
+    const { list, approx } = variantsOf(c);
+    let total = 0;
+    let all = true;
+    const rows = list.slice().sort((a, b) => variantOrder(a[0], b[0])).map(([k, n]) => {
+      const q = p.v[k];
+      if (reliable(q)) total += q.p * n; else all = false;
+      return h('li', { key: k, class: 'cote__row' }, [
+        h('span', null, `${n > 1 ? fmt(n) + ' × ' : ''}${variantName(k)}`),
+        q ? h('b', { class: { approx: !reliable(q) }, title: reliable(q) ? null : 'Moins de 3 ventes : cote peu fiable' }, (reliable(q) ? '' : '~ ') + wfmt(q.p)) : h('b', { class: 'none' }, 'pas de vente'),
+        q ? h('span', { class: 'small muted' }, `${fmt(q.n)} ${plural(q.n, 'vente', 'ventes')} · dernière ${wfmt(q.l)} le ${dateDay(q.d)}${q.w != null && q.w > 0 ? ` · 7 jours : ${pctOf(q.p, q.w)}` : ''}`) : null,
+      ]);
+    });
+    return h('div', { class: 'cote' }, [
+      h('h3', null, ['Cote ', h('span', { class: 'hint-inline' }, `lue le ${dateDay(p.at)}`)]),
+      h('ul', { class: 'cote__list' }, rows),
+      list.length > 1 || list[0][1] > 1 ? h('p', { class: 'small' }, `${all ? 'Tes exemplaires' : 'Tes exemplaires cotés'} : ${wfmt(total)}`) : null,
+      approx ? h('p', { class: 'small muted' }, "Rareté de tes exemplaires pas encore connue : comptés dans celle de la carte (la prochaine relecture complète du favori la donne).") : null,
+    ]);
+  }
+  // Fiche d'une carte qui te manque : ses cotes connues, par rareté d'exemplaire.
+  function viewMissingCote(item) {
+    if (!M.loaded) return null;
+    const p = wantedPrices.value.get(normTitle(item.title));
+    if (!p) return null;
+    const keys = Object.keys(p.v).filter((k) => VARIANT_RE.test(k)).sort(variantOrder);
+    return h('div', { class: 'cote' }, [
+      h('h3', null, ['Cote dans le jeu ', h('span', { class: 'hint-inline' }, `lue le ${dateDay(p.at)}`)]),
+      keys.length ? h('ul', { class: 'cote__list' }, keys.map((k) => {
+        const q = p.v[k];
+        return h('li', { key: k, class: 'cote__row' }, [h('span', null, variantName(k)), h('b', { class: { approx: !reliable(q) } }, (reliable(q) ? '' : '~ ') + wfmt(q.p)),
+          h('span', { class: 'small muted' }, `${fmt(q.n)} ${plural(q.n, 'vente', 'ventes')} · dernière le ${dateDay(q.d)}`)]);
+      })) : h('p', { class: 'small muted' }, 'Aucune vente ces 90 derniers jours.'),
+    ]);
+  }
+
   // ================================================================ rendu : contenu, bande de sélection
   function viewMain() {
     let panel;
@@ -4953,6 +5619,8 @@
     else if (S.tab === 'maj') panel = viewUpdate();
     else if (S.tab === 'reglages') panel = viewSettings();
     else if (S.tab === 'amis') panel = viewFriends();
+    else if (S.tab === 'chat') panel = viewChat();
+    else if (S.tab === 'marche') panel = viewMarket();
     else panel = S.album ? viewAlbum() : viewCollections();
     return h('main', { class: 'wrap', id: 'main' }, [
       h('section', { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
@@ -5026,6 +5694,7 @@
           c.quality != null ? fact('Qualité', NUM2.format(c.quality)) : null,
           c.starred ? fact('Favorite', 'oui, dans le jeu') : null,
         ]),
+        viewCote(c),
         h('div', null, [
           h('h3', null, 'Tes tags'),
           h('div', { class: 'tags' }, c.tags.length ? c.tags.map((t) => h('span', { class: 'tag own', key: t, title: tagTitle(t) }, [tagSub(t),
@@ -5092,6 +5761,7 @@
         ]) : null,
         ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
+        ok ? viewMissingCote(item) : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
@@ -5594,6 +6264,8 @@
   }
   function onVisible() {
     setLive();
+    chatVisibility(); // chat ouvert : relu tout de suite au retour, minuterie arrêtée quand la page est cachée
+    if (S.tab === 'marche' && document.visibilityState === 'visible') loadMarket(Date.now() - M.at > 20000); // retour du jeu : cotes peut-être relues
     return checkRemote(false);
   }
 

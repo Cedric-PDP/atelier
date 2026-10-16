@@ -20,6 +20,24 @@ export const isDate = (v) => typeof v === 'string' && v.length <= 40 && /^\d{4}-
 const isNum = (v) => v === null || (typeof v === 'number' && Number.isFinite(v));
 const isText = (v, max) => v === null || (typeof v === 'string' && v.length <= max);
 
+// Exemplaires d'une carte par rareté d'exemplaire et brillance (« R » : rares, « R* » : rares brillantes), de quoi coter
+// chacun (market.js) : {"C*": 1, "R": 2}, clés dans l'ordre binaire (celui de SQLite), somme = count. Facultatif (favori
+// plus ancien) ; une forme invalide est seulement oubliée, la carte reste.
+const VARIANT_KEY = /^(C|PC|R|SR|UR|L)\*?$/;
+export function cleanVariants(v, n) {
+  if (!v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const keys = Object.keys(v).sort();
+  if (!keys.length || keys.length > 12) return null;
+  const out = {};
+  let sum = 0;
+  for (const k of keys) {
+    if (!VARIANT_KEY.test(k) || !Number.isInteger(v[k]) || v[k] < 1 || v[k] > 1_000_000) return null;
+    out[k] = v[k];
+    sum += v[k];
+  }
+  return sum === n ? out : null;
+}
+
 // Mêmes règles pour les deux sources (favori : CarteImport ; rafraîchissement ou favori ancien : entrées brutes) :
 // une carte qui ne les respecte pas est ignorée (et comptée dans `skipped`), jamais corrigée.
 function validCard(c) {
@@ -48,6 +66,8 @@ function validCard(c) {
   if (c.starred) out.starred = true;
   if (c.obtained_at !== null) out.obtained_at = c.obtained_at;
   if (c.eid !== null) out.eid = c.eid;
+  const variants = c.variants === null || c.variants === undefined ? null : cleanVariants(c.variants, c.count);
+  if (variants) out.variants = variants;
   return out;
 }
 
@@ -72,11 +92,14 @@ export function checkCard(c) {
     starred: c.starred ?? false,
     obtained_at: opt(c.obtained_at),
     eid: null,
+    variants: c.variants ?? null,
   });
 }
 
 // Entrée brute du jeu → carte partielle (un exemplaire). `eid` = id de l'exemplaire, pour ne pas compter deux fois
-// une entrée vue deux fois. Jamais le user_id du jeu ni ses étiquettes. null si l'entrée est invalide.
+// une entrée vue deux fois. Jamais le user_id du jeu ni ses étiquettes. null si l'entrée est invalide. Rareté de
+// l'exemplaire (variants) : son snapshot_rarity s'il en a un (rareté au moment où il a été obtenu, celle des ventes du
+// marché), sinon celle de la carte.
 export function entryToCard(entry) {
   if (!entry || typeof entry !== 'object' || !entry.card || typeof entry.card !== 'object') return null;
   const c = entry.card;
@@ -97,6 +120,7 @@ export function entryToCard(entry) {
     starred: !!entry.starred,
     obtained_at: opt(entry.obtained_at),
     eid: entry.id === undefined || entry.id === null ? null : String(entry.id),
+    variants: { [(RARITIES.has(entry.snapshot_rarity) ? entry.snapshot_rarity : c.rarity) + (entry.is_shiny ? '*' : '')]: entry.count ?? 1 },
   });
 }
 

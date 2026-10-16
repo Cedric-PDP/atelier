@@ -607,8 +607,9 @@ const SITE_ERRORS = { 500: 'Erreur interne du serveur.', 503: 'La base du classe
 // en vie) ; sinon les autres pages sont déchargées (rechargement). storage : le localStorage de la page (un neuf par
 // défaut ; le même objet pour deux pages = le même navigateur ; null : absent ; 'refused' : accès refusé).
 // onPost(body, route) : appelé à chaque envoi au classeur, avant sa réponse.
-async function openGame({ start = 'click', pathname = '/collection', answers = [], tab = false, storage = memoryStorage(), onPost = null } = {}) {
+async function openGame({ start = 'click', pathname = '/collection', answers = [], tab = false, storage = memoryStorage(), onPost = null, cookie = '' } = {}) {
   const { doc } = makeDom();
+  doc.cookie = cookie; // cookies de la page lisibles en JavaScript (session du jeu : supa.cookie)
   if (!tab) {
     for (const p of clock.pages) p.alive = false;
     clock.pages = [];
@@ -696,6 +697,7 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
         return { ok: r.status >= 200 && r.status < 300, status: r.status, json: async () => r.json };
       });
     }
+    if (url.startsWith('https://cyrxjeppjqsxxjayfrur.supabase.co/')) return Promise.resolve(supaFetch(url, init)); // base du jeu (cotes)
     calls.push({ url, at: clock.now });
     return Promise.resolve(searchFetch(url)); // jeu simulé, Collection globale comprise
   }
@@ -708,7 +710,7 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
       clock.timers.push({ at: clock.now + Math.max(0, Number(ms) || 0), seq: clock.seq, f, page: me });
       return clock.seq;
     },
-    URL, URLSearchParams, Date, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console,
+    URL, URLSearchParams, Date, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console, atob,
     prompt: () => (answers.length ? answers.shift() : null),
   };
   if (storage === 'refused') Object.defineProperty(ctx, 'localStorage', { get() { throw new Error('SecurityError : accès au stockage refusé'); } });
@@ -1316,16 +1318,16 @@ await test('relié sur la Collection globale : une synchro automatique n\'efface
   const g = await openGame({ pathname: '/global-collection', answers: ['vache', 'Mes vaches'] });
   const CHOICES = ['Mettre à jour mon classeur', 'Créer une collection avec une recherche…'];
   const buttons = () => g.ctx.document.getElementById('classeur-favori').querySelectorAll('button').map((x) => x.textContent);
-  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Réduire', 'Arrêter']);
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter']);
   await g.page('/api/packs/open', POST_JSON({}));
   await g.advance(6_000);
   assert.match(g.text(), /5 exemplaires obtenus depuis ta dernière synchro/, g.text());
   assert.match(g.text(), /Collection globale : que veux-tu faire \?/, g.text());
-  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Réduire', 'Arrêter']);
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter']);
   g.press('Créer une collection avec une recherche…');
   await g.advance(1_000);
   assert.match(g.text(), /Collection « Mes vaches » créée dans ton classeur : 87 cartes/, g.text());
-  assert.deepEqual(buttons(), ['Synchroniser', 'Réduire', 'Arrêter'], 'choix retirés une fois l\'un d\'eux pris');
+  assert.deepEqual(buttons(), ['Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter'], 'choix retirés une fois l\'un d\'eux pris');
 });
 
 await test('script Tampermonkey périmé (favori régénéré) : rien n\'est lu dans le jeu, message propre au script, pause aussitôt', async () => {
@@ -1358,6 +1360,298 @@ await test('classeur plus ancien (« state » refusé, 400) : après un clic, le
   await g.advance(6_000);
   assert.deepEqual(g.since(n), [], 'rien n\'est lu dans le jeu en automatique');
   assert.match(g.text(), /Erreur\./, g.text());
+});
+
+// --- Cotes et marché : « Mettre à jour les cotes », base du jeu simulée (Supabase, PostgREST) ------------------------
+// supa.token : le seul jeton accepté (sinon 401 « JWT expired ») ; supa.fail(url, n) peut rendre une erreur au n-ième
+// appel ; tables : cards (titre -> id), ventes et enchères en cours (auctions), enchères posées (auction_bids).
+const ANON_KEY = src.match(/var ANON = "([^"]+)"/)[1];
+const supa = {};
+const resetSupa = () => Object.assign(supa, { calls: [], token: 'jeton-acces-1', cards: [], auctions: [], bids: [], fail: null, after: null });
+resetSupa();
+const SESSION_COOKIE = 'sb-cyrxjeppjqsxxjayfrur-auth-token';
+const UID = 'uid-joueur-7f3a';
+const REFRESH = 'jeton-de-renouvellement-a-usage-unique';
+const b64url = (t) => Buffer.from(t, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+// Cookie de session comme le pose la page du jeu (@supabase/ssr) : « base64- » + JSON en base64url, découpé en .0, .1…
+// au-delà de `chunk` caractères ; prefix = false : JSON encodé pour l'adresse (anciennes versions).
+function sessionCookie({ token = supa.token, exp = Math.floor(clock.now / 1000) + 3600, chunk = 0, prefix = true } = {}) {
+  const json = JSON.stringify({ access_token: token, token_type: 'bearer', expires_in: 3600, expires_at: exp, refresh_token: REFRESH, user: { id: UID, email: 'joueur@example.org', user_metadata: { name: 'Joueur é' } } });
+  const value = prefix ? 'base64-' + b64url(json) : encodeURIComponent(json);
+  if (!chunk) return `theme=sombre; ${SESSION_COOKIE}=${value}; autre=1`;
+  const parts = [];
+  for (let i = 0; i * chunk < value.length; i++) parts.push(`${SESSION_COOKIE}.${i}=${value.slice(i * chunk, (i + 1) * chunk)}`);
+  return ['theme=sombre', ...parts].join('; ');
+}
+// in.("a","b, c") de PostgREST -> ['a', 'b, c'] (guillemets et barres obliques inverses).
+function pgList(v) {
+  const out = [];
+  let cur = '';
+  let q = false;
+  let esc = false;
+  for (const ch of v.slice(4, -1)) {
+    if (esc) { cur += ch; esc = false; } else if (q && ch === '\\') esc = true;
+    else if (ch === '"') q = !q;
+    else if (!q && ch === ',') { out.push(cur); cur = ''; } else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+function supaFetch(url, init) {
+  const headers = (init && init.headers) || {};
+  supa.calls.push({ url, at: clock.now, headers: { ...headers } });
+  clock.ticks += 1;
+  if (init && init.method && init.method !== 'GET') throw new Error('écriture dans la base du jeu : ' + url);
+  if (headers.apikey !== ANON_KEY) return reply({ message: 'Invalid API key' }, 401);
+  const forced = supa.fail && supa.fail(url, supa.calls.length);
+  if (forced) return reply(forced.body, forced.status);
+  if (headers.Authorization !== 'Bearer ' + supa.token) return reply({ code: 'PGRST301', message: 'JWT expired' }, 401);
+  const u = new URL(url);
+  assert.equal(u.pathname.startsWith('/rest/v1/'), true, 'seulement les tables (REST), jamais /auth : ' + url);
+  const rows0 = { cards: supa.cards, auctions: supa.auctions, auction_bids: supa.bids }[u.pathname.slice(9)];
+  if (!rows0) throw new Error('table inattendue : ' + url);
+  let rows = rows0.filter((r) => [...u.searchParams].every(([k, v]) => {
+    if (['select', 'order', 'limit', 'offset'].includes(k)) return true;
+    const x = r[k] === undefined || r[k] === null ? null : String(r[k]);
+    if (v.startsWith('eq.')) return x === v.slice(3);
+    if (v.startsWith('gte.')) return x !== null && x >= v.slice(4);
+    if (v.startsWith('gt.')) return x !== null && x > v.slice(3);
+    if (v.startsWith('in.')) return pgList(v).includes(x);
+    throw new Error('filtre inattendu : ' + k + '=' + v);
+  }));
+  const order = (u.searchParams.get('order') || '').split(',').filter(Boolean).map((o) => o.split('.'));
+  rows = rows.slice().sort((a, b) => {
+    for (const [c, d] of order) if (a[c] !== b[c]) return (a[c] < b[c] ? -1 : 1) * (d === 'desc' ? -1 : 1);
+    return 0;
+  });
+  const limit = Number(u.searchParams.get('limit') || 1000);
+  assert.ok(limit <= 1000, 'limit ≤ 1 000');
+  const off = Number(u.searchParams.get('offset') || 0);
+  if (supa.after) supa.after(supa.calls.length);
+  return reply(rows.slice(off, off + limit));
+}
+const iso = (ms) => new Date(ms).toISOString();
+const sale = (card, rarity, price, ageMs, shiny = false) => ({ id: `v${supa.auctions.length}`, card_id: card, status: 'settled_sold', snapshot_rarity: rarity, is_shiny: shiny,
+  final_price: price, settled_at: iso(clock.now - ageMs), end_at: iso(clock.now - ageMs - 1000), seller_id: 'vendeur', winner_id: 'acheteur' });
+const H = 3600_000;
+const supaPaths = () => supa.calls.map((c) => decodeURIComponent(c.url.slice('https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/'.length)));
+const pricesOf = async (ids) => {
+  const all = [];
+  for (let part = '0'; part !== null;) {
+    const r = (await api('GET', `market/prices?part=${encodeURIComponent(part)}`, { key: account.key })).json;
+    all.push(...r.prices);
+    part = r.next_part;
+  }
+  return ids ? Object.fromEntries(ids.map((id) => [id, (all.find((x) => x.id === id) || {}).v])) : all;
+};
+// Cartes envoyées au classeur sans passer par le jeu (clé principale, morceaux de 500).
+async function importDirect(ids) {
+  let r = null;
+  for (let p = 0; p * 500 < ids.length; p++) {
+    r = await api('POST', 'import', { key: account.key, body: { upload_id: 'direct', part: p, last: (p + 1) * 500 >= ids.length, cards: ids.slice(p * 500, (p + 1) * 500).map((id) => ({ id, title: 'Titre ' + id, rarity: 'C', count: 1 })) } });
+  }
+  return r;
+}
+async function pressCotes(g, ms = 120_000) {
+  g.press('Mettre à jour les cotes');
+  await g.advance(ms);
+  return g.text();
+}
+
+await test('cotes : médiane des 30 ventes (fiable dès 3), 7 jours, brillance et rareté à part ; bonnes affaires, enchères, ventes ; une requête par seconde ; jeton jamais envoyé', async () => {
+  await newAccount();
+  collection = Array.from({ length: 60 }, (_, i) => entry(i, i, i === 4 ? { snapshot_rarity: 'R' } : {}));
+  resetSupa();
+  const item = (title) => ({ title, description: null, image: null, status: 'ok' });
+  const odd = 'Avec, virgule (et "guillemets")';
+  await api('POST', 'targets/save', { key: account.key, body: { name: 'Envies', items: ['Voulue 1', 'Voulue 2', odd, 'Carte 3', 'Inconnue'].map(item) } });
+  const g = await openGame({ cookie: sessionCookie() });
+  await g.advance(5_000);
+  assert.match(g.text(), /60 cartes envoyées au classeur/, g.text());
+  assert.deepEqual((await cardOf('c4')).variants, { R: 1 }, 'rareté de l\'exemplaire (snapshot_rarity) envoyée');
+  assert.deepEqual((await cardOf('c5')).variants, { C: 1 });
+  assert.equal(supa.calls.length, 0, 'aucune lecture de la base du jeu sans clic sur « Mettre à jour les cotes »');
+  supa.cards = [{ id: 'w1', wikipedia_title: 'Voulue 1', lang: 'fr' }, { id: 'w2-en', wikipedia_title: 'Voulue 2', lang: 'en' }, { id: 'w2', wikipedia_title: 'Voulue 2', lang: 'fr' },
+    { id: 'w3', wikipedia_title: odd, lang: 'fr' }, { id: 'c3', wikipedia_title: 'Carte 3', lang: 'fr' }];
+  // Ventes : c0 en R (40, dont 11 de plus de 7 jours), en R brillante (3), en C (2 : pas fiable) ; c2 : une seule, de
+  // plus de 90 jours (pas lue) ; les cartes voulues w1 (R), w2 (SR), w3 (C).
+  const t0 = clock.now;
+  for (let i = 0; i < 40; i++) supa.auctions.push(sale('c0', 'R', i + 1, (i * 6 + 1) * H));
+  supa.auctions.push(sale('c0', 'R', 999, 2 * H, true), sale('c0', 'R', 100, 3 * H, true), sale('c0', 'R', 200, 4 * H, true));
+  supa.auctions.push(sale('c0', 'C', 5, H), sale('c0', 'C', 7, 2 * H), sale('c2', 'C', 50, 100 * 24 * H));
+  for (let i = 0; i < 5; i++) supa.auctions.push(sale('w1', 'R', 100, i * H), sale('w2', 'SR', 100, i * H));
+  for (let i = 0; i < 3; i++) supa.auctions.push(sale('w3', 'C', 100, i * H));
+  const card = (t) => ({ wikipedia_title: t, image_url: 'https://upload.wikimedia.org/' + t.length + '.jpg', hide_image: false });
+  const active = (id, cardId, rarity, extra) => ({ id, card_id: cardId, status: 'active', snapshot_rarity: rarity, is_shiny: false, seller_id: 'vendeur', current_bid: null,
+    current_bidder_id: null, base_amount: 10, card: card('Titre du jeu ' + cardId), ...extra });
+  supa.auctions.push(
+    active('a1', 'w1', 'R', { base_amount: 50, end_at: iso(clock.now + H) }), // sans enchère, finit dans 1 h, 50 % de la cote
+    active('a1b', 'w1', 'R', { base_amount: 90, end_at: iso(clock.now + 1.5 * H) }), // finit bientôt : sans enchère, < 2 h, départ ≤ cote
+    active('a2', 'w2', 'SR', { current_bid: 70, current_bidder_id: 'quelqu-un', base_amount: 20, end_at: iso(clock.now + 5 * H) }), // 70 % de la cote
+    active('a3', 'w3', 'C', { current_bid: 95, current_bidder_id: 'quelqu-un', end_at: iso(clock.now + 3 * H) }), // 95 % : pas une affaire
+    active('a3b', 'w3', 'C', { base_amount: 90, end_at: iso(clock.now + 3 * H) }), // sans enchère mais plus de 2 h
+    active('a4', 'w1', 'R', { seller_id: UID, base_amount: 1, end_at: iso(clock.now + H) }), // la mienne
+    active('a5', 'w1', 'R', { is_shiny: true, base_amount: 1, end_at: iso(clock.now + H) }), // brillante : pas de cote
+    active('a6', 'w3', 'C', { current_bid: 85, current_bidder_id: UID, end_at: iso(clock.now + 4 * H) }), // j'y mène, 85 % : pas une affaire
+    // Mes ventes : en cours avec une enchère, vendue, invendue, trop ancienne.
+    active('s1', 'c5', 'C', { seller_id: UID, base_amount: 30, current_bid: 35, current_bidder_id: 'x', end_at: iso(clock.now + 2 * H) }),
+    { ...active('s2', 'c6', 'C', { seller_id: UID, base_amount: 30, end_at: iso(clock.now - 30 * H) }), status: 'settled_sold', final_price: 70 },
+    { ...active('s3', 'c7', 'C', { seller_id: UID, base_amount: 30, end_at: iso(clock.now - 40 * H) }), status: 'settled_unsold' },
+    { ...active('s4', 'c8', 'C', { seller_id: UID, base_amount: 30, end_at: iso(clock.now - 20 * 24 * H) }), status: 'settled_sold', final_price: 1 },
+  );
+  const auctionOf = (id) => supa.auctions.find((a) => a.id === id);
+  const bid = (auction, amount, ageMs) => ({ bidder_id: UID, amount, placed_at: iso(clock.now - ageMs), auction: auctionOf(auction) });
+  supa.auctions.push({ ...active('a7', 'c9', 'C', { end_at: iso(clock.now - 5 * H) }), status: 'settled_sold', final_price: 80, winner_id: UID },
+    { ...active('a8', 'c9', 'C', { end_at: iso(clock.now - 6 * H) }), status: 'settled_sold', final_price: 120, winner_id: 'autre' });
+  supa.bids = [bid('a6', 85, H), bid('a6', 40, 2 * H), bid('a7', 80, 6 * H), bid('a8', 110, 7 * H), { ...bid('a8', 5, 30 * 24 * H) }];
+  for (let i = 5; i < 10; i++) supa.auctions.push(sale(`c${i}`, 'C', 40, i * H), sale(`c${i}`, 'C', 50, i * H), sale(`c${i}`, 'C', 60, i * H));
+  const posted0 = g.posts.length;
+  const text = await pressCotes(g);
+  assert.match(text, /Cotes lues : 6\d cartes, tes cotes sont à jour\. 3 bonnes affaires, 1 de tes enchères en cours : onglet « Marché » du classeur\./, text);
+  // Rythme et plafond : une requête par seconde au plus, 30 au plus, après la demande du plan au classeur.
+  assert.ok(supa.calls.length <= 30, `${supa.calls.length} requêtes`);
+  for (let i = 1; i < supa.calls.length; i++) assert.ok(supa.calls[i].at - supa.calls[i - 1].at >= 1000, `requêtes ${i} et ${i + 1} à moins d'une seconde`);
+  const routes = g.posts.slice(posted0).map((x) => x.route);
+  assert.deepEqual([routes[0], routes[routes.length - 1]], ['market/plan', 'market/live']);
+  assert.ok(g.posts.slice(posted0).find((x) => x.route === 'market/plan').at <= supa.calls[0].at, 'plan demandé avant toute lecture du jeu');
+  const paths = supaPaths();
+  assert.ok(paths.some((p) => p.startsWith('auction_bids?') && p.includes(`bidder_id=eq.${UID}`)), 'mes enchères');
+  assert.ok(paths.some((p) => p.startsWith('auctions?') && p.includes(`seller_id=eq.${UID}`)), 'mes ventes');
+  assert.ok(paths.some((p) => p.startsWith('cards?') && p.includes('wikipedia_title=in.("Voulue 1","Voulue 2","Avec, virgule (et \\"guillemets\\")","Inconnue")')), 'titres entre guillemets');
+  assert.ok(paths.some((p) => p.includes('status=eq.active') && p.includes('card_id=in.("w1","w2","w3")') && p.includes('order=end_at')), 'enchères en cours des cartes voulues');
+  assert.ok(paths.filter((p) => p.includes('status=eq.settled_sold')).every((p) => p.includes('order=card_id,settled_at.desc,id&limit=1000&offset=')), 'ventes : ordre stable, pages de 1 000');
+  assert.ok(!paths.some((p) => p.includes('/api/marketplace')) && !g.calls.some((c) => c.url.includes('marketplace')), 'jamais les routes du marché du site du jeu');
+  // Le jeton : seulement dans l'en-tête des requêtes à la base du jeu, jamais au classeur, dans l'encart ni renouvelé.
+  assert.ok(supa.calls.every((c) => c.headers.Authorization === 'Bearer ' + supa.token && c.headers.apikey === ANON_KEY));
+  const outgoing = JSON.stringify(g.posts) + JSON.stringify(supa.calls);
+  assert.ok(!outgoing.includes(REFRESH), 'jeton de renouvellement utilisé');
+  assert.ok(!JSON.stringify(g.posts).includes(supa.token) && !JSON.stringify(g.posts).includes(UID), 'jeton ou identifiant du joueur envoyé au classeur');
+  assert.ok(!g.text().includes(supa.token) && !(g.storage.keys ? g.storage.keys().some((k) => k.includes('token')) : false), 'jeton dans l\'encart ou le stockage');
+  // Les cotes rangées par le classeur.
+  const v = await pricesOf(['c0', 'c1', 'c2', 'c5']);
+  // R : médiane des 30 plus récentes (1 à 30), 40 ventes ; il y a 7 jours : médiane des 12 plus anciennes (29 à 40).
+  assert.deepEqual(v.c0.R, { p: 15.5, n: 40, w: 34.5, l: 1, d: iso(t0 - H) });
+  assert.deepEqual(v.c0['R*'], { p: 200, n: 3, w: null, l: 999, d: iso(t0 - 2 * H) }, 'brillantes à part');
+  assert.deepEqual(v.c0.C, { p: 6, n: 2, w: null, l: 5, d: iso(t0 - H) }, 'rareté d\'exemplaire à part (2 ventes : pas fiable)');
+  assert.deepEqual([v.c1, v.c2], [{}, {}], 'sans vente sur 90 jours : datée, sans cote');
+  assert.equal(v.c5.C.p, 50);
+  // La lecture du marché, montrée par la page.
+  const m = (await api('GET', 'market', { key: account.key })).json;
+  assert.deepEqual(m.live.deals.map((d) => [d.a, d.ask, d.bid, d.cote, d.t]), [['a1', 50, false, 100, 'Voulue 1'], ['a1b', 90, false, 100, 'Voulue 1'], ['a2', 70, true, 100, 'Voulue 2']]);
+  assert.deepEqual(m.live.bids.map((b) => [b.a, b.st, b.mine, b.cur, b.lead, b.cote]), [['a6', 'run', 85, 85, true, 100], ['a7', 'won', 80, 80, false, 50], ['a8', 'lost', 110, 120, false, 50]]);
+  assert.deepEqual(m.live.sales.map((x) => [x.a, x.st, x.base, x.cur, x.bid]), [['s1', 'run', 30, 35, true], ['a4', 'run', 1, null, false], ['s2', 'sold', 30, 70, false], ['s3', 'unsold', 30, null, false]]);
+  assert.equal(m.live.deals[0].img, 'https://upload.wikimedia.org/' + 'Titre du jeu w1'.length + '.jpg');
+  assert.ok(!JSON.stringify(m.live).includes(UID) && !JSON.stringify(m.live).includes('quelqu-un'), 'identifiants du jeu dans la lecture du marché');
+  // Valeur : c5 à c9 (C, 3 ventes à 40, 50, 60 : 50) ; c0 a son exemplaire en C (2 ventes : pas fiable), c4 en R (pas de cote).
+  assert.deepEqual(m.value, { value: 250, priced: 5, cards: 60, approx: 0 });
+  // Les titres résolus restent : le clic suivant ne les cherche plus ; cotes fraîches (moins de 12 h) pas relues.
+  const n0 = supa.calls.length;
+  const again = await pressCotes(g);
+  assert.ok(!supaPaths().slice(n0).some((p) => p.startsWith('cards?')), 'titres déjà résolus redemandés');
+  assert.ok(!supaPaths().slice(n0).some((p) => p.includes('status=eq.settled_sold') && p.includes('"c1"')), 'cote fraîche relue');
+  assert.match(again, /tes cotes sont à jour/, again);
+  resetSupa();
+});
+
+await test('cotes : 30 requêtes au plus par clic ; le suivant reprend aux cotes les plus anciennes ; pages stables de 1 000 ventes ; quota du jour', async () => {
+  await newAccount();
+  resetSupa();
+  const ids = Array.from({ length: 2950 }, (_, i) => `p${String(i).padStart(4, '0')}`);
+  const r = await importDirect(ids);
+  assert.equal(r.json.count, 2950);
+  for (let i = 0; i < 1200; i++) supa.auctions.push(sale('p0000', 'C', 10 + (i % 7), (i + 1) * 60_000));
+  const g = await openGame({ start: 'load', cookie: sessionCookie() });
+  const t1 = await pressCotes(g);
+  assert.equal(supa.calls.length, 30, 'plafond de 30 requêtes');
+  assert.match(t1, /Cotes lues : 2\s700 cartes \(il en reste 250 : reclique plus tard, les plus anciennes d'abord\)/, t1);
+  const paths = supaPaths();
+  const first = paths.filter((p) => p.includes('"p0000"'));
+  assert.deepEqual(first.map((p) => p.match(/offset=(\d+)/)[1]), ['0', '1000'], 'deux pages, dans le même ordre');
+  assert.equal((await pricesOf()).length, 2700);
+  assert.deepEqual((await pricesOf(['p0000'])).p0000.C.n, 1200);
+  const asked = (list) => list.filter((p) => p.includes('settled_sold')).flatMap((p) => pgList(p.match(/card_id=(in\.\([^)]*\))/)[1]));
+  const before = new Set(asked(paths));
+  supa.calls = [];
+  await g.advance(60_000);
+  const t2 = await pressCotes(g);
+  const now = asked(supaPaths());
+  assert.equal(new Set(now).size, 250, t2);
+  assert.ok(now.every((id) => !before.has(id)), 'le second clic reprend là où le premier s\'est arrêté');
+  assert.match(t2, /Cotes lues : 250 cartes, tes cotes sont à jour/, t2);
+  // Quota du classeur (3 000 par jour) : 2 950 envoyées ; le reste du jour, 50 au plus.
+  const plan = (await api('POST', 'market/plan', { key: importKey, body: {} })).json;
+  assert.deepEqual([plan.cards.length, plan.quota], [0, 50]);
+  resetSupa();
+});
+
+await test('cotes : session absente ou expirée → rien n\'est lu ; cookie découpé, sans « base64- » ou dans le localStorage ; jamais de renouvellement', async () => {
+  await fresh60();
+  resetSupa();
+  for (let i = 0; i < 3; i++) supa.auctions.push(sale('c1', 'C', 10, i * H));
+  // Pas de session lisible : message, aucune requête (ni au jeu, ni au classeur).
+  let g = await openGame({ start: 'load' });
+  let text = await pressCotes(g, 5_000);
+  assert.match(text, /ne trouve pas ta session du jeu/, text);
+  assert.deepEqual([supa.calls.length, g.posts.length], [0, 0]);
+  // Session expirée (expires_at passé) : demande de recharger la page, sans rien lire ni renouveler.
+  g = await openGame({ start: 'load', cookie: sessionCookie({ exp: Math.floor(clock.now / 1000) - 60 }) });
+  text = await pressCotes(g, 5_000);
+  assert.match(text, /Ta session du jeu a expiré dans cette page : recharge la page du jeu/, text);
+  assert.deepEqual([supa.calls.length, g.posts.length], [0, 0]);
+  // Formes du cookie : découpé en .0, .1… ; sans préfixe (JSON encodé) ; absent, mais dans le localStorage.
+  const stale = () => env.DB.sqlite.prepare("UPDATE prices SET read_at = '2000-01-01T00:00:00.000Z'").run();
+  for (const how of ['découpé', 'sans préfixe', 'localStorage']) {
+    resetSupa();
+    stale();
+    for (let i = 0; i < 3; i++) supa.auctions.push(sale('c1', 'C', 10, i * H));
+    const storage = memoryStorage();
+    if (how === 'localStorage') storage.setItem(SESSION_COOKIE, JSON.stringify({ access_token: supa.token, expires_at: Math.floor(clock.now / 1000) + 600, refresh_token: REFRESH, user: { id: UID } }));
+    const cookie = how === 'découpé' ? sessionCookie({ chunk: 120 }) : how === 'sans préfixe' ? sessionCookie({ prefix: false }) : 'theme=clair';
+    if (how === 'découpé') assert.ok(cookie.includes(SESSION_COOKIE + '.2='), 'au moins trois morceaux');
+    g = await openGame({ start: 'load', cookie, storage });
+    text = await pressCotes(g);
+    assert.match(text, /Cotes lues : 60 cartes/, `${how} : ${text}`);
+    assert.ok(supa.calls.every((c) => c.headers.Authorization === 'Bearer ' + supa.token), how);
+  }
+  // La page renouvelle elle-même sa session pendant la lecture : le favori prend le nouveau jeton à la requête suivante.
+  resetSupa();
+  stale();
+  g = await openGame({ start: 'load', cookie: sessionCookie() });
+  supa.after = (n) => {
+    if (n === 2) { supa.token = 'jeton-acces-2'; g.ctx.document.cookie = sessionCookie(); }
+  };
+  text = await pressCotes(g);
+  assert.match(text, /Cotes lues : 60 cartes/, text);
+  assert.deepEqual(supa.calls.map((c) => c.headers.Authorization.slice(-1)), ['1', '1', '2']);
+  // Jeton refusé en route (401) : arrêt et message, rien d'autre lu ; aucune requête de renouvellement, nulle part.
+  resetSupa();
+  g = await openGame({ start: 'load', cookie: sessionCookie() });
+  supa.token = 'jeton-que-la-page-na-pas-encore';
+  text = await pressCotes(g);
+  assert.match(text, /Ta session du jeu a expiré dans cette page : recharge la page du jeu/, text);
+  assert.equal(supa.calls.length, 1);
+  assert.ok(!g.calls.some((c) => /auth|token/.test(c.url)) && !g.posts.some((x) => /token/.test(x.route)), 'renouvellement tenté');
+  resetSupa();
+});
+
+await test('cotes : 429 ou 403 « automation_limit » → arrêt aussitôt, avec la raison ; les cotes déjà lues sont envoyées', async () => {
+  await newAccount();
+  const ids = Array.from({ length: 450 }, (_, i) => `q${String(i).padStart(3, '0')}`);
+  await importDirect(ids);
+  for (const [status, body] of [[429, { message: 'Too Many Requests' }], [403, { code: 'automation_limit', error: 'Trop de requêtes' }]]) {
+    resetSupa();
+    supa.auctions.push(sale('q000', 'C', 10, H), sale('q000', 'C', 12, H), sale('q000', 'C', 14, H));
+    // Appels : mes enchères, mes ventes, puis les lots de 100 ; le 5e (3e lot) est refusé.
+    supa.fail = (url, n) => (n === 5 ? { status, body } : null);
+    const g = await openGame({ start: 'load', cookie: sessionCookie() });
+    const text = await pressCotes(g);
+    assert.match(text, /Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard\. 200 cotes lues avant l'arrêt ont été envoyées au classeur\./, text);
+    assert.equal(supa.calls.length, 5, 'plus rien après le refus');
+    assert.ok(!g.posts.some((x) => x.route === 'market/live'), 'lecture du marché incomplète : pas envoyée');
+    assert.equal((await pricesOf(['q000'])).q000.C.p, 12);
+    env.DB.sqlite.prepare("UPDATE prices SET read_at = '2000-01-01T00:00:00.000Z'").run();
+  }
+  resetSupa();
 });
 
 console.log(`${results.length} tests`);

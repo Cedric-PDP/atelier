@@ -72,11 +72,43 @@ export const SCHEMA = [
     run_id TEXT NOT NULL,
     applied_at TEXT NOT NULL
   )`,
+  `CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    deleted INTEGER NOT NULL DEFAULT 0,
+    rev INTEGER NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS prices (
+    card_id TEXT PRIMARY KEY,
+    data TEXT NOT NULL,
+    read_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS value_history (
+    user_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    priced INTEGER NOT NULL,
+    cards INTEGER NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (user_id, date)
+  )`,
+  `CREATE TABLE IF NOT EXISTS market (
+    user_id TEXT PRIMARY KEY,
+    ids TEXT NOT NULL DEFAULT '{}',
+    live TEXT,
+    live_at TEXT,
+    quota_day TEXT,
+    quota_n INTEGER NOT NULL DEFAULT 0
+  )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
   `CREATE INDEX IF NOT EXISTS cards_gone_by_rev ON cards_gone (user_id, rev)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS chat_by_rev ON chat_messages (rev)`,
+  `CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at)`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.

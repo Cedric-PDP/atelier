@@ -33,6 +33,47 @@ function mockApi() {
   }
   // Comme le serveur : la révision n'avance que si une carte change (un envoi identique ne change que fetched_at).
   const bump = (st, ids) => { if (!ids.length) return; st.rev++; for (const id of ids) st.changed.set(id, st.rev); };
+  // Chat : un salon pour tous les comptes ; révision (rev) à la création puis à la suppression (marque vide gardée),
+  // comme le serveur. `chatLimit` : le prochain envoi est refusé (429).
+  const chat = { msgs: [], rev: 0, id: 0 };
+  const chatOut = (st, m) => ({ id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at });
+  const chatDrop = (m) => { if (!m.deleted) { m.deleted = true; m.text = ''; m.rev = ++chat.rev; } };
+  function chatRoute(st, method, p, body) {
+    const dm = p.match(/^\/api\/chat\/(\d+)$/);
+    if (dm) {
+      if (method !== 'DELETE') return json(405, { error: 'Méthode non autorisée.' });
+      const m = chat.msgs.find((x) => x.id === Number(dm[1]));
+      if (m && m.user === st.id) { chatDrop(m); return json(200, { ok: true }); }
+      if (!m || m.deleted) return json(404, { error: "Ce message n'existe plus." });
+      return json(403, { error: 'Tu ne peux supprimer que tes propres messages.' });
+    }
+    if (method === 'POST') {
+      const text = typeof body.text === 'string' ? body.text.replace(/\r\n?/g, '\n').trim() : '';
+      if (!text) return json(400, { error: "Message vide : écris quelque chose avant d'envoyer." });
+      if (text.length > 500) return json(400, { error: 'Message trop long : 500 caractères au plus.' });
+      if (!st.name) return json(400, { error: "Donne d'abord un prénom à ton classeur (Réglages, « Ton prénom ») : c'est lui que les autres membres verront." });
+      if (self.chatLimit) return json(429, { error: 'Doucement : 10 messages par minute au plus. Réessaie dans 42 s.', retry_after: 42 });
+      const m = { id: ++chat.id, user: st.id, text, at: new Date().toISOString(), deleted: false, rev: ++chat.rev };
+      chat.msgs.push(m);
+      return json(201, { message: chatOut(st, m) });
+    }
+    if (method !== 'GET') return json(405, { error: 'Méthode non autorisée.' });
+    const sp = new URL('http://x' + p).searchParams;
+    const live = chat.msgs.filter((m) => !m.deleted);
+    if (sp.has('before')) {
+      const older = live.filter((m) => m.id < Number(sp.get('before')));
+      return json(200, { messages: older.slice(-100).map((m) => chatOut(st, m)), older: older.length > 100 });
+    }
+    if (sp.has('after')) {
+      const a = Number(sp.get('after'));
+      if (a > chat.rev) return json(200, { reset: true, rev: chat.rev, last_id: chat.id });
+      const changed = chat.msgs.filter((m) => m.rev > a).sort((x, y) => x.rev - y.rev);
+      const kept = changed.slice(0, 100);
+      return json(200, { messages: kept.filter((m) => !m.deleted).map((m) => chatOut(st, m)), deleted: kept.filter((m) => m.deleted).map((m) => m.id),
+        rev: changed.length > 100 ? kept[99].rev : chat.rev, last_id: chat.id, more: changed.length > 100 });
+    }
+    return json(200, { messages: live.slice(-100).map((m) => chatOut(st, m)), rev: chat.rev, last_id: chat.id, older: live.length > 100 });
+  }
   function importCards(st, list, stats) {
     const before = new Map(st.cards.map((c) => [c.id, JSON.stringify(c)]));
     const first = st.fetched_at === null;
@@ -66,7 +107,7 @@ function mockApi() {
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
-          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }) });
+          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -118,7 +159,12 @@ function mockApi() {
         const page = sorted.slice(n * 2, n * 2 + 2).map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: !!c.shiny, image: c.image ?? null, url: c.url ?? null }));
         return json(200, { member: { id: u.pub, name: u.name, fetched_at: u.fetched_at }, cards: page, part, next_part: (n + 1) * 2 < sorted.length ? 'page-' + (n + 1) : null });
       }
-      if (p === '/api/me' && method === 'DELETE') { users.splice(users.indexOf(st), 1); return json(200, { ok: true }); }
+      if (p === '/api/me' && method === 'DELETE') {
+        for (const m of chat.msgs) if (m.user === st.id) { chatDrop(m); m.user = ''; } // ses messages du chat : vidés, sans auteur
+        users.splice(users.indexOf(st), 1);
+        return json(200, { ok: true });
+      }
+      if (p === '/api/chat' || p.startsWith('/api/chat?') || p.startsWith('/api/chat/')) return chatRoute(st, method, p, body || {});
       if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); return json(200, { import_key: st.importKey }); }
       if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
       if (p === '/api/cards' || p.startsWith('/api/cards?')) {
@@ -188,6 +234,18 @@ function mockApi() {
         return json(200, { target: t });
       }
       if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); st.targetsRev = (st.targetsRev || 0) + 1; return json(200, { ok: true }); }
+      // Marché (SPEC.md, « Le marché ») : st.market = {value, history, live, live_at, prices} posé par le test ; cotes par
+      // pages de 2 (curseur opaque), comme GET /api/market/prices.
+      if (p === '/api/market' && method === 'GET') {
+        const m = st.market || {};
+        return json(200, { value: m.value || { value: 0, priced: 0, cards: st.cards.length, approx: 0 }, history: m.history || [], live: m.live || null, live_at: m.live_at || null });
+      }
+      if (p.startsWith('/api/market/prices') && method === 'GET') {
+        const part = new URL('http://x' + p).searchParams.get('part') || '0';
+        const n = part === '0' ? 0 : Number(part.replace(/^cotes-/, ''));
+        const list = (st.market && st.market.prices) || [];
+        return json(200, { prices: list.slice(n * 2, n * 2 + 2), part, next_part: (n + 1) * 2 < list.length ? 'cotes-' + (n + 1) : null });
+      }
       return json(404, { error: 'introuvable' });
     },
   };
@@ -2708,6 +2766,230 @@ async function main() {
     }
   }
 
+  // 30. Chat : un salon pour tous les classeurs. Maëlle (une page du classeur) et Noa (un autre compte, par l'API) :
+  // badge des non-lus (GET /api/me au retour sur la page), ouverture (auteur, heure, lien cliquable), Entrée envoie et
+  // Maj+Entrée va à la ligne, « (toi) », lien personnel refusé avant l'envoi, suppression de son message seulement
+  // (confirmation), propagée aux autres pages par la relecture, 429 lisible, messages plus anciens, relecture minutée.
+  {
+    const keyM = await makeOtherAccount('Maëlle');
+    const keyN = await makeOtherAccount('Noa');
+    const meM = (await rawApi('GET', '/api/me', keyM)).body.user.id;
+    ls.set('classeur-key', keyM);
+    ls.set('classeur-known', JSON.stringify([{ key: keyM, name: 'Maëlle' }]));
+    const pc = openPage({ idb: 'absent' });
+    const d = pc.doc;
+    const hasIn = (t) => text(d.body).includes(t);
+    const tab = (id) => d.getElementById('tab-' + id);
+    const msgs = () => d.querySelectorAll('.chat-msg');
+    const badgeOf = (doc) => { const t = doc.getElementById('tab-chat'); const b = t && t.querySelector('.tab-badge'); return b ? text(b) : ''; };
+    const badge = () => badgeOf(d);
+    const field = () => d.getElementById('chat-input');
+    const chatCalls = (from) => apiLog.slice(from).filter((x) => /^(GET|POST|DELETE) \/api\/chat\b/.test(x));
+    check(await waitFor(() => tab('chat') && hasIn('Le classeur de Maëlle')), 'classeur de Maëlle non ouvert');
+    check(text(tab('chat')) === 'Chat' && badge() === '', 'onglet « Chat » absent, ou badge sans message : ' + text(tab('chat')));
+    // Noa écrit pendant que Maëlle est ailleurs : au retour sur la page, GET /api/me annonce un message, la page le lit.
+    const n1 = await rawApi('POST', '/api/chat', keyN, { text: 'Salut tout le monde ! Ma liste : https://fr.wikipedia.org/wiki/Mercure_(planète).' });
+    check(n1.status === 201, 'envoi de Noa refusé : ' + JSON.stringify(n1.body));
+    let from = apiLog.length;
+    await pc.visible();
+    check(await waitFor(() => badge() === '1 message non lu'), 'badge des non-lus absent : « ' + badge() + ' » / ' + apiLog.slice(from).join(', '));
+    check(chatCalls(from).join() === 'GET /api/chat', 'une lecture du chat attendue pour le badge : ' + chatCalls(from).join(', '));
+    // Rien de nouveau : la relecture de GET /api/me (toutes les 60 s) ne relit pas le chat.
+    from = apiLog.length;
+    await pc.live();
+    await settle(60);
+    check(apiLog.slice(from).includes('GET /api/me') && !chatCalls(from).length, 'chat relu sans nouveau message : ' + apiLog.slice(from).join(', '));
+    // Ouverture : message de Noa (auteur, heure, lien cliquable), sans bouton Supprimer ; badge parti, dernier lu gardé.
+    tab('chat').click();
+    await settle();
+    check(hasIn('Visible par tous les membres du classeur'), 'mention « Visible par tous les membres du classeur » absente');
+    check(await waitFor(() => msgs().length === 1), 'message de Noa absent');
+    const m0 = msgs()[0];
+    check(text(m0.querySelector('.chat-msg__who')) === 'Noa' && !m0.classList.contains('mine') && !m0.querySelector('.chat-msg__me'), 'auteur du message de Noa : ' + text(m0));
+    check(/^\d{2}:\d{2}$/.test(text(m0.querySelector('time'))), 'heure du message : ' + text(m0.querySelector('time')));
+    const link = m0.querySelector('a');
+    check(link && link.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Mercure_(plan%C3%A8te)' && text(link) === 'https://fr.wikipedia.org/wiki/Mercure_(planète)'
+      && /\bnoopener\b/.test(link.getAttribute('rel') || '') && link.getAttribute('target') === '_blank', 'lien du message : ' + (link && link.getAttribute('href')));
+    check(text(m0.querySelector('.chat-msg__text')).endsWith('Mercure_(planète).') && !m0.querySelector('.chat-msg__del'), "point final hors du lien ; pas de suppression du message d'un autre");
+    check(badge() === '', 'badge encore affiché, onglet ouvert');
+    check(JSON.parse(ls.get('classeur-chat-lu') || '{}')[meM] === n1.body.message.id, 'dernier lu non gardé : ' + ls.get('classeur-chat-lu'));
+    // Maj+Entrée : pas d'envoi (le navigateur va à la ligne) ; Entrée : envoi, « (toi) », retours à la ligne gardés, champ vidé.
+    check(field() && field().getAttribute('maxlength') === '500', 'champ du message absent, ou sans limite de 500');
+    type(field(), 'Bonjour Noa');
+    from = apiLog.length;
+    let ev = field().dispatch('keydown', { key: 'Enter', shiftKey: true });
+    await settle();
+    check(!ev.defaultPrevented && !chatCalls(from).some((x) => x.startsWith('POST')), 'Maj+Entrée ne doit rien envoyer');
+    type(field(), 'Bonjour Noa\nça va ?');
+    ev = field().dispatch('keydown', { key: 'Enter' });
+    check(ev.defaultPrevented, 'Entrée doit envoyer, sans aller à la ligne');
+    check(await waitFor(() => msgs().length === 2), "mon message n'apparaît pas");
+    const mine = msgs()[1];
+    check(mine.classList.contains('mine') && text(mine.querySelector('.chat-msg__who')) === 'Maëlle' && text(mine.querySelector('.chat-msg__me')) === '(toi)', 'mention « (toi) » absente : ' + text(mine));
+    check(text(mine.querySelector('.chat-msg__text')) === 'Bonjour Noa\nça va ?' && field().value === '', 'retour à la ligne perdu, ou champ non vidé');
+    check(chatCalls(from).filter((x) => x === 'POST /api/chat').length === 1, 'un seul envoi attendu : ' + chatCalls(from).join(', '));
+    // Champ vide : Entrée n'envoie rien ; lien personnel : refusé avant tout envoi.
+    from = apiLog.length;
+    field().dispatch('keydown', { key: 'Enter' });
+    type(field(), 'mon lien ' + ORIGIN + '/#cle=' + keyM);
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    check(hasIn('lien personnel de classeur') && !chatCalls(from).some((x) => x.startsWith('POST')), 'champ vide ou lien personnel : rien ne doit partir');
+    type(field(), '');
+    // Chez Noa : mon message, sans « (toi) » ; elle ne peut pas le supprimer (403). Elle supprime le sien : il disparaît de
+    // la page de Maëlle à la relecture suivante (retour sur la page, chat ouvert).
+    const seenByN = (await rawApi('GET', '/api/chat', keyN)).body.messages.find((m) => m.text.startsWith('Bonjour Noa'));
+    check(seenByN && seenByN.author === 'Maëlle' && seenByN.mine === false, 'mon message vu par Noa : ' + JSON.stringify(seenByN));
+    check((await rawApi('DELETE', '/api/chat/' + seenByN.id, keyN)).status === 403, 'Noa ne doit pas pouvoir supprimer mon message');
+    check((await rawApi('DELETE', '/api/chat/' + n1.body.message.id, keyN)).status === 200, 'suppression du message de Noa refusée');
+    await pc.visible();
+    check(await waitFor(() => msgs().length === 1 && !hasIn('Salut tout le monde')), 'message supprimé par Noa encore affiché');
+    // Suppression du mien, avec confirmation.
+    msgs()[0].querySelector('.chat-msg__del').click();
+    await settle();
+    const modal = d.querySelectorAll('.modal')[0];
+    check(modal && text(modal).includes('disparaîtra du chat pour tout le monde'), 'confirmation de suppression absente');
+    modal.querySelectorAll('button').find((b) => text(b).trim() === 'Supprimer').click();
+    check(await waitFor(() => !msgs().length && hasIn("Aucun message pour l'instant")), 'mon message supprimé reste affiché');
+    check(!(await rawApi('GET', '/api/chat', keyN)).body.messages.length, 'suppression non faite côté serveur');
+    // Ailleurs : mon propre message (autre appareil) ne compte pas ; un message de Noa → badge ; onglet ouvert → lu.
+    tab('cartes').click();
+    await settle();
+    await rawApi('POST', '/api/chat', keyM, { text: 'Depuis mon téléphone' });
+    from = apiLog.length;
+    await pc.visible();
+    check(await waitFor(() => chatCalls(from).length > 0), 'nouveau message annoncé par GET /api/me : le chat doit être relu');
+    await settle(60);
+    check(badge() === '', 'mon propre message ne doit pas compter comme non lu : ' + badge());
+    await rawApi('POST', '/api/chat', keyN, { text: 'Tu es là ?' });
+    await pc.live();
+    check(await waitFor(() => badge() === '1 message non lu'), 'badge après un nouveau message de Noa : « ' + badge() + ' »');
+    tab('chat').click();
+    check(await waitFor(() => badge() === '' && hasIn('Tu es là ?') && hasIn('Depuis mon téléphone')), "messages à l'ouverture, ou badge resté");
+    if (!SERVER) {
+      // 429 : message lisible, brouillon gardé.
+      api.chatLimit = true;
+      type(field(), 'Encore un');
+      field().dispatch('keydown', { key: 'Enter' });
+      check(await waitFor(() => hasIn('Doucement : 10 messages par minute au plus')), 'refus 429 non affiché');
+      check(field().value === 'Encore un', 'brouillon perdu après un refus');
+      api.chatLimit = false;
+      type(field(), '');
+      // 130 messages de plus : une page rouverte affiche « 99+ » non lus, lit les 100 plus récents, puis les autres à la
+      // demande ; chat ouvert, la relecture minutée (horloge accélérée) apporte un nouveau message sans autre geste.
+      for (let i = 0; i < 130; i++) await rawApi('POST', '/api/chat', keyN, { text: 'Message ' + i });
+      tab('collections').click(); // la première page quitte le chat : sa minuterie s'arrête
+      await settle();
+      const p2 = openPage({ idb: 'absent', speed: 50 });
+      const m2 = () => p2.doc.querySelectorAll('.chat-msg');
+      check(await waitFor(() => badgeOf(p2.doc) === '99+ messages non lus'), 'badge « 99+ » attendu : « ' + badgeOf(p2.doc) + ' »');
+      p2.doc.getElementById('tab-chat').click();
+      check(await waitFor(() => m2().length === 100), '100 messages attendus, ' + m2().length);
+      const olderBtn = () => p2.doc.querySelectorAll('button').find((b) => text(b).trim() === 'Charger les messages plus anciens');
+      check(olderBtn(), '« Charger les messages plus anciens » absent');
+      olderBtn().click();
+      check(await waitFor(() => m2().length === 132), 'messages plus anciens non chargés : ' + m2().length);
+      check(text(m2()[0].querySelector('.chat-msg__text')) === 'Depuis mon téléphone' && !olderBtn(), 'ordre des messages, ou bouton des plus anciens resté');
+      from = apiLog.length;
+      await rawApi('POST', '/api/chat', keyN, { text: 'En direct' });
+      check(await waitFor(() => text(p2.doc.body).includes('En direct')), 'chat ouvert : la relecture minutée doit apporter le nouveau message');
+      check(chatCalls(from).some((x) => /^GET \/api\/chat\?after=\d+$/.test(x)), 'relecture par ?after attendue : ' + chatCalls(from).join(', '));
+      p2.doc.getElementById('tab-collections').click();
+      await settle(100);
+      from = apiLog.length;
+      await sleep(800); // ≈ 40 s à l'horloge de la page : plus aucune relecture du chat
+      check(!chatCalls(from).length, 'chat relu alors que son onglet est fermé : ' + chatCalls(from).join(', '));
+    } else {
+      tab('collections').click();
+      await settle();
+    }
+    console.log(`chat : ${apiLog.filter((x) => /^(GET|POST|DELETE) \/api\/chat\b/.test(x)).length} appels de /api/chat par les pages, dont ${apiLog.filter((x) => /^GET \/api\/chat\?after=/.test(x)).length} relectures ?after`);
+  }
+
+  // Marché : valeur dans le bandeau, onglet « Marché » (graphique, bonnes affaires, cartes qui bougent, mes enchères et
+  // ventes, règles), cotes dans les fiches (carte possédée : par exemplaire, « ~ » sous 3 ventes ; carte qui manque : par
+  // rareté). Données posées dans l'API simulée (le favori les enverrait).
+  if (!SERVER) {
+    const keyM = await makeOtherAccount('Mona');
+    const um = api.users.find((u) => u.key === keyM);
+    const mc = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null, count, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', ...extra });
+    await sendImport(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } })]);
+    const it = (title) => ({ title, description: null, image: null, status: 'ok' });
+    await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1')] });
+    const soon = new Date(Date.now() + 3600_000).toISOString();
+    const q = (p, n, w = null) => ({ p, n, w, l: p - 1, d: '2026-10-15T10:00:00.000Z' });
+    um.market = {
+      value: { value: 1234, priced: 2, cards: 3, approx: 1 },
+      history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
+      live_at: new Date().toISOString(),
+      live: {
+        deals: [{ a: 'a1', id: 'w1', t: 'Voulue A', r: 'SR', s: false, img: null, end: soon, cote: 100, n: 5, ask: 50, bid: false, lead: false }],
+        bids: [{ a: 'b1', id: 'm3', t: 'Marché 3', r: 'C', s: false, img: null, end: soon, cote: 10, n: 4, mine: 8, cur: 9, lead: false, st: 'run' },
+          { a: 'b2', id: 'x9', t: 'Ailleurs', r: 'L', s: true, img: null, end: '2026-10-15T08:00:00.000Z', cote: null, n: null, mine: 300, cur: 300, lead: false, st: 'won' }],
+        sales: [{ a: 's1', id: 'm2', t: 'Marché 2', r: 'C', s: false, img: null, end: '2026-10-15T09:00:00.000Z', cote: 20, n: 5, base: 5, cur: 12, bid: true, st: 'sold' }],
+      },
+      prices: [
+        { id: 'm1', v: { R: q(400, 10, 300), 'R*': q(900, 2) }, at: '2026-10-16T08:00:00.000Z' },
+        { id: 'm2', v: { C: q(20, 5, 25) }, at: '2026-10-16T08:00:00.000Z' },
+        { id: 'w1', v: { SR: q(100, 5), 'SR*': q(260, 1) }, at: '2026-10-16T08:00:00.000Z', t: 'Voulue A' },
+      ],
+    };
+    ls.set('classeur-key', keyM);
+    ls.set('classeur-known', JSON.stringify([{ key: keyM, name: 'Mona' }]));
+    const pm = openPage({ idb: 'absent' });
+    const d = pm.doc;
+    const body = () => text(d.body);
+    const btn = (t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    check(await waitFor(() => pm.count() === 3), 'classeur de Mona non ouvert');
+    check(await waitFor(() => body().includes('1 234 W') && body().includes('valeur (2 cotées)')), 'valeur absente du bandeau : ' + body().slice(0, 400));
+    d.getElementById('tab-marche').click();
+    await settle(80);
+    const panel = () => text(d.getElementById('panel-marche'));
+    check(/Valeur de ton classeur/.test(panel()) && panel().includes('1 234 W · 2 cartes cotées sur 3') && panel().includes('Dont 1 carte comptée dans sa plus haute rareté'), 'valeur de l\'onglet Marché : ' + panel().slice(0, 300));
+    // Graphique : une ligne de 3 points, lisible sans couleur (valeur et date au-dessus, tableau des valeurs).
+    const svg = d.querySelectorAll('svg').find((n) => n.classList.contains('chart__svg'));
+    check(svg && svg.querySelectorAll('polyline').length === 1 && svg.querySelectorAll('circle').length === 3 && /Valeur du classeur, un point par jour/.test(svg.getAttribute('aria-label') || ''), 'graphique de la valeur absent');
+    check(d.querySelectorAll('.chart__table')[0].querySelectorAll('tr').length === 4 && panel().includes('Voir les valeurs'), 'tableau des valeurs absent');
+    // Bonnes affaires : carte qui manque, prix demandé, écart à la cote, « finit bientôt », collection qu'elle complète.
+    check(panel().includes('Voulue A') && panel().includes('50 W (prix de départ, sans enchère) · cote 100 W (−50 %)') && panel().includes('finit bientôt') && panel().includes('pour « Envies »'), 'bonnes affaires : ' + panel());
+    // Cartes qui bougent : m1 (2 rares de 300 à 400 : +200 ; la brillante n'a que 2 ventes), m2 (de 25 à 20 : −5).
+    const movers = d.querySelectorAll('.movers').map(text);
+    check(movers.length === 2 && movers[0].includes('Marché 1') && movers[0].includes('+200 W') && movers[0].includes('+33 %') && movers[1].includes('Marché 2') && movers[1].includes('−5 W'), 'cartes qui bougent : ' + movers.join(' | '));
+    // Mes enchères et mes ventes.
+    check(panel().includes('ta mise 8 W · enchère actuelle 9 W · cote 10 W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
+    check(panel().includes('départ 5 W · vendue 12 W · cote 20 W (−40 %)'), 'mes ventes : ' + panel());
+    check(panel().includes('lit directement la base du jeu avec ta session, à ton clic seulement') && panel().includes('à utiliser avec modération'), 'avertissement des règles absent');
+    // Fiche d'une carte possédée (depuis « Cartes qui bougent ») : cote de chaque exemplaire.
+    d.querySelectorAll('.movers')[0].querySelectorAll('button')[0].click();
+    await settle(60);
+    const fiche = () => text(d.querySelectorAll('.fiche')[0]);
+    check(/Cote/.test(fiche()) && fiche().includes('2 × Rare400 W10 ventes · dernière 399 W le 15 octobre · 7 jours : +33 %') && fiche().includes('Rare, brillante~ 900 W2 ventes'), 'cote de la fiche : ' + fiche());
+    check(fiche().includes('Tes exemplaires cotés : 800 W'), 'total des exemplaires : ' + fiche());
+    d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+    await settle(40);
+    // Carte sans détail de ses exemplaires : approchée, dite.
+    d.getElementById('tab-cartes').click();
+    await settle(60);
+    d.querySelectorAll('.cell').find((n) => text(n).includes('Marché 2')).querySelector('.card').dispatch('click');
+    await settle(60);
+    check(fiche().includes('Commune20 W') && fiche().includes('Rareté de tes exemplaires pas encore connue'), 'fiche approchée : ' + fiche());
+    d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+    await settle(40);
+    // Fiche d'une carte qui manque (depuis une bonne affaire) : ses cotes par rareté.
+    d.getElementById('tab-marche').click();
+    await settle(40);
+    d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
+    await settle(60);
+    check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100 W5 ventes') && fiche().includes('Super rare, brillante~ 260 W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
+    d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+    await settle(40);
+    // Classeur sans cote : l'onglet dit comment en avoir, sans valeur dans le bandeau.
+    um.market = null;
+    btn('Relire').click();
+    await settle(80);
+    check(panel().includes('Pas encore de cote : sur wiki-masters.com, clique « Mettre à jour les cotes »') && panel().includes('Pas de lecture récente du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+  }
+
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));
   check(!missing.length, 'icônes absentes du sprite : ' + missing.join(', '));
@@ -2785,7 +3067,9 @@ async function runBookmarklet(code, classeurFetch, key) {
     for (const c of b.cards) {
       ids.add(c.id);
       const keys = Object.keys(c).sort().join(',');
-      if (keys !== 'atk,category,count,def,id,image,obtained_at,pageviews,quality,rarity,shiny,starred,title,url') fail('favori : champs de CarteImport ' + keys);
+      if (keys !== 'atk,category,count,def,id,image,obtained_at,pageviews,quality,rarity,shiny,starred,title,url,variants') fail('favori : champs de CarteImport ' + keys);
+      // Exemplaires par rareté et brillance (marché) : leur somme fait count.
+      if (Object.values(c.variants).reduce((x, y) => x + y, 0) !== c.count) fail('favori : variants ne compte pas tous les exemplaires de ' + c.id);
     }
   });
   const all = posts.flatMap((b) => b.cards);

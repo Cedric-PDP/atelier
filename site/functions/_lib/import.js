@@ -8,6 +8,7 @@ import {
   MAX_CARDS, MAX_DELTA, MAX_PART_CARDS, NEXT_REV, badCard, checkCard, commitRev, entryToCard, isDate, rankSql, rarityOfRankSql,
 } from './cards.js';
 import { byteLength, nowIso, randomToken } from './util.js';
+import { valueAfterCards } from './market.js';
 
 // Quotas d'un envoi en attente (D1 gratuit : 500 Mo en tout, 100 000 lignes écrites par jour).
 const MAX_PARTS = 40;
@@ -20,7 +21,9 @@ const nat = (v) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
 // `j` = tableau JSON de cartes partielles ; paramètres ?1 = user_id, ?2 = clé de l'envoi).
 // e : une ligne par carte partielle (bad = 1 : entrée invalide, comptée mais jamais rangée, cards.js badCard) ;
 // d : exemplaires dédoublonnés (eid) ; g : une Carte par card_id, en JSON. Une carte possédée en plusieurs raretés
-// garde la plus haute (C < PC < R < SR < UR < L), pas la plus grande en texte.
+// garde la plus haute (C < PC < R < SR < UR < L), pas la plus grande en texte. Ses exemplaires par rareté
+// d'exemplaire et brillance (variants, cards.js) sont additionnés, et gardés seulement s'ils les comptent tous (une
+// entrée sans ce détail : la carte n'en a pas).
 function collectionCte(source) {
   return `WITH st AS (${source}),
   e AS (
@@ -33,8 +36,8 @@ function collectionCte(source) {
     UNION ALL
     SELECT card_id, bad, v FROM e WHERE eid IS NOT NULL GROUP BY eid
   ),
-  g AS (
-    SELECT card_id, json_object(
+  g0 AS (
+    SELECT card_id, SUM(json_extract(v, '$.count')) AS cnt, json_object(
       'id', card_id,
       'title', MAX(json_extract(v, '$.title')),
       'rarity', ${rarityOfRankSql(`MAX(${rankSql("json_extract(v, '$.rarity')")})`)},
@@ -51,6 +54,15 @@ function collectionCte(source) {
       'obtained_at', MIN(json_extract(v, '$.obtained_at'))
     ) AS data
     FROM d WHERE bad IS NULL GROUP BY card_id
+  ),
+  vk AS (
+    SELECT d.card_id, k.key AS k, SUM(k.value) AS n FROM d, json_each(d.v, '$.variants') AS k
+    WHERE d.bad IS NULL AND json_type(d.v, '$.variants') = 'object' GROUP BY d.card_id, k.key
+  ),
+  vg AS (SELECT card_id, json_group_object(k, n) AS j, SUM(n) AS total FROM (SELECT card_id, k, n FROM vk ORDER BY card_id, k) GROUP BY card_id),
+  g AS (
+    SELECT g0.card_id, CASE WHEN vg.total = g0.cnt THEN json_set(g0.data, '$.variants', json(vg.j)) ELSE g0.data END AS data
+    FROM g0 LEFT JOIN vg ON vg.card_id = g0.card_id
   )`;
 }
 
@@ -182,7 +194,9 @@ export async function deltaFits(db, user, state, { cards, text, stats, rows, cop
 }
 
 // Ajoute les nouveautés à la collection en place : carte nouvelle insérée, carte déjà là additionnée (exemplaires,
-// brillante ou favorite si l'un l'est, plus haute rareté, plus ancienne date d'obtention). Rien n'est retiré. Les cartes
+// brillante ou favorite si l'un l'est, plus haute rareté, plus ancienne date d'obtention ; exemplaires par rareté
+// additionnés si l'ancienne et la nouvelle les ont, sinon plus de détail jusqu'à la lecture complète suivante : la
+// cote de cette carte est alors approchée, market.js). Rien n'est retiré. Les cartes
 // écrites prennent la révision suivante (aucune nouveauté : la révision ne bouge pas).
 // Comparer-échanger : l'état n'est remplacé que s'il est encore celui lu à l'authentification (pas d'autre synchro ni
 // d'import complet fini entre-temps), et les cartes ne sont écrites que s'il l'a été (même transaction) ; sinon
@@ -199,6 +213,18 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   });
   const old = (f) => `json_extract(cards.data, '$.${f}')`;
   const add = (f) => `json_extract(excluded.data, '$.${f}')`;
+  // Carte déjà là : champs additionnés, sans ses exemplaires par rareté (base) ; ceux-ci sont remis, additionnés, si
+  // l'ancienne et la nouvelle les ont (en dernier, comme dans une carte importée), sinon la carte n'en a plus.
+  const base = `json_remove(json_set(cards.data,
+         '$.rarity', CASE WHEN ${rankSql(add('rarity'))} > ${rankSql(old('rarity'))} THEN ${add('rarity')} ELSE ${old('rarity')} END,
+         '$.count', ${old('count')} + ${add('count')},
+         '$.shiny', json(CASE WHEN ${old('shiny')} OR ${add('shiny')} THEN 'true' ELSE 'false' END),
+         '$.starred', json(CASE WHEN ${old('starred')} OR ${add('starred')} THEN 'true' ELSE 'false' END),
+         '$.obtained_at', CASE WHEN ${old('obtained_at')} IS NULL OR ${add('obtained_at')} < ${old('obtained_at')}
+           THEN ${add('obtained_at')} ELSE ${old('obtained_at')} END), '$.variants')`;
+  const variants = `json((SELECT json_group_object(k, n) FROM (SELECT key AS k, SUM(value) AS n FROM (
+             SELECT key, value FROM json_each(cards.data, '$.variants') UNION ALL SELECT key, value FROM json_each(excluded.data, '$.variants')
+           ) GROUP BY key ORDER BY key)))`;
   const [updated] = await db.batch([
     db.prepare(
       `${cte} UPDATE users SET
@@ -210,19 +236,16 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data, rev)
        SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g WHERE (SELECT sync_state FROM users WHERE id = ?1) IS ?3
-       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev, data = json_set(cards.data,
-         '$.rarity', CASE WHEN ${rankSql(add('rarity'))} > ${rankSql(old('rarity'))} THEN ${add('rarity')} ELSE ${old('rarity')} END,
-         '$.count', ${old('count')} + ${add('count')},
-         '$.shiny', json(CASE WHEN ${old('shiny')} OR ${add('shiny')} THEN 'true' ELSE 'false' END),
-         '$.starred', json(CASE WHEN ${old('starred')} OR ${add('starred')} THEN 'true' ELSE 'false' END),
-         '$.obtained_at', CASE WHEN ${old('obtained_at')} IS NULL OR ${add('obtained_at')} < ${old('obtained_at')}
-           THEN ${add('obtained_at')} ELSE ${old('obtained_at')} END)`,
+       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev, data = CASE
+         WHEN json_type(cards.data, '$.variants') = 'object' AND json_type(excluded.data, '$.variants') = 'object'
+         THEN json_set(${base}, '$.variants', ${variants}) ELSE ${base} END`,
     ).bind(user.id, text, next),
     clearGone(db, user.id),
     commitRev(db, user.id),
     ...clear,
   ]);
   if (!updated.results.length) return needsFull('race');
+  await valueAfterCards(db, user.id); // valeur du jour (market.js), au plus une fois par heure
   return {
     count,
     new_ids: raw(updated.results[0].new_ids || '[]'),
@@ -351,6 +374,7 @@ export async function finalizeImport(db, user, { source, key, stats, lastAt = nu
     ...clear,
   ]);
 
+  await valueAfterCards(db, user.id); // valeur du jour (market.js), au plus une fois par heure
   return { count, new_ids: raw(updated.results[0]?.new_ids || '[]'), complete, skipped };
 }
 

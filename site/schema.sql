@@ -105,6 +105,54 @@ CREATE TABLE IF NOT EXISTS migrations (
     applied_at TEXT NOT NULL
 );
 
+-- Chat : un seul salon pour tous les classeurs du site (functions/_lib/chat.js). id = numéro du message (croissant,
+-- jamais réutilisé) ; user_id = auteur ('' quand son classeur a été supprimé) ; text = texte brut, 500 caractères au
+-- plus (vidé à la suppression) ; deleted = 1 : message supprimé, gardé vide comme marque pour que les pages ouvertes le
+-- retirent ; rev = révision (unique, croissante), donnée à la création puis à la suppression, lue par
+-- GET /api/chat?after=<rev> (index chat_by_rev). Les 2 000 plus récents seulement (purge à chaque envoi).
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    deleted INTEGER NOT NULL DEFAULT 0,
+    rev INTEGER NOT NULL
+);
+
+-- Marché (functions/_lib/market.js, lu et écrit par le favori dans la page du jeu, jamais par ce serveur dans le jeu).
+-- Cotes des cartes, communes à tous les classeurs (des données du marché du jeu, liées à aucun joueur : pas de user_id) :
+-- data = {"<rareté>[*]": {p, n, w, l, d}} (« * » : brillante ; p = médiane des 30 ventes les plus récentes, n = ventes
+-- lues, w = médiane d'il y a 7 jours ou null, l et d = dernière vente) ; read_at = date de la lecture.
+CREATE TABLE IF NOT EXISTS prices (
+    card_id TEXT PRIMARY KEY,
+    data TEXT NOT NULL,
+    read_at TEXT NOT NULL
+);
+
+-- Valeur d'un classeur, un point par jour (UTC), le dernier calcul du jour remplaçant les précédents : value = Σ cote
+-- fiable × exemplaires, priced = cartes cotées, cards = cartes du classeur, at = heure du calcul. 400 jours gardés.
+CREATE TABLE IF NOT EXISTS value_history (
+    user_id TEXT NOT NULL,
+    date TEXT NOT NULL,
+    value INTEGER NOT NULL,
+    priced INTEGER NOT NULL,
+    cards INTEGER NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (user_id, date)
+);
+
+-- État du marché d'un classeur : ids = titres des cartes qui manquent à ses collections -> card_id du jeu ("" : aucune
+-- carte), relevés par son favori ; live = sa dernière lecture du marché (bonnes affaires, ses enchères et ventes),
+-- effacée au bout de 24 h ; quota_day / quota_n = cotes envoyées ce jour-là. user_id = '*' : quota de tout le site.
+CREATE TABLE IF NOT EXISTS market (
+    user_id TEXT PRIMARY KEY,
+    ids TEXT NOT NULL DEFAULT '{}',
+    live TEXT,
+    live_at TEXT,
+    quota_day TEXT,
+    quota_n INTEGER NOT NULL DEFAULT 0
+);
+
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);
@@ -114,3 +162,8 @@ CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev);
 CREATE INDEX IF NOT EXISTS cards_gone_by_rev ON cards_gone (user_id, rev);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id);
+
+-- Chat : lecture des changements (?after=<rev>) ; limites d'envoi par classeur et effacement de ses messages.
+CREATE UNIQUE INDEX IF NOT EXISTS chat_by_rev ON chat_messages (rev);
+
+CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at);
