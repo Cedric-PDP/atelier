@@ -35,12 +35,13 @@ export async function createAccount(env, body) {
   const name = cleanName(body.name);
   const id = randomToken(12);
   const key = randomToken(32);
-  // Nombre de comptes plafonné (MAX_USERS) : vérifié dans la même requête que l'insertion.
+  // Nombre de comptes plafonné (MAX_USERS) : vérifié dans la même requête que l'insertion. Partage entre membres
+  // (cartes et collections) activé dès la création (2026-10-16) ; il se coupe dans Réglages.
   const res = await env.DB.prepare(
-    `INSERT INTO users (id, name, key_hash, created_at)
-     SELECT ?1, ?2, ?3, ?4 WHERE (SELECT COUNT(*) FROM users) < ?5`,
+    `INSERT INTO users (id, name, key_hash, created_at, shared, shared_targets, public_id)
+     SELECT ?1, ?2, ?3, ?4, 1, 1, ?6 WHERE (SELECT COUNT(*) FROM users) < ?5`,
   )
-    .bind(id, name, await sha256Hex(key), nowIso(), maxUsers(env))
+    .bind(id, name, await sha256Hex(key), nowIso(), maxUsers(env), randomToken(9))
     .run();
   if (!res.meta.changes) throw new HttpError(403, 'Le classeur est complet : demande à la personne qui le gère.');
   return json({ key, user: { id, name } }, 201);

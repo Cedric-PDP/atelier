@@ -3210,7 +3210,7 @@
   }
 
   // ================================================================ « Entre amis » : partage entre membres
-  // Le partage est un choix (désactivé par défaut) et il est réciproque : on ne voit les cartes des autres membres que
+  // Le partage est activé par défaut (2026-10-16 ; chacun le coupe dans Réglages) et il est réciproque : on ne voit les cartes des autres membres que
   // si on montre les siennes (PATCH /api/me {shared}). Leurs cartes sont lues à la demande (onglet « Entre amis »,
   // ouverture d'une collection ou d'une case vide), par pages de 1 000, et gardées en mémoire pendant la visite ; elles
   // ne sont relues que si leur synchro ou leur nombre a changé. Le classeur ne fait que montrer qui a quoi : les

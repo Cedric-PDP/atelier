@@ -2,7 +2,8 @@
 //   node dev/api.test.mjs      → doit finir par « API OK »
 
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, rm } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createD1 } from './d1.mjs';
@@ -2213,7 +2214,16 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   await call('POST', 'session', { key: ben.key, body: { cookie: 'sb-auth=cookie-secret' } });
   const benImport = (await call('POST', 'import-key', { key: ben.key })).json.import_key;
 
-  // Désactivé par défaut ; sans partager soi-même : 403 partout (réciprocité), même avec un identifiant connu.
+  // Activé par défaut à la création (2026-10-16), cartes et collections ; ce test part de comptes qui l'ont coupé.
+  for (const u of [ana, ben, cleo]) {
+    const m = await me(u);
+    assert.equal(m.shared, true);
+    assert.equal(m.shared_targets, true);
+    assert.equal((await share(u, false)).status, 200);
+  }
+  // Les comptes des tests précédents partagent aussi par défaut : coupés ici, pour ne voir que ceux de ce test.
+  env.DB.sqlite.prepare('UPDATE users SET shared = 0, shared_targets = 0, public_id = NULL').run();
+  // Sans partager soi-même : 403 partout (réciprocité), même avec un identifiant connu.
   assert.equal((await me(ana)).shared, false);
   for (const r of [await members(ana), await pageOf(ana, 'nimporte'), await pageOf(ana, 'nimporte', '0')]) {
     assert.equal(r.status, 403, JSON.stringify(r.json));
@@ -2361,7 +2371,10 @@ await test('partage entre membres : collections à compléter (réglage à part,
   await call('POST', 'session', { key: ben.key, body: { cookie: 'sb-auth=cookie-secret' } });
   const benImport = (await call('POST', 'import-key', { key: ben.key })).json.import_key;
 
-  // Réglage à part, désactivé par défaut, et seulement si l'on montre ses cartes (dans la même requête ou déjà).
+  // Partage activé par défaut depuis 2026-10-16 (cartes et collections) : ce test part de comptes qui l'ont coupé.
+  assert.equal((await me(ben)).shared_targets, true);
+  env.DB.sqlite.prepare('UPDATE users SET shared = 0, shared_targets = 0, public_id = NULL').run();
+  // Réglage à part, et seulement si l'on montre ses cartes (dans la même requête ou déjà).
   assert.equal((await me(ben)).shared_targets, false);
   let r = await patch(ben, { shared_targets: true });
   assert.equal(r.status, 400);
@@ -2491,13 +2504,18 @@ await test('partage entre membres : collections à compléter (réglage à part,
   for (const u of [ana, ben, cleo]) await call('DELETE', 'me', { key: u.key });
 });
 
-await test('partage entre membres : base existante (colonnes shared et public_id ajoutées, index unique)', async () => {
-  const old = makeEnv();
+await test('partage entre membres : base existante (colonnes ajoutées, index unique, partage activé une seule fois)', async () => {
+  // Base dans un fichier : une deuxième instance du serveur peut l'ouvrir (la migration ne doit passer qu'une fois).
+  const file = path.join(os.tmpdir(), `classeur-migration-${process.pid}-${Date.now()}.sqlite`);
+  const old = { ...makeEnv(), DB: createD1(file) };
   old.DB.sqlite.exec(`CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, key_hash TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL,
       fetched_at TEXT, new_ids TEXT NOT NULL DEFAULT '[]', cookie_enc TEXT, cookie_updated_at TEXT, session_expired INTEGER NOT NULL DEFAULT 0)`);
   old.DB.sqlite.prepare("INSERT INTO users (id, key_hash, created_at) VALUES ('ancien', ?, '2026-10-01')").run(await sha256Hex('cle-ancienne'));
   let r = await call('GET', 'me', { key: 'cle-ancienne', e: old });
-  assert.deepEqual([r.status, r.json.shared, r.json.shared_targets], [200, false, false]);
+  // Migration du 2026-10-16 : un classeur existant partage ses cartes et ses collections, avec un identifiant public.
+  assert.deepEqual([r.status, r.json.shared, r.json.shared_targets], [200, true, true]);
+  assert.match(old.DB.sqlite.prepare("SELECT public_id FROM users WHERE id = 'ancien'").get().public_id, /^[0-9a-f]{18}$/);
+  assert.equal(old.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM migrations WHERE name = 'partage-par-defaut-2026-10-16'").get().n, 1);
   const cols = old.DB.sqlite.prepare('PRAGMA table_info(users)').all().map((x) => x.name);
   assert.ok(cols.includes('shared') && cols.includes('public_id') && cols.includes('shared_targets'), cols.join(','));
   const idx = old.DB.sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'index'").all().map((x) => x.name);
@@ -2506,6 +2524,16 @@ await test('partage entre membres : base existante (colonnes shared et public_id
   assert.equal(r.json.shared, true);
   r = await call('GET', 'members', { key: 'cle-ancienne', e: old });
   assert.deepEqual([r.status, r.json], [200, { members: [] }]);
+  // Coupé ensuite, il le reste : une autre instance qui démarre sur la même base ne refait pas la migration.
+  r = await call('PATCH', 'me', { key: 'cle-ancienne', e: old, body: { shared: false } });
+  assert.equal(r.json.shared, false);
+  const again = { ...old, DB: createD1(file) };
+  r = await call('GET', 'me', { key: 'cle-ancienne', e: again });
+  assert.deepEqual([r.status, r.json.shared, r.json.shared_targets], [200, false, false]);
+  assert.equal(again.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM migrations').get().n, 1);
+  old.DB.close();
+  again.DB.close();
+  await rm(file, { force: true });
 });
 
 await test('DELETE /api/me efface tout', async () => {

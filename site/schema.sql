@@ -98,6 +98,13 @@ CREATE TABLE IF NOT EXISTS import_staging (
     PRIMARY KEY (user_id, upload_id, part)
 );
 
+-- Modifications de données faites une seule fois par base (db.js, MIGRATIONS).
+CREATE TABLE IF NOT EXISTS migrations (
+    name TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    applied_at TEXT NOT NULL
+);
+
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);

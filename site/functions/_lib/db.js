@@ -67,6 +67,11 @@ export const SCHEMA = [
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, upload_id, part)
   )`,
+  `CREATE TABLE IF NOT EXISTS migrations (
+    name TEXT PRIMARY KEY,
+    run_id TEXT NOT NULL,
+    applied_at TEXT NOT NULL
+  )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
@@ -112,6 +117,28 @@ async function applySchema(db) {
     }
   }
   await db.batch(indexes.map((sql) => db.prepare(sql)));
+  await applyMigrations(db);
+}
+
+// Modifications de données à faire une seule fois par base. La ligne de `migrations` et la modification partent dans
+// le même lot (une transaction) ; la modification ne s'applique que si cette ligne vient d'être posée par CE lot
+// (run_id tiré au hasard) : deux instances qui démarrent ensemble ne la font qu'une fois, et jamais plus ensuite.
+const MIGRATIONS = [
+  // 2026-10-16, demande de l'administrateur : partage entre membres (cartes et collections) activé pour tous les
+  // classeurs existants ; chacun peut le couper dans Réglages, et un nouveau classeur partage dès sa création.
+  ['partage-par-defaut-2026-10-16', `UPDATE users SET shared = 1, shared_targets = 1,
+     public_id = COALESCE(public_id, lower(hex(randomblob(9))))
+     WHERE (shared = 0 OR shared_targets = 0)`],
+];
+
+async function applyMigrations(db) {
+  for (const [name, sql] of MIGRATIONS) {
+    const runId = crypto.randomUUID();
+    await db.batch([
+      db.prepare('INSERT OR IGNORE INTO migrations (name, run_id, applied_at) VALUES (?1, ?2, ?3)').bind(name, runId, new Date().toISOString()),
+      db.prepare(`${sql} AND EXISTS (SELECT 1 FROM migrations WHERE name = ?1 AND run_id = ?2)`).bind(name, runId),
+    ]);
+  }
 }
 
 // Une seule application du schéma par base et par instance (relancée si elle a échoué).

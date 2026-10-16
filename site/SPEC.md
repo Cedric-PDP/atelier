@@ -262,8 +262,10 @@ distinctes (quand elles ont un identifiant de carte) pour dire si une lecture es
 ## Partage entre membres
 
 Les membres du classeur (l'utilisateur et ses amis) peuvent se montrer leurs cartes, pour voir qui a celles qui
-manquent à leurs collections. **C'est un choix, désactivé par défaut, et il est réciproque** : on ne voit les cartes des
-autres que si l'on montre les siennes (Réglages, « Montrer mes cartes aux autres membres du classeur », ou le bouton de
+manquent à leurs collections. **Activé par défaut** (2026-10-16, demande de l'administrateur : un nouveau classeur
+partage ses cartes et ses collections dès sa création ; les classeurs existants l'ont reçu une fois, par la migration
+`partage-par-defaut-2026-10-16` de db.js, qui ne repasse jamais), chacun peut le couper, **et il est réciproque** : on
+ne voit les cartes des autres que si l'on montre les siennes (Réglages, « Montrer mes cartes aux autres membres du classeur », ou le bouton de
 l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale seulement).
 
 - **Ce qui est montré** : le prénom (nom du classeur), le nombre de cartes, la date de la dernière synchro, et pour
