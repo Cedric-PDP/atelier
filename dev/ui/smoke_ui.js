@@ -3105,6 +3105,19 @@ async function main() {
     // Fiche d'une carte qui manque (depuis une bonne affaire) : ses cotes par rareté.
     d.getElementById('tab-marche').click();
     await settle(40);
+    // Filtre par collection des bonnes affaires à acheter : « Toutes les collections (1) », puis « Envies (1) ».
+    {
+      const sel = d.getElementById('deal-col');
+      const opts = sel ? sel.querySelectorAll('option').map(text) : [];
+      check(opts.join(' | ') === 'Toutes les collections (1) | Envies (1)', 'filtre des bonnes affaires par collection : ' + opts.join(' | '));
+      sel.value = sel.querySelectorAll('option')[1].getAttribute('value');
+      sel.dispatch('change');
+      await settle(40);
+      check(d.querySelectorAll('.lot__title').some((n) => text(n).includes('Voulue A')), 'la bonne affaire de « Envies » doit rester affichée');
+      sel.value = '';
+      sel.dispatch('change');
+      await settle(40);
+    }
     d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
     await settle(60);
     check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100W5 ventes') && fiche().includes('Super rare, brillante~260W1 vente'), 'cote d\'une carte qui manque : ' + fiche());

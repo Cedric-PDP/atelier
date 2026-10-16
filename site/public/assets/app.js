@@ -3949,20 +3949,20 @@
   const MARKET_OPEN = Object.freeze({ acheter: true, vendre: true, bougent: true, encheres: false });
   const MARKET_MIN = 100;
   const MARKET_STEP = 20;
-  const MP = reactive({ user: null, open: { ...MARKET_OPEN }, min: MARKET_MIN, more: {} });
+  const MP = reactive({ user: null, open: { ...MARKET_OPEN }, min: MARKET_MIN, more: {}, col: '' }); // col : collection choisie dans « à acheter »
   function loadMarketPrefs(user) {
     const all = store.json(LS.market);
     const mine = user && all && typeof all === 'object' && !Array.isArray(all) && all[user] && typeof all[user] === 'object' ? all[user] : {};
     const open = { ...MARKET_OPEN };
     if (mine.open && typeof mine.open === 'object') for (const k of Object.keys(MARKET_OPEN)) if (typeof mine.open[k] === 'boolean') open[k] = mine.open[k];
     const min = Number(mine.min);
-    Object.assign(MP, { user: user || null, open, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, more: {} });
+    Object.assign(MP, { user: user || null, open, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, more: {}, col: typeof mine.col === 'string' ? mine.col : '' });
   }
   function saveMarketPrefs() {
     if (!MP.user) return;
     const all = store.json(LS.market);
     const map = all && typeof all === 'object' && !Array.isArray(all) ? all : {};
-    map[MP.user] = { open: { ...MP.open }, min: MP.min };
+    map[MP.user] = { open: { ...MP.open }, min: MP.min, col: MP.col };
     store.set(LS.market, JSON.stringify(map));
   }
   watch(() => (S.me && S.me.user ? S.me.user.id : null), (u) => loadMarketPrefs(u), { immediate: true });
@@ -5780,13 +5780,24 @@
   }
   const vsCote = (amount, x) => (x.cote != null && amount != null ? h('span', { class: 'lot__cote' },
     [' · cote ', priceTag(x.cote, { approx: !(x.n >= 3), tag: 'span', title: x.n >= 3 ? null : 'Moins de 3 ventes : cote peu fiable' }), ` (${pctOf(amount, x.cote)})`]) : h('span', { class: 'lot__cote' }, ' · pas de cote'));
+  // Liste déroulante « Toutes les collections / <collection> (N) » : les collections que remplissent les bonnes
+  // affaires lues, de celle qui en a le plus à celle qui en a le moins ; le choix est gardé (MP.col).
   function viewDeals(live) {
     if (!live) return h('p', { class: 'muted' }, "Pas de lecture récente du marché (elle est gardée 24 h) : sur wiki-masters.com, clique « Mettre à jour les cotes » dans l'encart du favori.");
-    const list = Array.isArray(live.deals) ? live.deals : [];
-    if (!list.length) return h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.');
-    return [h('ul', { class: 'lots' }, list.slice(0, marketShown('acheter')).map((x) => {
+    const all = (Array.isArray(live.deals) ? live.deals : []).map((x) => ({ x, cols: membershipsOfItem({ title: x.t }) }));
+    if (!all.length) return h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.');
+    const counts = new Map();
+    for (const d of all) for (const c of d.cols) counts.set(c.key, { col: c, n: ((counts.get(c.key) || {}).n || 0) + 1 });
+    const options = [...counts.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.col.name, b.col.name));
+    const sel = counts.has(MP.col) ? MP.col : '';
+    const list = sel ? all.filter((d) => d.cols.some((c) => c.key === sel)) : all;
+    const pick = h('label', { class: 'deal-col' }, [h('span', { class: 'sr' }, 'Filtrer par collection'),
+      h('select', { id: 'deal-col', class: 'field', value: sel, onChange: (e) => { MP.col = e.target.value; MP.more.acheter = 0; saveMarketPrefs(); } }, [
+        h('option', { value: '' }, `Toutes les collections (${fmt(all.length)})`),
+        ...options.map((o) => h('option', { key: o.col.key, value: o.col.key }, `${o.col.name} (${fmt(o.n)})`)),
+      ])]);
+    return [pick, h('ul', { class: 'lots' }, list.slice(0, marketShown('acheter')).map(({ x, cols }) => {
       const soon = !x.bid && Date.parse(x.end) - Date.now() < 2 * 3600000;
-      const cols = membershipsOfItem({ title: x.t });
       return h('li', { key: x.a, class: 'lot' }, [
         lotTitle(x, copyNameButton(x.t)),
         h('span', { class: 'lot__line' }, [priceTag(x.ask), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', vsCote(x.ask, x)]),

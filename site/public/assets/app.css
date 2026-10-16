@@ -669,3 +669,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .cote__row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 10px; font-size: 13px; }
 .cote__row b { font: 600 14px var(--f-head); font-variant-numeric: tabular-nums; }
 .cote__row b.none { color: var(--faint); font-weight: 400; font-family: var(--f-body); }
+
+/* « Bonnes affaires à acheter » : filtre par collection. */
+.deal-col { display: block; margin: 0 0 10px; }
+.deal-col select { width: 100%; max-width: 420px; }
