@@ -534,3 +534,28 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .fitem--static { cursor: default; }
 .fitem--static:hover { border-color: transparent; }
 #trade-member { flex: 0 1 200px; }
+/* Ligne en deux boutons : la carte (fiche) et, dessous, les collections d'un ami (son album). */
+.fitem--split:hover { border-color: transparent; }
+.fitem--split:has(.fitem__main:hover), .fitem--split:has(.fitem__main:focus-visible) { border-color: var(--accent); }
+.fitem__main { flex: 1 1 100%; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; border: 0; background: none; padding: 0; margin: 0; color: inherit; font: inherit; text-align: left; }
+.fitem__col { font-size: 11.5px; text-align: left; overflow-wrap: anywhere; }
+/* Collections d'un ami (« Ses collections » de son classeur) et album d'une d'elles, en lecture seule. */
+.back-line { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+.friend-tools { margin-bottom: 16px; }
+/* Quatre filtres (album d'un ami) : jamais un libellé coupé ; sur téléphone, plus serrés, puis sur deux lignes au besoin. */
+.seg--four button { white-space: nowrap; }
+@media (max-width: 480px) { .seg--four { flex-wrap: wrap; } .seg--four button { padding: 6px 9px; } }
+.row .row-help { font-size: 12px; color: var(--link); }
+.row .row-help b { color: inherit; font-weight: 700; }
+.row-kind { font-size: 11.5px; color: var(--faint); }
+.album-title .row-kind { font-size: 12.5px; }
+.give-sum { color: var(--link); }
+.give-sum b { color: var(--link); }
+.card.card--fa { cursor: pointer; }
+.card.card--fa:hover, .card.card--fa:focus-visible { transform: translateY(-6px); box-shadow: 0 20px 34px -14px var(--shadow), 0 0 18px color-mix(in srgb, var(--rc) 40%, transparent); }
+.card.card--fa.want { box-shadow: 0 0 0 2px var(--accent), 0 14px 30px -14px var(--shadow); }
+.cell__want { font-size: 11.5px; line-height: 1.35; color: var(--link); overflow-wrap: anywhere; }
+.slot.can { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+.slot__give { position: relative; display: flex; flex-wrap: wrap; gap: 4px; }
+.fiche__states { display: flex; flex-wrap: wrap; gap: 6px; }
+.missing-note.on { color: var(--link); border-style: solid; border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }

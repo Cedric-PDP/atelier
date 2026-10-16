@@ -641,6 +641,43 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   assert.equal(r.json.targets[0].items.length, 3000);
 });
 
+await test('collections à compléter : une seule collection par catégorie de Wikipédia (source wp:)', async () => {
+  const wes = await signup('Wes');
+  const items = [{ title: 'Charolaise', status: 'ok' }];
+  let r = await call('POST', 'targets/save', { key: wes.key, body: { name: 'Race bovine', items, source: 'wp:Race bovine' } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const first = r.json.target;
+  await new Promise((res) => setTimeout(res, 5));
+  // Créée une seconde fois, sans id (deux onglets, deux appareils) : la même collection, remplacée.
+  r = await call('POST', 'targets/save', { key: wes.key, body: { name: 'Races bovines', items: [...items, { title: 'Salers', status: 'ok' }], source: 'wp:Race bovine' } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.target.id, first.id);
+  assert.equal(r.json.target.created_at, first.created_at);
+  assert.equal(r.json.target.name, 'Races bovines');
+  assert.equal(r.json.target.items.length, 2);
+  let list = (await call('GET', 'targets', { key: wes.key })).json.targets;
+  assert.deepEqual(list.map((t) => [t.id, t.source]), [[first.id, 'wp:Race bovine']]);
+  // Une autre catégorie : une autre collection ; les autres sources (wm:, catalog:, aucune) ne sont pas regroupées.
+  r = await call('POST', 'targets/save', { key: wes.key, body: { name: 'Race bovine originaire de France', items, source: 'wp:Race bovine originaire de France' } });
+  assert.notEqual(r.json.target.id, first.id);
+  for (let i = 0; i < 2; i++) assert.equal((await call('POST', 'targets/save', { key: wes.key, body: { name: 'Vaches', items, source: 'wm:vache' } })).status, 200);
+  for (let i = 0; i < 2; i++) assert.equal((await call('POST', 'targets/save', { key: wes.key, body: { name: 'Sans source', items } })).status, 200);
+  // Un id envoyé reste la règle (création ou remplacement de celle-là).
+  r = await call('POST', 'targets/save', { key: wes.key, body: { id: 'autre-rb', name: 'Race bovine bis', items, source: 'wp:Race bovine' } });
+  assert.equal(r.json.target.id, 'autre-rb');
+  // La même catégorie suivie par un autre compte : sa collection à lui.
+  const zoe = await signup('Zoé');
+  r = await call('POST', 'targets/save', { key: zoe.key, body: { name: 'Race bovine', items, source: 'wp:Race bovine' } });
+  assert.notEqual(r.json.target.id, first.id);
+  list = (await call('GET', 'targets', { key: wes.key })).json.targets;
+  assert.equal(list.length, 7);
+  assert.equal(list.filter((t) => t.source === 'wm:vache').length, 2);
+  assert.equal(list.find((t) => t.id === first.id).name, 'Races bovines');
+  // Sans id, c'est la plus ancienne de cette source qui est remplacée (ici la première, pas « autre-rb »).
+  r = await call('POST', 'targets/save', { key: wes.key, body: { name: 'Race bovine', items, source: 'wp:Race bovine' } });
+  assert.equal(r.json.target.id, first.id);
+});
+
 await test('collections à compléter : 600 Ko par collection, 5 Mo par compte', async () => {
   const ivy = await signup('Ivy');
   // ~560 Ko d'éléments : 1 000 éléments avec une description de 500 caractères.

@@ -123,8 +123,14 @@ async function storeTarget(env, user, body) {
   }
 
   let id = body.id;
-  if (id === undefined || id === null || id === '') id = randomToken(8);
-  else if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(id)) {
+  if (id === undefined || id === null || id === '') {
+    // Une catégorie de Wikipédia n'a qu'une collection par compte (source « wp:… ») : sans id, la plus ancienne qui a
+    // déjà cette source est remplacée (créée deux fois, depuis deux onglets ou deux appareils) au lieu d'en créer une seconde.
+    const same = source && source.startsWith('wp:')
+      ? await db.prepare('SELECT id FROM targets WHERE user_id = ?1 AND source = ?2 ORDER BY created_at, id LIMIT 1').bind(user.id, source).first()
+      : null;
+    id = same ? same.id : randomToken(8);
+  } else if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(id)) {
     throw new HttpError(400, 'Identifiant de collection invalide.');
   }
 

@@ -6,11 +6,13 @@ wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
 
 **Vocabulaire de l'interface** (à respecter partout) :
 - **Collections** : les listes créées par l'utilisateur, surtout par le favori depuis une recherche de la « Collection
-  globale » du jeu (source `wm:<recherche>`), ou à la main dans « Nouvelle collection » (mots-clés, liste d'articles),
-  et les anciennes ajoutées du catalogue (`catalog:…`) : toutes dans « Mes collections ».
-- **Catégories** : les catégories de Wikipédia (pages `https://fr.wikipedia.org/wiki/Catégorie:Violet`). Une catégorie
-  **suivie** est une collection à compléter de source `wp:<nom>`, rangée dans « Mes catégories » (jamais dans « Mes
-  collections »).
+  globale » du jeu (source `wm:<recherche>`), à la main dans « Nouvelle collection » (mots-clés, liste d'articles),
+  depuis une catégorie de Wikipédia (`wp:<nom>`), et les anciennes ajoutées du catalogue (`catalog:…`) : toutes dans
+  « Mes collections ».
+- **Catégories** : les catégories de Wikipédia (pages `https://fr.wikipedia.org/wiki/Catégorie:Violet`), une **source**
+  d'où créer une collection (« Créer une collection » : source `wp:<nom>`, signalée « depuis la catégorie Wikipédia »),
+  pas une liste à part. On ne « suit » pas une catégorie (2026-10-16 : « Suivre », « Mes catégories » et « Ne plus
+  suivre » ont disparu ; les anciennes catégories suivies sont des collections comme les autres).
 
 Le catalogue de collections proposées tirées de Wikidata (`catalog.json`, 59 thèmes) a été **retiré** le 2026-10-16 :
 l'interface ne le demande plus, et il n'est plus servi.
@@ -118,12 +120,12 @@ autre format (voir « Le favori »).
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
 | `GET /api/targets` | | `{targets:[Collection]}` |
-| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` |
+| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie n'a qu'une collection par compte : deux onglets, deux appareils) |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url}], part, next_part}` : pages de 1 000 cartes, sans étiquettes |
-| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (ses collections et ses catégories suivies), réduites au nom, à leur nature (`kind` : `category` pour une catégorie de Wikipédia suivie, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
+| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?}], source, created_at,
 updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
@@ -131,10 +133,11 @@ diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par
 (`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
 vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (au plus 3 000 éléments,
 100 collections par utilisateur). `source` = `catalog:<id>` pour une collection ajoutée jadis depuis le catalogue
-(retiré le 2026-10-16 ; elle reste une collection comme les autres), `wp:<nom de la catégorie>` pour une **catégorie de
-Wikipédia suivie** (« Suivre cette catégorie » dans son album, ou « Suivre » une proposition de
-`site/public/assets/propose.js` : catégories des cartes de l'utilisateur dont il possède au moins 5 % et 2 cartes, hors
-catégories de rangement et de temps ; nom sans « Catégorie: », première lettre en majuscule), `wd` ou `cat` quand
+(retiré le 2026-10-16 ; elle reste une collection comme les autres), `wp:<nom de la catégorie>` pour une collection
+**créée depuis une catégorie de Wikipédia** (« Créer une collection » dans l'album de la catégorie, ou sur une
+proposition de `site/public/assets/propose.js` : catégories des cartes de l'utilisateur dont il possède au moins 5 % et
+2 cartes, hors catégories de rangement et de temps ; nom sans « Catégorie: », première lettre en majuscule ; une seule
+par catégorie et par compte, voir `targets/save`), `wd` ou `cat` quand
 elle vient de la recherche par mots-clés (requête Wikidata ou catégorie de Wikipédia), `wm:<recherche>` quand le favori
 l'a créée depuis une recherche de la Collection globale du jeu (`POST /api/targets/from-game`, titres = `wikipedia_title`
 du jeu, non revérifiés sur Wikipédia). `rarity` (facultatif, C | PC | R | SR | UR | L, gardé seulement s'il est connu,
@@ -272,8 +275,8 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   seulement quand il est coché ; `PATCH /api/me {shared_targets:true|false}` ; `users.shared_targets` 0/1, désactivé par
   défaut). Il n'existe qu'avec le partage des cartes : `400` sans lui, et couper le partage des cartes le coupe aussi (à
   rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (ses
-  collections et ses catégories suivies ; pas les propositions qu'il ne suit pas), leur nom, leur nature (catégorie de
-  Wikipédia ou collection, `kind`) et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions,
+  collections, y compris celles faites d'une catégorie ; pas les propositions), leur nom, leur nature (`kind` :
+  `category` pour une collection faite d'une catégorie de Wikipédia, `collection` sinon) et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions,
   images, statuts, leur source (recherche tapée, nom de la catégorie, id du catalogue) ni leurs dates ; les éléments
   introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre
   et la date du dernier changement.
@@ -290,29 +293,51 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre et au qid ; une réponse reste sous
   ~1 Mo (une collection fait 600 Ko rangés au plus), même pour un compte à 5 Mo de collections.
 - **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
-  partage pas ses collections », et le nombre de catégories parmi elles une fois lues) ; « Échanges possibles »
-  (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection et catégorie suivie
-  (badge « catégorie »), les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
+  partage pas ses collections ») ; « Échanges possibles »
+  (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
   double d'abord : les plus faciles à échanger), les collections où les amis remplissent le plus de cases d'abord ;
   « Ce qui pourrait intéresser tes amis » = tes cartes (tes doubles d'abord) qui remplissent une case vide des
   collections qu'ils montrent ; **rien pour un ami qui ne les montre pas** (« Rien pour Léa, qui ne partage pas ses
   collections » ; plus d'estimation par le catalogue) ; classeur d'un ami en lecture seule (filtre « Me manquent »,
-  recherche, tri). Dans un album, une case vide qu'un ami
+  recherche, tri, et « Ses collections », ci-dessous). Dans un album, une case vide qu'un ami
   peut remplir porte un badge (« chez Paul ×2 », « +1 » s'il y en a d'autres) ; sa fiche dit « Chez : Paul (×2), Léa ».
   Rapprochement carte ↔ élément comme pour les tiennes : titre, puis qid (`match.js` ; les titres des cartes des amis que
   tu n'as pas, et ceux des éléments sans qid des collections qu'ils montrent et qui leur manquent — 2 000 au plus par
   lecture —, sont résolus dans le même cache).
+- **« Ses collections »** (classeur d'un ami, avant ses cartes) : s'il les partage, toutes ses collections dans une seule
+  liste, de A à Z (le serveur les rend dans l'ordre de leurs ids), celles tirées d'une catégorie de Wikipédia (`kind:
+  'category'`) signalées discrètement (« depuis la catégorie Wikipédia »), chacune
+  comme une ligne de tes collections (éventail de ses cartes, « 12 sur 40 », barre des raretés, %), progression calculée
+  avec **ses** cartes (titre puis qid), et « Tu peux l'aider : 4, dont 3 en double » (ses cases vides que tes cartes
+  remplissent) ; sinon une phrase : « Léa ne partage pas ses collections. ». Une ligne ouvre l'**album de sa collection**,
+  en lecture seule, avec l'allure des tiens : ses cartes (« Tu l'as », estompée, ou « Te manque » ; mise en avant, avec
+  sous la carte les noms de tes collections, si elle remplirait une de leurs cases vides) et ses cases vides (« tu l'as »,
+  « ×2 en double » si ta carte la remplit : celles que tu pourrais lui donner ; rareté de ta carte, sinon estimée d'après
+  les vues) ; numéros, sauf pour une collection tirée d'une catégorie (A → Z) ; « Il lui en manque N », « Tu peux l'aider : N cartes
+  dont M en double » ; filtres « Toutes / Il les a / Lui manquent / Tu peux l'aider », tri par rareté ; « ← Retour au
+  classeur de Paul » (et « ← Échanges possibles », filtre gardé, quand on vient de là). Une carte ou une case ouvre une
+  fiche en lecture seule (qui l'a, rareté, vues, ses autres collections et les tiennes où elle figure, « Copier le nom »,
+  Wikipédia), sans tags ni sélection. Rien ne modifie sa collection ; « Créer la même collection chez moi » en fait une
+  **à toi** (`POST /api/targets/save {name, items}` : même nom, ses articles tels qu'il les montre, titre et qid, `status:
+  'ok'`, sans source ni requête à Wikipédia : une liste d'articles, sans lien avec la sienne ensuite), puis « Ouvrir ma
+  collection » (une des tiennes de même nom, sans source et d'autant d'articles compte comme cette copie : pas de
+  doublon d'une visite à l'autre). Vues sur 30 jours
+  (et vignettes) demandées seulement pour les cases que ni lui ni toi n'avez, dans la même file et le même cache que tes
+  albums. Dans « Échanges possibles » et « Ce qui pourrait intéresser tes amis », le nom d'une collection d'un ami ouvre
+  son album (ta carte reste un bouton à part : jamais un bouton dans un autre).
 - **Page « Échanges possibles »** (sous-page de l'onglet) : « telle carte de X pourrait compléter telle collection de
   Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
   compléter tes collections » ; celles qu'un ami montre ; aucune pour un ami qui ne les montre pas (on ne sait pas ce
   qui lui manque : « Léa ne partage pas ses collections : impossible de savoir ce qui lui manque », ses cartes comptent
   quand même pour les autres). Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
-  collections de Z qu'elle complète, chaque catégorie suivie suivie de « (catégorie) » (un même article dans deux
+  collections de Z qu'elle complète (un même article dans deux
   collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
   en double » ; ordre : les couples qui ont le plus de doubles, puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
-  plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Ce qui me
-  concerne » (tu donnes ou tu reçois, par défaut), « Tout le monde », ou un membre (il donne ou il reçoit). Une ligne de
-  ta carte ouvre sa fiche ; une ligne pour toi ouvre la fiche de la case vide ; entre deux amis, rien à ouvrir. Calcul
+  plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Tout le
+  monde » (par défaut : peu d'échanges pour l'instant, demande de l'utilisateur du 2026-10-16), « Ce qui me concerne » (tu
+  donnes ou tu reçois), ou un membre (il donne ou il reçoit). Une ligne de
+  ta carte ouvre sa fiche ; une ligne pour toi ouvre la fiche de la case vide ; entre deux amis, rien à ouvrir (sauf,
+  comme sur toute ligne pour un ami, le nom de ses collections : son album). Calcul
   dans le navigateur (`trades`, propriété calculée : refait quand les cartes, les collections ou les qids changent ;
   ~120 ms pour 6 personnes de 5 000 cartes et 30 000 éléments de collection), filtre à part.
 - **Chargement** : à la demande (ouverture de l'onglet, d'un album ou d'une case vide, si tu partages), par pages de
@@ -327,53 +352,78 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
 
 Deux zones, dans cet ordre :
 
-1. **« Mes collections »** : les collections à compléter dont la source ne commence pas par `wp:` (favori depuis la
-   Collection globale du jeu, « Nouvelle collection » par mots-clés ou liste d'articles, anciennes du catalogue), avec
-   « Nouvelle collection ». Vide : une phrase explique comment en créer une avec le favori (recherche dans la
-   « Collection globale », puis le favori), et « Installer le favori » s'il n'y en a pas encore.
-2. **« Catégories »** (catégories de Wikipédia) :
+1. **« Mes collections »** : TOUTES les collections à compléter (favori depuis la Collection globale du jeu, « Nouvelle
+   collection » par mots-clés ou liste d'articles, depuis une catégorie de Wikipédia, anciennes du catalogue), avec
+   « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son album, discrètement :
+   « depuis la catégorie Wikipédia » ; ses articles sont de A à Z, sans numéros (une catégorie n'a pas d'ordre), comme
+   les anciennes du catalogue sans ordre (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album
+   est celui d'une collection : « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia ». Vide : une phrase
+   explique comment en créer une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici,
+   et « Installer le favori » s'il n'y en a pas encore.
+2. **« Catégories »** (catégories de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
    - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
      catégories de Wikipédia : 250 ms après la dernière frappe (2 caractères au moins, « Catégorie: » retiré), une
      requête `action=query&generator=prefixsearch&gpsnamespace=14&gpslimit=20&prop=categoryinfo` (préfixe et taille
      dans la même réponse), complétée par `generator=search&gsrnamespace=14&gsrlimit=20&prop=categoryinfo` (plein
      texte) quand le préfixe donne moins de 5 catégories utiles ; écartées : catégories cachées (`categoryinfo.hidden`),
      de maintenance (ébauches, homonymies, pages à…), vides ; **8 suggestions au plus**, chacune avec son nombre
-     d'articles (`categoryinfo.pages`), ses sous-catégories, « suivie » si c'est le cas. Une seule requête à la fois
-     (file des requêtes Wikipédia de la page, 300 ms d'écart, 429/5xx : attente de `Retry-After` puis nouvel essai), la
-     recherche précédente abandonnée (`AbortController`), réponses gardées en mémoire pendant la visite (60 au plus).
-     En attendant les suggestions d'un nouveau texte, celles du précédent restent, estompées ; Entrée ouvre la
-     suggestion active si la liste est celle du texte tapé (ou choisie aux flèches), sinon la recherche part aussitôt et
-     sa première suggestion s'ouvre à son arrivée.
-   - **Album d'une catégorie** (choisie dans les suggestions ou les propositions ; déjà suivie : l'album de la
-     catégorie suivie) : ses articles (`list=categorymembers`, espace principal, 3 000 au plus ; « inclure les
-     sous-catégories (1 niveau : N) » si elle en a), la progression avec tes cartes (titre puis qid), la rareté estimée
-     des cases vides d'après les vues, comme les autres albums, de A à Z sans numéros ; « Voir sur Wikipédia » ;
-     **« Suivre cette catégorie »** = `POST /api/targets/save {name, items, source:'wp:<nom>'}` (articles lus, avec ceux
-     des sous-catégories si la case est cochée ; impossible au-delà de 3 000 articles). Suivie : badge « catégorie
-     suivie », **« Ne plus suivre »** (`POST /api/targets/delete`) ; l'album reste ouvert comme une catégorie non suivie,
-     d'où « Suivre » la reprend.
-   - **« Mes catégories »** : les catégories suivies (source `wp:…`), mêmes lignes que les collections.
+     d'articles (`categoryinfo.pages`), ses sous-catégories, « ta collection » si tu en as déjà fait une. Une seule
+     requête à la fois (file des requêtes Wikipédia de la page, 300 ms d'écart, 429/5xx : attente de `Retry-After` puis
+     nouvel essai), la recherche précédente abandonnée (`AbortController`), réponses gardées en mémoire pendant la
+     visite (60 au plus). En attendant les suggestions d'un nouveau texte, celles du précédent restent, estompées ;
+     Entrée ouvre la suggestion active si la liste est celle du texte tapé (ou choisie aux flèches), sinon la recherche
+     part aussitôt et sa première suggestion s'ouvre à son arrivée, **si l'on est encore dans le champ** : quitter le
+     champ, changer d'onglet, ouvrir ou fermer un album oublie cette Entrée. Une suggestion choisie : le focus va au
+     titre de l'album ouvert (`#album-name`, `tabindex=-1`).
+   - **Album d'une catégorie** (choisie dans les suggestions ou les propositions), badge « catégorie de Wikipédia » :
+     ses articles (`list=categorymembers`, espace principal, 3 000 au plus ; « inclure les sous-catégories (1 niveau :
+     N) » si elle en a, cochée d'emblée quand on l'ouvre depuis une proposition qui regroupe des sous-catégories), la
+     progression avec tes cartes (titre puis qid), la rareté estimée des cases vides d'après les vues, comme les autres
+     albums, de A à Z sans numéros ; « Voir sur Wikipédia » ; **« Créer une collection »** = `POST /api/targets/save
+     {name, items, source:'wp:<nom>'}` (nommée comme la catégorie ; articles lus, avec ceux des sous-catégories si la
+     case est cochée ; impossible au-delà de 3 000 articles) : l'album devient celui de la nouvelle collection (dans
+     « Mes collections »). Tu en as déjà une (source `wp:<nom>`) : **« Ouvrir ta collection »** à la place.
+     « Créer une collection » de sa proposition en cours : le bouton attend (« Un instant… »), puis l'album passe à la
+     collection créée ; jamais deux collections de même source (voir aussi `targets/save`).
    - **« Proposées d'après tes cartes »** (`propose.js`) : catégories de tes cartes dont tu as au moins 5 % et 2 cartes,
-     ni suivies ni retirées, **sans les sous-catégories** d'un thème déjà là (règles appliquées à l'affichage, sans
-     requête, `ClasseurPropose.prune`) :
+     ni déjà en collection (source `wp:<nom>`) ni retirées, **sans les sous-catégories** d'un thème déjà là (règles
+     appliquées à l'affichage, sans requête, `ClasseurPropose.prune`) :
      1. **couverte** : au moins 80 % des cartes qui la rendent proposable (celles comptées pour les 5 % et les 2 cartes)
-        sont déjà dans **une même** de tes collections ou catégories suivies (rapprochement titre puis qid, comme les
-        albums) → pas proposée (une collection « Couleurs » qui a tes cartes rouges : « Rouge » n'est pas proposée) ;
+        sont déjà dans **une même** de tes collections, quelle qu'en soit la source (rapprochement titre puis qid,
+        comme les albums) → pas proposée (une collection « Couleurs » qui a tes cartes rouges : « Rouge » n'est pas
+        proposée). C'est aussi ce qui écarte les filles d'une catégorie dont tu as une collection **avec ses
+        sous-catégories** (leurs articles y sont). Une collection faite d'une catégorie **sans** ses sous-catégories
+        n'écarte pas ses filles : sur Wikipédia, un article est rangé dans la catégorie la plus précise, la parente ne le
+        contient pas (« Race bovine originaire d'Europe » n'a pas les races d'Italie ni d'Espagne) ;
      2. **hiérarchie** : les catégories parentes visibles de chaque proposition sont relevées au calcul
         (`action=query&prop=categories&clshow=!hidden&cllimit=max` sur les pages de l'espace 14, 50 par requête, même
         file et cache de 14 jours que le reste, `classeur-catparents` ; un incident ici n'empêche pas les propositions) ;
-        une catégorie dont une parente est **suivie** n'est pas proposée ; une catégorie dont une parente est **elle-même
-        proposée** non plus (la parente seule reste ; d'une chaîne, la plus haute ; deux catégories parentes l'une de
-        l'autre : la plus grande) ; si la parente n'est pas proposable (seuils, retirée, couverte), les filles restent.
+        une catégorie dont une parente est **elle-même proposée** n'est pas proposée à part : la parente seule reste et
+        la **regroupe** (d'une chaîne, la plus haute ; catégories parentes les unes des autres, en cycle de 2 ou plus :
+        la plus grande, à taille égale la première de A à Z). La parente dit combien elle en regroupe (« Regroupe 3
+        sous-catégories proposées : Jaune, Rouge et Vert. La collection est créée sous-catégories comprises. ») et son
+        « Créer une collection » prend ses articles, ceux de ses sous-catégories (1 niveau) et ceux des propositions
+        regroupées plus bas (petites-filles) ; plus de 3 000 ainsi : ses articles et ceux des seules propositions
+        regroupées ; encore trop : refusé (l'ouvrir pour en faire une collection sans ses sous-catégories). Si la
+        parente n'est pas proposable (seuils, retirée, couverte, déjà en collection), les filles restent.
      Chaque proposition dit pourquoi elle est là (« Tu as : Coquelicot, Fraise et 3 autres » : les cartes comptées).
-     Le nom ouvre l'album, « Suivre » (on reste sur la liste, elle passe dans « Mes catégories »), « Retirer »
-     (`prefs.hidden_proposals`), « Voir sur Wikipédia » ; « Chercher de nouvelles propositions », « Rétablir les
-     propositions retirées », « Masquer les propositions » (`prefs.hide_proposals` : plus rien n'est cherché sur
-     Wikipédia tant qu'elles sont masquées).
+     Le nom ouvre l'album, « Créer une collection » (on reste sur la liste, la collection passe dans « Mes
+     collections »), « Retirer » (`prefs.hidden_proposals`), « Voir sur Wikipédia » ; « Chercher de nouvelles
+     propositions », « Rétablir les propositions retirées », « Masquer les propositions » (`prefs.hide_proposals` : plus
+     rien n'est cherché sur Wikipédia tant qu'elles sont masquées ; un calcul en cours s'arrête aussitôt). Catégories
+     couvertes : la page le dit, avec la collection qui en couvre le plus (« 2 autres catégories de tes cartes écartées
+     car déjà couvertes par « Couleurs ». » ; sans autre proposition : « Pas de nouvelle proposition : 3 catégories de
+     tes cartes sont écartées car déjà couvertes par tes collections, surtout « Couleurs » (au moins 80 % de leurs
+     cartes y sont déjà). »).
+   - **Courses** : changement de classeur pendant une création (lecture des articles, enregistrement) : rien n'est
+     enregistré ni montré dans l'autre classeur (garde `cardsGen`), et les propositions de l'ancien (calcul en cours,
+     liste, créations en cours) sont oubliées ; une relecture de `GET /api/me` (retour sur l'onglet, minuterie des
+     60 s) partie avant ou pendant un changement des préférences ne le défait pas ; la relecture des collections après un
+     chargement des cartes ne coupe pas la résolution des qids de l'album ouvert (deux résolutions à part).
 
-Bandeau : « N collections » = le nombre de collections de « Mes collections » (sans les catégories suivies, sans
-total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » et « Dans tes catégories » (catégories suivies
-qui contiennent la carte, par titre ou qid).
+Bandeau : « N collections » = le nombre de collections de « Mes collections » (toutes, celles faites d'une catégorie
+comprises ; pas de total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » = toutes tes
+collections qui contiennent la carte (par titre ou qid), celles faites d'une catégorie comprises.
 
 ## Le favori (bookmarklet)
 

@@ -36,7 +36,7 @@
  *   // list : [{key:'wp:Kampen', title:'Catégorie:Kampen', name:'Kampen', url, size:26, owned:2, ratio:0.077,
  *   //          cards:['titre possédé', …], subcats:1, partial:false, parents:['Commune d'Overijssel', …]}], triées par
  *   //          ratio puis owned décroissants ; parents = catégories parentes visibles de la proposition (sans préfixe).
- *   // Puis, à l'affichage (sans requête) : P.prune(list, {followed, covered}) écarte les sous-catégories (voir prune).
+ *   // Puis, à l'affichage (sans requête) : P.prune(list, {covered, stats}) écarte les sous-catégories (voir prune).
  *   // Erreurs : rejet avec un Error au message français lisible tel quel ; err.name === 'AbortError' si annulé
  *   // (ne rien afficher).
  *
@@ -46,11 +46,13 @@
  * titres de `cards` (déjà possédés), lien `url` ; si `partial` : « (avec sous-catégories) » (seuls les articles
  * directement dans la catégorie sont comptés). Masquées si `prefs.hide_proposals`.
  *
- * Avant l'affichage : `P.prune(list, { followed: sources 'wp:' des collections, covered: (p) => … })` (voir prune, en
- * bas : propositions couvertes par une collection, sous-catégories d'une catégorie suivie ou proposée).
+ * Avant l'affichage : `P.prune(list, { covered: (p) => …, stats: {} })` (voir prune, en bas : propositions couvertes
+ * par une collection, sous-catégories d'une catégorie proposée, regroupées sous elle dans `subs`).
  *
- * « Suivre » (la catégorie rejoint « Mes catégories ») :
+ * « Créer une collection » (source 'wp:<nom>', dans « Mes collections ») :
  *   const members = await proposer.loadMembers(p.title, { signal });     // [{title}] (3 000 au plus, articles seuls)
+ *   (si p.subs : avec les articles de ses sous-catégories, 1 niveau, et des propositions qu'elle regroupe ; l'interface
+ *    les lit elle-même)
  *   const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
  *   const name = p.name.length > 80 ? p.name.slice(0, 79) + '…' : p.name;            // le serveur : 80 caractères au plus
  *   await api('POST', '/api/targets/save', { name, items, source: p.key });           // source = 'wp:<nom>' (≤ 200)
@@ -462,8 +464,8 @@
         out.push({ key: 'wp:' + c, title, name: c, url: wikiUrl(title), size, owned: owned.length, ratio, cards: owned.slice(),
           subcats: v[1], partial: v[1] > 0 && v[1] * 4 >= v[0] });
       }
-      // 5. Catégories parentes des propositions (cache, puis Wikipédia) : de quoi écarter à l'affichage une
-      // sous-catégorie d'une catégorie suivie ou proposée (prune). Un incident ici ne prive pas des propositions.
+      // 5. Catégories parentes des propositions (cache, puis Wikipédia) : de quoi regrouper à l'affichage les
+      // sous-catégories d'une catégorie proposée (prune). Un incident ici ne prive pas des propositions.
       const todoParents = out.map((r) => r.name).filter((n) => !Array.isArray(parents.get(n)));
       const label3 = (d) => 'Catégories parentes : ' + d.toLocaleString('fr-FR') + ' sur ' + todoParents.length.toLocaleString('fr-FR');
       report('parents', 0, todoParents.length, label3(0));
@@ -508,26 +510,56 @@
   // ------------------------------------------------------------------------------------------------ à l'affichage
   // Propositions à montrer, sans aucune requête (les sous-catégories d'un même thème ne sont pas proposées une à une) :
   //  - « couverte » : covered(p) vrai (l'interface le calcule : au moins 80 % des cartes qui rendent la catégorie
-  //    proposable, p.cards, sont déjà dans une même collection ou catégorie suivie) → écartée ;
-  //  - une catégorie parente (p.parents) est suivie (followed : clés 'wp:<nom>' ou noms) → écartée ;
-  //  - une catégorie parente est elle-même proposée (dans la liste, après les deux règles ci-dessus) → écartée, la
-  //    parente reste (d'une chaîne, seule la plus haute reste) ; si la parente n'est pas proposable, les filles restent.
-  //    Deux catégories parentes l'une de l'autre : la plus grande reste.
-  // Rend la liste filtrée, dans le même ordre.
+  //    proposable, p.cards, sont déjà dans une même de ses collections, quelle qu'en soit la source) → écartée. C'est
+  //    aussi ce qui écarte les filles d'une catégorie dont une collection a été faite AVEC ses sous-catégories (leurs
+  //    articles y sont) ; faite sans elles, ses filles restent proposées : sur Wikipédia, un article est rangé dans la
+  //    catégorie la plus précise, la parente ne le contient pas (« Race bovine originaire d'Europe » n'a pas les races
+  //    d'Italie ni d'Espagne) ;
+  //  - une catégorie parente (p.parents) est elle-même proposée (dans la liste, après la règle ci-dessus) → écartée : la
+  //    parente reste et la regroupe (d'une chaîne, seule la plus haute reste) ; si la parente n'est pas proposable
+  //    (seuils, retirée, couverte, déjà en collection), les filles restent. Catégories parentes les unes des autres
+  //    (cycle de 2 ou plus) : la plus grande reste (à taille égale, la première dans l'ordre alphabétique).
+  // Rend la liste filtrée, dans le même ordre. Une proposition qui en regroupe d'autres est rendue en copie avec `subs` :
+  // noms des propositions qu'elle cache (filles, petites-filles…, dans l'ordre de la liste), que « Créer une
+  // collection » doit prendre avec elle. L'ancienne option `followed` (parentes suivies) est ignorée. options.stats (facultatif) reçoit {covered, grouped} : propositions couvertes, et regroupées sous une autre.
   function prune(list, options) {
     const op = options || {};
-    const followed = new Set();
-    for (const f of op.followed || []) if (typeof f === 'string' && f.trim()) followed.add(displayName(f));
     const covered = typeof op.covered === 'function' ? op.covered : () => false;
+    const stats = op.stats && typeof op.stats === 'object' ? op.stats : {};
+    stats.covered = 0;
+    stats.grouped = 0;
     const parentsOf = (p) => (Array.isArray(p.parents) ? p.parents.map(displayName).filter((n) => n && n !== p.name) : []);
-    const kept = (Array.isArray(list) ? list : []).filter((p) => p && !covered(p) && !parentsOf(p).some((n) => followed.has(n)));
+    const kept = [];
+    for (const p of Array.isArray(list) ? list : []) {
+      if (!p) continue;
+      if (covered(p)) stats.covered++; else kept.push(p);
+    }
     const byName = new Map(kept.map((p) => [p.name, p]));
-    const above = (p) => parentsOf(p).filter((n) => byName.has(n));
-    return kept.filter((p) => !above(p).some((n) => {
-      const q = byName.get(n);
-      if (!above(q).includes(p.name)) return true;
-      return q.size > p.size || (q.size === p.size && q.name.localeCompare(p.name, 'fr') < 0);
-    }));
+    const up = new Map(kept.map((p) => [p.name, parentsOf(p).filter((n) => byName.has(n))]));
+    // Parentes proposées de chaque proposition, directes ou non (les listes font quelques centaines au plus).
+    const anc = new Map();
+    for (const p of kept) {
+      const seen = new Set();
+      const todo = up.get(p.name).slice();
+      while (todo.length) {
+        const n = todo.pop();
+        if (seen.has(n)) continue;
+        seen.add(n);
+        todo.push(...up.get(n));
+      }
+      anc.set(p.name, seen);
+    }
+    const bigger = (a, b) => a.size > b.size || (a.size === b.size && a.name.localeCompare(b.name, 'fr') < 0);
+    // Cachée : une parente proposée au-dessus d'elle (qui ne remonte pas jusqu'à elle), ou, dans un cycle, une plus grande.
+    const hidden = (p) => [...anc.get(p.name)].some((n) => n !== p.name && (!anc.get(n).has(p.name) || bigger(byName.get(n), p)));
+    const shown = new Set(kept.filter((p) => !hidden(p)).map((p) => p.name));
+    const subs = new Map();
+    for (const p of kept) {
+      if (shown.has(p.name)) continue;
+      stats.grouped++;
+      for (const n of anc.get(p.name)) if (shown.has(n)) { if (!subs.has(n)) subs.set(n, []); subs.get(n).push(p.name); }
+    }
+    return kept.filter((p) => shown.has(p.name)).map((p) => (subs.has(p.name) ? Object.assign({}, p, { subs: subs.get(p.name) }) : p));
   }
 
   const exported = { createProposer, prune, displayName, keyOf, categoryTitle, isNoise, noiseReason };

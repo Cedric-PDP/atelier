@@ -336,18 +336,42 @@ function scenario() {
   // Liste : Animal de compagnie, Kampen, Félin (fille d'Animal de compagnie), Énorme exact, Grand ensemble, Petit lot
   // (fille de Grand ensemble).
   assert.deepEqual(names(list), ['Animal de compagnie', 'Kampen', 'Énorme exact', 'Grand ensemble'], 'parente proposée : la fille est écartée');
+  // La parente qui reste regroupe ses filles (subs, à suivre avec elle) ; les autres sont rendues telles quelles.
+  const st = {};
+  const pruned = Array.from(P.prune(list, { stats: st }));
+  const subsOf = (l, n) => { const x = l.find((p) => p.name === n); return x && x.subs ? Array.from(x.subs) : null; };
+  assert.deepEqual(subsOf(pruned, 'Animal de compagnie'), ['Félin']);
+  assert.deepEqual(subsOf(pruned, 'Grand ensemble'), ['Petit lot']);
+  assert.equal(subsOf(pruned, 'Kampen'), null);
+  assert.ok(pruned.find((p) => p.name === 'Kampen') === list.find((p) => p.name === 'Kampen'), 'proposition sans fille : rendue telle quelle');
+  assert.ok(!('subs' in list.find((p) => p.name === 'Grand ensemble')), 'la liste reçue ne doit pas être modifiée');
+  assert.deepEqual({ ...st }, { covered: 0, grouped: 2 });
   const sansGrand = list.filter((r) => r.name !== 'Grand ensemble'); // retirée par l'utilisateur
   assert.deepEqual(names(sansGrand), ['Animal de compagnie', 'Kampen', 'Énorme exact', 'Petit lot'], 'parente non proposée : la fille reste');
-  assert.deepEqual(names(sansGrand, { followed: ['wp:Lot', 'wp:Catégorie:Mammifère'] }), ['Animal de compagnie', 'Kampen', 'Énorme exact'], 'parente suivie : écartée');
-  // Couvertes écartées ; Félin reste alors (sa parente, couverte, n'est plus proposée).
-  assert.deepEqual(names(list, { covered: (r) => r.name === 'Kampen' || r.name === 'Animal de compagnie' }), ['Félin', 'Énorme exact', 'Grand ensemble'], 'couvertes écartées');
-  // Chaîne et cycle.
+  // Une parente dont on a une collection n'écarte pas ses filles par elle-même (faite sans ses sous-catégories, elle ne
+  // les contient pas ; avec, ses filles sont couvertes, plus bas) ; l'ancienne option followed (« suivies ») est ignorée.
+  assert.deepEqual(names(sansGrand, { followed: ['wp:Lot', 'wp:Catégorie:Mammifère'] }), ['Animal de compagnie', 'Kampen', 'Énorme exact', 'Petit lot'], 'parente en collection : la fille reste');
+  // Couvertes écartées (et comptées) ; Félin reste alors (sa parente, couverte, n'est plus proposée).
+  const st2 = {};
+  assert.deepEqual(names(list, { covered: (r) => r.name === 'Kampen' || r.name === 'Animal de compagnie', stats: st2 }), ['Félin', 'Énorme exact', 'Grand ensemble'], 'couvertes écartées');
+  assert.deepEqual({ ...st2 }, { covered: 2, grouped: 1 });
+  // Chaîne et cycles.
   const r = (name, size, parents) => ({ name, key: 'wp:' + name, size, parents });
-  assert.deepEqual(names([r('Couleur', 60, ['Optique']), r('Violet', 30, ['Couleur']), r('Nuance de violet', 12, ['Violet']), r('Rose', 20, [])]), ['Couleur', 'Rose'], 'chaîne : la plus haute reste');
+  const chain = [r('Couleur', 60, ['Optique']), r('Violet', 30, ['Couleur']), r('Nuance de violet', 12, ['Violet']), r('Rose', 20, [])];
+  assert.deepEqual(names(chain), ['Couleur', 'Rose'], 'chaîne : la plus haute reste');
+  assert.deepEqual(subsOf(Array.from(P.prune(chain)), 'Couleur'), ['Violet', 'Nuance de violet'], 'chaîne : la plus haute regroupe filles et petites-filles');
   assert.deepEqual(names([r('A', 10, ['B']), r('B', 30, ['A'])]), ['B'], 'cycle : la plus grande reste');
-  assert.deepEqual(names([r('Violet', 30, ['Couleur', 'Catégorie:Couleur']), r('Brun', 20, ['Couleur'])], { followed: ['wp:Couleur'] }), [], 'filles d\'une catégorie suivie');
+  // Cycle de 3 (A → C, B → A, C → B : chacune parente de la suivante) : la plus grande reste, et regroupe les deux autres.
+  const cyc3 = [r('A', 10, ['C']), r('B', 20, ['A']), r('C', 30, ['B'])];
+  assert.deepEqual(names(cyc3), ['C'], 'cycle de 3 : la plus grande reste');
+  assert.deepEqual(subsOf(Array.from(P.prune(cyc3)), 'C'), ['A', 'B']);
+  assert.deepEqual(names([r('A', 30, ['C']), r('B', 20, ['A']), r('C', 30, ['B'])]), ['A'], 'cycle de 3, deux plus grandes égales : ordre alphabétique');
+  // Cycle sous une parente proposée : la parente seule reste, même si une catégorie du cycle est plus grande qu'elle.
+  assert.deepEqual(names([r('X', 5, []), r('A', 40, ['B', 'X']), r('B', 10, ['A'])]), ['X'], 'cycle sous une parente : la parente reste');
+  // Collection d'une catégorie avec ses sous-catégories : ses filles sont couvertes (leurs cartes y sont), règle des 80 %.
+  assert.deepEqual(names([r('Violet', 30, ['Couleur', 'Catégorie:Couleur']), r('Brun', 20, ['Couleur'])], { covered: (p) => p.name === 'Violet' }), ['Brun'], 'filles couvertes par la collection de la parente');
   assert.deepEqual(names(null), []);
-  ok('prune : couvertes, parente suivie, parente proposée (la plus haute reste), parente non proposée, cycle');
+  ok('prune : couvertes (comptées), parente proposée (la plus haute reste et regroupe, subs), parente en collection sans effet, parente non proposée, cycles de 2 et 3');
 }
 
 // ------------------------------------------------------------------------------------------------ autres seuils

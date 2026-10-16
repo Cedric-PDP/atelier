@@ -261,6 +261,9 @@ const WIKI = {
   'Hydrogène': { q: 'Q556' }, // article de la catégorie « Élément chimique » : même élément que la carte « Hydrogène (élément) »
   Neptune: { q: 'Q332' }, // carte de Léa (Entre amis) : même élément que « Neptune (planète) » de la catégorie suivie
   'Neptune (planète)': { q: 'Q332' },
+  'Hélium': { q: 'Q560', pv: 3000, thumb: 'https://upload.wikimedia.org/he.jpg' }, // catégorie « Élément chimique » que Paul suit (case vide, rareté estimée)
+  'Néon': { q: 'Q654' }, // article de la catégorie « Gaz noble » : même élément que la carte « Néon (gaz) » de Léo
+  'Néon (gaz)': { q: 'Q654' },
   'Liste de races bovines': { q: 'Q900100' },
   'Liste des races bovines de France': { q: 'Q900110' },
 };
@@ -279,6 +282,7 @@ const CATS = {
   'Catégorie:Violation du droit d’auteur': { pages: 50, subcats: 0, hidden: true },
   'Catégorie:Viole vide': { pages: 0, subcats: 0 },
   'Catégorie:Élément chimique': { pages: 4, subcats: 0, page: ['Hydrogène', 'Hélium', 'Lithium', 'Mercure (chimie)'] },
+  'Catégorie:Gaz noble': { pages: 3, subcats: 0, page: ['Néon', 'Argon', 'Krypton'] }, // qids de l'album (Léo)
   // Couleurs (propositions : sous-catégories écartées) : Rouge, Vert et Jaune sont des sous-catégories de Couleur.
   'Catégorie:Couleur': { pages: 40, subcats: 3, page: ['Arc-en-ciel', 'Spectre visible'], subcat: ['Catégorie:Rouge', 'Catégorie:Vert', 'Catégorie:Jaune'] },
   'Catégorie:Rouge': { pages: 20, subcats: 0, page: ['Coquelicot', 'Fraise'] },
@@ -310,6 +314,7 @@ const DEF_MALADIE = [
 ];
 const defCalls = [];
 let wikiCalls = 0;
+const pvAsked = []; // titres dont les vues (prop=pageviews) ont été demandées, dans l'ordre
 const propose = { categories: 0 };
 const wdSearches = [];
 let lastProbe = '';
@@ -443,6 +448,7 @@ function wikiHandle(url) {
     return { query: { pages: p.titles.split('|').map((title) => ({ title, categoryinfo: I[title] || catInfo(title) || { pages: 0, subcats: 0 } })) } };
   }
   const titles = p.titles.split('|');
+  if (/pageviews/.test(p.prop || '') && !p.pvipcontinue) pvAsked.push(...titles);
   const normalized = [];
   const redirects = [];
   const pages = [];
@@ -481,7 +487,8 @@ async function main() {
   const catalogFetches = []; // demandes de /catalog.json (aucune attendue)
   // Contexte d'une page du classeur ; toutes les pages sont dans le même navigateur (localStorage, IndexedDB, API).
   // opts.idb : 'absent' (pas d'IndexedDB) ou 'refusé' (son accès lève une erreur, comme un stockage bloqué) ;
-  // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API ; opts.hash : fragment de l'adresse
+  // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API ; opts.wikiHold(url) : de même pour
+  // Wikipédia et Wikidata (une réponse abandonnée pendant l'attente est rejetée) ; opts.hash : fragment de l'adresse
   // (« #cle=… ») ; opts.speed : horloge de la page (minuteries et Date) accélérée d'autant, pour les longues attentes.
   function makeCtx(doc, win, opts = {}) {
     const ctx = {
@@ -532,6 +539,10 @@ async function main() {
       if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
         if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
         const data = wikiHandle(url);
+        if (opts.wikiHold) { // réponse de Wikipédia rendue plus tard (réseau lent) ; abandonnée entre-temps : rejetée
+          await opts.wikiHold(url);
+          if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
+        }
         return { ok: true, status: 200, headers: { get: () => null }, json: async () => data };
       }
       // Le catalogue Wikidata a été retiré de l'interface (2026-10-16) : il ne doit plus jamais être demandé.
@@ -881,15 +892,17 @@ async function main() {
   const cats = cls('tagcat').map((n) => text(n.querySelector('.chip__label')));
   check(cats.join('|') === 'Pays|Métiers|Culture et œuvres|Organisations', 'ordre des catégories : ' + cats.join(' | '));
 
-  // 9. Onglet Collections : « Mes collections » (favori depuis la Collection globale du jeu, ou à la main), puis
-  // « Catégories » : recherche d'une catégorie de Wikipédia avec suggestions au fil de la frappe, album d'une
-  // catégorie, « Suivre » / « Ne plus suivre », « Mes catégories ». Plus de catalogue.
+  // 9. Onglet Collections : « Mes collections » (toutes : favori depuis la Collection globale du jeu, à la main, depuis
+  // une catégorie de Wikipédia), puis « Catégories » : recherche d'une catégorie de Wikipédia avec suggestions au fil de
+  // la frappe, album d'une catégorie, « Créer une collection ». Ni catalogue, ni « Mes catégories » (plus de suivi).
   await goTab('collections');
-  check(has('Mes collections') && has('Catégories') && has('Mes catégories') && has("Proposées d'après tes cartes"), 'zones de l\'onglet Collections absentes');
+  check(has('Mes collections') && has('Catégories') && has("Proposées d'après tes cartes"), 'zones de l\'onglet Collections absentes');
+  check(!has('Mes catégories') && !byId('h-mycats') && !has('Suivre') && !has('suivie'), '« Mes catégories » et le vocabulaire du suivi doivent avoir disparu');
   check(!has('Collections proposées') && !has('Parcourir tout le catalogue') && !has('Pharaons') && !byId('prop-q'), 'le catalogue doit avoir disparu');
-  check(has('Collection globale') && has('Tu ne suis aucune catégorie'), 'textes des listes vides (favori, catégories) absents');
+  check(has('Collection globale') && has('depuis une catégorie de Wikipédia (plus bas)'), 'texte de la liste vide (favori, catégories) absent');
   const mineSection = () => byId('h-mine').parentNode.parentNode;
-  const myCats = () => byId('h-mycats').parentNode;
+  // Lignes de « Mes collections » faites d'une catégorie : « depuis la catégorie Wikipédia ».
+  const fromCat = (name) => { const r = mineSection().querySelectorAll('.row').find((n) => text(n.querySelector('.name')) === name); return !!r && !!r.querySelector('.row-kind') && text(r.querySelector('.row-kind')) === 'depuis la catégorie Wikipédia'; };
   const rowNames = (box) => box.querySelectorAll('.row').map((n) => text(n.querySelector('.name')));
   const opts = () => all((n) => n.getAttribute && n.getAttribute('role') === 'option');
   const at = () => (one('album-title') ? text(one('album-title')) : '');
@@ -935,9 +948,14 @@ async function main() {
     await settle();
     cq.dispatch('keydown', { key: 'Enter' });
     check(await waitFor(() => at().includes('Violet') && cls('slot').length === 3), "Entrée n'ouvre pas l'album de la catégorie : " + at());
+    // Le champ de recherche disparaît avec la liste : le focus va au titre de l'album (pas sur <body>).
+    await settle();
+    const focused = doc.activeElement && doc.activeElement.getAttribute ? doc.activeElement.getAttribute('id') : null;
+    check(focused === 'album-name' && byId('album-name').getAttribute('tabindex') === '-1', 'focus après le choix d\'une suggestion : ' + focused);
   }
-  // Album d'une catégorie : ses articles, la progression, la rareté estimée ; sous-catégories (1 niveau) ; Suivre.
-  check(at().includes('1 sur 4') && at().includes('catégorie') && cls('cell').length === 1 && has('Suivre cette catégorie') && !has('Modifier'), 'album de la catégorie : ' + at());
+  // Album d'une catégorie : ses articles, la progression, la rareté estimée ; sous-catégories (1 niveau) ; « Créer une
+  // collection ».
+  check(at().includes('1 sur 4') && at().includes('catégorie de Wikipédia') && cls('cell').length === 1 && has('Créer une collection') && !has('Modifier'), 'album de la catégorie : ' + at());
   check(all((n) => n.tagName === 'A' && text(n).includes('Voir sur Wikipédia')).some((a) => a.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Cat%C3%A9gorie:Violet'), 'lien vers la catégorie absent');
   {
     const subBox = all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'))[0];
@@ -945,43 +963,51 @@ async function main() {
     subBox.dispatch('change');
     check(await waitFor(() => at().includes('2 sur 6') && cls('slot').length === 4), 'avec les sous-catégories : 2 sur 6 attendu, ' + at());
   }
-  needButton('Suivre cette catégorie').click();
-  check(await waitFor(() => has('Ne plus suivre')), '« Suivre cette catégorie » sans effet');
-  if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Violet' && t.name === 'Violet' && t.items.length === 6), 'catégorie suivie mal enregistrée : ' + JSON.stringify(api.st.targets.map((t) => [t.name, t.source, t.items.length])));
-  check(at().includes('catégorie suivie') && at().includes('2 sur 6') && has('Tu suis « Violet » : 6 articles, sous-catégories comprises.'), 'album de la catégorie suivie : ' + at());
-  // Fiches : « Dans tes catégories » (carte possédée, puis case vide).
+  needButton('Créer une collection').click();
+  check(await waitFor(() => has('Modifier') && has('Supprimer')), '« Créer une collection » sans effet');
+  if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Violet' && t.name === 'Violet' && t.items.length === 6), 'collection de la catégorie mal enregistrée : ' + JSON.stringify(api.st.targets.map((t) => [t.name, t.source, t.items.length])));
+  check(at().includes('depuis la catégorie Wikipédia') && at().includes('2 sur 6') && has('Collection « Violet » créée : 6 articles, sous-catégories comprises, dans « Mes collections ».')
+    && !has('Créer une collection') && !has('Ne plus suivre'), 'album de la collection créée (devenu une collection comme les autres) : ' + at());
+  // Fiches : « Dans tes collections » (carte possédée, puis case vide), la collection faite de la catégorie comprise.
   {
     one('cell').querySelector('.card').dispatch('click');
     await settle(120);
-    check(fiche() && text(fiche()).includes('Dans tes catégories') && fiche().querySelector('.memberships') && text(fiche().querySelector('.memberships')).includes('Violet')
-      && !text(fiche()).includes('collections proposées'), 'fiche : « Dans tes catégories » attendu : ' + (fiche() ? text(fiche()).slice(-300) : 'absente'));
+    check(fiche() && text(fiche()).includes('Dans tes collections') && fiche().querySelector('.memberships') && text(fiche().querySelector('.memberships')).includes('Violet')
+      && !text(fiche()).includes('Dans tes catégories') && !text(fiche()).includes('collections proposées'), 'fiche : « Dans tes collections » attendu : ' + (fiche() ? text(fiche()).slice(-300) : 'absente'));
     win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
     await settle(500);
     cls('slot__open').filter((b) => (b.getAttribute('aria-label') || '').startsWith('Lavande : '))[0].click();
     await settle(120);
     const f = one('fiche--missing');
-    check(f && text(f).includes('Dans tes catégories') && text(f.querySelector('.memberships')).includes('Violet') && !text(f).includes('Dans tes collections'),
-      'fiche d\'une case vide : « Dans tes catégories » attendu : ' + (f ? text(f).slice(-300) : 'absente'));
+    check(f && text(f).includes('Dans tes collections') && text(f.querySelector('.memberships')).includes('Violet') && !text(f).includes('Dans tes catégories'),
+      'fiche d\'une case vide : « Dans tes collections » attendu : ' + (f ? text(f).slice(-300) : 'absente'));
     f.querySelector('.close').click();
     await settle(500);
   }
   needButton('← Toutes les collections').click();
   await settle();
-  check(rowNames(myCats()).includes('Violet') && !rowNames(mineSection()).includes('Violet'), 'Violet doit être dans « Mes catégories », pas dans « Mes collections » : '
-    + rowNames(myCats()).join(', ') + ' / ' + rowNames(mineSection()).join(', '));
+  check(rowNames(mineSection()).includes('Violet') && fromCat('Violet'), 'Violet doit être dans « Mes collections », « depuis la catégorie Wikipédia » : ' + rowNames(mineSection()).join(', '));
+  {
+    const n = rowNames(mineSection()).length;
+    check(colFigure() === `${n} ${n > 1 ? 'collections' : 'collection'}`, 'tuile du bandeau : la collection faite d\'une catégorie compte, ' + colFigure() + ' pour ' + n);
+  }
   check(byId('cat-q') && byId('cat-q').value === '', 'le champ de recherche doit être vidé après le choix');
-  // Une catégorie suivie se rouvre aussi depuis la recherche (« suivie »), puis « Ne plus suivre ».
+  // La catégorie se rouvre depuis la recherche (« ta collection ») : son album propose « Ouvrir ta collection » ; la
+  // collection se supprime comme les autres, après confirmation.
   type(byId('cat-q'), 'viol');
-  check(await waitFor(() => opts().length === 4 && text(opts()[1]).includes('suivie')), 'suggestion d\'une catégorie suivie : ' + opts().map(text).join(' / '));
+  check(await waitFor(() => opts().length === 4 && text(opts()[1]).includes('ta collection')), 'suggestion d\'une catégorie déjà en collection : ' + opts().map(text).join(' / '));
   opts()[1].dispatch('mousedown');
-  check(await waitFor(() => has('Ne plus suivre') && at().includes('catégorie suivie')), 'la catégorie suivie ne se rouvre pas depuis la recherche');
-  needButton('Ne plus suivre').click();
-  check(await waitFor(() => has('Suivre cette catégorie') && has('Tu ne suis plus « Violet »')), '« Ne plus suivre » sans effet');
-  if (!SERVER) check(!api.st.targets.some((t) => t.source === 'wp:Violet'), 'la catégorie est encore suivie');
-  check(at().includes('2 sur 6') && at().includes('catégorie') && !at().includes('suivie'), 'après « Ne plus suivre », l\'album de la catégorie doit rester ouvert : ' + at());
-  needButton('← Toutes les collections').click();
+  check(await waitFor(() => at().includes('Violet') && at().includes('catégorie de Wikipédia') && !!buttonByText('Ouvrir ta collection') && !buttonByText('Créer une collection')),
+    'catégorie déjà en collection : « Ouvrir ta collection » attendu, ' + at());
+  needButton('Ouvrir ta collection').click();
+  check(await waitFor(() => at().includes('depuis la catégorie Wikipédia') && at().includes('2 sur 6') && has('Supprimer')), '« Ouvrir ta collection » : ' + at());
+  needButton('Supprimer').click();
   await settle();
-  check(!rowNames(myCats()).includes('Violet') && has('Tu ne suis aucune catégorie'), 'Violet encore dans « Mes catégories »');
+  check(has('Supprimer « Violet » ?'), 'confirmation de suppression de la collection faite d\'une catégorie absente');
+  if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Violet'), 'collection supprimée avant la confirmation');
+  modalBtn('Supprimer la collection').click();
+  check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Violet')), 'collection « Violet » non supprimée');
+  if (!SERVER) check(!api.st.targets.some((t) => t.source === 'wp:Violet'), 'la collection « Violet » existe encore');
 
   // 9 ter. Rapprochement par identifiant Wikidata : la carte « Hydrogène (élément) » compte pour « Hydrogène » (même qid).
   // Entrée pressée avant l'arrivée des suggestions de « élément » (celles de « viol », estompées, sont encore là) : ce
@@ -998,14 +1024,14 @@ async function main() {
   await settle();
 
   // 9 quater. « Proposées d'après tes cartes » : catégories de tes cartes dont tu as au moins 5 % (et 2 cartes) ; ouvrir,
-  // Retirer, Suivre (sans quitter la liste), masquer, rétablir.
+  // Retirer, Créer une collection (sans quitter la liste), masquer, rétablir.
   for (let i = 0; i < 150 && !has('Exemples de test'); i++) await sleep(100);
   check(has('Exemples de test') && has('Autre essai'), 'propositions d\'après les catégories absentes');
   check(propose.categories > 0, 'propose.js n\'a pas interrogé Wikipédia');
   const wpRow = (name) => all((n) => n.classList.contains('row') && n.classList.contains('wp') && text(n.querySelector('.name')) === name)[0];
   check(text(wpRow('Exemples de test')).includes('7 sur 40') && text(wpRow('Exemples de test')).includes('Voir sur Wikipédia'), 'ligne de proposition incorrecte : ' + text(wpRow('Exemples de test')));
   wpRow('Exemples de test').querySelector('.row-open').click();
-  check(await waitFor(() => at().includes('Exemples de test') && at().includes('37 sur 40') && has('Suivre cette catégorie')), 'le nom d\'une proposition doit ouvrir son album : ' + at());
+  check(await waitFor(() => at().includes('Exemples de test') && at().includes('37 sur 40') && has('Créer une collection')), 'le nom d\'une proposition doit ouvrir son album : ' + at());
   needButton('← Toutes les collections').click();
   await settle();
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Retirer « Autre essai » des propositions')[0].click();
@@ -1014,11 +1040,11 @@ async function main() {
   await settle(100);
   if (!SERVER) check(JSON.stringify(api.st.prefs.hidden_proposals) === '["wp:Autre essai"]' && !('hidden_catalog' in api.st.prefs), 'retrait de la proposition non enregistré : ' + JSON.stringify(api.st.prefs));
   check(!wpRow('Autre essai'), 'la proposition retirée reste affichée');
-  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Suivre « Exemples de test »')[0].click();
-  check(await waitFor(() => has('Tu suis « Exemples de test » : 40 articles')), 'proposition non suivie');
+  all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Créer une collection « Exemples de test »')[0].click();
+  check(await waitFor(() => has('Collection « Exemples de test » créée : 40 articles, dans « Mes collections ».')), 'proposition : collection non créée');
   if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Exemples de test' && t.items.length === 40 && t.name === 'Exemples de test'), 'proposition mal enregistrée');
-  check(!one('album-title') && !wpRow('Exemples de test') && rowNames(myCats()).includes('Exemples de test') && !rowNames(mineSection()).includes('Exemples de test'),
-    'la proposition suivie doit passer dans « Mes catégories », sans quitter la liste');
+  check(!one('album-title') && !wpRow('Exemples de test') && rowNames(mineSection()).includes('Exemples de test') && fromCat('Exemples de test'),
+    'la collection créée d\'une proposition doit passer dans « Mes collections », sans quitter la liste');
   // Masquer les propositions, puis les afficher ; rétablir la proposition retirée.
   needButton('Masquer les propositions').click();
   await settle(100);
@@ -1029,15 +1055,15 @@ async function main() {
   needButton('Rétablir la proposition retirée').click();
   check(await waitFor(() => !!wpRow('Autre essai')), 'la proposition rétablie n\'est pas revenue');
   if (!SERVER) check(api.st.prefs.hide_proposals === false && api.st.prefs.hidden_proposals.length === 0, 'rétablissement non enregistré : ' + JSON.stringify(api.st.prefs));
-  // Suivie pour « Entre amis » : « Planète du Système solaire » (Entrée sur la première suggestion).
+  // Pour « Entre amis » : une collection « Planète du Système solaire » (Entrée sur la première suggestion).
   type(byId('cat-q'), 'planète');
   byId('cat-q').dispatch('keydown', { key: 'Enter' }); // tout de suite, sans attendre les suggestions
   check(await waitFor(() => at().includes('Planète du Système solaire') && at().includes('1 sur 9')), 'album des planètes : ' + at());
-  needButton('Suivre cette catégorie').click();
-  check(await waitFor(() => has('Ne plus suivre')), 'planètes non suivies');
+  needButton('Créer une collection').click();
+  check(await waitFor(() => has('Modifier') && at().includes('depuis la catégorie Wikipédia')), 'planètes : collection non créée');
   needButton('← Toutes les collections').click();
   await settle();
-  check(rowNames(myCats()).join('|') === 'Exemples de test|Planète du Système solaire', 'Mes catégories : ' + rowNames(myCats()).join(' | '));
+  check(rowNames(mineSection()).join('|') === 'Exemples de test|Planète du Système solaire' && fromCat('Planète du Système solaire'), 'Mes collections : ' + rowNames(mineSection()).join(' | '));
 
   // 9 bis. Nouvelle collection par mots-clés : catégories Wikipédia et requête Wikidata
   needButton('Nouvelle collection').click();
@@ -1269,8 +1295,8 @@ async function main() {
   needButton('Supprimer la collection').click();
   await settle(400);
   check(has('Mes collections') && !cls('group')[0].querySelectorAll('.row').some((n) => text(n).includes('Dieux')), 'collection non supprimée');
-  // Bandeau : les 4 collections de « Mes collections », pas les 2 catégories suivies.
-  check(colFigure() === '4 collections' && cls('group')[0].querySelectorAll('.row').length === 4, 'tuile des collections : ' + colFigure());
+  // Bandeau : les 6 collections de « Mes collections », les 2 faites d'une catégorie de Wikipédia comprises.
+  check(colFigure() === '6 collections' && cls('group')[0].querySelectorAll('.row').length === 6, 'tuile des collections : ' + colFigure());
 
   // 12. Sans session, le bouton devient « Mettre à jour avec le favori » : fenêtre guidée qui attend l'envoi du favori
   // et recharge la collection toute seule quand il arrive ; puis le cookie en secours, depuis « Mettre à jour ».
@@ -1769,7 +1795,7 @@ async function main() {
     const fcol = (name) => cls('fcol').find((n) => text(n.querySelector('.fcol__name')) === name) || null;
     const titlesIn = (n) => n.querySelectorAll('.fitem__title').map(text);
     check(await waitFor(() => has('Paul') && has('Léa') && fcol('Planète du Système solaire'), 5000), 'Entre amis : membres ou mise en avant absents');
-    check(fcol('Planète du Système solaire').querySelector('.badge') && text(fcol('Planète du Système solaire').querySelector('.badge')) === 'catégorie', 'une catégorie suivie doit être signalée comme telle');
+    check(fcol('Planète du Système solaire').querySelector('.row-kind') && text(fcol('Planète du Système solaire').querySelector('.row-kind')) === 'depuis la catégorie Wikipédia', 'collection tirée de la catégorie : mention discrète attendue');
     check(apiLog.slice(mark).includes('PATCH /api/me') && !has('Zoé') && !has('Bob'), 'seuls les membres qui partagent doivent apparaître');
     if (!SERVER) {
       // Cartes lues par pages (2 par page dans l'API simulée) : Paul 5 cartes = 3 pages, Léa 4 = 2 pages ; jamais Zoé.
@@ -1885,14 +1911,17 @@ async function main() {
       check(fcol('Paul') && titlesIn(fcol('Paul')).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && !fcol('Paul').querySelector('.badge'),
         'tes cartes pour Paul (ses collections) : ' + (fcol('Paul') ? text(fcol('Paul')) : 'absent'));
       check(!fcol('Léa') && has('Rien pour Léa, qui ne partage pas ses collections.'), 'tes cartes pour Léa : rien attendu (elle ne partage pas ses collections)');
-      // La page : « Ce qui me concerne » par défaut.
+      // La page : « Tout le monde » par défaut (demande de l'utilisateur, 2026-10-16), puis « Ce qui me concerne ».
       needButton('Voir les échanges possibles').click();
       await settle();
       const pairs = () => cls('trade').map((n) => text(n.querySelector('.fcol__name')).replace(' pour ', ''));
       const pair = (name) => cls('trade').find((n) => text(n.querySelector('.fcol__name')).replace(' pour ', '') === name) || null;
       const pressed = () => one('seg') ? one('seg').querySelectorAll('button').filter((b) => b.getAttribute('aria-pressed') === 'true').map(text).join() : '';
-      check(has('Échanges possibles') && pressed() === 'Ce qui me concerne', 'page des échanges : filtre par défaut ' + pressed());
-      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Paul → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
+      check(has('Échanges possibles') && pressed() === 'Tout le monde', 'page des échanges : filtre par défaut ' + pressed());
+      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi', 'couples (tout le monde, par défaut) : ' + pairs().join(' | '));
+      exactButton('Ce qui me concerne').click();
+      await settle();
+      check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Paul → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
       {
         const p = pair('Toi → Paul');
         check(titlesIn(p).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60', 'Toi → Paul : ' + titlesIn(p).join(' | '));
@@ -1903,12 +1932,15 @@ async function main() {
         check(titlesIn(pair('Léa → Toi')).join(' | ') === 'Saturne (planète) | Jupiter (planète) | Neptune' && text(pair('Léa → Toi')).includes('Léa peut compléter 3 cases chez toi, dont 1 en double'),
           'Léa → Toi : ' + text(pair('Léa → Toi')));
         check(titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5', 'Paul → Toi : ' + text(pair('Paul → Toi')));
-        // Une catégorie suivie est nommée comme telle ; les collections de Paul, non.
-        check(text(pair('Paul → Toi').querySelectorAll('.fitem')[0]).includes('Planète du Système solaire (catégorie)') && !text(a7).includes('(catégorie)'),
+        // Plus de « (catégorie) » : une collection faite d'une catégorie est une collection comme les autres.
+        check(text(pair('Paul → Toi').querySelectorAll('.fitem')[0]).includes('Planète du Système solaire') && !text(pair('Paul → Toi')).includes('(catégorie)') && !text(a7).includes('(catégorie)'),
           'nature des collections dans les échanges : ' + text(pair('Paul → Toi').querySelectorAll('.fitem')[0]));
         check(!pair('Toi → Léa') && !cls('trade').some((n) => n.querySelector('.badge')), "plus d'estimation pour Léa, qui ne partage pas ses collections");
-        // Ta carte : sa fiche ; une case vide chez toi : la fiche de la carte manquante.
-        a7.click();
+        // Ta carte : sa fiche ; une case vide chez toi : la fiche de la carte manquante. Une ligne pour un ami : deux boutons
+        // côte à côte (ta carte, et chaque collection de l'ami, qui ouvre son album), jamais l'un dans l'autre.
+        check(a7.tagName === 'DIV' && a7.querySelector('.fitem__main') && a7.querySelectorAll('.fitem__col').map(text).join(' | ') === 'Les préférées de Paul | Exemples de Paul'
+          && !a7.querySelector('.fitem__main').querySelector('button'), 'Article 7 : la carte et les collections de Paul, en boutons distincts : ' + text(a7));
+        a7.querySelector('.fitem__main').click();
         await settle();
         check(fiche() && text(fiche()).includes('Article 7') && !one('fiche--missing'), 'clic sur ta carte : sa fiche attendue');
         fiche().querySelector('.close').click();
@@ -1932,6 +1964,11 @@ async function main() {
       sel.dispatch('change');
       await settle();
       check(pairs().join(' | ') === 'Toi → Paul | Léa → Paul | Paul → Toi' && pressed() === '', 'couples (Paul) : ' + pairs().join(' | ') + ' / ' + pressed());
+      // « Un membre… » : retour au filtre par défaut, « Tout le monde ».
+      sel.value = '';
+      sel.dispatch('change');
+      await settle();
+      check(pressed() === 'Tout le monde' && pairs().length === 4, '« Un membre… » : « Tout le monde » attendu, ' + pressed());
       exactButton('Ce qui me concerne').click();
       await settle();
       check(pairs().length === 3 && byId('trade-member').value === '', 'retour à « Ce qui me concerne »');
@@ -1969,6 +2006,203 @@ async function main() {
       }
       await goTab('amis');
       check(!has('Tes amis ne voient pas tes collections'), 'la note « Tes amis ne voient pas tes collections » doit disparaître');
+
+      // 30. Les collections des amis : « Ses collections » dans le classeur de Paul (une liste, celles tirées d'une catégorie
+      // de Wikipédia signalées ; progression avec SES cartes), album d'une de ses collections en lecture seule (« tu l'as »,
+      // « ×2 en double », ses cartes qui manquent à mes collections, filtres, fiche sans action, « Copier le nom », retours),
+      // ouvert aussi depuis « Échanges possibles » et « Ce qui pourrait intéresser tes amis », « Créer la même collection
+      // chez moi » ; Léa, qui ne partage pas ses collections ; rien dans IndexedDB ; vues demandées à Wikipédia seulement
+      // pour les cases que ni Paul ni moi n'avons.
+      {
+        // Paul a aussi deux collections tirées de catégories : « Planète du Système solaire » (j'en ai une aussi) et
+        // « Élément chimique » (pas moi).
+        const its = (list) => list.map((title) => ({ title, description: null, image: null, status: 'ok' }));
+        for (const t of [
+          { name: 'Planète du Système solaire', source: 'wp:Planète du Système solaire', items: its(['Mars (planète)', 'Jupiter (planète)', 'Terre', 'Saturne (planète)']) },
+          { name: 'Élément chimique', source: 'wp:Élément chimique', items: its(['Hydrogène', 'Hélium', 'Lithium']) },
+        ]) check((await rawApi('POST', '/api/targets/save', paulKey, t)).status === 200, 'catégorie de Paul refusée');
+        needButton('Actualiser').click();
+        check(await waitFor(() => row('Paul') && text(row('Paul')).includes('partage ses collections : 4'), 5000), 'ligne de Paul (4 collections) : ' + text(row('Paul')));
+        const openBinder = async (name) => { all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de ' + name)[0].click(); await settle(); };
+        const sect = (id) => all((n) => n.tagName === 'SECTION' && n.getAttribute('aria-labelledby') === id)[0] || null;
+        const colRow = (name) => cls('row').find((n) => n.querySelector('.name') && text(n.querySelector('.name')) === name) || null;
+        const cr = (name) => text(colRow(name));
+        const rowNamesIn = (n) => (n ? n.querySelectorAll('.row').map((r) => text(r.querySelector('.name'))) : []);
+        const KIND = 'depuis la catégorie Wikipédia';
+        await openBinder('Paul');
+        check(sect('h-fcols') && text(sect('h-fcols')).includes('Ses collections') && sect('h-fcards') && !has('Ses catégories'),
+          '« Ses collections » absente du classeur de Paul : ' + text(doc.body).slice(-800));
+        {
+          // Une seule liste, de A à Z ; celles tirées d'une catégorie le disent ; progression avec SES cartes ; ce que je
+          // peux lui donner.
+          check(rowNamesIn(sect('h-fcols')).join(' | ') === 'Élément chimique | Exemples de Paul | Les préférées de Paul | Planète du Système solaire',
+            'ses collections : ' + rowNamesIn(sect('h-fcols')).join(' | '));
+          check(sect('h-fcols').querySelectorAll('.row').filter((r) => r.querySelector('.row-kind') && text(r.querySelector('.row-kind')) === KIND).map((r) => text(r.querySelector('.name'))).join(' | ')
+            === 'Élément chimique | Planète du Système solaire', 'collections tirées d\'une catégorie : signalées');
+          check(cr('Les préférées de Paul').includes('2 sur 9') && cr('Les préférées de Paul').includes('22 %') && cr('Les préférées de Paul').includes("Tu peux l'aider : 4, dont 3 en double")
+            && colRow('Les préférées de Paul').querySelectorAll('.mini').length === 2, 'progression des préférées de Paul : ' + cr('Les préférées de Paul'));
+          check(cr('Exemples de Paul').includes('1 sur 2') && cr('Exemples de Paul').includes('50 %') && cr('Exemples de Paul').includes("Tu peux l'aider : 1, dont 1 en double"), 'Exemples de Paul : ' + cr('Exemples de Paul'));
+          check(cr('Planète du Système solaire').includes('2 sur 4') && cr('Planète du Système solaire').includes("Tu peux l'aider : 1, dont 1 en double"), 'catégorie de Paul : ' + cr('Planète du Système solaire'));
+          // Hydrogène : ma carte « Hydrogène (élément) » (même qid).
+          check(await waitFor(() => cr('Élément chimique').includes('0 sur 3') && cr('Élément chimique').includes("Tu peux l'aider : 1"), 8000) && colRow('Élément chimique').classList.contains('zero'),
+            'Élément chimique (Paul) : ' + cr('Élément chimique'));
+        }
+        // Album des préférées de Paul : ses cartes et ses cases vides, dans l'ordre de sa collection.
+        const atitle = () => (one('album-title') ? text(one('album-title')) : '');
+        const grid = () => cls('cardgrid')[0] || null;
+        const shownTitles = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => text(n.querySelector('h3'))) : []);
+        const fslot = (t) => cls('slot').find((n) => n.querySelector('h3') && text(n.querySelector('h3')) === t) || null;
+        const fcard = (t) => cls('card--fa').find((n) => text(n.querySelector('.card__title')) === t) || null;
+        const gives = (t) => { const s = fslot(t); return s ? s.querySelectorAll('.slot__friends').map(text) : null; };
+        const pvMark = pvAsked.length;
+        colRow('Les préférées de Paul').click();
+        await settle(80);
+        check(atitle().includes('Les préférées de Paul') && atitle().includes('Paul en a 2 sur 9') && atitle().includes('lecture seule') && !atitle().includes('catégorie'), 'album de Paul : ' + atitle());
+        check(shownTitles().join(' | ') === 'Terre | Rihanna | Article 60 | Saturne (planète) | Neptune (planète) | Article 7 | Livre introuvable | Article 1 | Mars (planète)'
+          && cls('card--fa').length === 2 && cls('slot').length === 7, 'album de Paul, ordre et cases : ' + shownTitles().join(' | '));
+        check(text(fslot('Terre').querySelector('.slot__no')) === '1' && one('bar') && one('give-sum') && text(one('give-sum')).includes("Tu peux l'aider : 4 cartes dont 3 en double")
+          && text(one('give-sum')).includes('1 de ses cartes manque à tes collections'), 'en-tête de l\'album : ' + (one('give-sum') ? text(one('give-sum')) : 'absent'));
+        // Cases vides que je remplis : « tu l'as », et « ×2 en double » pour mes doubles ; rareté de ma carte (sans ≈).
+        check(gives('Terre').join() === "tu l'as,×2 en double" && gives('Rihanna').join() === "tu l'as,×2 en double" && gives('Article 60').join() === "tu l'as"
+          && gives('Article 7').join() === "tu l'as,×2 en double" && gives('Saturne (planète)').length === 0 && gives('Livre introuvable').length === 0,
+          'badges « tu l\'as » : ' + ['Terre', 'Rihanna', 'Article 60', 'Article 7', 'Saturne (planète)'].map((t) => t + '=' + gives(t)).join(', '));
+        check(fslot('Terre').classList.contains('can') && !fslot('Saturne (planète)').classList.contains('can') && !fslot('Terre').querySelector('.pill').classList.contains('est'),
+          'cases que je remplis : à part, rareté de ma carte');
+        // Ses cartes : Mars me manque et remplirait ma collection des planètes ; Article 1, je l'ai.
+        check(fcard('Mars (planète)') && fcard('Mars (planète)').classList.contains('want') && text(fcard('Mars (planète)').querySelector('.card__mark')) === 'Te manque'
+          && text(fcard('Mars (planète)').parentNode.querySelector('.cell__want')).startsWith('→ Planète du Système solaire'), 'Mars chez Paul : ' + text(fcard('Mars (planète)').parentNode));
+        check(fcard('Article 1').classList.contains('have') && text(fcard('Article 1').querySelector('.card__mark')) === "Tu l'as" && !fcard('Article 1').parentNode.querySelector('.cell__want'), 'Article 1 chez Paul');
+        // Vues sur Wikipédia : seulement pour les cases que ni Paul ni moi n'avons (Saturne et Neptune sont déjà en cache).
+        check(await waitFor(() => fslot('Livre introuvable') && text(fslot('Livre introuvable')).includes('vues inconnues'), 5000), 'vues de « Livre introuvable » : ' + text(fslot('Livre introuvable')));
+        {
+          const asked = pvAsked.slice(pvMark);
+          check(asked.includes('Livre introuvable') && asked.every((t) => ['Saturne (planète)', 'Neptune (planète)', 'Livre introuvable'].includes(t)), 'vues demandées pour l\'album de Paul : ' + asked.join(', '));
+        }
+        // Filtres : Toutes / Il les a / Lui manquent / Tu peux l'aider ; tri par rareté.
+        exactButton('Il les a').click();
+        await settle();
+        check(shownTitles().join(' | ') === 'Article 1 | Mars (planète)', '« Il les a » : ' + shownTitles().join(' | '));
+        exactButton('Lui manquent').click();
+        await settle();
+        check(shownTitles().length === 7 && !cls('card--fa').length, '« Lui manquent » : ' + shownTitles().join(' | '));
+        exactButton("Tu peux l'aider").click();
+        await settle();
+        check(shownTitles().join(' | ') === 'Terre | Rihanna | Article 60 | Article 7', '« Tu peux l\'aider » : ' + shownTitles().join(' | '));
+        exactButton('Rareté').click();
+        await settle();
+        check(shownTitles()[0] === 'Rihanna' && shownTitles().length === 4, 'tri par rareté : ' + shownTitles().join(' | '));
+        exactButton('Ordre').click();
+        exactButton('Toutes').click();
+        await settle();
+        check(shownTitles().length === 9, '« Toutes » : ' + shownTitles().length);
+        // « Copier le nom » sur une case vide.
+        {
+          const n0 = copied.length;
+          fslot('Article 60').querySelector('.slot__copy').click();
+          await settle();
+          check(copied[n0] === 'Article 60', 'copier le nom d\'une case de Paul : ' + JSON.stringify(copied.slice(n0)));
+        }
+        // Fiche d'une case vide que je remplis : en lecture seule, sans rien qui touche à mon classeur.
+        const fs = () => one('fiche--friend');
+        fslot('Terre').querySelector('.slot__open').click();
+        await settle();
+        check(fs() && text(fs()).includes('Manque à Paul') && text(fs()).includes("Tu l'as : ×2, en double") && text(fs()).includes('Tu pourrais la lui donner'), 'fiche de Terre (case vide de Paul) : ' + text(fs()));
+        check(!fs().querySelectorAll('input, textarea, select').length && !fs().querySelectorAll('button').some((b) => /Ajouter|Suivre|Modifier|Supprimer|Valider/.test(text(b))),
+          'fiche d\'un ami : aucune action sur un classeur');
+        {
+          const lists = fs().querySelectorAll('.memberships').map((m) => m.querySelectorAll('button').map(text));
+          check(text(fs()).includes('Dans les collections de Paul') && lists.length === 2 && lists[0].some((t) => t.startsWith('Les préférées de Paul'))
+            && lists[0].some((t) => t.startsWith('Planète du Système solaire')) && text(fs()).includes('Dans tes collections') && lists[1].some((t) => t.startsWith('Planète du Système solaire')),
+          'fiche de Terre : collections de Paul et les miennes : ' + text(fs()));
+        }
+        {
+          const n0 = copied.length;
+          fs().querySelectorAll('button').find((b) => b.getAttribute('aria-label') === 'Copier le nom « Terre »').click();
+          await settle();
+          check(copied[n0] === 'Terre', 'copier le nom (fiche d\'un ami) : ' + JSON.stringify(copied.slice(n0)));
+        }
+        fs().querySelector('.close').click();
+        await settle();
+        // Fiche d'une de ses cartes qui me manque.
+        fcard('Mars (planète)').click();
+        await settle();
+        check(fs() && text(fs()).includes('Chez Paul : ×2') && text(fs()).includes('Pas encore dans ta collection') && text(fs()).includes('Rareté dans le jeu')
+          && text(fs()).includes('Dans tes collections') && !fiche().querySelector('#new-tag'), 'fiche de Mars (carte de Paul) : ' + text(fs()));
+        fs().querySelector('.close').click();
+        await settle();
+        needButton('← Retour au classeur de Paul').click();
+        await settle();
+        check(has('Le classeur de Paul') && sect('h-fcols') && !one('card--fa'), 'retour au classeur de Paul');
+        // Sa collection tirée d'une catégorie : de A à Z, sans numéros, signalée.
+        colRow('Planète du Système solaire').click();
+        await settle(80);
+        check(atitle().includes('Planète du Système solaire') && atitle().includes(KIND) && atitle().includes('Paul en a 2 sur 4')
+          && shownTitles().join(' | ') === 'Jupiter (planète) | Mars (planète) | Saturne (planète) | Terre' && !cls('slot__no').length && !has('Suivre aussi'),
+          'catégorie de Paul : ' + atitle() + ' / ' + shownTitles().join(' | '));
+        needButton('← Retour au classeur de Paul').click();
+        await settle();
+        // Celle que je n'ai pas : Hydrogène (qid), Hélium (rareté estimée, vignette) ; « Créer la même collection chez moi »
+        // (sa liste d'articles, recopiée telle quelle, sans requête à Wikipédia).
+        colRow('Élément chimique').click();
+        await settle(80);
+        check(await waitFor(() => gives('Hydrogène') && gives('Hydrogène')[0] === "tu l'as", 8000), 'Hydrogène (ma carte, même qid) : ' + JSON.stringify(gives('Hydrogène')));
+        check(await waitFor(() => fslot('Hélium') && text(fslot('Hélium').querySelector('.pill')) === '≈ SR' && fslot('Hélium').querySelector('.slot__bg')), 'Hélium : rareté estimée et vignette : ' + text(fslot('Hélium')));
+        {
+          needButton('Créer la même collection chez moi').click();
+          check(await waitFor(() => buttonByText('Ouvrir ma collection'), 5000) && has('Collection « Élément chimique » créée dans ton classeur : 3 articles.') && !buttonByText('Créer la même collection'),
+            'Créer la même collection chez moi : sans effet');
+          const mineT = ((await rawApi('GET', '/api/targets', myKey3)).body.targets || []).find((x) => x.name === 'Élément chimique');
+          check(mineT && mineT.items.map((i) => i.title + ':' + i.status).join() === 'Hydrogène:ok,Hélium:ok,Lithium:ok' && !mineT.source, 'collection copiée de Paul : ' + JSON.stringify(mineT));
+        }
+        needButton('Ouvrir ma collection').click();
+        await settle(80);
+        check(tabBtn('collections').getAttribute('aria-selected') === 'true' && atitle().includes('Élément chimique') && !atitle().includes('lecture seule'), 'ma collection : ' + atitle());
+        await goTab('amis');
+        needButton('← Retour au classeur de Paul').click();
+        await settle();
+        needButton('← Entre amis').click();
+        await settle();
+        // Depuis « Ce qui pourrait intéresser tes amis » : le nom d'une collection de Paul ouvre son album.
+        fcol('Paul').querySelectorAll('.fitem__col')[0].click();
+        await settle(80);
+        check(atitle().includes('Paul en a') && buttonByText('← Retour au classeur de Paul') && !buttonByText('← Échanges possibles'), 'album depuis « Ce qui pourrait intéresser tes amis » : ' + atitle());
+        needButton('← Retour au classeur de Paul').click();
+        await settle();
+        needButton('← Entre amis').click();
+        await settle();
+        // Depuis « Échanges possibles » : le nom d'une collection de Paul ouvre son album ; un lien ramène aux échanges, filtre gardé.
+        needButton('Voir les échanges possibles').click();
+        await settle();
+        exactButton('Ce qui me concerne').click(); // un filtre autre que celui par défaut : il doit être gardé au retour
+        await settle();
+        const a7row = () => (pair('Toi → Paul') ? pair('Toi → Paul').querySelectorAll('.fitem').find((n) => text(n.querySelector('.fitem__title')) === 'Article 7') || null : null);
+        check(a7row(), 'échanges : Article 7 pour Paul absent');
+        a7row().querySelectorAll('.fitem__col').find((b) => text(b) === 'Exemples de Paul').click();
+        await settle(80);
+        check(atitle().includes('Exemples de Paul') && atitle().includes('Paul en a 1 sur 2') && buttonByText('← Échanges possibles') && buttonByText('← Retour au classeur de Paul')
+          && gives('Article 7').join() === "tu l'as,×2 en double", 'album depuis les échanges : ' + atitle());
+        needButton('← Échanges possibles').click();
+        await settle();
+        check(has('Échanges possibles') && pressed() === 'Ce qui me concerne' && a7row(), 'retour aux échanges : filtre gardé, ' + pressed());
+        a7row().querySelectorAll('.fitem__col').find((b) => text(b) === 'Les préférées de Paul').click();
+        await settle(80);
+        needButton('← Retour au classeur de Paul').click();
+        await settle();
+        check(has('Le classeur de Paul') && sect('h-fcols'), 'retour au classeur de Paul (depuis les échanges)');
+        needButton('← Entre amis').click();
+        await settle();
+        // Léa ne partage pas ses collections.
+        await openBinder('Léa');
+        check(sect('h-fcols') && text(sect('h-fcols')).includes('Léa ne partage pas ses collections.') && !sect('h-fcols').querySelector('.row') && cls('card--friend').length === 4,
+          'classeur de Léa : ' + (sect('h-fcols') ? text(sect('h-fcols')) : 'absent'));
+        needButton('← Entre amis').click();
+        await settle();
+        // Rien des collections des amis dans IndexedDB ni dans localStorage.
+        await sleep(1600);
+        const kept = JSON.stringify(cachedCards());
+        check(!kept.includes('Les préférées de Paul') && !kept.includes('Livre introuvable') && !kept.includes('p-mars'), 'les collections des amis ne doivent pas aller dans IndexedDB');
+        check(![...ls.values()].some((v) => String(v).includes('Les préférées de Paul') || String(v).includes('Exemples de Paul')), 'les collections des amis ne doivent pas aller dans localStorage');
+      }
     }
 
     // Désactivation dans les Réglages : l'onglet invite de nouveau à partager ; Paul ne me voit plus.
@@ -2056,37 +2290,229 @@ async function main() {
       await settle();
       return pg;
     };
-    // 1. Couleur est proposée : ses sous-catégories, proposables aussi, ne le sont pas (la parente seule reste).
+    const pt = (d) => text(d.body);
+    const btnIn = (d, t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    const ariaBtn = (d, t) => d.querySelectorAll('button').find((b) => b.getAttribute('aria-label') === t) || null;
+    const atIn = (d) => (d.querySelectorAll('.album-title').length ? text(d.querySelectorAll('.album-title')[0]) : '');
+    const coveredIn = (d) => { const n = d.querySelectorAll('.wp-covered')[0]; return n ? text(n) : ''; };
+    const targetsOf = async (key) => (await rawApi('GET', '/api/targets', key)).body.targets;
+    const searchCat = (d, q) => { const cq = d.getElementById('cat-q'); cq.value = q; cq.dispatch('input'); cq.dispatch('keydown', { key: 'Enter' }); };
+    const ready = (d) => !d.querySelectorAll('.wp-progress').length;
+    // 1. Couleur est proposée : ses sous-catégories, proposables aussi, ne le sont pas une à une ; Couleur les regroupe
+    // (« Regroupe 3 sous-catégories proposées ») et son album s'ouvre sous-catégories comprises.
     let p = await openIris();
-    check(await waitFor(() => proposedIn(p.doc).length > 0 && !p.doc.querySelectorAll('.wp-progress').length, 8000), 'propositions d\'Iris absentes');
+    check(await waitFor(() => proposedIn(p.doc).length > 0 && ready(p.doc), 8000), 'propositions d\'Iris absentes');
     check(proposedIn(p.doc).join('|') === 'Couleur', 'parente proposée : seule « Couleur » attendue, ' + proposedIn(p.doc).join(' | '));
     check(['Rouge', 'Vert', 'Jaune', 'Couleur'].every((c) => parentCalls.includes('Catégorie:' + c)), 'catégories parentes non demandées : ' + parentCalls.join(', '));
     check(text(p.doc.querySelectorAll('.row-why')[0]) === 'Tu as : Arc-en-ciel et Spectre visible', 'pourquoi la catégorie est proposée : ' + text(p.doc.querySelectorAll('.row-why')[0]));
+    {
+      const line = p.doc.querySelectorAll('.row-subs')[0];
+      check(line && text(line) === 'Regroupe 3 sous-catégories proposées : Jaune, Rouge et Vert. La collection est créée sous-catégories comprises.',
+        'sous-catégories regroupées sous « Couleur » : ' + (line ? text(line) : 'absent'));
+    }
+    p.doc.querySelectorAll('.row-open')[0].click();
+    check(await waitFor(() => atIn(p.doc).includes('Couleur') && atIn(p.doc).includes('8 sur 8')), 'album de « Couleur » ouvert depuis la proposition : sous-catégories comprises attendues, ' + atIn(p.doc));
+    {
+      const box = p.doc.querySelectorAll('input').find((n) => n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'));
+      check(box && box.checked === true, 'album de « Couleur » : case des sous-catégories cochée attendue');
+    }
+    btnIn(p.doc, '← Toutes les collections').click();
+    await settle();
+    // « Créer une collection » sur la proposition : ses 2 articles et les 6 de ses sous-catégories ; plus rien n'est
+    // proposé, et la page dit pourquoi (les 3 sous-catégories sont couvertes par la nouvelle collection).
+    ariaBtn(p.doc, 'Créer une collection « Couleur »').click();
+    check(await waitFor(() => pt(p.doc).includes('Collection « Couleur » créée : 8 articles, sous-catégories comprises, dans « Mes collections ».')), 'collection « Couleur » (proposition) non créée');
+    {
+      const tc = (await targetsOf(keyI)).find((t) => t.source === 'wp:Couleur');
+      check(tc && tc.items.map((i) => i.title).sort().join('|') === Object.keys(CARD_CATS).sort().join('|'), 'collection « Couleur » : ses articles et ceux de ses sous-catégories attendus, ' + JSON.stringify(tc && tc.items.map((i) => i.title)));
+      check(await waitFor(() => !proposedIn(p.doc).length && coveredIn(p.doc) === 'Pas de nouvelle proposition : 3 catégories de tes cartes sont écartées car déjà couvertes par « Couleur » (au moins 80 % de leurs cartes y sont déjà).')
+        && !pt(p.doc).includes('Pas de proposition pour l\'instant'), 'propositions couvertes : message attendu, ' + coveredIn(p.doc) + ' / ' + proposedIn(p.doc).join(' | '));
+      check((await rawApi('POST', '/api/targets/delete', keyI, { id: tc.id })).status === 200, 'suppression de « Couleur » refusée');
+    }
     // 2. Couleur retirée : elle n'est plus proposée, ses sous-catégories le sont.
+    p = await openIris();
+    check(await waitFor(() => proposedIn(p.doc).join('|') === 'Couleur' && ready(p.doc), 8000), 'collection supprimée : « Couleur » de nouveau proposée attendue, ' + proposedIn(p.doc).join(' | '));
     p.doc.querySelectorAll('button').find((b) => b.getAttribute('aria-label') === 'Retirer « Couleur » des propositions').click();
     await settle();
     p.doc.querySelectorAll('.modal')[0].querySelectorAll('button').filter((b) => text(b).trim() === 'Retirer des propositions')[0].click();
     check(await waitFor(() => proposedIn(p.doc).join('|') === 'Jaune|Rouge|Vert'), 'parente retirée : ses sous-catégories attendues, ' + proposedIn(p.doc).join(' | '));
+    check(!p.doc.querySelectorAll('.row-subs').length, 'parente retirée : plus rien de regroupé');
     // 3. Une collection « Couleurs » contient déjà mes cartes rouges et vertes, et une des deux jaunes : Rouge et Vert sont
-    // « couvertes » (100 %), pas Jaune (50 % < 80 %).
+    // « couvertes » (100 %), pas Jaune (50 % < 80 %) ; la page le dit.
     check((await rawApi('POST', '/api/targets/save', keyI, { name: 'Couleurs', items: ['Coquelicot', 'Fraise', 'Pomme verte', 'Menthe', 'Citron']
       .map((title) => ({ title, description: null, image: null, status: 'ok' })) })).status === 200, 'collection « Couleurs » refusée');
     p = await openIris();
-    check(await waitFor(() => proposedIn(p.doc).length > 0 && !p.doc.querySelectorAll('.wp-progress').length, 8000) && proposedIn(p.doc).join('|') === 'Jaune',
+    check(await waitFor(() => proposedIn(p.doc).length > 0 && ready(p.doc), 8000) && proposedIn(p.doc).join('|') === 'Jaune',
       'couvertes par « Couleurs » : seule « Jaune » attendue, ' + proposedIn(p.doc).join(' | '));
-    // 4. « Catégorie:Couleur » suivie : sa sous-catégorie Jaune n'est plus proposée.
-    const cq = p.doc.getElementById('cat-q');
-    cq.value = 'couleur';
-    cq.dispatch('input');
-    cq.dispatch('keydown', { key: 'Enter' });
-    check(await waitFor(() => p.doc.querySelectorAll('.album-title').length && text(p.doc.querySelectorAll('.album-title')[0]).includes('Couleur')), 'album de « Couleur » absent');
-    check(await waitFor(() => p.doc.querySelectorAll('button').some((b) => text(b).includes('Suivre cette catégorie') && !b.disabled)), '« Suivre cette catégorie » indisponible');
-    p.doc.querySelectorAll('button').find((b) => text(b).includes('Suivre cette catégorie')).click();
-    check(await waitFor(() => text(p.doc.body).includes('Ne plus suivre')), '« Couleur » non suivie');
-    p.doc.querySelectorAll('button').find((b) => text(b).includes('← Toutes les collections')).click();
+    check(coveredIn(p.doc) === '2 autres catégories de tes cartes écartées car déjà couvertes par « Couleurs ».', 'couvertes : message attendu, ' + coveredIn(p.doc));
+    // 4. Une collection faite de « Catégorie:Couleur » SANS ses sous-catégories n'a pas les articles de Jaune (sur
+    // Wikipédia, un article est rangé dans la catégorie la plus précise) : Jaune reste proposée.
+    searchCat(p.doc, 'couleur');
+    check(await waitFor(() => atIn(p.doc).includes('Couleur') && atIn(p.doc).includes('2 sur 2')), 'album de « Couleur » (recherche, sans sous-catégories) : ' + atIn(p.doc));
+    check(await waitFor(() => p.doc.querySelectorAll('button').some((b) => text(b).includes('Créer une collection') && !b.disabled)), '« Créer une collection » indisponible');
+    p.doc.querySelectorAll('button').find((b) => text(b).includes('Créer une collection')).click();
+    check(await waitFor(() => atIn(p.doc).includes('depuis la catégorie Wikipédia') && !!btnIn(p.doc, 'Supprimer')), 'collection « Couleur » non créée : ' + atIn(p.doc));
+    if (!SERVER) check(api.users.find((u) => u.key === keyI).targets.some((t) => t.source === 'wp:Couleur' && t.items.length === 2), 'collection « Couleur » (2 articles) mal enregistrée');
+    btnIn(p.doc, '← Toutes les collections').click();
     await settle();
-    check(!proposedIn(p.doc).length && text(p.doc.body).includes('Pas de proposition pour l\'instant'), 'sous-catégorie d\'une catégorie suivie encore proposée : ' + proposedIn(p.doc).join(' | '));
-    if (!SERVER) check(api.users.find((u) => u.key === keyI).targets.some((t) => t.source === 'wp:Couleur'), 'Couleur mal suivie');
+    check(proposedIn(p.doc).join('|') === 'Jaune', 'parente en collection sans ses sous-catégories : « Jaune » doit rester proposée, ' + proposedIn(p.doc).join(' | '));
+    // 5. Supprimée (confirmation), puis refaite AVEC ses sous-catégories : Jaune est couverte, plus rien n'est proposé.
+    p.doc.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith('Couleur :')).click();
+    await settle(80);
+    btnIn(p.doc, 'Supprimer').click();
+    await settle();
+    btnIn(p.doc.querySelectorAll('.modal')[0], 'Supprimer la collection').click();
+    check(await waitFor(() => !atIn(p.doc) && !p.doc.querySelectorAll('.row').some((n) => (n.getAttribute('aria-label') || '').startsWith('Couleur :'))), 'collection « Couleur » non supprimée');
+    searchCat(p.doc, 'couleur');
+    check(await waitFor(() => atIn(p.doc).includes('2 sur 2') && !!btnIn(p.doc, 'Créer une collection')), 'album de « Couleur » : ' + atIn(p.doc));
+    p.doc.querySelectorAll('input').find((n) => n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check')).dispatch('change');
+    check(await waitFor(() => atIn(p.doc).includes('8 sur 8')), 'avec ses sous-catégories : 8 sur 8 attendu, ' + atIn(p.doc));
+    btnIn(p.doc, 'Créer une collection').click();
+    check(await waitFor(() => atIn(p.doc).includes('depuis la catégorie Wikipédia')), 'collection « Couleur » (sous-catégories comprises) non créée');
+    btnIn(p.doc, '← Toutes les collections').click();
+    await settle();
+    check(!proposedIn(p.doc).length && coveredIn(p.doc) === 'Pas de nouvelle proposition : 3 catégories de tes cartes sont écartées car déjà couvertes par tes collections, surtout « Couleurs » (au moins 80 % de leurs cartes y sont déjà).',
+      'parente en collection avec ses sous-catégories : rien de proposé attendu, ' + proposedIn(p.doc).join(' | ') + ' / ' + coveredIn(p.doc));
+
+    // Courses (Jade : cartes rouges et jaunes, Rouge et Jaune proposées ; Kim : cartes vertes), réponses de Wikipédia
+    // (wikiHold) ou de GET /api/me (hold) retenues.
+    const keyJ = await makeOtherAccount('Jade');
+    const keyK = await makeOtherAccount('Kim');
+    await sendImport(keyJ, ['Coquelicot', 'Fraise', 'Citron', 'Banane'].map((t, i) => mk1('j' + i, t)));
+    await sendImport(keyK, ['Pomme verte', 'Menthe'].map((t, i) => mk1('k' + i, t)));
+    const known = JSON.stringify([{ key: keyJ, name: 'Jade' }, { key: keyK, name: 'Kim' }]);
+    const gates = [];
+    const wikiSeen = [];
+    let holdIf = null; // (adresse décodée) => vrai : réponse de Wikipédia retenue jusqu'à release()
+    const wikiHold = (url) => { const u = decodeURIComponent(url); wikiSeen.push(u); return holdIf && holdIf(u) ? new Promise((r) => gates.push(r)) : null; };
+    const release = () => { holdIf = null; while (gates.length) gates.shift()(); };
+    let meHold = false;
+    const meGates = [];
+    const hold = (url) => (meHold && url === '/api/me' ? new Promise((r) => meGates.push(r)) : null);
+    const tabIn = (d) => { const t = d.querySelectorAll('button').find((n) => (n.getAttribute('id') || '').startsWith('tab-') && n.getAttribute('aria-selected') === 'true'); return t ? t.getAttribute('id') : null; };
+    const openJade = async (wantProposals = true) => {
+      ls.set('classeur-key', keyJ);
+      ls.set('classeur-known', known);
+      const pg = openPage({ idb: 'absent', wikiHold, hold });
+      check(await waitFor(() => pg.count() === 4), 'classeur de Jade non ouvert');
+      pg.doc.getElementById('tab-collections').click();
+      await settle();
+      if (wantProposals) check(await waitFor(() => proposedIn(pg.doc).length > 0 && ready(pg.doc), 8000), 'propositions de Jade absentes');
+      return pg;
+    };
+    // A. « Créer une collection », puis changement de classeur pendant la lecture des articles : rien n'est enregistré
+    // (ni chez Kim, où la page est passée, ni chez Jade), et le classeur de Kim n'a que ses propositions.
+    let pj = await openJade();
+    check(proposedIn(pj.doc).join('|') === 'Jaune|Rouge', 'propositions de Jade : ' + proposedIn(pj.doc).join(' | '));
+    holdIf = (u) => u.includes('list=categorymembers') && u.includes('Catégorie:Rouge');
+    ariaBtn(pj.doc, 'Créer une collection « Rouge »').click();
+    check(await waitFor(() => gates.length === 1), 'lecture des articles de « Rouge » attendue');
+    pj.doc.getElementById('tab-reglages').click();
+    await settle();
+    btnIn(pj.doc, 'Ouvrir').click();
+    check(await waitFor(() => text(pj.doc.querySelector('h1')) === 'Le classeur de Kim' && pj.count() === 2), 'classeur de Kim non ouvert : ' + text(pj.doc.querySelector('h1')));
+    release();
+    await settle(200);
+    check(!(await targetsOf(keyK)).some((t) => t.source === 'wp:Rouge') && !(await targetsOf(keyJ)).some((t) => t.source === 'wp:Rouge'),
+      'collection créée dans le classeur de Jade, enregistrée après le changement de classeur : ' + JSON.stringify((await targetsOf(keyK)).map((t) => t.source)));
+    pj.doc.getElementById('tab-collections').click();
+    check(await waitFor(() => proposedIn(pj.doc).join('|') === 'Vert' && ready(pj.doc)), 'classeur de Kim : seule « Vert » attendue, ' + proposedIn(pj.doc).join(' | '));
+    // E. « Masquer les propositions » pendant un calcul (caches vidés : il doit tout redemander) : il s'arrête, plus rien
+    // n'est demandé à Wikipédia ; « Afficher » le relance.
+    for (const k of ['classeur-cats', 'classeur-catinfo', 'classeur-catparents']) ls.delete(k);
+    holdIf = (u) => u.includes('prop=categories') && !u.includes('titles=Catégorie:');
+    const pe = await openJade(false);
+    check(await waitFor(() => gates.length === 1 && pe.doc.querySelectorAll('.wp-progress').length === 1), 'calcul des propositions en cours attendu');
+    const mark = wikiSeen.length;
+    btnIn(pe.doc, 'Masquer les propositions').click();
+    await settle(100);
+    release();
+    await settle(300);
+    const after = wikiSeen.slice(mark).filter((u) => /prop=categor/.test(u));
+    check(!after.length && pt(pe.doc).includes('Propositions masquées.'), 'masquées pendant le calcul : Wikipédia encore interrogé, ' + after.join(' ; '));
+    const mark2 = wikiSeen.length;
+    btnIn(pe.doc, 'Afficher les propositions').click();
+    check(await waitFor(() => ready(pe.doc) && wikiSeen.slice(mark2).some((u) => u.includes('prop=categories') && !u.includes('titles=Catégorie:'))), 'propositions affichées : le calcul doit reprendre');
+    // B. « Créer une collection » sur la proposition, puis son album ouvert pendant la lecture : le bouton de l'album
+    // attend (« Un instant… »), puis l'album devient celui de la collection ; une seule collection de source wp:Rouge.
+    pj = await openJade();
+    holdIf = (u) => u.includes('list=categorymembers') && u.includes('Catégorie:Rouge') && u.includes('cmnamespace=0&cmlimit=500'); // propose.js seul
+    ariaBtn(pj.doc, 'Créer une collection « Rouge »').click();
+    check(await waitFor(() => gates.length === 1), 'lecture des articles de « Rouge » (proposition) attendue');
+    pj.doc.querySelectorAll('.row-open').find((b) => text(b) === 'Rouge').click();
+    check(await waitFor(() => atIn(pj.doc).includes('Rouge') && atIn(pj.doc).includes('2 sur 2')), 'album de « Rouge » pendant la création : ' + atIn(pj.doc));
+    {
+      const b = pj.doc.querySelectorAll('button').find((n) => /Créer une collection|Un instant/.test(text(n)) && !n.getAttribute('aria-label'));
+      check(b && text(b).includes('Un instant…') && b.disabled, 'album pendant la création depuis la proposition : bouton en attente attendu, ' + (b ? text(b) + (b.disabled ? ' (désactivé)' : '') : 'absent'));
+      b.click(); // désactivé : sans effet
+    }
+    release();
+    check(await waitFor(() => atIn(pj.doc).includes('Rouge') && atIn(pj.doc).includes('depuis la catégorie Wikipédia')), 'l\'album doit passer à la collection créée : ' + atIn(pj.doc));
+    check((await targetsOf(keyJ)).filter((t) => t.source === 'wp:Rouge').length === 1, 'deux collections de source wp:Rouge');
+    btnIn(pj.doc, '← Toutes les collections').click();
+    await settle();
+    // C. Entrée avant l'arrivée des suggestions, puis on passe à « Mes cartes » (ou on quitte le champ) : à leur arrivée,
+    // aucune catégorie ne s'ouvre.
+    for (const [how, q] of [['onglet', 'rouge'], ['champ quitté', 'jaune']]) {
+      holdIf = (u) => u.includes('generator=prefixsearch');
+      searchCat(pj.doc, q);
+      check(await waitFor(() => gates.length === 1), `Entrée (${how}) : recherche partie tout de suite attendue`);
+      if (how === 'onglet') pj.doc.getElementById('tab-cartes').click(); else pj.doc.getElementById('cat-q').dispatch('blur');
+      await settle();
+      release();
+      await settle(300);
+      check(!atIn(pj.doc) && tabIn(pj.doc) === (how === 'onglet' ? 'tab-cartes' : 'tab-collections'), `Entrée en attente (${how}) : aucune catégorie ne doit s'ouvrir, ${atIn(pj.doc)} / ${tabIn(pj.doc)}`);
+      if (how === 'onglet') { pj.doc.getElementById('tab-collections').click(); await settle(); }
+    }
+    // D. Relecture de GET /api/me (retour sur l'onglet) partie avant « Retirer » et revenue après : le retrait reste.
+    meHold = true;
+    pj.visible();
+    check(await waitFor(() => meGates.length === 1), 'GET /api/me retenue attendue');
+    meHold = false;
+    ariaBtn(pj.doc, 'Retirer « Jaune » des propositions').click();
+    await settle();
+    btnIn(pj.doc.querySelectorAll('.modal')[0], 'Retirer des propositions').click();
+    check(await waitFor(() => !proposedIn(pj.doc).includes('Jaune') && !!btnIn(pj.doc, 'Rétablir la proposition retirée')), 'proposition « Jaune » non retirée');
+    meGates.shift()();
+    await settle(200);
+    check(!!btnIn(pj.doc, 'Rétablir la proposition retirée') && !proposedIn(pj.doc).includes('Jaune'), 'GET /api/me revenue après « Retirer » : le retrait a été défait');
+    check(JSON.stringify((await rawApi('GET', '/api/me', keyJ)).body.prefs.hidden_proposals) === '["wp:Jaune"]', 'retrait de « Jaune » non enregistré');
+    // F. Anciennes collections du catalogue : « vaches » n'avait pas d'ordre (de A à Z, sans numéros), « planetes » oui.
+    const it = (l) => l.map((title) => ({ title, description: null, image: null, status: 'ok' }));
+    await rawApi('POST', '/api/targets/save', keyJ, { name: 'Vaches du catalogue', source: 'catalog:vaches', items: it(['Salers', 'Aubrac', 'Charolaise']) });
+    await rawApi('POST', '/api/targets/save', keyJ, { name: 'Planètes du catalogue', source: 'catalog:planetes', items: it(['Mercure (planète)', 'Vénus (planète)', 'Terre']) });
+    const pf = await openJade(false);
+    for (const [name, ordered] of [['Vaches du catalogue', false], ['Planètes du catalogue', true]]) {
+      pf.doc.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')).click();
+      await settle(80);
+      const sortBtn = pf.doc.querySelectorAll('button').find((b) => ['Ordre', 'A → Z'].includes(text(b).trim()));
+      check(sortBtn && text(sortBtn).trim() === (ordered ? 'Ordre' : 'A → Z') && !!pf.doc.querySelectorAll('.slot__no').length === ordered,
+        `${name} : ${ordered ? 'dans l\'ordre, numérotée' : 'de A à Z, sans numéros'} attendue, ${sortBtn ? text(sortBtn) : '?'} / ${pf.doc.querySelectorAll('.slot__no').length} numéros`);
+      btnIn(pf.doc, '← Toutes les collections').click();
+      await settle();
+    }
+    // G. Relecture périodique (60 s) pendant la résolution des qids de l'album ouvert : elle ne la coupe pas. Léo a la
+    // carte « Néon (gaz) », même élément que « Néon » de la catégorie « Gaz noble » ; sa collection « Inconnus » a des
+    // titres dont le qid n'est pas encore connu (résolus après chaque chargement des cartes).
+    {
+      const keyL = await makeOtherAccount('Léo');
+      await sendImport(keyL, [mk1('l0', 'Néon (gaz)')]);
+      await rawApi('POST', '/api/targets/save', keyL, { name: 'Inconnus', items: it(['Inconnu 1', 'Inconnu 2']) });
+      ls.set('classeur-key', keyL);
+      ls.set('classeur-known', JSON.stringify([{ key: keyL, name: 'Léo' }]));
+      holdIf = (u) => u.includes('ppprop=wikibase_item'); // toutes les résolutions de qids attendent
+      const pl = openPage({ idb: 'absent', wikiHold, hold });
+      check(await waitFor(() => pl.count() === 1), 'classeur de Léo non ouvert');
+      pl.doc.getElementById('tab-collections').click();
+      await settle();
+      searchCat(pl.doc, 'gaz noble');
+      check(await waitFor(() => atIn(pl.doc).includes('Gaz noble') && atIn(pl.doc).includes('0 sur 3')), 'album « Gaz noble » : ' + atIn(pl.doc));
+      await rawApi('POST', '/api/tags/set', keyL, { card_id: 'l0', tags: ['Gaz'] }); // cards_rev avance : la relecture recharge
+      await pl.live();
+      await settle(100);
+      release();
+      check(await waitFor(() => atIn(pl.doc).includes('1 sur 3'), 5000), 'qids de l\'album coupés par la relecture périodique : « Néon » doit compter pour « Néon (gaz) », ' + atIn(pl.doc));
+    }
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.

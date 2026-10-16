@@ -208,12 +208,10 @@
     boot: 'loading', // loading | welcome | app
     // « Catégories » (onglet Collections) : recherche d'une catégorie de Wikipédia avec suggestions au fil de la frappe
     // (list : [{title, name, pages, subcats}], done : texte pour lequel list a été reçue, nav : flèches utilisées depuis
-    // la dernière frappe, enter : Entrée pressée avant l'arrivée des suggestions) ; catégorie ouverte sans être suivie
-    // (catView : {key, title, name, size, subcats, withSubs, loading, error, items, total, busy}) ; catBusy : « Ne plus
-    // suivre » en cours.
+    // la dernière frappe, enter : Entrée pressée avant l'arrivée des suggestions) ; catégorie ouverte (catView : {key,
+    // title, name, size, subcats, withSubs, loading, error, items, total, busy}), source d'une collection à créer.
     catSearch: { q: '', open: false, active: 0, list: [], loading: false, error: '', done: '', nav: false, enter: false },
     catView: null,
-    catBusy: false,
     key: (() => { const k = store.get(LS.key); return k && KEY_RE.test(k) ? k : null; })(),
     keyNotSaved: false,
     health: null,
@@ -229,7 +227,7 @@
     fetchedAt: null,
     loadingCards: false,
     tab: 'collections', // collections | cartes | maj | reglages
-    album: null, // {kind: 'target', id} : collection ou catégorie suivie ouverte ; {kind: 'category', id: 'wp:<nom>'} : catégorie ouverte sans être suivie (S.catView)
+    album: null, // {kind: 'target', id} : collection ouverte ; {kind: 'category', id: 'wp:<nom>'} : catégorie de Wikipédia ouverte (S.catView)
     albumFilter: 'all',
     albumSort: 'order',
     albumLimit: ALBUM_PAGE,
@@ -269,9 +267,14 @@
     arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
     // « Entre amis » : lecture des membres (busy, loading = carte en cours), activation du partage, classeur parcouru.
-    // page : 'trades' = « Échanges possibles » (sous-page) ; trade : filtre de cette page ('me' = ce qui me concerne,
-    // 'all' = tout le monde, sinon l'identifiant public d'un membre).
-    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'me' },
+    // page : 'trades' = « Échanges possibles » (sous-page) ; trade : filtre de cette page ('all' = tout le monde, par défaut
+    // (demande de l'utilisateur, 2026-10-16 : peu d'échanges pour l'instant), 'me' = ce qui me concerne, sinon l'identifiant
+    // public d'un membre). album : collection de l'ami ouvert (open), en lecture
+    // seule, avec son filtre (all | has : il les a | lacks : lui manquent | help : tu peux l'aider), son tri et d'où on
+    // l'a ouverte (albumFrom : 'trades' = « Échanges possibles ») ; copyBusy : « Créer la même collection chez moi » en
+    // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'all',
+      album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
@@ -495,6 +498,22 @@
       .catch((e) => { if (token === pvToken) S.pv.error = e.message; })
       .finally(() => { if (token === pvToken) S.pv.running = false; });
   }
+  // Même chose pour l'album d'une collection d'un ami (même file, mêmes lots de 50, même cache) : seulement les cases que
+  // ni lui ni toi ne remplissez (une carte possédée donne déjà sa rareté et son illustration).
+  function startFriendPageviews() {
+    const token = ++pvToken;
+    S.pv.running = false;
+    S.pv.error = '';
+    const fa = friendAlbum.value;
+    if (!fa || S.boot !== 'app') return;
+    const index = friendIndexOf(fa.f.id);
+    const titles = [...new Set(fa.t.items.filter((it) => !index.findCard(it) && !findCard(it) && !pvCache.has(it.title)).map((it) => it.title))];
+    if (!titles.length) return;
+    Object.assign(S.pv, { running: true, done: 0, total: titles.length });
+    loadPageviews(titles, token)
+      .catch((e) => { if (token === pvToken) S.pv.error = e.message; })
+      .finally(() => { if (token === pvToken) S.pv.running = false; });
+  }
 
   // ---------------------------------------------------------------- suggestions de tags (Wikidata)
   // Groupe lisible d'un taxon d'après la description de la carte : « espèce d'insectes » -> « insectes ».
@@ -666,19 +685,23 @@
     const list = byTitle.value.get(normTitle(item.title));
     return list ? list[0] : null;
   }
-  let matchCtrl = null;
-  function resolveQids(items, allCards) {
+  // Deux résolutions indépendantes (le resolver les fait passer l'une après l'autre, lot par lot) : 'album' (l'album
+  // ouvert) et 'all' (toutes les collections, après chaque chargement des cartes) ; une nouvelle n'annule que la
+  // précédente du même canal (la relecture des 60 s ne coupe plus celle de l'album ouvert).
+  const matchCtrl = { album: null, all: null };
+  function resolveQids(items, allCards, channel) {
     if (!resolver || !cardIndex.value) return;
+    const ch = channel === 'all' ? 'all' : 'album';
     let titles = [];
     try { titles = cardIndex.value.missingQidTitles(items, { allCards: !!allCards }); } catch (e) { return; }
     if (!titles.length) return;
-    if (matchCtrl) matchCtrl.abort();
+    if (matchCtrl[ch]) matchCtrl[ch].abort();
     const ctrl = new AbortController();
-    matchCtrl = ctrl;
+    matchCtrl[ch] = ctrl;
     resolver.resolve(titles, { signal: ctrl.signal, onProgress: () => { qidVersion.value++; } })
       .then(() => { qidVersion.value++; })
       .catch(() => { /* annulée, ou Wikipédia indisponible : le rapprochement par titre reste */ })
-      .finally(() => { if (matchCtrl === ctrl) matchCtrl = null; });
+      .finally(() => { if (matchCtrl[ch] === ctrl) matchCtrl[ch] = null; });
   }
   const cardById = computed(() => new Map(cards.value.map((c) => [c.id, c])));
   const byTitle = computed(() => {
@@ -727,17 +750,24 @@
   });
   const visibleCards = computed(() => filtered.value.slice(0, S.limit));
 
-  // Collections à compléter du serveur (targets), en deux familles : les collections (créées par le favori depuis la
-  // Collection globale du jeu, à la main dans « Nouvelle collection », ou jadis ajoutées du catalogue : sources wm:, wd,
-  // cat, links, def, catalog:… ou aucune) et les catégories de Wikipédia suivies (source « wp:<nom> »).
+  // Collections à compléter du serveur (targets), toutes dans « Mes collections » : créées par le favori depuis la
+  // Collection globale du jeu, à la main dans « Nouvelle collection », depuis une catégorie de Wikipédia (source
+  // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), ou jadis ajoutées du catalogue (sources wm:, wd,
+  // cat, links, def, catalog:… ou aucune).
   const isCatSource = (s) => typeof s === 'string' && s.startsWith('wp:');
+  // Thèmes du catalogue (retiré le 2026-10-16) qui n'avaient pas d'ordre (`ordered: false` dans catalog.json, repris de
+  // git 9a62469) : leurs collections (source « catalog:<id> ») restent de A à Z, sans numéros.
+  const UNORDERED_CATALOG = new Set(['vaches', 'chiens', 'chats', 'chevaux', 'cepages', 'fromages', 'constellations', 'pays', 'departements', 'regions',
+    'merveilles', 'moutons', 'poules', 'etats_usa', 'regions_italie', 'canada', 'capitales_ue', 'metro_paris', 'cathedrales', 'olympe', 'ballon_or',
+    'beethoven', 'zodiaque']);
+  const unorderedSource = (s) => typeof s === 'string' && s.startsWith('catalog:') && UNORDERED_CATALOG.has(s.slice(8));
   const collections = computed(() => {
     // Une catégorie n'a pas d'ordre à elle (celui de Wikipédia suit des clés de tri) : de A à Z, sans numéros.
     const all = targets.value.map((t) => {
       const cat = isCatSource(t.source);
-      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat, cat, t };
+      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && !unorderedSource(t.source), cat, t };
     });
-    return { all, mine: all.filter((c) => !c.cat), cats: all.filter((c) => c.cat) };
+    return { all, mine: all };
   });
   // Progression d'une collection : possédées, répartition par rareté, trois cartes pour l'éventail.
   function progressFor(col) {
@@ -755,7 +785,8 @@
     return { own, total: col.items.length, byR, sample: sample.slice(0, 3) };
   }
   const progress = computed(() => new Map(collections.value.all.map((col) => [col.key, progressFor(col)])));
-  // Catégorie ouverte sans être suivie : ses articles, lus sur Wikipédia (S.catView), montrés comme un album.
+  // Catégorie de Wikipédia ouverte (source d'une collection à créer) : ses articles, lus sur Wikipédia (S.catView),
+  // montrés comme un album.
   const catAlbum = computed(() => {
     const cv = S.catView;
     return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: false, cat: true, cv } : null;
@@ -811,11 +842,11 @@
     for (const c of cards.value) if (!seen.has(c.title)) { seen.add(c.title); if (!hasSugg(c.title)) n++; }
     return n;
   });
-  // Collections et catégories suivies qui contiennent une carte (pour la fiche).
+  // Collections (toutes, celles faites d'une catégorie comprises) qui contiennent une carte (pour la fiche).
   function membershipsOf(card) {
     return collections.value.all.filter((col) => col.items.some((it) => { const f = findCard(it); return !!f && f.id === card.id; }));
   }
-  // Collections et catégories suivies qui contiennent un article que tu n'as pas (fiche d'une case vide) : même titre,
+  // Collections qui contiennent un article que tu n'as pas (fiche d'une case vide) : même titre,
   // ou même qid.
   function membershipsOfItem(item) {
     const k = normTitle(item.title);
@@ -849,11 +880,11 @@
     return out.length > 1 ? out.sort((a, b) => b.count - a.count || COLLATOR.compare(friendName(a), friendName(b))) : out;
   }
   const holdersText = (list) => list.map((x) => friendName(x) + (x.count > 1 ? ` (×${fmt(x.count)})` : '')).join(', ');
-  // Collections où chercher chez les amis : toutes les tiennes, catégories suivies comprises.
+  // Collections où chercher chez les amis : toutes les tiennes (celles faites d'une catégorie Wikipédia comprises).
   const friendCols = computed(() => collections.value.all);
   // Noms des collections d'une ligne (« Échanges possibles », « Ce qui pourrait intéresser tes amis ») : une catégorie
   // suivie est signalée comme telle.
-  const colsText = (cols, sep) => cols.map((c) => (c.cat ? c.name + ' (catégorie)' : c.name)).join(sep);
+  const colsText = (cols, sep) => cols.map((c) => c.name).join(sep);
   // Pour chacune : ses cases vides qu'au moins un ami peut remplir (en double chez lui d'abord), et les collections où
   // les amis remplissent le plus de cases en premier.
   const friendHighlights = computed(() => {
@@ -879,7 +910,7 @@
   });
   // « Échanges possibles » : pour chaque couple (X a la carte C, Z a la collection Y où C remplit une case vide), une
   // ligne, X et Z pris parmi toi et les amis dont les cartes sont lues. Collections de Z : les tiennes comme dans « Pour
-  // compléter tes collections » (catégories suivies comprises) ; celles qu'un ami montre ; rien pour un ami qui ne les
+  // compléter tes collections » (celles faites d'une catégorie comprises) ; celles qu'un ami montre ; rien pour un ami qui ne les
   // montre pas (on ne sait pas ce qui lui manque : il est seulement nommé). Une ligne par carte et par couple
   // (X → Z), avec toutes les collections de Z qu'elle complète ; rapprochement titre puis qid (match.js), comme ailleurs.
   // Calculé une fois par chargement (et quand un qid est appris), filtré à part (tradeView).
@@ -896,20 +927,21 @@
     if (people.length < 2) return empty;
     const hidden = [];
     const waiting = [];
-    // Collections de chacun : [{name, items, cat}] (cat : catégorie de Wikipédia suivie).
+    // Collections de chacun : [{id, name, items, cat}] (cat : catégorie de Wikipédia suivie ; id : celui de la collection,
+    // pour ouvrir l'album d'un ami depuis une ligne).
     function colsOf(p) {
-      if (p.me) return friendCols.value.map((col) => ({ name: col.name, items: col.items, cat: !!col.cat }));
-      if (p.f.tshare && p.f.targets) return p.f.targets.map((t) => ({ name: t.name, items: t.items, cat: !!t.cat }));
+      if (p.me) return friendCols.value.map((col) => ({ id: col.id, name: col.name, items: col.items, cat: !!col.cat }));
+      if (p.f.tshare && p.f.targets) return p.f.targets.map((t) => ({ id: t.id, name: t.name, items: t.items, cat: !!t.cat }));
       if (p.f.tshare) waiting.push(p); else hidden.push(p);
       return [];
     }
-    const sameCol = (a, b) => a.name === b.name && a.cat === b.cat;
+    const sameCol = (a, b) => (a.id != null && b.id != null ? a.id === b.id : a.name === b.name && a.cat === b.cat);
     const pairs = [];
     for (const z of people) {
       // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
       const holes = new Map();
       for (const col of colsOf(z)) {
-        const c = { name: col.name, cat: col.cat };
+        const c = { id: col.id, name: col.name, cat: col.cat };
         for (const it of col.items) {
           if (!it || (it.status && it.status !== 'ok')) continue;
           const k = normTitle(it.title);
@@ -947,12 +979,13 @@
       || COLLATOR.compare(who(a.x), who(b.x)) || COLLATOR.compare(who(a.z), who(b.z)));
     return { pairs, hidden: hidden.map((p) => p.f), waiting: waiting.map((p) => p.f) };
   });
-  // Filtre de la page : ce qui me concerne (je donne ou je reçois), tout le monde, ou un membre (qui donne ou reçoit).
+  // Filtre de la page : tout le monde (par défaut, et pour un membre qui n'est plus là), ce qui me concerne (je donne ou je
+  // reçois), ou un membre (qui donne ou reçoit).
   const tradeView = computed(() => {
     const t = S.friends.trade;
     const all = trades.value.pairs;
-    if (t === 'all') return all;
-    if (t === 'me' || !friendList.value.some((f) => f.id === t)) return all.filter((p) => p.x.me || p.z.me);
+    if (t === 'me') return all.filter((p) => p.x.me || p.z.me);
+    if (t === 'all' || !friendList.value.some((f) => f.id === t)) return all;
     return all.filter((p) => p.x.id === t || p.z.id === t);
   });
   // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent les collections qu'ils montrent, tes doubles
@@ -986,6 +1019,96 @@
     let list = q ? f.cards.filter((c) => c._k.includes(q)) : f.cards.slice();
     if (S.friends.filter === 'missing') list = list.filter((c) => !findCard(c));
     return list.sort(FRIEND_SORTS[S.friends.sort] || FRIEND_SORTS.rarity);
+  });
+  // « Ses collections » (classeur d'un ami qui les montre) : la progression de chacune avec SES cartes (titre puis qid,
+  // comme les tiennes), et ce que tu peux lui donner (ses cases vides que tes cartes remplissent, dont tes doubles). Toutes
+  // dans une liste (celles tirées d'une catégorie de Wikipédia sont seulement signalées), de A à Z (le serveur les rend
+  // dans l'ordre de leurs ids).
+  const noneIndex = { findCard: () => null };
+  const friendIndexOf = (id) => { const x = friendIndexes.value.find((y) => y.f.id === id); return x ? x.index : noneIndex; };
+  function friendProgressFor(index, t) {
+    let own = 0;
+    let help = 0;
+    let helpDup = 0;
+    const byR = {};
+    const sample = [];
+    for (const it of t.items) {
+      const c = index.findCard(it);
+      if (c) { own++; byR[c.rarity] = (byR[c.rarity] || 0) + 1; sample.push(c); continue; }
+      const m = findCard(it);
+      if (m) { help++; if ((Number(m.count) || 1) >= 2) helpDup++; }
+    }
+    sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
+    return { own, total: t.items.length, byR, sample: sample.slice(0, 3), help, helpDup };
+  }
+  const friendTargetsView = computed(() => {
+    const f = openFriend.value;
+    if (!f || !f.targets) return null;
+    void qidVersion.value;
+    const index = friendIndexOf(f.id);
+    const rows = f.targets.map((t) => ({ t, key: 'ft:' + t.id, p: friendProgressFor(index, t) })).sort((a, b) => COLLATOR.compare(a.t.name, b.t.name));
+    return { rows, byId: new Map(rows.map((r) => [r.t.id, r])) };
+  });
+  // Tes cases vides (toutes tes collections), une par article, avec les collections où il manque : indexées
+  // comme des cartes (titre, puis qid : match.js), pour reconnaître chez un ami une carte qui t'en remplirait une.
+  const myHoles = computed(() => {
+    void qidVersion.value;
+    const holes = new Map();
+    for (const col of collections.value.all) {
+      for (const it of col.items) {
+        if (!it || (it.status && it.status !== 'ok')) continue;
+        const k = normTitle(it.title);
+        let hole = holes.get(k);
+        if (hole === undefined) {
+          hole = findCard(it) ? null : { title: it.title, qid: it.qid || null, cols: [] };
+          holes.set(k, hole);
+        }
+        if (hole && !hole.cols.includes(col)) hole.cols.push(col);
+      }
+    }
+    return makeFriendIndex([...holes.values()].filter(Boolean));
+  });
+  // Album d'une collection d'un ami (lecture seule), comme les tiennes : ses cartes et ses cases vides. Une case vide que
+  // tu remplis : mine (ta carte : « tu l'as », « ×2 en double ») ; une de ses cartes qui te manque et qui remplirait une
+  // de tes collections : want (ces collections). Rareté : celle de sa carte ou de la tienne, sinon estimée d'après les vues.
+  const friendAlbum = computed(() => {
+    const f = openFriend.value;
+    const id = S.friends.album;
+    if (!f || id == null || !f.targets) return null;
+    const t = f.targets.find((x) => x.id === id);
+    return t ? { f, t, key: 'fa:' + f.id + ':' + t.id, ordered: !t.cat } : null;
+  });
+  const friendSlotsAll = computed(() => {
+    const fa = friendAlbum.value;
+    if (!fa) return [];
+    void qidVersion.value;
+    void S.pv.version;
+    const index = friendIndexOf(fa.f.id);
+    const holes = myHoles.value;
+    return fa.t.items.map((item, i) => {
+      const card = index.findCard(item);
+      const mine = findCard(item);
+      const hole = card && !mine ? holes.findCard(item) || holes.findCard(card) : null;
+      const info = card || mine ? null : pvCache.get(item.title);
+      const views = info ? info[0] : null;
+      const real = card ? null : mine ? okRarity(mine.rarity) : null;
+      return { i: i + 1, key: (card ? 'c:' + card.id : 'v:' + item.title) + ':' + i, item, card, mine, want: hole ? hole.cols : null,
+        views, real, est: card || real ? null : estRarity(views), thumb: info ? info[1] : null };
+    });
+  });
+  const friendSlots = computed(() => {
+    const fa = friendAlbum.value;
+    if (!fa) return [];
+    const f = S.friends.albumFilter;
+    let slots = friendSlotsAll.value;
+    if (f === 'has') slots = slots.filter((s) => s.card);
+    else if (f === 'lacks') slots = slots.filter((s) => !s.card);
+    else if (f === 'help') slots = slots.filter((s) => !s.card && s.mine);
+    if (S.friends.albumSort === 'rarity') {
+      const rank = (s) => RANK[s.card ? s.card.rarity : s.real || s.est] ?? 9;
+      slots = slots.slice().sort((a, b) => rank(a) - rank(b) || (b.views || 0) - (a.views || 0));
+    } else if (!fa.ordered) slots = slots.slice().sort((a, b) => COLLATOR.compare(a.item.title, b.item.title));
+    return slots;
   });
 
   // ================================================================ actions
@@ -1048,7 +1171,10 @@
     S.arrange = null;
     stopCategory(); // catégorie ouverte (lecture de ses articles) et recherche de catégories : celles de l'autre classeur
     stopCatSearch();
-    S.catBusy = false;
+    // Propositions (calcul en cours, liste, créations en cours) : celles des cartes de l'autre classeur.
+    cancelProposals();
+    S.wp.list = [];
+    S.wp.busy = {};
     pvToken++;
     suggToken++;
     S.sugg.running = false;
@@ -1107,11 +1233,14 @@
   }
   async function loadMe() {
     const gen = cardsGen;
+    const pg = prefsPending ? null : prefsGen;
     const me = await api('GET', '/api/me');
     if (gen !== cardsGen) return me; // classeur changé entre-temps (resetData) : réponse de l'ancien, écartée
     S.me = me;
     if (S.key && me.user) remember(S.key, me.user.name || '');
-    if (me.prefs !== undefined) S.prefs = normPrefs(me.prefs);
+    // Préférences changées ici (savePrefs) avant la réponse, ou encore en route à l'envoi : la réponse peut les précéder,
+    // elle ne les remplace pas.
+    if (me.prefs !== undefined && pg === prefsGen && !prefsPending) S.prefs = normPrefs(me.prefs);
     return me;
   }
   function prepCard(c) {
@@ -1253,10 +1382,10 @@
     cacheTimer = setTimeout(() => { cacheTimer = null; if (cacheWrite) cacheWrite(); }, 1500);
   }
   const prepTarget = (t) => markRaw({ ...t, items: Array.isArray(t.items) ? t.items : [] });
-  // Après chaque chargement des cartes : qids manquants (collections et catégories suivies), propositions d'après les
+  // Après chaque chargement des cartes : qids manquants (toutes les collections), propositions d'après les
   // catégories de tes cartes (sauf si tu les as masquées).
   function afterCards() {
-    resolveQids(collections.value.all.flatMap((c) => c.items), false);
+    resolveQids(collections.value.all.flatMap((c) => c.items), false, 'all'); // à part de celle de l'album ouvert
     if (!S.prefs.hide_proposals) computeProposals(false);
   }
   async function loadTargets() {
@@ -1591,6 +1720,7 @@
   function setTab(tab) {
     if (S.tab === tab) return;
     S.tab = tab;
+    S.catSearch.enter = false; // Entrée en attente dans la recherche des catégories : oubliée (on est passé ailleurs)
     if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false });
     if (tab === 'maj') prepareFavori();
     if (tab === 'amis') loadFriends(true);
@@ -1603,12 +1733,13 @@
     if (kind !== 'category') stopCategory();
     S.album = { kind, id };
     S.tab = 'collections';
+    S.catSearch.enter = false;
     Object.assign(S, { albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, lastClicked: null });
     S.selected.clear();
     ensureFriends(); // badges « chez Paul » des cases vides
     toTop();
   }
-  function closeAlbum() { stopCategory(); S.album = null; S.selected.clear(); toTop(); }
+  function closeAlbum() { stopCategory(); S.album = null; S.catSearch.enter = false; S.selected.clear(); toTop(); }
   function openTarget(id) { openAlbum('target', id); }
   function toggleTagFilter(name, ev) {
     // Clic simple : ce tag seul (ou plus aucun) ; Ctrl/⌘+clic : combiner.
@@ -2099,20 +2230,31 @@
     return o;
   }
   // Remplace les préférences (objet entier) ; gardées en mémoire même si le serveur refuse, et l'erreur est affichée.
+  // prefsGen avance à chaque changement fait ici, prefsPending compte ceux en route : une lecture de GET /api/me
+  // (retour sur l'onglet, minuterie des 60 s) partie avant, ou pendant, ne les défait pas (loadMe).
+  let prefsGen = 0;
+  let prefsPending = 0;
   async function savePrefs(patch) {
+    const gen = cardsGen;
+    const g = ++prefsGen;
+    prefsPending++;
     S.prefs = normPrefs({ ...S.prefs, ...patch });
     try {
       const r = await api('PATCH', '/api/me', { prefs: S.prefs });
       const back = (r && r.prefs) || (r && r.user && r.user.prefs);
-      if (back) S.prefs = normPrefs(back);
+      if (back && gen === cardsGen && g === prefsGen) S.prefs = normPrefs(back);
       return true;
     } catch (e) {
-      notify(e.message, true);
+      if (gen === cardsGen) notify(e.message, true);
       return false;
+    } finally {
+      prefsPending--;
     }
   }
-  // Masquer ou afficher les propositions (rien n'est cherché sur Wikipédia tant qu'elles sont masquées).
+  // Masquer ou afficher les propositions (rien n'est cherché sur Wikipédia tant qu'elles sont masquées : un calcul en
+  // cours s'arrête tout de suite).
   async function setHideProposals(hide) {
+    if (hide) cancelProposals();
     await savePrefs({ hide_proposals: !!hide });
     if (!hide) computeProposals(false);
   }
@@ -2122,7 +2264,7 @@
   const Propose = window.ClasseurPropose || null;
   const proposer = Propose ? Propose.createProposer({}) : null;
   let wpCtrl = null;
-  // Déjà suivies ou retirées : jamais proposées.
+  // Déjà en collection (source « wp:<nom> ») ou retirées : jamais proposées.
   const wpExclude = () => [...targets.value.map((t) => t.source).filter(isCatSource), ...S.prefs.hidden_proposals];
   // Automatique au plus une fois par semaine, ou quand presque tout est déjà en cache ; à la main avec le bouton.
   async function computeProposals(manual) {
@@ -2149,20 +2291,35 @@
     }
   }
   function cancelProposals() { if (wpCtrl) wpCtrl.abort(); wpCtrl = null; S.wp.running = false; }
-  // Propositions affichées : ni masquées, ni retirées, ni déjà suivies.
-  // Puis, sans requête (propose.js, prune) : ni celles déjà « couvertes » par une de tes collections ou catégories
-  // suivies (au moins 80 % des cartes qui la rendent proposable y sont déjà), ni les sous-catégories d'une catégorie
-  // suivie ou d'une catégorie elle-même proposée (la parente seule reste).
+  // Propositions affichées : ni masquées, ni retirées, ni déjà en collection (source « wp:<nom> »).
+  // Puis, sans requête (propose.js, prune) : ni celles déjà « couvertes » par une de tes collections (au moins 80 % des
+  // cartes qui la rendent proposable y sont déjà ; ce qui écarte aussi les filles d'une catégorie dont tu as une
+  // collection avec ses sous-catégories), ni les sous-catégories d'une catégorie elle-même proposée : la parente seule
+  // reste et les regroupe (p.subs), « Créer une collection » la prend avec ses sous-catégories. Une collection faite
+  // d'une catégorie sans ses sous-catégories n'écarte pas ses filles (ses articles directs ne les contiennent pas).
+  // wpPruned.covered : nombre de catégories couvertes, coveredBy : [nom, nombre] de la collection qui en couvre le plus
+  // (pour le dire).
   const COVERED_MIN = 0.8;
-  const wpVisible = computed(() => {
-    if (S.prefs.hide_proposals) return [];
+  const wpPruned = computed(() => {
+    const none = { list: [], covered: 0, coveredBy: null };
+    if (S.prefs.hide_proposals) return none;
     const hidden = new Set(S.prefs.hidden_proposals);
     const added = new Set(targets.value.map((t) => t.source).filter(Boolean));
     const list = S.wp.list.filter((p) => !hidden.has(p.key) && !added.has(p.key));
-    if (!Propose || typeof Propose.prune !== 'function') return list;
-    return Propose.prune(list, { followed: targets.value.map((t) => t.source).filter(isCatSource), covered: (p) => !!coveringCol(p) });
+    if (!Propose || typeof Propose.prune !== 'function') return { ...none, list };
+    const by = new Map();
+    const stats = {};
+    const covered = (p) => {
+      const col = coveringCol(p);
+      if (col) by.set(col.name, (by.get(col.name) || 0) + 1);
+      return !!col;
+    };
+    const kept = Propose.prune(list, { covered, stats });
+    const top = [...by].sort((a, b) => b[1] - a[1])[0];
+    return { list: kept, covered: stats.covered || 0, coveredBy: top || null };
   });
-  // Cartes de chaque collection et catégorie suivie (ids des cartes qui y remplissent une case, titre puis qid).
+  const wpVisible = computed(() => wpPruned.value.list);
+  // Cartes de chaque collection (ids des cartes qui y remplissent une case, titre puis qid).
   const colCardIds = computed(() => {
     void qidVersion.value;
     return collections.value.all.map((col) => {
@@ -2171,7 +2328,7 @@
       return { col, ids };
     });
   });
-  // Collection (ou catégorie suivie) qui contient déjà au moins 80 % des cartes qui rendent une proposition
+  // Collection (quelle qu'en soit la source) qui contient déjà au moins 80 % des cartes qui rendent une proposition
   // proposable (p.cards : celles comptées pour les 5 % et les 2 cartes) ; null sinon.
   function coveringCol(p) {
     const ids = [...new Set((p.cards || []).map((t) => { const l = byTitle.value.get(normTitle(t)); return l ? l[0].id : null; }).filter(Boolean))];
@@ -2183,24 +2340,58 @@
     }
     return null;
   }
-  // « Suivre » une proposition : ses articles (directement dans la catégorie, 3 000 au plus) deviennent une collection à
-  // compléter de source « wp:<nom> », rangée dans « Mes catégories ». On reste sur la liste.
-  async function followWp(p) {
+  // Articles de la collection créée d'une proposition : ceux de la catégorie (3 000 au plus) ; si elle en regroupe d'autres (p.subs :
+  // propositions cachées sous elle), aussi ceux de ses sous-catégories (1 niveau) et des propositions regroupées plus bas
+  // (petites-filles…). Plus de 3 000 ainsi : ses articles et ceux des seules propositions regroupées ; encore trop : erreur.
+  async function proposalMembers(p) {
+    if (!p.subs || !p.subs.length) return { members: await proposer.loadMembers(p.title, {}), withSubs: false };
+    const byName = new Map(S.wp.list.map((x) => [x.name, x]));
+    const direct = (n) => { const q = byName.get(n); return !!q && (q.parents || []).map(catName).includes(p.name); };
+    const out = new Map();
+    const add = (list) => { for (const m of list) if (!out.has(m.title)) out.set(m.title, m); };
+    add(await categoryMembers(p.title, true, null));
+    for (const n of p.subs) {
+      if (out.size > 3000) break;
+      if (!direct(n)) add(await categoryMembers(CAT_NS + n, false, null));
+    }
+    if (out.size > 3000) {
+      out.clear();
+      add(await categoryMembers(p.title, false, null));
+      for (const n of p.subs) { if (out.size > 3000) break; add(await categoryMembers(CAT_NS + n, false, null)); }
+    }
+    if (out.size > 3000) throw new Error(`« ${p.name} » et les catégories qu'elle regroupe ont plus de 3 000 articles : trop pour une collection. Ouvre-la pour en faire une collection sans ses sous-catégories.`);
+    return { members: [...out.values()], withSubs: true };
+  }
+  // « Créer une collection » d'une proposition : ses articles (directement dans la catégorie, 3 000 au plus ; avec ses
+  // sous-catégories si elle en regroupe) deviennent une collection à compléter de source « wp:<nom> », nommée comme la
+  // catégorie, dans « Mes collections ». On reste sur la liste. Classeur changé pendant la lecture (resetData) : rien
+  // n'est enregistré.
+  async function createFromProposal(p) {
     if (S.wp.busy[p.key] || !proposer) return;
+    const gen = cardsGen;
+    const stale = () => gen !== cardsGen;
     S.wp.busy[p.key] = true;
     try {
-      const members = await proposer.loadMembers(p.title, {});
+      const { members, withSubs } = await proposalMembers(p);
+      if (stale()) return;
+      // Créée entre-temps (depuis son album, un autre onglet…) : pas de seconde collection, celle qui existe s'ouvre.
+      const t0 = collectionFor(p.key);
+      if (t0) { openAlbum('target', t0.id); return; }
       if (!members.length) throw new Error('Cette catégorie ne contient plus d\'articles.');
       const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
       const name = p.name.length > 80 ? p.name.slice(0, 79) + '…' : p.name;
       const r = await api('POST', '/api/targets/save', { name, items, source: p.key });
-      if (r.target) upsertTarget(r.target); else await loadTargets();
+      if (stale()) return;
+      if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
-      notify(`Tu suis « ${name} » : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}, dans « Mes catégories ».`);
+      // Son album ouvert pendant la création (par son nom ou la recherche) : il devient celui de la nouvelle collection.
+      const t = collectionFor(p.key);
+      if (t && S.album && S.album.kind === 'category' && S.album.id === p.key) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
+      notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${withSubs ? ', sous-catégories comprises' : ''}, dans « Mes collections ».`);
     } catch (e) {
-      notify(e.message, true);
+      if (!stale()) notify(e.message, true);
     } finally {
-      S.wp.busy[p.key] = false;
+      if (!stale()) S.wp.busy[p.key] = false;
     }
   }
   function askHideWp(p) {
@@ -2216,14 +2407,15 @@
     });
   }
 
-  // ---------------------------------------------------------------- « Catégories » : recherche, album d'une catégorie, suivi
-  // Une catégorie de Wikipédia (« Catégorie:Violet ») se cherche par son nom, au fil de la frappe : par préfixe d'abord
-  // (generator=prefixsearch dans l'espace 14, avec categoryinfo dans la même requête), complété par la recherche plein
-  // texte (generator=search) quand le préfixe en donne peu ; catégories cachées, de maintenance ou vides écartées,
-  // CAT_MAX au plus, chacune avec son nombre d'articles. 250 ms après la dernière frappe, dans la file de Wikipédia
-  // (wikiQ : une requête à la fois, 429 et Retry-After respectés), la recherche précédente abandonnée ; réponses gardées
-  // en mémoire le temps de la visite. Ouverte, une catégorie montre ses articles (categoryMembers) comme un album ;
-  // « Suivre cette catégorie » en fait une collection à compléter de source « wp:<nom> » (« Mes catégories »).
+  // ---------------------------------------------------------------- « Catégories » : recherche, album d'une catégorie, collection
+  // Une catégorie de Wikipédia (« Catégorie:Violet ») est une SOURCE de collection. Elle se cherche par son nom, au fil
+  // de la frappe : par préfixe d'abord (generator=prefixsearch dans l'espace 14, avec categoryinfo dans la même requête),
+  // complété par la recherche plein texte (generator=search) quand le préfixe en donne peu ; catégories cachées, de
+  // maintenance ou vides écartées, CAT_MAX au plus, chacune avec son nombre d'articles. 250 ms après la dernière frappe,
+  // dans la file de Wikipédia (wikiQ : une requête à la fois, 429 et Retry-After respectés), la recherche précédente
+  // abandonnée ; réponses gardées en mémoire le temps de la visite. Ouverte, une catégorie montre ses articles
+  // (categoryMembers) comme un album ; « Créer une collection » en fait une collection à compléter de source
+  // « wp:<nom> », dans « Mes collections » (déjà faite : « Ouvrir ta collection »).
   const CAT_NS = 'Catégorie:';
   const CAT_MAX = 8;
   const CAT_MORE = 5; // moins de résultats par préfixe : la recherche plein texte complète
@@ -2231,7 +2423,8 @@
     : cap(String(t || '').replace(/^wp:/, '').replace(/_/g, ' ').replace(/^(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim()));
   // Texte cherché : sans « Catégorie: » (on cherche déjà dans l'espace des catégories).
   const catQuery = (q) => String(q || '').replace(/_/g, ' ').replace(/^\s*(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim();
-  const followedOf = (key) => targets.value.find((t) => t.source === key) || null;
+  // Ta collection créée depuis une catégorie (source « wp:<nom> »), ou null.
+  const collectionFor = (key) => targets.value.find((t) => t.source === key) || null;
   const pagesOf = (j) => ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
   const catSuggCache = new Map(); // texte replié -> suggestions
   let catSugCtrl = null;
@@ -2282,6 +2475,8 @@
   function chooseCat(m) {
     stopCatSearch();
     openCategory(m.title, m);
+    // Le champ de recherche disparaît avec la liste : le focus va au titre de l'album ouvert (pas sur <body>).
+    nextTick(() => { const el = document.getElementById('album-name'); if (el) el.focus(); });
   }
   // Suggestions arrivées pour le texte tapé : si Entrée a été pressée entre-temps, la première s'ouvre.
   function catSuggested(list) {
@@ -2331,31 +2526,31 @@
     catCtrl = null;
     S.catView = null;
   }
-  // Ouvre une catégorie (suggestion, proposition) : son album si tu la suis déjà, sinon ses articles lus sur Wikipédia.
-  // info : {pages, subcats} quand on les connaît déjà (categoryinfo).
+  // Ouvre une catégorie (suggestion, proposition) : ses articles lus sur Wikipédia, comme un album ; si tu en as déjà
+  // fait une collection, l'album le dit (« Ouvrir ta collection »). info : {pages, subcats} quand on les connaît déjà
+  // (categoryinfo) ; withSubs : sous-catégories comprises d'emblée (proposition qui en regroupe d'autres, comme son
+  // « Créer une collection »).
   function openCategory(title, info) {
     const name = catName(title);
     if (!name) return;
     const key = 'wp:' + name;
-    const t = followedOf(key);
-    if (t) { openAlbum('target', t.id); return; }
     stopCategory();
     const num = (v) => (v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
-    S.catView = { key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: false,
+    S.catView = { key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: !!(info && info.withSubs),
       loading: true, error: '', items: null, total: 0, busy: false };
     openAlbum('category', key);
-    loadCategory(false);
+    loadCategory();
   }
-  // Taille (categoryinfo) si on ne la connaît pas, puis, sauf infoOnly, les articles (avec ceux des sous-catégories
-  // directes si withSubs) : 3 000 au plus, total = ce qui a été lu (plus de 3 000 : trop grande pour être suivie).
-  async function loadCategory(infoOnly) {
+  // Taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes si
+  // withSubs) : 3 000 au plus, total = ce qui a été lu (plus de 3 000 : trop grande pour une collection).
+  async function loadCategory() {
     const cv = S.catView;
     if (!cv) return;
     if (catCtrl) catCtrl.abort();
     const ctrl = new AbortController();
     catCtrl = ctrl;
     const stale = () => catCtrl !== ctrl || S.catView !== cv;
-    if (!infoOnly) cv.loading = true;
+    cv.loading = true;
     cv.error = '';
     try {
       if (cv.size === null || cv.subcats === null) {
@@ -2364,16 +2559,11 @@
         const ci = (pagesOf(j)[0] || {}).categoryinfo || {};
         cv.size = Number(ci.pages) || 0;
         cv.subcats = Number(ci.subcats) || 0;
-        // Catégorie qui n'est plus suivie (ses articles repris de la collection) : plus d'articles qu'elle n'en a
-        // directement, c'est qu'ils venaient aussi de ses sous-catégories.
-        if (infoOnly && cv.subcats && cv.items && cv.items.length > cv.size) cv.withSubs = true;
       }
-      if (!infoOnly) {
-        const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal);
-        if (stale()) return;
-        cv.total = list.length;
-        cv.items = markRaw(list.slice(0, 3000).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
-      }
+      const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal);
+      if (stale()) return;
+      cv.total = list.length;
+      cv.items = markRaw(list.slice(0, 3000).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
     } catch (e) {
       if (!stale() && e.name !== 'AbortError') cv.error = e.message;
     } finally {
@@ -2384,53 +2574,39 @@
     const cv = S.catView;
     if (!cv || cv.busy) return;
     cv.withSubs = !cv.withSubs;
-    loadCategory(false);
+    loadCategory();
   }
-  // « Suivre cette catégorie » : ses articles lus (avec les sous-catégories si la case est cochée) deviennent une
-  // collection à compléter de source « wp:<nom> » ; l'album reste ouvert, devenu celui de la catégorie suivie.
-  async function followCategory() {
+  // « Créer une collection » (album d'une catégorie) : ses articles lus (avec les sous-catégories si la case est cochée)
+  // deviennent une collection à compléter de source « wp:<nom> », nommée comme la catégorie ; l'album reste ouvert,
+  // devenu celui de la collection (Modifier, Supprimer). Déjà faite, ou « Créer une collection » de sa proposition en
+  // cours (S.wp.busy, partagé) : pas de seconde collection de même source.
+  async function createFromCategory() {
     const cv = S.catView;
-    if (!cv || cv.busy || cv.loading || !cv.items || !cv.items.length) return;
-    if (cv.total > 3000) { notify('Cette catégorie a plus de 3 000 articles : trop grande pour être suivie.', true); return; }
-    if (cv.key.length > 200) { notify('Le nom de cette catégorie est trop long pour qu\'elle soit suivie.', true); return; }
+    if (!cv) return;
+    const t0 = collectionFor(cv.key);
+    if (t0) { openAlbum('target', t0.id); return; }
+    if (cv.busy || cv.loading || !cv.items || !cv.items.length || S.wp.busy[cv.key]) return;
+    if (cv.total > 3000) { notify('Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
+    if (cv.key.length > 200) { notify('Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
+    const gen = cardsGen;
+    const stale = () => gen !== cardsGen;
     cv.busy = true;
+    S.wp.busy[cv.key] = true;
     try {
       const name = cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
       const items = cv.items.map((it) => ({ title: it.title, description: null, image: null, status: 'ok' }));
       const r = await api('POST', '/api/targets/save', { name, items, source: cv.key });
-      if (r.target) upsertTarget(r.target); else await loadTargets();
+      if (stale()) return;
+      if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== cv.key));
-      const t = followedOf(cv.key);
+      const t = collectionFor(cv.key);
       if (t && S.catView === cv) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
-      notify(`Tu suis « ${name} » : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${cv.withSubs ? ', sous-catégories comprises' : ''}.`);
+      notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${cv.withSubs ? ', sous-catégories comprises' : ''}, dans « Mes collections ».`);
     } catch (e) {
-      notify(e.message, true);
+      if (!stale()) notify(e.message, true);
     } finally {
       cv.busy = false;
-    }
-  }
-  // « Ne plus suivre » : la collection de la catégorie est supprimée ; l'album reste ouvert, comme une catégorie non
-  // suivie (mêmes articles), d'où « Suivre » la reprend.
-  async function unfollowCategory(col) {
-    const t = col && col.t;
-    if (!t || S.catBusy) return;
-    S.catBusy = true;
-    try {
-      await api('POST', '/api/targets/delete', { id: t.id });
-      targets.value = targets.value.filter((x) => x.id !== t.id);
-      if (S.album && S.album.kind === 'target' && S.album.id === t.id) {
-        const name = catName(t.source);
-        stopCategory();
-        S.catView = { key: 'wp:' + name, title: CAT_NS + name, name, size: null, subcats: null, withSubs: false, loading: false, error: '',
-          items: markRaw(t.items.slice()), total: t.items.length, busy: false };
-        S.album = { kind: 'category', id: 'wp:' + name };
-        loadCategory(true);
-      }
-      notify(`Tu ne suis plus « ${t.name} ».`);
-    } catch (e) {
-      notify(e.message, true);
-    } finally {
-      S.catBusy = false;
+      if (!stale()) S.wp.busy[cv.key] = false;
     }
   }
 
@@ -3046,7 +3222,8 @@
     friendsAt = 0;
     if (friendQidCtrl) { friendQidCtrl.abort(); friendQidCtrl = null; }
     friendList.value = [];
-    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'me' });
+    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all',
+      album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copies: {} });
   }
   // Carte d'un ami (champs montrés par le serveur, rien d'autre) ; adresses vérifiées avant d'en faire des liens.
   function prepFriendCard(c) {
@@ -3247,16 +3424,67 @@
     }
   }
   function openFriendBinder(id) {
-    Object.assign(S.friends, { open: id, q: '', filter: 'all', limit: PAGE, page: null });
+    Object.assign(S.friends, { open: id, q: '', filter: 'all', limit: PAGE, page: null, album: null, albumFrom: null });
     toTop();
   }
-  function closeFriendBinder() { S.friends.open = null; toTop(); }
-  // « Échanges possibles » : sous-page de l'onglet, avec son filtre (ce qui me concerne par défaut).
+  function closeFriendBinder() { S.friends.open = null; S.friends.album = null; toTop(); }
+  // « Échanges possibles » : sous-page de l'onglet, avec son filtre (tout le monde par défaut).
   function openTrades(filter) {
-    Object.assign(S.friends, { page: 'trades', open: null, trade: filter || 'me' });
+    Object.assign(S.friends, { page: 'trades', open: null, album: null, trade: filter || 'all' });
     toTop();
   }
   function closeTrades() { S.friends.page = null; toTop(); }
+  // Album d'une collection d'un ami (lecture seule) : depuis « Ses collections » de son classeur, la fiche d'une de ses
+  // cartes, « Échanges possibles » ou « Ce qui pourrait intéresser tes amis » (from = 'trades' : un lien y ramène, avec
+  // le filtre gardé). « ← Retour au classeur de Paul » ramène à son classeur.
+  function openFriendAlbum(fid, tid, from) {
+    const fr = S.friends;
+    if (fr.open !== fid) Object.assign(fr, { q: '', filter: 'all', limit: PAGE });
+    Object.assign(fr, { open: fid, album: tid, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: from || null, page: null });
+    S.tab = 'amis';
+    toTop();
+  }
+  function closeFriendAlbum() { S.friends.album = null; S.friends.albumFrom = null; toTop(); }
+  function backToTrades() { Object.assign(S.friends, { album: null, albumFrom: null, open: null, page: 'trades' }); toTop(); }
+  // Une carte (ou une case vide) de l'album d'un ami : fiche en lecture seule (viewFriendSheet), sans rien qui touche à
+  // ton classeur. card : la sienne, s'il l'a.
+  function openFriendItem(f, s, ev) {
+    lastFocus = ev && ev.currentTarget ? ev.currentTarget : document.activeElement;
+    if (S.modal) closeModal();
+    S.openId = null;
+    S.openMissing = markRaw({ title: s.item.title, qid: s.item.qid || null, description: null, image: null, status: 'ok',
+      friend: { id: f.id, name: friendName(f), card: s.card || null } });
+  }
+  // « Créer la même collection chez moi » (album d'une collection d'un ami) : une collection à toi, de même nom, avec ses
+  // articles tels qu'il les montre (titre et qid, déjà vérifiés par sa page), sans requête à Wikipédia ni source (on ne
+  // connaît ni sa recherche ni sa catégorie : c'est une liste d'articles, rangée dans « Mes collections »). Rien ne la
+  // relie ensuite à la sienne. copyOf : la tienne, si tu l'as créée ainsi pendant la visite (et qu'elle existe encore), ou
+  // une des tiennes qui lui ressemble (même nom, sans source, autant d'articles : créée ainsi lors d'une autre visite).
+  const copyKey = (f, t) => f.id + ':' + t.id;
+  const copiedName = (t) => (t.name.length > 80 ? t.name.slice(0, 79) + '…' : t.name);
+  const copyOf = (f, t) => {
+    const id = S.friends.copies[copyKey(f, t)];
+    const name = copiedName(t);
+    return (id && targets.value.find((x) => x.id === id)) || targets.value.find((x) => !x.source && x.name === name && x.items.length === t.items.length) || null;
+  };
+  async function copyFriendCollection(f, t) {
+    const fr = S.friends;
+    if (fr.copyBusy || copyOf(f, t) || !t.items.length) return;
+    fr.copyBusy = true;
+    try {
+      const items = t.items.map((it) => (it.qid ? { title: it.title, description: null, image: null, status: 'ok', qid: it.qid } : { title: it.title, description: null, image: null, status: 'ok' }));
+      const name = copiedName(t);
+      const r = await api('POST', '/api/targets/save', { name, items });
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+      const mine = r.target ? targets.value.find((x) => x.id === r.target.id) : null;
+      if (mine) fr.copies = { ...fr.copies, [copyKey(f, t)]: mine.id };
+      notify(`Collection « ${name} » créée dans ton classeur : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}.`);
+    } catch (e) {
+      notify(e.message, true);
+    } finally {
+      fr.copyBusy = false;
+    }
+  }
 
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
@@ -3404,6 +3632,7 @@
         h('span', { class: 'name' }, col.name),
         rarityBar(p.byR, p.total),
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), h('span', null, pct(p.own, p.total))]),
+        col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
       ]),
     ]);
   }
@@ -3439,7 +3668,7 @@
       ]);
     }
     const counts = rarityCount.value;
-    // Nombre de collections de « Mes collections » (ni les catégories suivies, ni de total à atteindre).
+    // Nombre de collections de « Mes collections » (celles faites d'une catégorie de Wikipédia comprises ; pas de total).
     const nCol = collections.value.mine.length;
     const nL = counts.L || 0;
     return h('div', { class: 'summary' }, [
@@ -3477,28 +3706,33 @@
   }
 
   // ================================================================ rendu : onglet Collections
-  // Deux zones : « Mes collections » (favori depuis la Collection globale du jeu, ou à la main), puis « Catégories »
-  // (recherche d'une catégorie de Wikipédia, « Mes catégories » suivies, propositions d'après tes cartes).
+  // Deux zones : « Mes collections » (toutes : favori depuis la Collection globale du jeu, à la main, ou depuis une
+  // catégorie de Wikipédia), puis « Catégories » : des catégories de Wikipédia d'où créer une collection (recherche,
+  // propositions d'après tes cartes).
   function viewWpRow(p) {
     const owned = p.cards.map((t) => byTitle.value.get(normTitle(t))).filter(Boolean).map((l) => l[0]);
     const byR = {};
     for (const c of owned) byR[c.rarity] = (byR[c.rarity] || 0) + 1;
     const sample = owned.slice().sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0)).slice(0, 3);
     const busy = !!S.wp.busy[p.key];
+    // « A, B et C », « A, B, C et 2 autres ».
+    const andList = (l) => (l.length > 3 ? `${l.slice(0, 3).join(', ')} et ${fmt(l.length - 3)} ${plural(l.length - 3, 'autre', 'autres')}`
+      : l.length > 1 ? `${l.slice(0, -1).join(', ')} et ${l[l.length - 1]}` : l.join(''));
+    const subs = Array.isArray(p.subs) ? p.subs : [];
     return h('div', { class: ['row', 'wp'], key: p.key }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, sample.length ? sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
-        h('button', { class: 'name row-open', type: 'button', title: 'Ouvrir la catégorie', onClick: () => openCategory(p.title, { pages: p.size, subcats: p.subcats }) }, p.name),
+        h('button', { class: 'name row-open', type: 'button', title: 'Ouvrir la catégorie', onClick: () => openCategory(p.title, { pages: p.size, subcats: p.subcats, withSubs: subs.length > 0 }) }, p.name),
         rarityBar(byR, p.size),
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.owned)), ` sur ${fmt(p.size)}${p.partial ? ' (avec sous-catégories)' : ''}`]),
           h('span', null, pct(p.owned, p.size))]),
         // Pourquoi elle est proposée : les cartes qui la rendent proposable.
-        h('span', { class: 'row-why' }, 'Tu as : ' + (p.cards.length > 3
-          ? `${p.cards.slice(0, 3).join(', ')} et ${fmt(p.cards.length - 3)} ${plural(p.cards.length - 3, 'autre', 'autres')}`
-          : p.cards.length > 1 ? `${p.cards.slice(0, -1).join(', ')} et ${p.cards[p.cards.length - 1]}` : p.cards.join(''))),
+        h('span', { class: 'row-why' }, 'Tu as : ' + andList(p.cards)),
+        // Sous-catégories proposables cachées sous elle (prune) : « Créer une collection » les prend avec elle.
+        subs.length ? h('span', { class: 'row-why row-subs' }, `Regroupe ${fmt(subs.length)} ${plural(subs.length, 'sous-catégorie proposée', 'sous-catégories proposées')} : ${andList(subs)}. La collection est créée sous-catégories comprises.`) : null,
         h('span', { class: 'row-actions' }, [
-          h('button', { class: 'btn small primary', type: 'button', disabled: busy, 'aria-label': `Suivre « ${p.name} »`, onClick: () => followWp(p) },
-            busy ? 'Un instant…' : 'Suivre'),
+          h('button', { class: 'btn small primary', type: 'button', disabled: busy, 'aria-label': `Créer une collection « ${p.name} »`, onClick: () => createFromProposal(p) },
+            busy ? 'Un instant…' : 'Créer une collection'),
           h('button', { class: 'btn small ghost', type: 'button', 'aria-label': `Retirer « ${p.name} » des propositions`, onClick: () => askHideWp(p) }, 'Retirer'),
           h('a', { class: 'small', href: p.url, target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗'),
         ]),
@@ -3516,6 +3750,13 @@
       h('button', { class: 'linkish', type: 'button', onClick: () => setHideProposals(!hidden) }, hidden ? 'Afficher les propositions' : 'Masquer les propositions'),
     ]);
     if (hidden) return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [head, h('p', { class: 'small muted' }, 'Propositions masquées.')]);
+    // Catégories écartées parce que tes collections les couvrent déjà (règle des 80 %) : on le dit, avec la collection qui
+    // en couvre le plus (une très grande collection peut en écarter presque toutes).
+    const { covered: nCov, coveredBy: top } = wpPruned.value;
+    const by = !top ? 'par tes collections' : top[1] === nCov ? `par « ${top[0]} »` : `par tes collections, surtout « ${top[0]} »`;
+    const covText = !nCov ? ''
+      : list.length ? `${fmt(nCov)} ${plural(nCov, 'autre catégorie de tes cartes écartée car déjà couverte', 'autres catégories de tes cartes écartées car déjà couvertes')} ${by}.`
+        : `Pas de nouvelle proposition : ${fmt(nCov)} ${plural(nCov, 'catégorie de tes cartes est écartée car déjà couverte', 'catégories de tes cartes sont écartées car déjà couvertes')} ${by} (au moins 80 % ${plural(nCov, 'de ses cartes y sont', 'de leurs cartes y sont')} déjà).`;
     return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [
       head,
       S.wp.running ? h('div', { class: 'wp-progress', role: 'status' }, [
@@ -3524,7 +3765,8 @@
       ]) : null,
       errLine(S.wp.error),
       list.length ? h('div', { class: 'rows' }, list.map(viewWpRow))
-        : !S.wp.running ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia de tes cartes est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
+        : S.wp.running ? null : !covText ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia de tes cartes est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
+      covText && !S.wp.running ? h('p', { class: 'small muted wp-covered' }, covText) : null,
       S.wp.running ? null : h('div', { class: 'row-actions' }, [
         h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions'),
         retired ? h('button', { class: 'linkish', type: 'button', onClick: restoreProposals },
@@ -3556,7 +3798,8 @@
         'aria-activedescendant': open ? 'cat-opt-' + act : null, 'aria-busy': String(!!cs.loading),
         onInput: (e) => catSearchInput(e.target.value),
         onFocus: () => { cs.open = true; },
-        onBlur: () => { setTimeout(() => { cs.open = false; }, 150); },
+        // Champ quitté : une Entrée en attente (suggestions pas encore arrivées) n'ouvrira plus rien.
+        onBlur: () => { cs.enter = false; setTimeout(() => { cs.open = false; }, 150); },
         onKeydown: (e) => {
           if (e.key === 'ArrowDown') { e.preventDefault(); cs.open = true; cs.nav = true; cs.active = Math.min(act + 1, Math.max(0, list.length - 1)); }
           else if (e.key === 'ArrowUp') { e.preventDefault(); cs.nav = true; cs.active = Math.max(act - 1, 0); }
@@ -3569,41 +3812,36 @@
         onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
       }, [
         h('span', { class: 'prop-list__name' }, m.name),
-        h('span', { class: 'prop-list__hint' }, followedOf('wp:' + m.name) ? 'suivie'
+        h('span', { class: 'prop-list__hint' }, collectionFor('wp:' + m.name) ? 'ta collection'
           : m.subcats ? `${fmt(m.subcats)} ${plural(m.subcats, 'sous-catégorie', 'sous-catégories')}` : ''),
         h('span', { class: 'prop-list__count num' }, `${fmt(m.pages)} ${plural(m.pages, 'article', 'articles')}`),
       ]))) : status ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, status) : null,
     ]);
   }
   function viewCollections() {
-    const { mine, cats } = collections.value;
+    const { mine } = collections.value;
     const hasFavori = !!storedImportKey() || !!(S.me && S.me.has_import_key);
     return h('div', { class: 'groups' }, [
       h('section', { class: 'group', 'aria-labelledby': 'h-mine' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-mine' }, 'Mes collections'),
-          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, ou à la main'),
+          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, à la main, ou depuis une catégorie de Wikipédia'),
           h('span', { class: 'spacer' }),
           h('button', { class: 'btn', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), 'Nouvelle collection']),
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
           : h('div', { class: 'empty-box' }, [
             h('p', null, "Aucune collection pour l'instant. Le plus simple : sur wiki-masters.com, ouvre la « Collection globale », fais une recherche (« vache »…) puis clique ton favori : il propose d'en faire une collection, avec la rareté de chaque carte dans le jeu."),
-            h('p', null, "Tu peux aussi en créer une ici, par mots-clés ou avec une liste d'articles : « Nouvelle collection »."),
+            h('p', null, "Tu peux aussi en créer une ici, par mots-clés ou avec une liste d'articles (« Nouvelle collection »), ou depuis une catégorie de Wikipédia (plus bas)."),
             hasFavori ? null : h('button', { class: 'btn small', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
           ]),
       ]),
       h('section', { class: 'group', 'aria-labelledby': 'h-cats' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-cats' }, 'Catégories'),
-          h('small', null, 'les catégories de Wikipédia (« Catégorie:Violet »…) : cherches-en une, ouvre-la, suis-la pour la compléter'),
+          h('small', null, 'les catégories de Wikipédia (« Catégorie:Violet »…) : cherches-en une, ouvre-la, fais-en une collection'),
         ]),
         viewCatSearch(),
-        h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-mycats' }, [
-          h('h3', { class: 'subhead', id: 'h-mycats' }, 'Mes catégories'),
-          cats.length ? h('div', { class: 'rows' }, cats.map(viewRow))
-            : h('p', { class: 'small muted' }, 'Tu ne suis aucune catégorie : cherches-en une ci-dessus, ou suis une proposition ci-dessous.'),
-        ]),
         viewWpGroup(),
       ]),
     ]);
@@ -3619,7 +3857,7 @@
         h('p', { class: 'muted' }, "Cette collection n'existe plus."),
       ]);
     }
-    const cv = col.kind === 'category' ? col.cv : null; // catégorie ouverte sans être suivie
+    const cv = col.kind === 'category' ? col.cv : null; // catégorie de Wikipédia ouverte (source d'une collection à créer)
     const reading = !!cv && (cv.loading || !cv.items);
     const p = progressOf(col);
     void S.pv.version;
@@ -3655,25 +3893,27 @@
     else if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
     else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
-    // Catégorie : « Voir sur Wikipédia » ; suivie : « Ne plus suivre » ; pas encore suivie : « Suivre cette catégorie ».
+    // Catégorie de Wikipédia : « Créer une collection » (déjà faite : « Ouvrir ta collection »), « Voir sur Wikipédia » ;
+    // collection : « Modifier », « Supprimer » (et « Voir sur Wikipédia » pour celle faite d'une catégorie).
     const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
     const tooBig = !!cv && cv.total > 3000;
     let actions;
     if (cv) {
+      const mineT = collectionFor(cv.key);
+      // « Créer une collection » de sa proposition en cours (S.wp.busy) : en attente ici aussi, l'album passera à la
+      // collection créée.
+      const creating = cv.busy || !!S.wp.busy[cv.key];
       actions = [
-        h('button', { class: 'btn primary', type: 'button', disabled: cv.busy || reading || !cv.items.length || tooBig, onClick: followCategory },
-          [icon('plus', 'sm'), cv.busy ? 'Un instant…' : 'Suivre cette catégorie']),
+        mineT ? h('button', { class: 'btn primary', type: 'button', onClick: () => openAlbum('target', mineT.id) }, 'Ouvrir ta collection')
+          : h('button', { class: 'btn primary', type: 'button', disabled: creating || reading || !cv.items.length || tooBig, onClick: createFromCategory },
+            [icon('plus', 'sm'), creating ? 'Un instant…' : 'Créer une collection']),
         wpLink(cv.title),
-      ];
-    } else if (col.cat) {
-      actions = [
-        h('button', { class: 'btn danger', type: 'button', disabled: S.catBusy, onClick: () => unfollowCategory(col) }, S.catBusy ? 'Un instant…' : 'Ne plus suivre'),
-        wpLink(CAT_NS + catName(col.t.source)),
       ];
     } else {
       actions = [
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
+        col.cat ? wpLink(CAT_NS + catName(col.t.source)) : null,
       ];
     }
     const total = albumSlots.value.length;
@@ -3681,14 +3921,14 @@
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
-        h('div', { class: 'album-title' }, [h('h2', null, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
-          col.cat ? h('span', { class: 'badge' }, cv ? 'catégorie' : 'catégorie suivie') : null]),
+        h('div', { class: 'album-title' }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+          cv ? h('span', { class: 'badge' }, 'catégorie de Wikipédia') : col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null]),
         cv && cv.subcats ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: cv.withSubs, disabled: cv.loading || cv.busy, onChange: toggleCatSubs }),
           ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
         reading ? (cv.error ? null : h('p', { class: 'hint', role: 'status' }, 'Lecture des articles de la catégorie sur Wikipédia…')) : rarityBar(p.byR, p.total, 'bar big'),
-        cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory(false) }, 'Réessayer')]) : null,
-        tooBig ? h('p', { class: 'warn' }, 'Plus de 3 000 articles : trop grande pour être suivie. Seuls les 3 000 premiers sont montrés.') : null,
+        cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory() }, 'Réessayer')]) : null,
+        tooBig ? h('p', { class: 'warn' }, 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
         !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
         reading ? null : h('div', { class: 'missing-sum' }, missLine),
         !reading && missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
@@ -3991,7 +4231,7 @@
         sharing() ? h('label', { class: 'check check--sub' }, [
           h('input', { type: 'checkbox', id: 'set-shared-targets', checked: sharingTargets(), disabled: S.friends.shareBusy,
             onChange: (e) => { const want = e.target.checked; e.target.checked = sharingTargets(); setSharedTargets(want); } }),
-          'et mes collections à compléter (catégories suivies comprises)',
+          'et mes collections à compléter',
         ]) : null,
         h('p', { class: 'small muted' }, 'Réciproque : tu ne vois les cartes des autres membres (onglet « Entre amis ») que si tu montres les tiennes. Désactivé par défaut.'),
         h('p', { class: 'small muted' }, SHARE_WHAT),
@@ -4011,7 +4251,7 @@
 
   // ================================================================ rendu : onglet Entre amis
   const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni ta session WikiMasters ; tes collections à compléter seulement si tu le choisis en plus.';
-  const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections et de tes catégories suivies (signalées comme catégories) et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
+  const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections (avec la mention « depuis la catégorie Wikipédia » pour celles faites d\'une catégorie) et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
   const TRADE_NOTE = 'Le classeur ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre vous.';
   const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
   const syncedOn = (f) => (f.fetched_at ? `synchro du ${dateDay(f.fetched_at)}` : 'pas encore synchronisé');
@@ -4038,11 +4278,6 @@
       h('p', { class: 'small muted' }, TRADE_NOTE),
     ]);
   }
-  // « dont 2 catégories » : catégories de Wikipédia parmi les collections qu'un ami montre (une fois lues).
-  function catCountText(f) {
-    const n = f.targets ? f.targets.filter((t) => t.cat).length : 0;
-    return n ? ` (dont ${fmt(n)} ${plural(n, 'catégorie', 'catégories')})` : '';
-  }
   function viewMemberRow(f) {
     const st = friendStats.value.get(f.id);
     return h('div', { class: 'row member', key: f.id }, [
@@ -4053,7 +4288,7 @@
         st ? h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
           st.dup ? h('span', null, [h('b', null, fmt(st.dup)), ' en double']) : null]) : null,
         h('span', { class: 'line' }, [f.tshare
-          ? h('span', null, ['partage ses collections : ', h('b', null, fmt(f.tcount)), catCountText(f)])
+          ? h('span', null, ['partage ses collections : ', h('b', null, fmt(f.tcount))])
           : h('span', null, 'ne partage pas ses collections')]),
         h('span', { class: 'row-actions' }, [h('button', { class: 'btn small', type: 'button', disabled: !f.cards, onClick: () => openFriendBinder(f.id),
           'aria-label': `Parcourir le classeur de ${friendName(f)}` }, f.cards ? 'Parcourir son classeur' : 'Lecture…')]),
@@ -4067,7 +4302,7 @@
     return h('article', { class: 'fcol', key: x.col.key }, [
       h('div', { class: 'fcol__head' }, [
         h('button', { class: 'fcol__name', type: 'button', title: x.col.cat ? 'Ouvrir la catégorie' : 'Ouvrir la collection', onClick: () => openAlbum(x.col.kind, x.col.id) }, x.col.name),
-        x.col.cat ? h('span', { class: 'badge' }, 'catégorie') : null,
+        x.col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
         h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` ${plural(x.rows.length, 'case', 'cases')} à remplir chez tes amis`,
           ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' en double'] : []), ` · tu en as ${fmt(p.own)} sur ${fmt(p.total)}`]),
       ]),
@@ -4089,14 +4324,30 @@
           ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' que tu as en double'] : [])]),
       ]),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [
-        h('button', { class: 'fitem', type: 'button', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${colsText(r.cols, ', ')}). Ouvrir ta carte`, onClick: (e) => openCardFrom(r.card.id, e) }, [
-          pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
-          r.card.count > 1 ? h('span', { class: 'holder dup' }, ['tu en as ', h('b', null, '×' + fmt(r.card.count))]) : null,
-          h('span', { class: 'fitem__cols' }, colsText(r.cols, ' · ')),
+        // Ta carte ouvre sa fiche ; le nom de chaque collection de l'ami, son album (deux boutons côte à côte).
+        h('div', { class: 'fitem fitem--split', role: 'group', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${colsText(r.cols, ', ')})` }, [
+          h('button', { class: 'fitem__main', type: 'button', 'aria-label': `${r.card.title}, pour ${friendName(x.f)} (${colsText(r.cols, ', ')}). Ouvrir ta carte`, onClick: (e) => openCardFrom(r.card.id, e) }, [
+            pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
+            r.card.count > 1 ? h('span', { class: 'holder dup' }, ['tu en as ', h('b', null, '×' + fmt(r.card.count))]) : null,
+          ]),
+          h('span', { class: 'fitem__cols' }, colLinks(x.f, r.cols, null)),
         ]),
       ]))),
       moreToggle(key, x.rows.length),
     ]);
+  }
+  // Noms des collections d'une ligne : celles d'un ami (f) ouvrent son album en lecture seule ; les tiennes (f null) restent
+  // du texte. Chaque nom s'écrit comme colsText l'écrit.
+  function colLinks(f, cols, from) {
+    if (!f) return [colsText(cols, ' · ')];
+    const out = [];
+    cols.forEach((c, i) => {
+      const label = colsText([c], '');
+      if (i) out.push(' · ');
+      out.push(c.id == null ? label : h('button', { class: 'linkish fitem__col', type: 'button', key: 'col' + i,
+        'aria-label': `Ouvrir « ${c.name} » de ${friendName(f)}`, onClick: () => openFriendAlbum(f.id, c.id, from) }, label));
+    });
+    return out;
   }
   // ---------------------------------------------------------------- « Échanges possibles »
   const personOf = (p) => (p.me ? 'Toi' : friendName(p.f));
@@ -4117,11 +4368,15 @@
     const body = [
       pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
       r.dup ? h('span', { class: 'holder dup', title: `${p.x.me ? 'Tu en as' : friendName(p.x.f) + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null,
-      h('span', { class: 'fitem__cols' }, ['→ ', colsText(r.cols, ' · ')]),
     ];
-    if (p.x.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir ta carte', onClick: (e) => openCardFrom(r.card.id, e) }, body);
-    if (p.z.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir la fiche', onClick: (e) => openMissingFrom(r.item, e) }, body);
-    return h('div', { class: 'fitem fitem--static', role: 'group', 'aria-label': label }, body);
+    // Collections de Z : chez un ami, chaque nom ouvre son album (lecture seule) ; d'ici, un lien ramène aux échanges.
+    const cols = h('span', { class: 'fitem__cols' }, ['→ ', ...colLinks(p.z.me ? null : p.z.f, r.cols, 'trades')]);
+    if (p.z.me) return h('button', { class: 'fitem', type: 'button', 'aria-label': label + '. Ouvrir la fiche', onClick: (e) => openMissingFrom(r.item, e) }, [...body, cols]);
+    if (p.x.me) {
+      return h('div', { class: 'fitem fitem--split', role: 'group', 'aria-label': label }, [
+        h('button', { class: 'fitem__main', type: 'button', 'aria-label': label + '. Ouvrir ta carte', onClick: (e) => openCardFrom(r.card.id, e) }, body), cols]);
+    }
+    return h('div', { class: 'fitem fitem--static', role: 'group', 'aria-label': label }, [...body, cols]);
   }
   function viewTradePair(p) {
     const key = 'trade:' + p.key;
@@ -4148,7 +4403,7 @@
     }
     if (t.waiting.length) out.push(h('p', { class: 'small muted', role: 'status', key: 'waiting' }, `Lecture des collections de ${andList(t.waiting.map(friendName))}…`));
     if (!sharingTargets()) {
-      out.push(h('p', { class: 'trade-note', key: 'mine' }, ['Tes amis ne voient pas tes collections ni tes catégories : ils ne savent pas ce qui te manque. ',
+      out.push(h('p', { class: 'trade-note', key: 'mine' }, ['Tes amis ne voient pas tes collections : ils ne savent pas ce qui te manque. ',
         h('button', { class: 'linkish', type: 'button', disabled: S.friends.shareBusy, onClick: () => setSharedTargets(true) }, 'Partager aussi mes collections à compléter')]));
     }
     return out;
@@ -4168,11 +4423,11 @@
         h('p', { class: 'hint' }, "Telle carte de l'un pourrait compléter telle collection de l'autre. Les doubles d'abord : ce sont les plus faciles à donner. " + TRADE_NOTE),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Échanges à montrer' }, [
-            seg('Ce qui me concerne', fr.trade === 'me' || (fr.trade !== 'all' && !member), () => { fr.trade = 'me'; }),
-            seg('Tout le monde', fr.trade === 'all', () => { fr.trade = 'all'; }),
+            seg('Tout le monde', fr.trade === 'all' || (fr.trade !== 'me' && !member), () => { fr.trade = 'all'; }),
+            seg('Ce qui me concerne', fr.trade === 'me', () => { fr.trade = 'me'; }),
           ]),
           h('label', { class: 'sr', for: 'trade-member' }, 'Les échanges d\'un membre'),
-          h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'me'; } },
+          h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'all'; } },
             [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, friendName(f)))]),
         ]),
       ]),
@@ -4202,6 +4457,184 @@
       c.url ? h('a', { class: 'cell__link', href: c.url, target: '_blank', rel: 'noopener noreferrer' }, 'Wikipédia ↗') : null,
     ]);
   }
+  // ---------------------------------------------------------------- « Ses collections » et album d'une collection d'un ami
+  // Une collection d'un ami, comme les tiennes : ses cartes en éventail, sa progression (« 12 sur 40 », barre, %), et ce
+  // que tu peux lui donner (ses cases vides que tes cartes remplissent, dont tes doubles).
+  function viewFriendColRow(f, r) {
+    const p = r.p;
+    return h('button', { class: ['row', { zero: !p.own }], type: 'button', key: r.key, onClick: () => openFriendAlbum(f.id, r.t.id, null),
+      'aria-label': `${r.t.name} : ${friendName(f)} en a ${fmt(p.own)} sur ${fmt(p.total)}${p.help ? `, tu as ${fmt(p.help)} ${plural(p.help, 'carte', 'cartes')} qui lui ${plural(p.help, 'manque', 'manquent')}` : ''}` }, [
+      h('span', { class: 'fan', 'aria-hidden': 'true' }, p.sample.length ? p.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
+      h('span', { class: 'info' }, [
+        h('span', { class: 'name' }, r.t.name),
+        r.t.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
+        rarityBar(p.byR, p.total),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), h('span', null, pct(p.own, p.total))]),
+        p.help ? h('span', { class: 'row-help' }, ['Tu peux l\'aider : ', h('b', null, fmt(p.help)), p.helpDup ? `, dont ${fmt(p.helpDup)} en double` : '']) : null,
+      ]),
+    ]);
+  }
+  // « Ses collections » dans le classeur d'un ami : toutes ses collections, dans une liste (celles tirées d'une catégorie
+  // de Wikipédia signalées discrètement) ; rien (une phrase) s'il ne les partage pas.
+  function viewFriendCols(f) {
+    const name = friendName(f);
+    const v = f.tshare && f.targets ? friendTargetsView.value : null;
+    const key = 'fcols:' + f.id;
+    let body;
+    if (!f.tshare) body = [h('p', { class: 'small muted' }, `${name} ne partage pas ses collections.`)];
+    else if (!v) body = [h('p', { class: 'small muted', role: 'status' }, 'Lecture de ses collections…')];
+    else if (!v.rows.length) body = [h('p', { class: 'small muted' }, `${name} n'a pas encore de collection.`)];
+    else {
+      const shown = S.friends.more[key] ? v.rows : v.rows.slice(0, FRIEND_ROWS);
+      body = [h('div', { class: 'rows' }, shown.map((r) => viewFriendColRow(f, r))), moreToggle(key, v.rows.length)];
+    }
+    return h('section', { class: 'group', 'aria-labelledby': 'h-fcols' }, [
+      h('div', { class: 'section-head' }, [h('h2', { id: 'h-fcols' }, 'Ses collections'),
+        f.tshare ? h('small', null, `la progression de ${name} avec ses cartes ; ouvre-en une pour voir ce que tu peux lui donner`) : null]),
+      ...body,
+    ]);
+  }
+  // Une carte de l'ami dans son album : « Tu l'as » (estompée) ou « Te manque » ; si elle remplirait une de tes
+  // collections, elle ressort, avec leurs noms dessous. Un clic ouvre la fiche en lecture seule.
+  function viewFriendAlbumCard(s, f) {
+    const c = s.card;
+    const r = okRarity(c.rarity) || 'C';
+    const have = !!s.mine;
+    const want = !have && s.want && s.want.length ? s.want : null;
+    const open = (e) => openFriendItem(f, s, e);
+    const label = `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''} chez ${friendName(f)}, `
+      + `${have ? "tu l'as" : want ? 'manque à ' + colsText(want, ', ') : 'te manque'} : ouvrir la fiche`;
+    return h('div', { class: ['cell', { pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === s.item.title }], key: s.key }, [
+      h('article', { class: ['card', 'card--friend', 'card--fa', 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
+        onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } }, [
+        h('div', { class: 'card__art' }, [
+          h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
+          c.image ? h('img', { src: c.image, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+        ]),
+        pill(r),
+        c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires chez ${friendName(f)}` }, '×' + fmt(c.count)) : null,
+        h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
+        h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
+        r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
+      ]),
+      want ? h('p', { class: 'cell__want', title: 'Manque à : ' + colsText(want, ', ') }, ['→ ', colsText(want, ' · ')]) : null,
+    ]);
+  }
+  // Case vide de l'album d'un ami : « tu l'as » (et « ×2 en double ») si ta carte la remplit, c'est-à-dire une carte que tu
+  // pourrais lui donner. Toute la case ouvre la fiche en lecture seule ; « Copier le nom » en haut à droite.
+  function viewFriendSlot(s, fa) {
+    const it = s.item;
+    const f = fa.f;
+    const mine = s.mine;
+    const n = mine ? Math.max(1, Number(mine.count) || 1) : 0;
+    const img = (mine && mine.image) || s.thumb;
+    let views = '';
+    if (!mine) views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
+    const give = mine ? (n > 1 ? `, tu l'as (${fmt(n)} exemplaires)` : ", tu l'as") : '';
+    return h('div', { class: ['slot', { can: !!mine, pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === it.title }], key: s.key }, [
+      img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+      fa.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
+      h('button', { class: 'slot__open', type: 'button', title: `Manque à ${friendName(f)} : ouvrir la fiche`,
+        'aria-label': `${it.title} : manque à ${friendName(f)}${give}, ouvrir la fiche`, onClick: (e) => openFriendItem(f, s, e) }),
+      h('div', { class: 'slot__top' }, [s.real ? pill(s.real) : pill(s.est, true), copyNameButton(it.title, true)]),
+      h('h3', null, it.title),
+      mine && mine.category ? h('p', null, mine.category) : null,
+      mine ? h('div', { class: 'slot__give' }, [h('span', { class: 'slot__friends' }, "tu l'as"),
+        n > 1 ? h('span', { class: 'slot__friends dup', title: `Tu en as ${fmt(n)} exemplaires` }, `×${fmt(n)} en double`) : null]) : null,
+      views ? h('span', { class: 'views' }, views) : null,
+    ]);
+  }
+  // Album d'une collection d'un ami (lecture seule), avec l'allure des tiens : ses cartes et ses cases vides ; filtres
+  // « Toutes / Il les a / Lui manquent / Tu peux l'aider », tri ; rien n'y modifie sa collection.
+  function viewFriendAlbum(f) {
+    const fr = S.friends;
+    const fa = friendAlbum.value;
+    const name = friendName(f);
+    const backs = [
+      h('button', { class: 'back', type: 'button', onClick: closeFriendAlbum }, `← Retour au classeur de ${name}`),
+      fr.albumFrom === 'trades' ? h('button', { class: 'back', type: 'button', onClick: backToTrades }, '← Échanges possibles') : null,
+    ];
+    const backLine = h('div', { class: 'back-line' }, backs);
+    if (!fa) {
+      return h('div', { class: 'album-head' }, [backLine, h('p', { class: 'muted', role: 'status' },
+        !f.tshare ? `${name} ne partage plus ses collections.` : !f.targets ? 'Lecture de ses collections…' : "Cette collection n'existe plus.")]);
+    }
+    const t = fa.t;
+    const all = friendSlotsAll.value;
+    let own = 0;
+    let help = 0;
+    let helpDup = 0;
+    let want = 0;
+    let estimated = 0;
+    let unknown = 0;
+    const byR = {};
+    const missG = {}; // rareté connue (ta carte)
+    const missR = {}; // rareté estimée d'après les vues
+    for (const s of all) {
+      if (s.card) { own++; byR[s.card.rarity] = (byR[s.card.rarity] || 0) + 1; if (!s.mine && s.want) want++; continue; }
+      if (s.mine) { help++; if ((Number(s.mine.count) || 1) >= 2) helpDup++; }
+      if (s.real) { missG[s.real] = (missG[s.real] || 0) + 1; continue; }
+      estimated++;
+      if (s.est) missR[s.est] = (missR[s.est] || 0) + 1; else unknown++;
+    }
+    const total = all.length;
+    const missing = total - own;
+    const pills = (m, est) => RAR_UP.slice().reverse().filter((r) => m[r]).map((r) => h('span', { key: (est ? 'e' : 'g') + r }, [pill(r, est), ' ', h('b', { class: 'num' }, fmt(m[r]))]));
+    const ownLine = own > 0 ? [h('span', null, `${name} en a ${fmt(own)} :`), ...pills(byR, false)] : null;
+    const missLine = missing > 0 ? [h('span', null, `Il lui en manque ${fmt(missing)} :`), ...pills(missG, false), ...pills(missR, true),
+      unknown ? h('span', { key: '?' }, [pill(null), ' ', h('b', { class: 'num' }, fmt(unknown))]) : null]
+      : [h('span', null, total ? 'Sa collection est complète.' : 'Cette collection est vide.')];
+    let hint = '≈ : rareté estimée d\'après les vues de l\'article sur Wikipédia ces 30 derniers jours.';
+    if (!estimated && Object.keys(missG).length) hint = 'Rareté des cases vides : celle de ta carte.';
+    else if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
+    else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
+    else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté de ta carte.';
+    // « Créer la même collection chez moi » (une liste d'articles à toi, copiée de la sienne) ; une fois créée, ton album.
+    const copy = copyOf(f, t);
+    const actions = copy
+      ? [h('button', { class: 'btn', type: 'button', key: 'ouvrir', onClick: () => openAlbum('target', copy.id) }, 'Ouvrir ma collection')]
+      : t.items.length ? [h('button', { class: 'btn', type: 'button', key: 'copier', disabled: fr.copyBusy, onClick: () => copyFriendCollection(f, t) },
+        [icon('plus', 'sm'), fr.copyBusy ? 'Un instant…' : 'Créer la même collection chez moi'])] : [];
+    const list = friendSlots.value;
+    const shown = list.slice(0, fr.albumLimit);
+    const setFilter = (v) => () => { fr.albumFilter = v; fr.albumLimit = ALBUM_PAGE; };
+    const empty = fr.albumFilter === 'help' ? `Tu n'as aucune des cartes qui manquent à ${name} ici.`
+      : fr.albumFilter === 'has' ? `${name} n'a encore aucune carte de cette collection.` : fr.albumFilter === 'lacks' ? 'Il ne lui en manque aucune.' : 'Cette collection est vide.';
+    return h('div', null, [
+      h('div', { class: 'album-head' }, [
+        backLine,
+        h('div', { class: 'album-title' }, [h('h2', null, t.name), h('span', { class: 'num' }, `${name} en a ${fmt(own)} sur ${fmt(total)}`),
+          h('span', { class: 'badge' }, 'lecture seule'), t.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null]),
+        rarityBar(byR, total, 'bar big'),
+        ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
+        h('div', { class: 'missing-sum' }, missLine),
+        help || want ? h('div', { class: 'missing-sum give-sum' }, [
+          help ? h('span', { key: 'help' }, ['Tu peux l\'aider : ', h('b', { class: 'num' }, fmt(help)), ` ${plural(help, 'carte', 'cartes')}`, helpDup ? [' dont ', h('b', { class: 'num' }, fmt(helpDup)), ' en double'] : null]) : null,
+          want ? h('span', { key: 'want' }, [help ? '· ' : '', h('b', { class: 'num' }, fmt(want)), ` de ses cartes ${plural(want, 'manque', 'manquent')} à tes collections`]) : null,
+        ]) : null,
+        missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
+        h('p', { class: 'hint' }, TRADE_NOTE),
+        h('div', { class: 'toolbar' }, [
+          h('div', { class: 'seg seg--four', role: 'group', 'aria-label': 'Filtrer' }, [
+            seg('Toutes', fr.albumFilter === 'all', setFilter('all')),
+            seg('Il les a', fr.albumFilter === 'has', setFilter('has')),
+            seg('Lui manquent', fr.albumFilter === 'lacks', setFilter('lacks')),
+            seg('Tu peux l\'aider', fr.albumFilter === 'help', setFilter('help')),
+          ]),
+          h('div', { class: 'seg', role: 'group', 'aria-label': 'Trier' }, [
+            seg(fa.ordered ? 'Ordre' : 'A → Z', fr.albumSort === 'order', () => { fr.albumSort = 'order'; fr.albumLimit = ALBUM_PAGE; }),
+            seg('Rareté', fr.albumSort === 'rarity', () => { fr.albumSort = 'rarity'; fr.albumLimit = ALBUM_PAGE; }),
+          ]),
+          h('span', { class: 'spacer' }),
+          ...actions,
+        ]),
+      ]),
+      list.length ? h('div', { class: 'cardgrid' }, shown.map((s) => (s.card ? viewFriendAlbumCard(s, f) : viewFriendSlot(s, fa))))
+        : h('div', { class: 'empty-box' }, empty),
+      shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.albumLimit += ALBUM_PAGE; } },
+        `Afficher les ${fmt(Math.min(ALBUM_PAGE, list.length - shown.length))} suivantes (${fmt(list.length - shown.length)} restantes)`)]) : null,
+    ]);
+  }
   function viewFriendBinder(f) {
     const fr = S.friends;
     const st = friendStats.value.get(f.id);
@@ -4215,30 +4648,37 @@
         st ? h('div', { class: 'missing-sum' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
           st.dup ? h('span', null, ['· dont ', h('b', null, fmt(st.dup)), ` en double chez ${friendName(f)}`]) : null]) : null,
         h('p', { class: 'hint' }, TRADE_NOTE),
-        h('div', { class: 'toolbar' }, [
-          h('label', { class: 'sr', for: 'fq' }, 'Chercher dans ce classeur'),
-          h('input', { id: 'fq', class: 'field', type: 'search', value: fr.q, autocomplete: 'off', placeholder: 'Chercher un titre', onInput: (e) => { fr.q = e.target.value; fr.limit = PAGE; } }),
-          h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
-            seg('Toutes', fr.filter === 'all', () => { fr.filter = 'all'; fr.limit = PAGE; }),
-            seg('Me manquent', fr.filter === 'missing', () => { fr.filter = 'missing'; fr.limit = PAGE; }),
+      ]),
+      // « Ses collections » (s'il les partage), puis ses cartes.
+      h('div', { class: 'groups' }, [
+        viewFriendCols(f),
+        h('section', { class: 'group', 'aria-labelledby': 'h-fcards' }, [
+          h('div', { class: 'section-head' }, [h('h2', { id: 'h-fcards' }, 'Ses cartes')]),
+          h('div', { class: 'toolbar friend-tools' }, [
+            h('label', { class: 'sr', for: 'fq' }, 'Chercher dans ce classeur'),
+            h('input', { id: 'fq', class: 'field', type: 'search', value: fr.q, autocomplete: 'off', placeholder: 'Chercher un titre', onInput: (e) => { fr.q = e.target.value; fr.limit = PAGE; } }),
+            h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
+              seg('Toutes', fr.filter === 'all', () => { fr.filter = 'all'; fr.limit = PAGE; }),
+              seg('Me manquent', fr.filter === 'missing', () => { fr.filter = 'missing'; fr.limit = PAGE; }),
+            ]),
+            h('label', { class: 'sr', for: 'fsort' }, 'Trier'),
+            h('select', { id: 'fsort', class: 'field', value: fr.sort, onChange: (e) => { fr.sort = e.target.value; } },
+              [['rarity', 'Rareté'], ['count', 'Exemplaires'], ['title', 'Titre']].map(([v, l]) => h('option', { key: v, value: v }, l))),
           ]),
-          h('label', { class: 'sr', for: 'fsort' }, 'Trier'),
-          h('select', { id: 'fsort', class: 'field', value: fr.sort, onChange: (e) => { fr.sort = e.target.value; } },
-            [['rarity', 'Rareté'], ['count', 'Exemplaires'], ['title', 'Titre']].map(([v, l]) => h('option', { key: v, value: v }, l))),
+          !f.cards ? h('p', { class: 'muted', role: 'status' }, 'Lecture de ses cartes…')
+            : list.length ? h('div', { class: 'cardgrid' }, shown.map(viewFriendCard))
+              : h('div', { class: 'empty-box' }, fr.filter === 'missing' && !fr.q.trim() ? `Tu as déjà toutes les cartes de ${friendName(f)}.` : 'Aucune carte ne correspond.'),
+          shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.limit += PAGE; } },
+            `Afficher plus (${fmt(list.length - shown.length)} restantes)`)]) : null,
         ]),
       ]),
-      !f.cards ? h('p', { class: 'muted', role: 'status' }, 'Lecture de ses cartes…')
-        : list.length ? h('div', { class: 'cardgrid' }, shown.map(viewFriendCard))
-          : h('div', { class: 'empty-box' }, fr.filter === 'missing' && !fr.q.trim() ? `Tu as déjà toutes les cartes de ${friendName(f)}.` : 'Aucune carte ne correspond.'),
-      shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.limit += PAGE; } },
-        `Afficher plus (${fmt(list.length - shown.length)} restantes)`)]) : null,
     ]);
   }
   function viewFriends() {
     if (!sharing()) return viewShareOff();
     const fr = S.friends;
     const open = openFriend.value;
-    if (fr.open && open) return viewFriendBinder(open);
+    if (fr.open && open) return fr.album != null ? viewFriendAlbum(open) : viewFriendBinder(open);
     if (fr.page === 'trades') return viewTrades();
     const list = friendList.value;
     const loadingAll = fr.busy || list.some((f) => !f.cards || (f.tshare && !f.targets));
@@ -4273,15 +4713,15 @@
             h('b', null, fmt(get)), ` de leurs cartes ${plural(get, 'peut', 'peuvent')} compléter les tiennes`,
             others ? ['. Entre eux : ', h('b', null, fmt(others)), '.'] : '.',
           ] : 'Recherche dans les classeurs…'),
-          h('button', { class: 'btn primary', type: 'button', onClick: () => openTrades('me') }, 'Voir les échanges possibles'),
+          h('button', { class: 'btn primary', type: 'button', onClick: () => openTrades('all') }, 'Voir les échanges possibles'),
         ]),
         ...tradeNotes(),
       ]) : null,
       list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-fill' }, [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-fill' }, 'Pour compléter tes collections'),
-          h('small', null, 'les cartes qui manquent à tes collections et à tes catégories, et que tes amis ont ; en double chez eux : les plus faciles à échanger')]),
+          h('small', null, 'les cartes qui manquent à tes collections, et que tes amis ont ; en double chez eux : les plus faciles à échanger')]),
         fill.length ? h('div', { class: 'fcols' }, fill.map(viewFillCol))
-          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections et à tes catégories."),
+          : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections."),
       ]) : null,
       list.length ? h('section', { class: 'group', 'aria-labelledby': 'h-wants' }, [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-wants' }, 'Ce qui pourrait intéresser tes amis'),
@@ -4353,9 +4793,7 @@
   }
   function fact(label, value) { return h('div', { class: 'fact' }, [h('span', null, label), h('b', null, value)]); }
   function viewFiche(c, closeRef, boxRef) {
-    const member = membershipsOf(c);
-    const mine = member.filter((m) => !m.cat);
-    const cats = member.filter((m) => m.cat);
+    const mine = membershipsOf(c); // toutes tes collections, celles faites d'une catégorie de Wikipédia comprises
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
     const memberList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
       const p = progressOf(col);
@@ -4392,7 +4830,6 @@
         ]),
         viewSuggestions(c),
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
-        cats.length ? h('div', null, [h('h3', null, 'Dans tes catégories'), memberList(cats)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
@@ -4416,9 +4853,7 @@
     const ok = item.status === 'ok';
     const real = ok ? realRarity(item) : null; // rareté donnée par le jeu : pas d'estimation
     const est = ok && !real ? estRarity(views) : null;
-    const member = membershipsOfItem(item);
-    const mine = member.filter((m) => !m.cat);
-    const cats = member.filter((m) => m.cat);
+    const mine = membershipsOfItem(item); // toutes tes collections, celles faites d'une catégorie de Wikipédia comprises
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
     const memberList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
       const p = progressOf(col);
@@ -4446,9 +4881,72 @@
         ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
-        cats.length ? h('div', null, [h('h3', null, 'Dans tes catégories'), memberList(cats)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
+        ]),
+      ]),
+    ]);
+  }
+  // Fiche d'une carte (ou d'une case vide) de l'album d'un ami, en lecture seule : qui l'a (lui, toi), sa rareté (celle de
+  // sa carte ou de la tienne, sinon estimée), ses vues, les autres collections de l'ami et les tiennes où elle figure,
+  // « Copier le nom », Wikipédia. Rien n'y modifie ton classeur ni le sien (pas de tags, pas de sélection).
+  function viewFriendSheet(item, closeRef, boxRef) {
+    void S.pv.version;
+    const fx = item.friend;
+    const fc = fx.card;
+    const mine = findCard(item);
+    const n = mine ? Math.max(1, Number(mine.count) || 1) : 0;
+    const info = pvCache.get(item.title);
+    const views = info ? info[0] : null;
+    const real = (fc && okRarity(fc.rarity)) || (mine && okRarity(mine.rarity)) || null;
+    const est = real ? null : estRarity(views);
+    const img = (fc && fc.image) || (mine && mine.image) || (info ? info[1] : null);
+    const url = (fc && fc.url) || (mine && mine.url) || wikiUrl(item.title);
+    const myCols = mine ? membershipsOf(mine) : membershipsOfItem(item);
+    // Ses collections qui contiennent cet article : même titre, ou même qid.
+    const f = friendList.value.find((x) => x.id === fx.id) || null;
+    const k = normTitle(item.title);
+    const theirs = f && f.targets ? f.targets.filter((t) => t.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid))) : [];
+    const progressById = friendTargetsView.value && openFriend.value && openFriend.value.id === fx.id ? friendTargetsView.value.byId : new Map();
+    const goMine = (col) => { closeCard(); openAlbum(col.kind, col.id); };
+    const goTheirs = (t) => { closeCard(); openFriendAlbum(fx.id, t.id, S.friends.albumFrom); };
+    const myList = (list) => h('div', { class: 'memberships' }, list.map((col) => {
+      const p = progressOf(col);
+      return h('button', { key: col.key, type: 'button', onClick: () => goMine(col) }, [col.name, h('span', null, `${fmt(p.own)} / ${fmt(p.total)}`)]);
+    }));
+    const theirList = h('div', { class: 'memberships' }, theirs.map((t) => {
+      const r = progressById.get(t.id);
+      return h('button', { key: t.id, type: 'button', 'aria-label': `Ouvrir « ${t.name} » de ${fx.name}`, onClick: () => goTheirs(t) },
+        [colsText([t], ''), r ? h('span', null, `${fmt(r.p.own)} / ${fmt(r.p.total)}`) : null]);
+    }));
+    return h('div', { class: 'sheet fiche fiche--missing fiche--friend', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'detail-title', tabindex: '-1', ref: boxRef,
+      onKeydown: (e) => trapTab(e, boxRef.value) }, [
+      h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
+      h('div', { class: ['slot', 'big', { can: !fc && !!mine }], 'aria-hidden': 'true' }, [
+        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken }) : null,
+        h('div', { class: 'slot__top' }, [real ? pill(real) : pill(est, true)]),
+        h('p', { class: 'slot__name' }, item.title),
+      ]),
+      h('div', { class: 'info' }, [
+        ficheTitle(item.title, true),
+        mine && mine.category ? h('p', { class: 'muted lead' }, mine.category) : null,
+        h('div', { class: 'fiche__states' }, [
+          h('p', { class: ['missing-note', { on: !!fc }] }, fc ? `Chez ${fx.name}${fc.count > 1 ? ' : ×' + fmt(fc.count) : ''}${fc.shiny ? ', brillante' : ''}` : `Manque à ${fx.name}`),
+          h('p', { class: ['missing-note', { on: !!mine }] }, mine ? `Tu l'as${n > 1 ? ` : ×${fmt(n)}, en double` : ''}` : 'Pas encore dans ta collection'),
+        ]),
+        !fc && mine ? h('p', { class: 'friends-note' }, [h('b', null, n > 1 ? 'Tu pourrais la lui donner' : 'Tu pourrais la lui donner, mais c\'est ton seul exemplaire'),
+          h('span', { class: 'muted' }, ' · à échanger dans le jeu, entre vous')]) : null,
+        mine ? null : viewMissingFriends(item),
+        h('div', { class: 'facts' }, [
+          real ? fact('Rareté dans le jeu', RARITY_NAME[real]) : fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running ? '…' : '?'),
+          views != null || (!fc && !mine) ? fact('Vues sur 30 jours', views != null ? fmt(views) : S.pv.running ? '…' : '?') : null,
+        ]),
+        h('p', { class: 'small muted' }, real ? (fc ? `Rareté de la carte de ${fx.name} dans le jeu.` : 'Rareté de ta carte dans le jeu.')
+          : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu)."),
+        theirs.length ? h('div', null, [h('h3', null, `Dans les collections de ${fx.name}`), theirList]) : null,
+        myCols.length ? h('div', null, [h('h3', null, 'Dans tes collections'), myList(myCols)]) : null,
+        h('div', { class: 'actions' }, [
+          h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
       ]),
     ]);
@@ -4815,7 +5313,8 @@
         class: 'overlay', key: 'fiche',
         onPointerdown: (e) => { downOnVeil = e.target === e.currentTarget; },
         onClick: (e) => { if (downOnVeil && e.target === e.currentTarget) closeCard(); downOnVeil = false; },
-      }, [openCard.value ? viewFiche(openCard.value, closeRef, boxRef) : viewMissing(S.openMissing, closeRef, boxRef)]) : null));
+      }, [openCard.value ? viewFiche(openCard.value, closeRef, boxRef) : S.openMissing.friend ? viewFriendSheet(S.openMissing, closeRef, boxRef)
+        : viewMissing(S.openMissing, closeRef, boxRef)]) : null));
     },
   };
   const Modals = { name: 'Modals', setup: () => () => h(Transition, { name: 'fade' }, () => (S.modal && MODALS[S.modal] ? MODALS[S.modal]() : null)) };
@@ -4912,6 +5411,14 @@
   watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => {
     startPageviews();
     if (activeAlbum.value) resolveQids(activeAlbum.value.items, false);
+  });
+  // Album d'une collection d'un ami affiché : vues des articles que ni lui ni toi n'avez, et qids de ses articles pour les
+  // rapprocher de tes cartes ; refermé (ou onglet quitté) : celles de ton album ouvert reprennent.
+  watch(() => (friendAlbum.value && S.tab === 'amis' ? friendAlbum.value.key + ':' + friendAlbum.value.t.items.length : ''), (k, old) => {
+    if (k) {
+      startFriendPageviews();
+      resolveQids(friendAlbum.value.t.items, false);
+    } else if (old) startPageviews();
   });
 
   createApp(Root).mount('#app');
