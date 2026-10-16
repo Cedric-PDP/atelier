@@ -679,6 +679,29 @@ await test('collections à compléter : une seule collection par catégorie de W
   assert.equal(r.json.target.id, first.id);
 });
 
+await test('collections à compléter : une seule collection par page de Wikipédia (source links:)', async () => {
+  const yan = await signup('Yan');
+  const items = [{ title: 'Rouge', status: 'ok', qid: 'Q900304', description: 'couleur primaire' }];
+  let r = await call('POST', 'targets/save', { key: yan.key, body: { name: 'Noms de couleur', items, source: 'links:Liste de noms de couleur' } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const first = r.json.target;
+  assert.equal(first.source, 'links:Liste de noms de couleur');
+  assert.deepEqual(first.items, [{ title: 'Rouge', description: 'couleur primaire', image: null, status: 'ok', qid: 'Q900304' }]);
+  await new Promise((res) => setTimeout(res, 5));
+  // Créée une seconde fois sans id (deux onglets) : la même, remplacée.
+  r = await call('POST', 'targets/save', { key: yan.key, body: { name: 'Couleurs', items: [...items, { title: 'Bleu marine', status: 'ok' }], source: 'links:Liste de noms de couleur' } });
+  assert.equal(r.json.target.id, first.id);
+  assert.equal(r.json.target.created_at, first.created_at);
+  assert.equal(r.json.target.items.length, 2);
+  // Une autre page : une autre collection ; l'ancienne source « links » (sans « : », jadis le catalogue) n'est pas regroupée.
+  r = await call('POST', 'targets/save', { key: yan.key, body: { name: 'Races bovines', items, source: 'links:Liste de races bovines' } });
+  assert.notEqual(r.json.target.id, first.id);
+  for (let i = 0; i < 2; i++) assert.equal((await call('POST', 'targets/save', { key: yan.key, body: { name: 'Ancienne', items, source: 'links' } })).status, 200);
+  const list = (await call('GET', 'targets', { key: yan.key })).json.targets;
+  assert.deepEqual(list.map((t) => t.source), ['links:Liste de noms de couleur', 'links:Liste de races bovines', 'links', 'links']);
+  await call('DELETE', 'me', { key: yan.key });
+});
+
 await test('collections à compléter : 600 Ko par collection, 5 Mo par compte', async () => {
   const ivy = await signup('Ivy');
   // ~560 Ko d'éléments : 1 000 éléments avec une description de 500 caractères.

@@ -266,14 +266,36 @@ const WIKI = {
   'Néon (gaz)': { q: 'Q654' },
   'Liste de races bovines': { q: 'Q900100' },
   'Liste des races bovines de France': { q: 'Q900110' },
+  'Liste de noms de couleur': { q: 'Q900300' },
+  'Liste de couleurs (pigments)': { q: 'Q900310' },
+  'Tableau périodique des éléments': { q: 'Q10693' },
 };
 // Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
 const LINKS = { 'Charolaise': 'Q900101', 'Limousine (race bovine)': 'Q900102', 'Salers (race bovine)': 'Q900103', France: 'Q142', 'Massif central': 'Q900104' };
-const REDIRECTS = { 'Poseidon': 'Poséidon' };
+// Liens de « Liste de noms de couleur » : [qid, natures (P31), description]. Gardés : 3 « couleur » (Q1075), Rouge
+// (« couleur primaire », sous-classe de couleur) et « Vert d'eau » (sans nature, décrit « nom de couleur ») ; écartés :
+// Imprimerie et une linguiste. « Article 3 » est une carte du classeur.
+const COLOR_LINKS = { 'Article 3': ['Q900301', ['Q1075'], 'couleur'], 'Bleu marine': ['Q900302', ['Q1075'], 'couleur'], 'Mauve (couleur)': ['Q900303', ['Q1075'], 'couleur'],
+  Rouge: ['Q900304', ['Q166902'], 'couleur primaire'], "Vert d'eau": ['Q900305', [], 'nom de couleur'], Imprimerie: ['Q900306', ['Q900399'], 'technique d\'impression'],
+  'Annie Mollard-Desfour': ['Q900307', ['Q5'], 'linguiste française'] };
+const COLOR_BY_Q = Object.fromEntries(Object.values(COLOR_LINKS).map(([q, c, d]) => [q, { c, d }]));
+const SUBCLASSES = { Q1075: ['Q166902'] }; // sous-classes (P279+) connues d'une nature
+const linkCalls = []; // pages dont les liens ont été lus (generator=links)
+const REDIRECTS = { 'Poseidon': 'Poséidon', 'Tableau périodique': 'Tableau périodique des éléments' };
+// Pages « Liste de… » trouvées par la recherche intitle:liste (ou des articles, écartés par l'interface).
+const listSearch = (s) => (/bovin/i.test(s) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }]
+  : /couleur/i.test(s) ? [{ title: 'Liste de noms de couleur' }, { title: 'Couleur' }, { title: 'Liste de couleurs (pigments)' }] : []);
+// Articles par préfixe (espace 0) : leurs noms, sans précision entre parenthèses, sont essayés comme catégories.
+const ARTICLE_PREFIX = { viol: ['Violence', 'Violet (couleur)', 'Viola Davis'], couleur: ['Couleur', 'Couleur primaire'] };
 // Catégories de Wikipédia (onglet Collections, zone « Catégories ») : taille (categoryinfo), articles et sous-catégories
 // (categorymembers). Pour « viol » : par préfixe Violence, Violet, Violoniste français (une homonymie, une catégorie
-// cachée et une vide écartées), puis Nuance de violet par la recherche plein texte ; « peintre » : 12 par préfixe.
+// cachée et une vide écartées), Viol par son titre exact seulement (noPrefix : le préfixe de Wikipédia classe par
+// popularité), puis Nuance de violet par la recherche plein texte ; « peintre » : 12 par préfixe ; « races bovines » :
+// Race bovine par le singulier, Race bovine originaire de France par la recherche plein texte.
 const CATS = {
+  'Catégorie:Viol': { pages: 42, subcats: 5, noPrefix: true },
+  'Catégorie:Race bovine': { pages: 25, subcats: 2, noPrefix: true },
+  'Catégorie:Race bovine originaire de France': { pages: 60, subcats: 0, noPrefix: true },
   'Catégorie:Violet': { pages: 4, subcats: 1, page: ['Article 3', 'Violet (couleur)', 'Améthyste', 'Lavande'], subcat: ['Catégorie:Nuance de violet'] },
   'Catégorie:Nuance de violet': { pages: 2, subcats: 0, page: ['Mauve', 'Article 8'] },
   'Catégorie:Violence': { pages: 120, subcats: 6 },
@@ -336,10 +358,23 @@ function wikiHandle(url) {
     const q = u.searchParams.get('query');
     if (/SELECT \?item \?c \?desc/.test(q)) {
       const ids = [...q.matchAll(/wd:(Q\d+)/g)].map((m) => m[1]);
-      return { results: { bindings: ids.map((id) => (Number(id.slice(1)) >= 900101 && Number(id.slice(1)) <= 900103
-        ? { item: uri(id), c: uri('Q12045585'), desc: lit('race bovine française') } : { item: uri(id), c: uri(id === 'Q142' ? 'Q6256' : 'Q1620908') })) } };
+      return { results: { bindings: ids.flatMap((id) => {
+        const col = COLOR_BY_Q[id];
+        if (col) return col.c.length ? col.c.map((c) => ({ item: uri(id), c: uri(c), desc: lit(col.d) })) : [{ item: uri(id), desc: lit(col.d) }];
+        return [Number(id.slice(1)) >= 900101 && Number(id.slice(1)) <= 900103
+          ? { item: uri(id), c: uri('Q12045585'), desc: lit('race bovine française') } : { item: uri(id), c: uri(id === 'Q142' ? 'Q6256' : 'Q1620908') }];
+      }) } };
     }
     if (/wd:Q12045585 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('race bovine') }] } };
+    if (/wd:Q1075 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('couleur') }] } };
+    {
+      // Sous-classes de la nature dominante parmi celles vues (liens d'une page).
+      const m = q.match(/^SELECT \?c WHERE \{ VALUES \?c \{ ([^}]*) \} \?c wdt:P279\+ wd:(Q\d+) \. \}$/);
+      if (m) {
+        const asked = [...m[1].matchAll(/wd:(Q\d+)/g)].map((x) => x[1]);
+        return { results: { bindings: asked.filter((c) => (SUBCLASSES[m[2]] || []).includes(c)).map((c) => ({ c: uri(c) })) } };
+      }
+    }
     if (/P279\+/.test(q)) return { results: { bindings: [] } };
     if (/P1549/.test(q)) return { results: { bindings: q.includes('fr[aàâä]n[cç]') ? [{ c: uri('Q142'), cl: lit('France'), isCountry: bool(true) }] : [] } };
     if (/AS \?country\)/.test(q)) {
@@ -373,16 +408,48 @@ function wikiHandle(url) {
     if (p.srsearch.includes('"est une cathédrale"~1')) return { query: { searchinfo: { totalhits: 4200 }, search: [{ title: 'Cathédrale 1', snippet: hl('La cathédrale 1 est une cathédrale gothique') }] } };
     return { query: { searchinfo: { totalhits: 0 }, search: [] } };
   }
-  // Suggestions de catégories : par préfixe, puis plein texte, avec leur taille (categoryinfo) dans la même réponse ;
-  // pages rendues dans le désordre (l'interface les range par index).
+  // Suggestions de catégories : par préfixe (et, dans la même requête, les pages « Liste de… » et les articles par
+  // préfixe), puis plein texte, avec leur taille (categoryinfo) dans la même réponse ; pages rendues dans le désordre
+  // (l'interface les range par index). Plein texte : « races » trouve « race » (racine, comme CirrusSearch).
   if (p.generator === 'prefixsearch' || (p.generator === 'search' && p.gsrnamespace === '14')) {
     const prefix = p.generator === 'prefixsearch';
     if ((prefix ? p.gpsnamespace : p.gsrnamespace) !== '14' || p.prop !== 'categoryinfo') throw new Error('suggestions de catégories incorrectes : ' + url);
     const q = foldT(prefix ? p.gpssearch : p.gsrsearch);
     catSuggest.push([prefix ? 'prefix' : 'search', prefix ? p.gpssearch : p.gsrsearch]);
-    const titles = Object.keys(CATS).sort().filter((t) => (prefix ? foldT(t.slice(10)).startsWith(q) : q.split(/\s+/).every((w) => foldT(t.slice(10)).includes(w))))
+    const stem = (w) => (w.length >= 5 ? w.replace(/s$/, '') : w);
+    const titles = Object.keys(CATS).sort().filter((t) => (prefix ? !CATS[t].noPrefix && foldT(t.slice(10)).startsWith(q) : q.split(/\s+/).every((w) => foldT(t.slice(10)).includes(stem(w)))))
       .slice(0, Number(prefix ? p.gpslimit : p.gsrlimit) || 10);
-    return { batchcomplete: true, query: { pages: titles.map((title, i) => ({ ns: 14, title, index: i + 1, categoryinfo: catInfo(title) })).reverse() } };
+    const query = { pages: titles.map((title, i) => ({ ns: 14, title, index: i + 1, categoryinfo: catInfo(title) })).reverse() };
+    if (p.list) {
+      if (!prefix || p.list !== 'search|prefixsearch' || p.srnamespace !== '0' || p.psnamespace !== '0' || !/^intitle:liste /.test(p.srsearch) || p.pssearch !== p.gpssearch) {
+        throw new Error('suggestions : pages de liste ou articles par préfixe incorrects : ' + url);
+      }
+      query.search = listSearch(p.srsearch).map((r) => ({ ns: 0, ...r }));
+      query.prefixsearch = (ARTICLE_PREFIX[foldT(p.pssearch)] || []).map((title) => ({ ns: 0, title }));
+    }
+    return { batchcomplete: true, query };
+  }
+  // Titres exacts (suggestions, adresse collée) : catégories avec leur taille, pages avec leurs pageprops ; normalisation
+  // (majuscule) et redirections comme Wikipédia.
+  if (p.prop === 'categoryinfo|pageprops') {
+    if (p.redirects !== '1' || p.ppprop !== 'disambiguation') throw new Error('titres exacts : redirections ou homonymies non demandées : ' + url);
+    catSuggest.push(['exact', p.titles]);
+    const normalized = [];
+    const redirects = [];
+    const pages = [];
+    for (const t of p.titles.split('|')) {
+      let cur = t.replace(/^Category:/, 'Catégorie:');
+      cur = cur.startsWith('Catégorie:') ? 'Catégorie:' + cur.charAt(10).toUpperCase() + cur.slice(11) : cur.charAt(0).toUpperCase() + cur.slice(1);
+      if (cur !== t) normalized.push({ from: t, to: cur });
+      if (REDIRECTS[cur]) { redirects.push({ from: cur, to: REDIRECTS[cur] }); cur = REDIRECTS[cur]; }
+      if (pages.some((x) => x.title === cur)) continue;
+      if (cur.startsWith('Spécial:')) pages.push({ ns: -1, title: cur, special: true, missing: true });
+      else if (CATS[cur]) pages.push({ ns: 14, title: cur, categoryinfo: catInfo(cur) });
+      else if (cur.startsWith('Catégorie:')) pages.push({ ns: 14, title: cur, missing: true });
+      else if (WIKI[cur]) pages.push({ ns: 0, title: cur, pageprops: WIKI[cur].disamb ? { disambiguation: '' } : {} });
+      else pages.push({ ns: 0, title: cur, missing: true });
+    }
+    return { batchcomplete: true, query: { normalized, redirects, pages } };
   }
   if (p.generator === 'search') {
     if (p.gsrnamespace !== '0' || p.prop !== 'cirrusdoc|description|pageprops' || p.cdincludes !== 'opening_text' || !/wikibase_item/.test(p.ppprop) || !/disambiguation/.test(p.ppprop)) throw new Error('lecture des définitions incorrecte : ' + url);
@@ -406,10 +473,17 @@ function wikiHandle(url) {
   }
   if (p.list === 'search' && p.srnamespace === '0') {
     if (!/^intitle:liste /.test(p.srsearch)) throw new Error('recherche de listes sans intitle : ' + p.srsearch);
-    return { query: { search: /bovin/i.test(p.srsearch) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }] : [] } };
+    return { query: { search: listSearch(p.srsearch) } };
   }
   if (p.generator === 'links') {
-    if (p.titles !== 'Liste de races bovines' || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
+    if (!['Liste de races bovines', 'Liste de noms de couleur', 'Tableau périodique des éléments'].includes(p.titles) || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
+    linkCalls.push(p.titles);
+    if (p.titles === 'Liste de noms de couleur') {
+      const pages = Object.entries(COLOR_LINKS).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } }));
+      pages.push({ title: 'Couleur (homonymie)', pageprops: { disambiguation: '', wikibase_item: 'Q900308' } });
+      return { batchcomplete: true, query: { pages } };
+    }
+    if (p.titles === 'Tableau périodique des éléments') return { batchcomplete: true, query: { pages: [{ title: 'Hydrogène', pageprops: { wikibase_item: 'Q556' } }, { title: 'Hélium', pageprops: { wikibase_item: 'Q560' } }] } };
     const pages = Object.entries(LINKS).map(([title, q]) => ({ title, pageprops: { wikibase_item: q } }));
     pages.push({ title: 'Race inconnue', missing: true }, { title: 'Salers', pageprops: { disambiguation: '', wikibase_item: 'Q900105' } });
     return { batchcomplete: true, query: { pages } };
@@ -910,14 +984,21 @@ async function main() {
     const cq = byId('cat-q');
     check(cq && cq.getAttribute('role') === 'combobox' && cq.getAttribute('aria-controls') === 'cat-list' && cq.getAttribute('aria-autocomplete') === 'list',
       'champ de recherche des catégories (combobox) absent');
-    // Frappe rapide : une seule recherche, 250 ms après la dernière touche ; préfixe, puis plein texte (peu de résultats).
+    // Frappe rapide : une seule recherche, 250 ms après la dernière touche ; préfixe (avec les pages de liste et les
+    // articles), titres exacts, puis plein texte (peu de catégories) : trois requêtes au plus.
     const n0 = catSuggest.length;
     for (const v of ['v', 'vi', 'vio', 'viol']) type(cq, v);
     check(await waitFor(() => opts().length > 0), 'suggestions absentes pour « viol » : ' + text(one('prop-search')));
-    check(JSON.stringify(catSuggest.slice(n0)) === '[["prefix","viol"],["search","viol"]]', 'requêtes de suggestions : ' + JSON.stringify(catSuggest.slice(n0)));
+    check(JSON.stringify(catSuggest.slice(n0).map((x) => x[0])) === '["prefix","exact","search"]' && catSuggest[n0][1] === 'viol' && catSuggest[n0 + 2][1] === 'viol'
+      && catSuggest[n0 + 1][1].split('|').includes('Catégorie:Viol') && catSuggest[n0 + 1][1].split('|').includes('Catégorie:Viola Davis')
+      && !catSuggest[n0 + 1][1].split('|').includes('Catégorie:Violence'), 'requêtes de suggestions : ' + JSON.stringify(catSuggest.slice(n0)));
     const names = () => opts().map((o) => text(o.querySelector('.prop-list__name')));
-    check(names().join('|') === 'Violence|Violet|Violoniste français|Nuance de violet', 'suggestions (préfixe, puis plein texte ; homonymie, cachée et vide écartées) : ' + names().join(' | '));
-    check(text(opts()[1]).includes('4 articles') && text(opts()[1]).includes('1 sous-catégorie') && text(opts()[2]).includes('310 articles'), 'tailles des suggestions : ' + opts().map(text).join(' / '));
+    // Classement : Viol (titre exact, absent du préfixe) d'abord, puis celles qui commencent par « viol » de la plus grande
+    // à la plus petite, puis Nuance de violet (un mot commence par « viol ») ; homonymie, cachée et vide écartées.
+    check(names().join('|') === 'Viol|Violoniste français|Violence|Violet|Nuance de violet', 'suggestions (exact, commence par, taille) : ' + names().join(' | '));
+    check(text(opts()[0]).includes('42 articles') && text(opts()[0]).includes('5 sous-catégories') && text(opts()[3]).includes('4 articles') && text(opts()[3]).includes('1 sous-catégorie')
+      && text(opts()[1]).includes('310 articles'), 'tailles des suggestions : ' + opts().map(text).join(' / '));
+    check(cls('prop-list__group').map(text).join('|') === 'Catégories', 'un seul groupe (pas de page de liste pour « viol ») : ' + cls('prop-list__group').map(text).join('|'));
     check(cq.getAttribute('aria-expanded') === 'true' && cq.getAttribute('aria-activedescendant') === 'cat-opt-0' && byId('cat-list').getAttribute('role') === 'listbox', 'combobox : liste ouverte et option active attendues');
     cq.dispatch('keydown', { key: 'ArrowDown' });
     await settle();
@@ -934,18 +1015,41 @@ async function main() {
     const n1 = catSuggest.length;
     type(cq, 'viol');
     await sleep(400);
-    check(opts().length === 4, 'suggestions reprises absentes');
+    check(opts().length === 5, 'suggestions reprises absentes');
     check(catSuggest.length === n1, 'même recherche : réponse gardée attendue, ' + JSON.stringify(catSuggest.slice(n1)));
-    // Au plus 8 suggestions ; une recherche sans résultat le dit.
+    // Au plus 8 catégories (la plus grande d'abord, à rang égal) ; une recherche sans résultat le dit.
     type(cq, 'peintre');
-    check(await waitFor(() => opts().length && text(opts()[0]).includes('Peintre 01')), 'suggestions « peintre » absentes');
-    check(opts().length === 8 && JSON.stringify(catSuggest.slice(-1)) === '[["prefix","peintre"]]', '8 suggestions au plus, sans plein texte quand le préfixe suffit : ' + opts().length + ' ' + JSON.stringify(catSuggest.slice(-2)));
+    check(await waitFor(() => opts().length && text(opts()[0]).includes('Peintre 12')), 'suggestions « peintre » absentes : ' + opts().map(text).join(' / '));
+    check(opts().length === 8 && JSON.stringify(catSuggest.slice(-2).map((x) => x[0])) === '["prefix","exact"]', '8 suggestions au plus, sans plein texte quand le préfixe suffit : ' + opts().length + ' ' + JSON.stringify(catSuggest.slice(-2)));
     type(cq, 'zzzz');
-    check(await waitFor(() => has('Aucune catégorie de Wikipédia ne correspond.')), 'recherche sans résultat');
+    check(await waitFor(() => has('Aucune catégorie ni page de liste de Wikipédia ne correspond.')), 'recherche sans résultat');
+    // Catégories et pages « Liste de… » mêlées, en deux groupes, chacun avec sa taille : « couleur » (la catégorie
+    // exacte d'abord, puis les pages ; « Couleurs (pigments) » commence par le texte, « Noms de couleur » non).
+    type(cq, 'couleur');
+    check(await waitFor(() => opts().length === 3 && !one('prop-list--stale')), 'suggestions « couleur » : ' + opts().map(text).join(' / '));
+    check(cls('prop-list__group').map(text).join('|') === 'Catégories|Pages de liste' && names().join('|') === 'Couleur|Liste de couleurs (pigments)|Liste de noms de couleur'
+      && text(opts()[0]).includes('40 articles') && text(opts()[1]).includes('liste') && byId('cat-list').querySelectorAll('[role="group"]').length === 2,
+      'groupes « Catégories » / « Pages de liste » : ' + cls('prop-list__group').map(text).join('|') + ' — ' + opts().map(text).join(' / '));
+    // « noms de couleur » : la page exacte (« Liste de noms de couleur ») seule, son groupe en tête.
+    type(cq, 'noms de couleur');
+    check(await waitFor(() => opts().length === 1 && !one('prop-list--stale')), 'suggestions « noms de couleur » : ' + opts().map(text).join(' / '));
+    check(cls('prop-list__group').map(text).join('|') === 'Pages de liste' && names()[0] === 'Liste de noms de couleur', 'page exacte : ' + opts().map(text).join(' / '));
+    // Le titre de la page tapé en entier : demandé tel quel parmi les titres exacts.
+    {
+      const n2 = catSuggest.length;
+      type(cq, 'Liste de noms de couleur');
+      await settle();
+      check(await waitFor(() => catSuggest.slice(n2).some((x) => x[0] === 'exact') && opts().length === 1 && !one('prop-list--stale')), 'titre tapé en entier : ' + opts().map(text).join(' / '));
+      const ex = catSuggest.slice(n2).find((x) => x[0] === 'exact');
+      check(names()[0] === 'Liste de noms de couleur' && ex && ex[1].split('|').includes('Liste de noms de couleur'), 'titre exact demandé : ' + JSON.stringify(catSuggest.slice(n2)));
+    }
+    // « races bovines » : la catégorie au singulier (titre exact) avant la recherche plein texte, plus grande ; puis les pages.
+    type(cq, 'races bovines');
+    check(await waitFor(() => opts().length === 4 && !one('prop-list--stale')), 'suggestions « races bovines » : ' + opts().map(text).join(' / '));
+    check(names().join('|') === 'Race bovine|Race bovine originaire de France|Liste de races bovines|Liste des races bovines de France', 'races bovines : ' + names().join(' | '));
     type(cq, 'viol');
-    check(await waitFor(() => opts().length === 4), 'suggestions « viol » absentes');
-    cq.dispatch('keydown', { key: 'ArrowDown' });
-    await settle();
+    check(await waitFor(() => opts().length === 5 && !one('prop-list--stale')), 'suggestions « viol » absentes');
+    for (let k = 0; k < 3; k++) { cq.dispatch('keydown', { key: 'ArrowDown' }); await settle(); }
     cq.dispatch('keydown', { key: 'Enter' });
     check(await waitFor(() => at().includes('Violet') && cls('slot').length === 3), "Entrée n'ouvre pas l'album de la catégorie : " + at());
     // Le champ de recherche disparaît avec la liste : le focus va au titre de l'album (pas sur <body>).
@@ -995,8 +1099,8 @@ async function main() {
   // La catégorie se rouvre depuis la recherche (« ta collection ») : son album propose « Ouvrir ta collection » ; la
   // collection se supprime comme les autres, après confirmation.
   type(byId('cat-q'), 'viol');
-  check(await waitFor(() => opts().length === 4 && text(opts()[1]).includes('ta collection')), 'suggestion d\'une catégorie déjà en collection : ' + opts().map(text).join(' / '));
-  opts()[1].dispatch('mousedown');
+  check(await waitFor(() => opts().length === 5 && text(opts()[3]).includes('ta collection')), 'suggestion d\'une catégorie déjà en collection : ' + opts().map(text).join(' / '));
+  opts()[3].dispatch('mousedown');
   check(await waitFor(() => at().includes('Violet') && at().includes('catégorie de Wikipédia') && !!buttonByText('Ouvrir ta collection') && !buttonByText('Créer une collection')),
     'catégorie déjà en collection : « Ouvrir ta collection » attendu, ' + at());
   needButton('Ouvrir ta collection').click();
@@ -1011,12 +1115,12 @@ async function main() {
 
   // 9 ter. Rapprochement par identifiant Wikidata : la carte « Hydrogène (élément) » compte pour « Hydrogène » (même qid).
   // Entrée pressée avant l'arrivée des suggestions de « élément » (celles de « viol », estompées, sont encore là) : ce
-  // n'est pas « Violence » qui s'ouvre, mais la première suggestion de « élément », à son arrivée.
+  // n'est pas « Viol » qui s'ouvre, mais la première suggestion de « élément », à son arrivée.
   type(byId('cat-q'), 'viol');
-  check(await waitFor(() => opts().length === 4 && !one('prop-list--stale')), 'suggestions « viol » absentes');
+  check(await waitFor(() => opts().length === 5 && !one('prop-list--stale')), 'suggestions « viol » absentes');
   type(byId('cat-q'), 'élément');
   await settle(); // rendu fait, recherche pas encore partie (250 ms)
-  check(opts().length === 4 && one('prop-list--stale'), 'les suggestions du texte précédent doivent rester, estompées, en attendant');
+  check(opts().length === 5 && one('prop-list--stale'), 'les suggestions du texte précédent doivent rester, estompées, en attendant');
   byId('cat-q').dispatch('keydown', { key: 'Enter' });
   check(await waitFor(() => at().includes('Élément chimique') && at().includes('1 sur 4'), 15000), 'la carte « Hydrogène (élément) » doit compter pour « Hydrogène » (qid) : ' + at());
   check(cls('cell').length === 1 && cls('slot').length === 3 && text(cls('cell')[0]).includes('Hydrogène (élément)'), "l'album doit montrer la carte à la place de « Hydrogène »");
@@ -1064,6 +1168,85 @@ async function main() {
   needButton('← Toutes les collections').click();
   await settle();
   check(rowNames(mineSection()).join('|') === 'Exemples de test|Planète du Système solaire' && fromCat('Planète du Système solaire'), 'Mes collections : ' + rowNames(mineSection()).join(' | '));
+
+  // 9 quater bis. Adresse collée dans la recherche des catégories : une catégorie (adresse mobile, encodée) ouvre son
+  // album ; une page de liste, l'album des articles qu'elle lie (nature dominante, ou tous), « Créer une collection »
+  // (source links:<titre>), « depuis la page Wikipédia « … » » ; collée de nouveau : « Ouvrir ta collection ». Une autre
+  // page (redirection suivie) : ses liens aussi ; l'adresse d'un autre site ou d'une page absente : rien à ouvrir.
+  {
+    const paste = (v) => { const cq = byId('cat-q'); cq.value = v; cq.dispatch('input', { inputType: 'insertFromPaste' }); };
+    let n0 = catSuggest.length;
+    paste('https://fr.m.wikipedia.org/wiki/Cat%C3%A9gorie:Violet');
+    check(await waitFor(() => at().includes('Violet') && at().includes('catégorie de Wikipédia') && cls('slot').length === 3), "adresse d'une catégorie collée : son album attendu, " + at());
+    check(JSON.stringify(catSuggest.slice(n0)) === '[["exact","Catégorie:Violet"]]', 'adresse collée : une seule requête attendue, ' + JSON.stringify(catSuggest.slice(n0)));
+    needButton('← Toutes les collections').click();
+    await settle();
+    const n1 = linkCalls.length;
+    paste('https://fr.wikipedia.org/wiki/Liste_de_noms_de_couleur#Rouge');
+    check(await waitFor(() => at().includes('Noms de couleur') && at().includes('1 sur 5'), 5000), "adresse d'une page de liste collée : album de ses liens attendu, " + at());
+    check(at().includes('page de Wikipédia') && has('ne garder que les « couleur » (5 sur 7 articles liés') && cls('cell').length === 1 && cls('slot').length === 4
+      && has('Créer une collection') && !has('Modifier'), 'album de la page : nature dominante, sous-classe et description gardées, ' + at() + ' / ' + cls('slot').map((s) => text(s.querySelector('h3'))).join(', '));
+    check(all((n) => n.tagName === 'A' && text(n).includes('Voir sur Wikipédia')).some((a) => a.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Liste_de_noms_de_couleur'), 'lien vers la page absent');
+    const box = () => all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'))[0];
+    box().dispatch('change');
+    check(await waitFor(() => at().includes('1 sur 7')), 'tous les liens : 1 sur 7 attendu, ' + at());
+    box().dispatch('change');
+    check(await waitFor(() => at().includes('1 sur 5')), 'retour à la nature dominante : ' + at());
+    check(linkCalls.length === n1 + 1, 'liens de la page lus une seule fois : ' + JSON.stringify(linkCalls.slice(n1)));
+    needButton('Créer une collection').click();
+    check(await waitFor(() => has('Modifier') && has('Supprimer')), '« Créer une collection » (page) sans effet');
+    if (!SERVER) {
+      const t = api.st.targets.find((x) => x.source === 'links:Liste de noms de couleur');
+      check(t && t.name === 'Noms de couleur' && t.items.length === 5 && t.items.every((i) => i.status === 'ok' && /^Q9003\d\d$/.test(i.qid)) && t.items.find((i) => i.title === 'Rouge').description === 'couleur primaire',
+        'collection de la page mal enregistrée : ' + JSON.stringify(t));
+    }
+    check(at().includes('depuis la page Wikipédia « Liste de noms de couleur »') && has('Collection « Noms de couleur » créée : 5 articles (les « couleur » de la page), dans « Mes collections ».'),
+      'album de la collection créée depuis la page : ' + at());
+    {
+      const sortBtn = all((n) => n.tagName === 'BUTTON' && ['Ordre', 'A → Z'].includes(text(n).trim()))[0];
+      check(sortBtn && text(sortBtn).trim() === 'A → Z' && !cls('slot__no').length, 'collection faite d\'une page : de A à Z, sans numéros');
+    }
+    // Fiche de la carte « Article 3 » : « Dans tes collections » la cite.
+    one('cell').querySelector('.card').dispatch('click');
+    await settle(120);
+    check(fiche() && fiche().querySelector('.memberships') && text(fiche().querySelector('.memberships')).includes('Noms de couleur'), 'fiche : « Noms de couleur » attendue dans « Dans tes collections »');
+    win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
+    await settle(500);
+    needButton('← Toutes les collections').click();
+    await settle();
+    {
+      const r = mineSection().querySelectorAll('.row').find((n) => text(n.querySelector('.name')) === 'Noms de couleur');
+      check(r && r.querySelector('.row-kind') && text(r.querySelector('.row-kind')) === 'depuis la page Wikipédia « Liste de noms de couleur »', 'ligne de la collection faite d\'une page : ' + (r ? text(r) : 'absente'));
+    }
+    // Les suggestions la disent déjà faite ; collée de nouveau (adresse mobile) : « Ouvrir ta collection », sans requête.
+    type(byId('cat-q'), 'noms de couleur');
+    check(await waitFor(() => opts().length === 1 && text(opts()[0]).includes('ta collection')), 'suggestion d\'une page déjà en collection : ' + opts().map(text).join(' / '));
+    n0 = catSuggest.length;
+    paste('https://fr.m.wikipedia.org/wiki/Liste_de_noms_de_couleur');
+    check(await waitFor(() => at().includes('Noms de couleur') && !!buttonByText('Ouvrir ta collection') && !buttonByText('Créer une collection')), 'page déjà en collection : « Ouvrir ta collection » attendu, ' + at());
+    check(catSuggest.length === n0, 'adresse déjà lue : réponse gardée attendue, ' + JSON.stringify(catSuggest.slice(n0)));
+    needButton('Ouvrir ta collection').click();
+    check(await waitFor(() => at().includes('depuis la page Wikipédia') && has('Supprimer')), '« Ouvrir ta collection » (page) : ' + at());
+    needButton('Supprimer').click();
+    await settle();
+    modalBtn('Supprimer la collection').click();
+    check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Noms de couleur')), 'collection « Noms de couleur » non supprimée');
+    // Autre page, par /w/index.php?title=… (redirection suivie) : ses liens, sans nature dominante à filtrer.
+    paste('https://fr.wikipedia.org/w/index.php?title=Tableau_p%C3%A9riodique&action=history');
+    check(await waitFor(() => at().includes('Tableau périodique des éléments') && at().includes('page de Wikipédia') && cls('slot').length + cls('cell').length === 2, 5000), 'autre page collée : ' + at());
+    check(has('sans nature dominante à filtrer') && !all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check')).length, 'page sans nature dominante : ' + at());
+    needButton('← Toutes les collections').click();
+    await settle();
+    // Adresse d'un autre site : rien n'est demandé à Wikipédia ; page absente : la recherche le dit.
+    n0 = catSuggest.length;
+    type(byId('cat-q'), 'https://en.wikipedia.org/wiki/Color');
+    check(await waitFor(() => has("Colle l'adresse d'une page de Wikipédia en français")), 'adresse d\'un autre site : message attendu');
+    check(catSuggest.length === n0, 'adresse d\'un autre site : aucune requête attendue');
+    paste('https://fr.wikipedia.org/wiki/Page_inexistante_zz');
+    check(await waitFor(() => has("Cette page n'existe pas sur Wikipédia : « Page inexistante zz ».")) && !one('album-title'), 'page absente : message attendu');
+    type(byId('cat-q'), '');
+    await settle();
+  }
 
   // 9 bis. Nouvelle collection par mots-clés : catégories Wikipédia et requête Wikidata
   needButton('Nouvelle collection').click();
@@ -1918,7 +2101,17 @@ async function main() {
       const pair = (name) => cls('trade').find((n) => text(n.querySelector('.fcol__name')).replace(' pour ', '') === name) || null;
       const pressed = () => one('seg') ? one('seg').querySelectorAll('button').filter((b) => b.getAttribute('aria-pressed') === 'true').map(text).join() : '';
       check(has('Échanges possibles') && pressed() === 'Tout le monde', 'page des échanges : filtre par défaut ' + pressed());
-      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi', 'couples (tout le monde, par défaut) : ' + pairs().join(' | '));
+      // « Seulement les cartes en double », cochée par défaut : chaque ligne montrée est un double (×n) de celui qui donne.
+      check(byId('trade-dup') && byId('trade-dup').checked === true, 'case « Seulement les cartes en double » absente ou décochée par défaut');
+      {
+        const shown = cls('trade');
+        const rowsOf = (n) => n.querySelectorAll('.fitem__title').length;
+        check(shown.length > 0 && shown.every((n) => rowsOf(n) > 0 && n.querySelectorAll('.holder.dup').length === rowsOf(n)),
+          'doubles seulement : ' + shown.map((n) => text(n.querySelector('.fcol__name')) + ' ' + rowsOf(n) + '/' + n.querySelectorAll('.holder.dup').length).join(' ; '));
+      }
+      byId('trade-dup').dispatch('change');
+      await settle();
+      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi', 'couples (tout le monde, tous les exemplaires) : ' + pairs().join(' | '));
       exactButton('Ce qui me concerne').click();
       await settle();
       check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Paul → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));

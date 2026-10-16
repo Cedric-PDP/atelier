@@ -7,12 +7,14 @@ wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
 **Vocabulaire de l'interface** (à respecter partout) :
 - **Collections** : les listes créées par l'utilisateur, surtout par le favori depuis une recherche de la « Collection
   globale » du jeu (source `wm:<recherche>`), à la main dans « Nouvelle collection » (mots-clés, liste d'articles),
-  depuis une catégorie de Wikipédia (`wp:<nom>`), et les anciennes ajoutées du catalogue (`catalog:…`) : toutes dans
-  « Mes collections ».
+  depuis une catégorie de Wikipédia (`wp:<nom>`), depuis les liens d'une page de Wikipédia (`links:<titre>`), et les
+  anciennes ajoutées du catalogue (`catalog:…`) : toutes dans « Mes collections ».
 - **Catégories** : les catégories de Wikipédia (pages `https://fr.wikipedia.org/wiki/Catégorie:Violet`), une **source**
   d'où créer une collection (« Créer une collection » : source `wp:<nom>`, signalée « depuis la catégorie Wikipédia »),
   pas une liste à part. On ne « suit » pas une catégorie (2026-10-16 : « Suivre », « Mes catégories » et « Ne plus
-  suivre » ont disparu ; les anciennes catégories suivies sont des collections comme les autres).
+  suivre » ont disparu ; les anciennes catégories suivies sont des collections comme les autres). La même zone ouvre
+  aussi une **page** de Wikipédia (« Liste de noms de couleur », ou toute page dont on colle l'adresse) : les articles
+  qu'elle lie sont une autre source (source `links:<titre>`, signalée « depuis la page Wikipédia « … » »).
 
 Le catalogue de collections proposées tirées de Wikidata (`catalog.json`, 59 thèmes) a été **retiré** le 2026-10-16 :
 l'interface ne le demande plus, et il n'est plus servi.
@@ -120,7 +122,7 @@ autre format (voir « Le favori »).
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
 | `GET /api/targets` | | `{targets:[Collection]}` |
-| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie n'a qu'une collection par compte : deux onglets, deux appareils) |
+| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; l'ancienne source `links` sans « : » n'est pas concernée) |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
@@ -137,7 +139,10 @@ vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait
 **créée depuis une catégorie de Wikipédia** (« Créer une collection » dans l'album de la catégorie, ou sur une
 proposition de `site/public/assets/propose.js` : catégories des cartes de l'utilisateur dont il possède au moins 5 % et
 2 cartes, hors catégories de rangement et de temps ; nom sans « Catégorie: », première lettre en majuscule ; une seule
-par catégorie et par compte, voir `targets/save`), `wd` ou `cat` quand
+par catégorie et par compte, voir `targets/save`), `links:<titre de la page>` pour une collection **créée depuis les
+liens d'une page de Wikipédia** (« Créer une collection » dans l'album de la page ; titre tel que Wikipédia l'écrit,
+redirection suivie, avec ses espaces ; éléments avec leur `qid` et leur description Wikidata ; une seule par page et par
+compte, voir `targets/save`), `wd` ou `cat` quand
 elle vient de la recherche par mots-clés (requête Wikidata ou catégorie de Wikipédia), `wm:<recherche>` quand le favori
 l'a créée depuis une recherche de la Collection globale du jeu (`POST /api/targets/from-game`, titres = `wikipedia_title`
 du jeu, non revérifiés sur Wikipédia). `rarity` (facultatif, C | PC | R | SR | UR | L, gardé seulement s'il est connu,
@@ -355,28 +360,57 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
 Deux zones, dans cet ordre :
 
 1. **« Mes collections »** : TOUTES les collections à compléter (favori depuis la Collection globale du jeu, « Nouvelle
-   collection » par mots-clés ou liste d'articles, depuis une catégorie de Wikipédia, anciennes du catalogue), avec
-   « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son album, discrètement :
-   « depuis la catégorie Wikipédia » ; ses articles sont de A à Z, sans numéros (une catégorie n'a pas d'ordre), comme
-   les anciennes du catalogue sans ordre (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album
-   est celui d'une collection : « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia ». Vide : une phrase
-   explique comment en créer une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici,
-   et « Installer le favori » s'il n'y en a pas encore.
-2. **« Catégories »** (catégories de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
+   collection » par mots-clés ou liste d'articles, depuis une catégorie ou une page de Wikipédia, anciennes du
+   catalogue), avec « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son
+   album, discrètement : « depuis la catégorie Wikipédia » ; une de source `links:<titre>` : « depuis la page Wikipédia
+   « <titre> » » (aussi dans « Entre amis », pour tes collections). Leurs articles sont de A à Z, sans numéros (une
+   catégorie n'a pas d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre
+   (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album est celui d'une collection :
+   « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la catégorie, ou la page). Pour le reste
+   (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection comme les autres ; un
+   ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
+   une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
+   s'il n'y en a pas encore.
+2. **« Catégories »** (catégories et pages de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
    - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
-     catégories de Wikipédia : 250 ms après la dernière frappe (2 caractères au moins, « Catégorie: » retiré), une
-     requête `action=query&generator=prefixsearch&gpsnamespace=14&gpslimit=20&prop=categoryinfo` (préfixe et taille
-     dans la même réponse), complétée par `generator=search&gsrnamespace=14&gsrlimit=20&prop=categoryinfo` (plein
-     texte) quand le préfixe donne moins de 5 catégories utiles ; écartées : catégories cachées (`categoryinfo.hidden`),
-     de maintenance (ébauches, homonymies, pages à…), vides ; **8 suggestions au plus**, chacune avec son nombre
-     d'articles (`categoryinfo.pages`), ses sous-catégories, « ta collection » si tu en as déjà fait une. Une seule
-     requête à la fois (file des requêtes Wikipédia de la page, 300 ms d'écart, 429/5xx : attente de `Retry-After` puis
-     nouvel essai), la recherche précédente abandonnée (`AbortController`), réponses gardées en mémoire pendant la
-     visite (60 au plus). En attendant les suggestions d'un nouveau texte, celles du précédent restent, estompées ;
-     Entrée ouvre la suggestion active si la liste est celle du texte tapé (ou choisie aux flèches), sinon la recherche
-     part aussitôt et sa première suggestion s'ouvre à son arrivée, **si l'on est encore dans le champ** : quitter le
-     champ, changer d'onglet, ouvrir ou fermer un album oublie cette Entrée. Une suggestion choisie : le focus va au
-     titre de l'album ouvert (`#album-name`, `tabindex=-1`).
+     catégories de Wikipédia **et les pages « Liste de… »** : 250 ms après la dernière frappe (2 caractères au moins,
+     « Catégorie: » retiré), **trois requêtes au plus** :
+     1. `action=query&generator=prefixsearch&gpsnamespace=14&gpslimit=20&prop=categoryinfo` (catégories par préfixe,
+        avec leur taille) et, dans la même requête (si le texte a un mot de 3 lettres ou plus),
+        `list=search|prefixsearch&srsearch=intitle:liste <texte>&srnamespace=0&srlimit=10&pssearch=<texte>&psnamespace=0&pslimit=8`
+        : les pages « Liste de… » dont le titre contient tous les mots du texte (au singulier : « races bovines » →
+        race, bovine), et les articles par préfixe ;
+     2. `action=query&titles=…&redirects=1&prop=categoryinfo|pageprops&ppprop=disambiguation` (titres exacts) :
+        `Catégorie:<Texte>` et sa forme au singulier (mots de 5 lettres et plus : « Catégorie:Race bovine »),
+        `Catégorie:<nom>` pour les articles par préfixe qui commencent par le texte (sans précision entre parenthèses :
+        « Violet (couleur) » → « Catégorie:Violet »), et `Liste de <texte>` / `Liste d'<texte>`, `Liste des <texte>`
+        (ou le texte lui-même s'il commence par « Liste ») : le préfixe de Wikipédia classe par popularité et peut
+        laisser de côté la catégorie exacte (limite : « viol » ne propose pas « Violet », que ni le préfixe ni les
+        titres exacts ne trouvent ; « violet » la met en tête) ;
+     3. seulement s'il reste moins de 5 catégories : `generator=search&gsrnamespace=14&gsrlimit=20&prop=categoryinfo`
+        (plein texte), dont seules restent les catégories dont le nom a tous les mots du texte (au singulier, accents
+        ignorés : « noms de couleur » ramenait « Chanson contre le racisme et la xénophobie »).
+     Écartées : catégories cachées (`categoryinfo.hidden`), de maintenance (ébauches, homonymies, pages à…), vides ;
+     pages d'homonymie. **Classement** : nom exact (au singulier près, ou titre exact atteint par une redirection),
+     puis qui commence par le texte, puis dont un mot commence par le texte, puis le reste (plein texte) ; à rang égal,
+     la catégorie qui a le plus d'articles d'abord, les pages dans l'ordre de la recherche. **Deux groupes**, chacun
+     sous son titre (`role=group`) : « Catégories » (8 au plus, avec leur nombre d'articles `categoryinfo.pages` et
+     leurs sous-catégories) et « Pages de liste » (4 au plus, « liste » à la place de la taille : le nombre de liens
+     n'est connu qu'à l'ouverture), 10 suggestions en tout ; le groupe qui a le meilleur rang d'abord (à égalité, les
+     catégories) ; « ta collection » si tu en as déjà fait une. **Adresse collée** : une adresse de fr.wikipedia.org
+     (`/wiki/…` ou `/w/index.php?title=…`, `fr.m.` aussi, encodée ou non, fragment et paramètres ignorés) ne cherche
+     rien : une seule requête titres exacts sur la page elle-même (redirection suivie), une seule suggestion (groupe
+     « Catégories » pour une catégorie, « Page Wikipédia » pour toute autre page : liste, article, portail…) ; collée
+     (`inputType` `insertFromPaste`), elle s'ouvre aussitôt, tapée il faut Entrée. Page absente : « Cette page n'existe
+     pas sur Wikipédia : « … ». » ; adresse d'un autre site (en.wikipedia…) : aucune requête, la page demande une adresse
+     de Wikipédia en français. Une seule requête à la fois (file des requêtes Wikipédia de la page, 300 ms d'écart,
+     429/5xx : attente de `Retry-After` puis nouvel essai), la recherche précédente abandonnée (`AbortController`),
+     réponses gardées en mémoire pendant la visite (60 au plus, texte replié ou titre de l'adresse). En attendant les
+     suggestions d'un nouveau texte, celles du précédent restent, estompées ; Entrée ouvre la suggestion active si la
+     liste est celle du texte tapé (ou choisie aux flèches), sinon la recherche part aussitôt et sa première suggestion
+     s'ouvre à son arrivée, **si l'on est encore dans le champ** : quitter le champ, changer d'onglet, ouvrir ou fermer
+     un album oublie cette Entrée. Une suggestion choisie : le focus va au titre de l'album ouvert (`#album-name`,
+     `tabindex=-1`).
    - **Album d'une catégorie** (choisie dans les suggestions ou les propositions), badge « catégorie de Wikipédia » :
      ses articles (`list=categorymembers`, espace principal, 3 000 au plus ; « inclure les sous-catégories (1 niveau :
      N) » si elle en a, cochée d'emblée quand on l'ouvre depuis une proposition qui regroupe des sous-catégories), la
@@ -483,6 +517,23 @@ requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un reje
   par minute au plus) », « relecture complète à 14:50 (…) », « synchro en cours… »). Boutons « Synchroniser » (tout de
   suite, hors limites des synchros automatiques), « Réduire » / « Détails », « Arrêter » (rend `window.fetch` d'origine ;
   si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
+   - **Album d'une page** (suggestion « Pages de liste », adresse collée), badge « page de Wikipédia » : les articles
+     qu'elle lie (`generator=links&gplnamespace=0&gpllimit=max&redirects=1&prop=pageprops`, liens rouges, pages
+     d'homonymie et la page elle-même écartés, 5 000 liens lus au plus), avec leur nature (P31) et leur description
+     Wikidata (SPARQL par 200), comme les pages « Liste de… » de « Nouvelle collection » (même lecture, `pageLinks`).
+     **Nature dominante** : la nature la plus fréquente, si elle concerne au moins 3 liens et 20 % d'entre eux sans
+     les concerner tous ; un article en est s'il a cette nature, une de ses **sous-classes** (une requête SPARQL
+     `?c wdt:P279+ wd:<nature>` sur les natures vues : « couleur primaire » pour « couleur ») ou, sinon, une
+     **description** Wikidata qui la nomme dans ses quatre premiers mots (« nom de couleur »). Case « ne garder que les
+     « <nature> » (N sur M articles liés ; décochée : tous les liens) », cochée d'emblée (les liens déjà lus : sans
+     requête) ; sans nature dominante, la page le dit et garde tous les liens. Mesuré le 2026-10-16 : « Liste de noms de
+     couleur » lie 247 articles, 181 gardés (103 par la nature « couleur » seule, 134 avec ses sous-classes) ;
+     « Liste de races bovines » : 355 sur 589 (330 par la nature seule). Progression, rareté estimée, de A à Z sans
+     numéros, « Voir sur Wikipédia » (la page) ; **« Créer une collection »** = `POST /api/targets/save {name, items,
+     source:'links:<titre>'}` (nom : le titre sans « Liste de / des / d' », première lettre en majuscule, 80 caractères
+     au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
+     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source) : **« Ouvrir ta
+     collection »**.
   main ; encart retiré ; **la synchro en cours s'arrête aussi** : la requête déjà partie finit seule, puis plus rien n'est
   lu ni envoyé — contrôle avant chaque lecture et chaque envoi, donc entre deux pages ou deux morceaux). L'encart est
   remis dans la page si le jeu l'en retire en se redessinant.

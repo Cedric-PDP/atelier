@@ -206,10 +206,12 @@
   // ================================================================ état
   const S = reactive({
     boot: 'loading', // loading | welcome | app
-    // « Catégories » (onglet Collections) : recherche d'une catégorie de Wikipédia avec suggestions au fil de la frappe
-    // (list : [{title, name, pages, subcats}], done : texte pour lequel list a été reçue, nav : flèches utilisées depuis
-    // la dernière frappe, enter : Entrée pressée avant l'arrivée des suggestions) ; catégorie ouverte (catView : {key,
-    // title, name, size, subcats, withSubs, loading, error, items, total, busy}), source d'une collection à créer.
+    // « Catégories » (onglet Collections) : recherche d'une catégorie ou d'une page « Liste de… » de Wikipédia avec
+    // suggestions au fil de la frappe, ou adresse d'une page collée (list : [{type: 'cat', title, name, pages, subcats} |
+    // {type: 'page', title, name, list}], dans l'ordre affiché ; done : texte pour lequel list a été reçue, nav : flèches
+    // utilisées depuis la dernière frappe, enter : Entrée pressée avant l'arrivée des suggestions) ; catégorie ou page
+    // ouverte (catView : {type: 'cat' | 'page', key, title, name, size, subcats, withSubs, links, allLinks, loading,
+    // error, items, total, busy}), source d'une collection à créer.
     catSearch: { q: '', open: false, active: 0, list: [], loading: false, error: '', done: '', nav: false, enter: false },
     catView: null,
     key: (() => { const k = store.get(LS.key); return k && KEY_RE.test(k) ? k : null; })(),
@@ -227,7 +229,7 @@
     fetchedAt: null,
     loadingCards: false,
     tab: 'collections', // collections | cartes | maj | reglages
-    album: null, // {kind: 'target', id} : collection ouverte ; {kind: 'category', id: 'wp:<nom>'} : catégorie de Wikipédia ouverte (S.catView)
+    album: null, // {kind: 'target', id} : collection ouverte ; {kind: 'category', id: 'wp:<nom>' | 'links:<titre>'} : catégorie ou page de Wikipédia ouverte (S.catView)
     albumFilter: 'all',
     albumSort: 'order',
     albumLimit: ALBUM_PAGE,
@@ -273,7 +275,7 @@
     // seule, avec son filtre (all | has : il les a | lacks : lui manquent | help : tu peux l'aider), son tri et d'où on
     // l'a ouverte (albumFrom : 'trades' = « Échanges possibles ») ; copyBusy : « Créer la même collection chez moi » en
     // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
-    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'all',
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, trade: 'all', tradeDup: true,
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
@@ -752,9 +754,12 @@
 
   // Collections à compléter du serveur (targets), toutes dans « Mes collections » : créées par le favori depuis la
   // Collection globale du jeu, à la main dans « Nouvelle collection », depuis une catégorie de Wikipédia (source
-  // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), ou jadis ajoutées du catalogue (sources wm:, wd,
-  // cat, links, def, catalog:… ou aucune).
+  // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), depuis les liens d'une page de Wikipédia (source
+  // « links:<titre> » : `page` = le titre, signalée « depuis la page Wikipédia « … » »), ou jadis ajoutées du catalogue
+  // (sources wm:, wd, cat, links, def, catalog:… ou aucune).
   const isCatSource = (s) => typeof s === 'string' && s.startsWith('wp:');
+  const PAGE_SRC = 'links:';
+  const pageOfSource = (s) => (typeof s === 'string' && s.startsWith(PAGE_SRC) && s.length > PAGE_SRC.length ? s.slice(PAGE_SRC.length) : null);
   // Thèmes du catalogue (retiré le 2026-10-16) qui n'avaient pas d'ordre (`ordered: false` dans catalog.json, repris de
   // git 9a62469) : leurs collections (source « catalog:<id> ») restent de A à Z, sans numéros.
   const UNORDERED_CATALOG = new Set(['vaches', 'chiens', 'chats', 'chevaux', 'cepages', 'fromages', 'constellations', 'pays', 'departements', 'regions',
@@ -762,10 +767,12 @@
     'beethoven', 'zodiaque']);
   const unorderedSource = (s) => typeof s === 'string' && s.startsWith('catalog:') && UNORDERED_CATALOG.has(s.slice(8));
   const collections = computed(() => {
-    // Une catégorie n'a pas d'ordre à elle (celui de Wikipédia suit des clés de tri) : de A à Z, sans numéros.
+    // Une catégorie n'a pas d'ordre à elle (celui de Wikipédia suit des clés de tri) : de A à Z, sans numéros ; les liens
+    // d'une page non plus (lus de A à Z).
     const all = targets.value.map((t) => {
       const cat = isCatSource(t.source);
-      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && !unorderedSource(t.source), cat, t };
+      const page = pageOfSource(t.source);
+      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && !page && !unorderedSource(t.source), cat, page, t };
     });
     return { all, mine: all };
   });
@@ -785,11 +792,12 @@
     return { own, total: col.items.length, byR, sample: sample.slice(0, 3) };
   }
   const progress = computed(() => new Map(collections.value.all.map((col) => [col.key, progressFor(col)])));
-  // Catégorie de Wikipédia ouverte (source d'une collection à créer) : ses articles, lus sur Wikipédia (S.catView),
-  // montrés comme un album.
+  // Catégorie ou page de Wikipédia ouverte (source d'une collection à créer) : ses articles (ou les articles liés depuis
+  // la page), lus sur Wikipédia (S.catView), montrés comme un album.
   const catAlbum = computed(() => {
     const cv = S.catView;
-    return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: false, cat: true, cv } : null;
+    const page = cv && cv.type === 'page' ? cv.title : null;
+    return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: false, cat: !page, page, cv } : null;
   });
   const catProgress = computed(() => (catAlbum.value ? progressFor(catAlbum.value) : null));
   const progressOf = (col) => (col.kind === 'category' ? catProgress.value : progress.value.get(col.key)) || { own: 0, total: col.items.length, byR: {}, sample: [] };
@@ -981,12 +989,15 @@
   });
   // Filtre de la page : tout le monde (par défaut, et pour un membre qui n'est plus là), ce qui me concerne (je donne ou je
   // reçois), ou un membre (qui donne ou reçoit).
+  // Case « Seulement les cartes en double » (cochée par défaut, 2026-10-16) : ne garder que les cartes que celui qui
+  // donne a en plusieurs exemplaires (il les donne sans les perdre), et les couples qui en ont.
   const tradeView = computed(() => {
     const t = S.friends.trade;
-    const all = trades.value.pairs;
-    if (t === 'me') return all.filter((p) => p.x.me || p.z.me);
-    if (t === 'all' || !friendList.value.some((f) => f.id === t)) return all;
-    return all.filter((p) => p.x.id === t || p.z.id === t);
+    let list = trades.value.pairs;
+    if (t === 'me') list = list.filter((p) => p.x.me || p.z.me);
+    else if (t !== 'all' && friendList.value.some((f) => f.id === t)) list = list.filter((p) => p.x.id === t || p.z.id === t);
+    if (!S.friends.tradeDup) return list;
+    return list.map((p) => ({ ...p, rows: p.rows.filter((r) => r.dup) })).filter((p) => p.rows.length);
   });
   // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent les collections qu'ils montrent, tes doubles
   // d'abord (rien pour ceux qui ne les montrent pas).
@@ -2407,56 +2418,158 @@
     });
   }
 
-  // ---------------------------------------------------------------- « Catégories » : recherche, album d'une catégorie, collection
-  // Une catégorie de Wikipédia (« Catégorie:Violet ») est une SOURCE de collection. Elle se cherche par son nom, au fil
-  // de la frappe : par préfixe d'abord (generator=prefixsearch dans l'espace 14, avec categoryinfo dans la même requête),
-  // complété par la recherche plein texte (generator=search) quand le préfixe en donne peu ; catégories cachées, de
-  // maintenance ou vides écartées, CAT_MAX au plus, chacune avec son nombre d'articles. 250 ms après la dernière frappe,
-  // dans la file de Wikipédia (wikiQ : une requête à la fois, 429 et Retry-After respectés), la recherche précédente
-  // abandonnée ; réponses gardées en mémoire le temps de la visite. Ouverte, une catégorie montre ses articles
-  // (categoryMembers) comme un album ; « Créer une collection » en fait une collection à compléter de source
-  // « wp:<nom> », dans « Mes collections » (déjà faite : « Ouvrir ta collection »).
+  // ---------------------------------------------------------------- « Catégories » : recherche, album d'une catégorie ou d'une page, collection
+  // Une catégorie de Wikipédia (« Catégorie:Violet ») et les liens d'une page (« Liste de noms de couleur ») sont des
+  // SOURCES de collection. Elles se cherchent par leur nom, au fil de la frappe : 250 ms après la dernière frappe, dans
+  // la file de Wikipédia (wikiQ : une requête à la fois, 429 et Retry-After respectés), la recherche précédente
+  // abandonnée, réponses gardées en mémoire le temps de la visite ; trois requêtes au plus (suggestSources) :
+  // 1. les catégories par préfixe (generator=prefixsearch, espace 14, avec categoryinfo) et, dans la même requête, les
+  //    pages « Liste de… » (list=search, intitle:liste) et les articles par préfixe (list=prefixsearch, espace 0 : leurs
+  //    noms sont souvent ceux des catégories principales, « Violence », « Violon ») ;
+  // 2. des titres exacts (titles=, avec categoryinfo) : « Catégorie:<texte> » et sa forme au singulier (le préfixe de
+  //    Wikipédia classe par popularité : la catégorie exacte peut lui manquer), les catégories du nom de ces articles,
+  //    « Liste de <texte> », « Liste des <texte> », ou le texte lui-même s'il commence par « Liste » ;
+  // 3. seulement s'il reste moins de CAT_MORE catégories : la recherche plein texte des catégories (generator=search),
+  //    dont on ne garde que celles qui ont tous les mots du texte.
+  // Catégories cachées, de maintenance ou vides écartées. Classement (nameRank) : nom exact (ou titre exact atteint par
+  // une redirection), puis qui commence par le texte, puis dont un mot commence par le texte, puis le reste ; à rang
+  // égal, la catégorie qui a le plus d'articles d'abord (pages : l'ordre de la recherche). Deux groupes, « Catégories »
+  // (CAT_MAX au plus) et « Pages de liste » (PAGE_MAX au plus), SUGG_MAX en tout, celui qui a le meilleur rang d'abord.
+  // L'adresse d'une page de fr.wikipedia.org (wpTitleFromUrl) : une seule requête, la page elle-même, catégorie ou toute
+  // autre page (suggestFromUrl) ; collée (et pas tapée), elle s'ouvre aussitôt.
+  // Ouverte, une catégorie montre ses articles (categoryMembers), une page les articles qu'elle lie (pageLinks : ceux de
+  // sa nature dominante, ou tous), comme un album ; « Créer une collection » en fait une collection à compléter de source
+  // « wp:<nom> » ou « links:<titre> », dans « Mes collections » (déjà faite : « Ouvrir ta collection »).
   const CAT_NS = 'Catégorie:';
   const CAT_MAX = 8;
-  const CAT_MORE = 5; // moins de résultats par préfixe : la recherche plein texte complète
+  const CAT_MORE = 5; // moins de catégories après les deux premières requêtes : la recherche plein texte complète
+  const PAGE_MAX = 4;
+  const SUGG_MAX = 10;
   const catName = (t) => (Propose ? Propose.displayName(t)
     : cap(String(t || '').replace(/^wp:/, '').replace(/_/g, ' ').replace(/^(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim()));
   // Texte cherché : sans « Catégorie: » (on cherche déjà dans l'espace des catégories).
   const catQuery = (q) => String(q || '').replace(/_/g, ' ').replace(/^\s*(?:Catégorie|Category)\s*:\s*/i, '').replace(/\s+/g, ' ').trim();
-  // Ta collection créée depuis une catégorie (source « wp:<nom> »), ou null.
+  // Nom d'une collection faite des liens d'une page : « Liste de noms de couleur » -> « Noms de couleur ».
+  const pageName = (t) => { const n = /^Liste\b/i.test(t) ? listName(t) : t; return n.length > 80 ? n.slice(0, 79) + '…' : n; };
+  // Ta collection créée depuis une catégorie (source « wp:<nom> ») ou une page (« links:<titre> »), ou null.
   const collectionFor = (key) => targets.value.find((t) => t.source === key) || null;
   const pagesOf = (j) => ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
-  const catSuggCache = new Map(); // texte replié -> suggestions
+  const catSuggCache = new Map(); // texte replié (ou « url:<titre> ») -> suggestions
   let catSugCtrl = null;
   let catSugTimer = null;
   let catCtrl = null;
-  async function suggestCategories(q, signal) {
-    const out = [];
-    const seen = new Set();
-    const take = (j) => {
-      for (const p of pagesOf(j)) {
-        if (out.length >= CAT_MAX) return;
-        const t = p && typeof p.title === 'string' ? p.title : '';
-        if (!t || seen.has(t)) continue;
-        seen.add(t);
-        const ci = p.categoryinfo || {};
-        const pages = Number(ci.pages) || 0;
-        const subcats = Number(ci.subcats) || 0;
-        if (ci.hidden || isMaintenanceCategory(t) || (!pages && !subcats)) continue;
-        out.push({ title: t, name: catName(t), pages, subcats });
-      }
-    };
-    take(await getJson(wikiQ, wpUrl({ action: 'query', generator: 'prefixsearch', gpssearch: q, gpsnamespace: '14', gpslimit: '20', prop: 'categoryinfo' }), 4, null, signal));
-    if (out.length < CAT_MORE) {
-      take(await getJson(wikiQ, wpUrl({ action: 'query', generator: 'search', gsrsearch: q, gsrnamespace: '14', gsrlimit: '20', prop: 'categoryinfo' }), 4, null, signal));
-    }
-    return out;
+  // Titre d'une page de fr.wikipedia.org d'après son adresse : https://fr.wikipedia.org/wiki/…, fr.m.wikipedia.org,
+  // /w/index.php?title=…, encodée ou non, avec ou sans « https:// » ; null si ce n'en est pas une.
+  function wpTitleFromUrl(q) {
+    const m = String(q || '').trim().match(/^(?:https?:\/\/)?fr\.(?:m\.)?wikipedia\.org\/(?:wiki\/([^?#]+)|w\/index\.php\?(?:[^#]*&)?title=([^&#]+))/i);
+    if (!m) return null;
+    let t = m[1] !== undefined ? m[1] : m[2].replace(/\+/g, ' ');
+    try { t = decodeURIComponent(t); } catch (e) { /* mal encodée : prise telle quelle */ }
+    t = t.replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    return t || null;
   }
-  function catSearchInput(value) {
+  // Une adresse, mais pas d'une page de fr.wikipedia.org (en.wikipedia, autre site) : rien à chercher.
+  const looksLikeUrl = (q) => /^\s*(?:https?:\/\/|www\.)\S/i.test(String(q || '')) || /^\s*[a-z-]+(?:\.m)?\.wikipedia\.org\//i.test(String(q || ''));
+  // Rang d'un nom pour le texte cherché (forms : le texte et sa forme au singulier, repliés) : 0 exact, 1 commence par
+  // le texte, 2 un de ses mots commence par le texte, 3 le reste (recherche plein texte).
+  const normName = (s) => fold(s).replace(/[^a-z0-9]+/g, ' ').trim();
+  function nameRank(name, forms) {
+    const n = normName(name);
+    if (forms.some((f) => n === f)) return 0;
+    if (forms.some((f) => n.startsWith(f))) return 1;
+    if (forms.some((f) => (' ' + n).includes(' ' + f))) return 2;
+    return 3;
+  }
+  async function suggestSources(q, signal) {
+    // « races bovines » -> « race bovine » (mots de 5 lettres et plus : « pays » reste « pays »).
+    const sing = q.split(/\s+/).map((w) => (w.length >= 5 ? singular(w) : w)).join(' ');
+    const forms = [...new Set([normName(q), normName(sing)])].filter(Boolean);
+    const words = simplify(q).split(' ').filter((w) => w.length > 2).map(fold);
+    const withPages = words.length > 0;
+    const cats = new Map(); // titre -> {type: 'cat', title, name, pages, subcats, order}
+    const pages = new Map(); // titre -> {type: 'page', title, name, list, order}
+    const exact = new Set(); // titres atteints par un titre exact demandé (redirection comprise)
+    const addCat = (p, order) => {
+      const t = p && typeof p.title === 'string' ? p.title : '';
+      if (!t || cats.has(t) || !t.startsWith(CAT_NS) || p.missing || p.invalid) return;
+      const ci = p.categoryinfo || {};
+      const n = Number(ci.pages) || 0;
+      const subcats = Number(ci.subcats) || 0;
+      if (ci.hidden || isMaintenanceCategory(t) || (!n && !subcats)) return;
+      cats.set(t, { type: 'cat', title: t, name: catName(t), pages: n, subcats, order });
+    };
+    const addPage = (t, order) => { if (!pages.has(t)) pages.set(t, { type: 'page', title: t, name: pageName(t), list: true, order }); };
+    // 1. Catégories par préfixe ; pages « Liste de… » et articles par préfixe dans la même requête.
+    const p1 = { action: 'query', generator: 'prefixsearch', gpssearch: q, gpsnamespace: '14', gpslimit: '20', prop: 'categoryinfo' };
+    if (withPages) Object.assign(p1, { list: 'search|prefixsearch', srsearch: 'intitle:liste ' + q, srnamespace: '0', srlimit: '10', srprop: '', pssearch: q, psnamespace: '0', pslimit: '8' });
+    const j1 = await getJson(wikiQ, wpUrl(p1), 4, null, signal);
+    pagesOf(j1).forEach((p, i) => addCat(p, i));
+    const q1 = (j1 && j1.query) || {};
+    (q1.search || []).forEach((r, i) => {
+      const t = String((r && r.title) || '');
+      const f = fold(t);
+      if (/^liste\b/.test(f) && words.every((w) => f.includes(w))) addPage(t, 100 + i);
+    });
+    const derived = [];
+    for (const r of q1.prefixsearch || []) {
+      const base = String((r && r.title) || '').replace(/\s*\([^)]*\)\s*$/, '').trim();
+      if (base && nameRank(base, forms) <= 1 && !derived.includes(base)) derived.push(base);
+    }
+    // 2. Titres exacts : la catégorie du texte (et au singulier), celles du nom des articles trouvés, la page de liste.
+    const exactAsked = new Set([CAT_NS + cap(q), CAT_NS + cap(sing)]);
+    if (withPages) {
+      if (/^liste\b/i.test(q)) exactAsked.add(cap(q));
+      else for (const t of [(/^[aeiouyhàâäéèêëîïôöûüù]/i.test(q) ? "Liste d'" : 'Liste de ') + q, 'Liste des ' + q]) exactAsked.add(t);
+    }
+    const asked = [...new Set([...exactAsked, ...derived.slice(0, 6).map((t) => CAT_NS + cap(t))])].filter((t) => !cats.has(t) && t.length <= 250);
+    if (asked.length) {
+      const j2 = await getJson(wikiQ, wpUrl({ action: 'query', titles: asked.join('|'), redirects: '1', prop: 'categoryinfo|pageprops', ppprop: 'disambiguation' }), 4, null, signal);
+      const q2 = (j2 && j2.query) || {};
+      const alias = aliasOf(q2);
+      const byT = new Map((q2.pages || []).map((p) => [p.title, p]));
+      for (const t of asked) {
+        const to = resolve(alias, t);
+        const p = byT.get(to);
+        if (!p || p.missing || p.invalid) continue;
+        if (to.startsWith(CAT_NS)) { addCat(p, 50); if (exactAsked.has(t) && cats.has(to)) exact.add(to); continue; }
+        if (exactAsked.has(t) && /^liste\b/i.test(to) && !(p.pageprops && 'disambiguation' in p.pageprops)) { addPage(to, 99); exact.add(to); }
+      }
+    }
+    // 3. Peu de catégories : la recherche plein texte complète, seulement celles dont le nom a tous les mots du texte
+    // (au singulier) : pour « noms de couleur », elle donnait « Chanson contre le racisme et la xénophobie ».
+    if (cats.size < CAT_MORE) {
+      const j3 = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'search', gsrsearch: q, gsrnamespace: '14', gsrlimit: '20', prop: 'categoryinfo' }), 4, null, signal);
+      pagesOf(j3).forEach((p, i) => { if (p && words.every((w) => fold(p.title).includes(w))) addCat(p, 200 + i); });
+    }
+    const rankOf = (x) => (exact.has(x.title) ? 0 : x.type === 'cat' ? nameRank(x.name, forms) : Math.min(nameRank(x.name, forms), nameRank(x.title, forms)));
+    const ranked = (m, bySize) => [...m.values()].map((x) => ({ x, r: rankOf(x) }))
+      .sort((a, b) => a.r - b.r || (bySize ? b.x.pages - a.x.pages : 0) || a.x.order - b.x.order);
+    const ps = ranked(pages, false).slice(0, PAGE_MAX);
+    const cs = ranked(cats, true).slice(0, Math.min(CAT_MAX, SUGG_MAX - ps.length));
+    const strip = (l) => l.map(({ x }) => { const { order, ...rest } = x; return rest; });
+    // Le groupe qui a le meilleur rang d'abord (à égalité : les catégories).
+    return ps.length && (!cs.length || ps[0].r < cs[0].r) ? [...strip(ps), ...strip(cs)] : [...strip(cs), ...strip(ps)];
+  }
+  // Adresse collée : la page elle-même (redirection suivie), catégorie ou autre page ; [] si elle n'existe pas.
+  async function suggestFromUrl(title, signal) {
+    const j = await getJson(wikiQ, wpUrl({ action: 'query', titles: title, redirects: '1', prop: 'categoryinfo|pageprops', ppprop: 'disambiguation' }), 4, null, signal);
+    const qy = (j && j.query) || {};
+    const to = resolve(aliasOf(qy), title);
+    const p = (qy.pages || []).find((x) => x.title === to) || (qy.pages || [])[0];
+    if (!p || p.missing || p.invalid || p.special || typeof p.title !== 'string') return [];
+    if (p.ns === 14 || p.title.startsWith(CAT_NS)) {
+      const ci = p.categoryinfo || {};
+      return [{ type: 'cat', title: p.title, name: catName(p.title), pages: Number(ci.pages) || 0, subcats: Number(ci.subcats) || 0 }];
+    }
+    return [{ type: 'page', title: p.title, name: pageName(p.title), list: /^Liste\b/i.test(p.title) }];
+  }
+  // pasted : texte collé (et pas tapé) ; une adresse de Wikipédia collée s'ouvre aussitôt (comme Entrée).
+  function catSearchInput(value, pasted) {
     const cs = S.catSearch;
     Object.assign(cs, { q: value, open: true, active: 0, error: '', nav: false, enter: false, loading: catQuery(value).length >= 2 });
     clearTimeout(catSugTimer);
     catSugTimer = setTimeout(runCatSuggest, 250);
+    if (pasted && wpTitleFromUrl(value)) catSearchEnter();
   }
   // Entrée : la suggestion active si la liste est celle du texte tapé (ou choisie aux flèches) ; sinon (suggestions pas
   // encore arrivées, ou celles d'un texte précédent) la recherche part tout de suite et la première suggestion s'ouvre
@@ -2474,7 +2587,7 @@
   }
   function chooseCat(m) {
     stopCatSearch();
-    openCategory(m.title, m);
+    if (m.type === 'page') openPage(m.title); else openCategory(m.title, m);
     // Le champ de recherche disparaît avec la liste : le focus va au titre de l'album ouvert (pas sur <body>).
     nextTick(() => { const el = document.getElementById('album-name'); if (el) el.focus(); });
   }
@@ -2494,14 +2607,17 @@
     if (catSugCtrl) catSugCtrl.abort();
     catSugCtrl = null;
     if (q.length < 2) { Object.assign(cs, { list: [], loading: false, error: '', done: '' }); return; }
-    const k = fold(q);
+    // Adresse d'une page de fr.wikipedia.org : la page elle-même ; autre adresse : rien à chercher (la vue le dit).
+    const urlTitle = wpTitleFromUrl(raw);
+    if (!urlTitle && looksLikeUrl(raw)) { Object.assign(cs, { list: [], loading: false, error: '', done: raw, active: 0, nav: false, enter: false }); return; }
+    const k = urlTitle ? 'url:' + urlTitle : fold(q);
     const hit = catSuggCache.get(k);
     if (hit) { Object.assign(cs, { list: hit, loading: false, error: '', done: raw, active: 0, nav: false }); catSuggested(hit); return; }
     const ctrl = new AbortController();
     catSugCtrl = ctrl;
     Object.assign(cs, { loading: true, error: '' });
     try {
-      const list = markRaw(await suggestCategories(q, ctrl.signal));
+      const list = markRaw(urlTitle ? await suggestFromUrl(urlTitle, ctrl.signal) : await suggestSources(q, ctrl.signal));
       if (catSugCtrl !== ctrl) return;
       catSuggCache.set(k, list);
       if (catSuggCache.size > 60) catSuggCache.delete(catSuggCache.keys().next().value);
@@ -2536,13 +2652,26 @@
     const key = 'wp:' + name;
     stopCategory();
     const num = (v) => (v === null || v === undefined || !Number.isFinite(Number(v)) ? null : Number(v));
-    S.catView = { key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: !!(info && info.withSubs),
+    S.catView = { type: 'cat', key, title: CAT_NS + name, name, size: info ? num(info.pages) : null, subcats: info ? num(info.subcats) : null, withSubs: !!(info && info.withSubs),
       loading: true, error: '', items: null, total: 0, busy: false };
     openAlbum('category', key);
     loadCategory();
   }
-  // Taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes si
-  // withSubs) : 3 000 au plus, total = ce qui a été lu (plus de 3 000 : trop grande pour une collection).
+  // Ouvre une page (suggestion « Pages de liste », adresse collée) : les articles qu'elle lie, comme un album (source
+  // « links:<titre> », titre tel que Wikipédia l'écrit, redirection suivie).
+  function openPage(title) {
+    const t = String(title || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!t) return;
+    const key = PAGE_SRC + t;
+    stopCategory();
+    S.catView = { type: 'page', key, title: t, name: pageName(t), size: null, subcats: null, withSubs: false, links: null, allLinks: false,
+      loading: true, error: '', items: null, total: 0, busy: false };
+    openAlbum('category', key);
+    loadCategory();
+  }
+  // Catégorie : taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes
+  // si withSubs). Page : ses liens et leur nature (pageLinks, lus une fois), ceux de la nature dominante seulement sauf
+  // si allLinks. 3 000 au plus, total = ce qui a été lu ou gardé (plus de 3 000 : trop grande pour une collection).
   async function loadCategory() {
     const cv = S.catView;
     if (!cv) return;
@@ -2553,6 +2682,22 @@
     cv.loading = true;
     cv.error = '';
     try {
+      if (cv.type === 'page') {
+        if (!cv.links) {
+          const links = await pageLinks(cv.title, ctrl.signal);
+          if (stale()) return;
+          cv.links = markRaw(links);
+        }
+        const { top } = cv.links;
+        const kept = top && !cv.allLinks ? cv.links.items.filter((i) => i.fits) : cv.links.items;
+        cv.total = kept.length;
+        cv.items = markRaw(kept.slice(0, 3000).map((i) => {
+          const it = { title: i.title, description: i.description || null, image: null, status: 'ok' };
+          if (i.qid) it.qid = i.qid;
+          return it;
+        }));
+        return;
+      }
       if (cv.size === null || cv.subcats === null) {
         const j = await getJson(wikiQ, wpUrl({ action: 'query', prop: 'categoryinfo', titles: cv.title }), 3, null, ctrl.signal);
         if (stale()) return;
@@ -2576,32 +2721,43 @@
     cv.withSubs = !cv.withSubs;
     loadCategory();
   }
-  // « Créer une collection » (album d'une catégorie) : ses articles lus (avec les sous-catégories si la case est cochée)
-  // deviennent une collection à compléter de source « wp:<nom> », nommée comme la catégorie ; l'album reste ouvert,
-  // devenu celui de la collection (Modifier, Supprimer). Déjà faite, ou « Créer une collection » de sa proposition en
-  // cours (S.wp.busy, partagé) : pas de seconde collection de même source.
+  // Page : seulement la nature dominante, ou tous les liens (déjà lus : sans requête).
+  function toggleAllLinks() {
+    const cv = S.catView;
+    if (!cv || cv.busy || cv.type !== 'page') return;
+    cv.allLinks = !cv.allLinks;
+    loadCategory();
+  }
+  // « Créer une collection » (album d'une catégorie ou d'une page) : ses articles lus (avec les sous-catégories si la case
+  // est cochée ; page : les articles liés gardés, avec leur qid et leur description Wikidata) deviennent une collection à
+  // compléter de source « wp:<nom> » ou « links:<titre> », nommée comme la catégorie (page : « Liste de » retiré) ;
+  // l'album reste ouvert, devenu celui de la collection (Modifier, Supprimer). Déjà faite, ou « Créer une collection » de
+  // sa proposition en cours (S.wp.busy, partagé) : pas de seconde collection de même source.
   async function createFromCategory() {
     const cv = S.catView;
     if (!cv) return;
     const t0 = collectionFor(cv.key);
     if (t0) { openAlbum('target', t0.id); return; }
     if (cv.busy || cv.loading || !cv.items || !cv.items.length || S.wp.busy[cv.key]) return;
-    if (cv.total > 3000) { notify('Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
-    if (cv.key.length > 200) { notify('Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
+    const page = cv.type === 'page';
+    if (cv.total > 3000) { notify(page ? 'Cette page lie plus de 3 000 articles : trop pour une collection.' : 'Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
+    if (cv.key.length > 200) { notify(page ? 'Le titre de cette page est trop long pour en faire une collection.' : 'Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
     const gen = cardsGen;
     const stale = () => gen !== cardsGen;
     cv.busy = true;
     S.wp.busy[cv.key] = true;
     try {
       const name = cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
-      const items = cv.items.map((it) => ({ title: it.title, description: null, image: null, status: 'ok' }));
+      const items = cv.items.map((it) => (it.qid ? { title: it.title, description: it.description || null, image: null, status: 'ok', qid: it.qid }
+        : { title: it.title, description: it.description || null, image: null, status: 'ok' }));
       const r = await api('POST', '/api/targets/save', { name, items, source: cv.key });
       if (stale()) return;
       if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== cv.key));
       const t = collectionFor(cv.key);
       if (t && S.catView === cv) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
-      notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${cv.withSubs ? ', sous-catégories comprises' : ''}, dans « Mes collections ».`);
+      const how = cv.withSubs ? ', sous-catégories comprises' : page && cv.links && cv.links.top && !cv.allLinks ? ` (les « ${cv.links.top.label} » de la page)` : page ? ' (tous les liens de la page)' : '';
+      notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${how}, dans « Mes collections ».`);
     } catch (e) {
       if (!stale()) notify(e.message, true);
     } finally {
@@ -2772,11 +2928,7 @@
     return [...out.values()];
   }
   // Pages « Liste de… » (ou l'adresse d'une page collée) : leurs liens deviennent la collection.
-  function pageFromUrl(q) {
-    const m = q.match(/^https?:\/\/fr\.(?:m\.)?wikipedia\.org\/wiki\/([^?#]+)/i);
-    if (!m) return null;
-    try { return decodeURIComponent(m[1]).replace(/_/g, ' '); } catch (e) { return m[1].replace(/_/g, ' '); }
-  }
+  function pageFromUrl(q) { return wpTitleFromUrl(q); }
   const listName = (t) => cap(t.replace(/^Liste\s+(?:de la |de l['’]|des |du |de |d['’])/i, ''));
   // exact : titre tiré d'une adresse collée, pris tel quel (même si ce n'est pas une liste).
   async function searchPages(q, signal, exact) {
@@ -2805,7 +2957,11 @@
     return out.slice(0, 5);
   }
   // Articles liés depuis une page, avec leur nature (P31) et leur description Wikidata ; top = la nature la plus
-  // fréquente (dans « Liste de races bovines » : race bovine, 330 liens sur 589 ; le reste = pays, régions…).
+  // fréquente, et `fits` sur chaque article de cette nature : directement, par une de ses sous-classes (P279+), ou par
+  // une description qui la nomme dans ses quatre premiers mots (« nom de couleur ») ; top.n = leur nombre. Mesuré le
+  // 2026-10-16 : « Liste de races bovines », race bovine, 330 directement, 351 avec les sous-classes, 355 avec les
+  // descriptions, sur 589 liens (le reste = pays, régions…) ; « Liste de noms de couleur », couleur : 103, 134, 181 sur
+  // 247 (beaucoup de noms de couleur sont des « chromonymes » sans nature « couleur »).
   async function pageLinks(title, signal) {
     const by = new Map();
     const drop = new Set();
@@ -2845,6 +3001,17 @@
     if (top) {
       const rows = await sparql(`SELECT ?l WHERE { wd:${top.id} rdfs:label ?l . FILTER(LANG(?l) = "fr") } LIMIT 1`, 3, signal);
       if (rows[0] && rows[0].l) top.label = rows[0].l.value;
+      // Sous-classes de la nature dominante parmi les natures vues (« couleur primaire », « couleur du Web » pour « couleur »).
+      const subs = new Set();
+      for (const batch of chunks([...count.keys()].filter((c) => c !== top.id), 200)) {
+        const rs = await sparql(`SELECT ?c WHERE { VALUES ?c { ${batch.map((id) => 'wd:' + id).join(' ')} } ?c wdt:P279+ wd:${top.id} . }`, 3, signal);
+        for (const r of rs) if (r.c) subs.add(qid(r.c.value));
+      }
+      const lab = /^Q\d+$/.test(top.label) ? '' : normName(top.label);
+      const head = (d) => ' ' + normName(d).split(' ').slice(0, 4).join(' ') + ' ';
+      for (const it of items) it.fits = it.classes.some((c) => c === top.id || subs.has(c)) || (!!lab && !!it.description && head(it.description).includes(' ' + lab + ' '));
+      top.n = items.filter((i) => i.fits).length;
+      if (top.n === items.length) top = null;
     }
     return { items, top };
   }
@@ -3055,7 +3222,7 @@
           ch.links = markRaw(links);
         }
         const { top } = ch.links;
-        items = top && !ch.allLinks ? ch.links.items.filter((i) => i.classes.includes(top.id)) : ch.links.items;
+        items = top && !ch.allLinks ? ch.links.items.filter((i) => i.fits) : ch.links.items;
       } else if (cand.source === 'def') {
         const r = await defPages(cand, ch.top, ctrl.signal, (done, kept) => {
           if (!stale()) ch.progress = ch.top ? `${fmt(kept)} sur ${fmt(ch.top)} trouvés (${fmt(done)} lus)…` : `${fmt(done)} sur ${fmt(cand.size)} lus, ${fmt(kept)} retenus…`;
@@ -3222,7 +3389,7 @@
     friendsAt = 0;
     if (friendQidCtrl) { friendQidCtrl.abort(); friendQidCtrl = null; }
     friendList.value = [];
-    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all',
+    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all', tradeDup: true,
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copies: {} });
   }
   // Carte d'un ami (champs montrés par le serveur, rien d'autre) ; adresses vérifiées avant d'en faire des liens.
@@ -3632,9 +3799,15 @@
         h('span', { class: 'name' }, col.name),
         rarityBar(p.byR, p.total),
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), h('span', null, pct(p.own, p.total))]),
-        col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
+        sourceKind(col),
       ]),
     ]);
+  }
+  // Mention discrète d'une collection faite d'une catégorie ou d'une page de Wikipédia.
+  function sourceKind(col) {
+    if (col.cat) return h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia');
+    if (col.page) return h('span', { class: 'row-kind' }, `depuis la page Wikipédia « ${col.page} »`);
+    return null;
   }
 
   // ================================================================ rendu : bandeau et onglets
@@ -3774,8 +3947,10 @@
       ]),
     ]);
   }
-  // Recherche d'une catégorie de Wikipédia (combobox) : suggestions au fil de la frappe (suggestCategories), ↑ ↓ pour
-  // choisir, Entrée pour ouvrir, Échap pour fermer la liste.
+  // Recherche d'une catégorie ou d'une page « Liste de… » de Wikipédia (combobox), ou adresse d'une page collée :
+  // suggestions au fil de la frappe (suggestSources, suggestFromUrl) en deux groupes, « Catégories » et « Pages de
+  // liste » (une adresse : « Page Wikipédia »), ↑ ↓ pour choisir (d'un groupe à l'autre), Entrée pour ouvrir, Échap pour
+  // fermer la liste.
   function viewCatSearch() {
     const cs = S.catSearch;
     const list = cs.list;
@@ -3783,20 +3958,46 @@
     const open = cs.open && q.length >= 2 && list.length > 0;
     const act = Math.max(0, Math.min(cs.active, list.length - 1));
     const stale = cs.done !== cs.q; // suggestions d'un texte précédent, montrées en attendant (estompées)
+    const urlTitle = wpTitleFromUrl(cs.q);
     let status = null;
     if (cs.open && q.length >= 2 && !open) {
       if (cs.error) status = cs.error;
-      else if (cs.loading) status = 'Recherche des catégories…';
-      else if (cs.done === cs.q) status = 'Aucune catégorie de Wikipédia ne correspond.';
+      else if (cs.loading) status = urlTitle ? 'Lecture de la page sur Wikipédia…' : 'Recherche des catégories et des pages de liste…';
+      else if (cs.done === cs.q) {
+        status = urlTitle ? `Cette page n'existe pas sur Wikipédia : « ${urlTitle} ».`
+          : looksLikeUrl(cs.q) ? "Colle l'adresse d'une page de Wikipédia en français (https://fr.wikipedia.org/wiki/…)."
+            : 'Aucune catégorie ni page de liste de Wikipédia ne correspond.';
+      }
     }
+    // Groupes dans l'ordre de la liste (une suite de suggestions de même type) ; options numérotées dans cet ordre.
+    const groups = [];
+    list.forEach((m, i) => {
+      const type = m.type === 'page' ? 'page' : 'cat';
+      const g = groups[groups.length - 1];
+      if (g && g.type === type) g.items.push([m, i]); else groups.push({ type, items: [[m, i]] });
+    });
+    const option = ([m, i]) => {
+      const page = m.type === 'page';
+      const mine = collectionFor(page ? PAGE_SRC + m.title : 'wp:' + m.name);
+      return h('li', {
+        id: 'cat-opt-' + i, key: (page ? 'p:' : 'c:') + m.title, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
+        onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
+      }, [
+        h('span', { class: 'prop-list__name' }, page ? m.title : m.name),
+        h('span', { class: 'prop-list__hint' }, mine ? 'ta collection'
+          : !page && m.subcats ? `${fmt(m.subcats)} ${plural(m.subcats, 'sous-catégorie', 'sous-catégories')}` : ''),
+        h('span', { class: 'prop-list__count num' }, page ? (m.list ? 'liste' : 'page') : `${fmt(m.pages)} ${plural(m.pages, 'article', 'articles')}`),
+      ]);
+    };
+    const groupLabel = (type) => (type === 'cat' ? 'Catégories' : urlTitle ? 'Page Wikipédia' : 'Pages de liste');
     return h('div', { class: 'prop-search' }, [
-      h('label', { class: 'sr', for: 'cat-q' }, 'Chercher une catégorie de Wikipédia'),
+      h('label', { class: 'sr', for: 'cat-q' }, "Chercher une catégorie ou une page de liste de Wikipédia, ou coller l'adresse d'une page"),
       h('input', {
         id: 'cat-q', class: 'field full', type: 'search', value: cs.q, autocomplete: 'off', spellcheck: 'false',
-        placeholder: 'Chercher une catégorie de Wikipédia : « violet », « races bovines », « footballeur »…',
+        placeholder: 'Catégorie, page « Liste de… » ou adresse Wikipédia : « violet », « races bovines »…',
         role: 'combobox', 'aria-expanded': String(open), 'aria-controls': 'cat-list', 'aria-autocomplete': 'list',
         'aria-activedescendant': open ? 'cat-opt-' + act : null, 'aria-busy': String(!!cs.loading),
-        onInput: (e) => catSearchInput(e.target.value),
+        onInput: (e) => catSearchInput(e.target.value, e.inputType === 'insertFromPaste'),
         onFocus: () => { cs.open = true; },
         // Champ quitté : une Entrée en attente (suggestions pas encore arrivées) n'ouvrira plus rien.
         onBlur: () => { cs.enter = false; setTimeout(() => { cs.open = false; }, 150); },
@@ -3807,15 +4008,11 @@
           else if (e.key === 'Escape' && cs.open) { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); cs.open = false; }
         },
       }),
-      open ? h('ul', { id: 'cat-list', class: ['prop-list', { 'prop-list--stale': stale }], role: 'listbox', 'aria-label': 'Catégories de Wikipédia' }, list.map((m, i) => h('li', {
-        id: 'cat-opt-' + i, key: m.title, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
-        onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
-      }, [
-        h('span', { class: 'prop-list__name' }, m.name),
-        h('span', { class: 'prop-list__hint' }, collectionFor('wp:' + m.name) ? 'ta collection'
-          : m.subcats ? `${fmt(m.subcats)} ${plural(m.subcats, 'sous-catégorie', 'sous-catégories')}` : ''),
-        h('span', { class: 'prop-list__count num' }, `${fmt(m.pages)} ${plural(m.pages, 'article', 'articles')}`),
-      ]))) : status ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, status) : null,
+      open ? h('div', { id: 'cat-list', class: ['prop-list', { 'prop-list--stale': stale }], role: 'listbox', 'aria-label': 'Catégories et pages de Wikipédia' },
+        groups.map((g, k) => h('ul', { key: g.type + k, class: 'prop-list__grp', role: 'group', 'aria-labelledby': 'cat-grp-' + k }, [
+          h('li', { id: 'cat-grp-' + k, class: 'prop-list__group', role: 'presentation' }, groupLabel(g.type)),
+          ...g.items.map(option),
+        ]))) : status ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, status) : null,
     ]);
   }
   function viewCollections() {
@@ -3825,7 +4022,7 @@
       h('section', { class: 'group', 'aria-labelledby': 'h-mine' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-mine' }, 'Mes collections'),
-          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, à la main, ou depuis une catégorie de Wikipédia'),
+          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, à la main, ou depuis une catégorie ou une page de Wikipédia'),
           h('span', { class: 'spacer' }),
           h('button', { class: 'btn', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), 'Nouvelle collection']),
         ]),
@@ -3839,7 +4036,7 @@
       h('section', { class: 'group', 'aria-labelledby': 'h-cats' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-cats' }, 'Catégories'),
-          h('small', null, 'les catégories de Wikipédia (« Catégorie:Violet »…) : cherches-en une, ouvre-la, fais-en une collection'),
+          h('small', null, "les catégories de Wikipédia (« Catégorie:Violet »…) et les pages « Liste de… » : cherches-en une (ou colle l'adresse d'une page), ouvre-la, fais-en une collection"),
         ]),
         viewCatSearch(),
         viewWpGroup(),
@@ -3893,10 +4090,13 @@
     else if (S.pv.running) hint = `Rareté estimée des cases vides : ${fmt(S.pv.done)} sur ${fmt(S.pv.total)} articles…`;
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
     else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
-    // Catégorie de Wikipédia : « Créer une collection » (déjà faite : « Ouvrir ta collection »), « Voir sur Wikipédia » ;
-    // collection : « Modifier », « Supprimer » (et « Voir sur Wikipédia » pour celle faite d'une catégorie).
+    // Catégorie ou page de Wikipédia : « Créer une collection » (déjà faite : « Ouvrir ta collection »), « Voir sur
+    // Wikipédia » ; collection : « Modifier », « Supprimer » (et « Voir sur Wikipédia » pour celle faite d'une catégorie
+    // ou d'une page).
     const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
     const tooBig = !!cv && cv.total > 3000;
+    const pg = cv && cv.type === 'page' ? cv : null; // page de Wikipédia ouverte : ses liens
+    const pgTop = pg && pg.links ? pg.links.top : null;
     let actions;
     if (cv) {
       const mineT = collectionFor(cv.key);
@@ -3913,7 +4113,7 @@
       actions = [
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
-        col.cat ? wpLink(CAT_NS + catName(col.t.source)) : null,
+        col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
       ];
     }
     const total = albumSlots.value.length;
@@ -3922,13 +4122,20 @@
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
         h('div', { class: 'album-title' }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
-          cv ? h('span', { class: 'badge' }, 'catégorie de Wikipédia') : col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null]),
+          cv ? h('span', { class: 'badge' }, pg ? 'page de Wikipédia' : 'catégorie de Wikipédia') : sourceKind(col)]),
         cv && cv.subcats ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: cv.withSubs, disabled: cv.loading || cv.busy, onChange: toggleCatSubs }),
           ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
-        reading ? (cv.error ? null : h('p', { class: 'hint', role: 'status' }, 'Lecture des articles de la catégorie sur Wikipédia…')) : rarityBar(p.byR, p.total, 'bar big'),
+        // Page : les articles qu'elle lie, ceux de leur nature dominante seulement (case cochée) ou tous.
+        pg ? h('p', { class: 'hint' }, ['Les articles liés depuis la page « ', h('a', { href: wikiUrl(pg.title), target: '_blank', rel: 'noopener noreferrer' }, pg.title), ' »',
+          pg.links && !pgTop && !reading ? ` : tous (${fmt(pg.links.items.length)}), sans nature dominante à filtrer.` : '.']) : null,
+        pgTop ? h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: !pg.allLinks, disabled: pg.loading || pg.busy, onChange: toggleAllLinks }),
+          ` ne garder que les « ${pgTop.label} » (${fmt(pgTop.n)} sur ${fmt(pg.links.items.length)} articles liés ; décochée : tous les liens)`]) : null,
+        reading ? (cv.error ? null : h('p', { class: 'hint', role: 'status' }, pg ? 'Lecture des liens de la page sur Wikipédia et de leur nature sur Wikidata…' : 'Lecture des articles de la catégorie sur Wikipédia…')) : rarityBar(p.byR, p.total, 'bar big'),
         cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory() }, 'Réessayer')]) : null,
-        tooBig ? h('p', { class: 'warn' }, 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
+        tooBig ? h('p', { class: 'warn' }, pg ? `Plus de 3 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 3 000 premiers sont montrés.`
+          : 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
         !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
         reading ? null : h('div', { class: 'missing-sum' }, missLine),
         !reading && missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
@@ -3946,7 +4153,7 @@
           ...actions,
         ]),
       ]),
-      total ? h(AlbumGrid) : reading ? null : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : col.cat ? 'Cette catégorie ne contient aucun article.' : [
+      total ? h(AlbumGrid) : reading ? null : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : pg ? 'Cette page ne lie aucun article.' : col.cat ? 'Cette catégorie ne contient aucun article.' : [
         'Ajoute des articles Wikipédia pour la remplir. ',
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, 'Modifier la collection'),
       ]),
@@ -4302,7 +4509,7 @@
     return h('article', { class: 'fcol', key: x.col.key }, [
       h('div', { class: 'fcol__head' }, [
         h('button', { class: 'fcol__name', type: 'button', title: x.col.cat ? 'Ouvrir la catégorie' : 'Ouvrir la collection', onClick: () => openAlbum(x.col.kind, x.col.id) }, x.col.name),
-        x.col.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
+        sourceKind(x.col),
         h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)), ` ${plural(x.rows.length, 'case', 'cases')} à remplir chez tes amis`,
           ...(x.dup ? [' · ', h('b', null, fmt(x.dup)), ' en double'] : []), ` · tu en as ${fmt(p.own)} sur ${fmt(p.total)}`]),
       ]),
@@ -4429,12 +4636,17 @@
           h('label', { class: 'sr', for: 'trade-member' }, 'Les échanges d\'un membre'),
           h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'all'; } },
             [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, friendName(f)))]),
+          h('label', { class: 'check' }, [
+            h('input', { id: 'trade-dup', type: 'checkbox', checked: fr.tradeDup, onChange: () => { fr.tradeDup = !fr.tradeDup; } }),
+            ' Seulement les cartes en double']),
         ]),
       ]),
       ...tradeNotes(),
       list.length ? h('div', { class: 'fcols' }, list.map(viewTradePair))
         : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
-          : all.length ? 'Aucun échange possible avec ce filtre : essaie « Tout le monde ».' : "Aucun échange possible pour l'instant : personne n'a de carte qui manque aux collections d'un autre."),
+          : all.length ? (fr.tradeDup ? 'Aucune carte en double à donner avec ce filtre : décoche « Seulement les cartes en double », ou essaie « Tout le monde ».'
+            : 'Aucun échange possible avec ce filtre : essaie « Tout le monde ».')
+            : "Aucun échange possible pour l'instant : personne n'a de carte qui manque aux collections d'un autre."),
     ]);
   }
   // Carte d'un ami (lecture seule) : pas de fiche ni de sélection ; « Te manque » si tu ne l'as pas.

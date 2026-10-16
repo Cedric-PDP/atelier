@@ -150,7 +150,7 @@ main.wrap { padding-block: 26px 110px; }
 .section-head .btn { align-self: center; }
 /* Recherche dans les collections proposées : suggestions sous le champ. */
 .prop-search { position: relative; margin: 2px 0 14px; }
-.prop-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); max-height: 340px; overflow-y: auto; }
+.prop-list { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: 4px; list-style: none; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); max-height: min(470px, 70vh); overflow-y: auto; }
 .prop-list li { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 8px; cursor: pointer; min-width: 0; }
 .prop-list li.active { background: color-mix(in srgb, var(--accent) 16%, transparent); }
 .prop-list__name { font-weight: 600; color: var(--fg); flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -158,6 +158,11 @@ main.wrap { padding-block: 26px 110px; }
 .prop-list__count { flex: none; color: var(--muted); font-size: 12.5px; white-space: nowrap; }
 .prop-list--empty { padding: 10px 12px; color: var(--muted); font-size: 13px; }
 .prop-list--stale li { opacity: 0.55; }
+/* Deux groupes de suggestions (Catégories, Pages de liste), chacun sous son titre. */
+.prop-list__grp { margin: 0; padding: 0; list-style: none; }
+.prop-list__grp + .prop-list__grp { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--border); }
+.prop-list li.prop-list__group { display: block; cursor: default; padding: 6px 10px 2px; font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+.prop-list--stale li.prop-list__group { opacity: 1; }
 @media (max-width: 560px) {
   .prop-list li { flex-wrap: wrap; row-gap: 2px; }
   .prop-list__name { flex: 1 1 100%; max-width: none; white-space: normal; overflow-wrap: anywhere; }
