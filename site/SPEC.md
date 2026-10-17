@@ -422,7 +422,11 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   les forçages de sens d'écriture (U+202A–202E, U+2066–2069), les espaces de fin de ligne et les bords, et réduit trois
   lignes vides ou plus à une. **Jamais de HTML** : le texte passe tel quel à Vue (échappé) ; seuls les liens
   `http(s)://` deviennent des liens (`target=_blank`, `rel="noopener noreferrer nofollow ugc"`, ponctuation finale hors
-  du lien sauf une parenthèse qui en ferme une du lien : `…/Mercure_(planète)`). Un message qui contient un lien
+  du lien sauf une parenthèse qui en ferme une du lien : `…/Mercure_(planète)`). **Cartes citées** (demande de
+  l'utilisateur du 2026-10-17 : « linker des cartes dans le chat ») : `[[Titre de la carte]]` dans le texte (1 à 300
+  caractères sans `[ ] { } | # < >` ni retour à la ligne ; première lettre mise en majuscule, `_` en espaces ; un lien
+  `http(s)` entre crochets reste un lien) ; le serveur range le texte tel quel (rien de plus à valider, les crochets
+  comptent dans les 500 caractères) et la page le montre en pastille, voir « Interface ». Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
   à chaque lecture (jointure sur `users`) : un renommage vaut pour les anciens messages ; jamais l'id interne du compte
@@ -466,6 +470,19 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     14:32 ») et date complète en info-bulle ;
   - **Entrée** envoie, **Maj+Entrée** va à la ligne (pas pendant une saisie IME) ; le brouillon reste si l'envoi échoue
     (message du serveur affiché, `429` compris) ; il est vidé à l'envoi réussi, sauf s'il a été modifié entre-temps ;
+  - **cartes citées** : chaque `[[Titre]]` d'un message devient une pastille (un `<button>`, titre en texte : jamais de
+    HTML) ; ta carte (titre puis qid, comme les albums) : avec sa rareté ; une carte que tu n'as pas : bord en pointillés.
+    Un clic ouvre la fiche : celle de ta carte, sinon celle d'une carte qui te manque (ce qu'en disent tes collections,
+    puis l'article vérifié sur Wikipédia en une requête `prop=pageprops|description|pageimages|pageviews`, redirection
+    suivie : description, homonymie, qid, vignette, vues sur 30 jours et rareté estimée, dans le cache des vues des
+    albums ; « Vérification sur Wikipédia… » en attendant ; introuvable : « le titre cité dans le chat est peut-être mal
+    écrit » ; une redirection vers une de tes cartes ouvre la tienne, et le qid appris sert aux pastilles). Sous le
+    champ, une aide discrète (aussi sur téléphone) : « Pour montrer une carte : `[[Titre de la carte]]`, ou « Partager
+    dans le chat » depuis sa fiche. » ;
+  - **« Partager dans le chat »** : icône à côté de « Copier le nom » dans les fiches (ta carte, carte qui te manque,
+    carte d'un ami ; pas pour un article introuvable ou une homonymie) : ajoute `[[Titre]] ` au bout du brouillon du
+    chat (sauf s'il y est déjà ; refusé avec un message si le brouillon dépasserait 500 caractères), ferme la fiche,
+    ouvre l'onglet Chat et met le curseur à la fin du champ. Rien n'est envoyé : on complète son message, puis Entrée ;
   - relecture `?after=` toutes les **12 s** tant que l'onglet est ouvert et la page visible (30 s après 5 min sans nouveau
     message ni geste dans le chat), tout de suite au retour sur la page ; rien quand l'onglet est fermé ou la page cachée.
     Plus de 100 changements ou révision inconnue : relecture des plus récents ;
@@ -511,11 +528,39 @@ Deux zones, dans cet ordre :
    « <titre> » » (aussi dans « Entre amis », pour tes collections). Leurs articles sont de A à Z, sans numéros (une
    catégorie n'a pas d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre
    (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album est celui d'une collection :
-   « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la catégorie, ou la page). Pour le reste
-   (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection comme les autres ; un
-   ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
+   « Ajouter par tags », « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la catégorie, ou la
+   page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
+   comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
    s'il n'y en a pas encore.
+
+   **« Ajouter par tags »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du 2026-10-17 :
+   « Alek a une collection maladie et doit avoir plein de cartes avec le tag maladie qui ne sont pas dedans ») : une
+   fenêtre propose des tags, calculés dans la page sans requête :
+   - **même nom** que la collection (mots repliés : casse et accents ignorés, articles « de, la, des… » écartés, pluriel
+     ramené au singulier « maladies → maladie », « animaux → animal » ; on compare le **sous-tag** : « Sciences et
+     nature/Maladie » pour « Maladies ») : cochés d'emblée ; **nom proche** (les mots de l'un sont tous dans l'autre :
+     « Maladies tropicales ») ; **catégorie de tags** de même nom ou proche (« Pays/ » : tous ses tags) ;
+   - **portés par beaucoup de ses cartes** : par 2 au moins de tes cartes déjà dans la collection, et 20 % d'entre elles
+     (« porté par 3 de tes 5 cartes de la collection ») ; 16 tags proposés au plus en tout (ceux du même nom, proches et
+     choisis à la main en plus) ;
+   - **un autre de tes tags**, au choix (champ avec la liste de tes tags : nom exact, sous-tag seul s'il n'y en a qu'un
+     de ce nom, sans la casse, ou une catégorie de tags ; inconnu : « Aucune de tes cartes ne porte le tag « … ». »).
+
+   Pour chacun : le nombre de tes cartes qui le portent et ne sont **pas encore** dans la collection (rapprochement par
+   titre puis qid, comme l'album ; une carte par titre) et combien y sont déjà ; les tags du même nom dont tout est
+   déjà dedans sont signalés à part (« Déjà toutes dans la collection : … »). Rien à proposer : la fenêtre le dit (pas
+   de tag du tout, aucun nom ressemblant ni tag assez porté, ou tags du même nom déjà complets), et le champ « un autre
+   de tes tags » reste. **Aperçu** des cartes des tags cochés (de A à Z, avec leur rareté, 120 affichées puis « Afficher
+   les suivantes »), décochables une à une (« Tout cocher » / « Tout décocher ») ; **« Ajouter N cartes »** =
+   `POST /api/targets/save {id, name, items, source?}` : les éléments existants tels quels, puis les nouveaux à la fin
+   (`{title, description: catégorie de la carte, image: null, status:'ok', qid?}`, qid s'il est connu), sans doublon
+   (titre ou qid revérifiés à l'enregistrement) ; limites de `targets.js` contrôlées avant l'envoi (3 000 éléments :
+   « Décoche-en N », bouton grisé ; 600 Ko) ; l'erreur du serveur s'affiche telle quelle (5 Mo par compte…). Une
+   collection **faite d'une catégorie ou d'une page de Wikipédia** (`wp:` / `links:`) : l'ajout est permis et elle
+   **garde sa source** (comme avec « Modifier », qui le permettait déjà ; aucune relecture automatique de la catégorie ne
+   défait l'ajout) ; la fenêtre le dit (« les cartes ajoutées viennent en plus de ses articles »). Courses : classeur
+   changé pendant l'enregistrement, la réponse est écartée.
 2. **« Catégories »** (catégories et pages de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
    - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
      catégories de Wikipédia **et les pages « Liste de… »** : 250 ms après la dernière frappe (2 caractères au moins,

@@ -256,7 +256,7 @@
     refresh: { running: false, msg: '', error: false, warn: false },
     sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null }, // fenêtre « Mettre à jour avec le favori »
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link | arrange | sync
+    modal: null, // editor | confirm | tag | switch | link | arrange | sync | tagadd
     session: { cookie: '', busy: false, error: '' },
     editor: null,
     confirm: null,
@@ -270,6 +270,10 @@
     bulkCat: '',
     wp: { list: [], running: false, done: 0, total: 0, label: '', error: '', busy: {} }, // propositions d'après les catégories Wikipédia
     arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
+    // « Ajouter par tags » (album d'une collection) : {id (de la collection), on (tags cochés : noms, « Catégorie/ » pour
+    // toute une catégorie), off (cartes décochées dans l'aperçu : ids), extra (tags choisis à la main), field,
+    // fieldError, limit (cartes de l'aperçu affichées), busy, error}.
+    tagAdd: null,
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
     // « Entre amis » : lecture des membres (busy, loading = carte en cours), activation du partage, classeur parcouru.
     // page : 'trades' = « Échanges possibles » (sous-page) ; trade : filtre de cette page ('all' = tout le monde, par défaut
@@ -2101,6 +2105,206 @@
     });
   }
 
+  // ---------------------------------------------------------------- « Ajouter par tags » (album d'une collection)
+  // Demande de l'utilisateur (2026-10-17) : « Alek a une collection maladie et doit avoir plein de cartes avec le tag
+  // maladie qui ne sont pas dedans ». Tags proposés pour une collection : ceux dont le nom ressemble au sien (accents,
+  // casse, articles et pluriel ignorés : « Maladies » ↔ « Sciences et nature/Maladie », sous-tag compris), une catégorie
+  // de tags de même nom (toute la catégorie), puis ceux que portent beaucoup de ses cartes (2 au moins, et 20 % de celles
+  // que tu y as), et ceux choisis à la main. Pour chacun : tes cartes qui le portent et ne sont pas encore dans la
+  // collection (titre puis qid, comme l'album ; une seule par titre). Les cartes cochées s'ajoutent à la fin de la
+  // collection (POST /api/targets/save, éléments existants inchangés), sans doublon, dans les limites de targets.js ; une
+  // collection faite d'une catégorie ou d'une page de Wikipédia garde sa source (comme avec « Modifier »).
+  const TAGADD_PAGE = 120; // cartes de l'aperçu affichées d'abord
+  const TAGADD_MAX = 16; // tags proposés au plus (ceux du même nom et ceux choisis à la main en plus)
+  const TARGET_MAX_ITEMS = 3000; // targets.js : MAX_ITEMS
+  const TARGET_MAX_BYTES = 600 * 1024; // targets.js : MAX_ITEMS_BYTES (éléments en JSON)
+  const titleKey = (t) => (Match ? Match.normTitle(t) : normTitle(t));
+  // Octets UTF-8 d'un texte (la limite de targets.js se compte en octets).
+  const utf8Length = (s) => {
+    let n = 0;
+    for (let i = 0; i < s.length; i++) {
+      const c = s.charCodeAt(i);
+      if (c < 0x80) n++;
+      else if (c < 0x800) n += 2;
+      else if (c >= 0xd800 && c <= 0xdbff && i + 1 < s.length) { n += 4; i++; } else n += 3;
+    }
+    return n;
+  };
+  // Mots qui comptent dans un nom, repliés et au singulier : « Maladies tropicales » -> maladie, tropicale.
+  const nameWords = (s) => fold(String(s || '').replace(/œ/gi, 'oe').replace(/æ/gi, 'ae')).replace(/['’]/g, ' ').split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 1 && !KW_STOP.has(w)).map(singular);
+  // Ressemblance de deux noms (listes de mots) : 3 = les mêmes mots, 2 = ceux de l'un sont tous dans l'autre, 0 sinon.
+  function nameMatch(a, b) {
+    if (!a.length || !b.length) return 0;
+    const A = new Set(a);
+    const B = new Set(b);
+    const aInB = [...A].every((w) => B.has(w));
+    const bInA = [...B].every((w) => A.has(w));
+    return aInB && bInA ? 3 : aInB || bInA ? 2 : 0;
+  }
+  // Tags proposés pour la collection de la fenêtre : rows = [{key, why: same | near | cat | manual | often, n (often :
+  // cartes de la collection qui le portent), inside, cards}] (ceux qui ont des cartes à ajouter, les plus sûrs d'abord),
+  // full = tags du même nom (ou choisis) dont toutes tes cartes sont déjà dedans, own = tes cartes déjà dans la collection.
+  const tagAddInfo = computed(() => {
+    const ta = S.tagAdd;
+    const t = ta ? targets.value.find((x) => x.id === ta.id) : null;
+    if (!t) return null;
+    void qidVersion.value;
+    const titles = new Set();
+    const qids = new Set();
+    const inIds = new Set();
+    for (const it of t.items) {
+      titles.add(titleKey(it.title));
+      if (it.qid) qids.add(it.qid);
+      const c = findCard(it);
+      if (c) inIds.add(c.id);
+    }
+    const qidOf = (c) => (resolver && qids.size ? resolver.known(c.title) || null : null);
+    const isIn = (c) => inIds.has(c.id) || titles.has(titleKey(c.title)) || qids.has(qidOf(c));
+    let own = 0;
+    const inside = new Map(); // tag (ou « Catégorie/ ») -> tes cartes de la collection qui le portent
+    const out = []; // tes cartes hors de la collection qui ont au moins un tag
+    for (const c of cards.value) {
+      if (isIn(c)) {
+        own++;
+        const keys = new Set();
+        for (const tg of c.tags) { keys.add(tg); keys.add(tagCat(tg) + '/'); }
+        for (const k of keys) inside.set(k, (inside.get(k) || 0) + 1);
+      } else if (c.tags.length) out.push(c);
+    }
+    // Rang : choisi à la main 4, même nom 3, catégorie de même nom 2,5, nom proche 2, catégorie proche 1,5, porté par
+    // beaucoup de ses cartes : la part de ses cartes (1 au plus).
+    const words = nameWords(t.name);
+    const rel = new Map();
+    for (const { name } of tagList.value) {
+      const s = nameMatch(nameWords(tagSub(name)), words);
+      if (s) rel.set(name, { key: name, score: s, why: s === 3 ? 'same' : 'near' });
+    }
+    for (const node of tagTree.value) {
+      if (node.cat === OTHER) continue;
+      const s = nameMatch(nameWords(node.cat), words);
+      if (s) rel.set(node.cat + '/', { key: node.cat + '/', score: s - 0.5, why: 'cat' });
+    }
+    for (const k of ta.extra) if (!rel.has(k)) rel.set(k, { key: k, score: 4, why: 'manual' });
+    if (own >= 2) {
+      for (const [k, n] of inside) {
+        if (rel.has(k) || k.endsWith('/') || n < 2 || n < own * 0.2) continue;
+        rel.set(k, { key: k, score: n / own, why: 'often', n });
+      }
+    }
+    const found = new Map([...rel.keys()].map((k) => [k, new Map()])); // clé -> titre -> carte
+    for (const c of out) {
+      const tk = titleKey(c.title);
+      for (const tg of c.tags) {
+        for (const k of [tg, tagCat(tg) + '/']) {
+          const m = found.get(k);
+          if (m && !m.has(tk)) m.set(tk, c);
+        }
+      }
+    }
+    const rows = [];
+    const full = [];
+    for (const r of rel.values()) {
+      const row = { ...r, inside: inside.get(r.key) || 0, cards: [...found.get(r.key).values()] };
+      if (row.cards.length) rows.push(row); else if (r.why !== 'often') full.push(row);
+    }
+    rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.key, b.key));
+    const sure = rows.filter((r) => r.why !== 'often');
+    const often = rows.filter((r) => r.why === 'often').slice(0, Math.max(0, TAGADD_MAX - sure.length));
+    return { t, own, rows: [...sure, ...often], full, hasTags: tagList.value.length > 0 };
+  });
+  // Aperçu : tes cartes des tags cochés, une par titre, de A à Z ; picked = sans celles décochées.
+  const tagAddPreview = computed(() => {
+    const info = tagAddInfo.value;
+    const ta = S.tagAdd;
+    if (!info || !ta) return [];
+    const m = new Map();
+    for (const r of info.rows) {
+      if (!ta.on.has(r.key)) continue;
+      for (const c of r.cards) { const k = titleKey(c.title); if (!m.has(k)) m.set(k, c); }
+    }
+    return [...m.values()].sort((a, b) => COLLATOR.compare(a.title, b.title));
+  });
+  const tagAddPicked = computed(() => (S.tagAdd ? tagAddPreview.value.filter((c) => !S.tagAdd.off.has(c.id)) : []));
+  function openTagAdd(col) {
+    S.tagAdd = { id: col.id, on: new Set(), off: new Set(), extra: [], field: '', fieldError: '', limit: TAGADD_PAGE, busy: false, error: '' };
+    // Cochés d'emblée : les tags du même nom que la collection (les plus sûrs) ; les autres, à cocher soi-même.
+    const info = tagAddInfo.value;
+    if (info) for (const r of info.rows) if (r.why === 'same') S.tagAdd.on.add(r.key);
+    S.modal = 'tagadd';
+  }
+  function toggleTagAddKey(ta, key, on) {
+    if (on) ta.on.add(key); else ta.on.delete(key);
+    ta.limit = TAGADD_PAGE;
+    ta.error = '';
+  }
+  function toggleTagAddCard(ta, id, on) { if (on) ta.off.delete(id); else ta.off.add(id); }
+  // Tout cocher (ou tout décocher) dans l'aperçu.
+  function toggleTagAddAll(ta, on) {
+    if (on) ta.off.clear();
+    else for (const c of tagAddPreview.value) ta.off.add(c.id);
+  }
+  // « Un autre de tes tags » : le nom exact (« Pays/Brésil »), un sous-tag seul s'il n'y en a qu'un de ce nom
+  // (« Brésil »), ou une catégorie de tags (toute la catégorie).
+  function addTagAddKey(ta) {
+    const raw = cleanTag(ta.field);
+    if (!raw) return;
+    const names = tagList.value.map((x) => x.name);
+    const f = fold(raw);
+    let key = names.includes(raw) ? raw : null;
+    if (!key) {
+      const same = names.filter((x) => fold(x) === f || fold(tagSub(x)) === f);
+      if (same.length > 1) { ta.fieldError = `Plusieurs tags s'appellent « ${raw} » : choisis-en un dans la liste (${same.map(tagTitle).join(', ')}).`; return; }
+      if (same.length) key = same[0];
+    }
+    if (!key) { const node = tagTree.value.find((x) => x.cat !== OTHER && fold(x.cat) === f); if (node) key = node.cat + '/'; }
+    if (!key) { ta.fieldError = `Aucune de tes cartes ne porte le tag « ${raw} ».`; return; }
+    if (!ta.extra.includes(key)) ta.extra.push(key);
+    ta.on.add(key);
+    ta.field = '';
+    ta.fieldError = '';
+  }
+  async function saveTagAdd(ta) {
+    if (ta.busy) return;
+    const t = targets.value.find((x) => x.id === ta.id);
+    if (!t) { ta.error = "Cette collection n'existe plus."; return; }
+    // Rapprochés de nouveau au moment d'enregistrer (la collection a pu changer depuis l'ouverture) : aucun doublon.
+    const titles = new Set(t.items.map((it) => titleKey(it.title)));
+    const qids = new Set(t.items.map((it) => it.qid).filter(Boolean));
+    const fresh = [];
+    for (const c of tagAddPicked.value) {
+      const k = titleKey(c.title);
+      const q = resolver ? resolver.known(c.title) || null : null;
+      if (titles.has(k) || (q && qids.has(q))) continue;
+      titles.add(k);
+      if (q) qids.add(q);
+      // Carte possédée : sa description du jeu ; pas d'image (la carte a la sienne, une case vide la retrouve sur Wikipédia).
+      const item = { title: c.title, description: c.category || null, image: null, status: 'ok' };
+      if (q) item.qid = q;
+      fresh.push(item);
+    }
+    if (!fresh.length) { ta.error = 'Ces cartes sont déjà toutes dans la collection.'; return; }
+    const items = [...t.items, ...fresh];
+    if (items.length > TARGET_MAX_ITEMS) { ta.error = `${fmt(TARGET_MAX_ITEMS)} éléments au plus par collection : elle en aurait ${fmt(items.length)}. Décoche-en ${fmt(items.length - TARGET_MAX_ITEMS)}.`; return; }
+    if (utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) { ta.error = 'Collection trop volumineuse avec ces cartes : 600 Ko au plus. Décoche-en une partie.'; return; }
+    const body = { id: t.id, name: t.name, items };
+    if (t.source) body.source = t.source;
+    const gen = cardsGen;
+    ta.busy = true;
+    ta.error = '';
+    try {
+      const r = await api('POST', '/api/targets/save', body);
+      if (gen !== cardsGen) return; // classeur changé entre-temps
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+      if (S.tagAdd === ta) closeModal();
+      notify(`${cards$(fresh.length)} ${plural(fresh.length, 'ajoutée', 'ajoutées')} à « ${t.name} ».`);
+    } catch (e) {
+      if (S.tagAdd === ta) ta.error = e.message;
+    } finally {
+      ta.busy = false;
+    }
+  }
+
   // ---------------------------------------------------------------- fenêtres, réglages, favori
   function closeModal() {
     const m = S.modal;
@@ -2111,6 +2315,7 @@
     if (m === 'switch') S.switchAsk = null;
     if (m === 'editor') kwAbort();
     if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
+    if (m === 'tagadd') S.tagAdd = null;
     if (m === 'sync') stopSync();
   }
   function openConfirm(o) {
@@ -4185,8 +4390,14 @@
       onClick: () => copyName(title, id),
     }, [icon(done ? 'check' : 'copy', slot ? '' : 'sm')]);
   }
-  // Titre d'une fiche, avec l'icône « Copier le nom » à côté (sauf article à vérifier).
-  const ficheTitle = (title, copy) => h('div', { class: 'fiche__title' }, [h('h2', { id: 'detail-title' }, title), copy ? copyNameButton(title) : null]);
+  // Icône « Partager dans le chat » : à côté de « Copier le nom » dans les fiches ; met [[Titre]] dans le champ du chat.
+  function shareChatButton(title) {
+    return h('button', { class: 'copy-name share-chat', type: 'button', title: 'Partager dans le chat', 'aria-label': `Partager « ${title} » dans le chat`,
+      onClick: () => shareInChat(title) }, [icon('chat', 'sm')]);
+  }
+  // Titre d'une fiche, avec les icônes « Copier le nom » et « Partager dans le chat » à côté (sauf article à vérifier).
+  const ficheTitle = (title, copy) => h('div', { class: 'fiche__title' }, [h('h2', { id: 'detail-title' }, title),
+    copy ? copyNameButton(title) : null, copy ? shareChatButton(title) : null]);
   // Case vide d'une collection : la carte qui te manque. Toute la case ouvre sa fiche : un bouton étendu sur la case
   // (frère du bouton « Copier le nom », jamais parent : pas de contrôle dans un contrôle), qui passe au-dessus.
   function viewSlot(s, col) {
@@ -4545,8 +4756,8 @@
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
     else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
     // Catégorie ou page de Wikipédia : « Créer une collection » (déjà faite : « Ouvrir ta collection »), « Voir sur
-    // Wikipédia » ; collection : « Modifier », « Supprimer » (et « Voir sur Wikipédia » pour celle faite d'une catégorie
-    // ou d'une page).
+    // Wikipédia » ; collection : « Ajouter par tags », « Modifier », « Supprimer » (et « Voir sur Wikipédia » pour celle
+    // faite d'une catégorie ou d'une page).
     const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
     const tooBig = !!cv && cv.total > 3000;
     const pg = cv && cv.type === 'page' ? cv : null; // page de Wikipédia ouverte : ses liens
@@ -4569,6 +4780,7 @@
       ];
     } else {
       actions = [
+        h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags']),
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
         col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
@@ -5459,13 +5671,17 @@
   // message ni geste dans le chat). Ailleurs : GET /api/me (relu toutes les 60 s, page visible) donne last_chat_id, et
   // les nouveaux messages ne sont lus que s'il change : badge des non-lus sur l'onglet. Dernier message lu : localStorage
   // (classeur-chat-lu = {<id du compte>: numéro}, accès protégés ; refusé : en mémoire seulement). Jamais de HTML : le
-  // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener).
+  // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener) et les cartes citées
+  // ([[Titre]]) des boutons qui ouvrent leur fiche (titre en texte).
   const CHAT_MAX = 500;
   const CHAT_EVERY = 12 * 1000;
   const CHAT_IDLE_EVERY = 30 * 1000;
   const CHAT_IDLE_AFTER = 5 * 60 * 1000;
   const CHAT_KEY_LINK = /#cle=[A-Za-z0-9_-]{20,}/;
   const CHAT_URL = /\bhttps?:\/\/[^\s<>"«»]+/gi;
+  // Carte citée dans un message : [[Titre de la carte]] (un titre de Wikipédia : 1 à 300 caractères, sans [ ] { } | # < >
+  // ni retour à la ligne). Le texte envoyé ne change pas ; la page la montre en pastille qui ouvre la fiche de la carte.
+  const CHAT_CARD = /\[\[([^[\]{}|#<>\n]{1,300})\]\]/g;
   const chatMsgs = shallowRef([]);
   let chatRev = null;
   let chatLastId = 0;
@@ -5526,11 +5742,100 @@
     if (last < text.length) out.push({ text: text.slice(last) });
     return out;
   }
+  // Morceaux d'un message : cartes citées ({text, card: titre}, « [[rihanna]] » -> « Rihanna »), puis, entre elles,
+  // texte brut et liens (linkify). Un lien entre crochets (« [[https://…]] ») reste un lien.
+  function chatParts(text) {
+    const out = [];
+    let last = 0;
+    for (const m of text.matchAll(CHAT_CARD)) {
+      const title = normTitle(m[1]);
+      if (!title || /^https?:/i.test(title)) continue;
+      if (m.index > last) out.push(...linkify(text.slice(last, m.index)));
+      out.push({ text: m[0], card: title });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push(...linkify(text.slice(last)));
+    return out;
+  }
   function prepChatMsg(m) {
     const id = Number(m && m.id);
     if (!Number.isInteger(id) || id <= 0) return null;
     const text = String(m.text || '');
-    return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''), parts: linkify(text) });
+    return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''), parts: chatParts(text) });
+  }
+  // Pastille d'une carte citée : la fiche de ta carte, sinon celle d'une carte que tu n'as pas (ce qu'en disent tes
+  // collections, puis l'article vérifié sur Wikipédia : checkChatCard).
+  function openChatCard(title, ev) {
+    const c = findCard({ title });
+    if (c) { openCardFrom(c.id, ev); return; }
+    const k = titleKey(title);
+    let known = null;
+    for (const t of targets.value) { known = t.items.find((it) => it.status === 'ok' && titleKey(it.title) === k) || null; if (known) break; }
+    openMissingFrom({ ...(known || { title, description: null, image: null, status: 'ok' }), chat: true, checking: true }, ev);
+    checkChatCard(S.openMissing);
+  }
+  // Article d'une carte citée dans le chat, vérifié sur Wikipédia (une requête : redirection, homonymie, description,
+  // qid, vignette et vues sur 30 jours, dans le cache des vues des albums) ; fiche mise à jour si elle est encore
+  // ouverte. Une redirection vers une de tes cartes (même qid) ouvre la sienne ; le qid appris sert aussi aux pastilles.
+  async function checkChatCard(opened) {
+    const title = opened.title;
+    const pages = new Map();
+    const alias = {};
+    let views = null;
+    try {
+      let cont = {};
+      for (let guard = 0; guard < 10; guard++) {
+        const j = await getJson(wikiQ, wpUrl({ action: 'query', redirects: '1', prop: 'pageprops|description|pageimages|pageviews', ppprop: 'disambiguation|wikibase_item',
+          piprop: 'thumbnail', pithumbsize: '330', pvipdays: '30', titles: title, ...cont }), 3);
+        const q = (j && j.query) || {};
+        Object.assign(alias, aliasOf(q));
+        for (const p of q.pages || []) {
+          if (p.pageviews) views = (views || 0) + Object.values(p.pageviews).reduce((s, x) => s + (x || 0), 0);
+          pages.set(p.title, Object.assign(pages.get(p.title) || {}, p));
+        }
+        if (!j.continue) break;
+        cont = j.continue;
+      }
+    } catch (e) {
+      if (S.openMissing === opened) S.openMissing = markRaw({ ...opened, checking: false });
+      return; // Wikipédia indisponible : la fiche garde ce qu'elle sait
+    }
+    const p = pages.get(resolve(alias, title));
+    let item;
+    if (!p || p.missing || p.invalid) item = { ...opened, status: 'missing', checking: false };
+    else {
+      const thumb = (p.thumbnail && p.thumbnail.source) || null;
+      const q = (p.pageprops && p.pageprops.wikibase_item) || null;
+      item = { ...opened, title: p.title, description: opened.description || p.description || null, image: opened.image || thumb,
+        status: p.pageprops && 'disambiguation' in p.pageprops ? 'disambiguation' : 'ok', qid: opened.qid || q, checking: false };
+      pvCache.set(p.title, [views, thumb]);
+      S.pv.version++;
+      if (resolver && q) { resolver.remember([[title, q], [p.title, q]]); qidVersion.value++; }
+    }
+    if (S.openMissing !== opened) return;
+    const mine = item.status === 'ok' ? findCard(item) : null;
+    if (mine) openCardById(mine.id); else S.openMissing = markRaw(item);
+  }
+  // « Partager dans le chat » (fiches) : [[Titre]] au bout du brouillon du chat (sauf s'il y est déjà), puis l'onglet
+  // Chat, le curseur à la fin du champ. Rien n'est envoyé : on complète son message, puis Entrée.
+  function shareInChat(title) {
+    const c = S.chat;
+    const link = '[[' + title + ']]';
+    if (!c.draft.includes(link)) {
+      const next = c.draft + (c.draft && !/\s$/.test(c.draft) ? ' ' : '') + link + ' ';
+      if (next.length > CHAT_MAX) { notify(`Ton message en cours est trop long pour y ajouter « ${title} » (${CHAT_MAX} caractères au plus).`, true); return; }
+      c.draft = next;
+    }
+    c.sendError = '';
+    if (S.modal) closeModal();
+    closeCard();
+    setTab('chat');
+    nextTick(() => {
+      const t = document.getElementById('chat-input');
+      if (!t) return;
+      t.focus();
+      if (typeof t.setSelectionRange === 'function') t.setSelectionRange(t.value.length, t.value.length);
+    });
   }
   // Heure du message : « 14:32 » aujourd'hui, « hier, 14:32 », sinon « 15 oct., 14:32 » (l'année si ce n'est pas celle-ci).
   function chatWhen(iso) {
@@ -5771,15 +6076,24 @@
         m.mine ? h('button', { class: 'chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
           [icon('trash', 'sm'), h('span', { class: 'chat-msg__del-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
       ]),
-      h('p', { class: 'chat-msg__text' }, m.parts.map((p) => (p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
+      h('p', { class: 'chat-msg__text' }, m.parts.map((p) => (p.card ? viewChatCard(p.card)
+        : p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
     ]);
+  }
+  // Pastille d'une carte citée : ta carte (avec sa rareté), ou une carte que tu n'as pas (bord en pointillés).
+  function viewChatCard(title) {
+    const c = findCard({ title });
+    const r = c ? okRarity(c.rarity) : null;
+    return h('button', { class: ['chat-card', { own: !!c }], type: 'button', title: c ? 'Ta carte : ouvrir sa fiche' : "Pas dans ton classeur : ouvrir sa fiche",
+      'aria-label': c ? `Ta carte « ${title} »${r ? ' (' + RARITY_NAME[r] + ')' : ''} : ouvrir sa fiche` : `Carte « ${title} », pas dans ton classeur : ouvrir sa fiche`,
+      onClick: (e) => openChatCard(title, e) }, [c ? pill(c.rarity) : null, h('span', { class: 'chat-card__name' }, title)]);
   }
   function viewChatForm() {
     const c = S.chat;
     const n = c.draft.length;
     return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
       h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
-      h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint',
+      h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint chat-tip',
         onInput: (e) => { c.draft = e.target.value; if (c.sendError) c.sendError = ''; chatTouch(); }, onKeydown: onChatKey }),
       h('div', { class: 'chat-form__foot' }, [
         h('span', { id: 'chat-hint', class: 'chat-hint' }, [h('kbd', null, 'Entrée'), ' envoie, ', h('kbd', null, 'Maj'), ' + ', h('kbd', null, 'Entrée'), ' va à la ligne']),
@@ -5787,6 +6101,8 @@
         h('button', { class: 'btn primary', type: 'submit', disabled: c.sending || !c.draft.trim() }, c.sending ? 'Envoi…' : 'Envoyer'),
       ]),
       errLine(c.sendError),
+      // Aide (aussi sur téléphone, contrairement aux raccourcis) : citer une carte.
+      h('p', { id: 'chat-tip', class: 'chat-tip' }, ['Pour montrer une carte : ', h('code', null, '[[Titre de la carte]]'), ', ou « Partager dans le chat » depuis sa fiche.']),
     ]);
   }
   function viewChat() {
@@ -6204,8 +6520,8 @@
     if (!list.length) return S.friends.busy ? h('p', { class: 'small muted', role: 'status' }, 'Recherche chez tes amis…') : null;
     return h('p', { class: 'friends-note' }, [h('b', null, 'Chez : '), holdersText(list), h('span', { class: 'muted' }, ' · à échanger dans le jeu, entre vous')]);
   }
-  // Fiche d'une carte qui te manque (case vide) : ce qu'en dit Wikipédia, sa rareté estimée d'après ses vues,
-  // les collections où elle figure, le marché du jeu (article vérifié seulement) et l'article.
+  // Fiche d'une carte qui te manque (case vide, ou carte citée dans le chat) : ce qu'en dit Wikipédia, sa rareté
+  // estimée d'après ses vues, les collections où elle figure, le marché du jeu (article vérifié seulement) et l'article.
   function viewMissing(item, closeRef, boxRef) {
     void S.pv.version;
     const info = pvCache.get(item.title);
@@ -6232,13 +6548,17 @@
         ficheTitle(item.title, ok),
         item.description ? h('p', { class: 'muted lead' }, item.description) : null,
         h('p', { class: 'missing-note' }, 'Pas encore dans ta collection'),
-        viewSepToggle(albumItemOf((it) => it.title === item.title && !findCard(it))),
+        item.chat ? null : viewSepToggle(albumItemOf((it) => it.title === item.title && !findCard(it))),
+        // Carte citée dans le chat (item.chat) : vérifiée sur Wikipédia à l'ouverture (item.checking), pas de collection à corriger.
+        item.checking ? h('p', { class: 'small muted', role: 'status' }, 'Vérification sur Wikipédia…') : null,
         viewMissingFriends(item),
-        item.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
-        item.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre dans la collection.") : null,
+        item.status === 'missing' ? h('p', { class: 'warn' }, item.chat ? 'Article introuvable sur Wikipédia : le titre cité dans le chat est peut-être mal écrit.'
+          : 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
+        item.status === 'disambiguation' ? h('p', { class: 'warn' }, item.chat ? "Page d'homonymie sur Wikipédia : le titre cité dans le chat ne désigne pas une seule carte."
+          : "Page d'homonymie : précise le titre dans la collection.") : null,
         ok ? h('div', { class: 'facts' }, [
-          real ? fact('Rareté dans le jeu', RARITY_NAME[real]) : fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running ? '…' : '?'),
-          fact('Vues sur 30 jours', views != null ? fmt(views) : S.pv.running ? '…' : '?'),
+          real ? fact('Rareté dans le jeu', RARITY_NAME[real]) : fact('Rareté estimée', est ? '≈ ' + RARITY_NAME[est] : S.pv.running || item.checking ? '…' : '?'),
+          fact('Vues sur 30 jours', views != null ? fmt(views) : S.pv.running || item.checking ? '…' : '?'),
         ]) : null,
         ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
@@ -6517,6 +6837,70 @@
       ]),
     ]);
   }
+  // « Ajouter par tags » : tags proposés (cochés d'emblée : ceux du même nom), un autre tag au choix, aperçu des cartes
+  // à ajouter (décochables une à une), puis « Ajouter N cartes ».
+  function modalTagAdd() {
+    const ta = S.tagAdd;
+    if (!ta) return null;
+    const info = tagAddInfo.value;
+    if (!info) return h(Modal, { key: 'tagadd', title: 'Ajouter par tags', onClose: closeModal }, () => [h('p', null, "Cette collection n'existe plus."), foot([closeBtn()])]);
+    const t = info.t;
+    const preview = tagAddPreview.value;
+    const n = tagAddPicked.value.length;
+    const after = t.items.length + n;
+    const tooMany = after > TARGET_MAX_ITEMS;
+    const page = pageOfSource(t.source);
+    const src = isCatSource(t.source) ? `de la catégorie Wikipédia « ${catName(t.source)} »` : page ? `de la page Wikipédia « ${page} »` : null;
+    const why = (r) => (r.why === 'same' ? 'même nom que la collection' : r.why === 'near' ? 'nom proche de celui de la collection'
+      : r.why === 'cat' ? `catégorie de tags ${r.score > 2 ? 'de même nom' : 'au nom proche'} : tous ses tags` : r.why === 'manual' ? 'choisi par toi'
+        : `porté par ${fmt(r.n)} de tes ${fmt(info.own)} cartes de la collection`) + (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dedans` : '');
+    const row = (r) => h('li', { key: r.key }, [
+      h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: ta.on.has(r.key), disabled: ta.busy, onClick: (e) => toggleTagAddKey(ta, r.key, e.target.checked) }),
+        h('span', null, tokenLabel(r.key))]),
+      h('span', { class: 'n' }, `${fmt(r.cards.length)} à ajouter`),
+      h('span', { class: 'why' }, why(r)),
+    ]);
+    const fullNames = info.full.map((r) => `« ${tokenLabel(r.key)} »`);
+    let none = null;
+    if (!info.hasTags) none = "Tu n'as encore posé aucun tag : ajoutes-en dans la fiche d'une carte, ou à plusieurs cartes d'un coup (sélection dans « Mes cartes »), puis reviens ici.";
+    else if (!info.rows.length) {
+      none = fullNames.length ? `Rien à proposer : tes cartes qui portent ${namesText(fullNames, false)} sont déjà toutes dans la collection, et aucun autre tag ne s'en approche.`
+        : `Rien à proposer : aucun de tes tags ne ressemble au nom « ${t.name} »${info.own >= 2 ? ", et aucun n'est porté par plusieurs de tes cartes de la collection" : ''}.`;
+    }
+    const shown = preview.slice(0, ta.limit);
+    return h(Modal, { key: 'tagadd', wide: true, title: 'Ajouter par tags', onClose: closeModal }, () => [
+      h('p', null, `Dans « ${t.name} » : coche des tags, et tes cartes qui les portent sans être encore dans la collection s'y ajoutent, à la fin. Proposés : les tags dont le nom ressemble à celui de la collection, puis ceux que portent beaucoup de tes cartes déjà dedans.`),
+      src ? h('p', { class: 'note' }, `Cette collection est faite ${src} : les cartes ajoutées viennent en plus de ses articles et elle garde sa source, comme avec « Modifier ».`) : null,
+      info.rows.length ? h('ul', { class: 'tagadd', 'aria-label': 'Tags proposés' }, info.rows.map(row)) : h('p', { role: 'status' }, none),
+      info.rows.length && fullNames.length ? h('p', { class: 'note' }, `Déjà toutes dans la collection : tes cartes qui portent ${namesText(fullNames, false)}.`) : null,
+      info.hasTags ? h('form', { class: 'tagadd-other', onSubmit: (e) => { e.preventDefault(); addTagAddKey(ta); } }, [
+        h('label', { class: 'sr', for: 'tagadd-other' }, 'Un autre de tes tags'),
+        h('input', { id: 'tagadd-other', class: 'field', list: 'taglist', value: ta.field, maxlength: 60, autocomplete: 'off', placeholder: 'Un autre de tes tags…',
+          onInput: (e) => { ta.field = e.target.value; ta.fieldError = ''; } }),
+        h('button', { class: 'btn small', type: 'submit', disabled: ta.busy || !ta.field.trim() }, [icon('plus', 'sm'), 'Ajouter à la liste']),
+      ]) : null,
+      errLine(ta.fieldError),
+      ...(preview.length ? [
+        h('div', { class: 'tagadd-head' }, [
+          h('h3', null, `Aperçu : ${cards$(n)} à ajouter${n < preview.length ? ` sur ${fmt(preview.length)}` : ''}`),
+          h('button', { class: 'linkish', type: 'button', disabled: ta.busy, onClick: () => toggleTagAddAll(ta, n < preview.length) }, n < preview.length ? 'Tout cocher' : 'Tout décocher'),
+        ]),
+        h('ul', { class: 'tagadd-preview', 'aria-label': 'Cartes à ajouter' }, shown.map((c) => h('li', { key: c.id }, [
+          h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: !ta.off.has(c.id), disabled: ta.busy, onClick: (e) => toggleTagAddCard(ta, c.id, e.target.checked) }),
+            pill(c.rarity), h('span', null, c.title)]),
+        ]))),
+        shown.length < preview.length ? h('button', { class: 'linkish', type: 'button', onClick: () => { ta.limit += TAGADD_PAGE; } },
+          `Afficher les ${fmt(Math.min(TAGADD_PAGE, preview.length - shown.length))} suivantes (${fmt(preview.length - shown.length)} restantes)`) : null,
+      ] : ta.on.size && info.rows.length ? [h('p', { class: 'note' }, 'Coche un tag qui a des cartes à ajouter.')] : []),
+      tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection aurait ${fmt(after)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus. Décoche-en ${fmt(after - TARGET_MAX_ITEMS)}.`) : null,
+      errLine(ta.error),
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: ta.busy || !n || tooMany, onClick: () => saveTagAdd(ta) },
+          ta.busy ? 'Enregistrement…' : n ? `Ajouter ${cards$(n)}` : 'Ajouter'),
+      ]),
+    ]);
+  }
   function modalConfirm() {
     const cf = S.confirm;
     if (!cf) return null;
@@ -6587,7 +6971,7 @@
       ]),
     ]);
   }
-  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync };
+  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

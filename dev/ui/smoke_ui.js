@@ -332,6 +332,7 @@ const WIKI = {
   'Liste de noms de couleur': { q: 'Q900300' },
   'Liste de couleurs (pigments)': { q: 'Q900310' },
   'Tableau périodique des éléments': { q: 'Q10693' },
+  'Lèpre': { q: 'Q36956', desc: 'maladie infectieuse chronique', pv: 2000 }, // carte citée dans le chat, qu'Alek n'a pas
 };
 // Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
 const LINKS = { 'Charolaise': 'Q900101', 'Limousine (race bovine)': 'Q900102', 'Salers (race bovine)': 'Q900103', France: 'Q142', 'Massif central': 'Q900104' };
@@ -3082,6 +3083,159 @@ async function main() {
       await settle();
     }
     console.log(`chat : ${apiLog.filter((x) => /^(GET|POST|DELETE) \/api\/chat\b/.test(x)).length} appels de /api/chat par les pages, dont ${apiLog.filter((x) => /^GET \/api\/chat\?after=/.test(x)).length} relectures ?after`);
+  }
+
+  // 31. « Ajouter par tags » (album d'une collection) : Alek a une collection « Maladies » et des cartes taguées
+  // « Maladie » qui n'y sont pas. Tags proposés (même nom, coché d'emblée ; nom proche ; porté par beaucoup de ses
+  // cartes), aperçu décochable carte par carte, ajout (éléments existants gardés, nouveaux à la fin, sans doublon) ;
+  // rouverte : le tag complet est signalé. Collection faite d'une catégorie : « Rien à proposer », un tag choisi à la
+  // main, source gardée.
+  // 32. Cartes citées dans le chat : [[Titre]] devient une pastille (ta carte : sa rareté ; sinon en pointillés) qui ouvre
+  // la fiche (la tienne, ou la carte manquante vérifiée sur Wikipédia) ; jamais de HTML ; « Partager dans le chat » d'une
+  // fiche met [[Titre]] dans le champ du chat et ouvre l'onglet.
+  {
+    const keyA = await makeOtherAccount('Alek');
+    const mkA = (id, title, rarity, category) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category, image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    await sendImport(keyA, [mkA('a1', 'Grippe', 'R', 'maladie infectieuse'), mkA('a2', 'Rougeole', 'PC', 'maladie infectieuse'), mkA('a3', 'Varicelle', 'C', 'maladie'),
+      mkA('a4', 'Choléra', 'SR', 'maladie'), mkA('a5', 'Peste', 'UR', 'maladie'), mkA('a6', 'Paludisme', 'R', 'maladie parasitaire'),
+      mkA('a7', 'Louis Pasteur', 'L', 'scientifique français'), mkA('a8', 'Rihanna', 'L', 'chanteuse barbadienne')]);
+    const tagA = async (ids, tag) => check((await rawApi('POST', '/api/tags/bulk', keyA, { card_ids: ids, add: [tag], remove: [] })).status === 200, "tags d'Alek refusés");
+    await tagA(['a1', 'a2', 'a3', 'a4', 'a5'], 'Sciences et nature/Maladie');
+    await tagA(['a1', 'a2', 'a3', 'a7'], 'Contagion');
+    await tagA(['a6'], 'Maladies tropicales');
+    await tagA(['a8'], 'Métiers/Chanteuse');
+    const it0 = (title, more) => ({ title, description: null, image: null, status: 'ok', ...more });
+    check((await rawApi('POST', '/api/targets/save', keyA, { name: 'Maladies', items: [it0('Grippe'), it0('Rougeole'),
+      it0('Tuberculose', { description: 'maladie infectieuse', qid: 'Q12204' }), it0('Variole')] })).status === 200, 'collection « Maladies » refusée');
+    check((await rawApi('POST', '/api/targets/save', keyA, { name: 'Vaccination', source: 'wp:Vaccination', items: [it0('Louis Pasteur')] })).status === 200, 'collection « Vaccination » refusée');
+    ls.set('classeur-key', keyA);
+    ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alek' }]));
+    const pa = openPage({ idb: 'absent' });
+    const d = pa.doc;
+    const txt = () => text(d.body);
+    const btnIn = (root, t) => root.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    check(await waitFor(() => pa.count() === 8), "classeur d'Alek non ouvert");
+    d.getElementById('tab-collections').click();
+    await settle();
+    const openRow = async (name) => {
+      const r = d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :'));
+      check(r, `collection « ${name} » absente`);
+      r.click();
+      await settle(80);
+    };
+    await openRow('Maladies');
+    check(txt().includes('2 sur 4') && btnIn(d.body, 'Ajouter par tags'), '« Ajouter par tags » absent de l\'album de « Maladies »');
+    btnIn(d.body, 'Ajouter par tags').click();
+    await settle();
+    const modal = () => d.querySelectorAll('.modal')[0] || null;
+    const lis = (c) => { const u = modal().querySelector('.' + c); return u ? u.querySelectorAll('li') : []; }; // le faux DOM ne lit pas « .a li »
+    const rows = () => lis('tagadd');
+    const box = (li) => li.querySelector('input');
+    const prev = () => lis('tagadd-preview').map((li) => text(li));
+    check(modal() && text(modal().querySelector('h2')) === 'Ajouter par tags' && text(modal()).includes('Dans « Maladies »'), 'fenêtre « Ajouter par tags » absente');
+    let rt = rows().map((li) => text(li));
+    check(rt.length === 3 && rt[0].includes('Sciences et nature › Maladie') && rt[0].includes('3 à ajouter') && rt[0].includes('même nom que la collection') && rt[0].includes('2 déjà dedans')
+      && rt[1].includes('Maladies tropicales') && rt[1].includes('1 à ajouter') && rt[1].includes('nom proche')
+      && rt[2].includes('Contagion') && rt[2].includes('2 à ajouter') && rt[2].includes('porté par 2 de tes 2 cartes de la collection'), 'tags proposés : ' + rt.join(' | '));
+    check(box(rows()[0]).checked && !box(rows()[1]).checked && !box(rows()[2]).checked, "seul le tag du même nom doit être coché d'emblée");
+    check(prev().join('|') === 'SRCholéra|URPeste|CVaricelle' && btnIn(modal(), 'Ajouter 3 cartes'), 'aperçu du tag du même nom : ' + prev().join('|'));
+    // Un tag de plus (« Contagion » : Varicelle y est déjà, Louis Pasteur s'ajoute), puis une carte décochée.
+    box(rows()[2]).click();
+    await settle();
+    check(prev().length === 4 && prev()[1] === 'LLouis Pasteur', 'aperçu avec « Contagion » : ' + prev().join('|'));
+    box(lis('tagadd-preview').find((li) => text(li).includes('Louis Pasteur'))).click();
+    await settle();
+    check(text(modal()).includes('Aperçu : 3 cartes à ajouter sur 4') && btnIn(modal(), 'Ajouter 3 cartes') && btnIn(modal(), 'Tout cocher'), 'carte décochée dans l\'aperçu : ' + text(modal()).slice(-300));
+    btnIn(modal(), 'Ajouter 3 cartes').click();
+    check(await waitFor(() => !modal()), "la fenêtre doit se fermer après l'ajout");
+    let mal = (await rawApi('GET', '/api/targets', keyA)).body.targets.find((x) => x.name === 'Maladies');
+    check(mal.items.map((i) => i.title).join('|') === 'Grippe|Rougeole|Tuberculose|Variole|Choléra|Peste|Varicelle', "éléments après l'ajout : " + mal.items.map((i) => i.title).join('|'));
+    check(mal.items[2].qid === 'Q12204' && mal.items[2].description === 'maladie infectieuse' && mal.items[4].description === 'maladie' && mal.items[4].status === 'ok' && mal.items[4].image === null,
+      'éléments existants gardés tels quels, nouveaux complets : ' + JSON.stringify(mal.items.slice(2, 5)));
+    check(await waitFor(() => txt().includes('3 cartes ajoutées à « Maladies »') && txt().includes('5 sur 7')), "confirmation ou progression après l'ajout");
+    // Rouverte : le tag du même nom est complet (signalé, plus proposé) ; rien n'est coché, rien à ajouter.
+    btnIn(d.body, 'Ajouter par tags').click();
+    await settle();
+    rt = rows().map((li) => text(li));
+    check(rt.length === 2 && rt[0].includes('Maladies tropicales') && rt[1].includes('Contagion') && rt[1].includes('1 à ajouter') && rt[1].includes('porté par 3 de tes 5 cartes'), 'tags proposés, rouverte : ' + rt.join(' | '));
+    check(text(modal()).includes('Déjà toutes dans la collection : tes cartes qui portent « Sciences et nature › Maladie »'), 'tag complet non signalé');
+    check(!modal().querySelectorAll('.tagadd-preview').length && btnIn(modal(), 'Ajouter') && btnIn(modal(), 'Ajouter').disabled, 'rien de coché : rien à ajouter');
+    btnIn(modal(), 'Annuler').click();
+    await settle(300);
+    // Collection faite d'une catégorie de Wikipédia : rien ne ressemble à son nom ; un tag choisi à la main (sous-tag seul,
+    // sans la casse), source gardée à l'enregistrement.
+    btnIn(d.body, '← Toutes les collections').click();
+    await settle();
+    await openRow('Vaccination');
+    btnIn(d.body, 'Ajouter par tags').click();
+    await settle();
+    check(text(modal()).includes('Rien à proposer : aucun de tes tags ne ressemble au nom « Vaccination »') && !rows().length
+      && text(modal()).includes('faite de la catégorie Wikipédia « Vaccination »'), '« Rien à proposer » ou note de la catégorie absents : ' + text(modal()).slice(0, 500));
+    type(d.getElementById('tagadd-other'), 'Inconnu');
+    btnIn(modal(), 'Ajouter à la liste').click();
+    await settle();
+    check(text(modal()).includes('Aucune de tes cartes ne porte le tag « Inconnu ».'), 'tag inconnu non signalé');
+    type(d.getElementById('tagadd-other'), 'contagion');
+    btnIn(modal(), 'Ajouter à la liste').click();
+    await settle();
+    check(rows().length === 1 && text(rows()[0]).includes('Contagion') && text(rows()[0]).includes('choisi par toi') && box(rows()[0]).checked
+      && prev().join('|') === 'RGrippe|PCRougeole|CVaricelle', 'tag choisi à la main : ' + rows().map(text).join(' | ') + ' / ' + prev().join('|'));
+    btnIn(modal(), 'Ajouter 3 cartes').click();
+    check(await waitFor(() => !modal()), "la fenêtre doit se fermer après l'ajout (catégorie)");
+    const vac = (await rawApi('GET', '/api/targets', keyA)).body.targets.find((x) => x.name === 'Vaccination');
+    check(vac.source === 'wp:Vaccination' && vac.items.map((i) => i.title).join('|') === 'Louis Pasteur|Grippe|Rougeole|Varicelle', 'collection faite d\'une catégorie après l\'ajout : ' + JSON.stringify(vac));
+    check(await waitFor(() => txt().includes('depuis la catégorie Wikipédia')), 'la collection doit rester signalée « depuis la catégorie Wikipédia »');
+
+    // 32. Cartes citées dans le chat.
+    const keyB = await makeOtherAccount('Bérénice');
+    check((await rawApi('POST', '/api/chat', keyB, { text: 'Regarde [[grippe]] et [[Lèpre]] ! <b>gras</b> [[<img src=x onerror=alert(1)>]] [[Mot inconnu]]' })).status === 201, 'message de Bérénice refusé');
+    d.getElementById('tab-chat').click();
+    const lastMsg = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    const chips = () => (lastMsg() ? lastMsg().querySelectorAll('.chat-card') : []);
+    check(await waitFor(() => chips().length === 3), 'pastilles des cartes citées absentes : ' + chips().map(text).join('|'));
+    check(text(chips()[0]) === 'RGrippe' && chips()[0].classList.contains('own') && chips()[0].getAttribute('aria-label') === 'Ta carte « Grippe » (Rare) : ouvrir sa fiche'
+      && text(chips()[1]) === 'Lèpre' && !chips()[1].classList.contains('own') && text(chips()[2]) === 'Mot inconnu', 'pastilles : ' + chips().map(text).join('|'));
+    const mt = text(lastMsg().querySelector('.chat-msg__text'));
+    check(!lastMsg().querySelectorAll('b').length && !lastMsg().querySelectorAll('img').length && mt.includes('<b>gras</b>') && mt.includes('[[<img src=x onerror=alert(1)>]]'),
+      'le texte du message ne doit jamais devenir du HTML : ' + mt);
+    check(txt().includes('Pour montrer une carte : [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche.'), 'aide des cartes citées absente sous le champ du chat');
+    const ficheA = () => d.querySelectorAll('.fiche')[0] || null;
+    chips()[0].click();
+    await settle(80);
+    check(ficheA() && !ficheA().classList.contains('fiche--missing') && text(ficheA().querySelector('h2')) === 'Grippe', 'pastille de ta carte : sa fiche attendue');
+    ficheA().querySelector('.close').click();
+    await settle(400);
+    chips()[1].click();
+    check(await waitFor(() => ficheA() && ficheA().classList.contains('fiche--missing') && text(ficheA()).includes('maladie infectieuse chronique') && text(ficheA()).includes('≈ Super rare')),
+      'pastille d\'une carte que tu n\'as pas : fiche vérifiée sur Wikipédia attendue : ' + (ficheA() ? text(ficheA()).slice(0, 300) : 'aucune'));
+    check(text(ficheA()).includes('Pas encore dans ta collection') && text(ficheA()).includes('2 000'), 'fiche de « Lèpre » : vues ou mention absentes');
+    // « Partager dans le chat » (à côté de « Copier le nom ») : [[Lèpre]] dans le champ, fiche fermée.
+    const share = (t) => ficheA().querySelectorAll('button').find((b) => b.getAttribute('aria-label') === `Partager « ${t} » dans le chat`);
+    check(share('Lèpre') && share('Lèpre').parentNode.classList.contains('fiche__title'), 'bouton « Partager dans le chat » absent à côté du titre');
+    share('Lèpre').click();
+    await settle(400);
+    const field = () => d.getElementById('chat-input');
+    check(!ficheA() && field().value === '[[Lèpre]] ', 'partage : fiche fermée et [[Lèpre]] dans le champ attendus : « ' + (field() && field().value) + ' »');
+    chips()[2].click();
+    check(await waitFor(() => ficheA() && text(ficheA()).includes('le titre cité dans le chat est peut-être mal écrit')), 'carte citée introuvable sur Wikipédia : message attendu');
+    check(!share('Mot inconnu'), 'pas de partage pour un article introuvable');
+    ficheA().querySelector('.close').click();
+    await settle(400);
+    // Depuis une autre page (« Mes cartes ») : le partage ouvre l'onglet Chat, le titre s'ajoute au brouillon.
+    d.getElementById('tab-cartes').click();
+    await settle();
+    type(d.getElementById('q'), 'peste');
+    await settle();
+    d.querySelectorAll('.card')[0].dispatch('click');
+    await settle(80);
+    share('Peste').click();
+    check(await waitFor(() => d.getElementById('tab-chat').getAttribute('aria-selected') === 'true' && field() && field().value === '[[Lèpre]] [[Peste]] ' && d.activeElement === field()),
+      'partage depuis « Mes cartes » : onglet Chat, brouillon et curseur attendus : « ' + (field() && field().value) + ' »');
+    field().dispatch('keydown', { key: 'Enter' });
+    check(await waitFor(() => lastMsg() && lastMsg().classList.contains('mine') && chips().map(text).join('|') === 'Lèpre|URPeste'), 'message envoyé avec deux cartes citées : ' + chips().map(text).join('|'));
+    d.getElementById('tab-collections').click();
+    await settle();
   }
 
   // Marché : valeur dans le bandeau, onglet « Marché » (graphique, bonnes affaires, cartes qui bougent, mes enchères et

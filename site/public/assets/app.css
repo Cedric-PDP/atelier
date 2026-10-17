@@ -476,6 +476,14 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .chat-msg__del:hover, .chat-msg__del:focus-visible { color: var(--danger); }
 .chat-msg__text { margin-top: 2px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
 .chat-msg__text a { text-decoration: underline; text-underline-offset: 2px; }
+/* Carte citée ([[Titre]]) : pastille qui ouvre sa fiche ; ta carte avec sa rareté, sinon bord en pointillés. */
+.chat-card { display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 1px 0; padding: 0 9px 0 3px; vertical-align: baseline; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: 99px; background: color-mix(in srgb, var(--accent) 10%, var(--surface)); color: var(--fg); font: 600 13px/1.6 var(--f-body); text-align: left; white-space: normal; overflow-wrap: anywhere; cursor: pointer; }
+.chat-card:not(.own) { padding-left: 9px; border-style: dashed; background: transparent; color: var(--link); }
+.chat-card:hover, .chat-card:focus-visible { border-color: var(--accent); }
+.chat-card .pill { flex: none; padding: 1px 5px; font-size: 10px; box-shadow: none; }
+.chat-card__name { min-width: 0; }
+.chat-tip { font-size: 12px; color: var(--faint); }
+.chat-tip code { overflow-wrap: normal; white-space: nowrap; }
 .chat-below { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); padding: 6px 14px; border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); border-radius: 99px; background: var(--surface-2); color: var(--fg); font-weight: 600; font-size: 12.5px; box-shadow: 0 10px 24px -10px var(--shadow); }
 .chat-error { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .chat-form { display: grid; gap: 8px; }
@@ -533,6 +541,22 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .arrange .arrow { color: var(--faint); }
 .arrange .why { font-size: 12px; color: var(--faint); }
 @media (max-width: 640px) { .arrange li { grid-template-columns: minmax(0, 1fr) minmax(0, 12rem); } .arrange .arrow, .arrange .why { display: none; } .tag-form { grid-template-columns: minmax(0, 1fr); } }
+/* « Ajouter par tags » (album d'une collection) : tags proposés, un autre tag, aperçu des cartes à ajouter. */
+.tagadd { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 34vh; overflow-y: auto; }
+.modal .tagadd li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 6px 10px; border-radius: 9px; background: var(--surface-2); color: var(--fg); }
+.tagadd .check { min-width: 0; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
+.tagadd .check input, .tagadd-preview .check input { margin-top: 3px; flex: none; }
+.tagadd .n { font-size: 12px; color: var(--link); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tagadd .why { grid-column: 1 / -1; padding-left: 22px; font-size: 12px; color: var(--faint); }
+.tagadd-other { display: flex; flex-wrap: wrap; gap: 8px; }
+.tagadd-other .field { flex: 1 1 200px; min-width: 0; }
+.tagadd-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.tagadd-head h3 { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+.tagadd-preview { list-style: none; margin: 0; padding: 6px 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 2px 14px; max-height: 30vh; overflow-y: auto; background: var(--surface-2); border-radius: 8px; }
+.modal .tagadd-preview li { min-width: 0; color: var(--fg); font-size: 13px; }
+.tagadd-preview .check { min-width: 0; align-items: flex-start; padding: 3px 0; }
+.tagadd-preview .check > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.tagadd-preview .pill { flex: none; padding: 1px 5px; font-size: 10px; box-shadow: none; }
 
 /* ------------------------------------------------------------------ nouvelle collection par mots-clés */
 .seg button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }

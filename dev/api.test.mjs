@@ -2724,6 +2724,12 @@ await test('chat : envoi, lecture (100 plus récents, ?after, ?before), auteur =
   assert.equal(r.status, 400);
   assert.match(r.json.error, /prénom/);
   assert.equal(q('SELECT COUNT(*) AS n FROM chat_messages WHERE user_id = ?', anon.user.id)[0].n, 0);
+  // Cartes citées ([[Titre]], montrées en pastilles par la page) : le texte est rangé et relu tel quel, crochets compris.
+  const cited = 'Regarde [[Grippe]] et [[Mercure (planète)]], [[L’Œil — « essai »]] !';
+  r = await say(ben.key, cited);
+  assert.equal(r.status, 201, JSON.stringify(r.json));
+  assert.equal(r.json.message.text, cited);
+  assert.equal((await read(ana.key)).json.messages.at(-1).text, cited);
   e.DB.close();
 });
 
