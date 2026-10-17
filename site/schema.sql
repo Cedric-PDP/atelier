@@ -15,7 +15,8 @@
 -- ses cartes aux autres membres (partage choisi, réciproque) ; public_id = son identifiant pour les autres membres
 -- (aléatoire, tiré à chaque activation du partage, NULL quand il ne partage pas), jamais l'id interne.
 -- shared_targets = 1 s'il montre aussi ses collections à compléter (réglage à part, seulement avec shared = 1 ; remis
--- à 0 quand il cesse de montrer ses cartes).
+-- à 0 quand il cesse de montrer ses cartes). last_sync = résumé de la dernière ligne du journal des synchros (sync_log,
+-- JSON {at, kind, via, result, message}), lu par GET /api/me sans requête de plus.
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT,
@@ -33,7 +34,8 @@ CREATE TABLE IF NOT EXISTS users (
     cards_gone_floor INTEGER NOT NULL DEFAULT 0,
     shared INTEGER NOT NULL DEFAULT 0,
     public_id TEXT,
-    shared_targets INTEGER NOT NULL DEFAULT 0
+    shared_targets INTEGER NOT NULL DEFAULT 0,
+    last_sync TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -86,8 +88,9 @@ CREATE TABLE IF NOT EXISTS refresh_staging (
     PRIMARY KEY (user_id, page)
 );
 
--- Morceaux d'un import (POST /api/import, 500 cartes par morceau) en attendant le dernier : un envoi à la fois par
--- utilisateur, 40 morceaux et 3 Mo au plus, part -1 = statistiques. Effacés au bout d'une heure.
+-- Morceaux d'un import (POST /api/import, 500 cartes par morceau) en attendant le dernier : trois envois en cours au
+-- plus par utilisateur (deux onglets, favori relié et clic), 40 morceaux et 8 Mo au plus chacun, part -1 = en-tête
+-- (statistiques du jeu, exemplaires lus, début de la lecture…). Effacés au bout d'une heure.
 CREATE TABLE IF NOT EXISTS import_staging (
     user_id TEXT NOT NULL,
     upload_id TEXT NOT NULL,
@@ -156,6 +159,22 @@ CREATE TABLE IF NOT EXISTS market (
     attempt TEXT
 );
 
+-- Journal des synchros (functions/_lib/synclog.js) : une ligne par synchro, réussie ou non, écrite par le serveur (import
+-- du favori, synchro rapide, rafraîchissement par cookie) ou signalée par le favori (ses échecs avant tout envoi : session
+-- du jeu expirée, erreur ou limite du jeu…). kind = full (lecture complète) | quick (synchro rapide) ; result = ok |
+-- warn (lecture incomplète : rien retiré) | error ; message = texte lisible ; data = JSON (via : clic | relie | script |
+-- cookie, nombres, durée, raison…). Une ligne identique à la précédente la met seulement à jour (data.repeat). Les 50
+-- plus récentes par classeur, 30 jours au plus.
+CREATE TABLE IF NOT EXISTS sync_log (
+    id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    at TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    result TEXT NOT NULL,
+    message TEXT NOT NULL,
+    data TEXT NOT NULL DEFAULT '{}'
+);
+
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);
@@ -170,3 +189,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id);
 CREATE UNIQUE INDEX IF NOT EXISTS chat_by_rev ON chat_messages (rev);
 
 CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at);
+
+-- Journal des synchros : lecture des plus récentes et élagage, par classeur.
+CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id);

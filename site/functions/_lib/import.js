@@ -1,6 +1,9 @@
 // Import par morceaux (POST /api/import) et finalisation en SQL, commune avec /api/refresh.
-// Limite de calcul des Workers gratuits : JavaScript ne touche jamais plus d'un morceau (500 cartes) ; la
-// comparaison avec la collection en place se fait dans D1.
+// JavaScript ne touche jamais plus d'un morceau (500 cartes) ; la comparaison avec la collection en place se fait dans
+// D1 (règle née de la limite de calcul des Workers gratuits, gardée : elle ne coûte rien).
+// Sécurité des cartes : une lecture complète ne retire des cartes que si elle est VÉRIFIÉE complète (cartes lues =
+// compteurs du jeu, et compteurs identiques avant et après la lecture) ; sinon elle ne fait qu'ajouter les cartes
+// absentes du classeur (finalizeImport). Chaque synchro, réussie ou non, laisse une ligne dans le journal (synclog.js).
 
 import { HttpError, raw } from './http.js';
 import { purgeStaging } from './db.js';
@@ -9,13 +12,47 @@ import {
 } from './cards.js';
 import { byteLength, nowIso, randomToken } from './util.js';
 import { valueAfterCards } from './market.js';
+import { errorEntry, versionOf, viaOf, writeLog } from './synclog.js';
 
 // Quotas d'un envoi en attente (D1 gratuit : 500 Mo en tout, 100 000 lignes écrites par jour).
 const MAX_PARTS = 40;
 // 8 Mo : une carte réelle pèse ~370 octets en forme compacte, donc ~20 000 cartes (la limite de la collection).
 const MAX_STAGING_BYTES = 8 * 1024 * 1024;
+// Envois en cours en même temps par classeur, celui-ci compris (deux onglets, favori relié et clic) : au-delà, le plus
+// ancien est abandonné.
+const MAX_UPLOADS = 3;
+// Version du favori la plus récente (site/public/assets/bookmarklet.js, VERSION ; un test vérifie qu'elles concordent),
+// rendue par « state » : un favori plus ancien le signale.
+export const FAVORI_VERSION = 2;
 
 const nat = (v) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
+const num = (n) => Number(n || 0).toLocaleString('fr-FR');
+const plural = (n, one, many) => (n > 1 ? many : one);
+
+// Début de la lecture : heure du serveur rendue par « state » (favori) ou prise à la page 0 (rafraîchissement). Une
+// lecture plus ancienne que celle dont le classeur vient (sync_state.read_at) n'est jamais appliquée par-dessus. Absent,
+// invalide, à venir (plus d'une minute) ou de plus de 2 h : ignoré (aucun contrôle, comme un ancien favori).
+export function startedAt(v) {
+  if (!isDate(v)) return null;
+  const t = Date.parse(v);
+  if (!Number.isFinite(t) || t > Date.now() + 60_000 || t < Date.now() - 2 * 3600_000) return null;
+  return new Date(Math.min(t, Date.now())).toISOString();
+}
+
+// Raisons d'une relecture complète, envoyées par le favori avec sa lecture (« reason ») et recopiées dans le journal :
+// celles d'une synchro rapide refusée par le classeur (needs_full) et celles qu'il voit lui-même dans le tri par date.
+export const REASONS = {
+  state: 'pas de synchro rapide possible : première lecture, relecture de la semaine ou demandée',
+  counts: 'les compteurs du jeu ne collaient pas avec les nouveautés',
+  race: 'une autre synchro était passée en même temps',
+  invalid: 'une nouvelle carte ne pouvait pas être rangée',
+  too_many: 'plus de 500 nouveautés',
+  max_cards: 'plus de 20 000 cartes',
+  gone: 'la carte la plus récente de la dernière synchro était partie',
+  order: "le jeu n'avait pas rangé la collection par date",
+  sort: "le tri par date du jeu n'avait pas répondu",
+};
+const reasonOf = (v) => (typeof v === 'string' && Object.hasOwn(REASONS, v) ? v : null);
 
 // Collection à importer, recalculée en SQL à partir de la table d'attente (`source` : requête qui rend une colonne
 // `j` = tableau JSON de cartes partielles ; paramètres ?1 = user_id, ?2 = clé de l'envoi).
@@ -102,7 +139,12 @@ const DELTA_SOURCE = 'SELECT ?2 AS j';
 //            lecture incomplète) ;
 //   invalid  cartes distinctes ignorées (invalides) à la lecture complète, comptées dans totalUnique ;
 //   count    cartes du classeur (lu aussi par GET /api/me, sans compter les lignes) ;
-//   tok      jeton tiré à chaque écriture : deux synchros en même temps ne partent pas du même état (writeDelta).
+//   tok      jeton tiré à chaque écriture : deux synchros en même temps ne partent pas du même état (writeDelta) ;
+//   read_at  début de la lecture dont le classeur vient (lecture vérifiée ou synchro rapide ; null : inconnu) : une
+//            lecture commencée avant n'est plus appliquée (« superseded ») ;
+//   complete résultat du contrôle de la dernière lecture complète (true, false ou null : pas de compteurs) ;
+//   up       upload_id du dernier envoi du favori appliqué : son dernier morceau renvoyé (réponse perdue) rend le même
+//            résultat au lieu d'un 409.
 // Le favori (ou /api/refresh) lit la collection triée du plus récent au plus ancien (sort=added) jusqu'à last_at ; les
 // nouveautés ne sont ajoutées que si elles expliquent à elles seules les compteurs du jeu (deltaFits), sinon relecture
 // complète.
@@ -201,7 +243,10 @@ export async function deltaFits(db, user, state, { cards, text, stats, rows, cop
 // Comparer-échanger : l'état n'est remplacé que s'il est encore celui lu à l'authentification (pas d'autre synchro ni
 // d'import complet fini entre-temps), et les cartes ne sont écrites que s'il l'a été (même transaction) ; sinon
 // {needs_full, reason: 'race'} et rien n'est écrit.
-export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, clear = [] }) {
+// started = début de la lecture (startedAt), gardé dans read_at ; copies = exemplaires ajoutés et log = {via, v} pour
+// la ligne du journal (synclog.js).
+export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, copies = 0, started = null, log = {}, clear = [] }) {
+  const t0 = Date.now();
   const cte = collectionCte(DELTA_SOURCE);
   const count = state.count + fresh;
   const next = JSON.stringify({
@@ -210,6 +255,7 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
     last_at: lastAt && lastAt > state.last_at ? lastAt : state.last_at,
     count,
     tok: randomToken(9),
+    read_at: started,
   });
   const old = (f) => `json_extract(cards.data, '$.${f}')`;
   const add = (f) => `json_extract(excluded.data, '$.${f}')`;
@@ -246,6 +292,14 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   ]);
   if (!updated.results.length) return needsFull('race');
   await valueAfterCards(db, user.id); // valeur du jour (market.js), au plus une fois par heure
+  await writeLog(db, user.id, {
+    kind: 'quick',
+    result: 'ok',
+    message: copies
+      ? `Synchro rapide : ${num(copies)} ${plural(copies, 'exemplaire obtenu', 'exemplaires obtenus')}, ${fresh ? `${num(fresh)} ${plural(fresh, 'nouvelle carte', 'nouvelles cartes')}` : 'aucune nouvelle carte'} (${num(count)} ${plural(count, 'carte', 'cartes')}).`
+      : `Synchro rapide : rien de nouveau (${num(count)} ${plural(count, 'carte', 'cartes')}).`,
+    data: { ...log, count, fresh, copies, ms: started ? Date.now() - Date.parse(started) : Date.now() - t0 },
+  });
   return {
     count,
     new_ids: raw(updated.results[0].new_ids || '[]'),
@@ -255,16 +309,37 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   };
 }
 
-// POST /api/import {mode: 'delta', cards, stats, rows, copies, last_at} (favori) : nouveautés seulement, en un envoi.
-// {needs_full: true, reason} (rien d'écrit) quand la synchro rapide n'est pas possible : 'state' (pas de lecture
-// complète vérifiée récente, ou relecture complète demandée), 'too_many', 'invalid' (carte invalide parmi les
-// nouveautés), 'counts' (les compteurs ne collent pas), 'max_cards', 'race' (une autre synchro est passée entre-temps).
+// Réponse à une synchro (rapide ou complète) partie avant la lecture dont le classeur vient déjà (read_at) : rien
+// n'est écrit, le classeur est au moins aussi à jour. Même forme qu'une réponse réussie (un ancien client l'affiche
+// comme telle), avec superseded: true ; une ligne au journal.
+async function supersededReply(db, user, kind, data, extra = {}) {
+  const row = await db.prepare('SELECT sync_state FROM users WHERE id = ?1').bind(user.id).first();
+  const count = syncState(row || {})?.count ?? null;
+  await writeLog(db, user.id, {
+    kind,
+    result: 'ok',
+    message: 'Lecture remplacée : une synchro plus récente (autre onglet, favori relié ou rafraîchissement) est déjà passée, ton classeur est à jour.',
+    data: { ...data, count, superseded: true },
+  });
+  return { count, new_ids: [], complete: null, skipped: 0, ...extra, superseded: true };
+}
+
+// POST /api/import {mode: 'delta', cards, stats, rows, copies, last_at, started?, via?, v?} (favori) : nouveautés
+// seulement, en un envoi. {needs_full: true, reason} (rien d'écrit) quand la synchro rapide n'est pas possible : 'state'
+// (pas de lecture complète vérifiée récente, ou relecture complète demandée), 'too_many', 'invalid' (carte invalide
+// parmi les nouveautés), 'counts' (les compteurs ne collent pas), 'max_cards', 'race' (une autre synchro est passée
+// entre-temps). Lecture commencée avant celle dont le classeur vient (started < read_at) : superseded, rien d'écrit.
 async function deltaRoute(db, user, body) {
   const list = Array.isArray(body.cards) ? body.cards : null;
   if (!list) throw new HttpError(400, 'Il manque les cartes (champ « cards »).');
   if (!nat(body.rows) || !nat(body.copies)) throw new HttpError(400, 'Les champs « rows » et « copies » doivent être des entiers positifs.');
   if (body.last_at !== undefined && body.last_at !== null && !isDate(body.last_at)) throw new HttpError(400, 'Le champ « last_at » doit être une date.');
   const state = syncState(user);
+  const started = startedAt(body.started);
+  const log = { via: viaOf(body.via), v: versionOf(body.v) };
+  if (started && state && isDate(state.read_at) && state.read_at > started) {
+    return supersededReply(db, user, 'quick', log, { quick: true });
+  }
   if (!quickSyncAllowed(state)) return needsFull('state');
   if (list.length > MAX_PART_CARDS) return needsFull('too_many');
   if (body.ignored !== undefined && body.ignored !== null && body.ignored !== 0) return needsFull('invalid');
@@ -278,28 +353,43 @@ async function deltaRoute(db, user, body) {
   const stats = pickStats(body.stats);
   const fit = await deltaFits(db, user, state, { cards, text, stats, rows: body.rows, copies: body.copies });
   if (fit.reason) return needsFull(fit.reason);
-  return writeDelta(db, user, state, { text, stats, lastAt: body.last_at ?? null, fresh: fit.fresh });
+  return writeDelta(db, user, state, { text, stats, lastAt: body.last_at ?? null, fresh: fit.fresh, copies: body.copies, started, log });
 }
 
-// Remplace la collection par celle de la table d'attente, en n'écrivant que les différences, dans une transaction.
-// Les cartes ajoutées, revenues ou modifiées et les retraits prennent la révision suivante ; une collection identique
-// à celle en place ne fait pas avancer la révision.
+// Applique la collection de la table d'attente, en n'écrivant que les différences, dans une transaction. Les cartes
+// ajoutées, revenues ou modifiées et les retraits prennent la révision suivante ; une collection identique à celle en
+// place ne fait pas avancer la révision.
 // `clear` = requêtes qui vident la table d'attente (passées dans la même transaction) ; `skipped` = entrées ignorées
 // (invalides), recopié dans la réponse.
 // lastAt = obtained_at du plus récent exemplaire lu (envoyé par le favori) ; sinon le plus récent de la table d'attente,
 // entrées invalides comprises. read = {rows, copies} lus par le favori (ses cartes arrivent déjà regroupées) ; sinon
 // comptés dans la table d'attente (entrées brutes). ignored = cartes distinctes écartées par le favori.
-// complete = cartes rangées + cartes invalides = totalUnique. La synchro rapide n'est armée (full_at) que si la lecture
-// est complète et que `total` y correspond aux exemplaires ou aux lignes lus (unité apprise, utilisable).
-export async function finalizeImport(db, user, { source, key, stats, lastAt = null, read = null, ignored = 0, clear, skipped = 0 }) {
+// complete = cartes rangées + cartes invalides = totalUnique (null sans compteurs du jeu). statsEnd = compteurs relus
+// après la dernière page : s'ils ont changé, la collection a bougé pendant la lecture (moved), qui n'est pas fiable.
+// - Lecture VÉRIFIÉE (complete et pas moved) : la collection est remplacée, cartes retirées comprises. La synchro rapide
+//   n'est armée (full_at) que si `total` y correspond aux exemplaires ou aux lignes lus (unité apprise, utilisable).
+// - Sinon (il manque des cartes d'après le jeu, compteurs absents, collection qui a bougé) : seules les cartes absentes
+//   du classeur sont ajoutées ; aucune n'est retirée ni modifiée (une page manquante ne doit jamais effacer de cartes),
+//   la synchro rapide n'est pas armée et la suivante relit tout.
+// started = début de la lecture (startedAt) : si le classeur vient déjà d'une lecture commencée après (read_at), rien
+// n'est écrit (superseded) ; contrôlé dans la transaction même (l'état n'est remplacé que si read_at le permet, et les
+// cartes ne sont écrites que s'il l'a été). upload = upload_id du favori (sync_state.up). log = {via, reason, v} pour la
+// ligne du journal (synclog.js).
+// Réponse : {count, new_ids, complete, skipped, removed, kept} (+ moved: true ; ou superseded: true).
+export async function finalizeImport(db, user, {
+  source, key, stats, lastAt = null, read = null, ignored = 0, clear, skipped = 0, statsEnd = null, started = null, upload = null, log = {},
+}) {
   const cte = collectionCte(source);
   // Un passage : cartes distinctes (valides ou non ; une entrée sans identifiant de carte n'en est pas une), entrées
-  // invalides, plus récent obtained_at, et exemplaires lus (dédoublonnés, d) quand le favori ne les a pas comptés.
-  // Cartes rangées / invalides séparées par une seconde requête seulement s'il y a des entrées invalides.
+  // invalides, plus récent obtained_at, exemplaires lus (dédoublonnés, d) quand le favori ne les a pas comptés, cartes
+  // du classeur (have) et cartes du classeur absentes de la lecture (unseen : retirées par une lecture vérifiée, gardées
+  // sinon). Cartes rangées / invalides séparées par une seconde requête seulement s'il y a des entrées invalides.
+  const mine = `(SELECT COUNT(*) FROM cards WHERE user_id = ?1) AS have,
+      (SELECT COUNT(*) FROM cards WHERE user_id = ?1 AND card_id NOT IN (SELECT card_id FROM e WHERE bad IS NULL AND card_id IS NOT NULL)) AS unseen`;
   const sum = await db.prepare(read
-    ? `${cte} SELECT COUNT(DISTINCT card_id) AS ids, COUNT(bad) AS nbad, MAX(json_extract(v, '$.obtained_at')) AS last FROM e`
+    ? `${cte} SELECT COUNT(DISTINCT card_id) AS ids, COUNT(bad) AS nbad, MAX(json_extract(v, '$.obtained_at')) AS last, ${mine} FROM e`
     : `${cte} SELECT COUNT(DISTINCT card_id) AS ids, COUNT(bad) AS nbad, MAX(json_extract(v, '$.obtained_at')) AS last,
-         COUNT(*) AS rows, SUM(json_extract(v, '$.count')) AS copies FROM d`,
+         COUNT(*) AS rows, SUM(json_extract(v, '$.count')) AS copies, ${mine} FROM d`,
   ).bind(user.id, key).first();
   const ids = sum ? sum.ids : 0;
   const count = sum && sum.nbad
@@ -311,19 +401,37 @@ export async function finalizeImport(db, user, { source, key, stats, lastAt = nu
   const invalid = ids - count + ignored;
   const unit = learnUnit(counts, read ? read.rows : sum.rows, read ? read.copies : sum.copies);
   const complete = counts && Number.isInteger(counts.totalUnique) ? count + invalid === counts.totalUnique : null;
+  const end = pickStats(statsEnd);
+  const moved = countsOk(counts) && countsOk(end) && (end.total !== counts.total || end.totalUnique !== counts.totalUnique);
+  const verified = complete === true && !moved;
+  const have = sum.have || 0;
+  const unseen = sum.unseen || 0;
+  const fresh = count - (have - unseen); // cartes lues absentes du classeur
+  const after = verified ? count : have + fresh;
+  if (after > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
   const last = lastAt || sum.last || null;
-  const armed = complete === true && (unit === 'copies' || unit === 'both') && isDate(last);
+  const armed = verified && (unit === 'copies' || unit === 'both') && isDate(last);
+  const prev = syncState(user);
+  const tok = randomToken(9);
   const state = JSON.stringify({
     stats: countsOk(counts) ? counts : null,
     last_at: last,
     full_at: armed ? nowIso() : null,
     unit,
     invalid,
-    count,
-    tok: randomToken(9),
+    count: after,
+    tok,
+    // Une lecture non vérifiée ne dit pas où en est toute la collection : read_at ne bouge pas.
+    read_at: verified ? started : prev?.read_at ?? null,
+    complete: moved ? false : complete,
+    up: upload,
   });
+  // Les cartes ne sont écrites que si l'état vient d'être remplacé par celui-ci (son jeton) ; read_at lu en SQL (une
+  // ancienne valeur de sync_state peut ne pas être du JSON).
+  const ours = "(SELECT CASE WHEN json_valid(sync_state) THEN json_extract(sync_state, '$.tok') END FROM users WHERE id = ?1) IS ?3";
+  const readAt = "CASE WHEN json_valid(sync_state) THEN json_extract(sync_state, '$.read_at') END";
 
-  const [updated] = await db.batch([
+  const results = await db.batch([
     // new_ids d'abord (avant l'écriture des cartes) : vide au tout premier import.
     db.prepare(
       `${cte} UPDATE users SET
@@ -332,50 +440,87 @@ export async function finalizeImport(db, user, { source, key, stats, lastAt = nu
               WHERE bad IS NULL AND card_id NOT IN (SELECT card_id FROM cards WHERE user_id = ?1)))
          END,
          fetched_at = ?3, sync_state = ?4
-       WHERE id = ?1 RETURNING new_ids`,
-    ).bind(user.id, key, nowIso(), state),
-    // Nouvelles et modifiées.
+       WHERE id = ?1 AND (?5 IS NULL OR ${readAt} IS NULL OR ${readAt} <= ?5) RETURNING new_ids`,
+    ).bind(user.id, key, nowIso(), state, started),
+    // Nouvelles et modifiées (lecture vérifiée) ; nouvelles seulement sinon (une carte déjà là garde ses données).
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data, rev)
        SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
-       WHERE c.data IS NULL OR c.data <> g.data
+       WHERE ${verified ? '(c.data IS NULL OR c.data <> g.data)' : 'c.data IS NULL'} AND ${ours}
        ON CONFLICT (user_id, card_id) DO UPDATE SET data = excluded.data, rev = excluded.rev`,
-    ).bind(user.id, key),
+    ).bind(user.id, key, tok),
     clearGone(db, user.id),
-    // Disparues : une marque chacune (cards_gone), puis effacées par ces marques (leurs étiquettes restent). Plus de
-    // MAX_DELTA : aucune marque une à une (l'élagage les effacerait aussitôt), mais une seule marque de débordement
-    // (card_id vide) qui fait avancer la révision et monter le plancher ; les cartes sont alors effacées directement.
-    db.prepare(
-      `${cte}, gone AS MATERIALIZED (
-         SELECT card_id FROM cards WHERE user_id = ?1 AND card_id NOT IN (SELECT card_id FROM e WHERE bad IS NULL)
-       )
-       INSERT INTO cards_gone (user_id, card_id, rev)
-       SELECT ?1, card_id, ${NEXT_REV} FROM gone WHERE (SELECT COUNT(*) FROM gone) <= ${MAX_DELTA}
-       UNION ALL
-       SELECT ?1, '', ${NEXT_REV} WHERE (SELECT COUNT(*) FROM gone) > ${MAX_DELTA}
-       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev`,
-    ).bind(user.id, key),
-    db.prepare(
-      `DELETE FROM cards WHERE user_id = ?1 AND card_id IN (SELECT card_id FROM cards_gone WHERE user_id = ?1 AND rev = ${NEXT_REV})`,
-    ).bind(user.id),
-    // Débordement seulement : la marque est cherchée d'abord (par clé) ; sans elle, rien n'est parcouru.
-    db.prepare(
-      `${cte} DELETE FROM cards WHERE user_id = ?1 AND card_id IN (
-         SELECT c.card_id FROM cards_gone AS s, cards AS c
-         WHERE s.user_id = ?1 AND s.card_id = '' AND s.rev = ${NEXT_REV}
-           AND c.user_id = ?1 AND c.card_id NOT IN (SELECT card_id FROM e WHERE bad IS NULL))`,
-    ).bind(user.id, key),
+    // Lecture vérifiée seulement. Disparues : une marque chacune (cards_gone), puis effacées par ces marques (leurs
+    // étiquettes restent). Plus de MAX_DELTA : aucune marque une à une (l'élagage les effacerait aussitôt), mais une seule
+    // marque de débordement (card_id vide) qui fait avancer la révision et monter le plancher ; les cartes sont alors
+    // effacées directement. Sans marque posée (état pas remplacé), rien n'est effacé.
+    ...(verified ? [
+      db.prepare(
+        `${cte}, gone AS MATERIALIZED (
+           SELECT card_id FROM cards WHERE user_id = ?1 AND card_id NOT IN (SELECT card_id FROM e WHERE bad IS NULL)
+         )
+         INSERT INTO cards_gone (user_id, card_id, rev)
+         SELECT ?1, card_id, ${NEXT_REV} FROM gone WHERE (SELECT COUNT(*) FROM gone) <= ${MAX_DELTA} AND ${ours}
+         UNION ALL
+         SELECT ?1, '', ${NEXT_REV} WHERE (SELECT COUNT(*) FROM gone) > ${MAX_DELTA} AND ${ours}
+         ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev`,
+      ).bind(user.id, key, tok),
+      db.prepare(
+        `DELETE FROM cards WHERE user_id = ?1 AND card_id IN (SELECT card_id FROM cards_gone WHERE user_id = ?1 AND rev = ${NEXT_REV})`,
+      ).bind(user.id),
+      // Débordement seulement : la marque est cherchée d'abord (par clé) ; sans elle, rien n'est parcouru.
+      db.prepare(
+        `${cte} DELETE FROM cards WHERE user_id = ?1 AND card_id IN (
+           SELECT c.card_id FROM cards_gone AS s, cards AS c
+           WHERE s.user_id = ?1 AND s.card_id = '' AND s.rev = ${NEXT_REV}
+             AND c.user_id = ?1 AND c.card_id NOT IN (SELECT card_id FROM e WHERE bad IS NULL))`,
+      ).bind(user.id, key),
+    ] : []),
     commitRev(db, user.id),
-    db.prepare(
-      `UPDATE users SET cards_gone_floor = cards_rev WHERE id = ?1
-         AND EXISTS (SELECT 1 FROM cards_gone WHERE user_id = ?1 AND card_id = '' AND rev = users.cards_rev)`,
-    ).bind(user.id),
+    ...(verified ? [
+      db.prepare(
+        `UPDATE users SET cards_gone_floor = cards_rev WHERE id = ?1
+           AND EXISTS (SELECT 1 FROM cards_gone WHERE user_id = ?1 AND card_id = '' AND rev = users.cards_rev)`,
+      ).bind(user.id),
+    ] : []),
     ...pruneGone(db, user.id),
     ...clear,
   ]);
 
+  const ms = started ? Date.now() - Date.parse(started) : null;
+  const data = {
+    ...log, count: after, fresh, removed: verified ? unseen : 0, kept: verified ? 0 : unseen, read: count + invalid,
+    unique: counts ? counts.totalUnique : null, total: counts ? counts.total : null, invalid, skipped, complete, moved: moved || null, ms,
+  };
+  if (!results[0].results.length) return supersededReply(db, user, 'full', data, { complete });
   await valueAfterCards(db, user.id); // valeur du jour (market.js), au plus une fois par heure
-  return { count, new_ids: raw(updated.results[0]?.new_ids || '[]'), complete, skipped };
+  await writeLog(db, user.id, fullLogEntry(data, verified, log.reason));
+  const res = { count: after, new_ids: raw(results[0].results[0].new_ids || '[]'), complete: moved ? false : complete, skipped, removed: data.removed, kept: data.kept };
+  if (moved) res.moved = true;
+  return res;
+}
+
+// Ligne du journal d'une lecture complète appliquée (data : voir finalizeImport).
+function fullLogEntry(d, verified, reason) {
+  const nouvelles = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle', 'nouvelles')}` : 'aucune nouvelle';
+  const ignored = d.skipped ? ` ; ${num(d.skipped)} ${plural(d.skipped, 'entrée ignorée', 'entrées ignorées')} (sans titre ou rareté inconnue)` : '';
+  if (verified) {
+    const why = reason ? ` (${REASONS[reason]})` : '';
+    const removed = d.removed ? `${num(d.removed)} ${plural(d.removed, 'retirée', 'retirées')}` : 'aucune retirée';
+    return { kind: 'full', result: 'ok', message: `Lecture complète${why} : ${num(d.count)} ${plural(d.count, 'carte', 'cartes')}, ${nouvelles}, ${removed}${ignored}.`, data: d };
+  }
+  const added = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle carte ajoutée', 'nouvelles cartes ajoutées')}` : 'aucune nouvelle carte';
+  const kept = d.kept ? ` (${num(d.kept)} ${plural(d.kept, 'carte non vue, gardée', 'cartes non vues, gardées')})` : '';
+  let head;
+  if (d.moved) head = 'Ta collection a bougé pendant la lecture (compteurs du jeu différents avant et après)';
+  else if (d.complete === false) head = `Lecture incomplète : ${num(d.read)} ${plural(d.read, 'carte lue', 'cartes lues')}, le jeu en compte ${num(d.unique)}`;
+  else head = "Lecture non vérifiée (le jeu n'a pas donné ses compteurs)";
+  return {
+    kind: 'full',
+    result: 'warn',
+    message: `${head} : ${added}, aucune carte retirée${kept}${ignored}. Relance la mise à jour dans un moment.`,
+    data: d,
+  };
 }
 
 // Statistiques du jeu gardées : seulement les compteurs (pas tagOptions). Un compteur donné en texte (« 1043 ») est
@@ -394,17 +539,34 @@ export function pickStats(s) {
   };
 }
 
-// POST /api/import {upload_id, part, last, cards | collection, stats?, last_at?, rows?, copies?, ignored?, source}
+// POST /api/import {upload_id, part, last, cards | collection, stats?, last_at?, rows?, copies?, ignored?, stats_end?,
+// started?, reason?, via?, v?, source}
 // Sans upload_id : import en un seul morceau. `source` est accepté mais pas stocké (aucune colonne prévue).
 // rows, copies, ignored (favori, au premier morceau) : exemplaires lus, leur nombre total et cartes distinctes qu'il a
-// écartées, pour vérifier que la lecture est complète (finalizeImport).
+// écartées, pour vérifier que la lecture est complète (finalizeImport) ; stats_end : compteurs du jeu relus après la
+// dernière page ; started : heure du serveur rendue par « state » au début de la synchro ; reason : pourquoi une lecture
+// complète (REASONS) ; via, v : chemin et version du favori (journal des synchros).
+// Tout échec (refus, morceaux manquants, erreur du serveur) laisse une ligne au journal des synchros.
 export async function importRoute(env, user, body) {
-  const db = env.DB;
   if (body.mode === 'state') {
     const state = syncState(user);
-    return { quick: quickSyncAllowed(state), last_at: state?.last_at ?? null, full_at: state?.full_at ?? null };
+    return {
+      quick: quickSyncAllowed(state),
+      last_at: state?.last_at ?? null,
+      full_at: state?.full_at ?? null,
+      now: nowIso(), // début de la synchro, à renvoyer (started) avec la lecture
+      v: FAVORI_VERSION,
+    };
   }
-  if (body.mode === 'delta') return deltaRoute(db, user, body);
+  try {
+    return body.mode === 'delta' ? await deltaRoute(env.DB, user, body) : await uploadRoute(env.DB, user, body);
+  } catch (err) {
+    await writeLog(env.DB, user.id, errorEntry(body.mode === 'delta' ? 'quick' : 'full', err, { via: viaOf(body.via), v: versionOf(body.v) }));
+    throw err;
+  }
+}
+
+async function uploadRoute(db, user, body) {
   if (body.mode !== undefined) throw new HttpError(400, "Mode d'import inconnu (« state », « delta » ou rien).");
   if (body.last_at !== undefined && body.last_at !== null && !isDate(body.last_at)) throw new HttpError(400, 'Le champ « last_at » doit être une date.');
   for (const f of ['rows', 'copies', 'ignored']) {
@@ -431,6 +593,12 @@ export async function importRoute(env, user, body) {
   if (body.source !== undefined && typeof body.source !== 'string') {
     throw new HttpError(400, 'Le champ « source » doit être un texte.');
   }
+  // Dernier morceau d'un envoi déjà appliqué (nouvel essai du favori après une réponse perdue) : même résultat, rien de
+  // plus d'écrit.
+  const prev = syncState(user);
+  if (!single && last && prev && prev.up === uploadId) {
+    return { count: prev.count ?? null, new_ids: raw(user.new_ids || '[]'), complete: prev.complete ?? null, skipped: 0, again: true };
+  }
 
   // Cartes invalides (favori ou entrées brutes, mêmes règles) : ignorées et comptées, gardées en attente sous forme de
   // marque (badCard) pour que la finalisation les compte.
@@ -450,8 +618,10 @@ export async function importRoute(env, user, body) {
       cards.push(badCard(item, rawEntries));
     }
   });
-  if (body.stats !== undefined && body.stats !== null && (typeof body.stats !== 'object' || Array.isArray(body.stats))) {
-    throw new HttpError(400, 'Le champ « stats » doit être un objet.');
+  for (const f of ['stats', 'stats_end']) {
+    if (body[f] !== undefined && body[f] !== null && (typeof body[f] !== 'object' || Array.isArray(body[f]))) {
+      throw new HttpError(400, `Le champ « ${f} » doit être un objet.`);
+    }
   }
   const stats = pickStats(body.stats);
 
@@ -468,18 +638,31 @@ export async function importRoute(env, user, body) {
     throw new HttpError(413, "Envoi trop volumineux : 8 Mo au plus en attente pour un import. Rien n'a été importé.");
   }
 
-  // Morceau -1 : compteurs du jeu, date du plus récent exemplaire lu, exemplaires lus (favori), relus à la finalisation.
+  // Morceau -1 (en-tête) : compteurs du jeu, date du plus récent exemplaire lu, exemplaires lus (favori), compteurs
+  // relus à la fin, début de la synchro, raison, chemin et version du favori ; relus à la finalisation.
   const head = { ...(stats || {}) };
   if (body.last_at) head.last_at = body.last_at;
   for (const f of ['rows', 'copies', 'ignored']) if (nat(body[f])) head[f] = body[f];
+  const end = pickStats(body.stats_end);
+  if (countsOk(end)) head.stats_end = { total: end.total, totalUnique: end.totalUnique };
+  const started = startedAt(body.started);
+  if (started) head.started = started;
+  if (reasonOf(body.reason)) head.reason = body.reason;
+  if (viaOf(body.via)) head.via = body.via;
+  if (versionOf(body.v)) head.v = body.v;
 
-  // Un seul envoi à la fois par utilisateur : un nouvel upload_id remplace l'envoi en cours.
+  // Plusieurs envois en même temps (deux onglets, favori relié et clic) : chacun garde ses morceaux ; au-delà de
+  // MAX_UPLOADS, les plus anciens sont abandonnés (leur dernier morceau répondra 409).
   const now = nowIso();
   const put = `INSERT OR REPLACE INTO import_staging (user_id, upload_id, part, cards, skipped, created_at)
     VALUES (?1, ?2, ?3, ?4, ?5, ?6)`;
   await db.batch([
     ...purgeStaging(db),
-    db.prepare('DELETE FROM import_staging WHERE user_id = ?1 AND upload_id <> ?2').bind(user.id, uploadId),
+    db.prepare(
+      `DELETE FROM import_staging WHERE user_id = ?1 AND upload_id IN (
+         SELECT upload_id FROM import_staging WHERE user_id = ?1 AND upload_id <> ?2
+         GROUP BY upload_id ORDER BY MAX(created_at) DESC, MAX(rowid) DESC LIMIT -1 OFFSET ${MAX_UPLOADS - 1})`,
+    ).bind(user.id, uploadId),
     db.prepare(put).bind(user.id, uploadId, part, text, skipped, now),
     ...(Object.keys(head).length ? [db.prepare(put).bind(user.id, uploadId, -1, JSON.stringify(head), 0, now)] : []),
   ]);
@@ -490,7 +673,9 @@ export async function importRoute(env, user, body) {
 
   // Dernier morceau : tous les précédents doivent être là (morceaux envoyés dans l'ordre, le dernier à la fin).
   if (others.n !== part || (part > 0 && others.top !== part - 1)) {
-    throw new HttpError(409, "Import incomplet : des morceaux manquent. Recommence l'envoi depuis le début.");
+    // Cet envoi ne pourra plus aboutir : ses morceaux sont effacés (un nouvel envoi repart avec un autre upload_id).
+    await db.prepare('DELETE FROM import_staging WHERE user_id = ?1 AND upload_id = ?2').bind(user.id, uploadId).run();
+    throw new HttpError(409, "Envoi incomplet : des morceaux manquent (envoi interrompu, ou abandonné pour un plus récent). Ton classeur n'a pas été modifié : relance la mise à jour.");
   }
   const statsRow = await db.prepare(
     'SELECT cards FROM import_staging WHERE user_id = ?1 AND upload_id = ?2 AND part = -1',
@@ -498,14 +683,26 @@ export async function importRoute(env, user, body) {
     .bind(user.id, uploadId)
     .first();
   const meta = statsRow ? JSON.parse(statsRow.cards) : null;
-  return finalizeImport(db, user, {
-    source: IMPORT_SOURCE,
-    key: uploadId,
-    stats: meta,
-    lastAt: meta && isDate(meta.last_at) ? meta.last_at : null,
-    read: meta && nat(meta.rows) && nat(meta.copies) ? { rows: meta.rows, copies: meta.copies } : null,
-    ignored: meta && nat(meta.ignored) ? meta.ignored : 0,
-    clear: [db.prepare('DELETE FROM import_staging WHERE user_id = ?1').bind(user.id)],
-    skipped: skippedTotal,
-  });
+  const clear = db.prepare('DELETE FROM import_staging WHERE user_id = ?1 AND upload_id = ?2').bind(user.id, uploadId);
+  try {
+    return await finalizeImport(db, user, {
+      source: IMPORT_SOURCE,
+      key: uploadId,
+      stats: meta,
+      lastAt: meta && isDate(meta.last_at) ? meta.last_at : null,
+      read: meta && nat(meta.rows) && nat(meta.copies) ? { rows: meta.rows, copies: meta.copies } : null,
+      ignored: meta && nat(meta.ignored) ? meta.ignored : 0,
+      statsEnd: meta ? meta.stats_end ?? null : null,
+      started: meta ? startedAt(meta.started) : null,
+      upload: single ? null : uploadId,
+      clear: [clear],
+      skipped: skippedTotal,
+      log: { via: meta ? viaOf(meta.via) : null, reason: meta ? reasonOf(meta.reason) : null, v: meta ? versionOf(meta.v) : null },
+    });
+  } catch (err) {
+    // Refus définitif (collection vide ou trop grande) : l'envoi est abandonné. Erreur passagère (base) : ses morceaux
+    // restent, un nouvel essai du dernier peut aboutir.
+    if (err instanceof HttpError || single) await clear.run().catch(() => {});
+    throw err;
+  }
 }

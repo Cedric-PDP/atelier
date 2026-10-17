@@ -19,7 +19,8 @@ export const SCHEMA = [
     cards_gone_floor INTEGER NOT NULL DEFAULT 0,
     shared INTEGER NOT NULL DEFAULT 0,
     public_id TEXT,
-    shared_targets INTEGER NOT NULL DEFAULT 0
+    shared_targets INTEGER NOT NULL DEFAULT 0,
+    last_sync TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -103,6 +104,15 @@ export const SCHEMA = [
     quota_n INTEGER NOT NULL DEFAULT 0,
     attempt TEXT
   )`,
+  `CREATE TABLE IF NOT EXISTS sync_log (
+    id INTEGER PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    at TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    result TEXT NOT NULL,
+    message TEXT NOT NULL,
+    data TEXT NOT NULL DEFAULT '{}'
+  )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
@@ -110,6 +120,7 @@ export const SCHEMA = [
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_public_id ON users (public_id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS chat_by_rev ON chat_messages (rev)`,
   `CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at)`,
+  `CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id)`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.
@@ -122,6 +133,7 @@ const ADDED_COLUMNS = [
   ['users', 'shared', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'public_id', 'TEXT'],
   ['users', 'shared_targets', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'last_sync', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],

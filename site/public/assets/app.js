@@ -254,7 +254,9 @@
     tagSearch: '',
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
-    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null }, // fenêtre « Mettre à jour avec le favori »
+    // Fenêtre « Mettre à jour avec le favori » ; failed = échec signalé par le favori pendant qu'elle est ouverte (journal
+    // des synchros, last_sync de GET /api/me), lastAt = dernière ligne du journal à son ouverture.
+    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null, failed: '', lastAt: null },
     notice: null,
     modal: null, // editor | confirm | tag | switch | link | arrange | sync | tagadd
     session: { cookie: '', busy: false, error: '' },
@@ -1211,6 +1213,7 @@
     S.refresh.error = false;
     S.refresh.warn = false;
     S.bm.importKey = null;
+    Object.assign(syncLog, { entries: null, error: '' }); // journal des synchros : celui de l'autre classeur
     S.prefs = normPrefs({});
     S.arrange = null;
     stopCategory(); // catégorie ouverte (lecture de ses articles) et recherche de catégories : celles de l'autre classeur
@@ -1282,7 +1285,10 @@
     const pg = prefsPending ? null : prefsGen;
     const me = await api('GET', '/api/me');
     if (gen !== cardsGen) return me; // classeur changé entre-temps (resetData) : réponse de l'ancien, écartée
+    // Dernière synchro connue avant cette réponse (undefined : première lecture du compte, rien à annoncer).
+    const lastBefore = S.me ? (S.me.last_sync ? S.me.last_sync.at : null) : undefined;
     S.me = me;
+    noteLastSync(lastBefore, me.last_sync);
     if (S.key && me.user) remember(S.key, me.user.name || '');
     chatNote(me); // dernier message du chat (badge des non-lus)
     // Préférences changées ici (savePrefs) avant la réponse, ou encore en route à l'envoi : la réponse peut les précéder,
@@ -1575,16 +1581,81 @@
     boot(key);
   }
 
+  // ---------------------------------------------------------------- journal des synchros
+  // GET /api/sync-log : les dernières synchros du classeur, réussies ou non (favori, favori relié, script Tampermonkey,
+  // cookie), avec leur message ; lu à l'ouverture de « Mettre à jour », quand une synchro arrive pendant qu'il est
+  // ouvert (last_sync de GET /api/me change) et sur « Actualiser ».
+  const syncLog = reactive({ entries: null, busy: false, error: '' });
+  async function loadSyncLog() {
+    if (syncLog.busy || !S.key) return;
+    const gen = cardsGen;
+    syncLog.busy = true;
+    syncLog.error = '';
+    try {
+      const r = await api('GET', '/api/sync-log');
+      if (gen === cardsGen) syncLog.entries = Array.isArray(r.entries) ? r.entries : [];
+    } catch (e) {
+      // Classeur plus ancien, sans journal (404) : rien à montrer.
+      if (gen === cardsGen) {
+        if (e.status === 404) syncLog.entries = [];
+        else syncLog.error = e.message;
+      }
+    } finally {
+      syncLog.busy = false;
+    }
+  }
+  const VIA_LABEL = { clic: 'Favori', relie: 'Favori relié', script: 'Script Tampermonkey', cookie: 'Cookie' };
+  const KIND_LABEL = { full: 'lecture complète', quick: 'synchro rapide' };
+  const RESULT_LABEL = { ok: 'réussie', warn: 'incomplète', error: 'échec' };
+  // « Favori relié · synchro rapide » (un favori d'avant le journal n'envoie pas son chemin : « Favori »).
+  const syncKind = (via, kind) => `${VIA_LABEL[via] || 'Favori'} · ${KIND_LABEL[kind] || 'synchro'}`;
+  // Heure d'une synchro : « aujourd'hui à 14:32 », « hier à 09:10 », sinon « 16 octobre à 14:32 ».
+  function syncWhen(iso) {
+    const d = dateOf(iso);
+    if (!d) return '';
+    const hm = d.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return `aujourd'hui à ${hm}`;
+    if (d.toDateString() === new Date(now.getTime() - 86400000).toDateString()) return `hier à ${hm}`;
+    return `${dateDay(iso)} à ${hm}`;
+  }
+  // Version du favori servi (bookmarklet.js, « var VERSION = 2; ») ; la dernière synchro faite par un favori (ou un
+  // script) plus ancien le fait remplacer.
+  const favoriVersion = computed(() => { const m = S.bm.src && S.bm.src.match(/var VERSION = (\d+);/); return m ? Number(m[1]) : null; });
+  const oldFavori = computed(() => {
+    const v = favoriVersion.value;
+    const last = (syncLog.entries || []).find((x) => (x.data || {}).via !== 'cookie' && (x.result !== 'error' || (x.data || {}).client));
+    return !!(v && last && !(Number((last.data || {}).v) >= v));
+  });
+  // Dernière ligne du journal (GET /api/me) : un nouvel échec du favori (cliqué dans un autre onglet, ou relié) est
+  // annoncé ; « Mettre à jour » ouvert relit le journal. Les échecs du rafraîchissement par cookie s'affichent déjà.
+  function noteLastSync(before, ls) {
+    if (!ls || ls.at === before) return;
+    // Une synchro du favori depuis le dernier rafraîchissement par cookie : son message, dépassé, laisse la place.
+    if (before !== undefined && ls.via !== 'cookie' && !S.refresh.running) Object.assign(S.refresh, { msg: '', error: false, warn: false });
+    if (before !== undefined && ls.result === 'error' && ls.via !== 'cookie' && S.modal !== 'sync') notify(`La dernière synchro du favori a échoué : ${ls.message}`, true);
+    if (S.tab === 'maj') loadSyncLog();
+  }
+
   // ---------------------------------------------------------------- rafraîchissement
   function importSummary(res) {
+    if (res.superseded) return `une synchro plus récente est déjà passée : ton classeur est à jour${Number.isInteger(res.count) ? ` (${cards$(res.count)})` : ''}`;
     const n = Array.isArray(res.new_ids) ? res.new_ids.length : 0;
     const parts = [cards$(res.count)];
     if (n) parts.push(`${fmt(n)} ${plural(n, 'nouvelle', 'nouvelles')}`);
     else parts.push('aucune nouvelle');
+    const removed = Number(res.removed) || 0;
+    if (removed) parts.push(`${fmt(removed)} ${plural(removed, 'retirée', 'retirées')}`);
     // Entrées du jeu ignorées par le serveur (sans titre, rareté inconnue, champs trop longs).
     const skipped = Number(res.skipped) || 0;
     if (skipped > 0) parts.push(`${fmt(skipped)} ${plural(skipped, 'ignorée', 'ignorées')} (sans titre ou rareté inconnue)`);
     return parts.join(' · ');
+  }
+  // Lecture complète non vérifiée (complete:false) : ce qui s'est passé et quoi faire ; aucune carte n'a été retirée.
+  function incompleteNote(res) {
+    const kept = Number(res.kept) || 0;
+    return (res.moved ? ' · ta collection a bougé pendant la lecture' : ' · il en manque par rapport au total du jeu')
+      + ` : aucune carte retirée${kept ? ` (${fmt(kept)} ${plural(kept, 'non vue, gardée', 'non vues, gardées')})` : ''}, relance dans un moment`;
   }
   async function refreshCollection() {
     if (S.refresh.running) return;
@@ -1604,7 +1675,8 @@
   function openSync() {
     if (S.modal) closeModal();
     const sess = (S.me && S.me.session) || {};
-    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key), others: {}, elsewhere: null });
+    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key), others: {}, elsewhere: null,
+      failed: '', lastAt: S.me && S.me.last_sync ? S.me.last_sync.at : null });
     // Les autres classeurs connus de ce navigateur (un ami, un second compte) : le favori envoie vers le classeur pour
     // lequel il a été créé, qui n'est pas forcément celui ouvert ici. On note leur dernier envoi pour repérer le bon.
     const others = S.known.filter((k) => k.key !== S.key).slice(0, 6);
@@ -1625,6 +1697,9 @@
       try {
         await loadMe();
         const now = S.me && S.me.fetched_at;
+        // Échec signalé par le favori depuis l'ouverture de la fenêtre (session du jeu, limite de lectures…) : dit ici.
+        const ls = S.me && S.me.last_sync;
+        if (ls && ls.at !== S.sync.lastAt && ls.result === 'error' && ls.via !== 'cookie') S.sync.failed = ls.message;
         // Envoi arrivé dans un autre classeur de ce navigateur ? (toutes les 30 s, pendant 3 min)
         const t = Date.now();
         if (!(now && now !== S.sync.before) && !S.sync.elsewhere && t - started <= SYNC_OTHERS_FOR && t - othersAt >= SYNC_OTHERS_EVERY) {
@@ -1642,6 +1717,9 @@
           afterCards();
           S.sync.done = true;
           S.sync.msg = `Collection mise à jour : ${cards$(cards.value.length)}${newCount ? ', ' + fmt(newCount) + ' ' + plural(newCount, 'nouvelle', 'nouvelles') : ''}.`;
+          // Lecture incomplète (rien de retiré) : le journal dit quoi faire.
+          const last = S.me.last_sync;
+          if (last && last.result === 'warn') S.sync.msg += ' ' + last.message;
           notify(S.sync.msg);
         }
       } catch (e) { /* le prochain tour réessaie */ } finally { busy = false; }
@@ -1653,10 +1731,12 @@
     try {
       let page = 0;
       let res = null;
+      let run = null; // jeton de cette lecture (page 0) : une autre lecture commencée entre-temps (autre onglet) l'arrête
       for (let guard = 0; guard < 5000; guard++) {
         // Relecture complète demandée (onglet « Mettre à jour ») : jamais de synchro rapide.
-        res = await api('POST', '/api/refresh', page === 0 && S.me && S.me.next_full ? { page, full: true } : { page });
+        res = await api('POST', '/api/refresh', page === 0 ? (S.me && S.me.next_full ? { page, full: true } : { page }) : run ? { page, run } : { page });
         if (res.done) break;
+        if (page === 0 && typeof res.run === 'string') run = res.run;
         const next = Number(res.next_page);
         if (!Number.isFinite(next) || next <= page) throw new Error('Réponse inattendue du classeur pendant le rafraîchissement : relance-le.');
         page = next;
@@ -1668,9 +1748,9 @@
       }
       if (!res || !res.done) throw new Error("Le rafraîchissement ne s'est pas terminé : relance-le.");
       S.refresh.msg = importSummary(res);
-      if (res.complete === false) {
+      if (res.complete === false && !res.superseded) {
         S.refresh.warn = true;
-        S.refresh.msg += ' · il en manque par rapport au total du jeu : relance dans un moment';
+        S.refresh.msg += incompleteNote(res);
       }
       await Promise.all([syncCards(), loadMe()]);
       startPageviews();
@@ -1684,6 +1764,7 @@
       }
     } finally {
       S.refresh.running = false;
+      if (S.tab === 'maj') loadSyncLog();
     }
   }
 
@@ -2415,10 +2496,11 @@
       S.bm.error = "Le favori n'a pas pu être préparé : recharge la page, puis réessaie.";
     }
   }
-  // Prépare le favori (source, clé d'import gardée) pour l'onglet « Mettre à jour ».
+  // Prépare le favori (source, clé d'import gardée) et le journal des synchros pour l'onglet « Mettre à jour ».
   async function prepareFavori() {
     S.bm.clicked = false;
     S.bm.importKey = storedImportKey();
+    loadSyncLog();
     await loadBookmarkletSource();
   }
   function openFavori() {
@@ -2510,7 +2592,8 @@
   // chargement de chaque page du jeu, rien n'est lu avant une action du joueur), sous l'en-tête du gestionnaire.
   // @grant none : il tourne dans la page, comme le favori (il doit voir le window.fetch de la page).
   function makeUserscript(src, site, key) {
-    return ['// ==UserScript==', '// @name         Le classeur, relié à WikiMasters', `// @namespace    ${site}`, '// @version      1',
+    const version = (src.match(/var VERSION = (\d+);/) || [])[1] || '1'; // celle du favori
+    return ['// ==UserScript==', '// @name         Le classeur, relié à WikiMasters', `// @namespace    ${site}`, `// @version      ${version}`,
       '// @description  Après tes actions dans le jeu (paquet, défausse, enchère, échange), relit tes nouvelles cartes et les envoie à ton classeur. Lecture seule.',
       '// @match        https://www.wiki-masters.com/*', '// @match        https://wiki-masters.com/*', '// @run-at       document-idle',
       '// @grant        none', '// @noframes', '// ==/UserScript==', favoriCode(src, site, key).replace('"__START__"', '"load"'), ''].join('\n');
@@ -4017,9 +4100,10 @@
   let marketJob = null;
   let marketSeen = ''; // market_at de GET /api/me déjà pris en compte par la dernière lecture de l'onglet
   const VARIANT_RE = /^(C|PC|R|SR|UR|L)\*?$/;
-  // Version du favori qui lit les cotes toute seule (VERSION de bookmarklet.js ; le test du favori vérifie qu'elles
-  // concordent) : un essai d'un favori plus ancien (ou sans version) dit de le remplacer.
-  const FAVORI_VERSION = '2026-10-17';
+  // Version du favori qui lit les cotes toute seule (VERSION de bookmarklet.js, un entier ; le test du favori vérifie
+  // qu'elles concordent) : un essai d'un favori plus ancien, sans version ou à version texte (celui du 17/10 au matin,
+  // « 2026-10-17 ») dit de le remplacer.
+  const FAVORI_VERSION = 2;
   function resetMarket() {
     Object.assign(M, { loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, at: 0, hover: -1 });
     prices.value = new Map();
@@ -4509,11 +4593,17 @@
   function viewSummary() {
     const total = cards.value.length;
     const sess = (S.me && S.me.session) || {};
+    // Dernière synchro en échec ou incomplète (journal des synchros), tant que rien d'autre n'est affiché ici.
+    const ls = S.me && S.me.last_sync;
+    const lastBad = !S.refresh.msg && !S.refresh.running && ls && (ls.result === 'error' || ls.result === 'warn') ? ls : null;
     const refreshBits = [
       h('button', { class: 'btn small', type: 'button', disabled: S.refresh.running, onClick: refreshCollection },
         [icon('refresh', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : (sess.has_cookie && !sess.expired ? 'Rafraîchir la collection' : 'Mettre à jour avec le favori')]),
       h('span', { class: ['status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, S.refresh.msg),
       S.refresh.error && !S.refresh.running ? h('button', { class: 'linkish', type: 'button', onClick: openFavori }, 'Passer par le favori') : null,
+      lastBad ? h('span', { class: ['status', 'last-sync', lastBad.result === 'error' ? 'err' : 'warn'] },
+        `Dernière synchro ${lastBad.result === 'error' ? 'en échec' : 'incomplète'} (${syncKind(lastBad.via, lastBad.kind)}, ${syncWhen(lastBad.at)}) : ${lastBad.message}`) : null,
+      lastBad ? h('button', { class: 'linkish', type: 'button', onClick: () => setTab('maj') }, 'Dernières synchros') : null,
     ];
     if (!total) {
       return h('div', { class: 'summary' }, [
@@ -5092,8 +5182,38 @@
       errLine(fullNext.error),
     ]);
   }
+  // « Dernières synchros » (journal des synchros) : heure, chemin et type, résultat, message lisible ; les 20 plus récentes.
+  function viewSyncLog() {
+    const list = syncLog.entries;
+    const rows = (list || []).slice(0, 20);
+    let body;
+    if (list === null) body = h('p', { class: 'small muted', role: 'status' }, syncLog.busy ? 'Lecture du journal…' : '');
+    else if (!rows.length) body = h('p', { class: 'small muted' }, 'Aucune synchro notée pour l\'instant : elles apparaîtront ici (favori, favori relié, cookie), réussies ou non.');
+    else body = h('ul', { class: 'synclog-list' }, rows.map((x, i) => viewSyncRow(x, i)));
+    return h('div', { class: 'panel synclog', style: { gridColumn: '1 / -1' } }, [
+      h('div', { class: 'synclog-head' }, [
+        h('h3', null, 'Dernières synchros'),
+        h('button', { class: 'btn small ghost', type: 'button', disabled: syncLog.busy, onClick: loadSyncLog }, [icon('refresh', syncLog.busy ? 'sm spin' : 'sm'), 'Actualiser']),
+      ]),
+      oldFavori.value ? h('p', { class: 'notice warn-box' }, "Ta dernière synchro vient d'un favori d'avant le 17 octobre 2026 : glisse le nouveau favori (ci-dessus) dans ta barre à la place de l'ancien, et recolle le script Tampermonkey si tu t'en sers. Le nouveau relit une page restée vide, vérifie que ta collection n'a pas bougé pendant la lecture et signale ici ses échecs.") : null,
+      body,
+      errLine(syncLog.error),
+    ]);
+  }
+  function viewSyncRow(x, i) {
+    const d = x.data || {};
+    const repeat = Number(d.repeat) > 1 ? ` · ${fmt(d.repeat)} fois${d.first ? ` depuis ${syncWhen(d.first)}` : ''}` : '';
+    return h('li', { key: i + ':' + x.at, class: ['synclog-row', 'is-' + x.result] }, [
+      h('div', { class: 'synclog-line' }, [
+        h('span', { class: 'synclog-badge' }, RESULT_LABEL[x.result] || x.result),
+        h('span', { class: 'synclog-what' }, syncKind(d.via, x.kind)),
+        h('span', { class: 'synclog-when' }, syncWhen(x.at) + repeat),
+      ]),
+      h('p', { class: 'synclog-msg' }, x.message),
+    ]);
+  }
   function viewUpdate() {
-    return h('div', { class: 'update' }, [viewFavori(), viewCookie(), viewFullNext()]);
+    return h('div', { class: 'update' }, [viewFavori(), viewCookie(), viewFullNext(), viewSyncLog()]);
   }
 
   // ================================================================ rendu : onglet Réglages
@@ -6181,7 +6301,7 @@
     } else if (a && !a.end && Date.now() - Date.parse(a.start) > 10 * 60000) {
       out.push(h('p', { class: 'small warn', key: 'fail' }, `Une lecture commencée ${agoText(a.start)} n'a pas abouti (onglet du jeu fermé pendant la lecture, ou favori ancien) : relance « Mettre à jour les cotes » sur wiki-masters.com.`));
     }
-    if (a && (!a.v || a.v < FAVORI_VERSION)) {
+    if (a && !(Number(a.v) >= FAVORI_VERSION)) {
       out.push(h('p', { class: 'small warn', key: 'old' }, "Ton favori n'est pas à jour : depuis le 17 octobre, il lit les cotes et les bonnes affaires tout seul et dit pourquoi quand il n'y arrive pas. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script Tampermonkey : recopie-le)."));
     }
     return out;
@@ -7028,6 +7148,7 @@
         h('li', null, 'Reviens ici : le classeur se met à jour tout seul.'),
       ]),
       h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'), ' En attente de ton favori…']),
+      y.failed ? h('p', { class: 'notice error', role: 'alert' }, ['Le favori a signalé un échec : ', y.failed, ' Fais ce qu\x27il demande, puis clique-le à nouveau.']) : null,
       y.expired ? h('p', { class: 'note' }, 'Ta session collée a expiré : le favori la remplace, sans rien coller.') : null,
       !y.hasFavori ? h('p', { class: 'note' }, ['Pas encore de favori ? ', h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openFavori(); } }, 'Installer le favori')]) : null,
       foot([

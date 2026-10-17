@@ -59,7 +59,9 @@ avec `node:sqlite`).
   collections ni le reste du classeur. Une clé d'import qui fuit permet donc en plus de lire ces titres, d'envoyer de
   fausses cotes (cache commun à tous les classeurs, dans les quotas), de remplacer la lecture du marché de ce
   classeur (ses bonnes affaires et enchères affichées) et d'y afficher un faux « dernier essai » (message de 300
-  caractères au plus).
+  caractères au plus). **Journal des synchros** (2026-10-17) : elle ouvre aussi `POST /api/sync-log` (le favori y
+  signale ses échecs) ; une clé d'import qui fuit permet donc d'y écrire de faux échecs (30 par heure au plus), jamais
+  de lire le journal (`GET /api/sync-log` : clé principale).
 - **Lien d'un autre classeur** : l'interface n'écrase jamais une clé gardée sans vérifier la nouvelle (`GET /api/me`)
   et demander confirmation.
 
@@ -127,17 +129,17 @@ autre format (voir « Le favori »).
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` ; `409` si le prénom est déjà celui d'un autre classeur (comparé sans casse, accents ni espaces en trop), avec un message qui dit comment retrouver son lien (Réglages d'un appareil où il est ouvert, ou un nouveau lien demandé à la personne qui gère le classeur) ; exception : un classeur de ce prénom qui n'a jamais servi (aucune synchro, pas de favori, aucune carte ni collection) est effacé et remplacé (2026-10-17 : des amis qui avaient perdu leur lien recréaient un second classeur) ; sans prénom, aucun contrôle |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, last_chat_id, market_at, session:{has_cookie, expired, updated_at}}` (`last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `market_at` (2026-10-17) : heure du dernier envoi du favori au marché — lecture du marché reçue, ou essai fini, réussi ou non —, `null` sans, lue dans la même requête (ligne `market` par sa clé primaire) : la page relit alors l'onglet « Marché », voir « Le marché » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, last_chat_id, market_at, last_sync, session:{has_cookie, expired, updated_at}}` (`last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `market_at` (2026-10-17) : heure du dernier envoi du favori au marché — lecture du marché reçue, ou essai fini, réussi ou non —, `null` sans, lue dans la même requête (ligne `market` par sa clé primaire) : la page relit alors l'onglet « Marché », voir « Le marché » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide » ; `last_sync` : dernière ligne du journal des synchros, `{at, kind, via, result, message}` ou `null`, gardée dans le compte (aucune requête de plus), voir « Journal des synchros ») |
 | `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte ; ses messages du chat sont vidés et perdent leur auteur (voir « Chat ») |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
 | `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{rev, fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page ; `rev` : révision lue avant les cartes, garder celle de la page `0`) ; sans `part` : `{rev, fetched_at, cards, new_ids}`, tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
 | `GET /api/cards?since=R` | `R` : entier ≥ 0, la `rev` gardée (sinon `400`, et `400` avec `part`) | `{rev, delta:true, cards:[Carte], gone:[id…], fetched_at, new_ids}` : cartes changées (données ou étiquettes) et cartes retirées depuis `R` ; ou `{rev, delta:false}` : tout recharger (voir « Lecture incrémentale ») |
-| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, rows?, copies?, ignored?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards` ; `rows`, `copies`, `ignored` : entiers ≥ 0, sinon `400`, voir « Synchro rapide ») | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped}` (`complete` = `count` + cartes invalides distinctes = `stats.totalUnique` : `false` = il manque des cartes que le classeur aurait pu ranger ; `null` sans stats) ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at}`, `{mode:'delta', cards, stats, rows, copies, last_at}` → `{count, new_ids, complete, skipped:0, quick:true}` ou `{needs_full:true, reason}` (rien d'écrit ; `reason` : `state`, `too_many`, `invalid`, `counts`, `max_cards`, `race`) |
+| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, rows?, copies?, ignored?, stats_end?, started?, reason?, via?, v?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards` ; `rows`, `copies`, `ignored` : entiers ≥ 0, sinon `400`, voir « Synchro rapide » ; `stats_end` : compteurs du jeu relus après la dernière page, objet, sinon `400` ; `started` : l'heure `now` rendue par `state` ; `reason` : pourquoi une lecture complète (`state`, `counts`, `race`, `invalid`, `too_many`, `max_cards`, `gone`, `order`, `sort`) ; `via` : `clic`, `relie` ou `script` ; `v` : version du favori ; ces cinq-là, au premier morceau, pour la sûreté et le journal, voir « Synchros sûres ») | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped, removed, kept}` (`complete` = `count` + cartes invalides distinctes = `stats.totalUnique` : `false` = il manque des cartes que le classeur aurait pu ranger, ou la collection a bougé pendant la lecture (`moved:true` en plus) ; `null` sans stats ; `count` = cartes du classeur après l'envoi ; `removed` = cartes retirées, seulement par une lecture vérifiée ; `kept` = cartes du classeur absentes d'une lecture non vérifiée, gardées) ; `{…, superseded:true}` : rien d'écrit, une lecture commencée après celle-ci est déjà appliquée ; `{…, again:true}` : dernier morceau d'un envoi déjà appliqué, renvoyé (réponse perdue) : même résultat ; morceaux manquants (envoi interrompu ou abandonné) : `409`, l'envoi est effacé ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at, now, v}` (`now` : heure du serveur, à renvoyer en `started` ; `v` : version la plus récente du favori), `{mode:'delta', cards, stats, rows, copies, last_at, started?, via?, v?}` → `{count, new_ids, complete, skipped:0, quick:true}` (`superseded:true` en plus si une lecture commencée après est déjà appliquée : rien d'écrit) ou `{needs_full:true, reason}` (rien d'écrit ; `reason` : `state`, `too_many`, `invalid`, `counts`, `max_cards`, `race`) |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` | `{ok:true}` ; extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`), le chiffre et le garde |
 | `DELETE /api/session` | | `{ok:true}` |
-| `POST /api/refresh` | `{page?, full?}` (0 au départ ; `full:true` = jamais de synchro rapide ; l'interface l'envoie quand `next_full`) | `{done:false, next_page, fetched, total, skipped}` (`next_page` : première page pas encore lue) puis, à la fin, `{done:true, count, new_ids, complete, skipped}` (`quick:true` en plus si la synchro rapide a suffi) ; `401 {error, needs_session:true}` si pas de cookie ou session expirée ; `429 {error}` si le jeu limite les lectures automatiques |
+| `POST /api/refresh` | `{page?, full?, run?}` (0 au départ ; `full:true` = jamais de synchro rapide ; l'interface l'envoie quand `next_full` ; `run` : le jeton rendu par la page 0, à renvoyer avec les suivantes, texte base64url de 64 caractères au plus, sinon `400`) | `{done:false, next_page, run, fetched, total, skipped}` (`next_page` : première page pas encore lue) puis, à la fin, `{done:true, count, new_ids, complete, skipped, removed, kept}` (comme le dernier morceau d'un import ; `quick:true` à la place de `removed`/`kept` si la synchro rapide a suffi) ; `409` si une autre lecture a commencé entre-temps (autre onglet : `run` différent) ou si les pages d'avant manquent ; `401 {error, needs_session:true}` si pas de cookie ou session expirée ; `429 {error}` si le jeu limite les lectures automatiques |
 | `POST /api/tags/set` | `{card_id, tags:[…]}` | `{tags}` |
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
@@ -157,6 +159,8 @@ autre format (voir « Le favori »).
 | `POST /api/market/fail` | (clé principale **ou clé d'import**, CORS du jeu ; 2 Ko au plus) `{why, v?, auto?}` : `why` = le message d'échec montré par le favori (texte nettoyé, 1 à 300 caractères, sinon `400` ; un morceau qui ressemble à un jeton JWT est remplacé par « [jeton masqué] ») | `{ok:true}` : l'essai de ce classeur est noté raté (`end`, `ok:false`, `why`, `v`, `auto`), montré par la page |
 | `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai du favori (`null` : jamais) |
 | `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
+| `GET /api/sync-log` | (clé principale seulement) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières synchros au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
+| `POST /api/sync-log` | (clé principale **ou clé d'import**, CORS du jeu ; 2 Ko au plus, sinon `413`) `{message, kind?, via?, code?, reason?, ms?, read?, total?, v?}` : `message` non vide (sinon `400`), 300 caractères gardés ; `kind` `full` ou `quick` (autre valeur : `400`) ; `ms`, `read`, `total` entiers ≥ 0 (sinon `400`) ; `code` inconnu : `other` ; `via` autre que `clic`, `relie`, `script` : `clic` | `{ok:true}` : un échec vu par le favori lui-même, noté au journal (`result:'error'`, `data.client:true`) ; `429 {error}` au-delà de 30 signalements par heure pour ce classeur |
 
 **Message** (chat) : `{id, author, mine, text, created_at}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
@@ -192,14 +196,17 @@ la valeur, les échanges). Gardé par `targets/save` seulement s'il vaut exactem
 regroupe les exemplaires et ne garde que ces champs : le serveur n'a presque rien à calculer.
 
 **Limite de calcul des Workers gratuits (10 ms de CPU par requête)** : aucune requête ne doit traiter plus de
-~500 cartes en JavaScript. Les morceaux d'un import vont dans une table d'attente ; au dernier morceau, la
+~500 cartes en JavaScript. (Depuis le 2026-10-17, le classeur tourne sur l'abonnement payant des Workers : plus de limite
+de 10 ms ni de quota gratuit de lectures. La règle reste : elle ne coûte rien et garde les requêtes courtes. Avant, un
+gros classeur pouvait voir sa finalisation coupée net, en « erreur 503 » pour le favori.) Les morceaux d'un import vont dans une table d'attente ; au dernier morceau, la
 comparaison avec la collection en place (ajouts, retraits, modifications, `new_ids`) se fait **en SQL dans D1**
 (`json_each`, `INSERT … SELECT`, `DELETE … WHERE NOT IN`), pas en JavaScript. Même règle pour `/api/refresh` :
 10 pages au plus par appel.
 
-**Import et nouveautés** : un import (favori ou rafraîchissement) remplace la collection ; on n'écrit que les
-différences (cartes ajoutées, retirées, modifiées). `new_ids` = cartes présentes après mais pas avant ; **vide au
-tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées (elle peut revenir).
+**Import et nouveautés** : une lecture complète (favori ou rafraîchissement) **vérifiée** remplace la collection ; on
+n'écrit que les différences (cartes ajoutées, retirées, modifiées). Une lecture **non vérifiée** n'ajoute que les cartes
+absentes du classeur et ne retire ni ne modifie rien (voir « Synchros sûres »). `new_ids` = cartes présentes après mais
+pas avant ; **vide au tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées (elle peut revenir).
 
 **Lecture incrémentale** (ne relire que ce qui a changé) : `users.cards_rev` = révision de la liste des cartes du
 classeur, +1 par opération qui la change : import complet (favori ou fin de `/api/refresh`), synchro rapide,
@@ -236,7 +243,8 @@ plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'u
   (le favori envoie au premier morceau `rows` / `copies` = exemplaires lus et leur nombre total, invalides compris, et
   `ignored` = cartes distinctes qu'il a écartées ; le rafraîchissement les compte dans sa table d'attente, où les
   entrées invalides gardent une marque), et `total` correspond aux exemplaires lus. Sinon (page vide passagère,
-  pagination instable…) le classeur prend ce qui a été lu mais `full_at` reste vide : la synchro suivante relit tout.
+  pagination instable, collection qui a bougé pendant la lecture…) le classeur n'ajoute que les cartes absentes et ne
+  retire rien (voir « Synchros sûres »), et `full_at` reste vide : la synchro suivante relit tout.
 - **Unité de `total`, apprise à chaque lecture complète** : `copies` si `total` = Σ `count` lus ; `both` (ambiguë) si
   les lignes lues = les exemplaires lus = `total` ; `rows` si `total` = lignes lues alors que des piles (`count` > 1)
   existent : la synchro rapide ne verrait pas un exemplaire ajouté à une pile, elle est **coupée** (toujours une
@@ -256,6 +264,8 @@ plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'u
 - **Exemplaire de la dernière synchro** : le premier exemplaire d'au plus `last_at` doit être daté de `last_at` (c'est
   le plus récent de la dernière synchro) ; sinon il est parti (vendu, échangé) et tout est relu. L'ordre des dates est
   contrôlé sur toute la page lue, au-delà de l'arrêt.
+- **Lecture commencée trop tôt** : avec `started` (heure `now` rendue par `state`), une synchro rapide partie avant la
+  lecture dont le classeur vient (`read_at`) répond `superseded:true`, rien d'écrit (voir « Synchros sûres »).
 - **Rareté** : une carte possédée en plusieurs raretés garde la plus haute (C < PC < R < SR < UR < L), à l'import
   complet comme en synchro rapide et dans le favori.
 - **Angles morts** (ce que les compteurs ne montrent pas) : échange 1 contre 1 de deux cartes de **même rareté** quand
@@ -279,7 +289,13 @@ de nouveautés, compteurs, course), la lecture complète commence dans le même 
 décodées au plus par appel, `next_page` = la page suivante réellement). Redirections non suivies (une redirection =
 session expirée) ; un 403 qui n'est pas du JSON = refus anti-robots, `502` sans expirer la session ; un 403 JSON avec
 `code: "automation_limit"` (ou un 429) = le jeu limite les lectures automatiques : `429` « Le jeu limite les lectures
-automatiques : réessaie plus tard », session intacte, et pas de lecture complète derrière.
+automatiques : réessaie plus tard », session intacte, et pas de lecture complète derrière. La page 0 tire un **jeton de
+lecture** (`run`, gardé dans la page -1 de la table d'attente avec les compteurs et l'heure du début) que l'interface
+renvoie avec les pages suivantes : si une autre lecture a commencé entre-temps (un second onglet qui clique
+« Rafraîchir »), la première s'arrête en `409` (« Une autre mise à jour a commencé entre-temps (dans un autre onglet ?) :
+celle-ci s'arrête, sans rien changer à ton classeur ») au lieu de mélanger leurs pages ; un ancien client sans jeton n'est
+pas contrôlé. Une lecture faite en plusieurs appels relit les compteurs du jeu à la fin (une requête de plus) : s'ils ont
+changé, elle ne retire rien. Chaque fin de lecture, réussie ou non, laisse une ligne au journal (`via:'cookie'`).
 
 **Limite du cookie collé** : la session du jeu (Supabase) renouvelle son jeton. Si le serveur la renouvelle, le
 navigateur du joueur garde l'ancien jeton : le jeu peut le déconnecter, et le rafraîchissement par cookie ne marche
@@ -288,15 +304,84 @@ en général qu'environ une heure après le collage. Le favori est donc le chemi
 `Set-Cookie` dans une réponse du jeu met à jour le cookie stocké. 401/403 du jeu (hors limite de lectures
 automatiques) → session marquée expirée, `401 {needs_session:true}`.
 
-**CORS** : seuls `POST /api/import`, `POST /api/targets/from-game` et `POST /api/market/plan`, `/prices`, `/live`, `/fail` (et
-leur `OPTIONS`), les routes du favori, acceptent les origines `https://www.wiki-masters.com` et `https://wiki-masters.com`
+**Synchros sûres** (2026-10-17, « pas mal de problèmes de synchro ») :
+
+- **Une lecture incomplète n'efface jamais de cartes.** Avant, toute lecture complète remplaçait la collection, même
+  quand ses cartes ne collaient pas avec les compteurs du jeu : une page vide passagère, une pagination qui bouge, une
+  défausse pendant la lecture pouvaient retirer des centaines de cartes (revenues à la lecture suivante, étiquettes
+  gardées, mais marquées « nouvelles »). Maintenant une lecture n'est **vérifiée** que si cartes rangées + cartes
+  invalides distinctes = `totalUnique` du jeu, **et** que les compteurs relus après la dernière page (`stats_end`) sont
+  ceux d'avant (`total`, `totalUnique`). Vérifiée : la collection est remplacée (cartes retirées comprises, `removed`).
+  Sinon (`complete:false`, `moved:true`, ou compteurs absents : `complete:null`) : seules les cartes absentes du
+  classeur sont ajoutées, aucune carte n'est retirée ni modifiée (`kept` = cartes du classeur non vues), la synchro
+  rapide n'est pas armée et la suivante relit tout ; le journal et les messages le disent (« Lecture incomplète : 3 650
+  cartes lues, le jeu en compte 3 702 : … aucune carte retirée (52 cartes non vues, gardées). Relance la mise à jour dans
+  un moment. »). Si les compteurs du jeu différaient toujours un peu de ce que lit le favori pour un joueur, ses cartes
+  parties ne seraient jamais retirées : le journal le montrerait (même écart à chaque lecture).
+- **Deux synchros en même temps** (deux onglets, favori relié et clic, favori et rafraîchissement) : chaque envoi garde
+  ses morceaux (trois envois en cours au plus par classeur ; un quatrième abandonne le plus ancien, dont le dernier
+  morceau répond `409` et qui est effacé). Avant, un nouvel envoi effaçait celui en cours, et deux envois croisés
+  échouaient tous deux en « Import incomplet ». **Fraîcheur** : `sync_state.read_at` = début de la lecture dont le
+  classeur vient (lecture vérifiée ou synchro rapide, heure du serveur : `now` de `state` renvoyé en `started`, ou la
+  page 0 du rafraîchissement) ; une lecture commencée avant n'est jamais appliquée par-dessus (`superseded:true`, rien
+  d'écrit, « Une synchro plus récente … est déjà passée : ton classeur est à jour »), contrôlé dans la transaction même
+  (l'état n'est remplacé que si `read_at` le permet, les cartes ne sont écrites que s'il l'a été). Sans `started` (ancien
+  favori) : pas de contrôle, comme avant ; `started` à venir (plus d'une minute) ou de plus de 2 h : ignoré. Une lecture
+  non vérifiée ne fait pas avancer `read_at`.
+- **Dernier morceau renvoyé** (réponse perdue, nouvel essai du favori) : `sync_state.up` = `upload_id` du dernier envoi
+  appliqué ; le même dernier morceau rend le même résultat (`again:true`), rien de plus d'écrit. Refus définitif à la
+  finalisation (collection vide ou trop grande) : l'envoi est effacé ; erreur passagère de la base : ses morceaux restent.
+- `sync_state` garde aussi `complete` (résultat du contrôle de la dernière lecture complète), `read_at` et `up`.
+
+**Journal des synchros** (`sync_log`, `functions/_lib/synclog.js`) : une ligne par synchro, réussie ou non, pour
+diagnostiquer la suivante. `kind` = `full` (lecture complète) | `quick` (synchro rapide) ; `result` = `ok` | `warn`
+(lecture non vérifiée : rien retiré) | `error` ; `message` = texte lisible, celui que voit le joueur (« Lecture complète
+(les compteurs du jeu ne collaient pas avec les nouveautés) : 1 043 cartes, 2 nouvelles, 1 retirée. », « Synchro
+rapide : rien de nouveau (1 043 cartes). », le message d'erreur rendu…) ; `data` = `via` (`clic`, `relie`, `script`,
+`cookie` ; absent : favori d'avant le journal), `v` (version du favori), nombres (`count`, `fresh`, `removed`, `kept`,
+`read`, `unique`, `total`, `invalid`, `skipped`, `copies`), `complete`, `moved`, `superseded`, `reason` (pourquoi une
+lecture complète), `ms` (durée depuis le début de la synchro), `status` (erreur HTTP rendue), et pour un signalement du
+favori `client:true`, `code` (`session`, `limit`, `antibot`, `game`, `network`, `timeout`, `format`, `other`), `read`,
+`total`.
+- **Écrit par le serveur** : fin de chaque import du favori (lecture complète appliquée, non vérifiée ou remplacée),
+  chaque synchro rapide réussie, chaque fin de rafraîchissement par cookie, et **chaque échec** de ces routes (refus,
+  morceaux manquants, erreur interne : « Erreur interne du serveur (…) » avec un extrait de l'erreur, visible du seul
+  titulaire). Une synchro rapide refusée (`needs_full`) n'est pas notée : la relecture complète qui suit porte sa raison
+  (`reason`). Le journal ne fait jamais échouer une synchro (une écriture ratée est seulement notée dans les journaux du
+  Worker).
+- **Signalé par le favori** (`POST /api/sync-log`, clé d'import) : ses échecs avant ou pendant sa lecture du jeu, quand
+  rien n'a pu être envoyé (session du jeu expirée, limite de lectures, protection anti-robots, erreur ou délai du jeu,
+  réponse inattendue). Il n'envoie que le message affiché dans son encart et quelques nombres, **jamais de jeton ni de
+  cookie du jeu** ; par précaution, le serveur masque dans le message tout ce qui ressemble à un secret (jeton JWT,
+  « #cle=… », suite base64 de 32 caractères ou plus). 30 signalements par heure et par classeur au plus.
+- **Borné** : une ligne identique à la précédente (même `kind`, `result`, `message`, `via` : « rien de nouveau » toutes
+  les minutes en mode relié, même échec répété) ne fait que mettre à jour son heure (`data.repeat`, `data.first`) ; les
+  50 plus récentes par classeur, 30 jours au plus (élagage à chaque écriture, par l'index `(user_id, id)`). Effacé avec
+  le classeur. `users.last_sync` = résumé de la dernière ligne, rendu par `GET /api/me` (aucune requête de plus).
+- **Lu par la page** (onglet « Mettre à jour », panneau « Dernières synchros ») : les 20 plus récentes, chacune avec son
+  résultat (« réussie », « incomplète », « échec », en couleur), son chemin et son type (« Favori relié · synchro
+  rapide », « Cookie · lecture complète », « Favori » pour un favori d'avant le journal), son heure (« aujourd'hui à
+  14:32 », « 3 fois depuis… » pour une ligne répétée) et son message ; lu à l'ouverture de l'onglet, après un
+  rafraîchissement par cookie, quand `last_sync` change et sur « Actualiser » ; ancien serveur (`404`) : rien. Si la
+  dernière synchro (réussie, incomplète, ou échec signalé) d'un favori ou d'un script n'a pas de version, ou une plus
+  ancienne que celle du favori servi (`var VERSION` de `bookmarklet.js`, lue par la page) : « Ta dernière synchro vient
+  d'un favori d'avant le 17 octobre 2026 : glisse le nouveau favori … ». Sous le résumé des cartes, tant que rien d'autre
+  n'y est affiché : « Dernière synchro en échec (Favori · lecture complète, aujourd'hui à 14:32) : <message> » (ou
+  « incomplète »), avec « Dernières synchros » qui ouvre l'onglet ; un nouvel échec du favori (`last_sync` relu par
+  `GET /api/me`) est annoncé (« La dernière synchro du favori a échoué : … »), et dans la fenêtre « Mettre à jour avec le
+  favori » (« Le favori a signalé un échec : … ») ; un envoi incomplet y ajoute le message du journal.
+
+**CORS** : seuls `POST /api/import`, `POST /api/targets/from-game`, `POST /api/market/plan`, `/prices`, `/live`, `/fail` et
+`POST /api/sync-log` (et leur `OPTIONS`), les routes du favori, acceptent les origines `https://www.wiki-masters.com` et `https://wiki-masters.com`
 (`Access-Control-Allow-Headers: content-type, x-classeur-key`). Le reste est même origine.
 
 **Limites et quotas** (D1 gratuit : 500 Mo, 100 000 lignes écrites par jour, partagés par tous) : `MAX_USERS` comptes
 (variable, 50 par défaut) ; 20 000 cartes par utilisateur ; étiquette = texte nettoyé, 60 caractères au plus (2 niveaux au plus dans le nom :
 « Catégorie/Sous-catégorie », catégories larges : Pays, Métiers, Lieux, Culture et œuvres, Sciences et nature, Histoire
 et événements, Organisations, Autres), 30 par carte, 50 000 par compte, 5 000 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par
-compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente ; corps JSON
+compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente, trois envois en
+cours au plus par classeur ; journal des synchros : 50 lignes et 30 jours par classeur, 30 signalements du favori par
+heure, 2 Ko par signalement ; corps JSON
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
 longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`, et comptées comme cartes
 distinctes (quand elles ont un identifiant de carte) pour dire si une lecture est complète. Quota ou base pleine :
@@ -722,8 +807,46 @@ désordre, carte la plus récente partie, plus de 500 nouveautés, nouvelle cart
 autre synchro en même temps). Cartes invalides : « 1 carte ignorée … elle reste dans le jeu, mais le classeur ne peut
 pas la ranger » (pas « relance », qui n'y changerait rien) ; « relance le favori dans un moment » seulement si
 `complete:false`. Une page sans liste `collection` est une erreur (rien n'est envoyé), pas la fin de la collection.
-Ailleurs : « Ouvre wiki-masters.com et connecte-toi ». 401/403 du jeu : « Connecte-toi à WikiMasters » ; 403
-`automation_limit` (ou 429) : « Le jeu limite les lectures automatiques : réessaie plus tard ».
+Ailleurs : « Ouvre wiki-masters.com et connecte-toi ». 401/403 du jeu : « Connecte-toi à WikiMasters (ta session du jeu
+a expiré ou n'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori » ; 403 qui n'est pas
+du JSON : « WikiMasters a refusé la lecture (protection anti-robots ?) : recharge la page du jeu (passe la vérification si
+elle s'affiche) … » ; 403 `automation_limit` (ou 429) : « Le jeu limite les lectures automatiques : réessaie plus tard
+(dans une dizaine de minutes) » ; jeu injoignable, en erreur ou muet : « WikiMasters ne répond pas (réseau) / a répondu
+500 (souci passager du jeu) / ne répond plus (30 s sans réponse) : réessaie dans un moment ». Chaque message d'échec
+finit par « Rien n'a été changé dans ton classeur. » quand c'est le cas.
+
+**Sûreté de la lecture** (2026-10-17, `VERSION = 2` dans `bookmarklet.js`, envoyée en `v`) :
+- `state` rend l'heure du serveur (`now`) : renvoyée en `started` avec la synchro rapide et au premier morceau, elle
+  empêche une lecture partie plus tôt de passer par-dessus une plus récente (« Une synchro plus récente (autre onglet,
+  favori relié ou rafraîchissement) est déjà passée : ton classeur est à jour (1 043 cartes). »). Le favori envoie aussi
+  `via` (`clic`, `relie` : synchro automatique, `script` : Tampermonkey) et `reason` (code de la raison d'une relecture
+  complète), pour le journal des synchros.
+- Lectures du jeu en `cache: "no-store"` (une réponse gardée par le navigateur ferait croire à « Rien de nouveau ») et
+  avec un **délai d'attente** (`AbortController` : 30 s pour le jeu, 60 s pour le classeur ; sans `AbortController`,
+  comme avant) : une requête qui ne répond plus ne laisse plus le favori, ni ses synchros automatiques, bloqué sur
+  « synchro en cours… ».
+- **Page courte** (moins de 50 entrées) alors que les exemplaires lus restent sous `total` du jeu : relue une fois après
+  une pause d'une seconde (page vide ou tronquée passagère) ; même résultat : fin de la lecture (elle sera non vérifiée).
+- **Compteurs relus après la dernière page** (`stats_end`, une requête de plus) : s'ils ont changé, le classeur ne
+  retire aucune carte (« Ta collection a bougé pendant la lecture (compteurs du jeu différents avant et après) : aucune
+  carte n'a été retirée de ton classeur … Relance le favori dans un moment. »). Lecture incomplète : « Il en manque par
+  rapport au total du jeu (…) : aucune carte n'a été retirée de ton classeur (52 cartes non vues, gardées pour
+  l'instant). Relance le favori dans un moment. ». Lecture vérifiée : « 1 043 cartes envoyées au classeur, 2 nouvelles,
+  1 retirée (plus dans ta collection). ».
+- **Limite de lectures du jeu en pleine lecture complète** : une pause (le délai `Retry-After` du jeu, 120 s au plus,
+  sinon une minute ; « Le jeu demande de ralentir : reprise de la lecture à 14:32 (1 250 exemplaires lus)… « Arrêter »
+  l'annule. »), puis reprise **à la même page** : tout recommencer heurterait la même limite au même endroit (gros
+  classeurs). Une seconde limite dans la même synchro arrête tout. La synchro rapide, elle, s'arrête dès la première.
+- **Envoi** : un morceau refusé par une panne passagère du classeur (réseau, délai, `5xx` sauf `503`, le quota du jour)
+  est renvoyé deux fois (après 2 s, puis 6 s) ; le dernier, déjà appliqué mais dont la réponse s'est perdue, rend le même
+  résultat (`again`).
+- **Échecs signalés** : un échec vu par le favori lui-même (session, limite, anti-robots, erreur, délai ou format du jeu)
+  est envoyé au journal des synchros (`POST /api/sync-log` : `kind`, `via`, `code`, le message affiché, `ms`,
+  `read`, `total`, `reason`, `v` ; jamais de jeton ni de cookie du jeu). Un refus ou une panne du classeur n'est pas
+  signalé (il l'a noté lui-même, ou ne peut rien recevoir), ni « Arrêter ».
+- `state` rend aussi la version la plus récente du favori (`v`) : un favori plus ancien finit ses messages par « Une
+  nouvelle version du favori existe : remplace celui-ci (onglet « Mettre à jour » du classeur). ». Le script
+  Tampermonkey porte la même version (`@version`).
 
 **Mode relié** (le favori reste dans la page) : après son clic, le favori reste actif dans la page du jeu jusqu'à ce
 qu'elle soit rechargée (le jeu est une application Next.js : y naviguer ne la recharge pas) ; sans `URL` ni `fetch`, il
@@ -745,7 +868,10 @@ requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un reje
   précédente, **20 automatiques par heure** au plus. Une relecture complète automatique (compteurs qui ne collent plus
   après une défausse, une mise aux enchères…) a lieu au plus **toutes les 15 minutes** ; sinon elle est reportée et
   annoncée (« Relecture complète prévue à 14:50 (…) : « Synchroniser » la lance tout de suite »). Une action pendant une
-  synchro en programme une autre après. Sans action en attente, aucune minuterie : rien n'est lu.
+  synchro en programme une autre après. Sans action en attente, aucune minuterie : rien n'est lu. Paquet ouvert mais
+  « Rien de nouveau » (le jeu n'avait pas encore rangé les cartes tirées) : **une seule vérification de plus**, dans les
+  limites habituelles (une minute après au moins ; badge « synchro à 14:36 (vérification après le paquet ; une par
+  minute au plus) »), pas une de plus même si elle ne trouve rien.
 - **Ces limites valent pour toutes les pages et tous les onglets du jeu de ce navigateur** (un rechargement, le script
   Tampermonkey de chaque page, un second onglet ne les remettent pas à zéro) : `localStorage` de wiki-masters.com, une
   seule clé, `classeur:relie` = `{autos, end, full}` (heures des synchros automatiques de la dernière heure, fin — ou

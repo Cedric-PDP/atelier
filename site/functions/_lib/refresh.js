@@ -1,13 +1,17 @@
-// POST /api/refresh {page, full?} : lit la collection sur WikiMasters avec le cookie gardé, 10 pages au plus par appel.
-// Lecture seule, mêmes requêtes que la page « Collection » du jeu ; toujours lancé par un geste de l'utilisateur.
+// POST /api/refresh {page, full?, run?} : lit la collection sur WikiMasters avec le cookie gardé, 10 pages au plus par
+// appel. Lecture seule, mêmes requêtes que la page « Collection » du jeu ; toujours lancé par un geste de l'utilisateur.
 // Synchro rapide d'abord (page 0, sans full) : seulement les exemplaires plus récents que la dernière synchro (import.js).
+// La page 0 rend un jeton de lecture (run) que les appels suivants renvoient : une autre lecture commencée entre-temps
+// (autre onglet) arrête celle-ci au lieu de mélanger leurs pages. Chaque fin de lecture, réussie ou non, laisse une ligne
+// au journal des synchros (synclog.js, via « cookie »).
 
 import { purgeStaging } from './db.js';
 import { HttpError } from './http.js';
 import { badCard, entryToCard } from './cards.js';
-import { REFRESH_SOURCE, deltaFits, finalizeImport, pickStats, quickSyncAllowed, syncState, writeDelta } from './import.js';
+import { REFRESH_SOURCE, deltaFits, finalizeImport, pickStats, quickSyncAllowed, startedAt, syncState, writeDelta } from './import.js';
 import { GAME_HOST, decryptCookie, encryptCookie, mergeSetCookies, setCookiesOf } from './session.js';
-import { nowIso, sleep } from './util.js';
+import { errorEntry, writeLog } from './synclog.js';
+import { nowIso, randomToken, sleep } from './util.js';
 
 const GAME = `https://${GAME_HOST}`;
 const PAGE_SIZE = 50;
@@ -76,10 +80,24 @@ function deltaOf(fresh) {
   return { cards, text: JSON.stringify(cards), rows, copies, lastAt: fresh.length ? fresh[0].obtained_at : null };
 }
 
+// Toute erreur laisse une ligne au journal des synchros (phase : synchro rapide ou lecture complète).
 export async function refresh(env, user, body) {
+  const ctx = { phase: 'full' };
+  try {
+    return await refreshCall(env, user, body, ctx);
+  } catch (err) {
+    await writeLog(env.DB, user.id, errorEntry(ctx.phase, err, { via: 'cookie', page: Number.isInteger(body.page) ? body.page : 0 }));
+    throw err;
+  }
+}
+
+async function refreshCall(env, user, body, ctx) {
   const db = env.DB;
   const page = body.page ?? 0;
   if (!Number.isInteger(page) || page < 0 || page > MAX_PAGE) throw new HttpError(400, 'Numéro de page invalide.');
+  if (body.run !== undefined && body.run !== null && (typeof body.run !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(body.run))) {
+    throw new HttpError(400, 'Jeton de lecture (run) invalide.');
+  }
   if (!user.cookie_enc) throw new HttpError(401, NO_SESSION, { needs_session: true });
   if (user.session_expired) throw new HttpError(401, EXPIRED, { needs_session: true });
 
@@ -88,18 +106,27 @@ export async function refresh(env, user, body) {
   // Pause réglable pour les tests (REFRESH_PAUSE_MS) ; 250 ms sinon.
   const pause = env.REFRESH_PAUSE_MS !== undefined ? Number(env.REFRESH_PAUSE_MS) : PAUSE_MS;
 
+  // Jeton de cette lecture (tiré à la page 0, gardé dans la page -1 de la table d'attente) et son début.
+  let run = body.run ?? null;
   if (page === 0) {
+    run = randomToken(9);
     await db.batch([...purgeStaging(db), db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)]);
   } else {
     await db.batch(purgeStaging(db));
-    // Les pages précédentes doivent toutes être en attente (sinon : rafraîchissement interrompu).
+    // Les pages précédentes doivent toutes être en attente (sinon : rafraîchissement interrompu), et être celles de
+    // cette lecture (jeton de la page -1 ; un ancien client sans jeton n'est pas contrôlé).
     const row = await db.prepare(
-      'SELECT COUNT(*) AS n FROM refresh_staging WHERE user_id = ?1 AND page >= 0 AND page < ?2',
+      `SELECT COUNT(*) AS n,
+         (SELECT json_extract(entries, '$.run') FROM refresh_staging WHERE user_id = ?1 AND page = -1) AS run
+       FROM refresh_staging WHERE user_id = ?1 AND page >= 0 AND page < ?2`,
     )
       .bind(user.id, page)
       .first();
+    if (row && run && row.run && row.run !== run) {
+      throw new HttpError(409, "Une autre mise à jour a commencé entre-temps (dans un autre onglet ?) : celle-ci s'arrête, sans rien changer à ton classeur.");
+    }
     if (!row || row.n !== page) {
-      throw new HttpError(409, 'Le rafraîchissement a été interrompu : recommence depuis le début.');
+      throw new HttpError(409, "Le rafraîchissement a été interrompu : recommence depuis le début (ton classeur n'a pas été modifié).");
     }
   }
 
@@ -148,14 +175,17 @@ export async function refresh(env, user, body) {
   let done = false;
   let next = page; // première page pas encore lue
   let quick = null; // synchro rapide écrite : la réponse de writeDelta
+  let statsEnd = null; // compteurs relus après la dernière page (lecture en plusieurs appels)
   let failure = null;
   try {
     let budget = PAGES_PER_CALL;
     if (page === 0) {
       const stats = pickStats(await gameGet('/api/my-collection/stats?sort=rarity'));
-      staged.push([-1, JSON.stringify(stats ?? {}), 0]);
+      const started = nowIso();
+      staged.push([-1, JSON.stringify({ ...(stats ?? {}), run, started }), 0]);
       const state = syncState(user);
       if (body.full !== true && stats && quickSyncAllowed(state)) {
+        ctx.phase = 'quick';
         // PAGES_PER_CALL - 1 pages au plus : la relecture complète qui suivrait un échec lit au moins une page, et
         // l'appel ne décode jamais plus de PAGES_PER_CALL pages en tout.
         const got = await readNewest(gameGet, state.last_at, PAGES_PER_CALL - 1);
@@ -164,12 +194,13 @@ export async function refresh(env, user, body) {
         const fit = delta && (await deltaFits(db, user, state, { ...delta, stats }));
         if (fit && fit.reason === undefined) {
           const res = await writeDelta(db, user, state, {
-            text: delta.text, stats, lastAt: delta.lastAt, fresh: fit.fresh,
+            text: delta.text, stats, lastAt: delta.lastAt, fresh: fit.fresh, copies: delta.copies, started, log: { via: 'cookie' },
             clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)],
           });
           // Une autre synchro est passée entre-temps : relecture complète.
           if (!res.needs_full) quick = res;
         }
+        ctx.phase = 'full';
       }
     }
     for (let p = page; !quick && p < page + budget; p++) {
@@ -193,6 +224,16 @@ export async function refresh(env, user, body) {
       if (list.length < PAGE_SIZE) {
         done = true;
         break;
+      }
+    }
+    // Lecture en plusieurs appels : compteurs du jeu relus à la fin ; s'ils ont changé, la collection a bougé pendant la
+    // lecture, qui ne retirera aucune carte (finalizeImport). Échec de cette relecture : la lecture finit sans (les pages
+    // lues ne sont pas perdues ; une session expirée est quand même notée).
+    if (done && page > 0) {
+      try {
+        statsEnd = pickStats(await gameGet('/api/my-collection/stats?sort=rarity'));
+      } catch {
+        statsEnd = null;
       }
     }
   } catch (err) {
@@ -230,6 +271,7 @@ export async function refresh(env, user, body) {
     return {
       done: false,
       next_page: next,
+      run, // à renvoyer avec la page suivante
       fetched: progress?.fetched ?? 0,
       total: typeof progress?.total === 'number' ? progress.total : null,
       skipped: progress?.skipped ?? 0,
@@ -243,12 +285,16 @@ export async function refresh(env, user, body) {
   )
     .bind(user.id)
     .first();
+  const head = info?.stats ? JSON.parse(info.stats) : null;
   const result = await finalizeImport(db, user, {
     source: REFRESH_SOURCE,
     key: 0,
-    stats: info?.stats ? JSON.parse(info.stats) : null,
+    stats: head,
+    statsEnd,
+    started: head ? startedAt(head.started) : null,
     clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)],
     skipped: info?.skipped ?? 0,
+    log: { via: 'cookie' },
   });
   return { done: true, ...result };
 }

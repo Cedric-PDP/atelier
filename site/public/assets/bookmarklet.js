@@ -19,6 +19,13 @@
 // 14:32 »), avec « Synchroniser » et « Arrêter » (qui rend window.fetch d'origine, et coupe la synchro en cours : plus
 // rien n'est lu ni envoyé). Relié, il lit aussi les cotes et le marché sans clic (toutes les 20 min tant que l'onglet est
 // visible, et après une enchère ou une vente vue dans la page : « cotes automatiques »), ligne « Cotes : … » du badge.
+// Sûreté des synchros (2026-10-17) : une page courte alors que le jeu compte plus d'exemplaires est relue une fois ; les
+// compteurs du jeu sont relus après la dernière page (le classeur ne retire aucune carte si la collection a bougé pendant
+// la lecture, ni si elle est incomplète) ; une limite de lectures du jeu en pleine lecture complète met celle-ci en pause
+// une minute, puis elle reprend à la même page ; chaque requête a un délai d'attente ; un morceau refusé par une panne
+// passagère du classeur est renvoyé deux fois. Les échecs vus par le favori lui-même (session du jeu, erreur ou limite du
+// jeu, réponse inattendue) sont signalés au journal des synchros du classeur (POST /api/sync-log : le message affiché et
+// quelques nombres, jamais de jeton ni de cookie du jeu).
 // L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
 // principale : elle ne permet que d'envoyer des cartes), et "__START__" par "load" dans le script Tampermonkey (relié
 // dès le chargement de chaque page du jeu, sans rien lire avant une action du joueur ; sinon : clic sur le favori), puis
@@ -28,6 +35,10 @@
   var SITE = "__SITE__";
   var KEY = "__KEY__";
   var START = "__START__";
+  // Version de ce favori, envoyée au classeur (journal des synchros) ; « state » rend la plus récente : un favori plus
+  // ancien le dit à la fin de sa synchro. La page la lit dans ce fichier (favori ancien signalé, @version du script
+  // Tampermonkey) ; FAVORI_VERSION de import.js doit valoir la même (un test le vérifie).
+  var VERSION = 2;
   var BOX_ID = "classeur-favori";
   var PART = 500;
   // Déjà relié dans cette page : pendant une synchro, le clic déplie seulement l'encart ; sinon l'ancien favori est
@@ -146,29 +157,69 @@
       throw e;
     }
   };
-  // Lecture d'une adresse de l'API du jeu, avec la session du navigateur (même origine).
+  // Erreur du jeu avec sa nature (code), pour le journal des synchros : network, timeout, limit, session, antibot, game,
+  // format. wait = délai demandé par le jeu (Retry-After, en ms) pour une limite de lectures.
+  var gameError = function (message, code, stops) {
+    var e = stops ? stop(message) : new Error(message);
+    e.code = code;
+    return e;
+  };
+  var UNCHANGED = " Rien n'a été changé dans ton classeur.";
+  // Requête avec un délai d'attente (jeu : 30 s ; classeur : 60 s, finalisation d'un gros envoi comprise) : une requête
+  // qui ne répond plus ne bloque plus le favori, ni ses synchros automatiques. Sans AbortController : comme avant.
+  var timed = function (url, init, ms) {
+    if (typeof AbortController !== "function" || typeof clearTimeout !== "function") {
+      return net.call(window, url, init);
+    }
+    var ctl = new AbortController();
+    var timer = setTimeout(function () {
+      ctl.abort();
+    }, ms);
+    init.signal = ctl.signal;
+    return net.call(window, url, init).then(function (r) {
+      clearTimeout(timer);
+      return r;
+    }, function (e) {
+      clearTimeout(timer);
+      if (ctl.signal.aborted) {
+        e = new Error("timeout");
+        e.timeout = true;
+      }
+      throw e;
+    });
+  };
+  // Lecture d'une adresse de l'API du jeu, avec la session du navigateur (même origine), jamais depuis le cache du
+  // navigateur (une réponse gardée ferait croire à « Rien de nouveau »).
   var read = async function (path) {
     halt();
-    var r = await net.call(window, path, { credentials: "include", headers: { Accept: "application/json" } }).catch(function () {
-      throw new Error("WikiMasters ne répond pas (réseau) : réessaie dans un moment.");
+    var r = await timed(path, { credentials: "include", cache: "no-store", headers: { Accept: "application/json" } }, 30000).catch(function (e) {
+      if (e && e.timeout) {
+        throw gameError("WikiMasters ne répond plus (30 s sans réponse) : réessaie dans un moment." + UNCHANGED, "timeout");
+      }
+      throw gameError("WikiMasters ne répond pas (réseau) : réessaie dans un moment." + UNCHANGED, "network");
     });
-    if (r.status === 403 || r.status === 429) {
+    if (r.status === 401 || r.status === 403 || r.status === 429) {
       var refused = await r.json().catch(function () {
         return null;
       });
       // Limite de lectures automatiques du jeu (403 avec ce code, vue sur son marché) : la session n'y est pour rien.
       if (r.status === 429 || (refused && refused.code === "automation_limit")) {
-        throw stop("Le jeu limite les lectures automatiques : réessaie plus tard.");
+        var limited = gameError("Le jeu limite les lectures automatiques : réessaie plus tard (dans une dizaine de minutes)." + UNCHANGED, "limit", true);
+        var after = r.headers && typeof r.headers.get === "function" ? Number(r.headers.get("retry-after")) : NaN;
+        limited.wait = after > 0 ? Math.min(after, 120) * 1000 : 60000;
+        throw limited;
       }
-    }
-    if (r.status === 401 || r.status === 403) {
-      throw stop("Connecte-toi à WikiMasters, puis clique à nouveau ce favori.");
+      // 403 qui n'est pas du JSON : sans doute la protection anti-robots devant le site, pas la session.
+      if (r.status === 403 && !refused) {
+        throw gameError("WikiMasters a refusé la lecture (protection anti-robots ?) : recharge la page du jeu (passe la vérification si elle s'affiche), puis relance la synchro." + UNCHANGED, "antibot", true);
+      }
+      throw gameError("Connecte-toi à WikiMasters (ta session du jeu a expiré ou n'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori." + UNCHANGED, "session", true);
     }
     if (!r.ok) {
-      throw new Error("WikiMasters a répondu " + r.status + " : réessaie dans un moment.");
+      throw gameError("WikiMasters a répondu " + r.status + " (souci passager du jeu) : réessaie dans un moment." + UNCHANGED, "game");
     }
     return r.json().catch(function () {
-      throw new Error("Réponse inattendue de WikiMasters (ce n'est pas du JSON) : réessaie dans un moment.");
+      throw gameError("Réponse inattendue de WikiMasters (ce n'est pas du JSON) : réessaie dans un moment." + UNCHANGED, "format");
     });
   };
   var web = function (v) {
@@ -243,9 +294,10 @@
   };
   var GONE = "La carte la plus récente de ta dernière synchro n'est plus dans ta collection (vendue, échangée…) : relecture complète. ";
   // Exemplaires obtenus après lastAt : collection lue du plus récent au plus ancien, 10 pages au plus. {fresh} ; ou
-  // {why} (relecture complète, avec sa raison) : tri par date en erreur ou sans liste, dates dans le désordre (le
-  // reste de la page est contrôlé aussi : un tri ignoré ou croissant ne passe pas pour une vente), exemplaire de la
-  // dernière synchro introuvable (le premier d'au plus lastAt doit être lui, à la même date), trop de nouveautés.
+  // {why, code} (relecture complète, avec sa raison et son code pour le journal des synchros) : tri par date en erreur
+  // ou sans liste, dates dans le désordre (le reste de la page est contrôlé aussi : un tri ignoré ou croissant ne passe
+  // pas pour une vente), exemplaire de la dernière synchro introuvable (le premier d'au plus lastAt doit être lui, à la
+  // même date), trop de nouveautés.
   var readNew = async function (lastAt) {
     var fresh = [];
     var prev = null;
@@ -257,17 +309,17 @@
         if (e.stop) {
           throw e;
         }
-        return { why: "Le tri par date du jeu n'a pas répondu : relecture complète. " };
+        return { why: "Le tri par date du jeu n'a pas répondu : relecture complète. ", code: "sort" };
       }
       var list = data && Array.isArray(data.collection) ? data.collection : null;
       if (!list) {
-        return { why: "Réponse inattendue du jeu pour le tri par date : relecture complète. " };
+        return { why: "Réponse inattendue du jeu pour le tri par date : relecture complète. ", code: "sort" };
       }
       var stopAt = -1;
       for (var i = 0; i < list.length; i++) {
         var at = list[i] && list[i].obtained_at;
         if (typeof at !== "string" || (prev !== null && at > prev)) {
-          return { why: "Le jeu n'a pas rangé ta collection par date comme prévu : relecture complète. " };
+          return { why: "Le jeu n'a pas rangé ta collection par date comme prévu : relecture complète. ", code: "order" };
         }
         prev = at;
         if (stopAt < 0 && at <= lastAt) {
@@ -278,14 +330,22 @@
         }
       }
       if (stopAt >= 0) {
-        return list[stopAt].obtained_at === lastAt ? { fresh: fresh } : { why: GONE };
+        return list[stopAt].obtained_at === lastAt ? { fresh: fresh } : { why: GONE, code: "gone" };
       }
       if (list.length < 50) {
-        return { why: GONE };
+        return { why: GONE, code: "gone" };
       }
       await wait(300);
     }
-    return { why: "Plus de 500 exemplaires obtenus depuis ta dernière synchro : relecture complète. " };
+    return { why: "Plus de 500 exemplaires obtenus depuis ta dernière synchro : relecture complète. ", code: "too_many" };
+  };
+  // Exemplaires d'une page du jeu (une entrée sans count valable en compte un), comme group().
+  var copiesOf = function (list) {
+    var n = 0;
+    list.forEach(function (e) {
+      n += e && Math.trunc(Number(e.count)) > 0 ? Math.trunc(Number(e.count)) : 1;
+    });
+    return n;
   };
   // Message d'un refus du classeur : le sien (favori périmé…), sauf script Tampermonkey périmé (401 en mode « load » :
   // c'est le script qu'il faut reprendre, pas le favori) et erreur du serveur (5xx ; 503 : quota du jour ou base non
@@ -300,15 +360,16 @@
     }
     return said || "Le classeur a répondu " + status + ".";
   };
-  // Envoi au classeur (route : /api/import ou /api/targets/from-game). Erreur : e.status (refus) ou e.down (réseau).
+  // Envoi au classeur (route : /api/import, /api/sync-log ou /api/targets/from-game ; 60 s au plus). Erreur : e.status
+  // (refus) ou e.down (réseau, délai dépassé).
   var post = async function (route, body) {
     halt();
-    var r = await net.call(window, SITE + route, {
+    var r = await timed(SITE + route, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Classeur-Key": KEY },
       body: JSON.stringify(body)
-    }).catch(function () {
-      var down = new Error("Le classeur ne répond pas (réseau) : réessaie dans un moment.");
+    }, 60000).catch(function (e) {
+      var down = new Error(e && e.timeout ? "Le classeur ne répond plus (60 s sans réponse) : réessaie dans un moment." : "Le classeur ne répond pas (réseau) : réessaie dans un moment.");
       down.down = true;
       throw down;
     });
@@ -325,6 +386,21 @@
   var send = function (body) {
     return post("/api/import", body);
   };
+  // Morceau d'une lecture complète : deux nouveaux essais (2 s puis 6 s) sur une panne passagère du classeur (réseau,
+  // délai, erreur 5xx autre que 503, le quota du jour) ; un morceau renvoyé remplace le précédent, et un dernier morceau
+  // déjà appliqué rend le même résultat.
+  var sendPart = async function (body) {
+    for (var attempt = 0; ; attempt++) {
+      try {
+        return await send(body);
+      } catch (e) {
+        if (attempt >= 2 || e.halted || !(e.down || (e.status >= 500 && e.status !== 503))) {
+          throw e;
+        }
+        await wait(attempt ? 6000 : 2000);
+      }
+    }
+  };
   // Raisons d'une relecture complète demandée par le classeur (réponse needs_full à une synchro rapide).
   var WHY = {
     counts: "Les compteurs du jeu ne collent pas avec tes nouveautés (carte vendue, échangée ou mise aux enchères, exemplaire ajouté à une carte déjà là…) : relecture complète. ",
@@ -334,12 +410,46 @@
     too_many: "Plus de 500 nouvelles cartes : relecture complète. ",
     max_cards: "Ton classeur dépasserait 20 000 cartes : relecture complète. "
   };
+  var SUPERSEDED = "Une synchro plus récente (autre onglet, favori relié ou rafraîchissement) est déjà passée : ton classeur est à jour";
+  // Échec vu par le favori lui-même pendant une synchro (jeu injoignable ou en erreur, session, limite de lectures,
+  // réponse inattendue : e.code) : signalé au journal des synchros du classeur, avec le message affiché et quelques
+  // nombres, jamais de jeton ni de cookie du jeu. Refus ou panne du classeur (e.status, e.down : il l'a noté lui-même, ou
+  // ne peut rien recevoir), « Arrêter » : rien. Échec du signalement : ignoré.
+  var report = async function (e, info) {
+    if (!e || e.halted || e.status || e.down || !e.code || halted) {
+      return;
+    }
+    var body = { kind: info.kind, via: info.via, code: e.code, message: String(e.message || "").slice(0, 300), ms: Math.max(0, Date.now() - info.t0), v: VERSION };
+    if (info.reason) {
+      body.reason = info.reason;
+    }
+    if (info.read) {
+      body.read = info.read;
+    }
+    if (info.total) {
+      body.total = info.total;
+    }
+    await post("/api/sync-log", body).catch(function () {
+      return null;
+    });
+  };
   // Synchro : rapide si possible, sinon relecture complète. auto = true (mode relié, après une action du joueur) : une
   // relecture complète moins de FULL_GAP après la précédente est reportée ({later: true}, rien n'est lu de plus).
+  // {quick: true, empty} (empty : rien de nouveau), {full: true} ou {later: true}. Un échec vu par le favori est signalé
+  // au classeur (report) avant d'être rendu.
   var run = async function (auto) {
+    var info = { t0: Date.now(), kind: "quick", via: START === "load" ? "script" : auto === true ? "relie" : "clic", reason: "", read: 0, total: 0 };
+    try {
+      return await sync(auto, info);
+    } catch (e) {
+      await report(e, info);
+      throw e;
+    }
+  };
+  var sync = async function (auto, info) {
     say("Lecture de ta collection…");
     var state = null;
-    // Raison d'une relecture complète, gardée en tête des messages de progression.
+    // Raison d'une relecture complète, gardée en tête des messages de progression (et son code pour le classeur).
     var why = "";
     // L'état de la synchro d'abord : sans réponse du classeur, rien n'est lu dans le jeu.
     try {
@@ -352,27 +462,47 @@
       }
       state = null;
     }
+    // Début de la synchro, à l'heure du classeur : il n'applique jamais une lecture plus ancienne que la sienne.
+    var started = state && typeof state.now === "string" ? state.now : undefined;
+    info.kind = state && state.quick && state.last_at ? "quick" : "full";
+    // Fin d'une synchro réussie : son message, et la mention d'un favori plus récent.
+    var done = function (message) {
+      if (state && typeof state.v === "number" && state.v > VERSION) {
+        message += " Une nouvelle version du favori existe : remplace celui-ci (onglet « Mettre à jour » du classeur).";
+      }
+      say(message, true);
+    };
     var stats = await read("/api/my-collection/stats?sort=rarity");
+    var total = stats && Number.isInteger(Number(stats.total)) && Number(stats.total) > 0 ? Number(stats.total) : null;
+    info.total = total || 0;
+    info.reason = state && state.quick ? "" : "state";
     if (state && state.quick && state.last_at) {
       say("Recherche de tes nouvelles cartes…");
       var got = await readNew(state.last_at);
       why = got.why || "";
+      info.reason = got.code || "";
       if (got.fresh) {
         var news = group(got.fresh);
         if (news.ignored > 0) {
           why = WHY.invalid;
+          info.reason = "invalid";
         } else {
-          var quick = await send({ mode: "delta", cards: news.list, stats: stats, rows: news.rows, copies: news.copies, last_at: newest(got.fresh), source: "bookmarklet" });
+          var quick = await send({ mode: "delta", cards: news.list, stats: stats, rows: news.rows, copies: news.copies, last_at: newest(got.fresh), started: started, via: info.via, v: VERSION, source: "bookmarklet" });
+          if (quick.superseded) {
+            done(SUPERSEDED + (typeof quick.count === "number" ? " (" + num(quick.count) + " cartes)." : "."));
+            return { quick: true };
+          }
           if (!quick.needs_full) {
             var added = Array.isArray(quick.new_ids) ? quick.new_ids.length : 0;
             if (!news.rows) {
-              say("Rien de nouveau depuis ta dernière synchro : ton classeur est à jour (" + num(quick.count) + " cartes).", true);
+              done("Rien de nouveau depuis ta dernière synchro : ton classeur est à jour (" + num(quick.count) + " cartes).");
             } else {
-              say(num(news.rows) + (news.rows > 1 ? " exemplaires obtenus" : " exemplaire obtenu") + " depuis ta dernière synchro, " + num(added) + (added > 1 ? " nouvelles cartes" : " nouvelle carte") + " : ton classeur est à jour (" + num(quick.count) + " cartes).", true);
+              done(num(news.rows) + (news.rows > 1 ? " exemplaires obtenus" : " exemplaire obtenu") + " depuis ta dernière synchro, " + num(added) + (added > 1 ? " nouvelles cartes" : " nouvelle carte") + " : ton classeur est à jour (" + num(quick.count) + " cartes).");
             }
-            return { quick: true };
+            return { quick: true, empty: !news.rows };
           }
           why = WHY[quick.reason] || WHY.counts;
+          info.reason = WHY[quick.reason] ? quick.reason : "counts";
         }
       }
     }
@@ -393,20 +523,60 @@
       live.fullAt = Date.now();
       share(true);
     }
+    info.kind = "full";
     say(why + "Lecture de ta collection…");
     var entries = [];
+    var copies = 0;
+    // Une page courte relue (une fois par synchro) ; une pause après une limite de lectures du jeu (une fois aussi).
+    var reread = false;
+    var paused = false;
     for (var page = 0; page < 2000; page++) {
-      var data = await read("/api/my-collection?sort=rarity&page=" + page + "&stats=0");
+      var data;
+      try {
+        data = await read("/api/my-collection?sort=rarity&page=" + page + "&stats=0");
+      } catch (e) {
+        // Limite de lectures du jeu en pleine lecture : pause (le délai demandé par le jeu, une minute sinon), puis reprise
+        // à la même page ; tout recommencer heurterait la même limite au même endroit. Une seconde limite arrête tout.
+        if (e.code === "limit" && !paused && !halted) {
+          paused = true;
+          say(why + "Le jeu demande de ralentir : reprise de la lecture à " + hhmm(Date.now() + e.wait) + " (" + num(entries.length) + " exemplaires lus)… « Arrêter » l'annule.");
+          await wait(e.wait);
+          page -= 1;
+          continue;
+        }
+        throw e;
+      }
       if (!data || !Array.isArray(data.collection)) {
-        throw new Error("Réponse inattendue de WikiMasters (pas de liste de cartes) : rien n'a été envoyé, réessaie dans un moment.");
+        throw gameError("Réponse inattendue de WikiMasters (pas de liste de cartes) : rien n'a été envoyé, réessaie dans un moment.", "format");
       }
       var list = data.collection;
+      // Page courte alors que le jeu compte plus d'exemplaires que ceux lus : relue une fois après une pause (page vide
+      // ou tronquée passagère), au lieu de finir sur une lecture incomplète.
+      if (list.length < 50 && total !== null && copies + copiesOf(list) < total && !reread) {
+        reread = true;
+        await wait(1000);
+        page -= 1;
+        continue;
+      }
       entries = entries.concat(list);
+      copies += copiesOf(list);
+      info.read = entries.length;
       say(why + "Lecture de ta collection… " + num(entries.length) + (stats && stats.total ? " sur " + num(stats.total) : "") + " exemplaires");
       if (list.length < 50) {
         break;
       }
       await wait(300);
+    }
+    // Compteurs du jeu relus après la dernière page : s'ils ont changé, la collection a bougé pendant la lecture, et le
+    // classeur n'en retire aucune carte. Échec de cette relecture : la lecture part sans (rien n'est perdu).
+    var statsEnd = null;
+    try {
+      statsEnd = await read("/api/my-collection/stats?sort=rarity");
+    } catch (e) {
+      if (e.halted) {
+        throw e;
+      }
+      statsEnd = null;
     }
     var grouped = group(entries);
     var cards = grouped.list;
@@ -422,19 +592,36 @@
         body.rows = grouped.rows;
         body.copies = grouped.copies;
         body.ignored = grouped.unknown;
+        body.via = info.via;
+        body.v = VERSION;
+        if (statsEnd && typeof statsEnd === "object") {
+          body.stats_end = { total: statsEnd.total, totalUnique: statsEnd.totalUnique };
+        }
+        if (started) {
+          body.started = started;
+        }
+        if (info.reason) {
+          body.reason = info.reason;
+        }
       }
-      res = await send(body);
+      res = await sendPart(body);
+    }
+    if (res.superseded) {
+      done(SUPERSEDED + (typeof res.count === "number" ? " (" + num(res.count) + " cartes)." : "."));
+      return { full: true };
     }
     var fresh = Array.isArray(res.new_ids) ? res.new_ids.length : 0;
-    var message = num(res.count) + " cartes envoyées au classeur, " + num(fresh) + (fresh > 1 ? " nouvelles." : " nouvelle.");
+    var removed = Number(res.removed) || 0;
+    var message = num(cards.length) + " cartes envoyées au classeur, " + num(fresh) + (fresh > 1 ? " nouvelles" : " nouvelle") + (removed ? ", " + num(removed) + (removed > 1 ? " retirées" : " retirée") + " (plus dans ta collection)" : "") + ".";
     var ignored = grouped.ignored + (Number(res.skipped) || 0);
     if (ignored > 0) {
       message += " " + num(ignored) + (ignored > 1 ? " cartes ignorées" : " carte ignorée") + " (sans titre ou rareté inconnue du classeur) : " + (ignored > 1 ? "elles restent dans le jeu, mais le classeur ne peut pas les ranger." : "elle reste dans le jeu, mais le classeur ne peut pas la ranger.");
     }
     if (res.complete === false) {
-      message += " Il en manque par rapport au total du jeu (ta collection a sans doute bougé pendant la lecture) : relance le favori dans un moment.";
+      var kept = Number(res.kept) || 0;
+      message += (res.moved ? " Ta collection a bougé pendant la lecture (compteurs du jeu différents avant et après)" : " Il en manque par rapport au total du jeu (ta collection a sans doute bougé pendant la lecture)") + " : aucune carte n'a été retirée de ton classeur" + (kept ? " (" + num(kept) + (kept > 1 ? " cartes non vues, gardées pour l'instant)" : " carte non vue, gardée pour l'instant)") : "") + ". Relance le favori dans un moment.";
     }
-    say(message, true);
+    done(message);
     return { full: true };
   };
   // Page « Collection globale » du jeu : le favori propose aussi de créer une collection du classeur avec la recherche
@@ -573,7 +760,6 @@
   // sur 90 jours ; fiable dès 3 ventes ; celle d'il y a 7 jours ; la dernière vente), ta lecture du marché (bonnes
   // affaires, tes enchères et tes ventes), jamais ton identifiant dans le jeu ; et, si la lecture échoue, le message
   // affiché ici (POST /api/market/fail), pour que sa page dise quoi faire.
-  var VERSION = "2026-10-17";
   var SUPA = "https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/";
   // Clé publique de la base du jeu (rôle « anon », livrée dans le code de sa page) : seule, elle n'ouvre rien.
   var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5cnhqZXBwanFzeHhqYXlmcnVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODAzMzksImV4cCI6MjA4OTQ1NjMzOX0.BZluyXygNxuQGDPxFX1zG5i-cqp10CVK-8GGtuak4Rg";
@@ -850,7 +1036,7 @@
   var seenCotes = {};
   // L'échec d'une lecture et sa raison (le message montré ici), pour la page du classeur ; rien si le classeur ne répond
   // pas.
-  var report = async function (why, auto) {
+  var reportFail = async function (why, auto) {
     try {
       await post("/api/market/fail", { why: String(why).slice(0, 300), v: VERSION, auto: auto });
     } catch (e) {
@@ -882,7 +1068,7 @@
     var me = session();
     if (!me.token) {
       var none = stop(me.why);
-      await report(none.message, auto);
+      await reportFail(none.message, auto);
       throw none;
     }
     say("Lecture des cotes…");
@@ -895,7 +1081,7 @@
     mkShare(true);
     if (!(plan.quota > 0)) {
       var full = stop("Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu.");
-      await report(full.message, auto);
+      await reportFail(full.message, auto);
       throw full;
     }
     mk.n = 0;
@@ -1065,7 +1251,7 @@
     }
     if (fail) {
       var why = fail.message + (sent.length ? " " + num(sent.length) + " cotes lues avant l'arrêt ont été envoyées au classeur" + (told ? ", avec les bonnes affaires et tes enchères." : ".") : "");
-      await report(why, auto);
+      await reportFail(why, auto);
       var e2 = new Error(why);
       e2.stop = fail.stop;
       e2.limit = fail.limit;
@@ -1224,7 +1410,7 @@
       }
       return p;
     };
-    live = { on: true, wanted: false, first: 0, last: 0, what: "", hold: "", plan: 0, due: 0, end: 0, okAt: 0, autos: [], fullAt: 0, later: false, paused: false, pauseWhy: "", fails: 0, foldPlan: 0 };
+    live = { on: true, wanted: false, first: 0, last: 0, what: "", hold: "", plan: 0, due: 0, end: 0, okAt: 0, autos: [], fullAt: 0, later: false, paused: false, pauseWhy: "", fails: 0, foldPlan: 0, rechecked: false };
     // Arrêt : window.fetch d'origine rendu ; si un autre script l'a enveloppé à son tour, il est laissé en place et
     // celui-ci ne fait plus que passer la main (live.on = false).
     live.restore = function () {
@@ -1335,6 +1521,7 @@
     live.wanted = true;
     live.last = now;
     live.what = what;
+    live.rechecked = false;
     schedule();
   };
   // ---------------------------------------------------------------- cotes automatiques (mode relié)
@@ -1563,6 +1750,15 @@
         live.okAt = Date.now();
         live.paused = false;
         live.pauseWhy = "";
+        // Paquet ouvert mais « Rien de nouveau » (le jeu n'avait pas encore rangé les cartes tirées) : une seule
+        // vérification de plus, dans les limites habituelles (une minute après celle-ci au moins).
+        if (auto && res && res.empty && live.what === "paquet ouvert" && !live.rechecked && !live.wanted) {
+          live.rechecked = true;
+          live.wanted = true;
+          live.what = "vérification après le paquet";
+          live.first = Date.now();
+          live.last = live.first;
+        }
       }
       if (task === market) {
         mkEnd(res, null, auto);

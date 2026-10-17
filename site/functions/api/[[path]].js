@@ -13,11 +13,13 @@ import { deleteTarget, listTargets, saveGameTarget, saveTarget } from '../_lib/t
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices, marketPlan, postFail, postLive, postPrices } from '../_lib/market.js';
+import { listSyncLog, reportSync } from '../_lib/synclog.js';
 
 // Seuls les points d'accès du favori (lancé depuis le jeu, sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
-// Marché : le favori lit son plan, envoie les cotes et sa lecture du marché, ou dit pourquoi elle a échoué (market.js).
-const CORS_PATHS = new Set(['import', 'targets/from-game', 'market/plan', 'market/prices', 'market/live', 'market/fail']);
+// Marché : le favori lit son plan, envoie les cotes et sa lecture du marché, ou dit pourquoi elle a échoué (market.js) ;
+// journal des synchros : il y signale ses propres échecs (synclog.js).
+const CORS_PATHS = new Set(['import', 'targets/from-game', 'market/plan', 'market/prices', 'market/live', 'market/fail', 'sync-log']);
 const CORS_HEADERS = {
   'access-control-allow-methods': 'POST, OPTIONS',
   'access-control-allow-headers': 'content-type, x-classeur-key',
@@ -53,12 +55,13 @@ const ROUTES = {
   'market/plan': { POST: [marketPlan, 'import'] }, // favori : cartes à coter, titres des cartes voulues
   'market/live': { POST: [postLive, 'import'] }, // favori : bonnes affaires, enchères et ventes du joueur
   'market/fail': { POST: [postFail, 'import'] }, // favori : pourquoi sa lecture du marché a échoué (montré par la page)
+  'sync-log': { GET: [listSyncLog, 'main'], POST: [reportSync, 'import'] }, // journal des synchros : lu par la page, échecs signalés par le favori
 };
 // Chemins avec un paramètre → leur entrée dans ROUTES.
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'market/plan': 1024, 'market/prices': 512 * 1024, 'market/live': 320 * 1024, 'market/fail': 2048 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'market/plan': 1024, 'market/prices': 512 * 1024, 'market/live': 320 * 1024, 'market/fail': 2048, 'sync-log': 2048 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 function health(env) {

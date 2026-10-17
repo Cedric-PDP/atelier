@@ -161,7 +161,8 @@ const parseAttempt = (text) => {
     return null;
   }
 };
-const cleanVersion = (v) => (typeof v === 'string' && VERSION.test(v) ? v : null);
+// Version du favori : un entier (VERSION de bookmarklet.js), ou un texte court (favori du 17/10 au matin : « 2026-10-17 »).
+const cleanVersion = (v) => (Number.isInteger(v) && v >= 0 && v < 1e6 ? v : typeof v === 'string' && VERSION.test(v) ? v : null);
 const SET_ATTEMPT = `INSERT INTO market (user_id, attempt) VALUES (?1, ?2)
   ON CONFLICT (user_id) DO UPDATE SET attempt = excluded.attempt`;
 

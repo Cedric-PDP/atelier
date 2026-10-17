@@ -26,7 +26,8 @@ const { onRequest } = await import(pathToFileURL(path.join(root, 'site', 'functi
 
 const SITE = 'https://classeur.example';
 const GAME = 'https://www.wiki-masters.com';
-const env ={ DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation' };
+// MAX_USERS : un compte neuf par scénario, bien plus que les 50 comptes permis par défaut.
+const env = { DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation', MAX_USERS: '1000' };
 
 // Horloge virtuelle, la même pour le serveur et pour les pages simulées du mode relié (openGame) : Date est remplacée
 // dans tout le processus (le serveur date full_at, le favori le compare à son heure) et n'avance que par advance().
@@ -58,7 +59,7 @@ const favoriSrc = appSrc.match(/\n( {2}function favoriCode\(src, site, key\) \{\
 assert.ok(favoriSrc, 'favoriCode introuvable dans app.js');
 const favoriCode = new Function(`${favoriSrc[1]}; return favoriCode;`)();
 // La page dit « ton favori n'est pas à jour » d'après la version qu'il envoie : les deux doivent concorder.
-assert.equal(appSrc.match(/const FAVORI_VERSION = '([^']+)';/)[1], src.match(/var VERSION = "([^"]+)";/)[1], 'FAVORI_VERSION (app.js) ≠ VERSION (bookmarklet.js)');
+assert.equal(appSrc.match(/const FAVORI_VERSION = (\d+);/)[1], src.match(/var VERSION = (\d+);/)[1], 'FAVORI_VERSION (app.js) ≠ VERSION (bookmarklet.js)');
 const oneLine = (key, start) => favoriCode(src, SITE, key)
   .replace('"__START__"', JSON.stringify(start || '__START__')); // "load" : script Tampermonkey (makeUserscript)
 // favoriCode retire des espaces : le code doit rester le même. Arbre syntaxique (acorn, interne à Node : processus à part
@@ -75,9 +76,10 @@ const oneLine = (key, start) => favoriCode(src, SITE, key)
   else console.log('  (arbre syntaxique non comparé : acorn interne indisponible dans ce Node)');
 }
 // Taille une fois en adresse javascript: (makeBookmarklet) : Firefox refuse un favori de plus de 65 536 caractères.
+// 61 300 le 2026-10-17 (synchros sûres + cotes automatiques) : seuil à 64 000, il ne reste plus beaucoup de place.
 {
   const url = 'javascript:' + encodeURI(favoriCode(src, 'https://classeur.cedric-pdp.workers.dev', 'k'.repeat(43))).replace(/#/g, '%23');
-  assert.ok(url.length < 60000, `favori trop long pour Firefox : ${url.length} caractères (65 536 au plus, garder de la marge)`);
+  assert.ok(url.length < 64000, `favori trop long pour Firefox : ${url.length} caractères (65 536 au plus, garder de la marge)`);
   console.log(`favori : ${url.length} caractères en adresse javascript:`);
 }
 
@@ -105,7 +107,12 @@ let gameCalls = [];
 const game = {};
 // Mode relié (openGame) : game.offline (échec réseau), game.weird(res) (réponse altérée), game.packRefused (429) ; et
 // le classeur : game.siteDown (injoignable), game.siteStatus(body, route) (statut d'erreur rendu à la place du serveur).
-const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null, siteDown: false, siteStatus: null });
+// Favori cliqué (click) : game.siteFail(body, route) → statut d'erreur rendu à la place du classeur (rien de transmis) ;
+// game.siteLose(body, route) → transmis au classeur, puis réponse perdue (échec réseau) ; game.sitePre(body, route) : appelé
+// juste avant de transmettre. Mode relié : game.lagPack (les cartes d'un paquet n'arrivent dans la collection qu'avec
+// game.pending, quand le test les y met).
+const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null, siteDown: false, siteStatus: null,
+  siteFail: null, siteLose: null, sitePre: null, lagPack: false, pending: [] });
 resetGame();
 const at = (h) => new Date(Date.UTC(2026, 9, 1) + h * 3600_000).toISOString();
 const entry = (n, hour, extra = {}, card = {}) => ({
@@ -143,14 +150,21 @@ async function click() {
   const { doc } = makeDom();
   const key = importKey;
   const calls = [];
-  const posts = [];
+  const posts = []; // envois à /api/import
+  const reports = []; // échecs signalés au journal des synchros (/api/sync-log)
   const seen = [];
   const pageFetch = async (url, init = {}) => {
-    if (url === SITE + '/api/import') {
+    if (url.startsWith(SITE + '/api/')) {
       assert.equal(init.headers['X-Classeur-Key'], key);
+      const route = url.slice(SITE.length + 5);
       const body = JSON.parse(init.body);
-      posts.push(body);
-      const r = await api('POST', 'import', { body, key, origin: 'https://www.wiki-masters.com' });
+      if (route === 'import') posts.push(body);
+      else if (route === 'sync-log') reports.push(body); // pas les envois du marché (market/plan, market/fail…)
+      const failed = game.siteFail && game.siteFail(body, route);
+      if (failed) return { ok: false, status: failed, json: async () => ({ error: 'Erreur interne du serveur.' }) };
+      if (game.sitePre) game.sitePre(body, route);
+      const r = await api('POST', route, { body, key, origin: 'https://www.wiki-masters.com' });
+      if (game.siteLose && game.siteLose(body, route)) throw new TypeError('Failed to fetch');
       return { ok: r.status >= 200 && r.status < 300, status: r.status, json: async () => r.json };
     }
     calls.push(url);
@@ -171,7 +185,7 @@ async function click() {
     await new Promise((r) => setImmediate(r));
   }
   gameCalls = calls;
-  return { text: box(), seen: seen.join(' | '), posts, calls };
+  return { text: box(), seen: seen.join(' | '), posts, reports, calls };
 }
 const fullRead = (r) => r.calls.includes('/api/my-collection?sort=rarity&page=0&stats=0');
 
@@ -197,7 +211,8 @@ await test('première fois : lecture complète triée par rareté, date du plus 
   collection = Array.from({ length: 120 }, (_, i) => entry(i, i));
   const r = await click();
   assert.match(r.text, /120 cartes envoyées au classeur/, r.seen);
-  assert.deepEqual(gameCalls, ['/api/my-collection/stats?sort=rarity', ...[0, 1, 2].map((p) => `/api/my-collection?sort=rarity&page=${p}&stats=0`)]);
+  // Compteurs, pages, puis compteurs relus après la dernière page (la collection a-t-elle bougé pendant la lecture ?).
+  assert.deepEqual(gameCalls, ['/api/my-collection/stats?sort=rarity', ...[0, 1, 2].map((p) => `/api/my-collection?sort=rarity&page=${p}&stats=0`), '/api/my-collection/stats?sort=rarity']);
   assert.equal(r.posts[0].mode, 'state');
   assert.deepEqual([r.posts[1].last_at, r.posts[1].rows, r.posts[1].copies, r.posts[1].ignored], [at(119), 120, 120, 0]);
   assert.equal((await cardsOf()).length, 120);
@@ -297,23 +312,34 @@ await test('la carte la plus récente de la dernière synchro est partie (échan
   assert.ok(!(await cardOf('c59')) && (await cardOf('c900')));
 });
 
-await test('lecture complète incomplète (page vide passagère, pagination instable) : pas armée, le clic suivant relit tout', async () => {
+await test('lecture complète : page vide passagère relue ; page manquante persistante ou pagination instable → incomplète, aucune carte retirée, le clic suivant relit tout', async () => {
+  // Page vide une seule fois (alors que le jeu compte plus d'exemplaires) : relue après une pause, lecture complète.
+  await newAccount();
+  collection = Array.from({ length: 120 }, (_, i) => entry(i, 119 - i)); // le plus récent en tête du tri par rareté
+  await click();
+  collection = collection.filter((e) => e.card_id !== 'c70'); // une vente → relecture complète
+  let once = true;
+  game.fault = (sort, p) => {
+    if (sort !== 'rarity' || p !== 1 || !once) return undefined;
+    once = false;
+    return [];
+  };
+  let r = await click();
+  assert.equal(r.calls.filter((u) => u.includes('sort=rarity&page=1&')).length, 2, 'page 1 relue');
+  assert.match(r.text, /119 cartes envoyées au classeur, 0 nouvelle, 1 retirée/, r.seen);
+  assert.equal((await cardsOf()).length, 119);
   for (const fault of [
     (sort, p) => (sort === 'rarity' && p === 1 ? [] : undefined),
     (sort, p, page, list) => (sort === 'rarity' && p === 1 ? list.slice(49, 99) : undefined),
   ]) {
     await newAccount();
-    collection = Array.from({ length: 120 }, (_, i) => entry(i, 119 - i)); // le plus récent en tête du tri par rareté
+    collection = Array.from({ length: 120 }, (_, i) => entry(i, 119 - i));
     await click();
-    collection = collection.filter((e) => e.card_id !== 'c70'); // une vente → relecture complète
-    let once = true;
-    game.fault = (...a) => {
-      const out = once ? fault(...a) : undefined;
-      if (out !== undefined) once = false;
-      return out;
-    };
-    let r = await click();
-    assert.match(r.text, /Il en manque par rapport au total du jeu/, r.seen);
+    collection = collection.filter((e) => e.card_id !== 'c70');
+    game.fault = fault;
+    r = await click();
+    assert.match(r.text, /Il en manque par rapport au total du jeu .*: aucune carte n'a été retirée de ton classeur \(\d+ cartes? non vues?, gardées? pour l'instant\)\. Relance le favori dans un moment\./, r.seen);
+    assert.equal((await cardsOf()).length, 120, 'une lecture incomplète ne retire aucune carte');
     game.fault = null;
     r = await click();
     assert.ok(fullRead(r) && !/Rien de nouveau/.test(r.text), r.seen);
@@ -393,6 +419,188 @@ await test('échange 1 contre 1 entre raretés différentes, carte reçue datée
   const r = await click();
   assert.match(r.seen, /Les compteurs du jeu ne collent pas/, r.seen);
   assert.ok(!(await cardOf('c10')) && (await cardOf('c900')).rarity === 'SR');
+});
+
+// --- Sûreté des synchros et journal des synchros ------------------------------------------------------------------
+
+const VERSION = Number(src.match(/var VERSION = (\d+);/)[1]);
+const syncLog = async () => (await api('GET', 'sync-log', { key: account.key })).json.entries;
+
+await test('version du favori : la même que celle que le classeur annonce ; un favori plus ancien le dit à la fin de sa synchro', async () => {
+  const { FAVORI_VERSION } = await import(pathToFileURL(path.join(root, 'site', 'functions', '_lib', 'import.js')).href);
+  assert.equal(VERSION, FAVORI_VERSION, 'bookmarklet.js (VERSION) et import.js (FAVORI_VERSION) doivent concorder');
+  await fresh60();
+  const current = code;
+  code = oneLine(importKey).replace(/var VERSION\s*=\s*\d+;/, `var VERSION=${VERSION - 1};`); // favoriCode retire les espaces
+  assert.ok(code.includes(`var VERSION=${VERSION - 1};`), 'version du favori non remplacée');
+  try {
+    const r = await click();
+    assert.match(r.text, /Rien de nouveau.*Une nouvelle version du favori existe : remplace celui-ci/, r.seen);
+  } finally {
+    code = current;
+  }
+  const r = await click();
+  assert.ok(!/nouvelle version du favori/.test(r.text), r.text);
+});
+
+await test('journal : la lecture envoie son début (heure du classeur), son chemin, sa version, les compteurs relus et sa raison ; une ligne par synchro', async () => {
+  await newAccount();
+  collection = Array.from({ length: 60 }, (_, i) => entry(i, i));
+  let r = await click();
+  const full = r.posts[1];
+  assert.deepEqual([full.via, full.v, full.reason, full.stats_end, full.started], ['clic', VERSION, 'state', { total: 60, totalUnique: 60 }, new Date(clock.now).toISOString()]);
+  let [e] = await syncLog();
+  assert.deepEqual([e.kind, e.result, e.data.via, e.data.reason, e.data.v, e.data.count], ['full', 'ok', 'clic', 'state', VERSION, 60]);
+  assert.match(e.message, /^Lecture complète \(pas de synchro rapide possible/);
+  collection.push(entry(100, 100));
+  r = await click();
+  const delta = r.posts.find((b) => b.mode === 'delta');
+  assert.deepEqual([delta.via, delta.v, delta.started], ['clic', VERSION, new Date(clock.now).toISOString()]);
+  [e] = await syncLog();
+  assert.deepEqual([e.kind, e.result, e.message], ['quick', 'ok', 'Synchro rapide : 1 exemplaire obtenu, 1 nouvelle carte (61 cartes).']);
+  // Une carte vendue : la relecture complète dit pourquoi (raison venue du classeur, needs_full « counts »).
+  collection = collection.filter((x) => x.card_id !== 'c3');
+  r = await click();
+  assert.equal(r.posts.at(-1).reason, 'counts');
+  [e] = await syncLog();
+  assert.match(e.message, /^Lecture complète \(les compteurs du jeu ne collaient pas avec les nouveautés\) : 60 cartes, aucune nouvelle, 1 retirée\.$/);
+  assert.match(r.text, /60 cartes envoyées au classeur, 0 nouvelle, 1 retirée \(plus dans ta collection\)\./, r.seen);
+});
+
+await test('échec vu par le favori (session du jeu, réponse inattendue) : message clair, signalé au journal du classeur, sans jeton ni cookie', async () => {
+  await fresh60();
+  game.status = (url) => (url.includes('stats') ? reply({ error: 'Unauthorized' }, 401) : null);
+  let r = await click();
+  assert.match(r.text, /Connecte-toi à WikiMasters \(ta session du jeu a expiré ou n'est pas ouverte dans cette page\).*Rien n'a été changé dans ton classeur\./, r.seen);
+  assert.equal(r.reports.length, 1);
+  const sent = r.reports[0];
+  assert.deepEqual(Object.keys(sent).sort(), ['code', 'kind', 'message', 'ms', 'v', 'via']);
+  assert.deepEqual([sent.kind, sent.code, sent.via, sent.v], ['quick', 'session', 'clic', VERSION]);
+  assert.ok(!JSON.stringify(r.reports).includes(importKey) && !JSON.stringify(r.reports).includes('SECRET'), 'ni clé ni donnée du jeu');
+  let [e] = await syncLog();
+  assert.deepEqual([e.kind, e.result, e.data.client, e.data.code, e.data.via, e.message], ['quick', 'error', true, 'session', 'clic', sent.message]);
+  // Réponse sans liste en pleine lecture complète (compte neuf) : code « format », exemplaires lus avant l'arrêt.
+  await newAccount();
+  collection = Array.from({ length: 120 }, (_, i) => entry(i, i));
+  game.status = null;
+  game.fault = (sort, p) => (p === 1 ? null : undefined);
+  r = await click();
+  assert.deepEqual([r.reports.length, r.reports[0].code, r.reports[0].kind, r.reports[0].read, r.reports[0].reason], [1, 'format', 'full', 50, 'state']);
+  [e] = await syncLog();
+  assert.match(e.message, /^Réponse inattendue de WikiMasters \(pas de liste de cartes\)/);
+  // Refus du classeur (favori périmé) : il l'a noté lui-même, ou ne reconnaît plus la clé ; rien de signalé en plus.
+  await api('POST', 'import-key', { key: account.key });
+  r = await click();
+  assert.deepEqual(r.reports, []);
+});
+
+await test('limite de lectures du jeu en pleine lecture complète : pause puis reprise à la même page ; une seconde limite arrête tout (signalée)', async () => {
+  await newAccount();
+  collection = Array.from({ length: 120 }, (_, i) => entry(i, i));
+  let n = 0;
+  game.status = (url) => (url.includes('sort=rarity&page=1&') && n++ === 0 ? reply({ code: 'automation_limit' }, 403) : null);
+  let r = await click();
+  assert.match(r.seen, /Le jeu demande de ralentir : reprise de la lecture à \d\d:\d\d \(50 exemplaires lus\)… « Arrêter » l'annule\./);
+  assert.match(r.text, /120 cartes envoyées au classeur/, r.seen);
+  assert.equal(r.calls.filter((u) => u.includes('sort=rarity&page=1&')).length, 2);
+  assert.equal((await cardsOf()).length, 120);
+  await newAccount();
+  game.status = (url) => (url.includes('sort=rarity&page=1&') ? reply({ code: 'automation_limit' }, 403) : null);
+  r = await click();
+  assert.match(r.text, /Le jeu limite les lectures automatiques : réessaie plus tard \(dans une dizaine de minutes\)\. Rien n'a été changé dans ton classeur\./, r.seen);
+  assert.deepEqual(r.posts.map((b) => b.mode), ['state'], 'rien envoyé');
+  assert.deepEqual([r.reports.length, r.reports[0].code, r.reports[0].kind, r.reports[0].read], [1, 'limit', 'full', 50]);
+});
+
+await test('envoi en morceaux : panne passagère du classeur (500, réponse perdue) → morceau renvoyé, rien de mélangé ni de 409', async () => {
+  await newAccount();
+  collection = Array.from({ length: 1200 }, (_, i) => entry(i, i));
+  let fails = 0;
+  game.siteFail = (body, route) => (route === 'import' && body.part === 1 && fails++ < 2 ? 500 : 0);
+  let r = await click();
+  assert.match(r.text, /1\s200 cartes envoyées au classeur/, r.seen);
+  assert.equal(r.posts.filter((b) => b.part === 1).length, 3, 'deux nouveaux essais');
+  assert.equal((await cardsOf()).length, 1200);
+  // Dernier morceau appliqué mais réponse perdue : renvoyé, le classeur rend le même résultat.
+  game.siteFail = null;
+  collection = collection.filter((x) => x.card_id !== 'c5');
+  let lost = true;
+  game.siteLose = (body, route) => {
+    if (route !== 'import' || !body.last || !lost) return false;
+    lost = false;
+    return true;
+  };
+  r = await click();
+  assert.match(r.text, /1\s199 cartes envoyées au classeur/, r.seen);
+  assert.equal(r.posts.filter((b) => b.last).length, 2);
+  assert.equal((await cardsOf()).length, 1199);
+  // 503 (quota du jour du classeur) : pas de nouvel essai, son message.
+  game.siteLose = null;
+  game.siteFail = (body, route) => (route === 'import' && body.part === 0 && body.upload_id ? 503 : 0);
+  collection = collection.filter((x) => x.card_id !== 'c6');
+  r = await click();
+  assert.equal(r.posts.filter((b) => b.part === 0).length, 1);
+});
+
+await test('deux synchros en même temps : une lecture commencée avant celle déjà appliquée ne passe pas par-dessus (« Une synchro plus récente… »)', async () => {
+  await fresh60();
+  collection = collection.filter((e) => e.card_id !== 'c7'); // une vente → relecture complète
+  // Pendant l'envoi, une lecture commencée plus tard (autre onglet) est appliquée.
+  game.sitePre = (body, route) => {
+    if (route === 'import' && body.last) {
+      env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.read_at', ?) WHERE id = ?").run(new Date(clock.now + 1000).toISOString(), account.user.id);
+    }
+  };
+  const r = await click();
+  assert.match(r.text, /Une synchro plus récente \(autre onglet, favori relié ou rafraîchissement\) est déjà passée : ton classeur est à jour \(60 cartes\)\./, r.seen);
+  assert.ok(await cardOf('c7'), 'rien appliqué');
+});
+
+await test('délai d\'attente : une requête du jeu qui ne répond plus n\'immobilise plus le favori (30 s), échec signalé', async () => {
+  await fresh60();
+  const { doc } = makeDom();
+  const timers = [];
+  const reports = [];
+  const pageFetch = async (url, init = {}) => {
+    if (url.startsWith(SITE + '/api/')) {
+      const route = url.slice(SITE.length + 5);
+      const body = JSON.parse(init.body);
+      if (route === 'sync-log') reports.push(body);
+      const r = await api('POST', route, { body, key: importKey, origin: GAME });
+      return { ok: r.status >= 200 && r.status < 300, status: r.status, json: async () => r.json };
+    }
+    // Le jeu ne répond jamais aux compteurs : seule l'interruption (AbortController) rend la main.
+    if (url.includes('/stats')) {
+      assert.ok(init.signal, 'requête du jeu sans délai d\'attente');
+      return new Promise((_, reject) => init.signal.addEventListener('abort', () => reject(new Error('The operation was aborted.'))));
+    }
+    return gameFetch(url);
+  };
+  // Minuteries : celles de moins de 30 s partent aussitôt ; les délais d'attente (30 s et plus) quand le test le décide.
+  const ctx = { document: doc, location: { hostname: 'www.wiki-masters.com', origin: GAME, href: GAME + '/collection', pathname: '/collection', search: '' }, fetch: pageFetch,
+    AbortController,
+    setTimeout: (f, ms) => {
+      const t = { f, ms, cleared: false };
+      timers.push(t);
+      if (ms < 30000) setImmediate(() => { if (!t.cleared) f(); });
+      return timers.length;
+    },
+    clearTimeout: (id) => { if (timers[id - 1]) timers[id - 1].cleared = true; },
+    URL, Promise, JSON, Math, Date, Number, String, Array, Object, Error, console };
+  ctx.window = ctx;
+  vm.createContext(ctx);
+  vm.runInContext(code, ctx);
+  const settle = async () => { for (let i = 0; i < 200; i++) await new Promise((ok) => setImmediate(ok)); };
+  await settle();
+  assert.equal(ctx.__classeurFavori, true, 'la synchro attend le jeu');
+  const pending = timers.filter((t) => t.ms === 30000 && !t.cleared);
+  assert.equal(pending.length, 1);
+  pending[0].f();
+  await settle();
+  const text = doc.getElementById('classeur-favori').textContent;
+  assert.match(text, /WikiMasters ne répond plus \(30 s sans réponse\) : réessaie dans un moment\. Rien n'a été changé dans ton classeur\./);
+  assert.equal(ctx.__classeurFavori, false, 'le favori a rendu la main');
+  assert.deepEqual([reports.length, reports[0].code], [1, 'timeout']);
 });
 
 // --- Page « Collection globale » du jeu : créer une collection du classeur avec la recherche affichée --------------
@@ -667,7 +875,7 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
         packSeq += 1;
         return entry(0, 0, { id: `pack-${packSeq}`, card_id: `pk${packSeq}`, obtained_at: new Date(clock.now).toISOString() }, { id: `pk${packSeq}`, wikipedia_title: `Paquet ${packSeq}` });
       });
-      collection.push(...fresh);
+      if (game.lagPack) game.pending.push(...fresh); else collection.push(...fresh);
       return json({ cards: fresh.map((e) => e.card), packs_remaining: 3, packs_last_regen_at: new Date(clock.now).toISOString(), owned_copies: fresh.map((e) => ({ id: e.id, card_id: e.card_id, is_shiny: false })) });
     }
     if (method === 'POST' && p === '/api/user-cards/bulk-discard') {
@@ -927,6 +1135,39 @@ await test('relié : défausse, mise aux enchères → relecture complète, au p
   assert.deepEqual(g.since(n), QUICK);
   assert.match(g.text(), /1 exemplaire obtenu depuis ta dernière synchro, 1 nouvelle carte/, g.text());
   assert.ok(await cardOf('c10'));
+});
+
+await test('relié : paquet ouvert mais « Rien de nouveau » (cartes pas encore rangées par le jeu) → une seule vérification, une minute après', async () => {
+  await fresh60();
+  const g = await openGame();
+  await g.advance(15 * 60_000);
+  game.lagPack = true;
+  let n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(6_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.match(g.text(), /Rien de nouveau depuis ta dernière synchro/, g.text());
+  assert.match(g.status(), /synchro à \d\d:\d\d \(vérification après le paquet ; une par minute au plus\)/, g.status());
+  // Les cartes arrivent ; la vérification les trouve.
+  collection.push(...game.pending);
+  game.pending = [];
+  n = g.calls.length;
+  await g.advance(60_000);
+  assert.deepEqual(g.since(n), QUICK);
+  assert.match(g.text(), /5 exemplaires obtenus depuis ta dernière synchro, 5 nouvelles cartes/, g.text());
+  assert.equal((await cardsOf()).length, 65);
+  // Une seule vérification par action : plus rien ensuite, même si elle n'avait rien trouvé.
+  // (synchro du paquet une minute après la précédente au moins, puis sa vérification une minute plus tard)
+  game.lagPack = true;
+  n = g.calls.length;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(3 * 60_000);
+  assert.deepEqual(g.since(n), [...QUICK, ...QUICK], 'la synchro du paquet et sa vérification');
+  n = g.calls.length;
+  await g.advance(30 * 60_000);
+  assert.deepEqual(g.since(n), [], 'pas de troisième synchro');
+  game.lagPack = false;
+  game.pending = [];
 });
 
 await test('relié : « Arrêter » rend window.fetch d\'origine ; enveloppé par-dessus par un autre script, il ne fait plus que passer la main', async () => {
@@ -1395,7 +1636,6 @@ await test('classeur plus ancien (« state » refusé, 400) : après un clic, le
 // supa.token : le seul jeton accepté (sinon 401 « JWT expired ») ; supa.fail(url, n) peut rendre une erreur au n-ième
 // appel ; tables : cards (titre -> id), ventes et enchères en cours (auctions), enchères posées (auction_bids).
 const ANON_KEY = src.match(/var ANON = "([^"]+)"/)[1];
-const VERSION = src.match(/var VERSION = "([^"]+)"/)[1];
 const supa = {};
 const resetSupa = () => Object.assign(supa, { calls: [], token: 'jeton-acces-1', cards: [], auctions: [], bids: [], fail: null, after: null });
 resetSupa();

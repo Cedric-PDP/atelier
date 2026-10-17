@@ -108,7 +108,7 @@ function mockApi() {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
-          market_at: (st.market && st.market.market_at) || null });
+          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -209,11 +209,16 @@ function mockApi() {
         if (!body.last) return json(200, { ok: true, received: u.parts.flat().length });
         return json(200, importCards(st, u.parts.flat(), u.stats));
       }
+      // Journal des synchros : st.syncLog (lignes posées par le test), comme GET /api/sync-log.
+      if (p === '/api/sync-log' && method === 'GET') return json(200, { entries: st.syncLog || [] });
       if (p === '/api/session' && method === 'POST') { if (!body.cookie && !body.har) return json(400, { error: 'Cookie manquant.' }); st.cookie = true; st.expired = false; st.lastSession = body; return json(200, { ok: true }); }
       if (p === '/api/session' && method === 'DELETE') { st.cookie = false; return json(200, { ok: true }); }
       if (p === '/api/refresh') {
         if (!st.cookie) return json(401, { error: "Aucune session WikiMasters : colle d'abord ton cookie.", needs_session: true });
-        if (body.page < 20) return json(200, { done: false, next_page: body.page + 10, fetched: (body.page + 10) * 50, total: 1500 });
+        // Jeton de lecture (run) rendu à la page 0, à renvoyer avec les suivantes (sinon 409, comme une lecture interrompue).
+        if (body.page === 0) st.run = 'lecture-' + ++seq;
+        else if (body.run !== st.run) return json(409, { error: 'Une autre mise à jour a commencé entre-temps (dans un autre onglet ?).' });
+        if (body.page < 20) return json(200, { done: false, next_page: body.page + 10, run: st.run, fetched: (body.page + 10) * 50, total: 1500 });
         const list = st.cards.filter((c) => c.id !== 'new1').concat([{ id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false, obtained_at: '2026-10-15T09:00:00Z' }]);
         return json(200, { done: true, ...importCards(st, list, { totalUnique: list.length + 1 }), skipped: 2 });
       }
@@ -1614,6 +1619,8 @@ async function main() {
     check(api.st.lastSession && api.st.lastSession.cookie === 'sb-a=1; sb-b=2', 'cookie mal envoyé : ' + JSON.stringify(api.st.lastSession));
     const pages = api.st.calls.filter(([, p]) => p === '/api/refresh').map(([, , b]) => b.page).join(',');
     check(pages === '0,10,20', 'pages du rafraîchissement : ' + pages);
+    const runs = api.st.calls.filter(([, p]) => p === '/api/refresh').map(([, , b]) => b.run || '');
+    check(runs[0] === '' && runs[1] && runs[1] === runs[2], 'jeton de lecture (run) non renvoyé avec les pages suivantes : ' + runs.join(','));
     check(has('1 nouvelle'), 'résumé du rafraîchissement absent');
     check(has('2 ignorées'), 'entrées ignorées (skipped) du rafraîchissement non affichées');
     check(api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
@@ -1684,6 +1691,53 @@ async function main() {
     type(q, '');
     await settle();
   }
+
+  // 12 quater. Journal des synchros : « Dernières synchros » dans « Mettre à jour » (résultat, chemin et type, heure,
+  // message, répétitions), ligne d'état sous le résumé quand la dernière a échoué, favori trop ancien signalé, et un
+  // nouvel échec du favori annoncé au retour sur l'onglet.
+  if (!SERVER) {
+    const at = (min) => new Date(Date.now() - min * 60_000).toISOString();
+    api.st.syncLog = [
+      { at: at(1), kind: 'full', result: 'error', message: 'Connecte-toi à WikiMasters (ta session du jeu a expiré ou n\'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori.', data: { client: true, via: 'clic', code: 'session', v: 2 } },
+      { at: at(5), kind: 'quick', result: 'ok', message: 'Synchro rapide : rien de nouveau (1 050 cartes).', data: { via: 'relie', v: 2, repeat: 3, first: at(30) } },
+      { at: at(60), kind: 'full', result: 'warn', message: 'Lecture incomplète : 1 000 cartes lues, le jeu en compte 1 050 : aucune nouvelle carte, aucune carte retirée (50 cartes non vues, gardées). Relance la mise à jour dans un moment.', data: { via: 'cookie' } },
+    ];
+    api.st.lastSync = { at: at(1), kind: 'full', via: 'clic', result: 'error', message: api.st.syncLog[0].message };
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(200);
+    await goTab('collections');
+    const line = () => text(doc.body.querySelector('.refresh-line'));
+    check(/Dernière synchro en échec \(Favori · lecture complète, aujourd'hui à \d\d:\d\d\) : Connecte-toi à WikiMasters/.test(line()), 'échec de la dernière synchro absent du résumé : ' + line());
+    needButton('Dernières synchros').click();
+    await settle(200);
+    check(tabBtn('maj').getAttribute('aria-selected') === 'true', '« Dernières synchros » doit ouvrir « Mettre à jour »');
+    check(api.st.calls.some(([m, p]) => m === 'GET' && p === '/api/sync-log'), 'journal non demandé à l\'ouverture de « Mettre à jour »');
+    const rows = () => cls('synclog-row');
+    check(has('Dernières synchros') && rows().length === 3, 'journal : 3 lignes attendues, ' + rows().length);
+    check(rows()[0].classList.contains('is-error') && text(rows()[0]).includes('échec') && text(rows()[0]).includes('Favori · lecture complète') && text(rows()[0]).includes('Connecte-toi à WikiMasters'),
+      'ligne en échec : ' + text(rows()[0]));
+    check(text(rows()[1]).includes('réussie') && text(rows()[1]).includes('Favori relié · synchro rapide') && /3 fois depuis aujourd'hui à \d\d:\d\d/.test(text(rows()[1])), 'ligne répétée : ' + text(rows()[1]));
+    check(rows()[2].classList.contains('is-warn') && text(rows()[2]).includes('incomplète') && text(rows()[2]).includes('Cookie · lecture complète'), 'ligne incomplète : ' + text(rows()[2]));
+    // La synchro réussie la plus récente vient d'un favori à jour (v 2) : pas d'avertissement ; d'un ancien (sans v) : oui.
+    check(!has("vient d'un favori d'avant le 17 octobre 2026"), 'favori à jour signalé comme ancien');
+    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'ok', message: 'Lecture complète : 1 050 cartes, aucune nouvelle, aucune retirée.', data: {} }, ...api.st.syncLog];
+    needButton('Actualiser').click();
+    await settle(200);
+    check(rows().length === 4 && has("vient d'un favori d'avant le 17 octobre 2026"), 'favori ancien non signalé');
+    // Nouvel échec du favori pendant que la page est ouverte : annoncé au retour sur l'onglet, journal relu.
+    const msg = 'Le jeu limite les lectures automatiques : réessaie plus tard (dans une dizaine de minutes). Rien n\'a été changé dans ton classeur.';
+    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'error', message: msg, data: { client: true, via: 'relie', code: 'limit', v: 2 } }, ...api.st.syncLog];
+    api.st.lastSync = { at: api.st.syncLog[0].at, kind: 'full', via: 'relie', result: 'error', message: msg };
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(200);
+    check(has('La dernière synchro du favori a échoué : ' + msg), 'nouvel échec du favori non annoncé');
+    check(rows().length === 5 && text(rows()[0]).includes('Favori relié · lecture complète'), 'journal non relu après un nouvel échec');
+    api.st.syncLog = [];
+    api.st.lastSync = null;
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(100);
+  }
+
 
   // 13. HAR : seuls l'adresse et le cookie des requêtes vers le jeu partent
   if (!SERVER) {
@@ -3263,7 +3317,7 @@ async function main() {
       value: { value: 1234, priced: 2, cards: 3, approx: 1 },
       history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
       live_at: new Date().toISOString(),
-      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: '2026-10-17', auto: true },
+      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 2, auto: true },
       live: {
         // Voulue A deux fois (la moins chère reste, l'autre comptée) ; Voulue B finie depuis la lecture ; Marché 3, que
         // Mona a maintenant : ni l'une ni l'autre montrées.
@@ -3530,7 +3584,7 @@ async function main() {
       check(reads() === n0 + 1, 'onglet relu sans nouvel envoi du favori');
       const later = new Date(Date.now() + 1000).toISOString();
       um.market.live_at = new Date(Date.now() - 3 * 3600_000).toISOString();
-      um.market.attempt = { start: later, end: later, ok: true, v: '2026-10-17', auto: true };
+      um.market.attempt = { start: later, end: later, ok: true, v: 2, auto: true };
       um.market.market_at = later;
       await pm.live();
       await settle(80);

@@ -8,7 +8,7 @@ import { patchSharing } from './members.js';
 import { eraseChatOf } from './chat.js';
 
 const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
-  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets';
+  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets, last_sync';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -124,6 +124,8 @@ export async function getMe(env, user) {
     shared_targets: !!(user.shared && user.shared_targets), // et ses collections à compléter (réglage à part)
     last_chat_id: user.last_chat_id ?? 0, // dernier message du chat (supprimé ou non) : la page en déduit le badge des non-lus
     market_at: user.market_at || null, // dernier envoi du favori au marché (market.js) : la page relit alors l'onglet « Marché »
+    // Dernière ligne du journal des synchros ({at, kind, via, result, message}, synclog.js), ou null.
+    last_sync: user.last_sync ? raw(user.last_sync) : null,
     session: {
       has_cookie: !!user.cookie_enc,
       expired: !!user.session_expired,
@@ -193,7 +195,7 @@ export async function deleteMe(env, user) {
   await db.batch(
     // Marché : sa lecture du marché et ses quotas (market), l'historique de sa valeur ; les cotes (prices), communes et
     // liées à aucun classeur, restent.
-    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging', 'market', 'value_history'].map((t) =>
+    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging', 'market', 'value_history', 'sync_log'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
     ).concat(eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );
