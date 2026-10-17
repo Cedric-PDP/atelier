@@ -380,7 +380,9 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .close { position: absolute; right: 10px; top: 10px; border: 0; background: none; color: var(--muted); padding: 6px; border-radius: 8px; display: grid; place-items: center; }
 .close:hover { color: var(--fg); background: var(--surface-2); }
 .close .ic { width: 20px; height: 20px; }
-.info { display: grid; gap: 14px; min-width: 0; }
+/* Une seule colonne qui ne s'élargit pas au plus large de son contenu (le formulaire « Ajouter un tag » faisait
+   déborder la fiche sur téléphone, 2026-10-17). */
+.info { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; min-width: 0; }
 .info h2 { font-size: 1.7rem; font-weight: 600; letter-spacing: -0.02em; padding-right: 30px; overflow-wrap: anywhere; }
 /* Titre de fiche + icône « Copier le nom » à côté (la place du bouton Fermer reste réservée à droite). */
 .fiche__title { display: flex; align-items: center; gap: 10px; padding-right: 30px; min-width: 0; }
@@ -392,7 +394,8 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .fact span { display: block; font-size: 11px; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
 .fact b { font: 600 15px var(--f-head); font-variant-numeric: tabular-nums; }
 .add-row { display: flex; gap: 8px; margin-top: 8px; }
-.add-row .field { flex: 1; }
+.add-row .field { flex: 1; min-width: 0; }
+@media (max-width: 520px) { .add-row { flex-wrap: wrap; } .add-row .field { flex: 1 1 100%; } .add-row .cat-select { flex: 1 1 auto; max-width: none; } }
 .sugg { display: grid; gap: 8px; }
 .memberships { display: grid; gap: 6px; }
 .memberships button { display: flex; justify-content: space-between; gap: 10px; text-align: left; border: 1px solid var(--border); background: var(--surface-2); border-radius: 9px; padding: 7px 11px; color: var(--fg); font-size: 13px; }
