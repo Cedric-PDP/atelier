@@ -2462,10 +2462,45 @@
     });
   }
   // Met bookmarklet.js sur une ligne (commentaires en lignes à part, instructions finies par « ; ») et y place l'adresse
-  // du classeur et la clé.
+  // du classeur et la clé. Les espaces du code qui ne séparent pas deux mots (« var x », « return x ») sont retirés,
+  // jamais dans une chaîne "…" ou '…' ni dans une expression régulière (reconnue à ce qui la précède : « ( , = : [ ! & | ?
+  // { } ; + - * % < > ~ ^ », ou return, typeof…) : chaque espace coûte 3 caractères une fois encodé (%20), et Firefox
+  // refuse un favori de plus de 65 536 caractères (54 600 avec, 73 200 sans, le 2026-10-17). Fonction autonome : le test
+  // du favori (dev/bookmarklet.test.mjs) la reprend telle quelle.
   function favoriCode(src, site, key) {
-    return src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
-      .replace('"__SITE__"', JSON.stringify(site)).replace('"__KEY__"', JSON.stringify(key));
+    const code = src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ');
+    const word = (c) => /[\w$\u0080-\uffff]/.test(c || '');
+    let out = '';
+    const regexHere = () => {
+      const t = out.replace(/\s+$/, '');
+      return !t || '(,=:[!&|?{};+-*%<>~^'.includes(t.slice(-1)) || /(^|[^\w$])(return|typeof|case|do|else|in|of|new|delete|void|throw)$/.test(t);
+    };
+    for (let i = 0; i < code.length;) {
+      const c = code[i];
+      let j = i + 1;
+      if (c === '"' || c === "'") {
+        while (j < code.length && code[j] !== c) j += code[j] === '\\' ? 2 : 1;
+        out += code.slice(i, j + 1);
+        i = j + 1;
+      } else if (c === '/' && regexHere()) {
+        for (let cls = false; j < code.length && (cls || code[j] !== '/'); j++) {
+          if (code[j] === '\\') j++;
+          else if (code[j] === '[') cls = true;
+          else if (code[j] === ']') cls = false;
+        }
+        out += code.slice(i, j + 1);
+        i = j + 1;
+      } else if (c === ' ') {
+        while (code[i] === ' ') i++;
+        const a = out.slice(-1);
+        const b = code[i];
+        if ((word(a) && word(b)) || (a === b && (a === '+' || a === '-')) || (a === '/' && (b === '/' || b === '*'))) out += ' ';
+      } else {
+        out += c;
+        i = j;
+      }
+    }
+    return out.replace('"__SITE__"', JSON.stringify(site)).replace('"__KEY__"', JSON.stringify(key));
   }
   // Le favori : une adresse javascript: (encodeURI, plus « # » qui couperait l'adresse).
   function makeBookmarklet(src, site, key) {
@@ -3968,21 +4003,28 @@
   }
 
   // ================================================================ marché : cotes, valeur, bonnes affaires (SPEC.md, « Le marché »)
-  // Tout ce qui vient du jeu est lu par le favori, dans la page du jeu, à son clic « Mettre à jour les cotes » (cette page
-  // ne peut pas lire la base du jeu : CSP, et pas de session) ; ici, on montre ce que le serveur a rangé : la valeur du
-  // classeur et son historique (GET /api/market), la dernière lecture du marché (bonnes affaires, tes enchères et tes
-  // ventes, 24 h au plus), et les cotes de tes cartes et des cartes qui te manquent (GET /api/market/prices, communes à
-  // tous les classeurs). Relu à l'ouverture, après chaque changement des cartes et à l'ouverture de l'onglet « Marché »,
-  // une fois par minute au plus (sauf demande).
-  const M = reactive({ loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, at: 0, hover: -1 });
+  // Tout ce qui vient du jeu est lu par le favori, dans la page du jeu, à son clic « Mettre à jour les cotes » et, relié,
+  // toutes les 20 min et après tes enchères et ventes (cette page ne peut pas lire la base du jeu : CSP, et pas de
+  // session) ; ici, on montre ce que le serveur a rangé : la valeur du classeur et son historique (GET /api/market), la
+  // dernière lecture du marché (bonnes affaires, tes enchères et tes ventes, 7 jours au plus, avec son âge), le dernier
+  // essai du favori (attempt : réussi, ou raté et pourquoi), et les cotes de tes cartes et des cartes qui te manquent
+  // (GET /api/market/prices, communes à tous les classeurs). Relu à l'ouverture, après chaque changement des cartes, à
+  // l'ouverture de l'onglet « Marché » (une fois par minute au plus, sauf demande), et quand GET /api/me (relu chaque
+  // minute, checkRemote) annonce un nouvel envoi du favori (market_at).
+  const M = reactive({ loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, at: 0, hover: -1 });
   const prices = shallowRef(new Map()); // card_id -> {id, v: {"R": {p, n, w, l, d}, "R*": …}, at}
   const wantedPrices = shallowRef(new Map()); // titre (normTitle) d'une carte qui te manque -> la même chose
   let marketJob = null;
+  let marketSeen = ''; // market_at de GET /api/me déjà pris en compte par la dernière lecture de l'onglet
   const VARIANT_RE = /^(C|PC|R|SR|UR|L)\*?$/;
+  // Version du favori qui lit les cotes toute seule (VERSION de bookmarklet.js ; le test du favori vérifie qu'elles
+  // concordent) : un essai d'un favori plus ancien (ou sans version) dit de le remplacer.
+  const FAVORI_VERSION = '2026-10-17';
   function resetMarket() {
-    Object.assign(M, { loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, at: 0, hover: -1 });
+    Object.assign(M, { loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, at: 0, hover: -1 });
     prices.value = new Map();
     wantedPrices.value = new Map();
+    marketSeen = '';
   }
   function loadMarket(force) {
     if (S.boot !== 'app' || !S.key) return Promise.resolve();
@@ -3990,6 +4032,7 @@
     if (!force && M.at && Date.now() - M.at < 60000) return Promise.resolve();
     const gen = cardsGen;
     M.busy = true;
+    const seen = (S.me && S.me.market_at) || '';
     marketJob = (async () => {
       try {
         const m = await api('GET', '/api/market');
@@ -4012,7 +4055,9 @@
         prices.value = byId;
         wantedPrices.value = byTitle;
         const live = m.live && typeof m.live === 'object' ? m.live : null;
-        Object.assign(M, { value: m.value || null, history: Array.isArray(m.history) ? m.history : [], live, liveAt: m.live_at || null, loaded: true, error: '' });
+        const attempt = m.attempt && typeof m.attempt === 'object' && typeof m.attempt.start === 'string' ? m.attempt : null;
+        Object.assign(M, { value: m.value || null, history: Array.isArray(m.history) ? m.history : [], live, liveAt: m.live_at || null, attempt, loaded: true, error: '' });
+        if (seen > marketSeen) marketSeen = seen;
       } catch (e) {
         if (gen === cardsGen) M.error = e.message;
       } finally {
@@ -4159,32 +4204,6 @@
   const variantName = (k) => (RARITY_NAME[k.replace('*', '')] || k) + (k.endsWith('*') ? ', brillante' : '');
   const variantOrder = (a, b) => rarityRank(a.replace('*', '')) - rarityRank(b.replace('*', '')) || (a < b ? -1 : a > b ? 1 : 0);
   const pctOf = (p, w) => { const d = Math.round(((p - w) / w) * 100); return (d > 0 ? '+' : d < 0 ? '−' : '') + NUM.format(Math.abs(d)) + ' %'; };
-  // « Cartes qui bougent » : écart en W sur 7 jours de tes exemplaires (cote fiable maintenant et il y a 7 jours), les
-  // hausses et les baisses, des plus fortes aux plus faibles (montrées 20 par 20).
-  const movers = computed(() => {
-    const map = prices.value;
-    const all = [];
-    if (!map.size) return { up: [], down: [] };
-    for (const c of cards.value) {
-      const p = map.get(String(c.id));
-      if (!p) continue;
-      let delta = 0;
-      let now = 0;
-      let then = 0;
-      for (const [k, n] of variantsOf(c).list) {
-        const q = p.v[k];
-        if (!reliable(q) || q.w == null || !(q.w > 0)) continue;
-        delta += (q.p - q.w) * n;
-        now += q.p * n;
-        then += q.w * n;
-      }
-      if (delta) all.push({ c, delta, pct: pctOf(now, then) });
-    }
-    return {
-      up: all.filter((x) => x.delta > 0).sort((a, b) => b.delta - a.delta),
-      down: all.filter((x) => x.delta < 0).sort((a, b) => a.delta - b.delta),
-    };
-  });
   // « Bonnes affaires à vendre » : tes cartes qui ne servent à aucune de tes collections (rapprochement titre puis qid,
   // comme les albums), et les exemplaires en trop de celles qui y servent (une collection n'a besoin que d'un exemplaire :
   // on garde le moins coté, cote peu fiable comprise pour en juger ; « 2 en trop »). Prix d'une ligne : la plus haute cote
@@ -4226,7 +4245,7 @@
   // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes) et seuil
   // des « Bonnes affaires à vendre » (100W par défaut), gardés par classeur dans ce navigateur (localStorage, accès protégés
   // : sans lui, les valeurs par défaut). Chaque liste montre 20 cartes, puis « Afficher 20 de plus ».
-  const MARKET_OPEN = Object.freeze({ acheter: true, vendre: true, bougent: true, encheres: false });
+  const MARKET_OPEN = Object.freeze({ acheter: true, vendre: true, encheres: false });
   const MARKET_MIN = 100;
   const MARKET_STEP = 20;
   const MP = reactive({ user: null, open: { ...MARKET_OPEN }, min: MARKET_MIN, more: {}, col: '' }); // col : collection choisie dans « à acheter »
@@ -5008,7 +5027,7 @@
       ]),
       h('p', null, "Ensuite, le favori reste relié à la page du jeu jusqu'à ce que tu la recharges : après tes actions (paquet ouvert, carte défaussée, mise aux enchères, échange), il renvoie tout seul tes nouvelles cartes, et ce classeur se met à jour pendant qu'il est ouvert. Il ne fait toujours que lire : il regarde passer les requêtes que la page du jeu fait d'elle-même, sans en envoyer ni en modifier, puis relit tes nouvelles cartes (au plus une fois par minute). Il ne joue pas et ne clique rien. Le badge « Classeur relié » le rappelle ; « Arrêter » le coupe."),
       h('p', { class: 'small muted' }, "Sur la page « Collection globale » du jeu, fais une recherche (« vache »…) puis clique le favori : il propose aussi d'en faire une collection à compléter, avec la vraie rareté de chaque carte dans le jeu."),
-      h('p', { class: 'small muted' }, "« Mettre à jour les cotes », dans l'encart du favori : il lit les cotes du marché, les bonnes affaires et tes enchères pour l'onglet « Marché », directement dans la base du jeu avec ta session, à ton clic seulement (voir « À savoir » dans cet onglet). Un favori installé avant le 16 octobre 2026 n'a pas ce bouton : glisse à nouveau celui-ci dans ta barre."),
+      h('p', { class: 'small muted' }, "« Mettre à jour les cotes », dans l'encart du favori : il lit les cotes du marché, les bonnes affaires et tes enchères pour l'onglet « Marché », directement dans la base du jeu avec ta session ; relié, il le fait aussi tout seul toutes les 20 minutes et après tes enchères et tes ventes (voir « À savoir » dans cet onglet ; « Couper les cotes automatiques » dans son encart). Un favori installé avant le 17 octobre 2026 ne lit les cotes qu'au clic (avant le 16, il n'a pas ce bouton) : glisse à nouveau celui-ci dans ta barre."),
       h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
       hasKey ? h('h3', null, 'Le créer à la main') : null,
@@ -6131,8 +6150,42 @@
   }
 
   // ================================================================ rendu : onglet Marché, cotes des fiches
-  const MARKET_RULES = "Les cotes et la lecture du marché viennent de ton favori, sur wiki-masters.com : « Mettre à jour les cotes » lit directement la base du jeu avec ta session, à ton clic seulement (une requête par seconde, 30 au plus par clic), sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : à utiliser avec modération. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
-  const MARKET_HOW = "Pas encore de cote : sur wiki-masters.com, clique « Mettre à jour les cotes » dans l'encart du favori (favori installé avant le 16 octobre 2026 : glisse à nouveau le favori dans ta barre, onglet « Mettre à jour »).";
+  const MARKET_RULES = "Les cotes et la lecture du marché viennent de ton favori, sur wiki-masters.com : il lit directement la base du jeu avec ta session, à ton clic sur « Mettre à jour les cotes » et, tant qu'il est relié à un onglet du jeu visible, toutes les 20 minutes et après tes enchères et tes ventes (une requête par seconde, 30 au plus par lecture), sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : « Couper les cotes automatiques », dans l'encart du favori, revient à la lecture au clic seulement. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
+  const MARKET_HOW = "Pas encore de cote : ouvre wiki-masters.com et clique ton favori ; une minute après, il lit les cotes tout seul (ou clique « Mettre à jour les cotes » dans son encart). Favori installé avant le 17 octobre 2026 : remplace-le (onglet « Mettre à jour »).";
+  const MARKET_OLD = 2 * 3600000; // lecture du marché « ancienne » au-delà de 2 h (les enchères bougent vite)
+  // « il y a 5 min », « il y a 2 h », « il y a 3 jours ».
+  const agoText = (iso) => {
+    const ms = Date.now() - Date.parse(iso);
+    if (!(ms >= 60000)) return "à l'instant";
+    const m = Math.floor(ms / 60000);
+    if (m < 60) return `il y a ${m} min`;
+    if (m < 2880) return `il y a ${Math.floor(m / 60)} h`;
+    return `il y a ${Math.floor(m / 1440)} jours`;
+  };
+  // Où en est la lecture du marché par le favori : son âge, le dernier essai raté (et pourquoi), favori à remplacer, ou
+  // jamais lue (et quoi faire). Une ligne par fait, en tête de l'onglet.
+  function viewMarketRead() {
+    const a = M.attempt;
+    const out = [];
+    const old = !!M.liveAt && Date.now() - Date.parse(M.liveAt) > MARKET_OLD;
+    if (M.liveAt) {
+      out.push(h('p', { class: ['small', old ? 'warn' : 'muted'], key: 'age' }, [`Lecture du marché par ton favori : ${agoText(M.liveAt)} (${dateShort(M.liveAt)}).`,
+        old ? ' Elle date de plus de 2 h : des enchères ont pu finir ou monter. Ouvre wiki-masters.com avec ton favori relié : il la refait toutes les 20 minutes (ou clique « Mettre à jour les cotes »).' : '']));
+    } else if (a && a.ok === true) {
+      out.push(h('p', { class: 'small muted', key: 'age' }, `Cotes lues par ton favori ${agoText(a.end || a.start)} ; sa lecture du marché (bonnes affaires, tes enchères) n'est pas arrivée : relance « Mettre à jour les cotes » sur wiki-masters.com.`));
+    } else if (!a) {
+      out.push(h('p', { class: 'small warn', key: 'age' }, "Ton favori n'a encore jamais lu le marché. Sur wiki-masters.com, clique-le : une minute après, il lit les cotes et les bonnes affaires tout seul, puis toutes les 20 minutes tant que l'onglet du jeu reste ouvert. S'il n'a pas de bouton « Mettre à jour les cotes », il date d'avant le 16 octobre : remplace-le (onglet « Mettre à jour »)."));
+    }
+    if (a && a.ok === false && a.why) {
+      out.push(h('p', { class: 'status err', role: 'status', key: 'fail' }, `Dernier essai de ton favori, ${agoText(a.end || a.start)}${a.auto ? ' (lecture automatique)' : ''} : ${a.why}`));
+    } else if (a && !a.end && Date.now() - Date.parse(a.start) > 10 * 60000) {
+      out.push(h('p', { class: 'small warn', key: 'fail' }, `Une lecture commencée ${agoText(a.start)} n'a pas abouti (onglet du jeu fermé pendant la lecture, ou favori ancien) : relance « Mettre à jour les cotes » sur wiki-masters.com.`));
+    }
+    if (a && (!a.v || a.v < FAVORI_VERSION)) {
+      out.push(h('p', { class: 'small warn', key: 'old' }, "Ton favori n'est pas à jour : depuis le 17 octobre, il lit les cotes et les bonnes affaires tout seul et dit pourquoi quand il n'y arrive pas. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script Tampermonkey : recopie-le)."));
+    }
+    return out;
+  }
   // Valeur jour par jour : une ligne (SVG dans la page), survol = le jour le plus proche, tableau des valeurs à part.
   function viewValueChart(hist) {
     const pts = hist.filter((p) => p && typeof p.date === 'string' && Number.isFinite(Number(p.value)) && Number.isFinite(Date.parse(p.date)));
@@ -6204,12 +6257,34 @@
   }
   const vsCote = (amount, x) => (x.cote != null && amount != null ? h('span', { class: 'lot__cote' },
     [' · cote ', priceTag(x.cote, { approx: !(x.n >= 3), tag: 'span', title: x.n >= 3 ? null : 'Moins de 3 ventes : cote peu fiable' }), ` (${pctOf(amount, x.cote)})`]) : h('span', { class: 'lot__cote' }, ' · pas de cote'));
+  // Bonnes affaires de la dernière lecture encore valables : enchère pas finie, carte que tu n'as pas eue depuis (gagnée,
+  // échangée…), une seule par carte (la moins chère : une lecture d'un ancien favori en a parfois plusieurs ; more =
+  // les autres). ended / owned : écartées pour l'une ou l'autre raison.
+  function dealsOf(live) {
+    const best = new Map();
+    let ended = 0;
+    let owned = 0;
+    for (const x of Array.isArray(live && live.deals) ? live.deals : []) {
+      if (!x || typeof x.id !== 'string') continue;
+      if (!(Date.parse(x.end) > Date.now())) { ended++; continue; }
+      if (cardById.value.has(x.id)) { owned++; continue; }
+      const o = best.get(x.id);
+      const more = Number(x.more) > 0 ? Number(x.more) : 0;
+      if (!o) best.set(x.id, { ...x, more });
+      else if (x.ask < o.ask) best.set(x.id, { ...x, more: more + o.more + 1 });
+      else o.more += more + 1;
+    }
+    return { list: [...best.values()].sort((a, b) => Date.parse(a.end) - Date.parse(b.end)), ended, owned };
+  }
   // Liste déroulante « Toutes les collections / <collection> (N) » : les collections que remplissent les bonnes
   // affaires lues, de celle qui en a le plus à celle qui en a le moins ; le choix est gardé (MP.col).
   function viewDeals(live) {
-    if (!live) return h('p', { class: 'muted' }, "Pas de lecture récente du marché (elle est gardée 24 h) : sur wiki-masters.com, clique « Mettre à jour les cotes » dans l'encart du favori.");
-    const all = (Array.isArray(live.deals) ? live.deals : []).map((x) => ({ x, cols: membershipsOfItem({ title: x.t }) }));
-    if (!all.length) return h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.');
+    if (!live) return h('p', { class: 'muted' }, "Pas de lecture du marché : sur wiki-masters.com, clique ton favori (il la fait tout seul une minute après, puis toutes les 20 minutes) ou « Mettre à jour les cotes » dans son encart.");
+    const { list: deals, ended, owned } = dealsOf(live);
+    const hidden = [ended ? `${fmt(ended)} ${plural(ended, 'enchère finie', 'enchères finies')} depuis la lecture` : '', owned ? `${fmt(owned)} ${plural(owned, 'carte que tu as maintenant', 'cartes que tu as maintenant')}` : ''].filter(Boolean);
+    const note = hidden.length ? h('p', { class: 'small muted' }, `Plus montrées : ${hidden.join(', ')}.`) : null;
+    const all = deals.map((x) => ({ x, cols: membershipsOfItem({ title: x.t }) }));
+    if (!all.length) return [h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.'), note];
     const counts = new Map();
     for (const d of all) for (const c of d.cols) counts.set(c.key, { col: c, n: ((counts.get(c.key) || {}).n || 0) + 1 });
     const options = [...counts.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.col.name, b.col.name));
@@ -6226,9 +6301,10 @@
         lotTitle(x, copyNameButton(x.t)),
         h('span', { class: 'lot__line' }, [priceTag(x.ask), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', vsCote(x.ask, x)]),
         h('span', { class: 'lot__meta small' }, [soon ? h('span', { class: 'flag' }, 'finit bientôt') : null, x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : null, leftText(x.end),
-          cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '']),
+          cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '',
+          x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '']),
       ]);
-    })), marketMoreButton('acheter', list.length)];
+    })), marketMoreButton('acheter', list.length), note];
   }
   // « Bonnes affaires à vendre » : seuil (« Valeur minimale : [100]W »), puis tes cartes dont la cote l'atteint, de la plus
   // chère à la moins chère : rareté et brillance de l'exemplaire, titre (sa fiche), « ×3 » ou « 2 en trop », « Copier le
@@ -6257,13 +6333,13 @@
           ]);
         })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
       M.loaded ? marketMoreButton('vendre', kept.length) : null,
-      M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : clique « Mettre à jour les cotes » dans l'encart du favori, sur wiki-masters.com (les plus anciennes d'abord).`) : null,
+      M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : ton favori les lit peu à peu, les plus anciennes d'abord, à chaque lecture (ou clique « Mettre à jour les cotes » dans son encart, sur wiki-masters.com).`) : null,
     ];
   }
   const BID_STATE = { won: 'gagnée', lost: 'perdue', off: 'terminée' };
   const SALE_STATE = { sold: 'vendue', unsold: 'invendue', off: 'annulée ou terminée' };
   function viewMine(live) {
-    if (!live) return h('p', { class: 'muted' }, 'Tes mises et tes ventes des 14 derniers jours apparaissent ici après « Mettre à jour les cotes ».');
+    if (!live) return h('p', { class: 'muted' }, 'Tes mises et tes ventes des 14 derniers jours apparaissent ici à la prochaine lecture du marché par ton favori.');
     const bids = Array.isArray(live.bids) ? live.bids : [];
     const sales = Array.isArray(live.sales) ? live.sales : [];
     return h('div', { class: 'mine' }, [
@@ -6285,15 +6361,6 @@
       marketMoreButton('ventes', sales.length),
     ]);
   }
-  function viewMovers() {
-    const mv = movers.value;
-    if (!mv.up.length && !mv.down.length) return h('p', { class: 'muted' }, "Pas encore assez de ventes pour comparer à il y a 7 jours (3 ventes au moins, maintenant et avant).");
-    const col = (title, key, list) => h('div', null, [h('h3', null, title), list.length ? h('ol', { class: 'movers' }, list.slice(0, marketShown(key)).map((x) => h('li', { key: x.c.id }, [
-      pill(x.c.rarity), ' ', h('button', { class: 'linkish', type: 'button', onClick: (e) => openCardFrom(x.c.id, e) }, x.c.title),
-      h('b', { class: ['delta', x.delta > 0 ? 'up' : 'down'] }, `${x.delta > 0 ? '+' : '−'}${wfmt(Math.abs(x.delta))}`), h('span', { class: 'small muted' }, ` ${x.pct}`),
-    ]))) : h('p', { class: 'small muted' }, 'Aucune.'), marketMoreButton(key, list.length)]);
-    return h('div', { class: 'movers-cols' }, [col('En hausse', 'hausses', mv.up), col('En baisse', 'baisses', mv.down)]);
-  }
   // Une section repliable de l'onglet (accordéon) : un bouton dans le titre (aria-expanded), le contenu rendu seulement
   // quand elle est ouverte. note : ce que la section contient, dit dans le titre (utile quand elle est fermée).
   function marketSection(id, title, note, body, cls) {
@@ -6307,15 +6374,14 @@
   }
   function viewMarket() {
     const v = M.value;
-    const stamp = M.liveAt ? `lue par ton favori le ${dateShort(M.liveAt)}` : '';
+    const stamp = M.liveAt ? `lue par ton favori ${agoText(M.liveAt)}` : '';
     const live = M.live;
-    const nDeals = live && Array.isArray(live.deals) ? live.deals.length : 0;
+    const nDeals = live ? dealsOf(live).list.length : 0;
     const nBids = live && Array.isArray(live.bids) ? live.bids.length : 0;
     const nSales = live && Array.isArray(live.sales) ? live.sales.length : 0;
     const nSell = M.loaded ? sellOffers.value.list.filter((x) => x.price >= MP.min).length : 0;
-    const mv = movers.value;
-    // En haut, la valeur (toujours visible) ; puis côte à côte « à acheter » et « à vendre » (l'une sous l'autre sur un
-    // écran étroit) ; « Cartes qui bougent » ; « Mes enchères » (fermée par défaut) ; « À savoir ».
+    // En haut, la valeur (toujours visible) et où en est la lecture du marché ; puis côte à côte « à acheter » et « à
+    // vendre » (l'une sous l'autre sur un écran étroit) ; « Mes enchères » (fermée par défaut) ; « À savoir ».
     return h('div', { class: 'market' }, [
       h('section', { class: 'panel market__value' }, [
         h('div', { class: 'market__head' }, [h('h2', null, 'Valeur de ton classeur'),
@@ -6327,24 +6393,23 @@
         M.loaded ? viewValueChart(M.history) : null,
         h('p', { class: 'small muted' }, 'Valeur = somme des cotes fiables (3 ventes au moins) de chacun de tes exemplaires, selon sa rareté et s\'il est brillant ; cote = médiane des 30 dernières ventes sur 90 jours. Un point par jour.'),
         M.loaded && M.error ? errLine(M.error) : null,
+        M.loaded ? h('div', { class: 'market__read' }, viewMarketRead()) : null,
       ]),
       marketSection('acheter', 'Bonnes affaires à acheter', nDeals ? fmt(nDeals) : '', () => [
-        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections : au plus 80 % de la cote, ou « finit bientôt » (sans enchère, moins de 2 h, départ sous la cote).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
+        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte : au plus 80 % de la cote, ou « finit bientôt » (sans enchère, moins de 2 h, départ sous la cote).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
         viewDeals(live)]),
       marketSection('vendre', 'Bonnes affaires à vendre', nSell ? fmt(nSell) : '', viewSell),
-      marketSection('bougent', 'Cartes qui bougent', mv.up.length || mv.down.length ? `${fmt(mv.up.length)} ↑ · ${fmt(mv.down.length)} ↓` : '', () => [
-        h('p', { class: 'small muted' }, 'Écart de la cote de tes exemplaires sur 7 jours, en W.'), viewMovers()], 'market__wide'),
       marketSection('encheres', 'Mes enchères', live ? `${fmt(nBids)} ${plural(nBids, 'mise', 'mises')} · ${fmt(nSales)} ${plural(nSales, 'vente', 'ventes')}` : '', () => [viewMine(live)], 'market__wide'),
       h('section', { class: 'panel market__rules' }, [h('h2', null, 'À savoir'),
         h('p', { class: 'notice warn-box' }, MARKET_RULES),
-        h('p', { class: 'small muted' }, 'Les cotes sont communes à tous les classeurs du site (des ventes du jeu, liées à aucun joueur) : une cote lue il y a plus de 12 h est relue au clic suivant d\'un membre qui a la carte.')]),
+        h('p', { class: 'small muted' }, 'Les cotes sont communes à tous les classeurs du site (des ventes du jeu, liées à aucun joueur) : une cote lue il y a plus de 12 h est relue à la lecture suivante d\'un membre qui a la carte.')]),
     ]);
   }
   // Fiche d'une carte possédée : cote de chacun de tes exemplaires (rareté, brillance), « ~ » si moins de 3 ventes.
   function viewCote(c) {
     if (!M.loaded) return null;
     const p = prices.value.get(String(c.id));
-    if (!p) return h('div', { class: 'cote' }, [h('h3', null, 'Cote'), h('p', { class: 'small muted' }, M.value && M.value.priced ? "Pas encore lue : « Mettre à jour les cotes » dans l'encart du favori la lira (les plus anciennes d'abord)." : MARKET_HOW)]);
+    if (!p) return h('div', { class: 'cote' }, [h('h3', null, 'Cote'), h('p', { class: 'small muted' }, M.value && M.value.priced ? "Pas encore lue : ton favori la lira à une prochaine lecture (les plus anciennes d'abord), ou clique « Mettre à jour les cotes » dans son encart." : MARKET_HOW)]);
     const { list, approx } = variantsOf(c);
     let total = 0;
     let all = true;
@@ -7112,6 +7177,8 @@
       const before = S.me && S.me.fetched_at;
       try { await loadMe(); } catch (e) { return; }
       const me = S.me;
+      // Nouvel envoi du favori au marché (lecture automatique ou au clic, réussie ou non) : l'onglet « Marché » est relu.
+      if (M.loaded && me && typeof me.market_at === 'string' && me.market_at > marketSeen) loadMarket(true);
       const imported = !!(me && me.fetched_at && me.fetched_at !== before);
       if (!(imported || (me && Number.isInteger(me.cards_rev) && me.cards_rev !== cardsRev))) return;
       try {

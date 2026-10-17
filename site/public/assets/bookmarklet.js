@@ -17,7 +17,8 @@
 // erreur : rien n'est lu dans le jeu, et trois échecs de suite (ou un favori périmé, ou le quota du jour du classeur)
 // mettent les synchros automatiques en pause. Encart réductible en badge (« Classeur relié · dernière synchro à
 // 14:32 »), avec « Synchroniser » et « Arrêter » (qui rend window.fetch d'origine, et coupe la synchro en cours : plus
-// rien n'est lu ni envoyé).
+// rien n'est lu ni envoyé). Relié, il lit aussi les cotes et le marché sans clic (toutes les 20 min tant que l'onglet est
+// visible, et après une enchère ou une vente vue dans la page : « cotes automatiques »), ligne « Cotes : … » du badge.
 // L'interface remplace "__SITE__" et "__KEY__" par l'adresse du classeur et la clé d'import du favori (jamais la clé
 // principale : elle ne permet que d'envoyer des cartes), et "__START__" par "load" dans le script Tampermonkey (relié
 // dès le chargement de chaque page du jeu, sans rien lire avant une action du joueur ; sinon : clic sur le favori), puis
@@ -562,14 +563,17 @@
     say(message, true);
   };
   // ---------------------------------------------------------------- cotes et marché (« Mettre à jour les cotes »)
-  // À ton clic seulement : lecture directe de la base du jeu (Supabase : tables auctions, cards et auction_bids, celles
-  // que la page du jeu lit déjà avec ta session), jamais ses routes /api/marketplace (limitées). Une requête par seconde
-  // au plus, SUPA_MAX par clic (le clic suivant reprend aux cotes les plus anciennes) ; arrêt sur 401, 403 ou 429. Le
-  // jeton de ta session est lu dans la page à chaque requête et ne la quitte pas (ni le classeur ni l'encart ne le
-  // voient) ; le favori ne le renouvelle jamais : un jeton de renouvellement ne sert qu'une fois, le réutiliser fermerait
-  // ta session. Le classeur reçoit les cotes calculées ici (médiane des 30 ventes les plus récentes par rareté
-  // d'exemplaire et brillance, sur 90 jours ; fiable dès 3 ventes ; celle d'il y a 7 jours ; la dernière vente), et ta
-  // lecture du marché (bonnes affaires, tes enchères et tes ventes), jamais ton identifiant dans le jeu.
+  // À ton clic, et en mode relié sans clic (toutes les 20 min, onglet visible, et après tes enchères et tes ventes : voir
+  // « cotes automatiques ») : lecture directe de la base du jeu (Supabase : tables auctions, cards et auction_bids, celles
+  // que la page du jeu lit déjà avec ta session), jamais ses routes /api/marketplace (limitées). Une requête par seconde au
+  // plus, SUPA_MAX par lecture (la suivante reprend aux cotes les plus anciennes) ; arrêt sur 401, 403 ou 429. Le jeton de
+  // ta session est lu dans la page à chaque requête et ne la quitte pas (ni le classeur ni l'encart ne le voient) ; le
+  // favori ne le renouvelle jamais : un jeton de renouvellement ne sert qu'une fois, le réutiliser fermerait ta session. Le
+  // classeur reçoit les cotes calculées ici (médiane des 30 ventes les plus récentes par rareté d'exemplaire et brillance,
+  // sur 90 jours ; fiable dès 3 ventes ; celle d'il y a 7 jours ; la dernière vente), ta lecture du marché (bonnes
+  // affaires, tes enchères et tes ventes), jamais ton identifiant dans le jeu ; et, si la lecture échoue, le message
+  // affiché ici (POST /api/market/fail), pour que sa page dise quoi faire.
+  var VERSION = "2026-10-17";
   var SUPA = "https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/";
   // Clé publique de la base du jeu (rôle « anon », livrée dans le code de sa page) : seule, elle n'ouvre rien.
   var ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5cnhqZXBwanFzeHhqYXlmcnVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODAzMzksImV4cCI6MjA4OTQ1NjMzOX0.BZluyXygNxuQGDPxFX1zG5i-cqp10CVK-8GGtuak4Rg";
@@ -577,8 +581,10 @@
   var SUPA_GAP = 1000;
   var SUPA_MAX = 30;
   var DAY = 86400000;
-  var EXPIRED = "Ta session du jeu a expiré dans cette page : recharge la page du jeu, puis clique à nouveau « Mettre à jour les cotes » (le favori ne la renouvelle jamais lui-même).";
-  var NO_SESSION = "Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, recharge la page, puis réessaie. Rien n'a été lu.";
+  var RELOAD = "recharge la page du jeu (F5), puis clique « Mettre à jour les cotes »";
+  var EXPIRED = "Ta session du jeu a expiré dans cette page : " + RELOAD + " (le favori ne la renouvelle jamais lui-même).";
+  var NO_SESSION = "Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, " + RELOAD + ". Rien n'a été lu.";
+  var BOSS = " (préviens la personne qui gère le classeur)";
   var unb64 = function (s) {
     var b = String(s).replace(/-/g, "+").replace(/_/g, "/");
     while (b.length % 4) {
@@ -593,63 +599,105 @@
       return bin;
     }
   };
-  // Session de la page : cookie SESSION (« base64- » puis du JSON en base64url, parfois découpé en .0, .1…), sinon le
-  // localStorage du même nom. {token, uid} ou {why}. Jeton expiré (ou à moins de 30 s) : pas de lecture.
-  var session = function () {
-    var jar = {};
-    var raw;
+  // Une valeur de session (cookie ou localStorage) -> {token, exp, uid}, ou null : « base64- » puis du JSON en base64url,
+  // ou du JSON (encodé pour l'adresse, entre guillemets ou non) ; objet, {currentSession}, {session}, ou tableau [jeton
+  // d'accès, …] (anciens outils de Supabase).
+  var parseSession = function (raw) {
+    var s = String(raw || "").trim();
     var data = null;
-    try {
-      String(document.cookie || "").split(";").forEach(function (p) {
-        var i = p.indexOf("=");
-        if (i > 0) {
-          jar[p.slice(0, i).trim()] = p.slice(i + 1).trim();
-        }
-      });
-    } catch (e) {
-      jar = {};
-    }
-    raw = jar[SESSION];
-    if (raw === undefined && jar[SESSION + ".0"] !== undefined) {
-      raw = "";
-      for (var j = 0; j < 20 && jar[SESSION + "." + j] !== undefined; j++) {
-        raw += jar[SESSION + "." + j];
-      }
+    if (s.length > 1 && s.charAt(0) === "\"" && s.charAt(s.length - 1) === "\"") {
+      s = s.slice(1, -1);
     }
     try {
-      raw = raw || window.localStorage.getItem(SESSION) || "";
-      try {
-        raw = decodeURIComponent(raw);
-      } catch (e) {
-        raw = String(raw);
-      }
-      data = raw ? JSON.parse(raw.indexOf("base64-") === 0 ? unb64(raw.slice(7)) : raw) : null;
+      s = decodeURIComponent(s);
     } catch (e) {
-      data = null;
+      s = String(s);
     }
-    data = data && data.currentSession ? data.currentSession : data;
+    try {
+      data = JSON.parse(s.indexOf("base64-") === 0 ? unb64(s.slice(7)) : s);
+    } catch (e) {
+      return null;
+    }
+    data = Array.isArray(data) ? { access_token: data[0] } : data;
+    data = data && data.currentSession ? data.currentSession : data && data.session && data.session.access_token ? data.session : data;
     var token = data && typeof data.access_token === "string" ? data.access_token : "";
-    if (!token) {
-      return { why: NO_SESSION };
-    }
     var claims = {};
+    if (!token) {
+      return null;
+    }
     try {
       claims = JSON.parse(unb64(token.split(".")[1])) || {};
     } catch (e) {
       claims = {};
     }
-    var exp = typeof data.expires_at === "number" ? data.expires_at : claims.exp;
-    if (typeof exp === "number" && exp * 1000 < Date.now() + 30000) {
-      return { why: EXPIRED };
-    }
     var uid = data.user && typeof data.user.id === "string" ? data.user.id : claims.sub;
-    return { token: token, uid: typeof uid === "string" ? uid : "" };
+    return { token: token, exp: typeof data.expires_at === "number" ? data.expires_at : typeof claims.exp === "number" ? claims.exp : 0, uid: typeof uid === "string" ? uid : "" };
   };
-  // Compte des requêtes du clic en cours (n) et heure de la dernière (last) : rythme et plafond.
+  // Session de la page, relue avant chaque requête : cookie SESSION entier, cookie découpé (.0, .1… ; essayé aussi sans
+  // ses derniers morceaux, au cas où un ancien traîne), puis le localStorage du même nom. Le jeton valide qui expire le plus
+  // tard l'emporte (un vieux cookie resté à côté d'un plus récent ne gagne pas). {token, uid} ; sinon {why, code} : "none"
+  // (rien de lisible), "expired" (expiré ou à moins de 30 s), "moved" (seulement le cookie d'une autre base Supabase).
+  var session = function () {
+    var vals = [];
+    var parts = [];
+    var moved = false;
+    var best = null;
+    var old = false;
+    try {
+      String(document.cookie || "").split(";").forEach(function (p) {
+        var i = p.indexOf("=");
+        var k = i > 0 ? p.slice(0, i).trim() : "";
+        var m = /^sb-[a-z0-9]+-auth-token(?:\.(\d+))?$/.exec(k);
+        if (!m) {
+          return;
+        }
+        if (k.indexOf(SESSION) !== 0) {
+          moved = true;
+        } else if (m[1] === undefined) {
+          vals.push(p.slice(i + 1));
+        } else if (parts[+m[1]] === undefined) {
+          parts[+m[1]] = p.slice(i + 1);
+        }
+      });
+    } catch (e) {
+      vals = [];
+    }
+    for (var j = 0, all = ""; j < 20 && parts[j] !== undefined; j++) {
+      all += parts[j];
+      vals.push(all);
+    }
+    try {
+      vals.push(window.localStorage.getItem(SESSION) || "");
+    } catch (e) {
+      // Stockage refusé : les cookies suffisent.
+    }
+    vals.forEach(function (v) {
+      var s = parseSession(v);
+      if (s && s.exp && s.exp * 1000 < Date.now() + 30000) {
+        old = true;
+      } else if (s && (!best || (best.exp && (!s.exp || s.exp > best.exp)))) {
+        best = s;
+      }
+    });
+    if (best) {
+      return best;
+    }
+    if (old) {
+      return { why: EXPIRED, code: "expired" };
+    }
+    if (moved) {
+      return { why: "La base du jeu a changé : le favori doit être mis à jour pour lire les cotes" + BOSS + ".", code: "moved" };
+    }
+    // Ta collection lue (synchro réussie) : tu es connecté, c'est la session qui est hors de portée du favori.
+    return { why: NO_SESSION + (live && live.okAt ? " Ta collection, elle, se lit : si ça continue après un rechargement, le jeu cache sans doute sa session au favori" + BOSS + "." : ""), code: "none" };
+  };
+  // Compte des requêtes de la lecture en cours (n) et heure de la dernière (last) : rythme et plafond.
   var mk = { n: 0, last: 0 };
   var room = function () {
     return mk.n < SUPA_MAX;
   };
+  // Une requête à la base du jeu. Erreurs : celles qui arrêtent tout (e.stop : session, limite du jeu e.limit, jeu changé)
+  // et les passagères (réseau, 5xx : la lecture automatique suivante réessaie).
   var supa = async function (path) {
     halt();
     if (mk.last + SUPA_GAP > Date.now()) {
@@ -663,37 +711,52 @@
     mk.n += 1;
     mk.last = Date.now();
     var r = await net.call(window, SUPA + path, { headers: { apikey: ANON, Authorization: "Bearer " + s.token, Accept: "application/json" } }).catch(function () {
-      throw stop("La base du jeu ne répond pas (réseau) : cotes arrêtées, réessaie dans un moment.");
+      throw new Error("La base du jeu ne répond pas (réseau) : cotes arrêtées, réessaie dans un moment.");
     });
     mk.last = Date.now();
-    if (r.status === 401 || r.status === 403 || r.status === 429) {
-      var said = await r.json().catch(function () {
-        return null;
-      });
-      if (r.status === 429 || (said && said.code === "automation_limit")) {
-        throw stop("Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard.");
-      }
-      if (r.status === 401 && said && /api ?key/i.test(String(said.message || said.msg || ""))) {
-        throw stop("La clé publique de la base du jeu a changé : le favori doit être mis à jour pour lire les cotes.");
-      }
-      throw stop(r.status === 401 ? EXPIRED : "La base du jeu refuse cette lecture (403) : cotes arrêtées.");
-    }
-    if (!r.ok) {
-      throw stop("La base du jeu a répondu " + r.status + " : cotes arrêtées, réessaie dans un moment.");
-    }
     var rows = await r.json().catch(function () {
       return null;
     });
-    if (!Array.isArray(rows)) {
-      throw stop("La base du jeu a répondu dans un format inattendu : cotes arrêtées.");
+    var said = rows && !Array.isArray(rows) ? String(rows.message || rows.msg || "").slice(0, 120) : "";
+    if (r.ok && Array.isArray(rows)) {
+      return rows;
     }
-    return rows;
+    if (r.status === 429 || (rows && rows.code === "automation_limit")) {
+      var e = stop("Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard.");
+      e.limit = true;
+      throw e;
+    }
+    if (r.status === 401) {
+      throw stop(/api ?key/i.test(said) ? "La clé publique de la base du jeu a changé : le favori doit être mis à jour pour lire les cotes" + BOSS + "." : EXPIRED);
+    }
+    if (r.status >= 500) {
+      throw new Error("La base du jeu a répondu " + r.status + " : cotes arrêtées, réessaie dans un moment.");
+    }
+    throw stop("La base du jeu a refusé une lecture (" + (r.ok ? "format inattendu" : r.status + (said ? " : " + said : "")) + ") : cotes arrêtées. Recharge la page du jeu ; si ça recommence, le jeu a changé et le favori doit être mis à jour" + BOSS + ".");
   };
   // Liste PostgREST « in.(…) » de textes entre guillemets (titres avec virgules ou parenthèses compris).
   var inList = function (xs) {
     return encodeURIComponent("(" + xs.map(function (x) {
       return "\"" + String(x).replace(/\\/g, "\\\\").replace(/"/g, "\\\"") + "\"";
     }).join(",") + ")");
+  };
+  // Lots pour « in.(…) » : max valeurs au plus, et 5 000 caractères au plus une fois encodés (un titre long et accentué
+  // s'allonge beaucoup : une adresse trop longue serait refusée, 414).
+  var lots = function (xs, max) {
+    var out = [];
+    var cur = [];
+    var len = 0;
+    xs.forEach(function (x) {
+      var n = inList([x]).length;
+      if (cur.length && (cur.length >= max || len + n > 5000)) {
+        out.push(cur);
+        cur = [];
+        len = 0;
+      }
+      cur.push(x);
+      len += n;
+    });
+    return cur.length ? out.concat([cur]) : out;
   };
   var iso = function (t) {
     return encodeURIComponent(new Date(t).toISOString());
@@ -735,8 +798,8 @@
     });
     return out;
   };
-  // Cotes d'un lot de 100 cartes au plus : ventes des 90 derniers jours, pages de 1 000 dans un ordre stable. Plafond
-  // atteint au milieu : seules les cartes lues en entier (toutes sauf la dernière vue) sont rendues. [{id, v}].
+  // Cotes d'un lot de cartes : ventes des 90 derniers jours, pages de 1 000 dans un ordre stable. Plafond atteint au
+  // milieu : seules les cartes lues en entier (toutes sauf la dernière vue) sont rendues. [{id, v}].
   var readCotes = async function (ids) {
     var rows = [];
     var done = false;
@@ -766,35 +829,74 @@
     var n = Number(v);
     return v !== null && v !== undefined && isFinite(n) && n >= 0 && n <= 1e9 ? n : null;
   };
-  // Ce que la page du classeur montre d'une enchère : carte, rareté de l'exemplaire, image, fin, cote (fiable ou non).
-  // null si une valeur ne passerait pas les contrôles du classeur (qui refuserait toute la lecture du marché).
+  // Ce que la page du classeur montre d'une enchère : carte, rareté de l'exemplaire, image, fin (ISO), cote (fiable ou
+  // non). null si une valeur ne passerait pas les contrôles du classeur (qui refuserait toute la lecture du marché).
   var lot = function (a, fresh, title) {
     var r = a.snapshot_rarity;
     var c = a.card || {};
-    if (RANKS.indexOf(r) < 0 || !/^[A-Za-z0-9_-]{1,64}$/.test(String(a.id)) || !CARD_ID.test(String(a.card_id)) || typeof a.end_at !== "string" || a.end_at.length > 40 || !isFinite(Date.parse(a.end_at))) {
+    var end = typeof a.end_at === "string" && a.end_at.length <= 40 ? Date.parse(a.end_at) : NaN;
+    if (RANKS.indexOf(r) < 0 || !/^[A-Za-z0-9_-]{1,64}$/.test(String(a.id)) || !CARD_ID.test(String(a.card_id)) || !isFinite(end)) {
       return null;
     }
     var k = vkey(r, a.is_shiny);
     var q = fresh[a.card_id] && fresh[a.card_id][k];
-    return { a: String(a.id), id: String(a.card_id), t: String(title || c.wikipedia_title || "?").slice(0, 300), r: r, s: !!a.is_shiny, img: c.hide_image ? null : https(c.image_url), end: String(a.end_at), cote: q ? q.p : null, n: q ? q.n : null };
+    return { a: String(a.id), id: String(a.card_id), t: String(title || c.wikipedia_title || "?").slice(0, 300), r: r, s: !!a.is_shiny, img: c.hide_image ? null : https(c.image_url), end: new Date(end).toISOString(), cote: q ? q.p : null, n: q ? q.n : null };
   };
   var CARD = "card:cards(wikipedia_title,image_url,hide_image)";
   // Identifiant de carte accepté par le classeur (sinon tout l'envoi serait refusé).
   var CARD_ID = /^[A-Za-z0-9_-]{1,100}$/;
-  // Le clic : plan du classeur (cartes à coter, cartes qui manquent à tes collections), tes enchères et tes ventes,
-  // titres -> cartes du jeu, enchères en cours sur les cartes voulues, cotes de ces cartes, puis des tiennes (les plus
-  // anciennes d'abord) tant que le plafond le permet. Les cotes lues sont envoyées même si une erreur arrête tout.
-  var market = async function () {
-    say("Lecture des cotes…");
-    var me = session();
-    if (!me.token) {
-      say(me.why);
+  // Cotes lues dans cette page (card_id -> {v, at}) : celles des enchères en cours et de tes enchères, relues à chaque
+  // lecture, ne le sont qu'au-delà d'une heure (les lectures automatiques, toutes les 20 min, en économisent autant).
+  var seenCotes = {};
+  // L'échec d'une lecture et sa raison (le message montré ici), pour la page du classeur ; rien si le classeur ne répond
+  // pas.
+  var report = async function (why, auto) {
+    try {
+      await post("/api/market/fail", { why: String(why).slice(0, 300), v: VERSION, auto: auto });
+    } catch (e) {
       return;
     }
-    var plan = await post("/api/market/plan", {});
+  };
+  // La lecture du marché tient sous 200 000 caractères (le classeur en accepte 256 Ko) : sinon sans les images de tes
+  // enchères et ventes, puis sans les plus anciennes.
+  var fit = function (lv) {
+    var big = function () {
+      return JSON.stringify(lv).length > 200000;
+    };
+    if (big()) {
+      lv.bids.concat(lv.sales).forEach(function (x) {
+        x.img = null;
+      });
+    }
+    while (big() && lv.bids.length + lv.sales.length) {
+      (lv.bids.length >= lv.sales.length ? lv.bids : lv.sales).pop();
+    }
+  };
+  // Une lecture : plan du classeur (cartes à coter, cartes qui manquent à tes collections), tes enchères et tes ventes,
+  // titres -> cartes du jeu, enchères en cours sur les cartes voulues et leurs cotes ; la lecture du marché part alors au
+  // classeur ; puis les cotes de tes cartes (les plus anciennes d'abord) tant que le plafond le permet. Les cotes lues
+  // sont envoyées même si une erreur arrête tout, et l'échec avec sa raison. auto : lecture automatique (mode relié) ;
+  // le classeur la refuse si une autre a commencé il y a moins de 5 min ({skip}).
+  var market = async function (auto) {
+    auto = auto === true;
+    var me = session();
+    if (!me.token) {
+      var none = stop(me.why);
+      await report(none.message, auto);
+      throw none;
+    }
+    say("Lecture des cotes…");
+    var plan = await post("/api/market/plan", { v: VERSION, auto: auto });
+    if (plan.skip) {
+      say("Cotes lues il y a moins de 5 min par un autre onglet ou appareil : rien n'a été lu cette fois.", true);
+      return { skip: Date.parse(plan.until) };
+    }
+    mkst.last = Date.now();
+    mkShare(true);
     if (!(plan.quota > 0)) {
-      say("Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : réessaie demain. Rien n'a été lu.");
-      return;
+      var full = stop("Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu.");
+      await report(full.message, auto);
+      throw full;
     }
     mk.n = 0;
     var cards = Array.isArray(plan.cards) ? plan.cards : [];
@@ -803,13 +905,16 @@
     var fresh = {};
     var sent = [];
     var found = {};
-    var live = { ids: {}, deals: [], bids: [], sales: [] };
+    var lv = { ids: {}, deals: [], bids: [], sales: [] };
     var fail = null;
+    var told = false;
     var take = async function (list) {
-      for (var i = 0; i < list.length && room() && sent.length < plan.quota; i += 100) {
-        (await readCotes(list.slice(i, i + 100))).forEach(function (x) {
+      var parts = lots(list, 100);
+      for (var i = 0; i < parts.length && room() && sent.length < plan.quota; i++) {
+        (await readCotes(parts[i])).forEach(function (x) {
           if (!fresh[x.id] && sent.length < plan.quota && CARD_ID.test(x.id)) {
             fresh[x.id] = x.v;
+            seenCotes[x.id] = { v: x.v, at: Date.now() };
             sent.push(x);
           }
         });
@@ -821,31 +926,30 @@
       var bids = me.uid ? await supa("auction_bids?select=amount,placed_at,auction:auctions(id,card_id,status,end_at,current_bid,current_bidder_id,final_price,winner_id,snapshot_rarity,is_shiny," + CARD + ")&bidder_id=eq." + encodeURIComponent(me.uid) + "&placed_at=gte." + iso(now - 14 * DAY) + "&order=placed_at.desc&limit=200") : [];
       var sales = me.uid ? await supa("auctions?select=id,card_id,status,end_at,base_amount,current_bid,current_bidder_id,final_price,snapshot_rarity,is_shiny," + CARD + "&seller_id=eq." + encodeURIComponent(me.uid) + "&end_at=gte." + iso(now - 14 * DAY) + "&order=end_at.desc&limit=100") : [];
       say("Lecture des cotes… recherche des cartes qui te manquent");
-      var unknown = wanted.filter(function (t) {
+      var unknown = lots(wanted.filter(function (t) {
         return typeof ids[t] !== "string";
-      }).slice(0, 320);
-      for (var i = 0; i < unknown.length && room(); i += 80) {
-        var part = unknown.slice(i, i + 80);
-        (await supa("cards?select=id,wikipedia_title,lang&wikipedia_title=in." + inList(part) + "&order=id&limit=1000")).forEach(function (c) {
+      }).slice(0, 320), 80);
+      for (var i = 0; i < unknown.length && room(); i++) {
+        (await supa("cards?select=id,wikipedia_title,lang&wikipedia_title=in." + inList(unknown[i]) + "&order=id&limit=1000")).forEach(function (c) {
           if (c && CARD_ID.test(String(c.id)) && (!found[c.wikipedia_title] || c.lang === "fr")) {
             found[c.wikipedia_title] = String(c.id);
           }
         });
-        part.forEach(function (t) {
-          live.ids[t] = found[t] || "";
-          ids[t] = live.ids[t];
+        unknown[i].forEach(function (t) {
+          lv.ids[t] = found[t] || "";
+          ids[t] = lv.ids[t];
         });
       }
       var titleOf = {};
-      var want = wanted.filter(function (t) {
+      var want = lots(wanted.filter(function (t) {
         return ids[t];
       }).map(function (t) {
         titleOf[ids[t]] = t;
         return ids[t];
-      });
+      }).slice(0, 500), 100);
       var auctions = [];
-      for (var k = 0; k < want.length && room() && k < 500; k += 100) {
-        auctions = auctions.concat(await supa("auctions?select=id,card_id,seller_id,snapshot_rarity,current_bid,current_bidder_id,base_amount,end_at,is_shiny," + CARD + "&status=eq.active&end_at=gt." + iso(now) + "&card_id=in." + inList(want.slice(k, k + 100)) + "&order=end_at&limit=1000"));
+      for (var k = 0; k < want.length && room(); k++) {
+        auctions = auctions.concat(await supa("auctions?select=id,card_id,seller_id,snapshot_rarity,current_bid,current_bidder_id,base_amount,end_at,is_shiny," + CARD + "&status=eq.active&end_at=gt." + iso(now) + "&card_id=in." + inList(want[k]) + "&order=end_at&limit=1000"));
       }
       auctions = auctions.filter(function (a) {
         return a && a.id && a.card_id && a.seller_id !== me.uid;
@@ -862,32 +966,43 @@
         }
       });
       say("Lecture des cotes…");
-      var first = auctions.map(function (a) {
+      await take(auctions.map(function (a) {
         return String(a.card_id);
       }).concat(mine.map(String)).filter(function (id, n, all) {
-        return all.indexOf(id) === n;
-      }).slice(0, 300);
-      await take(first);
-      await take(cards.filter(function (id) {
-        return !fresh[id];
-      }));
+        var m = seenCotes[id];
+        if (m && Date.now() - m.at < HOUR) {
+          fresh[id] = m.v;
+        }
+        return all.indexOf(id) === n && !fresh[id];
+      }).slice(0, 300));
+      // Bonnes affaires : la moins chère par carte (une collection n'en demande qu'un exemplaire, de n'importe quelle
+      // rareté) ; more = les autres enchères intéressantes sur la même carte.
+      var best = {};
       auctions.forEach(function (a) {
         var x = lot(a, fresh, titleOf[a.card_id]);
-        if (!x) {
-          return;
-        }
         var bid = !!a.current_bidder_id;
         var ask = money(bid ? a.current_bid : a.base_amount);
         var base = money(a.base_amount);
-        var left = Date.parse(a.end_at) - Date.now();
-        if (x.cote !== null && x.n >= 3 && ask !== null && (ask <= 0.8 * x.cote || (!bid && left < 2 * 3600000 && base !== null && base <= x.cote))) {
-          x.ask = ask;
-          x.bid = bid;
-          x.lead = !!me.uid && a.current_bidder_id === me.uid;
-          live.deals.push(x);
+        if (!x || x.cote === null || x.n < 3 || ask === null || !(ask <= 0.8 * x.cote || (!bid && Date.parse(x.end) - Date.now() < 2 * 3600000 && base !== null && base <= x.cote))) {
+          return;
         }
+        x.ask = ask;
+        x.bid = bid;
+        x.lead = !!me.uid && a.current_bidder_id === me.uid;
+        x.more = 0;
+        var o = best[x.id];
+        if (!o) {
+          lv.deals.push(x);
+        } else if (ask < o.ask || (ask === o.ask && x.end < o.end)) {
+          x.more = o.more + 1;
+          lv.deals[lv.deals.indexOf(o)] = x;
+        } else {
+          o.more += 1;
+          return;
+        }
+        best[x.id] = x;
       });
-      live.deals = live.deals.sort(function (a, b) {
+      lv.deals = lv.deals.sort(function (a, b) {
         return Date.parse(a.end) - Date.parse(b.end);
       }).slice(0, 50);
       var seen = {};
@@ -911,10 +1026,10 @@
         x.lead = run && a.current_bidder_id === me.uid;
         x.st = run ? "run" : a.status === "settled_sold" ? (a.winner_id === me.uid ? "won" : "lost") : "off";
         seen[a.id] = x;
-        live.bids.push(x);
+        lv.bids.push(x);
       });
-      live.bids = live.bids.slice(0, 100);
-      sales.forEach(function (a) {
+      lv.bids = lv.bids.slice(0, 100);
+      sales.slice(0, 100).forEach(function (a) {
         if (!a || !a.id || !a.card_id || money(a.base_amount) === null) {
           return;
         }
@@ -927,21 +1042,36 @@
         x.bid = !!a.current_bidder_id;
         x.cur = money(st === "settled_sold" ? a.final_price : x.bid ? a.current_bid : null);
         x.st = st === "active" ? "run" : st === "settled_sold" ? "sold" : st.indexOf("settled") === 0 ? "unsold" : "off";
-        live.sales.push(x);
+        lv.sales.push(x);
       });
+      fit(lv);
+      await post("/api/market/live", lv);
+      told = true;
+      await take(cards.filter(function (id) {
+        return !fresh[id];
+      }));
     } catch (e) {
       fail = e;
     }
     if (halted) {
       throw fail || stop("Favori arrêté.");
     }
-    for (var p = 0; p * 500 < sent.length || p === 0; p++) {
-      await post("/api/market/prices", { prices: sent.slice(p * 500, (p + 1) * 500), last: (p + 1) * 500 >= sent.length });
+    try {
+      for (var p = 0; p * 500 < sent.length || p === 0; p++) {
+        await post("/api/market/prices", { prices: sent.slice(p * 500, (p + 1) * 500), last: (p + 1) * 500 >= sent.length });
+      }
+    } catch (e) {
+      fail = fail || e;
     }
     if (fail) {
-      throw new Error(fail.message + (sent.length ? " " + num(sent.length) + " cotes lues avant l'arrêt ont été envoyées au classeur." : ""));
+      var why = fail.message + (sent.length ? " " + num(sent.length) + " cotes lues avant l'arrêt ont été envoyées au classeur" + (told ? ", avec les bonnes affaires et tes enchères." : ".") : "");
+      await report(why, auto);
+      var e2 = new Error(why);
+      e2.stop = fail.stop;
+      e2.limit = fail.limit;
+      e2.status = fail.status;
+      throw e2;
     }
-    await post("/api/market/live", live);
     var planned = {};
     cards.forEach(function (id) {
       planned[id] = true;
@@ -949,10 +1079,11 @@
     var left = Math.max(0, (Number(plan.stale) || 0) - sent.filter(function (x) {
       return planned[x.id];
     }).length);
-    var running = live.bids.filter(function (x) {
+    var running = lv.bids.filter(function (x) {
       return x.st === "run";
     }).length;
-    say("Cotes lues : " + num(sent.length) + (sent.length > 1 ? " cartes" : " carte") + (left ? " (il en reste " + num(left) + " : reclique plus tard, les plus anciennes d'abord)" : ", tes cotes sont à jour") + ". " + num(live.deals.length) + (live.deals.length > 1 ? " bonnes affaires" : " bonne affaire") + ", " + num(running) + " de tes enchères en cours : onglet « Marché » du classeur.", true);
+    say("Cotes lues : " + num(sent.length) + (sent.length > 1 ? " cartes" : " carte") + (left ? " (il en reste " + num(left) + " : la prochaine lecture continue, les plus anciennes d'abord)" : ", tes cotes sont à jour") + ". " + num(lv.deals.length) + (lv.deals.length > 1 ? " bonnes affaires" : " bonne affaire") + ", " + num(running) + " de tes enchères en cours : onglet « Marché » du classeur.", true);
+    return { ok: true };
   };
   // ---------------------------------------------------------------- mode relié
   // Synchro automatique AFTER après la dernière action (le jeu finit d'écrire), au plus AFTER_MAX après la première d'une
@@ -1024,10 +1155,18 @@
     ["*", /^\/api\/trades(\/|$)/, "échange"],
     ["POST", /^\/api\/achievements\/claim$/, "récompense réclamée"]
   ];
-  var actionOf = function (method, path) {
-    for (var i = 0; i < ACTIONS.length; i++) {
-      if ((ACTIONS[i][0] === "*" || ACTIONS[i][0] === method) && ACTIONS[i][1].test(path)) {
-        return ACTIONS[i][2];
+  // Actions du joueur sur le marché, qui relancent la lecture des cotes (« cotes automatiques ») : enchère posée ou achat
+  // (chemin d'achat direct supposé : aucun relevé), mise en vente, vente annulée.
+  var MK_ACTIONS = [
+    ["POST", /^\/api\/marketplace\/[^/]+\/(bid|buy|buyout|purchase)$/, "enchère ou achat"],
+    ["POST", /^\/api\/marketplace$/, "mise en vente"],
+    ["DELETE", /^\/api\/marketplace\/[^/]+$/, "vente annulée"]
+  ];
+  var actionOf = function (method, path, table) {
+    var list = table || ACTIONS;
+    for (var i = 0; i < list.length; i++) {
+      if ((list[i][0] === "*" || list[i][0] === method) && list[i][1].test(path)) {
+        return list[i][2];
       }
     }
     return null;
@@ -1046,13 +1185,19 @@
       return;
     }
     var what = actionOf(method, u.pathname);
-    if (!what || !p || typeof p.then !== "function") {
+    var sale = actionOf(method, u.pathname, MK_ACTIONS);
+    if ((!what && !sale) || !p || typeof p.then !== "function") {
       return;
     }
     p.then(function (r) {
       try {
         if (r && r.ok === true) {
-          noticed(what);
+          if (what) {
+            noticed(what);
+          }
+          if (sale) {
+            mkNoticed(sale);
+          }
         }
       } catch (e) {
         return;
@@ -1097,10 +1242,14 @@
   var foldBtn = null;
   // Ce que dit le badge pendant une lecture (synchro ou cotes).
   var busy = "synchro en cours…";
-  // Sous les boutons, déplié : ce que fait « Mettre à jour les cotes » (règles du jeu, SPEC.md).
+  // Sous la ligne d'état : où en sont les cotes (« cotes automatiques »).
+  var mkStatus = document.createElement("div");
+  mkStatus.style.cssText = "font-size:12px;color:#98a29d";
+  // Sous les boutons, déplié : ce que fait la lecture des cotes (règles du jeu, SPEC.md), et de quoi couper l'automatique.
   var mnote = document.createElement("div");
   mnote.style.cssText = "margin-top:8px;font-size:11.5px;line-height:1.35;color:#98a29d";
-  mnote.textContent = "Cotes : lecture directe de la base du jeu avec ta session, à ton clic seulement (1 requête/s, 30 au plus), sans passer par les pages du marché, qui limitent les outils. Plus risqué qu'une synchro : avec modération.";
+  mnote.textContent = "Cotes : lecture directe de la base du jeu avec ta session, à ton clic et toutes les 20 min tant que cet onglet est visible (et après tes enchères et ventes), 1 requête/s, 30 au plus, sans passer par les pages du marché, qui limitent les outils. Plus risqué qu'une synchro.";
+  var mkToggle = null;
   // Encart réduit en badge (true) ou déplié.
   var fold = function (yes) {
     folded = yes;
@@ -1188,6 +1337,198 @@
     live.what = what;
     schedule();
   };
+  // ---------------------------------------------------------------- cotes automatiques (mode relié)
+  // La lecture des cotes et du marché (market), sans clic : MK_FIRST après le clic sur le favori (ou le chargement du
+  // script Tampermonkey), puis toutes les MK_EVERY tant que l'onglet est visible ; et MK_AFTER après une enchère, un achat
+  // ou une mise en vente vus dans le jeu (MK_ACTIONS ; MK_AFTER_MAX au plus après le premier d'une rafale). Jamais moins de
+  // MK_GAP après la précédente (au clic ou non), MK_PER_HOUR automatiques par heure au plus, pour tous les onglets du jeu
+  // de ce navigateur (localStorage, clé MKMEMO : {autos, last, off}, des heures et un choix, rien d'autre) ; entre
+  // navigateurs ou appareils, le classeur refuse une lecture automatique moins de 5 min après le début de la précédente.
+  // Même lecture qu'au clic (1 requête/s, 30 au plus), jamais pendant une synchro. Sans session lisible : rien n'est
+  // programmé ; session expirée ou onglet caché : nouvel examen chaque minute (la page renouvelle elle-même sa session),
+  // rien n'est lu entre-temps. Une erreur qui arrête tout (session refusée, limite du jeu, quota, favori périmé, jeu
+  // changé) ou trois échecs de suite les mettent en pause jusqu'à un clic réussi sur « Mettre à jour les cotes ».
+  // « Couper les cotes automatiques » (encart déplié) les arrête dans tout ce navigateur.
+  var MK_FIRST = 60000;
+  var MK_EVERY = 20 * 60000;
+  var MK_AFTER = 20000;
+  var MK_AFTER_MAX = 60000;
+  var MK_GAP = 5 * 60000;
+  var MK_PER_HOUR = 6;
+  var MK_RETRY = 60000;
+  var MKMEMO = "classeur:cotes";
+  // born : début du mode relié ; last : début de la dernière lecture (tous onglets) ; want/first/act : action vue sur le
+  // marché (et heures de la première et de la dernière) ; until : refus du classeur jusqu'à ; hold : ce qui retient
+  // (none, expired, moved : session ; hidden : onglet caché) ; paused : pourquoi en pause ; why : dernier échec passager.
+  var mkst = { born: Date.now(), autos: [], last: 0, off: false, plan: 0, due: 0, okAt: 0, hold: "", paused: "", fails: 0, why: "", want: "", first: 0, act: 0, until: 0, queued: false };
+  // Limites et choix communs aux onglets (comme share pour les synchros) ; own : ce choix-ci l'emporte (bouton).
+  var mkShare = function (write, own) {
+    var now = Date.now();
+    var m = null;
+    try {
+      m = JSON.parse(window.localStorage.getItem(MKMEMO) || "null");
+    } catch (e) {
+      m = null;
+    }
+    var at = function (t) {
+      return typeof t === "number" && isFinite(t) && t <= now ? t : 0;
+    };
+    if (m && typeof m === "object") {
+      (Array.isArray(m.autos) ? m.autos.slice(-MK_PER_HOUR) : []).forEach(function (t) {
+        if (at(t) && mkst.autos.indexOf(t) < 0) {
+          mkst.autos.push(t);
+        }
+      });
+      mkst.last = Math.max(mkst.last, at(m.last));
+      if (!own && typeof m.off === "boolean") {
+        mkst.off = m.off;
+      }
+    }
+    mkst.autos = mkst.autos.filter(function (t) {
+      return now - t < HOUR;
+    }).sort(function (a, b) {
+      return a - b;
+    });
+    if (write) {
+      try {
+        window.localStorage.setItem(MKMEMO, JSON.stringify({ autos: mkst.autos.slice(-MK_PER_HOUR), last: mkst.last, off: mkst.off }));
+      } catch (e) {
+        // Stockage plein ou refusé : limites de cette page seulement.
+      }
+    }
+  };
+  var mkWhen = function () {
+    var at = mkst.want ? Math.min(mkst.act + MK_AFTER, mkst.first + MK_AFTER_MAX) : mkst.last ? mkst.last + MK_EVERY : mkst.born + MK_FIRST;
+    at = Math.max(at, mkst.last + MK_GAP, mkst.until);
+    return mkst.autos.length >= MK_PER_HOUR ? Math.max(at, mkst.autos[mkst.autos.length - MK_PER_HOUR] + HOUR) : at;
+  };
+  // Ligne « Cotes : … » sous la ligne d'état.
+  var mkBadge = function () {
+    if (!live || !live.on) {
+      return;
+    }
+    var t = mkst.okAt ? "lues à " + hhmm(mkst.okAt) : "";
+    if (window.__classeurFavori && busy === "lecture des cotes…") {
+      t = "lecture en cours…";
+    } else if (mkst.queued) {
+      t = "lecture juste après la synchro en cours";
+    } else if (mkst.off) {
+      t = "lecture automatique coupée (« Mettre à jour les cotes » les lit à ton clic)";
+    } else if (mkst.paused) {
+      t = "lecture automatique en pause (" + mkst.paused + ") : « Mettre à jour les cotes » la relance";
+    } else if (mkst.hold) {
+      t = { none: "en attente de ta session du jeu (connecte-toi, puis recharge la page)", expired: "session du jeu expirée, en attente de son renouvellement par la page (sinon recharge-la)", moved: "le jeu a changé de base, favori à mettre à jour", hidden: "prochaine lecture au retour sur cet onglet" }[mkst.hold];
+    } else {
+      t += (mkst.due ? (t ? ", " : "") + "prochaine vers " + hhmm(mkst.due) : "") + (mkst.why ? (t ? " ; " : "") + "dernier essai raté : " + mkst.why : "");
+    }
+    mkStatus.textContent = t ? "Cotes : " + t : "";
+    if (mkToggle) {
+      mkToggle.textContent = mkst.off ? "Réactiver les cotes automatiques" : "Couper les cotes automatiques";
+    }
+    keep();
+  };
+  var mkLater = function (at) {
+    var id = mkst.plan;
+    mkst.due = at;
+    setTimeout(function () {
+      mkTick(id);
+    }, Math.max(0, at - Date.now()));
+  };
+  // Programme la prochaine lecture automatique (rien sans session lisible, en pause, coupée ou pendant une lecture).
+  var mkArm = function () {
+    if (!live || !live.on || halted) {
+      return;
+    }
+    mkst.plan += 1;
+    mkst.due = 0;
+    mkShare(false);
+    if (!mkst.off && !mkst.paused && !window.__classeurFavori) {
+      var s = session();
+      mkst.hold = s.token ? "" : s.code;
+      if (s.token || s.code === "expired") {
+        mkLater(mkWhen());
+      }
+    }
+    mkBadge();
+  };
+  var mkTick = function (id) {
+    if (!live || !live.on || halted || id !== mkst.plan || mkst.off || mkst.paused || window.__classeurFavori) {
+      return;
+    }
+    mkShare(false);
+    var now = Date.now();
+    // Une autre page du jeu a pu lire entre-temps : l'heure est recalculée avant de lire quoi que ce soit.
+    if (mkWhen() > now) {
+      mkArm();
+      return;
+    }
+    var s = session();
+    mkst.hold = document.visibilityState === "hidden" ? "hidden" : s.token ? "" : s.code;
+    if (mkst.hold) {
+      mkst.plan += 1;
+      mkst.due = 0;
+      if (mkst.hold === "hidden" || mkst.hold === "expired") {
+        mkLater(now + MK_RETRY);
+      }
+      mkBadge();
+      return;
+    }
+    mkst.autos.push(now);
+    mkst.want = "";
+    mkShare(true);
+    start(market, true);
+  };
+  // Enchère, achat ou mise en vente vus dans le jeu (réponse 2xx reçue par la page).
+  var mkNoticed = function (what) {
+    if (!live || !live.on) {
+      return;
+    }
+    if (!mkst.want) {
+      mkst.first = Date.now();
+    }
+    mkst.want = what;
+    mkst.act = Date.now();
+    mkArm();
+  };
+  // Fin d'une lecture des cotes. Refus du classeur (une autre a commencé il y a moins de 5 min) : la suivante 20 min
+  // après celle-là. Échec : au clic, le message s'affiche (encart déplié, comme avant) ; en automatique, encart déplié
+  // seulement si les lectures automatiques se mettent en pause, sinon une mention sous la ligne d'état. Rend true si
+  // l'échec est déjà montré.
+  var mkEnd = function (res, e, auto) {
+    if (res && res.skip) {
+      var until = Math.min(isFinite(res.skip) ? res.skip : 0, Date.now() + MK_GAP);
+      mkst.until = until;
+      mkst.last = Math.max(mkst.last, Math.min(until - MK_GAP, Date.now()));
+      return false;
+    }
+    if (!e) {
+      mkst.okAt = Date.now();
+      mkst.fails = 0;
+      mkst.why = "";
+      mkst.paused = "";
+      return false;
+    }
+    var message = e.message || "Lecture des cotes impossible.";
+    mkst.fails = auto ? mkst.fails + 1 : mkst.fails;
+    mkst.why = message.length > 80 ? message.slice(0, 79) + "…" : message;
+    if (e.limit || (auto && (e.stop || e.status === 401 || e.status === 403 || e.status === 503 || mkst.fails >= 3))) {
+      mkst.paused = e.limit ? "le jeu limite les lectures automatiques" : e.status === 401 || e.status === 403 ? "favori refusé par le classeur" : e.stop ? "voir le message de l'encart" : "trois échecs de suite";
+      if (auto) {
+        say(message + " Cotes automatiques en pause : « Mettre à jour les cotes » les relance.");
+        fold(false);
+      }
+    }
+    return auto;
+  };
+  // Après une synchro ou une lecture : la lecture demandée pendant la synchro, sinon la prochaine automatique.
+  var mkAfter = function () {
+    if (mkst.queued && live && live.on && !halted) {
+      mkst.queued = false;
+      start(market, false);
+      return;
+    }
+    mkArm();
+  };
   // Lance une synchro (run) ou la création d'une collection ; auto = true : synchro déclenchée par une action du joueur.
   // Une synchro couvre les actions d'avant son début. Une erreur qui arrête tout (session, limite de lectures du jeu,
   // favori périmé, quota du jour du classeur), ou trois de suite (classeur injoignable…), met les synchros automatiques
@@ -1223,6 +1564,9 @@
         live.paused = false;
         live.pauseWhy = "";
       }
+      if (task === market) {
+        mkEnd(res, null, auto);
+      }
       if (!auto) {
         var plan = live.foldPlan;
         setTimeout(function () {
@@ -1232,7 +1576,7 @@
         }, 15000);
       }
     }).catch(function (e) {
-      if (halted) {
+      if (halted || (task === market && live && mkEnd(null, e || {}, auto))) {
         return;
       }
       var message = e && e.message ? e.message : "Le favori n'a pas pu lire ta collection.";
@@ -1265,6 +1609,7 @@
           share(true);
         }
         schedule();
+        mkAfter();
       }
     });
   };
@@ -1299,16 +1644,30 @@
       fold(!folded);
     });
     foot.textContent = "";
-    foot.append(status, button("Synchroniser", function () {
+    // Cotes automatiques coupées ou réactivées pour tout ce navigateur (encart déplié).
+    mkToggle = button("", function () {
+      mkst.off = !mkst.off;
+      mkShare(true, true);
+      mkArm();
+    });
+    mnote.appendChild(mkToggle);
+    // « Mettre à jour les cotes » pendant une synchro : la lecture la suit (dit sous la ligne d'état).
+    foot.append(status, mkStatus, button("Synchroniser", function () {
       if (!window.__classeurFavori) {
         start(run, false);
       }
     }), button("Mettre à jour les cotes", function () {
       if (!window.__classeurFavori) {
         start(market, false);
+      } else if (busy !== "lecture des cotes…") {
+        mkst.queued = true;
+        mkBadge();
+      } else {
+        fold(false);
       }
     }), foldBtn, button("Arrêter", stopLive), mnote);
     badge();
+    mkArm();
     return true;
   };
   var linked = relier();

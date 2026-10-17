@@ -143,14 +143,17 @@ CREATE TABLE IF NOT EXISTS value_history (
 
 -- État du marché d'un classeur : ids = titres des cartes qui manquent à ses collections -> card_id du jeu ("" : aucune
 -- carte), relevés par son favori ; live = sa dernière lecture du marché (bonnes affaires, ses enchères et ventes),
--- effacée au bout de 24 h ; quota_day / quota_n = cotes envoyées ce jour-là. user_id = '*' : quota de tout le site.
+-- effacée au bout de 7 jours ; quota_day / quota_n = cotes envoyées ce jour-là. user_id = '*' : quota de tout le site.
+-- attempt = dernier essai de lecture du favori, texte JSON {start, v, auto, end, ok, why} (heures, version du favori,
+-- message d'échec montré au joueur ; rien du jeu).
 CREATE TABLE IF NOT EXISTS market (
     user_id TEXT PRIMARY KEY,
     ids TEXT NOT NULL DEFAULT '{}',
     live TEXT,
     live_at TEXT,
     quota_day TEXT,
-    quota_n INTEGER NOT NULL DEFAULT 0
+    quota_n INTEGER NOT NULL DEFAULT 0,
+    attempt TEXT
 );
 
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);

@@ -15,6 +15,7 @@ const { onRequest } = await import(lib('api/[[path]].js'));
 const { SCHEMA } = await import(lib('_lib/db.js'));
 const { decryptCookie } = await import(lib('_lib/session.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
+const { QUOTA_USER, QUOTA_ALL, AUTO_GAP } = await import(lib('_lib/market.js'));
 
 const realFetch = globalThis.fetch;
 const SECRET = 'secret-de-test';
@@ -2119,10 +2120,13 @@ await test('GET /api/me (relu toutes les minutes par la page visible) : une requ
   assert.equal((await me()).card_count, 40);
   assert.equal(seen.length, 1, seen.join('\n'));
   const plan = env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${seen[0]}`).all().map((r) => r.detail);
-  // Le compte par sa clé, et le dernier numéro du chat (badge des non-lus) : MAX sur la clé primaire, une ligne.
-  assert.deepEqual(plan.length, 3, plan.join('\n'));
+  // Le compte par sa clé, le dernier numéro du chat (badge des non-lus) : MAX sur la clé primaire, une ligne ; l'heure
+  // de la dernière lecture du marché (market_at) : sa ligne de market, par sa clé primaire.
+  assert.deepEqual(plan.length, 5, plan.join('\n'));
   assert.match(plan[0], /^SEARCH users USING INDEX sqlite_autoindex_users_\d \(key_hash=\?\)$/);
-  assert.deepEqual(plan.slice(1), ['SCALAR SUBQUERY 1', 'SEARCH chat_messages'], plan.join('\n'));
+  assert.deepEqual(plan.slice(1, 3), ['SCALAR SUBQUERY 1', 'SEARCH chat_messages'], plan.join('\n'));
+  assert.match(plan[3], /^CORRELATED SCALAR SUBQUERY \d$/, plan.join('\n'));
+  assert.match(plan[4], /^SEARCH m USING INDEX sqlite_autoindex_market_1 \(user_id=\?\)$/, plan.join('\n'));
   // Classeur importé avant le compteur (sync_state absent, ou ancien format sans unit, invalid ni count) : compté une
   // fois, puis gardé ; le reste de l'état est intact et la synchro rapide reste coupée (relecture complète).
   const setState = (v) => env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(v, kim.user.id);
@@ -2991,12 +2995,15 @@ await test('marché : cotes validées, sans user_id, clé d\'import (CORS du jeu
   assert.deepEqual(Object.keys(q('SELECT * FROM prices')[0]), ['card_id', 'data', 'read_at']);
   assert.ok(!JSON.stringify(q('SELECT * FROM prices')).includes(u.user.id));
   assert.deepEqual(JSON.parse(q("SELECT data FROM prices WHERE card_id = 'carte-1'")[0].data), { R: cote(120, 5), 'R*': cote(800, 1) });
-  // Quota du classeur : 3 000 cotes par jour (2 déjà) ; au-delà 429, rien d'écrit pour cet envoi.
+  // Quota du classeur : 15 000 cotes par jour (abonnement payant ; 2 déjà) ; au-delà 429, rien d'écrit pour cet envoi.
+  // Les 12 000 premières sont comptées sans être envoyées (même effet sur le quota).
+  assert.deepEqual([QUOTA_USER, QUOTA_ALL], [15000, 150000]);
   for (let k = 0; k < 5; k++) {
     r = await post({ prices: Array.from({ length: 500 }, (_, i) => ({ id: `q${k}-${i}`, v: {} })) });
     assert.equal(r.status, 200, JSON.stringify(r.json));
   }
-  assert.equal(r.json.quota, 498);
+  assert.equal(r.json.quota, QUOTA_USER - 2502);
+  e.DB.sqlite.prepare('UPDATE market SET quota_n = quota_n + ? WHERE user_id = ?').run(QUOTA_USER - 3000, u.user.id);
   r = await post({ prices: Array.from({ length: 499 }, (_, i) => ({ id: `q9-${i}`, v: {} })) });
   assert.equal(r.status, 429);
   assert.match(r.json.error, /Quota du jour des cotes atteint/);
@@ -3008,7 +3015,7 @@ await test('marché : cotes validées, sans user_id, clé d\'import (CORS du jeu
   assert.equal((await post({ prices: [{ id: 'lendemain', v: {} }] })).status, 200);
   // Quota du site (tous les classeurs) : un autre classeur est refusé aussi quand il est atteint.
   const v = await marketAccount(e, 'Noé');
-  e.DB.sqlite.prepare("UPDATE market SET quota_n = 29999, quota_day = ? WHERE user_id = '*'").run(todayUtc());
+  e.DB.sqlite.prepare("UPDATE market SET quota_n = ?, quota_day = ? WHERE user_id = '*'").run(QUOTA_ALL - 1, todayUtc());
   assert.equal((await post({ prices: [{ id: 'n1', v: {} }, { id: 'n2', v: {} }] }, v.importKey)).status, 429);
   assert.equal((await post({ prices: [{ id: 'n1', v: {} }] }, v.importKey)).status, 200);
   // La clé principale marche aussi (comme pour /api/import).
@@ -3032,7 +3039,7 @@ await test('marché : plan du favori (cotes les plus anciennes d\'abord, cartes 
   let r = await call('POST', 'market/plan', { key: u.importKey, e, body: {}, headers: gameOrigin });
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  assert.deepEqual(r.json, { cards: ['own-d', 'own-c', 'own-b'], stale: 3, fresh: 1, wanted: ['Psi', 'Omega', 'Chi'], ids: {}, quota: 3000 - 3 });
+  assert.deepEqual(r.json, { cards: ['own-d', 'own-c', 'own-b'], stale: 3, fresh: 1, wanted: ['Psi', 'Omega', 'Chi'], ids: {}, quota: QUOTA_USER - 3 });
   // Titres résolus par le favori (live) : les voulus connus entrent au plan (après les possédées à égalité).
   r = await call('POST', 'market/live', { key: u.importKey, e, headers: gameOrigin, body: { ids: { Psi: 'w-psi', Chi: '', Ailleurs: 'w-x' } } });
   assert.equal(r.status, 200, JSON.stringify(r.json));
@@ -3090,13 +3097,13 @@ await test('marché : valeur du classeur (cotes fiables × exemplaires, un point
   e.DB.close();
 });
 
-await test('marché : lecture du marché du favori (validée, montrée par GET /api/market, oubliée au bout de 24 h)', async () => {
+await test('marché : lecture du marché du favori (validée, montrée par GET /api/market, 256 Ko au plus, oubliée au bout de 7 jours)', async () => {
   const e = makeEnv();
   const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
   const u = await marketAccount(e, 'Tom');
   const base = { a: 'enchere-1', id: 'carte-9', t: 'Neuf', r: 'SR', s: false, img: 'https://upload.wikimedia.org/x.jpg', end: '2026-10-16T12:00:00.000Z', cote: 300, n: 7 };
   const live = {
-    deals: [{ ...base, ask: 200, bid: true, lead: false }],
+    deals: [{ ...base, ask: 200, bid: true, lead: false, more: 2 }],
     bids: [{ ...base, a: 'enchere-2', mine: 150, cur: 180, lead: false, st: 'run' }],
     sales: [{ ...base, a: 'enchere-3', img: null, cote: null, n: null, base: 100, cur: null, bid: false, st: 'unsold' }],
   };
@@ -3105,22 +3112,42 @@ await test('marché : lecture du marché du favori (validée, montrée par GET /
   let m = (await call('GET', 'market', { key: u.key, e })).json;
   assert.deepEqual(m.live, live);
   assert.ok(m.live_at);
+  // Favori d'avant le 2026-10-17 : ses bonnes affaires n'ont pas « more » (0 par défaut), elles passent quand même.
+  const { more, ...older } = live.deals[0];
+  assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body: { ...live, deals: [older] } })).status, 200);
+  assert.equal((await call('GET', 'market', { key: u.key, e })).json.live.deals[0].more, 0);
   for (const [why, body] of [
     ['état inconnu', { bids: [{ ...live.bids[0], st: 'gagné' }] }],
     ['image non https', { deals: [{ ...live.deals[0], img: 'javascript:alert(1)' }] }],
     ['montant', { deals: [{ ...live.deals[0], ask: -5 }] }],
+    ['autres enchères', { deals: [{ ...live.deals[0], more: -1 }] }],
     ['trop', { deals: Array.from({ length: 51 }, () => live.deals[0]) }],
     ['ids', { ids: { Titre: 'a b' } }],
   ]) {
     assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body })).status, 400, why);
   }
+  // Un joueur très actif (100 mises, 100 ventes, 50 bonnes affaires, images et titres longs) passe sous 256 Ko ; au-delà, 413.
+  const img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/' + 'a'.repeat(260) + '.jpg';
+  const many = (n, x, p) => Array.from({ length: n }, (_, i) => ({ ...x, a: `${p}-${String(i).padStart(4, '0')}-7c9e6679-7425-40de-944b`, id: `c-${i}-5a2b0c1d-0000-4000-8000-000000000000`, t: 'Titre assez long numéro ' + i, img }));
+  const big = { deals: many(50, live.deals[0], 'd'), bids: many(100, live.bids[0], 'b'), sales: many(100, live.sales[0], 's') };
+  assert.ok(JSON.stringify(big).length > 100 * 1024, 'lecture de plus de 100 Ko attendue');
+  r = await call('POST', 'market/live', { key: u.importKey, e, body: big });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const long = img.slice(0, -4) + 'b'.repeat(1990 - img.length) + '.jpg';
+  const huge = { deals: big.deals, bids: big.bids.map((x) => ({ ...x, img: long })), sales: big.sales };
+  assert.ok(JSON.stringify(huge).length > 256 * 1024 && JSON.stringify(huge).length < 320 * 1024, 'entre 256 et 320 Ko attendu : ' + JSON.stringify(huge).length);
+  assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body: huge })).status, 413);
+  await call('POST', 'market/live', { key: u.importKey, e, body: live });
   // Rien de l'identité du joueur dans le jeu : les champs inconnus sont oubliés.
   await call('POST', 'market/live', { key: u.importKey, e, body: { bids: [{ ...live.bids[0], bidder_id: GAME_USER }] } });
   assert.ok(!q('SELECT live FROM market')[0].live.includes(GAME_USER));
-  // Plus de 24 h : plus montrée, et effacée au passage d'un autre favori.
+  // 6 jours : encore montrée (la page dit son âge).
+  e.DB.sqlite.prepare('UPDATE market SET live_at = ? WHERE user_id = ?').run(new Date(Date.now() - 6 * 86400_000).toISOString(), u.user.id);
+  assert.ok((await call('GET', 'market', { key: u.key, e })).json.live, 'lecture de 6 jours encore montrée');
+  // Plus de 7 jours : plus montrée, et effacée au passage d'un autre favori.
   e.DB.sqlite.prepare("UPDATE market SET live_at = '2026-01-01T00:00:00.000Z' WHERE user_id = ?").run(u.user.id);
   m = (await call('GET', 'market', { key: u.key, e })).json;
-  assert.equal(m.live, null);
+  assert.deepEqual([m.live, m.live_at], [null, null]);
   const v = await marketAccount(e, 'Ugo');
   await call('POST', 'market/live', { key: v.importKey, e, body: {} });
   assert.deepEqual(q('SELECT live, live_at FROM market WHERE user_id = ?', u.user.id), [{ live: null, live_at: null }]);
@@ -3130,6 +3157,67 @@ await test('marché : lecture du marché du favori (validée, montrée par GET /
   await call('DELETE', 'me', { key: u.key, e });
   for (const t of ['market', 'value_history']) assert.equal(q(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`, u.user.id)[0].n, 0, t);
   assert.equal(q("SELECT COUNT(*) AS n FROM prices WHERE card_id = 'carte-9'")[0].n, 1);
+  e.DB.close();
+});
+
+await test('marché : dernier essai du favori (plan, fin, échec et sa raison), lectures automatiques espacées de 5 min, market_at de GET /api/me', async () => {
+  const e = makeEnv();
+  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+  const u = await marketAccount(e, 'Wes');
+  const market = async () => (await call('GET', 'market', { key: u.key, e })).json;
+  const me = async () => (await call('GET', 'me', { key: u.key, e })).json;
+  const setStart = (ms) => e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE user_id = ?").run(new Date(ms).toISOString(), u.user.id);
+  // Jamais d'essai : attempt null, market_at null.
+  assert.deepEqual([(await market()).attempt, (await me()).market_at], [null, null]);
+  // Un plan note le début de l'essai (version du favori, lecture automatique ou non), pas sa fin.
+  let r = await call('POST', 'market/plan', { key: u.importKey, e, headers: gameOrigin, body: { v: '2026-10-17', auto: false } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  let a = (await market()).attempt;
+  assert.deepEqual([a.v, a.auto, a.end, a.ok], ['2026-10-17', false, undefined, undefined]);
+  assert.equal((await me()).market_at, null, "un essai commencé n'est pas une lecture reçue");
+  // Fin (cotes envoyées avec last: true) : ok, et market_at = sa fin.
+  r = await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [], last: true } });
+  assert.equal(r.status, 200);
+  a = (await market()).attempt;
+  assert.equal(a.ok, true);
+  assert.equal((await me()).market_at, a.end);
+  // Lecture automatique moins de 5 min après le début de la précédente (autre navigateur, autre appareil) : refusée,
+  // sans rien lire ni écrire ; une lecture au clic, elle, passe toujours.
+  r = await call('POST', 'market/plan', { key: u.importKey, e, headers: gameOrigin, body: { v: '2026-10-17', auto: true } });
+  assert.deepEqual(Object.keys(r.json).sort(), ['skip', 'until']);
+  assert.equal(Date.parse(r.json.until), Date.parse(a.start) + AUTO_GAP);
+  assert.deepEqual((await market()).attempt, a, 'essai refusé : rien de noté');
+  setStart(Date.now() - AUTO_GAP - 1000);
+  r = await call('POST', 'market/plan', { key: u.importKey, e, body: { v: '2026-10-17', auto: true } });
+  assert.ok(Array.isArray(r.json.cards) && !r.json.skip, JSON.stringify(r.json));
+  assert.equal((await market()).attempt.auto, true);
+  r = await call('POST', 'market/plan', { key: u.importKey, e, body: {} });
+  assert.ok(Array.isArray(r.json.cards), 'lecture au clic refusée');
+  assert.deepEqual([(await market()).attempt.v, (await market()).attempt.auto], [null, false], 'favori sans version (avant le 2026-10-17)');
+  // Échec annoncé : ok false, la raison (nettoyée, 300 caractères au plus, jeton masqué), et market_at = sa fin.
+  r = await call('POST', 'market/fail', { key: u.importKey, e, headers: gameOrigin, body: { why: '  Ta session du jeu a expiré   dans cette page. ', v: '2026-10-17', auto: true } });
+  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [200, 'https://www.wiki-masters.com']);
+  a = (await market()).attempt;
+  assert.deepEqual([a.ok, a.why, a.v, a.auto], [false, 'Ta session du jeu a expiré dans cette page.', '2026-10-17', true]);
+  assert.equal((await me()).market_at, a.end, "market_at = fin de l'essai raté");
+  await call('POST', 'market/fail', { key: u.importKey, e, body: { why: 'Erreur avec eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc dedans' } });
+  assert.equal((await market()).attempt.why, 'Erreur avec [jeton masqué] dedans');
+  for (const body of [{}, { why: '' }, { why: 12 }, { why: 'x'.repeat(301) }]) {
+    assert.equal((await call('POST', 'market/fail', { key: u.importKey, e, body })).status, 400, JSON.stringify(body).slice(0, 40));
+  }
+  assert.equal((await call('POST', 'market/fail', { e, body: { why: 'x' } })).status, 401);
+  assert.equal((await call('OPTIONS', 'market/fail', { e, headers: gameOrigin })).headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
+  // Un succès après l'échec : la raison disparaît.
+  await call('POST', 'market/plan', { key: u.importKey, e, body: { v: '2026-10-17' } });
+  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [], last: true } });
+  a = (await market()).attempt;
+  assert.deepEqual([a.ok, 'why' in a], [true, false]);
+  // Une lecture du marché reçue fait aussi avancer market_at (la page relit l'onglet).
+  await new Promise((res) => setTimeout(res, 5));
+  await call('POST', 'market/live', { key: u.importKey, e, body: {} });
+  assert.equal((await me()).market_at, (await market()).live_at);
+  // Rien du jeu dans l'essai.
+  assert.deepEqual(Object.keys(JSON.parse(q('SELECT attempt FROM market WHERE user_id = ?', u.user.id)[0].attempt)).sort(), ['auto', 'end', 'ok', 'start', 'v']);
   e.DB.close();
 });
 

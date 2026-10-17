@@ -100,7 +100,8 @@ export const SCHEMA = [
     live TEXT,
     live_at TEXT,
     quota_day TEXT,
-    quota_n INTEGER NOT NULL DEFAULT 0
+    quota_n INTEGER NOT NULL DEFAULT 0,
+    attempt TEXT
   )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
@@ -125,6 +126,7 @@ const ADDED_COLUMNS = [
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['import_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
+  ['market', 'attempt', 'TEXT'],
 ];
 
 // Les morceaux en attente depuis plus d'une heure (import ou rafraîchissement abandonné) sont effacés.

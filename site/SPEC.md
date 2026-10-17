@@ -52,12 +52,14 @@ avec `node:sqlite`).
   600 Ko chacune, 5 Mo en tout, 3 000 éléments) ; on ne peut rien lire (ni cartes, ni étiquettes, ni collections), ni
   modifier ou supprimer une collection existante, ni toucher au compte. On la régénère (l'ancien favori cesse de
   marcher) et on supprime les collections en trop. **Marché** (2026-10-16, voir « Le marché ») : la clé d'import ouvre
-  aussi `POST /api/market/plan`, `POST /api/market/prices` et `POST /api/market/live`. C'est **sa seule lecture** : le
+  aussi `POST /api/market/plan`, `POST /api/market/prices`, `POST /api/market/live` et `POST /api/market/fail`
+  (2026-10-17 : raison d'un échec de lecture). C'est **sa seule lecture** : le
   plan, soit des identifiants de cartes du jeu (les tiennes à coter) et les titres des cartes qui manquent à tes
   collections (500 au plus, avec leur card_id quand le favori l'a trouvé) ; jamais les étiquettes, les noms des
   collections ni le reste du classeur. Une clé d'import qui fuit permet donc en plus de lire ces titres, d'envoyer de
-  fausses cotes (cache commun à tous les classeurs, dans les quotas) et de remplacer la lecture du marché de ce
-  classeur (ses bonnes affaires et enchères affichées).
+  fausses cotes (cache commun à tous les classeurs, dans les quotas), de remplacer la lecture du marché de ce
+  classeur (ses bonnes affaires et enchères affichées) et d'y afficher un faux « dernier essai » (message de 300
+  caractères au plus).
 - **Lien d'un autre classeur** : l'interface n'écrase jamais une clé gardée sans vérifier la nouvelle (`GET /api/me`)
   et demander confirmation.
 
@@ -125,7 +127,7 @@ autre format (voir « Le favori »).
 |---|---|---|
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open}` : présence des réglages, jamais leur valeur |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` ; `409` si le prénom est déjà celui d'un autre classeur (comparé sans casse, accents ni espaces en trop), avec un message qui dit comment retrouver son lien (Réglages d'un appareil où il est ouvert, ou un nouveau lien demandé à la personne qui gère le classeur) ; exception : un classeur de ce prénom qui n'a jamais servi (aucune synchro, pas de favori, aucune carte ni collection) est effacé et remplacé (2026-10-17 : des amis qui avaient perdu leur lien recréaient un second classeur) ; sans prénom, aucun contrôle |
-| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, last_chat_id, session:{has_cookie, expired, updated_at}}` (`last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
+| `GET /api/me` | | `{user:{id, name, created_at}, fetched_at, card_count, next_full, cards_rev, new_ids, shared, shared_targets, last_chat_id, market_at, session:{has_cookie, expired, updated_at}}` (`last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `market_at` (2026-10-17) : heure du dernier envoi du favori au marché — lecture du marché reçue, ou essai fini, réussi ou non —, `null` sans, lue dans la même requête (ligne `market` par sa clé primaire) : la page relit alors l'onglet « Marché », voir « Le marché » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les imports dans `sync_state`, sans relire les cartes (classeur importé avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `next_full` : la prochaine mise à jour relira toute la collection, voir « Synchro rapide ») |
 | `PATCH /api/me` | `{name?, prefs?, shared?, shared_targets?, force_full?}` (`prefs` : objet JSON ≤ 4 Ko, remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `force_full: true` : la prochaine mise à jour relira toute la collection, autre valeur `400`) | `{user, prefs, shared, shared_targets}` ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, cookie) et le compte ; ses messages du chat sont vidés et perdent leur auteur (voir « Chat ») |
 | `POST /api/import-key` | | `{import_key}` : clé réservée à `/api/import` (celle du favori) ; en crée une nouvelle, l'ancien favori cesse de marcher |
@@ -149,10 +151,11 @@ autre format (voir « Le favori »).
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
 | `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
-| `POST /api/market/plan` | (clé principale **ou clé d'import**, CORS du jeu ; corps ignoré, 1 Ko au plus) | `{cards:[card_id…], stale, fresh, wanted:[titre…], ids:{titre: card_id \| ""}, quota}` : cartes à coter (les tiennes, puis les cartes voulues dont le card_id est connu ; cote absente puis la plus ancienne d'abord, plus de 12 h ; 3 000 au plus), `stale`/`fresh` = à coter / cotées depuis moins de 12 h, `wanted` = titres des cartes qui manquent à tes collections (500 au plus), `ids` = ce que ton favori en a trouvé, `quota` = cotes encore acceptées aujourd'hui. Voir « Le marché » |
-| `POST /api/market/prices` | (clé principale **ou clé d'import**, CORS du jeu ; 512 Ko au plus) `{prices:[{id, v:{"<rareté>[*]": {p, n, w, l, d}}}], last?}` : 500 au plus, tout l'envoi refusé (`400`) sur une forme invalide | `{written, quota}` ; `429 {error, quota}` au-delà du quota du jour (rien d'écrit) ; `last:true` : la valeur du jour de ce classeur est recalculée |
-| `POST /api/market/live` | (clé principale **ou clé d'import**, CORS du jeu ; 128 Ko au plus) `{ids?, deals?, bids?, sales?}` | `{ok:true, known}` : remplace la lecture du marché de ce classeur (64 Ko au plus, gardée 24 h) et ajoute les titres trouvés à `ids` (2 000 au plus) |
-| `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 24 h |
+| `POST /api/market/plan` | (clé principale **ou clé d'import**, CORS du jeu ; 1 Ko au plus) `{v?, auto?}` : version du favori (`[A-Za-z0-9._-]`, 20 au plus, sinon ignorée), lecture automatique du mode relié (`true`) ou au clic ; corps vide accepté (favori d'avant le 2026-10-17) | `{cards:[card_id…], stale, fresh, wanted:[titre…], ids:{titre: card_id \| ""}, quota}` : cartes à coter (les tiennes, puis les cartes voulues dont le card_id est connu ; cote absente puis la plus ancienne d'abord, plus de 12 h ; 3 000 au plus), `stale`/`fresh` = à coter / cotées depuis moins de 12 h, `wanted` = titres des cartes qui manquent à tes collections (500 au plus), `ids` = ce que ton favori en a trouvé, `quota` = cotes encore acceptées aujourd'hui ; l'essai est noté (`market.attempt` = `{start, v, auto}`). `auto:true` moins de 5 min après le début du précédent essai de ce classeur (d'où qu'il vienne) : `{skip:true, until}` seulement, rien de lu ni d'écrit. Voir « Le marché » |
+| `POST /api/market/prices` | (clé principale **ou clé d'import**, CORS du jeu ; 512 Ko au plus) `{prices:[{id, v:{"<rareté>[*]": {p, n, w, l, d}}}], last?}` : 500 au plus, tout l'envoi refusé (`400`) sur une forme invalide | `{written, quota}` ; `429 {error, quota}` au-delà du quota du jour (rien d'écrit) ; `last:true` : la valeur du jour de ce classeur est recalculée et son essai noté fini (`end`, `ok:true`, raison effacée) |
+| `POST /api/market/live` | (clé principale **ou clé d'import**, CORS du jeu ; 320 Ko au plus) `{ids?, deals?, bids?, sales?}` (`deals[].more` : autres enchères intéressantes sur la même carte, entier ≥ 0, 0 s'il manque) | `{ok:true, known}` : remplace la lecture du marché de ce classeur (256 Ko au plus, `413` au-delà ; gardée 7 jours) et ajoute les titres trouvés à `ids` (2 000 au plus) |
+| `POST /api/market/fail` | (clé principale **ou clé d'import**, CORS du jeu ; 2 Ko au plus) `{why, v?, auto?}` : `why` = le message d'échec montré par le favori (texte nettoyé, 1 à 300 caractères, sinon `400` ; un morceau qui ressemble à un jeton JWT est remplacé par « [jeton masqué] ») | `{ok:true}` : l'essai de ce classeur est noté raté (`end`, `ok:false`, `why`, `v`, `auto`), montré par la page |
+| `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai du favori (`null` : jamais) |
 | `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
 
 **Message** (chat) : `{id, author, mine, text, created_at}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
@@ -285,7 +288,7 @@ en général qu'environ une heure après le collage. Le favori est donc le chemi
 `Set-Cookie` dans une réponse du jeu met à jour le cookie stocké. 401/403 du jeu (hors limite de lectures
 automatiques) → session marquée expirée, `401 {needs_session:true}`.
 
-**CORS** : seuls `POST /api/import`, `POST /api/targets/from-game` et `POST /api/market/plan`, `/prices`, `/live` (et
+**CORS** : seuls `POST /api/import`, `POST /api/targets/from-game` et `POST /api/market/plan`, `/prices`, `/live`, `/fail` (et
 leur `OPTIONS`), les routes du favori, acceptent les origines `https://www.wiki-masters.com` et `https://wiki-masters.com`
 (`Access-Control-Allow-Headers: content-type, x-classeur-key`). Le reste est même origine.
 
@@ -297,8 +300,8 @@ compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par e
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
 longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`, et comptées comme cartes
 distinctes (quand elles ont un identifiant de carte) pour dire si une lecture est complète. Quota ou base pleine :
-`503` avec un message lisible. Marché : 3 000 cotes par classeur et par jour, 30 000 pour tout le site (`429`), voir
-« Le marché ».
+`503` avec un message lisible. Marché : 15 000 cotes par classeur et par jour, 150 000 pour tout le site (`429`), voir
+« Le marché » (abonnement payant Workers depuis le 2026-10-17 : 50 millions de lignes écrites par mois comprises).
 
 ## Partage entre membres
 
@@ -756,12 +759,15 @@ requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un reje
   · dernière synchro à 14:32 » (ou « synchro dans un instant (paquet ouvert) », « synchro à 14:35 (paquet ouvert ; une
   par minute au plus) », « relecture complète à 14:50 (…) », « synchro en cours… »). Boutons « Synchroniser » (tout de
   suite, hors limites des synchros automatiques), « Mettre à jour les cotes » (voir « Le marché » ; avec, encart déplié,
-  un avertissement court des règles du jeu ; badge « lecture des cotes… » pendant la lecture), « Réduire » / « Détails »,
+  un avertissement court des règles du jeu et « Couper les cotes automatiques » / « Réactiver les cotes automatiques » ;
+  badge « lecture des cotes… » pendant la lecture ; pendant une synchro, la lecture est faite juste après, « Cotes :
+  lecture juste après la synchro en cours »), « Réduire » / « Détails »,
   « Arrêter » (rend `window.fetch` d'origine ;
   si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
   main ; encart retiré ; **la synchro en cours s'arrête aussi** : la requête déjà partie finit seule, puis plus rien n'est
   lu ni envoyé — contrôle avant chaque lecture et chaque envoi, donc entre deux pages ou deux morceaux). L'encart est
-  remis dans la page si le jeu l'en retire en se redessinant.
+  remis dans la page si le jeu l'en retire en se redessinant. Sous la ligne d'état, une ligne « Cotes : … » (voir « Le
+  marché », « Cotes automatiques »).
 - Erreur d'une synchro automatique : encart déplié avec le message. **Classeur injoignable ou en erreur** : la demande
   d'état échoue, rien n'est lu dans le jeu. Une erreur qui arrête tout (session, limite de lectures automatiques du jeu,
   favori ou script périmé `401`/`403`, quota du jour du classeur `503`) ou **trois de suite** mettent les synchros
@@ -842,42 +848,59 @@ jeu ni à sa base, aucune tâche planifiée). Code : `site/public/assets/bookmar
 `functions/_lib/market.js`, onglet « Marché » de `app.js`.
 
 **Qui lit quoi.** Seul le favori lit le marché, dans la page du jeu, **au clic du joueur sur « Mettre à jour les
-cotes »** (encart du favori relié, script Tampermonkey compris) ; jamais pendant une synchro, automatique ou non, ni au
-chargement. Il lit directement la base du jeu (Supabase, `https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/`, tables
+cotes »** (encart du favori relié, script Tampermonkey compris) et, depuis le 2026-10-17, **sans clic en mode relié**
+(voir « Cotes automatiques » ci-dessous : toutes les 20 min tant que l'onglet est visible, et après une enchère, un achat
+ou une mise en vente vus dans le jeu) ; jamais pendant une synchro. Il lit directement la base du jeu (Supabase, `https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/`, tables
 `auctions`, `cards`, `auction_bids`, que la page du jeu lit déjà) avec la clé publique `anon` du jeu (livrée dans le code
 de sa page ; embarquée dans le favori : seule, elle n'ouvre rien) et la session que la page a déjà (`apikey` et
 `Authorization: Bearer <jeton d'accès>`). **Jamais** les routes `/api/marketplace/…` du site du jeu (30 requêtes par
 minute puis `403 automation_limit` pour les ventes d'une carte ; ~3 s et limitée pour une enchère).
 
 - **Jeton** : relu dans la page avant chaque requête (la page renouvelle elle-même sa session : le favori prend le
-  nouveau jeton), dans le cookie `sb-cyrxjeppjqsxxjayfrur-auth-token` (`base64-` puis du JSON en base64url, ou JSON
-  encodé pour l'adresse ; découpé en `.0`, `.1`… s'il est long), sinon dans le `localStorage` du même nom :
-  `access_token`, `expires_at`, `user.id` (sinon `exp` et `sub` du jeton). **Pas vérifié sur le jeu** (format relevé dans
-  la description de l'ami) : si le cookie n'est pas lisible en JavaScript (`HttpOnly`) ni le `localStorage`, le favori dit
-  « Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, recharge la page, puis réessaie. Rien n'a
-  été lu. ». Jeton expiré (ou à moins de 30 s), ou refusé (`401`) en route : « Ta session du jeu a expiré dans cette
-  page : recharge la page du jeu, puis clique à nouveau « Mettre à jour les cotes » (le favori ne la renouvelle jamais
-  lui-même). » ; **jamais de renouvellement** (`POST /auth/v1/token`) : un jeton de renouvellement ne sert qu'une fois,
+  nouveau jeton). Candidats (2026-10-17) : le cookie `sb-cyrxjeppjqsxxjayfrur-auth-token` entier, le même découpé en
+  `.0`, `.1`… (essayé aussi sans ses derniers morceaux, au cas où un ancien morceau traîne), puis le `localStorage` du
+  même nom ; chacun `base64-` puis du JSON en base64url, ou du JSON (encodé pour l'adresse, entre guillemets ou non),
+  objet direct, `{currentSession}`, `{session}` ou tableau `[jeton d'accès, …]` (anciens outils de Supabase) :
+  `access_token`, `expires_at`, `user.id` (sinon `exp` et `sub` du jeton). **Le jeton valide qui expire le plus tard
+  l'emporte** : avant, un vieux cookie entier resté à côté d'un cookie découpé à jour gagnait, et le favori disait « session
+  expirée » même après un rechargement. **Pas vérifié sur le jeu** (format relevé dans la description de l'ami). Rien de
+  lisible (cookie `HttpOnly`, pas connecté) : « Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi,
+  recharge la page du jeu (F5), puis clique « Mettre à jour les cotes ». Rien n'a été lu. », avec, si la collection vient
+  de se lire (donc le joueur est connecté), « Ta collection, elle, se lit : si ça continue après un rechargement, le jeu
+  cache sans doute sa session au favori (préviens la personne qui gère le classeur). » ; seulement le cookie d'une autre
+  base Supabase : « La base du jeu a changé : le favori doit être mis à jour pour lire les cotes (…) ». Jeton expiré (ou à
+  moins de 30 s), ou refusé (`401`) en route : « Ta session du jeu a expiré dans cette page : recharge la page du jeu (F5),
+  puis clique « Mettre à jour les cotes » (le favori ne la renouvelle jamais lui-même). » ; **jamais de renouvellement** (`POST /auth/v1/token`) : un jeton de renouvellement ne sert qu'une fois,
   le réutiliser fermerait la session du joueur. Le jeton ne va qu'à la base du jeu, en en-tête : ni au classeur, ni dans
   l'encart, ni dans un stockage. L'identifiant du joueur dans le jeu ne sert qu'aux filtres de ses enchères et ventes
   (`bidder_id`, `seller_id`, et pour écarter ses propres enchères des bonnes affaires) : jamais envoyé au classeur.
-- **Rythme** : une requête par seconde au plus, **30 par clic** ; le clic suivant reprend aux cotes les plus anciennes.
+- **Rythme** : une requête par seconde au plus, **30 par lecture** ; la suivante reprend aux cotes les plus anciennes.
   Arrêt aussitôt, avec la raison, sur `401` (ou clé publique refusée : « le favori doit être mis à jour »), `403`, `429`
-  ou `automation_limit` (« Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard. ») et sur toute
-  autre erreur ; les cotes déjà lues sont envoyées quand même, pas la lecture du marché (incomplète).
-- **Un clic** : 1. `POST /api/market/plan` (classeur injoignable : rien n'est lu dans le jeu ; quota du jour atteint :
-  rien n'est lu) ; 2. tes mises (`auction_bids?bidder_id=eq.<toi>`, 14 derniers jours, avec l'enchère et sa carte) et tes
+  ou `automation_limit` (« Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard. »), sur une autre
+  erreur `4xx` ou un format inattendu (« La base du jeu a refusé une lecture (400 : <message de la base>) : … le jeu a
+  changé et le favori doit être mis à jour (préviens la personne qui gère le classeur). ») et sur une erreur passagère
+  (réseau, `5xx` : « réessaie dans un moment ») ; les cotes déjà lues sont envoyées quand même, la lecture du marché
+  aussi si elle était déjà prête (étape 5), sinon pas (la précédente reste). Listes `in.(…)` découpées pour rester sous
+  5 000 caractères encodés (titres longs ou accentués : sinon une adresse de plus de 8 Ko, `414`). **Chaque échec est
+  envoyé au classeur** (`POST /api/market/fail`, le message affiché) et la page le répète.
+- **Une lecture** (au clic ou automatique) : 0. session lisible et valide, sinon le message ci-dessus (rien de lu ; au clic,
+  la raison part au classeur) ; 1. `POST /api/market/plan` `{v, auto}` (classeur injoignable : rien n'est lu dans le
+  jeu ; quota du jour atteint : « Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise
+  demain. Rien n'a été lu. » ; `skip` : rien n'est lu, « Cotes lues il y a moins de 5 min par un autre onglet ou
+  appareil ») ; 2. tes mises (`auction_bids?bidder_id=eq.<toi>`, 14 derniers jours, avec l'enchère et sa carte) et tes
   ventes (`auctions?seller_id=eq.<toi>`, fin dans les 14 derniers jours ou à venir) ; 3. titres des cartes qui te
-  manquent → cartes du jeu (`cards?wikipedia_title=in.("…","…")`, 80 titres par requête, 320 par clic ; carte `lang`
+  manquent → cartes du jeu (`cards?wikipedia_title=in.("…","…")`, 80 titres par requête au plus (moins s'ils sont longs), 320 par lecture ; carte `lang`
   `fr` préférée ; gardés par le classeur, `""` quand aucune carte n'a ce titre) ; 4. enchères en cours sur ces cartes
   (`auctions?status=eq.active&end_at=gt.<maintenant>&card_id=in.(…)&order=end_at`, 100 cartes par requête, 500 cartes au
-  plus) ; 5. cotes des cartes de ces enchères et de tes enchères et ventes (toujours relues), puis des cartes du plan
+  plus) ; 5. cotes des cartes de ces enchères et de tes enchères et ventes (relues sauf si cette page les a lues il y a
+  moins d'une heure), puis la lecture du marché part (`POST /api/market/live`) ; 6. cotes des cartes du plan
   (les plus anciennes d'abord), par lots de 100 : `auctions?status=eq.settled_sold&settled_at=gte.<il y a 90 jours>&
   card_id=in.(…)&order=card_id,settled_at.desc,id&limit=1000&offset=…` (pages de 1 000 dans un ordre stable ; plafond
-  atteint au milieu d'un lot : seules les cartes lues en entier sont gardées), dans la limite du quota du jour ; 6.
-  `POST /api/market/prices` par 500 (`last:true` au dernier), puis `POST /api/market/live`. Message : « Cotes lues : 312
-  cartes (il en reste 736 : reclique plus tard, les plus anciennes d'abord). 4 bonnes affaires, 2 de tes enchères en
-  cours : onglet « Marché » du classeur. » et le lien vers le classeur.
+  atteint au milieu d'un lot : seules les cartes lues en entier sont gardées), dans la limite du quota du jour ; 7.
+  `POST /api/market/prices` par 500 (`last:true` au dernier : fin de l'essai). Message : « Cotes lues : 312 cartes (il en
+  reste 736 : la prochaine lecture continue, les plus anciennes d'abord). 4 bonnes affaires, 2 de tes enchères en cours :
+  onglet « Marché » du classeur. » et le lien vers le classeur. La lecture du marché tient sous 200 000 caractères
+  (sinon sans les images de tes mises et ventes, puis sans les plus anciennes) : le classeur en accepte 256 Ko.
 - **Cote**, calculée dans le favori, par carte, **rareté d'exemplaire** (`snapshot_rarity`) et brillance (`is_shiny`) :
   clé `R` ou `R*`, `{p, n, w, l, d}` = médiane des 30 ventes les plus récentes (90 derniers jours), ventes lues, la même
   médiane sur les ventes de plus de 7 jours (3 au moins, sinon `null`), prix et date de la dernière vente. **Fiable à
@@ -887,18 +910,52 @@ minute puis `403 automation_limit` pour les ventes d'une carte ; ~3 s et limité
 - **Bonnes affaires** (dans le favori, avec les cotes **qu'il vient de lire**, jamais celles du cache commun) : enchère en
   cours sur une carte qui te manque, d'un autre vendeur, avec une cote fiable de la rareté de l'exemplaire, demandée
   (enchère actuelle, sinon prix de départ) à 80 % de la cote au plus, ou « finit bientôt » (sans enchère, moins de 2 h,
-  départ ≤ cote) ; de la fin la plus proche à la plus lointaine, 50 au plus. **Tes enchères** : regroupées par enchère
+  départ ≤ cote) ; **la moins chère par carte** (2026-10-17 : une collection ne demande qu'un exemplaire, de n'importe
+  quelle rareté ; `more` = les autres enchères intéressantes sur la même carte, « 1 autre enchère intéressante sur cette
+  carte ») ; de la fin la plus proche à la plus lointaine, 50 au plus. La page écarte en plus celles **finies depuis la
+  lecture** et celles d'une carte **que tu as maintenant** (« Plus montrées : 1 enchère finie depuis la lecture, 1 carte
+  que tu as maintenant. »), et regroupe par carte une lecture d'un ancien favori. **Tes enchères** : regroupées par enchère
   (ta plus haute mise) : `run` (en cours ; `lead` : tu mènes), `won` / `lost` (vendue à toi, à un autre), `off`.
   **Tes ventes** : `run`, `sold`, `unsold` (close sans vente), `off` (annulée). Chacune avec la cote de la rareté de son
-  exemplaire (lue au même clic).
+  exemplaire (lue à la même lecture).
+
+**Cotes automatiques** (2026-10-17, demande de Cédric : « les bonnes affaires, ça n'a pas l'air de se rafraîchir ») : en
+mode relié (favori cliqué, ou script Tampermonkey), la lecture ci-dessus se fait aussi **sans clic** :
+- **une minute après** le clic sur le favori (ou le chargement du script), puis **toutes les 20 min tant que l'onglet est
+  visible** ; onglet caché : rien, nouvel examen chaque minute (une lecture dans la minute au retour) ;
+- **20 s après une enchère, un achat ou une mise en vente vus dans le jeu** (réponse 2xx de la page à `POST
+  /api/marketplace/<id>/bid`, `…/buy`, `…/buyout` ou `…/purchase` — chemins d'achat direct supposés, aucun relevé —,
+  `POST /api/marketplace`, `DELETE /api/marketplace/<id>` ; 60 s au plus après la première d'une rafale) ;
+- **jamais moins de 5 min après la précédente** (au clic ou non), **6 automatiques par heure** au plus, pour tous les
+  onglets du jeu de ce navigateur (`localStorage` `classeur:cotes` = `{autos, last, off}` : des heures et le choix
+  « coupées », rien d'autre) ; entre navigateurs ou appareils, le classeur refuse une lecture automatique moins de 5 min
+  après le début de la précédente (`skip` : la suivante 20 min après celle-là) ;
+- même lecture qu'au clic (1 requête/s, 30 au plus, jamais de renouvellement de session), jamais pendant une synchro ;
+- **sans session lisible : rien n'est programmé** (aucune minuterie), « Cotes : en attente de ta session du jeu
+  (connecte-toi, puis recharge la page) » ; session expirée : rien n'est lu, nouvel examen chaque minute (la page
+  renouvelle elle-même sa session), « Cotes : session du jeu expirée, en attente de son renouvellement par la page (sinon
+  recharge-la) » ;
+- échec passager (réseau, `5xx`) : encart replié, « Cotes : …, dernier essai raté : <raison> » ; une erreur qui arrête tout
+  (session refusée, limite du jeu, quota, favori refusé, jeu changé) ou trois échecs de suite : **pause**, encart déplié
+  avec le message et « Cotes automatiques en pause : « Mettre à jour les cotes » les relance. » ; un clic réussi les
+  relance ;
+- « Couper les cotes automatiques » (encart déplié) les arrête pour tout ce navigateur ; « Réactiver… » les relance ;
+- ligne sous l'état : « Cotes : lues à 14:32, prochaine vers 14:52 », « Cotes : lecture en cours… », etc.
+
+Coût : une lecture lit au plus 30 pages de la base du jeu ; les cotes des enchères en cours ne sont relues qu'au-delà
+d'une heure dans la même page ; les cotes de tes cartes, au plus toutes les 12 h (plan) : après les premières lectures,
+une lecture automatique écrit surtout les cotes des enchères (quelques centaines de lignes).
 
 **Où vont les données (le plus simple).** Les cotes vont au **cache commun** `prices` (une ligne par carte, **sans
 user_id** : des ventes du marché, liées à aucun joueur, qui servent à tous les membres). La lecture du marché (bonnes
 affaires, tes enchères, tes ventes) va aussi au serveur, **une ligne par classeur** (`market.live`), remplacée à chaque
-clic et **oubliée au bout de 24 h** (plus montrée, puis effacée au passage d'un favori) : c'est la plus simple des deux
+lecture et **oubliée au bout de 7 jours** (plus montrée, puis effacée au passage d'un favori ; 24 h avant le
+2026-10-17 : une lecture de la veille disparaissait sans que la page dise pourquoi ; la page dit maintenant son âge) : c'est la plus simple des deux
 voies pour avoir un onglet « Marché » complet (fiches, collections concernées, « Copier le nom » : l'encart du favori,
-étroit et dans la page du jeu, n'en montre qu'un résumé), pour une ligne écrite par clic et rien de gardé au-delà ; les
-titres trouvés (`market.ids`, 2 000 au plus) évitent de les rechercher à chaque clic.
+étroit et dans la page du jeu, n'en montre qu'un résumé), pour une ligne écrite par lecture et rien de gardé au-delà ; les
+titres trouvés (`market.ids`, 2 000 au plus) évitent de les rechercher à chaque lecture. **Dernier essai**
+(`market.attempt`, 2026-10-17) : `{start, v, auto}` au plan, `end` et `ok:true` à la fin (cotes `last:true`), ou
+`ok:false` et `why` (`POST /api/market/fail`) ; des heures, la version du favori et le message d'échec, rien du jeu.
 
 **Serveur** (`market.js`, routes dans « Points d'accès ») :
 - **Plan** : cartes possédées et cartes voulues dont le card_id est connu, cote absente puis la plus ancienne d'abord,
@@ -908,9 +965,10 @@ titres trouvés (`market.ids`, 2 000 au plus) évitent de les rechercher à chaq
 - **Cotes validées** (`400`, rien d'écrit) : identifiant `[A-Za-z0-9_-]` (100 au plus), clés `C|PC|R|SR|UR|L` + `*`
   (12 au plus), montants de 0 à 10⁹, ventes entières de 1 à 10⁶, date ISO pas dans le futur, une carte une fois par
   envoi, 500 par envoi ; arrondies au centime ; remplacées en entier (`read_at` = maintenant).
-- **Quotas du jour** (UTC) : 3 000 cotes par classeur, 30 000 pour tout le site (ligne `market` de user_id `'*'`) : une
-  cote = une ligne écrite (pas d'index sur `prices`), D1 gratuit = 100 000 par jour pour tout ; au-delà `429`, à quelques
-  envois simultanés près.
+- **Quotas du jour** (UTC) : 15 000 cotes par classeur, 150 000 pour tout le site (ligne `market` de user_id `'*'`) :
+  une cote = une ligne écrite (et l'index de sa clé primaire) ; abonnement payant Workers depuis le 2026-10-17 (50 millions
+  de lignes écrites par mois comprises ; avant, D1 gratuit, 100 000 par jour pour tout, imposait 3 000 et 30 000) ;
+  au-delà `429`, à quelques envois simultanés près.
 - **Valeur** (`value_history`, un point par classeur et par jour UTC, le dernier calcul du jour remplaçant les
   précédents, 400 jours) : somme, sur les exemplaires (`variants` ; sinon approchés), de la cote fiable de leur rareté et
   brillance × leur nombre ; `priced` = cartes avec au moins un exemplaire coté, `cards` = cartes, `approx` = cartes sans
@@ -921,10 +979,11 @@ titres trouvés (`market.ids`, 2 000 au plus) évitent de les rechercher à chaq
 - `DELETE /api/me` efface la ligne `market` et l'historique du classeur ; les cotes, communes, restent.
 
 **Fausses cotes.** Un membre (ou quiconque a sa clé d'import) peut envoyer des cotes fausses pour n'importe quelle carte,
-dans ses quotas : cela fausse chez tous la valeur des classeurs, les cotes des fiches et les « Cartes qui bougent ». Cela
+dans ses quotas : cela fausse chez tous la valeur des classeurs et les cotes des fiches. Cela
 ne touche ni les cartes ni les collections de personne, ni les **bonnes affaires** et les écarts de tes enchères, calculés
 par ton favori avec ses propres lectures (une cote fausse dans le cache n'y entre pas, et les cartes de ces enchères sont
-relues et réécrites à chaque clic). Une cote fausse dure jusqu'à ce qu'un membre la relise (plus de 12 h après) ;
+relues et réécrites à chaque lecture, ou gardées une heure au plus dans la page du favori). Une cote fausse dure jusqu'à
+ce qu'un membre la relise (plus de 12 h après) ;
 renvoyée sans cesse, elle reste. Contrôle simple fait : bornes, raretés connues, taille, quotas. Pas fait (pas rentable
 entre membres invités, et il faudrait garder qui a écrit, contraire à « pas de user_id ») : exiger que deux membres
 concordent, garder l'auteur pour effacer ses cotes. Remède : régénérer la clé d'import qui a fuité.
@@ -932,11 +991,12 @@ concordent, garder l'auteur pour effacer ses cotes. Remède : régénérer la cl
 **Interface** : bandeau, tuile « 12 340W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »**
 (réorganisé le 2026-10-16) : en haut, la valeur (« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la
 valeur dès deux jours (SVG dans la page, une ligne aux couleurs du thème, sombre ou clair ; survol : le jour le plus
-proche ; « Voir les valeurs » : le tableau) ; puis, **côte à côte** (l'une sous l'autre sous 760 px), « Bonnes affaires
-à acheter » (les bonnes affaires ci-dessus) et « Bonnes affaires à vendre » ; puis « Cartes qui bougent » (écart en W sur
-7 jours de tes exemplaires, cote fiable maintenant et il y a 7 jours : toutes les hausses, toutes les baisses), « Mes
-enchères » (tes mises, tes ventes) et « À savoir » (avertissement des règles du jeu). Ces quatre sections sont
-**repliables** (accordéon : un bouton dans le titre, `aria-expanded`, contenu rendu seulement ouvert ; ce qu'elles
+proche ; « Voir les valeurs » : le tableau) et **où en est la lecture du marché** (2026-10-17, voir ci-dessous) ; puis,
+**côte à côte** (l'une sous l'autre sous 760 px), « Bonnes affaires à acheter » (les bonnes affaires ci-dessus) et
+« Bonnes affaires à vendre » ; puis « Mes enchères » (tes mises, tes ventes) et « À savoir » (avertissement des règles du
+jeu). « Cartes qui bougent » (écart sur 7 jours de la cote de tes exemplaires) a été **retirée** le 2026-10-17 (demande
+de Cédric) ; la médiane d'il y a 7 jours (`w`) reste dans les cotes, pour la fiche (« 7 jours : +33 % »). Ces trois
+sections sont **repliables** (accordéon : un bouton dans le titre, `aria-expanded`, contenu rendu seulement ouvert ; ce qu'elles
 contiennent dit dans le titre, « 2 mises · 1 vente ») : toutes ouvertes par défaut, **sauf « Mes enchères », fermée** ;
 l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-marche` : `{<id du compte>: {open, min}}`,
 accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montre **20 cartes**, puis « Afficher 20 de plus
@@ -948,13 +1008,28 @@ accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montr
   (rareté et brillance de l'exemplaire), au moins le seuil « Valeur minimale : [100]W » (champ nombre, 100 par défaut,
   gardé avec l'état des sections ; vidé, il ne change rien) ; de la plus chère à la moins chère. Une ligne : rareté de
   l'exemplaire, titre (sa fiche), « brillante », « ×3 » ou « 2 en trop », « Copier le nom », cote, ventes, dernière vente.
-  Cartes sans cote fiable : « 12 cartes sans cote fiable : clique « Mettre à jour les cotes » dans l'encart du favori ».
+  Cartes sans cote fiable : « 12 cartes sans cote fiable : ton favori les lit peu à peu, les plus anciennes d'abord, à
+  chaque lecture (ou clique « Mettre à jour les cotes » dans son encart, sur wiki-masters.com). »
+- **Lecture du marché** (en haut, sous la valeur ; 2026-10-17) : « Lecture du marché par ton favori : il y a 12 min (17
+  octobre, 10:02). » ; au-delà de 2 h, en orange, « Elle date de plus de 2 h : des enchères ont pu finir ou monter. Ouvre
+  wiki-masters.com avec ton favori relié : il la refait toutes les 20 minutes (ou clique « Mettre à jour les
+  cotes »). » ; jamais d'essai : « Ton favori n'a encore jamais lu le marché. Sur wiki-masters.com, clique-le : une
+  minute après, il lit les cotes et les bonnes affaires tout seul, puis toutes les 20 minutes tant que l'onglet du jeu
+  reste ouvert. S'il n'a pas de bouton « Mettre à jour les cotes », il date d'avant le 16 octobre : remplace-le (onglet
+  « Mettre à jour »). » ; dernier essai raté : « Dernier essai de ton favori, il y a 5 min (lecture automatique) : <le
+  message du favori> » ; essai commencé il y a plus de 10 min sans fin : « Une lecture commencée … n'a pas abouti (onglet
+  du jeu fermé pendant la lecture, ou favori ancien) » ; essai d'un favori sans version ou plus ancien que celui de la
+  page (`FAVORI_VERSION` d'`app.js` = `VERSION` de `bookmarklet.js`, vérifié par le test du favori) : « Ton favori n'est
+  pas à jour : depuis le 17 octobre, il lit les cotes et les bonnes affaires tout seul et dit pourquoi quand il n'y
+  arrive pas. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script
+  Tampermonkey : recopie-le). ». **Mise à jour de la page** : `GET /api/me`, relu chaque minute (page visible), rend
+  `market_at` ; s'il a avancé depuis la dernière lecture de l'onglet (déjà chargé), `GET /api/market` et les cotes sont
+  relus, une fois par envoi du favori.
 - **Montants** (2026-10-16) : partout (fiches, albums, lignes des collections, bandeau, onglet « Marché », amis), un
   montant s'écrit **collé à son W** (« 738W », « 1 234W », séparateur des milliers gardé : espace insécable ordinaire,
   l'espace fine de fr-FR n'existant pas dans la police des titres) et **en vert** (couleur des liens, celle de « ← Toutes
   les collections » ; classe `w`, `priceTag` dans `app.js`) ; « ~120W » estompé pour une cote peu fiable (moins de 3
-  ventes) ; « ~5 100W » pour une somme estimée. Exception : les écarts des « Cartes qui bougent » (hausse en vert, baisse
-  en rouge).
+  ventes) ; « ~5 100W » pour une somme estimée.
 - **Valeur d'une collection** (tes collections, et une catégorie ou une page de Wikipédia ouverte) : tes cartes qui la
   remplissent, comptées comme la valeur du classeur (cote fiable de la rareté de chaque exemplaire × nombre ; une carte
   une fois, même nommée par deux cases) : à côté de « N sur M » dans l'album (« Valeur : 2 340W (18 cartes cotées sur
@@ -978,14 +1053,36 @@ accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montr
   octobre · 7 jours : +33 % », « ~ » sous 3 ventes), total ; fiche d'une carte qui manque : ses cotes connues par rareté ;
   fiche d'une carte d'un ami : sa cote (venue avec ses cartes), sinon celle de ta carte, sinon celle d'une carte qui te
   manque. Relu à l'ouverture, après chaque changement des cartes, à l'ouverture de l'onglet et au retour sur la page (une
-  fois par minute au plus, 20 s pour l'onglet ; et à la demande d'un tri par prix). Rien n'est lu dans le jeu depuis
+  fois par minute au plus, 20 s pour l'onglet ; et à la demande d'un tri par prix), et à chaque nouvel envoi du favori
+  (`market_at`). Rien n'est lu dans le jeu depuis
   cette page (CSP, et pas de session).
 
 **Limites** : formats de la base du jeu relevés dans la description de l'ami, **pas vérifiés** (noms des tables et des
 colonnes, statuts `active`/`settled_sold`/`cancelled`/`settled_*`, liens `auction:auctions(…)` et `card:cards(…)`) ; un
-favori installé avant le 2026-10-16 n'a ni le bouton ni `variants` (le glisser à nouveau) ; le favori fait ~60 000
-caractères une fois en adresse `javascript:` (Firefox refuse un favori au-delà de 65 536) ; la première relecture
+favori installé avant le 2026-10-16 n'a ni le bouton ni `variants`, un favori d'avant le 2026-10-17 ne lit les cotes qu'au
+clic et ne dit pas ses échecs au classeur (le glisser à nouveau) ; le favori fait ~55 000 caractères une fois en adresse
+`javascript:` (Firefox refuse un favori au-delà de 65 536 ; `favoriCode` d'`app.js` retire les espaces du code qui ne
+séparent pas deux mots, hors chaînes et expressions régulières : 73 200 caractères sans, le 2026-10-17 ; le test du
+favori échoue au-delà de 60 000) ; la première relecture
 complète après la mise en place réécrit toutes les cartes une fois (`variants` ajouté).
+
+**Pourquoi la plupart des classeurs n'avaient ni lecture du marché ni cotes** (constat du 2026-10-17 : trois membres
+sur six sans aucune lecture, les autres d'hier) — ce qui pouvait échouer sans que personne ne le voie, et ce qui a
+changé :
+- la lecture n'avait lieu qu'au clic sur « Mettre à jour les cotes », replié dans le badge 15 s après une synchro, et
+  absent des favoris installés avant le 16 octobre (rien ne le disait dans la page) → lecture automatique, et la page dit
+  « jamais lu » / « favori pas à jour » ;
+- un échec avant la lecture (session introuvable, quota) s'affichait puis l'encart se repliait au bout de 15 s comme après
+  un succès, et le classeur n'en savait rien → l'échec reste affiché (encart déplié), part au classeur
+  (`POST /api/market/fail`) et la page le répète ;
+- un vieux cookie de session entier, resté à côté du cookie découpé à jour, était pris en premier → « session expirée »
+  même après un rechargement ; corrigé (le jeton valide qui expire le plus tard) ;
+- un échec en fin de lecture (cotes de tes cartes) jetait toute la lecture du marché, déjà prête → elle part avant ;
+- une lecture du marché de plus de 64 Ko (joueur actif : 100 mises, 100 ventes, images) était refusée (`413`) → 256 Ko, et
+  le favori allège au besoin ;
+- des titres longs et accentués pouvaient faire une adresse de plus de 8 Ko (`414`) → listes découpées à 5 000 caractères ;
+- la lecture était effacée au bout de 24 h, sans que la page dise qu'elle avait existé → 7 jours, avec son âge.
+Rien de cela n'a pu être vérifié sur le jeu lui-même (inaccessible depuis la machine de développement).
 
 ## Règles du jeu
 
@@ -994,7 +1091,8 @@ fait que **lire** la collection (mêmes requêtes que la page « Collection » d
 « Collection globale » avec les requêtes de cette page, pages de 50, pause de 300 ms) : jamais d'écriture dans le jeu,
 jamais d'étiquette posée dans le jeu, jamais de lecture automatique quand il ne se passe rien. Toute lecture du jeu suit
 un geste du joueur : le clic sur le favori, « Synchroniser », ou — favori relié — **une action qu'il vient de faire
-lui-même dans le jeu** (ouvrir un paquet, défausser, mettre aux enchères ou annuler, échanger, réclamer une récompense).
+lui-même dans le jeu** (ouvrir un paquet, défausser, mettre aux enchères ou annuler, échanger, réclamer une récompense) ;
+seule exception, depuis le 2026-10-17 : les cotes automatiques (voir ci-dessous).
 La synchro qui suit est celle qu'il aurait lancée d'un clic (2 lectures pour la synchro rapide), au plus une par minute
 et 20 par heure, une relecture complète au plus tous les quarts d'heure — **toutes pages et onglets du jeu de ce
 navigateur confondus** (rechargements et script Tampermonkey compris ; sauf stockage du navigateur refusé : par page),
@@ -1023,17 +1121,27 @@ reliés ont chacun leurs limites de synchros rapides ; seules les relectures com
 il ne lit rien avant une action, mais il n'y a plus de geste explicite pour le démarrer.
 
 **Ce qui change avec « Mettre à jour les cotes »** (2026-10-16, voir « Le marché ») : le favori lit maintenant aussi,
-au clic du joueur seulement, la base du jeu directement (Supabase : tables `auctions`, `cards`, `auction_bids`), avec la
-session que la page du jeu a déjà, à son rythme : une requête par seconde au plus, 30 par clic, arrêt sur `401`, `403`,
-`429` ou `automation_limit`. Rien d'automatique, jamais d'écriture, jamais de session gardée ni renouvelée ailleurs que
+au clic du joueur (et, depuis le 2026-10-17, sans clic : voir le paragraphe suivant), la base du jeu directement (Supabase : tables `auctions`, `cards`, `auction_bids`), avec la
+session que la page du jeu a déjà, à son rythme : une requête par seconde au plus, 30 par lecture, arrêt sur `401`,
+`403`, `429` ou `automation_limit`. Jamais d'écriture, jamais de session gardée ni renouvelée ailleurs que
 par la page du jeu. **À dire franchement** : l'ami dont l'outil a inspiré cette partie lit la base directement pour
 contourner la limite de 30 requêtes par minute de la route des ventes du jeu (`/api/marketplace/cards/<id>/sales`),
 une mesure anti-automatisation du jeu ; passer par la base au lieu de ses pages, c'est faire ce que cette limite vise à
 empêcher, donc un **risque plus élevé** que la synchro de la collection (qui reprend les requêtes de la page
 « Collection »), même si le jeu laisse ces tables lisibles par la session du joueur. On reste bien en dessous de ce que
-l'ami fait et de ce que la limite visait : 30 requêtes par clic au plus, seulement quand le joueur le demande, chacune
+l'ami fait et de ce que la limite visait : 30 requêtes par lecture au plus, chacune
 pour 100 cartes (la route des ventes, elle, sert une carte par requête). Pendant un clic, le rythme d'une requête par
 seconde dépasse celui de la route (60 par minute contre 30) pendant une trentaine de secondes ; en moyenne, un clic de
 temps en temps reste très en dessous. Le jeu peut voir ces lectures (clé publique, jeton du joueur, en-têtes du
 navigateur) et les juger contraires à ses règles. Un avertissement court l'accompagne là où est le bouton (encart du
 favori) et dans l'onglet « Marché » (« À savoir »).
+
+**Ce qui change avec les cotes automatiques** (2026-10-17, demande de Cédric) : pour la première fois, le favori lit
+quelque chose **sans geste du joueur** : la base du jeu toutes les 20 min tant qu'un onglet du jeu relié est visible
+(script Tampermonkey compris : une minute après le chargement d'une page, puis au même rythme pour tout le navigateur).
+Le reste suit encore un geste (une enchère, un achat, une mise en vente). **Risques** : le rythme moyen reste bas (au plus
+6 lectures automatiques par heure et par navigateur, une par 5 min et par classeur entre appareils, 30 requêtes chacune,
+une par seconde), mais c'est une lecture régulière et automatique de la base du jeu, ce que ses règles visent le plus
+directement ; le jeu peut la voir (même jeton, mêmes en-têtes, à heures régulières). Pour limiter : rien quand l'onglet est
+caché, rien sans session valide (jamais de renouvellement), pause sur toute limite ou refus du jeu, et « Couper les cotes
+automatiques » dans l'encart (choix gardé pour tout le navigateur), qui revient à la lecture au clic seulement.

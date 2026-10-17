@@ -73,12 +73,14 @@ export async function createAccount(env, body) {
 
 // Utilisateur de la requête (en-tête X-Classeur-Key), ou 401. `importKey` : la clé d'import est acceptée aussi.
 // `chat` (GET /api/me) : numéro du dernier message du chat lu dans la même requête (last_chat_id ; MAX sur la clé
-// primaire : une ligne lue).
-export async function authenticate(request, env, { importKey = false, chat = false } = {}) {
+// primaire : une ligne lue). `market` (GET /api/me) : heure du dernier envoi du favori au marché (market_at : lecture
+// du marché reçue ou essai fini, réussi ou non ; une ligne lue par la clé primaire de market).
+export async function authenticate(request, env, { importKey = false, chat = false, market = false } = {}) {
   const key = (request.headers.get('x-classeur-key') || '').trim();
   if (!key) throw new HttpError(401, 'Clé absente : ouvre ton lien personnel du classeur.');
   const where = importKey ? 'key_hash = ?1 OR import_key_hash = ?1' : 'key_hash = ?1';
-  const extra = chat ? ', (SELECT MAX(id) FROM chat_messages) AS last_chat_id' : '';
+  const extra = (chat ? ', (SELECT MAX(id) FROM chat_messages) AS last_chat_id' : '')
+    + (market ? ", (SELECT max(coalesce(m.live_at, ''), coalesce(CASE WHEN json_valid(m.attempt) THEN json_extract(m.attempt, '$.end') END, '')) FROM market AS m WHERE m.user_id = users.id) AS market_at" : '');
   const user = await env.DB.prepare(`SELECT ${USER_COLUMNS}${extra} FROM users WHERE ${where}`)
     .bind(await sha256Hex(key))
     .first();
@@ -121,6 +123,7 @@ export async function getMe(env, user) {
     shared: !!user.shared, // montre ses cartes aux autres membres (partage entre membres, members.js)
     shared_targets: !!(user.shared && user.shared_targets), // et ses collections à compléter (réglage à part)
     last_chat_id: user.last_chat_id ?? 0, // dernier message du chat (supprimé ou non) : la page en déduit le badge des non-lus
+    market_at: user.market_at || null, // dernier envoi du favori au marché (market.js) : la page relit alors l'onglet « Marché »
     session: {
       has_cookie: !!user.cookie_enc,
       expired: !!user.session_expired,

@@ -107,7 +107,8 @@ function mockApi() {
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
-          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id });
+          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
+          market_at: (st.market && st.market.market_at) || null });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -243,7 +244,7 @@ function mockApi() {
       // pages de 2 (curseur opaque), comme GET /api/market/prices.
       if (p === '/api/market' && method === 'GET') {
         const m = st.market || {};
-        return json(200, { value: m.value || { value: 0, priced: 0, cards: st.cards.length, approx: 0 }, history: m.history || [], live: m.live || null, live_at: m.live_at || null });
+        return json(200, { value: m.value || { value: 0, priced: 0, cards: st.cards.length, approx: 0 }, history: m.history || [], live: m.live || null, live_at: m.live_at || null, attempt: m.attempt || null });
       }
       if (p.startsWith('/api/market/prices') && method === 'GET') {
         const part = new URL('http://x' + p).searchParams.get('part') || '0';
@@ -3262,8 +3263,14 @@ async function main() {
       value: { value: 1234, priced: 2, cards: 3, approx: 1 },
       history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
       live_at: new Date().toISOString(),
+      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: '2026-10-17', auto: true },
       live: {
-        deals: [{ a: 'a1', id: 'w1', t: 'Voulue A', r: 'SR', s: false, img: null, end: soon, cote: 100, n: 5, ask: 50, bid: false, lead: false }],
+        // Voulue A deux fois (la moins chère reste, l'autre comptée) ; Voulue B finie depuis la lecture ; Marché 3, que
+        // Mona a maintenant : ni l'une ni l'autre montrées.
+        deals: [{ a: 'a0', id: 'w1', t: 'Voulue A', r: 'SR', s: false, img: null, end: soon, cote: 100, n: 5, ask: 70, bid: true, lead: false, more: 0 },
+          { a: 'a1', id: 'w1', t: 'Voulue A', r: 'SR', s: false, img: null, end: soon, cote: 100, n: 5, ask: 50, bid: false, lead: false },
+          { a: 'a2', id: 'w2', t: 'Voulue B', r: 'R', s: false, img: null, end: '2026-10-15T08:00:00.000Z', cote: 50, n: 3, ask: 10, bid: false, lead: false, more: 0 },
+          { a: 'a3', id: 'm3', t: 'Marché 3', r: 'C', s: false, img: null, end: soon, cote: 10, n: 4, ask: 2, bid: false, lead: false, more: 0 }],
         bids: [{ a: 'b1', id: 'm3', t: 'Marché 3', r: 'C', s: false, img: null, end: soon, cote: 10, n: 4, mine: 8, cur: 9, lead: false, st: 'run' },
           { a: 'b2', id: 'x9', t: 'Ailleurs', r: 'L', s: true, img: null, end: '2026-10-15T08:00:00.000Z', cote: null, n: null, mine: 300, cur: 300, lead: false, st: 'won' }],
         sales: [{ a: 's1', id: 'm2', t: 'Marché 2', r: 'C', s: false, img: null, end: '2026-10-15T09:00:00.000Z', cote: 20, n: 5, base: 5, cur: 12, bid: true, st: 'sold' }],
@@ -3324,17 +3331,26 @@ async function main() {
     check(d.querySelectorAll('.chart__table')[0].querySelectorAll('tr').length === 4 && panel().includes('Voir les valeurs'), 'tableau des valeurs absent');
     // Bonnes affaires : carte qui manque, prix demandé, écart à la cote, « finit bientôt », collection qu'elle complète.
     check(panel().includes('Voulue A') && panel().includes('50W (prix de départ, sans enchère) · cote 100W (−50 %)') && panel().includes('finit bientôt') && panel().includes('pour « Envies »'), 'bonnes affaires : ' + panel());
-    // Cartes qui bougent : m1 (2 rares de 300 à 400 : +200 ; la brillante n'a que 2 ventes), m2 (de 25 à 20 : −5).
-    const movers = d.querySelectorAll('.movers').map(text);
-    check(movers.length === 2 && movers[0].includes('Marché 1') && movers[0].includes('+200W') && movers[0].includes('+33 %') && movers[1].includes('Marché 2') && movers[1].includes('−5W'), 'cartes qui bougent : ' + movers.join(' | '));
-    // Sections : « à acheter » et « à vendre » côte à côte, puis « Cartes qui bougent » et « Mes enchères » sur toute la
-    // largeur ; accordéon, « Mes enchères » fermée par défaut (rien de rendu), état gardé par classeur.
+    // Une seule par carte (la moins chère, l'autre comptée) ; finies depuis la lecture ou carte que tu as maintenant : plus
+    // montrées, et dit.
+    {
+      const buy = text(d.querySelectorAll('section').find((n) => n.getAttribute('data-section') === 'acheter'));
+      check(!buy.includes('70W (enchère en cours)') && buy.includes('1 autre enchère intéressante sur cette carte') && !buy.includes('Voulue B') && !buy.includes('Marché 3'),
+        'bonnes affaires, doublons, enchères finies ou cartes déjà là : ' + buy);
+    }
+    check(panel().includes('Plus montrées : 1 enchère finie depuis la lecture, 1 carte que tu as maintenant.'), 'bonnes affaires écartées non dites : ' + panel());
+    // Âge de la lecture, essai réussi d'un favori à jour : rien d'autre à dire.
+    check(panel().includes("Lecture du marché par ton favori : à l'instant") && !panel().includes("n'est pas à jour") && !panel().includes('Dernier essai'), 'âge de la lecture du marché : ' + panel().slice(0, 900));
+    // Sections : « à acheter » et « à vendre » côte à côte, puis « Mes enchères » sur toute la largeur (plus de « Cartes
+    // qui bougent ») ; accordéon, « Mes enchères » fermée par défaut (rien de rendu), état gardé par classeur.
     const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
     const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
     const accBtn = (id) => section(id).querySelector('.acc__btn');
-    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'acheter,vendre,bougent*,encheres*',
+    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'acheter,vendre,encheres*',
       'sections du Marché : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
-    check(['acheter', 'vendre', 'bougent'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
+    check(!panel().includes('Cartes qui bougent') && !d.querySelectorAll('.movers').length, '« Cartes qui bougent » encore là');
+    check(text(accBtn('acheter')).includes('Bonnes affaires à acheter1'), 'nombre de bonnes affaires montrées dans le titre : ' + text(accBtn('acheter')));
+    check(['acheter', 'vendre'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
       && !text(section('encheres')).includes('Tes mises') && text(accBtn('encheres')).includes('2 mises · 1 vente'), '« Mes enchères » doit être fermée par défaut : ' + text(section('encheres')));
     check(text(accBtn('acheter')).startsWith('Bonnes affaires à acheter') && text(accBtn('vendre')).startsWith('Bonnes affaires à vendre'), 'titres des deux colonnes');
     accBtn('encheres').click();
@@ -3342,10 +3358,10 @@ async function main() {
     check(accBtn('encheres').getAttribute('aria-expanded') === 'true' && text(section('encheres')).includes('Tes mises'), '« Mes enchères » ne s\'ouvre pas');
     const prefs = () => JSON.parse(ls.get('classeur-marche') || '{}');
     check(Object.values(prefs()).length === 1 && Object.values(prefs())[0].open.encheres === true && Object.values(prefs())[0].open.acheter === true, 'état des sections non gardé : ' + ls.get('classeur-marche'));
-    accBtn('bougent').click();
+    accBtn('vendre').click();
     await settle(40);
-    check(accBtn('bougent').getAttribute('aria-expanded') === 'false' && !section('bougent').querySelector('.movers') && Object.values(prefs())[0].open.bougent === false, '« Cartes qui bougent » ne se ferme pas');
-    accBtn('bougent').click();
+    check(accBtn('vendre').getAttribute('aria-expanded') === 'false' && !section('vendre').querySelector('.lots') && Object.values(prefs())[0].open.vendre === false, '« Bonnes affaires à vendre » ne se ferme pas');
+    accBtn('vendre').click();
     await settle(40);
     // « Bonnes affaires à vendre » : seuil 100W par défaut ; 21 « Vente » (105W à 505W) et Marché 1 (dans « Envies » : 3
     // exemplaires, un gardé, « 2 en trop » à 400W) ; Marché 2 et 3 (un seul exemplaire, dans « Envies ») n'y sont pas ;
@@ -3358,7 +3374,7 @@ async function main() {
         'à vendre (20 premières) : ' + rows().join(' | '));
       const m1 = sell().querySelectorAll('li').find((n) => text(n).includes('Marché 1'));
       check(text(m1).includes('2 en trop') && text(m1).includes('400W · 10 ventes · dernière 399W le 15 octobre') && m1.querySelector('.copy-name') && m1.querySelector('.w'), 'ligne de Marché 1 : ' + text(m1));
-      check(text(sell()).includes('1 carte sans cote fiable : clique « Mettre à jour les cotes »'), 'cartes sans cote non annoncées : ' + text(sell()));
+      check(text(sell()).includes('1 carte sans cote fiable : ton favori les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
       const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
       check(more && text(more) === 'Afficher 2 de plus (2 restantes)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
       more.click();
@@ -3380,12 +3396,14 @@ async function main() {
     // Mes enchères et mes ventes.
     check(panel().includes('ta mise 8W · enchère actuelle 9W · cote 10W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
     check(panel().includes('départ 5W · vendue 12W · cote 20W (−40 %)'), 'mes ventes : ' + panel());
-    check(panel().includes('lit directement la base du jeu avec ta session, à ton clic seulement') && panel().includes('à utiliser avec modération'), 'avertissement des règles absent');
+    check(panel().includes("il lit directement la base du jeu avec ta session, à ton clic sur « Mettre à jour les cotes » et, tant qu'il est relié à un onglet du jeu visible, toutes les 20 minutes") && panel().includes('« Couper les cotes automatiques »'), 'avertissement des règles absent');
     // Aucun « 12 W » (espace avant le W) ; les montants de l'onglet en vert (classe w), hors écarts (hausse, baisse).
     check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
     check(d.getElementById('panel-marche').querySelectorAll('.w').length >= 12 && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W', "montants de l'onglet Marché : classe w attendue");
-    // Fiche d'une carte possédée (depuis « Cartes qui bougent ») : cote de chaque exemplaire.
-    d.querySelectorAll('.movers')[0].querySelectorAll('button')[0].click();
+    // Fiche d'une carte possédée (depuis « Mes cartes ») : cote de chaque exemplaire.
+    d.getElementById('tab-cartes').click();
+    await settle(60);
+    d.querySelectorAll('.cell').find((n) => text(n).includes('Marché 1')).querySelector('.card').dispatch('click');
     await settle(60);
     const fiche = () => text(d.querySelectorAll('.fiche')[0]);
     check(/Cote/.test(fiche()) && fiche().includes('2 × Rare400W10 ventes · dernière 399W le 15 octobre · 7 jours : +33 %') && fiche().includes('Rare, brillante~900W2 ventes'), 'cote de la fiche : ' + fiche());
@@ -3493,18 +3511,45 @@ async function main() {
     await settle(40);
     d.getElementById('tab-marche').click();
     await settle(40);
+    // Nouvel envoi du favori (market_at de GET /api/me, relu chaque minute) : l'onglet est relu, une fois. Ici un essai
+    // raté d'un favori pas à jour : la raison et le remède sont dits ; puis une lecture de 3 h : elle est dite ancienne ;
+    // puis jamais de lecture ni d'essai : quoi faire.
+    {
+      const reads = () => apiLog.filter((x) => x === 'GET /api/market').length;
+      const now = new Date().toISOString();
+      const n0 = reads();
+      um.market.attempt = { start: now, end: now, ok: false, why: 'Ta session du jeu a expiré dans cette page : recharge la page du jeu (F5), puis clique « Mettre à jour les cotes ».', v: '2026-10-16', auto: true };
+      um.market.market_at = now;
+      await pm.live();
+      await settle(80);
+      check(reads() === n0 + 1, `onglet relu après un envoi du favori : ${reads() - n0} lecture(s)`);
+      check(panel().includes("Dernier essai de ton favori, à l'instant (lecture automatique) : Ta session du jeu a expiré dans cette page : recharge la page du jeu (F5)"), 'essai raté non dit : ' + panel().slice(0, 1200));
+      check(panel().includes("Ton favori n'est pas à jour") && panel().includes('glisse le nouveau favori dans ta barre'), 'favori pas à jour non dit');
+      await pm.live();
+      await settle(40);
+      check(reads() === n0 + 1, 'onglet relu sans nouvel envoi du favori');
+      const later = new Date(Date.now() + 1000).toISOString();
+      um.market.live_at = new Date(Date.now() - 3 * 3600_000).toISOString();
+      um.market.attempt = { start: later, end: later, ok: true, v: '2026-10-17', auto: true };
+      um.market.market_at = later;
+      await pm.live();
+      await settle(80);
+      check(panel().includes('Lecture du marché par ton favori : il y a 3 h') && panel().includes('Elle date de plus de 2 h') && !panel().includes('Dernier essai') && !panel().includes("n'est pas à jour"),
+        'lecture ancienne : ' + panel().slice(0, 1200));
+    }
     // Classeur sans cote : l'onglet dit comment en avoir, sans valeur dans le bandeau.
     um.market = null;
     btn('Relire').click();
     await settle(80);
-    check(panel().includes('Pas encore de cote : sur wiki-masters.com, clique « Mettre à jour les cotes »') && panel().includes('Pas de lecture récente du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    check(panel().includes('Pas encore de cote : ouvre wiki-masters.com et clique ton favori') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    check(panel().includes("Ton favori n'a encore jamais lu le marché. Sur wiki-masters.com, clique-le : une minute après"), 'jamais de lecture : quoi faire non dit');
     {
       const pm2 = openPage({ idb: 'absent' });
       check(await waitFor(() => pm2.count() === 28), 'classeur de Mona non rouvert');
       pm2.doc.getElementById('tab-marche').click();
       await settle(80);
       const btn2 = (id) => pm2.doc.querySelectorAll('section').find((n) => n.getAttribute('data-section') === id).querySelector('.acc__btn');
-      check(btn2('encheres').getAttribute('aria-expanded') === 'true' && btn2('bougent').getAttribute('aria-expanded') === 'true' && String(pm2.doc.getElementById('sell-min').value) === '450',
+      check(btn2('encheres').getAttribute('aria-expanded') === 'true' && btn2('vendre').getAttribute('aria-expanded') === 'true' && String(pm2.doc.getElementById('sell-min').value) === '450',
         'nouvelle page : état des sections ou seuil non gardés');
     }
   }

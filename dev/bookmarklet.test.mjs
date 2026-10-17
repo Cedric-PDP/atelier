@@ -4,7 +4,10 @@
 // les cas où la synchro rapide doit céder la place à une relecture complète (avec la raison affichée). Puis le mode
 // relié : la page simulée fait ses propres requêtes (paquet, défausse, enchère, échange, lectures…) par window.fetch,
 // horloge virtuelle ; réponses rendues telles quelles, synchro 5 s après une action, limites (aussi entre pages et
-// onglets, et d'après full_at du classeur), « Arrêter » (même en pleine synchro), erreurs, classeur en panne.
+// onglets, et d'après full_at du classeur), « Arrêter » (même en pleine synchro), erreurs, classeur en panne. Enfin les
+// cotes et le marché (base du jeu simulée) : au clic, puis les cotes automatiques du mode relié (rythme, onglet caché,
+// session expirée ou absente, limites entre onglets et entre appareils, « Couper », échecs et leur raison au classeur).
+// Le favori est mis sur une ligne par favoriCode d'app.js (la fonction même de la page, espaces retirés).
 //   node dev/bookmarklet.test.mjs      → doit finir par « FAVORI OK »
 
 import assert from 'node:assert/strict';
@@ -47,18 +50,44 @@ async function api(method, route, { body, key, origin } = {}) {
   return { status: res.status, json: text ? JSON.parse(text) : null };
 }
 
-// Le favori tel qu'installé : une ligne, adresse du classeur et clé d'import en place (comme makeBookmarklet).
+// Le favori tel qu'installé : une ligne, adresse du classeur et clé d'import en place, par la fonction même de la page
+// (favoriCode d'app.js, reprise telle quelle : espaces inutiles retirés).
 const src = await readFile(path.join(root, 'site', 'public', 'assets', 'bookmarklet.js'), 'utf8');
-const oneLine = (key, start) => src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ')
-  .replace('"__SITE__"', JSON.stringify(SITE)).replace('"__KEY__"', JSON.stringify(key))
+const appSrc = await readFile(path.join(root, 'site', 'public', 'assets', 'app.js'), 'utf8');
+const favoriSrc = appSrc.match(/\n( {2}function favoriCode\(src, site, key\) \{\r?\n[\s\S]*?\r?\n {2}\})\r?\n/);
+assert.ok(favoriSrc, 'favoriCode introuvable dans app.js');
+const favoriCode = new Function(`${favoriSrc[1]}; return favoriCode;`)();
+// La page dit « ton favori n'est pas à jour » d'après la version qu'il envoie : les deux doivent concorder.
+assert.equal(appSrc.match(/const FAVORI_VERSION = '([^']+)';/)[1], src.match(/var VERSION = "([^"]+)";/)[1], 'FAVORI_VERSION (app.js) ≠ VERSION (bookmarklet.js)');
+const oneLine = (key, start) => favoriCode(src, SITE, key)
   .replace('"__START__"', JSON.stringify(start || '__START__')); // "load" : script Tampermonkey (makeUserscript)
+// favoriCode retire des espaces : le code doit rester le même. Arbre syntaxique (acorn, interne à Node : processus à part
+// avec --expose-internals) du favori sur une ligne, espaces gardés ou retirés, positions mises à part : identique.
+{
+  const spaced = src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ');
+  const script = `const acorn = require('internal/deps/acorn/acorn/dist/acorn');
+    const strip = (t) => JSON.stringify(acorn.parse(t, { ecmaVersion: 2022 }), (k, v) => (['start', 'end', 'raw'].includes(k) ? undefined : v));
+    const [a, b] = JSON.parse(require('fs').readFileSync(0, 'utf8'));
+    process.stdout.write(strip(a) === strip(b) ? 'same' : 'different');`;
+  const { spawnSync } = await import('node:child_process');
+  const r = spawnSync(process.execPath, ['--expose-internals', '-e', script], { input: JSON.stringify([spaced, favoriCode(src, '__SITE__', '__KEY__')]), encoding: 'utf8' });
+  if (r.status === 0) assert.equal(r.stdout, 'same', 'favoriCode a changé le code du favori (chaîne ou expression régulière abîmée ?)');
+  else console.log('  (arbre syntaxique non comparé : acorn interne indisponible dans ce Node)');
+}
+// Taille une fois en adresse javascript: (makeBookmarklet) : Firefox refuse un favori de plus de 65 536 caractères.
+{
+  const url = 'javascript:' + encodeURI(favoriCode(src, 'https://classeur.cedric-pdp.workers.dev', 'k'.repeat(43))).replace(/#/g, '%23');
+  assert.ok(url.length < 60000, `favori trop long pour Firefox : ${url.length} caractères (65 536 au plus, garder de la marge)`);
+  console.log(`favori : ${url.length} caractères en adresse javascript:`);
+}
 
 // Un compte neuf, sa clé d'import et son favori (chaque scénario indépendant repart de là).
 let account;
 let importKey;
 let code;
+let accounts = 0; // prénom différent à chaque compte : l'inscription refuse un prénom déjà pris (2026-10-17)
 async function newAccount() {
-  account = (await api('POST', 'account', { body: { code: 'invitation', name: 'Test' } })).json;
+  account = (await api('POST', 'account', { body: { code: 'invitation', name: `Test ${++accounts}` } })).json;
   importKey = (await api('POST', 'import-key', { key: account.key })).json.import_key;
   assert.ok(importKey);
   code = oneLine(importKey);
@@ -1318,16 +1347,16 @@ await test('relié sur la Collection globale : une synchro automatique n\'efface
   const g = await openGame({ pathname: '/global-collection', answers: ['vache', 'Mes vaches'] });
   const CHOICES = ['Mettre à jour mon classeur', 'Créer une collection avec une recherche…'];
   const buttons = () => g.ctx.document.getElementById('classeur-favori').querySelectorAll('button').map((x) => x.textContent);
-  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter']);
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter', 'Couper les cotes automatiques']);
   await g.page('/api/packs/open', POST_JSON({}));
   await g.advance(6_000);
   assert.match(g.text(), /5 exemplaires obtenus depuis ta dernière synchro/, g.text());
   assert.match(g.text(), /Collection globale : que veux-tu faire \?/, g.text());
-  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter']);
+  assert.deepEqual(buttons(), [...CHOICES, 'Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter', 'Couper les cotes automatiques']);
   g.press('Créer une collection avec une recherche…');
   await g.advance(1_000);
   assert.match(g.text(), /Collection « Mes vaches » créée dans ton classeur : 87 cartes/, g.text());
-  assert.deepEqual(buttons(), ['Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter'], 'choix retirés une fois l\'un d\'eux pris');
+  assert.deepEqual(buttons(), ['Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter', 'Couper les cotes automatiques'], 'choix retirés une fois l\'un d\'eux pris');
 });
 
 await test('script Tampermonkey périmé (favori régénéré) : rien n\'est lu dans le jeu, message propre au script, pause aussitôt', async () => {
@@ -1366,6 +1395,7 @@ await test('classeur plus ancien (« state » refusé, 400) : après un clic, le
 // supa.token : le seul jeton accepté (sinon 401 « JWT expired ») ; supa.fail(url, n) peut rendre une erreur au n-ième
 // appel ; tables : cards (titre -> id), ventes et enchères en cours (auctions), enchères posées (auction_bids).
 const ANON_KEY = src.match(/var ANON = "([^"]+)"/)[1];
+const VERSION = src.match(/var VERSION = "([^"]+)"/)[1];
 const supa = {};
 const resetSupa = () => Object.assign(supa, { calls: [], token: 'jeton-acces-1', cards: [], auctions: [], bids: [], fail: null, after: null });
 resetSupa();
@@ -1470,7 +1500,7 @@ await test('cotes : médiane des 30 ventes (fiable dès 3), 7 jours, brillance e
   assert.match(g.text(), /60 cartes envoyées au classeur/, g.text());
   assert.deepEqual((await cardOf('c4')).variants, { R: 1 }, 'rareté de l\'exemplaire (snapshot_rarity) envoyée');
   assert.deepEqual((await cardOf('c5')).variants, { C: 1 });
-  assert.equal(supa.calls.length, 0, 'aucune lecture de la base du jeu sans clic sur « Mettre à jour les cotes »');
+  assert.equal(supa.calls.length, 0, 'aucune lecture de la base du jeu avant la première lecture automatique (une minute après le clic)');
   supa.cards = [{ id: 'w1', wikipedia_title: 'Voulue 1', lang: 'fr' }, { id: 'w2-en', wikipedia_title: 'Voulue 2', lang: 'en' }, { id: 'w2', wikipedia_title: 'Voulue 2', lang: 'fr' },
     { id: 'w3', wikipedia_title: odd, lang: 'fr' }, { id: 'c3', wikipedia_title: 'Carte 3', lang: 'fr' }];
   // Ventes : c0 en R (40, dont 11 de plus de 7 jours), en R brillante (3), en C (2 : pas fiable) ; c2 : une seule, de
@@ -1507,12 +1537,15 @@ await test('cotes : médiane des 30 ventes (fiable dès 3), 7 jours, brillance e
   for (let i = 5; i < 10; i++) supa.auctions.push(sale(`c${i}`, 'C', 40, i * H), sale(`c${i}`, 'C', 50, i * H), sale(`c${i}`, 'C', 60, i * H));
   const posted0 = g.posts.length;
   const text = await pressCotes(g);
-  assert.match(text, /Cotes lues : 6\d cartes, tes cotes sont à jour\. 3 bonnes affaires, 1 de tes enchères en cours : onglet « Marché » du classeur\./, text);
+  assert.match(text, /Cotes lues : 6\d cartes, tes cotes sont à jour\. 2 bonnes affaires, 1 de tes enchères en cours : onglet « Marché » du classeur\./, text);
   // Rythme et plafond : une requête par seconde au plus, 30 au plus, après la demande du plan au classeur.
   assert.ok(supa.calls.length <= 30, `${supa.calls.length} requêtes`);
   for (let i = 1; i < supa.calls.length; i++) assert.ok(supa.calls[i].at - supa.calls[i - 1].at >= 1000, `requêtes ${i} et ${i + 1} à moins d'une seconde`);
   const routes = g.posts.slice(posted0).map((x) => x.route);
-  assert.deepEqual([routes[0], routes[routes.length - 1]], ['market/plan', 'market/live']);
+  // Plan d'abord ; la lecture du marché dès qu'elle est prête (avant les cotes du plan) ; les cotes à la fin (last: true).
+  assert.deepEqual([routes[0], routes[routes.length - 1], routes.filter((x) => x === 'market/live').length], ['market/plan', 'market/prices', 1]);
+  assert.ok(routes.indexOf('market/live') < routes.indexOf('market/prices'), routes.join(', '));
+  assert.equal(g.posts.slice(posted0).find((x) => x.route === 'market/plan').body.v, VERSION, 'version du favori envoyée avec le plan');
   assert.ok(g.posts.slice(posted0).find((x) => x.route === 'market/plan').at <= supa.calls[0].at, 'plan demandé avant toute lecture du jeu');
   const paths = supaPaths();
   assert.ok(paths.some((p) => p.startsWith('auction_bids?') && p.includes(`bidder_id=eq.${UID}`)), 'mes enchères');
@@ -1537,7 +1570,9 @@ await test('cotes : médiane des 30 ventes (fiable dès 3), 7 jours, brillance e
   assert.equal(v.c5.C.p, 50);
   // La lecture du marché, montrée par la page.
   const m = (await api('GET', 'market', { key: account.key })).json;
-  assert.deepEqual(m.live.deals.map((d) => [d.a, d.ask, d.bid, d.cote, d.t]), [['a1', 50, false, 100, 'Voulue 1'], ['a1b', 90, false, 100, 'Voulue 1'], ['a2', 70, true, 100, 'Voulue 2']]);
+  assert.deepEqual(m.live.deals.map((d) => [d.a, d.ask, d.bid, d.cote, d.t]), [['a1', 50, false, 100, 'Voulue 1'], ['a2', 70, true, 100, 'Voulue 2']]);
+  assert.deepEqual(m.live.deals.map((d) => d.more), [1, 0], 'la moins chère par carte, les autres comptées (a1b)');
+  assert.deepEqual([m.attempt.ok, m.attempt.v, m.attempt.auto], [true, VERSION, false], 'essai noté réussi');
   assert.deepEqual(m.live.bids.map((b) => [b.a, b.st, b.mine, b.cur, b.lead, b.cote]), [['a6', 'run', 85, 85, true, 100], ['a7', 'won', 80, 80, false, 50], ['a8', 'lost', 110, 120, false, 50]]);
   assert.deepEqual(m.live.sales.map((x) => [x.a, x.st, x.base, x.cur, x.bid]), [['s1', 'run', 30, 35, true], ['a4', 'run', 1, null, false], ['s2', 'sold', 30, 70, false], ['s3', 'unsold', 30, null, false]]);
   assert.equal(m.live.deals[0].img, 'https://upload.wikimedia.org/' + 'Titre du jeu w1'.length + '.jpg');
@@ -1550,10 +1585,13 @@ await test('cotes : médiane des 30 ventes (fiable dès 3), 7 jours, brillance e
   assert.ok(!supaPaths().slice(n0).some((p) => p.startsWith('cards?')), 'titres déjà résolus redemandés');
   assert.ok(!supaPaths().slice(n0).some((p) => p.includes('status=eq.settled_sold') && p.includes('"c1"')), 'cote fraîche relue');
   assert.match(again, /tes cotes sont à jour/, again);
+  // Cotes des enchères en cours lues il y a moins d'une heure dans cette page : pas relues, les bonnes affaires restent.
+  assert.ok(!supaPaths().slice(n0).some((p) => p.includes('status=eq.settled_sold') && p.includes('"w1"')), "cote d'une enchère relue moins d'une heure après");
+  assert.deepEqual((await api('GET', 'market', { key: account.key })).json.live.deals.map((d) => [d.a, d.cote]), [['a1', 100], ['a2', 100]]);
   resetSupa();
 });
 
-await test('cotes : 30 requêtes au plus par clic ; le suivant reprend aux cotes les plus anciennes ; pages stables de 1 000 ventes ; quota du jour', async () => {
+await test('cotes : 30 requêtes au plus par lecture ; la suivante reprend aux cotes les plus anciennes ; pages stables de 1 000 ventes ; quota du jour', async () => {
   await newAccount();
   resetSupa();
   const ids = Array.from({ length: 2950 }, (_, i) => `p${String(i).padStart(4, '0')}`);
@@ -1563,7 +1601,7 @@ await test('cotes : 30 requêtes au plus par clic ; le suivant reprend aux cotes
   const g = await openGame({ start: 'load', cookie: sessionCookie() });
   const t1 = await pressCotes(g);
   assert.equal(supa.calls.length, 30, 'plafond de 30 requêtes');
-  assert.match(t1, /Cotes lues : 2\s700 cartes \(il en reste 250 : reclique plus tard, les plus anciennes d'abord\)/, t1);
+  assert.match(t1, /Cotes lues : 2\s700 cartes \(il en reste 250 : la prochaine lecture continue, les plus anciennes d'abord\)/, t1);
   const paths = supaPaths();
   const first = paths.filter((p) => p.includes('"p0000"'));
   assert.deepEqual(first.map((p) => p.match(/offset=(\d+)/)[1]), ['0', '1000'], 'deux pages, dans le même ordre');
@@ -1578,41 +1616,80 @@ await test('cotes : 30 requêtes au plus par clic ; le suivant reprend aux cotes
   assert.equal(new Set(now).size, 250, t2);
   assert.ok(now.every((id) => !before.has(id)), 'le second clic reprend là où le premier s\'est arrêté');
   assert.match(t2, /Cotes lues : 250 cartes, tes cotes sont à jour/, t2);
-  // Quota du classeur (3 000 par jour) : 2 950 envoyées ; le reste du jour, 50 au plus.
+  // Quota du classeur (15 000 par jour) : 2 950 envoyées ; le reste du jour, 12 050 au plus.
   const plan = (await api('POST', 'market/plan', { key: importKey, body: {} })).json;
-  assert.deepEqual([plan.cards.length, plan.quota], [0, 50]);
+  assert.deepEqual([plan.cards.length, plan.quota], [0, 12050]);
+  // Quota atteint : rien n'est lu, le message le dit (la page aussi : essai raté, avec la raison).
+  env.DB.sqlite.prepare("UPDATE market SET quota_n = 15000 WHERE quota_day IS NOT NULL AND user_id <> '*'").run();
+  supa.calls = [];
+  await g.advance(60_000);
+  const t3 = await pressCotes(g, 5_000);
+  assert.match(t3, /Quota du jour des cotes atteint pour ton classeur \(ou pour tout le site\) : reprise demain\. Rien n'a été lu\./, t3);
+  assert.equal(supa.calls.length, 0);
+  const m = (await api('GET', 'market', { key: account.key })).json;
+  assert.deepEqual([m.attempt.ok, m.attempt.why], [false, "Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu."]);
+  env.DB.sqlite.prepare("UPDATE market SET quota_n = 0").run();
   resetSupa();
 });
 
-await test('cotes : session absente ou expirée → rien n\'est lu ; cookie découpé, sans « base64- » ou dans le localStorage ; jamais de renouvellement', async () => {
+await test('cotes : session absente ou expirée → rien n\'est lu ; la raison va au classeur ; formes du cookie (découpé, sans « base64- », localStorage, guillemets, tableau, vieux cookie à côté, morceau en trop) ; jamais de renouvellement', async () => {
   await fresh60();
   resetSupa();
   for (let i = 0; i < 3; i++) supa.auctions.push(sale('c1', 'C', 10, i * H));
-  // Pas de session lisible : message, aucune requête (ni au jeu, ni au classeur).
+  // Pas de session lisible : message (resté déplié), aucune lecture du jeu ; le classeur reçoit seulement la raison de
+  // l'échec (sa page la montre), sans rien du jeu.
   let g = await openGame({ start: 'load' });
-  let text = await pressCotes(g, 5_000);
+  let text = await pressCotes(g, 30_000);
   assert.match(text, /ne trouve pas ta session du jeu/, text);
-  assert.deepEqual([supa.calls.length, g.posts.length], [0, 0]);
+  assert.match(g.text(), /Réduire/, 'encart replié : le message d\'échec ne doit pas disparaître');
+  assert.equal(supa.calls.length, 0);
+  assert.deepEqual(g.posts.map((x) => [x.route, x.body.v, x.body.auto]), [['market/fail', VERSION, false]]);
+  assert.match(g.posts[0].body.why, /^Le favori ne trouve pas ta session du jeu dans cette page : connecte-toi, recharge la page du jeu \(F5\)/);
+  let m = (await api('GET', 'market', { key: account.key })).json;
+  assert.deepEqual([m.attempt.ok, m.attempt.why], [false, g.posts[0].body.why]);
+  assert.match(g.text(), /Cotes : en attente de ta session du jeu/, g.text());
   // Session expirée (expires_at passé) : demande de recharger la page, sans rien lire ni renouveler.
   g = await openGame({ start: 'load', cookie: sessionCookie({ exp: Math.floor(clock.now / 1000) - 60 }) });
   text = await pressCotes(g, 5_000);
   assert.match(text, /Ta session du jeu a expiré dans cette page : recharge la page du jeu/, text);
-  assert.deepEqual([supa.calls.length, g.posts.length], [0, 0]);
-  // Formes du cookie : découpé en .0, .1… ; sans préfixe (JSON encodé) ; absent, mais dans le localStorage.
+  assert.deepEqual([supa.calls.length, g.posts.map((x) => x.route)], [0, ['market/fail']]);
+  // Cookie d'une autre base Supabase seulement : le jeu a changé de base, le favori le dit.
+  g = await openGame({ start: 'load', cookie: 'sb-autrebase-auth-token=base64-eyJ4IjoxfQ' });
+  text = await pressCotes(g, 5_000);
+  assert.match(text, /La base du jeu a changé : le favori doit être mis à jour pour lire les cotes/, text);
+  // Ta collection se lit (synchro réussie) mais pas ta session : le message le précise.
+  g = await openGame({ cookie: 'theme=clair' });
+  text = await pressCotes(g, 5_000);
+  assert.match(text, /Ta collection, elle, se lit : si ça continue après un rechargement, le jeu cache sans doute sa session au favori/, text);
+  // Formes du cookie : découpé en .0, .1… ; sans préfixe (JSON encodé) ; absent, mais dans le localStorage ; entre
+  // guillemets ; tableau [jeton, …] (anciens outils de Supabase) ; un vieux cookie entier (expiré) resté à côté du
+  // cookie découpé à jour ; un ancien morceau .3 resté après les morceaux à jour.
   const stale = () => env.DB.sqlite.prepare("UPDATE prices SET read_at = '2000-01-01T00:00:00.000Z'").run();
-  for (const how of ['découpé', 'sans préfixe', 'localStorage']) {
+  const later = Math.floor(clock.now / 1000) + 600;
+  const forms = {
+    'découpé': () => sessionCookie({ chunk: 120 }),
+    'sans préfixe': () => sessionCookie({ prefix: false }),
+    'localStorage': () => 'theme=clair',
+    'entre guillemets': () => `${SESSION_COOKIE}="${encodeURIComponent(JSON.stringify({ access_token: supa.token, expires_at: later, user: { id: UID } }))}"`,
+    'tableau': () => `${SESSION_COOKIE}=${encodeURIComponent(JSON.stringify([supa.token, REFRESH, null]))}`,
+    'vieux cookie à côté': () => `${sessionCookie({ token: 'vieux-jeton', exp: Math.floor(clock.now / 1000) - 3600 }).split('; ')[1]}; ${sessionCookie({ chunk: 150 })}`,
+    'morceau en trop': () => `${sessionCookie({ chunk: 150 })}; ${SESSION_COOKIE}.9=ancien; ${SESSION_COOKIE}.${Math.ceil(sessionCookie().length / 150) + 1}=xyz`,
+  };
+  for (const [how, cookieOf] of Object.entries(forms)) {
     resetSupa();
     stale();
     for (let i = 0; i < 3; i++) supa.auctions.push(sale('c1', 'C', 10, i * H));
     const storage = memoryStorage();
-    if (how === 'localStorage') storage.setItem(SESSION_COOKIE, JSON.stringify({ access_token: supa.token, expires_at: Math.floor(clock.now / 1000) + 600, refresh_token: REFRESH, user: { id: UID } }));
-    const cookie = how === 'découpé' ? sessionCookie({ chunk: 120 }) : how === 'sans préfixe' ? sessionCookie({ prefix: false }) : 'theme=clair';
+    if (how === 'localStorage') storage.setItem(SESSION_COOKIE, JSON.stringify({ access_token: supa.token, expires_at: later, refresh_token: REFRESH, user: { id: UID } }));
+    const cookie = cookieOf();
     if (how === 'découpé') assert.ok(cookie.includes(SESSION_COOKIE + '.2='), 'au moins trois morceaux');
     g = await openGame({ start: 'load', cookie, storage });
     text = await pressCotes(g);
     assert.match(text, /Cotes lues : 60 cartes/, `${how} : ${text}`);
-    assert.ok(supa.calls.every((c) => c.headers.Authorization === 'Bearer ' + supa.token), how);
+    assert.ok(supa.calls.length && supa.calls.every((c) => c.headers.Authorization === 'Bearer ' + supa.token), how);
   }
+  m = (await api('GET', 'market', { key: account.key })).json;
+  assert.equal(m.attempt.ok, true, 'un succès efface l\'échec précédent');
   // La page renouvelle elle-même sa session pendant la lecture : le favori prend le nouveau jeton à la requête suivante.
   resetSupa();
   stale();
@@ -1634,23 +1711,257 @@ await test('cotes : session absente ou expirée → rien n\'est lu ; cookie déc
   resetSupa();
 });
 
-await test('cotes : 429 ou 403 « automation_limit » → arrêt aussitôt, avec la raison ; les cotes déjà lues sont envoyées', async () => {
+await test('cotes : 429 ou 403 « automation_limit » → arrêt aussitôt, avec la raison ; les cotes déjà lues sont envoyées, la lecture du marché si elle était complète', async () => {
   await newAccount();
   const ids = Array.from({ length: 450 }, (_, i) => `q${String(i).padStart(3, '0')}`);
   await importDirect(ids);
   for (const [status, body] of [[429, { message: 'Too Many Requests' }], [403, { code: 'automation_limit', error: 'Trop de requêtes' }]]) {
     resetSupa();
     supa.auctions.push(sale('q000', 'C', 10, H), sale('q000', 'C', 12, H), sale('q000', 'C', 14, H));
-    // Appels : mes enchères, mes ventes, puis les lots de 100 ; le 5e (3e lot) est refusé.
+    // Appels : mes enchères, mes ventes, puis les lots de 100 ; le 5e (3e lot des cotes du plan) est refusé : la lecture
+    // du marché, complète, était déjà partie.
     supa.fail = (url, n) => (n === 5 ? { status, body } : null);
     const g = await openGame({ start: 'load', cookie: sessionCookie() });
     const text = await pressCotes(g);
-    assert.match(text, /Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard\. 200 cotes lues avant l'arrêt ont été envoyées au classeur\./, text);
+    assert.match(text, /Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard\. 200 cotes lues avant l'arrêt ont été envoyées au classeur, avec les bonnes affaires et tes enchères\./, text);
     assert.equal(supa.calls.length, 5, 'plus rien après le refus');
-    assert.ok(!g.posts.some((x) => x.route === 'market/live'), 'lecture du marché incomplète : pas envoyée');
+    assert.deepEqual(g.posts.map((x) => x.route), ['market/plan', 'market/live', 'market/prices', 'market/fail']);
     assert.equal((await pricesOf(['q000'])).q000.C.p, 12);
+    const m = (await api('GET', 'market', { key: account.key })).json;
+    assert.deepEqual([m.attempt.ok, /^Le jeu limite les lectures automatiques/.test(m.attempt.why)], [false, true]);
+    // La limite du jeu met aussi les lectures automatiques en pause : plus rien, même une heure après.
+    assert.match(g.text(), /Cotes : lecture automatique en pause \(le jeu limite les lectures automatiques\)/, g.text());
+    await g.advance(3600_000);
+    assert.equal(supa.calls.length, 5, 'lecture automatique malgré la limite du jeu');
     env.DB.sqlite.prepare("UPDATE prices SET read_at = '2000-01-01T00:00:00.000Z'").run();
   }
+  // Refus dès la première requête : la lecture du marché, incomplète, n'est pas envoyée (la précédente reste).
+  resetSupa();
+  supa.fail = (url, n) => (n === 1 ? { status: 429, body: {} } : null);
+  const g = await openGame({ start: 'load', cookie: sessionCookie() });
+  const text = await pressCotes(g);
+  assert.match(text, /Le jeu limite les lectures automatiques : cotes arrêtées, réessaie plus tard\.$|réessaie plus tard\.Classeur/, text);
+  assert.deepEqual(g.posts.map((x) => x.route), ['market/plan', 'market/prices', 'market/fail']);
+  resetSupa();
+});
+
+// --- Cotes automatiques (mode relié) : toutes les 20 min, onglet visible ; après une enchère ou une vente ; limites ----
+const autoPlans = (g, from = 0) => g.posts.slice(from).filter((x) => x.route === 'market/plan');
+const cotesLine = (g) => {
+  const el = g.ctx.document.getElementById('classeur-favori');
+  const d = el && el.querySelectorAll('div').find((x) => x.childNodes.length === 1 && x.childNodes[0].nodeType === 3 && x.textContent.startsWith('Cotes : '));
+  return d ? d.textContent : '';
+};
+
+await test('cotes automatiques : une minute après le clic, puis toutes les 20 min tant que l\'onglet est visible ; la page les voit (market_at)', async () => {
+  await fresh60();
+  resetSupa();
+  for (let i = 0; i < 3; i++) supa.auctions.push(sale('c1', 'C', 10, i * H));
+  const t0 = clock.now;
+  const g = await openGame({ cookie: sessionCookie() });
+  assert.match(cotesLine(g), new RegExp(`^Cotes : prochaine vers ${hhmm(t0 + 60_000)}$`), cotesLine(g));
+  await g.advance(50_000);
+  assert.equal(supa.calls.length, 0, 'rien avant la minute');
+  await g.advance(30_000);
+  let plans = autoPlans(g);
+  assert.equal(plans.length, 1);
+  assert.deepEqual(plans[0].body, { v: VERSION, auto: true });
+  assert.ok(supa.calls.length > 0 && supa.calls.length <= 30, `${supa.calls.length} requêtes`);
+  assert.ok(g.posts.some((x) => x.route === 'market/live'), 'lecture du marché envoyée');
+  const first = plans[0].at;
+  assert.match(cotesLine(g), new RegExp(`^Cotes : lues à (${hhmm(first)}|${hhmm(first + 60_000)}), prochaine vers ${hhmm(first + 20 * 60_000)}$`), cotesLine(g));
+  assert.doesNotMatch(g.text(), /Réduire/, 'une lecture automatique réussie ne déplie pas l\'encart');
+  const me = (await api('GET', 'me', { key: account.key })).json;
+  const m = (await api('GET', 'market', { key: account.key })).json;
+  assert.ok(me.market_at && me.market_at >= m.live_at, 'market_at de GET /api/me : la page relit l\'onglet « Marché »');
+  assert.deepEqual([m.attempt.ok, m.attempt.auto], [true, true]);
+  // Rien pendant 20 min ; puis la suivante.
+  let n = supa.calls.length;
+  await g.advance(18 * 60_000);
+  assert.equal(supa.calls.length, n, 'lecture avant 20 min');
+  await g.advance(3 * 60_000);
+  assert.equal(autoPlans(g).length, 2);
+  assert.ok(supa.calls.length > n);
+  // Onglet caché : rien ; de retour, une lecture dans la minute.
+  g.ctx.document.visibilityState = 'hidden';
+  n = supa.calls.length;
+  await g.advance(45 * 60_000);
+  assert.equal(supa.calls.length, n, 'lecture avec l\'onglet caché');
+  assert.equal(cotesLine(g), 'Cotes : prochaine lecture au retour sur cet onglet');
+  // De retour sur l'onglet, la page renouvelle sa session (son jeton d'une heure a expiré entre-temps).
+  g.ctx.document.visibilityState = 'visible';
+  g.ctx.document.cookie = sessionCookie();
+  await g.advance(61_000);
+  assert.equal(autoPlans(g).length, 3);
+  assert.ok(supa.calls.length > n);
+  // Jamais de renouvellement de session, jamais le jeton au classeur.
+  assert.ok(!JSON.stringify(g.posts).includes(supa.token) && !JSON.stringify(g.posts).includes(REFRESH));
+  resetSupa();
+});
+
+await test('cotes automatiques : après une enchère ou une mise en vente (20 s après), jamais moins de 5 min après la précédente, 6 par heure ; tous les onglets', async () => {
+  await fresh60();
+  resetSupa();
+  const storage = memoryStorage();
+  const g = await openGame({ cookie: sessionCookie(), storage });
+  await g.advance(61_000);
+  assert.equal(autoPlans(g).length, 1, 'première lecture automatique');
+  // Enchère posée 6 min après : lecture 20 s après.
+  await g.advance(6 * 60_000);
+  const c0 = g.calls.length;
+  await samePage(g, '/api/marketplace/0d6c0f4e-1111-4111-8111-111111111111/bid', POST_JSON({ amount: 12 }), (d) => assert.equal(d.current_bid, 12));
+  await g.advance(15_000);
+  assert.equal(autoPlans(g).length, 1, 'trop tôt (20 s)');
+  await g.advance(10_000);
+  assert.equal(autoPlans(g).length, 2, 'lecture après l\'enchère');
+  assert.equal(g.calls.length, c0, 'une enchère ne relit pas la collection');
+  const second = autoPlans(g)[1].at;
+  // Nouvelle enchère tout de suite : attendue 5 min après la précédente lecture.
+  await samePage(g, '/api/marketplace/0d6c0f4e-1111-4111-8111-111111111111/bid', POST_JSON({ amount: 13 }));
+  await g.advance(2 * 60_000);
+  assert.equal(autoPlans(g).length, 2, 'moins de 5 min après la précédente');
+  assert.match(cotesLine(g), new RegExp(`prochaine vers ${hhmm(second + 5 * 60_000)}`), cotesLine(g));
+  await g.advance(4 * 60_000);
+  assert.equal(autoPlans(g).length, 3);
+  // Un second onglet du même navigateur ne double pas les lectures ; et jamais plus de 6 automatiques par heure, même
+  // avec une enchère toutes les 5 minutes.
+  const g2 = await openGame({ cookie: sessionCookie(), storage, tab: true, start: 'load' });
+  const all = () => autoPlans(g).length + autoPlans(g2).length;
+  const before = all();
+  const t1 = clock.now;
+  for (let i = 0; i < 12; i++) {
+    await samePage(i % 2 ? g2 : g, '/api/marketplace', POST_JSON({ card_id: 'e1', base_amount: 5, duration_minutes: 60 }));
+    await g.advance(5 * 60_000);
+  }
+  const times = [...autoPlans(g), ...autoPlans(g2)].map((x) => x.at).filter((t) => t >= t1).sort((a, b) => a - b);
+  assert.ok(all() - before <= 6 && times.length <= 6, `${all() - before} lectures en une heure`);
+  for (let i = 1; i < times.length; i++) assert.ok(times[i] - times[i - 1] >= 5 * 60_000, 'deux lectures à moins de 5 min');
+  resetSupa();
+});
+
+await test('cotes automatiques : session expirée (attente de son renouvellement), absente (rien de programmé), autre appareil (refus du classeur), « Couper », échecs passagers puis pause', async () => {
+  await fresh60();
+  resetSupa();
+  // Session expirée à l'heure prévue : rien n'est lu ; la page renouvelle sa session : lecture dans la minute.
+  let g = await openGame({ cookie: sessionCookie({ exp: Math.floor(clock.now / 1000) + 40 }) });
+  await g.advance(70_000);
+  assert.equal(supa.calls.length, 0);
+  assert.match(cotesLine(g), /session du jeu expirée, en attente de son renouvellement par la page/, cotesLine(g));
+  await g.advance(5 * 60_000);
+  assert.equal(supa.calls.length, 0);
+  g.ctx.document.cookie = sessionCookie();
+  await g.advance(61_000);
+  assert.equal(autoPlans(g).length, 1);
+  assert.ok(supa.calls.length > 0);
+  // Sans session lisible : aucune minuterie de cotes, aucune requête, une heure durant.
+  resetSupa();
+  g = await openGame({ cookie: 'theme=clair' });
+  const timers = clock.timers.length;
+  await g.advance(3600_000);
+  assert.deepEqual([supa.calls.length, autoPlans(g).length], [0, 0]);
+  assert.ok(clock.timers.length <= timers, 'minuterie de cotes sans session');
+  assert.match(cotesLine(g), /en attente de ta session du jeu/);
+  // Un autre appareil a lu il y a 2 min : le classeur refuse la lecture automatique, rien n'est lu dans le jeu, la
+  // suivante 20 min après celle de l'autre appareil.
+  resetSupa();
+  g = await openGame({ cookie: sessionCookie() });
+  env.DB.sqlite.prepare('UPDATE market SET attempt = ? WHERE user_id = (SELECT id FROM users WHERE import_key_hash IS NOT NULL ORDER BY created_at DESC LIMIT 1)')
+    .run(JSON.stringify({ start: new Date(clock.now - 2 * 60_000 + 61_000).toISOString(), v: VERSION, auto: true, end: new Date(clock.now).toISOString(), ok: true }));
+  await g.advance(61_000);
+  assert.equal(autoPlans(g).length, 1);
+  assert.equal(supa.calls.length, 0, 'lecture malgré le refus du classeur');
+  await g.advance(15 * 60_000);
+  assert.equal(autoPlans(g).length, 1, 'relance trop tôt après le refus');
+  await g.advance(5 * 60_000);
+  assert.equal(autoPlans(g).length, 2);
+  assert.ok(supa.calls.length > 0);
+  // « Couper les cotes automatiques » : plus rien dans ce navigateur (une autre page aussi) ; « Réactiver » les relance.
+  resetSupa();
+  const storage = memoryStorage();
+  g = await openGame({ cookie: sessionCookie(), storage });
+  g.press('Couper les cotes automatiques');
+  await g.advance(2 * 3600_000);
+  assert.equal(supa.calls.length, 0);
+  assert.match(cotesLine(g), /lecture automatique coupée/);
+  assert.equal(JSON.parse(storage.getItem('classeur:cotes')).off, true);
+  const g3 = await openGame({ cookie: sessionCookie(), storage, start: 'load' });
+  await g3.advance(3600_000);
+  assert.equal(supa.calls.length, 0, 'coupées dans tout le navigateur');
+  g3.ctx.document.cookie = sessionCookie(); // la page a renouvelé sa session entre-temps
+  g3.press('Réactiver les cotes automatiques');
+  await g3.advance(61_000);
+  assert.equal(autoPlans(g3).length, 1);
+  // Échecs passagers (base du jeu en 500) : rien de déplié, mention sous la ligne d'état ; au troisième, pause et encart
+  // déplié avec le message ; un clic réussi les relance.
+  resetSupa();
+  supa.fail = () => ({ status: 500, body: { message: 'Internal' } });
+  env.DB.sqlite.prepare('UPDATE market SET attempt = NULL').run(); // sinon refusée : la lecture de g3 date d'une minute
+  g = await openGame({ cookie: sessionCookie(), start: 'load' });
+  await g.advance(61_000);
+  assert.equal(supa.calls.length, 1);
+  assert.match(cotesLine(g), /dernier essai raté : La base du jeu a répondu 500/, cotesLine(g));
+  assert.doesNotMatch(g.text(), /Réduire/, 'échec passager : encart replié');
+  await g.advance(41 * 60_000);
+  assert.equal(supa.calls.length, 3);
+  assert.match(g.text(), /Réduire/, 'pause : encart déplié');
+  assert.match(g.text(), /Cotes automatiques en pause : « Mettre à jour les cotes » les relance\./);
+  assert.match(cotesLine(g), /lecture automatique en pause \(trois échecs de suite\)/);
+  await g.advance(3600_000);
+  assert.equal(supa.calls.length, 3);
+  supa.fail = null;
+  g.ctx.document.cookie = sessionCookie();
+  await pressCotes(g);
+  assert.ok(supa.calls.length > 3);
+  assert.match(cotesLine(g), /^Cotes : lues à \d\d:\d\d, prochaine vers/, cotesLine(g));
+  resetSupa();
+});
+
+await test('cotes : « Mettre à jour les cotes » pendant une synchro → lue juste après ; lecture du marché allégée au-delà de 200 000 caractères ; titres longs en plusieurs requêtes courtes', async () => {
+  await fresh60();
+  resetSupa();
+  // Bouton pendant une synchro : la lecture suit.
+  const storage = memoryStorage();
+  let during = null;
+  let seen = '';
+  const g = await openGame({ cookie: sessionCookie(), storage, onPost: (body, route) => {
+    if (during && route === 'import' && body.mode === 'state') {
+      during = null;
+      seen = g.status();
+      g.press('Mettre à jour les cotes');
+      seen += ' | ' + cotesLine(g);
+    }
+  } });
+  g.press('Couper les cotes automatiques');
+  await g.advance(61_000);
+  during = true;
+  await g.page('/api/packs/open', POST_JSON({}));
+  await g.advance(120_000);
+  assert.equal(seen, 'Classeur relié · synchro en cours… | Cotes : lecture juste après la synchro en cours');
+  assert.equal(autoPlans(g).length, 1);
+  assert.deepEqual(autoPlans(g)[0].body, { v: VERSION, auto: false });
+  // Beaucoup de mises et de ventes avec de longues images : allégée (sans leurs images, puis sans les plus anciennes),
+  // jamais refusée par le classeur.
+  resetSupa();
+  const long = 'https://upload.wikimedia.org/' + 'x'.repeat(1900) + '.jpg';
+  const act = (id, extra) => ({ id, card_id: 'c' + (Number(id.slice(1)) % 60), status: 'active', snapshot_rarity: 'C', is_shiny: false, seller_id: UID, base_amount: 10, current_bid: null, current_bidder_id: null,
+    end_at: iso(clock.now + H), card: { wikipedia_title: 'Titre ' + id, image_url: long, hide_image: false }, ...extra });
+  for (let i = 0; i < 100; i++) supa.auctions.push(act('s' + i));
+  for (let i = 0; i < 100; i++) {
+    const a = act('b' + i, { seller_id: 'vendeur', current_bid: 20, current_bidder_id: UID });
+    supa.auctions.push(a);
+    supa.bids.push({ bidder_id: UID, amount: 20, placed_at: iso(clock.now - i * 60_000), auction: a });
+  }
+  // Collections : 300 titres longs et accentués (une adresse de plus de 8 000 caractères en un seul lot de 80).
+  const titles = Array.from({ length: 300 }, (_, i) => `Liste des épisodes de la série télévisée « Été ${i} » — saison complète, édition spéciale numéro ${i}`);
+  await api('POST', 'targets/save', { key: account.key, body: { name: 'Longs', items: titles.map((title) => ({ title, description: null, image: null, status: 'ok' })) } });
+  await pressCotes(g);
+  const live = g.posts.filter((x) => x.route === 'market/live').pop().body;
+  assert.ok(JSON.stringify(live).length <= 200000, `lecture de ${JSON.stringify(live).length} caractères`);
+  assert.ok(live.bids.length + live.sales.length > 50 && live.bids.concat(live.sales).every((x) => x.img === null), 'images des mises et ventes retirées d\'abord');
+  assert.ok(!g.posts.some((x) => x.route === 'market/fail'), 'lecture refusée : ' + JSON.stringify(g.posts.filter((x) => x.route === 'market/fail').map((x) => x.body.why)));
+  const cardsReqs = supa.calls.filter((c) => c.url.includes('/rest/v1/cards?'));
+  assert.ok(cardsReqs.length >= 5 && cardsReqs.every((c) => c.url.length < 6000), `requêtes de titres : ${cardsReqs.map((c) => c.url.length).join(', ')}`);
+  assert.equal(Object.keys(live.ids).length, 300, 'tous les titres cherchés');
   resetSupa();
 });
 
