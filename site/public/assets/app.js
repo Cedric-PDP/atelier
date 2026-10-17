@@ -248,6 +248,8 @@
     bulkError: '',
     openId: null,
     openMissing: null, // élément d'une collection qui te manque, ouvert dans sa fiche (case vide)
+    sepBusy: null, // id de la collection dont un intercalaire s'enregistre (case de la fiche)
+    sepError: '',
     drawer: { newTag: '', newCat: '', busy: false, error: '' },
     tagSearch: '',
     tagsAll: false,
@@ -1868,6 +1870,7 @@
     if (S.modal) closeModal();
     S.openMissing = null;
     S.openId = id;
+    S.sepError = '';
     S.drawer.error = '';
     S.drawer.newTag = '';
     const c = cardById.value.get(id);
@@ -1883,6 +1886,7 @@
     lastFocus = ev && ev.currentTarget ? ev.currentTarget : document.activeElement;
     if (S.modal) closeModal();
     S.openId = null;
+    S.sepError = '';
     S.openMissing = markRaw({ ...item }); // copie figée : la fiche lit les vues et la vignette dans le cache, en direct
     ensureFriends(); // « Chez : Paul (×2), Léa »
   }
@@ -1954,8 +1958,12 @@
   }
 
   // ---------------------------------------------------------------- collections à compléter
+  // Ligne de l'éditeur d'une collection : un titre ou une adresse fr.wikipedia.org ; « # » devant (interdit dans un titre de
+  // Wikipédia, donc sans ambiguïté) en fait un intercalaire, qui ouvre une section (SEP_MARK : ce qu'écrit openEditor).
+  const SEP_LINE = /^#\s*/;
+  const SEP_MARK = '# ';
   function parseLine(line) {
-    let s = String(line || '').trim();
+    let s = String(line || '').trim().replace(SEP_LINE, '');
     if (!s) return null;
     const url = s.match(/^https?:\/\/([a-z.-]+)\/(.*)$/i);
     if (url) {
@@ -1974,7 +1982,7 @@
     S.editor = {
       id: t ? t.id : null,
       name: t ? t.name : '',
-      text: t ? t.items.map((i) => i.title).join('\n') : '',
+      text: t ? t.items.map((i) => (i.sep ? SEP_MARK : '') + i.title).join('\n') : '',
       source: t ? t.source || null : null,
       known: markRaw(new Map(t ? t.items.map((i) => [i.title, i]) : [])),
       busy: false, progress: '', error: '', issues: null,
@@ -1990,12 +1998,14 @@
     if (!name) { ed.error = 'Donne un nom à ta collection.'; return; }
     const titles = [];
     const seen = new Set();
+    const seps = new Set(); // titres marqués « # » (intercalaires), sur au moins une de leurs lignes
     const bad = [];
     ed.text.split('\n').forEach((line, i) => {
       const r = parseLine(line);
       if (r == null) return;
-      if (typeof r === 'object') bad.push(`ligne ${i + 1} : ${r.error}`);
-      else if (!seen.has(r)) { seen.add(r); titles.push(r); }
+      if (typeof r === 'object') { bad.push(`ligne ${i + 1} : ${r.error}`); return; }
+      if (SEP_LINE.test(line.trim())) seps.add(r);
+      if (!seen.has(r)) { seen.add(r); titles.push(r); }
     });
     if (bad.length) { ed.error = 'À corriger : ' + bad.slice(0, 4).join(' ; ') + (bad.length > 4 ? ' ; …' : '.'); return; }
     if (!titles.length) { ed.error = 'Ajoute au moins un article, un par ligne.'; return; }
@@ -2011,17 +2021,19 @@
         for (const [t, item] of checked) ed.known.set(t, item);
       }
       const items = [];
-      const kept = new Set();
+      const kept = new Map();
       let redirected = 0;
       for (const t of titles) {
         const it = ed.known.get(t);
         if (!it) continue;
         if (it.title !== t) redirected++;
-        if (kept.has(it.title)) continue;
-        kept.add(it.title);
+        // Deux lignes qui mènent au même article (redirection) : un seul élément, intercalaire si l'une des deux l'est.
+        if (kept.has(it.title)) { if (seps.has(t)) kept.get(it.title).sep = true; continue; }
         const item = { title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' };
         if (it.qid) item.qid = it.qid;
         if (realRarity(it)) item.rarity = it.rarity; // rareté du jeu (collection créée par le favori) : gardée
+        if (seps.has(t)) item.sep = true;
+        kept.set(it.title, item);
         items.push(item);
       }
       const issues = items.filter((i) => i.status !== 'ok');
@@ -2046,6 +2058,32 @@
     } finally {
       ed.busy = false;
       if (alive()) ed.progress = '';
+    }
+  }
+  // Intercalaire changé depuis l'album (case de la fiche) : la collection renvoyée telle quelle (POST /api/targets/save,
+  // éléments rangés par le serveur), avec ou sans `sep` sur l'élément n° index. Refusé : la case revient à l'état d'avant.
+  async function setSep(t, index, on, input) {
+    if (S.sepBusy) return;
+    const gen = cardsGen;
+    S.sepBusy = t.id;
+    S.sepError = '';
+    try {
+      const items = t.items.map((it, j) => {
+        if (j !== index) return it;
+        const { sep, ...rest } = it;
+        return on ? { ...rest, sep: true } : rest;
+      });
+      const body = { id: t.id, name: t.name, items };
+      if (t.source) body.source = t.source;
+      const r = await api('POST', '/api/targets/save', body);
+      if (gen !== cardsGen) return; // classeur changé entre-temps
+      if (r.target) upsertTarget(r.target); else await loadTargets();
+    } catch (e) {
+      if (gen !== cardsGen) return;
+      S.sepError = e.message;
+      if (input) input.checked = !on;
+    } finally {
+      S.sepBusy = null;
     }
   }
   function askDeleteTarget(t) {
@@ -3475,11 +3513,15 @@
     return out;
   }
   // Collection qu'un ami montre : son nom, si c'est une catégorie de Wikipédia qu'il suit (kind), et pour chaque
-  // élément, le titre et le qid (rien d'autre n'est gardé).
+  // élément, le titre, le qid et le drapeau d'intercalaire (rien d'autre n'est gardé).
   const QID_RE = /^Q[1-9]\d{0,11}$/;
   function prepFriendTarget(t) {
     const items = (Array.isArray(t.items) ? t.items : []).filter((it) => it && typeof it.title === 'string' && it.title)
-      .map((it) => (typeof it.qid === 'string' && QID_RE.test(it.qid) ? { title: it.title, qid: it.qid } : { title: it.title }));
+      .map((it) => {
+        const out = typeof it.qid === 'string' && QID_RE.test(it.qid) ? { title: it.title, qid: it.qid } : { title: it.title };
+        if (it.sep === true) out.sep = true; // intercalaire : il ouvre une section de son album
+        return out;
+      });
     return markRaw({ id: String(t.id), name: String(t.name || 'Sans nom'), cat: t.kind === 'category', items });
   }
   async function readMemberTargets(id, gen) {
@@ -3701,7 +3743,12 @@
     if (fr.copyBusy || copyOf(f, t) || !t.items.length) return;
     fr.copyBusy = true;
     try {
-      const items = t.items.map((it) => (it.qid ? { title: it.title, description: null, image: null, status: 'ok', qid: it.qid } : { title: it.title, description: null, image: null, status: 'ok' }));
+      const items = t.items.map((it) => {
+        const item = { title: it.title, description: null, image: null, status: 'ok' };
+        if (it.qid) item.qid = it.qid;
+        if (it.sep) item.sep = true; // ses intercalaires aussi : la même collection, mêmes sections
+        return item;
+      });
       const name = copiedName(t);
       const r = await api('POST', '/api/targets/save', { name, items });
       if (r.target) upsertTarget(r.target); else await loadTargets();
@@ -4065,7 +4112,7 @@
   });
 
   // ---------------------------------------------------------------- la carte de jeu (5:7)
-  function viewCard(c, big) {
+  function viewCard(c, big, sep) {
     const r = okRarity(c.rarity) || 'C';
     const open = (e) => {
       if (big) return;
@@ -4075,7 +4122,7 @@
     return h('article', {
       class: ['card', 'r' + r, { shiny: c.shiny, big }],
       role: big ? null : 'button', tabindex: big ? null : '0',
-      'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${big ? '' : ' : ouvrir la fiche'}`,
+      'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${sep ? ', intercalaire' : ''}${big ? '' : ' : ouvrir la fiche'}`,
       onClick: open,
       onKeydown: big ? null : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardFrom(c.id, e); } },
     }, [
@@ -4100,10 +4147,26 @@
   }
   // Une carte dans une grille : la carte et sa case de sélection. Ses tags (et les suggestions) ne sont que dans la
   // fiche, ouverte d'un clic sur la carte (demande de l'utilisateur, 2026-10-16).
-  function viewCell(c) {
+  // Intercalaire (élément `sep` d'une collection, qui ouvre une section) : la carte ou la case posée sur un cadre à onglet,
+  // comme glissée dans l'intercalaire d'un classeur (dessiné en CSS, .sep-frame). Le cadre ne bouge pas quand la carte se
+  // soulève au survol. key : celle de l'élément de la grille, quand le cadre en est un.
+  const sepFrame = (node, on, key) => (on ? h('div', { class: 'sep-frame', key: key || null }, [node]) : node);
+  // Sections d'un album : un intercalaire commence une nouvelle ligne de la grille (gridBreak avant lui, sauf en tête),
+  // seulement dans l'ordre de la collection, sans filtre ; ailleurs, il ne garde que son cadre.
+  const showSections = (ordered, sort, filter) => !!ordered && sort === 'order' && filter === 'all';
+  const gridBreak = (key) => h('div', { class: 'grid-break', key: 'sec:' + key, 'aria-hidden': 'true' });
+  function albumKids(slots, sections, render) {
+    const kids = [];
+    slots.forEach((s, n) => {
+      if (sections && n > 0 && s.item.sep) kids.push(gridBreak(s.key));
+      kids.push(render(s));
+    });
+    return kids;
+  }
+  function viewCell(c, sep) {
     const sel = S.selected.has(c.id);
-    return h('div', { class: ['cell', { selected: sel, pulled: S.openId === c.id }] }, [
-      viewCard(c, false),
+    return h('div', { class: ['cell', { selected: sel, pulled: S.openId === c.id, sep }] }, [
+      sepFrame(viewCard(c, false, sep), sep),
       h('label', { class: 'pick', title: 'Sélectionner (Maj+clic : une plage)' }, [
         h('input', { type: 'checkbox', checked: sel, 'aria-label': 'Sélectionner ' + c.title, onClick: (e) => toggleSelect(c.id, e) }),
         icon('check'),
@@ -4131,11 +4194,11 @@
     const img = it.image || s.thumb;
     let views = '';
     if (it.status === 'ok') views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
-    return h('div', { class: ['slot', { pulled: !!S.openMissing && S.openMissing.title === it.title }], key: s.key }, [
+    return sepFrame(h('div', { class: ['slot', { pulled: !!S.openMissing && S.openMissing.title === it.title, sep: !!it.sep }], key: s.key }, [
       img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
       col.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: 'Pas encore dans ta collection : ouvrir la fiche',
-        'aria-label': `${it.title} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
+        'aria-label': `${it.title}${it.sep ? ', intercalaire' : ''} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
       h('div', { class: 'slot__top' }, it.status === 'ok' ? [s.real ? pill(s.real) : pill(s.est, true), copyNameButton(it.title, true)] : []),
       h('h3', null, it.title),
       it.description ? h('p', null, it.description) : null,
@@ -4143,7 +4206,7 @@
       it.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre") : null,
       friendBadge(it),
       views ? h('span', { class: 'views' }, views) : null,
-    ]);
+    ]), !!it.sep, s.key);
   }
   // Case vide qu'un ami peut remplir (partage entre membres) : « chez Paul ×2 », « +1 » s'il y en a d'autres.
   function friendBadge(item) {
@@ -4161,17 +4224,22 @@
     return h('span', { class: cls || 'bar', 'aria-hidden': 'true' }, RAR_UP.map((r) => (byR[r]
       ? h('i', { key: r, class: 'r' + r, style: { width: ((100 * byR[r]) / Math.max(1, total)).toFixed(3) + '%' } }) : null)));
   }
+  // Collection complète (toutes ses cartes, au moins une) : tour doré et brillant de sa ligne et de l'en-tête de son
+  // album (.complete, app.css), « Complète » à la place du pourcentage.
+  const isComplete = (p) => p.total > 0 && p.own >= p.total;
+  const doneMark = () => h('span', { class: 'done-mark' }, [icon('check', 'sm'), 'Complète']);
   function viewRow(col) {
     const p = progressOf(col);
     const w = worthOf(col);
     const wt = w ? worthText(w) : '';
-    return h('button', { class: ['row', { zero: !p.own }], type: 'button', key: col.key, onClick: () => openAlbum(col.kind, col.id),
-      'aria-label': `${col.name} : ${fmt(p.own)} sur ${fmt(p.total)}${wt ? '. ' + wt : ''}` }, [
+    const done = isComplete(p);
+    return h('button', { class: ['row', { zero: !p.own, complete: done }], type: 'button', key: col.key, onClick: () => openAlbum(col.kind, col.id),
+      'aria-label': `${col.name} : ${fmt(p.own)} sur ${fmt(p.total)}${done ? ', collection complète' : ''}${wt ? '. ' + wt : ''}` }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, p.sample.length ? p.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
         h('span', { class: 'name' }, col.name),
         rarityBar(p.byR, p.total),
-        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), h('span', null, pct(p.own, p.total))]),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), done ? doneMark() : h('span', null, pct(p.own, p.total))]),
         rowWorth(w, wt),
         sourceKind(col),
       ]),
@@ -4510,10 +4578,12 @@
     const shown = visibleSlots.value.length;
     // Valeur de la collection (tes cartes) et ce qu'il faudrait pour la compléter (SPEC.md, « Le marché »).
     const w = reading ? null : worthOf(col);
+    const done = !cv && isComplete(p); // une de tes collections, complète (pas une catégorie à créer)
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
-        h('div', { class: 'album-title' }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+        h('div', { class: ['album-title', { complete: done }] }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+          done ? doneMark() : null,
           w && w.priced ? h('span', { class: 'album-value' }, ['Valeur : ', priceTag(w.value), ` (${pricedOf(w.priced, w.cards)})`]) : null,
           cv ? h('span', { class: 'badge' }, pg ? 'page de Wikipédia' : 'catégorie de Wikipédia') : sourceKind(col)]),
         cv && cv.subcats ? h('label', { class: 'check' }, [
@@ -5092,14 +5162,15 @@
   // que tu peux lui donner (ses cases vides que tes cartes remplissent, dont tes doubles).
   function viewFriendColRow(f, r) {
     const p = r.p;
-    return h('button', { class: ['row', { zero: !p.own }], type: 'button', key: r.key, onClick: () => openFriendAlbum(f.id, r.t.id, null),
-      'aria-label': `${r.t.name} : ${friendName(f)} en a ${fmt(p.own)} sur ${fmt(p.total)}${p.priced ? `, valeur ${wfmt(p.value)}` : ''}${p.help ? `, tu as ${fmt(p.help)} ${plural(p.help, 'carte', 'cartes')} qui lui ${plural(p.help, 'manque', 'manquent')}` : ''}` }, [
+    const done = isComplete(p);
+    return h('button', { class: ['row', { zero: !p.own, complete: done }], type: 'button', key: r.key, onClick: () => openFriendAlbum(f.id, r.t.id, null),
+      'aria-label': `${r.t.name} : ${friendName(f)} en a ${fmt(p.own)} sur ${fmt(p.total)}${done ? ', collection complète' : ''}${p.priced ? `, valeur ${wfmt(p.value)}` : ''}${p.help ? `, tu as ${fmt(p.help)} ${plural(p.help, 'carte', 'cartes')} qui lui ${plural(p.help, 'manque', 'manquent')}` : ''}` }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, p.sample.length ? p.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
         h('span', { class: 'name' }, r.t.name),
         r.t.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null,
         rarityBar(p.byR, p.total),
-        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), h('span', null, pct(p.own, p.total))]),
+        h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), done ? doneMark() : h('span', null, pct(p.own, p.total))]),
         rowWorth(p, p.priced ? `Valeur de ses cartes de cette collection : ${wfmt(p.value)} (${pricedOf(p.priced, p.cards)}). ${FRIEND_WORTH}` : ''),
         p.help ? h('span', { class: 'row-help' }, ['Tu peux l\'aider : ', h('b', null, fmt(p.help)), p.helpDup ? `, dont ${fmt(p.helpDup)} en double` : '']) : null,
       ]),
@@ -5133,10 +5204,11 @@
     const have = !!s.mine;
     const want = !have && s.want && s.want.length ? s.want : null;
     const open = (e) => openFriendItem(f, s, e);
-    const label = `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''} chez ${friendName(f)}, `
+    const sep = !!s.item.sep;
+    const label = `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}${sep ? ', intercalaire' : ''} chez ${friendName(f)}, `
       + `${have ? "tu l'as" : want ? 'manque à ' + colsText(want, ', ') : 'te manque'} : ouvrir la fiche`;
-    return h('div', { class: ['cell', { pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === s.item.title }], key: s.key }, [
-      h('article', { class: ['card', 'card--friend', 'card--fa', 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
+    return h('div', { class: ['cell', { pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === s.item.title, sep }], key: s.key }, [
+      sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
         onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } }, [
         h('div', { class: 'card__art' }, [
           h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
@@ -5147,7 +5219,7 @@
         h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
         h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
         r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
-      ]),
+      ]), sep),
       want ? h('p', { class: 'cell__want', title: 'Manque à : ' + colsText(want, ', ') }, ['→ ', colsText(want, ' · ')]) : null,
     ]);
   }
@@ -5162,18 +5234,18 @@
     let views = '';
     if (!mine) views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
     const give = mine ? (n > 1 ? `, tu l'as (${fmt(n)} exemplaires)` : ", tu l'as") : '';
-    return h('div', { class: ['slot', { can: !!mine, pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === it.title }], key: s.key }, [
+    return sepFrame(h('div', { class: ['slot', { can: !!mine, pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === it.title, sep: !!it.sep }], key: s.key }, [
       img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
       fa.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: `Manque à ${friendName(f)} : ouvrir la fiche`,
-        'aria-label': `${it.title} : manque à ${friendName(f)}${give}, ouvrir la fiche`, onClick: (e) => openFriendItem(f, s, e) }),
+        'aria-label': `${it.title}${it.sep ? ', intercalaire' : ''} : manque à ${friendName(f)}${give}, ouvrir la fiche`, onClick: (e) => openFriendItem(f, s, e) }),
       h('div', { class: 'slot__top' }, [s.real ? pill(s.real) : pill(s.est, true), copyNameButton(it.title, true)]),
       h('h3', null, it.title),
       mine && mine.category ? h('p', null, mine.category) : null,
       mine ? h('div', { class: 'slot__give' }, [h('span', { class: 'slot__friends' }, "tu l'as"),
         n > 1 ? h('span', { class: 'slot__friends dup', title: `Tu en as ${fmt(n)} exemplaires` }, `×${fmt(n)} en double`) : null]) : null,
       views ? h('span', { class: 'views' }, views) : null,
-    ]);
+    ]), !!it.sep, s.key);
   }
   // Album d'une collection d'un ami (lecture seule), avec l'allure des tiens : ses cartes et ses cases vides ; filtres
   // « Toutes / Il les a / Lui manquent / Tu peux l'aider », tri ; rien n'y modifie sa collection.
@@ -5211,6 +5283,7 @@
     }
     const total = all.length;
     const missing = total - own;
+    const done = isComplete({ own, total }); // sa collection complète : en-tête doré, comme les tiennes
     const pills = (m, est) => RAR_UP.slice().reverse().filter((r) => m[r]).map((r) => h('span', { key: (est ? 'e' : 'g') + r }, [pill(r, est), ' ', h('b', { class: 'num' }, fmt(m[r]))]));
     const ownLine = own > 0 ? [h('span', null, `${name} en a ${fmt(own)} :`), ...pills(byR, false)] : null;
     const missLine = missing > 0 ? [h('span', null, `Il lui en manque ${fmt(missing)} :`), ...pills(missG, false), ...pills(missR, true),
@@ -5235,7 +5308,8 @@
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         backLine,
-        h('div', { class: 'album-title' }, [h('h2', null, t.name), h('span', { class: 'num' }, `${name} en a ${fmt(own)} sur ${fmt(total)}`),
+        h('div', { class: ['album-title', { complete: done }] }, [h('h2', null, t.name), h('span', { class: 'num' }, `${name} en a ${fmt(own)} sur ${fmt(total)}`),
+          done ? doneMark() : null,
           worth && worth.p.priced ? h('span', { class: 'album-value', title: FRIEND_WORTH }, ['Valeur : ', priceTag(worth.p.value), ` (${pricedOf(worth.p.priced, worth.p.cards)})`]) : null,
           h('span', { class: 'badge' }, 'lecture seule'), t.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null]),
         rarityBar(byR, total, 'bar big'),
@@ -5264,7 +5338,7 @@
           ...actions,
         ]),
       ]),
-      list.length ? h('div', { class: 'cardgrid' }, shown.map((s) => (s.card ? viewFriendAlbumCard(s, f) : viewFriendSlot(s, fa))))
+      list.length ? h('div', { class: 'cardgrid' }, albumKids(shown, showSections(fa.ordered, fr.albumSort, fr.albumFilter), (s) => (s.card ? viewFriendAlbumCard(s, f) : viewFriendSlot(s, fa))))
         : h('div', { class: 'empty-box' }, empty),
       shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, list.length - shown.length))} suivantes (${fmt(list.length - shown.length)} restantes)`)]) : null,
@@ -6055,6 +6129,28 @@
     return h('div', { class: 'sugg' }, [h('h3', null, ['Suggestions ', h('span', { class: 'hint-inline' }, "d'après Wikidata")]), ...body]);
   }
   function fact(label, value) { return h('div', { class: 'fact' }, [h('span', null, label), h('b', null, value)]); }
+  // Fiche ouverte depuis l'album d'une de tes collections : l'élément qu'elle montre (le premier qui correspond), de quoi
+  // en faire un intercalaire ou non. Rien depuis « Mes cartes », une catégorie de Wikipédia ou l'album d'un ami.
+  function albumItemOf(match) {
+    const col = S.tab === 'collections' ? activeAlbum.value : null;
+    if (!col || col.kind !== 'target') return null;
+    const i = col.items.findIndex(match);
+    return i < 0 ? null : { col, i, item: col.items[i] };
+  }
+  function viewSepToggle(ref) {
+    if (!ref) return null;
+    const busy = S.sepBusy === ref.col.id;
+    return h('div', { class: 'sep-toggle' }, [
+      h('label', { class: 'check' }, [
+        h('input', { type: 'checkbox', checked: !!ref.item.sep, disabled: busy, 'aria-describedby': 'sep-toggle-help',
+          onChange: (e) => setSep(ref.col.t, ref.i, e.target.checked, e.target) }),
+        ' Intercalaire',
+        busy ? h('span', { class: 'muted' }, ' · enregistrement…') : null,
+      ]),
+      h('p', { id: 'sep-toggle-help', class: 'small muted' }, `Dans « ${ref.col.name} », cette carte ouvre une section : un bord à part, et une nouvelle ligne dans l'ordre de la collection.`),
+      errLine(S.sepError),
+    ]);
+  }
   function viewFiche(c, closeRef, boxRef) {
     const mine = membershipsOf(c); // toutes tes collections, celles faites d'une catégorie de Wikipédia comprises
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
@@ -6069,6 +6165,7 @@
       h('div', { class: 'info' }, [
         ficheTitle(c.title, true),
         c.category ? h('p', { class: 'muted lead' }, c.category) : null,
+        viewSepToggle(albumItemOf((it) => { const f = findCard(it); return !!f && f.id === c.id; })),
         h('div', { class: 'facts' }, [
           fact('Rareté', RARITY_NAME[c.rarity] || c.rarity || '?'),
           fact('Vues par mois', fmt(c.pageviews)),
@@ -6135,6 +6232,7 @@
         ficheTitle(item.title, ok),
         item.description ? h('p', { class: 'muted lead' }, item.description) : null,
         h('p', { class: 'missing-note' }, 'Pas encore dans ta collection'),
+        viewSepToggle(albumItemOf((it) => it.title === item.title && !findCard(it))),
         viewMissingFriends(item),
         item.status === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia : corrige son titre dans la collection.') : null,
         item.status === 'disambiguation' ? h('p', { class: 'warn' }, "Page d'homonymie : précise le titre dans la collection.") : null,
@@ -6336,16 +6434,19 @@
     ];
   }
   function viewListMode(ed) {
-    const lines = ed.text.split('\n').filter((l) => l.trim()).length;
+    const filled = ed.text.split('\n').filter((l) => l.trim());
+    const lines = filled.length;
+    const seps = filled.filter((l) => SEP_LINE.test(l.trim()) && l.trim().replace(SEP_LINE, '')).length;
     return [
       h('label', { class: 'sr', for: 'ed-name' }, 'Nom de la collection'),
       h('input', { id: 'ed-name', class: 'field full', value: ed.name, maxlength: 120, autocomplete: 'off', placeholder: "Nom, par exemple Dieux de l'Olympe",
         onInput: (e) => { ed.name = e.target.value; } }),
       h('p', { class: 'note' }, 'Un article Wikipédia par ligne : son titre exact (« Zeus ») ou son adresse fr.wikipedia.org. Chaque article est vérifié sur Wikipédia.'),
+      h('p', { class: 'note', id: 'ed-sep-help' }, "Intercalaire : « # » en début de ligne (« # Sous-continent ») ; cette carte ouvre alors une section de l'album, avec un bord à part. Elle se possède et compte comme les autres."),
       h('label', { class: 'sr', for: 'ed-text' }, 'Articles, un par ligne'),
-      h('textarea', { id: 'ed-text', class: 'field full', rows: 12, value: ed.text, spellcheck: 'false',
+      h('textarea', { id: 'ed-text', class: 'field full', rows: 12, value: ed.text, spellcheck: 'false', 'aria-describedby': 'ed-sep-help',
         placeholder: 'Zeus\nHéra\nhttps://fr.wikipedia.org/wiki/Poséidon', onInput: (e) => { ed.text = e.target.value; ed.issues = null; } }),
-      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')} · 3 000 articles au plus`),
+      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')}${seps ? ` · ${fmt(seps)} ${plural(seps, 'intercalaire', 'intercalaires')}` : ''} · 3 000 articles au plus`),
       ed.progress ? h('p', { class: 'progress-msg', role: 'status' }, ed.progress) : null,
       ed.issues ? h('div', { class: 'panel' }, [
         h('p', { class: 'warn' }, `${fmt(ed.issues.length)} ${plural(ed.issues.length, 'article pose', 'articles posent')} problème :`),
@@ -6556,7 +6657,7 @@
   // ================================================================ composants
   const Top = { name: 'Top', setup: () => viewTop };
   const Main = { name: 'Main', setup: () => viewMain };
-  const Cell = { name: 'Cell', props: { card: Object }, setup: (props) => () => viewCell(props.card) };
+  const Cell = { name: 'Cell', props: { card: Object, sep: Boolean }, setup: (props) => () => viewCell(props.card, props.sep) };
   const CardGrid = {
     name: 'CardGrid',
     setup: () => () => h('div', { class: ['cardgrid', { selecting: S.selected.size > 0 }] }, visibleCards.value.map((c) => h(Cell, { key: c.id, card: c }))),
@@ -6565,7 +6666,9 @@
     name: 'AlbumGrid',
     setup: () => () => {
       const col = activeAlbum.value;
-      return h('div', { class: ['cardgrid', { selecting: S.selected.size > 0 }] }, visibleSlots.value.map((s) => (s.card ? h(Cell, { key: s.key, card: s.card }) : viewSlot(s, col))));
+      const sections = !!col && showSections(col.ordered, S.albumSort, S.albumFilter);
+      return h('div', { class: ['cardgrid', { selecting: S.selected.size > 0 }] },
+        albumKids(visibleSlots.value, sections, (s) => (s.card ? h(Cell, { key: s.key, card: s.card, sep: !!s.item.sep }) : viewSlot(s, col))));
     },
   };
   const BulkBar = { name: 'BulkBar', setup: () => () => h(Transition, { name: 'rise' }, () => viewBulk()) };

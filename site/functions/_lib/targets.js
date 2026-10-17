@@ -51,6 +51,9 @@ function cleanItem(item, i) {
   if (typeof item.qid === 'string' && QID.test(item.qid)) out.qid = item.qid;
   // Rareté relevée dans le jeu (collection créée depuis sa Collection globale) ; gardée seulement si elle est connue.
   if (RARITIES.has(item.rarity)) out.rarity = item.rarity;
+  // Intercalaire : carte qui ouvre une section de la collection (une vraie carte, qui compte comme les autres) ; gardé
+  // seulement s'il vaut true, absent sinon.
+  if (item.sep === true) out.sep = true;
   return out;
 }
 

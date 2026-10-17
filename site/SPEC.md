@@ -145,7 +145,7 @@ autre format (voir « Le favori »).
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent, sauf les classeurs vides (ni carte ni collection) ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url, v?}], part, next_part}` : pages de 1 000 cartes, sans étiquettes ; `v` = la cote de la carte telle que rangée dans le cache commun `prices` (`{"<rareté>[*]": {p, n, w, l, d}}`, voir « Le marché »), seulement quand elle en a une (pas pour `{}`, carte lue sans vente) |
-| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre et au qid ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
+| `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?, sep?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre, au qid et à `sep: true` pour un intercalaire ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
 | `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
@@ -159,7 +159,7 @@ autre format (voir « Le favori »).
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
 du compte.
 
-**Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?}], source, created_at,
+**Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, created_at,
 updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
 diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par titre, puis par qid
 (`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
@@ -178,7 +178,12 @@ l'a créée depuis une recherche de la Collection globale du jeu (`POST /api/tar
 du jeu, non revérifiés sur Wikipédia). `rarity` (facultatif, C | PC | R | SR | UR | L, gardé seulement s'il est connu,
 aussi par `targets/save` pour qu'une collection modifiée dans la page le garde) = rareté de la carte **dans le jeu**,
 relevée par le favori : l'interface l'affiche sans « ≈ » (case vide, fiche de la carte manquante, « Il t'en manque »)
-au lieu de la rareté estimée d'après les vues de l'article, qui reste pour les éléments sans `rarity`.
+au lieu de la rareté estimée d'après les vues de l'article, qui reste pour les éléments sans `rarity`. `sep` (facultatif,
+2026-10-17) : `true` pour un **intercalaire**, un élément qui ouvre une section de la collection (« Sous-continent »
+dans « Continents et Sous-continents ») ; c'est une carte comme les autres (elle se possède, compte dans la progression,
+la valeur, les échanges). Gardé par `targets/save` seulement s'il vaut exactement `true`, absent sinon (`false`, `"true"`,
+`1`… : ignorés) ; montré aux amis avec le titre et le qid (voir « Partage entre membres ») ; affichage : « Onglet
+« Collections » », « Intercalaires et collections complètes ».
 
 **CarteImport** (ce qu'envoie le favori, déjà regroupée par carte) : la Carte ci-dessus **sans `tags`**. Le favori
 regroupe les exemplaires et ne garde que ces champs : le serveur n'a presque rien à calculer.
@@ -316,7 +321,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   défaut). Il n'existe qu'avec le partage des cartes : `400` sans lui, et couper le partage des cartes le coupe aussi (à
   rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (ses
   collections, y compris celles faites d'une catégorie ; pas les propositions), leur nom, leur nature (`kind` :
-  `category` pour une collection faite d'une catégorie de Wikipédia, `collection` sinon) et, pour chaque élément vérifié, son titre et son qid. **Jamais** leurs descriptions,
+  `category` pour une collection faite d'une catégorie de Wikipédia, `collection` sinon) et, pour chaque élément vérifié, son titre, son qid et s'il est un intercalaire (`sep: true`). **Jamais** leurs descriptions,
   images, statuts, leur source (recherche tapée, nom de la catégorie, id du catalogue) ni leurs dates ; les éléments
   introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre
   et la date du dernier changement.
@@ -331,7 +336,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   (une page de 1 000 cartes toutes cotées : ~300 Ko, < 1 ms de JavaScript, `v` collé au texte JSON de la carte). Aucun JavaScript proportionnel à la taille de la collection.
   `GET /api/members/<id>/targets` = le membre et une page de collections par la clé primaire `(user_id, id)` (`id >
   curseur`) : une somme cumulée (`SUM … OVER`) de leur taille rangée garde celles qui commencent sous 512 Ko (la première
-  toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre et au qid ; une réponse reste sous
+  toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre, au qid et au drapeau `sep` ; une réponse reste sous
   ~1 Mo (une collection fait 600 Ko rangés au plus), même pour un compte à 5 Mo de collections.
 - **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
   partage pas ses collections ») ; « Échanges possibles »
@@ -357,14 +362,15 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   en lecture seule, avec l'allure des tiens : ses cartes (« Tu l'as », estompée, ou « Te manque » ; mise en avant, avec
   sous la carte les noms de tes collections, si elle remplirait une de leurs cases vides) et ses cases vides (« tu l'as »,
   « ×2 en double » si ta carte la remplit : celles que tu pourrais lui donner ; rareté de ta carte, sinon estimée d'après
-  les vues) ; numéros, sauf pour une collection tirée d'une catégorie (A → Z) ; « Il lui en manque N », « Tu peux l'aider : N cartes
+  les vues) ; ses intercalaires et sa collection complète comme les tiens (cadre, sections, tour doré : voir « Intercalaires
+  et collections complètes ») ; numéros, sauf pour une collection tirée d'une catégorie (A → Z) ; « Il lui en manque N », « Tu peux l'aider : N cartes
   dont M en double » ; filtres « Toutes / Il les a / Lui manquent / Tu peux l'aider », tris par rareté et par prix
   (« Prix ↑ », « Prix ↓ », voir « Le marché ») ; « ← Retour au
   classeur de Paul » (et « ← Échanges possibles », filtre gardé, quand on vient de là). Une carte ou une case ouvre une
   fiche en lecture seule (qui l'a, rareté, vues, ses autres collections et les tiennes où elle figure, « Copier le nom »,
   Wikipédia), sans tags ni sélection. Rien ne modifie sa collection ; « Créer la même collection chez moi » en fait une
-  **à toi** (`POST /api/targets/save {name, items}` : même nom, ses articles tels qu'il les montre, titre et qid, `status:
-  'ok'`, sans source ni requête à Wikipédia : une liste d'articles, sans lien avec la sienne ensuite), puis « Ouvrir ma
+  **à toi** (`POST /api/targets/save {name, items}` : même nom, ses articles tels qu'il les montre, titre, qid et
+  intercalaires, `status: 'ok'`, sans source ni requête à Wikipédia : une liste d'articles, sans lien avec la sienne ensuite), puis « Ouvrir ma
   collection » (une des tiennes de même nom, sans source et d'autant d'articles compte comme cette copie : pas de
   doublon d'une visite à l'autre). Vues sur 30 jours
   (et vignettes) demandées seulement pour les cases que ni lui ni toi n'avez, dans la même file et le même cache que tes
@@ -619,6 +625,32 @@ Deux zones, dans cet ordre :
      liste, créations en cours) sont oubliées ; une relecture de `GET /api/me` (retour sur l'onglet, minuterie des
      60 s) partie avant ou pendant un changement des préférences ne le défait pas ; la relecture des collections après un
      chargement des cartes ne coupe pas la résolution des qids de l'album ouvert (deux résolutions à part).
+
+**Intercalaires et collections complètes** (2026-10-17, demande de l'utilisateur) :
+
+- **Intercalaire** (élément `sep: true`) : une carte qui ouvre une section (« Continent », « Sous-continent »,
+  « Supercontinent » dans « Continents et Sous-continents »), et qui reste une carte comme les autres. Dans les grilles
+  d'album (les tiens, et ceux des collections d'un ami, en lecture seule), la carte possédée ou la case vide est posée sur
+  un **cadre gris clair à onglet** (`.sep-frame`, 4 px autour, onglet en haut à gauche, derrière la carte : elle passe
+  devant quand elle se soulève au survol) ; son nom accessible dit « intercalaire ». En tri « Ordre », **sans filtre**
+  (« Toutes ») et pour une collection qui a un ordre, un intercalaire **commence une nouvelle ligne** de la grille (une
+  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé) ; en tri
+  « A → Z », « Rareté », « Prix ↑/↓ » ou avec un filtre, il ne garde que son cadre.
+- **Le changer** : dans l'éditeur (« Liste d'articles »), une ligne qui commence par « # » (« # Sous-continent », espaces
+  après « # » permis ; « # » est interdit dans un titre de Wikipédia, donc sans ambiguïté) est un intercalaire ; à
+  l'ouverture, l'éditeur écrit « # » devant les intercalaires ; une explication et le compte (« 20 lignes · 3
+  intercalaires ») sous le champ. Deux lignes qui mènent au même article (redirection) : intercalaire si l'une des deux
+  l'est. Depuis l'album : la fiche d'une carte ou d'une case vide **ouverte depuis l'album d'une de tes collections** a une
+  case « Intercalaire » (« Dans « … », cette carte ouvre une section… ») : cochée ou décochée, la collection est renvoyée
+  entière (`POST /api/targets/save {id, name, items, source}`, éléments tels que rangés, seul `sep` de cet élément
+  changé), case grisée pendant l'enregistrement, revenue à l'état d'avant et erreur affichée si c'est refusé. Pas de case
+  depuis « Mes cartes », l'album d'une catégorie ou d'une page de Wikipédia, ni l'album d'un ami.
+- **Collection complète** (toutes ses cartes, au moins une) : sa ligne dans « Mes collections » et l'en-tête de son
+  album (titre, « N sur N ») ont un **tour doré et brillant** (bordure en dégradé conique or, lueur dorée ; le reflet fait
+  le tour en 8 s, immobile si le système demande moins d'animations, `prefers-reduced-motion`, ou sans `@property`) ;
+  « ✓ Complète » en or à la place du pourcentage sur la ligne, en pastille dans l'en-tête, « collection complète » dans
+  le nom accessible de la ligne. De même pour les collections complètes d'un ami (« Ses collections », album). Pas pour
+  l'album d'une catégorie ou d'une page de Wikipédia (pas encore une collection).
 
 Bandeau : « N collections » = le nombre de collections de « Mes collections » (toutes, celles faites d'une catégorie
 comprises ; pas de total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » = toutes tes

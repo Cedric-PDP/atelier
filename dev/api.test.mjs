@@ -633,6 +633,26 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   assert.deepEqual(listed.items[0], { title: 'Rihanna', description: null, image: null, status: 'ok', qid: 'Q36844' });
   assert.equal(listed.items.filter((x) => x.qid).length, 2);
   await call('POST', 'targets/delete', { key: alice.key, body: { id: 'qids' } });
+  // Intercalaire (carte qui ouvre une section, qui compte comme les autres) : gardé seulement s'il vaut true (absent
+  // sinon), renvoyé par GET /api/targets, avec les autres champs.
+  r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'seps', name: 'Continents', items: [
+    { title: 'Continent', status: 'ok', sep: true },
+    { title: 'Afrique', status: 'ok' },
+    { title: 'Sous-continent', status: 'ok', qid: 'Q855697', rarity: 'R', sep: true },
+    ...[false, 'true', 1, null, {}, []].map((sep, i) => ({ title: `Pas un intercalaire ${i}`, status: 'ok', sep })),
+  ] } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.target.items.map((x) => ('sep' in x ? x.sep : '-')), [true, '-', true, '-', '-', '-', '-', '-', '-']);
+  const seps = (await call('GET', 'targets', { key: alice.key })).json.targets.find((x) => x.id === 'seps');
+  assert.deepEqual(seps.items.slice(0, 3), [
+    { title: 'Continent', description: null, image: null, status: 'ok', sep: true },
+    { title: 'Afrique', description: null, image: null, status: 'ok' },
+    { title: 'Sous-continent', description: null, image: null, status: 'ok', qid: 'Q855697', rarity: 'R', sep: true },
+  ]);
+  // Retiré à la sauvegarde suivante (la page renvoie la collection sans le drapeau).
+  r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'seps', name: 'Continents', items: seps.items.map(({ sep, ...it }) => it) } });
+  assert.ok(r.json.target.items.every((x) => !('sep' in x)));
+  await call('POST', 'targets/delete', { key: alice.key, body: { id: 'seps' } });
   await new Promise((res) => setTimeout(res, 5));
   r = await call('POST', 'targets/save', { key: alice.key, body: { id: t.id, name: 'Chanteuses 2', items: items.slice(0, 1) } });
   assert.equal(r.json.target.id, t.id);
@@ -2449,11 +2469,11 @@ await test('partage entre membres : collections à compléter (réglage à part,
   await call('POST', 'tags/set', { key: ben.key, body: { card_id: synth(1, 300)[0].id, tags: ['Étiquette-secrète'] } });
   const planets = (await save(ben, { name: 'Planètes', source: 'wp:Catégorie-secrète', items: [
     { title: 'Mars (planète)', description: 'description-secrète', image: 'https://upload.wikimedia.org/image-secrete.jpg', status: 'ok', qid: 'Q111' },
-    { title: 'Vénus (planète)', status: 'ok' },
+    { title: 'Vénus (planète)', status: 'ok', sep: true },
     { title: 'Mercure (homonymie)', status: 'disambiguation' },
-    { title: 'Article-introuvable', status: 'missing' },
+    { title: 'Article-introuvable', status: 'missing', sep: true },
   ] })).json.target;
-  const cat = (await save(ben, { name: 'Dieux grecs', source: 'catalog:dieux-grecs', items: [{ title: 'Zeus', qid: 'Q34201', status: 'ok' }, { title: 'Héra', status: 'ok' }] })).json.target;
+  const cat = (await save(ben, { name: 'Dieux grecs', source: 'catalog:dieux-grecs', items: [{ title: 'Zeus', qid: 'Q34201', status: 'ok', sep: true }, { title: 'Héra', status: 'ok' }] })).json.target;
   await patch(ben, { prefs: { note: 'préférence-secrète' } });
   await call('POST', 'session', { key: ben.key, body: { cookie: 'sb-auth=cookie-secret' } });
   const benImport = (await call('POST', 'import-key', { key: ben.key })).json.import_key;
@@ -2496,15 +2516,16 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
 
   // Ce qu'Ana voit : le nom de chaque collection (y compris celle du catalogue), sa nature (catégorie de Wikipédia
-  // suivie ou collection) et, pour chaque élément vérifié, son titre et son qid ; ni description, ni image, ni statut,
-  // ni source, ni dates ; les éléments introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir).
+  // suivie ou collection) et, pour chaque élément vérifié, son titre, son qid et s'il est un intercalaire (sep: true,
+  // avec ou sans qid) ; ni description, ni image, ni statut, ni source, ni dates ; les éléments introuvables ou
+  // d'homonymie sont omis (aucune carte ne peut les remplir), intercalaires compris.
   r = await targetsOf(ana, benPub, '0');
   assert.equal(r.status, 200);
   assert.deepEqual(Object.keys(r.json), ['member', 'targets', 'part', 'next_part']);
   assert.deepEqual([r.json.member, r.json.part, r.json.next_part], [{ id: benPub, name: 'Ben' }, '0', null]);
   const expected = [
-    { id: planets.id, name: 'Planètes', kind: 'category', items: [{ title: 'Mars (planète)', qid: 'Q111' }, { title: 'Vénus (planète)' }] },
-    { id: cat.id, name: 'Dieux grecs', kind: 'collection', items: [{ title: 'Zeus', qid: 'Q34201' }, { title: 'Héra' }] },
+    { id: planets.id, name: 'Planètes', kind: 'category', items: [{ title: 'Mars (planète)', qid: 'Q111' }, { title: 'Vénus (planète)', sep: true }] },
+    { id: cat.id, name: 'Dieux grecs', kind: 'collection', items: [{ title: 'Zeus', qid: 'Q34201', sep: true }, { title: 'Héra' }] },
   ].sort((a, b) => (a.id < b.id ? -1 : 1));
   assert.deepEqual(r.json.targets, expected);
   assert.deepEqual((await targetsOf(ana, benPub)).json, r.json, 'sans part : la première page');

@@ -137,8 +137,8 @@ function mockApi() {
           return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, count: u.cards.length, fetched_at: u.fetched_at,
             targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null })) });
         }
-        // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre et au qid des
-        // éléments vérifiés.
+        // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre, au qid et au
+        // drapeau d'intercalaire (sep: true) des éléments vérifiés.
         const mt = p.match(/^\/api\/members\/([^/?]+)\/targets(?:\?part=(.*))?$/);
         if (mt) {
           const u = users.find((x) => x.shared && x.pub === mt[1]);
@@ -147,7 +147,7 @@ function mockApi() {
           const part = mt[2] === undefined ? '0' : decodeURIComponent(mt[2]);
           const n = part === '0' ? 0 : Number(part.replace(/^tpage-/, ''));
           const page = u.targets.slice(n, n + 1).map((t) => ({ id: t.id, name: t.name, kind: String(t.source || '').startsWith('wp:') ? 'category' : 'collection',
-            items: t.items.filter((i) => (i.status || 'ok') === 'ok').map((i) => (i.qid ? { title: i.title, qid: i.qid } : { title: i.title })) }));
+            items: t.items.filter((i) => (i.status || 'ok') === 'ok').map((i) => ({ title: i.title, ...(i.qid ? { qid: i.qid } : {}), ...(i.sep === true ? { sep: true } : {}) })) }));
           return json(200, { member: { id: u.pub, name: u.name }, targets: page, part, next_part: n + 1 < u.targets.length ? 'tpage-' + (n + 1) : null });
         }
         const m = p.match(/^\/api\/members\/([^/?]+)\/cards(?:\?part=(.*))?$/);
@@ -2557,6 +2557,150 @@ async function main() {
       'collection du jeu : fiche de la carte manquante : ' + ft.slice(0, 300));
     f.querySelector('.close').click();
     await settle(400);
+  }
+
+  // Intercalaires et collections complètes (Ninon ; Olga, une amie qui montre ses collections). Un intercalaire (sep: true)
+  // est une vraie carte qui ouvre une section : cadre à onglet (carte possédée ou case vide), nouvelle ligne de la grille
+  // dans l'ordre de la collection (gridBreak), cadre seul en tri par rareté ou avec un filtre ; « # » dans l'éditeur (relu
+  // et enregistré) ; case « Intercalaire » de la fiche (carte possédée, case vide) qui renvoie la collection entière, ses
+  // autres champs gardés ; rien depuis « Mes cartes ». Collection complète : ligne et en-tête dorés (.complete), « Complète ».
+  // Chez Olga (lecture seule) : ses intercalaires, sa collection complète.
+  {
+    const keyN = await makeOtherAccount('Ninon');
+    const keyO = await makeOtherAccount('Olga');
+    const mkc = (id, title) => ({ id, title, rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'continent', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    const it = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
+    const CONT = [it('Continent', { sep: true }), it('Afrique', { qid: 'Q15', rarity: 'R', description: 'continent' }), it('Europe'), it('Sous-continent', { sep: true }),
+      it('Amérique du Nord'), it('Supercontinent', { sep: true }), it('Pangée')];
+    await sendImport(keyN, ['Continent', 'Afrique', 'Europe', 'Supercontinent', 'Pangée', 'Zeus'].map((t, i) => mkc('n' + i, t)));
+    await sendImport(keyO, CONT.map((x, i) => mkc('o' + i, x.title)));
+    check((await rawApi('POST', '/api/targets/save', keyN, { name: 'Continents', items: CONT })).status === 200, 'intercalaires : collection refusée');
+    await rawApi('POST', '/api/targets/save', keyN, { name: 'Olympe', items: [it('Zeus')] }); // complète (Ninon a Zeus)
+    await rawApi('POST', '/api/targets/save', keyO, { name: "Continents d'Olga", items: CONT });
+    for (const k of [keyN, keyO]) check((await rawApi('PATCH', '/api/me', k, { shared: true, shared_targets: true })).status === 200, 'intercalaires : partage refusé');
+    ls.set('classeur-key', keyN);
+    ls.set('classeur-known', JSON.stringify([{ key: keyN, name: 'Ninon' }]));
+    const p = openPage({ idb: 'absent' });
+    check(await waitFor(() => p.count() === 6), 'intercalaires : classeur de Ninon non ouvert');
+    p.doc.getElementById('tab-collections').click();
+    await settle();
+    const d = p.doc;
+    const rowOf = (name) => d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')) || null;
+    const btnIn = (t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    const grid = () => d.querySelectorAll('.cardgrid')[0] || null;
+    // Enfants de la grille : « | » pour une nouvelle ligne, « [Titre] » pour un intercalaire (cadre), « Titre » sinon.
+    const layout = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => {
+      if (n.classList.contains('grid-break')) return '|';
+      const t = text(n.querySelector('h3'));
+      return n.querySelector('.sep-frame') || n.classList.contains('sep-frame') ? `[${t}]` : t;
+    }).join(' ') : '');
+    const serverSeps = async () => {
+      const t = (await rawApi('GET', '/api/targets', keyN)).body.targets.find((x) => x.name === 'Continents');
+      return { seps: t.items.filter((x) => x.sep === true).map((x) => x.title).join(', '), afrique: t.items.find((x) => x.title === 'Afrique'), t };
+    };
+    // « Mes collections » : Olympe complète (tour doré, « Complète » au lieu du pourcentage), Continents non.
+    check(rowOf('Olympe') && rowOf('Olympe').classList.contains('complete') && text(rowOf('Olympe')).includes('Complète') && !text(rowOf('Olympe')).includes('100 %')
+      && (rowOf('Olympe').getAttribute('aria-label') || '').includes('collection complète'), 'collection complète : ligne dorée attendue, ' + (rowOf('Olympe') ? rowOf('Olympe').className + ' / ' + text(rowOf('Olympe')) : 'absente'));
+    check(!rowOf('Continents').classList.contains('complete') && text(rowOf('Continents')).includes('71 %') && !text(rowOf('Continents')).includes('Complète'), 'collection incomplète : pas de tour doré, ' + text(rowOf('Continents')));
+    rowOf('Olympe').click();
+    await settle(80);
+    {
+      const at = d.querySelectorAll('.album-title')[0];
+      check(at && at.classList.contains('complete') && text(at).includes('1 sur 1') && text(at).includes('Complète'), 'en-tête d\'une collection complète : ' + (at ? at.className + ' / ' + text(at) : 'absent'));
+    }
+    btnIn('← Toutes les collections').click();
+    await settle();
+    // Album des continents, dans l'ordre : trois sections, intercalaires dans leur cadre (case vide comprise).
+    rowOf('Continents').click();
+    await settle(80);
+    check(!d.querySelectorAll('.album-title')[0].classList.contains('complete'), 'collection incomplète : en-tête doré');
+    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée', 'intercalaires dans l\'ordre : ' + layout());
+    {
+      const cont = d.querySelectorAll('.cell').find((c) => text(c.querySelector('.card__title')) === 'Continent');
+      check(cont.classList.contains('sep') && (cont.querySelector('.card').getAttribute('aria-label') || '').startsWith('Continent, Commune, intercalaire'),
+        'carte intercalaire : classe ou nom accessible, ' + cont.className + ' / ' + cont.querySelector('.card').getAttribute('aria-label'));
+      const sous = d.querySelectorAll('.slot').find((s) => text(s.querySelector('h3')) === 'Sous-continent');
+      check(sous.classList.contains('sep') && sous.parentNode.classList.contains('sep-frame') && (sous.querySelector('.slot__open').getAttribute('aria-label') || '').startsWith('Sous-continent, intercalaire :'),
+        'case vide intercalaire : cadre ou nom accessible');
+      check(!d.querySelectorAll('.cell').find((c) => text(c.querySelector('.card__title')) === 'Afrique').classList.contains('sep'), 'Afrique n\'est pas un intercalaire');
+    }
+    // Tri par rareté, filtre « Manquantes » : le cadre reste, plus de nouvelle ligne.
+    btnIn('Rareté').click();
+    await settle();
+    check(!d.querySelectorAll('.grid-break').length && d.querySelectorAll('.sep-frame').length === 3, 'tri par rareté : cadres sans sections attendus, ' + layout());
+    btnIn('Ordre').click();
+    btnIn('Manquantes').click();
+    await settle();
+    check(layout() === '[Sous-continent] Amérique du Nord', 'filtre « Manquantes » : ' + layout());
+    btnIn('Toutes').click();
+    await settle();
+    // Éditeur : « # » devant les intercalaires ; « # » retiré de Supercontinent, ajouté (sans espace) à Pangée, enregistré
+    // sans revérifier les articles (tous déjà connus).
+    btnIn('Modifier').click();
+    await settle();
+    {
+      const ta = d.getElementById('ed-text');
+      check(ta && ta.value === '# Continent\nAfrique\nEurope\n# Sous-continent\nAmérique du Nord\n# Supercontinent\nPangée', 'éditeur : intercalaires en « # » attendus, ' + JSON.stringify(ta && ta.value));
+      check(text(d.querySelectorAll('.modal')[0]).includes('7 lignes · 3 intercalaires') && text(d.querySelectorAll('.modal')[0]).includes('« # » en début de ligne'), 'éditeur : explication ou compte des intercalaires absent');
+      const wikiMark = apiLog.length;
+      type(ta, '# Continent\nAfrique\nEurope\n#  Sous-continent\nAmérique du Nord\nSupercontinent\n#Pangée\n');
+      d.querySelectorAll('.modal')[0].querySelectorAll('button').find((b) => text(b).trim() === 'Enregistrer').click();
+      check(await waitFor(() => !d.querySelectorAll('.modal').length), 'éditeur : enregistrement sans effet, ' + text(d.querySelectorAll('.modal')[0] || d.body).slice(0, 300));
+      check(apiLog.slice(wikiMark).filter((x) => x.startsWith('POST /api/targets/save')).length === 1, 'éditeur : un seul enregistrement attendu');
+    }
+    {
+      const s = await serverSeps();
+      check(s.seps === 'Continent, Sous-continent, Pangée' && s.afrique.qid === 'Q15' && s.afrique.rarity === 'R' && s.afrique.description === 'continent',
+        'éditeur : intercalaires enregistrés (ou autres champs perdus) : ' + s.seps + ' / ' + JSON.stringify(s.afrique));
+    }
+    await settle(80);
+    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord Supercontinent | [Pangée]', 'après l\'éditeur : ' + layout());
+    // Fiche d'une carte possédée de l'album : case « Intercalaire » cochée ; décochée, la collection est renvoyée sans le
+    // drapeau (le reste gardé).
+    const sepBox = () => { const t = d.querySelectorAll('.sep-toggle')[0]; return t ? t.querySelector('input') : null; };
+    d.querySelectorAll('.card').find((c) => text(c.querySelector('.card__title')) === 'Pangée').click();
+    await settle(80);
+    check(sepBox() && sepBox().checked && text(d.querySelectorAll('.sep-toggle')[0]).includes('« Continents »'), 'fiche : case « Intercalaire » cochée attendue, ' + text(d.querySelectorAll('.fiche')[0] || d.body).slice(0, 300));
+    sepBox().checked = false;
+    sepBox().dispatch('change');
+    check(await waitFor(() => sepBox() && !sepBox().disabled && !sepBox().checked), 'fiche : case « Intercalaire » restée cochée');
+    {
+      const s = await serverSeps();
+      check(s.seps === 'Continent, Sous-continent' && s.afrique.qid === 'Q15' && s.t.items.length === 7, 'fiche : intercalaire non retiré (ou collection abîmée) : ' + s.seps + ' / ' + JSON.stringify(s.afrique));
+    }
+    d.querySelectorAll('.fiche')[0].querySelector('.close').click();
+    await settle(400);
+    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord Supercontinent Pangée', 'après la fiche (carte) : ' + layout());
+    // Fiche d'une case vide : même case, cochée cette fois.
+    d.querySelectorAll('.slot__open').find((b) => (b.getAttribute('aria-label') || '').startsWith('Amérique du Nord :')).click();
+    await settle(80);
+    check(sepBox() && !sepBox().checked && d.querySelectorAll('.fiche--missing').length === 1, 'fiche d\'une case vide : case « Intercalaire » décochée attendue');
+    sepBox().checked = true;
+    sepBox().dispatch('change');
+    check(await waitFor(() => sepBox() && !sepBox().disabled), 'fiche d\'une case vide : enregistrement sans fin');
+    check((await serverSeps()).seps === 'Continent, Sous-continent, Amérique du Nord', 'fiche d\'une case vide : intercalaire non enregistré, ' + (await serverSeps()).seps);
+    d.querySelectorAll('.fiche')[0].querySelector('.close').click();
+    await settle(400);
+    check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée', 'après la fiche (case vide) : ' + layout());
+    // Depuis « Mes cartes », la fiche n'a pas la case (aucun album ouvert là).
+    d.getElementById('tab-cartes').click();
+    await settle();
+    d.querySelectorAll('.card').find((c) => text(c.querySelector('.card__title')) === 'Pangée').click();
+    await settle(80);
+    check(d.querySelectorAll('.fiche').length === 1 && !d.querySelectorAll('.sep-toggle').length, 'fiche ouverte depuis « Mes cartes » : pas de case « Intercalaire »');
+    d.querySelectorAll('.fiche')[0].querySelector('.close').click();
+    await settle(400);
+    // Chez Olga (lecture seule) : sa collection complète (ligne et en-tête dorés), ses intercalaires et ses sections.
+    d.getElementById('tab-amis').click();
+    check(await waitFor(() => !!d.querySelectorAll('button').find((b) => b.getAttribute('aria-label') === 'Parcourir le classeur de Olga'), 5000), 'intercalaires : Olga absente d\'« Entre amis »');
+    d.querySelectorAll('button').find((b) => b.getAttribute('aria-label') === 'Parcourir le classeur de Olga').click();
+    check(await waitFor(() => !!rowOf("Continents d'Olga"), 5000), 'collections d\'Olga absentes');
+    check(rowOf("Continents d'Olga").classList.contains('complete') && text(rowOf("Continents d'Olga")).includes('Complète'), 'collection complète d\'Olga : ligne dorée attendue, ' + text(rowOf("Continents d'Olga")));
+    rowOf("Continents d'Olga").click();
+    await settle(80);
+    check(d.querySelectorAll('.album-title')[0].classList.contains('complete') && layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée',
+      'album d\'Olga : en-tête doré et intercalaires attendus, ' + layout());
+    check(!d.querySelectorAll('.sep-toggle').length, 'album d\'Olga : rien à modifier');
   }
 
   // Propositions d'après les cartes, sans les sous-catégories (Iris : 8 cartes de couleurs). Rouge, Vert et Jaune sont

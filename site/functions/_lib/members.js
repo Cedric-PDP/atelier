@@ -7,9 +7,9 @@
 // ci-dessous) : un membre est désigné par son identifiant public (users.public_id, tiré à chaque activation du partage,
 // effacé à sa désactivation).
 // Second réglage, à part (users.shared_targets, seulement avec le premier) : montrer aussi ses collections à compléter,
-// réduites au nom de chaque collection et, pour chaque élément vérifié, à son titre et à son qid (GET
-// /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée, catégorie) ni dates :
-// seulement si c'est une catégorie de Wikipédia suivie (kind).
+// réduites au nom de chaque collection et, pour chaque élément vérifié, à son titre, à son qid et à son drapeau
+// d'intercalaire (GET /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée,
+// catégorie) ni dates : seulement si c'est une catégorie de Wikipédia suivie (kind).
 // Le site ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre joueurs.
 
 import { HttpError, raw } from './http.js';
@@ -138,8 +138,9 @@ const MEMBER_T = 'SELECT public_id AS id, name, shared_targets AS st FROM users 
 // Une page de collections par clé (id > dernière lue) : `before` = taille rangée des collections qui la précèdent dans
 // la page ; on garde celles qui commencent sous TARGETS_PAGE_BYTES (la première toujours), et la suivante revient sans
 // contenu (j NULL) pour dire qu'il en reste. Chaque collection est réduite en SQL : nom, puis pour chaque élément vérifié
-// (status ok) son titre et son qid s'il en a un ; rien d'autre ne sort de targets (ni source, ni dates, ni descriptions),
-// sauf sa nature (kind) : 'category' pour une catégorie de Wikipédia suivie (source « wp:… »), sinon 'collection'.
+// (status ok) son titre, son qid s'il en a un et `sep: true` si c'est un intercalaire ; rien d'autre ne sort de targets
+// (ni source, ni dates, ni descriptions), sauf sa nature (kind) : 'category' pour une catégorie de Wikipédia suivie
+// (source « wp:… »), sinon 'collection'.
 const MEMBER_TARGETS = `WITH page AS (
     SELECT t.id, t.name, t.items, t.source,
       COALESCE(SUM(length(CAST(t.items AS BLOB))) OVER (ORDER BY t.id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS before
@@ -150,9 +151,14 @@ const MEMBER_TARGETS = `WITH page AS (
       'id', p.id,
       'name', p.name,
       'kind', CASE WHEN substr(coalesce(p.source, ''), 1, 3) = 'wp:' THEN 'category' ELSE 'collection' END,
-      'items', (SELECT json_group_array(json(CASE WHEN json_extract(e.value, '$.qid') IS NULL
-          THEN json_object('title', json_extract(e.value, '$.title'))
-          ELSE json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid')) END))
+      'items', (SELECT json_group_array(json(CASE
+          WHEN json_extract(e.value, '$.qid') IS NULL AND coalesce(json_type(e.value, '$.sep'), '') <> 'true'
+            THEN json_object('title', json_extract(e.value, '$.title'))
+          WHEN json_extract(e.value, '$.qid') IS NULL
+            THEN json_object('title', json_extract(e.value, '$.title'), 'sep', json('true'))
+          WHEN coalesce(json_type(e.value, '$.sep'), '') <> 'true'
+            THEN json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid'))
+          ELSE json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid'), 'sep', json('true')) END))
         FROM json_each(p.items) AS e
         WHERE e.type = 'object' AND json_type(e.value, '$.title') = 'text' AND coalesce(json_extract(e.value, '$.status'), 'ok') = 'ok')
     ) END AS j
