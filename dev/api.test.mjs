@@ -202,7 +202,12 @@ async function test(name, fn) {
   console.log(`ok  ${name}`);
 }
 
+// Les tests reprennent les mêmes prénoms (Ana, Ben…) et l'inscription refuse un prénom déjà pris (2026-10-17) : l'ancien
+// compte de ce nom est renommé avant.
 async function signup(name, e = env) {
+  if (name && e.DB && e.DB.sqlite) {
+    try { e.DB.sqlite.prepare("UPDATE users SET name = name || ' #' || id WHERE name = ?").run(name); } catch (x) { /* base neuve : pas encore de table */ }
+  }
   const r = await call('POST', 'account', { body: { code: 'invitation', name }, e });
   assert.equal(r.status, 201);
   return r.json;
@@ -309,6 +314,31 @@ await test('inscription : fermée, code faux, code bon', async () => {
   // Base créée par une version précédente (sans import_key_hash) : la colonne est ajoutée au premier appel.
   const columns = dflt.DB.sqlite.prepare('PRAGMA table_info(users)').all().map((c) => c.name);
   assert.ok(columns.includes('import_key_hash') && columns.includes('prefs'), columns.join(','));
+});
+
+await test('inscription : prénom déjà pris refusé, classeur jamais utilisé remplacé', async () => {
+  const e = makeEnv();
+  const first = await signup('Trykh4r', e);
+  // Même prénom (casse, accents, espaces) d'un classeur jamais utilisé : remplacé, l'ancienne clé ne marche plus.
+  const second = await signup('  trykh4r ', e);
+  assert.equal((await call('GET', 'me', { key: first.key, e })).status, 401);
+  assert.equal((await call('GET', 'me', { key: second.key, e })).status, 200);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM users').get().n, 1);
+  // Utilisé (une collection) : refusé, avec le moyen de retrouver son lien.
+  await call('POST', 'targets/save', { key: second.key, body: { name: 'Continents', items: [{ title: 'Europe', status: 'ok' }] }, e });
+  let r = await call('POST', 'account', { body: { code: 'invitation', name: 'TRYKH4R' }, e });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /Il existe déjà un classeur « trykh4r »\..*lien personnel.*Réglages/);
+  assert.equal((await call('GET', 'me', { key: second.key, e })).status, 200, 'le classeur existant ne doit pas bouger');
+  // Accents : « Cléo » = « cleo » ; un favori créé suffit à dire le classeur utilisé.
+  const cleo = await signup('Cléo', e);
+  await call('POST', 'import-key', { key: cleo.key, e });
+  r = await call('POST', 'account', { body: { code: 'invitation', name: 'cleo' }, e });
+  assert.equal(r.status, 409);
+  // Sans prénom, ou un autre prénom : pas de contrôle.
+  assert.equal((await call('POST', 'account', { body: { code: 'invitation' }, e })).status, 201);
+  assert.equal((await call('POST', 'account', { body: { code: 'invitation' }, e })).status, 201);
+  assert.equal((await call('POST', 'account', { body: { code: 'invitation', name: 'Trykh4r bis' }, e })).status, 201);
 });
 
 await test('authentification et /api/me', async () => {
@@ -2282,6 +2312,9 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   r = await members(ana);
   assert.equal(r.status, 200);
   assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', count: 12, fetched_at: (await me(ben)).fetched_at, targets: null }]);
+  // Classeur vide (ni carte ni collection) : absent de la liste ; Ana y apparaît avec sa première collection.
+  assert.deepEqual((await members(ben)).json.members, [], 'un classeur vide ne doit pas être listé');
+  await call('POST', 'targets/save', { key: ana.key, body: { name: 'Première', items: [{ title: 'Article premier', status: 'ok' }] } });
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.id, m.name, m.count]), [[anaPub, 'Ana', 0]]);
   assert.equal((await members(cleo)).status, 403);
   assert.equal((await pageOf(cleo, benPub)).status, 403);
@@ -2412,6 +2445,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
 
   // Ben : des cartes, des étiquettes, deux collections (une à lui, une ajoutée du catalogue), des préférences, une session.
   await upload(ben.key, synth(6, 300));
+  await upload(ana.key, synth(2, 900)); // Ana : deux cartes (un classeur vide n'est pas listé)
   await call('POST', 'tags/set', { key: ben.key, body: { card_id: synth(1, 300)[0].id, tags: ['Étiquette-secrète'] } });
   const planets = (await save(ben, { name: 'Planètes', source: 'wp:Catégorie-secrète', items: [
     { title: 'Mars (planète)', description: 'description-secrète', image: 'https://upload.wikimedia.org/image-secrete.jpg', status: 'ok', qid: 'Q111' },

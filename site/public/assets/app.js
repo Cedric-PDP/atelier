@@ -6524,7 +6524,7 @@
         ]);
       const link = h('form', { class: 'panel', onSubmit: (e) => { e.preventDefault(); useLink(); } }, [
         h('h2', null, "J'ai déjà un lien"),
-        h('p', { class: 'muted' }, 'Ouvre ton lien personnel, ou colle-le ici.'),
+        h('p', { class: 'muted' }, "Ouvre ton lien personnel, ou colle-le ici. Tu le retrouves dans les Réglages du classeur (« Ton lien personnel »), sur un appareil où il est déjà ouvert : ne recrée pas de classeur."),
         h('label', { class: 'field' }, [h('span', null, 'Ton lien personnel'), h('input', { value: w.link, autocomplete: 'off', spellcheck: 'false', placeholder: location.origin + '/#cle=…',
           onInput: (e) => { w.link = e.target.value; } })]),
         errLine(w.linkError),

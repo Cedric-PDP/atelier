@@ -26,6 +26,28 @@ function maxUsers(env) {
   return Number.isInteger(n) && n > 0 ? n : DEFAULT_MAX_USERS;
 }
 
+// Nom comparé sans casse, accents ni espaces en trop : « Trykh4r » = « trykh4r ».
+const foldName = (s) => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+// Classeur jamais utilisé : aucune synchro, pas de favori, aucune carte, aucune collection.
+const UNUSED = `SELECT 1 AS unused FROM users AS u WHERE u.id = ?1 AND u.fetched_at IS NULL AND u.import_key_hash IS NULL
+  AND NOT EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = u.id) AND NOT EXISTS (SELECT 1 FROM targets AS t WHERE t.user_id = u.id)`;
+
+// Un prénom déjà pris par un autre classeur est refusé (2026-10-17 : des amis qui avaient perdu leur lien recréaient
+// un second classeur à leur nom) ; le message dit comment retrouver son lien. Sauf si ce classeur n'a jamais servi :
+// il est alors effacé, et le nouveau prend sa place.
+async function freeName(env, name) {
+  const { results } = await env.DB.prepare('SELECT id, name FROM users WHERE name IS NOT NULL').all();
+  const same = results.filter((r) => foldName(r.name) === foldName(name));
+  for (const r of same) {
+    if (!(await env.DB.prepare(UNUSED).bind(r.id).first())) {
+      throw new HttpError(409, `Il existe déjà un classeur « ${r.name} ». Si c'est le tien, ouvre-le avec ton lien personnel (« J'ai déjà un lien ») : `
+        + "il est dans les Réglages du classeur, sur un appareil où il est déjà ouvert. Lien perdu : demande un nouveau lien à la personne qui gère "
+        + 'le classeur. Sinon, choisis un autre prénom.');
+    }
+  }
+  for (const r of same) await deleteMe(env, { id: r.id });
+}
+
 // POST /api/account {code, name?}
 export async function createAccount(env, body) {
   const expected = typeof env.SIGNUP_CODE === 'string' ? env.SIGNUP_CODE.trim() : '';
@@ -34,6 +56,7 @@ export async function createAccount(env, body) {
   if (!(await safeEqual(code, expected))) throw new HttpError(403, "Code d'invitation incorrect.");
 
   const name = cleanName(body.name);
+  if (name) await freeName(env, name);
   const id = randomToken(12);
   const key = randomToken(32);
   // Nombre de comptes plafonné (MAX_USERS) : vérifié dans la même requête que l'insertion. Partage entre membres

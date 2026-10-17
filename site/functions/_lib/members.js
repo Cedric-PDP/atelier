@@ -62,13 +62,15 @@ function requireSharing(user) {
 
 // Les autres membres qui partagent (50 comptes au plus), nombre de cartes compté sur la clé primaire (user_id, card_id).
 // Pour ceux qui montrent aussi leurs collections : leur nombre et la date du dernier changement (50 au plus, même clé
-// primaire), de quoi ne les relire que si elles ont changé.
+// primaire), de quoi ne les relire que si elles ont changé. Classeurs vides (ni carte ni collection) écartés : rien à
+// y voir (2026-10-17, classeurs créés en double puis abandonnés).
 const MEMBERS = `SELECT u.public_id AS id, u.name, u.fetched_at,
     (SELECT COUNT(*) FROM cards AS c WHERE c.user_id = u.id) AS count,
     u.shared_targets AS st,
     CASE WHEN u.shared_targets = 1 THEN (SELECT COUNT(*) FROM targets AS t WHERE t.user_id = u.id) END AS t_count,
     CASE WHEN u.shared_targets = 1 THEN (SELECT MAX(t.updated_at) FROM targets AS t WHERE t.user_id = u.id) END AS t_at
   FROM users AS u WHERE u.shared = 1 AND u.public_id IS NOT NULL AND u.id <> ?1
+    AND (EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = u.id) OR EXISTS (SELECT 1 FROM targets AS t WHERE t.user_id = u.id))
   ORDER BY u.created_at, u.public_id`;
 
 // GET /api/members : targets = null si le membre ne montre pas ses collections, sinon {count, updated_at}.
