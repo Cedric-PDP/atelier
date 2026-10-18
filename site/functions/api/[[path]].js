@@ -3,7 +3,7 @@
 
 import { HttpError, MAX_BODY, errorResponse, json, readJson } from '../_lib/http.js';
 import { ensureSchema } from '../_lib/db.js';
-import { authenticate, createAccount, deleteMe, getMe, newImportKey, patchMe, rotateKey } from '../_lib/auth.js';
+import { adoptImportKey, authenticate, createAccount, deleteMe, getImportKey, getMe, newImportKey, patchMe, rotateKey } from '../_lib/auth.js';
 import { listCards } from '../_lib/cards.js';
 import { importRoute } from '../_lib/import.js';
 import { deleteSession, saveSession } from '../_lib/session.js';
@@ -32,7 +32,8 @@ const ROUTES = {
   health: { GET: [health, false] },
   account: { POST: [(env, _user, body) => createAccount(env, body), false] },
   me: { GET: [getMe, 'main'], PATCH: [patchMe, 'main'], DELETE: [deleteMe, 'main'] },
-  'import-key': { POST: [newImportKey, 'main'] },
+  'import-key': { GET: [getImportKey, 'main'], POST: [newImportKey, 'main'] },
+  'import-key/adopt': { POST: [adoptImportKey, 'main'] },
   'key/rotate': { POST: [rotateKey, 'main'] },
   cards: { GET: [listCards, 'main'] },
   import: { POST: [importRoute, 'import'] },

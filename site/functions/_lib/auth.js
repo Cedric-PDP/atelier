@@ -6,6 +6,7 @@ import { quickSyncAllowed, syncState } from './import.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 import { patchSharing } from './members.js';
 import { eraseChatOf } from './chat.js';
+import { decryptCookie, encryptCookie } from './session.js';
 
 const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
   + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets, last_sync';
@@ -172,12 +173,59 @@ export async function patchMe(env, user, body) {
   return { user: publicUser({ ...user, name }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets };
 }
 
+// La clé d'import est aussi gardée chiffrée (import_key_enc : AES-GCM de COOKIE_SECRET, donnée associée
+// « import-key:<id> ») : chaque appareil du titulaire reprend la clé du favori en cours (GET /api/import-key) au lieu
+// de garder la sienne. Avant (2026-10-18), elle n'était gardée que dans le navigateur qui l'avait créée : un favori créé
+// ailleurs la rendait périmée, et la page reproposait sans fin ce favori périmé (« Favori périmé » à chaque essai).
+const importAad = (id) => 'import-key:' + id;
+async function sealImportKey(env, userId, importKey) {
+  try {
+    return await encryptCookie(env, importAad(userId), importKey);
+  } catch {
+    return null; // sans COOKIE_SECRET : pas de copie (comme avant, seul ce navigateur la garde)
+  }
+}
+const IMPORT_KEY_RE = /^[A-Za-z0-9_-]{43}$/;
+const STALE_FAVORI = "Favori périmé : la clé gardée dans ce navigateur n'est plus celle de ton favori (un favori plus récent a été créé sur un autre appareil ou navigateur). Crée un nouveau favori, puis remplace l'ancien partout.";
+
 // POST /api/import-key : nouvelle clé d'import (le favori qui portait l'ancienne cesse de marcher).
 export async function newImportKey(env, user) {
   const importKey = randomToken(32);
-  await env.DB.prepare('UPDATE users SET import_key_hash = ?1 WHERE id = ?2')
-    .bind(await sha256Hex(importKey), user.id)
+  await env.DB.prepare('UPDATE users SET import_key_hash = ?1, import_key_enc = ?2 WHERE id = ?3')
+    .bind(await sha256Hex(importKey), await sealImportKey(env, user.id, importKey), user.id)
     .run();
+  return { import_key: importKey };
+}
+
+// GET /api/import-key (clé principale) : la clé du favori en cours, la même sur tous les appareils ; 404 sans favori, ou
+// pour un favori créé avant la copie chiffrée (la page propose alors la clé qu'elle garde : POST /api/import-key/adopt).
+export async function getImportKey(env, user) {
+  const row = await env.DB.prepare('SELECT import_key_hash, import_key_enc FROM users WHERE id = ?1').bind(user.id).first();
+  if (row && row.import_key_hash && row.import_key_enc) {
+    try {
+      const importKey = await decryptCookie(env, importAad(user.id), row.import_key_enc);
+      if ((await sha256Hex(importKey)) === row.import_key_hash) return { import_key: importKey };
+    } catch {
+      // copie illisible (secret changé) : comme sans copie
+    }
+  }
+  throw new HttpError(404, row && row.import_key_hash
+    ? "Le classeur n'a pas de copie de la clé de ton favori (créé avant le 18 octobre 2026)."
+    : "Pas encore de favori : crée-le dans l'onglet « Mettre à jour ».");
+}
+
+// POST /api/import-key/adopt {import_key} (clé principale) : la clé gardée par un navigateur, si c'est bien celle du
+// favori en cours, devient la copie du classeur (favori d'avant le 18/10) ; sinon 409 : ce favori est périmé.
+export async function adoptImportKey(env, user, body) {
+  const importKey = typeof body.import_key === 'string' ? body.import_key.trim() : '';
+  if (!IMPORT_KEY_RE.test(importKey)) throw new HttpError(400, "« import_key » doit être une clé d'import (43 lettres, chiffres, « - » ou « _ »).");
+  const hash = await sha256Hex(importKey);
+  const row = await env.DB.prepare('SELECT import_key_hash FROM users WHERE id = ?1').bind(user.id).first();
+  if (!row || row.import_key_hash !== hash) throw new HttpError(409, STALE_FAVORI);
+  const sealed = await sealImportKey(env, user.id, importKey);
+  if (sealed) {
+    await env.DB.prepare('UPDATE users SET import_key_enc = ?1 WHERE id = ?2 AND import_key_hash = ?3').bind(sealed, user.id, hash).run();
+  }
   return { import_key: importKey };
 }
 

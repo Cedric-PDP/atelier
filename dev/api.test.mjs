@@ -345,6 +345,42 @@ await test('inscription : prénom déjà pris refusé, classeur jamais utilisé 
   assert.equal((await call('POST', 'account', { body: { code: 'invitation', name: 'Trykh4r bis' }, e })).status, 201);
 });
 
+await test("clé du favori : la même sur tous les appareils (copie chiffrée), adoption d'une ancienne, favori périmé", async () => {
+  const e = makeEnv();
+  const u = await signup('Favori', e);
+  const getKey = (key = u.key) => call('GET', 'import-key', { key, e });
+  // Pas encore de favori : 404.
+  assert.equal((await getKey()).status, 404);
+  const k1 = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
+  assert.match(k1, /^[A-Za-z0-9_-]{43}$/);
+  // Un autre appareil (même clé principale) retrouve la même clé, sans en créer une nouvelle.
+  let r = await getKey();
+  assert.deepEqual([r.status, r.json.import_key], [200, k1]);
+  const enc = e.DB.sqlite.prepare('SELECT import_key_enc FROM users WHERE id = ?').get(u.user.id).import_key_enc;
+  assert.ok(enc && !enc.includes(k1), 'copie chiffrée, jamais en clair');
+  // La clé d'import elle-même ne la lit pas (clé principale seulement).
+  assert.equal((await getKey(k1)).status, 401);
+  // Favori d'avant la copie (import_key_enc vide) : 404, puis la bonne clé est adoptée, une périmée refusée (409).
+  e.DB.sqlite.prepare('UPDATE users SET import_key_enc = NULL WHERE id = ?').run(u.user.id);
+  assert.equal((await getKey()).status, 404);
+  r = await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: 'p'.repeat(43) } });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /Favori périmé/);
+  assert.equal((await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: 'court' } })).status, 400);
+  r = await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: k1 } });
+  assert.deepEqual([r.status, r.json.import_key], [200, k1]);
+  assert.equal((await getKey()).json.import_key, k1);
+  // Nouveau favori : l'ancienne clé cesse de marcher partout, et tous les appareils reprennent la nouvelle.
+  const k2 = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
+  assert.equal((await getKey()).json.import_key, k2);
+  assert.equal((await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: k1 } })).status, 409);
+  // Sans COOKIE_SECRET : le favori se crée toujours, sans copie (404 ensuite, comme avant).
+  const e2 = makeEnv({ COOKIE_SECRET: '' });
+  const v = await signup('Sans secret', e2);
+  assert.equal((await call('POST', 'import-key', { key: v.key, e: e2 })).status, 200);
+  assert.equal((await call('GET', 'import-key', { key: v.key, e: e2 })).status, 404);
+});
+
 await test('authentification et /api/me', async () => {
   let r = await call('GET', 'me');
   assert.equal(r.status, 401);

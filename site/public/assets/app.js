@@ -265,7 +265,7 @@
     tagEdit: null,
     settings: { name: '', busy: false, error: '', saved: false },
     copied: '',
-    bm: { src: null, error: '', clicked: false, importKey: null, busy: false },
+    bm: { src: null, error: '', clicked: false, importKey: null, busy: false, checking: false, stale: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
     prefs: { hidden_proposals: [], hide_proposals: false }, // préférences du compte (GET/PATCH /api/me) : propositions retirées, masquées
     tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
@@ -2496,12 +2496,48 @@
       S.bm.error = "Le favori n'a pas pu être préparé : recharge la page, puis réessaie.";
     }
   }
-  // Prépare le favori (source, clé d'import gardée) et le journal des synchros pour l'onglet « Mettre à jour ».
+  // Clé d'import gardée dans ce navigateur (classeur-import-key, par classeur) : posée, ou retirée (k = null).
+  function keepImportKey(k) {
+    const me = S.me && S.me.user;
+    if (me) {
+      const all = importKeys();
+      if (k) all[me.id] = k; else delete all[me.id];
+      store.set(LS.importKey, JSON.stringify(all));
+    }
+    S.bm.importKey = k;
+  }
+  // Clé du favori : celle du classeur (GET /api/import-key), la même sur tous les appareils, même si ce navigateur en
+  // garde une autre. Favori créé avant que le classeur n'en garde une copie (404) : la clé gardée ici est adoptée si c'est
+  // celle du favori en cours (POST /api/import-key/adopt), oubliée sinon (409 : périmée, un favori plus récent a été créé
+  // ailleurs ; avant le 2026-10-18, la page reproposait ce favori périmé sans fin). Classeur injoignable : celle d'ici.
+  async function syncImportKey() {
+    const stored = storedImportKey();
+    S.bm.checking = true;
+    try {
+      try {
+        const r = await api('GET', '/api/import-key');
+        if (r && typeof r.import_key === 'string' && r.import_key) { keepImportKey(r.import_key); S.bm.stale = false; return; }
+      } catch (e) {
+        if (e.status !== 404) { S.bm.importKey = stored; return; }
+      }
+      if (!stored) { S.bm.importKey = null; return; }
+      try {
+        const r = await api('POST', '/api/import-key/adopt', { import_key: stored });
+        keepImportKey(r.import_key || stored);
+        S.bm.stale = false;
+      } catch (e) {
+        if (e.status === 409) { keepImportKey(null); S.bm.stale = true; } else S.bm.importKey = stored;
+      }
+    } finally {
+      S.bm.checking = false;
+    }
+  }
+  // Prépare le favori (source, clé d'import du classeur) et le journal des synchros pour l'onglet « Mettre à jour ».
   async function prepareFavori() {
     S.bm.clicked = false;
-    S.bm.importKey = storedImportKey();
+    S.bm.importKey = null;
     loadSyncLog();
-    await loadBookmarkletSource();
+    await Promise.all([syncImportKey(), loadBookmarkletSource()]);
   }
   function openFavori() {
     if (S.modal) closeModal();
@@ -2520,8 +2556,8 @@
       const r = await api('POST', '/api/import-key');
       if (!r.import_key || typeof r.import_key !== 'string') throw new Error("Le classeur n'a pas renvoyé de clé d'import : réessaie.");
       const me = S.me && S.me.user;
-      if (me) store.set(LS.importKey, JSON.stringify({ ...importKeys(), [me.id]: r.import_key }));
-      S.bm.importKey = r.import_key;
+      keepImportKey(r.import_key);
+      S.bm.stale = false;
       if (S.me) S.me.has_import_key = true;
       return true;
     } catch (e) {
@@ -5094,11 +5130,14 @@
     const hasKey = !!S.bm.importKey;
     const elsewhere = !!(S.me && S.me.has_import_key);
     let button;
-    if (!hasKey) {
+    if (!hasKey && S.bm.checking) {
+      button = h('p', { class: 'muted', role: 'status' }, 'Préparation du favori…');
+    } else if (!hasKey) {
       button = h('div', { class: 'notice' }, [
         h('p', null, "Pour fabriquer ton favori, le classeur crée une clé d'import : elle ne sert qu'à envoyer des cartes, jamais à ouvrir ton classeur."),
-        elsewhere ? h('p', { class: 'warn' }, 'Tu as déjà un favori (sur un autre navigateur, ou avant que celui-ci ne l\'oublie) : en créer un ici le remplace, et l\'ancien cessera de marcher.') : null,
-        h('button', { class: 'btn primary', type: 'button', disabled: S.bm.busy, onClick: createImportKey }, S.bm.busy ? 'Création…' : elsewhere ? 'Créer un nouveau favori' : 'Créer mon favori'),
+        S.bm.stale ? h('p', { class: 'warn', role: 'status' }, "Le favori gardé dans ce navigateur était périmé : un favori plus récent a été créé sur un autre appareil ou navigateur, avant que le classeur ne garde sa clé. Crée un nouveau favori ici et remplace l'ancien dans ta barre ; ensuite, tes autres appareils retrouveront ce même favori ici, sans le recréer.")
+          : elsewhere ? h('p', { class: 'warn' }, 'Tu as déjà un favori (sur un autre navigateur, ou avant que celui-ci ne l\'oublie) : en créer un ici le remplace, et l\'ancien cessera de marcher.') : null,
+        h('button', { class: 'btn primary', type: 'button', disabled: S.bm.busy, onClick: createImportKey }, S.bm.busy ? 'Création…' : elsewhere || S.bm.stale ? 'Créer un nouveau favori' : 'Créer mon favori'),
         errLine(S.bm.error),
       ]);
     } else if (url) {

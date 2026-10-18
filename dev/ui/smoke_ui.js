@@ -171,7 +171,14 @@ function mockApi() {
         return json(200, { ok: true });
       }
       if (p === '/api/chat' || p.startsWith('/api/chat?') || p.startsWith('/api/chat/')) return chatRoute(st, method, p, body || {});
-      if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); return json(200, { import_key: st.importKey }); }
+      if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); st.importSealed = true; return json(200, { import_key: st.importKey }); }
+      // Clé du favori gardée par le classeur (importSealed : sa copie chiffrée ; false = favori d'avant cette copie).
+      if (p === '/api/import-key' && method === 'GET') return st.importKey && st.importSealed !== false ? json(200, { import_key: st.importKey }) : json(404, { error: 'Pas de copie de la clé du favori.' });
+      if (p === '/api/import-key/adopt' && method === 'POST') {
+        if (!st.importKey || (body || {}).import_key !== st.importKey) return json(409, { error: 'Favori périmé.' });
+        st.importSealed = true;
+        return json(200, { import_key: st.importKey });
+      }
       if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
       if (p === '/api/cards' || p.startsWith('/api/cards?')) {
         // Lecture par morceaux comme le vrai serveur, avec un curseur opaque (chaîne) : 400 cartes par morceau ici.
@@ -765,11 +772,15 @@ async function main() {
   };
   const waitFor = async (cond, ms = 3000) => { for (let t = 0; t < ms && !cond(); t += 25) await sleep(25); return cond(); };
   // Envoi du favori simulé (CarteImport : les cartes sans leurs tags), par morceaux de 500.
+  // Avec les compteurs du jeu qui collent (total, totalUnique) : lecture vérifiée, le serveur peut retirer les cartes
+  // absentes (sans eux, depuis le 2026-10-17, il n'en retire aucune).
   const sendImport = async (key, list) => {
     const up = 'favori-' + Math.random().toString(36).slice(2);
     const rows = list.map(({ tags, ...c }) => c);
+    const stats = { total: rows.reduce((n, c) => n + (c.count || 1), 0), totalUnique: rows.length };
     for (let i = 0, part = 0; i < rows.length || part === 0; i += 500, part++) {
-      await rawApi('POST', '/api/import', key, { upload_id: up, part, last: i + 500 >= rows.length, cards: rows.slice(i, i + 500), source: 'bookmarklet' });
+      const last = i + 500 >= rows.length;
+      await rawApi('POST', '/api/import', key, { upload_id: up, part, last, cards: rows.slice(i, i + 500), ...(last ? { stats } : {}), source: 'bookmarklet' });
     }
   };
   // Le classeur rouvert dans une autre page du même navigateur (localStorage, IndexedDB et API partagés). live() :
@@ -844,6 +855,27 @@ async function main() {
   bm.dispatch('click');
   await settle();
   check(has('Pas ici'), 'clic sur le favori dans le classeur non intercepté');
+  // Clé du favori : celle du classeur (GET /api/import-key), même si ce navigateur en garde une autre ; favori d'avant la
+  // copie chiffrée (404) : la clé gardée ici est adoptée si c'est la bonne, sinon elle est périmée et la page le dit au
+  // lieu de reproposer sans fin ce favori périmé (« Favori périmé » à chaque essai, 2026-10-18).
+  if (!SERVER) {
+    const lsKeys = () => JSON.parse(ls.get('classeur-import-key') || '{}');
+    const meId = Object.keys(lsKeys())[0];
+    const bmHref = () => { const a = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0]; return a ? decodeURI(a.getAttribute('href') || a.href) : ''; };
+    const reopen = async () => { tabBtn('cartes').click(); await settle(); tabBtn('maj').click(); await settle(80); };
+    const old = 'v'.repeat(43);
+    ls.set('classeur-import-key', JSON.stringify({ [meId]: old }));
+    await reopen();
+    check(bmHref().includes('"' + importKey + '"') && !bmHref().includes(old) && lsKeys()[meId] === importKey, 'favori : la clé du classeur doit remplacer celle gardée ici');
+    api.st.importSealed = false; // favori créé avant la copie chiffrée
+    ls.set('classeur-import-key', JSON.stringify({ [meId]: old }));
+    await reopen();
+    check(!bmHref() && has('Le favori gardé dans ce navigateur était périmé') && !!buttonByText('Créer un nouveau favori') && !lsKeys()[meId],
+      'favori périmé : message et « Créer un nouveau favori » attendus, sans le favori périmé, ' + JSON.stringify(lsKeys()));
+    ls.set('classeur-import-key', JSON.stringify({ [meId]: importKey }));
+    await reopen();
+    check(bmHref().includes('"' + importKey + '"') && api.st.importSealed === true && !has('était périmé'), 'favori d\'avant la copie, bonne clé gardée ici : adoptée');
+  }
 
   // 3. Le favori sur wiki-masters.com : lecture simulée, regroupement, envoi par morceaux
   const imports = await runBookmarklet(bmCode, ctx.fetch, importKey);
@@ -2111,6 +2143,8 @@ async function main() {
     await sendImport(leaKey, [fc('l-jup', 'Jupiter (planète)', 'UR', 1), fc('l-sat', 'Saturne (planète)', 'SR', 3), fc('l-nep', 'Neptune', 'SR', 1), fc('l-a7', 'Article 7', 'C', 1)]);
     await sendImport(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
     for (const k of [paulKey, leaKey]) check((await rawApi('PATCH', '/api/me', k, { shared: true })).status === 200, 'partage des amis refusé');
+    // Partage activé dès la création (2026-10-16, vrai serveur) : coupé ici pour Cédric et Zoé, comme au départ du scénario.
+    for (const k of [myKey3, zoeKey]) check((await rawApi('PATCH', '/api/me', k, { shared: false })).status === 200, 'arrêt du partage refusé');
     // Sans partager soi-même : 403 (réciprocité), et l'onglet invite à partager sans rien lire des autres.
     check((await rawApi('GET', '/api/members', myKey3)).status === 403, 'sans partage, GET /api/members doit répondre 403');
     mark = apiLog.length;

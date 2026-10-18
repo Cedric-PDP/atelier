@@ -35,7 +35,9 @@ CREATE TABLE IF NOT EXISTS users (
     shared INTEGER NOT NULL DEFAULT 0,
     public_id TEXT,
     shared_targets INTEGER NOT NULL DEFAULT 0,
-    last_sync TEXT
+    last_sync TEXT,
+    -- clé d'import (celle du favori) chiffrée (AES-GCM de COOKIE_SECRET) : chaque appareil du titulaire retrouve la même
+    import_key_enc TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
