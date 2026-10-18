@@ -695,7 +695,8 @@ Deux zones, dans cet ordre :
    d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre (`ordered: false` dans
    `catalog.json`, liste reprise dans `app.js`) ; sauf celle faite de la colonne clé des tableaux d'une page : dans
    l'ordre des lignes, numérotée (tri « Ordre »). Son album est celui d'une collection :
-   « Ajouter par tags du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
+   « Ajouter par tags du jeu », « Modifier », « Réorganiser… » (qui explique pourquoi elle reste de A à Z : voir
+   « Réorganiser »), « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
    Wikipédia » (la catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
    comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
@@ -761,6 +762,61 @@ Deux zones, dans cet ordre :
    collection est renvoyée sans cet élément (`POST /api/targets/save`), la fiche se ferme, et le message « « <titre> »
    retirée de « <collection> ». » propose **« Annuler »** (10 s) : l'élément est remis à sa place, avec tous ses champs.
    Pas de bouton depuis « Mes cartes », l'album d'une catégorie ou d'une page de Wikipédia, ni celui d'un ami.
+   **« Réorganiser »** (2026-10-18, demande de l'utilisateur : « Il faudrait aussi qu'on puisse réorganiser les cartes
+   d'une collection à la main. ») : dans l'album d'une de tes collections **qui a un ordre** (à la main, du jeu `wm:`, de
+   la colonne clé d'une page `links:<titre>#<colonne>`, `wd`, `cat`… : tout sauf `wp:`, `links:<titre>` sans colonne et les
+   anciens thèmes du catalogue sans ordre), après « Modifier », s'il y a 2 éléments au moins. Il passe l'album en **mode
+   réorganisation** (tri « Ordre » et filtre « Toutes » remis, sélection vidée, fiche fermée) :
+   - **tous les éléments** (pas de « Afficher les suivantes »), dans l'ordre, en **vignettes réduites** (image 4:3 : ta
+     carte, sinon l'article ; numéro ; titre sur 2 lignes ; bord de la rareté de ta carte, pointillé pour une case vide,
+     bord et onglet gris pour un intercalaire), 4 par ligne à 390 px, plus en large ; jusqu'à 3 000 sans ramer : chaque
+     vignette est un petit composant redessiné seulement si son numéro ou son état change, et celles hors de l'écran ne
+     sont pas peintes (`content-visibility: auto`) ; mesuré dans Chrome (2026-10-18) : 250 ms pour entrer en mode
+     réorganisation avec 3 000 éléments, 70 à 80 ms par déplacement. **Les sections restent visibles** : un intercalaire commence une
+     nouvelle ligne, et il bouge comme les autres en gardant son rôle (`sep` suit l'élément) ;
+   - **glisser** (pointer events, pas le glisser-déposer HTML5 qui ne marche pas au doigt) : à la souris, toute la
+     vignette (après 6 px) ; **au doigt ou au stylet, par sa poignée** (⠿, en haut à droite, 30 px, 36 px sur un écran
+     tactile, `touch-action: none`) :
+     ailleurs, la page défile normalement. Choix d'une poignée plutôt que d'un appui long : visible, immédiate, sans
+     conflit avec le défilement ni avec le menu du système. Pendant le geste : la vignette pâlit, un fantôme suit le
+     pointeur, un **repère d'insertion** (barre émeraude) montre où elle ira ; lâchée sur la moitié gauche ou droite d'une
+     vignette : avant ou après elle ; avant un intercalaire = à la fin de la section d'avant (le repère va après sa
+     dernière vignette) ; dans le trou d'une ligne courte : après la vignette à sa gauche ; la page défile seule près du
+     haut et au-dessus de la barre du bas ; Échap annule le geste ;
+   - **pour tous, au clavier compris** : « ← » / « → » sous chaque vignette (« « Afrique » : une place avant / après » ;
+     aux deux bouts, `aria-disabled` : le focus reste, l'annonce dit « déjà en tête / à la fin ») ; après un déplacement,
+     le focus reste sur la flèche de l'élément déplacé. Une vignette **choisie** (clic, toucher, ou focus sur ses flèches)
+     apparaît dans la **barre du bas** (fixe, comme la bande de sélection) : « <titre> · 3 sur 20 », « En tête », « À la
+     fin », champ « N° » + « Déplacer » (position de 1 à N ; hors bornes : « Position : un nombre entier de 1 à N. ») ;
+   - **annonce** pour les lecteurs d'écran (`role=status`, cachée à l'œil) à chaque déplacement : « « Afrique » : position 3
+     sur 20. » (« (intercalaire) » pour un intercalaire), « Déplacement annulé. », « … reste à sa place. » ;
+   - **« Enregistrer l'ordre »** (grisé tant que l'ordre est celui de la collection ; la barre dit « Ordre modifié, pas
+     encore enregistré » / « Ordre inchangé ») : **une seule requête** `POST /api/targets/save {id, name, items, source?}`,
+     les éléments tels que rangés (**tous leurs champs** : `qid`, `rarity`, `description`, `image`, `status`, `sep`) dans
+     le nouvel ordre ; le mode se referme, l'album montre le nouvel ordre, et le message « Nouvel ordre de « … »
+     enregistré. » propose **« Annuler »** (10 s : l'ordre d'avant renvoyé). Échec : erreur dans la barre, brouillon gardé ;
+   - **« Annuler »** : rien n'est envoyé, l'album revient comme avant ; s'il y avait des changements, le message « Ordre de
+     « … » laissé tel quel : rien n'a été envoyé. » propose **« Reprendre »** (le brouillon revient).
+   **Quitter avec des changements non enregistrés** (« ← Toutes les collections », un autre album, un autre onglet) : le
+   **brouillon est gardé** (en mémoire, un seul à la fois), un message le dit une fois (« Le nouvel ordre de « … » n'est
+   pas encore enregistré : il t'attend dans son album. », **« Y revenir »**), et l'album de cette collection rouvre le mode
+   réorganisation avec lui. Recharger ou fermer la page avec un brouillon modifié demande d'abord (`beforeunload`, message
+   du navigateur). Sans changement, quitter referme simplement le mode. « Réorganiser » une autre collection pendant qu'un
+   brouillon modifié attend : confirmation (« Le nouvel ordre de « … » n'est pas enregistré. L'abandonner pour réorganiser
+   « … » ? »). Collection changée entre-temps par la page : le brouillon est reporté sur ses éléments d'aujourd'hui (par
+   titre ; disparus retirés, nouveaux à la fin) ; supprimée : brouillon abandonné (message). Changement de classeur :
+   brouillon oublié.
+   **Collection sans ordre** : « Réorganiser… » (même place) ouvre une explication au lieu du mode. Faite d'une **catégorie
+   ou des liens d'une page** (`wp:` / `links:<titre>`) : elle reste LA collection de cette source (une seule par compte :
+   `targets/save` remplace au lieu de doubler, « Catégories » propose de l'ouvrir) ; lui retirer sa source pour lui donner un
+   ordre casserait ce dédoublonnage (une seconde collection de la même catégorie redeviendrait possible) et son lien
+   « Voir sur Wikipédia » : elle ne se réorganise donc pas. Proposé à la place : **« Créer la copie et la réorganiser »**,
+   une nouvelle collection « <nom> (mon ordre) » (80 caractères au plus), **sans source**, mêmes éléments (tous leurs
+   champs), de A à Z pour commencer, ouverte en mode réorganisation ; l'originale reste telle quelle. **Ancien thème du
+   catalogue sans ordre** (`catalog:<id>`) : rien ne dépend de sa source (ni dédoublonnage, ni lien) ; **« Passer en ordre
+   manuel »** la renvoie sur place (même `id`, source retirée, éléments dans l'ordre affiché, de A à Z), numérotée, puis
+   ouvre le mode réorganisation. Pas de bouton dans l'album d'une catégorie ou d'une page de Wikipédia (pas encore une
+   collection), ni dans celui d'un ami.
    **« Fusionner avec… »** (album de toute collection, entre « Modifier » et « Supprimer », seulement si tu as une autre
    collection ; demande de l'utilisateur du 2026-10-18 : « un bouton pour fusionner deux collections ») : la collection
    d'où l'on part **reçoit la fusion** (même `id`, même source, même place dans « Mes collections »). Une fenêtre, calculée
@@ -1004,6 +1060,8 @@ Deux zones, dans cet ordre :
   entière (`POST /api/targets/save {id, name, items, source}`, éléments tels que rangés, seul `sep` de cet élément
   changé), case grisée pendant l'enregistrement, revenue à l'état d'avant et erreur affichée si c'est refusé. Pas de case
   depuis « Mes cartes », l'album d'une catégorie ou d'une page de Wikipédia, ni l'album d'un ami.
+- **Le déplacer** : « Réorganiser » (album d'une de tes collections qui a un ordre, voir « Onglet « Collections » ») ; en
+  mode réorganisation, les sections restent visibles et un intercalaire déplacé garde son rôle.
 - **Collection complète** (toutes ses cartes, au moins une) : sa ligne dans « Mes collections » et l'en-tête de son
   album (titre, « N sur N ») ont un **tour doré et brillant** (bordure en dégradé conique or, lueur dorée ; le reflet fait
   le tour en 8 s, immobile si le système demande moins d'animations, `prefers-reduced-motion`, ou sans `@property`) ;

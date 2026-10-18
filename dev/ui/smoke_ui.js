@@ -900,7 +900,7 @@ async function main() {
     box.setAttribute('id', 'app');
     p.doc.body.appendChild(box);
     for (const file of [VUE, ...['match.js', 'propose.js', 'app.js'].map((m) => path.join(PUB, 'assets', m))]) vm.runInContext(fs.readFileSync(file, 'utf8'), c, { filename: path.basename(file) });
-    return { doc: p.doc, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
+    return { doc: p.doc, win: p.win, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
       longTimers, live: async () => { for (const f of [...longTimers.values()]) await f(); } };
   };
   const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
@@ -1268,7 +1268,7 @@ async function main() {
   }
   // Album d'une catégorie : ses articles, la progression, la rareté estimée ; sous-catégories (1 niveau) ; « Créer une
   // collection ».
-  check(at().includes('1 sur 4') && at().includes('catégorie de Wikipédia') && cls('cell').length === 1 && has('Créer une collection') && !has('Modifier'), 'album de la catégorie : ' + at());
+  check(at().includes('1 sur 4') && at().includes('catégorie de Wikipédia') && cls('cell').length === 1 && has('Créer une collection') && !has('Modifier') && !has('Réorganiser'), 'album de la catégorie : ' + at());
   check(all((n) => n.tagName === 'A' && text(n).includes('Voir sur Wikipédia')).some((a) => a.getAttribute('href') === 'https://fr.wikipedia.org/wiki/Cat%C3%A9gorie:Violet'), 'lien vers la catégorie absent');
   {
     const subBox = all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check'))[0];
@@ -1280,7 +1280,7 @@ async function main() {
   check(await waitFor(() => has('Modifier') && has('Supprimer')), '« Créer une collection » sans effet');
   if (!SERVER) check(api.st.targets.some((t) => t.source === 'wp:Violet' && t.name === 'Violet' && t.items.length === 6), 'collection de la catégorie mal enregistrée : ' + JSON.stringify(api.st.targets.map((t) => [t.name, t.source, t.items.length])));
   check(at().includes('depuis la catégorie Wikipédia') && at().includes('2 sur 6') && has('Collection « Violet » créée : 6 articles, sous-catégories comprises, dans « Mes collections ».')
-    && !has('Créer une collection') && !has('Ne plus suivre'), 'album de la collection créée (devenu une collection comme les autres) : ' + at());
+    && !has('Créer une collection') && !has('Ne plus suivre') && !!buttonByText('Réorganiser…'), 'album de la collection créée (devenu une collection comme les autres) : ' + at());
   // Fiches : « Dans tes collections » (carte possédée, puis case vide), la collection faite de la catégorie comprise.
   {
     one('cell').querySelector('.card').dispatch('click');
@@ -3047,7 +3047,7 @@ async function main() {
     await settle(80);
     check(d.querySelectorAll('.album-title')[0].classList.contains('complete') && layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée',
       'album d\'Olga : en-tête doré et intercalaires attendus, ' + layout());
-    check(!d.querySelectorAll('.sep-toggle').length, 'album d\'Olga : rien à modifier');
+    check(!d.querySelectorAll('.sep-toggle').length && !d.querySelectorAll('button').some((b) => text(b).includes('Réorganiser')), 'album d\'Olga : rien à modifier (ni à réorganiser)');
   }
 
   // Propositions d'après les cartes, sans les sous-catégories (Iris : 8 cartes de couleurs). Rouge, Vert et Jaune sont
@@ -4181,6 +4181,359 @@ async function main() {
       'fusion sans les images : ' + la.items.length + ' éléments, ' + la.items.filter((i) => i.image).length + ' images ; « Images B » ' + (ib ? 'gardée' : 'absente'));
     check(await waitFor(() => txt().includes('« Images B » fusionnée dans « Longues A » : 300 éléments ajoutés.')), 'confirmation de la fusion sans suppression');
     console.log(`fusion : ${all.length} collections de Mila après trois fusions ; « Longues A » : ${la.items.length} éléments, ${Math.round(JSON.stringify(la.items).length / 1024)} Ko`);
+  }
+
+  // « Réorganiser » (album d'une de tes collections, demande du 2026-10-18) : Rémi range « Continents » à la main. Pas de
+  // bouton sous 2 éléments. Mode réorganisation : vignettes réduites, toutes, dans l'ordre (tri et filtre de l'album mis de
+  // côté), sections des intercalaires ; « ← » / « → » (focus gardé sur la flèche, annonce « … : position N sur M »,
+  // « déjà en tête / à la fin ») ; vignette choisie : « En tête », « À la fin », « Position » ; glisser à la souris (toute
+  // la vignette, seuil de 6 px, fantôme, repère d'insertion ; avant un intercalaire = fin de la section d'avant ; trou de la
+  // grille = après la vignette à sa gauche), au doigt (poignée seulement : ailleurs, rien ne bouge) ; Échap annule le geste.
+  // « Annuler » (aucune requête, « Reprendre ») ; brouillon gardé en quittant l'album ou l'onglet (message, « Y revenir ») ;
+  // « Enregistrer l'ordre » (une seule requête, tous les champs gardés) puis « Annuler » du message ; 3 000 éléments ;
+  // un autre brouillon en cours (confirmation) ; collection sans ordre : faite d'une catégorie, copie à ordonner (l'originale
+  // garde sa source) ; ancien thème du catalogue, ordre manuel sur place. Rien chez un ami ni dans l'album d'une catégorie
+  // (vérifié plus haut).
+  {
+    const keyR = await makeOtherAccount('Rémi');
+    const mkR = (id, title, rarity) => ({ id, title, rarity: rarity || 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'continent', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    const itR = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
+    await sendImport(keyR, [mkR('r1', 'Afrique', 'R'), mkR('r2', 'Europe'), mkR('r3', 'Continent')]);
+    const CONT = [itR('Continent', { sep: true }), itR('Afrique', { qid: 'Q15', rarity: 'R', description: 'continent' }), itR('Europe'), itR('Asie'),
+      itR('Sous-continent', { sep: true, image: 'https://upload.wikimedia.org/sc.jpg' }), itR('Amérique du Nord'), itR('Océanie')];
+    const saveR = async (t) => check((await rawApi('POST', '/api/targets/save', keyR, t)).status === 200, `réorganiser : collection « ${t.name} » refusée`);
+    await saveR({ name: 'Continents', items: CONT });
+    await saveR({ name: 'Races bovines', source: 'wp:Race bovine', items: [itR('Salers'), itR('Aubrac'), itR('Charolaise')] });
+    await saveR({ name: 'Vaches du catalogue', source: 'catalog:vaches', items: [itR('Salers'), itR('Aubrac'), itR('Charolaise')] });
+    await saveR({ name: 'Une seule', items: [itR('Afrique')] });
+    const pad = (i) => String(i).padStart(4, '0');
+    await saveR({ name: 'Grande', items: Array.from({ length: 3000 }, (_, i) => itR('Article R' + pad(i), { qid: 'Q75' + pad(i) })) });
+    const targetsR = async () => (await rawApi('GET', '/api/targets', keyR)).body.targets;
+    const serverOf = async (name) => (await targetsR()).find((x) => x.name === name);
+    ls.set('classeur-key', keyR);
+    ls.set('classeur-known', JSON.stringify([{ key: keyR, name: 'Rémi' }]));
+    const pr = openPage({ idb: 'absent' });
+    const d = pr.doc;
+    check(await waitFor(() => pr.count() === 3), 'réorganiser : classeur de Rémi non ouvert');
+    d.getElementById('tab-collections').click();
+    await settle();
+    const btnIn = (root, t) => root.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    const rowOf = (name) => d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')) || null;
+    const openRow = async (name) => { const r = rowOf(name); check(r, `réorganiser : « ${name} » absente de « Mes collections »`); r.click(); await settle(80); };
+    const back = async () => { btnIn(d.body, '← Toutes les collections').click(); await settle(); };
+    const modal = () => d.querySelectorAll('.modal')[0] || null;
+    const toast = () => d.querySelectorAll('.toast')[0] || null;
+    const toastBtn = (t) => (toast() ? toast().querySelectorAll('button').find((b) => text(b) === t) || null : null);
+    const grid = () => d.querySelectorAll('.ro-grid')[0] || null;
+    const bar = () => d.querySelectorAll('.reorder-bar')[0] || null;
+    const roTitle = (li) => li.querySelector('.ro-title').childNodes[0].textContent;
+    const tiles = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1 && n.classList.contains('ro-tile')) : []);
+    const tileFor = (title) => tiles().find((li) => roTitle(li) === title) || null;
+    const arrow = (title, act) => tileFor(title).querySelectorAll('button').find((b) => b.getAttribute('data-act') === act);
+    // Vignettes du mode réorganisation : « | » pour une nouvelle ligne, « [Titre] » pour un intercalaire.
+    const roLayout = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => (n.classList.contains('grid-break') ? '|'
+      : n.classList.contains('sep') ? `[${roTitle(n)}]` : roTitle(n))).join(' ') : '');
+    // Album ordinaire : même écriture (cartes et cases vides).
+    const albumLayout = () => { const g = d.querySelectorAll('.cardgrid')[0]; return g ? g.childNodes.filter((n) => n.nodeType === 1).map((n) => {
+      if (n.classList.contains('grid-break')) return '|';
+      const t = text(n.querySelector('h3'));
+      return n.querySelector('.sep-frame') || n.classList.contains('sep-frame') ? `[${t}]` : t;
+    }).join(' ') : ''; };
+    const said = () => { const p = bar() && bar().querySelectorAll('p').find((x) => x.getAttribute('role') === 'status'); return p ? text(p) : ''; };
+    const barName = () => (bar() && bar().querySelector('.reorder-bar__name') ? text(bar().querySelector('.reorder-bar__name')) : '');
+    const saves = (mark) => apiLog.slice(mark).filter((x) => x === 'POST /api/targets/save').length;
+    const fire = (type, ev) => { for (const f of [...(pr.win.listeners[type] || [])]) f({ preventDefault() {}, stopPropagation() {}, cancelable: true, ...ev }); };
+    const listening = () => ((pr.win.listeners.pointermove || new Set()).size);
+    // Géométrie simulée de la grille (le faux DOM n'en a pas) : 4 vignettes de 100 × 160 par ligne, 10 px d'écart, une
+    // nouvelle ligne à chaque intercalaire ; elementFromPoint rend le titre de la vignette sous le point, sinon la grille
+    // (trou), sinon la page. Rend la boîte d'une vignette par son titre.
+    const geom = () => {
+      const g = grid();
+      const box = (l, t, w, hh) => ({ left: l, top: t, width: w, height: hh, right: l + w, bottom: t + hh, x: l, y: t });
+      g.parentNode.getBoundingClientRect = () => box(0, 0, 440, 2000);
+      const boxes = [];
+      let col = 0;
+      let row = 0;
+      for (const n of g.childNodes.filter((x) => x.nodeType === 1)) {
+        if (n.classList.contains('grid-break')) { if (col) { row++; col = 0; } continue; }
+        const b = box(col * 110, row * 170, 100, 160);
+        n.getBoundingClientRect = () => b;
+        boxes.push([b, n]);
+        if (++col === 4) { col = 0; row++; }
+      }
+      d.elementFromPoint = (x, y) => {
+        const hit = boxes.find(([b]) => x >= b.left && x < b.right && y >= b.top && y < b.bottom);
+        return hit ? hit[1].querySelector('.ro-title') : x >= 0 && x < 440 && y >= 0 && y < 2000 ? g : d.body;
+      };
+      return (title) => boxes.find(([, n]) => roTitle(n) === title)[0];
+    };
+    const ORIG = '[Continent] Afrique Europe Asie | [Sous-continent] Amérique du Nord Océanie';
+
+    // Moins de 2 éléments : rien à réorganiser.
+    await openRow('Une seule');
+    check(!d.querySelectorAll('button').some((b) => text(b).includes('Réorganiser')), '« Une seule » : pas de « Réorganiser » attendu');
+    await back();
+    // « Continents » en tri par rareté, filtre « Possédées » : « Réorganiser » montre tout, dans l'ordre.
+    await openRow('Continents');
+    btnIn(d.body, 'Rareté').click();
+    btnIn(d.body, 'Possédées').click();
+    await settle();
+    check(btnIn(d.body, 'Réorganiser') && d.getElementById('reorder-btn'), '« Réorganiser » absent de l\'album de « Continents »');
+    btnIn(d.body, 'Réorganiser').click();
+    await settle(80);
+    check(grid() && roLayout() === ORIG && tiles().length === 7, 'mode réorganisation : toutes les vignettes dans l\'ordre attendues, ' + roLayout());
+    check(text(d.querySelectorAll('.album-title')[0]).includes('Réorganisation') && !btnIn(d.body, 'Possédées') && !btnIn(d.body, 'Modifier') && !d.querySelectorAll('.cardgrid').length,
+      'mode réorganisation : en-tête réduit, sans filtres ni actions de l\'album');
+    check(d.activeElement === d.getElementById('album-name'), 'mode réorganisation : focus sur le nom de la collection attendu');
+    check(text(tileFor('Asie').querySelector('.ro-no')) === '4' && tileFor('Asie').classList.contains('ro-tile--missing') && tileFor('Afrique').classList.contains('rR')
+      && tileFor('Continent').classList.contains('sep') && text(tileFor('Continent').querySelector('.ro-title')) === 'Continent, intercalaire'
+      && text(tileFor('Asie').querySelector('.ro-title')) === 'Asie, pas encore dans ta collection' && tileFor('Asie').querySelector('.ro-grip').getAttribute('aria-hidden') === 'true',
+      'vignettes : numéro, case vide, rareté, intercalaire ou poignée incorrects');
+    check(arrow('Afrique', 'next').getAttribute('aria-label') === '« Afrique » : une place après' && arrow('Continent', 'prev').getAttribute('aria-disabled') === 'true'
+      && arrow('Océanie', 'next').getAttribute('aria-disabled') === 'true' && arrow('Afrique', 'prev').getAttribute('aria-disabled') === null, 'flèches : noms ou états incorrects');
+    check(btnIn(bar(), 'Enregistrer l\'ordre').disabled && text(bar()).includes('Ordre inchangé') && text(bar()).includes('Choisis une carte'), 'barre du bas au départ : ' + text(bar()));
+    // « → » sur Afrique : elle passe après Europe ; le focus reste sur sa flèche ; l'annonce le dit.
+    arrow('Afrique', 'next').click();
+    await settle();
+    check(roLayout() === '[Continent] Europe Afrique Asie | [Sous-continent] Amérique du Nord Océanie' && said() === '« Afrique » : position 3 sur 7.'
+      && d.activeElement === arrow('Afrique', 'next') && barName() === 'Afrique · 3 sur 7' && !btnIn(bar(), 'Enregistrer l\'ordre').disabled
+      && text(bar()).includes('Ordre modifié, pas encore enregistré'), '« → » : ' + roLayout() + ' / ' + said() + ' / ' + barName());
+    // Aux deux bouts : rien ne bouge, l'annonce le dit.
+    arrow('Continent', 'prev').click();
+    await settle();
+    check(said() === '« Continent » est déjà en tête.' && roLayout().startsWith('[Continent] Europe'), '« ← » en tête : ' + said());
+    arrow('Océanie', 'next').click();
+    await settle();
+    check(said() === '« Océanie » est déjà à la fin.', '« → » à la fin : ' + said());
+    // Un intercalaire bouge comme les autres et ouvre toujours sa section.
+    arrow('Sous-continent', 'prev').click();
+    await settle();
+    check(roLayout() === '[Continent] Europe Afrique | [Sous-continent] Asie Amérique du Nord Océanie' && said() === '« Sous-continent » (intercalaire) : position 4 sur 7.',
+      'intercalaire avancé : ' + roLayout() + ' / ' + said());
+    arrow('Sous-continent', 'next').click();
+    await settle();
+    // Vignette choisie (clic) : « En tête », « À la fin », « Position ».
+    tileFor('Océanie').querySelector('.ro-title').click();
+    await settle();
+    check(barName() === 'Océanie · 7 sur 7' && tileFor('Océanie').classList.contains('active'), 'vignette choisie : ' + barName());
+    btnIn(bar(), 'En tête').click();
+    await settle();
+    check(roLayout() === 'Océanie | [Continent] Europe Afrique Asie | [Sous-continent] Amérique du Nord' && barName() === 'Océanie · 1 sur 7', '« En tête » : ' + roLayout());
+    btnIn(bar(), 'À la fin').click();
+    await settle();
+    check(roLayout() === '[Continent] Europe Afrique Asie | [Sous-continent] Amérique du Nord Océanie', '« À la fin » : ' + roLayout());
+    type(d.getElementById('reorder-pos'), '2');
+    await settle();
+    btnIn(bar(), 'Déplacer').click();
+    await settle();
+    check(roLayout() === '[Continent] Océanie Europe Afrique Asie | [Sous-continent] Amérique du Nord' && d.getElementById('reorder-pos').value === '', '« Position » 2 : ' + roLayout());
+    type(d.getElementById('reorder-pos'), '9');
+    await settle();
+    btnIn(bar(), 'Déplacer').click();
+    await settle();
+    check(text(bar()).includes('Position : un nombre entier de 1 à 7.') && roLayout().startsWith('[Continent] Océanie'), '« Position » 9 : ' + text(bar()));
+    // Glisser à la souris : Amérique du Nord lâchée sur la moitié gauche d'Europe (avant elle) ; sous 6 px, rien ne commence.
+    {
+      const at = geom();
+      const am = at('Amérique du Nord');
+      tileFor('Amérique du Nord').querySelector('.ro-title').dispatch('pointerdown', { pointerType: 'mouse', button: 0, pointerId: 3, clientX: am.left + 50, clientY: am.top + 120 });
+      check(listening() === 1, 'glisser : écoute du pointeur attendue');
+      fire('pointermove', { pointerId: 3, clientX: am.left + 53, clientY: am.top + 122 });
+      await settle();
+      check(!tileFor('Amérique du Nord').classList.contains('lifted') && !d.querySelectorAll('.ro-ghost').length, 'glisser : rien ne doit commencer sous 6 px');
+      const eu = at('Europe');
+      fire('pointermove', { pointerId: 3, clientX: eu.left + 20, clientY: eu.top + 80 });
+      await settle();
+      const mark = grid().parentNode.querySelector('.ro-mark');
+      const ghost = d.querySelectorAll('.ro-ghost')[0];
+      check(tileFor('Amérique du Nord').classList.contains('lifted') && ghost && text(ghost).includes('Amérique du Nord') && ghost.style['--gx'] === (eu.left + 20) + 'px'
+        && mark.classList.contains('on') && mark.style['--mx'] === (eu.left - 5) + 'px' && mark.style['--my'] === '0px' && mark.style['--mh'] === '160px',
+        'glisser : vignette soulevée, fantôme et repère attendus, ' + JSON.stringify({ mx: mark.style['--mx'], on: mark.className, gx: ghost && ghost.style['--gx'] }));
+      fire('pointerup', { pointerId: 3, clientX: eu.left + 20, clientY: eu.top + 80 });
+      await settle();
+      check(roLayout() === '[Continent] Océanie Amérique du Nord Europe Afrique Asie | [Sous-continent]' && said() === '« Amérique du Nord » : position 3 sur 7.'
+        && !d.querySelectorAll('.ro-ghost').length && !mark.classList.contains('on') && !tileFor('Amérique du Nord').classList.contains('lifted') && listening() === 0,
+        'glisser à la souris : ' + roLayout() + ' / ' + said());
+    }
+    // Lâcher sur la moitié gauche d'un intercalaire = à la fin de la section d'avant (repère après sa dernière vignette) ;
+    // dans le trou de la ligne, après la vignette à gauche : même place.
+    {
+      const at = geom();
+      const oc = at('Océanie');
+      tileFor('Océanie').querySelector('.ro-title').dispatch('pointerdown', { pointerType: 'mouse', button: 0, pointerId: 4, clientX: oc.left + 50, clientY: oc.top + 100 });
+      const sc = at('Sous-continent');
+      const asie = at('Asie');
+      const mark = grid().parentNode.querySelector('.ro-mark');
+      fire('pointermove', { pointerId: 4, clientX: sc.left + 20, clientY: sc.top + 60 });
+      await settle();
+      check(mark.classList.contains('on') && mark.style['--mx'] === (asie.right + 5) + 'px' && mark.style['--my'] === asie.top + 'px', 'avant un intercalaire : repère après Asie attendu, ' + mark.style['--mx'] + ' ' + mark.style['--my']);
+      fire('pointermove', { pointerId: 4, clientX: 400, clientY: asie.top + 80 });
+      await settle();
+      check(mark.classList.contains('on') && mark.style['--mx'] === (asie.right + 5) + 'px', 'trou de la grille : repère après Asie attendu, ' + mark.style['--mx']);
+      fire('pointerup', { pointerId: 4, clientX: 400, clientY: asie.top + 80 });
+      await settle();
+      check(roLayout() === '[Continent] Amérique du Nord Europe Afrique Asie Océanie | [Sous-continent]', 'lâcher avant un intercalaire : ' + roLayout());
+    }
+    // Au doigt : hors de la poignée, rien (la page défile) ; par la poignée, l'intercalaire passe après Europe.
+    {
+      let at = geom();
+      const eu = at('Europe');
+      tileFor('Europe').querySelector('.ro-title').dispatch('pointerdown', { pointerType: 'touch', button: 0, pointerId: 5, clientX: eu.left + 50, clientY: eu.top + 120 });
+      check(listening() === 0, 'au doigt hors de la poignée : aucun glisser attendu');
+      at = geom();
+      const sc = at('Sous-continent');
+      tileFor('Sous-continent').querySelector('.ro-grip').dispatch('pointerdown', { pointerType: 'touch', button: 0, pointerId: 6, clientX: sc.left + 90, clientY: sc.top + 15 });
+      check(listening() === 1, 'au doigt sur la poignée : glisser attendu');
+      fire('pointermove', { pointerId: 6, clientX: eu.left + 80, clientY: eu.top + 80 });
+      await settle();
+      check(tileFor('Sous-continent').classList.contains('lifted'), 'au doigt : vignette soulevée attendue');
+      fire('pointerup', { pointerId: 6, clientX: eu.left + 80, clientY: eu.top + 80 });
+      await settle();
+      check(roLayout() === '[Continent] Amérique du Nord Europe | [Sous-continent] Afrique Asie Océanie' && said() === '« Sous-continent » (intercalaire) : position 4 sur 7.',
+        'au doigt, intercalaire déplacé : ' + roLayout() + ' / ' + said());
+    }
+    const DRAFT = '[Continent] Amérique du Nord Europe | [Sous-continent] Afrique Asie Océanie';
+    // Échap pendant un glisser : rien ne bouge.
+    {
+      const at = geom();
+      const af = at('Afrique');
+      tileFor('Afrique').querySelector('.ro-title').dispatch('pointerdown', { pointerType: 'mouse', button: 0, pointerId: 8, clientX: af.left + 50, clientY: af.top + 100 });
+      fire('pointermove', { pointerId: 8, clientX: 20, clientY: 80 });
+      await settle();
+      d.body.dispatch('keydown', { key: 'Escape' });
+      await settle();
+      fire('pointerup', { pointerId: 8, clientX: 20, clientY: 80 });
+      await settle();
+      check(roLayout() === DRAFT && said() === 'Déplacement annulé.' && !tileFor('Afrique').classList.contains('lifted') && listening() === 0, 'Échap : ' + roLayout() + ' / ' + said());
+    }
+    // « Annuler » : aucune requête ; « Reprendre » rend le brouillon.
+    let mark = apiLog.length;
+    btnIn(bar(), 'Annuler').click();
+    await settle();
+    check(!grid() && albumLayout() === ORIG && saves(mark) === 0 && toast() && text(toast()).includes("Ordre de « Continents » laissé tel quel : rien n'a été envoyé."),
+      '« Annuler » : album d\'avant sans requête attendu, ' + albumLayout() + ' / ' + (toast() ? text(toast()) : ''));
+    check(d.activeElement === d.getElementById('reorder-btn'), '« Annuler » : focus sur « Réorganiser » attendu');
+    toastBtn('Reprendre').click();
+    await settle();
+    check(roLayout() === DRAFT, '« Reprendre » : brouillon attendu, ' + roLayout());
+    // Quitter l'album, puis l'onglet : le brouillon est gardé, le message le dit ; « Y revenir », ou l'album rouvert, le rend.
+    await back();
+    check(!grid() && toast() && text(toast()).includes("Le nouvel ordre de « Continents » n'est pas encore enregistré : il t'attend dans son album.") && saves(mark) === 0,
+      'quitter l\'album : message du brouillon attendu, ' + (toast() ? text(toast()) : ''));
+    toastBtn('Y revenir').click();
+    await settle();
+    check(roLayout() === DRAFT, '« Y revenir » : brouillon attendu, ' + roLayout());
+    d.getElementById('tab-cartes').click();
+    await settle();
+    check(toast() && text(toast()).includes('pas encore enregistré'), 'quitter l\'onglet : message du brouillon attendu');
+    d.getElementById('tab-collections').click();
+    await settle();
+    check(roLayout() === DRAFT, 'retour sur l\'onglet : brouillon attendu, ' + roLayout());
+    // « Enregistrer l'ordre » : une seule requête, les éléments tels quels dans le nouvel ordre.
+    mark = apiLog.length;
+    btnIn(bar(), 'Enregistrer l\'ordre').click();
+    check(await waitFor(() => !grid() && !!d.querySelectorAll('.cardgrid').length), 'enregistrer : mode réorganisation resté ouvert');
+    await settle(80);
+    {
+      const t = await serverOf('Continents');
+      const by = (x) => t.items.find((i) => i.title === x);
+      check(saves(mark) === 1 && t.items.map((i) => i.title).join('|') === 'Continent|Amérique du Nord|Europe|Sous-continent|Afrique|Asie|Océanie',
+        'enregistrer : une requête et le nouvel ordre attendus, ' + saves(mark) + ' / ' + t.items.map((i) => i.title).join('|'));
+      check(by('Afrique').qid === 'Q15' && by('Afrique').rarity === 'R' && by('Afrique').description === 'continent' && by('Sous-continent').sep === true
+        && by('Sous-continent').image === 'https://upload.wikimedia.org/sc.jpg' && by('Continent').sep === true && !by('Europe').sep && t.items.length === 7,
+        'enregistrer : champs perdus, ' + JSON.stringify(t.items));
+    }
+    check(albumLayout() === DRAFT && toast() && text(toast()).includes('Nouvel ordre de « Continents » enregistré.') && btnIn(d.body, 'Ordre').getAttribute('aria-pressed') === 'true',
+      'après l\'enregistrement : ' + albumLayout() + ' / ' + (toast() ? text(toast()) : ''));
+    // « Annuler » du message : l'ordre d'avant revient.
+    mark = apiLog.length;
+    toastBtn('Annuler').click();
+    check(await waitFor(() => albumLayout() === ORIG), '« Annuler » après l\'enregistrement : ordre d\'avant attendu, ' + albumLayout());
+    check(saves(mark) === 1 && (await serverOf('Continents')).items.map((i) => i.title).join('|') === CONT.map((i) => i.title).join('|'), '« Annuler » : ordre d\'avant non enregistré');
+    // Sans changement, quitter referme simplement le mode (pas de brouillon).
+    btnIn(d.body, 'Réorganiser').click();
+    await settle();
+    await back();
+    check(!toast() || !text(toast()).includes('pas encore enregistré'), 'sans changement : pas de message de brouillon attendu');
+    await openRow('Continents');
+    check(!grid() && albumLayout() === ORIG, 'sans changement : album ordinaire attendu au retour');
+    await back();
+    // 3 000 éléments : toutes les vignettes ; « → », puis « Position » 3000 ; brouillon gardé ; « Réorganiser » d'une autre
+    // collection demande d'abord ; enregistré en une requête.
+    await openRow('Grande');
+    let t0 = Date.now();
+    btnIn(d.body, 'Réorganiser').click();
+    check(await waitFor(() => tiles().length === 3000, 20000), 'grande collection : 3 000 vignettes attendues, ' + tiles().length);
+    const ms = Date.now() - t0;
+    t0 = Date.now();
+    arrow('Article R0000', 'next').click();
+    await settle();
+    check(roTitle(tiles()[0]) === 'Article R0001' && roTitle(tiles()[1]) === 'Article R0000' && said() === '« Article R0000 » : position 2 sur 3 000.', 'grande collection : « → » : ' + said());
+    type(d.getElementById('reorder-pos'), '3000');
+    await settle();
+    btnIn(bar(), 'Déplacer').click();
+    await settle();
+    check(roTitle(tiles()[2999]) === 'Article R0000' && barName() === 'Article R0000 · 3 000 sur 3 000', 'grande collection : « Position » 3000 : ' + barName());
+    console.log(`réorganiser : 3 000 vignettes en ${ms} ms (faux DOM), deux déplacements en ${Date.now() - t0} ms`);
+    await back();
+    await openRow('Continents');
+    btnIn(d.body, 'Réorganiser').click();
+    await settle();
+    check(modal() && text(modal()).includes('Le nouvel ordre de « Grande » n\'est pas enregistré. L\'abandonner pour réorganiser « Continents » ?'), 'autre brouillon : confirmation attendue');
+    btnIn(modal(), 'Annuler').click();
+    await settle(300);
+    check(!grid(), 'autre brouillon gardé : pas de mode réorganisation pour « Continents »');
+    await back();
+    await openRow('Grande');
+    check(await waitFor(() => tiles().length === 3000 && roTitle(tiles()[2999]) === 'Article R0000'), 'grande collection : brouillon attendu au retour');
+    mark = apiLog.length;
+    btnIn(bar(), 'Enregistrer l\'ordre').click();
+    check(await waitFor(() => !grid(), 10000), 'grande collection : enregistrement sans effet');
+    {
+      const t = await serverOf('Grande');
+      check(saves(mark) === 1 && t.items.length === 3000 && t.items[0].title === 'Article R0001' && t.items[2999].title === 'Article R0000' && t.items[2999].qid === 'Q750000'
+        && t.items.every((i) => /^Q75\d{4}$/.test(i.qid)), 'grande collection enregistrée : ' + t.items.slice(0, 2).map((i) => i.title).join('|') + ' … ' + t.items[2999].title);
+    }
+    await back();
+    // Collection faite d'une catégorie : « Réorganiser… » dit pourquoi et propose une copie à ordonner.
+    await openRow('Races bovines');
+    check(!btnIn(d.body, 'Réorganiser') && btnIn(d.body, 'Réorganiser…'), 'collection d\'une catégorie : « Réorganiser… » attendu');
+    btnIn(d.body, 'Réorganiser…').click();
+    await settle();
+    check(modal() && text(modal().querySelector('h2')) === 'Réorganiser « Races bovines »' && text(modal()).includes('« Races bovines » est faite de la catégorie Wikipédia « Race bovine »')
+      && text(modal()).includes('elle ne se réorganise donc pas') && text(modal()).includes('« Races bovines (mon ordre) »'), 'collection d\'une catégorie : explication attendue, ' + (modal() ? text(modal()) : ''));
+    mark = apiLog.length;
+    btnIn(modal(), 'Créer la copie et la réorganiser').click();
+    check(await waitFor(() => !modal() && roLayout() === 'Aubrac Charolaise Salers'), 'copie à ordonner : mode réorganisation attendu, ' + roLayout());
+    {
+      const all = await targetsR();
+      const copy = all.find((x) => x.name === 'Races bovines (mon ordre)');
+      const orig = all.find((x) => x.name === 'Races bovines');
+      check(saves(mark) === 1 && copy && !copy.source && copy.items.map((i) => i.title).join('|') === 'Aubrac|Charolaise|Salers' && orig.source === 'wp:Race bovine'
+        && orig.items.map((i) => i.title).join('|') === 'Salers|Aubrac|Charolaise', 'copie à ordonner : ' + JSON.stringify(all.map((x) => [x.name, x.source, x.items.length])));
+    }
+    arrow('Aubrac', 'next').click();
+    await settle();
+    btnIn(bar(), 'Enregistrer l\'ordre').click();
+    check(await waitFor(() => !grid()), 'copie : enregistrement sans effet');
+    check((await serverOf('Races bovines (mon ordre)')).items.map((i) => i.title).join('|') === 'Charolaise|Aubrac|Salers', 'copie : nouvel ordre non enregistré');
+    await back();
+    // Ancien thème du catalogue sans ordre : ordre manuel sur place (même collection, sans source, de A à Z), numérotée.
+    await openRow('Vaches du catalogue');
+    btnIn(d.body, 'Réorganiser…').click();
+    await settle();
+    check(modal() && text(modal()).includes('ancien thème du catalogue sans ordre'), 'thème du catalogue : explication attendue');
+    btnIn(modal(), 'Passer en ordre manuel').click();
+    check(await waitFor(() => !modal() && roLayout() === 'Aubrac Charolaise Salers'), 'thème du catalogue : mode réorganisation attendu, ' + roLayout());
+    {
+      const all = await targetsR();
+      const v = all.filter((x) => x.name === 'Vaches du catalogue');
+      check(v.length === 1 && !v[0].source && v[0].items.map((i) => i.title).join('|') === 'Aubrac|Charolaise|Salers', 'thème du catalogue en ordre manuel : ' + JSON.stringify(v));
+    }
+    btnIn(bar(), 'Annuler').click();
+    await settle();
+    check(!grid() && d.querySelectorAll('.slot__no').length === 3 && btnIn(d.body, 'Réorganiser'), 'thème du catalogue : album numéroté attendu après « Annuler »');
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.

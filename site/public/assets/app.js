@@ -269,6 +269,8 @@
     // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
     merge: null,
+    // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
+    reorder: null,
     settings: { name: '', busy: false, error: '', saved: false },
     copied: '',
     bm: { src: null, error: '', clicked: false, importKey: null, busy: false, checking: false, stale: false },
@@ -871,6 +873,30 @@
     return slots;
   });
   const visibleSlots = computed(() => albumSlots.value.slice(0, S.albumLimit));
+  // Mode réorganisation : un objet figé par élément du brouillon ({k : indice dans base, item, card, thumb}), puis dans
+  // l'ordre en cours. Un déplacement ne refait que la liste ; une relecture (cartes, qids résolus, vignettes arrivées)
+  // garde l'objet d'un élément dont rien n'a changé (roInfoPrev) : les vignettes dont ni l'objet, ni le numéro, ni l'état
+  // ne changent ne sont pas redessinées (RoTile), même à 3 000.
+  let roInfoPrev = [];
+  const reorderInfo = computed(() => {
+    const r = S.reorder;
+    if (!r) { roInfoPrev = []; return roInfoPrev; }
+    void S.pv.version;
+    const prev = roInfoPrev;
+    roInfoPrev = r.base.map((item, k) => {
+      const card = findCard(item);
+      const info = card ? null : pvCache.get(item.title);
+      const thumb = info ? info[1] : null;
+      const old = prev[k];
+      return old && old.item === item && old.card === card && old.thumb === thumb ? old : markRaw({ k, item, card, thumb });
+    });
+    return roInfoPrev;
+  });
+  const reorderSlots = computed(() => {
+    const r = S.reorder;
+    const info = reorderInfo.value;
+    return r ? r.order.map((k) => info[k]).filter(Boolean) : [];
+  });
   // Cartes qu'on peut sélectionner dans la vue ouverte (Maj+clic pour une plage).
   const selectableIds = computed(() => (S.tab === 'collections' && activeAlbum.value
     ? albumSlots.value.filter((s) => s.card).map((s) => s.card.id)
@@ -1227,7 +1253,7 @@
     cardsRev = null;
     cardsGen++;
     cardsJob = Promise.resolve();
-    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
+    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null,
       q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
@@ -2243,6 +2269,222 @@
     } catch (e) {
       if (gen === cardsGen) notify(e.message, true);
     }
+  }
+  // ---------------------------------------------------------------- « Réorganiser » (album d'une de tes collections)
+  // Demande de l'utilisateur (2026-10-18) : « Il faudrait aussi qu'on puisse réorganiser les cartes d'une collection à la
+  // main. » Dans l'album d'une de tes collections qui a un ordre, « Réorganiser » passe en mode réorganisation (tri
+  // « Ordre », filtre « Toutes ») : tous les éléments, dans l'ordre, en vignettes réduites (ReorderGrid : léger jusqu'à
+  // 3 000), avec les sections des intercalaires. Brouillon (S.reorder) : {id, name, base (les éléments de la collection à
+  // l'entrée, tels que rangés, figés), order (l'ordre en cours : indices dans base, tableau figé remplacé à chaque
+  // déplacement), dirty (différent de l'ordre de la collection), active (indice de l'élément choisi : barre du bas, « En
+  // tête », « À la fin », « Position »), drag (élément en train d'être glissé), pos (position tapée), busy, error, said
+  // et saidN (annonce pour les lecteurs d'écran, et son numéro), away (message « pas encore enregistré » déjà donné)}.
+  // « Enregistrer l'ordre » : une seule requête POST /api/targets/save, les éléments tels quels (tous leurs champs) dans
+  // le nouvel ordre ; « Annuler » n'envoie rien. Quitter l'album (ou l'onglet) avec un ordre modifié garde le brouillon :
+  // un message le dit (« Y revenir »), l'album le reprend à son retour ; recharger ou fermer la page le demande d'abord
+  // (beforeunload). Sans changement, le mode se referme simplement.
+  const isIdentity = (order) => order.every((k, i) => k === i);
+  function reorderOf(col) {
+    const r = S.reorder;
+    return r && col && col.kind === 'target' && r.id === col.id ? r : null;
+  }
+  // Ordre de `list` (des éléments) reporté sur `items` : indices dans items, dans l'ordre des titres de list, puis ceux
+  // de items qui n'y sont pas, à la fin, dans leur ordre (deux éléments de même titre gardent leur ordre entre eux).
+  function alignOrder(list, items) {
+    const pool = new Map();
+    items.forEach((it, i) => { const k = normTitle(it.title); if (pool.has(k)) pool.get(k).push(i); else pool.set(k, [i]); });
+    const out = [];
+    for (const it of list) { const q = pool.get(normTitle(it.title)); if (q && q.length) out.push(q.shift()); }
+    const used = new Set(out);
+    items.forEach((_, i) => { if (!used.has(i)) out.push(i); });
+    return out;
+  }
+  function startReorder(col) {
+    const r = S.reorder;
+    if (r && r.id !== col.id && r.dirty) {
+      openConfirm({
+        title: 'Ordre non enregistré',
+        text: `Le nouvel ordre de « ${r.name} » n'est pas enregistré. L'abandonner pour réorganiser « ${col.name} » ?`,
+        ok: 'Abandonner et réorganiser',
+        danger: true,
+        run: () => { beginReorder(col.t); },
+      });
+      return;
+    }
+    beginReorder(col.t);
+  }
+  function beginReorder(t) {
+    roDragEnd();
+    S.selected.clear();
+    if (S.openId || S.openMissing) closeCard();
+    Object.assign(S, { albumSort: 'order', albumFilter: 'all' });
+    S.reorder = { id: t.id, name: t.name, base: markRaw(t.items), order: markRaw(t.items.map((_, i) => i)), dirty: false, active: null, drag: null, pos: '',
+      busy: false, error: '', said: '', saidN: 0, away: false };
+    nextTick(() => { const el = document.getElementById('album-name'); if (el) el.focus(); });
+  }
+  function sayReorder(r, text) { r.said = text; r.saidN++; }
+  // Déplace l'élément k (indice dans base) à la place `to` de l'ordre (0 = en tête), bornée ; false s'il n'a pas bougé.
+  function moveTo(k, to) {
+    const r = S.reorder;
+    if (!r || r.busy) return false;
+    const from = r.order.indexOf(k);
+    if (from < 0) return false;
+    const n = r.order.length;
+    const dest = Math.max(0, Math.min(n - 1, to));
+    const title = r.base[k].title;
+    if (r.active !== k) Object.assign(r, { active: k, pos: '' });
+    r.error = '';
+    if (dest === from) {
+      sayReorder(r, from === 0 && to <= 0 ? `« ${title} » est déjà en tête.` : from === n - 1 && to >= n - 1 ? `« ${title} » est déjà à la fin.` : `« ${title} » est déjà en position ${fmt(from + 1)}.`);
+      return false;
+    }
+    const next = r.order.slice();
+    next.splice(from, 1);
+    next.splice(dest, 0, k);
+    r.order = markRaw(next);
+    r.dirty = !isIdentity(next);
+    sayReorder(r, `« ${title} »${r.base[k].sep ? ' (intercalaire)' : ''} : position ${fmt(dest + 1)} sur ${fmt(n)}.`);
+    return true;
+  }
+  // Lâché avant (after = false) ou après l'élément `target`.
+  function dropAt(k, target, after) {
+    const r = S.reorder;
+    if (!r) return;
+    const from = r.order.indexOf(k);
+    let to = r.order.indexOf(target) + (after ? 1 : 0);
+    if (from < to) to--;
+    moveTo(k, to);
+  }
+  // Champ « Position » de la barre du bas (1 = en tête).
+  function moveToTyped() {
+    const r = S.reorder;
+    if (!r || r.active == null) return;
+    const n = r.order.length;
+    const p = Number(String(r.pos).trim());
+    if (!Number.isInteger(p) || p < 1 || p > n) { r.error = `Position : un nombre entier de 1 à ${fmt(n)}.`; sayReorder(r, r.error); return; }
+    r.pos = '';
+    const k = r.active;
+    if (moveTo(k, p - 1)) showTile(k);
+  }
+  // Vignette de l'élément k montrée (déplacée au loin par la barre du bas).
+  function showTile(k) {
+    nextTick(() => { const li = document.querySelector(`li.ro-tile[data-k="${k}"]`); if (li && typeof li.scrollIntoView === 'function') li.scrollIntoView({ block: 'nearest' }); });
+  }
+  function focusReorderButton() {
+    nextTick(() => { const b = document.getElementById('reorder-btn'); if (b) b.focus(); });
+  }
+  function cancelReorder() {
+    const r = S.reorder;
+    if (!r || r.busy) return;
+    roDragEnd();
+    S.reorder = null;
+    focusReorderButton();
+    if (r.dirty) notify(`Ordre de « ${r.name} » laissé tel quel : rien n'a été envoyé.`, false, { label: 'Reprendre', run: () => resumeReorder(r) });
+  }
+  // « Reprendre » (après « Annuler ») ou « Y revenir » (brouillon gardé) : le brouillon, reporté sur la collection
+  // d'aujourd'hui, dans son album.
+  function resumeReorder(r) {
+    const t = targets.value.find((x) => x.id === r.id);
+    if (!t) { notify("Cette collection n'existe plus.", true); return; }
+    const cur = S.reorder;
+    if (cur && cur.id !== r.id && cur.dirty) { notify(`Termine d'abord la réorganisation de « ${cur.name} » (« Enregistrer l'ordre » ou « Annuler »).`, true); return; }
+    Object.assign(r, { drag: null, busy: false, away: false });
+    S.reorder = r;
+    if (t.items !== S.reorder.base) rebaseReorder(S.reorder, t);
+    if (!(S.tab === 'collections' && S.album && S.album.kind === 'target' && S.album.id === r.id)) openAlbum('target', r.id);
+    Object.assign(S, { albumSort: 'order', albumFilter: 'all' });
+  }
+  // Collection changée pendant la réorganisation (ailleurs dans la page) : l'ordre en cours est reporté sur ses éléments
+  // d'aujourd'hui (par titre) ; ceux qui ont disparu sont retirés, les nouveaux viennent à la fin.
+  function rebaseReorder(r, t) {
+    roDragEnd();
+    const next = alignOrder(r.order.map((k) => r.base[k]), t.items);
+    Object.assign(r, { base: markRaw(t.items), order: markRaw(next), dirty: !isIdentity(next), active: null, drag: null, name: t.name });
+  }
+  async function saveOrder() {
+    const r = S.reorder;
+    if (!r || r.busy) return;
+    roDragEnd();
+    const t = targets.value.find((x) => x.id === r.id);
+    if (!t) { S.reorder = null; notify("Cette collection n'existe plus.", true); return; }
+    if (t.items !== r.base) rebaseReorder(r, t);
+    if (!r.dirty) { S.reorder = null; focusReorderButton(); notify('Ordre inchangé : rien à enregistrer.'); return; }
+    const before = t.items;
+    const items = r.order.map((k) => r.base[k]);
+    const gen = cardsGen;
+    r.busy = true;
+    r.error = '';
+    try {
+      await saveItemsOf(t, items);
+      if (gen !== cardsGen) return;
+      if (S.reorder === r) { S.reorder = null; focusReorderButton(); }
+      notify(`Nouvel ordre de « ${t.name} » enregistré.`, false, { label: 'Annuler', run: () => restoreOrder(t.id, before) });
+    } catch (e) {
+      if (gen === cardsGen) r.error = e.message;
+    } finally {
+      r.busy = false;
+    }
+  }
+  // « Annuler » du message après l'enregistrement : l'ordre d'avant, reporté sur la collection d'aujourd'hui.
+  async function restoreOrder(id, before) {
+    const t = targets.value.find((x) => x.id === id);
+    if (!t) { notify("Cette collection n'existe plus : rien à remettre.", true); return; }
+    const gen = cardsGen;
+    try {
+      await saveItemsOf(t, alignOrder(before, t.items).map((i) => t.items[i]));
+      if (gen === cardsGen) notify(`Ordre d'avant remis dans « ${t.name} ».`);
+    } catch (e) {
+      if (gen === cardsGen) notify(e.message, true);
+    }
+  }
+  // Collection sans ordre (de A à Z) : « Réorganiser… » dit pourquoi. Faite d'une catégorie ou d'une page de Wikipédia
+  // (`wp:` / `links:` sans colonne), elle reste LA collection de cette source (une seule par compte : targets/save
+  // remplace au lieu de doubler, « Catégories » propose de l'ouvrir au lieu d'en créer une autre) ; lui retirer sa source
+  // pour lui donner un ordre casserait ce dédoublonnage (une seconde collection de la même catégorie deviendrait
+  // possible) et son lien « Voir sur Wikipédia ». Proposé à la place : une copie à ordonner, sans source (mêmes éléments,
+  // de A à Z pour commencer), l'originale restant telle quelle. Ancien thème du catalogue sans ordre (`catalog:<id>`) :
+  // rien ne dépend de sa source (ni dédoublonnage, ni lien), elle passe en ordre manuel sur place (source retirée,
+  // éléments dans l'ordre affiché), puis en mode réorganisation.
+  function explainUnordered(col) {
+    const t = col.t;
+    const az = t.items.slice().sort((a, b) => COLLATOR.compare(a.title, b.title));
+    const from = col.cat ? `la catégorie Wikipédia « ${catName(t.source)} »` : col.page ? `la page Wikipédia « ${col.page} »` : null;
+    const cur = S.reorder;
+    const lost = cur && cur.id !== t.id && cur.dirty ? ` Le nouvel ordre non enregistré de « ${cur.name} » sera abandonné.` : '';
+    if (!from) {
+      openConfirm({
+        title: `Réorganiser « ${t.name} »`,
+        text: `« ${t.name} » vient d'un ancien thème du catalogue sans ordre : elle s'affiche de A à Z, sans numéros. En ordre manuel, ses éléments gardent d'abord l'ordre affiché (de A à Z), numérotés, puis tu les places comme tu veux.${lost}`,
+        ok: 'Passer en ordre manuel',
+        run: async () => {
+          const gen = cardsGen;
+          const r = await api('POST', '/api/targets/save', { id: t.id, name: t.name, items: az });
+          if (gen !== cardsGen) return;
+          if (r.target) upsertTarget(r.target); else await loadTargets();
+          const nt = targets.value.find((x) => x.id === t.id);
+          if (nt) beginReorder(nt);
+        },
+      });
+      return;
+    }
+    const suffix = ' (mon ordre)';
+    const name = t.name.slice(0, 80 - suffix.length).trim() + suffix;
+    openConfirm({
+      title: `Réorganiser « ${t.name} »`,
+      text: `« ${t.name} » est faite de ${from} : elle s'affiche de A à Z, sans numéros, et reste la collection de cette ${col.cat ? 'catégorie' : 'page'} (le classeur n'en crée jamais une seconde). Lui donner ton ordre couperait ce lien : elle ne se réorganise donc pas. À la place, une copie à ordonner : « ${name} », mêmes éléments (de A à Z pour commencer), sans lien avec ${col.cat ? 'la catégorie' : 'la page'} ; « ${t.name} » reste telle quelle.${lost}`,
+      ok: 'Créer la copie et la réorganiser',
+      run: async () => {
+        const gen = cardsGen;
+        const r = await api('POST', '/api/targets/save', { name, items: az });
+        if (gen !== cardsGen) return;
+        if (r.target) upsertTarget(r.target); else await loadTargets();
+        const nt = r.target ? targets.value.find((x) => x.id === r.target.id) : null;
+        if (!nt) return;
+        openAlbum('target', nt.id);
+        beginReorder(nt);
+        notify(`Copie « ${name} » créée : place ses cartes, puis « Enregistrer l'ordre ».`);
+      },
+    });
   }
   // ---------------------------------------------------------------- « Fusionner avec… » (album d'une de tes collections)
   // Demande de l'utilisateur (2026-10-18) : « un bouton pour fusionner deux collections ». La collection d'où l'on part
@@ -5651,6 +5893,8 @@
         h('p', { class: 'muted' }, "Cette collection n'existe plus."),
       ]);
     }
+    const ro = reorderOf(col);
+    if (ro) return viewReorder(col, ro);
     const cv = col.kind === 'category' ? col.cv : null; // catégorie de Wikipédia ouverte (source d'une collection à créer)
     const reading = !!cv && (cv.loading || !cv.items);
     const p = progressOf(col);
@@ -5714,6 +5958,8 @@
       actions = [
         h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags du jeu']),
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
+        // « Réorganiser » (2 éléments au moins) ; « Réorganiser… » d'une collection sans ordre : pourquoi (explainUnordered).
+        viewReorderButton(col),
         // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
         targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
@@ -5751,6 +5997,9 @@
           h('span', null, `(${pricedOf(w.costPriced, w.missing)} qui ${plural(w.missing, 'manque', 'manquent')}, à la moins chère de leurs cotes)`),
         ]) : null,
         !reading && missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
+        // Actions de la collection sur leur propre ligne, au-dessus des filtres et des tris (2026-10-18 : avec
+        // « Réorganiser » et « Fusionner avec… », elles ne tenaient plus sur la même ligne).
+        h('div', { class: 'toolbar album-actions' }, actions),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', S.albumFilter === 'all', () => { S.albumFilter = 'all'; }),
@@ -5763,8 +6012,6 @@
             seg('Prix ↑', S.albumSort === 'price-up', () => { S.albumSort = 'price-up'; loadMarket(false); }, 'Prix croissant'),
             seg('Prix ↓', S.albumSort === 'price-down', () => { S.albumSort = 'price-down'; loadMarket(false); }, 'Prix décroissant'),
           ]),
-          h('span', { class: 'spacer' }),
-          ...actions,
         ]),
       ]),
       total ? h(AlbumGrid) : reading ? null : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : pg ? 'Cette page ne lie aucun article.' : col.cat ? 'Cette catégorie ne contient aucun article.' : [
@@ -5773,6 +6020,94 @@
       ]),
       shown < total ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { S.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, total - shown))} suivantes (${fmt(total - shown)} restantes)`)]) : null,
+    ]);
+  }
+  // « Réorganiser » dans l'album d'une de tes collections (2 éléments au moins) : le mode réorganisation si elle a un ordre,
+  // sinon « Réorganiser… », qui dit pourquoi elle reste de A à Z (explainUnordered).
+  function viewReorderButton(col) {
+    if (col.kind !== 'target' || col.items.length < 2) return null;
+    return col.ordered
+      ? h('button', { id: 'reorder-btn', class: 'btn', type: 'button', onClick: () => startReorder(col) }, [icon('move', 'sm'), 'Réorganiser'])
+      : h('button', { id: 'reorder-btn', class: 'btn', type: 'button', title: 'Elle s\'affiche de A à Z : pourquoi, et que faire', onClick: () => explainUnordered(col) }, [icon('move', 'sm'), 'Réorganiser…']);
+  }
+  // Mode réorganisation (S.reorder) : en-tête réduit (nom, aide), toutes les vignettes (ReorderGrid), barre du bas.
+  function viewReorder(col, r) {
+    const n = r.order.length;
+    return h('div', { class: 'reorder' }, [
+      h('div', { class: 'album-head' }, [
+        h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
+        h('div', { class: 'album-title' }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name),
+          h('span', { class: 'num' }, `${fmt(n)} ${plural(n, 'élément', 'éléments')}`), h('span', { class: 'badge' }, 'Réorganisation')]),
+        h('p', { class: 'hint reorder-help', id: 'reorder-help' }, [
+          'Glisse une carte à sa place (au doigt, par sa poignée ', icon('grip', 'sm'), sr('poignée'), '), ou utilise ← et →. ',
+          'Choisis une carte pour la mettre en tête, à la fin ou à une position (barre du bas). ',
+          'Un intercalaire garde son rôle : il ouvre toujours une nouvelle ligne. Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
+        ]),
+      ]),
+      h(ReorderGrid),
+      viewReorderBar(r),
+    ]);
+  }
+  // Barre du bas du mode réorganisation : l'élément choisi (position, « En tête », « À la fin », « Position »), « Annuler »,
+  // « Enregistrer l'ordre », et l'annonce de chaque déplacement pour les lecteurs d'écran (role=status, cachée à l'œil :
+  // la position visible change déjà sur la vignette et ici).
+  function viewReorderBar(r) {
+    const n = r.order.length;
+    const k = r.active;
+    const at = k == null ? -1 : r.order.indexOf(k);
+    const item = at >= 0 ? r.base[k] : null;
+    return h('div', { class: 'reorder-bar', role: 'region', 'aria-label': 'Réorganisation' }, [
+      item ? h('div', { class: 'reorder-bar__item' }, [
+        h('span', { class: 'reorder-bar__name' }, [h('b', null, item.title), h('span', { class: 'num' }, ` · ${fmt(at + 1)} sur ${fmt(n)}`)]),
+        h('span', { class: 'reorder-bar__acts' }, [
+          h('button', { class: 'btn small', type: 'button', disabled: r.busy, 'aria-disabled': at === 0 ? 'true' : null, onClick: () => { if (moveTo(k, 0)) showTile(k); } }, 'En tête'),
+          h('button', { class: 'btn small', type: 'button', disabled: r.busy, 'aria-disabled': at === n - 1 ? 'true' : null, onClick: () => { if (moveTo(k, n - 1)) showTile(k); } }, 'À la fin'),
+          h('form', { class: 'reorder-bar__pos', onSubmit: (e) => { e.preventDefault(); moveToTyped(); } }, [
+            h('label', { class: 'sr', for: 'reorder-pos' }, `Nouvelle position de « ${item.title} » (1 à ${fmt(n)})`),
+            h('input', { id: 'reorder-pos', class: 'field', type: 'number', inputmode: 'numeric', min: '1', max: String(n), step: '1', value: r.pos, placeholder: 'N°',
+              onInput: (e) => { r.pos = e.target.value; } }),
+            h('button', { class: 'btn small', type: 'submit', disabled: r.busy || !String(r.pos).trim() }, 'Déplacer'),
+          ]),
+        ]),
+      ]) : h('p', { class: 'reorder-bar__hint small muted' }, 'Choisis une carte pour la mettre en tête, à la fin ou à une position précise.'),
+      h('div', { class: 'reorder-bar__end' }, [
+        h('span', { class: ['reorder-bar__state', 'small', { dirty: r.dirty }] }, r.dirty
+          ? [h('span', { class: 'long' }, 'Ordre modifié, pas encore enregistré'), h('span', { class: 'short' }, 'Non enregistré')]
+          : [h('span', { class: 'long' }, 'Ordre inchangé'), h('span', { class: 'short' }, 'Inchangé')]),
+        h('button', { class: 'btn', type: 'button', disabled: r.busy, onClick: cancelReorder }, 'Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: r.busy || !r.dirty, 'aria-busy': r.busy ? 'true' : null, onClick: saveOrder },
+          r.busy ? 'Enregistrement…' : 'Enregistrer l\'ordre'),
+      ]),
+      errLine(r.error),
+      h('p', { class: 'sr', role: 'status' }, r.said ? [h('span', { key: r.saidN }, r.said)] : []),
+    ]);
+  }
+  // Vignette réduite d'un élément (mode réorganisation, fantôme du glisser) : son image (ta carte, sinon l'article), ou
+  // son initiale.
+  function roArt(s) {
+    const it = s.item;
+    const img = s.card ? s.card.image : it.image || s.thumb;
+    return h('span', { class: 'ro-art', 'aria-hidden': 'true' }, [
+      h('span', { class: 'ro-noart' }, initialOf(it.title)),
+      img ? h('img', { src: img, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false', onError: hideBroken }) : null,
+    ]);
+  }
+  // Une vignette du mode réorganisation : numéro, poignée (au doigt), image, titre, « ← » / « → ». Ta carte : bord de sa
+  // rareté ; case vide : bord pointillé ; intercalaire : bord et onglet gris. Les flèches restent actives aux deux bouts
+  // (aria-disabled : le focus ne se perd pas, l'annonce dit « déjà en tête »). Clics et glisser : délégués à la grille.
+  function viewRoTile(s, n, last, active, lifted) {
+    const it = s.item;
+    const c = s.card;
+    const r = c ? okRarity(c.rarity) || 'C' : null;
+    return h('li', { class: ['ro-tile', r ? 'r' + r : 'ro-tile--missing', { sep: !!it.sep, active, lifted }], 'data-k': String(s.k) }, [
+      roArt(s),
+      h('span', { class: 'ro-no' }, fmt(n)),
+      h('span', { class: 'ro-grip', title: 'Glisser pour déplacer', 'aria-hidden': 'true' }, [icon('grip')]),
+      h('span', { class: 'ro-title' }, [it.title, it.sep ? sr(', intercalaire') : null, c ? null : sr(', pas encore dans ta collection')]),
+      h('span', { class: 'ro-moves' }, [
+        h('button', { class: 'ro-move', type: 'button', 'data-act': 'prev', title: 'Une place avant', 'aria-label': `« ${it.title} » : une place avant`, 'aria-disabled': n === 1 ? 'true' : null }, '←'),
+        h('button', { class: 'ro-move', type: 'button', 'data-act': 'next', title: 'Une place après', 'aria-label': `« ${it.title} » : une place après`, 'aria-disabled': last ? 'true' : null }, '→'),
+      ]),
     ]);
   }
 
@@ -8223,7 +8558,225 @@
         albumKids(visibleSlots.value, sections, (s) => (s.card ? h(Cell, { key: s.key, card: s.card, sep: !!s.item.sep }) : viewSlot(s, col))));
     },
   };
-  const BulkBar = { name: 'BulkBar', setup: () => () => h(Transition, { name: 'rise' }, () => viewBulk()) };
+  // Glisser une vignette du mode réorganisation, en pointer events (souris, doigt et stylet de la même façon ; le
+  // glisser-déposer HTML5 ne marche pas au doigt). Souris : toute la vignette, après 6 px ; doigt ou stylet : sa poignée
+  // seulement (touch-action: none sur elle), le reste de la grille faisant défiler la page comme d'habitude — une poignée
+  // plutôt qu'un appui long : visible, immédiate, sans conflit avec le défilement ni avec le menu du système. Écouteurs sur
+  // window le temps du geste ; Vue ne redessine qu'au début (vignette soulevée, fantôme) et au lâcher (nouvel ordre) :
+  // entre les deux, le fantôme et le repère d'insertion bougent par des variables CSS (CSSOM), une fois par image, et la
+  // page défile seule près du haut de la fenêtre et au-dessus de la barre du bas. Échap annule le geste.
+  let roDrag = null; // {k, id (pointerId), type, x0, y0, x, y, on (geste commencé), grid, target: {k, after, el} | null, raf}
+  let roDragEnded = 0; // heure du dernier lâcher : le clic qui le suit aussitôt (souris) ne choisit rien
+  const isTile = (n) => typeof n.hasAttribute === 'function' && n.hasAttribute('data-k');
+  function upTo(el, stop, test) {
+    for (let n = el; n && n !== stop; n = n.parentNode) if (n.nodeType === 1 && test(n)) return n;
+    return null;
+  }
+  const tileOf = (k) => document.querySelector(`li.ro-tile[data-k="${k}"]`);
+  function roPointerDown(e) {
+    const r = S.reorder;
+    if (!r || r.busy || roDrag) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const grid = e.currentTarget;
+    const li = upTo(e.target, grid, isTile);
+    if (!li || upTo(e.target, li, (n) => n.tagName === 'BUTTON')) return; // les flèches : un clic
+    const grip = !!upTo(e.target, li, (n) => n.classList.contains('ro-grip'));
+    if (e.pointerType !== 'mouse' && !grip) return; // au doigt, hors de la poignée : la page défile
+    roDrag = { k: Number(li.getAttribute('data-k')), id: e.pointerId, type: e.pointerType, x0: e.clientX, y0: e.clientY, x: e.clientX, y: e.clientY, on: false, grid, target: null, raf: 0 };
+    if (e.pointerType === 'mouse') e.preventDefault(); // pas de sélection de texte
+    window.addEventListener('pointermove', roPointerMove);
+    window.addEventListener('pointerup', roPointerUp);
+    window.addEventListener('pointercancel', roPointerCancel);
+    window.addEventListener('keydown', roDragKey, true);
+  }
+  function roPointerMove(e) {
+    const d = roDrag;
+    if (!d || e.pointerId !== d.id) return;
+    d.x = e.clientX;
+    d.y = e.clientY;
+    if (!d.on) {
+      if (Math.abs(d.x - d.x0) + Math.abs(d.y - d.y0) < (d.type === 'mouse' ? 6 : 3)) return;
+      const r = S.reorder;
+      if (!r) { roDragEnd(); return; }
+      d.on = true;
+      Object.assign(r, { drag: d.k, active: d.k, pos: '' });
+      try { if (d.grid.setPointerCapture) d.grid.setPointerCapture(d.id); } catch (err) { /* pointeur déjà relâché */ }
+      document.documentElement.classList.add('ro-dragging');
+    }
+    if (e.cancelable !== false && typeof e.preventDefault === 'function') e.preventDefault();
+    roFrame();
+  }
+  function roFrame() { if (roDrag && !roDrag.raf) roDrag.raf = requestAnimationFrame(roStep); }
+  function roStep() {
+    const d = roDrag;
+    if (!d) return;
+    d.raf = 0;
+    const wrap = d.grid.parentNode;
+    const ghost = wrap && wrap.querySelector('.ro-ghost');
+    if (ghost) { ghost.style.setProperty('--gx', d.x + 'px'); ghost.style.setProperty('--gy', d.y + 'px'); }
+    d.target = roTargetAt(d);
+    roMark(d);
+    // Près du haut de la fenêtre, ou au-dessus de la barre du bas : la page défile (plus vite près du bord).
+    const vh = window.innerHeight || 0;
+    if (!vh || typeof window.scrollBy !== 'function') return;
+    const bar = document.querySelector('.reorder-bar');
+    const bottom = bar && typeof bar.getBoundingClientRect === 'function' ? Math.min(vh, bar.getBoundingClientRect().top) : vh;
+    const edge = 70;
+    let dy = 0;
+    if (d.y < edge) dy = -(edge - d.y);
+    else if (d.y > bottom - edge) dy = d.y - (bottom - edge);
+    if (dy) { window.scrollBy(0, Math.max(-28, Math.min(28, Math.round(dy / 3)))); roFrame(); }
+  }
+  // Où lâcher : la vignette sous le pointeur (avant ou après selon la moitié), sinon, dans un trou de la grille (fin d'une
+  // ligne courte, avant une section), la plus proche à sa gauche ; avant un intercalaire (qui commence sa ligne) = à la fin
+  // de la section d'avant (le repère va après sa dernière vignette). null : lâcher ne changerait rien ; hors de la grille,
+  // la cible d'avant reste.
+  function roTargetAt(d) {
+    const r = S.reorder;
+    if (!r || typeof document.elementFromPoint !== 'function') return d.target;
+    const inGrid = (n) => !!n && d.grid.contains(n);
+    let hit = document.elementFromPoint(d.x, d.y);
+    let li = inGrid(hit) ? upTo(hit, d.grid, isTile) : null;
+    let after = false;
+    if (li) {
+      const rc = li.getBoundingClientRect();
+      after = d.x > rc.left + rc.width / 2;
+    } else if (inGrid(hit)) {
+      for (let dx = 12; dx <= 600 && !li; dx += 12) {
+        hit = document.elementFromPoint(d.x - dx, d.y);
+        if (!inGrid(hit)) break;
+        li = upTo(hit, d.grid, isTile);
+      }
+      after = true;
+    }
+    if (!li) return d.target;
+    let k = Number(li.getAttribute('data-k'));
+    let at = r.order.indexOf(k);
+    if (at < 0) return d.target;
+    if (!after && at > 0 && r.base[k].sep) {
+      at--;
+      k = r.order[at];
+      after = true;
+      li = tileOf(k) || li;
+    }
+    const from = r.order.indexOf(d.k);
+    let to = at + (after ? 1 : 0);
+    if (from < to) to--;
+    return to === from ? null : { k, after, el: li };
+  }
+  function roMark(d) {
+    const wrap = d.grid.parentNode;
+    const mark = wrap && wrap.querySelector('.ro-mark');
+    if (!mark) return;
+    const t = d.target;
+    if (!t || !t.el || typeof t.el.getBoundingClientRect !== 'function') { mark.classList.remove('on'); return; }
+    const rc = t.el.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    mark.style.setProperty('--mx', Math.round((t.after ? rc.right + 5 : rc.left - 5) - wr.left) + 'px');
+    mark.style.setProperty('--my', Math.round(rc.top - wr.top) + 'px');
+    mark.style.setProperty('--mh', Math.round(rc.height) + 'px');
+    mark.classList.add('on');
+  }
+  function roPointerUp(e) {
+    const d = roDrag;
+    if (!d || e.pointerId !== d.id) return;
+    if (!d.on) { roDragEnd(); return; } // un simple clic : la grille le reçoit (roClick)
+    d.x = e.clientX;
+    d.y = e.clientY;
+    const t = roTargetAt(d);
+    roDragEnd();
+    roDragEnded = Date.now();
+    if (t) dropAt(d.k, t.k, t.after);
+    else if (S.reorder && S.reorder.base[d.k]) sayReorder(S.reorder, `« ${S.reorder.base[d.k].title} » reste à sa place.`);
+  }
+  function roPointerCancel(e) { if (roDrag && e.pointerId === roDrag.id) roDragEnd(); }
+  function roDragKey(e) {
+    if (e.key !== 'Escape' || !roDrag) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const on = roDrag.on;
+    roDragEnd();
+    if (on && S.reorder) sayReorder(S.reorder, 'Déplacement annulé.');
+  }
+  function roDragEnd() {
+    const d = roDrag;
+    roDrag = null;
+    window.removeEventListener('pointermove', roPointerMove);
+    window.removeEventListener('pointerup', roPointerUp);
+    window.removeEventListener('pointercancel', roPointerCancel);
+    window.removeEventListener('keydown', roDragKey, true);
+    if (!d) return;
+    if (d.raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(d.raf);
+    const wrap = d.grid.parentNode;
+    const mark = wrap && wrap.querySelector('.ro-mark');
+    if (mark) mark.classList.remove('on');
+    document.documentElement.classList.remove('ro-dragging');
+    try { if (d.on && d.grid.releasePointerCapture) d.grid.releasePointerCapture(d.id); } catch (err) { /* déjà relâché */ }
+    if (S.reorder) S.reorder.drag = null;
+  }
+  // Clic dans la grille : « ← » / « → » d'une vignette (le focus reste sur la flèche de l'élément déplacé, que Vue a pu
+  // déplacer dans la page), ou une vignette choisie pour la barre du bas.
+  function roClick(e) {
+    const r = S.reorder;
+    if (!r) return;
+    const li = upTo(e.target, e.currentTarget, isTile);
+    if (!li) return;
+    const k = Number(li.getAttribute('data-k'));
+    const b = upTo(e.target, li, (n) => n.tagName === 'BUTTON');
+    const act = b ? b.getAttribute('data-act') : null;
+    if (act === 'prev' || act === 'next') {
+      const at = r.order.indexOf(k);
+      moveTo(k, act === 'prev' ? at - 1 : at + 1);
+      nextTick(() => {
+        const t = tileOf(k);
+        const nb = t && t.querySelector(`button[data-act="${act}"]`);
+        if (nb && document.activeElement !== nb) nb.focus();
+      });
+      return;
+    }
+    if (Date.now() - roDragEnded < 150) return;
+    if (r.active !== k) Object.assign(r, { active: k, pos: '' });
+  }
+  // Le focus entre dans une vignette (Tab) : elle devient l'élément choisi de la barre du bas.
+  function roFocusIn(e) {
+    const r = S.reorder;
+    if (!r || roDrag) return;
+    const li = upTo(e.target, e.currentTarget, isTile);
+    if (!li) return;
+    const k = Number(li.getAttribute('data-k'));
+    if (r.active !== k) Object.assign(r, { active: k, pos: '' });
+  }
+  const RoTile = {
+    name: 'RoTile',
+    props: { s: Object, n: Number, last: Boolean, active: Boolean, lifted: Boolean },
+    setup: (props) => () => viewRoTile(props.s, props.n, props.last, props.active, props.lifted),
+  };
+  const ReorderGrid = {
+    name: 'ReorderGrid',
+    setup() {
+      onBeforeUnmount(roDragEnd);
+      return () => {
+        const r = S.reorder;
+        if (!r) return null;
+        const slots = reorderSlots.value;
+        const kids = [];
+        slots.forEach((s, i) => {
+          if (i > 0 && s.item.sep) kids.push(h('li', { class: 'grid-break', key: 'sec:' + s.k, 'aria-hidden': 'true' }));
+          kids.push(h(RoTile, { key: s.k, s, n: i + 1, last: i === slots.length - 1, active: r.active === s.k, lifted: r.drag === s.k }));
+        });
+        const g = r.drag != null ? reorderInfo.value[r.drag] : null;
+        return h('div', { class: 'ro-wrap' }, [
+          h('ol', { class: ['ro-grid', { dragging: r.drag != null }], 'aria-label': `Ordre de « ${r.name} »`, 'aria-describedby': 'reorder-help',
+            onPointerdown: roPointerDown, onClick: roClick, onFocusin: roFocusIn, onDragstart: (e) => e.preventDefault() }, kids),
+          h('div', { class: 'ro-mark', 'aria-hidden': 'true' }),
+          g ? h('div', { class: ['ro-ghost', g.card ? 'r' + (okRarity(g.card.rarity) || 'C') : 'ro-ghost--missing'], 'aria-hidden': 'true',
+            style: roDrag ? { '--gx': roDrag.x + 'px', '--gy': roDrag.y + 'px' } : null },
+            [roArt(g), h('span', null, g.item.title)]) : null,
+        ]);
+      };
+    },
+  };
+  const BulkBar ={ name: 'BulkBar', setup: () => () => h(Transition, { name: 'rise' }, () => viewBulk()) };
   const Fiche = {
     name: 'Fiche',
     setup() {
@@ -8319,6 +8872,8 @@
         window.addEventListener('keydown', onKey);
         window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); });
         document.addEventListener('visibilitychange', onVisible);
+        // Ordre réorganisé pas encore enregistré : recharger ou fermer la page le demande d'abord (message du navigateur).
+        window.addEventListener('beforeunload', (e) => { if (S.reorder && S.reorder.dirty) { e.preventDefault(); e.returnValue = ''; } });
         setLive();
         boot(LINK_KEY);
       });
@@ -8334,6 +8889,34 @@
 
   watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
+  // Mode réorganisation quitté par la navigation (autre album, liste des collections, autre onglet) : sans changement, il
+  // se referme ; avec un ordre modifié, le brouillon est gardé et un message le dit une fois (« Y revenir »).
+  watch(() => S.tab + '|' + (S.album ? S.album.kind + ':' + S.album.id : ''), () => {
+    const r = S.reorder;
+    if (!r) return;
+    if (S.tab === 'collections' && S.album && S.album.kind === 'target' && S.album.id === r.id) { r.away = false; return; }
+    roDragEnd();
+    if (!r.dirty) { S.reorder = null; return; }
+    if (r.away) return;
+    r.away = true;
+    notify(`Le nouvel ordre de « ${r.name} » n'est pas encore enregistré : il t'attend dans son album.`, false, { label: 'Y revenir', run: () => resumeReorder(r) });
+  });
+  // Collections relues ou changées pendant la réorganisation : collection supprimée, brouillon abandonné ; changée (par une
+  // autre action de la page), brouillon reporté sur ses éléments d'aujourd'hui (rebaseReorder). Pas pendant
+  // l'enregistrement de l'ordre (sa propre réponse).
+  watch(() => targets.value, (list) => {
+    const r = S.reorder;
+    if (!r || r.busy) return;
+    const t = list.find((x) => x.id === r.id);
+    if (!t) {
+      roDragEnd();
+      S.reorder = null;
+      if (r.dirty && list.length) notify(`« ${r.name} » n'existe plus : son nouvel ordre est abandonné.`, true);
+      return;
+    }
+    if (t.items !== r.base) rebaseReorder(r, t);
+    else if (t.name !== r.name) r.name = t.name;
+  });
   // Collection ouverte (ou articles d'une catégorie arrivés après coup) : vues sur 30 jours des articles qui manquent.
   watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => {
     startPageviews();

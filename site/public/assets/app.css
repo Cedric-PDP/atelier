@@ -216,6 +216,7 @@ main.wrap { padding-block: 26px 110px; }
 .missing-sum b { color: var(--fg); }
 .hint { font-size: 12px; color: var(--faint); max-width: 80ch; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+.toolbar.album-actions { gap: 8px 10px; margin-bottom: 10px; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
 .seg button { border: 0; background: none; padding: 6px 13px; font-size: 13px; color: var(--muted); }
 .seg button + button { border-left: 1px solid var(--border); }
@@ -323,6 +324,67 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .grid-break { grid-column: 1 / -1; height: 0; }
 .sep-toggle { display: grid; gap: 2px; }
 .sep-toggle .check { font-weight: 600; }
+
+/* Mode réorganisation d'une collection : vignettes réduites (image 4:3, numéro, poignée, titre, « ← » / « → »), toutes
+   affichées (jusqu'à 3 000 : content-visibility saute le rendu de celles hors de l'écran), sections des intercalaires
+   (.grid-break) ; repère d'insertion et fantôme placés par des variables CSS (--mx, --my, --mh, --gx, --gy) ; barre fixe
+   en bas, comme la bande de sélection. Au doigt, seule la poignée glisse (touch-action: none) : le reste fait défiler. */
+.reorder { padding-bottom: 180px; }
+.reorder-help { max-width: 96ch; }
+.reorder-help .ic { vertical-align: -2px; }
+.ro-wrap { position: relative; }
+.ro-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 14px 10px; align-items: start; }
+@media (max-width: 420px) { .ro-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 6px; } }
+.ro-tile { position: relative; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 4px; border-radius: 11px; cursor: grab;
+  border: 1.5px solid color-mix(in srgb, var(--rc) 75%, var(--border)); background: var(--surface); transition: opacity 0.15s;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  content-visibility: auto; contain-intrinsic-size: auto 158px; scroll-margin: 90px 0 200px; }
+.ro-tile--missing { border-style: dashed; border-color: var(--border); background: color-mix(in srgb, var(--surface) 60%, transparent); }
+.ro-tile.sep { border-color: var(--sep); box-shadow: inset 0 0 0 1px var(--sep); }
+.ro-tile.sep::before { content: ""; position: absolute; z-index: 2; left: 10px; top: 0; width: 38%; max-width: 48px; height: 5px; border-radius: 0 0 4px 4px; background: var(--sep); pointer-events: none; }
+.ro-tile.active { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ro-tile.lifted { opacity: 0.35; }
+.ro-art { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 7px; overflow: hidden; }
+.ro-noart { position: absolute; inset: 0; display: grid; place-items: center; font: 700 1.5rem/1 var(--f-head); color: var(--rc); background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--rc) 55%, var(--deep)) 0, var(--deep) 80%); }
+.ro-tile--missing .ro-noart, .ro-ghost--missing .ro-noart { color: var(--faint); background: var(--surface-2); }
+.ro-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; pointer-events: none; -webkit-user-drag: none; }
+.ro-art img.broken { display: none; }
+.ro-tile--missing .ro-art img, .ro-ghost--missing .ro-art img { opacity: 0.4; filter: grayscale(1); }
+.ro-no { position: absolute; left: 7px; top: 7px; z-index: 1; min-width: 20px; padding: 0 5px; border-radius: 6px; background: rgba(12, 13, 12, 0.78); color: #f2f4f3; font: 700 11px/18px var(--f-body); text-align: center; font-variant-numeric: tabular-nums; pointer-events: none; }
+.ro-grip { position: absolute; right: 5px; top: 5px; z-index: 1; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: rgba(12, 13, 12, 0.72); color: #f2f4f3; touch-action: none; cursor: grab; }
+.ro-grip .ic { width: 18px; height: 18px; }
+@media (pointer: coarse) { .ro-grip { right: 3px; top: 3px; width: 36px; height: 36px; } }
+.ro-title { min-height: 2.5em; padding: 0 2px; font: 600 11.5px/1.25 var(--f-head); color: var(--fg); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; -webkit-hyphens: auto; hyphens: auto; }
+.ro-moves { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.ro-move { min-height: 30px; padding: 0; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); color: var(--fg); font: 600 15px/1 var(--f-body); }
+.ro-move:hover { border-color: var(--accent); }
+.ro-move[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+.ro-move[aria-disabled="true"]:hover { border-color: var(--border); }
+.ro-mark { position: absolute; left: 0; top: 0; z-index: 5; width: 4px; height: var(--mh, 0px); margin-left: -2px; transform: translate(var(--mx, 0px), var(--my, 0px)); border-radius: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent); pointer-events: none; opacity: 0; }
+.ro-mark.on { opacity: 1; }
+.ro-ghost { position: fixed; left: 0; top: 0; z-index: 70; width: 96px; display: grid; gap: 4px; padding: 4px; border-radius: 11px; background: var(--surface-2); border: 1.5px solid var(--accent);
+  box-shadow: 0 18px 30px -10px var(--shadow); font: 600 11px/1.25 var(--f-head); color: var(--fg); pointer-events: none;
+  transform: translate(calc(var(--gx, -300px) - 50%), calc(var(--gy, -300px) - 100% - 14px)) rotate(-3deg); }
+.ro-ghost > span:last-child { padding: 0 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+html.ro-dragging, html.ro-dragging * { cursor: grabbing !important; }
+html.ro-dragging { -webkit-user-select: none; user-select: none; }
+.reorder-bar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 40; width: min(1000px, calc(100vw - 24px));
+  display: grid; gap: 8px; padding: 10px 12px 10px 16px; border-radius: 14px; background: var(--surface-2); color: var(--fg);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); box-shadow: 0 18px 40px -10px var(--shadow), 0 0 24px color-mix(in srgb, var(--accent) 14%, transparent); }
+.reorder-bar__item, .reorder-bar__acts, .reorder-bar__end { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.reorder-bar__name { flex: 1 1 180px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.reorder-bar__name .num { color: var(--muted); }
+.reorder-bar__pos { display: inline-flex; gap: 6px; align-items: center; }
+.reorder-bar__pos .field { width: 5.2em; padding: 5px 8px; font-size: 13px; }
+.reorder-bar .btn[aria-disabled="true"] { opacity: 0.5; }
+.reorder-bar__state { flex: 1 1 auto; color: var(--muted); }
+.reorder-bar__state.dirty { color: var(--warn); font-weight: 600; }
+.reorder-bar__state .short { display: none; }
+@media (max-width: 520px) {
+  .reorder-bar { bottom: 8px; width: calc(100vw - 16px); padding: 8px 10px; gap: 6px; }
+  .reorder-bar__state .long { display: none; }
+  .reorder-bar__state .short { display: inline; }
+}
 
 /* Collection complète : tour doré et brillant (dégradé conique sur la bordure, qui tourne lentement ; immobile si le
    système demande moins d'animations), sur sa ligne et sur l'en-tête de son album ; « Complète » en or. Sans @property
