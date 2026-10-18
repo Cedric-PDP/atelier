@@ -417,7 +417,7 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .foot .left { margin-right: auto; }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
-.toast { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 60; max-width: min(560px, calc(100vw - 24px)); display: flex; align-items: center; gap: 10px;
+.toast { position: fixed; left: 50%; top: 16px; transform: translateX(-50%); z-index: 60; width: max-content; max-width: min(560px, calc(100vw - 24px)); display: flex; align-items: center; gap: 10px;
   padding: 10px 44px 10px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border)); color: var(--fg); box-shadow: 0 18px 40px -12px var(--shadow); font-size: 13.5px; }
 .toast.error { border-color: var(--danger); }
 .toast .close { top: 50%; transform: translateY(-50%); right: 6px; }
@@ -592,6 +592,27 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .modal .preview li { color: var(--fg); font-size: 13px; }
 .check { display: inline-flex; gap: 6px; align-items: center; font-size: 13px; color: var(--fg); }
 .check input { accent-color: var(--accent); }
+
+/* ------------------------------------------------------------------ « Fusionner avec… » (album d'une collection) */
+.merge-pick { border: 0; margin: 0; padding: 0; min-width: 0; }
+.merge-pick legend { padding: 0; margin-bottom: 8px; font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+.merge-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 30vh; overflow-y: auto; }
+.modal .merge-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 6px 10px; border: 1px solid transparent; border-radius: 9px; background: var(--surface-2); color: var(--fg); }
+.modal .merge-list li.on { border-color: var(--accent); }
+.merge-list .check { min-width: 0; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; cursor: pointer; }
+.merge-list .check input, .merge-opt .check input { margin-top: 3px; flex: none; }
+.merge-list .n { font-size: 12px; color: var(--link); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.merge-list .why { grid-column: 1 / -1; padding-left: 22px; font-size: 12px; color: var(--faint); overflow-wrap: anywhere; }
+.modal .merge-sum { color: var(--fg); font-size: 14px; }
+.merge-added { list-style: none; margin: 0; padding: 6px 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 2px 14px; max-height: 24vh; overflow-y: auto; background: var(--surface-2); border-radius: 8px; }
+.modal .merge-added li { display: flex; align-items: baseline; gap: 6px; min-width: 0; padding: 2px 0; color: var(--fg); font-size: 13px; }
+.merge-added li > span:not(.pill):not(.merge-sep) { min-width: 0; overflow-wrap: anywhere; }
+.merge-added .pill { flex: none; padding: 1px 5px; font-size: 10px; box-shadow: none; }
+.merge-added .merge-sep { flex: none; padding: 0 6px; border: 1px solid var(--border); border-radius: 999px; font-size: 11px; color: var(--faint); }
+.modal .merge-added .merge-more { color: var(--faint); }
+.merge-opt { display: grid; gap: 2px; }
+.merge-opt .check { align-items: flex-start; font-weight: 600; }
+.merge-opt .note { padding-left: 22px; }
 
 /* ------------------------------------------------------------------ propositions d'après les catégories Wikipédia */
 .row.wp { cursor: default; }

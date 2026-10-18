@@ -3644,6 +3644,182 @@ async function main() {
     }
   }
 
+  // « Fusionner avec… » (album d'une collection) : Mila fusionne « Dieux grecs » dans « Olympe ». Ses autres collections
+  // de A à Z avec leur taille ; aperçu (ajoutés, déjà présents par titre, par qid enregistré ou résolu sur Wikipédia,
+  // complétés) ; « Rien à ajouter » ; intercalaires gardés, transmis (intercalaire déjà présent) et en tête sur demande ;
+  // nouveau nom ; une seule requête d'enregistrement puis la suppression de l'autre. Limites : 3 000 éléments, 600 Ko
+  // (sans les images quand elles seules font dépasser). Collection faite d'une catégorie : source gardée, pas
+  // d'intercalaire en tête ; suppression refusée : la fusion reste enregistrée, l'autre reste telle quelle.
+  {
+    const keyF = await makeOtherAccount('Mila');
+    const mkF = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    await sendImport(keyF, [mkF('f1', 'Zeus', 'L'), mkF('f2', 'Héra', 'R'), mkF('f3', 'Apollon', 'SR')]);
+    const itF = (title, more) => ({ title, description: null, image: null, status: 'ok', ...more });
+    const pad = (i) => String(i).padStart(4, '0');
+    const saveF = async (t) => check((await rawApi('POST', '/api/targets/save', keyF, t)).status === 200, `collection « ${t.name} » refusée`);
+    await saveF({ name: 'Olympe', items: [itF('Zeus'), itF('Héra'), itF('Poséidon'), itF('Athéna', { qid: 'Q37122' })] });
+    // « Poseidon » : redirection vers « Poséidon » (même qid, résolu sur Wikipédia) ; « Pallas Athéna » : même qid
+    // qu'« Athéna » ; Héra, déjà présente, ouvre une section : Hermès, la carte ajoutée suivante, l'ouvrira.
+    await saveF({ name: 'Dieux grecs', items: [itF('Zeus', { description: 'roi des dieux', image: 'https://upload.wikimedia.org/z2.jpg', rarity: 'L' }), itF('Apollon'),
+      itF('Héra', { sep: true }), itF('Poseidon'), itF('Hermès'), itF('Pallas Athéna', { qid: 'Q37122' }), itF('Artémis', { sep: true })] });
+    await saveF({ name: 'Doublons', items: [itF('Zeus'), itF('Héra')] });
+    await saveF({ name: 'Vaches', source: 'wp:Race bovine', items: [itF('Salers'), itF('Aubrac')] });
+    await saveF({ name: 'Vaches 2', items: [itF('Aubrac', { qid: 'Q900200', description: 'race bovine' }), itF('Charolaise')] });
+    // Grandes collections (avec un qid : rien à résoudre sur Wikipédia).
+    await saveF({ name: 'Grande', items: Array.from({ length: 2998 }, (_, i) => itF('Article G' + pad(i), { qid: 'Q71' + pad(i) })) });
+    const desc = 'Une description de cinq cents caractères. '.repeat(12).slice(0, 500);
+    await saveF({ name: 'Longues A', items: Array.from({ length: 560 }, (_, i) => itF('Longue A' + pad(i), { description: desc, qid: 'Q72' + pad(i) })) });
+    await saveF({ name: 'Longues B', items: Array.from({ length: 560 }, (_, i) => itF('Longue B' + pad(i), { description: desc, qid: 'Q73' + pad(i) })) });
+    await saveF({ name: 'Images B', items: Array.from({ length: 300 }, (_, i) => itF('Image B' + pad(i), { image: `https://upload.wikimedia.org/b${i}/${'i'.repeat(940)}.jpg`, qid: 'Q74' + pad(i) })) });
+    const targetsF = async () => (await rawApi('GET', '/api/targets', keyF)).body.targets;
+    const olympeId = (await targetsF()).find((x) => x.name === 'Olympe').id;
+    ls.set('classeur-key', keyF);
+    ls.set('classeur-known', JSON.stringify([{ key: keyF, name: 'Mila' }]));
+    const pf = openPage({ idb: 'absent' });
+    const d = pf.doc;
+    const txt = () => text(d.body);
+    const btnIn = (root, t) => root.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    check(await waitFor(() => pf.count() === 3), 'classeur de Mila non ouvert');
+    d.getElementById('tab-collections').click();
+    await settle();
+    const openRow = async (name) => {
+      const r = d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :'));
+      check(r, `collection « ${name} » absente`);
+      r.click();
+      await settle(80);
+    };
+    const back = async () => { btnIn(d.body, '← Toutes les collections').click(); await settle(); };
+    const modal = () => d.querySelectorAll('.modal')[0] || null;
+    const mtxt = () => text(modal());
+    const choices = () => { const u = modal().querySelector('.merge-list'); return u ? u.querySelectorAll('li') : []; };
+    const choose = async (name) => {
+      const li = choices().find((x) => text(x.querySelector('.check')) === name);
+      check(li, `« ${name} » absente des collections proposées : ` + choices().map(text).join(' | '));
+      li.querySelector('input').click();
+      await settle();
+    };
+    const primary = () => modal().querySelectorAll('button').find((b) => b.classList.contains('primary')) || null;
+    const box = (id) => d.getElementById(id);
+    await openRow('Olympe');
+    check(btnIn(d.body, 'Fusionner avec…'), '« Fusionner avec… » absent de l\'album de « Olympe »');
+    btnIn(d.body, 'Fusionner avec…').click();
+    await settle();
+    check(modal() && text(modal().querySelector('h2')) === 'Fusionner « Olympe » avec…', 'fenêtre « Fusionner avec… » absente');
+    const ct = choices().map(text);
+    check(ct.length === 8 && ct.join(' | ').startsWith('Dieux grecs7 éléments | Doublons2 éléments | Grande2 998 éléments | Images B300 éléments | Longues A560 éléments | Longues B560 éléments | Vaches2 éléments')
+      && ct[6].includes('depuis la catégorie Wikipédia « Race bovine »') && ct[7] === 'Vaches 22 éléments' && !ct.some((x) => x.startsWith('Olympe')), 'collections proposées : ' + ct.join(' | '));
+    check(primary() && text(primary()) === 'Fusionner' && primary().disabled && !box('merge-name'), 'rien de choisi : bouton grisé, pas encore de nom');
+    // Tout est déjà là : rien à ajouter ; supprimer l'autre (coché d'emblée) reste possible, sinon rien à faire.
+    await choose('Doublons');
+    check(mtxt().includes('Rien à ajouter : les 2 éléments de « Doublons » sont déjà dans « Olympe ».') && box('merge-drop').checked
+      && text(primary()) === 'Supprimer « Doublons »' && !primary().disabled, '« Doublons » : rien à ajouter attendu : ' + mtxt().slice(0, 600));
+    // Seulement la suppression, refusée (API simulée) : rien d'enregistré, la fenêtre reste ouverte avec l'erreur.
+    if (api) {
+      const realHandle0 = api.handle;
+      api.handle = (method, p, headers, body) => (p === '/api/targets/delete' ? { status: 500, body: { error: 'Panne passagère du serveur.' } } : realHandle0.call(api, method, p, headers, body));
+      const mark0 = apiLog.length;
+      try {
+        primary().click();
+        check(await waitFor(() => modal() && mtxt().includes("« Doublons » n'a pas pu être supprimée : Panne passagère du serveur.") && !primary().disabled),
+          'suppression seule refusée : erreur dans la fenêtre attendue : ' + (modal() ? mtxt().slice(-300) : 'fenêtre fermée'));
+      } finally {
+        api.handle = realHandle0;
+      }
+      check(apiLog.slice(mark0).join(' | ') === 'POST /api/targets/delete', 'suppression seule : aucun enregistrement attendu : ' + apiLog.slice(mark0).join(' | '));
+    }
+    box('merge-drop').click();
+    await settle();
+    check(text(primary()) === 'Fusionner' && primary().disabled && mtxt().includes('Elle restera telle quelle'), 'rien à ajouter et rien à supprimer : bouton grisé');
+    box('merge-drop').click();
+    await settle();
+    await choose('Dieux grecs');
+    check(await waitFor(() => mtxt().includes('3 éléments ajoutés, 4 déjà présents')), 'aperçu de la fusion : ' + mtxt().slice(0, 900));
+    check(mtxt().includes('Après la fusion : 7 éléments, dont 3 que tu as.') && mtxt().includes('1 élément déjà présent reçoit ce qui lui manquait')
+      && mtxt().includes('Intercalaires dans la partie ajoutée : « Hermès » et « Artémis ».'), 'détail de l\'aperçu : ' + mtxt().slice(0, 900));
+    const added = () => { const u = modal().querySelector('.merge-added'); return u ? u.querySelectorAll('li').map(text) : []; };
+    check(added().join('|') === 'SRApollon|Hermèsintercalaire|Artémisintercalaire', 'éléments ajoutés : ' + added().join('|'));
+    check(box('merge-name').value === 'Olympe' && box('merge-drop').checked && box('merge-head') && !box('merge-head').checked
+      && mtxt().includes('« Apollon » commencera une nouvelle ligne') && text(primary()) === 'Fusionner et supprimer « Dieux grecs »', 'options de la fusion : ' + mtxt().slice(-700));
+    box('merge-head').click();
+    await settle();
+    check(mtxt().includes('Intercalaires dans la partie ajoutée : « Apollon », « Hermès » et « Artémis ».') && added()[0] === 'SRApollonintercalaire', 'intercalaire en tête : ' + added().join('|'));
+    type(box('merge-name'), "Dieux de l'Olympe");
+    await settle();
+    const mark = apiLog.length;
+    primary().click();
+    check(await waitFor(() => !modal()), 'la fenêtre doit se fermer après la fusion');
+    check(await waitFor(() => txt().includes("« Dieux grecs » fusionnée dans « Dieux de l'Olympe » : 3 éléments ajoutés, 4 déjà présents ; « Dieux grecs » supprimée.")),
+      'confirmation de la fusion absente');
+    const calls = apiLog.slice(mark).filter((x) => /^POST \/api\/targets\//.test(x));
+    check(calls.join(' | ') === 'POST /api/targets/save | POST /api/targets/delete', 'requêtes de la fusion : ' + calls.join(' | '));
+    let all = await targetsF();
+    const ol = all.find((x) => x.id === olympeId);
+    check(ol && ol.name === "Dieux de l'Olympe" && !all.some((x) => x.name === 'Dieux grecs') && all.length === 8, 'collections après la fusion : ' + all.map((x) => x.name).join(' | '));
+    check(ol.items.map((i) => i.title + (i.sep ? '#' : '')).join('|') === 'Zeus|Héra|Poséidon|Athéna|Apollon#|Hermès#|Artémis#', 'éléments fusionnés : ' + ol.items.map((i) => i.title + (i.sep ? '#' : '')).join('|'));
+    check(ol.items[0].description === 'roi des dieux' && ol.items[0].image === 'https://upload.wikimedia.org/z2.jpg' && ol.items[0].rarity === 'L' && !ol.items[0].sep
+      && ol.items[3].qid === 'Q37122' && !ol.items[1].sep, 'éléments déjà présents complétés, sans intercalaire de plus : ' + JSON.stringify(ol.items.slice(0, 4)));
+    check(await waitFor(() => text(d.querySelector('.album-title')).includes("Dieux de l'Olympe") && text(d.querySelector('.album-title')).includes('3 sur 7')), 'album après la fusion');
+    // 3 000 éléments au plus : vérifié avant l'envoi.
+    btnIn(d.body, 'Fusionner avec…').click();
+    await settle();
+    check(!choices().some((x) => text(x).startsWith('Dieux grecs')), 'la collection supprimée est encore proposée');
+    await choose('Grande');
+    check(mtxt().includes("La collection fusionnée aurait 3 005 éléments : 3 000 au plus. Retire d'abord 5 éléments de l'une des deux") && primary().disabled,
+      'fusion de plus de 3 000 éléments : ' + mtxt().slice(-500));
+    btnIn(modal(), 'Annuler').click();
+    await settle(300);
+    // Collection faite d'une catégorie : elle garde sa source, pas d'intercalaire en tête (de A à Z). Suppression de l'autre
+    // refusée (API simulée) : la fusion est enregistrée, l'autre reste, on le dit.
+    await back();
+    await openRow('Vaches');
+    btnIn(d.body, 'Fusionner avec…').click();
+    await settle();
+    await choose('Vaches 2');
+    check(mtxt().includes('1 élément ajouté, 1 déjà présent') && mtxt().includes('« Vaches » est faite de la catégorie Wikipédia « Race bovine » : la collection fusionnée garde cette source')
+      && mtxt().includes('1 élément déjà présent reçoit') && !box('merge-head'), 'fusion dans une collection faite d\'une catégorie : ' + mtxt().slice(0, 900));
+    const realHandle = api ? api.handle : null;
+    if (api) api.handle = (method, p, headers, body) => (p === '/api/targets/delete' ? { status: 500, body: { error: 'Panne passagère du serveur.' } } : realHandle.call(api, method, p, headers, body));
+    try {
+      primary().click();
+      check(await waitFor(() => !modal()), 'la fenêtre doit se fermer après la fusion (catégorie)');
+      if (api) {
+        check(await waitFor(() => txt().includes("« Vaches 2 » fusionnée dans « Vaches » : 1 élément ajouté, 1 déjà présent. Mais « Vaches 2 » n'a pas pu être supprimée (Panne passagère du serveur) : elle est restée telle quelle")),
+          'suppression refusée : message attendu');
+      } else check(await waitFor(() => txt().includes('« Vaches 2 » fusionnée dans « Vaches »')), 'confirmation de la fusion (catégorie) absente');
+    } finally {
+      if (api) api.handle = realHandle;
+    }
+    all = await targetsF();
+    const vac = all.find((x) => x.name === 'Vaches');
+    check(vac.source === 'wp:Race bovine' && vac.items.map((i) => i.title).join('|') === 'Salers|Aubrac|Charolaise' && vac.items[1].qid === 'Q900200' && vac.items[1].description === 'race bovine',
+      'collection faite d\'une catégorie après la fusion : ' + JSON.stringify(vac));
+    check(all.some((x) => x.name === 'Vaches 2') === !!api, '« Vaches 2 » doit rester si sa suppression est refusée');
+    // 600 Ko : trop lourde même sans images, refusée avant l'envoi ; trop lourde à cause des images : fusion sans elles.
+    await back();
+    await openRow('Longues A');
+    btnIn(d.body, 'Fusionner avec…').click();
+    await settle();
+    await choose('Longues B');
+    check(/Collection fusionnée trop volumineuse : \d+ Ko, 600 Ko au plus\./.test(mtxt()) && !mtxt().includes('même sans les images') && primary().disabled, 'fusion de plus de 600 Ko : ' + mtxt().slice(-500));
+    await choose('Images B');
+    check(mtxt().includes('300 éléments ajoutés, aucun déjà présent') && mtxt().includes('Sans les images : avec elles, la collection dépasserait 600 Ko') && !mtxt().includes('trop volumineuse')
+      && !primary().disabled, 'fusion sans les images : ' + mtxt().slice(0, 900));
+    check(added().length === 31 && added()[30] === '… et 270 éléments de plus', 'aperçu des éléments ajoutés (30 montrés) : ' + added().slice(-2).join('|'));
+    box('merge-drop').click();
+    await settle();
+    check(text(primary()) === 'Fusionner', 'garder l\'autre : bouton « Fusionner »');
+    primary().click();
+    check(await waitFor(() => !modal()), 'la fenêtre doit se fermer après la fusion (images)');
+    all = await targetsF();
+    const la = all.find((x) => x.name === 'Longues A');
+    const ib = all.find((x) => x.name === 'Images B');
+    check(la.items.length === 860 && la.items.every((i) => i.image === null) && la.items[859].title === 'Image B0299' && ib && ib.items.length === 300 && ib.items[0].image,
+      'fusion sans les images : ' + la.items.length + ' éléments, ' + la.items.filter((i) => i.image).length + ' images ; « Images B » ' + (ib ? 'gardée' : 'absente'));
+    check(await waitFor(() => txt().includes('« Images B » fusionnée dans « Longues A » : 300 éléments ajoutés.')), 'confirmation de la fusion sans suppression');
+    console.log(`fusion : ${all.length} collections de Mila après trois fusions ; « Longues A » : ${la.items.length} éléments, ${Math.round(JSON.stringify(la.items).length / 1024)} Ko`);
+  }
+
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));
   check(!missing.length, 'icônes absentes du sprite : ' + missing.join(', '));

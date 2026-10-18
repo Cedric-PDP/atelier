@@ -258,11 +258,15 @@
     // des synchros, last_sync de GET /api/me), lastAt = dernière ligne du journal à son ouverture.
     sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null, failed: '', lastAt: null },
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link | arrange | sync | tagadd
+    modal: null, // editor | confirm | tag | switch | link | arrange | sync | tagadd | merge
     session: { cookie: '', busy: false, error: '' },
     editor: null,
     confirm: null,
     tagEdit: null,
+    // « Fusionner avec… » (album d'une de tes collections) : {id (celle d'où l'on part, qui reçoit la fusion), other (id de
+    // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
+    // head (la première carte ajoutée devient un intercalaire), busy, error}.
+    merge: null,
     settings: { name: '', busy: false, error: '', saved: false },
     copied: '',
     bm: { src: null, error: '', clicked: false, importKey: null, busy: false, checking: false, stale: false },
@@ -2171,6 +2175,189 @@
       S.sepBusy = null;
     }
   }
+  // ---------------------------------------------------------------- « Fusionner avec… » (album d'une de tes collections)
+  // Demande de l'utilisateur (2026-10-18) : « un bouton pour fusionner deux collections ». La collection d'où l'on part
+  // reçoit la fusion (même id, même source, même place dans « Mes collections ») : ses éléments dans leur ordre, puis
+  // ceux de l'autre qui n'y sont pas déjà (même titre, ou même qid : le sien, sinon celui que la page a résolu pour son
+  // titre), une seule fois. Un élément déjà présent garde sa place et reçoit ce qui lui manque de l'autre (qid,
+  // description, image, rareté du jeu, statut « ok »). Les intercalaires de l'autre sont gardés ; dans une collection qui
+  // a un ordre (en tri « Ordre », un intercalaire commence une ligne), un intercalaire déjà présent passe sa marque à la
+  // première carte ajoutée de sa section, et, sur demande, la première carte ajoutée en devient un. Une seule requête
+  // (POST /api/targets/save), limites de targets.js vérifiées avant ; trop lourde avec les images mais pas sans : sans les
+  // images (comme targets/from-game : la page retrouve les vignettes sur Wikipédia). Puis, si demandé, l'autre est
+  // supprimée (POST /api/targets/delete) : un échec la laisse telle quelle, la fusion reste enregistrée.
+  const mergeOrdered = (t) => !isCatSource(t.source) && !pageOfSource(t.source) && !unorderedSource(t.source);
+  // Élément tel que targets.js le range : {title, description, image, status, qid?, rarity?, sep?}.
+  function mergeCopy(it) {
+    const out = { title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' };
+    if (it.qid) out.qid = it.qid;
+    if (realRarity(it)) out.rarity = it.rarity;
+    if (it.sep === true) out.sep = true;
+    return out;
+  }
+  // Champs que `b` (le même article) apporte à `a` : {champ: valeur}, vide si rien ne manque à `a`.
+  function mergeGain(a, b, sameTitle) {
+    const add = {};
+    if (!a.qid && b.qid) add.qid = b.qid;
+    if (!a.description && b.description) add.description = b.description;
+    if (!a.image && b.image) add.image = b.image;
+    if (!realRarity(a) && realRarity(b)) add.rarity = b.rarity;
+    if (sameTitle && (a.status || 'ok') !== 'ok' && (b.status || 'ok') === 'ok') add.status = 'ok';
+    return add;
+  }
+  // Fusion de deux listes d'éléments (opts : sections = la collection a un ordre, head = la première carte ajoutée devient
+  // un intercalaire) : {items, added (éléments ajoutés), present (éléments de l'autre déjà là), enriched (éléments déjà là
+  // complétés), headMoot (la première carte ajoutée est déjà un intercalaire), changed, noImages (images retirées pour
+  // tenir dans 600 Ko), hadImages, kb (taille en Ko si elle ne tient pas), tooMany, tooBig, own (tes cartes après)}.
+  function mergeTargetItems(base, other, opts) {
+    const qidOf = (it) => it.qid || (resolver ? resolver.known(it.title) || null : null);
+    const items = base.slice();
+    const byTitle = new Map();
+    const byQid = new Map();
+    const remember = (it, i) => {
+      const k = titleKey(it.title);
+      if (!byTitle.has(k)) byTitle.set(k, i);
+      const q = qidOf(it);
+      if (q && !byQid.has(q)) byQid.set(q, i);
+    };
+    items.forEach(remember);
+    const added = [];
+    const gains = new Map(); // élément déjà là (rang) -> champs reçus
+    let present = 0;
+    let carry = false; // intercalaire de l'autre déjà présent : la prochaine carte ajoutée ouvre sa section
+    let headMoot = false;
+    for (const it of other) {
+      const k = titleKey(it.title);
+      const q = qidOf(it);
+      const j = byTitle.has(k) ? byTitle.get(k) : q && byQid.has(q) ? byQid.get(q) : -1;
+      if (j >= 0) {
+        present++;
+        const add = mergeGain(items[j], it, titleKey(items[j].title) === k);
+        if (Object.keys(add).length) {
+          items[j] = { ...items[j], ...add };
+          if (j < base.length) gains.set(j, new Set([...(gains.get(j) || []), ...Object.keys(add)]));
+        }
+        if (it.sep === true && opts.sections) carry = true;
+        continue;
+      }
+      const item = mergeCopy(it);
+      if (carry) item.sep = true;
+      if (!added.length) {
+        headMoot = item.sep === true;
+        if (opts.sections && opts.head) item.sep = true;
+      }
+      carry = false;
+      remember(item, items.length);
+      items.push(item);
+      added.push(item);
+    }
+    // Limites de targets.js (3 000 éléments, 600 Ko d'éléments en JSON) ; trop lourde : sans les images, si elle tient.
+    const fits = (s) => s.length * 3 <= TARGET_MAX_BYTES || utf8Length(s) <= TARGET_MAX_BYTES;
+    let out = items;
+    let json = JSON.stringify(out);
+    let noImages = false;
+    const hadImages = out.some((it) => it.image);
+    if (!fits(json) && hadImages) {
+      const bare = out.map((it) => (it.image ? { ...it, image: null } : it));
+      json = JSON.stringify(bare);
+      if (fits(json)) { out = bare; noImages = true; }
+    }
+    const tooBig = !noImages && !fits(json);
+    // Complétés : ceux qui ont reçu un champ (une image retirée ensuite ne compte pas).
+    let enriched = 0;
+    for (const f of gains.values()) if (!noImages || [...f].some((x) => x !== 'image')) enriched++;
+    return {
+      items: out, added, present, enriched, headMoot, noImages, hadImages, tooBig,
+      changed: out.length !== base.length || (out.some((it, i) => it !== base[i]) && JSON.stringify(out) !== JSON.stringify(base)),
+      kb: tooBig ? Math.ceil(utf8Length(json) / 1024) : 0,
+      tooMany: out.length > TARGET_MAX_ITEMS,
+      own: out.reduce((n, it) => n + (findCard(it) ? 1 : 0), 0),
+    };
+  }
+  // Fenêtre ouverte : la collection d'où l'on part (t), tes autres collections (de A à Z), celle choisie (o) et la fusion.
+  const mergeInfo = computed(() => {
+    const mg = S.merge;
+    const t = mg ? targets.value.find((x) => x.id === mg.id) : null;
+    if (!t) return null;
+    const others = targets.value.filter((x) => x.id !== t.id).sort((a, b) => COLLATOR.compare(a.name, b.name));
+    const o = mg.other ? others.find((x) => x.id === mg.other) || null : null;
+    const sections = mergeOrdered(t);
+    if (!o) return { t, others, o: null, sections };
+    void qidVersion.value;
+    return { t, others, o, sections, ...mergeTargetItems(t.items, o.items, { sections, head: mg.head }) };
+  });
+  function openMerge(t) {
+    // « Supprimer l'autre » coché d'emblée : fusionner, c'est faire une collection de deux, et tous ses éléments seront
+    // dans la collection fusionnée (le bouton le dit : « Fusionner et supprimer « … » »).
+    S.merge = { id: t.id, other: null, name: t.name, drop: true, head: false, busy: false, error: '' };
+    S.modal = 'merge';
+  }
+  function pickMerge(mg, id) {
+    if (mg.busy || mg.other === id) return;
+    mg.other = id;
+    mg.error = '';
+  }
+  const mergeName = (mg) => String(mg.name || '').replace(/\s+/g, ' ').trim();
+  async function saveMerge(mg) {
+    if (mg.busy) return;
+    const info = mergeInfo.value;
+    if (!info) { mg.error = "Cette collection n'existe plus."; return; }
+    const { t, o } = info;
+    if (!o) { mg.error = `Choisis la collection à fusionner avec « ${t.name} ».`; return; }
+    const name = mergeName(mg);
+    if (!name) { mg.error = 'Donne un nom à la collection fusionnée.'; return; }
+    if (name.length > 80) { mg.error = 'Le nom de la collection fait 80 caractères au plus.'; return; }
+    if (info.tooMany) { mg.error = `La collection fusionnée aurait ${fmt(info.items.length)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus.`; return; }
+    if (info.tooBig) { mg.error = 'Collection fusionnée trop volumineuse : 600 Ko au plus.'; return; }
+    const save = info.changed || name !== t.name;
+    if (!save && !mg.drop) { mg.error = `Rien à fusionner : les éléments de « ${o.name} » sont déjà tous dans « ${t.name} ».`; return; }
+    const gen = cardsGen;
+    mg.busy = true;
+    mg.error = '';
+    try {
+      if (save) {
+        const body = { id: t.id, name, items: info.items };
+        if (t.source) body.source = t.source; // la source de celle d'où l'on part (voir plus haut)
+        let r;
+        try {
+          r = await api('POST', '/api/targets/save', body);
+        } catch (e) {
+          if (gen === cardsGen && S.merge === mg) mg.error = e.message;
+          return;
+        }
+        if (gen !== cardsGen) return; // classeur changé entre-temps
+        if (r.target) upsertTarget(r.target); else await loadTargets();
+        if (gen !== cardsGen) return;
+        // Fermée dès l'enregistrement : son aperçu, recalculé sur la collection fusionnée, dirait « Rien à ajouter ».
+        if (S.merge === mg) closeModal();
+      }
+      // La fusion est enregistrée : l'autre n'est supprimée qu'ensuite. Un échec la laisse telle quelle (ses éléments sont
+      // déjà dans la collection fusionnée) : rien n'est perdu, on le dit.
+      let dropError = '';
+      if (mg.drop) {
+        try {
+          await api('POST', '/api/targets/delete', { id: o.id });
+          if (gen !== cardsGen) return;
+          targets.value = targets.value.filter((x) => x.id !== o.id);
+          if (S.album && S.album.kind === 'target' && S.album.id === o.id) S.album = null;
+        } catch (e) {
+          if (gen !== cardsGen) return;
+          dropError = String(e.message || '').replace(/[.\s]+$/, '');
+          // Seulement la suppression (rien à enregistrer) : la fenêtre reste ouverte, avec l'erreur.
+          if (!save && S.merge === mg) { mg.error = `« ${o.name} » n'a pas pu être supprimée : ${dropError}.`; return; }
+        }
+      }
+      if (S.merge === mg) closeModal();
+      const n = info.added.length;
+      const what = !save ? `Les éléments de « ${o.name} » étaient déjà tous dans « ${name} »`
+        : `« ${o.name} » fusionnée dans « ${name} » : ${fmt(n)} ${plural(n, 'élément ajouté', 'éléments ajoutés')}`
+          + (info.present ? `, ${fmt(info.present)} déjà ${plural(info.present, 'présent', 'présents')}` : '');
+      if (dropError) notify(`${what}. Mais « ${o.name} » n'a pas pu être supprimée (${dropError}) : elle est restée telle quelle, supprime-la depuis son album.`, true);
+      else notify(`${what}${mg.drop ? ` ; « ${o.name} » supprimée` : ''}.`);
+    } finally {
+      mg.busy = false;
+    }
+  }
   function askDeleteTarget(t) {
     openConfirm({
       title: `Supprimer « ${t.name} » ?`,
@@ -2397,6 +2584,7 @@
     if (m === 'editor') kwAbort();
     if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
     if (m === 'tagadd') S.tagAdd = null;
+    if (m === 'merge') S.merge = null;
     if (m === 'sync') stopSync();
   }
   function openConfirm(o) {
@@ -4928,6 +5116,8 @@
       actions = [
         h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags']),
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
+        // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
+        targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
         col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
       ];
@@ -7139,6 +7329,90 @@
       ]),
     ]);
   }
+  // « Fusionner avec… » : l'autre collection (tes collections, de A à Z, avec leur taille), aperçu (ajoutés, déjà
+  // présents, complétés), nom de la collection fusionnée, supprimer l'autre (coché d'emblée) et, pour une collection qui a
+  // un ordre, un intercalaire en tête de la partie ajoutée.
+  const MERGE_SHOWN = 30; // éléments ajoutés montrés dans l'aperçu
+  function modalMerge() {
+    const mg = S.merge;
+    if (!mg) return null;
+    const info = mergeInfo.value;
+    if (!info) return h(Modal, { key: 'merge', title: 'Fusionner deux collections', onClose: closeModal }, () => [h('p', null, "Cette collection n'existe plus."), foot([closeBtn()])]);
+    const { t, o } = info;
+    const els = (n) => `${fmt(n)} ${plural(n, 'élément', 'éléments')}`;
+    const srcOf = (x) => (isCatSource(x.source) ? `la catégorie Wikipédia « ${catName(x.source)} »` : pageOfSource(x.source) ? `la page Wikipédia « ${pageOfSource(x.source)} »` : null);
+    const choice = (x) => h('li', { key: x.id, class: { on: mg.other === x.id } }, [
+      h('label', { class: 'check' }, [
+        h('input', { type: 'radio', name: 'merge-other', value: x.id, checked: mg.other === x.id, disabled: mg.busy,
+          onClick: () => pickMerge(mg, x.id), onChange: () => pickMerge(mg, x.id) }),
+        h('span', null, x.name)]),
+      h('span', { class: 'n' }, els(x.items.length)),
+      srcOf(x) ? h('span', { class: 'why' }, 'depuis ' + srcOf(x)) : null,
+    ]);
+    let detail = [];
+    let ready = false;
+    let label = 'Fusionner';
+    if (o) {
+      const n = info.added.length;
+      const after = info.items.length;
+      const name = mergeName(mg);
+      const save = info.changed || name !== t.name;
+      ready = !info.tooMany && !info.tooBig && !!name && (save || mg.drop);
+      label = mg.drop ? (save ? `Fusionner et supprimer « ${o.name} »` : `Supprimer « ${o.name} »`) : 'Fusionner';
+      const lines = [`Après la fusion : ${els(after)}, dont ${info.own ? fmt(info.own) : 'aucun'} que tu as.`];
+      if (info.enriched) {
+        lines.push(info.enriched > 1 ? `${fmt(info.enriched)} éléments déjà présents reçoivent ce qui leur manquait (qid, description, image ou rareté du jeu).`
+          : '1 élément déjà présent reçoit ce qui lui manquait (qid, description, image ou rareté du jeu).');
+      }
+      const seps = info.added.filter((it) => it.sep).map((it) => it.title);
+      if (seps.length && info.sections) lines.push(`${plural(seps.length, 'Intercalaire', 'Intercalaires')} dans la partie ajoutée : ${namesText(seps, true)}.`);
+      if (info.noImages) lines.push('Sans les images : avec elles, la collection dépasserait 600 Ko (la page retrouve les vignettes sur Wikipédia).');
+      const oSrc = srcOf(o);
+      detail = [
+        h('p', { class: 'merge-sum', role: 'status' }, n ? [h('b', null, `${fmt(n)} ${plural(n, 'élément ajouté', 'éléments ajoutés')}`),
+          info.present ? `, ${fmt(info.present)} déjà ${plural(info.present, 'présent', 'présents')}` : ', aucun déjà présent']
+          : [h('b', null, 'Rien à ajouter'), !o.items.length ? ` : « ${o.name} » est vide.`
+            : ` : ${o.items.length > 1 ? `les ${fmt(o.items.length)} éléments` : "l'élément"} de « ${o.name} » ${o.items.length > 1 ? 'sont' : 'est'} déjà dans « ${t.name} ».`]),
+        h('p', { class: 'note' }, lines.join(' ')),
+        n ? h('ul', { class: 'merge-added', 'aria-label': 'Éléments ajoutés' }, [
+          ...info.added.slice(0, MERGE_SHOWN).map((it, i) => {
+            const c = findCard(it);
+            return h('li', { key: i + ':' + it.title }, [c ? pill(c.rarity) : null, h('span', null, it.title), it.sep ? h('span', { class: 'merge-sep' }, 'intercalaire') : null]);
+          }),
+          n > MERGE_SHOWN ? h('li', { key: 'plus', class: 'merge-more' }, `… et ${els(n - MERGE_SHOWN)} de plus`) : null,
+        ]) : null,
+        h('label', { class: 'field' }, [h('span', null, 'Nom de la collection fusionnée'),
+          h('input', { id: 'merge-name', class: 'field full', value: mg.name, maxlength: 80, autocomplete: 'off', disabled: mg.busy, onInput: (e) => { mg.name = e.target.value; mg.error = ''; } })]),
+        h('div', { class: 'merge-opt' }, [
+          h('label', { class: 'check' }, [h('input', { id: 'merge-drop', type: 'checkbox', checked: mg.drop, disabled: mg.busy, onClick: (e) => { mg.drop = e.target.checked; mg.error = ''; } }),
+            h('span', null, `Supprimer « ${o.name} » après la fusion`)]),
+          h('p', { class: 'note' }, mg.drop ? (oSrc ? `Tous ses éléments seront dans la collection fusionnée, qui ne reprend pas sa source (${oSrc}) : tu pourras en refaire une collection depuis « Catégories ».`
+            : "Tous ses éléments seront dans la collection fusionnée ; elle n'est supprimée qu'une fois la fusion enregistrée.") : 'Elle restera telle quelle, à côté de la collection fusionnée.'),
+        ]),
+        info.sections && n && !info.headMoot ? h('div', { class: 'merge-opt' }, [
+          h('label', { class: 'check' }, [h('input', { id: 'merge-head', type: 'checkbox', checked: mg.head, disabled: mg.busy, onClick: (e) => { mg.head = e.target.checked; } }),
+            h('span', null, 'Ouvrir la partie ajoutée par un intercalaire')]),
+          h('p', { class: 'note' }, `« ${info.added[0].title} » commencera une nouvelle ligne de l'album (tri « Ordre ») ; c'est une carte comme les autres.`),
+        ]) : null,
+        srcOf(t) ? h('p', { class: 'note' }, `« ${t.name} » est faite de ${srcOf(t)} : la collection fusionnée garde cette source (ses éléments restent de A à Z) ; les éléments ajoutés viennent en plus de ses articles.`) : null,
+        info.tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection fusionnée aurait ${els(after)} : ${fmt(TARGET_MAX_ITEMS)} au plus. Retire d'abord ${els(after - TARGET_MAX_ITEMS)} de l'une des deux (« Modifier »).`) : null,
+        info.tooBig ? h('p', { class: 'warn', role: 'alert' }, `Collection fusionnée trop volumineuse : ${fmt(info.kb)} Ko${info.hadImages ? ' même sans les images' : ''}, 600 Ko au plus. Retire d'abord des éléments de l'une des deux (« Modifier »).`) : null,
+      ];
+    }
+    return h(Modal, { key: 'merge', title: `Fusionner « ${t.name} » avec…`, onClose: closeModal }, () => [
+      h('p', null, `Les éléments de « ${t.name} » gardent leur ordre ; ceux de l'autre collection qui n'y sont pas déjà s'ajoutent à la fin. Un article présent dans les deux (même titre ou même article Wikidata) n'y est qu'une fois.`),
+      h('fieldset', { class: 'merge-pick' }, [
+        h('legend', null, 'Avec quelle collection ?'),
+        info.others.length ? h('ul', { class: 'merge-list' }, info.others.map(choice)) : h('p', null, "Tu n'as pas d'autre collection."),
+      ]),
+      ...detail,
+      errLine(mg.error),
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: mg.busy || !ready, onClick: () => saveMerge(mg) }, mg.busy ? 'Fusion…' : label),
+      ]),
+    ]);
+  }
   // Lien d'un autre classeur ouvert alors qu'une clé est déjà gardée : on demande.
   function modalSwitch() {
     const ask = S.switchAsk;
@@ -7197,7 +7471,7 @@
       ]),
     ]);
   }
-  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd };
+  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

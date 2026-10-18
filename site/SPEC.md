@@ -618,8 +618,8 @@ Deux zones, dans cet ordre :
    « <titre> » » (aussi dans « Entre amis », pour tes collections). Leurs articles sont de A à Z, sans numéros (une
    catégorie n'a pas d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre
    (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album est celui d'une collection :
-   « Ajouter par tags », « Modifier », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la catégorie, ou la
-   page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
+   « Ajouter par tags », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la
+   catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
    comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
    s'il n'y en a pas encore.
@@ -651,6 +651,59 @@ Deux zones, dans cet ordre :
    **garde sa source** (comme avec « Modifier », qui le permettait déjà ; aucune relecture automatique de la catégorie ne
    défait l'ajout) ; la fenêtre le dit (« les cartes ajoutées viennent en plus de ses articles »). Courses : classeur
    changé pendant l'enregistrement, la réponse est écartée.
+
+   **« Fusionner avec… »** (album de toute collection, entre « Modifier » et « Supprimer », seulement si tu as une autre
+   collection ; demande de l'utilisateur du 2026-10-18 : « un bouton pour fusionner deux collections ») : la collection
+   d'où l'on part **reçoit la fusion** (même `id`, même source, même place dans « Mes collections »). Une fenêtre, calculée
+   dans la page sans requête jusqu'à l'enregistrement :
+   - **l'autre collection** : tes autres collections, de A à Z, en boutons radio, avec leur taille (« 7 éléments ») et
+     leur origine (« depuis la catégorie Wikipédia « … » » / « depuis la page Wikipédia « … » ») ; rien de choisi à
+     l'ouverture (bouton « Fusionner » grisé) ;
+   - **la fusion** : les éléments de la collection de départ **dans leur ordre**, puis ceux de l'autre qui n'y sont pas
+     déjà, dans l'ordre de l'autre ; « déjà là » = même titre (replié comme partout : `Match.normTitle`) **ou** même qid
+     (celui de l'élément, sinon celui que la page a résolu pour son titre sur Wikipédia : une redirection compte). Un
+     élément déjà là garde sa place et ses champs, et **reçoit ce qui lui manque** de l'autre : `qid`, `description`,
+     `image`, `rarity` (rareté du jeu) et, à titre égal, `status: 'ok'` à la place de `missing`/`disambiguation` ; jamais
+     de `sep` en plus. Les éléments ajoutés sont recopiés tels quels (`{title, description, image, status, qid?, rarity?,
+     sep?}`), **intercalaires compris**. Dans une collection qui a un ordre (pas `wp:`, `links:` ni un ancien thème du
+     catalogue sans ordre : en tri « Ordre », un intercalaire commence une ligne), un intercalaire de l'autre **déjà
+     présent** passe sa marque à la première carte ajoutée de sa section (la section reste séparée), et une case
+     **« Ouvrir la partie ajoutée par un intercalaire »** (décochée d'emblée ; absente si la première carte ajoutée en est
+     déjà un, ou s'il n'y a rien à ajouter) fait de la première carte ajoutée un intercalaire : la partie venue de l'autre
+     commence une nouvelle ligne. Un intercalaire étant une vraie carte (un article), il ne peut pas porter le nom de
+     l'autre collection : c'est la première carte ajoutée qui ouvre la partie ;
+   - **aperçu** : « N éléments ajoutés, M déjà présents » (`role=status` ; rien à ajouter : « Rien à ajouter : les M
+     éléments de « … » sont déjà dans « … ». », ou « « … » est vide. ») ; « Après la fusion : T éléments, dont K que tu
+     as. », éléments déjà présents complétés, intercalaires de la partie ajoutée ; les 30 premiers éléments ajoutés (ta
+     rareté si tu as la carte, « intercalaire »), puis « … et N éléments de plus » ;
+   - **nom** de la collection fusionnée (80 caractères au plus), par défaut celui de la collection de départ ;
+   - **« Supprimer « … » après la fusion »**, **cochée d'emblée** (fusionner, c'est faire une collection de deux, et tous
+     les éléments de l'autre sont dans la collection fusionnée : on ne perd que son nom, son ordre et sa source ; le bouton
+     le dit : « Fusionner et supprimer « … » ») ; décochée : l'autre reste telle quelle (bouton « Fusionner »). Rien à
+     ajouter ni à compléter, même nom : seule la suppression reste (« Supprimer « … » »), décochée le bouton est grisé.
+
+   **Enregistrement** : une seule requête `POST /api/targets/save {id, name, items, source?}` (id et source de la
+   collection de départ), sautée s'il n'y a rien à changer (seulement la suppression) ; puis, si la case est cochée,
+   `POST /api/targets/delete {id}` de l'autre. La suppression ne vient **qu'après** un enregistrement réussi : un échec de
+   l'enregistrement ne touche à rien (erreur dans la fenêtre) ; la fenêtre se ferme dès l'enregistrement réussi ; un
+   échec de la suppression laisse l'autre telle quelle, la fusion reste enregistrée et un message d'erreur le dit
+   (« Mais « … » n'a pas pu être supprimée (…) : elle est restée telle quelle, supprime-la depuis son album. ») ; s'il n'y
+   avait que la suppression, la fenêtre reste ouverte avec l'erreur. Réussite : « « Autre » fusionnée dans
+   « Nom » : N éléments ajoutés, M déjà présents ; « Autre » supprimée. ». Classeur changé pendant l'enregistrement : la
+   suite est abandonnée. **Limites de `targets.js` vérifiées avant l'envoi** : plus de 3 000 éléments (« La collection
+   fusionnée aurait N éléments : 3 000 au plus. Retire d'abord K éléments de l'une des deux (« Modifier »). », bouton
+   grisé) ; plus de 600 Ko d'éléments en JSON (octets UTF-8) : si les images seules font dépasser, la fusion se fait
+   **sans les images** (`image: null` partout, comme `targets/from-game` : la page retrouve les vignettes sur Wikipédia ;
+   l'aperçu le dit), sinon « Collection fusionnée trop volumineuse : N Ko (même sans les images), 600 Ko au plus. »,
+   bouton grisé. Les 5 Mo par compte restent contrôlés par le serveur (erreur affichée telle quelle).
+
+   **Source** : la collection fusionnée garde **celle de la collection de départ** et aucune autre requête ne crée de
+   collection : jamais de doublon de source `wp:`/`links:` (une seule collection par catégorie ou par page). Partie
+   d'une collection faite d'une catégorie ou d'une page : elle garde sa source et reste de A à Z (la fenêtre le dit, et
+   n'offre pas d'intercalaire en tête), comme avec « Ajouter par tags » ou « Modifier ». L'autre faite d'une catégorie ou
+   d'une page et supprimée : sa source disparaît avec elle (la fenêtre le dit) ; la catégorie peut de nouveau être créée
+   en collection depuis « Catégories ». Reprendre la source de l'autre changerait l'ordre d'affichage de la collection de
+   départ (de A à Z) : pour garder celle de l'autre, partir de l'autre.
 2. **« Catégories »** (catégories et pages de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
    - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
      catégories de Wikipédia **et les pages « Liste de… »** : 250 ms après la dernière frappe (2 caractères au moins,
