@@ -1175,10 +1175,11 @@
 
   // ================================================================ actions
   let noticeSeq = 0;
-  function notify(text, error) {
+  // action : {label, run} facultatif, un bouton dans le message (« Annuler ») ; le message reste alors 10 s.
+  function notify(text, error, action) {
     const id = ++noticeSeq;
-    S.notice = { id, text, error: !!error };
-    setTimeout(() => { if (S.notice && S.notice.id === id) S.notice = null; }, error ? 12000 : 6000);
+    S.notice = { id, text, error: !!error, action: action || null };
+    setTimeout(() => { if (S.notice && S.notice.id === id) S.notice = null; }, error ? 12000 : action ? 10000 : 6000);
   }
 
   // ---------------------------------------------------------------- clés : la sienne, les classeurs connus, la clé d'import
@@ -2185,6 +2186,45 @@
       if (input) input.checked = !on;
     } finally {
       S.sepBusy = null;
+    }
+  }
+  // Retirer une carte d'une collection (bouton de la fiche ouverte depuis l'album, demande du 2026-10-18) : la collection
+  // renvoyée sans l'élément n° index ; la fiche se ferme et le message propose « Annuler » (l'élément remis à sa place,
+  // avec tous ses champs). Mêmes garde-fous que la case « Intercalaire » (S.sepBusy, S.sepError).
+  async function saveItemsOf(t, items) {
+    const body = { id: t.id, name: t.name, items };
+    if (t.source) body.source = t.source;
+    const r = await api('POST', '/api/targets/save', body);
+    if (r.target) upsertTarget(r.target); else await loadTargets();
+  }
+  async function removeFromCollection(t, index) {
+    if (S.sepBusy) return;
+    const gen = cardsGen;
+    const item = t.items[index];
+    S.sepBusy = t.id;
+    S.sepError = '';
+    try {
+      await saveItemsOf(t, t.items.filter((_, j) => j !== index));
+      if (gen !== cardsGen) return;
+      closeCard();
+      notify(`« ${item.title} » retirée de « ${t.name} ».`, false, { label: 'Annuler', run: () => restoreItem(t.id, index, item) });
+    } catch (e) {
+      if (gen === cardsGen) S.sepError = e.message;
+    } finally {
+      S.sepBusy = null;
+    }
+  }
+  async function restoreItem(id, index, item) {
+    const t = targets.value.find((x) => x.id === id);
+    if (!t) { notify("Cette collection n'existe plus : rien à remettre.", true); return; }
+    const gen = cardsGen;
+    const items = t.items.slice();
+    items.splice(Math.min(index, items.length), 0, item);
+    try {
+      await saveItemsOf(t, items);
+      if (gen === cardsGen) notify(`« ${item.title} » remise dans « ${t.name} ».`);
+    } catch (e) {
+      if (gen === cardsGen) notify(e.message, true);
     }
   }
   // ---------------------------------------------------------------- « Fusionner avec… » (album d'une de tes collections)
@@ -7363,6 +7403,8 @@
     const i = col.items.findIndex(match);
     return i < 0 ? null : { col, i, item: col.items[i] };
   }
+  // Outils de l'élément dans la fiche ouverte depuis l'album d'une de tes collections : case « Intercalaire », et
+  // « Retirer de « … » » (removeFromCollection).
   function viewSepToggle(ref) {
     if (!ref) return null;
     const busy = S.sepBusy === ref.col.id;
@@ -7374,6 +7416,8 @@
         busy ? h('span', { class: 'muted' }, ' · enregistrement…') : null,
       ]),
       h('p', { id: 'sep-toggle-help', class: 'small muted' }, `Dans « ${ref.col.name} », cette carte ouvre une section : un bord à part, et une nouvelle ligne dans l'ordre de la collection.`),
+      h('div', { class: 'actions' }, [h('button', { class: 'btn small danger item-remove', type: 'button', disabled: busy, onClick: () => removeFromCollection(ref.col.t, ref.i) },
+        [icon('trash', 'sm'), `Retirer de « ${ref.col.name} »`])]),
       errLine(S.sepError),
     ]);
   }
@@ -8093,6 +8137,7 @@
     name: 'Notice',
     setup: () => () => h(Transition, { name: 'fade' }, () => (S.notice ? h('div', { key: S.notice.id, class: ['toast', { error: S.notice.error }], role: S.notice.error ? 'alert' : 'status' }, [
       h('span', null, S.notice.text),
+      S.notice.action ? h('button', { class: 'linkish toast__action', type: 'button', onClick: () => { const a = S.notice.action; S.notice = null; a.run(); } }, S.notice.action.label) : null,
       h('button', { class: 'close', type: 'button', 'aria-label': 'Fermer le message', onClick: () => { S.notice = null; } }, [icon('x')]),
     ]) : null)),
   };

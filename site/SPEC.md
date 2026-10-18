@@ -699,6 +699,11 @@ Deux zones, dans cet ordre :
    jeu) ; le favori et le serveur les ignorent volontairement (jamais stockés). Tous vides dans la seule collection
    relevée (2026-10-15, 1 043 cartes) ; leur format n'est pas connu. Si ce sont eux que l'utilisateur appelle « les tags
    de wiki-masters », il faudra les lire (favori : quelques caractères ; serveur : un champ de plus par carte).
+   **Retirer une carte d'une collection** (2026-10-18) : la fiche d'une carte (possédée ou case vide) ouverte depuis
+   l'album d'une de tes collections a, sous la case « Intercalaire », un bouton « Retirer de « <collection> » » : la
+   collection est renvoyée sans cet élément (`POST /api/targets/save`), la fiche se ferme, et le message « « <titre> »
+   retirée de « <collection> ». » propose **« Annuler »** (10 s) : l'élément est remis à sa place, avec tous ses champs.
+   Pas de bouton depuis « Mes cartes », l'album d'une catégorie ou d'une page de Wikipédia, ni celui d'un ami.
    **« Fusionner avec… »** (album de toute collection, entre « Modifier » et « Supprimer », seulement si tu as une autre
    collection ; demande de l'utilisateur du 2026-10-18 : « un bouton pour fusionner deux collections ») : la collection
    d'où l'on part **reçoit la fusion** (même `id`, même source, même place dans « Mes collections »). Une fenêtre, calculée

@@ -3009,6 +3009,26 @@ async function main() {
     d.querySelectorAll('.fiche')[0].querySelector('.close').click();
     await settle(400);
     check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée', 'après la fiche (case vide) : ' + layout());
+    // « Retirer de « Continents » » (fiche de la case vide Amérique du Nord) : la collection est renvoyée sans elle, la
+    // fiche se ferme ; « Annuler » dans le message la remet à sa place, intercalaire compris.
+    d.querySelectorAll('.slot__open').find((b) => (b.getAttribute('aria-label') || '').startsWith('Amérique du Nord')).click();
+    await settle(80);
+    {
+      const until = async (f, ms = 3000) => { for (let t = 0; t < ms; t += 25) { if (await f()) return true; await sleep(25); } return !!(await f()); };
+      const rm = d.querySelectorAll('button').find((b) => b.classList.contains('item-remove'));
+      check(rm && text(rm).includes('Retirer de « Continents »'), 'fiche : bouton « Retirer de « Continents » » absent');
+      rm.click();
+      check(await until(async () => (await serverSeps()).t.items.length === 6 && !d.querySelectorAll('.fiche').length), 'retrait : collection non renvoyée sans l\'élément, ou fiche restée ouverte');
+      await settle(80);
+      check(!(await serverSeps()).t.items.some((i) => i.title === 'Amérique du Nord') && layout() === '[Continent] Afrique Europe | [Sous-continent] Supercontinent Pangée', 'après le retrait : ' + layout());
+      const toast = d.querySelectorAll('.toast')[0];
+      check(toast && text(toast).includes('« Amérique du Nord » retirée de « Continents ».'), 'message du retrait absent : ' + (toast ? text(toast) : ''));
+      toast.querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+      check(await until(async () => (await serverSeps()).t.items.length === 7), '« Annuler » : élément non remis');
+      await settle(80);
+      check((await serverSeps()).seps === 'Continent, Sous-continent, Amérique du Nord' && layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée',
+        '« Annuler » : élément remis ailleurs ou sans son intercalaire : ' + layout());
+    }
     // Depuis « Mes cartes », la fiche n'a pas la case (aucun album ouvert là).
     d.getElementById('tab-cartes').click();
     await settle();
