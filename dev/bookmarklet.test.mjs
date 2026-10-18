@@ -28,6 +28,8 @@ const SITE = 'https://classeur.example';
 const GAME = 'https://www.wiki-masters.com';
 // MAX_USERS : un compte neuf par scénario, bien plus que les 50 comptes permis par défaut.
 const env = { DB: createD1(':memory:'), COOKIE_SECRET: 'secret-de-test', SIGNUP_CODE: 'invitation', MAX_USERS: '1000' };
+// Fichiers de public/ (liaison ASSETS) : GET /api/favori.js y lit le code du favori.
+env.ASSETS = { fetch: async (req) => new Response(await readFile(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'site', 'public', new URL(req.url).pathname))) };
 
 // Horloge virtuelle, la même pour le serveur et pour les pages simulées du mode relié (openGame) : Date est remplacée
 // dans tout le processus (le serveur date full_at, le favori le compare à son heure) et n'avance que par advance().
@@ -188,6 +190,7 @@ async function click() {
   return { text: box(), seen: seen.join(' | '), posts, reports, calls };
 }
 const fullRead = (r) => r.calls.includes('/api/my-collection?sort=rarity&page=0&stats=0');
+
 
 const results = [];
 async function test(name, fn) {
@@ -2289,6 +2292,30 @@ await test('cotes : « Mettre à jour les cotes » pendant une synchro → lue j
   assert.ok(cardsReqs.length >= 5 && cardsReqs.every((c) => c.url.length < 6000), `requêtes de titres : ${cardsReqs.map((c) => c.url.length).join(', ')}`);
   assert.equal(Object.keys(live.ids).length, 300, 'tous les titres cherchés');
   resetSupa();
+});
+
+// Favori court (téléphone) : GET /api/favori.js sert le code du favori, adresse du classeur en place et clé lue dans
+// window.__classeurCourt ; exécuté comme le ferait la balise <script> qu'il ajoute, il lit et envoie la collection.
+await test('favori court : GET /api/favori.js sert le favori, la clé vient de window.__classeurCourt', async () => {
+  await newAccount();
+  collection = Array.from({ length: 60 }, (_, i) => entry(i, i));
+  const res = await onRequest({ request: new Request(`${SITE}/api/favori.js?t=1`), env, params: {}, waitUntil() {} });
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type'), /^text\/javascript/);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  const served = await res.text();
+  assert.ok(served.includes(`var SITE = ${JSON.stringify(SITE)};`) && served.includes('var KEY = ((window.__classeurCourt || {}).k || "");'), 'adresse ou clé non posées');
+  assert.ok(!served.includes('var KEY = "__KEY__"') && !served.includes(importKey), 'aucune clé dans le code servi');
+  new vm.Script(served);
+  const saved = code;
+  try {
+    code = `window.__classeurCourt = ${JSON.stringify({ k: importKey })};\n` + served;
+    const r = await click();
+    assert.match(r.text, /cartes envoyées au classeur/, r.seen);
+    assert.ok(r.posts.length > 0, 'rien envoyé');
+  } finally {
+    code = saved;
+  }
 });
 
 console.log(`${results.length} tests`);

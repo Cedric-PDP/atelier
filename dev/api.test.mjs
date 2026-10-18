@@ -403,6 +403,19 @@ await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et
   assert.deepEqual((await call('GET', 'members', { key: b.key, e })).json.members.map((m) => m.pseudo), [null]);
 });
 
+await test('favori court : GET /api/favori.js (code du favori, sans clé ni cache, 503 sans fichiers liés)', async () => {
+  const e = makeEnv({ ASSETS: { fetch: async (req) => new Response(await readFile(path.join(root, 'site', 'public', new URL(req.url).pathname))) } });
+  let res = await onRequest({ request: new Request('https://classeur.example/api/favori.js'), env: e, params: {}, waitUntil() {} });
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  const js = await res.text();
+  assert.ok(js.includes('var SITE = "https://classeur.example";') && js.includes('window.__classeurCourt') && !js.includes('var KEY = "__KEY__"'));
+  res = await onRequest({ request: new Request('https://classeur.example/api/favori.js'), env: makeEnv(), params: {}, waitUntil() {} });
+  assert.equal(res.status, 503);
+  res = await onRequest({ request: new Request('https://classeur.example/api/favori.js', { method: 'POST' }), env: e, params: {}, waitUntil() {} });
+  assert.equal(res.status, 405);
+});
+
 await test('authentification et /api/me', async () => {
   let r = await call('GET', 'me');
   assert.equal(r.status, 401);

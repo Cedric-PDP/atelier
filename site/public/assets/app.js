@@ -929,6 +929,17 @@
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
   const bookmarkletUrl = computed(() => (S.bm.src && S.bm.importKey ? makeBookmarklet(S.bm.src, location.origin, S.bm.importKey) : ''));
+  // Favori court (téléphone, 2026-10-18 : le favori complet, ≈ 62 000 caractères, fait planter les navigateurs de
+  // téléphone) : il pose la clé d'import dans window.__classeurCourt, puis charge le code du favori depuis le classeur
+  // (GET /api/favori.js), à chaque clic : toujours la dernière version, mais il faut le réseau, et ce code vient du
+  // classeur à chaque fois (le favori complet, lui, est figé à son installation).
+  const shortFavoriUrl = computed(() => {
+    if (!S.bm.importKey) return '';
+    const code = `(function(){window.__classeurCourt={k:${JSON.stringify(S.bm.importKey)}};var s=document.createElement("script");`
+      + `s.src=${JSON.stringify(location.origin + '/api/favori.js')}+"?t="+Date.now();`
+      + 's.onerror=function(){alert("Le classeur ne répond pas : réessaie dans un instant.")};document.head.appendChild(s)})()';
+    return 'javascript:' + encodeURI(code).replace(/#/g, '%23');
+  });
 
   // ---------------------------------------------------------------- « Entre amis » : qui a quoi
   const sharing = () => !!(S.me && S.me.shared);
@@ -6324,8 +6335,11 @@
       h('p', { class: 'small muted' }, "« Mettre à jour les cotes », dans l'encart du favori : il lit les cotes du marché, les bonnes affaires et tes enchères pour l'onglet « Marché », directement dans la base du jeu avec ta session ; relié, il le fait aussi tout seul toutes les 20 minutes et après tes enchères et tes ventes (voir « À savoir » dans cet onglet ; « Couper les cotes automatiques » dans son encart). Un favori installé avant le 17 octobre 2026 ne lit les cotes qu'au clic (avant le 16, il n'a pas ce bouton) : glisse à nouveau celui-ci dans ta barre."),
       h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
         ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
-      hasKey ? h('h3', null, 'Le créer à la main') : null,
-      hasKey ? h('p', { class: 'small muted' }, "Sur téléphone, ou si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci. Sur téléphone, tape ensuite « Classeur » dans la barre d'adresse sur wiki-masters.com et choisis le favori.") : null,
+      hasKey ? h('h3', null, 'Sur téléphone : le favori court') : null,
+      hasKey ? h('p', { class: 'small muted' }, "Le favori complet est trop long pour un téléphone (il fait planter le navigateur). Crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ce favori court ; puis, sur wiki-masters.com, tape « Classeur » dans la barre d'adresse et choisis le favori. Il charge le code du favori depuis le classeur à chaque clic : il faut le réseau, et c'est toujours la dernière version (pas besoin de le recréer après une mise à jour). Il marche aussi sur ordinateur.") : null,
+      hasKey ? copyRow('bm-short', shortFavoriUrl.value, 'Adresse du favori court') : null,
+      hasKey ? h('h3', null, 'Le créer à la main (ordinateur)') : null,
+      hasKey ? h('p', { class: 'small muted' }, "Si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci.") : null,
       hasKey ? copyRow('bm-url', url, 'Adresse du favori') : null,
       hasKey ? h('p', { class: 'small muted' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur ou y créer des collections, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
       hasKey ? viewUserscript() : null,

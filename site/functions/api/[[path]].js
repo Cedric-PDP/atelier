@@ -14,6 +14,7 @@ import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices, marketPlan, postFail, postLive, postPrices } from '../_lib/market.js';
 import { listSyncLog, reportSync } from '../_lib/synclog.js';
+import { favoriScript } from '../_lib/favori.js';
 
 // Seuls les points d'accès du favori (lancé depuis le jeu, sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -34,6 +35,7 @@ const ROUTES = {
   me: { GET: [getMe, 'main'], PATCH: [patchMe, 'main'], DELETE: [deleteMe, 'main'] },
   'import-key': { GET: [getImportKey, 'main'], POST: [newImportKey, 'main'] },
   'import-key/adopt': { POST: [adoptImportKey, 'main'] },
+  'favori.js': { GET: [favoriScript, false] }, // code du favori pour le favori court (téléphone), sans clé
   'key/rotate': { POST: [rotateKey, 'main'] },
   cards: { GET: [listCards, 'main'] },
   import: { POST: [importRoute, 'import'] },

@@ -954,6 +954,15 @@ async function main() {
   check(!bmCode.includes(ls.get('classeur-key')), 'la clé principale ne doit jamais être dans le favori');
   try { new vm.Script(bmCode); } catch (e) { fail('favori : code invalide une fois sur une ligne : ' + e.message); }
   check(byId('bm-url') && byId('bm-url').value === href, 'texte du favori à copier absent');
+  // Favori court (téléphone) : quelques centaines de caractères, la clé d'import posée dans window.__classeurCourt,
+  // le code chargé depuis le classeur (GET /api/favori.js) ; jamais la clé principale.
+  {
+    const short = byId('bm-short') && byId('bm-short').value;
+    const sc = short ? decodeURI(short.slice(11)) : '';
+    check(short && short.startsWith('javascript:') && short.length < 700 && !/[\s#"<>]/.test(short.slice(11)), 'favori court absent ou trop long : ' + String(short).length);
+    check(sc.includes('window.__classeurCourt={k:"' + importKey + '"}') && sc.includes('"' + ORIGIN + '/api/favori.js"') && !sc.includes(ls.get('classeur-key')), 'favori court : clé ou adresse incorrecte : ' + sc);
+    try { new vm.Script(sc); } catch (e) { fail('favori court : code invalide : ' + e.message); }
+  }
   // Script Tampermonkey (replié sous le favori) : en-tête du gestionnaire, puis le même code en mode « load », avec la
   // clé d'import seulement.
   {
