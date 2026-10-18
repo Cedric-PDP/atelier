@@ -69,7 +69,10 @@ CREATE TABLE IF NOT EXISTS tags (
     PRIMARY KEY (user_id, card_id, tag)
 );
 
--- Collections à compléter : items = tableau JSON de {title, description, image, status}.
+-- Collections à compléter : items = tableau JSON de {title, description, image, status}. auto = ajout automatique
+-- (« Refaire à chaque synchro » de la fenêtre « Ajouter par tags du jeu ») : JSON {rules:[{k:'gtag'|'cat'|'tag', v}],
+-- skip:[titres exclus]} validé par targets.js (20 règles, 2 000 titres exclus au plus), NULL sans règle ; jamais montré
+-- aux autres membres.
 CREATE TABLE IF NOT EXISTS targets (
     user_id TEXT NOT NULL,
     id TEXT NOT NULL,
@@ -78,6 +81,7 @@ CREATE TABLE IF NOT EXISTS targets (
     source TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
+    auto TEXT,
     PRIMARY KEY (user_id, id)
 );
 

@@ -140,8 +140,8 @@ const MEMBER_T = 'SELECT public_id AS id, name, shared_targets AS st FROM users 
 // la page ; on garde celles qui commencent sous TARGETS_PAGE_BYTES (la première toujours), et la suivante revient sans
 // contenu (j NULL) pour dire qu'il en reste. Chaque collection est réduite en SQL : nom, puis pour chaque élément vérifié
 // (status ok) son titre, son qid s'il en a un et `sep: true` si c'est un intercalaire ; rien d'autre ne sort de targets
-// (ni source, ni dates, ni descriptions), sauf sa nature (kind) : 'category' pour une catégorie de Wikipédia suivie
-// (source « wp:… »), sinon 'collection'.
+// (ni source, ni dates, ni descriptions, ni ajout automatique : colonne auto), sauf sa nature (kind) : 'category' pour
+// une catégorie de Wikipédia suivie (source « wp:… »), sinon 'collection'.
 const MEMBER_TARGETS = `WITH page AS (
     SELECT t.id, t.name, t.items, t.source,
       COALESCE(SUM(length(CAST(t.items AS BLOB))) OVER (ORDER BY t.id ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS before

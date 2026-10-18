@@ -177,8 +177,8 @@ autre format (voir « Le favori »).
 | `POST /api/tags/set` | `{card_id, tags:[…]}` | `{tags}` |
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
-| `GET /api/targets` | | `{targets:[Collection]}` |
-| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; `links:<titre>#<colonne>` est une source `links:` comme une autre, comparée en entier : l'interface, elle, ne propose qu'une collection par page, toutes colonnes confondues ; l'ancienne source `links` sans « : » n'est pas concernée) |
+| `GET /api/targets` | | `{targets:[Collection]}` (avec `auto`, l'ajout automatique, `null` sans règle) |
+| `POST /api/targets/save` | `{id?, name, items, source?, auto?, auto_skip?, expect_updated_at?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; `links:<titre>#<colonne>` est une source `links:` comme une autre, comparée en entier : l'interface, elle, ne propose qu'une collection par page, toutes colonnes confondues ; l'ancienne source `links` sans « : » n'est pas concernée). **Ajout automatique** (2026-10-18, voir « Ajout automatique » dans « Onglet « Collections » ») : `auto` **absent = inchangé** (règles et exclusions gardées : « Modifier », « Réorganiser », un intercalaire, une fusion… n'ont rien à renvoyer), `null` = effacé (règles et exclusions), `{rules:[{k, v}], skip?}` = règles remplacées (`k` : `gtag` tag du jeu, `cat` catégorie du jeu, `tag` tag du classeur — `v` = le tag, ou `Catégorie/` pour toute une catégorie de tags — ; `v` nettoyé, 1 à 500 caractères ; 20 règles au plus ; doublons repliés, sans la casse pour `gtag` et `cat` ; liste vide = effacé) et exclusions gardées, sauf `skip` donné (liste de 2 000 titres au plus, qui les remplace) ; `auto_skip: {add?:[titre…], del?:[titre…]}` (3 000 titres au plus chacun, 1 à 300 caractères) : titres ajoutés aux exclusions (à la fin, sans doublon) ou retirés, comparés comme la page (première lettre en majuscule, « _ » en espace, apostrophes et guillemets typographiques ramenés à l'ASCII), appliqué après `auto` et **ignoré s'il ne reste pas de règle** ; au-delà de 2 000 exclusions (ou de 200 Ko pour tout `auto`), les plus anciennes sont oubliées (un retrait ne doit jamais échouer pour ça) ; forme invalide : `400`, rien d'écrit. `auto` compte dans les 5 Mo du compte. **`expect_updated_at`** (texte, 40 caractères au plus, seulement avec un `id`, sinon `400`) : enregistrement conditionnel, seulement si la collection rangée a encore ce `updated_at` (dans la même requête SQL que l'écriture) ; sinon `409 {error, conflict:true, target}` où `target` est la collection telle qu'elle est maintenant (`null` si elle a été supprimée : jamais recréée), et rien n'est écrit. L'ajout automatique de la page s'en sert (deux onglets, deux appareils), ainsi que « Arrêter » ; les autres actions de la page ne l'envoient pas (comportement d'avant) |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, pseudo, count, fetched_at, targets}]}` (`pseudo` : son pseudo dans le jeu, ou `null`) : les **autres** membres qui partagent, sauf les classeurs vides (ni carte ni collection) ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
@@ -200,8 +200,9 @@ autre format (voir « Le favori »).
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
 du compte.
 
-**Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, created_at,
-updated_at}` ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
+**Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, auto, created_at,
+updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` ou `null`, voir `targets/save` et « Ajout
+automatique » ; colonne `targets.auto`, jamais montrée aux autres membres) ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
 diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par titre, puis par qid
 (`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
 vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (au plus 3 000 éléments,
@@ -488,7 +489,8 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   rechoisir). Ce qui est montré, aux membres qui montrent leurs cartes : toutes ses collections à compléter (ses
   collections, y compris celles faites d'une catégorie ; pas les propositions), leur nom, leur nature (`kind` :
   `category` pour une collection faite d'une catégorie de Wikipédia, `collection` sinon) et, pour chaque élément vérifié, son titre, son qid et s'il est un intercalaire (`sep: true`). **Jamais** leurs descriptions,
-  images, statuts, leur source (recherche tapée, nom de la catégorie, id du catalogue) ni leurs dates ; les éléments
+  images, statuts, leur source (recherche tapée, nom de la catégorie, id du catalogue), leurs dates ni leur ajout
+  automatique (règles et titres exclus : `targets.auto`) ; les éléments
   introuvables ou d'homonymie sont omis (aucune carte ne peut les remplir). `GET /api/members` dit seulement leur nombre
   et la date du dernier changement.
 - **Identifiant public** (`users.public_id`) : un membre est désigné par un identifiant aléatoire, tiré à chaque
@@ -692,7 +694,9 @@ Deux zones, dans cet ordre :
    catalogue), avec « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son
    album, discrètement : « depuis la catégorie Wikipédia » ; une de source `links:<titre>` : « depuis la page Wikipédia
    « <titre> » » (aussi dans « Entre amis », pour tes collections) ; `links:<titre>#<colonne>` : « depuis la page
-   Wikipédia « <titre> », colonne « <colonne> » ». Leurs articles sont de A à Z, sans numéros (une catégorie n'a pas
+   Wikipédia « <titre> », colonne « <colonne> » ». Une collection qui a un **ajout automatique** (voir plus bas) porte sur
+   sa ligne une petite marque « ajout automatique » (icône de synchro ; ses règles au survol ; « . Ajout automatique » à
+   la fin de l'étiquette lue par les lecteurs d'écran). Leurs articles sont de A à Z, sans numéros (une catégorie n'a pas
    d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre (`ordered: false` dans
    `catalog.json`, liste reprise dans `app.js`) ; sauf celle faite de la colonne clé des tableaux d'une page : dans
    l'ordre des lignes, numérotée (tri « Ordre »). Son album est celui d'une collection :
@@ -766,10 +770,81 @@ Deux zones, dans cet ordre :
    requête `targets/save` pour toute la collection ; le message propose « Annuler ». Un élément déjà décidé n'est jamais
    touché : `sep: true`, ou **`sep: false`**, que le serveur garde désormais (case de la fiche décochée, « # » retiré dans
    l'éditeur, « Annuler » de la détection).
+
+   **Ajout automatique** (2026-10-18, demande de l'utilisateur : « Quand il y a déjà eu un "Ajouter par tags du jeu",
+   automatiser pour le faire à chaque synchro. ») :
+   - **Dans la fenêtre**, sous l'aperçu, une case **cochée d'emblée** : « Refaire à chaque synchro : les prochaines cartes
+     de ces tags iront dans cette collection » (`#tagadd-auto`), avec une note (« Les tags et catégories cochés sont
+     gardés … Une carte décochée dans l'aperçu, ou retirée ensuite de la collection, n'est jamais rajoutée (N cartes
+     exclues pour l'instant). »). Cochée, l'enregistrement envoie aussi `auto: {rules}` = **les propositions cochées**
+     (tags du jeu `{k:'gtag', v:<nom du tag>}`, catégories du jeu `{k:'cat', v:<texte de la catégorie>}`, tes tags du
+     classeur dépliés `{k:'tag', v:<tag ou « Catégorie/ »>}`, qu'elles soient proposées ou choisies à la main) et
+     `auto_skip` : `add` = les cartes **décochées dans l'aperçu** (pas déjà exclues), `del` = les cartes ajoutées qui
+     étaient exclues (recochées : remises à la main). 20 règles au plus : au-delà, « N tags et catégories cochés :
+     l'ajout automatique en garde 20 au plus … » et bouton grisé. Décochée : rien de gardé (`auto: null` si la collection
+     en avait : l'ajout automatique s'arrête, la note le dit). Message : « 3 cartes ajoutées à « Maladies ». Les prochaines
+     cartes de ces tags y seront ajoutées à chaque synchro. ».
+   - **Rouverte** sur une collection qui a des règles : **ses règles, et elles seules, sont cochées** (pas les
+     propositions du même nom qu'on avait décochées), montrées même sans carte à ajouter (« rien à ajouter ») ou quand plus
+     aucune carte ne porte ce tag (libellé de la règle), en tête de leur liste, marquées « · règle de l'ajout
+     automatique » (et tes tags du classeur dépliés si une règle en est un) ; dans l'aperçu, les cartes **exclues** sont
+     décochées d'emblée, avec « exclue de l'ajout automatique » (les recocher les ajoute et lève leur exclusion). Sans carte
+     à ajouter, le bouton devient « Enregistrer les règles » (règles changées, ou cartes décochées à exclure), « Arrêter
+     l'ajout automatique » (case décochée), sinon reste grisé (« Ajouter ») ; aperçu vide : « Rien à ajouter pour
+     l'instant : tes cartes de ces tags et catégories sont déjà toutes dans la collection. ». Message : « Ajout automatique
+     mis à jour pour « … » : … ».
+   - **À chaque arrivée de cartes dans la page** (ouverture du classeur, synchro du favori — fenêtre « Mettre à jour »
+     ou envoi relié repéré par la relecture des 60 s —, rafraîchissement, relecture `?since` qui change les cartes, y
+     compris des tags du classeur posés ailleurs : partout où la page appelle `afterCards`), pour **chaque collection qui a
+     des règles** : tes cartes qui répondent à **l'une** de ses règles (tag du jeu ou catégorie du jeu repliés comme dans
+     la fenêtre : casse, accents, espaces ; tag du classeur exact, ou toute sa catégorie pour `Catégorie/`), qui ne sont
+     **ni déjà dedans** (rapprochement par titre puis qid, comme l'album et la fenêtre ; les qids des cartes à ajouter et
+     des éléments sans qid encore sans carte sont d'abord résolus sur Wikipédia, en cache le plus souvent : une carte que
+     tu as sous un autre titre n'entre pas une seconde fois) **ni exclues** (`skip`, comparé par titre replié), une par
+     titre et par qid, sont ajoutées **à la fin**, de A à Z, avec les champs de la fenêtre (`{title, description:
+     catégorie du jeu, image: null, status:'ok', qid?}`), intercalaires et autres éléments intacts : **une requête**
+     `POST /api/targets/save {id, name, items, source?, expect_updated_at}` par collection (sans `auto` : règles et
+     exclusions inchangées). Puis **un seul message** pour toutes : « 3 cartes ajoutées automatiquement à « Maladies ». »,
+     « 4 cartes ajoutées automatiquement : 1 à « Maladies », 2 à « Virus » et 1 à « Grande ». », mis à la suite du
+     message encore affiché (« Mis à jour depuis wiki-masters.com : … »). Rien à ajouter : aucune requête (sans
+     collection à règles, la page fait exactement les mêmes lectures qu'avant).
+   - **Limites** (celles de `targets.js`, vérifiées avant l'envoi) : seulement les cartes qui tiennent (3 000 éléments,
+     600 Ko d'éléments en JSON), dans l'ordre de A à Z ; les autres sont dites dans le message (« « Grande » est pleine :
+     2 cartes de ses règles d'ajout automatique n'ont pas pu y entrer (3 000 éléments et 600 Ko au plus par
+     collection). »), une fois (pas répété à chaque synchro tant que rien ne change) ; une erreur du serveur (5 Mo par
+     compte…) : « Ajout automatique à « … » impossible : … », une fois aussi. Rien d'autre n'est touché.
+   - **Où et pourquoi** : dans la page, pas dans le serveur à la fin d'un import. Seule la page rapproche les titres par
+     qid (résolus sur Wikipédia ; le serveur n'a pas les qids des cartes) et replie tags et catégories exactement comme la
+     fenêtre ; `import.js` et `refresh.js` (longs, par morceaux) restent tels quels. Contrepartie : l'ajout se fait quand
+     une page du classeur est ouverte (à l'ouverture suivante au plus tard).
+   - **Deux onglets, deux appareils** : chaque envoi porte `expect_updated_at` = le `updated_at` de la collection sur
+     laquelle il a été calculé ; si un autre enregistrement est passé avant (l'autre onglet vient d'ajouter les mêmes
+     cartes, ou une carte vient d'être retirée ailleurs), le serveur répond `409` avec la collection d'aujourd'hui, la page
+     la reprend et recalcule (en général : plus rien à ajouter, aucun message), deux fois au plus. Jamais de doublon, et
+     jamais une liste périmée écrite par-dessus. Dans une même page, un seul passage à la fois (une arrivée de cartes
+     pendant un passage en relance un à la fin) ; changement de classeur : abandonné.
+   - **Exclusions** (`skip`) : une carte **décochée dans l'aperçu**, ou **retirée ensuite de la collection** — bouton
+     « Retirer de « … » » de la fiche (`auto_skip.add`, message « « Peste » retirée de « Maladies » : elle n'y sera plus
+     ajoutée automatiquement. », son « Annuler » la remet et lève l'exclusion : `auto_skip.del`), ou éditeur « Modifier »
+     (titres présents à l'ouverture et absents à l'enregistrement : `add`) — n'est jamais rajoutée automatiquement. Une
+     carte **remise à la main** (recochée dans la fenêtre, retapée dans l'éditeur, ramenée par « Fusionner avec… »,
+     « Annuler » d'un retrait) n'est plus exclue (`del`). Seulement pour une collection qui a des règles (sinon rien n'est
+     envoyé, et le serveur ignorerait `auto_skip`).
+   - **Visible et réversible** : dans l'album d'une collection qui a des règles, sous ses actions, une ligne « Ajout
+     automatique : tag du jeu « Maladie », catégorie du jeu « maladie » » (« tags du jeu « A » et « B » », « tag du
+     classeur « Sciences › Maladie » » ; « · 2 cartes exclues » s'il y en a), avec **« Changer les règles »** (la fenêtre,
+     règles cochées) et **« Arrêter »** : `targets/save` avec `auto: null` (et `expect_updated_at`, la collection
+     d'aujourd'hui reprise sur `409`) ; règles et exclusions effacées, **les cartes déjà ajoutées restent** ; message
+     « Ajout automatique arrêté pour « … » : les cartes déjà ajoutées restent. » avec **« Annuler »** (10 s : règles et
+     exclusions remises, puis un passage d'ajout automatique). Les autres actions de la collection (« Modifier »,
+     « Réorganiser », intercalaire, « Fusionner avec… ») n'envoient pas `auto` : les règles restent.
+
    **Retirer une carte d'une collection** (2026-10-18) : la fiche d'une carte (possédée ou case vide) ouverte depuis
    l'album d'une de tes collections a, sous la case « Intercalaire », un bouton « Retirer de « <collection> » » : la
    collection est renvoyée sans cet élément (`POST /api/targets/save`), la fiche se ferme, et le message « « <titre> »
    retirée de « <collection> ». » propose **« Annuler »** (10 s) : l'élément est remis à sa place, avec tous ses champs.
+   Collection qui a un ajout automatique : la carte est aussi exclue (`auto_skip.add`), le message le dit (« … : elle
+   n'y sera plus ajoutée automatiquement. ») et « Annuler » lève l'exclusion (`auto_skip.del`).
    Pas de bouton depuis « Mes cartes », l'album d'une catégorie ou d'une page de Wikipédia, ni celui d'un ami.
    **« Réorganiser »** (2026-10-18, demande de l'utilisateur : « Il faudrait aussi qu'on puisse réorganiser les cartes
    d'une collection à la main. ») : dans l'album d'une de tes collections **qui a un ordre** (à la main, du jeu `wm:`, de

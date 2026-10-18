@@ -252,6 +252,7 @@
     openMissing: null, // élément d'une collection qui te manque, ouvert dans sa fiche (case vide)
     sepBusy: null, // id de la collection dont un intercalaire s'enregistre (case de la fiche)
     sepError: '',
+    autoBusy: null, // id de la collection dont l'ajout automatique s'arrête ou reprend (« Arrêter », « Annuler »)
     drawer: { newTag: '', newCat: '', busy: false, error: '' },
     tagSearch: '',
     tagsAll: false,
@@ -282,8 +283,9 @@
     arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
     // « Ajouter par tags du jeu » (album d'une collection) : {id (de la collection), on (propositions cochées :
     // « g:<tag du jeu replié> », « c:<catégorie du jeu repliée> », « t:<tag> » ou « t:<Catégorie de tags>/ »), off (cartes
-    // décochées dans l'aperçu : ids), extra (tags et catégories du jeu choisis à la main), field, fieldError, limit (cartes
-    // de l'aperçu affichées), tags (tes tags du classeur dépliés), busy, error}.
+    // décochées dans l'aperçu : ids), keep (cartes exclues de l'ajout automatique, recochées : ids), extra (tags et
+    // catégories du jeu choisis à la main), field, fieldError, limit (cartes de l'aperçu affichées), tags (tes tags du
+    // classeur dépliés), auto (case « Refaire à chaque synchro »), rules (règles de la collection à l'ouverture), busy, error}.
     tagAdd: null,
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
     // « Entre amis » : lecture des membres (busy, loading = carte en cours), activation du partage, classeur parcouru.
@@ -1264,7 +1266,7 @@
     cardsRev = null;
     cardsGen++;
     cardsJob = Promise.resolve();
-    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null,
+    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, autoBusy: null,
       q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
@@ -1286,6 +1288,7 @@
     clearFriends(); // cartes des amis : celles de l'autre classeur ne servent plus
     resetMarket(); // cotes, valeur et lecture du marché : celles de l'autre classeur
     resetChat(); // messages, brouillon et dernier lu : ceux de l'autre classeur
+    autoSaid.clear(); // avertissements de l'ajout automatique : ceux de l'autre classeur
   }
   const STALE_KEY = "La clé gardée dans ce navigateur ne correspond plus à aucun classeur : il a peut-être été supprimé, ou sa clé a été changée sur un autre appareil. Ouvre ton lien personnel le plus récent.";
   function lostKey(msg) {
@@ -1496,13 +1499,23 @@
     };
     cacheTimer = setTimeout(() => { cacheTimer = null; if (cacheWrite) cacheWrite(); }, 1500);
   }
-  const prepTarget = (t) => markRaw({ ...t, items: Array.isArray(t.items) ? t.items : [] });
+  // Ajout automatique d'une collection (`auto` de GET /api/targets, voir « ajout automatique » plus bas) : {rules, skip}
+  // s'il a au moins une règle bien formée, sinon null.
+  const AUTO_KINDS = new Set(['gtag', 'cat', 'tag']);
+  const normAuto = (a) => {
+    if (!a || typeof a !== 'object' || !Array.isArray(a.rules)) return null;
+    const rules = a.rules.filter((r) => r && AUTO_KINDS.has(r.k) && typeof r.v === 'string' && r.v);
+    return rules.length ? { rules, skip: Array.isArray(a.skip) ? a.skip.filter((x) => typeof x === 'string') : [] } : null;
+  };
+  const prepTarget = (t) => markRaw({ ...t, items: Array.isArray(t.items) ? t.items : [], auto: normAuto(t.auto) });
   // Après chaque chargement des cartes : qids manquants (toutes les collections), propositions d'après les
-  // catégories de tes cartes (sauf si tu les as masquées).
+  // catégories de tes cartes (sauf si tu les as masquées), ajout automatique des nouvelles cartes aux collections qui ont
+  // des règles (runAutoAdd).
   function afterCards() {
     resolveQids(collections.value.all.flatMap((c) => c.items), false, 'all'); // à part de celle de l'album ouvert
     if (!S.prefs.hide_proposals) computeProposals(false);
     loadMarket(false); // valeur et cotes (les cartes ont pu changer)
+    runAutoAdd();
   }
   async function loadTargets() {
     const gen = cardsGen;
@@ -2142,6 +2155,7 @@
       text: t ? t.items.map((i) => (i.sep ? SEP_MARK : '') + i.title).join('\n') : '',
       source: t ? t.source || null : null,
       known: markRaw(new Map(t ? t.items.map((i) => [i.title, i]) : [])),
+      base: markRaw(t ? t.items.map((i) => i.title) : []), // titres à l'ouverture (exclusions de l'ajout automatique)
       busy: false, progress: '', error: '', issues: null,
       mode: t ? 'liste' : 'mots',
       kw: { q: '', searching: false, error: '', interp: '', cands: [], chosen: null, searched: '' },
@@ -2204,6 +2218,17 @@
       const body = { name, items };
       if (ed.id) body.id = ed.id;
       if (ed.source) body.source = ed.source;
+      // Collection qui a un ajout automatique : les titres retirés à la main sont exclus (jamais rajoutés), ceux remis à
+      // la main ne le sont plus.
+      const cur = ed.id ? autoOf(targets.value.find((x) => x.id === ed.id)) : null;
+      if (cur) {
+        const now = new Set(items.map((i) => titleKey(i.title)));
+        const before = new Set(ed.base.map(titleKey));
+        const skipped = new Set(cur.skip.map(titleKey));
+        const add = ed.base.filter((x) => !now.has(titleKey(x)));
+        const del = items.filter((i) => !before.has(titleKey(i.title)) && skipped.has(titleKey(i.title))).map((i) => i.title);
+        if (add.length || del.length) body.auto_skip = { ...(add.length ? { add } : {}), ...(del.length ? { del } : {}) };
+      }
       const r = await api('POST', '/api/targets/save', body);
       if (!alive()) return;
       if (r.target) upsertTarget(r.target); else await loadTargets();
@@ -2313,8 +2338,9 @@
     const col = S.tab === 'collections' && !S.reorder ? activeAlbum.value : null;
     return col && col.kind === 'target' && col.ordered && col.t ? col.t : null;
   }, (t) => { if (t) autoSeps(t); });
-  async function saveItemsOf(t, items) {
-    const body = { id: t.id, name: t.name, items };
+  // extra : champs en plus (auto_skip : exclusions de l'ajout automatique).
+  async function saveItemsOf(t, items, extra) {
+    const body = { id: t.id, name: t.name, items, ...extra };
     if (t.source) body.source = t.source;
     const r = await api('POST', '/api/targets/save', body);
     if (r.target) upsertTarget(r.target); else await loadTargets();
@@ -2325,11 +2351,14 @@
     const item = t.items[index];
     S.sepBusy = t.id;
     S.sepError = '';
+    // Collection qui a un ajout automatique : la carte retirée est exclue (jamais rajoutée) ; « Annuler » lève l'exclusion.
+    const auto = !!autoOf(t);
     try {
-      await saveItemsOf(t, t.items.filter((_, j) => j !== index));
+      await saveItemsOf(t, t.items.filter((_, j) => j !== index), auto ? { auto_skip: { add: [item.title] } } : null);
       if (gen !== cardsGen) return;
       closeCard();
-      notify(`« ${item.title} » retirée de « ${t.name} ».`, false, { label: 'Annuler', run: () => restoreItem(t.id, index, item) });
+      notify(auto ? `« ${item.title} » retirée de « ${t.name} » : elle n'y sera plus ajoutée automatiquement.` : `« ${item.title} » retirée de « ${t.name} ».`, false,
+        { label: 'Annuler', run: () => restoreItem(t.id, index, item) });
     } catch (e) {
       if (gen === cardsGen) S.sepError = e.message;
     } finally {
@@ -2343,7 +2372,7 @@
     const items = t.items.slice();
     items.splice(Math.min(index, items.length), 0, item);
     try {
-      await saveItemsOf(t, items);
+      await saveItemsOf(t, items, autoOf(t) ? { auto_skip: { del: [item.title] } } : null);
       if (gen === cardsGen) notify(`« ${item.title} » remise dans « ${t.name} ».`);
     } catch (e) {
       if (gen === cardsGen) notify(e.message, true);
@@ -2708,6 +2737,13 @@
       if (save) {
         const body = { id: t.id, name, items: info.items };
         if (t.source) body.source = t.source; // la source de celle d'où l'on part (voir plus haut)
+        // Ajout automatique : un élément ajouté par la fusion qui était exclu ne l'est plus (remis à la main).
+        const auto = autoOf(t);
+        if (auto) {
+          const skipped = new Set(auto.skip.map(titleKey));
+          const del = info.added.filter((it) => skipped.has(titleKey(it.title))).map((it) => it.title);
+          if (del.length) body.auto_skip = { del };
+        }
         let r;
         try {
           r = await api('POST', '/api/targets/save', body);
@@ -2875,7 +2911,8 @@
   // collection. {rows = [{key, label, color, kind, why: same | near | wide | manual | often, score, n, inside, cards}]
   // (celles qui ont des cartes à ajouter, les plus sûres d'abord ; TAGADD_MAX au plus, celles du même nom et choisies en
   // plus), more = propositions non montrées, full = ressemblantes ou choisies dont toutes tes cartes sont déjà dedans}.
-  function propose(index, prefix, kind, words, extra, inside, known, out) {
+  // ruled : clé -> règle de l'ajout automatique de la collection (toujours montrées, même sans carte à ajouter, rule: true).
+  function propose(index, prefix, kind, words, extra, inside, known, out, ruled) {
     const W = new Set(words);
     const rel = new Map();
     for (const g of index.values()) {
@@ -2887,6 +2924,15 @@
       }
     }
     for (const x of extra) if (x.startsWith(prefix) && index.has(x.slice(prefix.length))) rel.set(x.slice(prefix.length), { score: 4, why: 'manual' });
+    // Règles de l'ajout automatique : montrées même sans carte à ajouter, ou quand plus aucune de tes cartes ne porte ce
+    // tag (libellé : celui de la règle), pour qu'on puisse les décocher.
+    const ghost = new Map();
+    for (const [key, rule] of ruled) {
+      if (!key.startsWith(prefix)) continue;
+      const k = key.slice(prefix.length);
+      rel.set(k, { ...(rel.get(k) || { score: 4, why: 'manual' }), rule: true });
+      if (!index.has(k)) ghost.set(k, { label: rule.v, color: null });
+    }
     if (known >= 2) {
       for (const [k, n] of inside) {
         if (rel.has(k) || !index.has(k) || n < 2 || n < known * 0.2) continue;
@@ -2896,13 +2942,13 @@
     const rows = [];
     const full = [];
     for (const [k, r] of rel) {
-      const g = index.get(k);
+      const g = index.get(k) || ghost.get(k);
       const row = { ...r, key: prefix + k, label: g.label, color: g.color || null, kind, inside: inside.get(k) || 0, cards: [...(out.get(k) || new Map()).values()] };
-      if (row.cards.length) rows.push(row); else if (r.why !== 'often') full.push(row);
+      if (row.cards.length || r.rule) rows.push(row); else if (r.why !== 'often') full.push(row);
     }
     rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
-    const sure = rows.filter((r) => r.why === 'same' || r.why === 'manual');
-    const rest = rows.filter((r) => r.why !== 'same' && r.why !== 'manual');
+    const sure = rows.filter((r) => r.why === 'same' || r.why === 'manual' || r.rule);
+    const rest = rows.filter((r) => r.why !== 'same' && r.why !== 'manual' && !r.rule);
     const shown = rest.slice(0, Math.max(0, TAGADD_MAX - sure.length));
     return { rows: [...sure, ...shown], more: rest.length - shown.length, full };
   }
@@ -2957,19 +3003,20 @@
       if (k) put(catOut, k, c);
     }
     const words = nameWords(t.name);
+    const ruled = new Map((ta.rules || []).map((r) => [ruleKey(r), r])); // règles de l'ajout automatique à l'ouverture
     return {
       t, own, known,
-      game: propose(gameTags.value, 'g:', 'gtag', words, ta.extra, gtagsIn, own, gtagOut),
-      cats: propose(gameCats.value, 'c:', 'cat', words, ta.extra, inside, known, catOut),
+      game: propose(gameTags.value, 'g:', 'gtag', words, ta.extra, gtagsIn, own, gtagOut, ruled),
+      cats: propose(gameCats.value, 'c:', 'cat', words, ta.extra, inside, known, catOut, ruled),
       hasGtags: gameTags.value.size > 0,
       hasCats: gameCats.value.size > 0,
-      tags: tagProposals(words, own, tagsIn, tagged),
+      tags: tagProposals(words, own, tagsIn, tagged, ruled),
     };
   });
   // Tes tags du classeur (en second, repliés) : même nom (sous-tag : « Sciences et nature/Maladie » pour « Maladies »),
   // nom proche, catégorie de tags de même nom ou proche (toute la catégorie), puis portés par beaucoup de tes cartes de la
   // collection (2 au moins, et 20 % d'entre elles).
-  function tagProposals(words, own, tagsIn, tagged) {
+  function tagProposals(words, own, tagsIn, tagged, ruled) {
     const rel = new Map();
     for (const { name } of tagList.value) {
       const s = nameMatch(nameWords(tagSub(name)), words);
@@ -2979,6 +3026,12 @@
       if (node.cat === OTHER) continue;
       const s = nameMatch(nameWords(node.cat), words);
       if (s) rel.set(node.cat + '/', { score: s - 0.5, why: 'cat' });
+    }
+    // Règles de l'ajout automatique (tags du classeur) : toujours montrées, en tête.
+    for (const [key] of ruled) {
+      if (!key.startsWith('t:')) continue;
+      const k = key.slice(2);
+      rel.set(k, { ...(rel.get(k) || { score: 4, why: 'manual' }), rule: true });
     }
     if (own >= 2) {
       for (const [k, n] of tagsIn) {
@@ -2999,10 +3052,10 @@
     const rows = [];
     for (const [k, r] of rel) {
       const row = { ...r, key: 't:' + k, label: tokenLabel(k), kind: 'tag', inside: tagsIn.get(k) || 0, cards: [...found.get(k).values()] };
-      if (row.cards.length) rows.push(row);
+      if (row.cards.length || r.rule) rows.push(row);
     }
-    rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
-    return { rows: rows.slice(0, TAGADD_MAX), own };
+    rows.sort((a, b) => (b.rule ? 1 : 0) - (a.rule ? 1 : 0) || b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
+    return { rows: rows.slice(0, Math.max(TAGADD_MAX, rows.filter((r) => r.rule).length)), own };
   }
   // Propositions cochables : tags du jeu, catégories du jeu, et tes tags du classeur quand leur liste est dépliée.
   const tagAddRows = computed(() => {
@@ -3021,13 +3074,50 @@
     }
     return [...m.values()].sort((a, b) => COLLATOR.compare(a.title, b.title));
   });
-  const tagAddPicked = computed(() => (S.tagAdd ? tagAddPreview.value.filter((c) => !S.tagAdd.off.has(c.id)) : []));
-  function openTagAdd(col) {
-    S.tagAdd = { id: col.id, on: new Set(), off: new Set(), extra: [], field: '', fieldError: '', limit: TAGADD_PAGE, tags: false, busy: false, error: '' };
-    // Cochés d'emblée : les tags et les catégories du jeu du même nom que la collection (les plus sûrs) ; les autres, à
-    // cocher soi-même.
+  // Titres exclus de l'ajout automatique de la collection de la fenêtre (titres repliés) : décochés d'emblée dans l'aperçu.
+  const tagAddSkip = computed(() => {
+    const ta = S.tagAdd;
+    const auto = autoOf(ta ? targets.value.find((x) => x.id === ta.id) : null);
+    return new Set(auto ? auto.skip.map(titleKey) : []);
+  });
+  const tagAddSkipped = (c) => tagAddSkip.value.has(titleKey(c.title));
+  // Carte de l'aperçu décochée : à la main, ou exclue de l'ajout automatique (sauf recochée).
+  const tagAddOff = (ta, c) => ta.off.has(c.id) || (!ta.keep.has(c.id) && tagAddSkipped(c));
+  const tagAddPicked = computed(() => (S.tagAdd ? tagAddPreview.value.filter((c) => !tagAddOff(S.tagAdd, c)) : []));
+  // Règles que la fenêtre enregistrerait (propositions cochées, tes tags du classeur s'ils sont dépliés) et ce qui change
+  // par rapport à celles de la collection : {had, rules, skipAdd (titres décochés dans l'aperçu, pas encore exclus),
+  // changed}.
+  const rulesSig = (list) => list.map(ruleKey).sort().join('\u0001');
+  const tagAddAuto = computed(() => {
+    const ta = S.tagAdd;
     const info = tagAddInfo.value;
-    if (info) for (const r of [...info.game.rows, ...info.cats.rows]) if (r.why === 'same') S.tagAdd.on.add(r.key);
+    if (!ta || !info) return null;
+    const had = autoOf(info.t);
+    const rules = [];
+    if (ta.auto) {
+      for (const r of tagAddRows.value) {
+        if (!ta.on.has(r.key)) continue;
+        rules.push(r.kind === 'gtag' ? { k: 'gtag', v: r.label } : r.kind === 'cat' ? { k: 'cat', v: r.label } : { k: 'tag', v: r.key.slice(2) });
+      }
+    }
+    const skipAdd = rules.length ? tagAddPreview.value.filter((c) => tagAddOff(ta, c) && !tagAddSkipped(c)).map((c) => c.title) : [];
+    return { had, rules, skipAdd, changed: rulesSig(rules) !== rulesSig(had ? had.rules : []) || skipAdd.length > 0 };
+  });
+  function openTagAdd(col) {
+    const t = col.t || targets.value.find((x) => x.id === col.id) || null;
+    const auto = autoOf(t);
+    S.tagAdd = { id: col.id, on: new Set(), off: new Set(), keep: new Set(), extra: [], field: '', fieldError: '', limit: TAGADD_PAGE, tags: false, busy: false, error: '',
+      auto: true, rules: auto ? auto.rules.slice() : [] };
+    if (auto) {
+      // Collection qui a déjà un ajout automatique : ses règles, et elles seules, sont cochées (à changer ici).
+      for (const r of auto.rules) S.tagAdd.on.add(ruleKey(r));
+      S.tagAdd.tags = auto.rules.some((r) => r.k === 'tag');
+    } else {
+      // Cochés d'emblée : les tags et les catégories du jeu du même nom que la collection (les plus sûrs) ; les autres, à
+      // cocher soi-même.
+      const info = tagAddInfo.value;
+      if (info) for (const r of [...info.game.rows, ...info.cats.rows]) if (r.why === 'same') S.tagAdd.on.add(r.key);
+    }
     S.modal = 'tagadd';
   }
   function toggleTagAddKey(ta, key, on) {
@@ -3035,11 +3125,12 @@
     ta.limit = TAGADD_PAGE;
     ta.error = '';
   }
-  function toggleTagAddCard(ta, id, on) { if (on) ta.off.delete(id); else ta.off.add(id); }
-  // Tout cocher (ou tout décocher) dans l'aperçu.
+  function toggleTagAddCard(ta, id, on) {
+    if (on) { ta.off.delete(id); ta.keep.add(id); } else { ta.off.add(id); ta.keep.delete(id); }
+  }
+  // Tout cocher (exclues comprises) ou tout décocher dans l'aperçu.
   function toggleTagAddAll(ta, on) {
-    if (on) ta.off.clear();
-    else for (const c of tagAddPreview.value) ta.off.add(c.id);
+    if (on) { ta.off.clear(); for (const c of tagAddPreview.value) ta.keep.add(c.id); } else for (const c of tagAddPreview.value) ta.off.add(c.id);
   }
   // Tes tags du classeur, dépliés ou repliés (repliés : plus cochés).
   function toggleTagAddTags(ta) {
@@ -3075,6 +3166,7 @@
     if (ta.busy) return;
     const t = targets.value.find((x) => x.id === ta.id);
     if (!t) { ta.error = "Cette collection n'existe plus."; return; }
+    const st = tagAddAuto.value || { had: null, rules: [], skipAdd: [], changed: false };
     // Rapprochés de nouveau au moment d'enregistrer (la collection a pu changer depuis l'ouverture) : aucun doublon.
     const titles = new Set(t.items.map((it) => titleKey(it.title)));
     const qids = new Set(t.items.map((it) => it.qid).filter(Boolean));
@@ -3085,17 +3177,24 @@
       if (titles.has(k) || (q && qids.has(q))) continue;
       titles.add(k);
       if (q) qids.add(q);
-      // Carte possédée : sa catégorie du jeu ; pas d'image (la carte a la sienne, une case vide la retrouve sur Wikipédia).
-      const item = { title: c.title, description: c.category || null, image: null, status: 'ok' };
-      if (q) item.qid = q;
-      fresh.push(item);
+      fresh.push(itemOfCard(c, q));
     }
-    if (!fresh.length) { ta.error = 'Ces cartes sont déjà toutes dans la collection.'; return; }
-    const items = [...t.items, ...fresh];
+    const { had, rules } = st;
+    if (rules.length > AUTO_MAX_RULES) { ta.error = `${fmt(AUTO_MAX_RULES)} règles au plus pour l'ajout automatique : décoche des tags ou des catégories, ou « Refaire à chaque synchro ».`; return; }
+    if (!fresh.length && !st.changed) { ta.error = 'Ces cartes sont déjà toutes dans la collection.'; return; }
+    const items = fresh.length ? [...t.items, ...fresh] : t.items;
     if (items.length > TARGET_MAX_ITEMS) { ta.error = `${fmt(TARGET_MAX_ITEMS)} éléments au plus par collection : elle en aurait ${fmt(items.length)}. Décoche-en ${fmt(items.length - TARGET_MAX_ITEMS)}.`; return; }
-    if (utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) { ta.error = 'Collection trop volumineuse avec ces cartes : 600 Ko au plus. Décoche-en une partie.'; return; }
+    if (fresh.length && utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) { ta.error = 'Collection trop volumineuse avec ces cartes : 600 Ko au plus. Décoche-en une partie.'; return; }
     const body = { id: t.id, name: t.name, items };
     if (t.source) body.source = t.source;
+    if (rules.length) {
+      // « Refaire à chaque synchro » : les règles cochées sont gardées ; les cartes décochées dans l'aperçu sont exclues
+      // (jamais ajoutées automatiquement), celles recochées malgré une exclusion ne le sont plus.
+      body.auto = { rules };
+      const skipped = new Set(had ? had.skip.map(titleKey) : []);
+      const del = fresh.filter((it) => skipped.has(titleKey(it.title))).map((it) => it.title);
+      if (st.skipAdd.length || del.length) body.auto_skip = { ...(st.skipAdd.length ? { add: st.skipAdd } : {}), ...(del.length ? { del } : {}) };
+    } else if (had) body.auto = null; // case décochée : l'ajout automatique s'arrête
     const gen = cardsGen;
     ta.busy = true;
     ta.error = '';
@@ -3104,11 +3203,248 @@
       if (gen !== cardsGen) return; // classeur changé entre-temps
       if (r.target) upsertTarget(r.target); else await loadTargets();
       if (S.tagAdd === ta) closeModal();
-      notify(`${cards$(fresh.length)} ${plural(fresh.length, 'ajoutée', 'ajoutées')} à « ${t.name} ».`);
+      const n = fresh.length;
+      const added = n ? `${cards$(n)} ${plural(n, 'ajoutée', 'ajoutées')} à « ${t.name} ».` : '';
+      const auto = rules.length
+        ? (n ? 'Les prochaines cartes de ces tags y seront ajoutées à chaque synchro.' : `Ajout automatique ${had ? 'mis à jour' : 'enregistré'} pour « ${t.name} » : les prochaines cartes de ces tags y seront ajoutées à chaque synchro.`)
+        : had ? `Ajout automatique arrêté pour « ${t.name} » : les cartes déjà ajoutées restent.` : '';
+      notify([added, auto].filter(Boolean).join(' '));
     } catch (e) {
       if (S.tagAdd === ta) ta.error = e.message;
     } finally {
       ta.busy = false;
+    }
+  }
+
+  // ---------------------------------------------------------------- ajout automatique (« Refaire à chaque synchro »)
+  // Demande de l'utilisateur (2026-10-18) : « Quand il y a déjà eu un "Ajouter par tags du jeu", automatiser pour le faire
+  // à chaque synchro. » La fenêtre retient ce qui y a été coché (tags du jeu, catégories du jeu, tags du classeur) comme
+  // règles de la collection : t.auto = {rules:[{k:'gtag'|'cat'|'tag', v}], skip:[titres exclus]} (colonne `auto` de
+  // targets, jamais montrée aux amis). À chaque arrivée de cartes dans la page (ouverture du classeur, synchro du favori,
+  // relecture ?since : afterCards), runAutoAdd ajoute à chaque collection qui a des règles tes cartes qui y répondent, ni
+  // déjà dedans (titre puis qid, comme la fenêtre), ni exclues (décochées dans l'aperçu, retirées ensuite de la
+  // collection : skip), à la fin, avec les mêmes champs que la fenêtre ; une requête par collection, une seule
+  // notification pour toutes. Fait ici, pas par le serveur à la fin d'un import : seule la page rapproche titres et qids
+  // (résolus sur Wikipédia) et replie tags et catégories comme la fenêtre, et import.js / refresh.js restent tels quels.
+  // Deux onglets (ou deux appareils) ouverts : chaque envoi porte expect_updated_at (le updated_at de la collection sur
+  // laquelle il a été calculé) ; si un autre est passé avant, le serveur répond 409 avec la collection d'aujourd'hui, et la
+  // page recalcule dessus (rien à ajouter, en général) : jamais de doublon ni d'écrasement. Sans collection à règles :
+  // rien à faire, aucune requête (les lectures incrémentales restent les mêmes).
+  const AUTO_MAX_RULES = 20; // targets.js : MAX_RULES
+  const autoOf = (t) => (t && t.auto && t.auto.rules.length ? t.auto : null);
+  // Clé d'une règle : celle de sa proposition dans la fenêtre (« g:<tag du jeu replié> », « c:<catégorie repliée> »,
+  // « t:<tag> » ou « t:<Catégorie de tags>/ »).
+  const ruleKey = (r) => (r.k === 'gtag' ? 'g:' + catKey(r.v) : r.k === 'cat' ? 'c:' + catKey(r.v) : 't:' + r.v);
+  // Test d'une carte contre des règles (l'une suffit), comme les propositions de la fenêtre.
+  function ruleTest(rules) {
+    const g = new Set();
+    const c = new Set();
+    const tags = new Set();
+    const tcats = new Set();
+    for (const r of rules) {
+      if (r.k === 'gtag') g.add(catKey(r.v));
+      else if (r.k === 'cat') c.add(catKey(r.v));
+      else if (r.v.endsWith('/')) tcats.add(r.v.slice(0, -1));
+      else tags.add(r.v);
+    }
+    return (card) => (g.size > 0 && card.gtags.some((t) => g.has(catKey(t))))
+      || (c.size > 0 && !!card.category && c.has(catKey(card.category)))
+      || ((tags.size > 0 || tcats.size > 0) && card.tags.some((t) => tags.has(t) || tcats.has(tagCat(t))));
+  }
+  // « tag du jeu « Maladie », catégorie du jeu « maladie » ».
+  function autoRulesText(rules) {
+    const part = (k, one, many) => {
+      const names = rules.filter((r) => r.k === k).map((r) => `« ${k === 'tag' ? tokenLabel(r.v) : r.v} »`);
+      return names.length ? `${plural(names.length, one, many)} ${andList(names)}` : null;
+    };
+    return [part('gtag', 'tag du jeu', 'tags du jeu'), part('cat', 'catégorie du jeu', 'catégories du jeu'), part('tag', 'tag du classeur', 'tags du classeur')]
+      .filter(Boolean).join(', ');
+  }
+  // Élément ajouté pour une de tes cartes (fenêtre et ajout automatique) : sa catégorie du jeu ; pas d'image (la carte a la
+  // sienne, une case vide la retrouve sur Wikipédia) ; son qid s'il est connu.
+  function itemOfCard(c, q) {
+    const item = { title: c.title, description: c.category || null, image: null, status: 'ok' };
+    if (q) item.qid = q;
+    return item;
+  }
+  // Ce que l'ajout automatique mettrait dans t : cands = tes cartes qui répondent aux règles, ni dans la collection (titre,
+  // puis qid de l'élément ou de son titre) ni exclues, une par titre, de A à Z ; fresh = leurs éléments, sans doublon de
+  // qid, tant que la collection tient dans les limites de targets.js ; left = celles qui n'y tiennent pas.
+  function autoPlan(t) {
+    const auto = autoOf(t);
+    if (!auto) return { cands: [], fresh: [], left: 0 };
+    const test = ruleTest(auto.rules);
+    const skip = new Set(auto.skip.map(titleKey));
+    const titles = new Set();
+    const qids = new Set();
+    const inIds = new Set();
+    for (const it of t.items) {
+      titles.add(titleKey(it.title));
+      if (it.qid) qids.add(it.qid);
+      const c = findCard(it);
+      if (c) inIds.add(c.id);
+    }
+    const found = new Map();
+    for (const c of cards.value) {
+      if (inIds.has(c.id)) continue;
+      const k = titleKey(c.title);
+      if (!k || titles.has(k) || skip.has(k) || found.has(k) || !test(c)) continue;
+      found.set(k, c);
+    }
+    const cands = [...found.values()].sort((a, b) => COLLATOR.compare(a.title, b.title));
+    const fresh = [];
+    let left = 0;
+    let room = TARGET_MAX_ITEMS - t.items.length;
+    let bytes = cands.length ? utf8Length(JSON.stringify(t.items)) : 0;
+    for (const c of cands) {
+      const q = resolver ? resolver.known(c.title) || null : null;
+      if (q && qids.has(q)) continue;
+      const item = itemOfCard(c, q);
+      const size = utf8Length(JSON.stringify(item)) + 1;
+      if (room <= 0 || bytes + size > TARGET_MAX_BYTES) { left++; continue; }
+      if (q) qids.add(q);
+      fresh.push(item);
+      room--;
+      bytes += size;
+    }
+    return { cands, fresh, left };
+  }
+  // Un seul passage à la fois (par classeur) ; une arrivée de cartes pendant un passage en relance un à la fin.
+  let autoJob = null; // {gen, again, p}
+  const autoSaid = new Map(); // collection -> dernier avertissement donné (limites, erreur) : pas répété à chaque synchro
+  function runAutoAdd() {
+    if (autoJob && autoJob.gen === cardsGen) { autoJob.again = true; return autoJob.p; }
+    const job = { gen: cardsGen, again: false, p: null };
+    autoJob = job;
+    job.p = (async () => {
+      try {
+        do { job.again = false; await autoAddOnce(job.gen); } while (job.again && job.gen === cardsGen);
+      } catch (e) { /* la prochaine arrivée de cartes réessaie */ } finally {
+        if (autoJob === job) autoJob = null;
+      }
+    })();
+    return job.p;
+  }
+  function dropTarget(id) {
+    targets.value = targets.value.filter((x) => x.id !== id);
+    if (S.album && S.album.kind === 'target' && S.album.id === id) S.album = null;
+  }
+  async function autoAddOnce(gen) {
+    const stale = () => gen !== cardsGen;
+    const todo = targets.value.filter((t) => autoOf(t) && autoPlan(t).cands.length);
+    if (!todo.length) return;
+    // Qids des cartes à ajouter et des éléments sans qid que rien ne rapproche encore : une carte que tu as sous un autre
+    // titre que l'élément (renommage, redirection) ne doit pas entrer une seconde fois. En cache la plupart du temps.
+    if (resolver) {
+      const titles = new Set();
+      for (const t of todo) {
+        for (const c of autoPlan(t).cands) if (resolver.known(c.title) === undefined) titles.add(c.title);
+        for (const it of t.items) if (!it.qid && resolver.known(it.title) === undefined && !findCard(it)) titles.add(it.title);
+      }
+      if (titles.size) {
+        try { await resolver.resolve([...titles]); } catch (e) { /* Wikipédia indisponible : rapprochement par titre */ }
+        if (stale()) return;
+        qidVersion.value++;
+      }
+    }
+    const added = [];
+    const warns = [];
+    const warn = (t, sig, text) => { if (autoSaid.get(t.id) !== sig) { autoSaid.set(t.id, sig); warns.push(text); } };
+    for (const t0 of todo) {
+      let t = targets.value.find((x) => x.id === t0.id);
+      for (let attempt = 0; t && autoOf(t) && attempt < 3; attempt++) {
+        const plan = autoPlan(t);
+        const full = () => warn(t, `full:${t.items.length + plan.fresh.length}:${plan.left}`, `« ${t.name} » est pleine : ${cards$(plan.left)} de ses règles d'ajout automatique ${plural(plan.left, "n'a", "n'ont")} pas pu y entrer (${fmt(TARGET_MAX_ITEMS)} éléments et 600 Ko au plus par collection).`);
+        if (!plan.fresh.length) { if (plan.left) full(); break; }
+        const body = { id: t.id, name: t.name, items: [...t.items, ...plan.fresh] };
+        if (t.source) body.source = t.source;
+        if (t.updated_at) body.expect_updated_at = t.updated_at;
+        try {
+          const r = await api('POST', '/api/targets/save', body);
+          if (stale()) return;
+          if (r.target) upsertTarget(r.target); else await loadTargets();
+          added.push({ name: t.name, n: plan.fresh.length });
+          if (plan.left) full(); else autoSaid.delete(t.id);
+          break;
+        } catch (e) {
+          if (stale()) return;
+          if (e.status === 409 && e.data && e.data.conflict) {
+            // Un autre onglet ou un autre appareil est passé avant : on repart de la collection d'aujourd'hui.
+            if (e.data.target) upsertTarget(e.data.target); else dropTarget(t.id);
+            t = targets.value.find((x) => x.id === t0.id);
+            continue;
+          }
+          warn(t, 'err:' + e.message, `Ajout automatique à « ${t.name} » impossible : ${String(e.message || '').replace(/[.\s]+$/, '')}.`);
+          break;
+        }
+      }
+    }
+    const parts = [];
+    if (added.length) {
+      const n = added.reduce((k, a) => k + a.n, 0);
+      parts.push(added.length === 1 ? `${cards$(n)} ${plural(n, 'ajoutée', 'ajoutées')} automatiquement à « ${added[0].name} ».`
+        : `${cards$(n)} ${plural(n, 'ajoutée', 'ajoutées')} automatiquement : ${andList(added.map((a) => `${fmt(a.n)} à « ${a.name} »`))}.`);
+    }
+    parts.push(...warns);
+    if (!parts.length) return;
+    // Un message encore affiché (« Mis à jour depuis wiki-masters.com… ») est gardé devant.
+    const cur = S.notice;
+    const text = parts.join(' ');
+    notify(cur && !cur.error && !cur.action ? `${cur.text} ${text}` : text, !added.length);
+  }
+  // Enregistre la collection `id` telle qu'elle est (éléments compris) avec `extra` (auto…), sans écraser un
+  // enregistrement passé entre-temps (expect_updated_at ; 409 : on repart de la collection d'aujourd'hui). Rend la
+  // collection enregistrée (null : classeur changé entre-temps).
+  async function saveTargetFresh(id, extra) {
+    const gen = cardsGen;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const t = targets.value.find((x) => x.id === id);
+      if (!t) throw new Error("Cette collection n'existe plus.");
+      const body = { id: t.id, name: t.name, items: t.items, ...extra };
+      if (t.source) body.source = t.source;
+      if (t.updated_at) body.expect_updated_at = t.updated_at;
+      try {
+        const r = await api('POST', '/api/targets/save', body);
+        if (gen !== cardsGen) return null;
+        if (r.target) upsertTarget(r.target); else await loadTargets();
+        return targets.value.find((x) => x.id === id) || null;
+      } catch (e) {
+        if (gen !== cardsGen) return null;
+        if (!(e.status === 409 && e.data && e.data.conflict)) throw e;
+        if (e.data.target) upsertTarget(e.data.target); else dropTarget(id);
+      }
+    }
+    throw new Error('Cette collection vient de changer plusieurs fois (dans un autre onglet ?) : réessaie.');
+  }
+  // « Arrêter » (album) : règles et exclusions effacées, cartes déjà ajoutées gardées ; « Annuler » les remet.
+  async function stopAuto(t) {
+    const prev = autoOf(t);
+    if (S.autoBusy || !prev) return;
+    const gen = cardsGen;
+    S.autoBusy = t.id;
+    try {
+      const nt = await saveTargetFresh(t.id, { auto: null });
+      if (!nt || gen !== cardsGen) return;
+      notify(`Ajout automatique arrêté pour « ${nt.name} » : les cartes déjà ajoutées restent.`, false, { label: 'Annuler', run: () => restoreAuto(t.id, prev) });
+    } catch (e) {
+      if (gen === cardsGen) notify(e.message, true);
+    } finally {
+      if (gen === cardsGen) S.autoBusy = null;
+    }
+  }
+  async function restoreAuto(id, prev) {
+    if (S.autoBusy) return;
+    const gen = cardsGen;
+    S.autoBusy = id;
+    try {
+      const nt = await saveTargetFresh(id, { auto: { rules: prev.rules, skip: prev.skip } });
+      if (!nt || gen !== cardsGen) return;
+      notify(`Ajout automatique de « ${nt.name} » remis.`);
+      runAutoAdd();
+    } catch (e) {
+      if (gen === cardsGen) notify(e.message, true);
+    } finally {
+      if (gen === cardsGen) S.autoBusy = null;
     }
   }
 
@@ -5685,8 +6021,9 @@
     const w = worthOf(col);
     const wt = w ? worthText(w) : '';
     const done = isComplete(p);
+    const auto = col.kind === 'target' ? autoOf(col.t) : null; // ajout automatique : petite marque
     return h('button', { class: ['row', { zero: !p.own, complete: done }], type: 'button', key: col.key, onClick: () => openAlbum(col.kind, col.id),
-      'aria-label': `${col.name} : ${fmt(p.own)} sur ${fmt(p.total)}${done ? ', collection complète' : ''}${wt ? '. ' + wt : ''}` }, [
+      'aria-label': `${col.name} : ${fmt(p.own)} sur ${fmt(p.total)}${done ? ', collection complète' : ''}${wt ? '. ' + wt : ''}${auto ? '. Ajout automatique' : ''}` }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, p.sample.length ? p.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
         h('span', { class: 'name' }, col.name),
@@ -5694,6 +6031,7 @@
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.own)), ` sur ${fmt(p.total)}`]), done ? doneMark() : h('span', null, pct(p.own, p.total))]),
         rowWorth(w, wt),
         sourceKind(col),
+        auto ? h('span', { class: 'row-kind row-auto', title: 'Ajout automatique : ' + autoRulesText(auto.rules) }, [icon('refresh', 'sm'), 'ajout automatique']) : null,
       ]),
     ]);
   }
@@ -6129,6 +6467,7 @@
         // Actions de la collection sur leur propre ligne, au-dessus des filtres et des tris (2026-10-18 : avec
         // « Réorganiser » et « Fusionner avec… », elles ne tenaient plus sur la même ligne).
         h('div', { class: 'toolbar album-actions' }, actions),
+        cv ? null : viewAutoLine(col),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', S.albumFilter === 'all', () => { S.albumFilter = 'all'; }),
@@ -6149,6 +6488,24 @@
       ]),
       shown < total ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { S.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, total - shown))} suivantes (${fmt(total - shown)} restantes)`)]) : null,
+    ]);
+  }
+  // Album d'une collection qui a un ajout automatique : « Ajout automatique : tag du jeu « Maladie », … », « Changer les
+  // règles » (la fenêtre, règles cochées) et « Arrêter » (règles effacées, cartes déjà ajoutées gardées).
+  function viewAutoLine(col) {
+    const auto = col.kind === 'target' ? autoOf(col.t) : null;
+    if (!auto) return null;
+    const n = auto.skip.length;
+    const busy = S.autoBusy === col.t.id;
+    return h('div', { class: 'auto-line' }, [
+      icon('refresh', 'sm'),
+      h('span', { class: 'auto-line__text' }, [h('b', null, 'Ajout automatique : '), autoRulesText(auto.rules),
+        n ? h('span', { class: 'auto-line__skip' }, ` · ${cards$(n)} ${plural(n, 'exclue', 'exclues')}`) : null]),
+      h('span', { class: 'auto-line__actions' }, [
+        h('button', { class: 'linkish', type: 'button', disabled: busy, onClick: () => openTagAdd(col) }, 'Changer les règles'),
+        h('button', { class: 'linkish', type: 'button', disabled: busy, 'aria-label': `Arrêter l'ajout automatique de « ${col.name} »`, onClick: () => stopAuto(col.t) },
+          busy ? 'Un instant…' : 'Arrêter'),
+      ]),
     ]);
   }
   // « Réorganiser » dans l'album d'une de tes collections (2 éléments au moins) : le mode réorganisation si elle a un ordre,
@@ -8395,13 +8752,14 @@
       : r.why === 'wide' ? "plus large que le nom de la collection : vérifie l'aperçu" : r.why === 'manual' ? 'choisie par toi'
         : `portée par ${fmt(r.n)} des ${fmt(info.known)} éléments de la collection`) + already(r);
     const whyTag = (r) => (r.why === 'same' ? 'même nom que la collection' : r.why === 'near' ? 'nom proche de celui de la collection'
-      : r.why === 'cat' ? `catégorie de tags ${r.score > 2 ? 'de même nom' : 'au nom proche'} : tous ses tags`
+      : r.why === 'cat' ? `catégorie de tags ${r.score > 2 ? 'de même nom' : 'au nom proche'} : tous ses tags` : r.why === 'manual' ? 'choisi par toi'
         : `porté par ${fmt(r.n)} de tes ${fmt(info.tags.own)} cartes de la collection`) + (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dedans` : '');
-    const row = (r) => h('li', { key: r.key }, [
+    // Règle de l'ajout automatique de la collection : signalée (montrée même sans carte à ajouter).
+    const row = (r) => h('li', { key: r.key, class: { 'tagadd-rule': r.rule } }, [
       h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: ta.on.has(r.key), disabled: ta.busy, onClick: (e) => toggleTagAddKey(ta, r.key, e.target.checked) }),
         r.kind === 'gtag' ? h('span', { class: 'gtag-name', style: gtagStyle(r.color) }, r.label) : h('span', null, r.kind === 'cat' ? `« ${r.label} »` : r.label)]),
-      h('span', { class: 'n' }, `${fmt(r.cards.length)} à ajouter`),
-      h('span', { class: 'why' }, r.kind === 'gtag' ? whyGtag(r) : r.kind === 'cat' ? whyCat(r) : whyTag(r)),
+      h('span', { class: 'n' }, r.cards.length ? `${fmt(r.cards.length)} à ajouter` : 'rien à ajouter'),
+      h('span', { class: 'why' }, (r.kind === 'gtag' ? whyGtag(r) : r.kind === 'cat' ? whyCat(r) : whyTag(r)) + (r.rule ? " · règle de l'ajout automatique" : '')),
     ]);
     // Une liste (tags du jeu ou catégories du jeu) : ses propositions, ou pourquoi il n'y en a pas ; celles qui ne tiennent
     // pas ; celles dont tout est déjà dedans.
@@ -8425,6 +8783,14 @@
     const many = tagAddRows.value.filter((r) => ta.on.has(r.key)).length > 1;
     const shown = preview.slice(0, ta.limit);
     const choices = [...gameTagList.value.map((g) => ['g:' + g.key, g.label]), ...gameCatList.value.map((g) => ['c:' + g.key, g.label])].slice(0, 2000);
+    // Ajout automatique : règles cochées, exclusions, ce que le bouton fera.
+    const st = tagAddAuto.value;
+    const nSkip = st && st.had ? st.had.skip.length : 0;
+    const tooManyRules = !!st && st.rules.length > AUTO_MAX_RULES;
+    const autoNote = ta.auto
+      ? `Les tags et catégories cochés sont gardés : à chaque synchro du favori (ou à l'ouverture du classeur), tes nouvelles cartes qui les portent s'ajoutent à la fin. Une carte décochée dans l'aperçu, ou retirée ensuite de la collection, n'est jamais rajoutée${nSkip ? ` (${cards$(nSkip)} ${plural(nSkip, 'exclue', 'exclues')} pour l'instant)` : ''}.`
+      : st && st.had ? "Décochée : l'ajout automatique de cette collection s'arrête (les cartes déjà ajoutées restent)." : null;
+    const go = ta.busy ? 'Enregistrement…' : n ? `Ajouter ${cards$(n)}` : st && st.changed ? (st.rules.length ? 'Enregistrer les règles' : "Arrêter l'ajout automatique") : 'Ajouter';
     return h(Modal, { key: 'tagadd', wide: true, title: TAGADD_TITLE, onClose: closeModal }, () => [
       h('p', null, `Dans « ${t.name} » : coche des tags du jeu (ceux que tu poses sur tes cartes dans wiki-masters.com) ou des catégories du jeu (le texte affiché sous le titre de chaque carte), et tes cartes qui les portent sans être encore dans la collection s'y ajoutent, à la fin. Proposés : ceux dont le nom ressemble à celui de la collection, puis ceux que portent beaucoup de ses éléments.`),
       src ? h('p', { class: 'note' }, `Cette collection est faite ${src} : les cartes ajoutées viennent en plus de ses articles et elle garde sa source, comme avec « Modifier ».`) : null,
@@ -8453,18 +8819,29 @@
           h('button', { class: 'linkish', type: 'button', disabled: ta.busy, onClick: () => toggleTagAddAll(ta, n < preview.length) }, n < preview.length ? 'Tout cocher' : 'Tout décocher'),
         ]),
         h('ul', { class: 'tagadd-preview', 'aria-label': 'Cartes à ajouter' }, shown.map((c) => h('li', { key: c.id }, [
-          h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: !ta.off.has(c.id), disabled: ta.busy, onClick: (e) => toggleTagAddCard(ta, c.id, e.target.checked) }),
-            pill(c.rarity), h('span', null, [c.title, many && c.category ? h('small', { class: 'tagadd-cat' }, c.category) : null])]),
+          h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: !tagAddOff(ta, c), disabled: ta.busy, onClick: (e) => toggleTagAddCard(ta, c.id, e.target.checked) }),
+            pill(c.rarity), h('span', null, [c.title, many && c.category ? h('small', { class: 'tagadd-cat' }, c.category) : null,
+              tagAddSkipped(c) ? h('small', { class: 'tagadd-skip' }, "exclue de l'ajout automatique") : null])]),
         ]))),
         shown.length < preview.length ? h('button', { class: 'linkish', type: 'button', onClick: () => { ta.limit += TAGADD_PAGE; } },
           `Afficher les ${fmt(Math.min(TAGADD_PAGE, preview.length - shown.length))} suivantes (${fmt(preview.length - shown.length)} restantes)`) : null,
-      ] : ta.on.size && (info.game.rows.length || info.cats.rows.length) ? [h('p', { class: 'note' }, 'Coche un tag ou une catégorie qui a des cartes à ajouter.')] : []),
+      ] : ta.on.size && (info.game.rows.length || info.cats.rows.length) ? [h('p', { class: 'note' }, st && st.had && st.rules.length
+        ? "Rien à ajouter pour l'instant : tes cartes de ces tags et catégories sont déjà toutes dans la collection."
+        : 'Coche un tag ou une catégorie qui a des cartes à ajouter.')] : []),
+      // « Refaire à chaque synchro » (cochée d'emblée) : les propositions cochées deviennent les règles de la collection.
+      h('div', { class: 'tagadd-auto' }, [
+        h('label', { class: 'check' }, [
+          h('input', { id: 'tagadd-auto', type: 'checkbox', checked: ta.auto, disabled: ta.busy, onClick: (e) => { ta.auto = e.target.checked; ta.error = ''; } }),
+          h('span', null, 'Refaire à chaque synchro : les prochaines cartes de ces tags iront dans cette collection'),
+        ]),
+        autoNote ? h('p', { class: 'note' }, autoNote) : null,
+      ]),
+      tooManyRules ? h('p', { class: 'warn', role: 'alert' }, `${fmt(st.rules.length)} tags et catégories cochés : l'ajout automatique en garde ${fmt(AUTO_MAX_RULES)} au plus. Décoche-en ${fmt(st.rules.length - AUTO_MAX_RULES)}, ou décoche « Refaire à chaque synchro ».`) : null,
       tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection aurait ${fmt(after)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus. Décoche-en ${fmt(after - TARGET_MAX_ITEMS)}.`) : null,
       errLine(ta.error),
       foot([
         closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: ta.busy || !n || tooMany, onClick: () => saveTagAdd(ta) },
-          ta.busy ? 'Enregistrement…' : n ? `Ajouter ${cards$(n)}` : 'Ajouter'),
+        h('button', { class: 'btn primary', type: 'button', disabled: ta.busy || (!n && !(st && st.changed)) || tooMany || tooManyRules, onClick: () => saveTagAdd(ta) }, go),
       ]),
     ]);
   }

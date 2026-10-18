@@ -643,6 +643,22 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .tagadd-preview .tagadd-cat { display: block; font-size: 11px; color: var(--faint); }
 .modal .tagadd-tags { justify-self: start; }
 .tagadd-sec { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-top: 4px; }
+/* Ajout automatique (« Refaire à chaque synchro ») : case de la fenêtre, règles signalées, cartes exclues dans l'aperçu,
+   ligne de l'album (« Changer les règles », « Arrêter »), marque sur la ligne de « Mes collections ». */
+.tagadd-auto { display: grid; gap: 4px; padding: 8px 10px; border-radius: 9px; background: var(--surface-2); }
+.tagadd-auto .check { min-width: 0; align-items: flex-start; font-weight: 600; color: var(--fg); overflow-wrap: anywhere; }
+.tagadd-auto .check input { margin-top: 3px; flex: none; }
+.modal .tagadd-auto .note { margin: 0; padding-left: 22px; }
+.modal .tagadd li.tagadd-rule { box-shadow: inset 3px 0 0 var(--link); }
+.tagadd-preview .tagadd-skip { display: block; font-size: 11px; color: var(--warn); }
+.auto-line { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 6px 10px; border-radius: 9px; background: var(--surface-2); font-size: 13px; color: var(--muted); }
+.auto-line > .ic { color: var(--link); }
+.auto-line__text { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+.auto-line__text b { color: var(--fg); font-weight: 600; }
+.auto-line__skip { color: var(--faint); }
+.auto-line__actions { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.row-auto { display: inline-flex; align-items: center; gap: 4px; }
+.row-auto .ic { color: var(--link); }
 
 /* ------------------------------------------------------------------ nouvelle collection par mots-clés */
 .seg button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }

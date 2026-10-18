@@ -117,6 +117,34 @@ function mockApi() {
     }
     return json(200, { messages: live.slice(-100).map((m) => chatOut(st, m)), rev: chat.rev, last_id: chat.id, older: live.length > 100 });
   }
+  // Ajout automatique d'une collection, comme targets.js (nextAuto) : undefined = inchangé, null = aucune règle ; une
+  // erreur = 400. Titres exclus comparés par leur première lettre, « _ » et apostrophes typographiques.
+  function mockAuto(body, stored) {
+    const hasAuto = body.auto !== undefined;
+    const delta = body.auto_skip;
+    if (!hasAuto && (delta === undefined || delta === null)) return undefined;
+    const key = (x) => { const t = String(x).replace(/_/g, ' ').replace(/[\u2018\u2019]/g, "'").trim(); return t.charAt(0).toUpperCase() + t.slice(1); };
+    let cur = stored ? { rules: stored.rules, skip: stored.skip.slice() } : null;
+    if (hasAuto) {
+      if (body.auto === null) cur = null;
+      else {
+        if (!body.auto || !Array.isArray(body.auto.rules) || body.auto.rules.length > 20) throw new Error('Ajout automatique : 20 règles au plus.');
+        const seen = new Set();
+        const rules = body.auto.rules.filter((r) => { const k = r.k + ':' + (r.k === 'tag' ? r.v : r.v.toLowerCase()); if (seen.has(k)) return false; seen.add(k); return true; })
+          .map((r) => ({ k: r.k, v: r.v }));
+        cur = rules.length ? { rules, skip: Array.isArray(body.auto.skip) ? body.auto.skip.slice() : cur ? cur.skip : [] } : null;
+      }
+    }
+    if (!cur) return hasAuto ? null : undefined;
+    if (delta) {
+      const gone = new Set((delta.del || []).map(key));
+      const seen = new Set();
+      const skip = [];
+      for (const x of [...cur.skip, ...(delta.add || [])]) { const k = key(x); if (gone.has(k) || seen.has(k)) continue; seen.add(k); skip.push(x); }
+      cur.skip = skip.slice(-2000);
+    }
+    return cur;
+  }
   function importCards(st, list, stats) {
     const before = new Map(st.cards.map((c) => [c.id, JSON.stringify(c)]));
     const first = st.fetched_at === null;
@@ -130,6 +158,7 @@ function mockApi() {
   const self = {
     noRev: false,
     calls,
+    conflicts: [], // enregistrements conditionnels refusés (409) : ids des collections
     get st() { return users[0]; },
     users,
     makeUser,
@@ -293,8 +322,17 @@ function mockApi() {
       if (p === '/api/targets/save') {
         if (!Array.isArray(body.items) || !body.items.every((i) => typeof i.title === 'string' && ['ok', 'missing', 'disambiguation'].includes(i.status))) return json(400, { error: 'items invalides' });
         let t = body.id ? st.targets.find((x) => x.id === body.id) : null;
-        if (!t) { t = { id: 't' + (st.targets.length + 1), created_at: 'x' }; st.targets.push(t); }
-        Object.assign(t, { name: body.name, items: body.items, source: body.source || null, updated_at: 'y' });
+        // Enregistrement conditionnel (expect_updated_at) : un autre est passé avant -> 409 avec la collection d'aujourd'hui
+        // (null si elle a été supprimée), rien d'écrit.
+        if (body.expect_updated_at !== undefined && body.expect_updated_at !== null && (!t || t.updated_at !== body.expect_updated_at)) {
+          self.conflicts.push(body.id);
+          return json(409, { error: "Cette collection a changé entre-temps (dans un autre onglet ou sur un autre appareil) : rien n'a été enregistré.", conflict: true, target: t || null });
+        }
+        let auto;
+        try { auto = mockAuto(body, t ? t.auto || null : null); } catch (e) { return json(400, { error: e.message }); }
+        if (!t) { t = { id: 't' + (st.targets.length + 1), created_at: 'x', auto: null }; st.targets.push(t); }
+        Object.assign(t, { name: body.name, items: body.items, source: body.source || null, updated_at: 'y' + ++seq });
+        if (auto !== undefined) t.auto = auto;
         st.targetsRev = (st.targetsRev || 0) + 1; // dernier changement, vu par les autres membres (GET /api/members)
         return json(200, { target: t });
       }
@@ -3545,6 +3583,11 @@ async function main() {
     check(tagRows().length === 3 && text(tagRows()[0]).includes('Sciences et nature › Maladie') && tagRows().every((li) => !box(li).checked), 'tags du classeur dépliés : ' + tagRows().map(text).join(' | '));
     btnIn(modal(), 'Masquer tes tags du classeur').click();
     await settle();
+    // « Refaire à chaque synchro » : cochée d'emblée ; décochée ici (ce parcours reste un ajout ponctuel, sans règle :
+    // l'ajout automatique a son propre parcours, 31 bis).
+    check(d.getElementById('tagadd-auto') && d.getElementById('tagadd-auto').checked, '« Refaire à chaque synchro » absente ou décochée d\'emblée');
+    d.getElementById('tagadd-auto').click();
+    await settle();
     btnIn(modal(), 'Ajouter 3 cartes').click();
     check(await waitFor(() => !modal()), "la fenêtre doit se fermer après l'ajout");
     let mal = (await rawApi('GET', '/api/targets', keyA)).body.targets.find((x) => x.name === 'Maladies');
@@ -3700,6 +3743,255 @@ async function main() {
     check(await waitFor(() => lastMsg() && lastMsg().classList.contains('mine') && chips().map(text).join('|') === 'Lèpre|URPeste'), 'message envoyé avec deux cartes citées : ' + chips().map(text).join('|'));
     d.getElementById('tab-collections').click();
     await settle();
+  }
+
+  // 31 bis. Ajout automatique (« Refaire à chaque synchro », demande du 2026-10-18 : « Quand il y a déjà eu un "Ajouter par
+  // tags du jeu", automatiser pour le faire à chaque synchro ») : règles retenues par la fenêtre (case cochée d'emblée), carte
+  // décochée exclue ; ligne de l'album et marque dans « Mes collections » ; nouvelles cartes d'un tag ou d'une catégorie des
+  // règles ajoutées à la synchro suivante (une requête conditionnelle, une notification), carte exclue jamais rajoutée ;
+  // « Retirer » exclut, « Annuler » remet et lève l'exclusion ; éditeur ; fenêtre rouverte : règles cochées, cartes exclues
+  // décochées, règles changées ; deux onglets : un seul ajout ; trois collections : une notification ; collection pleine :
+  // ce qui tient, et le message le dit ; « Arrêter » (cartes gardées) et son « Annuler ».
+  {
+    const keyU = await makeOtherAccount('Ugo');
+    const mkU = (id, title, category, gtags = []) => ({ id, title, rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category, image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', gtags });
+    let deck = [mkU('u1', 'Grippe', 'maladie infectieuse', ['Maladie']), mkU('u2', 'Rougeole', 'infection virale', ['Maladie']), mkU('u3', 'Peste', 'maladie'),
+      mkU('u4', 'Rihanna', 'chanteuse barbadienne', ['Musique'])];
+    await sendImport(keyU, deck);
+    const more = async (...list) => { deck = [...deck, ...list]; await sendImport(keyU, deck); };
+    const itU = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
+    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Maladies', items: [itU('Grippe')] })).status === 200, "collection « Maladies » d'Ugo refusée");
+    const colU = async (name) => ((await rawApi('GET', '/api/targets', keyU)).body.targets || []).find((x) => x.name === name);
+    const titlesOf = (t) => (t ? t.items.map((i) => i.title).join('|') : '(aucune)');
+    const autoOfU = (t) => JSON.stringify(t && t.auto);
+    const until = async (f, ms = 3000) => { for (let t = 0; t < ms; t += 25) { if (await f()) return true; await sleep(25); } return !!(await f()); };
+    const saves = (mark) => apiLog.slice(mark).filter((x) => x === 'POST /api/targets/save');
+    ls.set('classeur-key', keyU);
+    ls.set('classeur-known', JSON.stringify([{ key: keyU, name: 'Ugo' }]));
+    // Une page (onglet) du classeur d'Ugo et ses outils.
+    const pageU = async () => {
+      const pg = openPage({ idb: 'absent' });
+      const d = pg.doc;
+      check(await waitFor(() => pg.count() === deck.length), "classeur d'Ugo non ouvert");
+      d.getElementById('tab-collections').click();
+      await settle();
+      const btnIn = (root, t) => (root ? root.querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
+      const modal = () => d.querySelectorAll('.modal')[0] || null;
+      const row = (name) => d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')) || null;
+      return {
+        pg, d, btnIn, modal, row,
+        toast: () => text(d.querySelectorAll('.toast')[0] || null),
+        autoLine: () => d.querySelectorAll('.auto-line')[0] || null,
+        lis: (label) => { const u = modal() ? modal().querySelectorAll('.tagadd').find((x) => x.getAttribute('aria-label') === label) : null; return u ? u.querySelectorAll('li') : []; },
+        prev: () => { const u = modal() ? modal().querySelectorAll('.tagadd-preview')[0] : null; return u ? u.querySelectorAll('li') : []; },
+        open: async (name) => {
+          const back = btnIn(d.body, '← Toutes les collections');
+          if (back) { back.click(); await settle(); }
+          check(row(name), `collection « ${name} » absente`);
+          row(name).click();
+          await settle(80);
+        },
+        // Fiche d'une de tes cartes de l'album (une carte possédée y est une carte, pas une case vide).
+        slot: async (title) => {
+          const c = d.querySelectorAll('.card').find((n) => text(n.querySelector('.card__title')) === title);
+          check(c, `carte « ${title} » absente de l'album`);
+          c.dispatch('click');
+          await settle(80);
+        },
+      };
+    };
+    const u = await pageU();
+    check(!(u.row('Maladies').getAttribute('aria-label') || '').includes('Ajout automatique') && !u.d.querySelectorAll('.row-auto').length, 'marque « ajout automatique » sans règle');
+    await u.open('Maladies');
+    check(!u.autoLine(), 'ligne « Ajout automatique » sans règle');
+    u.btnIn(u.d.body, 'Ajouter par tags du jeu').click();
+    await settle();
+    const autoBox = () => u.d.getElementById('tagadd-auto');
+    check(autoBox() && autoBox().checked && text(u.modal()).includes('Refaire à chaque synchro : les prochaines cartes de ces tags iront dans cette collection'),
+      'case « Refaire à chaque synchro » absente ou décochée : ' + (u.modal() ? text(u.modal()).slice(0, 400) : ''));
+    // Tag du jeu « Maladie » et catégorie « maladie » (même nom, cochés) : Peste et Rougeole ; Rougeole décochée -> exclue.
+    check(u.prev().length === 2 && text(u.prev()[0]).includes('Peste') && text(u.prev()[1]).includes('Rougeole'), 'aperçu : ' + u.prev().map(text).join('|'));
+    u.prev()[1].querySelector('input').click();
+    await settle();
+    let from = apiLog.length;
+    u.btnIn(u.modal(), 'Ajouter 1 carte').click();
+    check(await waitFor(() => !u.modal()), "la fenêtre doit se fermer après l'ajout");
+    let mal = await colU('Maladies');
+    check(titlesOf(mal) === 'Grippe|Peste' && autoOfU(mal) === JSON.stringify({ rules: [{ k: 'gtag', v: 'Maladie' }, { k: 'cat', v: 'maladie' }], skip: ['Rougeole'] }),
+      'règles ou exclusion mal enregistrées : ' + JSON.stringify(mal));
+    check(saves(from).length === 1, 'un seul enregistrement attendu : ' + saves(from).length);
+    check(await waitFor(() => u.toast().includes('1 carte ajoutée à « Maladies ».') && u.toast().includes('à chaque synchro')), 'message de la fenêtre : ' + u.toast());
+    check(u.autoLine() && text(u.autoLine()).includes('Ajout automatique : tag du jeu « Maladie », catégorie du jeu « maladie »') && text(u.autoLine()).includes('1 carte exclue')
+      && u.btnIn(u.autoLine(), 'Arrêter') && u.btnIn(u.autoLine(), 'Changer les règles'), 'ligne « Ajout automatique » : ' + text(u.autoLine()));
+    u.btnIn(u.d.body, '← Toutes les collections').click();
+    await settle();
+    check((u.row('Maladies').getAttribute('aria-label') || '').endsWith('. Ajout automatique') && text(u.row('Maladies')).includes('ajout automatique'),
+      'marque de « Mes collections » absente : ' + u.row('Maladies').getAttribute('aria-label'));
+
+    // Synchro suivante : Choléra (catégorie « Maladie », autre casse) et Typhus (tag du jeu « maladie ») ajoutées à la fin, de
+    // A à Z, avec les champs de la fenêtre ; Rougeole (exclue) et Tétanos (hors des règles) non ; une requête,
+    // conditionnelle ; une notification, après celle de la synchro.
+    await more(mkU('u5', 'Typhus', 'fièvre', ['maladie']), mkU('u6', 'Choléra', 'Maladie'), mkU('u7', 'Tétanos', 'infection'));
+    from = apiLog.length;
+    await u.pg.live();
+    check(await waitFor(() => u.toast().includes('2 cartes ajoutées automatiquement à « Maladies ».')), "notification de l'ajout automatique : " + u.toast());
+    check(u.toast().startsWith('Mis à jour depuis wiki-masters.com'), 'le message de la synchro doit rester devant : ' + u.toast());
+    mal = await colU('Maladies');
+    check(titlesOf(mal) === 'Grippe|Peste|Choléra|Typhus', 'ajout automatique : ' + titlesOf(mal));
+    check(JSON.stringify(mal.items[2]) === JSON.stringify({ title: 'Choléra', description: 'Maladie', image: null, status: 'ok' }), 'élément ajouté : ' + JSON.stringify(mal.items[2]));
+    check(saves(from).length === 1, 'une seule requête par collection : ' + saves(from).length);
+    if (!SERVER) {
+      const last = api.calls.filter((c) => c[1] === '/api/targets/save').pop()[2];
+      check(typeof last.expect_updated_at === 'string' && !('auto' in last) && !('auto_skip' in last), 'ajout automatique : envoi conditionnel attendu, sans toucher aux règles : ' + JSON.stringify(Object.keys(last)));
+    }
+    // Rien de nouveau : rien d'envoyé.
+    from = apiLog.length;
+    await u.pg.live();
+    await settle(150);
+    check(!saves(from).length, 'relecture sans nouvelle carte : aucun enregistrement attendu');
+
+    // « Retirer » (fiche de Choléra ouverte depuis l'album) : exclue ; « Annuler » la remet et lève l'exclusion.
+    await u.open('Maladies');
+    await u.slot('Choléra');
+    const rm = () => u.d.querySelectorAll('button').find((b) => b.classList.contains('item-remove'));
+    check(rm() && text(rm()).includes('Retirer de « Maladies »'), 'bouton « Retirer » absent');
+    rm().click();
+    check(await until(async () => { const t = await colU('Maladies'); return titlesOf(t) === 'Grippe|Peste|Typhus' && t.auto.skip.join('|') === 'Rougeole|Choléra'; }),
+      'retrait : exclusion attendue : ' + autoOfU(await colU('Maladies')));
+    check(await waitFor(() => u.toast().includes("« Choléra » retirée de « Maladies » : elle n'y sera plus ajoutée automatiquement.")), 'message du retrait : ' + u.toast());
+    u.d.querySelectorAll('.toast')[0].querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+    check(await until(async () => { const t = await colU('Maladies'); return titlesOf(t) === 'Grippe|Peste|Choléra|Typhus' && t.auto.skip.join('|') === 'Rougeole'; }),
+      '« Annuler » : carte remise et exclusion levée attendues : ' + JSON.stringify(await colU('Maladies')));
+    await settle(80);
+    // Retirée de nouveau ; la synchro suivante (Lèpre, tag « Maladie ») ne la rajoute pas.
+    await u.slot('Choléra');
+    rm().click();
+    check(await until(async () => (await colU('Maladies')).auto.skip.join('|') === 'Rougeole|Choléra'), 'second retrait : exclusion attendue');
+    await settle(80);
+    await more(mkU('u8', 'Lèpre', 'maladie infectieuse chronique', ['Maladie']));
+    await u.pg.live();
+    check(await waitFor(() => u.toast().includes('1 carte ajoutée automatiquement à « Maladies ».')), 'Lèpre non ajoutée : ' + u.toast());
+    mal = await colU('Maladies');
+    check(titlesOf(mal) === 'Grippe|Peste|Typhus|Lèpre', 'carte exclue rajoutée, ou Lèpre absente : ' + titlesOf(mal));
+
+    // « Modifier » (éditeur) : Typhus retirée à la main -> exclue.
+    await settle(80);
+    u.btnIn(u.d.body, 'Modifier').click();
+    await settle();
+    type(u.d.getElementById('ed-text'), 'Grippe\nPeste\nLèpre');
+    u.btnIn(u.modal(), 'Enregistrer').click();
+    check(await waitFor(() => !u.modal()), 'éditeur : enregistrement sans effet');
+    mal = await colU('Maladies');
+    check(titlesOf(mal) === 'Grippe|Peste|Lèpre' && mal.auto.skip.join('|') === 'Rougeole|Choléra|Typhus' && mal.auto.rules.length === 2, 'éditeur : exclusion attendue : ' + JSON.stringify(mal));
+
+    // Fenêtre rouverte (« Changer les règles ») : les règles cochées, même sans carte à ajouter ; les cartes exclues décochées
+    // d'emblée ; la catégorie décochée -> « Enregistrer les règles ».
+    check(await waitFor(() => !!u.autoLine()), 'ligne « Ajout automatique » absente après l\'éditeur');
+    u.btnIn(u.autoLine(), 'Changer les règles').click();
+    await settle();
+    const gRows = u.lis('Tags du jeu proposés');
+    const cRows = u.lis('Catégories du jeu proposées');
+    check(gRows[0] && text(gRows[0]).startsWith('Maladie') && gRows[0].querySelector('input').checked && text(gRows[0]).includes("règle de l'ajout automatique"),
+      'règle du tag du jeu non cochée : ' + gRows.map(text).join(' | '));
+    const catRow = () => u.lis('Catégories du jeu proposées').find((li) => text(li).includes('« maladie »'));
+    check(catRow() && catRow().querySelector('input').checked && text(catRow()).includes("règle de l'ajout automatique"), 'règle de la catégorie non cochée : ' + cRows.map(text).join(' | '));
+    check(u.prev().length === 3 && u.prev().every((li) => !li.querySelector('input').checked && text(li).includes("exclue de l'ajout automatique")),
+      "cartes exclues : décochées d'emblée attendues : " + u.prev().map(text).join('|'));
+    check(autoBox().checked && text(u.modal()).includes('(3 cartes exclues pour l\'instant)') && u.btnIn(u.modal(), 'Ajouter') && u.btnIn(u.modal(), 'Ajouter').disabled,
+      'rien à changer : bouton grisé attendu : ' + text(u.modal()).slice(-500));
+    catRow().querySelector('input').click();
+    await settle();
+    from = apiLog.length;
+    u.btnIn(u.modal(), 'Enregistrer les règles').click();
+    check(await waitFor(() => !u.modal()), 'règles : fenêtre restée ouverte');
+    mal = await colU('Maladies');
+    check(autoOfU(mal) === JSON.stringify({ rules: [{ k: 'gtag', v: 'Maladie' }], skip: ['Rougeole', 'Choléra', 'Typhus'] }) && titlesOf(mal) === 'Grippe|Peste|Lèpre',
+      'règles changées : ' + JSON.stringify(mal));
+    check(saves(from).length === 1 && (await waitFor(() => u.toast().includes('Ajout automatique mis à jour pour « Maladies »'))), 'règles : message ' + u.toast());
+    check(text(u.autoLine()).includes('Ajout automatique : tag du jeu « Maladie »') && !text(u.autoLine()).includes('catégorie'), "ligne de l'album après le changement : " + text(u.autoLine()));
+
+    // Deux onglets ouverts : la même nouvelle carte, un seul ajout (l'autre reçoit 409 et repart de la collection
+    // d'aujourd'hui : plus rien à ajouter), une seule notification d'ajout.
+    const v = await pageU();
+    await settle(150);
+    await more(mkU('u9', 'Variole', 'maladie infectieuse', ['Maladie']));
+    from = apiLog.length;
+    const conflicts0 = SERVER ? 0 : api.conflicts.length;
+    await Promise.all([u.pg.live(), v.pg.live()]);
+    check(await until(async () => titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole'), 'deux onglets : ' + titlesOf(await colU('Maladies')));
+    await settle(300);
+    const said = [u, v].filter((x) => x.toast().includes('ajoutée automatiquement'));
+    check(said.length === 1 && said[0].toast().includes('1 carte ajoutée automatiquement à « Maladies ».'), 'deux onglets : une seule notification attendue : ' + u.toast() + ' / ' + v.toast());
+    const n2 = saves(from).length;
+    check(n2 === 1 || (n2 === 2 && (SERVER || api.conflicts.length === conflicts0 + 1)), 'deux onglets : un ajout, l\'autre refusé (409) : ' + n2);
+    console.log(`ajout automatique, deux onglets : ${n2} ${n2 > 1 ? 'envois (le second refusé, 409, puis rien à ajouter)' : 'envoi'}`);
+    check(titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole', 'deux onglets : doublon');
+    // Collection changée ailleurs (un autre appareil) depuis la dernière lecture de la page : l'envoi est refusé (409), la
+    // page repart de la collection d'aujourd'hui (rien d'écrasé) et ajoute quand même la nouvelle carte.
+    {
+      const cur = await colU('Maladies');
+      check((await rawApi('POST', '/api/targets/save', keyU, { id: cur.id, name: cur.name, items: [...cur.items, itU('Ajoutée ailleurs')] })).status === 200, 'changement ailleurs refusé');
+      await more(mkU('u11', 'Coqueluche', 'maladie infectieuse', ['Maladie']));
+      from = apiLog.length;
+      const c0 = SERVER ? 0 : api.conflicts.length;
+      await u.pg.live();
+      check(await until(async () => titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche'),
+        'changement ailleurs écrasé, ou carte non ajoutée : ' + titlesOf(await colU('Maladies')));
+      check(saves(from).length === 2 && (SERVER || api.conflicts.length === c0 + 1), 'changement ailleurs : un envoi refusé (409) puis un autre attendus : ' + saves(from).length);
+      check(await waitFor(() => u.toast().includes('1 carte ajoutée automatiquement à « Maladies ».')), 'changement ailleurs : notification ' + u.toast());
+    }
+
+    // Trois collections à règles (deux créées ici par l'API, avec leurs règles) : une notification pour toutes ; « Grande »
+    // (2 999 éléments) ne prend que la première de ses deux cartes (de A à Z), la notification le dit, rien ne casse.
+    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Virus', items: [itU('Grippe')], auto: { rules: [{ k: 'gtag', v: 'Virus' }] } })).status === 200, 'collection « Virus » refusée');
+    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Grande', items: Array.from({ length: 2999 }, (_, i) => itU('Élément ' + i, { qid: 'Q' + (7000000 + i) })),
+      auto: { rules: [{ k: 'cat', v: 'géant' }] } })).status === 200, 'collection « Grande » refusée');
+    const w = await pageU();
+    await settle(150);
+    await more(mkU('v1', 'Herpès', 'infection virale', ['Virus']), mkU('v2', 'Zona', 'infection virale', ['Virus', 'Maladie']), mkU('g1', 'Séquoia', 'Géant'), mkU('g2', 'Baleine bleue', 'géant'));
+    from = apiLog.length;
+    await w.pg.live();
+    check(await waitFor(() => w.toast().includes('4 cartes ajoutées automatiquement : 1 à « Maladies », 2 à « Virus » et 1 à « Grande ».')
+      && w.toast().includes("« Grande » est pleine : 1 carte de ses règles d'ajout automatique n'a pas pu y entrer (3 000 éléments et 600 Ko au plus par collection)."), 5000),
+    'trois collections : notification ' + w.toast());
+    check(saves(from).length === 3, 'une requête par collection : ' + saves(from).length);
+    check(titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche|Zona' && titlesOf(await colU('Virus')) === 'Grippe|Herpès|Zona',
+      'trois collections : ' + titlesOf(await colU('Maladies')) + ' / ' + titlesOf(await colU('Virus')));
+    const big = await colU('Grande');
+    check(big.items.length === 3000 && big.items[2999].title === 'Baleine bleue', 'collection pleine : ' + big.items.length + ' / ' + big.items[big.items.length - 1].title);
+    // Une autre carte, hors des règles : « Grande » est toujours pleine, l'avertissement n'est pas répété ; aucune requête.
+    await more(mkU('x1', 'Caillou', 'pierre'));
+    from = apiLog.length;
+    await w.pg.live();
+    await settle(300);
+    check(w.toast().includes('Mis à jour depuis wiki-masters.com') && !w.toast().includes('est pleine') && !saves(from).length, 'avertissement répété sans changement : ' + w.toast());
+
+    // « Arrêter » (album de « Maladies ») : règles et exclusions effacées, cartes gardées ; « Annuler » les remet ; arrêté de
+    // nouveau, une nouvelle carte du tag n'est plus ajoutée.
+    await w.open('Maladies');
+    from = apiLog.length;
+    w.btnIn(w.autoLine(), 'Arrêter').click();
+    check(await until(async () => (await colU('Maladies')).auto === null), '« Arrêter » : règles non effacées');
+    check(titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche|Zona' && saves(from).length === 1, '« Arrêter » : cartes non gardées');
+    check(await waitFor(() => !w.autoLine() && w.toast().includes('Ajout automatique arrêté pour « Maladies » : les cartes déjà ajoutées restent.')), '« Arrêter » : ' + w.toast());
+    w.d.querySelectorAll('.toast')[0].querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+    check(await until(async () => autoOfU(await colU('Maladies')) === JSON.stringify({ rules: [{ k: 'gtag', v: 'Maladie' }], skip: ['Rougeole', 'Choléra', 'Typhus'] })),
+      '« Annuler » de « Arrêter » : règles non remises : ' + autoOfU(await colU('Maladies')));
+    check(await waitFor(() => !!w.autoLine()), '« Annuler » de « Arrêter » : ligne absente');
+    await settle(80);
+    w.btnIn(w.autoLine(), 'Arrêter').click();
+    check(await until(async () => (await colU('Maladies')).auto === null), '« Arrêter » (2) : règles non effacées');
+    await settle(80);
+    await more(mkU('u10', 'Diphtérie', 'maladie infectieuse', ['Maladie']));
+    from = apiLog.length;
+    await w.pg.live();
+    await settle(300);
+    check(!saves(from).length && titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche|Zona', 'après « Arrêter » : carte ajoutée quand même');
+    w.btnIn(w.d.body, '← Toutes les collections').click();
+    await settle();
+    check(!(w.row('Maladies').getAttribute('aria-label') || '').includes('Ajout automatique') && (w.row('Virus').getAttribute('aria-label') || '').includes('Ajout automatique'),
+      'marques de « Mes collections » après « Arrêter »');
   }
 
   // Marché : valeur dans le bandeau, onglet « Marché » (graphique, bonnes affaires, cartes qui bougent, mes enchères et

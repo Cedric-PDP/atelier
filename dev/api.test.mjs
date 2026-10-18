@@ -879,6 +879,116 @@ await test('collections à compléter : 600 Ko par collection, 5 Mo par compte',
   await call('DELETE', 'me', { key: ivy.key });
 });
 
+await test('collections à compléter : ajout automatique (règles, exclusions, enregistrement conditionnel), jamais montré aux amis', async () => {
+  const ada = await signup('Ada');
+  const it = (title) => ({ title, status: 'ok' });
+  const save = (body) => call('POST', 'targets/save', { key: ada.key, body: { id: 'mal', name: 'Maladies', ...body } });
+  const stored = async () => (await call('GET', 'targets', { key: ada.key })).json.targets.find((t) => t.id === 'mal') || null;
+  // Sans règle : auto = null, dans la réponse et dans GET /api/targets.
+  let r = await save({ items: [it('Grippe')] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.target.auto, null);
+  assert.equal((await stored()).auto, null);
+  // Règles posées (textes nettoyés, doublons repliés : tags et catégories du jeu sans la casse), première exclusion.
+  r = await save({ items: [it('Grippe'), it('Peste')],
+    auto: { rules: [{ k: 'gtag', v: ' Maladie ' }, { k: 'cat', v: 'maladie' }, { k: 'gtag', v: 'MALADIE' }, { k: 'tag', v: 'Sciences/' }, { k: 'tag', v: 'sciences/' }] },
+    auto_skip: { add: ['Rougeole'] } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const rules = [{ k: 'gtag', v: 'Maladie' }, { k: 'cat', v: 'maladie' }, { k: 'tag', v: 'Sciences/' }, { k: 'tag', v: 'sciences/' }];
+  assert.deepEqual(r.json.target.auto, { rules, skip: ['Rougeole'] });
+  assert.deepEqual((await stored()).auto, { rules, skip: ['Rougeole'] });
+  // Un enregistrement sans `auto` (Modifier, Réorganiser, intercalaire, fusion…) garde règles et exclusions.
+  r = await save({ items: [it('Peste'), it('Grippe')] });
+  assert.deepEqual(r.json.target.auto, { rules, skip: ['Rougeole'] });
+  assert.deepEqual(r.json.target.items.map((x) => x.title), ['Peste', 'Grippe']);
+  // auto_skip : ajoutés à la fin sans doublon (titres comparés comme la page : première lettre, « _ », apostrophe
+  // typographique), puis retirés.
+  r = await save({ items: [it('Peste')], auto_skip: { add: ['Grippe', 'rougeole', 'Fièvre d’Ebola'] } });
+  assert.deepEqual(r.json.target.auto.skip, ['Rougeole', 'Grippe', 'Fièvre d’Ebola']);
+  r = await save({ items: [it('Peste'), it('Grippe')], auto_skip: { del: ['grippe', "Fièvre_d'Ebola"] } });
+  assert.deepEqual(r.json.target.auto.skip, ['Rougeole']);
+  // auto {rules} sans skip : règles remplacées, exclusions gardées ; avec skip : remplacées aussi.
+  r = await save({ items: [it('Peste')], auto: { rules: [{ k: 'cat', v: 'maladie' }] } });
+  assert.deepEqual(r.json.target.auto, { rules: [{ k: 'cat', v: 'maladie' }], skip: ['Rougeole'] });
+  r = await save({ items: [it('Peste')], auto: { rules: [{ k: 'cat', v: 'maladie' }], skip: ['Lèpre', 'lèpre'] } });
+  assert.deepEqual(r.json.target.auto, { rules: [{ k: 'cat', v: 'maladie' }], skip: ['Lèpre'] });
+  // 2 000 exclusions au plus : au-delà, les plus anciennes sont oubliées (une suppression ne doit jamais échouer pour ça).
+  r = await save({ items: [it('Peste')], auto_skip: { add: Array.from({ length: 2100 }, (_, i) => `Titre ${i}`) } });
+  assert.equal(r.status, 200, JSON.stringify(r.json).slice(0, 200));
+  assert.equal(r.json.target.auto.skip.length, 2000);
+  assert.deepEqual([r.json.target.auto.skip[0], r.json.target.auto.skip[1999]], ['Titre 100', 'Titre 2099']);
+  // 20 règles au plus (20 passent).
+  r = await save({ items: [it('Peste')], auto: { rules: Array.from({ length: 20 }, (_, i) => ({ k: 'gtag', v: `Tag ${i}` })), skip: [] } });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.target.auto.rules.length, 20);
+  // Validation : 400 lisible, rien d'écrit (ni les éléments, ni l'ajout automatique).
+  const keep = await stored();
+  for (const body of [
+    { auto: 'oui' }, { auto: [] }, { auto: { rules: 'x' } }, { auto: { rules: [{ k: 'autre', v: 'x' }] } }, { auto: { rules: [{ k: 'gtag', v: '' }] } },
+    { auto: { rules: [{ k: 'gtag', v: 42 }] } }, { auto: { rules: [{ k: 'cat', v: 'x'.repeat(501) }] } },
+    { auto: { rules: Array.from({ length: 21 }, (_, i) => ({ k: 'gtag', v: `T${i}` })) } },
+    { auto: { rules: [{ k: 'gtag', v: 'x' }], skip: Array.from({ length: 2001 }, (_, i) => `S${i}`) } }, { auto: { rules: [{ k: 'gtag', v: 'x' }], skip: [''] } },
+    { auto: { rules: [{ k: 'gtag', v: 'x' }], skip: 'Peste' } },
+    { auto_skip: [] }, { auto_skip: 'Peste' }, { auto_skip: { add: 'x' } }, { auto_skip: { del: ['y'.repeat(301)] } }, { auto_skip: { add: [null] } },
+    { expect_updated_at: 42 }, { expect_updated_at: '' }, { expect_updated_at: 'x'.repeat(41) },
+  ]) {
+    r = await save({ items: [it('Autre')], ...body });
+    assert.equal(r.status, 400, JSON.stringify(body).slice(0, 80));
+    assert.equal(typeof r.json.error, 'string');
+  }
+  r = await call('POST', 'targets/save', { key: ada.key, body: { name: 'Sans id', items: [], expect_updated_at: keep.updated_at } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /id/);
+  assert.deepEqual(await stored(), keep);
+  // auto: null efface règles et exclusions ; auto_skip sans règle : ignoré ; rules vide = effacé.
+  r = await save({ items: [it('Peste')], auto: null });
+  assert.equal(r.json.target.auto, null);
+  r = await save({ items: [it('Peste')], auto_skip: { add: ['Grippe'] } });
+  assert.equal(r.json.target.auto, null);
+  r = await save({ items: [it('Peste')], auto: { rules: [{ k: 'gtag', v: 'Maladie' }] } });
+  assert.deepEqual(r.json.target.auto, { rules: [{ k: 'gtag', v: 'Maladie' }], skip: [] });
+  r = await save({ items: [it('Peste')], auto: { rules: [] } });
+  assert.equal(r.json.target.auto, null);
+  r = await save({ items: [it('Grippe')], auto: { rules: [{ k: 'gtag', v: 'Maladie' }] }, auto_skip: { add: ['Rougeole'] } });
+
+  // Enregistrement conditionnel (expect_updated_at) : le bon updated_at -> écrit ; périmé (un autre onglet est passé) ->
+  // 409 avec la collection d'aujourd'hui, rien d'écrit ; supprimée -> 409, target null, jamais recréée.
+  const base = await stored();
+  await new Promise((res) => setTimeout(res, 5));
+  r = await save({ items: [...base.items, it('Choléra')], expect_updated_at: base.updated_at });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.notEqual(r.json.target.updated_at, base.updated_at);
+  assert.deepEqual(r.json.target.auto, base.auto, 'auto absent : gardé');
+  const now = r.json.target;
+  r = await save({ items: [...base.items, it('Typhus')], expect_updated_at: base.updated_at, auto: null });
+  assert.equal(r.status, 409);
+  assert.equal(r.json.conflict, true);
+  assert.match(r.json.error, /changé entre-temps/);
+  assert.deepEqual(r.json.target.items.map((x) => x.title), ['Grippe', 'Choléra']);
+  assert.deepEqual([r.json.target.updated_at, r.json.target.auto], [now.updated_at, base.auto]);
+  assert.deepEqual((await stored()).items.map((x) => x.title), ['Grippe', 'Choléra']);
+  assert.deepEqual((await stored()).auto, base.auto, 'refusé : auto non effacé');
+  await call('POST', 'targets/delete', { key: ada.key, body: { id: 'mal' } });
+  r = await save({ items: [it('Grippe')], expect_updated_at: now.updated_at });
+  assert.deepEqual([r.status, r.json.conflict, r.json.target], [409, true, null]);
+  assert.equal(await stored(), null, 'jamais recréée');
+
+  // Jamais montré aux autres membres (partage activé par défaut), ni dans GET /api/members.
+  r = await save({ items: [it('Grippe')], auto: { rules: [{ k: 'gtag', v: 'Règle-secrète' }] }, auto_skip: { add: ['Exclue-secrète'] } });
+  assert.equal(r.status, 200);
+  const bea = await signup('Béa');
+  const adaPub = rows('SELECT public_id FROM users WHERE id = ?', ada.user.id)[0].public_id;
+  r = await call('GET', `members/${adaPub}/targets`, { key: bea.key });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.targets.map((t) => t.name), ['Maladies']);
+  const seen = JSON.stringify(r.json) + JSON.stringify((await call('GET', 'members', { key: bea.key })).json);
+  for (const secret of ['Règle-secrète', 'Exclue-secrète', 'rules', 'skip', '"auto"']) assert.ok(!seen.includes(secret), secret);
+  // Compté dans les 5 Mo du compte, effacé avec le compte.
+  await call('DELETE', 'me', { key: ada.key });
+  await call('DELETE', 'me', { key: bea.key });
+  assert.equal(rows("SELECT COUNT(*) AS n FROM targets WHERE auto LIKE '%Règle-secrète%'")[0].n, 0);
+});
+
 await test("collection depuis une recherche du jeu (favori) : clé d'import sur cette route seulement, CORS, validation, rareté, quotas", async () => {
   const gus = await signup('Gus');
   const importKey = (await call('POST', 'import-key', { key: gus.key })).json.import_key;

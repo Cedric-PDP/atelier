@@ -12,14 +12,26 @@ const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
 const QID = /^Q[1-9][0-9]{0,11}$/;
 // Rareté d'une carte dans le jeu (élément d'une collection créée depuis une recherche du jeu).
 const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
+// Ajout automatique (« Refaire à chaque synchro » de la fenêtre « Ajouter par tags du jeu », 2026-10-18) : colonne
+// `auto` = {rules:[{k, v}], skip:[titres]} en JSON, NULL sans règle. k = 'gtag' (tag du jeu, v = son nom), 'cat'
+// (catégorie du jeu, v = son texte) ou 'tag' (tag du classeur, v = le tag, ou « Catégorie/ » pour toute une catégorie de
+// tags) ; skip = titres de cartes que l'ajout automatique ne remet jamais (décochées dans l'aperçu, retirées ensuite), les
+// plus anciens d'abord. C'est la page qui applique les règles (elle seule rapproche titres et qids) ; le serveur range.
+const AUTO_KINDS = new Set(['gtag', 'cat', 'tag']);
+const MAX_RULES = 20;
+const MAX_RULE_LENGTH = 500; // une catégorie du jeu fait 500 caractères au plus (favori)
+const MAX_SKIP = 2000; // titres exclus gardés (au-delà, par auto_skip.add : les plus anciens sont oubliés)
+const MAX_AUTO_BYTES = 200 * 1024; // auto en JSON (au-delà : les plus anciens titres exclus sont oubliés)
+const MAX_UPDATED_AT = 40;
 
-// Collection telle que stockée : `items` recopié en texte JSON, sans être relu.
+// Collection telle que stockée : `items` (et `auto`) recopiés en texte JSON, sans être relus.
 function toTarget(row, items = row.items) {
   return {
     id: row.id,
     name: row.name,
     items: raw(items),
     source: row.source,
+    auto: row.auto ? raw(row.auto) : null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -58,17 +70,120 @@ function cleanItem(item, i) {
   return out;
 }
 
+// Liste de titres (exclusions de l'ajout automatique) : textes nettoyés de 1 à 300 caractères, `max` au plus.
+function titleList(list, max, label) {
+  if (!Array.isArray(list)) throw new HttpError(400, `${label} : une liste de titres.`);
+  if (list.length > max) throw new HttpError(400, `${label} : ${max} titres au plus.`);
+  return list.map((value, i) => {
+    const title = typeof value === 'string' ? cleanText(value) : '';
+    if (!title || title.length > 300) throw new HttpError(400, `${label}, titre n° ${i + 1} : manquant ou trop long (300 caractères au plus).`);
+    return title;
+  });
+}
+
+// Clé de comparaison d'un titre exclu, comme normTitle de match.js en plus simple : « _ » en espace, apostrophes et
+// guillemets typographiques ramenés à l'ASCII, première lettre en majuscule (casse et accents gardés ailleurs).
+function skipKey(title) {
+  const t = title.replace(/_/g, ' ').replace(/[\u2018\u2019\u201b\u02bc\u2032]/g, "'").replace(/[\u201c-\u201f\u2033\u00ab\u00bb]/g, '"')
+    .replace(/[\u2010\u2011]/g, '-').replace(/\s+/g, ' ').trim();
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function cleanRules(rules) {
+  if (!Array.isArray(rules)) throw new HttpError(400, 'Ajout automatique : « auto.rules » doit être une liste.');
+  if (rules.length > MAX_RULES) throw new HttpError(400, `Ajout automatique : ${MAX_RULES} règles au plus.`);
+  const seen = new Set();
+  const out = [];
+  rules.forEach((rule, i) => {
+    if (!rule || typeof rule !== 'object' || !AUTO_KINDS.has(rule.k)) {
+      throw new HttpError(400, `Ajout automatique, règle n° ${i + 1} : genre inconnu (gtag, cat ou tag).`);
+    }
+    const v = typeof rule.v === 'string' ? cleanText(rule.v) : '';
+    if (!v || v.length > MAX_RULE_LENGTH) {
+      throw new HttpError(400, `Ajout automatique, règle n° ${i + 1} : nom manquant ou trop long (${MAX_RULE_LENGTH} caractères au plus).`);
+    }
+    // Tags et catégories du jeu se comparent sans la casse (la page les replie) ; un tag du classeur, tel quel.
+    const key = `${rule.k}\u0000${rule.k === 'tag' ? v : v.toLowerCase()}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    out.push({ k: rule.k, v });
+  });
+  return out;
+}
+
+function storedAuto(text) {
+  if (!text) return null;
+  try {
+    const a = JSON.parse(text);
+    return a && Array.isArray(a.rules) && a.rules.length ? { rules: a.rules, skip: Array.isArray(a.skip) ? a.skip : [] } : null;
+  } catch {
+    return null;
+  }
+}
+
+// Ajout automatique après la requête, d'après celui rangé (texte JSON ou null) : texte JSON, null (aucune règle), ou
+// undefined (inchangé : la colonne n'est pas réécrite). `auto` absent = inchangé, null = effacé (règles et exclusions),
+// {rules, skip?} = règles remplacées (liste vide = effacé) et exclusions gardées, sauf `skip` donné (remplacées).
+// `auto_skip` {add?, del?} : titres ajoutés aux exclusions ou retirés (comparés comme skipKey), appliqué ensuite,
+// seulement s'il reste des règles (ignoré sinon) ; au-delà de 2 000 exclusions ou de 200 Ko, les plus anciennes partent.
+function nextAuto(body, stored) {
+  const hasAuto = body.auto !== undefined;
+  const delta = body.auto_skip;
+  const hasDelta = delta !== undefined && delta !== null;
+  if (!hasAuto && !hasDelta) return undefined;
+  let add = [];
+  let del = [];
+  if (hasDelta) {
+    if (typeof delta !== 'object' || Array.isArray(delta)) throw new HttpError(400, 'Le champ « auto_skip » doit être un objet {add?, del?}.');
+    if (delta.add !== undefined) add = titleList(delta.add, MAX_ITEMS, 'Exclusions ajoutées (auto_skip.add)');
+    if (delta.del !== undefined) del = titleList(delta.del, MAX_ITEMS, 'Exclusions retirées (auto_skip.del)');
+  }
+  let cur = storedAuto(stored);
+  if (hasAuto) {
+    if (body.auto === null) cur = null;
+    else if (typeof body.auto !== 'object' || Array.isArray(body.auto)) {
+      throw new HttpError(400, 'Le champ « auto » vaut null ou {rules, skip?}.');
+    } else {
+      const rules = cleanRules(body.auto.rules);
+      const skip = body.auto.skip !== undefined ? titleList(body.auto.skip, MAX_SKIP, 'Titres exclus (auto.skip)') : cur ? cur.skip : [];
+      cur = rules.length ? { rules, skip } : null;
+    }
+  }
+  if (!cur) return hasAuto ? null : undefined;
+  if (!hasAuto && !add.length && !del.length) return undefined;
+  const gone = new Set(del.map(skipKey));
+  const skip = [];
+  const seen = new Set();
+  for (const title of [...cur.skip, ...add]) {
+    const k = skipKey(String(title));
+    if (gone.has(k) || seen.has(k)) continue;
+    seen.add(k);
+    skip.push(String(title));
+  }
+  let out = { rules: cur.rules, skip: skip.slice(-MAX_SKIP) };
+  let text = JSON.stringify(out);
+  while (out.skip.length && byteLength(text) > MAX_AUTO_BYTES) {
+    out = { rules: out.rules, skip: out.skip.slice(Math.ceil(out.skip.length / 10)) };
+    text = JSON.stringify(out);
+  }
+  return text;
+}
+
 // GET /api/targets
 export async function listTargets(env, user) {
   const { results } = await env.DB.prepare(
-    'SELECT id, name, items, source, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY created_at, id',
+    'SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY created_at, id',
   )
     .bind(user.id)
     .all();
   return { targets: raw(`[${results.map((r) => jsonText(toTarget(r))).join(',')}]`) };
 }
 
-// POST /api/targets/save {id?, name, items, source?} : crée, ou remplace celle qui a cet id.
+// POST /api/targets/save {id?, name, items, source?, auto?, auto_skip?, expect_updated_at?} : crée, ou remplace celle qui
+// a cet id (ajout automatique : voir nextAuto). expect_updated_at (avec un id) : seulement si la collection rangée a
+// encore ce updated_at, sinon 409 {conflict:true, target} (la collection d'aujourd'hui, ou null si elle a été supprimée)
+// et rien n'est écrit : l'ajout automatique de la page s'en sert pour ne jamais écraser ce qu'un autre onglet ou un autre
+// appareil vient d'enregistrer.
 export async function saveTarget(env, user, body) {
   const { row, itemsJson } = await storeTarget(env, user, body);
   return { target: raw(jsonText(toTarget(row, itemsJson))) };
@@ -126,6 +241,15 @@ async function storeTarget(env, user, body) {
     source = body.source.trim() || null;
   }
 
+  let expect = null;
+  if (body.expect_updated_at !== undefined && body.expect_updated_at !== null) {
+    if (typeof body.expect_updated_at !== 'string' || !body.expect_updated_at || body.expect_updated_at.length > MAX_UPDATED_AT) {
+      throw new HttpError(400, 'Le champ « expect_updated_at » doit être le updated_at lu de la collection.');
+    }
+    if (body.id === undefined || body.id === null || body.id === '') throw new HttpError(400, "« expect_updated_at » demande l'id de la collection.");
+    expect = body.expect_updated_at;
+  }
+
   let id = body.id;
   if (id === undefined || id === null || id === '') {
     // Une catégorie de Wikipédia (source « wp:… ») ou une page dont les liens font la collection (« links:<titre> ») n'a
@@ -139,30 +263,62 @@ async function storeTarget(env, user, body) {
     throw new HttpError(400, 'Identifiant de collection invalide.');
   }
 
-  // Les autres collections du compte (celle-ci, si elle existe, est remplacée).
-  const others = await db.prepare(
-    `SELECT COUNT(*) AS n, SUM(id = ?2) AS mine,
-            COALESCE(SUM(CASE WHEN id <> ?2 THEN length(CAST(items AS BLOB)) END), 0) AS bytes
-     FROM targets WHERE user_id = ?1`,
-  )
-    .bind(user.id, id)
-    .first();
+  // Les autres collections du compte (celle-ci, si elle existe, est remplacée), et celle-ci telle que rangée (son ajout
+  // automatique, son updated_at).
+  const [othersRes, curRes] = await db.batch([
+    db.prepare(
+      `SELECT COUNT(*) AS n, SUM(id = ?2) AS mine,
+              COALESCE(SUM(CASE WHEN id <> ?2 THEN length(CAST(items AS BLOB)) + COALESCE(length(CAST(auto AS BLOB)), 0) END), 0) AS bytes
+       FROM targets WHERE user_id = ?1`,
+    ).bind(user.id, id),
+    db.prepare('SELECT auto, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, id),
+  ]);
+  const others = othersRes.results[0];
+  const cur = curRes.results[0] || null;
+  if (expect !== null && (!cur || cur.updated_at !== expect)) throw await conflict(db, user, id);
+  const auto = nextAuto(body, cur ? cur.auto : null);
   if (!others.mine && others.n >= MAX_TARGETS) throw new HttpError(400, `${MAX_TARGETS} collections au plus.`);
-  if (others.bytes + size > MAX_TOTAL_BYTES) {
+  const autoBytes = auto === undefined ? (cur && cur.auto ? byteLength(cur.auto) : 0) : auto === null ? 0 : byteLength(auto);
+  if (others.bytes + size + autoBytes > MAX_TOTAL_BYTES) {
     throw new HttpError(400, 'Tes collections à compléter dépassent 5 Mo en tout : supprimes-en une avant.');
   }
 
   const now = nowIso();
-  const row = await db.prepare(
-    `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6)
-     ON CONFLICT (user_id, id) DO UPDATE SET
-       name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at
-     RETURNING id, name, source, created_at, updated_at`,
-  )
-    .bind(user.id, id, name, itemsJson, source, now)
-    .first();
+  const setAuto = auto === undefined ? 0 : 1;
+  const autoText = auto === undefined ? null : auto;
+  const row = expect !== null
+    // Remplacement conditionnel : rien n'est écrit si un autre enregistrement est passé entre-temps.
+    ? await db.prepare(
+      `UPDATE targets SET name = ?3, items = ?4, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END
+       WHERE user_id = ?1 AND id = ?2 AND updated_at = ?9
+       RETURNING id, name, source, auto, created_at, updated_at`,
+    )
+      .bind(user.id, id, name, itemsJson, source, now, setAuto, autoText, expect)
+      .first()
+    : await db.prepare(
+      `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at, auto)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?8)
+       ON CONFLICT (user_id, id) DO UPDATE SET
+         name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at,
+         auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END
+       RETURNING id, name, source, auto, created_at, updated_at`,
+    )
+      .bind(user.id, id, name, itemsJson, source, now, setAuto, autoText)
+      .first();
+  if (!row) throw await conflict(db, user, id);
   return { row, itemsJson, count: items.length };
+}
+
+// 409 d'un enregistrement conditionnel (expect_updated_at) : la collection telle qu'elle est maintenant (null si elle a
+// été supprimée), pour que la page reparte d'elle.
+async function conflict(db, user, id) {
+  const row = await db.prepare('SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
+    .bind(user.id, id)
+    .first();
+  return new HttpError(409, "Cette collection a changé entre-temps (dans un autre onglet ou sur un autre appareil) : rien n'a été enregistré.", {
+    conflict: true,
+    target: row ? raw(jsonText(toTarget(row))) : null,
+  });
 }
 
 // POST /api/targets/delete {id}

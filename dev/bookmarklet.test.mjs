@@ -651,6 +651,8 @@ await test('délai d\'attente : une requête du jeu qui ne répond plus n\'immob
   vm.runInContext(code, ctx);
   const settle = async () => { for (let i = 0; i < 200; i++) await new Promise((ok) => setImmediate(ok)); };
   await settle();
+  // Machine chargée : attendre que le délai de 30 s soit armé (au lieu d'un nombre fixe de tours).
+  for (let i = 0; i < 50 && !timers.some((t) => t.ms === 30000 && !t.cleared); i++) await settle();
   assert.equal(ctx.__classeurFavori, true, 'la synchro attend le jeu');
   const pending = timers.filter((t) => t.ms === 30000 && !t.cleared);
   assert.equal(pending.length, 1);
