@@ -798,6 +798,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .sell-min .field { width: 7.5rem; }
 .sell-hide { margin: 8px 0 0; }
 .toast__action { font-weight: 600; white-space: nowrap; }
+.pseudo-line { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.pseudo-line a { color: var(--link); }
 .sep-toggle .actions { margin-top: 8px; }
 .market .show-more { margin-top: 4px; }
 .market__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }

@@ -382,6 +382,27 @@ await test("clé du favori : la même sur tous les appareils (copie chiffrée), 
   assert.equal((await call('GET', 'import-key', { key: v.key, e: e2 })).status, 404);
 });
 
+await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et aux membres qui partagent', async () => {
+  const e = makeEnv();
+  const a = await signup('Aude', e);
+  const b = await signup('Basile', e);
+  const patchMe = (u, body) => call('PATCH', 'me', { key: u.key, e, body });
+  for (const bad of [42, 'a b', 'x/y', 'x?y', 'x#y', '<x>', 'y'.repeat(41)]) assert.equal((await patchMe(a, { pseudo: bad })).status, 400, JSON.stringify(bad));
+  let r = await patchMe(a, { pseudo: '  Aude_42 ' });
+  assert.deepEqual([r.status, r.json.user.pseudo], [200, 'Aude_42']);
+  assert.equal((await call('GET', 'me', { key: a.key, e })).json.user.pseudo, 'Aude_42');
+  // Les autres réglages ne l'effacent pas ; une chaîne vide le retire.
+  await patchMe(a, { name: 'Aude' });
+  assert.equal((await call('GET', 'me', { key: a.key, e })).json.user.pseudo, 'Aude_42');
+  // Basile (qui partage, comme Aude, par défaut) le voit dans la liste des membres ; Aude, une carte pour être listée.
+  await upload(a.key, synth(1, 700), { e });
+  r = await call('GET', 'members', { key: b.key, e });
+  assert.deepEqual(r.json.members.map((m) => [m.name, m.pseudo]), [['Aude', 'Aude_42']]);
+  r = await patchMe(a, { pseudo: '' });
+  assert.equal(r.json.user.pseudo, null);
+  assert.deepEqual((await call('GET', 'members', { key: b.key, e })).json.members.map((m) => m.pseudo), [null]);
+});
+
 await test('authentification et /api/me', async () => {
   let r = await call('GET', 'me');
   assert.equal(r.status, 401);
@@ -390,7 +411,8 @@ await test('authentification et /api/me', async () => {
   assert.equal(r.status, 401);
   r = await call('GET', 'me', { key: alice.key });
   assert.equal(r.status, 200);
-  assert.deepEqual(Object.keys(r.json.user).sort(), ['created_at', 'id', 'name']);
+  assert.deepEqual(Object.keys(r.json.user).sort(), ['created_at', 'id', 'name', 'pseudo']);
+  assert.equal(r.json.user.pseudo, null);
   assert.equal(r.json.card_count, 0);
   assert.equal(r.json.cards_rev, 0);
   assert.equal(r.json.fetched_at, null);
@@ -2742,7 +2764,7 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   const benPub = pubOf(ben);
   r = await members(ana);
   assert.equal(r.status, 200);
-  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', count: 12, fetched_at: (await me(ben)).fetched_at, targets: null }]);
+  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 12, fetched_at: (await me(ben)).fetched_at, targets: null }]);
   // Classeur vide (ni carte ni collection) : absent de la liste ; Ana y apparaît avec sa première collection.
   assert.deepEqual((await members(ben)).json.members, [], 'un classeur vide ne doit pas être listé');
   await call('POST', 'targets/save', { key: ana.key, body: { name: 'Première', items: [{ title: 'Article premier', status: 'ok' }] } });
@@ -2922,7 +2944,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.equal((await me(ben)).shared_targets, true);
   assert.equal(pubOf(ben), benPub, 'l\'identifiant public ne change pas');
   const lastChange = [planets.updated_at, cat.updated_at].sort().pop();
-  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', count: 6, fetched_at: (await me(ben)).fetched_at, targets: { count: 2, updated_at: lastChange } }]);
+  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 6, fetched_at: (await me(ben)).fetched_at, targets: { count: 2, updated_at: lastChange } }]);
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
 

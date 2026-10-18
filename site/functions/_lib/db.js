@@ -21,7 +21,8 @@ export const SCHEMA = [
     public_id TEXT,
     shared_targets INTEGER NOT NULL DEFAULT 0,
     last_sync TEXT,
-    import_key_enc TEXT
+    import_key_enc TEXT,
+    game_pseudo TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -136,6 +137,7 @@ const ADDED_COLUMNS = [
   ['users', 'shared_targets', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'last_sync', 'TEXT'],
   ['users', 'import_key_enc', 'TEXT'],
+  ['users', 'game_pseudo', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],

@@ -158,6 +158,10 @@ function mockApi() {
           if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 4096) return json(400, { error: 'Préférences invalides.' });
           st.prefs = body.prefs;
         }
+        if ('pseudo' in body) {
+          if (typeof body.pseudo !== 'string' || body.pseudo.trim().length > 40 || /[\s/?#<>]/.test(body.pseudo.trim())) return json(400, { error: 'Pseudo invalide.' });
+          st.pseudo = body.pseudo.trim() || null;
+        }
         if ('shared' in body) {
           // Partage entre membres : identifiant public tiré à chaque activation, effacé à la désactivation.
           if (typeof body.shared !== 'boolean') return json(400, { error: 'Le partage (shared) vaut true ou false.' });
@@ -178,7 +182,7 @@ function mockApi() {
         if (method !== 'GET') return json(405, { error: 'Méthode non autorisée.' });
         if (!st.shared) return json(403, { error: "Pour voir les cartes des autres membres, montre d'abord les tiennes : Réglages, « Partage entre membres »." });
         if (p === '/api/members') {
-          return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, count: u.cards.length, fetched_at: u.fetched_at,
+          return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, count: u.cards.length, fetched_at: u.fetched_at,
             targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null })) });
         }
         // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre, au qid et au
@@ -2380,6 +2384,7 @@ async function main() {
     await sendImport(leaKey, [fc('l-jup', 'Jupiter (planète)', 'UR', 1), fc('l-sat', 'Saturne (planète)', 'SR', 3), fc('l-nep', 'Neptune', 'SR', 1), fc('l-a7', 'Article 7', 'C', 1)]);
     await sendImport(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
     for (const k of [paulKey, leaKey]) check((await rawApi('PATCH', '/api/me', k, { shared: true })).status === 200, 'partage des amis refusé');
+    check((await rawApi('PATCH', '/api/me', paulKey, { pseudo: 'PaulDu13' })).status === 200, 'pseudo de Paul refusé');
     // Partage activé dès la création (2026-10-16, vrai serveur) : coupé ici pour Cédric et Zoé, comme au départ du scénario.
     for (const k of [myKey3, zoeKey]) check((await rawApi('PATCH', '/api/me', k, { shared: false })).status === 200, 'arrêt du partage refusé');
     // Sans partager soi-même : 403 (réciprocité), et l'onglet invite à partager sans rien lire des autres.
@@ -2415,6 +2420,14 @@ async function main() {
     // Membres : nombre de cartes et cartes qui me manquent.
     const paulRow = cls('member').find((n) => text(n).includes('Paul'));
     check(paulRow && text(paulRow).includes('5 cartes') && text(paulRow).includes('4 cartes que tu n\'as pas') && text(paulRow).includes('1 en double'), 'ligne de Paul : ' + text(paulRow));
+    // Pseudo dans le jeu : celui de Paul avec un lien vers son profil du jeu ; Léa n'en a pas donné.
+    {
+      const a = paulRow.querySelectorAll('a').find((n) => text(n).includes('profil dans le jeu'));
+      check(text(paulRow).includes('pseudo dans le jeu : PaulDu13') && a && a.getAttribute('href') === 'https://www.wiki-masters.com/profile/PaulDu13',
+        'pseudo de Paul : ' + text(paulRow));
+      const leaRow = cls('member').find((n) => text(n).includes('Léa'));
+      check(leaRow && !text(leaRow).includes('pseudo dans le jeu'), 'Léa : pas de pseudo attendu');
+    }
     // L'inverse : personne ne partage encore ses collections, donc rien à leur proposer (plus d'estimation par le catalogue).
     check(await waitFor(() => has('Aucun de tes amis ne partage ses collections : impossible de savoir ce qui leur manque.')) && !fcol('Paul') && !fcol('Léa')
       && !cls('badge').some((b) => text(b) === 'estimation'), 'tes cartes pour tes amis : rien sans leurs collections, ' + text(doc.body).slice(-400));

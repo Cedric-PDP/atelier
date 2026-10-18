@@ -37,7 +37,9 @@ CREATE TABLE IF NOT EXISTS users (
     shared_targets INTEGER NOT NULL DEFAULT 0,
     last_sync TEXT,
     -- clé d'import (celle du favori) chiffrée (AES-GCM de COOKIE_SECRET) : chaque appareil du titulaire retrouve la même
-    import_key_enc TEXT
+    import_key_enc TEXT,
+    -- pseudo dans le jeu, donné par le joueur (Réglages) : montré aux membres avec qui il partage, pour se trouver dans le jeu
+    game_pseudo TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son

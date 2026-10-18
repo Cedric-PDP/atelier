@@ -271,7 +271,7 @@
     merge: null,
     // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
     reorder: null,
-    settings: { name: '', busy: false, error: '', saved: false },
+    settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
     copied: '',
     bm: { src: null, error: '', clicked: false, importKey: null, busy: false, checking: false, stale: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
@@ -1901,7 +1901,8 @@
     if (S.tab === tab) return;
     S.tab = tab;
     S.catSearch.enter = false; // Entrée en attente dans la recherche des catégories : oubliée (on est passé ailleurs)
-    if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false });
+    if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false,
+      pseudo: (S.me && S.me.user && S.me.user.pseudo) || '', pBusy: false, pError: '', pSaved: false });
     if (tab === 'maj') prepareFavori();
     if (tab === 'amis') loadFriends(true);
     if (tab === 'marche') loadMarket(Date.now() - M.at > 20000); // les cotes ont pu être relues dans le jeu entre-temps
@@ -3082,6 +3083,33 @@
     } finally {
       st.busy = false;
     }
+  }
+  // Pseudo dans le jeu (PATCH /api/me {pseudo}) : montré aux membres avec qui tu partages, pour qu'ils te trouvent.
+  async function savePseudo() {
+    const st = S.settings;
+    st.pBusy = true;
+    st.pError = '';
+    st.pSaved = false;
+    try {
+      const r = await api('PATCH', '/api/me', { pseudo: st.pseudo.trim() });
+      if (S.me) S.me.user = r.user || { ...S.me.user, pseudo: st.pseudo.trim() || null };
+      st.pseudo = (S.me && S.me.user && S.me.user.pseudo) || '';
+      st.pSaved = true;
+    } catch (e) {
+      st.pError = e.message;
+    } finally {
+      st.pBusy = false;
+    }
+  }
+  // Profil d'un joueur dans le jeu (wiki-masters.com/profile/<pseudo>) : un lien, rien n'est lu ni écrit dans le jeu.
+  const gameProfileUrl = (pseudo) => 'https://www.wiki-masters.com/profile/' + encodeURIComponent(pseudo);
+  function viewPseudo(f, id) {
+    if (!f.pseudo) return null;
+    return h('span', { class: 'line pseudo-line' }, [
+      h('span', null, ['pseudo dans le jeu : ', h('b', null, f.pseudo)]),
+      h('button', { class: 'linkish', type: 'button', title: 'Copier le pseudo', onClick: () => copy(f.pseudo, id) }, S.copied === id ? 'copié' : 'copier'),
+      h('a', { href: gameProfileUrl(f.pseudo), target: '_blank', rel: 'noopener noreferrer' }, 'son profil dans le jeu ↗'),
+    ]);
   }
   function askForget() {
     openConfirm({
@@ -4890,7 +4918,7 @@
           const tg = m.targets && typeof m.targets === 'object' ? m.targets : null;
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
-          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
+          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
@@ -6408,6 +6436,17 @@
         st.saved ? h('p', { class: 'status ok', role: 'status' }, 'Enregistré.') : null,
         errLine(st.error),
       ]),
+      section('Ton pseudo dans WikiMasters', [
+        h('p', { class: 'small muted' }, "Visible par les membres avec qui tu partages tes cartes (« Entre amis »), avec un lien vers ton profil du jeu : pour qu'ils te trouvent et t'envoient des échanges."),
+        h('form', { class: 'line', onSubmit: (e) => { e.preventDefault(); savePseudo(); } }, [
+          h('label', { class: 'sr', for: 'set-pseudo' }, 'Ton pseudo dans WikiMasters'),
+          h('input', { id: 'set-pseudo', class: 'field', value: st.pseudo, maxlength: 40, autocomplete: 'nickname', spellcheck: 'false', placeholder: 'Ton pseudo dans le jeu',
+            onInput: (e) => { st.pseudo = e.target.value; st.pSaved = false; } }),
+          h('button', { class: 'btn', type: 'submit', disabled: st.pBusy }, st.pBusy ? 'Enregistrement…' : 'Enregistrer'),
+        ]),
+        st.pSaved ? h('p', { class: 'status ok', role: 'status' }, st.pseudo ? 'Enregistré.' : 'Pseudo retiré.') : null,
+        errLine(st.pError),
+      ]),
       section('Ton lien personnel', [
         h('p', null, "C'est la clé de ton classeur : il l'ouvre sur n'importe quel appareil, sans mot de passe. Garde-le pour toi (dans tes favoris ou un gestionnaire de mots de passe) et ne le partage pas."),
         copyRow('my-link', personalLink.value, 'Ton lien personnel'),
@@ -6491,6 +6530,7 @@
       h('span', { class: 'avatar', 'aria-hidden': 'true' }, initialOf(friendName(f))),
       h('span', { class: 'info' }, [
         h('span', { class: 'name' }, friendName(f)),
+        viewPseudo(f, 'pseudo-' + f.id),
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(f.count)), ' ' + plural(f.count, 'carte', 'cartes')]), h('span', null, syncedOn(f))]),
         fw && fw.priced ? h('span', { class: 'line', title: FRIEND_WORTH }, [h('span', null, ['valeur ', priceTag(fw.value)]), h('span', null, pricedOf(fw.priced, fw.cards))]) : null,
         st ? h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
@@ -6883,6 +6923,7 @@
         h('div', { class: 'album-title' }, [h('h2', null, `Le classeur de ${friendName(f)}`), h('span', { class: 'num' }, `${cards$(f.count)} · ${syncedOn(f)}`),
           fw && fw.priced ? h('span', { class: 'album-value' }, ['Valeur : ', priceTag(fw.value), `, ${pricedOf(fw.priced, fw.cards)}`]) : null,
           h('span', { class: 'badge' }, 'lecture seule')]),
+        f.pseudo ? h('p', { class: 'missing-sum' }, [viewPseudo(f, 'pseudo-b-' + f.id)]) : null,
         st ? h('div', { class: 'missing-sum' }, [h('span', null, [h('b', null, fmt(st.missing)), ` ${plural(st.missing, 'carte', 'cartes')} que tu n'as pas`]),
           st.dup ? h('span', null, ['· dont ', h('b', null, fmt(st.dup)), ` en double chez ${friendName(f)}`]) : null]) : null,
         fw && fw.priced ? h('p', { class: 'hint' }, 'Valeur : ' + FRIEND_WORTH[0].toLowerCase() + FRIEND_WORTH.slice(1)) : null,
@@ -6944,6 +6985,8 @@
         ]),
         fr.loading ? h('p', { class: 'small muted', role: 'status' }, fr.loading) : null,
         errLine(fr.error),
+        S.me && S.me.user && !S.me.user.pseudo ? h('p', { class: 'small muted pseudo-ask' }, ['Ajoute ton pseudo du jeu pour que tes amis te trouvent dans WikiMasters : ',
+          h('button', { class: 'linkish', type: 'button', onClick: openSettings }, 'Réglages'), '.']) : null,
         list.length ? h('div', { class: 'rows' }, list.map(viewMemberRow))
           : fr.status === 'loading' || fr.busy ? h('p', { class: 'muted', role: 'status' }, 'Lecture des membres…')
             : fr.status === 'ready' ? h('p', { class: 'empty-box' }, "Personne d'autre ne montre encore ses cartes : propose à tes amis d'activer « Montrer mes cartes aux autres membres » dans leurs Réglages.") : null,

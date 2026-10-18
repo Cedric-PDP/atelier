@@ -64,7 +64,7 @@ function requireSharing(user) {
 // Pour ceux qui montrent aussi leurs collections : leur nombre et la date du dernier changement (50 au plus, même clé
 // primaire), de quoi ne les relire que si elles ont changé. Classeurs vides (ni carte ni collection) écartés : rien à
 // y voir (2026-10-17, classeurs créés en double puis abandonnés).
-const MEMBERS = `SELECT u.public_id AS id, u.name, u.fetched_at,
+const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, u.fetched_at,
     (SELECT COUNT(*) FROM cards AS c WHERE c.user_id = u.id) AS count,
     u.shared_targets AS st,
     CASE WHEN u.shared_targets = 1 THEN (SELECT COUNT(*) FROM targets AS t WHERE t.user_id = u.id) END AS t_count,
@@ -81,6 +81,7 @@ export async function listMembers(env, user) {
     members: results.map((r) => ({
       id: r.id,
       name: r.name,
+      pseudo: r.pseudo || null, // pseudo dans le jeu, s'il l'a donné (Réglages) : pour se trouver dans le jeu
       count: r.count,
       fetched_at: r.fetched_at,
       targets: r.st ? { count: r.t_count || 0, updated_at: r.t_at || null } : null,

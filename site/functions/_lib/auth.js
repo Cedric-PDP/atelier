@@ -9,9 +9,20 @@ import { eraseChatOf } from './chat.js';
 import { decryptCookie, encryptCookie } from './session.js';
 
 const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, cookie_enc, cookie_updated_at, session_expired, '
-  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets, last_sync';
+  + 'import_key_hash, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, shared_targets, last_sync, game_pseudo';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
+
+// Pseudo dans le jeu (2026-10-18, « pour qu'on puisse se trouver ») : facultatif, 40 caractères au plus, sans espace
+// ni « / ? # < > » (il sert dans l'adresse de son profil du jeu) ; vide = aucun.
+export function cleanPseudo(value) {
+  if (value === undefined || value === null) return null;
+  if (typeof value !== 'string') throw new HttpError(400, 'Le pseudo doit être un texte.');
+  const pseudo = cleanText(value);
+  if (pseudo.length > 40) throw new HttpError(400, 'Le pseudo fait 40 caractères au plus.');
+  if (/[\s/?#<>\\]/.test(pseudo)) throw new HttpError(400, 'Le pseudo ne contient ni espace ni « / ? # < > \\ ».');
+  return pseudo || null;
+}
 
 // Nom affiché : facultatif, 60 caractères au plus ; vide = aucun.
 export function cleanName(value) {
@@ -94,7 +105,7 @@ export async function authenticate(request, env, { importKey = false, chat = fal
 }
 
 export function publicUser(user) {
-  return { id: user.id, name: user.name, created_at: user.created_at };
+  return { id: user.id, name: user.name, created_at: user.created_at, pseudo: user.game_pseudo || null };
 }
 
 // GET /api/me
@@ -147,8 +158,10 @@ export async function patchMe(env, user, body) {
   // que la synchro rapide ne voit pas : échange de cartes de même rareté, favori retiré dans le jeu…).
   const hasForce = Object.hasOwn(body, 'force_full');
   if (hasForce && body.force_full !== true) throw new HttpError(400, 'force_full vaut true (relire toute la collection à la prochaine mise à jour).');
-  if (!hasName && !hasPrefs && !hasShared && !hasForce) throw new HttpError(400, 'Rien à modifier : indique un nom, des préférences, le partage ou une relecture complète.');
+  const hasPseudo = Object.hasOwn(body, 'pseudo');
+  if (!hasName && !hasPrefs && !hasShared && !hasForce && !hasPseudo) throw new HttpError(400, 'Rien à modifier : indique un nom, un pseudo, des préférences, le partage ou une relecture complète.');
   const name = hasName ? cleanName(body.name) : user.name;
+  const pseudo = hasPseudo ? cleanPseudo(body.pseudo) : user.game_pseudo || null;
   let prefs = user.prefs || '{}';
   if (hasPrefs) {
     const p = body.prefs;
@@ -160,8 +173,8 @@ export async function patchMe(env, user, body) {
   }
   // Partage entre membres (choisi, désactivé par défaut ; identifiant public tiré à chaque activation) : patchSharing.
   const { shared, publicId, sharedTargets } = sharing;
-  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5 WHERE id = ?6')
-    .bind(name, prefs, shared, publicId, sharedTargets, user.id)
+  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5, game_pseudo = ?6 WHERE id = ?7')
+    .bind(name, prefs, shared, publicId, sharedTargets, pseudo, user.id)
     .run();
   // Relecture complète demandée : la synchro rapide n'est plus armée (full_at effacé ; une synchro rapide en cours,
   // partie de l'ancien état, échoue aussi).
@@ -170,7 +183,7 @@ export async function patchMe(env, user, body) {
       .bind(user.id)
       .run();
   }
-  return { user: publicUser({ ...user, name }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets };
+  return { user: publicUser({ ...user, name, game_pseudo: pseudo }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets };
 }
 
 // La clé d'import est aussi gardée chiffrée (import_key_enc : AES-GCM de COOKIE_SECRET, donnée associée
