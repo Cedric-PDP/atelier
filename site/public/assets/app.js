@@ -2190,6 +2190,7 @@
         if (it.qid) item.qid = it.qid;
         if (realRarity(it)) item.rarity = it.rarity; // rareté du jeu (collection créée par le favori) : gardée
         if (seps.has(t)) item.sep = true;
+        else if (it.sep === true || it.sep === false) item.sep = false; // « # » retiré (ou déjà décoché) : choix gardé
         kept.set(it.title, item);
         items.push(item);
       }
@@ -2228,7 +2229,7 @@
       const items = t.items.map((it, j) => {
         if (j !== index) return it;
         const { sep, ...rest } = it;
-        return on ? { ...rest, sep: true } : rest;
+        return { ...rest, sep: !!on }; // décochée : sep: false, jamais recochée par la détection automatique
       });
       const body = { id: t.id, name: t.name, items };
       if (t.source) body.source = t.source;
@@ -2246,6 +2247,72 @@
   // Retirer une carte d'une collection (bouton de la fiche ouverte depuis l'album, demande du 2026-10-18) : la collection
   // renvoyée sans l'élément n° index ; la fiche se ferme et le message propose « Annuler » (l'élément remis à sa place,
   // avec tous ses champs). Mêmes garde-fous que la case « Intercalaire » (S.sepBusy, S.sepError).
+  // Intercalaires probables (2026-10-18, « vérifier si une carte peut être considérée intercalaire et cocher la case
+  // automatiquement ») : dans une collection ordonnée, un élément dont le titre nomme la nature des éléments qui le
+  // suivent : au moins 2 des 12 suivants (jusqu'au prochain intercalaire), dont l'un des 2 premiers, ont une description
+  // qui commence par ce titre (« Continent », puis « continent situé… », « continent terrestre… » ; « Sous-continent »,
+  // puis « sous-continent nord-américain… »), sans que la sienne commence aussi par ce titre. Sur les descriptions déjà
+  // gardées, sans requête ; jamais un élément déjà décidé (sep: true, ou sep: false = décoché par toi).
+  const sepWords = (s) => fold(String(s || '').replace(/\s*\([^)]*\)\s*$/, '')).replace(/[^a-z0-9-]+/g, ' ').trim().split(' ').filter(Boolean).map(singular);
+  function sepCandidates(items) {
+    const out = [];
+    for (let i = 0; i < items.length - 2; i++) {
+      const it = items[i];
+      if (it.sep === true || it.sep === false || (it.status && it.status !== 'ok')) continue;
+      const w = sepWords(it.title).join(' ');
+      if (w.length < 4 || w.split(' ').length > 3) continue;
+      const starts = (d) => { const x = sepWords(d).join(' '); return x === w || x.startsWith(w + ' '); };
+      if (starts(it.description)) continue; // elle-même de cette nature : un membre, pas un intercalaire
+      let n = 0;
+      let near = false;
+      for (let j = i + 1; j < items.length && j <= i + 12; j++) {
+        if (items[j].sep === true) break;
+        if (starts(items[j].description)) { n++; if (j <= i + 2) near = true; }
+      }
+      if (n >= 2 && near) out.push(i);
+    }
+    return out;
+  }
+  // Ouverture de l'album d'une de tes collections ordonnées : ses intercalaires probables sont cochés (une requête) ; le
+  // message propose « Annuler » (ils passent à sep: false : jamais recochés). Une fois par état de la collection.
+  const sepChecked = new Set();
+  async function autoSeps(t) {
+    const sig = t.id + ':' + (t.updated_at || '') + ':' + t.items.length;
+    if (sepChecked.has(sig) || S.sepBusy) return;
+    sepChecked.add(sig);
+    const idx = sepCandidates(t.items);
+    if (!idx.length) return;
+    const gen = cardsGen;
+    const pick = new Set(idx);
+    const titles = idx.map((i) => t.items[i].title);
+    S.sepBusy = t.id;
+    try {
+      await saveItemsOf(t, t.items.map((it, j) => (pick.has(j) ? { ...it, sep: true } : it)));
+      if (gen !== cardsGen) return;
+      const list = andList(titles.map((x) => `« ${x} »`));
+      notify(`${list} ${titles.length > 1 ? 'cochées comme intercalaires' : 'cochée comme intercalaire'} dans « ${t.name} » (détection automatique).`, false,
+        { label: 'Annuler', run: () => undoAutoSeps(t.id, titles) });
+    } catch (e) {
+      sepChecked.delete(sig); // réessayé à la prochaine ouverture
+    } finally {
+      S.sepBusy = null;
+    }
+  }
+  async function undoAutoSeps(id, titles) {
+    const t = targets.value.find((x) => x.id === id);
+    if (!t) return;
+    const set = new Set(titles);
+    try {
+      await saveItemsOf(t, t.items.map((it) => (set.has(it.title) ? { ...it, sep: false } : it)));
+      notify(titles.length > 1 ? 'Intercalaires décochés : ils ne seront plus cochés automatiquement.' : 'Intercalaire décoché : il ne sera plus coché automatiquement.');
+    } catch (e) {
+      notify(e.message, true);
+    }
+  }
+  watch(() => {
+    const col = S.tab === 'collections' && !S.reorder ? activeAlbum.value : null;
+    return col && col.kind === 'target' && col.ordered && col.t ? col.t : null;
+  }, (t) => { if (t) autoSeps(t); });
   async function saveItemsOf(t, items) {
     const body = { id: t.id, name: t.name, items };
     if (t.source) body.source = t.source;

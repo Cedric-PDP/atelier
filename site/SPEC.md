@@ -758,6 +758,14 @@ Deux zones, dans cet ordre :
    ajoutées viennent en plus de ses articles »). Courses : classeur changé pendant l'enregistrement, la réponse est
    écartée.
 
+   **Intercalaires détectés** (2026-10-18) : à l'ouverture de l'album d'une de tes collections ordonnées, un élément
+   dont le titre nomme la nature des éléments qui le suivent est coché comme intercalaire : au moins 2 des 12 suivants
+   (jusqu'au prochain intercalaire), dont l'un des 2 premiers, ont une description qui commence par ce titre (mots
+   repliés, singulier ; « Continent » puis « continent situé… », « Sous-continent » puis « sous-continent
+   nord-américain… »), et la sienne ne commence pas par ce titre. Calcul sur les descriptions gardées, sans requête ; une
+   requête `targets/save` pour toute la collection ; le message propose « Annuler ». Un élément déjà décidé n'est jamais
+   touché : `sep: true`, ou **`sep: false`**, que le serveur garde désormais (case de la fiche décochée, « # » retiré dans
+   l'éditeur, « Annuler » de la détection).
    **Retirer une carte d'une collection** (2026-10-18) : la fiche d'une carte (possédée ou case vide) ouverte depuis
    l'album d'une de tes collections a, sous la case « Intercalaire », un bouton « Retirer de « <collection> » » : la
    collection est renvoyée sans cet élément (`POST /api/targets/save`), la fiche se ferme, et le message « « <titre> »

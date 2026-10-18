@@ -4567,6 +4567,49 @@ async function main() {
     check(!grid() && d.querySelectorAll('.slot__no').length === 3 && btnIn(d.body, 'Réorganiser'), 'thème du catalogue : album numéroté attendu après « Annuler »');
   }
 
+  // 33. Intercalaires détectés à l'ouverture de l'album (2026-10-18) : « Continent » (suivi de cartes décrites « continent
+  // … ») et « Sous-continent » (suivi de « sous-continent … ») sont cochés tout seuls, en une requête, avec « Annuler » ;
+  // annulés, ils passent à sep: false et ne sont plus jamais recochés. Pangée (dernière) ne l'est pas.
+  if (!SERVER) {
+    const saved = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
+    const keyD = await makeOtherAccount('Daphné');
+    const it = (title, description) => ({ title, description, image: null, status: 'ok' });
+    await rawApi('POST', '/api/targets/save', keyD, { name: 'Continents détectés', items: [
+      it('Continent', 'très grande masse de terre émergée'), it('Afrique', 'continent'), it('Europe', 'continent terrestre situé au nord-ouest de l’Eurasie'),
+      it('Asie', 'continent terrestre'), it('Sous-continent', 'partie d’un continent'), it('Amérique du Nord', 'sous-continent nord-américain'),
+      it('Amérique du Sud', 'sous-continent de l’Amérique'), it('Pangée', 'supercontinent')] });
+    const sepsOf = async () => {
+      const t = (await rawApi('GET', '/api/targets', keyD)).body.targets.find((x) => x.name === 'Continents détectés');
+      return t.items.filter((x) => 'sep' in x).map((x) => x.title + '=' + x.sep).join(', ');
+    };
+    ls.set('classeur-key', keyD);
+    ls.set('classeur-known', JSON.stringify([{ key: keyD, name: 'Daphné' }]));
+    const pd = openPage({ idb: 'absent' });
+    const d = pd.doc;
+    const row = () => d.querySelectorAll('.row').find((n) => n.querySelector('.name') && text(n.querySelector('.name')) === 'Continents détectés');
+    const goList = async () => { const t = d.getElementById('tab-collections'); if (t) t.click(); await settle(60); };
+    for (let i = 0; i < 120 && !d.getElementById('tab-collections'); i++) await sleep(25);
+    await goList();
+    check(await waitFor(() => !!row()), 'collection « Continents détectés » absente de « Mes collections »');
+    row().click();
+    let seps = '';
+    for (let i = 0; i < 200 && seps === ''; i++) { await sleep(25); seps = await sepsOf(); }
+    check(seps === 'Continent=true, Sous-continent=true', 'intercalaires détectés : ' + seps);
+    await settle(60);
+    const toast = d.querySelectorAll('.toast')[0];
+    check(toast && text(toast).includes('« Continent » et « Sous-continent » cochées comme intercalaires dans « Continents détectés » (détection automatique).'), 'message de la détection : ' + (toast ? text(toast) : 'absent'));
+    toast.querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+    for (let i = 0; i < 200 && seps !== 'Continent=false, Sous-continent=false'; i++) { await sleep(25); seps = await sepsOf(); }
+    check(seps === 'Continent=false, Sous-continent=false', '« Annuler » de la détection : ' + seps);
+    // Rouvert : rien n'est recoché.
+    d.querySelectorAll('button').find((b) => text(b).includes('Toutes les collections')).click();
+    await settle(60);
+    row().click();
+    await settle(300);
+    check((await sepsOf()) === 'Continent=false, Sous-continent=false' && !d.querySelectorAll('.toast').some((n) => text(n).includes('détection automatique')), 'intercalaires annulés recochés à la réouverture : ' + (await sepsOf()));
+    for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
+  }
+
   // Icônes : toutes celles utilisées existent dans le sprite.
   const missing = [...new Set(usedIcons())].filter((i) => !ctx.__symbols.includes(i));
   check(!missing.length, 'icônes absentes du sprite : ' + missing.join(', '));

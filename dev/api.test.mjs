@@ -739,7 +739,8 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
     ...[false, 'true', 1, null, {}, []].map((sep, i) => ({ title: `Pas un intercalaire ${i}`, status: 'ok', sep })),
   ] } });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json.target.items.map((x) => ('sep' in x ? x.sep : '-')), [true, '-', true, '-', '-', '-', '-', '-', '-']);
+  // sep: false (décoché par le joueur) est gardé aussi : la détection automatique de la page ne le recoche jamais.
+  assert.deepEqual(r.json.target.items.map((x) => ('sep' in x ? x.sep : '-')), [true, '-', true, false, '-', '-', '-', '-', '-']);
   const seps = (await call('GET', 'targets', { key: alice.key })).json.targets.find((x) => x.id === 'seps');
   assert.deepEqual(seps.items.slice(0, 3), [
     { title: 'Continent', description: null, image: null, status: 'ok', sep: true },

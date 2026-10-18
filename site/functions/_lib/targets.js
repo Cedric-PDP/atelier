@@ -54,6 +54,7 @@ function cleanItem(item, i) {
   // Intercalaire : carte qui ouvre une section de la collection (une vraie carte, qui compte comme les autres) ; gardé
   // seulement s'il vaut true, absent sinon.
   if (item.sep === true) out.sep = true;
+  else if (item.sep === false) out.sep = false; // décoché par le joueur : la détection automatique ne le recoche jamais
   return out;
 }
 
