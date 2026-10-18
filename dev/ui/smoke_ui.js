@@ -1967,8 +1967,8 @@ async function main() {
   if (!SERVER) {
     const at = (min) => new Date(Date.now() - min * 60_000).toISOString();
     api.st.syncLog = [
-      { at: at(1), kind: 'full', result: 'error', message: 'Connecte-toi à WikiMasters (ta session du jeu a expiré ou n\'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori.', data: { client: true, via: 'clic', code: 'session', v: 2 } },
-      { at: at(5), kind: 'quick', result: 'ok', message: 'Synchro rapide : rien de nouveau (1 050 cartes).', data: { via: 'relie', v: 2, repeat: 3, first: at(30) } },
+      { at: at(1), kind: 'full', result: 'error', message: 'Connecte-toi à WikiMasters (ta session du jeu a expiré ou n\'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori.', data: { client: true, via: 'clic', code: 'session', v: 3 } },
+      { at: at(5), kind: 'quick', result: 'ok', message: 'Synchro rapide : rien de nouveau (1 050 cartes).', data: { via: 'relie', v: 3, repeat: 3, first: at(30) } },
       { at: at(60), kind: 'full', result: 'warn', message: 'Lecture incomplète : 1 000 cartes lues, le jeu en compte 1 050 : aucune nouvelle carte, aucune carte retirée (50 cartes non vues, gardées). Relance la mise à jour dans un moment.', data: { via: 'cookie' } },
     ];
     api.st.lastSync = { at: at(1), kind: 'full', via: 'clic', result: 'error', message: api.st.syncLog[0].message };
@@ -1987,15 +1987,15 @@ async function main() {
       'ligne en échec : ' + text(rows()[0]));
     check(text(rows()[1]).includes('réussie') && text(rows()[1]).includes('Favori relié · synchro rapide') && /3 fois depuis aujourd'hui à \d\d:\d\d/.test(text(rows()[1])), 'ligne répétée : ' + text(rows()[1]));
     check(rows()[2].classList.contains('is-warn') && text(rows()[2]).includes('incomplète') && text(rows()[2]).includes('Cookie · lecture complète'), 'ligne incomplète : ' + text(rows()[2]));
-    // La synchro réussie la plus récente vient d'un favori à jour (v 2) : pas d'avertissement ; d'un ancien (sans v) : oui.
-    check(!has("vient d'un favori d'avant le 17 octobre 2026"), 'favori à jour signalé comme ancien');
+    // La synchro réussie la plus récente vient d'un favori à jour (v 3) : pas d'avertissement ; d'un ancien (sans v) : oui.
+    check(!has("vient d'un favori d'avant le 18 octobre 2026"), 'favori à jour signalé comme ancien');
     api.st.syncLog = [{ at: at(0), kind: 'full', result: 'ok', message: 'Lecture complète : 1 050 cartes, aucune nouvelle, aucune retirée.', data: {} }, ...api.st.syncLog];
     needButton('Actualiser').click();
     await settle(200);
-    check(rows().length === 4 && has("vient d'un favori d'avant le 17 octobre 2026"), 'favori ancien non signalé');
+    check(rows().length === 4 && has("vient d'un favori d'avant le 18 octobre 2026"), 'favori ancien non signalé');
     // Nouvel échec du favori pendant que la page est ouverte : annoncé au retour sur l'onglet, journal relu.
     const msg = 'Le jeu limite les lectures automatiques : réessaie plus tard (dans une dizaine de minutes). Rien n\'a été changé dans ton classeur.';
-    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'error', message: msg, data: { client: true, via: 'relie', code: 'limit', v: 2 } }, ...api.st.syncLog];
+    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'error', message: msg, data: { client: true, via: 'relie', code: 'limit', v: 3 } }, ...api.st.syncLog];
     api.st.lastSync = { at: api.st.syncLog[0].at, kind: 'full', via: 'relie', result: 'error', message: msg };
     for (const f of doc.listeners.visibilitychange || []) await f();
     await settle(200);
@@ -3431,25 +3431,28 @@ async function main() {
     console.log(`chat : ${apiLog.filter((x) => /^(GET|POST|DELETE) \/api\/chat\b/.test(x)).length} appels de /api/chat par les pages, dont ${apiLog.filter((x) => /^GET \/api\/chat\?after=/.test(x)).length} relectures ?after`);
   }
 
-  // 31. « Ajouter par catégorie du jeu » (album d'une collection) : Alek a une collection « Maladies » et des cartes de
-  // catégorie du jeu « maladie » qui n'y sont pas. Catégories proposées (même nom, cochée d'emblée ; plus précises ;
-  // portée par beaucoup de ses éléments, description comprise), tes tags du classeur repliés (jamais cochés), aperçu
-  // décochable carte par carte (catégorie rappelée quand plusieurs propositions sont cochées), ajout (éléments existants
-  // gardés, nouveaux à la fin, sans doublon) ; rouverte : la catégorie complète est signalée. Plus large que le nom
-  // (« Maladies parasitaires » ← « maladie ») : proposée, pas cochée. Collection faite d'une catégorie : « Rien à
-  // proposer », une catégorie choisie à la main (pluriel, casse, féminin ramenés ; inconnue : ressemblantes proposées),
-  // source gardée.
+  // 31. « Ajouter par tags du jeu » (album d'une collection) : Alek a une collection « Maladies », des cartes qu'il a
+  // taguées « Maladie » dans le jeu (tags du jeu, avec leur couleur) et des cartes de catégorie du jeu « maladie » qui n'y
+  // sont pas. Tags du jeu proposés d'abord (même nom, coché d'emblée ; plus précis ; porté par beaucoup de ses cartes),
+  // puis les catégories du jeu (même nom, cochée d'emblée ; plus précises ; portée par beaucoup de ses éléments,
+  // description comprise), tes tags du classeur repliés (jamais cochés), aperçu décochable (catégorie rappelée quand
+  // plusieurs propositions sont cochées), ajout (éléments existants gardés, nouveaux à la fin, sans doublon) ; rouverte :
+  // le tag complet est signalé. Plus large que le nom (« Maladies parasitaires » ← tag « Maladie ») : proposé, pas coché.
+  // Collection faite d'une catégorie : « Rien à proposer », un tag puis une catégorie choisis à la main (casse, pluriel,
+  // féminin ramenés ; inconnu : ressemblants proposés), source gardée. Classeur sans tag du jeu : la fenêtre le dit.
+  // « Mes cartes » : section « Tags du jeu » (filtre, combinable) ; fiche : « Tags du jeu » en pastilles colorées.
   // 32. Cartes citées dans le chat : [[Titre]] devient une pastille (ta carte : sa rareté ; sinon en pointillés) qui ouvre
   // la fiche (la tienne, ou la carte manquante vérifiée sur Wikipédia) ; jamais de HTML ; « Partager dans le chat » d'une
   // fiche met [[Titre]] dans le champ du chat et ouvre l'onglet.
   {
     const keyA = await makeOtherAccount('Alek');
-    const mkA = (id, title, rarity, category) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category, image: null, url: null,
-      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
-    await sendImport(keyA, [mkA('a1', 'Grippe', 'R', 'maladie infectieuse'), mkA('a2', 'Rougeole', 'PC', 'infection virale'), mkA('a3', 'Varicelle', 'C', 'maladie'),
-      mkA('a4', 'Choléra', 'SR', 'Maladie'), mkA('a5', 'Peste', 'UR', 'maladie'), mkA('a6', 'Paludisme', 'R', 'maladie parasitaire'),
-      mkA('a7', 'Louis Pasteur', 'L', 'scientifique français'), mkA('a8', 'Rihanna', 'L', 'chanteuse barbadienne'), mkA('a9', 'Herpès', 'C', 'infection virale'),
-      mkA('a10', 'Diphtérie', 'PC', 'maladie infectieuse')]);
+    const mkA = (id, title, rarity, category, gtags = [], gtagc = null) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category, image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', gtags, ...(gtagc ? { gtagc } : {}) });
+    const red = { Maladie: '#ef4444' };
+    await sendImport(keyA, [mkA('a1', 'Grippe', 'R', 'maladie infectieuse', ['Maladie', 'Virus'], red), mkA('a2', 'Rougeole', 'PC', 'infection virale', ['Maladie', 'Virus'], red),
+      mkA('a3', 'Varicelle', 'C', 'maladie', ['Maladie', 'Virus'], red), mkA('a4', 'Choléra', 'SR', 'Maladie', ['Maladie'], red), mkA('a5', 'Peste', 'UR', 'maladie', ['Fléau']),
+      mkA('a6', 'Paludisme', 'R', 'maladie parasitaire', ['Maladies tropicales']), mkA('a7', 'Louis Pasteur', 'L', 'scientifique français'),
+      mkA('a8', 'Rihanna', 'L', 'chanteuse barbadienne', ['Musique']), mkA('a9', 'Herpès', 'C', 'infection virale', ['Virus']), mkA('a10', 'Diphtérie', 'PC', 'maladie infectieuse')]);
     const tagA = async (ids, tag) => check((await rawApi('POST', '/api/tags/bulk', keyA, { card_ids: ids, add: [tag], remove: [] })).status === 200, "tags d'Alek refusés");
     await tagA(['a1', 'a2', 'a3', 'a4', 'a5'], 'Sciences et nature/Maladie');
     await tagA(['a1', 'a2', 'a3', 'a7'], 'Contagion');
@@ -3466,7 +3469,7 @@ async function main() {
     const d = pa.doc;
     const txt = () => text(d.body);
     const btnIn = (root, t) => root.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
-    const ADD = 'Ajouter par catégorie du jeu';
+    const ADD = 'Ajouter par tags du jeu';
     check(await waitFor(() => pa.count() === 10), "classeur d'Alek non ouvert");
     d.getElementById('tab-collections').click();
     await settle();
@@ -3477,96 +3480,154 @@ async function main() {
       await settle(80);
     };
     await openRow('Maladies');
-    check(txt().includes('2 sur 4') && btnIn(d.body, ADD) && !btnIn(d.body, 'Ajouter par tags'), `« ${ADD} » absent de l'album de « Maladies »`);
+    check(txt().includes('2 sur 4') && btnIn(d.body, ADD) && !btnIn(d.body, 'Ajouter par catégorie du jeu'), `« ${ADD} » absent de l'album de « Maladies »`);
     btnIn(d.body, ADD).click();
     await settle();
     const modal = () => d.querySelectorAll('.modal')[0] || null;
-    const lis = (c, n = 0) => { const u = modal().querySelectorAll('.' + c)[n]; return u ? u.querySelectorAll('li') : []; }; // le faux DOM ne lit pas « .a li »
-    const rows = () => lis('tagadd');
-    const tagRows = () => lis('tagadd', 1);
+    const listOf = (label) => modal().querySelectorAll('.tagadd').find((u) => u.getAttribute('aria-label') === label) || null;
+    const lis = (label) => { const u = listOf(label); return u ? u.querySelectorAll('li') : []; }; // le faux DOM ne lit pas « .a li »
+    const grows = () => lis('Tags du jeu proposés');
+    const rows = () => lis('Catégories du jeu proposées');
+    const tagRows = () => lis('Tes tags du classeur proposés');
     const box = (li) => li.querySelector('input');
-    const prev = () => lis('tagadd-preview').map((li) => text(li));
-    check(modal() && text(modal().querySelector('h2')) === ADD && text(modal()).includes('Dans « Maladies »') && text(modal()).includes('catégories du jeu'), 'fenêtre « Ajouter par catégorie du jeu » absente');
-    let rt = rows().map((li) => text(li));
-    // « maladie » et « Maladie » : une seule catégorie (casse ignorée) ; « maladie infectieuse » (Diphtérie) et « maladie
-    // parasitaire » plus précises ; « infection virale » : celle de Rougeole et la description de Variole (2 des 4 éléments).
+    const prev = () => { const u = modal().querySelectorAll('.tagadd-preview')[0]; return u ? u.querySelectorAll('li').map((li) => text(li)) : []; };
+    check(modal() && text(modal().querySelector('h2')) === ADD && text(modal()).includes('Dans « Maladies »') && text(modal()).includes('Tes tags du jeu')
+      && text(modal()).includes('Catégories du jeu'), 'fenêtre « Ajouter par tags du jeu » absente : ' + (modal() ? text(modal()).slice(0, 300) : ''));
+    // Tags du jeu : « Maladie » (même nom ; Grippe et Rougeole déjà dedans), « Maladies tropicales » (plus précis), « Virus »
+    // (porté par Grippe et Rougeole, les 2 cartes d'Alek dans la collection).
+    let rt = grows().map((li) => text(li));
+    check(rt.length === 3 && rt[0].startsWith('Maladie') && rt[0].includes('2 à ajouter') && rt[0].includes('même nom que la collection') && rt[0].includes('2 déjà dans la collection')
+      && rt[1].includes('Maladies tropicales') && rt[1].includes('1 à ajouter') && rt[1].includes('plus précis que le nom de la collection')
+      && rt[2].includes('Virus') && rt[2].includes('2 à ajouter') && rt[2].includes('porté par 2 de tes 2 cartes de la collection'), 'tags du jeu proposés : ' + rt.join(' | '));
+    check(box(grows()[0]).checked && !box(grows()[1]).checked && !box(grows()[2]).checked, "seul le tag du jeu du même nom doit être coché d'emblée");
+    check(grows()[0].querySelector('.gtag-name').style['--gtag'] === '#ef4444' && !grows()[2].querySelector('.gtag-name').style['--gtag'], 'couleur du tag du jeu absente de sa pastille');
+    // Catégories du jeu, ensuite : « maladie » (même nom, cochée), « maladie infectieuse » et « maladie parasitaire » (plus
+    // précises), « infection virale » (celle de Rougeole et la description de Variole : 2 des 4 éléments).
+    rt = rows().map((li) => text(li));
     check(rt.length === 4 && rt[0].includes('« maladie »') && rt[0].includes('3 à ajouter') && rt[0].includes('même nom que la collection')
-      && rt[1].includes('« maladie infectieuse »') && rt[1].includes('1 à ajouter') && rt[1].includes('plus précise que le nom de la collection') && rt[1].includes('2 déjà dans la collection')
-      && rt[2].includes('« maladie parasitaire »') && rt[2].includes('1 à ajouter')
-      && rt[3].includes('« infection virale »') && rt[3].includes('1 à ajouter') && rt[3].includes('portée par 2 des 4 éléments de la collection'), 'catégories proposées : ' + rt.join(' | '));
-    check(box(rows()[0]).checked && !box(rows()[1]).checked && !box(rows()[2]).checked && !box(rows()[3]).checked, "seule la catégorie du même nom doit être cochée d'emblée");
-    check(prev().join('|') === 'SRCholéra|URPeste|CVaricelle' && btnIn(modal(), 'Ajouter 3 cartes'), 'aperçu de la catégorie du même nom : ' + prev().join('|'));
-    // Une catégorie de plus (« infection virale » : Herpès s'ajoute) : la catégorie de chaque carte est rappelée.
-    box(rows()[3]).click();
+      && rt[1].includes('« maladie infectieuse »') && rt[1].includes('2 déjà dans la collection') && rt[2].includes('« maladie parasitaire »')
+      && rt[3].includes('« infection virale »') && rt[3].includes('portée par 2 des 4 éléments de la collection'), 'catégories proposées : ' + rt.join(' | '));
+    check(box(rows()[0]).checked && !box(rows()[1]).checked && !box(rows()[3]).checked, "seule la catégorie du même nom doit être cochée d'emblée");
+    check(prev().join('|') === 'SRCholéraMaladie|URPestemaladie|CVaricellemaladie' && btnIn(modal(), 'Ajouter 3 cartes'), 'aperçu des deux propositions du même nom : ' + prev().join('|'));
+    // Sans la catégorie : le tag du jeu seul (une proposition cochée : catégorie pas rappelée) ; puis « Virus » en plus.
+    box(rows()[0]).click();
     await settle();
-    check(prev().length === 4 && prev()[1] === 'CHerpèsinfection virale' && prev()[0] === 'SRCholéraMaladie', 'aperçu avec « infection virale » : ' + prev().join('|'));
-    // Tes tags du classeur : repliés, puis dépliés (rien de coché) ; un tag coché (« Contagion » : Louis Pasteur), une carte
-    // décochée, puis repliés : le tag n'est plus coché.
-    check(!modal().querySelectorAll('.tagadd')[1] && btnIn(modal(), 'Proposer aussi tes tags du classeur (3)'), 'tags du classeur : repliés, avec leur nombre');
+    check(prev().join('|') === 'SRCholéra|CVaricelle', 'aperçu du tag du jeu seul : ' + prev().join('|'));
+    box(grows()[2]).click();
+    await settle();
+    check(prev().join('|') === 'SRCholéraMaladie|CHerpèsinfection virale|CVaricellemaladie', 'aperçu avec « Virus » : ' + prev().join('|'));
+    // Tes tags du classeur : repliés (rien de coché une fois dépliés), puis repliés de nouveau.
+    check(!listOf('Tes tags du classeur proposés') && btnIn(modal(), 'Proposer aussi tes tags du classeur (3)'), 'tags du classeur : repliés, avec leur nombre');
     btnIn(modal(), 'Proposer aussi tes tags du classeur (3)').click();
     await settle();
-    rt = tagRows().map((li) => text(li));
-    check(rt.length === 3 && rt[0].includes('Sciences et nature › Maladie') && rt[0].includes('3 à ajouter') && rt[1].includes('Maladies tropicales')
-      && rt[2].includes('Contagion') && rt[2].includes('porté par 2 de tes 2 cartes de la collection') && tagRows().every((li) => !box(li).checked), 'tags du classeur dépliés : ' + rt.join(' | '));
-    box(tagRows()[2]).click();
-    await settle();
-    check(prev().length === 5 && prev().some((x) => x.startsWith('LLouis Pasteur')), 'aperçu avec le tag « Contagion » : ' + prev().join('|'));
-    box(lis('tagadd-preview').find((li) => text(li).includes('Louis Pasteur'))).click();
-    await settle();
-    check(text(modal()).includes('Aperçu : 4 cartes à ajouter sur 5') && btnIn(modal(), 'Tout cocher'), "carte décochée dans l'aperçu : " + text(modal()).slice(-300));
+    check(tagRows().length === 3 && text(tagRows()[0]).includes('Sciences et nature › Maladie') && tagRows().every((li) => !box(li).checked), 'tags du classeur dépliés : ' + tagRows().map(text).join(' | '));
     btnIn(modal(), 'Masquer tes tags du classeur').click();
     await settle();
-    check(!modal().querySelectorAll('.tagadd')[1] && prev().length === 4 && text(modal()).includes('Aperçu : 4 cartes à ajouter') && btnIn(modal(), 'Ajouter 4 cartes'), 'tags repliés : plus cochés : ' + prev().join('|'));
-    btnIn(modal(), 'Ajouter 4 cartes').click();
+    btnIn(modal(), 'Ajouter 3 cartes').click();
     check(await waitFor(() => !modal()), "la fenêtre doit se fermer après l'ajout");
     let mal = (await rawApi('GET', '/api/targets', keyA)).body.targets.find((x) => x.name === 'Maladies');
-    check(mal.items.map((i) => i.title).join('|') === 'Grippe|Rougeole|Tuberculose|Variole|Choléra|Herpès|Peste|Varicelle', "éléments après l'ajout : " + mal.items.map((i) => i.title).join('|'));
+    check(mal.items.map((i) => i.title).join('|') === 'Grippe|Rougeole|Tuberculose|Variole|Choléra|Herpès|Varicelle', "éléments après l'ajout : " + mal.items.map((i) => i.title).join('|'));
     check(mal.items[2].qid === 'Q12204' && mal.items[2].description === 'maladie infectieuse' && mal.items[4].description === 'Maladie' && mal.items[5].description === 'infection virale'
       && mal.items[4].status === 'ok' && mal.items[4].image === null, 'éléments existants gardés tels quels, nouveaux avec la catégorie du jeu : ' + JSON.stringify(mal.items.slice(2, 6)));
-    check(await waitFor(() => txt().includes('4 cartes ajoutées à « Maladies »') && txt().includes('6 sur 8')), "confirmation ou progression après l'ajout");
-    // Rouverte : « maladie » est complète (signalée, plus proposée) ; rien n'est coché, rien à ajouter.
+    check(await waitFor(() => txt().includes('3 cartes ajoutées à « Maladies »') && txt().includes('5 sur 7')), "confirmation ou progression après l'ajout");
+    // Rouverte : le tag « Maladie » est complet (signalé, plus proposé) ; « Virus » aussi (porté, mais rien à ajouter).
     btnIn(d.body, ADD).click();
     await settle();
-    rt = rows().map((li) => text(li));
-    check(rt.length === 2 && rt[0].includes('« maladie infectieuse »') && rt[1].includes('« maladie parasitaire »'), 'catégories proposées, rouverte : ' + rt.join(' | '));
-    check(text(modal()).includes('Déjà toutes dans la collection : tes cartes de catégorie « maladie »'), 'catégorie complète non signalée : ' + text(modal()).slice(0, 600));
-    check(!modal().querySelectorAll('.tagadd-preview').length && btnIn(modal(), 'Ajouter') && btnIn(modal(), 'Ajouter').disabled, 'rien de coché : rien à ajouter');
+    rt = grows().map((li) => text(li));
+    check(rt.length === 1 && rt[0].includes('Maladies tropicales') && text(modal()).includes('Déjà toutes dans la collection : tes cartes au tag Maladie'), 'tags du jeu, rouverte : ' + rt.join(' | '));
+    check(rows()[0] && text(rows()[0]).includes('« maladie »') && text(rows()[0]).includes('1 à ajouter') && box(rows()[0]).checked && prev().join('|') === 'URPeste',
+      'catégorie du même nom, rouverte (Peste seule) : ' + rows().map(text).join(' | ') + ' / ' + prev().join('|'));
     btnIn(modal(), 'Annuler').click();
     await settle(300);
-    // « Maladies parasitaires » : « maladie parasitaire » du même nom (cochée), « maladie » plus large (pas cochée).
+    // « Maladies parasitaires » : tag « Maladie » plus large (pas coché), catégorie « maladie parasitaire » du même nom (cochée).
     btnIn(d.body, '← Toutes les collections').click();
     await settle();
     await openRow('Maladies parasitaires');
     btnIn(d.body, ADD).click();
     await settle();
-    rt = rows().map((li) => text(li));
-    check(rt.length === 2 && rt[0].includes('« maladie parasitaire »') && box(rows()[0]).checked
-      && rt[1].includes('« maladie »') && rt[1].includes("plus large que le nom de la collection : vérifie l'aperçu") && !box(rows()[1]).checked, 'catégorie plus large : ' + rt.join(' | '));
+    rt = grows().map((li) => text(li));
+    check(rt.length === 1 && rt[0].startsWith('Maladie') && rt[0].includes("plus large que le nom de la collection : vérifie l'aperçu") && !box(grows()[0]).checked
+      && text(rows()[0]).includes('« maladie parasitaire »') && box(rows()[0]).checked, 'tag plus large : ' + rt.join(' | '));
     btnIn(modal(), 'Annuler').click();
     await settle(300);
-    // Collection faite d'une catégorie de Wikipédia : rien ne ressemble à son nom ; une catégorie choisie à la main (pluriel,
-    // casse et féminin ramenés), source gardée à l'enregistrement.
+    // Collection faite d'une catégorie de Wikipédia : rien ne ressemble à son nom ; un tag du jeu puis une catégorie choisis
+    // à la main (casse, pluriel et féminin ramenés), source gardée à l'enregistrement.
     btnIn(d.body, '← Toutes les collections').click();
     await settle();
     await openRow('Vaccination');
     btnIn(d.body, ADD).click();
     await settle();
-    check(text(modal()).includes('Rien à proposer : aucune catégorie du jeu de tes cartes ne ressemble au nom « Vaccination ». Choisis-en une ci-dessous.') && !rows().length
-      && text(modal()).includes('faite de la catégorie Wikipédia « Vaccination »') && d.getElementById('tagadd-cats') && d.getElementById('tagadd-cats').querySelectorAll('option').length === 6,
-    '« Rien à proposer », note de la catégorie ou liste des catégories du jeu absents : ' + text(modal()).slice(0, 500));
+    check(text(modal()).includes('Rien à proposer : aucun de tes tags du jeu ne ressemble au nom « Vaccination ».')
+      && text(modal()).includes('Rien à proposer : aucune catégorie du jeu de tes cartes ne ressemble au nom « Vaccination ».') && !grows().length && !rows().length
+      && text(modal()).includes('faite de la catégorie Wikipédia « Vaccination »') && d.getElementById('tagadd-cats').querySelectorAll('option').length === 11,
+    '« Rien à proposer », note de la catégorie ou liste des tags et catégories du jeu absents : ' + text(modal()).slice(0, 600));
     const pick = async (v) => { type(d.getElementById('tagadd-other'), v); btnIn(modal(), 'Ajouter à la liste').click(); await settle(); };
     await pick('Inconnue');
-    check(text(modal()).includes("Aucune de tes cartes n'a la catégorie du jeu « Inconnue »."), 'catégorie inconnue non signalée');
+    check(text(modal()).includes("Aucune de tes cartes n'a le tag ou la catégorie du jeu « Inconnue »."), 'inconnu non signalé');
     await pick('infectieux');
-    check(text(modal()).includes("Aucune de tes cartes n'a la catégorie du jeu « infectieux » ; ressemblantes : « maladie infectieuse »."), 'catégories ressemblantes non proposées : ' + text(modal()).slice(0, 700));
+    check(text(modal()).includes("Aucune de tes cartes n'a le tag ou la catégorie du jeu « infectieux » ; ressemblants : « maladie infectieuse »."), 'ressemblants non proposés : ' + text(modal()).slice(0, 900));
+    await pick('virus');
+    check(grows().length === 1 && text(grows()[0]).includes('Virus') && text(grows()[0]).includes('choisi par toi') && box(grows()[0]).checked
+      && prev().join('|') === 'RGrippe|CHerpès|PCRougeole|CVaricelle', 'tag du jeu choisi à la main : ' + grows().map(text).join(' | ') + ' / ' + prev().join('|'));
     await pick('Maladies infectieuses');
-    check(rows().length === 1 && text(rows()[0]).includes('« maladie infectieuse »') && text(rows()[0]).includes('choisie par toi') && box(rows()[0]).checked
-      && prev().join('|') === 'PCDiphtérie|RGrippe', 'catégorie choisie à la main : ' + rows().map(text).join(' | ') + ' / ' + prev().join('|'));
-    btnIn(modal(), 'Ajouter 2 cartes').click();
+    check(rows().length === 1 && text(rows()[0]).includes('« maladie infectieuse »') && text(rows()[0]).includes('choisie par toi') && prev().length === 5,
+      'catégorie choisie à la main : ' + rows().map(text).join(' | ') + ' / ' + prev().join('|'));
+    btnIn(modal(), 'Ajouter 5 cartes').click();
     check(await waitFor(() => !modal()), "la fenêtre doit se fermer après l'ajout (catégorie)");
     const vac = (await rawApi('GET', '/api/targets', keyA)).body.targets.find((x) => x.name === 'Vaccination');
-    check(vac.source === 'wp:Vaccination' && vac.items.map((i) => i.title).join('|') === 'Louis Pasteur|Diphtérie|Grippe', 'collection faite d\'une catégorie après l\'ajout : ' + JSON.stringify(vac));
+    check(vac.source === 'wp:Vaccination' && vac.items.map((i) => i.title).join('|') === 'Louis Pasteur|Diphtérie|Grippe|Herpès|Rougeole|Varicelle', 'collection faite d\'une catégorie après l\'ajout : ' + JSON.stringify(vac));
     check(await waitFor(() => txt().includes('depuis la catégorie Wikipédia')), 'la collection doit rester signalée « depuis la catégorie Wikipédia »');
+    // « Mes cartes » : section « Tags du jeu » (les plus portés d'abord), filtre, Ctrl+clic pour combiner, filtre retiré.
+    d.getElementById('tab-cartes').click();
+    await settle();
+    const gchips = () => d.querySelectorAll('.gchip');
+    check(gchips().map((b) => text(b)).join('|') === 'Maladie4|Virus4|Fléau1|Maladies tropicales1|Musique1' && gchips()[0].style['--gtag'] === '#ef4444',
+      'section « Tags du jeu » de « Mes cartes » : ' + gchips().map((b) => text(b)).join('|'));
+    gchips()[1].click();
+    await settle();
+    const shownTitles = () => d.querySelectorAll('.card__title').map((n) => text(n)).sort().join('|');
+    check(shownTitles() === 'Grippe|Herpès|Rougeole|Varicelle' && txt().includes('Jeu : Virus'), 'filtre « Virus » : ' + shownTitles());
+    gchips()[0].dispatch('click', { ctrlKey: true });
+    await settle();
+    check(shownTitles() === 'Grippe|Rougeole|Varicelle', 'filtres combinés « Virus » et « Maladie » : ' + shownTitles());
+    // Fiche : « Tags du jeu » en pastilles, avec leur couleur, à part de « Tes tags ».
+    d.querySelectorAll('.card').find((n) => text(n).includes('Grippe')).dispatch('click');
+    await settle(80);
+    const fiche = () => d.querySelectorAll('.fiche')[0] || null;
+    const games = () => (fiche() ? fiche().querySelectorAll('.game') : []);
+    check(fiche() && text(fiche()).includes('Tags du jeu') && games().map((n) => text(n)).join('|') === 'Maladie|Virus' && games()[0].style['--gtag'] === '#ef4444'
+      && !games().some((n) => n.classList.contains('own')), 'fiche : tags du jeu absents ou mêlés aux tiens : ' + (fiche() ? text(fiche()).slice(0, 400) : 'aucune'));
+    fiche().querySelector('.close').click();
+    await settle(400);
+    btnIn(d.body, 'Réinitialiser les filtres').click();
+    await settle();
+    check(!txt().includes('Jeu : Virus'), 'filtres des tags du jeu non retirés');
+    d.getElementById('tab-collections').click();
+    await settle();
+    // Classeur dont aucune carte n'a de tag du jeu : la fenêtre le dit (et propose quand même les catégories du jeu).
+    {
+      const keyZ = await makeOtherAccount('Zélie');
+      await sendImport(keyZ, [mkA('z1', 'Grippe', 'R', 'maladie'), mkA('z2', 'Peste', 'UR', 'maladie')].map(({ gtags, ...c }) => c));
+      check((await rawApi('POST', '/api/targets/save', keyZ, { name: 'Maladies', items: [it0('Rougeole')] })).status === 200, 'collection de Zélie refusée');
+      ls.set('classeur-key', keyZ);
+      ls.set('classeur-known', JSON.stringify([{ key: keyZ, name: 'Zélie' }]));
+      const pz = openPage({ idb: 'absent' });
+      check(await waitFor(() => pz.count() === 2), 'classeur de Zélie non ouvert');
+      pz.doc.getElementById('tab-collections').click();
+      await settle();
+      pz.doc.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith('Maladies :')).click();
+      await settle(80);
+      btnIn(pz.doc.body, ADD).click();
+      await settle();
+      const mz = text(pz.doc.querySelectorAll('.modal')[0]);
+      check(mz.includes("Ton favori n'a encore lu aucun tag du jeu : relance une mise à jour complète") && mz.includes('« maladie »') && mz.includes('Ajouter 2 cartes'),
+        'classeur sans tag du jeu : message absent : ' + mz.slice(0, 600));
+      pz.doc.getElementById('tab-cartes').click();
+      await settle();
+      check(text(pz.doc.body).includes("Aucun tag du jeu lu pour l'instant"), '« Mes cartes » sans tag du jeu : message absent');
+      ls.set('classeur-key', keyA);
+      ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alek' }]));
+    }
 
     // 32. Cartes citées dans le chat.
     const keyB = await makeOtherAccount('Bérénice');
@@ -3643,7 +3704,7 @@ async function main() {
       value: { value: 1234, priced: 2, cards: 3, approx: 1 },
       history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
       live_at: new Date().toISOString(),
-      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 2, auto: true },
+      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 3, auto: true },
       live: {
         // Voulue A deux fois (la moins chère reste, l'autre comptée) ; Voulue B finie depuis la lecture ; Marché 3, que
         // Mona a maintenant : ni l'une ni l'autre montrées.
@@ -3922,7 +3983,7 @@ async function main() {
       check(reads() === n0 + 1, 'onglet relu sans nouvel envoi du favori');
       const later = new Date(Date.now() + 1000).toISOString();
       um.market.live_at = new Date(Date.now() - 3 * 3600_000).toISOString();
-      um.market.attempt = { start: later, end: later, ok: true, v: 2, auto: true };
+      um.market.attempt = { start: later, end: later, ok: true, v: 3, auto: true };
       um.market.market_at = later;
       await pm.live();
       await settle(80);
@@ -4199,14 +4260,16 @@ async function runBookmarklet(code, classeurFetch, key) {
     for (const c of b.cards) {
       ids.add(c.id);
       const keys = Object.keys(c).sort().join(',');
-      if (keys !== 'atk,category,count,def,id,image,obtained_at,pageviews,quality,rarity,shiny,starred,title,url,variants') fail('favori : champs de CarteImport ' + keys);
+      if (keys !== 'atk,category,count,def,gtagc,gtags,id,image,obtained_at,pageviews,quality,rarity,shiny,starred,title,url,variants') fail('favori : champs de CarteImport ' + keys);
       // Exemplaires par rareté et brillance (marché) : leur somme fait count.
       if (Object.values(c.variants).reduce((x, y) => x + y, 0) !== c.count) fail('favori : variants ne compte pas tous les exemplaires de ' + c.id);
     }
   });
   const all = posts.flatMap((b) => b.cards);
   if (ids.size !== 1050 || all.length !== 1050) fail('favori : regroupement par carte incorrect');
-  if (JSON.stringify(posts).includes('SECRET') || JSON.stringify(posts).includes('"jeu"')) fail('favori : user_id ou tags du jeu envoyés');
+  if (JSON.stringify(posts).includes('SECRET')) fail('favori : user_id du jeu envoyé');
+  // Tags posés dans le jeu (entry.tags = [{name}]) : envoyés en noms (gtags), depuis le 18 octobre 2026.
+  if (!all.every((c) => JSON.stringify(c.gtags) === '["jeu"]')) fail('favori : tags du jeu non envoyés en gtags');
   const c0 = all.find((c) => c.id === 'c0');
   if (c0.count !== 2 || c0.obtained_at !== '2026-10-10T10:00:00Z' || c0.title !== 'Rihanna') fail('favori : exemplaires mal regroupés ' + JSON.stringify(c0));
   if (!all.find((c) => c.id === 'c10').shiny) fail('favori : brillante perdue');

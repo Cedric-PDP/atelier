@@ -8,7 +8,8 @@
 import { HttpError, raw } from './http.js';
 import { purgeStaging } from './db.js';
 import {
-  MAX_CARDS, MAX_DELTA, MAX_PART_CARDS, NEXT_REV, badCard, checkCard, commitRev, entryToCard, isDate, rankSql, rarityOfRankSql,
+  MAX_CARDS, MAX_DELTA, MAX_GTAGS, MAX_PART_CARDS, NEXT_REV, badCard, checkCard, commitRev, entryToCard, gameTagNames, isDate, rankSql,
+  rarityOfRankSql, tagSig,
 } from './cards.js';
 import { byteLength, nowIso, randomToken } from './util.js';
 import { valueAfterCards } from './market.js';
@@ -23,7 +24,7 @@ const MAX_STAGING_BYTES = 8 * 1024 * 1024;
 const MAX_UPLOADS = 3;
 // Version du favori la plus récente (site/public/assets/bookmarklet.js, VERSION ; un test vérifie qu'elles concordent),
 // rendue par « state » : un favori plus ancien le signale.
-export const FAVORI_VERSION = 2;
+export const FAVORI_VERSION = 3;
 
 const nat = (v) => Number.isInteger(v) && v >= 0 && v <= 1_000_000;
 const num = (n) => Number(n || 0).toLocaleString('fr-FR');
@@ -51,6 +52,7 @@ export const REASONS = {
   gone: 'la carte la plus récente de la dernière synchro était partie',
   order: "le jeu n'avait pas rangé la collection par date",
   sort: "le tri par date du jeu n'avait pas répondu",
+  tags: "les tags du jeu avaient changé, ou n'avaient jamais été lus",
 };
 const reasonOf = (v) => (typeof v === 'string' && Object.hasOwn(REASONS, v) ? v : null);
 
@@ -60,7 +62,10 @@ const reasonOf = (v) => (typeof v === 'string' && Object.hasOwn(REASONS, v) ? v 
 // d : exemplaires dédoublonnés (eid) ; g : une Carte par card_id, en JSON. Une carte possédée en plusieurs raretés
 // garde la plus haute (C < PC < R < SR < UR < L), pas la plus grande en texte. Ses exemplaires par rareté
 // d'exemplaire et brillance (variants, cards.js) sont additionnés, et gardés seulement s'ils les comptent tous (une
-// entrée sans ce détail : la carte n'en a pas).
+// entrée sans ce détail : la carte n'en a pas). Tags du jeu (gtags) : réunis sur tous ses exemplaires, sans doublon, triés,
+// MAX_GTAGS au plus, en dernier dans le JSON (puis leurs couleurs, gtagc, s'il y en a) et absents s'il n'y en a aucun ;
+// g.gread = 1 si au moins un exemplaire les a lus (tableau gtags, même vide), 0 sinon (favori d'avant les tags du jeu :
+// ceux du classeur sont gardés).
 function collectionCte(source) {
   return `WITH st AS (${source}),
   e AS (
@@ -89,7 +94,7 @@ function collectionCte(source) {
       'shiny', json(CASE WHEN MAX(json_extract(v, '$.shiny')) THEN 'true' ELSE 'false' END),
       'starred', json(CASE WHEN MAX(json_extract(v, '$.starred')) THEN 'true' ELSE 'false' END),
       'obtained_at', MIN(json_extract(v, '$.obtained_at'))
-    ) AS data
+    ) AS data, MAX(json_type(v, '$.gtags') = 'array') AS gread
     FROM d WHERE bad IS NULL GROUP BY card_id
   ),
   vk AS (
@@ -97,9 +102,29 @@ function collectionCte(source) {
     WHERE d.bad IS NULL AND json_type(d.v, '$.variants') = 'object' GROUP BY d.card_id, k.key
   ),
   vg AS (SELECT card_id, json_group_object(k, n) AS j, SUM(n) AS total FROM (SELECT card_id, k, n FROM vk ORDER BY card_id, k) GROUP BY card_id),
-  g AS (
-    SELECT g0.card_id, CASE WHEN vg.total = g0.cnt THEN json_set(g0.data, '$.variants', json(vg.j)) ELSE g0.data END AS data
+  gv AS (
+    SELECT DISTINCT d.card_id, t.value AS t FROM d, json_each(d.v, '$.gtags') AS t
+    WHERE d.bad IS NULL AND json_type(d.v, '$.gtags') = 'array' AND t.type = 'text'
+  ),
+  gc AS (
+    SELECT d.card_id, k.key AS t, MAX(k.value) AS c FROM d, json_each(d.v, '$.gtagc') AS k
+    WHERE d.bad IS NULL AND json_type(d.v, '$.gtagc') = 'object' AND k.type = 'text' GROUP BY d.card_id, k.key
+  ),
+  gt AS (
+    SELECT card_id, json_group_array(t) AS j, json_group_object(t, c) FILTER (WHERE c IS NOT NULL) AS cj, COUNT(c) AS nc FROM (
+      SELECT r.card_id, r.t, gc.c FROM (SELECT card_id, t, ROW_NUMBER() OVER (PARTITION BY card_id ORDER BY t) AS k FROM gv) AS r
+      LEFT JOIN gc ON gc.card_id = r.card_id AND gc.t = r.t
+      WHERE r.k <= ${MAX_GTAGS} ORDER BY r.card_id, r.t
+    ) GROUP BY card_id
+  ),
+  g1 AS (
+    SELECT g0.card_id, g0.gread, CASE WHEN vg.total = g0.cnt THEN json_set(g0.data, '$.variants', json(vg.j)) ELSE g0.data END AS data
     FROM g0 LEFT JOIN vg ON vg.card_id = g0.card_id
+  ),
+  g AS (
+    SELECT g1.card_id, g1.gread, CASE WHEN gt.j IS NULL THEN g1.data WHEN gt.nc THEN json_set(g1.data, '$.gtags', json(gt.j), '$.gtagc', json(gt.cj))
+      ELSE json_set(g1.data, '$.gtags', json(gt.j)) END AS data
+    FROM g1 LEFT JOIN gt ON gt.card_id = g1.card_id
   )`;
 }
 
@@ -112,6 +137,21 @@ const CARD_FIELDS = ['title', 'atk', 'def', 'quality', 'pageviews', 'category', 
 // SQL : un de ces champs diffère entre deux cartes en JSON ; carte `a` avec ceux de `b`.
 const cardFieldsDiffer = (a, b) => CARD_FIELDS.map((f) => `json_extract(${a}, '$.${f}') IS NOT json_extract(${b}, '$.${f}')`).join(' OR ');
 const withCardFields = (a, b) => `json_set(${a}, ${CARD_FIELDS.map((f) => `'$.${f}', json_extract(${b}, '$.${f}')`).join(', ')})`;
+// Tags du jeu : propres à chaque exemplaire (pas à la carte), donc jamais retirés par une lecture qui a pu manquer des
+// exemplaires (synchro rapide, lecture non vérifiée) : la carte `base` reçoit la réunion de ses tags du jeu `a` et des
+// nouveaux `b` (tableaux JSON ou NULL), triés, MAX_GTAGS au plus, avec leurs couleurs (`bc` d'abord, sinon `ac` : objets
+// JSON ou NULL), remis en dernier (même ordre des clés qu'une carte importée) ; aucun : clés retirées. Seule une lecture
+// vérifiée qui les a lus les remplace.
+const withGtags = (base, a, b, ac, bc) => {
+  const bare = `json_remove(${base}, '$.gtags', '$.gtagc')`;
+  return `(SELECT CASE WHEN COUNT(*) = 0 THEN ${bare}
+      WHEN COUNT(c) = 0 THEN json_set(${bare}, '$.gtags', json_group_array(t))
+      ELSE json_set(${bare}, '$.gtags', json_group_array(t), '$.gtagc', json_group_object(t, c) FILTER (WHERE c IS NOT NULL)) END
+    FROM (SELECT u.t, COALESCE((SELECT value FROM json_each(COALESCE(${bc}, '{}')) WHERE key = u.t),
+        (SELECT value FROM json_each(COALESCE(${ac}, '{}')) WHERE key = u.t)) AS c
+      FROM (SELECT value AS t FROM json_each(COALESCE(${a}, '[]')) UNION SELECT value FROM json_each(COALESCE(${b}, '[]'))
+        ORDER BY t LIMIT ${MAX_GTAGS}) AS u))`;
+};
 
 // Cartes retirées (cards_gone, lecture incrémentale). Une carte écrite par l'opération (nouvelle, revenue ou modifiée,
 // donc cards.rev = NEXT_REV) n'est plus retirée.
@@ -212,8 +252,11 @@ function rarityCounts(s) {
 //     par exemplaire ;
 //   - rarityCounts, rareté par rareté (voit un échange 1 contre 1 entre raretés différentes) ;
 //   - totalUnique, en absolu : cartes du classeur + cartes nouvelles + cartes invalides connues.
+// - tags du jeu (tsig : signature de tagOptions, rendue par tagSig ; undefined pour un client qui ne lit pas les tags) :
+//   la même qu'à la dernière lecture complète, sinon 'tags' (un tag posé ou retiré dans le jeu ne crée aucun exemplaire ;
+//   jamais lus encore : 'tags' aussi, la première synchro d'un favori qui les lit relit donc tout).
 // {fresh} (nombre de cartes nouvelles) si tout colle, sinon {reason}.
-export async function deltaFits(db, user, state, { cards, text, stats, rows, copies: sent }) {
+export async function deltaFits(db, user, state, { cards, text, stats, rows, copies: sent, tsig }) {
   const prev = state.stats;
   if (!countsOk(stats)) return { reason: 'counts' };
   let copies = 0;
@@ -232,6 +275,7 @@ export async function deltaFits(db, user, state, { cards, text, stats, rows, cop
       if ((now[r] || 0) - (was[r] || 0) !== (byRarity[r] || 0)) return { reason: 'counts' };
     }
   }
+  if (tsig !== undefined && state.tsig !== tsig) return { reason: 'tags' };
   // Cartes nouvelles : une recherche par clé par nouveauté (jamais toute la collection).
   const row = await db.prepare(
     `${collectionCte(DELTA_SOURCE)} SELECT COUNT(*) AS n FROM g
@@ -256,7 +300,7 @@ export async function deltaFits(db, user, state, { cards, text, stats, rows, cop
 // {needs_full, reason: 'race'} et rien n'est écrit.
 // started = début de la lecture (startedAt), gardé dans read_at ; copies = exemplaires ajoutés et log = {via, v} pour
 // la ligne du journal (synclog.js).
-export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, copies = 0, started = null, log = {}, clear = [] }) {
+export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, copies = 0, started = null, log = {}, clear = [], godd = null }) {
   const t0 = Date.now();
   const cte = collectionCte(DELTA_SOURCE);
   const count = state.count + fresh;
@@ -283,6 +327,9 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   const variants = `json((SELECT json_group_object(k, n) FROM (SELECT key AS k, SUM(value) AS n FROM (
              SELECT key, value FROM json_each(cards.data, '$.variants') UNION ALL SELECT key, value FROM json_each(excluded.data, '$.variants')
            ) GROUP BY key ORDER BY key)))`;
+  const merged = `CASE
+         WHEN json_type(cards.data, '$.variants') = 'object' AND json_type(excluded.data, '$.variants') = 'object'
+         THEN json_set(${base}, '$.variants', ${variants}) ELSE ${base} END`;
   const [updated] = await db.batch([
     db.prepare(
       `${cte} UPDATE users SET
@@ -294,9 +341,8 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data, rev)
        SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g WHERE (SELECT sync_state FROM users WHERE id = ?1) IS ?3
-       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev, data = CASE
-         WHEN json_type(cards.data, '$.variants') = 'object' AND json_type(excluded.data, '$.variants') = 'object'
-         THEN json_set(${base}, '$.variants', ${variants}) ELSE ${base} END`,
+       ON CONFLICT (user_id, card_id) DO UPDATE SET rev = excluded.rev,
+         data = ${withGtags(merged, old('gtags'), add('gtags'), old('gtagc'), add('gtagc'))}`,
     ).bind(user.id, text, next),
     clearGone(db, user.id),
     commitRev(db, user.id),
@@ -307,10 +353,10 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   await writeLog(db, user.id, {
     kind: 'quick',
     result: 'ok',
-    message: copies
+    message: (copies
       ? `Synchro rapide : ${num(copies)} ${plural(copies, 'exemplaire obtenu', 'exemplaires obtenus')}, ${fresh ? `${num(fresh)} ${plural(fresh, 'nouvelle carte', 'nouvelles cartes')}` : 'aucune nouvelle carte'} (${num(count)} ${plural(count, 'carte', 'cartes')}).`
-      : `Synchro rapide : rien de nouveau (${num(count)} ${plural(count, 'carte', 'cartes')}).`,
-    data: { ...log, count, fresh, copies, ms: started ? Date.now() - Date.parse(started) : Date.now() - t0 },
+      : `Synchro rapide : rien de nouveau (${num(count)} ${plural(count, 'carte', 'cartes')}).`) + oddNote(godd),
+    data: { ...log, count, fresh, copies, gtags_odd: godd, ms: started ? Date.now() - Date.parse(started) : Date.now() - t0 },
   });
   return {
     count,
@@ -363,9 +409,11 @@ async function deltaRoute(db, user, body) {
   }
   const text = JSON.stringify(cards);
   const stats = pickStats(body.stats);
-  const fit = await deltaFits(db, user, state, { cards, text, stats, rows: body.rows, copies: body.copies });
+  const fit = await deltaFits(db, user, state, { cards, text, stats, rows: body.rows, copies: body.copies, tsig: clientTsig(body) });
   if (fit.reason) return needsFull(fit.reason);
-  return writeDelta(db, user, state, { text, stats, lastAt: body.last_at ?? null, fresh: fit.fresh, copies: body.copies, started, log });
+  return writeDelta(db, user, state, {
+    text, stats, lastAt: body.last_at ?? null, fresh: fit.fresh, copies: body.copies, started, log, godd: oddOf(body.gtags_odd),
+  });
 }
 
 // Applique la collection de la table d'attente, en n'écrivant que les différences, dans une transaction. Les cartes
@@ -391,8 +439,11 @@ async function deltaRoute(db, user, body) {
 // ligne du journal (synclog.js).
 // Réponse : {count, new_ids, complete, skipped, removed, kept} (+ moved: true ; ou superseded: true) ; le journal compte
 // aussi les cartes déjà là mises à jour par une lecture non vérifiée (updated).
+// tsig = signature des tags du jeu lus (tagSig ; undefined : lecture qui ne lit pas les tags, celle d'avant est gardée) ;
+// godd = forme de tags du jeu non reconnue par le favori (journal).
 export async function finalizeImport(db, user, {
   source, key, stats, lastAt = null, read = null, ignored = 0, clear, skipped = 0, statsEnd = null, started = null, upload = null, log = {},
+  tsig, godd = null,
 }) {
   const cte = collectionCte(source);
   // Un passage : cartes distinctes (valides ou non ; une entrée sans identifiant de carte n'en est pas une), entrées
@@ -424,9 +475,12 @@ export async function finalizeImport(db, user, {
   const fresh = count - (have - unseen); // cartes lues absentes du classeur
   const after = verified ? count : have + fresh;
   if (after > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
-  // Lecture non vérifiée : cartes déjà là dont un champ de carte du jeu a changé (mises à jour plus bas), pour le journal.
+  // Lecture non vérifiée : cartes déjà là dont un champ de carte du jeu a changé ou qui reçoivent un tag du jeu de plus
+  // (mises à jour plus bas), pour le journal.
   const updated = verified ? 0 : (await db.prepare(
-    `${cte} SELECT COUNT(*) AS n FROM g JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id WHERE ${cardFieldsDiffer('c.data', 'g.data')}`,
+    `${cte} SELECT COUNT(*) AS n FROM g JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
+     WHERE ${cardFieldsDiffer('c.data', 'g.data')} OR EXISTS (SELECT 1 FROM json_each(COALESCE(json_extract(g.data, '$.gtags'), '[]')) AS t
+       WHERE t.value NOT IN (SELECT value FROM json_each(COALESCE(json_extract(c.data, '$.gtags'), '[]'))))`,
   ).bind(user.id, key).first())?.n ?? 0;
   const last = lastAt || sum.last || null;
   const armed = verified && (unit === 'copies' || unit === 'both') && isDate(last);
@@ -444,6 +498,7 @@ export async function finalizeImport(db, user, {
     read_at: verified ? started : prev?.read_at ?? null,
     complete: moved ? false : complete,
     up: upload,
+    tsig: typeof tsig === 'string' ? tsig : prev?.tsig,
   });
   // Les cartes ne sont écrites que si l'état vient d'être remplacé par celui-ci (son jeton) ; read_at lu en SQL (une
   // ancienne valeur de sync_state peut ne pas être du JSON).
@@ -461,13 +516,24 @@ export async function finalizeImport(db, user, {
          fetched_at = ?3, sync_state = ?4
        WHERE id = ?1 AND (?5 IS NULL OR ${readAt} IS NULL OR ${readAt} <= ?5) RETURNING new_ids`,
     ).bind(user.id, key, nowIso(), state, started),
-    // Nouvelles et modifiées (lecture vérifiée : la carte lue remplace l'ancienne) ; sinon nouvelles, et déjà là dont un
-    // champ de carte du jeu a changé (seulement ceux-là sont repris). Une carte inchangée garde sa révision.
+    // Nouvelles et modifiées (lecture vérifiée : la carte lue remplace l'ancienne, tags du jeu compris s'ils ont été lus ;
+    // sinon ceux du classeur restent) ; lecture non vérifiée : nouvelles, et déjà là dont un champ de carte du jeu a changé
+    // (seulement ceux-là sont repris) ou qui reçoivent des tags du jeu (réunis, jamais retirés). Une carte inchangée garde
+    // sa révision. nd = la carte écrite, od = celle du classeur, gd = celle de la lecture.
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data, rev)
-       SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
-       WHERE (c.data IS NULL OR ${verified ? 'c.data <> g.data' : `(${cardFieldsDiffer('c.data', 'g.data')})`}) AND ${ours}
-       ON CONFLICT (user_id, card_id) DO UPDATE SET data = ${verified ? 'excluded.data' : withCardFields('cards.data', 'excluded.data')}, rev = excluded.rev`,
+       SELECT ?1, card_id, nd, ${NEXT_REV} FROM (
+         SELECT card_id, od, gd, CASE WHEN od IS NULL THEN gd ELSE ${verified
+    ? `CASE WHEN gread OR json_type(od, '$.gtags') IS NULL THEN gd
+         WHEN json_type(od, '$.gtagc') IS NULL THEN json_set(gd, '$.gtags', json(json_extract(od, '$.gtags')))
+         ELSE json_set(gd, '$.gtags', json(json_extract(od, '$.gtags')), '$.gtagc', json(json_extract(od, '$.gtagc'))) END`
+    : withGtags(withCardFields('od', 'gd'), "json_extract(od, '$.gtags')", "json_extract(gd, '$.gtags')", "json_extract(od, '$.gtagc')",
+      "json_extract(gd, '$.gtagc')")} END AS nd
+         FROM (SELECT g.card_id, g.gread, c.data AS od, g.data AS gd FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id)
+       )
+       WHERE (od IS NULL OR ${verified ? 'od <> nd' : `${cardFieldsDiffer('od', 'gd')} OR json_extract(nd, '$.gtags') IS NOT json_extract(od, '$.gtags')
+         OR json_extract(nd, '$.gtagc') IS NOT json_extract(od, '$.gtagc')`}) AND ${ours}
+       ON CONFLICT (user_id, card_id) DO UPDATE SET data = excluded.data, rev = excluded.rev`,
     ).bind(user.id, key, tok),
     clearGone(db, user.id),
     // Lecture vérifiée seulement. Disparues : une marque chacune (cards_gone), puis effacées par ces marques (leurs
@@ -511,6 +577,7 @@ export async function finalizeImport(db, user, {
   const data = {
     ...log, count: after, fresh, removed: verified ? unseen : 0, kept: verified ? 0 : unseen, ...(verified ? {} : { updated }), read: count + invalid,
     unique: counts ? counts.totalUnique : null, total: counts ? counts.total : null, invalid, skipped, complete, moved: moved || null, ms,
+    gtags_odd: godd,
   };
   if (!results[0].results.length) return supersededReply(db, user, 'full', data, { complete });
   await valueAfterCards(db, user.id); // valeur du jour (market.js), au plus une fois par heure
@@ -520,6 +587,15 @@ export async function finalizeImport(db, user, {
   return res;
 }
 
+// Forme de tags du jeu que le favori n'a pas reconnue (gtags_odd : types et noms de clés, jamais de valeur) : gardée
+// seulement si elle n'a que des caractères attendus, 120 au plus ; sinon « autre ». oddNote : sa mention dans le journal.
+const ODD = /^[\w{},:() .\[\]-]{1,120}$/;
+export const oddOf = (v) => (typeof v === 'string' && v ? (ODD.test(v) ? v : 'autre') : null);
+const oddNote = (godd) => (godd ? ` Tags du jeu dans un format inconnu (${godd}) : ils n'ont pas été lus.` : '');
+// Le client lit-il les tags du jeu ? Favori de version 3 ou plus (18 octobre 2026) : signature de ses tagOptions ;
+// sinon undefined (aucun contrôle des tags).
+const clientTsig = (body) => ((versionOf(body.v) ?? 0) >= 3 ? tagSig(body.stats && typeof body.stats === 'object' ? body.stats.tagOptions : undefined) : undefined);
+
 // Ligne du journal d'une lecture complète appliquée (data : voir finalizeImport).
 function fullLogEntry(d, verified, reason) {
   const nouvelles = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle', 'nouvelles')}` : 'aucune nouvelle';
@@ -527,7 +603,7 @@ function fullLogEntry(d, verified, reason) {
   if (verified) {
     const why = reason ? ` (${REASONS[reason]})` : '';
     const removed = d.removed ? `${num(d.removed)} ${plural(d.removed, 'retirée', 'retirées')}` : 'aucune retirée';
-    return { kind: 'full', result: 'ok', message: `Lecture complète${why} : ${num(d.count)} ${plural(d.count, 'carte', 'cartes')}, ${nouvelles}, ${removed}${ignored}.`, data: d };
+    return { kind: 'full', result: 'ok', message: `Lecture complète${why} : ${num(d.count)} ${plural(d.count, 'carte', 'cartes')}, ${nouvelles}, ${removed}${ignored}.${oddNote(d.gtags_odd)}`, data: d };
   }
   const added = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle carte ajoutée', 'nouvelles cartes ajoutées')}` : 'aucune nouvelle carte';
   const kept = d.kept ? ` (${num(d.kept)} ${plural(d.kept, 'carte non vue, gardée', 'cartes non vues, gardées')})` : '';
@@ -539,7 +615,7 @@ function fullLogEntry(d, verified, reason) {
   return {
     kind: 'full',
     result: 'warn',
-    message: `${head} : ${added}${updated}, aucune carte retirée${kept}${ignored}. Relance la mise à jour dans un moment.`,
+    message: `${head} : ${added}${updated}, aucune carte retirée${kept}${ignored}. Relance la mise à jour dans un moment.${oddNote(d.gtags_odd)}`,
     data: d,
   };
 }
@@ -627,7 +703,8 @@ async function uploadRoute(db, user, body) {
   if (!list) throw new HttpError(400, 'Il manque les cartes (champ « cards », ou « collection » pour les entrées du jeu).');
   if (list.length > MAX_PART_CARDS) throw new HttpError(400, `${MAX_PART_CARDS} cartes au plus par morceau.`);
   const rawEntries = list !== body.cards;
-  const convert = rawEntries ? entryToCard : checkCard;
+  const names = rawEntries ? gameTagNames(body.stats && typeof body.stats === 'object' ? body.stats.tagOptions : null) : null;
+  const convert = rawEntries ? (entry) => entryToCard(entry, names) : checkCard;
   const cards = [];
   let skipped = 0;
   list.forEach((item) => {
@@ -671,6 +748,13 @@ async function uploadRoute(db, user, body) {
   if (reasonOf(body.reason)) head.reason = body.reason;
   if (viaOf(body.via)) head.via = body.via;
   if (versionOf(body.v)) head.v = body.v;
+  // Tags du jeu : signature de tagOptions quand ce morceau a les stats et que le client lit les tags (favori de version 3
+  // ou plus, ou entrées brutes lues ici) ; forme non reconnue par le favori.
+  if (body.stats && typeof body.stats === 'object') {
+    const tsig = rawEntries ? tagSig(body.stats.tagOptions) : clientTsig(body);
+    if (tsig !== undefined) head.tsig = tsig;
+  }
+  if (oddOf(body.gtags_odd)) head.godd = oddOf(body.gtags_odd);
 
   // Plusieurs envois en même temps (deux onglets, favori relié et clic) : chacun garde ses morceaux ; au-delà de
   // MAX_UPLOADS, les plus anciens sont abandonnés (leur dernier morceau répondra 409).
@@ -719,6 +803,8 @@ async function uploadRoute(db, user, body) {
       clear: [clear],
       skipped: skippedTotal,
       log: { via: meta ? viaOf(meta.via) : null, reason: meta ? reasonOf(meta.reason) : null, v: meta ? versionOf(meta.v) : null },
+      tsig: meta && typeof meta.tsig === 'string' ? meta.tsig : undefined,
+      godd: meta ? oddOf(meta.godd) : null,
     });
   } catch (err) {
     // Refus définitif (collection vide ou trop grande) : l'envoi est abandonné. Erreur passagère (base) : ses morceaux

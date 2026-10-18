@@ -7,7 +7,7 @@
 
 import { purgeStaging } from './db.js';
 import { HttpError } from './http.js';
-import { badCard, entryToCard } from './cards.js';
+import { badCard, entryToCard, gameTagNames, tagSig } from './cards.js';
 import { REFRESH_SOURCE, deltaFits, finalizeImport, pickStats, quickSyncAllowed, startedAt, syncState, writeDelta } from './import.js';
 import { GAME_HOST, decryptCookie, encryptCookie, mergeSetCookies, setCookiesOf } from './session.js';
 import { errorEntry, writeLog } from './synclog.js';
@@ -60,7 +60,8 @@ async function readNewest(gameGet, lastAt, maxPages) {
 }
 
 // Nouveautés → {cards, text, rows, copies, lastAt} pour deltaFits / writeDelta ; null si une entrée est inexploitable.
-function deltaOf(fresh) {
+// names : identifiants des tags du jeu → noms (gameTagNames de tagOptions).
+function deltaOf(fresh, names) {
   const seen = new Set();
   const cards = [];
   let rows = 0;
@@ -71,7 +72,7 @@ function deltaOf(fresh) {
       if (seen.has(eid)) continue;
       seen.add(eid);
     }
-    const card = entryToCard(entry);
+    const card = entryToCard(entry, names);
     if (!card) return null;
     cards.push(card);
     rows++;
@@ -106,8 +107,10 @@ async function refreshCall(env, user, body, ctx) {
   // Pause réglable pour les tests (REFRESH_PAUSE_MS) ; 250 ms sinon.
   const pause = env.REFRESH_PAUSE_MS !== undefined ? Number(env.REFRESH_PAUSE_MS) : PAUSE_MS;
 
-  // Jeton de cette lecture (tiré à la page 0, gardé dans la page -1 de la table d'attente) et son début.
+  // Jeton de cette lecture (tiré à la page 0, gardé dans la page -1 de la table d'attente) et son début ; identifiants des
+  // tags du jeu → noms (tagOptions des stats de la page 0, gardés aussi dans la page -1 pour les appels suivants).
   let run = body.run ?? null;
+  let names = new Map();
   if (page === 0) {
     run = randomToken(9);
     await db.batch([...purgeStaging(db), db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)]);
@@ -117,7 +120,8 @@ async function refreshCall(env, user, body, ctx) {
     // cette lecture (jeton de la page -1 ; un ancien client sans jeton n'est pas contrôlé).
     const row = await db.prepare(
       `SELECT COUNT(*) AS n,
-         (SELECT json_extract(entries, '$.run') FROM refresh_staging WHERE user_id = ?1 AND page = -1) AS run
+         (SELECT json_extract(entries, '$.run') FROM refresh_staging WHERE user_id = ?1 AND page = -1) AS run,
+         (SELECT json_extract(entries, '$.tnames') FROM refresh_staging WHERE user_id = ?1 AND page = -1) AS tnames
        FROM refresh_staging WHERE user_id = ?1 AND page >= 0 AND page < ?2`,
     )
       .bind(user.id, page)
@@ -127,6 +131,11 @@ async function refreshCall(env, user, body, ctx) {
     }
     if (!row || row.n !== page) {
       throw new HttpError(409, "Le rafraîchissement a été interrompu : recommence depuis le début (ton classeur n'a pas été modifié).");
+    }
+    try {
+      names = new Map(row.tnames ? JSON.parse(row.tnames) : []);
+    } catch {
+      names = new Map();
     }
   }
 
@@ -180,9 +189,13 @@ async function refreshCall(env, user, body, ctx) {
   try {
     let budget = PAGES_PER_CALL;
     if (page === 0) {
-      const stats = pickStats(await gameGet('/api/my-collection/stats?sort=rarity'));
+      const rawStats = await gameGet('/api/my-collection/stats?sort=rarity');
+      const stats = pickStats(rawStats);
+      const options = rawStats && typeof rawStats === 'object' ? rawStats.tagOptions : undefined;
+      names = gameTagNames(options);
+      const tsig = tagSig(options);
       const started = nowIso();
-      staged.push([-1, JSON.stringify({ ...(stats ?? {}), run, started }), 0]);
+      staged.push([-1, JSON.stringify({ ...(stats ?? {}), run, started, tsig, tnames: names.size && names.size <= 5000 ? [...names] : undefined }), 0]);
       const state = syncState(user);
       if (body.full !== true && stats && quickSyncAllowed(state)) {
         ctx.phase = 'quick';
@@ -190,8 +203,8 @@ async function refreshCall(env, user, body, ctx) {
         // l'appel ne décode jamais plus de PAGES_PER_CALL pages en tout.
         const got = await readNewest(gameGet, state.last_at, PAGES_PER_CALL - 1);
         budget -= got.pages;
-        const delta = got.fresh && deltaOf(got.fresh);
-        const fit = delta && (await deltaFits(db, user, state, { ...delta, stats }));
+        const delta = got.fresh && deltaOf(got.fresh, names);
+        const fit = delta && (await deltaFits(db, user, state, { ...delta, stats, tsig }));
         if (fit && fit.reason === undefined) {
           const res = await writeDelta(db, user, state, {
             text: delta.text, stats, lastAt: delta.lastAt, fresh: fit.fresh, copies: delta.copies, started, log: { via: 'cookie' },
@@ -211,7 +224,7 @@ async function refreshCall(env, user, body, ctx) {
       const cards = [];
       let skipped = 0;
       list.forEach((entry) => {
-        const card = entryToCard(entry);
+        const card = entryToCard(entry, names);
         if (card) {
           cards.push(card);
         } else {
@@ -295,6 +308,7 @@ async function refreshCall(env, user, body, ctx) {
     clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)],
     skipped: info?.skipped ?? 0,
     log: { via: 'cookie' },
+    tsig: head && typeof head.tsig === 'string' ? head.tsig : undefined,
   });
   return { done: true, ...result };
 }

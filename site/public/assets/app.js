@@ -238,6 +238,8 @@
     rarities: [], // vide = toutes
     sort: 'rarity',
     tagFilter: [],
+    gtagFilter: [], // tags du jeu (clés repliées, catKey) qui filtrent « Mes cartes », combinés
+    gtagsAll: false, // « Tags du jeu » de « Mes cartes » : tous montrés (sinon les GTAG_FACET premiers)
     untaggedOnly: false,
     newOnly: false,
     limit: PAGE,
@@ -276,10 +278,10 @@
     bulkCat: '',
     wp: { list: [], running: false, done: 0, total: 0, label: '', error: '', busy: {} }, // propositions d'après les catégories Wikipédia
     arrange: null, // « Ranger mes tags » : {rows, busy, loading, progress, error}
-    // « Ajouter par catégorie du jeu » (album d'une collection) : {id (de la collection), on (propositions cochées :
-    // « c:<catégorie du jeu repliée> », « t:<tag> » ou « t:<Catégorie de tags>/ »), off (cartes décochées dans l'aperçu :
-    // ids), extra (catégories choisies à la main), field, fieldError, limit (cartes de l'aperçu affichées), tags (tes tags
-    // du classeur dépliés), busy, error}.
+    // « Ajouter par tags du jeu » (album d'une collection) : {id (de la collection), on (propositions cochées :
+    // « g:<tag du jeu replié> », « c:<catégorie du jeu repliée> », « t:<tag> » ou « t:<Catégorie de tags>/ »), off (cartes
+    // décochées dans l'aperçu : ids), extra (tags et catégories du jeu choisis à la main), field, fieldError, limit (cartes
+    // de l'aperçu affichées), tags (tes tags du classeur dépliés), busy, error}.
     tagAdd: null,
     sugg: { version: 0, running: false, done: 0, total: 0, error: '', cardBusy: '', cardError: '', cardErrorFor: '' },
     // « Entre amis » : lecture des membres (busy, loading = carte en cours), activation du partage, classeur parcouru.
@@ -746,7 +748,7 @@
   });
   const tagCount = computed(() => new Map(tagList.value.map((t) => [t.name, t.count])));
   const untaggedCount = computed(() => cards.value.reduce((n, c) => n + (c.tags.length ? 0 : 1), 0));
-  const hasFilters = computed(() => !!(S.tagFilter.length || S.untaggedOnly || S.newOnly || S.q.trim() || S.rarities.length));
+  const hasFilters = computed(() => !!(S.tagFilter.length || S.gtagFilter.length || S.untaggedOnly || S.newOnly || S.q.trim() || S.rarities.length));
   const SORTERS = {
     rarity: (a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.pageviews ?? -1) - (a.pageviews ?? -1),
     pageviews: (a, b) => (b.pageviews ?? -1) - (a.pageviews ?? -1),
@@ -755,7 +757,8 @@
     def: (a, b) => (b.def ?? -1) - (a.def ?? -1),
     title: (a, b) => COLLATOR.compare(a.title, b.title),
   };
-  // « Mes cartes » : recherche (titre, description, tags), raretés, tags (combinés), sans tag, nouvelles.
+  // « Mes cartes » : recherche (titre, description, tags du jeu, tags), raretés, tags du jeu et tags (combinés), sans tag,
+  // nouvelles.
   const filtered = computed(() => {
     const q = fold(S.q.trim());
     const rar = new Set(S.rarities.length ? S.rarities : RARITIES);
@@ -765,7 +768,8 @@
       && (!q || c._k.includes(q) || c.tags.some((t) => fold(t).includes(q)))
       && (!S.untaggedOnly || !c.tags.length)
       && (!S.newOnly || fresh.has(c.id))
-      && tags.every((tok) => (tok.endsWith('/') ? c.tags.some((t) => tagCat(t) === tok.slice(0, -1)) : c.tags.includes(tok))));
+      && tags.every((tok) => (tok.endsWith('/') ? c.tags.some((t) => tagCat(t) === tok.slice(0, -1)) : c.tags.includes(tok)))
+      && S.gtagFilter.every((k) => c.gtags.some((t) => catKey(t) === k)));
     // Prix (cote de ton meilleur exemplaire ; sans cote fiable, à la fin) : à égalité, par rareté.
     if (isPriceSort(S.sort)) return sortByPrice(out, (c) => cardPrice(c, ownCote(c)), priceDir(S.sort), SORTERS.rarity);
     return out.sort(SORTERS[S.sort] || SORTERS.rarity);
@@ -1224,7 +1228,7 @@
     cardsGen++;
     cardsJob = Promise.resolve();
     Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null,
-      q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
+      q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
     S.refresh.error = false;
@@ -1313,9 +1317,13 @@
     if (me.prefs !== undefined && pg === prefsGen && !prefsPending) S.prefs = normPrefs(me.prefs);
     return me;
   }
+  // Carte reçue du serveur : tags du classeur et tags du jeu (gtags, posés par le joueur dans wiki-masters.com, avec leurs
+  // couleurs gtagc) en tableaux ; _k = texte de la recherche (titre, catégorie du jeu, tags du jeu).
   function prepCard(c) {
     const tags = Array.isArray(c.tags) ? c.tags.map(String) : [];
-    return markRaw({ ...c, title: String(c.title || ''), tags, _k: fold(`${c.title || ''} ${c.category || ''}`) });
+    const gtags = Array.isArray(c.gtags) ? c.gtags.map(String) : [];
+    const gtagc = c.gtagc && typeof c.gtagc === 'object' && !Array.isArray(c.gtagc) ? c.gtagc : null;
+    return markRaw({ ...c, title: String(c.title || ''), tags, gtags, gtagc, _k: fold(`${c.title || ''} ${c.category || ''} ${gtags.join(' ')}`) });
   }
   // Relecture complète. Rend true si les cartes ont été remplacées (false : classeur changé entre-temps).
   async function loadCards() {
@@ -1636,7 +1644,7 @@
     if (d.toDateString() === new Date(now.getTime() - 86400000).toDateString()) return `hier à ${hm}`;
     return `${dateDay(iso)} à ${hm}`;
   }
-  // Version du favori servi (bookmarklet.js, « var VERSION = 2; ») ; la dernière synchro faite par un favori (ou un
+  // Version du favori servi (bookmarklet.js, « var VERSION = 3; ») ; la dernière synchro faite par un favori (ou un
   // script) plus ancien le fait remplacer.
   const favoriVersion = computed(() => { const m = S.bm.src && S.bm.src.match(/var VERSION = (\d+);/); return m ? Number(m[1]) : null; });
   const oldFavori = computed(() => {
@@ -1874,7 +1882,7 @@
     toTop();
   }
   function resetFilters() {
-    Object.assign(S, { q: '', tagFilter: [], untaggedOnly: false, newOnly: false, rarities: [] });
+    Object.assign(S, { q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [] });
   }
   function openAlbum(kind, id) {
     if (kind !== 'category') stopCategory();
@@ -1892,6 +1900,15 @@
     // Clic simple : ce tag seul (ou plus aucun) ; Ctrl/⌘+clic : combiner.
     if (ev && (ev.ctrlKey || ev.metaKey)) S.tagFilter = S.tagFilter.includes(name) ? S.tagFilter.filter((x) => x !== name) : [...S.tagFilter, name];
     else S.tagFilter = S.tagFilter.length === 1 && S.tagFilter[0] === name ? [] : [name];
+    S.untaggedOnly = false;
+    S.newOnly = false;
+    S.tab = 'cartes';
+  }
+  // Tag du jeu (clé repliée) : clic simple, lui seul (ou plus aucun) ; Ctrl/⌘+clic : combiner. Les tags du classeur
+  // choisis restent (les deux se combinent).
+  function toggleGtagFilter(key, ev) {
+    if (ev && (ev.ctrlKey || ev.metaKey)) S.gtagFilter = S.gtagFilter.includes(key) ? S.gtagFilter.filter((x) => x !== key) : [...S.gtagFilter, key];
+    else S.gtagFilter = S.gtagFilter.length === 1 && S.gtagFilter[0] === key ? [] : [key];
     S.untaggedOnly = false;
     S.newOnly = false;
     S.tab = 'cartes';
@@ -2425,22 +2442,25 @@
     });
   }
 
-  // ---------------------------------------------------------------- « Ajouter par catégorie du jeu » (album d'une collection)
+  // ---------------------------------------------------------------- « Ajouter par tags du jeu » (album d'une collection)
   // Demande de l'utilisateur (2026-10-17) : « Alek a une collection maladie et doit avoir plein de cartes avec le tag
   // maladie qui ne sont pas dedans » ; précisée le 2026-10-18 : « je parlais [des tags] de wiki-masters, pas ceux en
-  // automatique ». Ces « tags » du jeu sont la **catégorie du jeu** de chaque carte (card.category : le texte que le jeu
-  // montre sous son titre, « maladie », « chanteuse barbadienne », lu par le favori). Catégories proposées pour une
-  // collection, parmi celles de tes cartes : celles dont le texte ressemble à son nom (mots repliés : accents, casse,
-  // articles, pluriel et féminin ignorés) — même nom (« Maladies » ↔ « maladie », cochée d'emblée), plus précise
-  // (« maladie infectieuse ») ou plus large (« maladie » pour « Maladies rares ») —, puis celles que portent beaucoup de ses
-  // éléments (catégorie de ta carte, sinon description de l'élément : celle du jeu pour une collection du favori, celle de
-  // Wikidata sinon, le même texte en général : 2 au moins, et 20 % des éléments qui en ont une), et celles choisies à la
-  // main. Tes tags du classeur ne viennent qu'en second, repliés, jamais cochés d'emblée (l'utilisateur ne les veut pas
-  // comme base). Pour chaque proposition : tes cartes qui la portent et ne sont pas encore dans la collection (titre puis
-  // qid, comme l'album ; une seule par titre). Les cartes cochées s'ajoutent à la fin de la collection
-  // (POST /api/targets/save, éléments existants inchangés), sans doublon, dans les limites de targets.js ; une collection
-  // faite d'une catégorie ou d'une page de Wikipédia garde sa source (comme avec « Modifier »).
-  // Clés des propositions : « c:<catégorie repliée> » (catégorie du jeu), « t:<tag> » ou « t:<Catégorie de tags>/ » (tags).
+  // automatique ». Ce sont les **tags du jeu** : les étiquettes que le joueur pose lui-même sur ses cartes dans
+  // wiki-masters.com (gtags, lus par le favori depuis le 18 octobre 2026). Proposés d'abord, parmi ceux de tes cartes :
+  // ceux dont le nom ressemble à celui de la collection (mots repliés : accents, casse, articles, pluriel et féminin
+  // ignorés) — même nom (« Maladies » ↔ « Maladie », coché d'emblée), plus précis (« Maladies tropicales ») ou plus large
+  // (« Maladie » pour « Maladies rares ») —, puis ceux que portent beaucoup de tes cartes déjà dans la collection (2 au
+  // moins, et 20 % d'entre elles), et ceux choisis à la main. Puis, pareil, les **catégories du jeu** (card.category : le
+  // texte que le jeu montre sous le titre, « maladie », « chanteuse barbadienne ») ; « portées par beaucoup de ses
+  // éléments » compte la catégorie de ta carte, sinon la description de l'élément (celle du jeu pour une collection du
+  // favori, celle de Wikidata sinon, le même texte en général : 2 au moins, et 20 % des éléments qui en ont une). Tes tags
+  // du classeur ne viennent qu'en dernier, repliés, jamais cochés d'emblée (l'utilisateur ne les veut pas comme base).
+  // Pour chaque proposition : tes cartes qui la portent et ne sont pas encore dans la collection (titre puis qid, comme
+  // l'album ; une seule par titre). Les cartes cochées s'ajoutent à la fin de la collection (POST /api/targets/save,
+  // éléments existants inchangés), sans doublon, dans les limites de targets.js ; une collection faite d'une catégorie ou
+  // d'une page de Wikipédia garde sa source (comme avec « Modifier »).
+  // Clés des propositions : « g:<tag du jeu replié> », « c:<catégorie repliée> » (catégorie du jeu), « t:<tag> » ou
+  // « t:<Catégorie de tags>/ » (tags du classeur).
   const TAGADD_PAGE = 120; // cartes de l'aperçu affichées d'abord
   const TAGADD_MAX = 16; // propositions au plus par liste (celles du même nom et celles choisies à la main en plus)
   const TARGET_MAX_ITEMS = 3000; // targets.js : MAX_ITEMS
@@ -2483,7 +2503,8 @@
     const bInA = [...B].every((w) => A.has(w));
     return aInB && bInA ? 3 : aInB || bInA ? 2 : 0;
   }
-  // Catégorie du jeu repliée (casse, accents, espaces) : la clé qui regroupe tes cartes.
+  // Catégorie ou tag du jeu replié (casse, accents, espaces) : la clé qui regroupe tes cartes (les noms de tags du jeu
+  // sont uniques par joueur sans tenir compte de la casse).
   const catKey = (s) => fold(String(s || '').replace(/\s+/g, ' ').trim());
   // Catégories du jeu de tes cartes : clé -> {key, label (texte du jeu, l'écriture la plus fréquente), words, n (tes
   // cartes)}.
@@ -2503,13 +2524,70 @@
     }
     return m;
   });
-  // Liste des catégories du jeu de tes cartes pour le champ « Une autre catégorie du jeu » : les plus portées d'abord.
+  // Liste des catégories du jeu de tes cartes pour le champ « Un autre tag ou une autre catégorie du jeu » : les plus
+  // portées d'abord.
   const gameCatList = computed(() => [...gameCats.value.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.label, b.label)));
-  // Propositions pour la collection de la fenêtre : rows = [{key, label, kind: cat | tag, why: same | near | wide | cat |
-  // manual | often, score, n (often : éléments qui la portent), inside (éléments de la collection qui la portent déjà),
-  // cards}] (celles qui ont des cartes à ajouter, les plus sûres d'abord), more = propositions non montrées (au-delà de
-  // TAGADD_MAX), full = ressemblantes ou choisies dont toutes tes cartes sont déjà dedans, known = éléments dont la
-  // catégorie est connue ; tags = {rows, own} pour tes tags du classeur (repliés).
+  // Couleur d'un tag du jeu (« #rrggbb » donnée par le jeu), sinon null ; style : la variable CSS de sa pastille.
+  const GTAG_COLOR = /^#[0-9a-f]{3,8}$/i;
+  const gtagStyle = (color) => (color && GTAG_COLOR.test(color) ? { '--gtag': color } : null);
+  // Tags du jeu de tes cartes : clé repliée -> {key, label, words, n (tes cartes), color}.
+  const gameTags = computed(() => {
+    const m = new Map();
+    for (const c of cards.value) {
+      for (const t of c.gtags) {
+        const k = catKey(t);
+        if (!k) continue;
+        let g = m.get(k);
+        if (!g) m.set(k, (g = { key: k, label: t, words: nameWords(t), n: 0, color: null }));
+        g.n++;
+        const color = c.gtagc ? c.gtagc[t] : null;
+        if (!g.color && typeof color === 'string' && GTAG_COLOR.test(color)) g.color = color;
+      }
+    }
+    return m;
+  });
+  const gameTagList = computed(() => [...gameTags.value.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.label, b.label)));
+  // Propositions tirées d'un index (tags du jeu ou catégories du jeu : clé -> {key, label, words, color?}) pour une
+  // collection dont le nom a les mots `words`. Rang : choisi à la main 4 (extra, clés « prefix… »), même nom 3, plus précis
+  // 2 (moins il a de mots en plus, mieux il est classé), plus large 1,5, porté par beaucoup de ses éléments : la part de
+  // ces éléments (inside : clé -> éléments, sur `known` ; 2 au moins et 20 %). out : clé -> titre -> ta carte hors de la
+  // collection. {rows = [{key, label, color, kind, why: same | near | wide | manual | often, score, n, inside, cards}]
+  // (celles qui ont des cartes à ajouter, les plus sûres d'abord ; TAGADD_MAX au plus, celles du même nom et choisies en
+  // plus), more = propositions non montrées, full = ressemblantes ou choisies dont toutes tes cartes sont déjà dedans}.
+  function propose(index, prefix, kind, words, extra, inside, known, out) {
+    const W = new Set(words);
+    const rel = new Map();
+    for (const g of index.values()) {
+      const s = nameMatch(g.words, words);
+      if (s === 3) rel.set(g.key, { score: 3, why: 'same' });
+      else if (s === 2) {
+        const G = new Set(g.words);
+        rel.set(g.key, [...W].every((w) => G.has(w)) ? { score: 2 - Math.min(G.size - W.size, 9) / 100, why: 'near' } : { score: 1.5, why: 'wide' });
+      }
+    }
+    for (const x of extra) if (x.startsWith(prefix) && index.has(x.slice(prefix.length))) rel.set(x.slice(prefix.length), { score: 4, why: 'manual' });
+    if (known >= 2) {
+      for (const [k, n] of inside) {
+        if (rel.has(k) || !index.has(k) || n < 2 || n < known * 0.2) continue;
+        rel.set(k, { score: n / known, why: 'often', n });
+      }
+    }
+    const rows = [];
+    const full = [];
+    for (const [k, r] of rel) {
+      const g = index.get(k);
+      const row = { ...r, key: prefix + k, label: g.label, color: g.color || null, kind, inside: inside.get(k) || 0, cards: [...(out.get(k) || new Map()).values()] };
+      if (row.cards.length) rows.push(row); else if (r.why !== 'often') full.push(row);
+    }
+    rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
+    const sure = rows.filter((r) => r.why === 'same' || r.why === 'manual');
+    const rest = rows.filter((r) => r.why !== 'same' && r.why !== 'manual');
+    const shown = rest.slice(0, Math.max(0, TAGADD_MAX - sure.length));
+    return { rows: [...sure, ...shown], more: rest.length - shown.length, full };
+  }
+  // Propositions pour la collection de la fenêtre : game (tags du jeu ; « portés par beaucoup » : tes cartes de la
+  // collection, own) et cats (catégories du jeu ; « portées par beaucoup » : ses éléments dont la catégorie est connue,
+  // known), chacun {rows, more, full} (propose) ; tags = {rows, own} pour tes tags du classeur (repliés).
   const tagAddInfo = computed(() => {
     const ta = S.tagAdd;
     const t = ta ? targets.value.find((x) => x.id === ta.id) : null;
@@ -2532,55 +2610,40 @@
     const isIn = (c) => inIds.has(c.id) || titles.has(titleKey(c.title)) || qids.has(qidOf(c));
     let own = 0;
     const tagsIn = new Map(); // tag (ou « Catégorie/ ») -> tes cartes de la collection qui le portent
+    const gtagsIn = new Map(); // tag du jeu -> tes cartes de la collection qui le portent
     const catOut = new Map(); // catégorie du jeu -> titre -> ta carte hors de la collection
-    const tagged = []; // tes cartes hors de la collection qui ont au moins un tag
+    const gtagOut = new Map(); // tag du jeu -> titre -> ta carte hors de la collection
+    const tagged = []; // tes cartes hors de la collection qui ont au moins un tag du classeur
+    const put = (map, k, c) => {
+      let m = map.get(k);
+      if (!m) map.set(k, (m = new Map()));
+      const tk = titleKey(c.title);
+      if (!m.has(tk)) m.set(tk, c);
+    };
     for (const c of cards.value) {
+      const gkeys = new Set(c.gtags.map(catKey).filter(Boolean));
       if (isIn(c)) {
         own++;
         const keys = new Set();
         for (const tg of c.tags) { keys.add(tg); keys.add(tagCat(tg) + '/'); }
         for (const k of keys) tagsIn.set(k, (tagsIn.get(k) || 0) + 1);
+        for (const k of gkeys) gtagsIn.set(k, (gtagsIn.get(k) || 0) + 1);
         continue;
       }
       if (c.tags.length) tagged.push(c);
+      for (const k of gkeys) put(gtagOut, k, c);
       const k = c.category ? catKey(c.category) : '';
-      if (!k) continue;
-      let m = catOut.get(k);
-      if (!m) catOut.set(k, (m = new Map()));
-      const tk = titleKey(c.title);
-      if (!m.has(tk)) m.set(tk, c);
+      if (k) put(catOut, k, c);
     }
     const words = nameWords(t.name);
-    const W = new Set(words);
-    // Catégories du jeu. Rang : choisie à la main 4, même nom 3, plus précise 2 (moins elle a de mots en plus, mieux elle
-    // est classée), plus large 1,5, portée par beaucoup de ses éléments : la part de ces éléments (1 au plus).
-    const rel = new Map();
-    for (const g of gameCats.value.values()) {
-      const s = nameMatch(g.words, words);
-      if (s === 3) rel.set(g.key, { score: 3, why: 'same' });
-      else if (s === 2) {
-        const G = new Set(g.words);
-        rel.set(g.key, [...W].every((w) => G.has(w)) ? { score: 2 - Math.min(G.size - W.size, 9) / 100, why: 'near' } : { score: 1.5, why: 'wide' });
-      }
-    }
-    for (const x of ta.extra) if (x.startsWith('c:') && gameCats.value.has(x.slice(2))) rel.set(x.slice(2), { score: 4, why: 'manual' });
-    if (known >= 2) {
-      for (const [k, n] of inside) {
-        if (rel.has(k) || !gameCats.value.has(k) || n < 2 || n < known * 0.2) continue;
-        rel.set(k, { score: n / known, why: 'often', n });
-      }
-    }
-    const rows = [];
-    const full = [];
-    for (const [k, r] of rel) {
-      const row = { ...r, key: 'c:' + k, label: gameCats.value.get(k).label, kind: 'cat', inside: inside.get(k) || 0, cards: [...(catOut.get(k) || new Map()).values()] };
-      if (row.cards.length) rows.push(row); else if (r.why !== 'often') full.push(row);
-    }
-    rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
-    const sure = rows.filter((r) => r.why === 'same' || r.why === 'manual');
-    const rest = rows.filter((r) => r.why !== 'same' && r.why !== 'manual');
-    const shown = rest.slice(0, Math.max(0, TAGADD_MAX - sure.length));
-    return { t, known, rows: [...sure, ...shown], more: rest.length - shown.length, full, hasCats: gameCats.value.size > 0, tags: tagProposals(words, own, tagsIn, tagged) };
+    return {
+      t, own, known,
+      game: propose(gameTags.value, 'g:', 'gtag', words, ta.extra, gtagsIn, own, gtagOut),
+      cats: propose(gameCats.value, 'c:', 'cat', words, ta.extra, inside, known, catOut),
+      hasGtags: gameTags.value.size > 0,
+      hasCats: gameCats.value.size > 0,
+      tags: tagProposals(words, own, tagsIn, tagged),
+    };
   });
   // Tes tags du classeur (en second, repliés) : même nom (sous-tag : « Sciences et nature/Maladie » pour « Maladies »),
   // nom proche, catégorie de tags de même nom ou proche (toute la catégorie), puis portés par beaucoup de tes cartes de la
@@ -2620,11 +2683,11 @@
     rows.sort((a, b) => b.score - a.score || b.cards.length - a.cards.length || COLLATOR.compare(a.label, b.label));
     return { rows: rows.slice(0, TAGADD_MAX), own };
   }
-  // Propositions cochables : les catégories du jeu, et les tags quand leur liste est dépliée.
+  // Propositions cochables : tags du jeu, catégories du jeu, et tes tags du classeur quand leur liste est dépliée.
   const tagAddRows = computed(() => {
     const info = tagAddInfo.value;
     if (!info) return [];
-    return S.tagAdd && S.tagAdd.tags ? [...info.rows, ...info.tags.rows] : info.rows;
+    return [...info.game.rows, ...info.cats.rows, ...(S.tagAdd && S.tagAdd.tags ? info.tags.rows : [])];
   });
   // Aperçu : tes cartes des propositions cochées, une par titre, de A à Z ; picked = sans celles décochées.
   const tagAddPreview = computed(() => {
@@ -2640,9 +2703,10 @@
   const tagAddPicked = computed(() => (S.tagAdd ? tagAddPreview.value.filter((c) => !S.tagAdd.off.has(c.id)) : []));
   function openTagAdd(col) {
     S.tagAdd = { id: col.id, on: new Set(), off: new Set(), extra: [], field: '', fieldError: '', limit: TAGADD_PAGE, tags: false, busy: false, error: '' };
-    // Cochées d'emblée : les catégories du jeu du même nom que la collection (les plus sûres) ; les autres, à cocher soi-même.
+    // Cochés d'emblée : les tags et les catégories du jeu du même nom que la collection (les plus sûrs) ; les autres, à
+    // cocher soi-même.
     const info = tagAddInfo.value;
-    if (info) for (const r of info.rows) if (r.why === 'same') S.tagAdd.on.add(r.key);
+    if (info) for (const r of [...info.game.rows, ...info.cats.rows]) if (r.why === 'same') S.tagAdd.on.add(r.key);
     S.modal = 'tagadd';
   }
   function toggleTagAddKey(ta, key, on) {
@@ -2662,21 +2726,22 @@
     if (!ta.tags) for (const k of [...ta.on]) if (k.startsWith('t:')) ta.on.delete(k);
     ta.limit = TAGADD_PAGE;
   }
-  // « Une autre catégorie du jeu » : le texte d'une catégorie de tes cartes (sans la casse ni les accents), sinon celles
-  // qui ont exactement les mêmes mots (pluriel, féminin : « Maladies infectieuses » -> « maladie infectieuse ») ;
-  // inconnue : jusqu'à trois catégories qui contiennent tous ses mots.
+  // « Un autre tag ou une autre catégorie du jeu » : le nom d'un tag du jeu ou le texte d'une catégorie de tes cartes
+  // (sans la casse ni les accents ; les deux s'ils existent), sinon ceux qui ont exactement les mêmes mots (pluriel,
+  // féminin : « Maladies infectieuses » -> « maladie infectieuse ») ; inconnu : jusqu'à trois tags ou catégories qui
+  // contiennent tous ses mots.
   function addTagAddKey(ta) {
     const raw = String(ta.field || '').replace(/\s+/g, ' ').trim();
     if (!raw) return;
     const words = nameWords(raw);
-    let keys = gameCats.value.has(catKey(raw)) ? [catKey(raw)] : gameCatList.value.filter((g) => nameMatch(g.words, words) === 3).map((g) => g.key);
+    const find = (index, list) => (index.has(catKey(raw)) ? [catKey(raw)] : list.filter((g) => nameMatch(g.words, words) === 3).map((g) => g.key));
+    const keys = [...find(gameTags.value, gameTagList.value).map((k) => 'g:' + k), ...find(gameCats.value, gameCatList.value).map((k) => 'c:' + k)];
     if (!keys.length) {
       const w = new Set(words);
-      const near = w.size ? gameCatList.value.filter((g) => [...w].every((x) => g.words.includes(x))).slice(0, 3).map((g) => `« ${g.label} »`) : [];
-      ta.fieldError = `Aucune de tes cartes n'a la catégorie du jeu « ${raw} »${near.length ? ` ; ressemblantes : ${andList(near)}` : ''}.`;
+      const near = w.size ? [...gameTagList.value, ...gameCatList.value].filter((g) => [...w].every((x) => g.words.includes(x))).slice(0, 3).map((g) => `« ${g.label} »`) : [];
+      ta.fieldError = `Aucune de tes cartes n'a le tag ou la catégorie du jeu « ${raw} »${near.length ? ` ; ressemblants : ${andList(near)}` : ''}.`;
       return;
     }
-    keys = keys.map((k) => 'c:' + k);
     for (const key of keys) {
       if (!ta.extra.includes(key)) ta.extra.push(key);
       ta.on.add(key);
@@ -4803,7 +4868,7 @@
   // Version du favori qui lit les cotes toute seule (VERSION de bookmarklet.js, un entier ; le test du favori vérifie
   // qu'elles concordent) : un essai d'un favori plus ancien, sans version ou à version texte (celui du 17/10 au matin,
   // « 2026-10-17 ») dit de le remplacer.
-  const FAVORI_VERSION = 2;
+  const FAVORI_VERSION = 3;
   function resetMarket() {
     Object.assign(M, { loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, at: 0, hover: -1 });
     prices.value = new Map();
@@ -5623,7 +5688,7 @@
     else if (S.pv.error) hint = `Rareté estimée incomplète : ${S.pv.error}`;
     else if (Object.keys(missG).length) hint += ' Sans « ≈ » : rareté relevée dans le jeu.';
     // Catégorie ou page de Wikipédia : « Créer une collection » (déjà faite : « Ouvrir ta collection »), « Voir sur
-    // Wikipédia » ; collection : « Ajouter par catégorie du jeu », « Modifier », « Supprimer » (et « Voir sur Wikipédia »
+    // Wikipédia » ; collection : « Ajouter par tags du jeu », « Modifier », « Supprimer » (et « Voir sur Wikipédia »
     // pour celle faite d'une catégorie ou d'une page).
     const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
     const tooBig = !!cv && cv.total > 3000;
@@ -5647,7 +5712,7 @@
       ];
     } else {
       actions = [
-        h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par catégorie du jeu']),
+        h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags du jeu']),
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
         // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
         targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
@@ -5715,6 +5780,7 @@
   function facetChip(key, label, n, on, onClick, title) {
     return h('button', { key, class: 'chip', type: 'button', 'aria-pressed': String(on), title, onClick }, [h('span', { class: 'chip__label' }, label), h('span', { class: 'n' }, fmt(n))]);
   }
+  const GTAG_FACET = 24; // tags du jeu montrés d'abord dans « Mes cartes »
   function viewSuggBox() {
     if (S.sugg.running) {
       return [h('p', { class: 'small', role: 'status' }, `Suggestions : ${fmt(S.sugg.done)} sur ${cards$(S.sugg.total)}…`),
@@ -5750,6 +5816,10 @@
           S.tagFilter.includes(t.name), (e) => toggleTagFilter(t.name, e), tagTitle(t.name) + ' · Ctrl/⌘+clic : combiner'))) : null,
       ]);
     }).filter(Boolean);
+    // Tags du jeu (posés dans wiki-masters.com) : les plus portés d'abord, GTAG_FACET puis « Afficher les N autres » ;
+    // couleur du jeu en pastille.
+    const glist = gameTagList.value;
+    const gshown = S.gtagsAll ? glist : glist.slice(0, GTAG_FACET);
     return h('aside', { class: 'facets', 'aria-label': 'Tags' }, [
       h('div', { class: 'facet' }, [
         h('h3', null, 'Raccourcis'),
@@ -5757,6 +5827,15 @@
           facetChip('untagged', 'Sans tag', untaggedCount.value, S.untaggedOnly, toggleUntagged),
           newIds.value.length ? facetChip('new', 'Nouvelles du dernier rafraîchissement', newIds.value.length, S.newOnly, toggleNew) : null,
         ]),
+      ]),
+      h('div', { class: 'facet' }, [
+        h('h3', null, ['Tags du jeu', glist.length > 1 ? h('span', { class: 'hint-inline' }, 'Ctrl/⌘+clic : combiner') : null]),
+        glist.length ? h('div', { class: 'chips' }, gshown.map((g) => h('button', { key: 'g:' + g.key, class: 'chip gchip', type: 'button', style: gtagStyle(g.color),
+          'aria-pressed': String(S.gtagFilter.includes(g.key)), title: `Tag posé dans le jeu · Ctrl/⌘+clic : combiner`, onClick: (e) => toggleGtagFilter(g.key, e) },
+        [h('span', { class: 'chip__label' }, g.label), h('span', { class: 'n' }, fmt(g.n))])))
+          : h('p', { class: 'small muted' }, "Aucun tag du jeu lu pour l'instant : ceux que tu poses sur tes cartes dans wiki-masters.com arrivent avec une mise à jour complète par le favori (celui du 18 octobre 2026 ou plus récent)."),
+        glist.length > GTAG_FACET ? h('button', { class: 'linkish', type: 'button', onClick: () => { S.gtagsAll = !S.gtagsAll; } },
+          S.gtagsAll ? 'Afficher moins' : `Afficher les ${fmt(glist.length - GTAG_FACET)} autres`) : null,
       ]),
       h('div', { class: 'facet' }, [
         h('h3', null, ['Tes tags', h('span', { class: 'hint-inline' }, 'Ctrl/⌘+clic : combiner')]),
@@ -5780,6 +5859,7 @@
     const rar = RAR_UP.filter((r) => S.rarities.includes(r));
     return h('div', { class: 'count-line' }, [
       h('span', null, [h('b', null, fmt(n)), ` ${plural(n, 'carte', 'cartes')}`, n !== cards.value.length ? ` sur ${fmt(cards.value.length)}` : '']),
+      ...S.gtagFilter.map((k) => { const label = (gameTags.value.get(k) || { label: k }).label; return filterChip('gtag:' + k, 'Jeu : ' + label, () => { S.gtagFilter = S.gtagFilter.filter((x) => x !== k); }, `Retirer le filtre du tag du jeu ${label}`); }),
       ...S.tagFilter.map((t) => filterChip('tag:' + t, tokenLabel(t), () => { S.tagFilter = S.tagFilter.filter((x) => x !== t); }, 'Retirer le filtre ' + tokenLabel(t))),
       S.untaggedOnly ? filterChip('untagged', 'Sans tag', () => { S.untaggedOnly = false; }, 'Retirer le filtre Sans tag') : null,
       S.newOnly ? filterChip('new', 'Nouvelles', () => { S.newOnly = false; }, 'Retirer le filtre Nouvelles') : null,
@@ -5955,7 +6035,7 @@
         h('h3', null, 'Dernières synchros'),
         h('button', { class: 'btn small ghost', type: 'button', disabled: syncLog.busy, onClick: loadSyncLog }, [icon('refresh', syncLog.busy ? 'sm spin' : 'sm'), 'Actualiser']),
       ]),
-      oldFavori.value ? h('p', { class: 'notice warn-box' }, "Ta dernière synchro vient d'un favori d'avant le 17 octobre 2026 : glisse le nouveau favori (ci-dessus) dans ta barre à la place de l'ancien, et recolle le script Tampermonkey si tu t'en sers. Le nouveau relit une page restée vide, vérifie que ta collection n'a pas bougé pendant la lecture et signale ici ses échecs.") : null,
+      oldFavori.value ? h('p', { class: 'notice warn-box' }, "Ta dernière synchro vient d'un favori d'avant le 18 octobre 2026 : glisse le nouveau favori (ci-dessus) dans ta barre à la place de l'ancien, et recolle le script Tampermonkey si tu t'en sers. Le nouveau lit aussi les tags que tu poses sur tes cartes dans le jeu, relit une page restée vide, vérifie que ta collection n'a pas bougé pendant la lecture et signale ici ses échecs.") : null,
       body,
       errLine(syncLog.error),
     ]);
@@ -7062,7 +7142,7 @@
       out.push(h('p', { class: 'small warn', key: 'fail' }, `Une lecture commencée ${agoText(a.start)} n'a pas abouti (onglet du jeu fermé pendant la lecture, ou favori ancien) : relance « Mettre à jour les cotes » sur wiki-masters.com.`));
     }
     if (a && !(Number(a.v) >= FAVORI_VERSION)) {
-      out.push(h('p', { class: 'small warn', key: 'old' }, "Ton favori n'est pas à jour : depuis le 17 octobre, il lit les cotes et les bonnes affaires tout seul et dit pourquoi quand il n'y arrive pas. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script Tampermonkey : recopie-le)."));
+      out.push(h('p', { class: 'small warn', key: 'old' }, "Ton favori n'est pas à jour : le nouveau lit les cotes et les bonnes affaires tout seul, dit pourquoi quand il n'y arrive pas et lit aussi tes tags du jeu. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script Tampermonkey : recopie-le)."));
     }
     return out;
   }
@@ -7445,6 +7525,11 @@
           c.starred ? fact('Favorite', 'oui, dans le jeu') : null,
         ]),
         viewCote(c),
+        // Tags posés dans le jeu (lecture seule ici : ils se changent dans wiki-masters.com), avec leur couleur.
+        c.gtags.length ? h('div', null, [
+          h('h3', null, 'Tags du jeu'),
+          h('div', { class: 'tags' }, c.gtags.map((t) => h('span', { class: 'tag game', key: t, style: gtagStyle(c.gtagc ? c.gtagc[t] : null), title: 'Tag posé dans le jeu' }, t))),
+        ]) : null,
         h('div', null, [
           h('h3', null, 'Tes tags'),
           h('div', { class: 'tags' }, c.tags.length ? c.tags.map((t) => h('span', { class: 'tag own', key: t, title: tagTitle(t) }, [tagSub(t),
@@ -7800,9 +7885,12 @@
       ]),
     ]);
   }
-  // « Ajouter par catégorie du jeu » : catégories du jeu proposées (cochées d'emblée : celles du même nom), une autre au
-  // choix, tes tags du classeur repliés, aperçu des cartes à ajouter (décochables une à une), puis « Ajouter N cartes ».
-  const TAGADD_TITLE = 'Ajouter par catégorie du jeu';
+  // « Ajouter par tags du jeu » : tes tags du jeu proposés, puis les catégories du jeu (cochés d'emblée : ceux du même
+  // nom), un autre au choix, tes tags du classeur repliés, aperçu des cartes à ajouter (décochables une à une), puis
+  // « Ajouter N cartes ». Nom du bouton : ce que l'utilisateur appelle « les tags de wiki-masters » (2026-10-18) ; les
+  // catégories du jeu viennent en second dans la même fenêtre.
+  const TAGADD_TITLE = 'Ajouter par tags du jeu';
+  const NO_GTAGS = "Ton favori n'a encore lu aucun tag du jeu : relance une mise à jour complète (onglet « Mettre à jour » : « La prochaine mise à jour relira toute ta collection », puis le favori sur wiki-masters.com ; il faut celui du 18 octobre 2026 ou plus récent). Si tu n'as posé aucun tag sur tes cartes dans le jeu, les catégories du jeu ci-dessous suffisent.";
   function modalTagAdd() {
     const ta = S.tagAdd;
     if (!ta) return null;
@@ -7815,40 +7903,59 @@
     const tooMany = after > TARGET_MAX_ITEMS;
     const page = pageOfSource(t.source);
     const src = isCatSource(t.source) ? `de la catégorie Wikipédia « ${catName(t.source)} »` : page ? `de la page Wikipédia « ${page} »` : null;
+    const already = (r) => (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dans la collection` : '');
+    const whyGtag = (r) => (r.why === 'same' ? 'même nom que la collection' : r.why === 'near' ? 'plus précis que le nom de la collection'
+      : r.why === 'wide' ? "plus large que le nom de la collection : vérifie l'aperçu" : r.why === 'manual' ? 'choisi par toi'
+        : `porté par ${fmt(r.n)} de tes ${fmt(info.own)} cartes de la collection`) + already(r);
     const whyCat = (r) => (r.why === 'same' ? 'même nom que la collection' : r.why === 'near' ? 'plus précise que le nom de la collection'
       : r.why === 'wide' ? "plus large que le nom de la collection : vérifie l'aperçu" : r.why === 'manual' ? 'choisie par toi'
-        : `portée par ${fmt(r.n)} des ${fmt(info.known)} éléments de la collection`) + (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dans la collection` : '');
+        : `portée par ${fmt(r.n)} des ${fmt(info.known)} éléments de la collection`) + already(r);
     const whyTag = (r) => (r.why === 'same' ? 'même nom que la collection' : r.why === 'near' ? 'nom proche de celui de la collection'
       : r.why === 'cat' ? `catégorie de tags ${r.score > 2 ? 'de même nom' : 'au nom proche'} : tous ses tags`
         : `porté par ${fmt(r.n)} de tes ${fmt(info.tags.own)} cartes de la collection`) + (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dedans` : '');
     const row = (r) => h('li', { key: r.key }, [
       h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: ta.on.has(r.key), disabled: ta.busy, onClick: (e) => toggleTagAddKey(ta, r.key, e.target.checked) }),
-        h('span', null, r.kind === 'cat' ? `« ${r.label} »` : r.label)]),
+        r.kind === 'gtag' ? h('span', { class: 'gtag-name', style: gtagStyle(r.color) }, r.label) : h('span', null, r.kind === 'cat' ? `« ${r.label} »` : r.label)]),
       h('span', { class: 'n' }, `${fmt(r.cards.length)} à ajouter`),
-      h('span', { class: 'why' }, r.kind === 'cat' ? whyCat(r) : whyTag(r)),
+      h('span', { class: 'why' }, r.kind === 'gtag' ? whyGtag(r) : r.kind === 'cat' ? whyCat(r) : whyTag(r)),
     ]);
-    const fullNames = info.full.map((r) => `« ${r.label} »`);
-    let none = null;
-    if (!info.hasCats) none = "Aucune de tes cartes n'a de catégorie du jeu (le texte que le jeu affiche sous leur titre) : relance une mise à jour avec le favori, puis reviens ici.";
-    else if (!info.rows.length) {
-      none = fullNames.length ? `Rien à proposer : tes cartes de catégorie ${namesText(fullNames, false)} sont déjà toutes dans la collection, et aucune autre catégorie du jeu ne s'en approche. Choisis-en une ci-dessous.`
-        : `Rien à proposer : aucune catégorie du jeu de tes cartes ne ressemble au nom « ${t.name} »${info.known >= 2 ? ", et aucune n'est portée par beaucoup de ses éléments" : ''}. Choisis-en une ci-dessous.`;
-    }
+    // Une liste (tags du jeu ou catégories du jeu) : ses propositions, ou pourquoi il n'y en a pas ; celles qui ne tiennent
+    // pas ; celles dont tout est déjà dedans.
+    const section = (part, o) => {
+      const fullNames = part.full.map((r) => (o.quote ? `« ${r.label} »` : r.label));
+      let none = null;
+      if (!o.has) none = o.empty;
+      else if (!part.rows.length) {
+        none = fullNames.length ? `Rien à proposer : tes cartes ${o.of} ${namesText(fullNames, false)} sont déjà toutes dans la collection, et ${o.noOther}.`
+          : `Rien à proposer : ${o.noName} « ${t.name} »${o.often ? `, et ${o.noOften}` : ''}.`;
+      }
+      return [
+        h('h3', { class: 'tagadd-sec' }, o.title),
+        part.rows.length ? h('ul', { class: 'tagadd', 'aria-label': o.label }, part.rows.map(row)) : h('p', { role: 'status', class: 'note' }, none),
+        part.more ? h('p', { class: 'note' }, `Et ${fmt(part.more)} ${o.more(part.more)} : tape celui que tu veux dans le champ ci-dessous.`) : null,
+        part.rows.length && fullNames.length ? h('p', { class: 'note' }, `Déjà toutes dans la collection : tes cartes ${o.of} ${namesText(fullNames, false)}.`) : null,
+      ];
+    };
     const tagRows = info.tags.rows;
     // Plusieurs propositions cochées : la catégorie de chaque carte de l'aperçu est rappelée.
     const many = tagAddRows.value.filter((r) => ta.on.has(r.key)).length > 1;
     const shown = preview.slice(0, ta.limit);
+    const choices = [...gameTagList.value.map((g) => ['g:' + g.key, g.label]), ...gameCatList.value.map((g) => ['c:' + g.key, g.label])].slice(0, 2000);
     return h(Modal, { key: 'tagadd', wide: true, title: TAGADD_TITLE, onClose: closeModal }, () => [
-      h('p', null, `Dans « ${t.name} » : coche des catégories du jeu (le texte que wiki-masters.com affiche sous le titre de chaque carte), et tes cartes qui les portent sans être encore dans la collection s'y ajoutent, à la fin. Proposées : celles dont le texte ressemble au nom de la collection, puis celles que portent beaucoup de ses éléments.`),
+      h('p', null, `Dans « ${t.name} » : coche des tags du jeu (ceux que tu poses sur tes cartes dans wiki-masters.com) ou des catégories du jeu (le texte affiché sous le titre de chaque carte), et tes cartes qui les portent sans être encore dans la collection s'y ajoutent, à la fin. Proposés : ceux dont le nom ressemble à celui de la collection, puis ceux que portent beaucoup de ses éléments.`),
       src ? h('p', { class: 'note' }, `Cette collection est faite ${src} : les cartes ajoutées viennent en plus de ses articles et elle garde sa source, comme avec « Modifier ».`) : null,
-      info.rows.length ? h('ul', { class: 'tagadd', 'aria-label': 'Catégories du jeu proposées' }, info.rows.map(row)) : h('p', { role: 'status' }, none),
-      info.more ? h('p', { class: 'note' }, `Et ${fmt(info.more)} ${plural(info.more, 'autre catégorie proposée', 'autres catégories proposées')} : tape celle que tu veux dans le champ ci-dessous.`) : null,
-      info.rows.length && fullNames.length ? h('p', { class: 'note' }, `Déjà toutes dans la collection : tes cartes de catégorie ${namesText(fullNames, false)}.`) : null,
-      info.hasCats ? h('form', { class: 'tagadd-other', onSubmit: (e) => { e.preventDefault(); addTagAddKey(ta); } }, [
-        h('label', { class: 'sr', for: 'tagadd-other' }, 'Une autre catégorie du jeu'),
-        h('input', { id: 'tagadd-other', class: 'field', list: 'tagadd-cats', value: ta.field, maxlength: 500, autocomplete: 'off', placeholder: 'Une autre catégorie du jeu…',
+      ...section(info.game, { title: 'Tes tags du jeu', label: 'Tags du jeu proposés', has: info.hasGtags, empty: NO_GTAGS, of: 'au tag', quote: false,
+        noOther: "aucun autre de tes tags du jeu ne s'en approche", noName: 'aucun de tes tags du jeu ne ressemble au nom', often: info.own >= 2,
+        noOften: "aucun n'est porté par plusieurs de tes cartes de la collection", more: (k) => plural(k, 'autre tag proposé', 'autres tags proposés') }),
+      ...section(info.cats, { title: 'Catégories du jeu', label: 'Catégories du jeu proposées', has: info.hasCats, quote: true, of: 'de catégorie',
+        empty: "Aucune de tes cartes n'a de catégorie du jeu (le texte que le jeu affiche sous leur titre) : relance une mise à jour avec le favori, puis reviens ici.",
+        noOther: "aucune autre catégorie du jeu ne s'en approche", noName: 'aucune catégorie du jeu de tes cartes ne ressemble au nom', often: info.known >= 2,
+        noOften: "aucune n'est portée par beaucoup de ses éléments", more: (k) => plural(k, 'autre catégorie proposée', 'autres catégories proposées') }),
+      choices.length ? h('form', { class: 'tagadd-other', onSubmit: (e) => { e.preventDefault(); addTagAddKey(ta); } }, [
+        h('label', { class: 'sr', for: 'tagadd-other' }, 'Un autre tag ou une autre catégorie du jeu'),
+        h('input', { id: 'tagadd-other', class: 'field', list: 'tagadd-cats', value: ta.field, maxlength: 500, autocomplete: 'off', placeholder: 'Un autre tag ou une autre catégorie du jeu…',
           onInput: (e) => { ta.field = e.target.value; ta.fieldError = ''; } }),
-        h('datalist', { id: 'tagadd-cats' }, gameCatList.value.slice(0, 2000).map((g) => h('option', { key: g.key, value: g.label }))),
+        h('datalist', { id: 'tagadd-cats' }, choices.map(([key, label]) => h('option', { key, value: label }))),
         h('button', { class: 'btn small', type: 'submit', disabled: ta.busy || !ta.field.trim() }, [icon('plus', 'sm'), 'Ajouter à la liste']),
       ]) : null,
       errLine(ta.fieldError),
@@ -7867,7 +7974,7 @@
         ]))),
         shown.length < preview.length ? h('button', { class: 'linkish', type: 'button', onClick: () => { ta.limit += TAGADD_PAGE; } },
           `Afficher les ${fmt(Math.min(TAGADD_PAGE, preview.length - shown.length))} suivantes (${fmt(preview.length - shown.length)} restantes)`) : null,
-      ] : ta.on.size && info.rows.length ? [h('p', { class: 'note' }, 'Coche une catégorie qui a des cartes à ajouter.')] : []),
+      ] : ta.on.size && (info.game.rows.length || info.cats.rows.length) ? [h('p', { class: 'note' }, 'Coche un tag ou une catégorie qui a des cartes à ajouter.')] : []),
       tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection aurait ${fmt(after)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus. Décoche-en ${fmt(after - TARGET_MAX_ITEMS)}.`) : null,
       errLine(ta.error),
       foot([
@@ -8225,7 +8332,7 @@
     },
   };
 
-  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly], () => { S.limit = PAGE; });
+  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
   // Collection ouverte (ou articles d'une catégorie arrivés après coup) : vues sur 30 jours des articles qui manquent.
   watch(() => (activeAlbum.value ? activeAlbum.value.key + ':' + activeAlbum.value.items.length : ''), () => {

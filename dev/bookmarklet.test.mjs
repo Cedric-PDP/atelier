@@ -112,7 +112,7 @@ const game = {};
 // juste avant de transmettre. Mode relié : game.lagPack (les cartes d'un paquet n'arrivent dans la collection qu'avec
 // game.pending, quand le test les y met).
 const resetGame = () => Object.assign(game, { total: 'rows', rc: false, added: 'desc', fault: null, status: null, offline: false, weird: null, packRefused: false, auctioned: null, siteDown: false, siteStatus: null,
-  siteFail: null, siteLose: null, sitePre: null, lagPack: false, pending: [] });
+  siteFail: null, siteLose: null, sitePre: null, lagPack: false, pending: [], tagOptions: null });
 resetGame();
 const at = (h) => new Date(Date.UTC(2026, 9, 1) + h * 3600_000).toISOString();
 const entry = (n, hour, extra = {}, card = {}) => ({
@@ -129,7 +129,7 @@ function gameFetch(url) {
   if (url === '/api/my-collection/stats?sort=rarity') {
     const rarityCounts = {};
     if (game.rc) for (const e of collection) rarityCounts[e.card.rarity] = (rarityCounts[e.card.rarity] || 0) + weight(e);
-    return reply({ total: collection.reduce((s, e) => s + weight(e), 0), totalUnique: new Set(collection.map((e) => e.card_id)).size, rarityCounts, tagOptions: [] });
+    return reply({ total: collection.reduce((s, e) => s + weight(e), 0), totalUnique: new Set(collection.map((e) => e.card_id)).size, rarityCounts, tagOptions: game.tagOptions || [] });
   }
   const m = url.match(/^\/api\/my-collection\?sort=(rarity|added)&page=(\d+)&stats=0$/);
   if (!m) throw new Error('jeu : adresse inattendue ' + url);
@@ -512,6 +512,44 @@ await test('échec vu par le favori (session du jeu, réponse inattendue) : mess
   assert.deepEqual(r.reports, []);
 });
 
+await test('tags du jeu : lus de chaque exemplaire ({id, name, color}, chaîne, {tag: {name}}, {label}), réunis par carte avec leur couleur ; forme inconnue signalée (sans valeur) ; tagOptions changés → relecture complète', async () => {
+  await newAccount();
+  collection = Array.from({ length: 60 }, (_, i) => entry(i, i));
+  const tag = (id, tags) => { collection.find((e) => e.id === id).tags = tags; };
+  tag('e0', [{ id: 'u1', name: 'Maladie', color: '#ef4444', user_id: 'SECRET' }, { id: 'u2', name: '  Fléau ', color: 'rouge' }]);
+  tag('e1', ['Virus']);
+  tag('e2', [{ tag: { name: 'Peste' } }, { label: 'Rare' }]);
+  tag('e3', [{ id: 'u9', color: '#000' }, 7]); // ni nom ni chaîne : forme inconnue
+  collection.push(entry(0, 61, { id: 'e0-bis', tags: [{ id: 'u3', name: 'Virus', color: '#22c55e' }, { id: 'u1', name: 'Maladie', color: '#ef4444' }] }));
+  let r = await click();
+  assert.match(r.text, /60 cartes envoyées au classeur/, r.seen);
+  const sent = r.posts.find((b) => b.part === 0);
+  assert.equal(sent.gtags_odd, '{id,color}', 'forme inconnue : clés seulement');
+  assert.ok(!JSON.stringify(r.posts).includes('SECRET') && !JSON.stringify(r.posts).includes('u9'), 'valeur envoyée avec la forme inconnue');
+  const c0 = sent.cards.find((c) => c.id === 'c0');
+  assert.deepEqual([c0.gtags, c0.gtagc], [['Maladie', 'Fléau', 'Virus'], { Maladie: '#ef4444', Virus: '#22c55e' }]);
+  let cards = await cardsOf();
+  const by = (id) => cards.find((c) => c.id === id);
+  assert.deepEqual([by('c0').gtags, by('c0').gtagc, by('c1').gtags, by('c2').gtags, by('c3').gtags, by('c4').gtags],
+    [['Fléau', 'Maladie', 'Virus'], { Maladie: '#ef4444', Virus: '#22c55e' }, ['Virus'], ['Peste', 'Rare'], undefined, undefined]);
+  let [e] = await syncLog();
+  assert.match(e.message, /Tags du jeu dans un format inconnu \(\{id,color\}\) : ils n'ont pas été lus\.$/, e.message);
+  // Rien de nouveau, mêmes tagOptions : synchro rapide.
+  r = await click();
+  assert.match(r.text, /Rien de nouveau depuis ta dernière synchro/, r.seen);
+  // Un tag créé dans le jeu (tagOptions des stats changés) et posé sur e4 : la synchro rapide ne le verrait pas (aucun
+  // exemplaire de plus) ; le classeur demande une relecture complète, qui le lit.
+  game.tagOptions = [{ id: 'u4', name: 'Grippe', color: '#3b82f6' }];
+  tag('e4', [{ id: 'u4', name: 'Grippe', color: '#3b82f6' }]);
+  r = await click();
+  assert.match(r.seen, /Tags du jeu changés ou pas encore lus : relecture complète/, r.seen);
+  assert.ok(fullRead(r), 'relecture complète attendue');
+  cards = await cardsOf();
+  assert.deepEqual([by('c4').gtags, by('c4').gtagc], [['Grippe'], { Grippe: '#3b82f6' }]);
+  r = await click();
+  assert.match(r.text, /Rien de nouveau depuis ta dernière synchro/, r.seen);
+});
+
 await test('limite de lectures du jeu en pleine lecture complète : pause puis reprise à la même page ; une seconde limite arrête tout (signalée)', async () => {
   await newAccount();
   collection = Array.from({ length: 120 }, (_, i) => entry(i, i));
@@ -614,7 +652,8 @@ await test('délai d\'attente : une requête du jeu qui ne répond plus n\'immob
   const pending = timers.filter((t) => t.ms === 30000 && !t.cleared);
   assert.equal(pending.length, 1);
   pending[0].f();
-  await settle();
+  // (Jusqu'à ce que le favori rende la main : son signalement au journal passe par l'API simulée, plus ou moins vite.)
+  for (let i = 0; i < 20 && ctx.__classeurFavori !== false; i++) await settle();
   const text = doc.getElementById('classeur-favori').textContent;
   assert.match(text, /WikiMasters ne répond plus \(30 s sans réponse\) : réessaie dans un moment\. Rien n'a été changé dans ton classeur\./);
   assert.equal(ctx.__classeurFavori, false, 'le favori a rendu la main');
@@ -1153,6 +1192,35 @@ await test('relié : défausse, mise aux enchères → relecture complète, au p
   assert.deepEqual(g.since(n), QUICK);
   assert.match(g.text(), /1 exemplaire obtenu depuis ta dernière synchro, 1 nouvelle carte/, g.text());
   assert.ok(await cardOf('c10'));
+});
+
+await test('relié : tag du jeu posé ou retiré (adresse en « tags ») → la synchro suivante est une relecture complète (la synchro rapide ne le verrait pas)', async () => {
+  await fresh60();
+  const g = await openGame();
+  await g.advance(15 * 60_000);
+  const full = (from) => g.calls.slice(from).some((c) => c.url.includes('sort=rarity&page=0'));
+  // Le jeu pose le tag (la collection change sans nouvel exemplaire), la page a fait la requête : relecture complète.
+  collection.find((e) => e.id === 'e7').tags = [{ id: 'u1', name: 'Maladie', color: '#ef4444' }];
+  const n = g.calls.length;
+  await g.page('/api/user-cards/e7/tags', POST_JSON({ tag_id: 'u1' }));
+  await g.advance(6_000);
+  assert.ok(full(n), g.since(n).join(', '));
+  assert.deepEqual((await cardOf('c7')).gtags, ['Maladie']);
+  assert.match(g.text(), /cartes envoyées au classeur/, g.text());
+  // Étiquette posée par la page directement dans la base Supabase du jeu (user_card_tags) : pareil, 15 minutes après la
+  // relecture précédente (une automatique par quart d'heure au plus).
+  await g.advance(15 * 60_000);
+  collection.find((e) => e.id === 'e8').tags = [{ id: 'u2', name: 'Fléau' }];
+  const m = g.calls.length;
+  await g.page('https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/user_card_tags', POST_JSON({ user_card_id: 'e8', tag_id: 'u2' }));
+  await g.advance(6_000);
+  assert.ok(full(m), g.since(m).join(', '));
+  assert.deepEqual((await cardOf('c8')).gtags, ['Fléau']);
+  // Une autre écriture vers Supabase (étoile) ne déclenche rien.
+  const k = g.calls.length;
+  await g.page('https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/user_cards?id=eq.e9', { method: 'PATCH', body: '{"starred":true}' });
+  await g.advance(6_000);
+  assert.deepEqual(g.since(k), [], g.since(k).join(', '));
 });
 
 await test('relié : paquet ouvert mais « Rien de nouveau » (cartes pas encore rangées par le jeu) → une seule vérification, une minute après', async () => {

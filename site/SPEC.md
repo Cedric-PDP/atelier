@@ -92,9 +92,27 @@ route sauf `/api/health` répond `503 {error:"Le classeur n'est pas encore confi
   "starred": false,              // au moins un exemplaire starred
   "obtained_at": "2026-10-14T16:24:39.011Z",  // plus ancien obtained_at des exemplaires
   "variants": {"L": 1},          // facultatif : exemplaires par rareté d'exemplaire et brillance (voir ci-dessous)
-  "tags": ["Musique", "à échanger"]           // étiquettes de l'utilisateur dans le classeur (jamais celles du jeu)
+  "gtags": ["Chanteuses", "Musique"],         // facultatif : tags du jeu (posés par le joueur dans wiki-masters.com), voir ci-dessous
+  "gtagc": {"Musique": "#94a3b8"},            // facultatif : leur couleur dans le jeu, quand il en donne une
+  "tags": ["Musique", "à échanger"]           // étiquettes de l'utilisateur dans le classeur (pas celles du jeu : gtags)
 }
 ```
+
+**Tags du jeu** (`gtags`, 2026-10-18 ; « je parlais [des tags] de wiki-masters, pas ceux en automatique ») : les étiquettes
+que le joueur crée lui-même dans le jeu (table `tags` du jeu : `id` UUID, `name`, `color` hexadécimal, par défaut
+`#94a3b8` ; noms uniques par joueur sans tenir compte de la casse ; posées sur les entrées de sa collection par
+`user_card_tags`). Chaque entrée de `my-collection` porte `tags` = `[{id, name, color, …}]` ; `tagOptions` (stats) = la
+liste des étiquettes du joueur (d'après `docs/api.md` de qpautrat/wikimasters-cli, relevés du 9 et 10 octobre ;
+**pas encore vu dans une vraie collection** : la seule relevée, le 15/10, n'en avait aucun). Lus de façon tolérante
+(favori et serveur, `cards.js` `gameTagsOf`) : le nom d'un objet (`name`, sinon `label`, `title`, `tag`, `value`, un
+niveau d'objet en plus : `{tag: {name}}`), une chaîne ; côté serveur aussi un nombre et un identifiant traduit par
+`tagOptions` (tableau d'objets `{id|key|value, name|label|…}`, ou objet id → nom) ; un objet sans nom dont l'identifiant
+n'est pas connu est ignoré (jamais un identifiant opaque pris pour un nom). Carte : noms nettoyés (espaces), 60
+caractères au plus, 30 par carte, **réunis sur tous ses exemplaires** (un tag est posé sur une entrée, pas sur la carte),
+sans doublon, triés (ordre binaire), absents s'il n'y en a aucun ; `gtagc` = la couleur de chacun quand le jeu en donne
+une valide (`#rgb`, `#rrggbb`, `#rrggbbaa`, en minuscules). Gardés dans `cards.data`, rendus par `GET /api/cards` et
+`?since` comme le reste de la carte, **jamais montrés aux autres membres** ; ils ne se mêlent jamais aux tags du classeur
+(table `tags`).
 
 `variants` (2026-10-16, pour coter chaque exemplaire, voir « Le marché ») : `{"<rareté>[*]": nombre}`, « * » =
 brillant, clés dans l'ordre binaire, somme = `count`. Rareté d'un exemplaire = son `snapshot_rarity` (rareté quand il a
@@ -106,6 +124,16 @@ et les nouveautés l'ont ; sinon retiré jusqu'à la relecture complète suivant
 fausse) : seulement oublié. Absent (carte importée avant, favori plus ancien) : la cote de la carte est approchée (tous
 ses exemplaires dans `rarity`, un seul brillant si `shiny`). `rarity`, `shiny` et la synchro rapide (compteurs
 `rarityCounts` comparés à `rarity`) ne changent pas. Jamais montré aux autres membres.
+
+**Tags du jeu dans la page** : fiche d'une carte, « Tags du jeu » en pastilles (couleur du jeu en point, gris
+`#94a3b8` sans couleur ; lecture seule : ils se changent dans le jeu), au-dessus de « Tes tags » et à part d'eux ;
+« Mes cartes », section « Tags du jeu » du menu de gauche (après « Raccourcis ») : un bouton par tag (sans tenir compte
+de la casse) avec son nombre de cartes, les plus portés d'abord, 24 puis « Afficher les N autres » ; clic : ce tag seul
+(ou plus aucun), Ctrl/⌘+clic : combiner (toutes les cartes qui les portent tous), combinable avec tes tags du classeur ;
+filtre rappelé dans la ligne des résultats (« Jeu : Maladie », retirable ; « Réinitialiser les filtres » le retire
+aussi) ; la recherche lit aussi les tags du jeu. Aucun tag du jeu lu : « Aucun tag du jeu lu pour l'instant : ceux que
+tu poses sur tes cartes dans wiki-masters.com arrivent avec une mise à jour complète par le favori (celui du 18 octobre
+2026 ou plus récent). » Fenêtre « Ajouter par tags du jeu » : voir « Onglet « Collections » ».
 
 **Entrée brute du jeu** (réponse `GET https://www.wiki-masters.com/api/my-collection?sort=rarity&page=N&stats=0`,
 50 par page, champ `collection`) : `{id, card:{id, atk, def, lang, rarity, q_score, category, image_url, pageviews,
@@ -141,7 +169,7 @@ autre format (voir « Le favori »).
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
 | `GET /api/cards?part=X` | (`part` facultatif : `0` pour la première page, puis le curseur `next_part` renvoyé tel quel ; pages de 1 000 cartes) | `{rev, fetched_at, cards:[Carte], new_ids:[id…], part, next_part}` (`next_part` : curseur opaque, `null` à la dernière page ; `rev` : révision lue avant les cartes, garder celle de la page `0`) ; sans `part` : `{rev, fetched_at, cards, new_ids}`, tout d'un coup (à éviter au-delà de ~3 000 cartes : limite de calcul) |
 | `GET /api/cards?since=R` | `R` : entier ≥ 0, la `rev` gardée (sinon `400`, et `400` avec `part`) | `{rev, delta:true, cards:[Carte], gone:[id…], fetched_at, new_ids}` : cartes changées (données ou étiquettes) et cartes retirées depuis `R` ; ou `{rev, delta:false}` : tout recharger (voir « Lecture incrémentale ») |
-| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, rows?, copies?, ignored?, stats_end?, started?, reason?, via?, v?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards` ; `rows`, `copies`, `ignored` : entiers ≥ 0, sinon `400`, voir « Synchro rapide » ; `stats_end` : compteurs du jeu relus après la dernière page, objet, sinon `400` ; `started` : l'heure `now` rendue par `state` ; `reason` : pourquoi une lecture complète (`state`, `counts`, `race`, `invalid`, `too_many`, `max_cards`, `gone`, `order`, `sort`) ; `via` : `clic`, `relie` ou `script` ; `v` : version du favori ; ces cinq-là, au premier morceau, pour la sûreté et le journal, voir « Synchros sûres ») | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped, removed, kept}` (`complete` = `count` + cartes invalides distinctes = `stats.totalUnique` : `false` = il manque des cartes que le classeur aurait pu ranger, ou la collection a bougé pendant la lecture (`moved:true` en plus) ; `null` sans stats ; `count` = cartes du classeur après l'envoi ; `removed` = cartes retirées, seulement par une lecture vérifiée ; `kept` = cartes du classeur absentes d'une lecture non vérifiée, gardées) ; `{…, superseded:true}` : rien d'écrit, une lecture commencée après celle-ci est déjà appliquée ; `{…, again:true}` : dernier morceau d'un envoi déjà appliqué, renvoyé (réponse perdue) : même résultat ; morceaux manquants (envoi interrompu ou abandonné) : `409`, l'envoi est effacé ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at, now, v}` (`now` : heure du serveur, à renvoyer en `started` ; `v` : version la plus récente du favori), `{mode:'delta', cards, stats, rows, copies, last_at, started?, via?, v?}` → `{count, new_ids, complete, skipped:0, quick:true}` (`superseded:true` en plus si une lecture commencée après est déjà appliquée : rien d'écrit) ou `{needs_full:true, reason}` (rien d'écrit ; `reason` : `state`, `too_many`, `invalid`, `counts`, `max_cards`, `race`) |
+| `POST /api/import` | **par morceaux** : `{upload_id, part, last, cards:[CarteImport], stats?, last_at?, rows?, copies?, ignored?, stats_end?, started?, reason?, via?, v?, source}` (500 cartes au plus par morceau ; `collection:[entrées brutes]` reste accepté à la place de `cards` ; `rows`, `copies`, `ignored` : entiers ≥ 0, sinon `400`, voir « Synchro rapide » ; `stats_end` : compteurs du jeu relus après la dernière page, objet, sinon `400` ; `started` : l'heure `now` rendue par `state` ; `reason` : pourquoi une lecture complète (`state`, `counts`, `race`, `invalid`, `too_many`, `max_cards`, `gone`, `order`, `sort`, `tags`) ; `via` : `clic`, `relie` ou `script` ; `v` : version du favori ; ces cinq-là, au premier morceau, pour la sûreté et le journal, voir « Synchros sûres » ; `gtags_odd` : forme de tags du jeu que le favori n'a pas reconnue, voir « Journal des synchros ») | morceau intermédiaire : `{ok:true, received, skipped}` (cumulés ; morceaux dans l'ordre, sinon 409) ; dernier (`last:true`) : `{count, new_ids, complete, skipped, removed, kept}` (`complete` = `count` + cartes invalides distinctes = `stats.totalUnique` : `false` = il manque des cartes que le classeur aurait pu ranger, ou la collection a bougé pendant la lecture (`moved:true` en plus) ; `null` sans stats ; `count` = cartes du classeur après l'envoi ; `removed` = cartes retirées, seulement par une lecture vérifiée ; `kept` = cartes du classeur absentes d'une lecture non vérifiée, gardées) ; `{…, superseded:true}` : rien d'écrit, une lecture commencée après celle-ci est déjà appliquée ; `{…, again:true}` : dernier morceau d'un envoi déjà appliqué, renvoyé (réponse perdue) : même résultat ; morceaux manquants (envoi interrompu ou abandonné) : `409`, l'envoi est effacé ; synchro rapide : `{mode:'state'}` → `{quick, last_at, full_at, now, v}` (`now` : heure du serveur, à renvoyer en `started` ; `v` : version la plus récente du favori), `{mode:'delta', cards, stats, rows, copies, last_at, started?, via?, v?, gtags_odd?}` → `{count, new_ids, complete, skipped:0, quick:true}` (`superseded:true` en plus si une lecture commencée après est déjà appliquée : rien d'écrit) ou `{needs_full:true, reason}` (rien d'écrit ; `reason` : `state`, `too_many`, `invalid`, `counts`, `max_cards`, `race`, `tags`) |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` | `{ok:true}` ; extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`), le chiffre et le garde |
 | `DELETE /api/session` | | `{ok:true}` |
 | `POST /api/refresh` | `{page?, full?, run?}` (0 au départ ; `full:true` = jamais de synchro rapide ; l'interface l'envoie quand `next_full` ; `run` : le jeton rendu par la page 0, à renvoyer avec les suivantes, texte base64url de 64 caractères au plus, sinon `400`) | `{done:false, next_page, run, fetched, total, skipped}` (`next_page` : première page pas encore lue) puis, à la fin, `{done:true, count, new_ids, complete, skipped, removed, kept}` (comme le dernier morceau d'un import ; `quick:true` à la place de `removed`/`kept` si la synchro rapide a suffi) ; `409` si une autre lecture a commencé entre-temps (autre onglet : `run` différent) ou si les pages d'avant manquent ; `401 {error, needs_session:true}` si pas de cookie ou session expirée ; `429 {error}` si le jeu limite les lectures automatiques |
@@ -201,7 +229,10 @@ la valeur, les échanges). Gardé par `targets/save` seulement s'il vaut exactem
 « Collections » », « Intercalaires et collections complètes ».
 
 **CarteImport** (ce qu'envoie le favori, déjà regroupée par carte) : la Carte ci-dessus **sans `tags`**. Le favori
-regroupe les exemplaires et ne garde que ces champs : le serveur n'a presque rien à calculer.
+regroupe les exemplaires et ne garde que ces champs : le serveur n'a presque rien à calculer. `gtags` (tableau, **même
+vide**) dit que les tags du jeu de la carte ont été lus (favori de version 3, 18 octobre 2026) ; absent (favori plus
+ancien, ou autre chose qu'un tableau) : pas lus, ceux du classeur sont gardés tels quels, même par une lecture vérifiée.
+`gtagc` : objet nom → couleur, seules les couleurs valides des noms gardés restent.
 
 **Limite de calcul des Workers gratuits (10 ms de CPU par requête)** : aucune requête ne doit traiter plus de
 ~500 cartes en JavaScript. (Depuis le 2026-10-17, le classeur tourne sur l'abonnement payant des Workers : plus de limite
@@ -280,13 +311,27 @@ plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'u
   complet comme en synchro rapide et dans le favori.
 - **Champs de carte du jeu** (2026-10-18) : un nouvel exemplaire d'une carte déjà là lui redonne ses champs de carte du
   jeu, lus à l'instant (`title`, `atk`, `def`, `quality`, `pageviews`, `category`, `image`, `url` : les mêmes dans tous
-  ses exemplaires) ; ses exemplaires, brillance, favori, rareté et date sont additionnés comme avant.
+  ses exemplaires) ; ses exemplaires, brillance, favori, rareté et date sont additionnés comme avant ; ses **tags du jeu**
+  (propres à chaque exemplaire) sont réunis avec ceux du nouvel exemplaire, jamais retirés.
+- **Tags du jeu** (2026-10-18) : un tag posé ou retiré dans le jeu ne crée aucun exemplaire, la synchro rapide ne le
+  verrait pas. Chaque lecture complète d'un client qui lit les tags (favori de version 3, rafraîchissement par cookie)
+  garde dans `sync_state.tsig` une signature de `tagOptions` (stats du jeu ; `cards.js` `tagSig` : FNV-1a des éléments,
+  ou des clés, triés : l'ordre ne compte pas ; `''` sans `tagOptions`) ; une lecture qui ne lit pas les tags (favori
+  plus ancien) garde celle d'avant. Une synchro rapide d'un tel client dont la signature diffère (tag créé, renommé,
+  recoloré ou supprimé dans le jeu ; ou tags jamais lus encore : la première synchro du nouveau favori relit donc tout)
+  répond `{needs_full:true, reason:'tags'}` (favori : « Tags du jeu changés ou pas encore lus : relecture complète »).
+  Favori relié : une écriture de la page vers la base Supabase du jeu dont l'adresse contient « tags » (étiquettes :
+  `user_card_tags`, `tags`), ou vers une adresse du jeu finissant par « tag(s) » ou contenant « /tags/ » (chemins
+  **supposés** : aucun relevé), est vue comme un tag posé ou retiré (« tag du jeu modifié ») et la synchro qui suit est
+  une relecture complète (dans la limite d'une automatique par quart d'heure ; voir le tableau du favori relié).
 - **Angles morts** (ce que les compteurs ne montrent pas) : échange 1 contre 1 de deux cartes de **même rareté** quand
   la carte reçue est datée d'avant `last_at` et que la carte donnée n'était pas la plus récente ; carte retirée des
   favoris (`starred`) ou devenue brillante sans nouvelle ligne ; si `total` compte les lignes et qu'aucune pile
   n'existait à la dernière lecture complète (`both`), un exemplaire ajouté à une ligne existante sans changer sa date ;
   catégorie du jeu (ou image, vues…) changée par le jeu sur une carte qui n'a pas reçu d'exemplaire (vue à la lecture
-  complète suivante, vérifiée ou non). Remèdes : lecture complète forcée au moins une fois par semaine, et **« La
+  complète suivante, vérifiée ou non) ; tag du jeu **existant** posé sur une carte ou retiré, quand `tagOptions` ne
+  change pas (s'il ne compte pas les cartes de chaque tag) et que le favori relié ne l'a pas vu (autre onglet ou appareil
+  non relié, adresse d'écriture que le favori ne reconnaît pas). Remèdes : lecture complète forcée au moins une fois par semaine, et **« La
   prochaine mise à jour relira toute ta collection »** (onglet « Mettre à jour », `PATCH /api/me {force_full:true}`,
   clé principale : `full_at` effacé ; `GET /api/me` renvoie alors `next_full:true` et l'interface envoie `full:true` à
   `/api/refresh`).
@@ -334,8 +379,11 @@ automatiques) → session marquée expirée, `401 {needs_session:true}`.
   (52 cartes non vues, gardées). Relance la mise à jour dans un moment. »). **Cartes déjà là** (2026-10-18, « pas bien
   synchronisés ») : seuls leurs **champs de carte du jeu** sont repris de la lecture (`title`, `atk`, `def`, `quality`,
   `pageviews`, `category`, `image`, `url` : propres à la carte, les mêmes dans chacun de ses exemplaires), et seulement
-  s'ils ont changé (la carte prend alors la révision suivante) ; jamais `count`, `variants`, `rarity`, `shiny`, `starred`
-  ni `obtained_at`, qui dépendent des exemplaires lus (une partie a pu manquer). Avant, une lecture non vérifiée ne
+  s'ils ont changé (la carte prend alors la révision suivante) ; leurs **tags du jeu** lus sont réunis avec ceux du
+  classeur (jamais retirés : un exemplaire non vu peut porter les autres ; couleurs de la lecture d'abord) ; jamais
+  `count`, `variants`, `rarity`, `shiny`, `starred` ni `obtained_at`, qui dépendent des exemplaires lus (une partie a pu
+  manquer). Une lecture **vérifiée** qui a lu les tags du jeu (`gtags` en tableau) les remplace ; qui ne les a pas lus
+  (favori plus ancien), elle garde ceux du classeur. Avant, une lecture non vérifiée ne
   modifiait rien : la catégorie du jeu, l'image ou les vues d'une carte déjà là n'étaient relues que par une lecture
   vérifiée ; un joueur dont les lectures restaient non vérifiées gardait des catégories anciennes. Si les compteurs du
   jeu différaient toujours un peu de ce que lit le favori pour un joueur, ses cartes parties ne seraient jamais
@@ -361,8 +409,12 @@ diagnostiquer la suivante. `kind` = `full` (lecture complète) | `quick` (synchr
 (les compteurs du jeu ne collaient pas avec les nouveautés) : 1 043 cartes, 2 nouvelles, 1 retirée. », « Synchro
 rapide : rien de nouveau (1 043 cartes). », le message d'erreur rendu…) ; `data` = `via` (`clic`, `relie`, `script`,
 `cookie` ; absent : favori d'avant le journal), `v` (version du favori), nombres (`count`, `fresh`, `removed`, `kept`,
-`updated` (lecture non vérifiée : cartes déjà là dont les champs de carte du jeu ont été repris), `read`, `unique`,
-`total`, `invalid`, `skipped`, `copies`), `complete`, `moved`, `superseded`, `reason` (pourquoi une
+`updated` (lecture non vérifiée : cartes déjà là dont les champs de carte du jeu ont été repris ou qui ont reçu un tag du
+jeu), `read`, `unique`, `total`, `invalid`, `skipped`, `copies`), `gtags_odd` (forme de tags du jeu que le favori n'a
+pas reconnue : type, ou noms de clés d'un objet, jamais de valeur, « {id,color} » ; gardée si elle n'a que des lettres,
+chiffres, espaces et `{}[](),:._-`, 120 caractères au plus, sinon « autre » ; le message ajoute « Tags du jeu dans un
+format inconnu (…) : ils n'ont pas été lus. » ; signalée dans la ligne de la synchro elle-même plutôt que par
+`POST /api/sync-log`, qui la marquerait « échec » et ferait dire « Dernière synchro en échec » à la page), `complete`, `moved`, `superseded`, `reason` (pourquoi une
 lecture complète), `ms` (durée depuis le début de la synchro), `status` (erreur HTTP rendue), et pour un signalement du
 favori `client:true`, `code` (`session`, `limit`, `antibot`, `game`, `network`, `timeout`, `format`, `other`), `read`,
 `total`.
@@ -388,7 +440,8 @@ favori `client:true`, `code` (`session`, `limit`, `antibot`, `game`, `network`, 
   rafraîchissement par cookie, quand `last_sync` change et sur « Actualiser » ; ancien serveur (`404`) : rien. Si la
   dernière synchro (réussie, incomplète, ou échec signalé) d'un favori ou d'un script n'a pas de version, ou une plus
   ancienne que celle du favori servi (`var VERSION` de `bookmarklet.js`, lue par la page) : « Ta dernière synchro vient
-  d'un favori d'avant le 17 octobre 2026 : glisse le nouveau favori … ». Sous le résumé des cartes, tant que rien d'autre
+  d'un favori d'avant le 18 octobre 2026 : glisse le nouveau favori … Le nouveau lit aussi les tags que tu poses sur
+  tes cartes dans le jeu … » (version 3 le 18 octobre : tags du jeu ; 2 le 17). Sous le résumé des cartes, tant que rien d'autre
   n'y est affiché : « Dernière synchro en échec (Favori · lecture complète, aujourd'hui à 14:32) : <message> » (ou
   « incomplète »), avec « Dernières synchros » qui ouvre l'onglet ; un nouvel échec du favori (`last_sync` relu par
   `GET /api/me`) est annoncé (« La dernière synchro du favori a échoué : … »), et dans la fenêtre « Mettre à jour avec le
@@ -642,36 +695,42 @@ Deux zones, dans cet ordre :
    d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre (`ordered: false` dans
    `catalog.json`, liste reprise dans `app.js`) ; sauf celle faite de la colonne clé des tableaux d'une page : dans
    l'ordre des lignes, numérotée (tri « Ordre »). Son album est celui d'une collection :
-   « Ajouter par catégorie du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
+   « Ajouter par tags du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
    Wikipédia » (la catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
    comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
    s'il n'y en a pas encore.
 
-   **« Ajouter par catégorie du jeu »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du
+   **« Ajouter par tags du jeu »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du
    2026-10-17 : « Alek a une collection maladie et doit avoir plein de cartes avec le tag maladie qui ne sont pas
-   dedans », précisée le 2026-10-18 : « je parlais [des tags] de wiki-masters, pas ceux en automatique » ; d'abord livrée
-   sous le nom « Ajouter par tags », sur les tags du classeur) : une fenêtre propose des **catégories du jeu** (`category`
-   de tes cartes : le texte que le jeu affiche sous leur titre, « maladie », « chanteuse barbadienne »), calculées dans la
-   page sans requête ; les écritures d'une même catégorie (casse, accents, espaces) n'en font qu'une, affichée sous sa
-   forme la plus fréquente :
-   - **ressemblantes au nom** de la collection (mots repliés : casse et accents ignorés, articles « de, la, des, un… » et
-     possessifs « mes, ses… » écartés, pluriel ramené au singulier « maladies → maladie », « animaux → animal », féminin
-     et masculin ramenés à une forme commune sur les mots de 6 lettres au moins « chanteuse, chanteur → chanteu »,
-     « infectieuse, infectieux → infectieu », « française → français ») : **même nom** (« Maladies » ↔ « maladie »),
-     **cochées d'emblée** ; **plus précises** (tous les mots du nom, et d'autres : « maladie infectieuse », les moins
-     longues d'abord) ; **plus larges** (« maladie » pour « Maladies parasitaires » : « vérifie l'aperçu »), jamais
-     cochées d'emblée ; une catégorie qui ne partage qu'une partie des mots n'est pas proposée ;
-   - **portées par beaucoup de ses éléments** : catégorie de ta carte pour un élément que tu as, sinon description de
-     l'élément (celle du jeu pour une collection créée par le favori, celle de Wikidata sinon : en général le même texte),
-     2 éléments au moins et 20 % de ceux qui en ont une (« portée par 2 des 4 éléments de la collection ») ; 16
-     propositions au plus (celles du même nom et choisies à la main en plus ; au-delà : « Et N autres catégories
-     proposées : tape celle que tu veux dans le champ ci-dessous ») ;
-   - **une autre catégorie du jeu**, au choix (champ avec la liste des catégories de tes cartes, les plus portées
-     d'abord, 2 000 au plus) : texte exact sans la casse ni les accents, sinon les catégories qui ont exactement les
-     mêmes mots repliés (« Maladies infectieuses » → « maladie infectieuse ») ; inconnue : « Aucune de tes cartes n'a la
-     catégorie du jeu « … » ; ressemblantes : « … » » (trois au plus, qui contiennent tous ses mots) ;
-   - **tes tags du classeur**, en second et **repliés** (« Proposer aussi tes tags du classeur (N) », jamais cochés
+   dedans », précisée le 2026-10-18 : « je parlais [des tags] de wiki-masters, pas ceux en automatique » ; livrée le 17
+   sous le nom « Ajouter par tags » sur les tags du classeur, puis le 18 au matin « Ajouter par catégorie du jeu » ; le
+   nom reprend ses mots, les catégories du jeu viennent en second dans la même fenêtre) : une fenêtre propose, calculés
+   dans la page sans requête, dans cet ordre :
+   - **tes tags du jeu** (`gtags` de tes cartes, voir « Tags du jeu » ; un par nom sans tenir compte de la casse, avec la
+     couleur du jeu en pastille) : **ressemblants au nom** de la collection (mots repliés : casse et accents ignorés,
+     articles « de, la, des, un… » et possessifs « mes, ses… » écartés, pluriel ramené au singulier « maladies →
+     maladie », « animaux → animal », féminin et masculin ramenés à une forme commune sur les mots de 6 lettres au moins
+     « chanteuse, chanteur → chanteu », « infectieuse, infectieux → infectieu », « française → français ») : **même nom**
+     (« Maladies » ↔ « Maladie »), **cochés d'emblée** ; **plus précis** (tous les mots du nom, et d'autres : « Maladies
+     tropicales », les moins longs d'abord) ; **plus larges** (« Maladie » pour « Maladies parasitaires » : « vérifie
+     l'aperçu »), jamais cochés d'emblée ; un tag qui ne partage qu'une partie des mots n'est pas proposé ; puis **portés
+     par beaucoup de tes cartes de la collection** (2 au moins, et 20 % d'entre elles : « porté par 2 de tes 2 cartes de
+     la collection ») ;
+   - **les catégories du jeu** (`category` de tes cartes : le texte que le jeu affiche sous leur titre, « maladie »,
+     « chanteuse barbadienne » ; les écritures d'une même catégorie, casse, accents, espaces, n'en font qu'une, affichée
+     sous sa forme la plus fréquente) : mêmes règles de nom (même nom cochée d'emblée), puis **portées par beaucoup de
+     ses éléments** : catégorie de ta carte pour un élément que tu as, sinon description de l'élément (celle du jeu pour
+     une collection créée par le favori, celle de Wikidata sinon : en général le même texte), 2 éléments au moins et 20 %
+     de ceux qui en ont une (« portée par 2 des 4 éléments de la collection ») ;
+   - dans chacune des deux listes, 16 propositions au plus (celles du même nom et choisies à la main en plus ; au-delà :
+     « Et N autres … : tape celui que tu veux dans le champ ci-dessous ») ;
+   - **un autre tag ou une autre catégorie du jeu**, au choix (champ avec la liste de tes tags du jeu puis des catégories
+     de tes cartes, les plus portés d'abord, 2 000 au plus) : nom exact sans la casse ni les accents (tag et catégorie si
+     les deux existent), sinon ceux qui ont exactement les mêmes mots repliés (« Maladies infectieuses » → « maladie
+     infectieuse ») ; inconnu : « Aucune de tes cartes n'a le tag ou la catégorie du jeu « … » ; ressemblants : « … » »
+     (trois au plus, qui contiennent tous ses mots) ;
+   - **tes tags du classeur**, en dernier et **repliés** (« Proposer aussi tes tags du classeur (N) », jamais cochés
      d'emblée ; « Masquer » les décoche) : sous-tag du même nom (« Sciences et nature/Maladie » pour « Maladies ») ou
      proche, catégorie de tags de même nom ou proche (tous ses tags), portés par 2 au moins de tes cartes de la
      collection et 20 % d'entre elles. L'utilisateur ne les veut pas comme base (ils viennent pour beaucoup des
@@ -679,26 +738,24 @@ Deux zones, dans cet ordre :
 
    Pour chaque proposition : le nombre de tes cartes qui la portent et ne sont **pas encore** dans la collection
    (rapprochement par titre puis qid, comme l'album ; une carte par titre) et combien d'éléments de la collection la
-   portent déjà ; les catégories (même nom, plus précises, plus larges, choisies) dont tout est déjà dedans sont
-   signalées à part (« Déjà toutes dans la collection : tes cartes de catégorie « maladie » »). Rien à proposer : la
-   fenêtre le dit (aucune carte avec une catégorie du jeu : « relance une mise à jour avec le favori » ; aucune
-   catégorie ressemblante ni assez portée ; ou celles du même nom déjà complètes), et le champ reste. **Aperçu** des
-   cartes des propositions cochées (de A à Z, avec leur rareté, et leur catégorie du jeu quand plusieurs propositions
-   sont cochées ; 120 affichées puis « Afficher les suivantes »), décochables une à une (« Tout cocher » / « Tout
-   décocher ») ; **« Ajouter N cartes »** = `POST /api/targets/save {id, name, items, source?}` : les éléments existants
-   tels quels, puis les nouveaux à la fin (`{title, description: catégorie du jeu de la carte, image: null, status:'ok',
-   qid?}`, qid s'il est connu), sans doublon (titre ou qid revérifiés à l'enregistrement) ; limites de `targets.js`
-   contrôlées avant l'envoi (3 000 éléments : « Décoche-en N », bouton grisé ; 600 Ko) ; l'erreur du serveur s'affiche
-   telle quelle (5 Mo par compte…). Une collection **faite d'une catégorie ou d'une page de Wikipédia** (`wp:` /
-   `links:`) : l'ajout est permis et elle **garde sa source** (comme avec « Modifier », qui le permettait déjà ; aucune
-   relecture automatique de la catégorie ne défait l'ajout) ; la fenêtre le dit (« les cartes ajoutées viennent en plus
-   de ses articles »). Courses : classeur changé pendant l'enregistrement, la réponse est écartée.
+   portent déjà ; celles (même nom, plus précises, plus larges, choisies) dont tout est déjà dedans sont signalées à part
+   (« Déjà toutes dans la collection : tes cartes au tag Maladie », « … de catégorie « maladie » »). Rien à proposer : la
+   fenêtre le dit pour chaque liste ; **aucun tag du jeu lu** : « Ton favori n'a encore lu aucun tag du jeu : relance une
+   mise à jour complète (onglet « Mettre à jour » : « La prochaine mise à jour relira toute ta collection », puis le
+   favori sur wiki-masters.com ; il faut celui du 18 octobre 2026 ou plus récent). Si tu n'as posé aucun tag sur tes
+   cartes dans le jeu, les catégories du jeu ci-dessous suffisent. » ; aucune catégorie : « relance une mise à jour avec
+   le favori ». **Aperçu** des cartes des propositions cochées (de A à Z, avec leur rareté, et leur catégorie du jeu
+   quand plusieurs propositions sont cochées ; 120 affichées puis « Afficher les suivantes »), décochables une à une
+   (« Tout cocher » / « Tout décocher ») ; **« Ajouter N cartes »** = `POST /api/targets/save {id, name, items, source?}` :
+   les éléments existants tels quels, puis les nouveaux à la fin (`{title, description: catégorie du jeu de la carte,
+   image: null, status:'ok', qid?}`, qid s'il est connu), sans doublon (titre ou qid revérifiés à l'enregistrement) ;
+   limites de `targets.js` contrôlées avant l'envoi (3 000 éléments : « Décoche-en N », bouton grisé ; 600 Ko) ;
+   l'erreur du serveur s'affiche telle quelle (5 Mo par compte…). Une collection **faite d'une catégorie ou d'une page
+   de Wikipédia** (`wp:` / `links:`) : l'ajout est permis et elle **garde sa source** (comme avec « Modifier », qui le
+   permettait déjà ; aucune relecture automatique de la catégorie ne défait l'ajout) ; la fenêtre le dit (« les cartes
+   ajoutées viennent en plus de ses articles »). Courses : classeur changé pendant l'enregistrement, la réponse est
+   écartée.
 
-   **Autre donnée du jeu qui ressemble à des tags** (pas utilisée) : chaque entrée de `my-collection` a un champ `tags`
-   et `my-collection/stats` rend `tagOptions` (sans doute les tags qu'un joueur pose lui-même dans sa collection du
-   jeu) ; le favori et le serveur les ignorent volontairement (jamais stockés). Tous vides dans la seule collection
-   relevée (2026-10-15, 1 043 cartes) ; leur format n'est pas connu. Si ce sont eux que l'utilisateur appelle « les tags
-   de wiki-masters », il faudra les lire (favori : quelques caractères ; serveur : un champ de plus par carte).
    **Retirer une carte d'une collection** (2026-10-18) : la fiche d'une carte (possédée ou case vide) ouverte depuis
    l'album d'une de tes collections a, sous la case « Intercalaire », un bouton « Retirer de « <collection> » » : la
    collection est renvoyée sans cet élément (`POST /api/targets/save`), la fiche se ferme, et le message « « <titre> »
@@ -752,7 +809,7 @@ Deux zones, dans cet ordre :
    **Source** : la collection fusionnée garde **celle de la collection de départ** et aucune autre requête ne crée de
    collection : jamais de doublon de source `wp:`/`links:` (une seule collection par catégorie ou par page). Partie
    d'une collection faite d'une catégorie ou d'une page : elle garde sa source et reste de A à Z (la fenêtre le dit, et
-   n'offre pas d'intercalaire en tête), comme avec « Ajouter par catégorie du jeu » ou « Modifier ». L'autre faite d'une catégorie ou
+   n'offre pas d'intercalaire en tête), comme avec « Ajouter par tags du jeu » ou « Modifier ». L'autre faite d'une catégorie ou
    d'une page et supprimée : sa source disparaît avec elle (la fenêtre le dit) ; la catégorie peut de nouveau être créée
    en collection depuis « Catégories ». Reprendre la source de l'autre changerait l'ordre d'affichage de la collection de
    départ (de A à Z) : pour garder celle de l'autre, partir de l'autre.
@@ -969,7 +1026,9 @@ n'est lu dans le jeu ; autre refus après un clic, classeur plus ancien : lectur
 `my-collection/stats`, puis synchro rapide si possible (pages `sort=added` jusqu'à `last_at`, envoi
 `mode:'delta'` : « 3 exemplaires obtenus depuis ta dernière synchro, 2 nouvelles cartes », ou « Rien de nouveau ») ;
 sinon lecture de toutes les pages `my-collection` (pause de 300 ms), regroupement des exemplaires en **CarteImport**
-(rareté la plus haute ; catégorie du jeu coupée à 500 caractères, la carte n'est plus écartée pour elle), envoi
+(rareté la plus haute ; catégorie du jeu coupée à 500 caractères, la carte n'est plus écartée pour elle ; tags du jeu
+de tous ses exemplaires, `gtags` et `gtagc`, depuis la version 3 : voir « Tags du jeu » ; une forme de tag non reconnue
+est décrite dans `gtags_odd`, au premier morceau et dans la synchro rapide), envoi
 `POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last` ; `stats`,
 `last_at`, `rows`, `copies`, `ignored` au premier), puis « 1 043 cartes envoyées au classeur, 12 nouvelles » et un lien
 vers le classeur. Une relecture complète après une synchro rapide ratée dit pourquoi (tri par date en erreur ou dans le
@@ -1100,7 +1159,8 @@ du Chrome Web Store — et **pas vérifiées sur le jeu** :
 | toute requête d'écriture vers `/api/trades` ou `/api/trades/…` | échange : cartes données et reçues ; chemins d'écriture **inconnus** (seul `GET /api/trades` est relevé) | synchro rapide (relecture complète si une carte part) | `GET /api/trades` : Toolkit, Toolbox, WikiRemastered ; écritures : Collection+ les range sous « trade » sans les nommer |
 | `POST /api/achievements/claim` `{achievement_id}` | récompense : des wikibidous d'après les sources ; une carte ou un paquet, pas exclu | synchro rapide (« Rien de nouveau » si rien n'a bougé) | QoL (`api.js`), Toolkit (`ACTIVITY.md`, `activity.js`) |
 | `POST /api/marketplace/<id>/bid` | aucun : une enchère gagnée n'arrive qu'à sa clôture, côté serveur | rien | `docs/api.md` |
-| `POST /api/human-check`, `POST /api/achievements/check`, toute lecture (`GET`), Supabase (`PATCH user_cards` : étoile ; étiquettes ; liste de souhaits), statut hors 2xx | aucun sur ce que le classeur garde | rien | `docs/api.md` ; Toolkit (`pack-verification.js`, `ACTIVITY.md`) ; WikiMasters+ (`inject.js`) |
+| écriture (autre que `GET`) vers la base Supabase du jeu dont l'adresse contient « tags » (`/rest/v1/user_card_tags`, `/rest/v1/tags`), ou vers une adresse du jeu finissant par « tag(s) » ou contenant « /tags/ » (chemin **supposé**, aucun relevé) | tag du jeu posé, retiré, créé, renommé : aucun exemplaire de plus, la synchro rapide ne le verrait pas | relecture complète (« tag du jeu modifié » ; une automatique par quart d'heure au plus) | tables `tags` et `user_card_tags` : `docs/api.md` ; écriture par Supabase : WikiMasters+ (`inject.js`) range les étiquettes avec l'étoile |
+| `POST /api/human-check`, `POST /api/achievements/check`, toute lecture (`GET`), Supabase hors étiquettes (`PATCH user_cards` : étoile ; liste de souhaits), statut hors 2xx | aucun sur ce que le classeur garde | rien | `docs/api.md` ; Toolkit (`pack-verification.js`, `ACTIVITY.md`) ; WikiMasters+ (`inject.js`) |
 
 **Ce qu'il ne voit pas** (rattrapé par un clic, la relecture complète hebdomadaire ou « Tout relire ») : une enchère
 gagnée (la carte arrive à la clôture, sans requête du joueur à ce moment) ; un échange accepté par l'autre joueur ; ce
@@ -1317,8 +1377,8 @@ accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montr
   message du favori> » ; essai commencé il y a plus de 10 min sans fin : « Une lecture commencée … n'a pas abouti (onglet
   du jeu fermé pendant la lecture, ou favori ancien) » ; essai d'un favori sans version ou plus ancien que celui de la
   page (`FAVORI_VERSION` d'`app.js` = `VERSION` de `bookmarklet.js`, vérifié par le test du favori) : « Ton favori n'est
-  pas à jour : depuis le 17 octobre, il lit les cotes et les bonnes affaires tout seul et dit pourquoi quand il n'y
-  arrive pas. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script
+  pas à jour : le nouveau lit les cotes et les bonnes affaires tout seul, dit pourquoi quand il n'y arrive pas et lit
+  aussi tes tags du jeu. Onglet « Mettre à jour » : glisse le nouveau favori dans ta barre à la place de l'ancien (script
   Tampermonkey : recopie-le). ». **Mise à jour de la page** : `GET /api/me`, relu chaque minute (page visible), rend
   `market_at` ; s'il a avancé depuis la dernière lecture de l'onglet (déjà chargé), `GET /api/market` et les cotes sont
   relus, une fois par envoi du favori.

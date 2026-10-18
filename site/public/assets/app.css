@@ -281,6 +281,9 @@ main.wrap { padding-block: 26px 110px; }
 .cell__tags .tag:not(.auto):not(.more) { color: var(--link); border-color: color-mix(in srgb, var(--accent) 35%, var(--border)); }
 .tag.auto { background: transparent; border-style: dashed; }
 .tag.more { background: transparent; border-color: transparent; }
+/* Tags du jeu (posés dans wiki-masters.com) : pastille de leur couleur du jeu (--gtag, posée par le CSSOM), gris sinon. */
+.tag.game { color: var(--fg); }
+.tag.game::before, .gchip .chip__label::before, .gtag-name::before { content: ''; flex: none; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--gtag, #94a3b8); margin-right: 5px; vertical-align: 0.05em; }
 button.tag { cursor: pointer; font: inherit; font-size: 12px; }
 button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .tag .x, .chip .x { border: 0; background: none; padding: 0; display: grid; place-items: center; color: inherit; opacity: 0.7; }
@@ -559,7 +562,7 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .arrange .arrow { color: var(--faint); }
 .arrange .why { font-size: 12px; color: var(--faint); }
 @media (max-width: 640px) { .arrange li { grid-template-columns: minmax(0, 1fr) minmax(0, 12rem); } .arrange .arrow, .arrange .why { display: none; } .tag-form { grid-template-columns: minmax(0, 1fr); } }
-/* « Ajouter par catégorie du jeu » (album d'une collection) : catégories proposées, une autre catégorie, tes tags repliés, aperçu des cartes à ajouter. */
+/* « Ajouter par tags du jeu » (album d'une collection) : tags du jeu puis catégories du jeu proposés, un autre au choix, tes tags repliés, aperçu des cartes à ajouter. */
 .tagadd { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 34vh; overflow-y: auto; }
 .modal .tagadd li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 6px 10px; border-radius: 9px; background: var(--surface-2); color: var(--fg); }
 .tagadd .check { min-width: 0; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
@@ -577,6 +580,7 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .tagadd-preview .pill { flex: none; padding: 1px 5px; font-size: 10px; box-shadow: none; }
 .tagadd-preview .tagadd-cat { display: block; font-size: 11px; color: var(--faint); }
 .modal .tagadd-tags { justify-self: start; }
+.tagadd-sec { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); margin-top: 4px; }
 
 /* ------------------------------------------------------------------ nouvelle collection par mots-clés */
 .seg button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }

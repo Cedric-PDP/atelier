@@ -1,6 +1,7 @@
 // Favori du classeur, à cliquer sur wiki-masters.com (avec ou sans www) quand tu y es connecté.
 // Il lit ta collection avec les mêmes requêtes que la page « Collection » du jeu (lecture seule : rien n'est écrit
-// dans le jeu), regroupe les exemplaires par carte, puis envoie les cartes à ton classeur par morceaux de 500.
+// dans le jeu), regroupe les exemplaires par carte (avec les tags que tu y as posés), puis envoie les cartes à ton
+// classeur par morceaux de 500.
 // Synchro rapide d'abord : seulement les exemplaires obtenus depuis la dernière synchro (collection triée du plus
 // récent au plus ancien, arrêt à l'exemplaire daté de la dernière synchro) ; si quelque chose ne colle pas (tri, carte
 // la plus récente partie, compteurs du jeu : carte vendue, mise aux enchères…), relecture complète aussitôt, avec la
@@ -9,7 +10,8 @@
 // application Next.js : y changer de page ne la recharge pas). Il regarde passer, sans y toucher, les requêtes que la
 // page du jeu fait d'elle-même (window.fetch enveloppé : mêmes arguments, même promesse rendue à la page, aucun corps
 // lu, aucune requête ajoutée), repère les actions du joueur qui changent sa collection (paquet ouvert, carte défaussée,
-// mise aux enchères ou enchère annulée, échange, récompense réclamée : ACTIONS) et relance alors la synchro rapide,
+// mise aux enchères ou enchère annulée, échange, récompense réclamée : ACTIONS ; tag du jeu posé ou retiré : relecture
+// complète, la synchro rapide ne le verrait pas) et relance alors la synchro rapide,
 // 5 s après la dernière action, au plus une par minute et 20 par heure ; une relecture complète automatique au plus
 // toutes les 15 minutes. Ces limites valent pour toutes les pages et tous les onglets du jeu de ce navigateur (heures
 // gardées dans son localStorage, clé "classeur:relie", jamais la clé d'import) et, pour les relectures complètes, d'après
@@ -38,7 +40,7 @@
   // Version de ce favori, envoyée au classeur (journal des synchros) ; « state » rend la plus récente : un favori plus
   // ancien le dit à la fin de sa synchro. La page la lit dans ce fichier (favori ancien signalé, @version du script
   // Tampermonkey) ; FAVORI_VERSION de import.js doit valoir la même (un test le vérifie).
-  var VERSION = 2;
+  var VERSION = 3;
   var BOX_ID = "classeur-favori";
   var PART = 500;
   // Déjà relié dans cette page : pendant une synchro, le clic déplie seulement l'encart ; sinon l'ancien favori est
@@ -228,9 +230,32 @@
   // Raretés de la plus basse à la plus haute : une carte possédée en plusieurs raretés garde la plus haute (comme le
   // classeur).
   var RANKS = ["C", "PC", "R", "SR", "UR", "L"];
-  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu, catégorie du jeu
-  // coupée à 500 caractères (la carte n'est plus écartée pour elle). Un exemplaire vu deux fois (même entry.id) ne
-  // compte qu'une fois ; les entrées inexploitables sont comptées à part (ignored), et
+  // Tags posés par le joueur dans le jeu : entry.tags = [{id, name, color}] (doc tierce de l'API) ; lu aussi d'une chaîne
+  // ou d'un objet {label|title|tag|value} (un niveau d'objet en plus : {tag: {name}}) ; couleur « #rrggbb » gardée ; 30
+  // par carte, 60 caractères chacun. Autre forme (nombre, objet sans nom…) : seulement décrite (type, ou noms de clés
+  // d'un objet ; jamais de valeur) dans godd, pour le journal du classeur.
+  var godd = "";
+  var tagsOf = function (raw, card) {
+    (Array.isArray(raw) ? raw : raw == null ? [] : [raw]).forEach(function (t) {
+      var o = t && typeof t === "object";
+      var n = o ? t.name || t.label || t.title || t.tag || t.value : t;
+      n = (n && n.name) || n;
+      if (typeof n !== "string") {
+        godd = godd || (o ? "{" + Object.keys(t).slice(0, 6) + "}" : typeof t);
+        return;
+      }
+      n = n.replace(/\s+/g, " ").trim().slice(0, 60);
+      if (n && card.gtags.indexOf(n) < 0 && card.gtags.length < 30) {
+        card.gtags.push(n);
+        if (o && /^#[\da-f]{3,8}$/i.test(t.color)) {
+          card.gtagc[n] = t.color;
+        }
+      }
+    });
+  };
+  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id, avec les tags du jeu de tous ses exemplaires
+  // (tagsOf), catégorie du jeu coupée à 500 caractères (la carte n'est plus écartée pour elle). Un exemplaire vu deux
+  // fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part (ignored), et
   // parmi elles les cartes distinctes que le jeu compte dans totalUnique (unknown). rows / copies : exemplaires lus et
   // leur nombre total, invalides compris (contrôlés par le classeur avec les compteurs du jeu). variants : exemplaires
   // par rareté d'exemplaire (snapshot_rarity s'il est là, celle des ventes du marché ; sinon celle de la carte) et
@@ -262,7 +287,7 @@
       id = String(id);
       var card = byId[id];
       if (!card) {
-        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category.slice(0, 500) : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null, variants: {} };
+        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category.slice(0, 500) : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null, variants: {}, gtags: [], gtagc: {} };
         byId[id] = card;
         list.push(card);
       } else if (RANKS.indexOf(c.rarity) > RANKS.indexOf(card.rarity)) {
@@ -270,6 +295,7 @@
       }
       var copy = (RANKS.indexOf(e.snapshot_rarity) >= 0 ? e.snapshot_rarity : c.rarity) + (e.is_shiny ? "*" : "");
       card.variants[copy] = (card.variants[copy] || 0) + n;
+      tagsOf(e.tags, card);
       card.count += n;
       card.shiny = card.shiny || !!e.is_shiny;
       card.starred = card.starred || !!e.starred;
@@ -408,7 +434,8 @@
     state: "Le classeur demande une relecture complète. ",
     invalid: "Une de tes nouvelles cartes ne peut pas être rangée dans le classeur : relecture complète. ",
     too_many: "Plus de 500 nouvelles cartes : relecture complète. ",
-    max_cards: "Ton classeur dépasserait 20 000 cartes : relecture complète. "
+    max_cards: "Ton classeur dépasserait 20 000 cartes : relecture complète. ",
+    tags: "Tags du jeu changés ou pas encore lus : relecture complète. "
   };
   var SUPERSEDED = "Une synchro plus récente (autre onglet, favori relié ou rafraîchissement) est déjà passée : ton classeur est à jour";
   // Échec vu par le favori lui-même pendant une synchro (jeu injoignable ou en erreur, session, limite de lectures,
@@ -473,10 +500,16 @@
       say(message, true);
     };
     var stats = await read("/api/my-collection/stats?sort=rarity");
+    godd = "";
+    // Relié : un tag posé ou retiré dans le jeu ne crée aucun exemplaire, la synchro rapide ne le verrait pas.
+    var tagged = auto === true && live && live.tags;
     var total = stats && Number.isInteger(Number(stats.total)) && Number(stats.total) > 0 ? Number(stats.total) : null;
     info.total = total || 0;
     info.reason = state && state.quick ? "" : "state";
-    if (state && state.quick && state.last_at) {
+    if (tagged) {
+      why = WHY.tags;
+      info.reason = "tags";
+    } else if (state && state.quick && state.last_at) {
       say("Recherche de tes nouvelles cartes…");
       var got = await readNew(state.last_at);
       why = got.why || "";
@@ -487,7 +520,7 @@
           why = WHY.invalid;
           info.reason = "invalid";
         } else {
-          var quick = await send({ mode: "delta", cards: news.list, stats: stats, rows: news.rows, copies: news.copies, last_at: newest(got.fresh), started: started, via: info.via, v: VERSION, source: "bookmarklet" });
+          var quick = await send({ mode: "delta", cards: news.list, stats: stats, rows: news.rows, copies: news.copies, last_at: newest(got.fresh), started: started, via: info.via, v: VERSION, source: "bookmarklet", gtags_odd: godd || undefined });
           if (quick.superseded) {
             done(SUPERSEDED + (typeof quick.count === "number" ? " (" + num(quick.count) + " cartes)." : "."));
             return { quick: true };
@@ -521,6 +554,7 @@
     }
     if (live) {
       live.fullAt = Date.now();
+      live.tags = false;
       share(true);
     }
     info.kind = "full";
@@ -594,6 +628,9 @@
         body.ignored = grouped.unknown;
         body.via = info.via;
         body.v = VERSION;
+        if (godd) {
+          body.gtags_odd = godd;
+        }
         if (statsEnd && typeof statsEnd === "object") {
           body.stats_end = { total: statsEnd.total, totalUnique: statsEnd.totalUnique };
         }
@@ -1330,6 +1367,10 @@
     var d = new Date(t);
     return two(d.getHours()) + ":" + two(d.getMinutes());
   };
+  // Tag posé ou retiré dans le jeu (chemins supposés : adresse du jeu finissant par « tag » ou « tags », ou qui contient
+  // « /tags/ » ; écriture dans la base Supabase du jeu dont l'adresse contient « tags », voir watch) : la synchro qui suit
+  // est une relecture complète (live.tags).
+  var TAGGED = "tag du jeu modifié";
   // Actions du joueur qui changent sa collection : [méthode ("*" : toute sauf GET), chemin de l'API du jeu, ce que le
   // badge en dit]. Relevées dans docs/api.md de qpautrat/wikimasters-cli et dans le code d'extensions tierces (tableau
   // dans SPEC.md). Toute autre requête (lecture, Supabase, autre site, enchère posée, statut hors 2xx) ne déclenche rien.
@@ -1339,7 +1380,8 @@
     ["POST", /^\/api\/marketplace$/, "carte mise aux enchères"],
     ["DELETE", /^\/api\/marketplace\/[^/]+$/, "enchère annulée"],
     ["*", /^\/api\/trades(\/|$)/, "échange"],
-    ["POST", /^\/api\/achievements\/claim$/, "récompense réclamée"]
+    ["POST", /^\/api\/achievements\/claim$/, "récompense réclamée"],
+    ["*", /tags?(\/|$)/, TAGGED]
   ];
   // Actions du joueur sur le marché, qui relancent la lecture des cotes (« cotes automatiques ») : enchère posée ou achat
   // (chemin d'achat direct supposé : aucun relevé), mise en vente, vente annulée.
@@ -1367,10 +1409,12 @@
       return;
     }
     var u = new URL(typeof input === "string" ? input : input && typeof input.url === "string" ? input.url : String(input), location.href);
-    if (u.origin !== location.origin) {
+    // Étiquettes écrites par la page directement dans la base du jeu (Supabase : user_card_tags, tags) : tag modifié.
+    var tagged = u.href.indexOf(SUPA) === 0 && /tags/.test(u.pathname);
+    if (u.origin !== location.origin && !tagged) {
       return;
     }
-    var what = actionOf(method, u.pathname);
+    var what = tagged ? TAGGED : actionOf(method, u.pathname);
     var sale = actionOf(method, u.pathname, MK_ACTIONS);
     if ((!what && !sale) || !p || typeof p.then !== "function") {
       return;
@@ -1522,6 +1566,9 @@
     live.last = now;
     live.what = what;
     live.rechecked = false;
+    if (what === TAGGED) {
+      live.tags = true;
+    }
     schedule();
   };
   // ---------------------------------------------------------------- cotes automatiques (mode relié)

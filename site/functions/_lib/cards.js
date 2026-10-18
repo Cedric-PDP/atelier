@@ -2,7 +2,7 @@
 // Le regroupement des exemplaires et la comparaison avec la collection en place se font en SQL (import.js).
 
 import { HttpError, raw } from './http.js';
-import { base64ToBytes, base64url } from './util.js';
+import { base64ToBytes, base64url, cleanText } from './util.js';
 
 export const MAX_CARDS = 20_000;
 export const MAX_PART_CARDS = 500;
@@ -53,6 +53,8 @@ function validCard(c) {
   if (typeof c.shiny !== 'boolean' || typeof c.starred !== 'boolean') return null;
   if (c.obtained_at !== null && !isDate(c.obtained_at)) return null;
   if (!isText(c.eid, 100)) return null;
+  if (c.gtags !== null && !Array.isArray(c.gtags)) return null;
+  if (c.gtagc !== null && (typeof c.gtagc !== 'object' || Array.isArray(c.gtagc))) return null;
   // Forme compacte pour la table d'attente (8 Mo au plus par envoi) : un champ nul ou faux est omis, ce que la
   // finalisation SQL lit pareil (json_extract d'un champ absent = NULL).
   const out = { id: c.id, title: c.title, rarity: c.rarity, count: c.count };
@@ -69,7 +71,82 @@ function validCard(c) {
   if (c.eid !== null) out.eid = c.eid;
   const variants = c.variants === null || c.variants === undefined ? null : cleanVariants(c.variants, c.count);
   if (variants) out.variants = variants;
+  // Tags du jeu : un tableau, même vide, dit que l'exemplaire les a été lus (absent : favori d'avant le 18 octobre) ;
+  // leurs couleurs (gtagc), seulement s'il y en a.
+  if (c.gtags !== null) out.gtags = c.gtags;
+  if (c.gtagc !== null) out.gtagc = c.gtagc;
   return out;
+}
+
+// ---------------------------------------------------------------- tags du jeu
+// Étiquettes que le joueur crée lui-même dans le jeu (table `tags` du jeu : id, name, color ; posées sur les entrées de sa
+// collection par `user_card_tags`) : chaque entrée de my-collection porte `tags` = [{id, name, color, …}] (relevé de la doc
+// tierce qpautrat/wikimasters-cli, docs/api.md ; pas encore vu dans une vraie collection, la seule relevée n'en avait
+// pas) ; `tagOptions` des stats = la liste des étiquettes du joueur. Lu de façon tolérante, comme le favori : un tag est
+// aussi une chaîne, un nombre, un objet {name|label|title|tag|value} (un niveau d'objet en plus : {tag: {name}}) ou un
+// identifiant (nombre, chaîne, objet {id}) traduit par tagOptions (tableau d'objets {id|key|value, name|label|…}, ou objet
+// id → nom). Carte : `gtags` = noms, 30 au plus, 60 caractères chacun, sans doublon sur tous ses exemplaires ; `gtagc` =
+// couleur de chacun quand le jeu en donne une (« #rrggbb », validée, en minuscules), absent sinon.
+export const MAX_GTAGS = 30;
+const GTAG_LEN = 60;
+const HEX = /^#(?:[0-9a-f]{3}|[0-9a-f]{6}|[0-9a-f]{8})$/i;
+const scalar = (v) => typeof v === 'string' || typeof v === 'number';
+const tagName = (t) => (t && typeof t === 'object' && !Array.isArray(t) ? t.name || t.label || t.title || t.tag || t.value : t);
+
+// tagOptions des stats du jeu → Map identifiant → nom (vide si rien d'exploitable).
+export function gameTagNames(options) {
+  const names = new Map();
+  const put = (id, n) => { if (scalar(id) && scalar(n)) names.set(String(id), String(n)); };
+  if (Array.isArray(options)) {
+    for (const o of options) if (o && typeof o === 'object') put(o.id ?? o.key ?? o.value, tagName(o));
+  } else if (options && typeof options === 'object') {
+    for (const [k, v] of Object.entries(options)) put(k, typeof v === 'string' ? v : v && typeof v === 'object' ? tagName(v) : undefined);
+  }
+  return names;
+}
+
+// Tags d'une entrée (entry.tags, ou CarteImport.gtags déjà en noms) → {names, colors} nettoyés ; un objet sans nom dont
+// l'identifiant n'est pas dans `names` est ignoré (jamais un identifiant opaque pris pour un nom).
+export function gameTagsOf(raw, names = new Map()) {
+  const list = Array.isArray(raw) ? raw : typeof raw === 'string' ? raw.split(',') : [];
+  const out = [];
+  const colors = {};
+  for (const t of list) {
+    let n = tagName(tagName(t));
+    if ((n === undefined || n === null) && t && typeof t === 'object' && names.has(String(t.id))) n = t.id;
+    if (!scalar(n)) continue;
+    const key = String(n);
+    const name = cleanText(names.has(key) ? names.get(key) : key).slice(0, GTAG_LEN).trim();
+    if (!name || out.includes(name)) continue;
+    out.push(name);
+    if (t && typeof t === 'object' && typeof t.color === 'string' && HEX.test(t.color)) colors[name] = t.color.toLowerCase();
+    if (out.length >= MAX_GTAGS) break;
+  }
+  return { names: out, colors: Object.keys(colors).length ? colors : null };
+}
+
+// CarteImport.gtags : null (pas lus : favori d'avant les tags du jeu, ou autre chose qu'un tableau) ou noms nettoyés ;
+// gtagc : couleurs valides des noms gardés, null s'il n'y en a aucune.
+export const cleanGtags = (v) => (Array.isArray(v) ? gameTagsOf(v).names : null);
+export function cleanGtagc(v, gtags) {
+  if (!gtags || !v || typeof v !== 'object' || Array.isArray(v)) return null;
+  const out = {};
+  for (const name of gtags) if (Object.hasOwn(v, name) && typeof v[name] === 'string' && HEX.test(v[name])) out[name] = v[name].toLowerCase();
+  return Object.keys(out).length ? out : null;
+}
+
+// Signature de tagOptions (texte court) : la synchro rapide la compare à celle de la dernière lecture complète, et
+// relit tout si elle a changé (un tag posé ou retiré dans le jeu ne crée aucun exemplaire, la synchro rapide ne le
+// verrait pas). Indépendante de l'ordre (éléments ou clés triés) ; '' sans tagOptions. FNV-1a 32 bits.
+export function tagSig(options) {
+  if (options === undefined || options === null) return '';
+  const stable = (x) => (x && typeof x === 'object' && !Array.isArray(x) ? JSON.stringify(Object.keys(x).sort().map((k) => [k, x[k]])) : JSON.stringify(x) ?? '');
+  const list = (Array.isArray(options) ? options.map(stable) : typeof options === 'object' ? Object.keys(options).map((k) => k + '=' + stable(options[k])) : [stable(options)]).sort();
+  if (!list.length) return '';
+  const text = list.join('|');
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(16) + ':' + list.length;
 }
 
 const opt = (v) => (v === undefined || v === '' ? null : v);
@@ -104,17 +181,21 @@ export function checkCard(c) {
     obtained_at: opt(c.obtained_at),
     eid: null,
     variants: c.variants ?? null,
+    gtags: cleanGtags(c.gtags),
+    gtagc: cleanGtagc(c.gtagc, cleanGtags(c.gtags)),
   });
 }
 
 // Entrée brute du jeu → carte partielle (un exemplaire). `eid` = id de l'exemplaire, pour ne pas compter deux fois
-// une entrée vue deux fois. Jamais le user_id du jeu ni ses étiquettes. null si l'entrée est invalide. Rareté de
+// une entrée vue deux fois. Jamais le user_id du jeu. null si l'entrée est invalide. Rareté de
 // l'exemplaire (variants) : son snapshot_rarity s'il en a un (rareté au moment où il a été obtenu, celle des ventes du
-// marché), sinon celle de la carte.
-export function entryToCard(entry) {
+// marché), sinon celle de la carte. Tags du jeu (gtags) : lus de entry.tags, identifiants traduits par names
+// (gameTagNames de tagOptions).
+export function entryToCard(entry, names) {
   if (!entry || typeof entry !== 'object' || !entry.card || typeof entry.card !== 'object') return null;
   const c = entry.card;
   const id = entry.card_id ?? c.id;
+  const gt = gameTagsOf(entry.tags, names);
   return validCard({
     id: typeof id === 'number' ? String(id) : id,
     title: c.wikipedia_title,
@@ -132,6 +213,8 @@ export function entryToCard(entry) {
     obtained_at: opt(entry.obtained_at),
     eid: entry.id === undefined || entry.id === null ? null : String(entry.id),
     variants: { [(RARITIES.has(entry.snapshot_rarity) ? entry.snapshot_rarity : c.rarity) + (entry.is_shiny ? '*' : '')]: entry.count ?? 1 },
+    gtags: gt.names,
+    gtagc: gt.colors,
   });
 }
 

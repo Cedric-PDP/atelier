@@ -16,6 +16,7 @@ const { SCHEMA } = await import(lib('_lib/db.js'));
 const { decryptCookie } = await import(lib('_lib/session.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
 const { QUOTA_USER, QUOTA_ALL, AUTO_GAP } = await import(lib('_lib/market.js'));
+const { tagSig } = await import(lib('_lib/cards.js'));
 
 const realFetch = globalThis.fetch;
 const SECRET = 'secret-de-test';
@@ -509,7 +510,7 @@ await test('premier import : regroupement, hide_image, sans user_id, new_ids vid
   assert.equal(cards.cards.length, 120);
   assert.ok(cards.fetched_at);
   const keys = ['id', 'title', 'rarity', 'atk', 'def', 'quality', 'pageviews', 'category', 'image', 'url', 'count',
-    'shiny', 'starred', 'obtained_at', 'variants', 'tags'];
+    'shiny', 'starred', 'obtained_at', 'variants', 'gtags', 'tags'];
   for (const c of cards.cards) assert.deepEqual(Object.keys(c), keys);
   const byId = new Map(cards.cards.map((c) => [c.id, c]));
   const d = byId.get(dup.id);
@@ -531,9 +532,11 @@ await test('premier import : regroupement, hide_image, sans user_id, new_ids vid
   assert.equal(one.category, base[0].c);
   assert.ok(one.url.startsWith('https://fr.wikipedia.org/wiki/'));
   assert.deepEqual(one.tags, []);
+  // Tags posés dans le jeu (entry.tags, objets {id, name}) : gardés dans la carte (gtags), jamais parmi les tags du classeur.
+  assert.deepEqual(one.gtags, ['TagDuJeu']);
   const everything = JSON.stringify(['users', 'cards', 'tags', 'targets', 'refresh_staging'].map((t) => rows(`SELECT * FROM ${t}`)));
   assert.ok(!everything.includes(GAME_USER), 'user_id du jeu stocké');
-  assert.ok(!everything.includes('TagDuJeu'), 'étiquette du jeu stockée');
+  assert.ok(!JSON.stringify(rows('SELECT * FROM tags')).includes('TagDuJeu'), 'tag du jeu mêlé aux tags du classeur');
   const me = (await call('GET', 'me', { key: alice.key })).json;
   assert.equal(me.card_count, 120);
 });
@@ -1270,7 +1273,7 @@ await test('import : synchro rapide du favori (state, delta additionné, compteu
   const syncRow = () => JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', dave.user.id)[0].sync_state);
   // Heure du serveur (début de la synchro, renvoyée avec la lecture) et version la plus récente du favori.
   const s0 = await state();
-  assert.deepEqual([s0.quick, s0.last_at, s0.full_at, s0.v], [false, null, null, 2]);
+  assert.deepEqual([s0.quick, s0.last_at, s0.full_at, s0.v], [false, null, null, 3]);
   assert.ok(Math.abs(Date.parse(s0.now) - Date.now()) < 5000, s0.now);
   // Sans lecture complète d'abord : pas de synchro rapide.
   let r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 0, totalUnique: 0 }, rows: 0, copies: 0 } });
@@ -2567,6 +2570,84 @@ await test('catégorie du jeu (et autres champs de la carte) : relue par la sync
   r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[4], category: 'z'.repeat(499) + '😀' }], stats: { total: 9, totalUnique: 6 } } });
   assert.equal((await mine()).get('carte-00004').category, 'z'.repeat(499));
   await call('DELETE', 'me', { key: gaby.key });
+});
+
+await test('tags du jeu (gtags) : lus par le favori 3 et les entrées brutes, gardés avec leur couleur ; réunis par la synchro rapide et une lecture non vérifiée, remplacés par une lecture vérifiée qui les a lus, gardés sinon ; tagOptions changés → relecture complète ; forme inconnue au journal', async () => {
+  const hugo = await signup('Hugo');
+  const imp = (await call('POST', 'import-key', { key: hugo.key })).json.import_key;
+  const mine = async () => new Map((await call('GET', 'cards', { key: hugo.key })).json.cards.map((c) => [c.id, c]));
+  const state = () => JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', hugo.user.id)[0].sync_state);
+  const opts = [{ id: 'u1', name: 'Maladie', color: '#ef4444' }, { id: 'u2', name: 'Fléau', color: '#94a3b8' }];
+  const four = synth(4).map((c) => ({ ...c, rarity: 'C', count: 1 }));
+  const many = Array.from({ length: 35 }, (_, i) => `Tag ${String(i).padStart(2, '0')} ${'x'.repeat(i === 0 ? 70 : 0)}`);
+  const cards = [{ ...four[0], gtags: ['Maladie', '  Fléau  ', 'Maladie', 12, null], gtagc: { Maladie: '#EF4444', 'Fléau': 'rouge', Autre: '#000' } },
+    { ...four[1], gtags: [] }, { ...four[2] }, { ...four[3], gtags: many }];
+  const game = { total: 4, totalUnique: 4, rarityCounts: { C: 4 }, tagOptions: opts };
+  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'h1', part: 0, last: true, cards, stats: game, rows: 4, copies: 4, last_at: '2026-10-15T09:00:00.000Z', v: 3 } });
+  assert.deepEqual([r.json.count, r.json.complete], [4, true], JSON.stringify(r.json));
+  let all = await mine();
+  // Nettoyés (espaces, doublons, autre chose que du texte ou un nombre), triés ; couleur valide seulement, en minuscules ;
+  // aucun : pas de clé.
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc], [['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }]);
+  assert.ok(!('gtags' in all.get('carte-00001')) && !('gtags' in all.get('carte-00002')) && !('gtagc' in all.get('carte-00001')));
+  assert.equal(all.get('carte-00003').gtags.length, 30);
+  assert.ok(all.get('carte-00003').gtags.every((t) => t.length <= 60), 'tags du jeu de 60 caractères au plus');
+  assert.equal(state().tsig, tagSig(opts), 'signature des tags du jeu gardée');
+  assert.ok(!JSON.stringify(rows('SELECT * FROM tags')).includes('Maladie'), 'tags du jeu mêlés aux tags du classeur');
+  // Synchro rapide : un exemplaire de carte-00001 avec un tag, un de carte-00000 sans : réunis (jamais retirés).
+  const copyOf = (c, gtags, at) => ({ ...c, count: 1, gtags, obtained_at: at });
+  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [copyOf(four[1], ['Virus'], '2026-10-16T09:00:00.000Z'), copyOf(four[0], [], '2026-10-16T09:00:00.000Z')],
+    rows: 2, copies: 2, last_at: '2026-10-16T09:00:00.000Z', stats: { ...game, total: 6, rarityCounts: { C: 6 } }, v: 3 } });
+  assert.deepEqual([r.json.quick, r.json.count], [true, 4], JSON.stringify(r.json));
+  all = await mine();
+  assert.deepEqual([all.get('carte-00001').gtags, all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00000').count],
+    [['Virus'], ['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }, 2]);
+  // tagOptions dans un autre ordre : rien ne change ; un tag créé dans le jeu : relecture complète demandée, rien d'écrit.
+  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [...opts].reverse() }, v: 3 } });
+  assert.equal(r.json.quick, true, JSON.stringify(r.json));
+  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [...opts, { id: 'u3', name: 'Virus' }] }, v: 3 } });
+  assert.deepEqual(r.json, { needs_full: true, reason: 'tags' });
+  // Favori d'avant les tags du jeu (version 2) : pas de contrôle ; sa lecture complète vérifiée ne les efface pas.
+  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [] }, v: 2 } });
+  assert.equal(r.json.quick, true, JSON.stringify(r.json));
+  const plain = four.map((c, i) => ({ ...c, count: i < 2 ? 2 : 1 }));
+  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h2', part: 0, last: true, cards: plain, stats: { total: 6, totalUnique: 4 }, v: 2 } });
+  assert.equal(r.json.complete, true, JSON.stringify(r.json));
+  all = await mine();
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00001').gtags], [['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }, ['Virus']]);
+  assert.equal(state().tsig, tagSig(opts), 'signature gardée par une lecture qui ne lit pas les tags');
+  // Lecture vérifiée du favori 3 : ses tags remplacent ceux du classeur (Fléau et 12 retirés dans le jeu ; carte-00001 n'en
+  // a plus) ; nouvelle signature.
+  const opts2 = [opts[0]];
+  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h3', part: 0, last: true, cards: plain.map((c, i) => (i === 0 ? { ...c, gtags: ['Maladie'], gtagc: { Maladie: '#ef4444' } } : { ...c, gtags: [] })),
+    stats: { total: 6, totalUnique: 4, tagOptions: opts2 }, v: 3 } });
+  assert.equal(r.json.complete, true);
+  all = await mine();
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00001').gtags, all.get('carte-00003').gtags], [['Maladie'], undefined, undefined]);
+  assert.equal(state().tsig, tagSig(opts2));
+  // Lecture non vérifiée (le jeu compte une carte de plus) : tags réunis, exemplaires gardés ; forme inconnue signalée par
+  // le favori (types et clés seulement), notée au journal ; une forme pleine de caractères inattendus : « autre ».
+  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h4', part: 0, last: true, cards: plain.map((c, i) => (i === 0 ? { ...c, count: 1, gtags: ['Peste'] } : { ...c, gtags: [] })),
+    stats: { total: 7, totalUnique: 5, tagOptions: opts2 }, v: 3, gtags_odd: '{id,color}' } });
+  assert.deepEqual([r.json.complete, r.json.removed], [false, 0]);
+  all = await mine();
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00000').count], [['Maladie', 'Peste'], { Maladie: '#ef4444' }, 2]);
+  let [e] = (await call('GET', 'sync-log', { key: hugo.key })).json.entries;
+  assert.deepEqual([e.result, e.data.updated, e.data.gtags_odd], ['warn', 1, '{id,color}']);
+  assert.match(e.message, /1 carte déjà là mise à jour .* Tags du jeu dans un format inconnu \(\{id,color\}\) : ils n'ont pas été lus\.$/);
+  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h5', part: 0, last: true, cards: plain, stats: { total: 7, totalUnique: 5 }, v: 2, gtags_odd: '<b>oups</b>' } });
+  [e] = (await call('GET', 'sync-log', { key: hugo.key })).json.entries;
+  assert.equal(e.data.gtags_odd, 'autre', JSON.stringify(e));
+  // Entrées brutes du jeu (rafraîchissement, ancien favori) : entry.tags = [{id, name, color}] lus, ou un identifiant
+  // traduit par tagOptions ; un objet sans nom ni identifiant connu est ignoré.
+  const ent = (c, tags) => ({ id: 'e-' + c.id, card_id: c.id, count: 1, obtained_at: c.obtained_at, card: { id: c.id, wikipedia_title: c.title, rarity: 'C' }, tags });
+  r = await call('POST', 'import', { key: imp, body: { collection: [ent(four[0], [{ id: 'u1', name: 'Maladie', color: '#EF4444' }, { id: 'u9' }, { id: 'u7', color: '#000' }]), ent(four[1], ['Virus', 7])],
+    stats: { tagOptions: [{ id: 'u9', name: 'Neuf' }] } } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  all = await mine();
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc], [['Maladie', 'Neuf', 'Peste'], { Maladie: '#ef4444' }]);
+  assert.deepEqual(all.get('carte-00001').gtags, ['7', 'Virus']);
+  await call('DELETE', 'me', { key: hugo.key });
 });
 
 await test('refresh : deux lectures en même temps (deux onglets) → la plus ancienne s\'arrête (jeton run) ; compteurs changés pendant la lecture → rien de retiré', async () => {
