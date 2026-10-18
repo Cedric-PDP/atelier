@@ -81,7 +81,7 @@ route sauf `/api/health` répond `503 {error:"Le classeur n'est pas encore confi
   "atk": 10000, "def": 9044,
   "quality": 84.58,              // card.q_score
   "pageviews": 28785,            // card.pageviews (vues mensuelles relevées par le jeu)
-  "category": "chanteuse barbadienne",  // card.category (description Wikidata), peut être null
+  "category": "chanteuse barbadienne",  // card.category, la « catégorie du jeu » (texte affiché sous le titre, en général la description Wikidata), 500 caractères au plus (coupée), peut être null
   "image": "https://upload.wikimedia.org/…/330px-….png",  // card.image_url, null si absent ou hide_image
   "url": "https://fr.wikipedia.org/wiki/Rihanna",           // card.wikipedia_url
   "count": 1,                    // somme des count des exemplaires
@@ -206,8 +206,9 @@ comparaison avec la collection en place (ajouts, retraits, modifications, `new_i
 10 pages au plus par appel.
 
 **Import et nouveautés** : une lecture complète (favori ou rafraîchissement) **vérifiée** remplace la collection ; on
-n'écrit que les différences (cartes ajoutées, retirées, modifiées). Une lecture **non vérifiée** n'ajoute que les cartes
-absentes du classeur et ne retire ni ne modifie rien (voir « Synchros sûres »). `new_ids` = cartes présentes après mais
+n'écrit que les différences (cartes ajoutées, retirées, modifiées). Une lecture **non vérifiée** ajoute les cartes
+absentes du classeur, ne retire rien, et ne reprend sur les cartes déjà là que leurs **champs de carte du jeu** (voir
+« Synchros sûres »). `new_ids` = cartes présentes après mais
 pas avant ; **vide au tout premier import**. Les étiquettes d'une carte qui disparaît sont gardées (elle peut revenir).
 
 **Lecture incrémentale** (ne relire que ce qui a changé) : `users.cards_rev` = révision de la liste des cartes du
@@ -245,8 +246,9 @@ plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'u
   (le favori envoie au premier morceau `rows` / `copies` = exemplaires lus et leur nombre total, invalides compris, et
   `ignored` = cartes distinctes qu'il a écartées ; le rafraîchissement les compte dans sa table d'attente, où les
   entrées invalides gardent une marque), et `total` correspond aux exemplaires lus. Sinon (page vide passagère,
-  pagination instable, collection qui a bougé pendant la lecture…) le classeur n'ajoute que les cartes absentes et ne
-  retire rien (voir « Synchros sûres »), et `full_at` reste vide : la synchro suivante relit tout.
+  pagination instable, collection qui a bougé pendant la lecture…) le classeur ajoute les cartes absentes, ne retire
+  rien et ne reprend que les champs de carte du jeu des autres (voir « Synchros sûres »), et `full_at` reste vide : la
+  synchro suivante relit tout.
 - **Unité de `total`, apprise à chaque lecture complète** : `copies` si `total` = Σ `count` lus ; `both` (ambiguë) si
   les lignes lues = les exemplaires lus = `total` ; `rows` si `total` = lignes lues alors que des piles (`count` > 1)
   existent : la synchro rapide ne verrait pas un exemplaire ajouté à une pile, elle est **coupée** (toujours une
@@ -270,13 +272,18 @@ plus `last_at`, et n'envoie que les nouveautés : 2 requêtes au jeu au lieu d'u
   lecture dont le classeur vient (`read_at`) répond `superseded:true`, rien d'écrit (voir « Synchros sûres »).
 - **Rareté** : une carte possédée en plusieurs raretés garde la plus haute (C < PC < R < SR < UR < L), à l'import
   complet comme en synchro rapide et dans le favori.
+- **Champs de carte du jeu** (2026-10-18) : un nouvel exemplaire d'une carte déjà là lui redonne ses champs de carte du
+  jeu, lus à l'instant (`title`, `atk`, `def`, `quality`, `pageviews`, `category`, `image`, `url` : les mêmes dans tous
+  ses exemplaires) ; ses exemplaires, brillance, favori, rareté et date sont additionnés comme avant.
 - **Angles morts** (ce que les compteurs ne montrent pas) : échange 1 contre 1 de deux cartes de **même rareté** quand
   la carte reçue est datée d'avant `last_at` et que la carte donnée n'était pas la plus récente ; carte retirée des
   favoris (`starred`) ou devenue brillante sans nouvelle ligne ; si `total` compte les lignes et qu'aucune pile
-  n'existait à la dernière lecture complète (`both`), un exemplaire ajouté à une ligne existante sans changer sa date.
-  Remèdes : lecture complète forcée au moins une fois par semaine, et **« La prochaine mise à jour relira toute ta
-  collection »** (onglet « Mettre à jour », `PATCH /api/me {force_full:true}`, clé principale : `full_at` effacé ;
-  `GET /api/me` renvoie alors `next_full:true` et l'interface envoie `full:true` à `/api/refresh`).
+  n'existait à la dernière lecture complète (`both`), un exemplaire ajouté à une ligne existante sans changer sa date ;
+  catégorie du jeu (ou image, vues…) changée par le jeu sur une carte qui n'a pas reçu d'exemplaire (vue à la lecture
+  complète suivante, vérifiée ou non). Remèdes : lecture complète forcée au moins une fois par semaine, et **« La
+  prochaine mise à jour relira toute ta collection »** (onglet « Mettre à jour », `PATCH /api/me {force_full:true}`,
+  clé principale : `full_at` effacé ; `GET /api/me` renvoie alors `next_full:true` et l'interface envoie `full:true` à
+  `/api/refresh`).
 
 Le tri `added` vient de la page profil du jeu (`rarity`, `name`, `added`). S'il n'était pas respecté (ignoré,
 croissant), la vérification de l'ordre des dates le détecte dès la première page, sauf si l'ordre rendu tombait
@@ -314,12 +321,19 @@ automatiques) → session marquée expirée, `401 {needs_session:true}`.
   gardées, mais marquées « nouvelles »). Maintenant une lecture n'est **vérifiée** que si cartes rangées + cartes
   invalides distinctes = `totalUnique` du jeu, **et** que les compteurs relus après la dernière page (`stats_end`) sont
   ceux d'avant (`total`, `totalUnique`). Vérifiée : la collection est remplacée (cartes retirées comprises, `removed`).
-  Sinon (`complete:false`, `moved:true`, ou compteurs absents : `complete:null`) : seules les cartes absentes du
-  classeur sont ajoutées, aucune carte n'est retirée ni modifiée (`kept` = cartes du classeur non vues), la synchro
-  rapide n'est pas armée et la suivante relit tout ; le journal et les messages le disent (« Lecture incomplète : 3 650
-  cartes lues, le jeu en compte 3 702 : … aucune carte retirée (52 cartes non vues, gardées). Relance la mise à jour dans
-  un moment. »). Si les compteurs du jeu différaient toujours un peu de ce que lit le favori pour un joueur, ses cartes
-  parties ne seraient jamais retirées : le journal le montrerait (même écart à chaque lecture).
+  Sinon (`complete:false`, `moved:true`, ou compteurs absents : `complete:null`) : les cartes absentes du classeur sont
+  ajoutées, aucune carte n'est retirée (`kept` = cartes du classeur non vues), la synchro rapide n'est pas armée et la
+  suivante relit tout ; le journal et les messages le disent (« Lecture incomplète : 3 650 cartes lues, le jeu en compte
+  3 702 : aucune nouvelle carte, 12 cartes déjà là mises à jour (catégorie du jeu, image, vues…), aucune carte retirée
+  (52 cartes non vues, gardées). Relance la mise à jour dans un moment. »). **Cartes déjà là** (2026-10-18, « pas bien
+  synchronisés ») : seuls leurs **champs de carte du jeu** sont repris de la lecture (`title`, `atk`, `def`, `quality`,
+  `pageviews`, `category`, `image`, `url` : propres à la carte, les mêmes dans chacun de ses exemplaires), et seulement
+  s'ils ont changé (la carte prend alors la révision suivante) ; jamais `count`, `variants`, `rarity`, `shiny`, `starred`
+  ni `obtained_at`, qui dépendent des exemplaires lus (une partie a pu manquer). Avant, une lecture non vérifiée ne
+  modifiait rien : la catégorie du jeu, l'image ou les vues d'une carte déjà là n'étaient relues que par une lecture
+  vérifiée ; un joueur dont les lectures restaient non vérifiées gardait des catégories anciennes. Si les compteurs du
+  jeu différaient toujours un peu de ce que lit le favori pour un joueur, ses cartes parties ne seraient jamais
+  retirées : le journal le montrerait (même écart à chaque lecture).
 - **Deux synchros en même temps** (deux onglets, favori relié et clic, favori et rafraîchissement) : chaque envoi garde
   ses morceaux (trois envois en cours au plus par classeur ; un quatrième abandonne le plus ancien, dont le dernier
   morceau répond `409` et qui est effacé). Avant, un nouvel envoi effaçait celui en cours, et deux envois croisés
@@ -341,7 +355,8 @@ diagnostiquer la suivante. `kind` = `full` (lecture complète) | `quick` (synchr
 (les compteurs du jeu ne collaient pas avec les nouveautés) : 1 043 cartes, 2 nouvelles, 1 retirée. », « Synchro
 rapide : rien de nouveau (1 043 cartes). », le message d'erreur rendu…) ; `data` = `via` (`clic`, `relie`, `script`,
 `cookie` ; absent : favori d'avant le journal), `v` (version du favori), nombres (`count`, `fresh`, `removed`, `kept`,
-`read`, `unique`, `total`, `invalid`, `skipped`, `copies`), `complete`, `moved`, `superseded`, `reason` (pourquoi une
+`updated` (lecture non vérifiée : cartes déjà là dont les champs de carte du jeu ont été repris), `read`, `unique`,
+`total`, `invalid`, `skipped`, `copies`), `complete`, `moved`, `superseded`, `reason` (pourquoi une
 lecture complète), `ms` (durée depuis le début de la synchro), `status` (erreur HTTP rendue), et pour un signalement du
 favori `client:true`, `code` (`session`, `limit`, `antibot`, `game`, `network`, `timeout`, `format`, `other`), `read`,
 `total`.
@@ -385,9 +400,10 @@ compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par e
 cours au plus par classeur ; journal des synchros : 50 lignes et 30 jours par classeur, 30 signalements du favori par
 heure, 2 Ko par signalement ; corps JSON
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
-longs) : ignorées pareil par le favori et le rafraîchissement, comptées dans `skipped`, et comptées comme cartes
-distinctes (quand elles ont un identifiant de carte) pour dire si une lecture est complète. Quota ou base pleine :
-`503` avec un message lisible. Marché : 15 000 cotes par classeur et par jour, 150 000 pour tout le site (`429`), voir
+longs ; une catégorie du jeu de plus de 500 caractères n'en fait plus une : elle est coupée à 500, par le favori comme
+par le serveur, et la carte est rangée, 2026-10-18) : ignorées pareil par le favori et le rafraîchissement, comptées
+dans `skipped`, et comptées comme cartes distinctes (quand elles ont un identifiant de carte) pour dire si une lecture
+est complète. Quota ou base pleine : `503` avec un message lisible. Marché : 15 000 cotes par classeur et par jour, 150 000 pour tout le site (`429`), voir
 « Le marché » (abonnement payant Workers depuis le 2026-10-17 : 50 millions de lignes écrites par mois comprises).
 
 ## Partage entre membres
@@ -618,40 +634,63 @@ Deux zones, dans cet ordre :
    « <titre> » » (aussi dans « Entre amis », pour tes collections). Leurs articles sont de A à Z, sans numéros (une
    catégorie n'a pas d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre
    (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album est celui d'une collection :
-   « Ajouter par tags », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la
+   « Ajouter par catégorie du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la
    catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
    comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
    s'il n'y en a pas encore.
 
-   **« Ajouter par tags »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du 2026-10-17 :
-   « Alek a une collection maladie et doit avoir plein de cartes avec le tag maladie qui ne sont pas dedans ») : une
-   fenêtre propose des tags, calculés dans la page sans requête :
-   - **même nom** que la collection (mots repliés : casse et accents ignorés, articles « de, la, des… » écartés, pluriel
-     ramené au singulier « maladies → maladie », « animaux → animal » ; on compare le **sous-tag** : « Sciences et
-     nature/Maladie » pour « Maladies ») : cochés d'emblée ; **nom proche** (les mots de l'un sont tous dans l'autre :
-     « Maladies tropicales ») ; **catégorie de tags** de même nom ou proche (« Pays/ » : tous ses tags) ;
-   - **portés par beaucoup de ses cartes** : par 2 au moins de tes cartes déjà dans la collection, et 20 % d'entre elles
-     (« porté par 3 de tes 5 cartes de la collection ») ; 16 tags proposés au plus en tout (ceux du même nom, proches et
-     choisis à la main en plus) ;
-   - **un autre de tes tags**, au choix (champ avec la liste de tes tags : nom exact, sous-tag seul s'il n'y en a qu'un
-     de ce nom, sans la casse, ou une catégorie de tags ; inconnu : « Aucune de tes cartes ne porte le tag « … ». »).
+   **« Ajouter par catégorie du jeu »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du
+   2026-10-17 : « Alek a une collection maladie et doit avoir plein de cartes avec le tag maladie qui ne sont pas
+   dedans », précisée le 2026-10-18 : « je parlais [des tags] de wiki-masters, pas ceux en automatique » ; d'abord livrée
+   sous le nom « Ajouter par tags », sur les tags du classeur) : une fenêtre propose des **catégories du jeu** (`category`
+   de tes cartes : le texte que le jeu affiche sous leur titre, « maladie », « chanteuse barbadienne »), calculées dans la
+   page sans requête ; les écritures d'une même catégorie (casse, accents, espaces) n'en font qu'une, affichée sous sa
+   forme la plus fréquente :
+   - **ressemblantes au nom** de la collection (mots repliés : casse et accents ignorés, articles « de, la, des, un… » et
+     possessifs « mes, ses… » écartés, pluriel ramené au singulier « maladies → maladie », « animaux → animal », féminin
+     et masculin ramenés à une forme commune sur les mots de 6 lettres au moins « chanteuse, chanteur → chanteu »,
+     « infectieuse, infectieux → infectieu », « française → français ») : **même nom** (« Maladies » ↔ « maladie »),
+     **cochées d'emblée** ; **plus précises** (tous les mots du nom, et d'autres : « maladie infectieuse », les moins
+     longues d'abord) ; **plus larges** (« maladie » pour « Maladies parasitaires » : « vérifie l'aperçu »), jamais
+     cochées d'emblée ; une catégorie qui ne partage qu'une partie des mots n'est pas proposée ;
+   - **portées par beaucoup de ses éléments** : catégorie de ta carte pour un élément que tu as, sinon description de
+     l'élément (celle du jeu pour une collection créée par le favori, celle de Wikidata sinon : en général le même texte),
+     2 éléments au moins et 20 % de ceux qui en ont une (« portée par 2 des 4 éléments de la collection ») ; 16
+     propositions au plus (celles du même nom et choisies à la main en plus ; au-delà : « Et N autres catégories
+     proposées : tape celle que tu veux dans le champ ci-dessous ») ;
+   - **une autre catégorie du jeu**, au choix (champ avec la liste des catégories de tes cartes, les plus portées
+     d'abord, 2 000 au plus) : texte exact sans la casse ni les accents, sinon les catégories qui ont exactement les
+     mêmes mots repliés (« Maladies infectieuses » → « maladie infectieuse ») ; inconnue : « Aucune de tes cartes n'a la
+     catégorie du jeu « … » ; ressemblantes : « … » » (trois au plus, qui contiennent tous ses mots) ;
+   - **tes tags du classeur**, en second et **repliés** (« Proposer aussi tes tags du classeur (N) », jamais cochés
+     d'emblée ; « Masquer » les décoche) : sous-tag du même nom (« Sciences et nature/Maladie » pour « Maladies ») ou
+     proche, catégorie de tags de même nom ou proche (tous ses tags), portés par 2 au moins de tes cartes de la
+     collection et 20 % d'entre elles. L'utilisateur ne les veut pas comme base (ils viennent pour beaucoup des
+     suggestions automatiques) ; ils restent pour qui en a posé à la main.
 
-   Pour chacun : le nombre de tes cartes qui le portent et ne sont **pas encore** dans la collection (rapprochement par
-   titre puis qid, comme l'album ; une carte par titre) et combien y sont déjà ; les tags du même nom dont tout est
-   déjà dedans sont signalés à part (« Déjà toutes dans la collection : … »). Rien à proposer : la fenêtre le dit (pas
-   de tag du tout, aucun nom ressemblant ni tag assez porté, ou tags du même nom déjà complets), et le champ « un autre
-   de tes tags » reste. **Aperçu** des cartes des tags cochés (de A à Z, avec leur rareté, 120 affichées puis « Afficher
-   les suivantes »), décochables une à une (« Tout cocher » / « Tout décocher ») ; **« Ajouter N cartes »** =
-   `POST /api/targets/save {id, name, items, source?}` : les éléments existants tels quels, puis les nouveaux à la fin
-   (`{title, description: catégorie de la carte, image: null, status:'ok', qid?}`, qid s'il est connu), sans doublon
-   (titre ou qid revérifiés à l'enregistrement) ; limites de `targets.js` contrôlées avant l'envoi (3 000 éléments :
-   « Décoche-en N », bouton grisé ; 600 Ko) ; l'erreur du serveur s'affiche telle quelle (5 Mo par compte…). Une
-   collection **faite d'une catégorie ou d'une page de Wikipédia** (`wp:` / `links:`) : l'ajout est permis et elle
-   **garde sa source** (comme avec « Modifier », qui le permettait déjà ; aucune relecture automatique de la catégorie ne
-   défait l'ajout) ; la fenêtre le dit (« les cartes ajoutées viennent en plus de ses articles »). Courses : classeur
-   changé pendant l'enregistrement, la réponse est écartée.
+   Pour chaque proposition : le nombre de tes cartes qui la portent et ne sont **pas encore** dans la collection
+   (rapprochement par titre puis qid, comme l'album ; une carte par titre) et combien d'éléments de la collection la
+   portent déjà ; les catégories (même nom, plus précises, plus larges, choisies) dont tout est déjà dedans sont
+   signalées à part (« Déjà toutes dans la collection : tes cartes de catégorie « maladie » »). Rien à proposer : la
+   fenêtre le dit (aucune carte avec une catégorie du jeu : « relance une mise à jour avec le favori » ; aucune
+   catégorie ressemblante ni assez portée ; ou celles du même nom déjà complètes), et le champ reste. **Aperçu** des
+   cartes des propositions cochées (de A à Z, avec leur rareté, et leur catégorie du jeu quand plusieurs propositions
+   sont cochées ; 120 affichées puis « Afficher les suivantes »), décochables une à une (« Tout cocher » / « Tout
+   décocher ») ; **« Ajouter N cartes »** = `POST /api/targets/save {id, name, items, source?}` : les éléments existants
+   tels quels, puis les nouveaux à la fin (`{title, description: catégorie du jeu de la carte, image: null, status:'ok',
+   qid?}`, qid s'il est connu), sans doublon (titre ou qid revérifiés à l'enregistrement) ; limites de `targets.js`
+   contrôlées avant l'envoi (3 000 éléments : « Décoche-en N », bouton grisé ; 600 Ko) ; l'erreur du serveur s'affiche
+   telle quelle (5 Mo par compte…). Une collection **faite d'une catégorie ou d'une page de Wikipédia** (`wp:` /
+   `links:`) : l'ajout est permis et elle **garde sa source** (comme avec « Modifier », qui le permettait déjà ; aucune
+   relecture automatique de la catégorie ne défait l'ajout) ; la fenêtre le dit (« les cartes ajoutées viennent en plus
+   de ses articles »). Courses : classeur changé pendant l'enregistrement, la réponse est écartée.
 
+   **Autre donnée du jeu qui ressemble à des tags** (pas utilisée) : chaque entrée de `my-collection` a un champ `tags`
+   et `my-collection/stats` rend `tagOptions` (sans doute les tags qu'un joueur pose lui-même dans sa collection du
+   jeu) ; le favori et le serveur les ignorent volontairement (jamais stockés). Tous vides dans la seule collection
+   relevée (2026-10-15, 1 043 cartes) ; leur format n'est pas connu. Si ce sont eux que l'utilisateur appelle « les tags
+   de wiki-masters », il faudra les lire (favori : quelques caractères ; serveur : un champ de plus par carte).
    **« Fusionner avec… »** (album de toute collection, entre « Modifier » et « Supprimer », seulement si tu as une autre
    collection ; demande de l'utilisateur du 2026-10-18 : « un bouton pour fusionner deux collections ») : la collection
    d'où l'on part **reçoit la fusion** (même `id`, même source, même place dans « Mes collections »). Une fenêtre, calculée
@@ -700,7 +739,7 @@ Deux zones, dans cet ordre :
    **Source** : la collection fusionnée garde **celle de la collection de départ** et aucune autre requête ne crée de
    collection : jamais de doublon de source `wp:`/`links:` (une seule collection par catégorie ou par page). Partie
    d'une collection faite d'une catégorie ou d'une page : elle garde sa source et reste de A à Z (la fenêtre le dit, et
-   n'offre pas d'intercalaire en tête), comme avec « Ajouter par tags » ou « Modifier ». L'autre faite d'une catégorie ou
+   n'offre pas d'intercalaire en tête), comme avec « Ajouter par catégorie du jeu » ou « Modifier ». L'autre faite d'une catégorie ou
    d'une page et supprimée : sa source disparaît avec elle (la fenêtre le dit) ; la catégorie peut de nouveau être créée
    en collection depuis « Catégories ». Reprendre la source de l'autre changerait l'ordre d'affichage de la collection de
    départ (de A à Z) : pour garder celle de l'autre, partir de l'autre.
@@ -855,7 +894,8 @@ n'est lu dans le jeu ; autre refus après un clic, classeur plus ancien : lectur
 `my-collection/stats`, puis synchro rapide si possible (pages `sort=added` jusqu'à `last_at`, envoi
 `mode:'delta'` : « 3 exemplaires obtenus depuis ta dernière synchro, 2 nouvelles cartes », ou « Rien de nouveau ») ;
 sinon lecture de toutes les pages `my-collection` (pause de 300 ms), regroupement des exemplaires en **CarteImport**
-(rareté la plus haute), envoi `POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last` ; `stats`,
+(rareté la plus haute ; catégorie du jeu coupée à 500 caractères, la carte n'est plus écartée pour elle), envoi
+`POST <site>/api/import` **par morceaux de 500** (`upload_id`, `part`, `last` ; `stats`,
 `last_at`, `rows`, `copies`, `ignored` au premier), puis « 1 043 cartes envoyées au classeur, 12 nouvelles » et un lien
 vers le classeur. Une relecture complète après une synchro rapide ratée dit pourquoi (tri par date en erreur ou dans le
 désordre, carte la plus récente partie, plus de 500 nouveautés, nouvelle carte invalide, compteurs qui ne collent pas,

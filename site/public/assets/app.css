@@ -559,7 +559,7 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .arrange .arrow { color: var(--faint); }
 .arrange .why { font-size: 12px; color: var(--faint); }
 @media (max-width: 640px) { .arrange li { grid-template-columns: minmax(0, 1fr) minmax(0, 12rem); } .arrange .arrow, .arrange .why { display: none; } .tag-form { grid-template-columns: minmax(0, 1fr); } }
-/* « Ajouter par tags » (album d'une collection) : tags proposés, un autre tag, aperçu des cartes à ajouter. */
+/* « Ajouter par catégorie du jeu » (album d'une collection) : catégories proposées, une autre catégorie, tes tags repliés, aperçu des cartes à ajouter. */
 .tagadd { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 34vh; overflow-y: auto; }
 .modal .tagadd li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 0 10px; align-items: center; padding: 6px 10px; border-radius: 9px; background: var(--surface-2); color: var(--fg); }
 .tagadd .check { min-width: 0; align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
@@ -575,6 +575,8 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .tagadd-preview .check { min-width: 0; align-items: flex-start; padding: 3px 0; }
 .tagadd-preview .check > span:last-child { min-width: 0; overflow-wrap: anywhere; }
 .tagadd-preview .pill { flex: none; padding: 1px 5px; font-size: 10px; box-shadow: none; }
+.tagadd-preview .tagadd-cat { display: block; font-size: 11px; color: var(--faint); }
+.modal .tagadd-tags { justify-self: start; }
 
 /* ------------------------------------------------------------------ nouvelle collection par mots-clés */
 .seg button[aria-selected="true"] { background: var(--surface-2); color: var(--fg); font-weight: 600; }

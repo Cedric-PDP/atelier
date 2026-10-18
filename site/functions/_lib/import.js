@@ -103,6 +103,16 @@ function collectionCte(source) {
   )`;
 }
 
+// Champs de la carte du jeu elle-même (les mêmes dans tous ses exemplaires : `card.*` de chaque entrée), par opposition à
+// ceux qui dépendent des exemplaires lus (rareté la plus haute, count, brillante, favorite, date d'obtention, variants).
+// Une lecture qui ne peut pas tout remplacer (synchro rapide, lecture complète non vérifiée) rafraîchit quand même ceux-là
+// sur les cartes qu'elle a vues (2026-10-18, « pas bien synchronisés » : sans cela, la catégorie du jeu, l'image ou les
+// vues d'une carte déjà là n'étaient relues que par une lecture complète vérifiée).
+const CARD_FIELDS = ['title', 'atk', 'def', 'quality', 'pageviews', 'category', 'image', 'url'];
+// SQL : un de ces champs diffère entre deux cartes en JSON ; carte `a` avec ceux de `b`.
+const cardFieldsDiffer = (a, b) => CARD_FIELDS.map((f) => `json_extract(${a}, '$.${f}') IS NOT json_extract(${b}, '$.${f}')`).join(' OR ');
+const withCardFields = (a, b) => `json_set(${a}, ${CARD_FIELDS.map((f) => `'$.${f}', json_extract(${b}, '$.${f}')`).join(', ')})`;
+
 // Cartes retirées (cards_gone, lecture incrémentale). Une carte écrite par l'opération (nouvelle, revenue ou modifiée,
 // donc cards.rev = NEXT_REV) n'est plus retirée.
 const clearGone = (db, userId) => db.prepare(
@@ -238,7 +248,8 @@ export async function deltaFits(db, user, state, { cards, text, stats, rows, cop
 // Ajoute les nouveautés à la collection en place : carte nouvelle insérée, carte déjà là additionnée (exemplaires,
 // brillante ou favorite si l'un l'est, plus haute rareté, plus ancienne date d'obtention ; exemplaires par rareté
 // additionnés si l'ancienne et la nouvelle les ont, sinon plus de détail jusqu'à la lecture complète suivante : la
-// cote de cette carte est alors approchée, market.js). Rien n'est retiré. Les cartes
+// cote de cette carte est alors approchée, market.js), et ses champs de carte du jeu (CARD_FIELDS : catégorie, image,
+// vues…) repris de la nouveauté, lue à l'instant. Rien n'est retiré. Les cartes
 // écrites prennent la révision suivante (aucune nouveauté : la révision ne bouge pas).
 // Comparer-échanger : l'état n'est remplacé que s'il est encore celui lu à l'authentification (pas d'autre synchro ni
 // d'import complet fini entre-temps), et les cartes ne sont écrites que s'il l'a été (même transaction) ; sinon
@@ -259,9 +270,10 @@ export async function writeDelta(db, user, state, { text, stats, lastAt, fresh, 
   });
   const old = (f) => `json_extract(cards.data, '$.${f}')`;
   const add = (f) => `json_extract(excluded.data, '$.${f}')`;
-  // Carte déjà là : champs additionnés, sans ses exemplaires par rareté (base) ; ceux-ci sont remis, additionnés, si
-  // l'ancienne et la nouvelle les ont (en dernier, comme dans une carte importée), sinon la carte n'en a plus.
-  const base = `json_remove(json_set(cards.data,
+  // Carte déjà là : champs de la carte du jeu repris de la nouveauté, champs des exemplaires additionnés, sans ses
+  // exemplaires par rareté (base) ; ceux-ci sont remis, additionnés, si l'ancienne et la nouvelle les ont (en dernier,
+  // comme dans une carte importée), sinon la carte n'en a plus.
+  const base = `json_remove(json_set(${withCardFields('cards.data', 'excluded.data')},
          '$.rarity', CASE WHEN ${rankSql(add('rarity'))} > ${rankSql(old('rarity'))} THEN ${add('rarity')} ELSE ${old('rarity')} END,
          '$.count', ${old('count')} + ${add('count')},
          '$.shiny', json(CASE WHEN ${old('shiny')} OR ${add('shiny')} THEN 'true' ELSE 'false' END),
@@ -368,14 +380,17 @@ async function deltaRoute(db, user, body) {
 // après la dernière page : s'ils ont changé, la collection a bougé pendant la lecture (moved), qui n'est pas fiable.
 // - Lecture VÉRIFIÉE (complete et pas moved) : la collection est remplacée, cartes retirées comprises. La synchro rapide
 //   n'est armée (full_at) que si `total` y correspond aux exemplaires ou aux lignes lus (unité apprise, utilisable).
-// - Sinon (il manque des cartes d'après le jeu, compteurs absents, collection qui a bougé) : seules les cartes absentes
-//   du classeur sont ajoutées ; aucune n'est retirée ni modifiée (une page manquante ne doit jamais effacer de cartes),
+// - Sinon (il manque des cartes d'après le jeu, compteurs absents, collection qui a bougé) : les cartes absentes du
+//   classeur sont ajoutées ; aucune n'est retirée (une page manquante ne doit jamais effacer de cartes) ; une carte déjà
+//   là ne reprend que ses champs de carte du jeu (CARD_FIELDS : catégorie, image, vues…, les mêmes dans tous ses
+//   exemplaires), jamais ses nombres d'exemplaires, sa rareté ni ses dates (une partie de ses exemplaires a pu manquer) ;
 //   la synchro rapide n'est pas armée et la suivante relit tout.
 // started = début de la lecture (startedAt) : si le classeur vient déjà d'une lecture commencée après (read_at), rien
 // n'est écrit (superseded) ; contrôlé dans la transaction même (l'état n'est remplacé que si read_at le permet, et les
 // cartes ne sont écrites que s'il l'a été). upload = upload_id du favori (sync_state.up). log = {via, reason, v} pour la
 // ligne du journal (synclog.js).
-// Réponse : {count, new_ids, complete, skipped, removed, kept} (+ moved: true ; ou superseded: true).
+// Réponse : {count, new_ids, complete, skipped, removed, kept} (+ moved: true ; ou superseded: true) ; le journal compte
+// aussi les cartes déjà là mises à jour par une lecture non vérifiée (updated).
 export async function finalizeImport(db, user, {
   source, key, stats, lastAt = null, read = null, ignored = 0, clear, skipped = 0, statsEnd = null, started = null, upload = null, log = {},
 }) {
@@ -409,6 +424,10 @@ export async function finalizeImport(db, user, {
   const fresh = count - (have - unseen); // cartes lues absentes du classeur
   const after = verified ? count : have + fresh;
   if (after > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
+  // Lecture non vérifiée : cartes déjà là dont un champ de carte du jeu a changé (mises à jour plus bas), pour le journal.
+  const updated = verified ? 0 : (await db.prepare(
+    `${cte} SELECT COUNT(*) AS n FROM g JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id WHERE ${cardFieldsDiffer('c.data', 'g.data')}`,
+  ).bind(user.id, key).first())?.n ?? 0;
   const last = lastAt || sum.last || null;
   const armed = verified && (unit === 'copies' || unit === 'both') && isDate(last);
   const prev = syncState(user);
@@ -442,12 +461,13 @@ export async function finalizeImport(db, user, {
          fetched_at = ?3, sync_state = ?4
        WHERE id = ?1 AND (?5 IS NULL OR ${readAt} IS NULL OR ${readAt} <= ?5) RETURNING new_ids`,
     ).bind(user.id, key, nowIso(), state, started),
-    // Nouvelles et modifiées (lecture vérifiée) ; nouvelles seulement sinon (une carte déjà là garde ses données).
+    // Nouvelles et modifiées (lecture vérifiée : la carte lue remplace l'ancienne) ; sinon nouvelles, et déjà là dont un
+    // champ de carte du jeu a changé (seulement ceux-là sont repris). Une carte inchangée garde sa révision.
     db.prepare(
       `${cte} INSERT INTO cards (user_id, card_id, data, rev)
        SELECT ?1, g.card_id, g.data, ${NEXT_REV} FROM g LEFT JOIN cards AS c ON c.user_id = ?1 AND c.card_id = g.card_id
-       WHERE ${verified ? '(c.data IS NULL OR c.data <> g.data)' : 'c.data IS NULL'} AND ${ours}
-       ON CONFLICT (user_id, card_id) DO UPDATE SET data = excluded.data, rev = excluded.rev`,
+       WHERE (c.data IS NULL OR ${verified ? 'c.data <> g.data' : `(${cardFieldsDiffer('c.data', 'g.data')})`}) AND ${ours}
+       ON CONFLICT (user_id, card_id) DO UPDATE SET data = ${verified ? 'excluded.data' : withCardFields('cards.data', 'excluded.data')}, rev = excluded.rev`,
     ).bind(user.id, key, tok),
     clearGone(db, user.id),
     // Lecture vérifiée seulement. Disparues : une marque chacune (cards_gone), puis effacées par ces marques (leurs
@@ -489,7 +509,7 @@ export async function finalizeImport(db, user, {
 
   const ms = started ? Date.now() - Date.parse(started) : null;
   const data = {
-    ...log, count: after, fresh, removed: verified ? unseen : 0, kept: verified ? 0 : unseen, read: count + invalid,
+    ...log, count: after, fresh, removed: verified ? unseen : 0, kept: verified ? 0 : unseen, ...(verified ? {} : { updated }), read: count + invalid,
     unique: counts ? counts.totalUnique : null, total: counts ? counts.total : null, invalid, skipped, complete, moved: moved || null, ms,
   };
   if (!results[0].results.length) return supersededReply(db, user, 'full', data, { complete });
@@ -511,6 +531,7 @@ function fullLogEntry(d, verified, reason) {
   }
   const added = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle carte ajoutée', 'nouvelles cartes ajoutées')}` : 'aucune nouvelle carte';
   const kept = d.kept ? ` (${num(d.kept)} ${plural(d.kept, 'carte non vue, gardée', 'cartes non vues, gardées')})` : '';
+  const updated = d.updated ? `, ${num(d.updated)} ${plural(d.updated, 'carte déjà là mise à jour', 'cartes déjà là mises à jour')} (catégorie du jeu, image, vues…)` : '';
   let head;
   if (d.moved) head = 'Ta collection a bougé pendant la lecture (compteurs du jeu différents avant et après)';
   else if (d.complete === false) head = `Lecture incomplète : ${num(d.read)} ${plural(d.read, 'carte lue', 'cartes lues')}, le jeu en compte ${num(d.unique)}`;
@@ -518,7 +539,7 @@ function fullLogEntry(d, verified, reason) {
   return {
     kind: 'full',
     result: 'warn',
-    message: `${head} : ${added}, aucune carte retirée${kept}${ignored}. Relance la mise à jour dans un moment.`,
+    message: `${head} : ${added}${updated}, aucune carte retirée${kept}${ignored}. Relance la mise à jour dans un moment.`,
     data: d,
   };
 }

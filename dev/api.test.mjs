@@ -1684,7 +1684,7 @@ await test('import par morceaux : cartes invalides ignorées, morceaux manquants
     { ...ok, rarity: 'XL' }, { ...ok, rarity: null }, { ...ok, atk: '12' }, { ...ok, quality: 'beaucoup' },
     { ...ok, image: 'javascript:alert(1)' }, { ...ok, url: 'ftp://x' }, { ...ok, url: `https://x/${'y'.repeat(2000)}` },
     { ...ok, count: 0 }, { ...ok, count: 1.5 }, { ...ok, shiny: 'oui' }, { ...ok, obtained_at: 'hier' },
-    { ...ok, category: 12 }, { ...ok, category: 'c'.repeat(501) }, 'texte', null,
+    { ...ok, category: 12 }, 'texte', null,
   ];
   // Favori (CarteImport) : les cartes invalides sont ignorées et comptées, les autres importées.
   let r = await call('POST', 'import', { key: frank.key, body: { cards: [ok, ...bad, { ...ok, id: 'autre', extra: 'ignoré', tags: ['x'] }] } });
@@ -1694,7 +1694,6 @@ await test('import par morceaux : cartes invalides ignorées, morceaux manquants
   const good = rawEntry(base[0]);
   const rawBad = [
     { ...good, card: { ...good.card, wikipedia_title: 't'.repeat(501) } },
-    { ...good, card: { ...good.card, category: 'c'.repeat(501) } },
     { ...good, card: { ...good.card, image_url: `https://x/${'y'.repeat(2000)}` } },
     { ...good, card: { ...good.card, rarity: 'XL' } },
     { ...good, id: 'e'.repeat(101) },
@@ -2514,6 +2513,60 @@ await test('synchros en même temps : une lecture commencée avant celle déjà 
   now = await ids();
   assert.ok(now.has('carte-00000') && !now.has('carte-00100'), 'aucune carte écrite ni retirée');
   await call('DELETE', 'me', { key: wes.key });
+});
+
+await test('catégorie du jeu (et autres champs de la carte) : relue par la synchro rapide et par une lecture non vérifiée, sans toucher aux exemplaires ; catégorie trop longue coupée, la carte gardée', async () => {
+  const gaby = await signup('Gaby');
+  const imp = (await call('POST', 'import-key', { key: gaby.key })).json.import_key;
+  const mine = async () => new Map((await call('GET', 'cards', { key: gaby.key })).json.cards.map((c) => [c.id, c]));
+  const rev = async () => (await call('GET', 'me', { key: gaby.key })).json.cards_rev;
+  const rc = (cards) => cards.reduce((o, c) => ({ ...o, [c.rarity]: (o[c.rarity] || 0) + c.count }), {});
+  const five = synth(5).map((c, i) => ({ ...c, rarity: 'R', count: i === 1 ? 3 : 1, category: `catégorie ${i}` }));
+  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'g1', part: 0, last: true, cards: five, stats: { ...statsOf(five), rarityCounts: rc(five) },
+    rows: 7, copies: 7, last_at: '2026-10-15T09:00:00.000Z' } });
+  assert.deepEqual([r.json.count, r.json.complete], [5, true]);
+  // Synchro rapide : un exemplaire de plus de carte-00000, dont le jeu a changé la catégorie, l'image et les vues.
+  const before = (await mine()).get('carte-00000');
+  const copy = { ...five[0], count: 1, rarity: 'R', category: 'maladie infectieuse', image: 'https://upload.wikimedia.org/neuve.jpg', pageviews: 4321,
+    obtained_at: '2026-10-16T09:00:00.000Z' };
+  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [copy], rows: 1, copies: 1, last_at: copy.obtained_at,
+    stats: { total: 8, totalUnique: 5, rarityCounts: { R: 8 } } } });
+  assert.deepEqual([r.json.quick, r.json.count], [true, 5], JSON.stringify(r.json));
+  let now = (await mine()).get('carte-00000');
+  assert.deepEqual([now.category, now.image, now.pageviews, now.count, now.obtained_at, now.rarity, now.title],
+    ['maladie infectieuse', copy.image, 4321, before.count + 1, before.obtained_at, 'R', before.title], 'champs de la carte repris, exemplaires additionnés');
+  // Lecture non vérifiée (le jeu compte une carte de plus) : carte-00001 n'est lue qu'en partie (1 exemplaire sur 3, rareté
+  // plus basse) et sa catégorie a changé ; carte-00002 a une catégorie de 600 caractères (coupée à 500, la carte gardée) ;
+  // les autres sont inchangées (même révision).
+  const r0 = await rev();
+  const partial = five.map((c, i) => (i === 0 ? { ...c, category: 'maladie infectieuse', image: copy.image, pageviews: 4321 }
+    : i === 1 ? { ...c, count: 1, rarity: 'C', category: 'maladie' } : i === 2 ? { ...c, category: 'x'.repeat(600) } : c));
+  // (En entrées brutes du jeu, comme le rafraîchissement par cookie.)
+  const asEntry = (c) => ({ id: 'e-' + c.id, card_id: c.id, count: c.count, is_shiny: c.shiny, starred: c.starred, obtained_at: c.obtained_at,
+    card: { id: c.id, wikipedia_title: c.title, rarity: c.rarity, atk: c.atk, def: c.def, q_score: c.quality, pageviews: c.pageviews, category: c.category,
+      image_url: c.image, hide_image: false, wikipedia_url: c.url } });
+  r = await call('POST', 'import', { key: imp, body: { collection: partial.map(asEntry), stats: { total: 9, totalUnique: 6 }, via: 'clic' } });
+  assert.deepEqual([r.json.count, r.json.complete, r.json.removed, r.json.kept, r.json.skipped], [5, false, 0, 0, 0], JSON.stringify(r.json));
+  const all = await mine();
+  const one = all.get('carte-00001');
+  assert.deepEqual([one.category, one.count, one.rarity], ['maladie', 3, 'R'], 'catégorie reprise ; exemplaires et rareté gardés');
+  assert.equal(all.get('carte-00002').category, 'x'.repeat(500));
+  assert.equal(all.get('carte-00000').count, before.count + 1, 'exemplaires de la synchro rapide gardés');
+  const changed = (await call('GET', `cards?since=${r0}`, { key: gaby.key })).json.cards.map((c) => c.id).sort();
+  assert.deepEqual(changed, ['carte-00001', 'carte-00002'], 'seules les cartes dont un champ a changé prennent une nouvelle révision');
+  const [e] = (await call('GET', 'sync-log', { key: gaby.key })).json.entries;
+  assert.deepEqual([e.result, e.data.updated], ['warn', 2]);
+  assert.match(e.message, /^Lecture incomplète : 5 cartes lues, le jeu en compte 6 : aucune nouvelle carte, 2 cartes déjà là mises à jour \(catégorie du jeu, image, vues…\), aucune carte retirée\./);
+  // Favori (CarteImport) : même règle ; relue telle quelle, rien ne change (pas de nouvelle révision).
+  const r1 = await rev();
+  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[3], category: 'y'.repeat(501) }], stats: { total: 9, totalUnique: 6 } } });
+  assert.deepEqual([r.json.skipped, (await mine()).get('carte-00003').category], [0, 'y'.repeat(500)]);
+  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[3], category: 'y'.repeat(501) }], stats: { total: 9, totalUnique: 6 } } });
+  assert.equal(await rev(), r1 + 1, 'une relecture identique ne change rien');
+  // Coupe au milieu d'une paire de substitution (émoji au 500e caractère) : la moitié restante est retirée.
+  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[4], category: 'z'.repeat(499) + '😀' }], stats: { total: 9, totalUnique: 6 } } });
+  assert.equal((await mine()).get('carte-00004').category, 'z'.repeat(499));
+  await call('DELETE', 'me', { key: gaby.key });
 });
 
 await test('refresh : deux lectures en même temps (deux onglets) → la plus ancienne s\'arrête (jeton run) ; compteurs changés pendant la lecture → rien de retiré', async () => {

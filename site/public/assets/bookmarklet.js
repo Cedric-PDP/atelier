@@ -228,8 +228,9 @@
   // Raretés de la plus basse à la plus haute : une carte possédée en plusieurs raretés garde la plus haute (comme le
   // classeur).
   var RANKS = ["C", "PC", "R", "SR", "UR", "L"];
-  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu. Un exemplaire vu
-  // deux fois (même entry.id) ne compte qu'une fois ; les entrées inexploitables sont comptées à part (ignored), et
+  // Exemplaires -> cartes (CarteImport) : un objet par card_id, sans user_id ni étiquettes du jeu, catégorie du jeu
+  // coupée à 500 caractères (la carte n'est plus écartée pour elle). Un exemplaire vu deux fois (même entry.id) ne
+  // compte qu'une fois ; les entrées inexploitables sont comptées à part (ignored), et
   // parmi elles les cartes distinctes que le jeu compte dans totalUnique (unknown). rows / copies : exemplaires lus et
   // leur nombre total, invalides compris (contrôlés par le classeur avec les compteurs du jeu). variants : exemplaires
   // par rareté d'exemplaire (snapshot_rarity s'il est là, celle des ventes du marché ; sinon celle de la carte) et
@@ -254,15 +255,14 @@
       var c = e && e.card;
       var id = e && (e.card_id || (c && c.id));
       var title = c && c.wikipedia_title;
-      var longCat = c && typeof c.category === "string" && c.category.length > 500;
-      if (!c || !id || typeof title !== "string" || !title || title.length > 500 || longCat || ["C", "PC", "R", "SR", "UR", "L"].indexOf(c.rarity) < 0) {
+      if (!c || !id || typeof title !== "string" || !title || title.length > 500 || ["C", "PC", "R", "SR", "UR", "L"].indexOf(c.rarity) < 0) {
         bad[id ? "c" + id : "e" + i] = true;
         return;
       }
       id = String(id);
       var card = byId[id];
       if (!card) {
-        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null, variants: {} };
+        card = { id: id, title: c.wikipedia_title, rarity: c.rarity, atk: typeof c.atk === "number" ? c.atk : null, def: typeof c.def === "number" ? c.def : null, quality: typeof c.q_score === "number" ? c.q_score : null, pageviews: typeof c.pageviews === "number" ? c.pageviews : null, category: typeof c.category === "string" && c.category ? c.category.slice(0, 500) : null, image: c.hide_image ? null : web(c.image_url), url: web(c.wikipedia_url), count: 0, shiny: false, starred: false, obtained_at: null, variants: {} };
         byId[id] = card;
         list.push(card);
       } else if (RANKS.indexOf(c.rarity) > RANKS.indexOf(card.rarity)) {

@@ -370,6 +370,24 @@ await test('carte invalide : message honnête (relancer n\'y change rien), puis 
   assert.match(r.text, /Rien de nouveau depuis ta dernière synchro : ton classeur est à jour \(60 cartes\)/, r.seen);
 });
 
+await test('catégorie du jeu de plus de 500 caractères : coupée, la carte rangée quand même ; catégorie changée par le jeu reprise par la synchro rapide', async () => {
+  await fresh60();
+  collection.push(entry(901, 500, {}, { category: 'é'.repeat(700) }));
+  collection.push(entry(3, 501, { id: 'e3-ter' }, { category: 'maladie infectieuse' }));
+  let r = await click();
+  assert.match(r.text, /2 exemplaires obtenus depuis ta dernière synchro, 1 nouvelle carte : ton classeur est à jour \(61 cartes\)/, r.seen);
+  let cards = await cardsOf();
+  assert.equal(cards.find((c) => c.id === 'c901').category, 'é'.repeat(500));
+  assert.deepEqual([cards.find((c) => c.id === 'c3').category, cards.find((c) => c.id === 'c3').count], ['maladie infectieuse', 2]);
+  // Lecture complète : toujours rangée (plus « ignorée »).
+  collection = collection.filter((e) => e.card_id !== 'c7');
+  r = await click();
+  assert.match(r.text, /60 cartes envoyées au classeur, 0 nouvelle/, r.seen);
+  assert.ok(!/ignorée/.test(r.text), r.text);
+  cards = await cardsOf();
+  assert.equal(cards.find((c) => c.id === 'c901').category, 'é'.repeat(500));
+});
+
 await test('deux favoris en même temps (deux onglets) : chaque nouveauté comptée une fois', async () => {
   await fresh60();
   collection.push(entry(900, 500), entry(3, 501, { id: 'e3-bis' }));

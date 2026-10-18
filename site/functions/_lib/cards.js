@@ -39,13 +39,14 @@ export function cleanVariants(v, n) {
 }
 
 // Mêmes règles pour les deux sources (favori : CarteImport ; rafraîchissement ou favori ancien : entrées brutes) :
-// une carte qui ne les respecte pas est ignorée (et comptée dans `skipped`), jamais corrigée.
+// une carte qui ne les respecte pas est ignorée (et comptée dans `skipped`), jamais corrigée (seule exception : une
+// catégorie du jeu trop longue est coupée avant, par checkCard et entryToCard).
 function validCard(c) {
   if (typeof c.id !== 'string' || !c.id || c.id.length > 100) return null;
   if (typeof c.title !== 'string' || !c.title || c.title.length > 500) return null;
   if (!RARITIES.has(c.rarity)) return null;
   if (!isNum(c.atk) || !isNum(c.def) || !isNum(c.quality) || !isNum(c.pageviews)) return null;
-  if (!isText(c.category, 500)) return null;
+  if (!isText(c.category, MAX_CATEGORY)) return null;
   if (c.image !== null && !isHttp(c.image)) return null;
   if (c.url !== null && !isHttp(c.url)) return null;
   if (!Number.isInteger(c.count) || c.count < 1 || c.count > 1_000_000) return null;
@@ -72,6 +73,16 @@ function validCard(c) {
 }
 
 const opt = (v) => (v === undefined || v === '' ? null : v);
+// Catégorie du jeu (texte affiché sous le titre de la carte) : coupée à 500 caractères plutôt que de faire écarter toute
+// la carte (2026-10-18 : une carte possédée ne doit pas manquer au classeur pour un texte trop long ; le favori la coupe
+// pareil) ; une moitié de paire de substitution laissée à la fin par la coupe (ici ou dans le favori) est retirée.
+export const MAX_CATEGORY = 500;
+function category(v) {
+  if (typeof v !== 'string') return opt(v);
+  const s = v.length > MAX_CATEGORY ? v.slice(0, MAX_CATEGORY) : v;
+  const code = s.charCodeAt(s.length - 1);
+  return opt(code >= 0xd800 && code <= 0xdbff ? s.slice(0, -1) : s);
+}
 
 // CarteImport (déjà regroupée par le favori) : seuls les champs connus sont gardés. null si invalide.
 export function checkCard(c) {
@@ -84,7 +95,7 @@ export function checkCard(c) {
     def: opt(c.def),
     quality: opt(c.quality),
     pageviews: opt(c.pageviews),
-    category: opt(c.category),
+    category: category(c.category),
     image: opt(c.image),
     url: opt(c.url),
     count: c.count,
@@ -112,7 +123,7 @@ export function entryToCard(entry) {
     def: opt(c.def),
     quality: opt(c.q_score),
     pageviews: opt(c.pageviews),
-    category: opt(c.category),
+    category: category(c.category),
     image: c.hide_image ? null : opt(c.image_url),
     url: opt(c.wikipedia_url),
     count: entry.count ?? 1,
