@@ -7,14 +7,17 @@ wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
 **Vocabulaire de l'interface** (à respecter partout) :
 - **Collections** : les listes créées par l'utilisateur, surtout par le favori depuis une recherche de la « Collection
   globale » du jeu (source `wm:<recherche>`), à la main dans « Nouvelle collection » (mots-clés, liste d'articles),
-  depuis une catégorie de Wikipédia (`wp:<nom>`), depuis les liens d'une page de Wikipédia (`links:<titre>`), et les
-  anciennes ajoutées du catalogue (`catalog:…`) : toutes dans « Mes collections ».
+  depuis une catégorie de Wikipédia (`wp:<nom>`), depuis les liens d'une page de Wikipédia (`links:<titre>`) ou la
+  colonne clé de ses tableaux (`links:<titre>#<colonne>`), et les anciennes ajoutées du catalogue (`catalog:…`) : toutes
+  dans « Mes collections ».
 - **Catégories** : les catégories de Wikipédia (pages `https://fr.wikipedia.org/wiki/Catégorie:Violet`), une **source**
   d'où créer une collection (« Créer une collection » : source `wp:<nom>`, signalée « depuis la catégorie Wikipédia »),
   pas une liste à part. On ne « suit » pas une catégorie (2026-10-16 : « Suivre », « Mes catégories » et « Ne plus
   suivre » ont disparu ; les anciennes catégories suivies sont des collections comme les autres). La même zone ouvre
   aussi une **page** de Wikipédia (« Liste de noms de couleur », ou toute page dont on colle l'adresse) : les articles
-  qu'elle lie sont une autre source (source `links:<titre>`, signalée « depuis la page Wikipédia « … » »).
+  qu'elle lie sont une autre source (source `links:<titre>`, signalée « depuis la page Wikipédia « … » »), ou, si sa
+  liste est en tableaux, les articles d'une **colonne clé** de ses tableaux (source `links:<titre>#<colonne>`, signalée
+  « depuis la page Wikipédia « … », colonne « … » »).
 
 Le catalogue de collections proposées tirées de Wikidata (`catalog.json`, 59 thèmes) a été **retiré** le 2026-10-16 :
 l'interface ne le demande plus, et il n'est plus servi.
@@ -146,7 +149,7 @@ autre format (voir « Le favori »).
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
 | `GET /api/targets` | | `{targets:[Collection]}` |
-| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; l'ancienne source `links` sans « : » n'est pas concernée) |
+| `POST /api/targets/save` | `{id?, name, items, source?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; `links:<titre>#<colonne>` est une source `links:` comme une autre, comparée en entier : l'interface, elle, ne propose qu'une collection par page, toutes colonnes confondues ; l'ancienne source `links` sans « : » n'est pas concernée) |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
 | `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, count, fetched_at, targets}]}` : les **autres** membres qui partagent, sauf les classeurs vides (ni carte ni collection) ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
@@ -181,7 +184,10 @@ proposition de `site/public/assets/propose.js` : catégories des cartes de l'uti
 par catégorie et par compte, voir `targets/save`), `links:<titre de la page>` pour une collection **créée depuis les
 liens d'une page de Wikipédia** (« Créer une collection » dans l'album de la page ; titre tel que Wikipédia l'écrit,
 redirection suivie, avec ses espaces ; éléments avec leur `qid` et leur description Wikidata ; une seule par page et par
-compte, voir `targets/save`), `wd` ou `cat` quand
+compte, voir `targets/save`), `links:<titre de la page>#<colonne>` pour une collection **créée depuis la colonne clé des
+tableaux d'une page** (libellé court de la colonne, « Nom » ; un titre de Wikipédia ne contient jamais « # » ; source
+coupée à 200 caractères ; éléments dans l'ordre des lignes, avec `qid` et description ; l'interface la compte comme LA
+collection de cette page), `wd` ou `cat` quand
 elle vient de la recherche par mots-clés (requête Wikidata ou catégorie de Wikipédia), `wm:<recherche>` quand le favori
 l'a créée depuis une recherche de la Collection globale du jeu (`POST /api/targets/from-game`, titres = `wikipedia_title`
 du jeu, non revérifiés sur Wikipédia). `rarity` (facultatif, C | PC | R | SR | UR | L, gardé seulement s'il est connu,
@@ -631,11 +637,13 @@ Deux zones, dans cet ordre :
    collection » par mots-clés ou liste d'articles, depuis une catégorie ou une page de Wikipédia, anciennes du
    catalogue), avec « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son
    album, discrètement : « depuis la catégorie Wikipédia » ; une de source `links:<titre>` : « depuis la page Wikipédia
-   « <titre> » » (aussi dans « Entre amis », pour tes collections). Leurs articles sont de A à Z, sans numéros (une
-   catégorie n'a pas d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre
-   (`ordered: false` dans `catalog.json`, liste reprise dans `app.js`). Son album est celui d'une collection :
-   « Ajouter par catégorie du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur Wikipédia » (la
-   catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
+   « <titre> » » (aussi dans « Entre amis », pour tes collections) ; `links:<titre>#<colonne>` : « depuis la page
+   Wikipédia « <titre> », colonne « <colonne> » ». Leurs articles sont de A à Z, sans numéros (une catégorie n'a pas
+   d'ordre, les liens d'une page sont lus de A à Z), comme les anciennes du catalogue sans ordre (`ordered: false` dans
+   `catalog.json`, liste reprise dans `app.js`) ; sauf celle faite de la colonne clé des tableaux d'une page : dans
+   l'ordre des lignes, numérotée (tri « Ordre »). Son album est celui d'une collection :
+   « Ajouter par catégorie du jeu », « Modifier », « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
+   Wikipédia » (la catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
    comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
    une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
    s'il n'y en a pas encore.
@@ -808,12 +816,74 @@ Deux zones, dans cet ordre :
      numéros, « Voir sur Wikipédia » (la page) ; **« Créer une collection »** = `POST /api/targets/save {name, items,
      source:'links:<titre>'}` (nom : le titre sans « Liste de / des / d' », première lettre en majuscule, 80 caractères
      au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
-     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source) : **« Ouvrir ta
-     collection »**.
-   - **Pendant la lecture** d'une catégorie ou d'une page (une page lit ses liens, puis leur nature sur Wikidata : 5 à
+     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même page, de tous ses liens ou d'une
+     colonne clé : une page ne donne qu'une collection) : **« Ouvrir ta collection »** (aussi « ta collection » dans les
+     suggestions).
+   - **Colonne clé des tableaux d'une page** (2026-10-18, demande de l'utilisateur : « quand on crée une collection en
+     partant d'une page de type liste qui contient une liste sous forme d'un ou plusieurs tableaux, l'interface doit
+     proposer la colonne à choisir comme clé ») : dans « Liste des pays du monde », « Liste des présidents de la
+     République française »…, les liens des autres colonnes (villes, partis, élections) se mêlent aux bons.
+     - **Lecture** : avant ses liens, le HTML rendu de la page, une requête
+       (`action=parse&page=<titre>&prop=text&redirects=1&disableeditsection=1&disablelimitreport=1&disabletoc=1` : les
+       modèles qui font les lignes y sont développés, ce que le wikicode ne donne pas). Il est analysé par `DOMParser`
+       dans un document à part, **inerte** (aucun script exécuté, aucun gestionnaire, aucune image chargée ; vérifié dans
+       Chrome : un `onerror`, un `<script>`, un `onclick` analysés ne font rien) et **jamais inséré** dans la page : on
+       n'en garde que des textes et des titres. Les attributs `style` deviennent `data-style` et les `<style>` sont
+       retirés avant l'analyse (le document créé hérite de la CSP de la page, qui signalerait chacun dans la console).
+       Échec de cette lecture : la page garde ses liens et le dit (« Tableaux de la page non lus (…) »).
+     - **Tableaux** : ceux de classe `wikitable` (repliés compris, pas ceux imbriqués dans un autre), cellules fusionnées
+       (`rowspan`, `colspan`) dépliées dans une grille, chacun avec l'intertitre (h2 à h4) qui le précède et sa légende.
+       En-tête : les premières lignes faites de `<th>` (ou dans `<thead>`), une ligne d'une seule cellule sur toute la
+       largeur (titre) mise à part ; **libellé** d'une colonne = ses en-têtes de haut en bas (« Mandat › Début »), sans
+       notes (« [1] », « [pas clair] ») ni clés de tri cachées (`display:none`) ; deux colonnes sous une même cellule
+       d'en-tête (« Appartenance politique » : couleur et nom) n'en font qu'une ; sans en-tête : « Colonne 1 »… Lignes de
+       données : les suivantes, sauf une cellule seule sur toute la largeur (intertitre, commentaire « intérim ») et un
+       en-tête répété. Pour chaque ligne et chaque colonne : le **premier lien d'article** de la cellule (lien bleu de
+       l'espace principal, `/wiki/…`, dont le texte se voit : ni image seule — drapeau, portrait —, ni note, ni lien
+       rouge, interlangue ou externe). Le premier seulement : dans la colonne clé c'est le sujet de la ligne, les liens
+       suivants de la même cellule le précisent (nationalité, lieu, parti, « (intérim) ») et ramèneraient ce que la
+       colonne clé écarte.
+     - **Colonnes proposées** : celles de même libellé (au repli près) dans plusieurs tableaux n'en font qu'une (« Forme
+       courte » des 24 tableaux A à Z des pays) ; un lien retrouvé parmi les liens de la page (`pageLinks`, redirection
+       suivie, ni lien rouge ni homonymie) donne l'article de la ligne, avec son qid et sa description. Gardées : celles
+       qui donnent au moins 2 articles différents, dans l'ordre où elles apparaissent ; nom court (la dernière ligne
+       d'en-tête, « Nom » ; le libellé entier si deux colonnes ont le même nom court). **Présélection** : la mieux notée,
+       articles différents × (½ + ½ part des liens dont le texte nomme l'article : « Adolphe Thiers » oui, « 1873 » pour
+       une élection, « 2 » pour « Présidence de … » non) × 1,5 si son en-tête reprend un mot du titre (« Nom de couleur »)
+       × (1 + ¼ part de la nature dominante des liens de la page) × 0,9 par colonne gardée à sa gauche ; à égalité, la plus
+       à gauche. Elle est choisie d'emblée si elle donne au moins 3 articles et au moins le quart de ce que donnent les
+       liens de la page (nature dominante, ou tous), ou, pour une page dont le titre commence par « Liste », si ses liens
+       d'articles sont au moins aussi nombreux dans ses tableaux que dans ses listes à puces (bandeaux, boîtes de
+       navigation, infobox, notes et références non comptés) ; sinon la page garde **tous ses liens** (« Aucune »), la
+       colonne restant proposée.
+     - **Album** : « Colonne clé » (liste déroulante, `#page-key`) : chaque colonne avec son nombre d'articles, puis
+       « Aucune : tous les liens de la page (N) » (le mode ci-dessus, nature dominante comprise). Colonne choisie : une
+       explication (« Le premier article lié de chaque ligne de la colonne « Nom » des 2 tableaux de la page « … », dans
+       l'ordre des lignes : N articles (k lignes sans article : lien rouge, homonymie ou pas de lien). Les autres tableaux
+       de la page n'ont aucun article dans une colonne « Nom ». »), et, si la colonne est dans plusieurs tableaux,
+       **« Tableaux lus : n sur m »** (repliable) : une case par tableau (« Tableau 2 · <intertitre ou légende> (N
+       articles) »), décochable (le dernier coché ne se décoche pas). Articles **dans l'ordre des tableaux et des lignes**,
+       chacun une fois (un doublon garde sa première place), **numérotés** (tri « Ordre ») ; tout se recalcule sans
+       requête. Sans colonne : la case de la nature dominante, comme avant.
+     - **« Créer une collection »** avec une colonne : `POST /api/targets/save {name, items, source:'links:<titre>#<nom
+       court de la colonne>'}` (mêmes nom et éléments que ci-dessus, dans l'ordre), message « Collection « … » créée : N
+       articles (colonne « Nom » des tableaux de la page, dans l'ordre), dans « Mes collections ». ». Plus de 3 000
+       articles : « décoche des tableaux ».
+     - **« Nouvelle collection »** (mots-clés), candidat « Page Wikipédia » : même lecture, même présélection et même
+       « Colonne clé » (`#kw-key`, tous les tableaux, sans « Tableaux lus »), aperçu dans l'ordre des lignes (« Colonne
+       « Nom » des tableaux de la page « … », dans l'ordre des lignes ») ; la collection y reste enregistrée sans source,
+       comme avant (donc numérotée, dans cet ordre).
+     - Mesuré le 2026-10-18 sur les vraies pages (Chrome sans fenêtre) : « Liste des éléments chimiques » : « Nom », 118
+       éléments dans l'ordre des numéros atomiques ; « Liste des présidents de la République française » : « Titulaire »
+       (4 tableaux, 26 présidents ; ses 713 liens n'ont aucune nature dominante) ; « Liste des pays du monde » : « Forme
+       courte » (24 tableaux, 197 pays) ; « Liste des plus hauts gratte-ciel du monde » : « Nom » (7 tableaux, 264) ;
+       « Liste de races bovines » : « Nom » (23 tableaux, 353) ; « Liste des départements français » : « Nom » (102, et
+       pas les arrondissements, nature dominante de ses liens) ; « Liste de noms de couleur » : « Nom de couleur » (189,
+       contre 181 par la nature dominante) ; « Liste de fromages français » (aucun tableau) : ses liens, comme avant.
+   - **Pendant la lecture** d'une catégorie ou d'une page (une page lit ses tableaux, ses liens, puis leur nature sur Wikidata : 5 à
      15 s mesurés le 2026-10-16 pour « Liste de noms de couleur ») : une ligne d'état avec la roue dit l'étape
-     (« Lecture des liens de la page sur Wikipédia : N articles liés… », « Nature des N articles liés, sur Wikidata
-     (lot k sur n)… » ; catégorie : « … N articles lus… », sous-catégorie k sur n). « Créer une collection » reste
+     (« Lecture des tableaux de la page sur Wikipédia… », « Lecture des liens de la page sur Wikipédia : N articles
+     liés… », « Nature des N articles liés, sur Wikidata (lot k sur n)… » ; catégorie : « … N articles lus… », sous-catégorie k sur n). « Créer une collection » reste
      cliquable, avec la roue (`aria-busy`) : cliqué, il devient « Créée dès la fin de la lecture… » (grisé) et la
      collection est créée dès que la lecture finit, sans second clic. Grisé seulement après une erreur de lecture
      (« Réessayer »), et alors rien n'est créé.

@@ -770,3 +770,12 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 /* « Bonnes affaires à acheter » : filtre par collection. */
 .deal-col { display: block; margin: 0 0 10px; }
 .deal-col select { width: 100%; max-width: 420px; }
+
+/* Album d'une page de Wikipédia : colonne clé de ses tableaux, tableaux lus. */
+.page-key { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13px; }
+.page-key__label { font-weight: 600; }
+.page-key select { flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 7px 10px; font-size: 13px; }
+.page-tables summary { cursor: pointer; font-size: 12.5px; color: var(--link); }
+.page-tables ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.page-tables .check { align-items: flex-start; min-width: 0; overflow-wrap: anywhere; }
+.page-tables .check input { margin-top: 3px; flex: none; }

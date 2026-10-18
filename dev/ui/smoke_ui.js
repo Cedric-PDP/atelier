@@ -7,6 +7,49 @@ const path = require('path');
 const vm = require('vm');
 const { makeDom } = require('./fakedom.js');
 
+// DOMParser simulé : analyse un HTML bien formé (celui des fausses pages de Wikipédia) en nœuds du faux DOM, dans un
+// document à part ; comme le vrai, il n'exécute rien (scripts gardés en texte, gestionnaires gardés en attributs).
+const parsedDocs = []; // documents rendus par parseFromString (l'interface ne doit jamais les insérer dans la page)
+class FakeDOMParser {
+  parseFromString(html) {
+    const { doc } = makeDom();
+    const VOID = new Set(['br', 'img', 'hr', 'meta', 'link', 'input', 'wbr', 'col', 'source']);
+    const RAW = new Set(['script', 'style']);
+    const NAMED = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' };
+    const ent = (x) => x.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (m, e) => (e[0] === '#' ? String.fromCodePoint(e[1] === 'x' || e[1] === 'X' ? parseInt(e.slice(2), 16) : Number(e.slice(1))) : NAMED[e.toLowerCase()] || m));
+    const stack = [doc.body];
+    const re = /<!--[\s\S]*?-->|<\/([a-zA-Z][\w-]*)\s*>|<([a-zA-Z][\w-]*)((?:\s+[^\s=>/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*(\/?)>|[^<]+|</g;
+    let m;
+    while ((m = re.exec(html))) {
+      const top = stack[stack.length - 1];
+      if (m[0].startsWith('<!--')) continue;
+      if (m[1]) {
+        const name = m[1].toLowerCase();
+        for (let i = stack.length - 1; i > 0; i--) if (stack[i].localName === name) { stack.length = i; break; }
+        continue;
+      }
+      if (m[2]) {
+        const name = m[2].toLowerCase();
+        const el = doc.createElement(name);
+        for (const a of m[3].matchAll(/([^\s=>/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) el.setAttribute(a[1].toLowerCase(), ent(a[2] ?? a[3] ?? a[4] ?? ''));
+        top.appendChild(el);
+        if (RAW.has(name)) {
+          const end = html.toLowerCase().indexOf('</' + name, re.lastIndex);
+          const stop = end < 0 ? html.length : end;
+          el.appendChild(doc.createTextNode(html.slice(re.lastIndex, stop)));
+          re.lastIndex = stop;
+          continue;
+        }
+        if (!VOID.has(name) && !m[4]) stack.push(el);
+        continue;
+      }
+      top.appendChild(doc.createTextNode(ent(m[0])));
+    }
+    parsedDocs.push(doc);
+    return doc;
+  }
+}
+
 const PUB = process.argv[2];
 const VUE = process.argv[3];
 const SERVER = (process.argv.find((a) => a.startsWith('--server=')) || '').slice(9) || null;
@@ -345,6 +388,7 @@ const WIKI = {
   'Liste de noms de couleur': { q: 'Q900300' },
   'Liste de couleurs (pigments)': { q: 'Q900310' },
   'Tableau périodique des éléments': { q: 'Q10693' },
+  'Liste des présidents de Testlande': { q: 'Q901000' }, // page en tableaux (colonne clé)
   'Lèpre': { q: 'Q36956', desc: 'maladie infectieuse chronique', pv: 2000 }, // carte citée dans le chat, qu'Alek n'a pas
 };
 // Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
@@ -358,6 +402,54 @@ const COLOR_LINKS = { 'Article 3': ['Q900301', ['Q1075'], 'couleur'], 'Bleu mari
 const COLOR_BY_Q = Object.fromEntries(Object.values(COLOR_LINKS).map(([q, c, d]) => [q, { c, d }]));
 const SUBCLASSES = { Q1075: ['Q166902'] }; // sous-classes (P279+) connues d'une nature
 const linkCalls = []; // pages dont les liens ont été lus (generator=links)
+// « Liste des présidents de Testlande » : deux tableaux (colonne clé « Nom »), une liste « Voir aussi », une boîte de
+// navigation. Liens : [qid, natures, description]. Présidents (Q5, nature dominante : 5 sur 16 liens), présidences (liens
+// de la colonne « N° », au texte « 1 », « 2 »), partis, villes, Conseil d'État, voir aussi. « E. Dubois » redirige vers
+// « Émile Dubois » ; « Martin » est une homonymie, « Denis Inconnu » un lien rouge (lignes sans article).
+const TL = {
+  'Aline Martin': ['Q901001', ['Q5'], 'femme politique testlandaise'], 'Bruno Petit': ['Q901002', ['Q5'], 'homme politique testlandais'],
+  'Carla Rossi (femme politique)': ['Q901003', ['Q5'], 'femme politique testlandaise'], 'Émile Dubois': ['Q901004', ['Q5'], 'homme politique testlandais'],
+  'Fanny Leroy': ['Q901005', ['Q5'], 'femme politique testlandaise'],
+  "Présidence d'Aline Martin": ['Q901011', ['Q901090'], 'présidence'], 'Présidence de Bruno Petit': ['Q901012', ['Q901090'], 'présidence'],
+  'Parti bleu': ['Q901021', ['Q7278'], 'parti politique'], 'Parti rouge': ['Q901022', ['Q7278'], 'parti politique'], 'Parti vert': ['Q901023', ['Q7278'], 'parti politique'],
+  Testville: ['Q901031', ['Q515'], 'ville de Testlande'], 'Bourg-Test': ['Q901032', ['Q515'], 'ville de Testlande'], 'Port-Test': ['Q901033', ['Q515'], 'ville de Testlande'],
+  "Conseil d'État (Testlande)": ['Q901041', ['Q901091'], 'institution'], 'Politique en Testlande': ['Q901051', ['Q901092'], 'politique'],
+  'Constitution de Testlande': ['Q901052', ['Q901093'], 'constitution'],
+};
+const TL_BY_Q = Object.fromEntries(Object.values(TL).map(([q, c, d]) => [q, { c, d }]));
+const TL_PAGE = 'Liste des présidents de Testlande';
+const TL_HTML = `<div class="mw-content-ltr mw-parser-output" lang="fr" dir="ltr">
+<style data-mw-deduplicate="TemplateStyles:r1">.mw-parser-output .x{color:red}</style>
+<p>Les présidents de la <a href="/wiki/Testlande_(pays)" class="new">Testlande</a>.</p>
+<div class="mw-heading mw-heading2"><h2 id="Premiere">Première République</h2></div>
+<table class="wikitable sortable" style="text-align:center;">
+<tbody><tr><th rowspan="2">N<sup>o</sup></th><th rowspan="2">Portrait</th><th rowspan="2">Nom</th><th colspan="2">Mandat</th><th rowspan="2" colspan="2">Parti</th></tr>
+<tr><th>Début</th><th>Fin</th></tr>
+<tr><th><a href="/wiki/Pr%C3%A9sidence_d%27Aline_Martin" title="Présidence d&#39;Aline Martin">1</a></th><td><span typeof="mw:File"><a href="/wiki/Fichier:Aline.jpg" class="mw-file-description"><img src="//upload.wikimedia.org/aline.jpg" onerror="window.__pwn = 1" /></a></span></td><td><b><a href="/wiki/Aline_Martin" title="Aline Martin">Aline Martin</a></b><sup id="cite_ref-1" class="reference"><a href="#cite_note-1">[1]</a></sup></td><td>1901</td><td>1910</td><td style="background:#00f"></td><td><a href="/wiki/Parti_bleu" title="Parti bleu">Parti bleu</a></td></tr>
+<tr><td colspan="7"><i>Intérim assuré par le <a href="/wiki/Conseil_d%27%C3%89tat_(Testlande)" title="Conseil d&#39;État (Testlande)">Conseil d'État</a>.</i></td></tr>
+<tr><th rowspan="2"><a href="/wiki/Pr%C3%A9sidence_de_Bruno_Petit" title="Présidence de Bruno Petit">2</a></th><td rowspan="2"></td><td rowspan="2"><a href="/wiki/Bruno_Petit" title="Bruno Petit">Bruno Petit</a> <small>(<a href="/wiki/Testville" title="Testville">Testville</a>)</small></td><td>1910</td><td>1915</td><td></td><td><a href="/wiki/Parti_rouge" title="Parti rouge">Parti rouge</a></td></tr>
+<tr><td>1915</td><td>1920</td><td></td><td><a href="/wiki/Parti_rouge" title="Parti rouge">Parti rouge</a></td></tr>
+<tr><th>3</th><td></td><td><span style="display:none">0003</span><a href="/wiki/Carla_Rossi_(femme_politique)" title="Carla Rossi (femme politique)">Carla Rossi</a></td><td>1920</td><td>1930</td><td></td><td><a href="/wiki/Parti_bleu" title="Parti bleu">Parti bleu</a></td></tr>
+<tr><th>4</th><td></td><td><a href="/w/index.php?title=Denis_Inconnu&amp;action=edit&amp;redlink=1" class="new" title="Denis Inconnu (page inexistante)">Denis Inconnu</a></td><td>1930</td><td>1931</td><td></td><td><a href="/wiki/Parti_vert" title="Parti vert">Parti vert</a></td></tr>
+</tbody></table>
+<div class="mw-heading mw-heading2"><h2 id="Seconde">Seconde République</h2></div>
+<table class="wikitable mw-collapsible mw-collapsed"><caption>Présidents depuis 1950</caption>
+<thead><tr><th>Nom</th><th>Parti</th><th>Ville natale</th></tr></thead>
+<tbody><tr><td><a href="/wiki/E._Dubois" title="E. Dubois">Émile Dubois</a></td><td><a href="/wiki/Parti_vert" title="Parti vert">Parti vert</a></td><td><a href="/wiki/Testville" title="Testville">Testville</a></td></tr>
+<tr><th>Nom</th><th>Parti</th><th>Ville natale</th></tr>
+<tr><td><a href="/wiki/Aline_Martin" title="Aline Martin">Aline Martin</a> (second mandat)</td><td><a href="/wiki/Parti_bleu" title="Parti bleu">Parti bleu</a></td><td><a href="/wiki/Bourg-Test" title="Bourg-Test">Bourg-Test</a></td></tr>
+<tr><td><a href="/wiki/Martin" title="Martin">Martin</a><script>window.__pwn = 2</script></td><td><a href="/wiki/Parti_bleu" title="Parti bleu" onclick="window.__pwn = 3">Parti bleu</a></td><td><a href="/wiki/Bourg-Test" title="Bourg-Test">Bourg-Test</a></td></tr>
+<tr><td><a href="/wiki/Fanny_Leroy" title="Fanny Leroy">Fanny Leroy</a></td><td><a href="/wiki/Parti_rouge" title="Parti rouge">Parti rouge</a></td><td><a href="/wiki/Port-Test" title="Port-Test">Port-Test</a></td></tr>
+</tbody></table>
+<div class="mw-heading mw-heading2"><h2 id="Voir">Voir aussi</h2></div>
+<ul><li><a href="/wiki/Politique_en_Testlande" title="Politique en Testlande">Politique en Testlande</a></li><li><a href="/wiki/Constitution_de_Testlande" title="Constitution de Testlande">Constitution de Testlande</a></li></ul>
+<table class="navbox"><tbody><tr><td><a href="/wiki/Aline_Martin">Aline Martin</a> · <a href="/wiki/Fanny_Leroy">Fanny Leroy</a></td></tr></tbody></table>
+</div>`;
+// « Tableau périodique des éléments » (pas une « Liste… ») : un petit tableau de 2 éléments, trop peu pour être
+// présélectionné : la page garde tous ses liens, la colonne « Élément » reste proposée.
+const PERIODIC_HTML = `<div class="mw-parser-output"><p>Le tableau.</p><table class="wikitable"><tbody><tr><th>Élément</th><th>Symbole</th></tr>
+<tr><td><a href="/wiki/Hydrog%C3%A8ne" title="Hydrogène">Hydrogène</a></td><td>H</td></tr><tr><td><a href="/wiki/H%C3%A9lium" title="Hélium">Hélium</a></td><td>He</td></tr></tbody></table></div>`;
+const parseCalls = []; // pages dont le HTML a été lu (action=parse)
 const REDIRECTS = { 'Poseidon': 'Poséidon', 'Tableau périodique': 'Tableau périodique des éléments' };
 // Pages « Liste de… » trouvées par la recherche intitle:liste (ou des articles, écartés par l'interface).
 const listSearch = (s) => (/bovin/i.test(s) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }]
@@ -438,12 +530,15 @@ function wikiHandle(url) {
       return { results: { bindings: ids.flatMap((id) => {
         const col = COLOR_BY_Q[id];
         if (col) return col.c.length ? col.c.map((c) => ({ item: uri(id), c: uri(c), desc: lit(col.d) })) : [{ item: uri(id), desc: lit(col.d) }];
+        const tl = TL_BY_Q[id];
+        if (tl) return tl.c.map((c) => ({ item: uri(id), c: uri(c), desc: lit(tl.d) }));
         return [Number(id.slice(1)) >= 900101 && Number(id.slice(1)) <= 900103
           ? { item: uri(id), c: uri('Q12045585'), desc: lit('race bovine française') } : { item: uri(id), c: uri(id === 'Q142' ? 'Q6256' : 'Q1620908') }];
       }) } };
     }
     if (/wd:Q12045585 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('race bovine') }] } };
     if (/wd:Q1075 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('couleur') }] } };
+    if (/wd:Q5 rdfs:label/.test(q)) return { results: { bindings: [{ l: lit('être humain') }] } };
     {
       // Sous-classes de la nature dominante parmi celles vues (liens d'une page).
       const m = q.match(/^SELECT \?c WHERE \{ VALUES \?c \{ ([^}]*) \} \?c wdt:P279\+ wd:(Q\d+) \. \}$/);
@@ -475,6 +570,13 @@ function wikiHandle(url) {
   }
   const p = Object.fromEntries(u.searchParams);
   if (p.origin !== '*' || p.format !== 'json' || p.formatversion !== '2') throw new Error('paramètres Wikipédia manquants : ' + url);
+  // HTML rendu d'une page (tableaux : colonne clé) ; une page sans tableau rend un paragraphe.
+  if (p.action === 'parse') {
+    if (p.prop !== 'text' || p.redirects !== '1' || !p.page) throw new Error('lecture du HTML incorrecte : ' + url);
+    parseCalls.push(p.page);
+    const html = p.page === TL_PAGE ? TL_HTML : p.page === 'Tableau périodique des éléments' ? PERIODIC_HTML : '<div class="mw-parser-output"><p>Une page sans tableau.</p></div>';
+    return { parse: { title: p.page, pageid: 1, text: html } };
+  }
   if (p.list === 'search' && p.srnamespace === '0' && /^"est un /.test(p.srsearch)) {
     // Recherche de la formule (« Définition Wikipédia ») : seulement son nombre d'articles et quelques extraits.
     if (p.srsearch.length > 300 || p.srinfo !== 'totalhits') throw new Error('recherche de la formule incorrecte : ' + p.srsearch);
@@ -553,8 +655,13 @@ function wikiHandle(url) {
     return { query: { search: listSearch(p.srsearch) } };
   }
   if (p.generator === 'links') {
-    if (!['Liste de races bovines', 'Liste de noms de couleur', 'Tableau périodique des éléments'].includes(p.titles) || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
+    if (!['Liste de races bovines', 'Liste de noms de couleur', 'Tableau périodique des éléments', TL_PAGE].includes(p.titles) || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
     linkCalls.push(p.titles);
+    if (p.titles === TL_PAGE) {
+      const pages = Object.entries(TL).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } }));
+      pages.push({ title: 'Denis Inconnu', missing: true }, { title: 'Martin', pageprops: { disambiguation: '', wikibase_item: 'Q901099' } }, { title: 'Testlande (pays)', missing: true });
+      return { batchcomplete: true, query: { redirects: [{ from: 'E. Dubois', to: 'Émile Dubois' }], pages } };
+    }
     if (p.titles === 'Liste de noms de couleur') {
       const pages = Object.entries(COLOR_LINKS).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } }));
       pages.push({ title: 'Couleur (homonymie)', pageprops: { disambiguation: '', wikibase_item: 'Q900308' } });
@@ -656,7 +763,7 @@ async function main() {
       SVGElement: function SVGElement() {},
       Element: function Element() {},
       Node: function Node() {},
-      queueMicrotask, AbortController,
+      queueMicrotask, AbortController, DOMParser: FakeDOMParser,
     };
     ctx.window = ctx;
     ctx.self = ctx;
@@ -1337,6 +1444,13 @@ async function main() {
     paste('https://fr.wikipedia.org/w/index.php?title=Tableau_p%C3%A9riodique&action=history');
     check(await waitFor(() => at().includes('Tableau périodique des éléments') && at().includes('page de Wikipédia') && cls('slot').length + cls('cell').length === 2, 5000), 'autre page collée : ' + at());
     check(has('sans nature dominante à filtrer') && !all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && n.parentNode.classList.contains('check')).length, 'page sans nature dominante : ' + at());
+    // Son petit tableau (2 éléments) : la colonne « Élément » est proposée, pas présélectionnée (trop peu d'articles).
+    {
+      const sel = byId('page-key');
+      const o = sel ? sel.querySelectorAll('option').map((x) => text(x)).join(' | ') : '';
+      check(sel && sel.value === '' && o === 'Élément (2 articles) | Aucune : tous les liens de la page (2)' && has('Sans colonne clé : les articles liés depuis la page'),
+        'petit tableau : colonne proposée mais pas choisie, ' + o + ' / ' + (sel ? JSON.stringify(sel.value) : 'pas de choix'));
+    }
     needButton('← Toutes les collections').click();
     await settle();
     // Lecture lente (liens de la page retenus) : « Créer une collection » reste cliquable, avec la roue, et la ligne
@@ -1363,6 +1477,93 @@ async function main() {
       await settle();
       modalBtn('Supprimer la collection').click();
       check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Tableau périodique des éléments')), 'collection « Tableau périodique des éléments » non supprimée');
+    }
+    // 9 quater ter. Page dont la liste est en tableaux (« Liste des présidents de Testlande », deux tableaux) : son HTML lu
+    // une fois (action=parse), analysé à part sans rien exécuter ni insérer dans la page ; « Colonne clé » proposée,
+    // « Nom » présélectionnée, ses articles dans l'ordre des lignes (cellules fusionnées, intertitre, en-tête répété, clé de
+    // tri cachée, note, image, lien rouge, homonymie, redirection, doublon), « Tableaux lus » ; une autre colonne, un
+    // tableau décoché, « Aucune : tous les liens de la page » ; « Créer une collection » (source links:<titre>#Nom,
+    // ordonnée, qid et description) ; rouverte : « Ouvrir ta collection ».
+    {
+      const p0 = parseCalls.length;
+      const l0 = linkCalls.length;
+      const slotTitles = () => cls('slot').map((s) => text(s.querySelector('h3')));
+      const keySel = () => byId('page-key');
+      const keyOpts = () => (keySel() ? keySel().querySelectorAll('option').map((o) => text(o)) : []);
+      const pickKey = async (label) => {
+        const sel = keySel();
+        const o = sel && sel.querySelectorAll('option').find((x) => text(x).startsWith(label));
+        if (!o) fail('colonne absente : ' + label + ' / ' + keyOpts().join(' | '));
+        sel.value = o.value;
+        sel.dispatch('change');
+        await settle(60);
+      };
+      const hintText = () => cls('hint').map(text).join(' || ');
+      paste('https://fr.wikipedia.org/wiki/Liste_des_pr%C3%A9sidents_de_Testlande');
+      check(await waitFor(() => at().includes('Présidents de Testlande') && !!keySel(), 5000), 'page en tableaux : « Colonne clé » attendue, ' + at() + ' / ' + text(one('album-head')).slice(0, 400));
+      check(keyOpts().join(' | ') === 'No (2 articles) | Nom (5 articles) | Parti (3 articles) | Ville natale (3 articles) | Aucune : tous les liens de la page (5)',
+        'colonnes proposées : ' + keyOpts().join(' | '));
+      check(keySel().value === 'nom' && at().includes('0 sur 5'), 'colonne « Nom » présélectionnée : ' + keySel().value + ' / ' + at());
+      check(slotTitles().join(' | ') === 'Aline Martin | Bruno Petit | Carla Rossi (femme politique) | Émile Dubois | Fanny Leroy',
+        'articles de la colonne « Nom », dans l\'ordre des lignes : ' + slotTitles().join(' | '));
+      check(cls('slot__no').map(text).join(',') === '1,2,3,4,5' && !!all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Ordre')[0], 'colonne clé : album numéroté, dans l\'ordre');
+      check(hintText().includes('Le premier article lié de chaque ligne de la colonne « Nom » des 2 tableaux de la page « Liste des présidents de Testlande », dans l\'ordre des lignes : 5 articles (2 lignes sans article : lien rouge, homonymie ou pas de lien).'),
+        'explication de la colonne clé : ' + hintText());
+      check(parseCalls.length === p0 + 1 && parseCalls[p0] === TL_PAGE && linkCalls.length === l0 + 1, 'HTML et liens de la page lus une fois chacun : ' + JSON.stringify(parseCalls.slice(p0)));
+      // Le HTML analysé n'entre jamais dans la page : ni son image, ni son script, ni son texte ; rien n'a été exécuté.
+      check(ctx.__pwn === undefined && !all((n) => n.tagName === 'IMG' && /aline\.jpg/.test(n.getAttribute('src') || '')).length && !has('Intérim assuré')
+        && !all((n) => n.tagName === 'SCRIPT').length && parsedDocs.length > 0, 'le HTML de la page ne doit être ni exécuté ni inséré');
+      // « Tableaux lus : 2 sur 2 » : décocher le premier ne garde que le second (le dernier coché ne se décoche pas).
+      const tableBoxes = () => all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && !!n.parentNode.parentNode && n.parentNode.parentNode.tagName === 'LI'
+        && text(n.parentNode).startsWith('Tableau '));
+      check(has('Tableaux lus : 2 sur 2') && tableBoxes().map((b) => text(b.parentNode)).join(' | ') === 'Tableau 1 · Première République (3 articles) | Tableau 2 · Présidents depuis 1950 (3 articles)',
+        'liste des tableaux : ' + tableBoxes().map((b) => text(b.parentNode)).join(' | '));
+      tableBoxes()[0].checked = false;
+      tableBoxes()[0].dispatch('change');
+      await settle(60);
+      check(slotTitles().join(' | ') === 'Émile Dubois | Aline Martin | Fanny Leroy' && has('Tableaux lus : 1 sur 2') && tableBoxes()[1].disabled && !tableBoxes()[0].disabled,
+        'premier tableau décoché : ' + slotTitles().join(' | ') + ' / ' + hintText());
+      tableBoxes()[0].checked = true;
+      tableBoxes()[0].dispatch('change');
+      await settle(60);
+      check(slotTitles().length === 5, 'tableau recoché : 5 articles attendus, ' + slotTitles().join(' | '));
+      // Une autre colonne : « Parti » (chaque parti une fois, dans l'ordre de la page).
+      await pickKey('Parti');
+      check(slotTitles().join(' | ') === 'Parti bleu | Parti rouge | Parti vert' && at().includes('0 sur 3'), 'colonne « Parti » : ' + slotTitles().join(' | '));
+      // « Aucune » : tous les liens de la page, ceux de la nature dominante (case), de A à Z.
+      await pickKey('Aucune');
+      check(keySel().value === '' && has('ne garder que les « être humain » (5 sur 16 articles liés') && hintText().includes('Sans colonne clé : les articles liés depuis la page')
+        && !cls('slot__no').length && !!all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'A → Z')[0] && slotTitles()[0] === 'Aline Martin',
+        'sans colonne clé : ' + hintText() + ' / ' + slotTitles().join(' | '));
+      check(parseCalls.length === p0 + 1 && linkCalls.length === l0 + 1, 'changer de colonne ne relit rien');
+      await pickKey('Nom');
+      needButton('Créer une collection').click();
+      check(await waitFor(() => has('Modifier') && has('Supprimer')), '« Créer une collection » (colonne clé) sans effet');
+      if (!SERVER) {
+        const t = api.st.targets.find((x) => x.source === 'links:' + TL_PAGE + '#Nom');
+        check(t && t.name === 'Présidents de Testlande' && t.items.map((i) => i.title).join('|') === 'Aline Martin|Bruno Petit|Carla Rossi (femme politique)|Émile Dubois|Fanny Leroy'
+          && t.items.every((i) => i.status === 'ok' && /^Q90100\d$/.test(i.qid)) && t.items[0].description === 'femme politique testlandaise',
+        'collection de la colonne clé mal enregistrée : ' + JSON.stringify(t));
+      }
+      check(has('Collection « Présidents de Testlande » créée : 5 articles (colonne « Nom » des tableaux de la page, dans l\'ordre), dans « Mes collections ».')
+        && at().includes('depuis la page Wikipédia « Liste des présidents de Testlande », colonne « Nom »'), 'collection créée de la colonne clé : ' + at());
+      check(cls('slot__no').map(text).join(',') === '1,2,3,4,5' && !!all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Ordre')[0], 'collection d\'une colonne clé : ordonnée, numérotée');
+      needButton('← Toutes les collections').click();
+      await settle();
+      {
+        const r = mineSection().querySelectorAll('.row').find((n) => text(n.querySelector('.name')) === 'Présidents de Testlande');
+        check(r && text(r.querySelector('.row-kind')) === 'depuis la page Wikipédia « Liste des présidents de Testlande », colonne « Nom »', 'ligne de la collection d\'une colonne clé : ' + (r ? text(r) : 'absente'));
+      }
+      // Rouverte (même page, autre adresse) : une page ne donne qu'une collection, « Ouvrir ta collection ».
+      paste('https://fr.m.wikipedia.org/wiki/Liste_des_présidents_de_Testlande');
+      check(await waitFor(() => at().includes('Présidents de Testlande') && !!buttonByText('Ouvrir ta collection') && !buttonByText('Créer une collection'), 5000),
+        'page déjà en collection (colonne clé) : « Ouvrir ta collection » attendu, ' + at());
+      needButton('Ouvrir ta collection').click();
+      check(await waitFor(() => has('Supprimer') && at().includes('colonne « Nom »')), '« Ouvrir ta collection » (colonne clé) : ' + at());
+      needButton('Supprimer').click();
+      await settle();
+      modalBtn('Supprimer la collection').click();
+      check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Présidents de Testlande')), 'collection « Présidents de Testlande » non supprimée');
     }
     // Adresse d'un autre site : rien n'est demandé à Wikipédia ; page absente : la recherche le dit.
     n0 = catSuggest.length;
@@ -1457,6 +1658,42 @@ async function main() {
   check(cls('cand').length === 1 && text(cls('cand')[0]).includes('Races bovines de France'), 'adresse collée : ' + cls('cand').map(text).join(' / '));
   modalBtn('Annuler').click();
   await settle();
+  // Page en tableaux dans « Nouvelle collection » : « Colonne clé » aussi, « Nom » présélectionnée, aperçu dans l'ordre des
+  // lignes ; « Parti », puis « Nom » ; enregistrée dans cet ordre (collection sans source, ordonnée), puis supprimée.
+  {
+    needButton('Nouvelle collection').click();
+    await settle();
+    type(byId('kw'), 'https://fr.wikipedia.org/wiki/Liste_des_pr%C3%A9sidents_de_Testlande');
+    byId('kw').dispatch('keydown', { key: 'Enter' });
+    for (let i = 0; i < 100 && !(cls('cand').length && !has('Recherche…')); i++) await sleep(50);
+    await settle();
+    all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Choisir Présidents de Testlande')[0].click();
+    for (let i = 0; i < 100 && !(cls('preview').length && byId('kw-key')); i++) await sleep(50);
+    const prev = () => cls('preview')[0].querySelectorAll('li').map(text).join('|');
+    const ks = byId('kw-key');
+    check(ks && ks.value === 'nom' && ks.querySelectorAll('option').map((o) => text(o)).join(' | ') === 'No (2 articles) | Nom (5 articles) | Parti (3 articles) | Ville natale (3 articles) | Aucune : tous les liens de la page'
+      && prev() === 'Aline Martin|Bruno Petit|Carla Rossi (femme politique)|Émile Dubois|Fanny Leroy' && has('Colonne « Nom » des tableaux de la page')
+      && !has('ne garder que les « être humain »'), 'nouvelle collection, page en tableaux : ' + (ks ? ks.value : 'pas de colonne clé') + ' / ' + (cls('preview').length ? prev() : ''));
+    ks.value = 'parti';
+    ks.dispatch('change');
+    for (let i = 0; i < 60 && cls('preview')[0].querySelectorAll('li').length !== 3; i++) await sleep(50);
+    check(prev() === 'Parti bleu|Parti rouge|Parti vert', 'nouvelle collection, colonne « Parti » : ' + prev());
+    byId('kw-key').value = 'nom';
+    byId('kw-key').dispatch('change');
+    for (let i = 0; i < 60 && cls('preview')[0].querySelectorAll('li').length !== 5; i++) await sleep(50);
+    modalBtn('Enregistrer').click();
+    for (let i = 0; i < 60 && !has('enregistrée : 5 articles'); i++) await sleep(50);
+    if (!SERVER) {
+      const t = api.st.targets.find((x) => x.name === 'Présidents de Testlande');
+      check(t && t.items.map((i) => i.title).join('|') === 'Aline Martin|Bruno Petit|Carla Rossi (femme politique)|Émile Dubois|Fanny Leroy' && t.items[3].qid === 'Q901004',
+        'nouvelle collection d\'une colonne clé mal enregistrée : ' + JSON.stringify(t));
+    }
+    check(await waitFor(() => at().includes('Présidents de Testlande') && has('Supprimer')), 'nouvelle collection d\'une colonne clé : album attendu, ' + at());
+    needButton('Supprimer').click();
+    await settle();
+    modalBtn('Supprimer la collection').click();
+    check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Présidents de Testlande')), 'collection « Présidents de Testlande » (nouvelle collection) non supprimée');
+  }
 
   // 9 quinquies. « Définition Wikipédia » : les articles dont la première phrase dit « … est une maladie … » (formule
   // cherchée dans Wikipédia, puis début de chaque article lu : bandeaux et infobox sautés, homonymies écartées)

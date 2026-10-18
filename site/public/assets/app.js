@@ -775,11 +775,20 @@
   // Collections à compléter du serveur (targets), toutes dans « Mes collections » : créées par le favori depuis la
   // Collection globale du jeu, à la main dans « Nouvelle collection », depuis une catégorie de Wikipédia (source
   // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), depuis les liens d'une page de Wikipédia (source
-  // « links:<titre> » : `page` = le titre, signalée « depuis la page Wikipédia « … » »), ou jadis ajoutées du catalogue
+  // « links:<titre> » : `page` = le titre, signalée « depuis la page Wikipédia « … » » ; « links:<titre>#<colonne> » quand
+  // elle est faite de la colonne clé des tableaux de la page : `column` = le libellé de la colonne, et elle est ordonnée
+  // comme les lignes des tableaux ; un titre de Wikipédia ne contient jamais « # »), ou jadis ajoutées du catalogue
   // (sources wm:, wd, cat, links, def, catalog:… ou aucune).
   const isCatSource = (s) => typeof s === 'string' && s.startsWith('wp:');
   const PAGE_SRC = 'links:';
-  const pageOfSource = (s) => (typeof s === 'string' && s.startsWith(PAGE_SRC) && s.length > PAGE_SRC.length ? s.slice(PAGE_SRC.length) : null);
+  const pageSourceParts = (s) => {
+    if (typeof s !== 'string' || !s.startsWith(PAGE_SRC) || s.length <= PAGE_SRC.length) return null;
+    const rest = s.slice(PAGE_SRC.length);
+    const k = rest.indexOf('#');
+    return k < 0 ? { page: rest, column: null } : { page: rest.slice(0, k), column: rest.slice(k + 1) || null };
+  };
+  const pageOfSource = (s) => { const p = pageSourceParts(s); return p && p.page ? p.page : null; };
+  const columnOfSource = (s) => { const p = pageSourceParts(s); return p ? p.column : null; };
   // Thèmes du catalogue (retiré le 2026-10-16) qui n'avaient pas d'ordre (`ordered: false` dans catalog.json, repris de
   // git 9a62469) : leurs collections (source « catalog:<id> ») restent de A à Z, sans numéros.
   const UNORDERED_CATALOG = new Set(['vaches', 'chiens', 'chats', 'chevaux', 'cepages', 'fromages', 'constellations', 'pays', 'departements', 'regions',
@@ -788,11 +797,12 @@
   const unorderedSource = (s) => typeof s === 'string' && s.startsWith('catalog:') && UNORDERED_CATALOG.has(s.slice(8));
   const collections = computed(() => {
     // Une catégorie n'a pas d'ordre à elle (celui de Wikipédia suit des clés de tri) : de A à Z, sans numéros ; les liens
-    // d'une page non plus (lus de A à Z).
+    // d'une page non plus (lus de A à Z), sauf ceux de la colonne clé de ses tableaux (dans l'ordre des lignes).
     const all = targets.value.map((t) => {
       const cat = isCatSource(t.source);
       const page = pageOfSource(t.source);
-      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && !page && !unorderedSource(t.source), cat, page, t };
+      const column = page ? columnOfSource(t.source) : null;
+      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && (!page || !!column) && !unorderedSource(t.source), cat, page, column, t };
     });
     return { all, mine: all };
   });
@@ -817,7 +827,8 @@
   const catAlbum = computed(() => {
     const cv = S.catView;
     const page = cv && cv.type === 'page' ? cv.title : null;
-    return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: false, cat: !page, page, cv } : null;
+    // Colonne clé des tableaux d'une page : dans l'ordre des lignes, numérotée.
+    return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: !!(page && cv.col), cat: !page, page, cv } : null;
   });
   const catProgress = computed(() => (catAlbum.value ? progressFor(catAlbum.value) : null));
   const progressOf = (col) => (col.kind === 'category' ? catProgress.value : progress.value.get(col.key)) || { own: 0, total: col.items.length, byR: {}, sample: [] };
@@ -3172,6 +3183,10 @@
   const pageName = (t) => { const n = /^Liste\b/i.test(t) ? listName(t) : t; return n.length > 80 ? n.slice(0, 79) + '…' : n; };
   // Ta collection créée depuis une catégorie (source « wp:<nom> ») ou une page (« links:<titre> »), ou null.
   const collectionFor = (key) => targets.value.find((t) => t.source === key) || null;
+  // Une page ne donne qu'une collection, de tous ses liens (« links:<titre> ») ou de la colonne clé de ses tableaux
+  // (« links:<titre>#<colonne> ») : la plus ancienne des deux, ou null.
+  const pageCollection = (title) => targets.value.find((t) => pageOfSource(t.source) === title) || null;
+  const catCollection = (cv) => (cv.type === 'page' ? pageCollection(cv.title) : collectionFor(cv.key));
   const pagesOf = (j) => ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
   const catSuggCache = new Map(); // texte replié (ou « url:<titre> ») -> suggestions
   let catSugCtrl = null;
@@ -3377,20 +3392,25 @@
     loadCategory();
   }
   // Ouvre une page (suggestion « Pages de liste », adresse collée) : les articles qu'elle lie, comme un album (source
-  // « links:<titre> », titre tel que Wikipédia l'écrit, redirection suivie).
+  // « links:<titre> », titre tel que Wikipédia l'écrit, redirection suivie), ou ceux de la colonne clé de ses tableaux
+  // (tables : tableaux lus par pageTables ; cols : colonnes proposées (tableColumns) ; col : clé de la colonne choisie,
+  // '' = tous les liens, null = pas encore choisie ; tableOff : tableaux décochés).
   function openPage(title) {
     const t = String(title || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
     if (!t) return;
     const key = PAGE_SRC + t;
     stopCategory();
     S.catView = { type: 'page', key, title: t, name: pageName(t), size: null, subcats: null, withSubs: false, links: null, allLinks: false,
+      tables: null, tablesError: '', cols: null, col: null, tableOff: [],
       loading: true, error: '', items: null, total: 0, busy: false, step: '', queued: false };
     openAlbum('category', key);
     loadCategory();
   }
   // Catégorie : taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes
-  // si withSubs). Page : ses liens et leur nature (pageLinks, lus une fois), ceux de la nature dominante seulement sauf
-  // si allLinks. 3 000 au plus, total = ce qui a été lu ou gardé (plus de 3 000 : trop grande pour une collection).
+  // si withSubs). Page : ses tableaux (pageTables) puis ses liens et leur nature (pageLinks), lus une fois ; les articles de
+  // la colonne clé choisie (cv.col, présélectionnée par pickColumn), dans l'ordre des lignes, ou sinon ceux de la nature
+  // dominante seulement sauf si allLinks. 3 000 au plus, total = ce qui a été lu ou gardé (plus de 3 000 : trop grande
+  // pour une collection).
   // cv.step : où en est la lecture (montré pendant l'attente) ; cv.queued : « Créer une collection » cliqué pendant la
   // lecture, la collection est créée dès qu'elle finit (pas en cas d'erreur).
   async function loadCategory() {
@@ -3406,13 +3426,27 @@
     cv.step = '';
     try {
       if (cv.type === 'page') {
+        if (!cv.tables) {
+          // Tableaux illisibles (Wikipédia en panne pour action=parse) : la page garde ses liens, la vue le dit.
+          try { cv.tables = markRaw(await pageTables(cv.title, ctrl.signal, onStep)); } catch (e) {
+            if (e.name === 'AbortError') throw e;
+            if (stale()) return;
+            cv.tables = markRaw({ list: [], inTables: 0, inLists: 0 });
+            cv.tablesError = e.message;
+          }
+          if (stale()) return;
+        }
         if (!cv.links) {
           const links = await pageLinks(cv.title, ctrl.signal, onStep);
           if (stale()) return;
           cv.links = markRaw(links);
+          const tc = tableColumns(cv.tables, links, cv.title);
+          cv.cols = markRaw(tc.cols);
+          if (cv.col === null) cv.col = pickColumn(tc, links, cv.title, cv.tables);
         }
         const { top } = cv.links;
-        const kept = top && !cv.allLinks ? cv.links.items.filter((i) => i.fits) : cv.links.items;
+        const col = cv.col ? cv.cols.find((c) => c.key === cv.col) || null : null;
+        const kept = col ? columnItems(col, cv.tableOff) : top && !cv.allLinks ? cv.links.items.filter((i) => i.fits) : cv.links.items;
         cv.total = kept.length;
         cv.items = markRaw(kept.slice(0, 3000).map((i) => {
           const it = { title: i.title, description: i.description || null, image: null, status: 'ok' };
@@ -3455,17 +3489,32 @@
     cv.allLinks = !cv.allLinks;
     loadCategory();
   }
+  // Page : colonne clé de ses tableaux (key = celle de tableColumns), ou '' pour tous ses liens ; un tableau décoché
+  // (index dans cv.tables.list) ne compte plus. Déjà lus : sans requête.
+  function setPageColumn(key) {
+    const cv = S.catView;
+    if (!cv || cv.busy || cv.type !== 'page' || !cv.cols) return;
+    cv.col = key && cv.cols.some((c) => c.key === key) ? key : '';
+    loadCategory();
+  }
+  function togglePageTable(t) {
+    const cv = S.catView;
+    if (!cv || cv.busy || cv.type !== 'page') return;
+    cv.tableOff = cv.tableOff.includes(t) ? cv.tableOff.filter((x) => x !== t) : [...cv.tableOff, t];
+    loadCategory();
+  }
   // « Créer une collection » (album d'une catégorie ou d'une page) : ses articles lus (avec les sous-catégories si la case
   // est cochée ; page : les articles liés gardés, avec leur qid et leur description Wikidata) deviennent une collection à
-  // compléter de source « wp:<nom> » ou « links:<titre> », nommée comme la catégorie (page : « Liste de » retiré) ;
-  // l'album reste ouvert, devenu celui de la collection (Modifier, Supprimer). Déjà faite, ou « Créer une collection » de
+  // compléter de source « wp:<nom> » ou « links:<titre> » (« links:<titre>#<colonne> » faite de la colonne clé de ses
+  // tableaux), nommée comme la catégorie (page : « Liste de » retiré) ; l'album reste ouvert, devenu celui de la
+  // collection (Modifier, Supprimer). Une page n'en donne qu'une (pageCollection). Déjà faite, ou « Créer une collection » de
   // sa proposition en cours (S.wp.busy, partagé) : pas de seconde collection de même source. Cliqué pendant la lecture
   // des articles (une page : ses liens puis leur nature sur Wikidata, plusieurs secondes) : retenu (cv.queued), la
   // collection est créée dès la fin de la lecture (loadCategory).
   async function createFromCategory() {
     const cv = S.catView;
     if (!cv) return;
-    const t0 = collectionFor(cv.key);
+    const t0 = catCollection(cv);
     if (t0) { openAlbum('target', t0.id); return; }
     if (cv.busy || S.wp.busy[cv.key]) return;
     if (cv.loading || !cv.items) { if (!cv.error) cv.queued = true; return; }
@@ -3473,6 +3522,9 @@
     const page = cv.type === 'page';
     if (cv.total > 3000) { notify(page ? 'Cette page lie plus de 3 000 articles : trop pour une collection.' : 'Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
     if (cv.key.length > 200) { notify(page ? 'Le titre de cette page est trop long pour en faire une collection.' : 'Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
+    // Colonne clé des tableaux d'une page : source « links:<titre>#<colonne> » (libellé coupé pour tenir en 200 caractères).
+    const col = page && cv.col && cv.cols ? cv.cols.find((c) => c.key === cv.col) || null : null;
+    const source = col && cv.key.length < 199 ? (cv.key + '#' + col.name).slice(0, 200) : cv.key;
     const gen = cardsGen;
     const stale = () => gen !== cardsGen;
     cv.busy = true;
@@ -3481,13 +3533,15 @@
       const name = cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
       const items = cv.items.map((it) => (it.qid ? { title: it.title, description: it.description || null, image: null, status: 'ok', qid: it.qid }
         : { title: it.title, description: it.description || null, image: null, status: 'ok' }));
-      const r = await api('POST', '/api/targets/save', { name, items, source: cv.key });
+      const r = await api('POST', '/api/targets/save', { name, items, source });
       if (stale()) return;
       if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== cv.key));
-      const t = collectionFor(cv.key);
+      const t = collectionFor(source);
       if (t && S.catView === cv) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
-      const how = cv.withSubs ? ', sous-catégories comprises' : page && cv.links && cv.links.top && !cv.allLinks ? ` (les « ${cv.links.top.label} » de la page)` : page ? ' (tous les liens de la page)' : '';
+      const used = col ? col.parts.filter((p) => !cv.tableOff.includes(p.t)).length : 0;
+      const how = cv.withSubs ? ', sous-catégories comprises' : col ? ` (colonne « ${col.name} » ${plural(used, 'du tableau', 'des tableaux')} de la page, dans l'ordre)`
+        : page && cv.links && cv.links.top && !cv.allLinks ? ` (les « ${cv.links.top.label} » de la page)` : page ? ' (tous les liens de la page)' : '';
       notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${how}, dans « Mes collections ».`);
     } catch (e) {
       if (!stale()) notify(e.message, true);
@@ -3706,11 +3760,13 @@
     const step = onStep || (() => {});
     const by = new Map();
     const drop = new Set();
+    const alias = {}; // redirections suivies (titre du lien -> article), pour retrouver les liens des tableaux
     let cont = {};
     step('Lecture des liens de la page sur Wikipédia…');
     for (let guard = 0; guard < 12 && by.size < 5000; guard++) {
       const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'links', titles: title, gplnamespace: '0', gpllimit: 'max', redirects: '1',
         prop: 'pageprops', ppprop: 'wikibase_item|disambiguation', ...cont }), 3, null, signal);
+      Object.assign(alias, aliasOf((j && j.query) || {}));
       for (const p of (j && j.query && j.query.pages) || []) {
         if (p.missing || p.invalid) continue;
         const pp = p.pageprops || {};
@@ -3760,7 +3816,263 @@
       top.n = items.filter((i) => i.fits).length;
       if (top.n === items.length) top = null;
     }
-    return { items, top };
+    return { items, top, alias };
+  }
+  // ---------------------------------------------------------------- tableaux d'une page : la colonne clé
+  // Une page de liste faite d'un ou plusieurs tableaux (« Liste des éléments chimiques », « Liste des présidents de la
+  // République française »…) : ses autres colonnes (pays, villes, partis…) mêlent leurs liens aux bons. On lit le HTML
+  // rendu de la page (action=parse&prop=text : les modèles qui font les lignes y sont développés, ce que le wikicode ne
+  // donne pas), analysé par DOMParser dans un document à part, inerte (ni script exécuté, ni gestionnaire d'événement, ni
+  // image chargée) et jamais inséré dans la page : on n'en garde que des textes et des titres d'articles.
+  // - Tableaux « wikitable », repliés compris, pas ceux imbriqués dans un autre ; cellules fusionnées (rowspan, colspan)
+  //   dépliées dans une grille. En-tête : les premières lignes faites de <th> (ou dans <thead>), une ligne d'une seule
+  //   cellule sur toute la largeur (titre) mise à part ; libellé d'une colonne = ses en-têtes de haut en bas (« Mandat ›
+  //   Début ») ; deux colonnes sous une même cellule d'en-tête (« Appartenance politique » : couleur et nom) n'en font
+  //   qu'une ; sans en-tête : « Colonne 1 », « Colonne 2 »… Lignes de données : les suivantes, sauf une cellule seule sur
+  //   toute la largeur (intertitre « IIIe République », commentaire « intérim ») et les en-têtes répétés.
+  // - Pour chaque ligne et chaque colonne, le PREMIER lien d'article de la cellule (lien bleu de l'espace principal dont
+  //   le texte se voit : ni image seule comme un drapeau ou un portrait, ni note, ni clé de tri cachée). Dans la colonne
+  //   clé, c'est le sujet de la ligne ; les liens suivants de la même cellule le précisent (nationalité, lieu, parti,
+  //   « (intérim) ») : les prendre tous ramènerait ce que la colonne clé écarte.
+  const WP_NS = /^(?:Fichier|File|Image|Média|Media|Catégorie|Category|Aide|Help|Wikipédia|Wikipedia|WP|Modèle|Template|Portail|Portal|Projet|Spécial|Special|Utilisateur|Utilisatrice|User|Discussion|Talk|Module|MediaWiki|Référence|Livre|Sujet|TimedText|Gadget|Brouillon|Draft)(?:[ _]discussion)?\s*:/i;
+  const TABLE_SKIP = /(?:^|\s)(?:reference|mw-ref|sortkey|noprint|mw-editsection|mw-cite-backlink|error|metadata|navbox)(?:\s|$)/;
+  const elKids = (el) => Array.prototype.filter.call(el.childNodes, (n) => n.nodeType === 1);
+  const skipEl = (el) => el.localName === 'style' || el.localName === 'script' || TABLE_SKIP.test(el.getAttribute('class') || '')
+    || /display\s*:\s*none/i.test(el.getAttribute('data-style') || '');
+  // Texte visible d'un nœud (notes « [1] », « [a] », « [pas clair] » et clés de tri cachées retirées).
+  function nodeText(el) {
+    let out = '';
+    const walk = (n) => {
+      if (n.nodeType === 3) { out += n.nodeValue; return; }
+      if (n.nodeType !== 1 || skipEl(n)) return;
+      if (n.localName === 'br') { out += ' '; return; }
+      if (n.localName === 'sup' && /^\s*\[/.test(n.textContent)) return;
+      for (const c of n.childNodes) walk(c);
+    };
+    walk(el);
+    return out.replace(/\[\s*(?:\d+|[a-z]|N \d+|note \d+)\s*\]/gi, '').replace(/\s+/g, ' ').trim();
+  }
+  // Article d'un lien du HTML de Wikipédia (« /wiki/Titre », ou « ./Titre » dans le HTML de Parsoid ; bleu, de l'espace
+  // principal), sinon null.
+  function articleOf(a) {
+    const href = a.getAttribute('href') || '';
+    const at = href.startsWith('/wiki/') ? 6 : href.startsWith('./') ? 2 : -1;
+    if (at < 0 || /(?:^|\s)(?:new|extiw|external|mw-selflink|mw-file-description)(?:\s|$)/.test(a.getAttribute('class') || '')) return null;
+    let t = href.slice(at).split('#')[0].split('?')[0];
+    try { t = decodeURIComponent(t); } catch (e) { return null; }
+    t = normTitle(t);
+    return t && !WP_NS.test(t) ? t : null;
+  }
+  // Le texte du lien nomme-t-il l'article (« Hydrogène » ; « Abricot » pour « Abricot (couleur) ») plutôt qu'une de ses
+  // propriétés (« 1873 » pour « Élection présidentielle française de 1873 », « 2 » pour « Présidence d'Adolphe Thiers ») ?
+  const namesIt = (text, title) => {
+    const a = normName(text);
+    const b = normName(title.replace(/\s*\([^)]*\)\s*$/, ''));
+    return !!a && !!b && (a === b || (b.includes(a) && a.length >= 0.5 * b.length) || a.includes(b));
+  };
+  // Premier lien d'article d'une cellule : {t (titre), named (namesIt)}, ou null.
+  function firstArticle(el) {
+    let found = null;
+    const walk = (n) => {
+      if (found || n.nodeType !== 1 || skipEl(n)) return;
+      if (n.localName === 'a') {
+        const t = articleOf(n);
+        const text = t ? nodeText(n) : '';
+        if (text) found = { t, named: namesIt(text, t) };
+        return;
+      }
+      for (const c of n.childNodes) { walk(c); if (found) return; }
+    };
+    walk(el);
+    return found;
+  }
+  function tableRows(table) {
+    const out = [];
+    for (const c of elKids(table)) {
+      if (c.localName === 'tr') out.push(c);
+      else if (c.localName === 'thead' || c.localName === 'tbody' || c.localName === 'tfoot') for (const r of elKids(c)) if (r.localName === 'tr') out.push(r);
+    }
+    return out;
+  }
+  // Un tableau : {caption, rows (lignes de données), cols: [{label, links: [titre | null, un par ligne], named (liens dont le
+  // texte nomme l'article)}]}, ou null.
+  function readTable(table) {
+    const trs = tableRows(table);
+    const grid = trs.map(() => []);
+    const starts = trs.map(() => []); // cellules qui commencent sur cette ligne
+    const span = (el, name, max) => { const n = parseInt(el.getAttribute(name), 10); return Number.isFinite(n) && n > 1 ? Math.min(n, max) : 1; };
+    for (let r = 0; r < trs.length; r++) {
+      let c = 0;
+      for (const td of elKids(trs[r])) {
+        if (td.localName !== 'td' && td.localName !== 'th') continue;
+        while (grid[r][c]) c++;
+        const cs = span(td, 'colspan', 60);
+        const rs = Math.min(span(td, 'rowspan', 3000), trs.length - r);
+        const cell = { el: td, th: td.localName === 'th', cs, link: undefined, text: undefined };
+        starts[r].push(cell);
+        for (let dr = 0; dr < rs; dr++) for (let dc = 0; dc < cs; dc++) grid[r + dr][c + dc] = cell;
+        c += cs;
+      }
+    }
+    const W = Math.max(0, ...grid.map((row) => row.length));
+    if (!W) return null;
+    const cellsOf = (r) => { const s = []; for (let c = 0; c < W; c++) if (grid[r][c] && !s.includes(grid[r][c])) s.push(grid[r][c]); return s; };
+    const full = (r) => { const d = cellsOf(r); return W > 1 && d.length === 1 && d[0].cs >= W; };
+    const inHead = (r) => !!trs[r].parentNode && trs[r].parentNode.localName === 'thead';
+    const textOf = (x) => (x.text === undefined ? (x.text = nodeText(x.el)) : x.text);
+    const linkOf = (x) => (x.link === undefined ? (x.link = firstArticle(x.el)) : x.link);
+    // Ligne d'en-tête : faite de <th> (une case vide en <td>, le coin d'un tableau, n'y change rien), ou toute couverte
+    // par les cellules fusionnées de la ligne d'avant.
+    const headRow = (r) => inHead(r) || !starts[r].length || (starts[r].some((x) => x.th) && starts[r].every((x) => x.th || !textOf(x)));
+    let h = 0;
+    while (h < trs.length && headRow(h)) h++;
+    if (h >= trs.length) h = Math.min(1, trs.length);
+    const heads = [];
+    for (let r = 0; r < h; r++) if (!full(r)) heads.push(r);
+    const last = heads.length ? heads[heads.length - 1] : -1;
+    const cols = [];
+    for (let c = 0; c < W; c++) {
+      const bottom = last >= 0 ? grid[last][c] || null : null;
+      const prev = cols[cols.length - 1];
+      if (prev && bottom && prev.bottom === bottom) { prev.c1 = c; continue; }
+      const parts = [];
+      const seen = [];
+      for (const r of heads) {
+        const x = grid[r][c];
+        if (!x || seen.includes(x)) continue;
+        seen.push(x);
+        const t = textOf(x);
+        if (t && !parts.includes(t)) parts.push(t);
+      }
+      cols.push({ c0: c, c1: c, bottom, label: parts.join(' › ').slice(0, 120) || `Colonne ${cols.length + 1}`, links: [], named: 0 });
+    }
+    let rows = 0;
+    for (let r = h; r < trs.length; r++) {
+      if (full(r) || (starts[r].length > 1 && starts[r].every((x) => x.th))) continue;
+      rows++;
+      for (const col of cols) {
+        let l = null;
+        for (let c = col.c0; c <= col.c1 && !l; c++) if (grid[r][c]) l = linkOf(grid[r][c]);
+        col.links.push(l ? l.t : null);
+        if (l && l.named) col.named++;
+      }
+    }
+    if (!rows) return null;
+    const caption = elKids(table).find((x) => x.localName === 'caption');
+    return { caption: caption ? nodeText(caption).slice(0, 120) : '', rows, cols: cols.map(({ label, links, named }) => ({ label, links, named })) };
+  }
+  // Tableaux d'un HTML de Wikipédia : {list: [tableaux dans l'ordre de la page, chacun avec l'intertitre (h2 à h4) qui le
+  // précède], inTables, inLists (liens d'articles dans ces tableaux, et dans des listes à puces hors tableaux)}. Bandeaux,
+  // boîtes de navigation, infobox, notes et références ne comptent pas. Avant l'analyse, les attributs style deviennent
+  // data-style et les feuilles <style> sont retirées : le document créé hérite de la CSP de la page, qui signalerait chacun
+  // dans la console (« inline style ») ; « display:none » reste lisible.
+  const PAGE_SKIP = /(?:^|\s)(?:infobox\w*|references|reflist|mw-references-wrap|bandeau\w*|homonymie|toc)(?:\s|$)/;
+  function readTables(html) {
+    const out = { list: [], inTables: 0, inLists: 0 };
+    if (typeof DOMParser === 'undefined') return out;
+    const clean = String(html).replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, '').replace(/(<[a-z][a-z0-9]*\b[^<>]*?)\sstyle=/gi, '$1 data-style=');
+    const doc = new DOMParser().parseFromString(clean, 'text/html');
+    let section = '';
+    const walk = (n, inTable, inLi) => {
+      if (n.nodeType !== 1 || skipEl(n) || PAGE_SKIP.test(n.getAttribute('class') || '')) return;
+      const name = n.localName;
+      if (/^h[2-4]$/.test(name)) { section = nodeText(n).slice(0, 120); return; }
+      if (name === 'a') {
+        if (articleOf(n)) { if (inTable) out.inTables++; else if (inLi) out.inLists++; }
+        return;
+      }
+      if (name === 'table') {
+        const wiki = /(?:^|\s)wikitable(?:\s|$)/.test(n.getAttribute('class') || '');
+        if (wiki && !inTable) { const t = readTable(n); if (t) out.list.push(Object.assign(t, { section })); }
+        for (const c of n.childNodes) walk(c, inTable || wiki, inLi);
+        return;
+      }
+      for (const c of n.childNodes) walk(c, inTable, inLi || name === 'li');
+    };
+    if (doc && doc.body) walk(doc.body, false, false);
+    return out;
+  }
+  async function pageTables(title, signal, onStep) {
+    if (typeof DOMParser === 'undefined') return { list: [], inTables: 0, inLists: 0 };
+    if (onStep) onStep('Lecture des tableaux de la page sur Wikipédia…');
+    const j = await getJson(wikiQ, wpUrl({ action: 'parse', page: title, prop: 'text', redirects: '1', disableeditsection: '1', disablelimitreport: '1', disabletoc: '1' }), 3, null, signal);
+    const html = j && j.parse && typeof j.parse.text === 'string' ? j.parse.text : '';
+    return readTables(html);
+  }
+  // Colonnes proposées comme clé, d'après les tableaux lus et les liens de la page (pageLinks : article, qid, nature) :
+  // les colonnes de même libellé (au repli près) dans plusieurs tableaux n'en font qu'une (« Forme courte » dans les 24
+  // tableaux A à Z de « Liste des pays du monde ») ; un lien retrouvé parmi ceux de la page (redirection suivie, ni lien
+  // rouge ni homonymie) donne l'article de la ligne. Gardées : celles qui donnent au moins 2 articles différents, dans
+  // l'ordre où elles apparaissent ; chacune : {key, label, name (libellé court : la dernière ligne d'en-tête, sauf si deux
+  // colonnes l'ont), parts: [{t (index du tableau), items, rows, linked}], n (articles différents), fits (de la nature
+  // dominante), score}. best = la mieux notée : articles différents × (½ + ½ part des liens dont le texte nomme l'article :
+  // « Adolphe Thiers » oui, « 1873 » pour une élection non) × 1,5 si son en-tête reprend un mot du titre (« Nom de couleur »
+  // pour « Liste de noms de couleur ») × (1 + ¼ part de la nature dominante) × 0,9 par colonne gardée à sa gauche (la
+  // colonne clé est souvent la première : « Nom » plutôt que « Chef-lieu », 102 articles chacune). La nature dominante ne
+  // pèse que peu : c'est celle de TOUS les liens de la page, pas forcément celle de sa liste (« Liste des départements
+  // français » : les arrondissements, plus nombreux que les départements). Mesuré le 2026-10-18 (pages de Wikipédia
+  // réelles) : « Nom » des éléments chimiques (118), « Titulaire » des présidents (26, contre « Élection » 31), « Forme
+  // courte » des pays (197), « Nom » des gratte-ciel, des races bovines, des départements, « Nom de couleur » (189).
+  function tableColumns(tables, links, title) {
+    const by = new Map(links.items.map((i) => [i.title, i]));
+    const find = (t) => by.get(resolve(links.alias || {}, t)) || by.get(t) || null;
+    const words = new Set(normName(listName(title)).split(' ').filter((w) => w.length >= 4).map(singular));
+    const groups = new Map();
+    ((tables && tables.list) || []).forEach((tb, ti) => {
+      const used = new Set();
+      tb.cols.forEach((c, ci) => {
+        const key = normName(c.label) || 'colonne ' + (ci + 1);
+        if (used.has(key)) return; // même libellé deux fois dans un tableau : la première
+        used.add(key);
+        const items = [];
+        for (const t of c.links) { const it = t ? find(t) : null; if (it) items.push(it); }
+        if (!items.length) return;
+        if (!groups.has(key)) groups.set(key, { key, label: c.label, order: groups.size, parts: [] });
+        groups.get(key).parts.push({ t: ti, items, rows: tb.rows, linked: items.length, raw: c.links.filter(Boolean).length, named: c.named || 0 });
+      });
+    });
+    const cols = [];
+    for (const g of groups.values()) {
+      const seen = new Set();
+      let fits = 0;
+      for (const p of g.parts) for (const it of p.items) if (!seen.has(it.title)) { seen.add(it.title); if (it.fits) fits++; }
+      const n = seen.size;
+      if (n < 2) continue;
+      const short = g.label.split(' › ').pop();
+      const match = normName(short).split(' ').some((w) => w.length >= 4 && words.has(singular(w)));
+      const raw = g.parts.reduce((x, p) => x + p.raw, 0);
+      const named = raw ? g.parts.reduce((x, p) => x + p.named, 0) / raw : 0;
+      const rank = cols.length; // place parmi les colonnes gardées, de gauche à droite
+      cols.push({ ...g, short, n, fits, score: n * (0.5 + 0.5 * named) * (match ? 1.5 : 1) * (1 + (links.top ? 0.25 * fits / n : 0)) * 0.9 ** rank });
+    }
+    const same = new Map();
+    for (const c of cols) { const k = normName(c.short); same.set(k, (same.get(k) || 0) + 1); }
+    for (const c of cols) c.name = same.get(normName(c.short)) > 1 ? c.label : c.short;
+    let best = null;
+    for (const c of cols) if (!best || c.score > best.score) best = c;
+    return { cols, best };
+  }
+  // Colonne présélectionnée : la mieux notée, si elle donne au moins 3 articles et au moins le quart de ce que donnent les
+  // liens de la page (nature dominante, ou tous), ou, pour une page « Liste… », si ses liens d'articles sont au moins aussi
+  // nombreux dans ses tableaux que dans ses listes à puces (« Liste des présidents de la République française » : aucune
+  // nature dominante parmi ses 713 liens, 222 liens dans ses tableaux contre 182 dans des listes) ; sinon '' (tous les
+  // liens) : une page dont la liste est surtout en puces et qui n'a qu'un petit tableau garde ses liens.
+  function pickColumn(tc, links, title, tables) {
+    const b = tc.best;
+    if (!b || b.n < 3) return '';
+    const kept = links.top ? links.top.n : links.items.length;
+    if (b.n >= 0.25 * kept) return b.key;
+    return /^Liste\b/i.test(title) && tables && tables.inTables >= tables.inLists ? b.key : '';
+  }
+  // Articles d'une colonne clé, dans l'ordre des tableaux et des lignes, chacun une fois ; off : tableaux décochés.
+  function columnItems(col, off) {
+    const seen = new Set();
+    const out = [];
+    for (const p of col.parts) {
+      if (off && off.includes(p.t)) continue;
+      for (const it of p.items) if (!seen.has(it.title)) { seen.add(it.title); out.push(it); }
+    }
+    return out;
   }
   // « Définition Wikipédia » : les articles dont la première phrase dit « … est une maladie … ». Deux temps :
   // 1. recherche de la formule dans le texte de Wikipédia (CirrusSearch, phrases à un mot près, « est un », « est une »,
@@ -3950,7 +4262,8 @@
     const ctrl = new AbortController();
     kwCtrl = ctrl;
     const ch = { candId: cand.id, source: cand.source, title: cand.title || null, subcats: cand.subcats || 0, withSubs: false, top: top || null,
-      name: top ? `${cand.name} (les ${top} plus connus)` : cand.name, loading: true, error: '', items: null, total: 0, interp: cand.interp || '', progress: '', checked: 0 };
+      name: top ? `${cand.name} (les ${top} plus connus)` : cand.name, loading: true, error: '', items: null, total: 0, interp: cand.interp || '', progress: '', checked: 0,
+      cols: null, col: null }; // page : colonnes de ses tableaux (tableColumns) et colonne clé choisie ('' = tous les liens)
     ed.kw.chosen = ch;
     await kwLoad(ed, cand, ctrl);
   }
@@ -3964,12 +4277,23 @@
       if (cand.source === 'wd') items = ch.top ? await wdTop(cand.where, ch.top, ctrl.signal) : cand.items || [];
       else if (cand.source === 'links') {
         if (!ch.links) {
+          // Comme l'album d'une page : ses tableaux (colonne clé, présélectionnée par pickColumn), puis ses liens.
+          let tables;
+          try { tables = await pageTables(cand.title, ctrl.signal); } catch (e) {
+            if (e.name === 'AbortError') throw e;
+            tables = { list: [], inTables: 0, inLists: 0 };
+          }
+          if (stale()) return;
           const links = await pageLinks(cand.title, ctrl.signal);
           if (stale()) return;
           ch.links = markRaw(links);
+          const tc = tableColumns(tables, links, cand.title);
+          ch.cols = markRaw(tc.cols);
+          ch.col = pickColumn(tc, links, cand.title, tables);
         }
         const { top } = ch.links;
-        items = top && !ch.allLinks ? ch.links.items.filter((i) => i.fits) : ch.links.items;
+        const col = ch.col ? ch.cols.find((c) => c.key === ch.col) || null : null;
+        items = col ? columnItems(col, []) : top && !ch.allLinks ? ch.links.items.filter((i) => i.fits) : ch.links.items;
       } else if (cand.source === 'def') {
         const r = await defPages(cand, ch.top, ctrl.signal, (done, kept) => {
           if (!stale()) ch.progress = ch.top ? `${fmt(kept)} sur ${fmt(ch.top)} trouvés (${fmt(done)} lus)…` : `${fmt(done)} sur ${fmt(cand.size)} lus, ${fmt(kept)} retenus…`;
@@ -3986,6 +4310,16 @@
     } finally {
       if (!stale()) ch.loading = false;
     }
+  }
+  // Page : colonne clé de ses tableaux, ou '' pour tous ses liens (déjà lus : sans requête).
+  function kwSetColumn(ed, cand, key) {
+    const ch = ed.kw.chosen;
+    if (!ch || !ch.cols) return;
+    ch.col = key && ch.cols.some((c) => c.key === key) ? key : '';
+    if (kwCtrl) kwCtrl.abort();
+    const ctrl = new AbortController();
+    kwCtrl = ctrl;
+    kwLoad(ed, cand, ctrl);
   }
   // Catégorie : avec ou sans sous-catégories ; page : seulement la nature dominante, ou tous les liens.
   function kwToggleSubs(ed, cand) {
@@ -4900,7 +5234,7 @@
   // Mention discrète d'une collection faite d'une catégorie ou d'une page de Wikipédia.
   function sourceKind(col) {
     if (col.cat) return h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia');
-    if (col.page) return h('span', { class: 'row-kind' }, `depuis la page Wikipédia « ${col.page} »`);
+    if (col.page) return h('span', { class: 'row-kind' }, `depuis la page Wikipédia « ${col.page} »${col.column ? `, colonne « ${col.column} »` : ''}`);
     return null;
   }
 
@@ -5080,7 +5414,7 @@
     });
     const option = ([m, i]) => {
       const page = m.type === 'page';
-      const mine = collectionFor(page ? PAGE_SRC + m.title : 'wp:' + m.name);
+      const mine = page ? pageCollection(m.title) : collectionFor('wp:' + m.name);
       return h('li', {
         id: 'cat-opt-' + i, key: (page ? 'p:' : 'c:') + m.title, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
         onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
@@ -5148,6 +5482,62 @@
   function seg(label, pressed, onClick, aria) {
     return h('button', { type: 'button', 'aria-pressed': String(pressed), 'aria-label': aria || null, title: aria || null, onClick }, label);
   }
+  // Page de Wikipédia ouverte (album) : d'où viennent ses articles. Avec des tableaux (lecture finie) : « Colonne clé »
+  // (les colonnes de tableColumns, la présélectionnée par pickColumn, et « Aucune : tous les liens de la page »), ce que la
+  // colonne donne et, si elle est dans plusieurs tableaux, lesquels lire (« Tableaux lus », décochables). Sans colonne
+  // clé : les articles liés, ceux de leur nature dominante seulement (case cochée) ou tous.
+  function viewPageSource(pg, reading) {
+    const link = h('a', { href: wikiUrl(pg.title), target: '_blank', rel: 'noopener noreferrer' }, pg.title);
+    const top = pg.links ? pg.links.top : null;
+    const cols = !reading && pg.links && pg.cols && pg.cols.length ? pg.cols : null;
+    const col = cols && pg.col ? cols.find((c) => c.key === pg.col) || null : null;
+    const out = [];
+    if (cols) {
+      const all = top && !pg.allLinks ? top.n : pg.links.items.length;
+      out.push(h('label', { class: 'page-key', for: 'page-key' }, [
+        h('span', { class: 'page-key__label' }, 'Colonne clé'),
+        h('select', { id: 'page-key', class: 'field', value: col ? col.key : '', disabled: pg.busy, onChange: (e) => setPageColumn(e.target.value) }, [
+          ...cols.map((c) => h('option', { key: 'c:' + c.key, value: c.key, title: c.label }, `${c.name} (${fmt(c.n)} ${plural(c.n, 'article', 'articles')})`)),
+          h('option', { key: 'tous', value: '' }, `Aucune : tous les liens de la page (${fmt(all)})`),
+        ]),
+      ]));
+    }
+    if (!col) {
+      out.push(h('p', { class: 'hint' }, [cols ? 'Sans colonne clé : les articles liés depuis la page « ' : 'Les articles liés depuis la page « ', link, ' »',
+        pg.links && !top && !reading ? ` : tous (${fmt(pg.links.items.length)}), sans nature dominante à filtrer.` : '.',
+        pg.tablesError && !reading ? ` Tableaux de la page non lus (${pg.tablesError}).` : '']));
+      if (top) {
+        out.push(h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: !pg.allLinks, disabled: pg.loading || pg.busy, onChange: toggleAllLinks }),
+          ` ne garder que les « ${top.label} » (${fmt(top.n)} sur ${fmt(pg.links.items.length)} articles liés ; décochée : tous les liens)`]));
+      }
+      return out;
+    }
+    const used = col.parts.filter((x) => !pg.tableOff.includes(x.t));
+    const empty = used.reduce((s, x) => s + x.rows - x.linked, 0);
+    const others = pg.tables.list.length - col.parts.length;
+    out.push(h('p', { class: 'hint' }, [
+      `Le premier article lié de chaque ligne de la colonne « ${col.name} » `,
+      used.length > 1 ? `des ${fmt(used.length)} tableaux` : 'du tableau', ' de la page « ', link, ' », dans l\'ordre des lignes : ',
+      `${fmt(pg.total)} ${plural(pg.total, 'article', 'articles')}`,
+      empty ? ` (${fmt(empty)} ${plural(empty, 'ligne', 'lignes')} sans article : lien rouge, homonymie ou pas de lien)` : '', '.',
+      others > 0 ? ` ${others > 1 ? `Les ${fmt(others)} autres tableaux` : "L'autre tableau"} de la page ${others > 1 ? "n'ont" : "n'a"} aucun article dans une colonne « ${col.name} ».` : '',
+    ]));
+    if (col.parts.length > 1) {
+      const tableName = (t) => { const tb = pg.tables.list[t] || {}; const what = tb.caption || tb.section; return `Tableau ${fmt(t + 1)}${what ? ' · ' + what : ''}`; };
+      out.push(h('details', { class: 'page-tables' }, [
+        h('summary', null, `Tableaux lus : ${fmt(used.length)} sur ${fmt(col.parts.length)}`),
+        h('ul', null, col.parts.map((x) => {
+          const on = !pg.tableOff.includes(x.t);
+          const n = new Set(x.items.map((i) => i.title)).size;
+          return h('li', { key: x.t }, h('label', { class: 'check' }, [
+            h('input', { type: 'checkbox', checked: on, disabled: pg.busy || (on && used.length === 1), onChange: () => togglePageTable(x.t) }),
+            h('span', null, `${tableName(x.t)} (${fmt(n)} ${plural(n, 'article', 'articles')})`)]));
+        })),
+      ]));
+    }
+    return out;
+  }
   function viewAlbum() {
     const col = activeAlbum.value;
     if (!col) {
@@ -5201,7 +5591,7 @@
     const pgTop = pg && pg.links ? pg.links.top : null;
     let actions;
     if (cv) {
-      const mineT = collectionFor(cv.key);
+      const mineT = catCollection(cv);
       // « Créer une collection » de sa proposition en cours (S.wp.busy) : en attente ici aussi, l'album passera à la
       // collection créée. Pendant la lecture, le bouton reste cliquable (avec la roue) : la collection est créée dès
       // qu'elle finit (cv.queued) ; grisé seulement après une erreur de lecture.
@@ -5240,17 +5630,14 @@
         cv && cv.subcats ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: cv.withSubs, disabled: cv.loading || cv.busy, onChange: toggleCatSubs }),
           ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
-        // Page : les articles qu'elle lie, ceux de leur nature dominante seulement (case cochée) ou tous.
-        pg ? h('p', { class: 'hint' }, ['Les articles liés depuis la page « ', h('a', { href: wikiUrl(pg.title), target: '_blank', rel: 'noopener noreferrer' }, pg.title), ' »',
-          pg.links && !pgTop && !reading ? ` : tous (${fmt(pg.links.items.length)}), sans nature dominante à filtrer.` : '.']) : null,
-        pgTop ? h('label', { class: 'check' }, [
-          h('input', { type: 'checkbox', checked: !pg.allLinks, disabled: pg.loading || pg.busy, onChange: toggleAllLinks }),
-          ` ne garder que les « ${pgTop.label} » (${fmt(pgTop.n)} sur ${fmt(pg.links.items.length)} articles liés ; décochée : tous les liens)`]) : null,
+        // Page : la colonne clé de ses tableaux, ou les articles qu'elle lie (nature dominante seulement, ou tous).
+        ...(pg ? viewPageSource(pg, reading) : []),
         reading ? (cv.error ? null : h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'),
           cv.step || (pg ? 'Lecture des liens de la page sur Wikipédia et de leur nature sur Wikidata…' : 'Lecture des articles de la catégorie sur Wikipédia…'),
           cv.queued ? ' La collection sera créée à la fin.' : ''])) : rarityBar(p.byR, p.total, 'bar big'),
         cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory() }, 'Réessayer')]) : null,
-        tooBig ? h('p', { class: 'warn' }, pg ? `Plus de 3 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 3 000 premiers sont montrés.`
+        tooBig ? h('p', { class: 'warn' }, pg && pg.col ? 'Plus de 3 000 articles dans cette colonne : trop pour une collection (décoche des tableaux). Seuls les 3 000 premiers sont montrés.'
+          : pg ? `Plus de 3 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 3 000 premiers sont montrés.`
           : 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
         !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
         reading ? null : h('div', { class: 'missing-sum' }, missLine),
@@ -7229,13 +7616,15 @@
     if (ch) {
       const cand = kw.cands.find((x) => x.id === ch.candId);
       const extra = ch.items && ch.items.length > 20 ? ch.items.length - 20 : 0;
+      const kcol = ch.source === 'links' && ch.col && ch.cols ? ch.cols.find((c) => c.key === ch.col) || null : null; // colonne clé
       return [
         h('button', { class: 'back', type: 'button', onClick: () => { kwAbort(); kw.chosen = null; } }, '← Autres candidats'), // arrête un chargement en cours
         h('label', { class: 'field' }, [h('span', null, 'Nom de la collection'),
           h('input', { id: 'kw-name', class: 'field full', value: ch.name, maxlength: 120, autocomplete: 'off', onInput: (e) => { ch.name = e.target.value; } })]),
         h('p', { class: 'note' }, [
           ch.source === 'cat' ? `Catégorie Wikipédia : ${ch.title.replace(/^Catégorie\s*:\s*/i, '')}`
-            : ch.source === 'links' ? ['Liens de la page ', h('a', { href: wpPageUrl(ch.title), target: '_blank', rel: 'noopener noreferrer' }, ch.title)]
+            : ch.source === 'links' ? [kcol ? `Colonne « ${kcol.name} » ${kcol.parts.length > 1 ? 'des tableaux' : 'du tableau'} de la page ` : 'Liens de la page ', h('a', { href: wpPageUrl(ch.title), target: '_blank', rel: 'noopener noreferrer' }, ch.title),
+              kcol ? ", dans l'ordre des lignes" : '']
               : ch.source === 'def' ? 'Définition Wikipédia · ' + ch.interp
                 : 'Wikidata' + (ch.interp ? ' · ' + ch.interp : ''),
           ' · ', ch.loading ? (ch.source === 'links' ? 'lecture des liens et de leur nature sur Wikidata…'
@@ -7246,7 +7635,14 @@
         ch.source === 'cat' && ch.subcats && cand ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: ch.withSubs, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
           ` inclure les sous-catégories (1 niveau : ${fmt(ch.subcats)})`]) : null,
-        ch.source === 'links' && ch.links && ch.links.top && cand ? h('label', { class: 'check' }, [
+        // Page en tableaux : « Colonne clé », comme dans l'album d'une page (tous ses tableaux).
+        ch.source === 'links' && ch.cols && ch.cols.length && cand ? h('label', { class: 'page-key', for: 'kw-key' }, [
+          h('span', { class: 'page-key__label' }, 'Colonne clé'),
+          h('select', { id: 'kw-key', class: 'field', value: ch.col || '', disabled: ch.loading, onChange: (e) => kwSetColumn(ed, cand, e.target.value) }, [
+            ...ch.cols.map((c) => h('option', { key: 'c:' + c.key, value: c.key, title: c.label }, `${c.name} (${fmt(c.n)} ${plural(c.n, 'article', 'articles')})`)),
+            h('option', { key: 'tous', value: '' }, 'Aucune : tous les liens de la page'),
+          ])]) : null,
+        ch.source === 'links' && ch.links && ch.links.top && !kcol && cand ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: !ch.allLinks, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
           ` ne garder que les « ${ch.links.top.label} » (${fmt(ch.links.top.n)} sur ${fmt(ch.links.items.length)} articles liés : pays, régions et autres liens écartés)`]) : null,
         ch.total > 3000 ? h('p', { class: 'warn' }, 'Trop grande (plus de 3 000 articles) : précise ta recherche.') : null,
@@ -7267,7 +7663,7 @@
       h('input', { id: 'kw', class: 'field full', type: 'search', value: kw.q, autocomplete: 'off', spellcheck: 'false',
         placeholder: 'races bovines, footballeur français, cathédrales de France, films de Miyazaki…',
         onInput: (e) => kwInput(ed, e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); kwSearch(ed); } } }),
-      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens forment la collection), des catégories, les articles dont la première phrase dit « … est une maladie … » (un nom suffit : « maladie »), et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
+      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens, ou la colonne clé de leurs tableaux, forment la collection), des catégories, les articles dont la première phrase dit « … est une maladie … » (un nom suffit : « maladie »), et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
       kw.searching ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche…') : null,
       errLine(kw.error),
       kw.interp ? h('p', { class: 'interp-line' }, ['Interprétation : ', h('b', null, kw.interp)]) : null,
