@@ -5334,10 +5334,11 @@
     list.sort((a, b) => b.price - a.price || COLLATOR.compare(a.c.title, b.c.title));
     return { list, unpriced };
   });
-  // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes) et seuil
+  // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes, « Valeur
+  // de ton classeur » comprise depuis le 2026-10-18) et seuil
   // des « Bonnes affaires à vendre » (100W par défaut), gardés par classeur dans ce navigateur (localStorage, accès protégés
   // : sans lui, les valeurs par défaut). Chaque liste montre 20 cartes, puis « Afficher 20 de plus ».
-  const MARKET_OPEN = Object.freeze({ acheter: true, vendre: true, encheres: false });
+  const MARKET_OPEN = Object.freeze({ valeur: true, acheter: true, vendre: true, encheres: false });
   const MARKET_MIN = 100;
   const MARKET_STEP = 20;
   // col : collection choisie dans « à acheter » ; hideCol : « à vendre » sans les cartes de tes collections (cochée par défaut).
@@ -7680,11 +7681,12 @@
     const nBids = live && Array.isArray(live.bids) ? live.bids.length : 0;
     const nSales = live && Array.isArray(live.sales) ? live.sales.length : 0;
     const nSell = M.loaded ? sellOffers.value.list.filter((x) => x.price >= MP.min).length : 0;
-    // En haut, la valeur (toujours visible) et où en est la lecture du marché ; puis côte à côte « à acheter » et « à
-    // vendre » (l'une sous l'autre sur un écran étroit) ; « Mes enchères » (fermée par défaut) ; « À savoir ».
+    // En haut, la valeur et où en est la lecture du marché (repliable comme les autres sections : repliée, le titre garde
+    // la valeur) ; puis côte à côte « à acheter » et « à vendre » (l'une sous l'autre sur un écran étroit) ; « Mes
+    // enchères » (fermée par défaut) ; « À savoir ».
     return h('div', { class: 'market' }, [
-      h('section', { class: 'panel market__value' }, [
-        h('div', { class: 'market__head' }, [h('h2', null, 'Valeur de ton classeur'),
+      marketSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
+        h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
           h('button', { class: 'btn small', type: 'button', disabled: M.busy, onClick: () => loadMarket(true) }, [icon('refresh', M.busy ? 'spin' : ''), M.busy ? 'Lecture…' : 'Relire'])]),
         !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
         M.loaded && v ? h('p', { class: 'market__big' }, [priceTag(v.value), h('span', { class: 'muted' }, ` · ${fmt(v.priced)} ${plural(v.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(v.cards)}`)]) : null,
@@ -7694,7 +7696,7 @@
         h('p', { class: 'small muted' }, 'Valeur = somme des cotes fiables (3 ventes au moins) de chacun de tes exemplaires, selon sa rareté et s\'il est brillant ; cote = médiane des 30 dernières ventes sur 90 jours. Un point par jour.'),
         M.loaded && M.error ? errLine(M.error) : null,
         M.loaded ? h('div', { class: 'market__read' }, viewMarketRead()) : null,
-      ]),
+      ], 'market__value'),
       marketSection('acheter', 'Bonnes affaires à acheter', nDeals ? fmt(nDeals) : '', () => [
         h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte : au plus 80 % de la cote, ou « finit bientôt » (sans enchère, moins de 2 h, départ sous la cote).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
         viewDeals(live)]),

@@ -1410,9 +1410,11 @@ proche ; « Voir les valeurs » : le tableau) et **où en est la lecture du marc
 « Bonnes affaires à vendre » ; puis « Mes enchères » (tes mises, tes ventes) et « À savoir » (avertissement des règles du
 jeu). « Cartes qui bougent » (écart sur 7 jours de la cote de tes exemplaires) a été **retirée** le 2026-10-17 (demande
 de Cédric) ; la médiane d'il y a 7 jours (`w`) reste dans les cotes, pour la fiche (« 7 jours : +33 % »). Ces trois
-sections sont **repliables** (accordéon : un bouton dans le titre, `aria-expanded`, contenu rendu seulement ouvert ; ce qu'elles
-contiennent dit dans le titre, « 2 mises · 1 vente ») : toutes ouvertes par défaut, **sauf « Mes enchères », fermée** ;
-l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-marche` : `{<id du compte>: {open, min}}`,
+sections, et « Valeur de ton classeur » (depuis le 2026-10-18, demande de Cédric ; repliée, son titre garde la valeur,
+« 1 234W » ; son bouton « Relire » est dans son contenu), sont **repliables** (accordéon : un bouton dans le titre,
+`aria-expanded`, contenu rendu seulement ouvert ; ce qu'elles contiennent dit dans le titre, « 2 mises · 1 vente ») :
+toutes ouvertes par défaut, **sauf « Mes enchères », fermée** ;
+l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-marche` : `{<id du compte>: {open, min, col, hideCol}}`,
 accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montre **20 cartes**, puis « Afficher 20 de plus
 (N restantes) ».
 - **« Bonnes affaires à vendre »** : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis

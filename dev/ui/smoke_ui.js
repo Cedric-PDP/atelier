@@ -3788,8 +3788,17 @@ async function main() {
     const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
     const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
     const accBtn = (id) => section(id).querySelector('.acc__btn');
-    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'acheter,vendre,encheres*',
+    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'valeur,acheter,vendre,encheres*',
       'sections du Marché : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
+    // « Valeur de ton classeur » : repliable comme les autres, ouverte par défaut ; repliée, son titre garde la valeur.
+    check(accBtn('valeur').getAttribute('aria-expanded') === 'true' && d.querySelectorAll('.market__big').length === 1, '« Valeur de ton classeur » doit être ouverte par défaut');
+    accBtn('valeur').click();
+    await settle(40);
+    check(accBtn('valeur').getAttribute('aria-expanded') === 'false' && !d.querySelectorAll('.market__big').length && text(accBtn('valeur')).includes('1 234W')
+      && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].open.valeur === false, '« Valeur de ton classeur » repliée : ' + text(accBtn('valeur')));
+    accBtn('valeur').click();
+    await settle(40);
+    check(accBtn('valeur').getAttribute('aria-expanded') === 'true' && d.querySelectorAll('.market__big').length === 1, '« Valeur de ton classeur » ne se rouvre pas');
     check(!panel().includes('Cartes qui bougent') && !d.querySelectorAll('.movers').length, '« Cartes qui bougent » encore là');
     check(text(accBtn('acheter')).includes('Bonnes affaires à acheter1'), 'nombre de bonnes affaires montrées dans le titre : ' + text(accBtn('acheter')));
     check(['acheter', 'vendre'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
