@@ -3487,24 +3487,34 @@ async function main() {
     check(accBtn('vendre').getAttribute('aria-expanded') === 'false' && !section('vendre').querySelector('.lots') && Object.values(prefs())[0].open.vendre === false, '« Bonnes affaires à vendre » ne se ferme pas');
     accBtn('vendre').click();
     await settle(40);
-    // « Bonnes affaires à vendre » : seuil 100W par défaut ; 21 « Vente » (105W à 505W) et Marché 1 (dans « Envies » : 3
-    // exemplaires, un gardé, « 2 en trop » à 400W) ; Marché 2 et 3 (un seul exemplaire, dans « Envies ») n'y sont pas ;
-    // du plus cher au moins cher ; 20 lignes puis « Afficher 2 de plus » ; une carte sans cote annoncée.
+    // « Bonnes affaires à vendre » : seuil 100W par défaut ; « Cacher les cartes de mes collections » cochée par défaut :
+    // 21 « Vente » (105W à 505W) et Favorite F (300W : une favorite du jeu reste proposée), pas Marché 1, 2 ni 3 (dans
+    // « Envies ») ; du plus cher au moins cher ; 20 lignes puis « Afficher 2 de plus » ; une carte sans cote annoncée.
+    // Décochée : Marché 1 aussi (3 exemplaires, un gardé, « 2 en trop » à 400W), jamais Marché 2 ni 3 (un seul exemplaire).
     {
       const sell = () => section('vendre');
       const rows = () => sell().querySelectorAll('li').map((n) => text(n.querySelector('.lot__title').querySelector('button')));
       check(d.getElementById('sell-min') && String(d.getElementById('sell-min').value) === '100', 'seuil par défaut : 100 attendu');
-      check(rows().length === 20 && rows().slice(0, 8).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21 | Vente 20 | Vente 19 | Marché 1 | Vente 18' && !rows().some((t) => t === 'Marché 2' || t === 'Marché 3'),
+      check(d.getElementById('sell-hide-col') && d.getElementById('sell-hide-col').checked === true, '« Cacher les cartes de mes collections » absente ou décochée par défaut');
+      check(rows().length === 20 && rows().slice(0, 8).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21 | Vente 20 | Vente 19 | Vente 18 | Vente 17' && !rows().some((t) => t.startsWith('Marché')),
         'à vendre (20 premières) : ' + rows().join(' | '));
-      const m1 = sell().querySelectorAll('li').find((n) => text(n).includes('Marché 1'));
-      check(text(m1).includes('2 en trop') && text(m1).includes('400W · 10 ventes · dernière 399W le 15 octobre') && m1.querySelector('.copy-name') && m1.querySelector('.w'), 'ligne de Marché 1 : ' + text(m1));
       check(text(sell()).includes('1 carte sans cote fiable : ton favori les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
       const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
       check(more && text(more) === 'Afficher 2 de plus (2 restantes)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
       more.click();
       await settle(40);
       check(rows().length === 22 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
-      check(!rows().includes('Favorite F'), 'une carte favorite dans le jeu ne doit jamais être proposée à la vente');
+      check(rows().includes('Favorite F'), 'une carte favorite du jeu reste proposée à la vente');
+      // Case décochée : les exemplaires en trop des cartes de tes collections (Marché 1), réglage gardé ; recochée ensuite.
+      d.getElementById('sell-hide-col').dispatch('change');
+      await settle(40);
+      const m1 = sell().querySelectorAll('li').find((n) => text(n).includes('Marché 1'));
+      check(rows().length === 20 && rows().slice(6, 8).join(' | ') === 'Marché 1 | Vente 18' && !rows().some((t) => t === 'Marché 2' || t === 'Marché 3') && Object.values(prefs())[0].hideCol === false,
+        'case décochée : ' + rows().slice(0, 8).join(' | ') + ' / ' + ls.get('classeur-marche'));
+      check(m1 && text(m1).includes('2 en trop') && text(m1).includes('400W · 10 ventes · dernière 399W le 15 octobre') && m1.querySelector('.copy-name') && m1.querySelector('.w'), 'ligne de Marché 1 : ' + (m1 ? text(m1) : 'absente'));
+      d.getElementById('sell-hide-col').dispatch('change');
+      await settle(40);
+      check(!rows().includes('Marché 1') && Object.values(prefs())[0].hideCol === true, 'case recochée : Marché 1 doit disparaître');
       type(d.getElementById('sell-min'), '450');
       await settle(40);
       check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && Object.values(prefs())[0].min === 450, 'seuil 450W : ' + rows().join(' | ') + ' / ' + ls.get('classeur-marche'));

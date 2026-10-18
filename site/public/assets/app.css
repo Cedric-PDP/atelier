@@ -730,6 +730,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .acc:not(.open) { gap: 0; }
 .sell-min { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13.5px; }
 .sell-min .field { width: 7.5rem; }
+.sell-hide { margin: 8px 0 0; }
 .market .show-more { margin-top: 4px; }
 .market__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .market__big b { font: 600 2rem/1.1 var(--f-head); font-variant-numeric: tabular-nums; }
