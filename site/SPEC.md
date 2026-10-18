@@ -1130,7 +1130,7 @@ l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-mar
 accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montre **20 cartes**, puis « Afficher 20 de plus
 (N restantes) ».
 - **« Bonnes affaires à vendre »** : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis
-  qid, comme les albums), et les **exemplaires en trop** de celles qui y servent (une collection n'a besoin que d'un
+  qid, comme les albums), **jamais tes favorites du jeu** (`starred`, 2026-10-18), et les **exemplaires en trop** de celles qui y servent (une collection n'a besoin que d'un
   exemplaire de la carte, quel que soit le nombre de collections : on garde le moins coté, cote peu fiable comprise pour
   en juger, et la ligne dit « 2 en trop ») ; prix d'une ligne = la plus haute cote fiable de ses exemplaires à vendre
   (rareté et brillance de l'exemplaire), au moins le seuil « Valeur minimale : [100]W » (champ nombre, 100 par défaut,

@@ -3336,7 +3336,7 @@ async function main() {
     const mc = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null, count, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', ...extra });
     const ventes = Array.from({ length: 24 }, (_, i) => mc('v' + String(i + 1).padStart(2, '0'), 'Vente ' + String(i + 1).padStart(2, '0'), 'C', 1, { variants: { C: 1 } }));
     await sendImport(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } }),
-      ...ventes, mc('m9', 'Sans cote M', 'C', 1, { variants: { C: 1 } })]);
+      ...ventes, mc('m9', 'Sans cote M', 'C', 1, { variants: { C: 1 } }), mc('vf', 'Favorite F', 'C', 1, { starred: true, variants: { C: 1 } })]);
     const it = (title) => ({ title, description: null, image: null, status: 'ok' });
     await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1'), it('Marché 2'), it('Marché 3'), it('Voulue B')] });
     // Nino, un ami qui montre ses cartes et ses collections : Marché 1 (2 exemplaires dont 1 brillant), Voulue A, une carte
@@ -3369,6 +3369,7 @@ async function main() {
         { id: 'w1', v: { SR: q(100, 5), 'SR*': q(260, 1) }, at: '2026-10-16T08:00:00.000Z', t: 'Voulue A' },
         { id: 'w2', v: { R: q(50, 1) }, at: '2026-10-16T08:00:00.000Z', t: 'Voulue B' }, // une seule vente : peu fiable
         ...ventes.map((c, i) => ({ id: c.id, v: { C: q(20 * (i + 1) + 25, 5) }, at: '2026-10-16T08:00:00.000Z' })),
+        { id: 'vf', v: { C: q(300, 5) }, at: '2026-10-16T08:00:00.000Z' }, // favorite dans le jeu : jamais à vendre
       ],
     };
     ls.set('classeur-key', keyM);
@@ -3377,7 +3378,7 @@ async function main() {
     const d = pm.doc;
     const body = () => text(d.body);
     const btn = (t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
-    check(await waitFor(() => pm.count() === 28), 'classeur de Mona non ouvert');
+    check(await waitFor(() => pm.count() === 29), 'classeur de Mona non ouvert');
     check(await waitFor(() => body().includes('1 234W') && body().includes('valeur (2 cotées)')), 'valeur absente du bandeau : ' + body().slice(0, 400));
     // Les montants : « 1 234W » (W collé, séparateur des milliers gardé), en vert (classe w) ; la tuile du bandeau aussi.
     const tile = d.querySelectorAll('.figure').find((n) => text(n).includes('valeur ('));
@@ -3468,6 +3469,7 @@ async function main() {
       more.click();
       await settle(40);
       check(rows().length === 22 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
+      check(!rows().includes('Favorite F'), 'une carte favorite dans le jeu ne doit jamais être proposée à la vente');
       type(d.getElementById('sell-min'), '450');
       await settle(40);
       check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && Object.values(prefs())[0].min === 450, 'seuil 450W : ' + rows().join(' | ') + ' / ' + ls.get('classeur-marche'));
@@ -3633,7 +3635,7 @@ async function main() {
     check(panel().includes("Ton favori n'a encore jamais lu le marché. Sur wiki-masters.com, clique-le : une minute après"), 'jamais de lecture : quoi faire non dit');
     {
       const pm2 = openPage({ idb: 'absent' });
-      check(await waitFor(() => pm2.count() === 28), 'classeur de Mona non rouvert');
+      check(await waitFor(() => pm2.count() === 29), 'classeur de Mona non rouvert');
       pm2.doc.getElementById('tab-marche').click();
       await settle(80);
       const btn2 = (id) => pm2.doc.querySelectorAll('section').find((n) => n.getAttribute('data-section') === id).querySelector('.acc__btn');

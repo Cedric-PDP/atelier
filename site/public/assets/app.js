@@ -4325,7 +4325,7 @@
   const variantOrder = (a, b) => rarityRank(a.replace('*', '')) - rarityRank(b.replace('*', '')) || (a < b ? -1 : a > b ? 1 : 0);
   const pctOf = (p, w) => { const d = Math.round(((p - w) / w) * 100); return (d > 0 ? '+' : d < 0 ? '−' : '') + NUM.format(Math.abs(d)) + ' %'; };
   // « Bonnes affaires à vendre » : tes cartes qui ne servent à aucune de tes collections (rapprochement titre puis qid,
-  // comme les albums), et les exemplaires en trop de celles qui y servent (une collection n'a besoin que d'un exemplaire :
+  // comme les albums), jamais tes favorites du jeu (2026-10-18), et les exemplaires en trop de celles qui y servent (une collection n'a besoin que d'un exemplaire :
   // on garde le moins coté, cote peu fiable comprise pour en juger ; « 2 en trop »). Prix d'une ligne : la plus haute cote
   // fiable de ses exemplaires à vendre ; du plus cher au moins cher (le seuil est appliqué à l'affichage). unpriced : cartes
   // (ou exemplaires en trop) sans aucune cote fiable.
@@ -4340,6 +4340,7 @@
     const list = [];
     let unpriced = 0;
     for (const c of cards.value) {
+      if (c.starred) continue; // favorite dans le jeu : jamais proposée à la vente
       const inCol = used.has(c.id);
       const p = map.get(String(c.id));
       const v = p && p.v && typeof p.v === 'object' ? p.v : null;
@@ -6476,7 +6477,7 @@
       h('label', { class: 'sell-min' }, ['Valeur minimale : ',
         h('input', { id: 'sell-min', class: 'field', type: 'number', min: '0', step: '10', inputmode: 'numeric', value: MP.min, 'aria-describedby': 'sell-min-hint',
           onInput: (e) => setMarketMin(e.target.value) }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')]),
-      h('p', { id: 'sell-min-hint', class: 'small muted' }, "Tes cartes qui ne servent à aucune de tes collections, et les exemplaires en trop de celles qui y servent (on en garde un, le moins coté), dont la cote fiable atteint ce seuil."),
+      h('p', { id: 'sell-min-hint', class: 'small muted' }, "Tes cartes qui ne servent à aucune de tes collections, et les exemplaires en trop de celles qui y servent (on en garde un, le moins coté), dont la cote fiable atteint ce seuil ; jamais tes favorites du jeu."),
       !M.loaded ? h('p', { class: 'muted', role: 'status' }, M.error ? M.error : 'Lecture des cotes…')
         : kept.length ? h('ul', { class: 'lots' }, shown.map((x) => {
           const c = x.c;
