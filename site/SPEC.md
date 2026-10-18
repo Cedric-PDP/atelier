@@ -1436,6 +1436,13 @@ accès protégés, valeurs par défaut sans lui). Chaque liste de l'onglet montr
   l'exemplaire, titre (sa fiche), « brillante », « ×3 » ou « 2 en trop », « Copier le nom », cote, ventes, dernière vente.
   Cartes sans cote fiable : « 12 cartes sans cote fiable : ton favori les lit peu à peu, les plus anciennes d'abord, à
   chaque lecture (ou clique « Mettre à jour les cotes » dans son encart, sur wiki-masters.com). »
+- **Cartes déjà en vente dans le jeu** (2026-10-18, « à vendre pas à jour ») : une carte mise aux enchères quitte la
+  collection du jeu, mais reste dans le classeur tant qu'une lecture complète **vérifiée** ne l'a pas retirée (pendant
+  que le joueur joue, les compteurs bougent et la lecture n'est pas vérifiée : rien n'est retiré, voir « Synchros
+  sûres »). « Bonnes affaires à vendre » écarte donc, d'après la dernière lecture du marché (`live.sales`), un exemplaire
+  (même rareté et brillance si possible) par vente **en cours** (`run`) ou **conclue** (`sold`) ; une carte dont il ne
+  reste aucun exemplaire n'est pas proposée, et une ligne le dit (« N cartes déjà en vente dans le jeu… »). Invendue
+  ou annulée : la carte est revenue au joueur, elle reste proposée.
 - **Lecture du marché** (en haut, sous la valeur ; 2026-10-17) : « Lecture du marché par ton favori : il y a 12 min (17
   octobre, 10:02). » ; au-delà de 2 h, en orange, « Elle date de plus de 2 h : des enchères ont pu finir ou monter. Ouvre
   wiki-masters.com avec ton favori relié : il la refait toutes les 20 minutes (ou clique « Mettre à jour les

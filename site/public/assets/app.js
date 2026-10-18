@@ -5411,11 +5411,28 @@
     for (const col of collections.value.all) for (const it of col.items) { const c = findCard(it); if (c) ids.add(c.id); }
     return ids;
   });
+  // Exemplaires déjà en vente dans le jeu, d'après ta dernière lecture du marché (ventes en cours ou conclues) : la
+  // carte reste dans ton classeur tant qu'une lecture complète vérifiée ne l'a pas retirée (pas pendant que tu joues :
+  // compteurs qui bougent), elle n'est donc pas proposée « à vendre » une deuxième fois (2026-10-18). card_id -> raretés
+  // d'exemplaire (« R », « R* »), une par vente ; invendue ou annulée : la carte t'est revenue, elle reste proposée.
+  const onSaleCopies = computed(() => {
+    const m = new Map();
+    const sales = M.live && Array.isArray(M.live.sales) ? M.live.sales : [];
+    for (const s of sales) {
+      if (!s || (s.st !== 'run' && s.st !== 'sold') || s.id == null) continue;
+      const k = String(s.id);
+      if (!m.has(k)) m.set(k, []);
+      m.get(k).push(String(s.r || '') + (s.s ? '*' : ''));
+    }
+    return m;
+  });
   const sellOffers = computed(() => {
     const used = usedInCollections.value;
     const map = prices.value;
+    const sale = onSaleCopies.value;
     const list = [];
     let unpriced = 0;
+    let onSale = 0;
     for (const c of cards.value) {
       const inCol = used.has(c.id);
       if (inCol && MP.hideCol) continue; // « Cacher les cartes de mes collections » (cochée par défaut)
@@ -5426,6 +5443,11 @@
         const q = v && v[k] && typeof v[k] === 'object' ? v[k] : null;
         const known = q && Number.isFinite(Number(q.p)) ? Number(q.p) : -1;
         for (let i = 0; i < n; i++) copies.push({ k, q: reliable(q) ? q : null, known });
+      }
+      const sold = sale.get(String(c.id));
+      if (sold) {
+        for (const k of sold) { const i = copies.findIndex((x) => x.k === k); if (copies.length) copies.splice(i >= 0 ? i : 0, 1); }
+        if (!copies.length) { onSale++; continue; }
       }
       if (inCol) {
         if (copies.length < 2) continue;
@@ -5438,7 +5460,7 @@
       list.push({ c, price: Number(best.q.p), q: best.q, k: best.k, n: copies.length, extra: inCol ? copies.length : 0 });
     }
     list.sort((a, b) => b.price - a.price || COLLATOR.compare(a.c.title, b.c.title));
-    return { list, unpriced };
+    return { list, unpriced, onSale };
   });
   // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes, « Valeur
   // de ton classeur » comprise depuis le 2026-10-18) et seuil
@@ -7730,7 +7752,7 @@
   // chère à la moins chère : rareté et brillance de l'exemplaire, titre (sa fiche), « ×3 » ou « 2 en trop », « Copier le
   // nom », cote, dernière vente.
   function viewSell() {
-    const { list, unpriced } = sellOffers.value;
+    const { list, unpriced, onSale } = sellOffers.value;
     const kept = list.filter((x) => x.price >= MP.min);
     const shown = kept.slice(0, marketShown('vendre'));
     return [
@@ -7758,6 +7780,7 @@
           ]);
         })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
       M.loaded ? marketMoreButton('vendre', kept.length) : null,
+      M.loaded && onSale ? h('p', { class: 'small muted' }, `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.`) : null,
       M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : ton favori les lit peu à peu, les plus anciennes d'abord, à chaque lecture (ou clique « Mettre à jour les cotes » dans son encart, sur wiki-masters.com).`) : null,
     ];
   }

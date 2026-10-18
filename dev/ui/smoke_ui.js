@@ -3736,7 +3736,9 @@ async function main() {
           { a: 'a3', id: 'm3', t: 'Marché 3', r: 'C', s: false, img: null, end: soon, cote: 10, n: 4, ask: 2, bid: false, lead: false, more: 0 }],
         bids: [{ a: 'b1', id: 'm3', t: 'Marché 3', r: 'C', s: false, img: null, end: soon, cote: 10, n: 4, mine: 8, cur: 9, lead: false, st: 'run' },
           { a: 'b2', id: 'x9', t: 'Ailleurs', r: 'L', s: true, img: null, end: '2026-10-15T08:00:00.000Z', cote: null, n: null, mine: 300, cur: 300, lead: false, st: 'won' }],
-        sales: [{ a: 's1', id: 'm2', t: 'Marché 2', r: 'C', s: false, img: null, end: '2026-10-15T09:00:00.000Z', cote: 20, n: 5, base: 5, cur: 12, bid: true, st: 'sold' }],
+        sales: [{ a: 's1', id: 'm2', t: 'Marché 2', r: 'C', s: false, img: null, end: '2026-10-15T09:00:00.000Z', cote: 20, n: 5, base: 5, cur: 12, bid: true, st: 'sold' },
+          // Favorite F, en vente dans le jeu (enchère en cours) mais encore dans le classeur : pas proposée « à vendre ».
+          { a: 's2', id: 'vf', t: 'Favorite F', r: 'C', s: false, img: null, end: soon, cote: 300, n: 5, base: 250, cur: null, bid: false, st: 'run' }],
       },
       prices: [
         { id: 'm1', v: { R: q(400, 10, 300), 'R*': q(900, 2) }, at: '2026-10-16T08:00:00.000Z' },
@@ -3824,7 +3826,7 @@ async function main() {
     check(!panel().includes('Cartes qui bougent') && !d.querySelectorAll('.movers').length, '« Cartes qui bougent » encore là');
     check(text(accBtn('acheter')).includes('Bonnes affaires à acheter1'), 'nombre de bonnes affaires montrées dans le titre : ' + text(accBtn('acheter')));
     check(['acheter', 'vendre'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
-      && !text(section('encheres')).includes('Tes mises') && text(accBtn('encheres')).includes('2 mises · 1 vente'), '« Mes enchères » doit être fermée par défaut : ' + text(section('encheres')));
+      && !text(section('encheres')).includes('Tes mises') && text(accBtn('encheres')).includes('2 mises · 2 ventes'), '« Mes enchères » doit être fermée par défaut : ' + text(section('encheres')));
     check(text(accBtn('acheter')).startsWith('Bonnes affaires à acheter') && text(accBtn('vendre')).startsWith('Bonnes affaires à vendre'), 'titres des deux colonnes');
     accBtn('encheres').click();
     await settle(40);
@@ -3849,11 +3851,13 @@ async function main() {
         'à vendre (20 premières) : ' + rows().join(' | '));
       check(text(sell()).includes('1 carte sans cote fiable : ton favori les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
       const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
-      check(more && text(more) === 'Afficher 2 de plus (2 restantes)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
+      check(more && text(more) === 'Afficher 1 de plus (1 restante)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
       more.click();
       await settle(40);
-      check(rows().length === 22 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
-      check(rows().includes('Favorite F'), 'une carte favorite du jeu reste proposée à la vente');
+      check(rows().length === 21 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
+      // Favorite F : en vente dans le jeu (enchère en cours), encore dans le classeur : pas proposée, et la ligne le dit.
+      check(!rows().includes('Favorite F') && text(sell()).includes('1 carte déjà en vente dans le jeu (« Mes enchères ») : pas proposée ici, même si ton classeur la garde encore.'),
+        'carte déjà en vente proposée : ' + text(sell()).slice(-300));
       // Case décochée : les exemplaires en trop des cartes de tes collections (Marché 1), réglage gardé ; recochée ensuite.
       d.getElementById('sell-hide-col').dispatch('change');
       await settle(40);
