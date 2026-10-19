@@ -431,6 +431,7 @@ const WIKI = {
   'Liste de couleurs (pigments)': { q: 'Q900310' },
   'Tableau périodique des éléments': { q: 'Q10693' },
   'Liste des présidents de Testlande': { q: 'Q901000' }, // page en tableaux (colonne clé)
+  'Liste des gares de Testlande': { q: 'Q902000' }, // tableaux rangés en sections
   'Lèpre': { q: 'Q36956', desc: 'maladie infectieuse chronique', pv: 2000 }, // carte citée dans le chat, qu'Alek n'a pas
 };
 // Liens de « Liste de races bovines » : 3 races, 2 lieux, un lien rouge et une homonymie (écartés).
@@ -486,6 +487,30 @@ const TL_HTML = `<div class="mw-content-ltr mw-parser-output" lang="fr" dir="ltr
 <div class="mw-heading mw-heading2"><h2 id="Voir">Voir aussi</h2></div>
 <ul><li><a href="/wiki/Politique_en_Testlande" title="Politique en Testlande">Politique en Testlande</a></li><li><a href="/wiki/Constitution_de_Testlande" title="Constitution de Testlande">Constitution de Testlande</a></li></ul>
 <table class="navbox"><tbody><tr><td><a href="/wiki/Aline_Martin">Aline Martin</a> · <a href="/wiki/Fanny_Leroy">Fanny Leroy</a></td></tr></tbody></table>
+</div>`;
+// « Liste des gares de Testlande », rangée comme « Liste des gares desservies par TGV » : la colonne « Gare » dans quatre
+// tableaux, sous des intertitres imbriqués (h2 › h3 › h4), dont deux « En Testlande » sous des h2 différents.
+const GR = {
+  'Gare A': ['Q902001', ['Q55488'], 'gare de Testlande'], 'Gare B': ['Q902002', ['Q55488'], 'gare de Testlande'], 'Gare C': ['Q902003', ['Q55488'], 'gare de Testlande'],
+  'Gare D': ['Q902004', ['Q55488'], 'gare de Ruritanie'], 'Gare E': ['Q902005', ['Q55488'], 'gare de Ruritanie'], 'Gare F': ['Q902006', ['Q55488'], 'gare de Syldavie'],
+  'Gare G': ['Q902007', ['Q55488'], 'gare de Syldavie'], 'Gare H': ['Q902008', ['Q55488'], 'ancienne gare de Testlande'],
+  Nordie: ['Q902011', ['Q82794'], 'région'], Sudie: ['Q902012', ['Q82794'], 'région'],
+};
+const GR_BY_Q = Object.fromEntries(Object.values(GR).map(([q, c, d]) => [q, { c, d }]));
+const GR_PAGE = 'Liste des gares de Testlande';
+const grRow = (g, r) => `<tr><td><a href="/wiki/${g.replace(/ /g, '_')}" title="${g}">${g}</a></td>${r ? `<td><a href="/wiki/${r}" title="${r}">${r}</a></td>` : ''}</tr>`;
+const GR_HTML = `<div class="mw-parser-output"><p>Les gares.</p>
+<div class="mw-heading mw-heading2"><h2 id="D">Gares desservies</h2></div>
+<div class="mw-heading mw-heading3"><h3 id="DT">En Testlande</h3></div>
+<table class="wikitable sortable"><tbody><tr><th>Gare</th><th>Région</th></tr>${grRow('Gare A', 'Nordie')}${grRow('Gare B', 'Sudie')}${grRow('Gare C', 'Nordie')}</tbody></table>
+<div class="mw-heading mw-heading3"><h3 id="DE">À l'étranger</h3></div>
+<div class="mw-heading mw-heading4"><h4 id="R">Ruritanie</h4></div>
+<table class="wikitable sortable"><tbody><tr><th>Gare</th></tr>${grRow('Gare D')}${grRow('Gare E')}</tbody></table>
+<div class="mw-heading mw-heading4"><h4 id="S">Syldavie</h4></div>
+<table class="wikitable sortable"><tbody><tr><th>Gare</th></tr>${grRow('Gare F')}${grRow('Gare G')}</tbody></table>
+<div class="mw-heading mw-heading2"><h2 id="F">Gares fermées</h2></div>
+<div class="mw-heading mw-heading3"><h3 id="FT">En Testlande</h3></div>
+<table class="wikitable sortable"><tbody><tr><th>Gare</th><th>Région</th></tr>${grRow('Gare H', 'Sudie')}</tbody></table>
 </div>`;
 // « Tableau périodique des éléments » (pas une « Liste… ») : un petit tableau de 2 éléments, trop peu pour être
 // présélectionné : la page garde tous ses liens, la colonne « Élément » reste proposée.
@@ -574,7 +599,7 @@ function wikiHandle(url) {
       return { results: { bindings: ids.flatMap((id) => {
         const col = COLOR_BY_Q[id];
         if (col) return col.c.length ? col.c.map((c) => ({ item: uri(id), c: uri(c), desc: lit(col.d) })) : [{ item: uri(id), desc: lit(col.d) }];
-        const tl = TL_BY_Q[id];
+        const tl = TL_BY_Q[id] || GR_BY_Q[id];
         if (tl) return tl.c.map((c) => ({ item: uri(id), c: uri(c), desc: lit(tl.d) }));
         return [Number(id.slice(1)) >= 900101 && Number(id.slice(1)) <= 900103
           ? { item: uri(id), c: uri('Q12045585'), desc: lit('race bovine française') } : { item: uri(id), c: uri(id === 'Q142' ? 'Q6256' : 'Q1620908') }];
@@ -618,7 +643,7 @@ function wikiHandle(url) {
   if (p.action === 'parse') {
     if (p.prop !== 'text' || p.redirects !== '1' || !p.page) throw new Error('lecture du HTML incorrecte : ' + url);
     parseCalls.push(p.page);
-    const html = p.page === TL_PAGE ? TL_HTML : p.page === 'Tableau périodique des éléments' ? PERIODIC_HTML : '<div class="mw-parser-output"><p>Une page sans tableau.</p></div>';
+    const html = p.page === TL_PAGE ? TL_HTML : p.page === GR_PAGE ? GR_HTML : p.page === 'Tableau périodique des éléments' ? PERIODIC_HTML : '<div class="mw-parser-output"><p>Une page sans tableau.</p></div>';
     return { parse: { title: p.page, pageid: 1, text: html } };
   }
   if (p.list === 'search' && p.srnamespace === '0' && /^"est un /.test(p.srsearch)) {
@@ -705,13 +730,14 @@ function wikiHandle(url) {
     return { query: { search: listSearch(p.srsearch) } };
   }
   if (p.generator === 'links') {
-    if (!['Liste de races bovines', 'Liste de noms de couleur', 'Tableau périodique des éléments', TL_PAGE].includes(p.titles) || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
+    if (!['Liste de races bovines', 'Liste de noms de couleur', 'Tableau périodique des éléments', TL_PAGE, GR_PAGE].includes(p.titles) || p.gplnamespace !== '0' || p.redirects !== '1') throw new Error('liens demandés incorrects : ' + url);
     linkCalls.push(p.titles);
     if (p.titles === TL_PAGE) {
       const pages = Object.entries(TL).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } }));
       pages.push({ title: 'Denis Inconnu', missing: true }, { title: 'Martin', pageprops: { disambiguation: '', wikibase_item: 'Q901099' } }, { title: 'Testlande (pays)', missing: true });
       return { batchcomplete: true, query: { redirects: [{ from: 'E. Dubois', to: 'Émile Dubois' }], pages } };
     }
+    if (p.titles === GR_PAGE) return { batchcomplete: true, query: { pages: Object.entries(GR).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } })) } };
     if (p.titles === 'Liste de noms de couleur') {
       const pages = Object.entries(COLOR_LINKS).map(([title, [q]]) => ({ title, pageprops: { wikibase_item: q } }));
       pages.push({ title: 'Couleur (homonymie)', pageprops: { disambiguation: '', wikibase_item: 'Q900308' } });
@@ -1572,15 +1598,15 @@ async function main() {
       // Le HTML analysé n'entre jamais dans la page : ni son image, ni son script, ni son texte ; rien n'a été exécuté.
       check(ctx.__pwn === undefined && !all((n) => n.tagName === 'IMG' && /aline\.jpg/.test(n.getAttribute('src') || '')).length && !has('Intérim assuré')
         && !all((n) => n.tagName === 'SCRIPT').length && parsedDocs.length > 0, 'le HTML de la page ne doit être ni exécuté ni inséré');
-      // « Tableaux lus : 2 sur 2 » : décocher le premier ne garde que le second (le dernier coché ne se décoche pas).
-      const tableBoxes = () => all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'checkbox' && !!n.parentNode.parentNode && n.parentNode.parentNode.tagName === 'LI'
-        && text(n.parentNode).startsWith('Tableau '));
-      check(has('Tableaux lus : 2 sur 2') && tableBoxes().map((b) => text(b.parentNode)).join(' | ') === 'Tableau 1 · Première République (3 articles) | Tableau 2 · Présidents depuis 1950 (3 articles)',
+      // « Sections et tableaux lus : 2 sur 2 » (un tableau sous chaque intertitre : une case par intertitre) : décocher le
+      // premier ne garde que le second (le dernier coché ne se décoche pas).
+      const tableBoxes = () => (one('page-tables') ? one('page-tables').querySelectorAll('input').filter((n) => n.getAttribute('type') === 'checkbox') : []);
+      check(has('Sections et tableaux lus : 2 sur 2') && tableBoxes().map((b) => text(b.parentNode)).join(' | ') === 'Première République (3 articles) | Seconde République (3 articles)',
         'liste des tableaux : ' + tableBoxes().map((b) => text(b.parentNode)).join(' | '));
       tableBoxes()[0].checked = false;
       tableBoxes()[0].dispatch('change');
       await settle(60);
-      check(slotTitles().join(' | ') === 'Émile Dubois | Aline Martin | Fanny Leroy' && has('Tableaux lus : 1 sur 2') && tableBoxes()[1].disabled && !tableBoxes()[0].disabled,
+      check(slotTitles().join(' | ') === 'Émile Dubois | Aline Martin | Fanny Leroy' && has('Sections et tableaux lus : 1 sur 2') && tableBoxes()[1].disabled && !tableBoxes()[0].disabled,
         'premier tableau décoché : ' + slotTitles().join(' | ') + ' / ' + hintText());
       tableBoxes()[0].checked = true;
       tableBoxes()[0].dispatch('change');
@@ -1623,6 +1649,35 @@ async function main() {
       await settle();
       modalBtn('Supprimer la collection').click();
       check(await waitFor(() => !one('album-title') && !rowNames(mineSection()).includes('Présidents de Testlande')), 'collection « Présidents de Testlande » non supprimée');
+    }
+    // 9 quater quater. Page dont les tableaux sont rangés en sections (« Liste des gares de Testlande », comme celle des
+    // gares desservies par TGV) : « Sections et tableaux lus » ouvert d'emblée, une case par intertitre (h2 › h3 › h4,
+    // deux « En Testlande » distincts), qui coche ou décoche tous ses tableaux ; « mixte » quand une partie l'est.
+    {
+      const boxes = () => (one('page-tables') ? one('page-tables').querySelectorAll('input').filter((n) => n.getAttribute('type') === 'checkbox') : []);
+      const box = (label, k = 0) => boxes().filter((b) => text(b.parentNode).startsWith(label + ' ('))[k] || fail('case absente : ' + label + ' / ' + boxes().map((b) => text(b.parentNode)).join(' | '));
+      const click = async (b) => { b.checked = !b.checked; b.dispatch('change'); await settle(60); };
+      const mixed = (b) => String(b.indeterminate !== undefined ? b.indeterminate : b.getAttribute('indeterminate')) === 'true';
+      const slotTitles = () => cls('slot').map((s) => text(s.querySelector('h3')));
+      paste('https://fr.wikipedia.org/wiki/Liste_des_gares_de_Testlande');
+      check(await waitFor(() => at().includes('Gares de Testlande') && !!byId('page-key') && !!one('page-tables'), 5000), 'page en sections : ' + at() + ' / ' + text(one('album-head')).slice(0, 400));
+      check(byId('page-key').value === 'gare' && slotTitles().join(',') === 'Gare A,Gare B,Gare C,Gare D,Gare E,Gare F,Gare G,Gare H', 'colonne « Gare » : ' + byId('page-key').value + ' / ' + slotTitles().join(','));
+      check(one('page-tables').getAttribute('open') !== null && one('page-tables').getAttribute('open') !== 'false' && has('Sections et tableaux lus : 4 sur 4'), '« Sections et tableaux lus » ouvert attendu');
+      check(boxes().map((b) => text(b.parentNode)).join(' | ') === 'Gares desservies (7 articles, 3 tableaux) | En Testlande (3 articles) | À l\'étranger (4 articles, 2 tableaux) | Ruritanie (2 articles) | Syldavie (2 articles) | Gares fermées (1 article) | En Testlande (1 article)',
+        'sections : ' + boxes().map((b) => text(b.parentNode)).join(' | '));
+      await click(box('À l\'étranger'));
+      check(slotTitles().join(',') === 'Gare A,Gare B,Gare C,Gare H' && !box('À l\'étranger').checked && !box('Ruritanie').checked && mixed(box('Gares desservies')) && has('Sections et tableaux lus : 2 sur 4'),
+        '« À l\'étranger » décochée : ' + slotTitles().join(','));
+      await click(box('Syldavie'));
+      check(slotTitles().join(',') === 'Gare A,Gare B,Gare C,Gare F,Gare G,Gare H' && mixed(box('À l\'étranger')), '« Syldavie » recochée : ' + slotTitles().join(','));
+      await click(box('Gares desservies')); // mixte -> tout coché
+      check(slotTitles().length === 8 && box('Gares desservies').checked && !mixed(box('Gares desservies')), 'section mixte cliquée : tout cochée attendue, ' + slotTitles().join(','));
+      await click(box('Gares desservies'));
+      check(slotTitles().join(',') === 'Gare H' && box('Gares fermées').disabled && box('En Testlande', 1).disabled && !box('Gares desservies').disabled, 'seules les gares fermées : ' + slotTitles().join(','));
+      await click(box('En Testlande'));
+      check(slotTitles().join(',') === 'Gare A,Gare B,Gare C,Gare H' && !box('Gares fermées').disabled, '« En Testlande » (desservies) recochée : ' + slotTitles().join(','));
+      needButton('← Toutes les collections').click();
+      await settle();
     }
     // Adresse d'un autre site : rien n'est demandé à Wikipédia ; page absente : la recherche le dit.
     n0 = catSuggest.length;

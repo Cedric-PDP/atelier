@@ -891,5 +891,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .page-key select { flex: 0 1 auto; min-width: 0; max-width: 100%; padding: 7px 10px; font-size: 13px; }
 .page-tables summary { cursor: pointer; font-size: 12.5px; color: var(--link); }
 .page-tables ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 4px; }
+.page-tables ul ul { margin: 4px 0 0 22px; }
+.page-tables .check b { font-weight: 600; }
 .page-tables .check { align-items: flex-start; min-width: 0; overflow-wrap: anywhere; }
 .page-tables .check input { margin-top: 3px; flex: none; }

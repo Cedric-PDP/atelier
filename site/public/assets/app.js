@@ -4311,6 +4311,18 @@
     cv.tableOff = cv.tableOff.includes(t) ? cv.tableOff.filter((x) => x !== t) : [...cv.tableOff, t];
     loadCategory();
   }
+  // Page : une section de ses tableaux (« En France ») cochée ou décochée d'un coup : ts = ses tableaux (index dans
+  // cv.tables.list). Jamais tous les tableaux de la colonne clé décochés.
+  function setPageTables(ts, on) {
+    const cv = S.catView;
+    if (!cv || cv.busy || cv.type !== 'page' || !cv.cols) return;
+    const col = cv.col ? cv.cols.find((c) => c.key === cv.col) || null : null;
+    const off = new Set(cv.tableOff);
+    for (const t of ts) { if (on) off.delete(t); else off.add(t); }
+    if (col && col.parts.every((p) => off.has(p.t))) return;
+    cv.tableOff = [...off];
+    loadCategory();
+  }
   // « Créer une collection » (album d'une catégorie ou d'une page) : ses articles lus (avec les sous-catégories si la case
   // est cochée ; page : les articles liés gardés, avec leur qid et leur description Wikidata) deviennent une collection à
   // compléter de source « wp:<nom> » ou « links:<titre> » (« links:<titre>#<colonne> » faite de la colonne clé de ses
@@ -4769,8 +4781,8 @@
     const caption = elKids(table).find((x) => x.localName === 'caption');
     return { caption: caption ? nodeText(caption).slice(0, 120) : '', rows, cols: cols.map(({ label, links, named }) => ({ label, links, named })) };
   }
-  // Tableaux d'un HTML de Wikipédia : {list: [tableaux dans l'ordre de la page, chacun avec l'intertitre (h2 à h4) qui le
-  // précède], inTables, inLists (liens d'articles dans ces tableaux, et dans des listes à puces hors tableaux)}. Bandeaux,
+  // Tableaux d'un HTML de Wikipédia : {list: [tableaux dans l'ordre de la page, chacun avec ses intertitres : path, de h2 à
+  // h4 (« Gares desservies en 2026 › À l'étranger › Allemagne »), section = le dernier], inTables, inLists (liens d'articles dans ces tableaux, et dans des listes à puces hors tableaux)}. Bandeaux,
   // boîtes de navigation, infobox, notes et références ne comptent pas. Avant l'analyse, les attributs style deviennent
   // data-style et les feuilles <style> sont retirées : le document créé hérite de la CSP de la page, qui signalerait chacun
   // dans la console (« inline style ») ; « display:none » reste lisible.
@@ -4780,18 +4792,24 @@
     if (typeof DOMParser === 'undefined') return out;
     const clean = String(html).replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, '').replace(/(<[a-z][a-z0-9]*\b[^<>]*?)\sstyle=/gi, '$1 data-style=');
     const doc = new DOMParser().parseFromString(clean, 'text/html');
-    let section = '';
+    let path = []; // intertitres en cours : [{lv (2 à 4), t}]
     const walk = (n, inTable, inLi) => {
       if (n.nodeType !== 1 || skipEl(n) || PAGE_SKIP.test(n.getAttribute('class') || '')) return;
       const name = n.localName;
-      if (/^h[2-4]$/.test(name)) { section = nodeText(n).slice(0, 120); return; }
+      if (/^h[2-4]$/.test(name)) {
+        const lv = Number(name[1]);
+        const t = nodeText(n).slice(0, 120);
+        path = path.filter((x) => x.lv < lv);
+        if (t) path.push({ lv, t });
+        return;
+      }
       if (name === 'a') {
         if (articleOf(n)) { if (inTable) out.inTables++; else if (inLi) out.inLists++; }
         return;
       }
       if (name === 'table') {
         const wiki = /(?:^|\s)wikitable(?:\s|$)/.test(n.getAttribute('class') || '');
-        if (wiki && !inTable) { const t = readTable(n); if (t) out.list.push(Object.assign(t, { section })); }
+        if (wiki && !inTable) { const t = readTable(n); if (t) { const ts = path.map((x) => x.t); out.list.push(Object.assign(t, { path: ts, section: ts.length ? ts[ts.length - 1] : '' })); } }
         for (const c of n.childNodes) walk(c, inTable || wiki, inLi);
         return;
       }
@@ -6366,7 +6384,8 @@
   }
   // Page de Wikipédia ouverte (album) : d'où viennent ses articles. Avec des tableaux (lecture finie) : « Colonne clé »
   // (les colonnes de tableColumns, la présélectionnée par pickColumn, et « Aucune : tous les liens de la page »), ce que la
-  // colonne donne et, si elle est dans plusieurs tableaux, lesquels lire (« Tableaux lus », décochables). Sans colonne
+  // colonne donne et, si elle est dans plusieurs tableaux, lesquels lire (« Sections et tableaux lus » : l'arbre de leurs
+  // intertitres, pageSections, une case par section ou par tableau). Sans colonne
   // clé : les articles liés, ceux de leur nature dominante seulement (case cochée) ou tous.
   function viewPageSource(pg, reading) {
     const link = h('a', { href: wikiUrl(pg.title), target: '_blank', rel: 'noopener noreferrer' }, pg.title);
@@ -6406,19 +6425,61 @@
       others > 0 ? ` ${others > 1 ? `Les ${fmt(others)} autres tableaux` : "L'autre tableau"} de la page ${others > 1 ? "n'ont" : "n'a"} aucun article dans une colonne « ${col.name} ».` : '',
     ]));
     if (col.parts.length > 1) {
-      const tableName = (t) => { const tb = pg.tables.list[t] || {}; const what = tb.caption || tb.section; return `Tableau ${fmt(t + 1)}${what ? ' · ' + what : ''}`; };
-      out.push(h('details', { class: 'page-tables' }, [
-        h('summary', null, `Tableaux lus : ${fmt(used.length)} sur ${fmt(col.parts.length)}`),
-        h('ul', null, col.parts.map((x) => {
-          const on = !pg.tableOff.includes(x.t);
-          const n = new Set(x.items.map((i) => i.title)).size;
-          return h('li', { key: x.t }, h('label', { class: 'check' }, [
-            h('input', { type: 'checkbox', checked: on, disabled: pg.busy || (on && used.length === 1), onChange: () => togglePageTable(x.t) }),
-            h('span', null, `${tableName(x.t)} (${fmt(n)} ${plural(n, 'article', 'articles')})`)]));
-        })),
+      const tree = pageSections(col, pg.tables);
+      const count = (parts) => { const n = new Set(parts.flatMap((x) => x.items.map((i) => i.title))).size; return `${fmt(n)} ${plural(n, 'article', 'articles')}`; };
+      const tableName = (x, inSection) => {
+        const tb = pg.tables.list[x.t] || {};
+        const what = tb.caption || (inSection ? '' : tb.section);
+        return `Tableau ${fmt(x.t + 1)}${what ? ' · ' + what : ''}`;
+      };
+      const tableLi = (x, inSection) => {
+        const on = !pg.tableOff.includes(x.t);
+        return h('li', { key: 't' + x.t }, h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: on, disabled: pg.busy || (on && used.length === 1), onChange: () => togglePageTable(x.t) }),
+          h('span', null, `${tableName(x, inSection)} (${count([x])})`)]));
+      };
+      // Une section : sa case (cochée si tous ses tableaux le sont, « mixte » si une partie), puis ses sous-sections et,
+      // s'il y en a plusieurs ou à côté de sous-sections, ses propres tableaux.
+      const sectionLi = (node, key) => {
+        const ts = node.parts.map((x) => x.t);
+        const n = ts.filter((t) => !pg.tableOff.includes(t)).length;
+        const on = n === ts.length;
+        const kids = [...node.kids.map((k, i) => sectionLi(k, key + '/' + i)), ...(node.own.length > 1 || node.kids.length ? node.own.map((x) => tableLi(x, true)) : [])];
+        return h('li', { key }, [
+          h('label', { class: 'check' }, [
+            h('input', { type: 'checkbox', checked: on, indeterminate: n > 0 && !on, disabled: pg.busy || (n > 0 && used.every((x) => ts.includes(x.t))),
+              onChange: () => setPageTables(ts, !on) }),
+            h('span', null, [h('b', null, node.label), ` (${count(node.parts)}${ts.length > 1 ? `, ${fmt(ts.length)} tableaux` : ''})`])]),
+          kids.length ? h('ul', null, kids) : null,
+        ]);
+      };
+      // Ouvert d'emblée quand les tableaux sont rangés dans des sections (« En France », « À l'étranger »…).
+      out.push(h('details', { class: 'page-tables', open: tree.kids.length > 0 }, [
+        h('summary', null, `${tree.kids.length ? 'Sections et tableaux lus' : 'Tableaux lus'} : ${fmt(used.length)} sur ${fmt(col.parts.length)}`),
+        h('ul', null, [...tree.kids.map((k, i) => sectionLi(k, 's' + i)), ...tree.own.map((x) => tableLi(x, false))]),
       ]));
     }
     return out;
+  }
+  // Sections des tableaux d'une colonne clé, d'après leurs intertitres (path de readTables) : un arbre
+  // {label, kids (sous-sections, dans l'ordre de la page), own (tableaux juste sous cet intertitre), parts (tous ses
+  // tableaux)} ; la racine (label '') garde les tableaux sans intertitre.
+  function pageSections(col, tables) {
+    const node = (label) => ({ label, kids: [], own: [], parts: [] });
+    const root = node('');
+    for (const x of col.parts) {
+      const tb = (tables && tables.list[x.t]) || {};
+      let cur = root;
+      cur.parts.push(x);
+      for (const s of tb.path || (tb.section ? [tb.section] : [])) {
+        let k = cur.kids.find((y) => y.label === s);
+        if (!k) { k = node(s); cur.kids.push(k); }
+        cur = k;
+        cur.parts.push(x);
+      }
+      cur.own.push(x);
+    }
+    return root;
   }
   function viewAlbum() {
     const col = activeAlbum.value;

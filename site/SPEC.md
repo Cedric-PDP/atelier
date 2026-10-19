@@ -1072,7 +1072,8 @@ Deux zones, dans cet ordre :
        retirés avant l'analyse (le document créé hérite de la CSP de la page, qui signalerait chacun dans la console).
        Échec de cette lecture : la page garde ses liens et le dit (« Tableaux de la page non lus (…) »).
      - **Tableaux** : ceux de classe `wikitable` (repliés compris, pas ceux imbriqués dans un autre), cellules fusionnées
-       (`rowspan`, `colspan`) dépliées dans une grille, chacun avec l'intertitre (h2 à h4) qui le précède et sa légende.
+       (`rowspan`, `colspan`) dépliées dans une grille, chacun avec ses intertitres (h2 › h3 › h4 en cours : « Gares
+       desservies en 2026 › À l'étranger › Allemagne ») et sa légende.
        En-tête : les premières lignes faites de `<th>` (ou dans `<thead>`), une ligne d'une seule cellule sur toute la
        largeur (titre) mise à part ; **libellé** d'une colonne = ses en-têtes de haut en bas (« Mandat › Début »), sans
        notes (« [1] », « [pas clair] ») ni clés de tri cachées (`display:none`) ; deux colonnes sous une même cellule
@@ -1101,8 +1102,15 @@ Deux zones, dans cet ordre :
        explication (« Le premier article lié de chaque ligne de la colonne « Nom » des 2 tableaux de la page « … », dans
        l'ordre des lignes : N articles (k lignes sans article : lien rouge, homonymie ou pas de lien). Les autres tableaux
        de la page n'ont aucun article dans une colonne « Nom ». »), et, si la colonne est dans plusieurs tableaux,
-       **« Tableaux lus : n sur m »** (repliable) : une case par tableau (« Tableau 2 · <intertitre ou légende> (N
-       articles) »), décochable (le dernier coché ne se décoche pas). Articles **dans l'ordre des tableaux et des lignes**,
+       **« Sections et tableaux lus : n sur m »** (repliable, ouvert d'emblée quand ses tableaux ont des intertitres ;
+       « Tableaux lus » sinon) : l'arbre des intertitres de ces tableaux (2026-10-19, demande de l'utilisateur : dans
+       « Liste des gares desservies par TGV », pouvoir choisir « En France », « À l'étranger »…), une case par section
+       (« À l'étranger (48 articles, 8 tableaux) ») qui coche ou décoche tous ses tableaux d'un coup, cochée s'ils le sont
+       tous, « mixte » (`indeterminate`) si une partie ; deux intertitres de même nom sous des parents différents (« En
+       France » des gares desservies et des gares fermées) restent deux sections. Une case par tableau seulement sous une
+       section qui en a plusieurs (ou à côté de sous-sections), et pour les tableaux sans intertitre (« Tableau 2 ·
+       <légende> (N articles) »). Rien ne se décoche s'il ne resterait aucun tableau (la case est alors grisée). Une page
+       ne donne toujours qu'une collection (`links:<titre>#<colonne>`), faite des tableaux cochés. Articles **dans l'ordre des tableaux et des lignes**,
        chacun une fois (un doublon garde sa première place), **numérotés** (tri « Ordre ») ; tout se recalcule sans
        requête. Sans colonne : la case de la nature dominante, comme avant.
      - **« Créer une collection »** avec une colonne : `POST /api/targets/save {name, items, source:'links:<titre>#<nom
