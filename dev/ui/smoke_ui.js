@@ -3737,7 +3737,8 @@ async function main() {
     const mt = text(lastMsg().querySelector('.chat-msg__text'));
     check(!lastMsg().querySelectorAll('b').length && !lastMsg().querySelectorAll('img').length && mt.includes('<b>gras</b>') && mt.includes('[[<img src=x onerror=alert(1)>]]'),
       'le texte du message ne doit jamais devenir du HTML : ' + mt);
-    check(txt().includes('Pour montrer une carte : [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche.'), 'aide des cartes citées absente sous le champ du chat');
+    check(txt().includes('Pour montrer une carte : # puis son titre, [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche. Pour mentionner un membre : @ puis son prénom.'),
+      'aide des cartes citées et des mentions absente sous le champ du chat');
     const ficheA = () => d.querySelectorAll('.fiche')[0] || null;
     chips()[0].click();
     await settle(80);
@@ -3772,6 +3773,91 @@ async function main() {
       'partage depuis « Mes cartes » : onglet Chat, brouillon et curseur attendus : « ' + (field() && field().value) + ' »');
     field().dispatch('keydown', { key: 'Enter' });
     check(await waitFor(() => lastMsg() && lastMsg().classList.contains('mine') && chips().map(text).join('|') === 'Lèpre|URPeste'), 'message envoyé avec deux cartes citées : ' + chips().map(text).join('|'));
+
+    // 32 bis. Autocomplétion du champ (demande du 2026-10-19) : « # » + lettre propose des cartes (les tiennes d'abord, avec
+    // leur rareté, puis celles de tes collections) et insère [[Titre]] ; « @ » propose les membres qui montrent leurs cartes
+    // (il faut montrer les siennes) et insère @Prénom ; flèches, Entrée, Tab, Échap ; Entrée sur une suggestion n'envoie rien.
+    // Un message qui te mentionne (@prénom, sans distinction de casse) est mis en avant, et compté à part dans le badge.
+    const acList = () => d.getElementById('chat-ac');
+    const acNames = () => (acList() ? acList().querySelectorAll('li').map((li) => text(li.querySelector('.prop-list__name'))) : []);
+    const posts = (mark) => apiLog.slice(mark).filter((x) => x === 'POST /api/chat');
+    let mark = apiLog.length;
+    type(field(), 'Vu #gri');
+    await settle();
+    check(acNames().join('|') === 'Grippe' && acList().getAttribute('role') === 'listbox' && acList().querySelector('.pill')
+      && field().getAttribute('aria-activedescendant') === 'chat-ac-0', 'suggestions de « #gri » : ' + acNames().join('|'));
+    let kev = field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    check(kev.defaultPrevented && field().value === 'Vu [[Grippe]] ' && !acList() && !posts(mark).length, 'Entrée sur une suggestion : [[Grippe]] inséré, rien envoyé : « ' + field().value + ' »');
+    type(field(), 'Vu [[Grippe]] #r');
+    await settle();
+    check(acNames().join('|') === 'Rihanna|Rougeole', 'suggestions de « #r » (tes cartes, la plus courte d\'abord) : ' + acNames().join('|'));
+    field().dispatch('keydown', { key: 'ArrowDown' });
+    await settle();
+    check(field().getAttribute('aria-activedescendant') === 'chat-ac-1', 'flèche bas : deuxième suggestion attendue');
+    field().dispatch('keydown', { key: 'Tab' });
+    await settle();
+    check(field().value === 'Vu [[Grippe]] [[Rougeole]] ', 'Tab : [[Rougeole]] attendu : « ' + field().value + ' »');
+    type(field(), 'et #tuber');
+    await settle();
+    const tub = acList() && acList().querySelectorAll('li')[0];
+    check(acNames().join('|') === 'Tuberculose' && text(tub).includes('pas dans ton classeur') && !tub.querySelector('.pill'), 'carte d\'une collection, que tu n\'as pas : ' + (tub ? text(tub) : 'aucune'));
+    field().dispatch('keydown', { key: 'Escape' });
+    await settle();
+    type(field(), 'et #tuberc');
+    await settle();
+    check(!acList(), 'Échap : la liste ne doit pas revenir pour le même #');
+    for (const v of ["C'est le #1", 'C#maj', 'Rien #zzzz']) {
+      type(field(), v);
+      await settle();
+      check(!acList(), `« ${v} » ne doit rien proposer`);
+    }
+    kev = field().dispatch('keydown', { key: 'Enter' });
+    await settle(80);
+    check(posts(mark).length === 1, 'Entrée sans suggestion : le message doit partir');
+    // « @ » sans montrer ses cartes : on dit pourquoi personne n'est proposé.
+    type(field(), 'Salut @');
+    await settle();
+    check(!acList() && txt().includes('Seuls les membres qui montrent leurs cartes peuvent être mentionnés'), '« @ » sans partage : explication attendue');
+    check(!apiLog.slice(mark).includes('GET /api/members'), 'sans partage, la page ne doit pas lire les membres');
+    type(field(), '');
+    // Bérénice et Alek montrent leurs cartes ; Alek ouvre de nouveau le chat : les prénoms sont lus (sans leurs cartes).
+    check((await rawApi('PATCH', '/api/me', keyB, { shared: true })).status === 200, 'partage de Bérénice refusé');
+    d.getElementById('tab-reglages').click();
+    await settle();
+    const cbA = d.getElementById('set-shared');
+    cbA.checked = true;
+    cbA.dispatch('change');
+    await settle(120);
+    d.getElementById('tab-chat').click();
+    await settle(80);
+    type(field(), 'Salut @bé');
+    check(await waitFor(() => acNames().join('|') === '@Bérénice'), 'suggestions de « @bé » : ' + acNames().join('|'));
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    check(field().value === 'Salut @Bérénice ', '@Bérénice attendu : « ' + field().value + ' »');
+    type(field(), 'Salut @Bérénice ça va ?');
+    field().dispatch('keydown', { key: 'Enter' });
+    check(await waitFor(() => lastMsg() && lastMsg().classList.contains('mine') && text(lastMsg().querySelector('.chat-at')) === '@Bérénice' && !lastMsg().classList.contains('ping')),
+      'mention envoyée : pastille @Bérénice attendue');
+    // Bérénice mentionne Alek (casse différente) pendant qu'il est ailleurs : badge à part ; une adresse n'est pas une mention.
+    d.getElementById('tab-collections').click();
+    await settle();
+    await rawApi('POST', '/api/chat', keyB, { text: 'Coucou @alek, regarde !' });
+    await rawApi('POST', '/api/chat', keyB, { text: 'Écris-moi à moi@alek.fr' });
+    await pa.visible();
+    const tabC = () => d.getElementById('tab-chat');
+    check(await waitFor(() => tabC().querySelector('.tab-badge.ping') && text(tabC().querySelector('.tab-badge.ping')) === '@1'
+      && text(tabC().querySelector('.tab-badge')).includes('2 messages non lus, dont 1 te mentionne')), 'badge des mentions : « ' + text(tabC()) + ' »');
+    tabC().click();
+    await settle(80);
+    const all = () => d.querySelectorAll('.chat-msg');
+    const ping = all().find((m) => text(m).includes('Coucou'));
+    const mail = all().find((m) => text(m).includes('moi@alek.fr'));
+    check(ping && ping.classList.contains('ping') && text(ping.querySelector('.chat-msg__ping')) === 'te mentionne' && text(ping.querySelector('.chat-at.me')) === '@alek',
+      'message qui me mentionne : mise en avant attendue');
+    check(mail && !mail.classList.contains('ping') && !mail.querySelector('.chat-at'), 'une adresse électronique n\'est pas une mention');
+    check(!tabC().querySelector('.tab-badge'), 'badge resté à l\'ouverture du chat');
     d.getElementById('tab-collections').click();
     await settle();
   }

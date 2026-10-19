@@ -300,7 +300,9 @@
     // « Chat » (un salon pour tous les classeurs) : user = compte dont `read` (dernier message lu, aussi dans
     // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
     // messages plus anciens ; newBelow = nouveaux messages arrivés sous la zone lue (on n'était pas en bas).
-    chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false },
+    // ac = autocomplétion du champ ouverte : {kind ('@' membre | '#' carte), start (position du @ ou du #), end (curseur),
+    // q (texte tapé après), active (suggestion surlignée)} ; acOff = position d'un @ ou # dont la liste a été fermée par Échap.
+    chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
@@ -311,6 +313,11 @@
   // | null)}], figés. En mémoire seulement, jamais dans IndexedDB (cardCache ne garde que ton classeur). friendsGen change à chaque
   // remise à zéro (classeur changé, partage coupé) : une lecture partie avant est écartée.
   const friendList = shallowRef([]);
+  // Prénoms des membres qui montrent leurs cartes, pour les mentions du chat (« @ ») quand « Entre amis » n'a pas encore
+  // été lu : GET /api/members seul, sans leurs cartes (loadChatMembers). Remis à zéro avec friendList (clearFriends).
+  const chatMembers = shallowRef([]);
+  let chatMembersAt = 0;
+  let chatMembersJob = null;
   let friendsGen = 0;
   let friendsJob = null;
   let friendsAt = 0;
@@ -5263,6 +5270,9 @@
     friendsAt = 0;
     if (friendQidCtrl) { friendQidCtrl.abort(); friendQidCtrl = null; }
     friendList.value = [];
+    chatMembers.value = [];
+    chatMembersAt = 0;
+    chatMembersJob = null;
     Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all', tradeDup: true,
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copies: {} });
   }
@@ -7543,8 +7553,9 @@
   // message ni geste dans le chat). Ailleurs : GET /api/me (relu toutes les 60 s, page visible) donne last_chat_id, et
   // les nouveaux messages ne sont lus que s'il change : badge des non-lus sur l'onglet. Dernier message lu : localStorage
   // (classeur-chat-lu = {<id du compte>: numéro}, accès protégés ; refusé : en mémoire seulement). Jamais de HTML : le
-  // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener) et les cartes citées
-  // ([[Titre]]) des boutons qui ouvrent leur fiche (titre en texte).
+  // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener), les cartes citées
+  // ([[Titre]]) des boutons qui ouvrent leur fiche (titre en texte) et les mentions (@Prénom) des pastilles ; un message
+  // qui te mentionne est mis en avant et compté à part dans le badge.
   const CHAT_MAX = 500;
   const CHAT_EVERY = 12 * 1000;
   const CHAT_IDLE_EVERY = 30 * 1000;
@@ -7589,6 +7600,13 @@
     for (const m of chatMsgs.value) if (m.id > read && !m.mine) n++;
     return n;
   });
+  // Non lus qui te mentionnent (parmi les non lus).
+  const chatUnreadPings = computed(() => {
+    const read = S.chat.read;
+    let n = 0;
+    for (const m of chatMsgs.value) if (m.id > read && !m.mine && chatInfo(m).me) n++;
+    return n;
+  });
   function markChatRead() {
     const list = chatMsgs.value;
     setChatRead(Math.max(S.chat.read, chatLastId, list.length ? list[list.length - 1].id : 0));
@@ -7628,6 +7646,66 @@
     }
     if (last < text.length) out.push(...linkify(text.slice(last)));
     return out;
+  }
+  // Mentions : « @ » puis le prénom (users.name) d'un membre, tel quel, sans distinction de casse ; « @ » en début de mot
+  // (pas « a@b.fr ») et prénom suivi d'autre chose qu'une lettre ou un chiffre. Prénoms reconnus : le tien, ceux des
+  // membres qui montrent leurs cartes et ceux des auteurs des messages lus ; le plus long l'emporte (« @Jo Anne » plutôt
+  // que « @Jo »). Un prénom qui contient des espaces marche donc aussi.
+  const CHAT_WORD = /[\p{L}\p{N}_]/u;
+  const chatPeople = computed(() => {
+    const src = friendList.value.length ? friendList.value : chatMembers.value;
+    const seen = new Set();
+    const out = [];
+    for (const f of src) {
+      const name = typeof f.name === 'string' ? f.name.trim() : '';
+      if (!name || seen.has(name.toLowerCase())) continue;
+      seen.add(name.toLowerCase());
+      out.push(name);
+    }
+    return out.sort(COLLATOR.compare);
+  });
+  const chatNames = computed(() => {
+    const myName = (S.me && S.me.user && S.me.user.name) || '';
+    const all = new Map();
+    const add = (n) => { if (typeof n === 'string' && n.trim()) all.set(n.trim().toLowerCase(), n.trim()); };
+    add(myName);
+    chatPeople.value.forEach(add);
+    for (const m of chatMsgs.value) add(m.author);
+    return { list: [...all.keys()].sort((a, b) => b.length - a.length), me: myName.trim().toLowerCase() };
+  });
+  // Texte brut en morceaux : texte et mentions ({text: '@Paul', at: true, me: te mentionne}).
+  function atParts(text, names) {
+    const out = [];
+    let last = 0;
+    for (let i = text.indexOf('@'); i >= 0; i = text.indexOf('@', i + 1)) {
+      if (i > 0 && CHAT_WORD.test(text[i - 1])) continue;
+      const rest = text.slice(i + 1).toLowerCase();
+      const name = names.list.find((n) => rest.startsWith(n) && !CHAT_WORD.test(rest.charAt(n.length)));
+      if (!name) continue;
+      if (i > last) out.push({ text: text.slice(last, i) });
+      out.push({ text: text.slice(i, i + 1 + name.length), at: true, me: name === names.me });
+      last = i + 1 + name.length;
+      i = last - 1;
+    }
+    if (last < text.length) out.push({ text: text.slice(last) });
+    return out;
+  }
+  // Morceaux d'un message avec ses mentions, et s'il te mentionne (pas tes propres messages) ; refait quand les prénoms
+  // connus changent.
+  const chatInfoCache = new WeakMap();
+  function chatInfo(m) {
+    const names = chatNames.value;
+    let x = chatInfoCache.get(m);
+    if (x && x.names === names) return x;
+    const parts = [];
+    let me = false;
+    for (const p of m.parts) {
+      if (p.card || p.url) { parts.push(p); continue; }
+      for (const q of atParts(p.text, names)) { parts.push(q); if (q.me) me = true; }
+    }
+    x = { names, parts, me: me && !m.mine };
+    chatInfoCache.set(m, x);
+    return x;
   }
   function prepChatMsg(m) {
     const id = Number(m && m.id);
@@ -7699,6 +7777,7 @@
       c.draft = next;
     }
     c.sendError = '';
+    c.ac = null;
     if (S.modal) closeModal();
     closeCard();
     setTab('chat');
@@ -7707,6 +7786,99 @@
       if (!t) return;
       t.focus();
       if (typeof t.setSelectionRange === 'function') t.setSelectionRange(t.value.length, t.value.length);
+    });
+  }
+  // Autocomplétion du champ : « @ » propose les membres qui montrent leurs cartes (il faut montrer les siennes : c'est ce
+  // que permet GET /api/members) et insère « @Prénom » ; « # » suivi d'une lettre propose des cartes (les tiennes, celles
+  // de tes collections, celles des amis déjà lues) et insère « [[Titre]] ». Flèches, Entrée ou Tab, Échap ; rien de
+  // choisi : le texte reste tel quel.
+  const CHAT_AC_MAX = 8;
+  const CHAT_AC_SPAN = 60; // caractères tapés après le @ ou le # au plus
+  // Le @ ou le # avant le curseur (même ligne, en début de mot), et ce qui a été tapé depuis.
+  function chatTrigger(value, caret) {
+    for (let i = caret - 1; i >= 0 && i >= caret - CHAT_AC_SPAN - 1; i--) {
+      const ch = value[i];
+      if (ch === '\n') return null;
+      if (ch !== '@' && ch !== '#') continue;
+      if (i > 0 && CHAT_WORD.test(value[i - 1])) return null;
+      const q = value.slice(i + 1, caret);
+      if (/^\s|\s\s/.test(q)) return null;
+      if (ch === '#' && !/^\p{L}/u.test(q)) return null;
+      return { kind: ch, start: i, end: caret, q };
+    }
+    return null;
+  }
+  // Prénoms des membres qui montrent leurs cartes, sans leurs cartes ; inutile si « Entre amis » les a déjà lus.
+  function loadChatMembers() {
+    if (!sharing() || friendList.value.length || chatMembersJob || (chatMembersAt && Date.now() - chatMembersAt < FRIENDS_TTL)) return;
+    const gen = friendsGen;
+    const job = api('GET', '/api/members').then((r) => {
+      if (gen !== friendsGen) return;
+      chatMembers.value = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.name === 'string' && m.name).map((m) => markRaw({ name: m.name }));
+      chatMembersAt = Date.now();
+    }).catch(() => { /* la liste reste vide : on tape le prénom à la main */ }).finally(() => { if (chatMembersJob === job) chatMembersJob = null; });
+    chatMembersJob = job;
+  }
+  // Cartes proposées après « # » : les tiennes (avec leur rareté), puis les éléments de tes collections et les cartes des
+  // amis, une fois par titre.
+  const chatCardChoices = computed(() => {
+    const out = new Map();
+    const add = (title, own, rarity) => {
+      const t = normTitle(title);
+      const k = titleKey(t);
+      if (!t || out.has(k)) return;
+      out.set(k, { title: t, f: fold(t), own, rarity: own ? rarity : null });
+    };
+    for (const c of cards.value) add(c.title, true, c.rarity);
+    for (const t of targets.value) for (const it of t.items) if (it.status === 'ok') add(it.title, false);
+    for (const f of friendList.value) for (const c of f.cards || []) add(c.title, false);
+    return [...out.values()];
+  });
+  const chatAcList = computed(() => {
+    const ac = S.chat.ac;
+    if (!ac) return [];
+    const q = fold(ac.q);
+    // Rang : commence par ce qui est tapé, puis un mot qui commence par lui, puis (3 lettres ou plus) le contient.
+    const rank = (f) => (f.startsWith(q) ? 0 : f.includes(' ' + q) ? 1 : q.length >= 3 && f.includes(q) ? 2 : -1);
+    if (ac.kind === '@') {
+      const me = chatNames.value.me;
+      return chatPeople.value.filter((n) => n.toLowerCase() !== me).map((n) => ({ n, r: rank(fold(n)) })).filter((x) => x.r >= 0)
+        .sort((a, b) => a.r - b.r || COLLATOR.compare(a.n, b.n)).slice(0, CHAT_AC_MAX)
+        .map(({ n }) => ({ key: 'm:' + n, label: '@' + n, insert: '@' + n }));
+    }
+    const hits = [];
+    for (const c of chatCardChoices.value) { const r = rank(c.f); if (r >= 0) hits.push([r, c]); }
+    return hits.sort(([ra, a], [rb, b]) => ra - rb || (b.own - a.own) || a.title.length - b.title.length || COLLATOR.compare(a.title, b.title))
+      .slice(0, CHAT_AC_MAX).map(([, c]) => ({ key: 'c:' + c.title, label: c.title, insert: '[[' + c.title + ']]', own: c.own, rarity: c.rarity }));
+  });
+  // Après une frappe ou un déplacement du curseur : liste ouverte, mise à jour ou fermée.
+  function updateChatAc(t) {
+    const c = S.chat;
+    const caret = t && typeof t.selectionStart === 'number' ? t.selectionStart : c.draft.length;
+    const tr = t && typeof t.selectionEnd === 'number' && t.selectionEnd !== caret ? null : chatTrigger(c.draft, caret);
+    if (!tr || c.acOff !== tr.start) c.acOff = null;
+    if (!tr || c.acOff !== null) { c.ac = null; return; }
+    if (tr.kind === '@') loadChatMembers();
+    const same = c.ac && c.ac.kind === tr.kind && c.ac.start === tr.start && c.ac.q === tr.q;
+    c.ac = { ...tr, active: same ? c.ac.active : 0 };
+  }
+  function pickChatAc(item) {
+    const c = S.chat;
+    const ac = c.ac;
+    if (!ac || !item) return;
+    const after = c.draft.slice(ac.end);
+    const ins = item.insert + (/^\s/.test(after) ? '' : ' ');
+    const next = c.draft.slice(0, ac.start) + ins + after;
+    c.ac = null;
+    if (next.length > CHAT_MAX) { notify(`Ton message est trop long pour y ajouter « ${item.label} » (${CHAT_MAX} caractères au plus).`, true); return; }
+    c.draft = next;
+    c.sendError = '';
+    const pos = ac.start + ins.length + (/^\s/.test(after) ? 1 : 0);
+    nextTick(() => {
+      const t = document.getElementById('chat-input');
+      if (!t) return;
+      t.focus();
+      if (typeof t.setSelectionRange === 'function') t.setSelectionRange(pos, pos);
     });
   }
   // Heure du message : « 14:32 » aujourd'hui, « hier, 14:32 », sinon « 15 oct., 14:32 » (l'année si ce n'est pas celle-ci).
@@ -7854,6 +8026,7 @@
     Object.assign(S.chat, { newBelow: false, sendError: '' });
     if (chatRev !== null) markChatRead(); // ce qui est déjà là est sous les yeux
     refreshChat();
+    loadChatMembers(); // prénoms des membres : pastilles des mentions et suggestions de « @ »
     setChatLive();
     nextTick(() => { chatToBottom(); chatIntoView(); });
   }
@@ -7877,7 +8050,7 @@
     chatRev = null;
     chatLastId = 0;
     chatAtBottom = true;
-    Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false });
+    Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null });
   }
   async function sendChat(fromKey) {
     const c = S.chat;
@@ -7895,7 +8068,7 @@
     try {
       const r = await api('POST', '/api/chat', { text });
       if (gen !== chatGen) return;
-      if (c.draft.replace(/\r\n?/g, '\n').trim() === text) c.draft = ''; // tapé de nouveau pendant l'envoi : gardé
+      if (c.draft.replace(/\r\n?/g, '\n').trim() === text) { c.draft = ''; c.ac = null; } // tapé de nouveau pendant l'envoi : gardé
       const m = prepChatMsg(r.message);
       if (m && !chatMsgs.value.some((x) => x.id === m.id)) chatMsgs.value = [...chatMsgs.value, m].sort(byChatId);
       afterChat(true, false);
@@ -7908,8 +8081,24 @@
     }
   }
   // Entrée envoie, Maj+Entrée va à la ligne (le navigateur s'en charge) ; pas pendant une saisie en cours (IME).
+  // Suggestions ouvertes : flèches pour choisir, Entrée ou Tab pour insérer, Échap pour fermer.
   function onChatKey(e) {
     chatTouch();
+    const ac = S.chat.ac;
+    if (ac && !e.isComposing && e.keyCode !== 229) {
+      const list = chatAcList.value;
+      if (e.key === 'Escape') { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); S.chat.acOff = ac.start; S.chat.ac = null; return; }
+      if (list.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
+        e.preventDefault();
+        ac.active = (Math.min(ac.active, list.length - 1) + (e.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length;
+        return;
+      }
+      if (list.length && ((e.key === 'Enter' && !e.shiftKey) || (e.key === 'Tab' && !e.shiftKey))) {
+        e.preventDefault();
+        pickChatAc(list[Math.min(ac.active, list.length - 1)]);
+        return;
+      }
+    }
     if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
     e.preventDefault();
     sendChat(true);
@@ -7932,23 +8121,30 @@
   }
 
   // ---------------------------------------------------------------- rendu du chat
+  // Badge des non-lus, et à côté « @2 » (couleur d'alerte) pour ceux qui te mentionnent.
   function chatTabLabel(label) {
     const n = S.tab === 'chat' ? 0 : chatUnread.value;
     if (!n) return label;
-    return [label, h('span', { class: 'tab-badge' }, [n > 99 ? '99+' : String(n), sr(' ' + plural(n, 'message non lu', 'messages non lus'))])];
+    const p = chatUnreadPings.value;
+    const said = ' ' + plural(n, 'message non lu', 'messages non lus') + (p ? `, dont ${p} ${plural(p, 'te mentionne', 'te mentionnent')}` : '');
+    return [label, h('span', { class: 'tab-badge' }, [n > 99 ? '99+' : String(n), sr(said)]),
+      p ? h('span', { class: 'tab-badge ping', 'aria-hidden': 'true' }, '@' + (p > 99 ? '99+' : String(p))) : null];
   }
   function viewChatMsg(m) {
     // Les miens : mon prénom actuel (renommé dans Réglages, il change aussitôt) ; ceux des autres : à la lecture.
     const who = (m.mine && S.me && S.me.user && S.me.user.name) || m.author || 'Sans prénom';
-    return h('div', { key: m.id, class: ['chat-msg', { mine: m.mine }] }, [
+    const info = chatInfo(m);
+    return h('div', { key: m.id, class: ['chat-msg', { mine: m.mine, ping: info.me }] }, [
       h('div', { class: 'chat-msg__head' }, [
         h('span', { class: 'chat-msg__who' }, who),
         m.mine ? h('span', { class: 'chat-msg__me' }, '(toi)') : null,
+        info.me ? h('span', { class: 'chat-msg__ping' }, 'te mentionne') : null,
         h('time', { class: 'chat-msg__time', datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
         m.mine ? h('button', { class: 'chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
           [icon('trash', 'sm'), h('span', { class: 'chat-msg__del-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
       ]),
-      h('p', { class: 'chat-msg__text' }, m.parts.map((p) => (p.card ? viewChatCard(p.card)
+      h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
+        : p.at ? h('span', { class: ['chat-at', { me: p.me }] }, p.text)
         : p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
     ]);
   }
@@ -7963,10 +8159,37 @@
   function viewChatForm() {
     const c = S.chat;
     const n = c.draft.length;
+    const ac = c.ac;
+    const list = ac ? chatAcList.value : [];
+    const act = list.length ? Math.min(ac.active, list.length - 1) : 0;
+    const open = list.length > 0;
+    // « @ » sans suggestion : pourquoi (il faut montrer ses cartes ; liste en cours de lecture).
+    const status = !ac || ac.kind !== '@' || open ? ''
+      : !sharing() ? 'Seuls les membres qui montrent leurs cartes peuvent être mentionnés, et il faut montrer les tiennes (Réglages) pour les voir ici.'
+      : chatMembersJob && !chatPeople.value.length ? 'Lecture des membres…'
+      : !ac.q && !chatPeople.value.length ? "Aucun autre membre ne montre ses cartes pour l'instant." : '';
+    const option = (it, i) => h('li', {
+      id: 'chat-ac-' + i, key: it.key, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
+      onMousedown: (e) => { e.preventDefault(); pickChatAc(it); }, onMouseenter: () => { if (c.ac) c.ac.active = i; },
+    }, [
+      it.own ? pill(it.rarity) : null,
+      h('span', { class: 'prop-list__name' }, it.label),
+      ac.kind === '#' && !it.own ? h('span', { class: 'prop-list__hint' }, 'pas dans ton classeur') : null,
+    ]);
     return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
       h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
-      h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint chat-tip',
-        onInput: (e) => { c.draft = e.target.value; if (c.sendError) c.sendError = ''; chatTouch(); }, onKeydown: onChatKey }),
+      h('div', { class: 'chat-field' }, [
+        h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint chat-tip',
+          role: 'combobox', 'aria-multiline': 'true', 'aria-expanded': String(open), 'aria-controls': 'chat-ac', 'aria-autocomplete': 'list',
+          'aria-activedescendant': open ? 'chat-ac-' + act : null,
+          onInput: (e) => { c.draft = e.target.value; if (c.sendError) c.sendError = ''; chatTouch(); updateChatAc(e.target); }, onKeydown: onChatKey,
+          // Curseur déplacé (flèches, clic) : la liste suit le @ ou le # sous le curseur.
+          onKeyup: (e) => { if (/^(ArrowLeft|ArrowRight|Home|End)$/.test(e.key)) updateChatAc(e.target); },
+          onClick: (e) => updateChatAc(e.target),
+          onBlur: () => { c.ac = null; } }),
+        open ? h('ul', { id: 'chat-ac', class: 'prop-list chat-ac', role: 'listbox', 'aria-label': ac.kind === '@' ? 'Membres à mentionner' : 'Cartes à citer' }, list.map(option))
+          : status ? h('p', { class: 'prop-list prop-list--empty chat-ac', role: 'status' }, status) : null,
+      ]),
       h('div', { class: 'chat-form__foot' }, [
         h('span', { id: 'chat-hint', class: 'chat-hint' }, [h('kbd', null, 'Entrée'), ' envoie, ', h('kbd', null, 'Maj'), ' + ', h('kbd', null, 'Entrée'), ' va à la ligne']),
         n >= CHAT_MAX - 100 ? h('span', { class: ['chat-count', { full: n >= CHAT_MAX }] }, `${fmt(n)} / ${fmt(CHAT_MAX)}`) : null,
@@ -7974,7 +8197,8 @@
       ]),
       errLine(c.sendError),
       // Aide (aussi sur téléphone, contrairement aux raccourcis) : citer une carte.
-      h('p', { id: 'chat-tip', class: 'chat-tip' }, ['Pour montrer une carte : ', h('code', null, '[[Titre de la carte]]'), ', ou « Partager dans le chat » depuis sa fiche.']),
+      h('p', { id: 'chat-tip', class: 'chat-tip' }, ['Pour montrer une carte : ', h('code', null, '#'), ' puis son titre, ', h('code', null, '[[Titre de la carte]]'),
+        ', ou « Partager dans le chat » depuis sa fiche. Pour mentionner un membre : ', h('code', null, '@'), ' puis son prénom.']),
     ]);
   }
   function viewChat() {

@@ -594,7 +594,11 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   l'utilisateur du 2026-10-17 : « linker des cartes dans le chat ») : `[[Titre de la carte]]` dans le texte (1 à 300
   caractères sans `[ ] { } | # < >` ni retour à la ligne ; première lettre mise en majuscule, `_` en espaces ; un lien
   `http(s)` entre crochets reste un lien) ; le serveur range le texte tel quel (rien de plus à valider, les crochets
-  comptent dans les 500 caractères) et la page le montre en pastille, voir « Interface ». Un message qui contient un lien
+  comptent dans les 500 caractères) et la page le montre en pastille, voir « Interface ». **Mentions** (demande de
+  l'utilisateur du 2026-10-19 : « pouvoir ping un utilisateur ») : `@` suivi du **prénom** (`users.name`) d'un membre, tel
+  quel dans le texte ; le serveur n'en sait rien (aucune table, aucun champ de plus) : c'est la page qui les reconnaît,
+  voir « Interface ». Un prénom changé ne désigne plus les anciennes mentions (choix : les membres sont peu nombreux,
+  avec des prénoms différents ; deux prénoms identiques seraient mentionnés ensemble). Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
   à chaque lecture (jointure sur `users`) : un renommage vaut pour les anciens messages ; jamais l'id interne du compte
@@ -645,8 +649,30 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     suivie : description, homonymie, qid, vignette, vues sur 30 jours et rareté estimée, dans le cache des vues des
     albums ; « Vérification sur Wikipédia… » en attendant ; introuvable : « le titre cité dans le chat est peut-être mal
     écrit » ; une redirection vers une de tes cartes ouvre la tienne, et le qid appris sert aux pastilles). Sous le
-    champ, une aide discrète (aussi sur téléphone) : « Pour montrer une carte : `[[Titre de la carte]]`, ou « Partager
-    dans le chat » depuis sa fiche. » ;
+    champ, une aide discrète (aussi sur téléphone) : « Pour montrer une carte : `#` puis son titre, `[[Titre de la
+    carte]]`, ou « Partager dans le chat » depuis sa fiche. Pour mentionner un membre : `@` puis son prénom. » ;
+  - **autocomplétion du champ** (2026-10-19), sur le modèle de la recherche de catégories (`role="combobox"`, liste
+    `role="listbox"` **au-dessus** du champ, à cause du clavier du téléphone) : elle s'ouvre sur le `@` ou le `#` placé
+    avant le curseur, en début de mot (pas « a@b.fr », « C#maj »), sur la même ligne, 60 caractères tapés au plus depuis,
+    sans espace au début ni deux espaces de suite (un prénom ou un titre peut contenir des espaces). **Flèches** pour
+    choisir, **Entrée** ou **Tab** pour insérer (Entrée n'envoie alors rien), **Échap** pour fermer (elle ne revient pas
+    pour ce `@` ou ce `#`), clic (à la souris : le champ garde le focus) ; quitter le champ la ferme. Rien de choisi : le
+    texte reste tel quel et Entrée envoie. 8 suggestions au plus, rangées : le nom commence par ce qui est tapé, puis un de
+    ses mots, puis (3 lettres ou plus) il le contient ;
+    - `#` suivi d'une **lettre** (« #1 » ne propose rien) : tes cartes (avec leur rareté), puis les éléments vérifiés de
+      tes collections et les cartes des amis déjà lues (« pas dans ton classeur »), une fois par titre ; à rang égal, les
+      tiennes d'abord, puis la plus courte. Insère `[[Titre]] ` (le texte tapé depuis le `#` est remplacé) ;
+    - `@` : les **membres qui montrent leurs cartes** (choix de l'utilisateur : seuls eux peuvent être mentionnés), sauf
+      toi : les prénoms de « Entre amis » s'ils sont lus, sinon `GET /api/members` seul (sans leurs cartes), à
+      l'ouverture du chat ou au premier `@`, au plus toutes les 10 min (`FRIENDS_TTL`). Comme ce point d'accès, il faut
+      montrer ses cartes : sinon, sous le champ, « Seuls les membres qui montrent leurs cartes peuvent être mentionnés,
+      et il faut montrer les tiennes (Réglages) pour les voir ici. », et aucune lecture. Insère `@Prénom ` ;
+  - **mentions dans les messages** : un `@` en début de mot suivi d'un prénom connu (le tien, ceux des membres qui
+    montrent leurs cartes, ceux des auteurs des messages lus), sans distinction de casse, puis autre chose qu'une lettre
+    ou un chiffre ; le plus long l'emporte (« @Jo Anne » plutôt que « @Jo »). Il devient une pastille (texte, jamais de
+    HTML) ; la tienne est surlignée. Un message **des autres** qui te mentionne est mis en avant (bord et fond d'alerte,
+    « te mentionne » à côté de l'heure). Il suffit que ton prénom y soit : même tapé à la main, même si tu ne montres pas
+    tes cartes ;
   - **« Partager dans le chat »** : icône à côté de « Copier le nom » dans les fiches (ta carte, carte qui te manque,
     carte d'un ami ; pas pour un article introuvable ou une homonymie) : ajoute `[[Titre]] ` au bout du brouillon du
     chat (sauf s'il y est déjà ; refusé avec un message si le brouillon dépasserait 500 caractères), ferme la fiche,
@@ -657,7 +683,9 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   - ailleurs, **badge des non-lus** sur l'onglet (« 3 », « 99+ » au-delà ; texte « 3 messages non lus » pour les lecteurs
     d'écran) : `last_chat_id` de `GET /api/me` (déjà relu toutes les 60 s) ; la page ne lit le chat que s'il a changé
     (chat déjà chargé) ou s'il dépasse le dernier lu. Non lus = messages des **autres** au-delà du dernier lu, parmi ceux
-    que la page a lus ; tes propres messages (d'un autre appareil) ne comptent pas ;
+    que la page a lus ; tes propres messages (d'un autre appareil) ne comptent pas. Parmi eux, ceux qui te mentionnent :
+    un second badge, en couleur d'alerte, « @2 » à côté du nombre (le texte pour lecteurs d'écran devient « 5 messages
+    non lus, dont 2 te mentionnent ») ; rien hors de la page (ni notification du navigateur, ni courriel) ;
   - dernier message lu : `localStorage` `classeur-chat-lu` = `{<id du compte>: numéro}` (accès protégés ; refusé : en
     mémoire seulement ; oublié par « Oublier ce navigateur ») ; il avance quand le chat est sous les yeux ou quand rien de
     nouveau ne vient des autres ; base recréée (`last_chat_id` plus petit) : ramené à `last_chat_id` ;
