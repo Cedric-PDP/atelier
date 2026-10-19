@@ -82,7 +82,8 @@ function makeDom() {
         for (const f of [...((n.listeners && n.listeners[type]) || [])]) f(ev);
         if (ev.stopped) break;
       }
-      if (n_isWindowTarget(type)) for (const f of [...(win.listeners[type] || [])]) f(ev);
+      // Comme dans un navigateur : stopPropagation() arrête aussi l'événement avant window.
+      if (!ev.stopped && n_isWindowTarget(type)) for (const f of [...(win.listeners[type] || [])]) f(ev);
       return ev;
     }
     click(extra) {

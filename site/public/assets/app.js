@@ -2217,7 +2217,10 @@
     if (/[#<>[\]{}|]/.test(s)) return { error: 'caractère interdit dans un titre' };
     return s || null;
   }
-  function openEditor(t) {
+  // t : la collection à modifier (éditeur « Liste d'articles » seul) ; sinon la fenêtre « Nouvelle collection », un onglet
+  // par façon de créer (NEW_MODES), ouverte sur mode (par défaut le premier).
+  function openEditor(t, mode) {
+    stopCatSearch();
     S.editor = {
       id: t ? t.id : null,
       name: t ? t.name : '',
@@ -2226,7 +2229,7 @@
       known: markRaw(new Map(t ? t.items.map((i) => [i.title, i]) : [])),
       base: markRaw(t ? t.items.map((i) => i.title) : []), // titres à l'ouverture (exclusions de l'ajout automatique)
       busy: false, progress: '', error: '', issues: null,
-      mode: t ? 'liste' : 'mots',
+      mode: t ? 'liste' : NEW_MODES.some((m) => m[0] === mode) ? mode : NEW_MODES[0][0],
       kw: { q: '', searching: false, error: '', interp: '', cands: [], chosen: null, searched: '' },
     };
     S.modal = 'editor';
@@ -3519,8 +3522,9 @@
   function closeModal() {
     const m = S.modal;
     S.modal = null;
-    if (m === 'editor') S.editor = null;
-    if (m === 'confirm') S.confirm = null;
+    if (m === 'editor') { S.editor = null; stopCatSearch(); }
+    // Confirmation ouverte depuis une autre fenêtre (« Retirer » une proposition de « Nouvelle collection ») : on y revient.
+    if (m === 'confirm') { const back = S.confirm && S.confirm.back; S.confirm = null; if (back) S.modal = back; }
     if (m === 'tag') S.tagEdit = null;
     if (m === 'switch') S.switchAsk = null;
     if (m === 'editor') kwAbort();
@@ -3531,7 +3535,7 @@
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
-      busy: false, error: '', progress: '' };
+      back: o.back || null, busy: false, error: '', progress: '' };
     S.modal = 'confirm';
   }
   async function runConfirm(cf) {
@@ -3994,13 +3998,14 @@
   function askHideWp(p) {
     openConfirm({
       title: `Retirer « ${p.name} » des propositions ?`,
-      text: 'Cette catégorie ne te sera plus proposée. Tu pourras la rétablir sous « Proposées d\'après tes cartes », ou la retrouver avec la recherche des catégories.',
+      text: 'Cette catégorie ne te sera plus proposée. Tu pourras la rétablir dans « Nouvelle collection », onglet « Propositions », ou la retrouver par son nom dans l\'onglet « Par URL ».',
       ok: 'Retirer des propositions',
       run: async () => {
         await savePrefs({ hidden_proposals: [...S.prefs.hidden_proposals, p.key] });
         S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
       },
       after: () => notify(`« ${p.name} » retirée des propositions.`),
+      back: S.modal === 'editor' ? 'editor' : null,
     });
   }
 
@@ -4178,6 +4183,7 @@
     if (catSugTimer || !catSugCtrl) runCatSuggest();
   }
   function chooseCat(m) {
+    if (S.modal === 'editor') closeModal(); // onglet « Par URL » de « Nouvelle collection » : l'aperçu s'ouvre à la place
     stopCatSearch();
     if (m.type === 'page') openPage(m.title); else openCategory(m.title, m);
     // Le champ de recherche disparaît avec la liste : le focus va au titre de l'album ouvert (pas sur <body>).
@@ -6276,9 +6282,9 @@
   }
 
   // ================================================================ rendu : onglet Collections
-  // Deux zones : « Mes collections » (toutes : favori depuis la Collection globale du jeu, à la main, ou depuis une
-  // catégorie de Wikipédia), puis « Catégories » : des catégories de Wikipédia d'où créer une collection (recherche,
-  // propositions d'après tes cartes).
+  // Une seule zone, « Mes collections » (toutes, quelle que soit leur origine), et un seul point d'entrée pour en créer :
+  // « Nouvelle collection », une fenêtre avec un onglet par façon de faire (modalEditor) : par URL (ou nom) d'une catégorie
+  // ou d'une page de Wikipédia, par mots-clés, par liste d'articles, propositions d'après tes cartes, depuis le jeu.
   function viewWpRow(p) {
     const owned = p.cards.map((t) => byTitle.value.get(normTitle(t))).filter(Boolean).map((l) => l[0]);
     const byR = {};
@@ -6292,7 +6298,10 @@
     return h('div', { class: ['row', 'wp'], key: p.key }, [
       h('span', { class: 'fan', 'aria-hidden': 'true' }, sample.length ? sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
       h('span', { class: 'info' }, [
-        h('button', { class: 'name row-open', type: 'button', title: 'Ouvrir la catégorie', onClick: () => openCategory(p.title, { pages: p.size, subcats: p.subcats, withSubs: subs.length > 0 }) }, p.name),
+        h('button', { class: 'name row-open', type: 'button', title: 'Ouvrir la catégorie', onClick: () => {
+          if (S.modal === 'editor') closeModal();
+          openCategory(p.title, { pages: p.size, subcats: p.subcats, withSubs: subs.length > 0 });
+        } }, p.name),
         rarityBar(byR, p.size),
         h('span', { class: 'line' }, [h('span', null, [h('b', null, fmt(p.owned)), ` sur ${fmt(p.size)}${p.partial ? ' (avec sous-catégories)' : ''}`]),
           h('span', null, pct(p.owned, p.size))]),
@@ -6309,17 +6318,17 @@
       ]),
     ]);
   }
-  // « Proposées d'après tes cartes » : catégories de Wikipédia de tes cartes dont tu as au moins 5 % (et 2 cartes).
+  // Onglet « Propositions » de « Nouvelle collection » : catégories de Wikipédia de tes cartes dont tu as au moins 5 %
+  // (et 2 cartes).
   function viewWpGroup() {
-    if (!proposer) return null;
+    if (!proposer) return [h('p', { class: 'small muted' }, 'Propositions indisponibles dans ce navigateur.')];
     const hidden = !!S.prefs.hide_proposals;
     const list = wpVisible.value;
     const retired = S.prefs.hidden_proposals.length;
-    const head = h('div', { class: 'subhead-line' }, [
-      h('h3', { class: 'subhead', id: 'h-wp' }, "Proposées d'après tes cartes"),
-      h('button', { class: 'linkish', type: 'button', onClick: () => setHideProposals(!hidden) }, hidden ? 'Afficher les propositions' : 'Masquer les propositions'),
-    ]);
-    if (hidden) return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [head, h('p', { class: 'small muted' }, 'Propositions masquées.')]);
+    const toggle = h('button', { class: 'linkish', type: 'button', onClick: () => setHideProposals(!hidden) }, hidden ? 'Afficher les propositions' : 'Masquer les propositions');
+    if (hidden) {
+      return [h('p', { class: 'small muted' }, "Propositions masquées. Rien n'est cherché sur Wikipédia tant qu'elles le restent."), h('div', { class: 'row-actions' }, [toggle])];
+    }
     // Catégories écartées parce que tes collections les couvrent déjà (règle des 80 %) : on le dit, avec la collection qui
     // en couvre le plus (une très grande collection peut en écarter presque toutes).
     const { covered: nCov, coveredBy: top } = wpPruned.value;
@@ -6327,8 +6336,7 @@
     const covText = !nCov ? ''
       : list.length ? `${fmt(nCov)} ${plural(nCov, 'autre catégorie de tes cartes écartée car déjà couverte', 'autres catégories de tes cartes écartées car déjà couvertes')} ${by}.`
         : `Pas de nouvelle proposition : ${fmt(nCov)} ${plural(nCov, 'catégorie de tes cartes est écartée car déjà couverte', 'catégories de tes cartes sont écartées car déjà couvertes')} ${by} (au moins 80 % ${plural(nCov, 'de ses cartes y sont', 'de leurs cartes y sont')} déjà).`;
-    return h('div', { class: 'subgroup', role: 'group', 'aria-labelledby': 'h-wp' }, [
-      head,
+    return [
       S.wp.running ? h('div', { class: 'wp-progress', role: 'status' }, [
         h('progress', { max: Math.max(1, S.wp.total), value: Math.min(S.wp.done, Math.max(1, S.wp.total)), 'aria-label': 'Recherche de propositions' }),
         h('span', null, S.wp.label), h('button', { class: 'linkish', type: 'button', onClick: cancelProposals }, 'Annuler'),
@@ -6337,12 +6345,13 @@
       list.length ? h('div', { class: 'rows' }, list.map(viewWpRow))
         : S.wp.running ? null : !covText ? h('p', { class: 'small muted' }, 'Pas de proposition pour l\'instant : une catégorie de Wikipédia de tes cartes est proposée quand tu en as au moins 5 % (et 2 cartes).') : null,
       covText && !S.wp.running ? h('p', { class: 'small muted wp-covered' }, covText) : null,
-      S.wp.running ? null : h('div', { class: 'row-actions' }, [
-        h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions'),
-        retired ? h('button', { class: 'linkish', type: 'button', onClick: restoreProposals },
+      h('div', { class: 'row-actions' }, [
+        S.wp.running ? null : h('button', { class: 'linkish', type: 'button', onClick: () => computeProposals(true) }, 'Chercher de nouvelles propositions'),
+        retired && !S.wp.running ? h('button', { class: 'linkish', type: 'button', onClick: restoreProposals },
           `Rétablir ${retired > 1 ? 'les ' + fmt(retired) + ' propositions retirées' : 'la proposition retirée'}`) : null,
+        toggle,
       ]),
-    ]);
+    ];
   }
   // Recherche d'une catégorie ou d'une page « Liste de… » de Wikipédia (combobox), ou adresse d'une page collée :
   // suggestions au fil de la frappe (suggestSources, suggestFromUrl) en deux groupes, « Catégories » et « Pages de
@@ -6391,7 +6400,7 @@
       h('label', { class: 'sr', for: 'cat-q' }, "Chercher une catégorie ou une page de liste de Wikipédia, ou coller l'adresse d'une page"),
       h('input', {
         id: 'cat-q', class: 'field full', type: 'search', value: cs.q, autocomplete: 'off', spellcheck: 'false',
-        placeholder: 'Catégorie, page « Liste de… » ou adresse Wikipédia : « violet », « races bovines »…',
+        placeholder: 'https://fr.wikipedia.org/wiki/…',
         role: 'combobox', 'aria-expanded': String(open), 'aria-controls': 'cat-list', 'aria-autocomplete': 'list',
         'aria-activedescendant': open ? 'cat-opt-' + act : null, 'aria-busy': String(!!cs.loading),
         onInput: (e) => catSearchInput(e.target.value, e.inputType === 'insertFromPaste'),
@@ -6414,29 +6423,25 @@
   }
   function viewCollections() {
     const { mine } = collections.value;
-    const hasFavori = !!storedImportKey() || !!(S.me && S.me.has_import_key);
+    const props = proposer && !S.prefs.hide_proposals ? wpVisible.value.length : 0;
+    const add = (label) => h('button', { class: 'btn primary', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), label]);
     return h('div', { class: 'groups' }, [
       h('section', { class: 'group', 'aria-labelledby': 'h-mine' }, [
         h('div', { class: 'section-head' }, [
           h('h2', { id: 'h-mine' }, 'Mes collections'),
-          h('small', null, 'créées avec ton favori depuis la « Collection globale » du jeu, à la main, ou depuis une catégorie ou une page de Wikipédia'),
           h('span', { class: 'spacer' }),
-          h('button', { class: 'btn', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), 'Nouvelle collection']),
+          // Propositions d'après tes cartes : la fenêtre s'ouvre directement sur elles.
+          props && mine.length ? h('button', { class: 'linkish props-link', type: 'button', onClick: () => openEditor(null, 'props') }, [icon('spark', 'sm'),
+            `${fmt(props)} ${plural(props, 'proposition', 'propositions')} d'après tes cartes`]) : null,
+          mine.length ? add('Nouvelle collection') : null,
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
           : h('div', { class: 'empty-box' }, [
-            h('p', null, "Aucune collection pour l'instant. Le plus simple : sur wiki-masters.com, ouvre la « Collection globale », fais une recherche (« vache »…) puis clique ton favori : il propose d'en faire une collection, avec la rareté de chaque carte dans le jeu."),
-            h('p', null, "Tu peux aussi en créer une ici, par mots-clés ou avec une liste d'articles (« Nouvelle collection »), ou depuis une catégorie de Wikipédia (plus bas)."),
-            hasFavori ? null : h('button', { class: 'btn small', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+            h('p', null, "Aucune collection pour l'instant. Crée-en une depuis l'adresse d'une page ou d'une catégorie de Wikipédia, par mots-clés, avec une liste d'articles, parmi les propositions faites d'après tes cartes, ou depuis le jeu avec ton favori."),
+            add('Nouvelle collection'),
+            props ? h('button', { class: 'linkish', type: 'button', onClick: () => openEditor(null, 'props') },
+              `Voir les ${fmt(props)} ${plural(props, 'proposition', 'propositions')} d'après tes cartes`) : null,
           ]),
-      ]),
-      h('section', { class: 'group', 'aria-labelledby': 'h-cats' }, [
-        h('div', { class: 'section-head' }, [
-          h('h2', { id: 'h-cats' }, 'Catégories'),
-          h('small', null, "les catégories de Wikipédia (« Catégorie:Violet »…) et les pages « Liste de… » : cherches-en une (ou colle l'adresse d'une page), ouvre-la, fais-en une collection"),
-        ]),
-        viewCatSearch(),
-        viewWpGroup(),
       ]),
     ]);
   }
@@ -9054,7 +9059,7 @@
   let modalSeq = 0;
   const Modal = {
     name: 'Modal',
-    props: { title: String, wide: Boolean, onClose: Function },
+    props: { title: String, wide: Boolean, cls: String, onClose: Function },
     setup(props, { slots }) {
       const box = ref(null);
       const id = 'modal-title-' + ++modalSeq;
@@ -9075,7 +9080,7 @@
         onPointerdown: (e) => { downOnVeil = e.target === e.currentTarget; },
         onClick: (e) => { if (downOnVeil && e.target === e.currentTarget && props.onClose) props.onClose(); downOnVeil = false; },
       }, [
-        h('div', { class: ['modal', { wide: props.wide }], role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id, tabindex: '-1', ref: box, onKeydown: (e) => trapTab(e, box.value) }, [
+        h('div', { class: ['modal', props.cls || '', { wide: props.wide }], role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': id, tabindex: '-1', ref: box, onKeydown: (e) => trapTab(e, box.value) }, [
           h('div', { class: 'modal-head' }, [
             h('h2', { id }, props.title),
             h('button', { class: 'close', type: 'button', 'aria-label': 'Fermer', onClick: () => props.onClose && props.onClose() }, [icon('x')]),
@@ -9166,7 +9171,6 @@
       h('input', { id: 'kw', class: 'field full', type: 'search', value: kw.q, autocomplete: 'off', spellcheck: 'false',
         placeholder: 'races bovines, footballeur français, cathédrales de France, films de Miyazaki…',
         onInput: (e) => kwInput(ed, e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); kwSearch(ed); } } }),
-      h('p', { class: 'note' }, "Le classeur cherche les pages « Liste de… » de Wikipédia (leurs liens, ou la colonne clé de leurs tableaux, forment la collection), des catégories, les articles dont la première phrase dit « … est une maladie … » (un nom suffit : « maladie »), et construit une requête Wikidata d'après tes mots. Tu peux aussi coller l'adresse d'une page Wikipédia. Choisis un candidat, vérifie l'aperçu, puis enregistre."),
       kw.searching ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche…') : null,
       errLine(kw.error),
       kw.interp ? h('p', { class: 'interp-line' }, ['Interprétation : ', h('b', null, kw.interp)]) : null,
@@ -9183,7 +9187,7 @@
       h('label', { class: 'sr', for: 'ed-name' }, 'Nom de la collection'),
       h('input', { id: 'ed-name', class: 'field full', value: ed.name, maxlength: 120, autocomplete: 'off', placeholder: "Nom, par exemple Dieux de l'Olympe",
         onInput: (e) => { ed.name = e.target.value; } }),
-      h('p', { class: 'note' }, 'Un article Wikipédia par ligne : son titre exact (« Zeus ») ou son adresse fr.wikipedia.org. Chaque article est vérifié sur Wikipédia.'),
+      ed.id ? h('p', { class: 'note' }, 'Un article Wikipédia par ligne : son titre exact (« Zeus ») ou son adresse fr.wikipedia.org. Chaque article est vérifié sur Wikipédia.') : null,
       h('p', { class: 'note', id: 'ed-sep-help' }, "Intercalaire : « # » en début de ligne (« # Sous-continent ») ; cette carte ouvre alors une section de l'album, avec un bord à part. Elle se possède et compte comme les autres."),
       h('label', { class: 'sr', for: 'ed-text' }, 'Articles, un par ligne'),
       h('textarea', { id: 'ed-text', class: 'field full', rows: 12, value: ed.text, spellcheck: 'false', 'aria-describedby': 'ed-sep-help',
@@ -9205,14 +9209,64 @@
       ]),
     ];
   }
+  // « Nouvelle collection » : un onglet par façon de créer, chacun avec son explication en tête. [mode, libellé, icône,
+  // explication].
+  const NEW_MODES = [
+    ['url', 'Par URL', 'link', "Colle l'adresse d'une catégorie ou d'une page de Wikipédia en français (ou tape son nom). Elle s'ouvre en aperçu avec tes cartes : choisis la colonne clé ou les sections s'il y en a, puis « Créer une collection »."],
+    ['mots', 'Par mots-clés', 'search', "Décris un thème : « races bovines », « films de Miyazaki », « maladie ». Le classeur cherche des pages « Liste de… », des catégories, des définitions et Wikidata ; choisis un candidat, vérifie l'aperçu, enregistre."],
+    ['liste', "Par liste d'articles", 'list', "Un article de Wikipédia par ligne, par son titre exact (« Zeus ») ou son adresse. Chaque article est vérifié sur Wikipédia ; la collection garde ton ordre."],
+    ['props', 'Propositions', 'spark', "Les catégories de Wikipédia dont tu as déjà au moins 5 % des cartes (et 2 au moins), trouvées d'après ta collection. Un clic en fait une collection ; le nom ouvre l'aperçu."],
+    ['jeu', 'Depuis le jeu', 'bookmark', "Sur wiki-masters.com, fais une recherche dans la « Collection globale » (« vache »…), puis clique ton favori : il propose d'en faire une collection, avec la rareté de chaque carte dans le jeu."],
+  ];
+  function viewNewFromGame() {
+    const has = !!storedImportKey() || !!(S.me && S.me.has_import_key);
+    return [
+      h('p', { class: 'small muted' }, has ? 'Ton favori est installé : la collection apparaîtra ici dès que tu l\'auras créée sur wiki-masters.com.'
+        : "Il te faut d'abord le favori (un bouton à glisser dans ta barre de favoris) : c'est aussi lui qui met ta collection à jour."),
+      h('div', { class: 'row-actions' }, [h('button', { class: has ? 'btn small' : 'btn small primary', type: 'button', onClick: openFavori },
+        [icon('bookmark', 'sm'), has ? 'Voir mon favori' : 'Installer le favori'])]),
+    ];
+  }
   function modalEditor() {
     const ed = S.editor;
     if (!ed) return null;
-    const tab = (mode, label) => h('button', { type: 'button', role: 'tab', 'aria-selected': String(ed.mode === mode), 'aria-pressed': String(ed.mode === mode),
-      onClick: () => { ed.mode = mode; ed.error = ''; } }, label);
-    return h(Modal, { key: 'editor', wide: ed.mode === 'mots', title: ed.id ? 'Modifier la collection' : 'Nouvelle collection à compléter', onClose: closeModal }, () => [
-      ed.id ? null : h('div', { class: 'seg', role: 'tablist', 'aria-label': 'Façon de créer la collection' }, [tab('mots', 'Par mots-clés'), tab('liste', "Liste d'articles")]),
-      ...(ed.mode === 'mots' && !ed.id ? viewKeywords(ed) : viewListMode(ed)),
+    if (ed.id) return h(Modal, { key: 'editor', title: 'Modifier la collection', onClose: closeModal }, () => viewListMode(ed));
+    const props = proposer && !S.prefs.hide_proposals ? wpVisible.value.length : 0;
+    const cur = NEW_MODES.find((m) => m[0] === ed.mode) || NEW_MODES[0];
+    const go = (mode) => {
+      if (mode === ed.mode) return;
+      if (ed.mode === 'mots') kwAbort();
+      if (ed.mode === 'url') stopCatSearch();
+      ed.mode = mode;
+      ed.error = '';
+    };
+    // Onglets au clavier : ← → (en boucle), Début, Fin ; l'onglet atteint est choisi et prend le focus.
+    const onKey = (e) => {
+      const i = NEW_MODES.findIndex((m) => m[0] === ed.mode);
+      const n = NEW_MODES.length;
+      const j = e.key === 'ArrowRight' ? (i + 1) % n : e.key === 'ArrowLeft' ? (i - 1 + n) % n : e.key === 'Home' ? 0 : e.key === 'End' ? n - 1 : -1;
+      if (j < 0) return;
+      e.preventDefault();
+      go(NEW_MODES[j][0]);
+      nextTick(() => { const el = document.getElementById('newcol-tab-' + NEW_MODES[j][0]); if (el) el.focus(); });
+    };
+    const body = ed.mode === 'url' ? [viewCatSearch()]
+      : ed.mode === 'mots' ? viewKeywords(ed)
+        : ed.mode === 'liste' ? viewListMode(ed)
+          : ed.mode === 'props' ? viewWpGroup()
+            : viewNewFromGame();
+    // Les vues mots-clés et liste ont leurs propres boutons ; les autres onglets se ferment simplement.
+    const ownFoot = ed.mode === 'mots' || ed.mode === 'liste';
+    return h(Modal, { key: 'editor', wide: true, cls: 'newcol', title: 'Nouvelle collection', onClose: closeModal }, () => [
+      h('div', { class: 'newcol-tabs', role: 'tablist', 'aria-label': 'Façon de créer la collection' }, NEW_MODES.map(([mode, label, ic]) => h('button', {
+        key: mode, id: 'newcol-tab-' + mode, type: 'button', role: 'tab', 'aria-selected': String(ed.mode === mode), 'aria-controls': 'newcol-panel',
+        tabindex: ed.mode === mode ? '0' : '-1', onClick: () => go(mode), onKeydown: onKey,
+      }, [icon(ic, 'sm'), h('span', null, label), mode === 'props' && props ? h('span', { class: 'tab-badge' }, fmt(props)) : null]))),
+      h('div', { id: 'newcol-panel', class: 'newcol-panel', role: 'tabpanel', 'aria-labelledby': 'newcol-tab-' + cur[0] }, [
+        h('p', { class: 'newcol-intro' }, cur[3]),
+        ...body,
+      ]),
+      ownFoot ? null : foot([closeBtn()]),
     ]);
   }
   function modalTag() {
@@ -9445,7 +9499,7 @@
         h('div', { class: 'merge-opt' }, [
           h('label', { class: 'check' }, [h('input', { id: 'merge-drop', type: 'checkbox', checked: mg.drop, disabled: mg.busy, onClick: (e) => { mg.drop = e.target.checked; mg.error = ''; } }),
             h('span', null, `Supprimer « ${o.name} » après la fusion`)]),
-          h('p', { class: 'note' }, mg.drop ? (oSrc ? `Tous ses éléments seront dans la collection fusionnée, qui ne reprend pas sa source (${oSrc}) : tu pourras en refaire une collection depuis « Catégories ».`
+          h('p', { class: 'note' }, mg.drop ? (oSrc ? `Tous ses éléments seront dans la collection fusionnée, qui ne reprend pas sa source (${oSrc}) : tu pourras en refaire une collection depuis « Nouvelle collection ».`
             : "Tous ses éléments seront dans la collection fusionnée ; elle n'est supprimée qu'une fois la fusion enregistrée.") : 'Elle restera telle quelle, à côté de la collection fusionnée.'),
         ]),
         info.sections && n && !info.headMoot ? h('div', { class: 'merge-opt' }, [

@@ -11,8 +11,9 @@ rafraîchissement (et de création de collections depuis la « Collection global
 suivre (recherche avec suggestions, propositions d'après tes cartes), rareté estimée des cartes manquantes, partage
 entre amis.
 
-Vocabulaire de l'interface : les **collections** sont les listes de l'utilisateur (créées surtout par le favori depuis
-une recherche de la Collection globale du jeu, sinon à la main dans « Nouvelle collection ») ; les **catégories** sont
+Vocabulaire de l'interface : les **collections** sont les listes de l'utilisateur (créées par le favori depuis
+une recherche de la Collection globale du jeu, ou dans la fenêtre « Nouvelle collection » : par URL, mots-clés, liste
+d'articles ou propositions) ; les **catégories** sont
 les catégories de Wikipédia (« Catégorie:Violet ») qu'il suit. Les deux sont des « collections à compléter » du
 serveur (une catégorie suivie a la source `wp:<nom>`).
 

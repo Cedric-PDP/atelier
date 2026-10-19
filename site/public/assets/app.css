@@ -487,6 +487,27 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .modal .note { font-size: 12.5px; color: var(--faint); }
 .modal .progress-msg { font-size: 13px; color: var(--fg); }
 .modal .err { color: var(--danger); font-size: 13px; }
+/* « Nouvelle collection » : un onglet par façon de créer, en pastilles qui passent à la ligne sur un écran étroit ;
+   l'explication de l'onglet en tête de son panneau. */
+.newcol-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.newcol-tabs [role="tab"] { display: inline-flex; align-items: center; gap: 7px; padding: 7px 13px; border: 1px solid var(--border); border-radius: 99px;
+  background: transparent; color: var(--muted); font: 500 13px var(--f-body); transition: color 0.15s, border-color 0.15s, background-color 0.15s; }
+.newcol-tabs [role="tab"]:hover { color: var(--fg); border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+.newcol-tabs [role="tab"][aria-selected="true"] { color: var(--fg); font-weight: 600; background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); }
+.newcol-tabs [role="tab"][aria-selected="true"] .ic { color: var(--accent); }
+.newcol-tabs .tab-badge { margin-left: 0; }
+.modal.newcol { min-height: min(640px, calc(100vh - 32px)); grid-template-rows: auto auto 1fr auto; } /* même place d'un onglet à l'autre */
+.newcol-panel { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.newcol-panel > .foot { margin-top: auto; padding-top: 6px; }
+.modal p.newcol-intro { max-width: 68ch; color: var(--fg); font-size: 14px; line-height: 1.55; }
+.newcol-panel .prop-search { margin: 0; }
+.newcol-panel .prop-list { position: static; margin-top: 6px; box-shadow: none; max-height: min(360px, 50vh); }
+.newcol-panel .rows { grid-template-columns: repeat(auto-fill, minmax(min(330px, 100%), 1fr)); }
+@media (max-width: 520px) {
+  .newcol-tabs [role="tab"] { padding: 6px 11px; font-size: 12.5px; }
+}
+.props-link { display: inline-flex; align-items: center; gap: 5px; align-self: center; }
 .modal .panel { padding: 12px 14px; }
 .modal ul { margin: 0; }
 .issues { max-height: 180px; overflow-y: auto; padding: 8px 12px 8px 28px; background: var(--surface-2); border-radius: 8px; }

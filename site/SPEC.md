@@ -761,11 +761,31 @@ tes cartes (pas les cases vides). Une valeur inconnue revient à la valeur par d
 
 ## Onglet « Collections » (interface)
 
-Deux zones, dans cet ordre :
+Depuis le 2026-10-20 (demande de l'utilisateur : « on peut créer des collections de plusieurs manières différentes et
+elles sont accessibles de manières différentes. Il faut complètement uniformiser tout ça »), l'onglet n'a plus qu'**une
+zone, « Mes collections »**, et **un seul point d'entrée pour créer** : le bouton principal **« Nouvelle collection »**
+(en tête de la zone, ou dans la liste vide), qui ouvre la fenêtre « Nouvelle collection ». La zone « Catégories »
+(recherche et propositions sous la liste) a disparu : son contenu est dans la fenêtre.
+
+**Fenêtre « Nouvelle collection »** (`modalEditor`, large, hauteur fixe pour que les onglets ne bougent pas) : un onglet
+par façon de créer (`NEW_MODES`, `role=tablist`, ← → en boucle, Début, Fin ; `#newcol-tab-<mode>`, panneau
+`#newcol-panel`), chacun commençant par une explication courte (`.newcol-intro`) :
+
+| Onglet | Contenu |
+|---|---|
+| **Par URL** (`url`, par défaut) | le champ de recherche des catégories et des pages (`#cat-q`, voir 2. ci-dessous) : une adresse de fr.wikipedia.org collée s'ouvre aussitôt, un nom tapé propose catégories et pages « Liste de… ». Le choix **ferme la fenêtre** et ouvre l'aperçu (album de la catégorie ou de la page, colonne clé, sections), d'où « Créer une collection » |
+| **Par mots-clés** (`mots`) | la recherche par mots-clés (candidats, aperçu, « Enregistrer »), inchangée |
+| **Par liste d'articles** (`liste`) | l'éditeur « un article par ligne », inchangé |
+| **Propositions** (`props`, avec leur nombre en pastille) | « Proposées d'après tes cartes » (voir 2. ci-dessous) : « Créer une collection » reste dans la fenêtre ; le nom d'une proposition ferme la fenêtre et ouvre son aperçu ; « Retirer » demande confirmation puis **revient à la fenêtre** (`openConfirm({back:'editor'})`) ; « Masquer / Afficher les propositions » toujours visible, même pendant le calcul |
+| **Depuis le jeu** (`jeu`) | comment créer une collection avec le favori depuis la « Collection globale » de wiki-masters.com, et « Installer le favori » (ou « Voir mon favori » s'il l'est déjà) : l'onglet « Mettre à jour » |
+
+`openEditor(null, mode)` ouvre la fenêtre sur un onglet ; changer d'onglet arrête une recherche en cours (mots-clés,
+suggestions). « Mes collections » a aussi, quand il y en a, un lien « N propositions d'après tes cartes » qui ouvre la
+fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde sa fenêtre à part, « Modifier la collection »
+(l'éditeur « Liste d'articles » seul).
 
 1. **« Mes collections »** : TOUTES les collections à compléter (favori depuis la Collection globale du jeu, « Nouvelle
-   collection » par mots-clés ou liste d'articles, depuis une catégorie ou une page de Wikipédia, anciennes du
-   catalogue), avec « Nouvelle collection ». Une collection de source `wp:…` est signalée sur sa ligne et dans son
+   collection » par URL, mots-clés, liste d'articles ou propositions, anciennes du catalogue). Une collection de source `wp:…` est signalée sur sa ligne et dans son
    album, discrètement : « depuis la catégorie Wikipédia » ; une de source `links:<titre>` : « depuis la page Wikipédia
    « <titre> » » (aussi dans « Entre amis », pour tes collections) ; `links:<titre>#<colonne>` : « depuis la page
    Wikipédia « <titre> », colonne « <colonne> » ». Une collection qui a un **ajout automatique** (voir plus bas) porte sur
@@ -777,9 +797,8 @@ Deux zones, dans cet ordre :
    « Ajouter par tags du jeu », « Modifier », « Réorganiser… » (qui explique pourquoi elle reste de A à Z : voir
    « Réorganiser »), « Fusionner avec… », « Supprimer » (confirmation), et « Voir sur
    Wikipédia » (la catégorie, ou la page). Pour le reste (propositions couvertes, fiches « Dans tes collections », amis, échanges), c'est une collection
-   comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase explique comment en créer
-   une avec le favori (recherche dans la « Collection globale », puis le favori), ou ici, et « Installer le favori »
-   s'il n'y en a pas encore.
+   comme les autres ; un ami la voit comme une collection (`kind: collection`, sans sa source). Vide : une phrase cite les
+   façons d'en créer une, puis « Nouvelle collection » (et le lien vers les propositions s'il y en a).
 
    **« Ajouter par tags du jeu »** (album de toute collection, avant « Modifier » ; demande de l'utilisateur du
    2026-10-17 : « Alek a une collection maladie et doit avoir plein de cartes avec le tag maladie qui ne sont pas
@@ -1024,7 +1043,8 @@ Deux zones, dans cet ordre :
    d'une page et supprimée : sa source disparaît avec elle (la fenêtre le dit) ; la catégorie peut de nouveau être créée
    en collection depuis « Catégories ». Reprendre la source de l'autre changerait l'ordre d'affichage de la collection de
    départ (de A à Z) : pour garder celle de l'autre, partir de l'autre.
-2. **« Catégories »** (catégories et pages de Wikipédia : des sources d'où créer une collection, pas une liste à part) :
+2. **Catégories et pages de Wikipédia** (onglets « Par URL » et « Propositions » de « Nouvelle collection » : des sources
+   d'où créer une collection, pas une liste à part) :
    - **Recherche avec suggestions** (combobox accessible : ↑ ↓, Entrée, Échap, `aria-activedescendant`) sur toutes les
      catégories de Wikipédia **et les pages « Liste de… »** : 250 ms après la dernière frappe (2 caractères au moins,
      « Catégorie: » retiré), **trois requêtes au plus** :
