@@ -2470,6 +2470,9 @@ async function main() {
       check(cls('fcol')[0] === col, 'la collection où les amis remplissent le plus de cases vient en premier');
       const jup = col.querySelectorAll('.fitem').find((n) => text(n).includes('Jupiter'));
       check(jup.querySelectorAll('.holder').map(text).join(',') === 'Léa,Paul' && text(col.querySelectorAll('.fitem')[0]).includes('Léa ×3'), 'qui a quoi : ' + text(col));
+      // Pseudo dans le jeu en info-bulle du prénom (Paul en a donné un, pas Léa).
+      check(jup.querySelectorAll('.holder').map((n) => n.getAttribute('title') || '').join(',') === ',Pseudo dans le jeu : PaulDu13',
+        'info-bulle du pseudo de Paul : ' + jup.querySelectorAll('.holder').map((n) => n.getAttribute('title')).join(','));
       check(fcol('Exemples de test') && titlesIn(fcol('Exemples de test')).join() === 'Article 5', 'Exemples de test : Article 5 (chez Paul) attendu');
     }
     // Membres : nombre de cartes et cartes qui me manquent.
@@ -3843,7 +3846,7 @@ async function main() {
     check(!apiLog.slice(mark).includes('GET /api/members'), 'sans partage, la page ne doit pas lire les membres');
     type(field(), '');
     // Bérénice et Alek montrent leurs cartes ; Alek ouvre de nouveau le chat : les prénoms sont lus (sans leurs cartes).
-    check((await rawApi('PATCH', '/api/me', keyB, { shared: true })).status === 200, 'partage de Bérénice refusé');
+    check((await rawApi('PATCH', '/api/me', keyB, { shared: true, pseudo: 'Bere_42' })).status === 200, 'partage de Bérénice refusé');
     d.getElementById('tab-reglages').click();
     await settle();
     const cbA = d.getElementById('set-shared');
@@ -3854,6 +3857,7 @@ async function main() {
     await settle(80);
     type(field(), 'Salut @bé');
     check(await waitFor(() => acNames().join('|') === '@Bérénice'), 'suggestions de « @bé » : ' + acNames().join('|'));
+    check(text(acList().querySelector('.prop-list__hint')) === 'Bere_42', 'suggestion de « @bé » : pseudo dans le jeu attendu, ' + text(acList()));
     field().dispatch('keydown', { key: 'Enter' });
     await settle();
     check(field().value === 'Salut @Bérénice ', '@Bérénice attendu : « ' + field().value + ' »');
@@ -3861,6 +3865,8 @@ async function main() {
     field().dispatch('keydown', { key: 'Enter' });
     check(await waitFor(() => lastMsg() && lastMsg().classList.contains('mine') && text(lastMsg().querySelector('.chat-at')) === '@Bérénice' && !lastMsg().classList.contains('ping')),
       'mention envoyée : pastille @Bérénice attendue');
+    check(lastMsg().querySelector('.chat-at').getAttribute('title') === 'Pseudo dans le jeu : Bere_42' && !lastMsg().querySelector('.chat-msg__pseudo'),
+      'mention : pseudo de Bérénice en info-bulle attendu, et pas de pseudo sur mes messages');
     // Bérénice mentionne Alek (casse différente) pendant qu'il est ailleurs : badge à part ; une adresse n'est pas une mention.
     d.getElementById('tab-collections').click();
     await settle();
@@ -3877,6 +3883,9 @@ async function main() {
     const mail = all().find((m) => text(m).includes('moi@alek.fr'));
     check(ping && ping.classList.contains('ping') && text(ping.querySelector('.chat-msg__ping')) === 'te mentionne' && text(ping.querySelector('.chat-at.me')) === '@alek',
       'message qui me mentionne : mise en avant attendue');
+    const pseudoA = ping.querySelector('.chat-msg__pseudo');
+    check(pseudoA && text(pseudoA) === 'Bere_42' && pseudoA.getAttribute('href') === 'https://www.wiki-masters.com/profile/Bere_42' && !ping.querySelector('.chat-at.me').getAttribute('title'),
+      'message de Bérénice : pseudo dans le jeu à côté du prénom attendu : ' + text(ping));
     check(mail && !mail.classList.contains('ping') && !mail.querySelector('.chat-at'), 'une adresse électronique n\'est pas une mention');
     check(!tabC().querySelector('.tab-badge'), 'badge resté à l\'ouverture du chat');
     d.getElementById('tab-collections').click();

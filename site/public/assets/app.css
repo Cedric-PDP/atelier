@@ -567,6 +567,11 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .chat-msg__who { font-weight: 700; color: var(--link); overflow-wrap: anywhere; }
 .chat-msg.mine .chat-msg__who { color: var(--fg); }
 .chat-msg__me { color: var(--muted); margin-left: -4px; }
+.chat-msg__pseudo { margin-left: -4px; color: var(--muted); font-size: 11.5px; text-decoration: none; overflow-wrap: anywhere; }
+.chat-msg__pseudo::before { content: '· '; }
+.chat-msg__pseudo:hover, .chat-msg__pseudo:focus-visible { color: var(--link); text-decoration: underline; }
+/* Prénom d'un membre qui a donné son pseudo dans le jeu : pseudo en info-bulle, souligné en pointillés. */
+.has-pseudo, .holder[title], .chat-at[title] { text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; cursor: help; }
 .chat-msg__time { color: var(--faint); font-variant-numeric: tabular-nums; }
 .chat-msg__del { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 6px; background: none; padding: 1px 4px; color: var(--faint); font-size: 11.5px; }
 .chat-msg__del:hover, .chat-msg__del:focus-visible { color: var(--danger); }

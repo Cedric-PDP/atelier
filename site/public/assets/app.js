@@ -961,6 +961,11 @@
   const sharing = () => !!(S.me && S.me.shared);
   const sharingTargets = () => !!(S.me && S.me.shared && S.me.shared_targets); // et ses collections à compléter
   const friendName = (f) => f.name || 'Sans prénom';
+  // Pseudo dans le jeu d'un membre (s'il l'a donné, Réglages), en info-bulle de son prénom : partout où il apparaît, sans
+  // l'alourdir (la ligne de « Entre amis » et le haut de son classeur le montrent en clair).
+  const pseudoTip = (f) => (f && f.pseudo ? 'Pseudo dans le jeu : ' + f.pseudo : null);
+  const friendWho = (f) => h('span', { class: { 'has-pseudo': !!(f && f.pseudo) }, title: pseudoTip(f) }, friendName(f));
+  const nameWithPseudo = (f) => friendName(f) + (f && f.pseudo ? ` (${f.pseudo})` : '');
   // Index des cartes de chaque ami : par titre, puis par identifiant Wikidata, comme pour les tiennes (match.js).
   function makeFriendIndex(list) {
     if (Match) return Match.createIndex(list, resolver);
@@ -976,7 +981,7 @@
     const out = [];
     for (const { f, index } of friendIndexes.value) {
       const c = index.findCard(item);
-      if (c) out.push({ id: f.id, name: f.name, count: c.count || 1, rarity: c.rarity });
+      if (c) out.push({ id: f.id, name: f.name, pseudo: f.pseudo, count: c.count || 1, rarity: c.rarity });
     }
     return out.length > 1 ? out.sort((a, b) => b.count - a.count || COLLATOR.compare(friendName(a), friendName(b))) : out;
   }
@@ -6065,7 +6070,7 @@
     if (!list.length) return null;
     const first = list[0];
     const label = `chez ${friendName(first)}${first.count > 1 ? ' ×' + fmt(first.count) : ''}${list.length > 1 ? ' +' + (list.length - 1) : ''}`;
-    return h('span', { class: ['slot__friends', { dup: first.count > 1 }], title: 'Chez : ' + holdersText(list) }, label);
+    return h('span', { class: ['slot__friends', { dup: first.count > 1 }], title: 'Chez : ' + list.map((x) => nameWithPseudo(x) + (x.count > 1 ? ` ×${fmt(x.count)}` : '')).join(', ') }, label);
   }
   function viewMini(c, i) {
     const r = okRarity(c.rarity) || 'C';
@@ -7025,7 +7030,7 @@
   const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
   const syncedOn = (f) => (f.fetched_at ? `synchro du ${dateDay(f.fetched_at)}` : 'pas encore synchronisé');
   function holderChips(list) {
-    return h('span', { class: 'holders' }, list.map((x) => h('span', { key: x.id, class: ['holder', { dup: x.count > 1 }] },
+    return h('span', { class: 'holders' }, list.map((x) => h('span', { key: x.id, class: ['holder', { dup: x.count > 1 }], title: pseudoTip(x) },
       x.count > 1 ? [friendName(x), h('b', null, ' ×' + fmt(x.count))] : friendName(x))));
   }
   function moreToggle(key, total) {
@@ -7091,7 +7096,7 @@
     const rows = S.friends.more[key] ? x.rows : x.rows.slice(0, FRIEND_ROWS);
     return h('article', { class: 'fcol', key }, [
       h('div', { class: 'fcol__head' }, [
-        h('span', { class: 'fcol__name' }, friendName(x.f)),
+        h('span', { class: 'fcol__name' }, friendWho(x.f)),
         // « 3 de tes cartes complètent « A », « B » et « C » » : ses collections concernées, les plus complétées d'abord.
         h('span', { class: 'fcol__sum' }, [h('b', null, fmt(x.rows.length)),
           ` de tes cartes ${plural(x.rows.length, 'complète', 'complètent')} ${namesText(rankNames(x.rows, (r) => r.cols.map((c) => c.name)), true)}`,
@@ -7125,6 +7130,7 @@
   }
   // ---------------------------------------------------------------- « Échanges possibles »
   const personOf = (p) => (p.me ? 'Toi' : friendName(p.f));
+  const personWho = (p) => (p.me ? 'Toi' : friendWho(p.f));
   const andList = (names) => (names.length > 1 ? names.slice(0, -1).join(', ') + ' et ' + names[names.length - 1] : names[0] || '');
   // Trois noms au plus (entre guillemets pour des collections) : « A », « B » et « C » ; au-delà, « A », « B », « C » et
   // 2 autres.
@@ -7169,7 +7175,7 @@
     const rows = S.friends.more[key] ? p.rows : p.rows.slice(0, FRIEND_ROWS);
     return h('article', { class: ['fcol', 'trade'], key: p.key }, [
       h('div', { class: 'fcol__head' }, [
-        h('span', { class: 'fcol__name' }, [personOf(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personOf(p.z)]),
+        h('span', { class: 'fcol__name' }, [personWho(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(p.z)]),
         h('span', { class: 'fcol__sum' }, tradeSum(p)),
       ]),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
@@ -7214,7 +7220,7 @@
           ]),
           h('label', { class: 'sr', for: 'trade-member' }, 'Les échanges d\'un membre'),
           h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'all'; } },
-            [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, friendName(f)))]),
+            [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, nameWithPseudo(f)))]),
           h('label', { class: 'check' }, [
             h('input', { id: 'trade-dup', type: 'checkbox', checked: fr.tradeDup, onChange: () => { fr.tradeDup = !fr.tradeDup; } }),
             ' Seulement les cartes en double']),
@@ -7667,6 +7673,15 @@
     }
     return out.sort(COLLATOR.compare);
   });
+  // Pseudos dans le jeu par prénom (sans casse) : ceux des membres qui montrent leurs cartes (les seuls que le serveur
+  // donne, et seulement si tu montres les tiennes), pour le nom des messages, les mentions et les suggestions de « @ ».
+  const chatPseudos = computed(() => {
+    const src = friendList.value.length ? friendList.value : chatMembers.value;
+    const m = new Map();
+    for (const f of src) if (f.pseudo && typeof f.name === 'string' && f.name.trim()) m.set(f.name.trim().toLowerCase(), f.pseudo);
+    return m;
+  });
+  const pseudoOf = (name) => (typeof name === 'string' && chatPseudos.value.get(name.trim().toLowerCase())) || null;
   const chatNames = computed(() => {
     const myName = (S.me && S.me.user && S.me.user.name) || '';
     const all = new Map();
@@ -7818,7 +7833,8 @@
     const gen = friendsGen;
     const job = api('GET', '/api/members').then((r) => {
       if (gen !== friendsGen) return;
-      chatMembers.value = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.name === 'string' && m.name).map((m) => markRaw({ name: m.name }));
+      chatMembers.value = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.name === 'string' && m.name)
+        .map((m) => markRaw({ name: m.name, pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null }));
       chatMembersAt = Date.now();
     }).catch(() => { /* la liste reste vide : on tape le prénom à la main */ }).finally(() => { if (chatMembersJob === job) chatMembersJob = null; });
     chatMembersJob = job;
@@ -7884,7 +7900,7 @@
       const me = chatNames.value.me;
       return chatPeople.value.filter((n) => n.toLowerCase() !== me).map((n) => ({ n, r: rank(fold(n)) }))
         .filter((x) => x.r < 9).sort((a, b) => a.r - b.r || COLLATOR.compare(a.n, b.n)).slice(0, CHAT_AC_MAX)
-        .map(({ n }) => ({ key: 'm:' + n, label: '@' + n, insert: '@' + n }));
+        .map(({ n }) => ({ key: 'm:' + n, label: '@' + n, insert: '@' + n, hint: pseudoOf(n) }));
     }
     const hits = [];
     const seen = new Set();
@@ -8193,17 +8209,22 @@
     // Les miens : mon prénom actuel (renommé dans Réglages, il change aussitôt) ; ceux des autres : à la lecture.
     const who = (m.mine && S.me && S.me.user && S.me.user.name) || m.author || 'Sans prénom';
     const info = chatInfo(m);
+    // Son pseudo dans le jeu, discret, avec un lien vers son profil (pas sur les tiens : les autres ne le voient que si
+    // tu leur montres tes cartes).
+    const pseudo = m.mine ? null : pseudoOf(m.author);
     return h('div', { key: m.id, class: ['chat-msg', { mine: m.mine, ping: info.me }] }, [
       h('div', { class: 'chat-msg__head' }, [
         h('span', { class: 'chat-msg__who' }, who),
         m.mine ? h('span', { class: 'chat-msg__me' }, '(toi)') : null,
+        pseudo ? h('a', { class: 'chat-msg__pseudo', href: gameProfileUrl(pseudo), target: '_blank', rel: 'noopener noreferrer',
+          title: `Pseudo dans le jeu : ${pseudo} (son profil dans le jeu)` }, pseudo) : null,
         info.me ? h('span', { class: 'chat-msg__ping' }, 'te mentionne') : null,
         h('time', { class: 'chat-msg__time', datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
         m.mine ? h('button', { class: 'chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
           [icon('trash', 'sm'), h('span', { class: 'chat-msg__del-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
       ]),
       h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
-        : p.at ? h('span', { class: ['chat-at', { me: p.me }] }, p.text)
+        : p.at ? h('span', { class: ['chat-at', { me: p.me }], title: p.me ? null : pseudoTip({ pseudo: pseudoOf(p.text.slice(1)) }) }, p.text)
         : p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
     ]);
   }
@@ -8234,7 +8255,8 @@
     }, [
       it.own ? pill(it.rarity) : null,
       h('span', { class: 'prop-list__name' }, it.label),
-      ac.kind === '#' && !it.own ? h('span', { class: 'prop-list__hint' }, 'pas dans ton classeur') : null,
+      ac.kind === '#' && !it.own ? h('span', { class: 'prop-list__hint' }, 'pas dans ton classeur')
+        : it.hint ? h('span', { class: 'prop-list__hint', title: 'Pseudo dans le jeu' }, it.hint) : null,
     ]);
     return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
       h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
@@ -8736,7 +8758,8 @@
     if (!sharing()) return null;
     const list = holdersOf(item);
     if (!list.length) return S.friends.busy ? h('p', { class: 'small muted', role: 'status' }, 'Recherche chez tes amis…') : null;
-    return h('p', { class: 'friends-note' }, [h('b', null, 'Chez : '), holdersText(list), h('span', { class: 'muted' }, ' · à échanger dans le jeu, entre vous')]);
+    return h('p', { class: 'friends-note' }, [h('b', null, 'Chez : '),
+      ...list.flatMap((x, i) => [i ? ', ' : null, friendWho(x), x.count > 1 ? ` (×${fmt(x.count)})` : null]), h('span', { class: 'muted' }, ' · à échanger dans le jeu, entre vous')]);
   }
   // Fiche d'une carte qui te manque (case vide, ou carte citée dans le chat) : ce qu'en dit Wikipédia, sa rareté
   // estimée d'après ses vues, les collections où elle figure, le marché du jeu (article vérifié seulement) et l'article.
