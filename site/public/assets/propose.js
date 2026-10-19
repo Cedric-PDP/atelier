@@ -50,7 +50,7 @@
  * par une collection, sous-catégories d'une catégorie proposée, regroupées sous elle dans `subs`).
  *
  * « Créer une collection » (source 'wp:<nom>', dans « Mes collections ») :
- *   const members = await proposer.loadMembers(p.title, { signal });     // [{title}] (3 000 au plus, articles seuls)
+ *   const members = await proposer.loadMembers(p.title, { signal });     // [{title}] (20 000 au plus, articles seuls)
  *   (si p.subs : avec les articles de ses sous-catégories, 1 niveau, et des propositions qu'elle regroupe ; l'interface
  *    les lit elle-même)
  *   const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
@@ -82,7 +82,7 @@
   const MAX_PARENTS_CHARS = 200000;
   const BATCH = 50; // titres par requête (limite de l'API pour un compte anonyme)
   const MAX_URL_TITLES = 6000; // longueur encodée des titres d'une requête (adresse raisonnable)
-  const MAX_MEMBERS = 3000; // une collection à compléter a 3 000 éléments au plus
+  const MAX_MEMBERS = 20000; // au-delà, une collection ne tiendrait pas dans 1,7 Mo (targets.js)
 
   // ------------------------------------------------------------------------------------------------ noms et clés
   const PREFIX_RE = /^(?:Catégorie|Category)\s*:\s*/i;
@@ -386,7 +386,7 @@
       const threshold = op.threshold == null ? 0.05 : Number(op.threshold);
       const minCards = op.minCards == null ? 2 : Number(op.minCards);
       const minSize = op.minSize == null ? 10 : Number(op.minSize);
-      const maxSize = op.maxSize == null ? 3000 : Number(op.maxSize);
+      const maxSize = op.maxSize == null ? MAX_MEMBERS : Number(op.maxSize);
       const excluded = new Set();
       for (const e of op.exclude || []) {
         if (typeof e !== 'string') continue;
@@ -486,7 +486,7 @@
       return out;
     }
 
-    // Articles d'une catégorie (pas ses sous-catégories), 3 000 au plus, dans l'ordre de Wikipédia.
+    // Articles d'une catégorie (pas ses sous-catégories), MAX_MEMBERS au plus, dans l'ordre de Wikipédia.
     async function loadMembers(category, options) {
       const op = options || {};
       const limit = Math.min(op.limit || MAX_MEMBERS, MAX_MEMBERS);

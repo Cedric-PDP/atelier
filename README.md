@@ -62,6 +62,8 @@ Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Work
 - **10 ms de CPU par requête** : aucune requête ne traite plus de ~500 cartes en JavaScript. Import par morceaux de
   500, finalisation en SQL dans D1 (le temps SQL ne compte pas), lecture de la collection par morceaux (`?part=N`),
   rafraîchissement par cookie à 10 pages par appel. `dev/api.test.mjs` mesure le JavaScript de chaque chemin.
+  Collections à compléter : pas de nombre d'éléments maximal, 1,7 Mo chacune (une ligne de D1 fait 2 Mo au plus),
+  600 Ko par envoi ; au-delà, la page les envoie en morceaux, réassemblés en SQL (`targets.js`, `upload`).
 - **50 sous-requêtes par appel** (rafraîchissement), **D1** : 100 000 lignes écrites par jour (un premier import de
   N cartes en écrit N).
 

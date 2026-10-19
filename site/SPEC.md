@@ -52,7 +52,7 @@ avec `node:sqlite`).
   **ou** la clé d'import ; toutes les autres routes exigent la clé principale. Le favori n'embarque que la clé
   d'import : s'il fuit (il s'exécute dans la page du jeu), on ne peut qu'envoyer des cartes (remplacer la liste des
   cartes du classeur, comme un import) et **créer** des collections à compléter, dans les quotas (50 collections,
-  600 Ko chacune, 5 Mo en tout, 3 000 éléments) ; on ne peut rien lire (ni cartes, ni étiquettes, ni collections), ni
+  600 Ko par envoi, 5 Mo en tout) ; on ne peut rien lire (ni cartes, ni étiquettes, ni collections), ni
   modifier ou supprimer une collection existante, ni toucher au compte. On la régénère (l'ancien favori cesse de
   marcher) et on supprime les collections en trop. **Marché** (2026-10-16, voir « Le marché ») : la clé d'import ouvre
   aussi `POST /api/market/plan`, `POST /api/market/prices`, `POST /api/market/live` et `POST /api/market/fail`
@@ -178,9 +178,9 @@ autre format (voir « Le favori »).
 | `POST /api/tags/bulk` | `{card_ids:[…], add:[…], remove:[…]}` | `{ok:true}` |
 | `POST /api/tags/rename` | `{from, to}` (fusionne si `to` existe) | `{ok:true}` |
 | `GET /api/targets` | | `{targets:[Collection]}` (avec `auto`, l'ajout automatique, `null` sans règle) |
-| `POST /api/targets/save` | `{id?, name, items, source?, auto?, auto_skip?, expect_updated_at?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (une catégorie, ou une page dont les liens font la collection, n'a qu'une collection par compte : deux onglets, deux appareils ; `links:<titre>#<colonne>` est une source `links:` comme une autre, comparée en entier : l'interface, elle, ne propose qu'une collection par page, toutes colonnes confondues ; l'ancienne source `links` sans « : » n'est pas concernée). **Ajout automatique** (2026-10-18, voir « Ajout automatique » dans « Onglet « Collections » ») : `auto` **absent = inchangé** (règles et exclusions gardées : « Modifier », « Réorganiser », un intercalaire, une fusion… n'ont rien à renvoyer), `null` = effacé (règles et exclusions), `{rules:[{k, v}], skip?}` = règles remplacées (`k` : `gtag` tag du jeu, `cat` catégorie du jeu, `tag` tag du classeur — `v` = le tag, ou `Catégorie/` pour toute une catégorie de tags — ; `v` nettoyé, 1 à 500 caractères ; 20 règles au plus ; doublons repliés, sans la casse pour `gtag` et `cat` ; liste vide = effacé) et exclusions gardées, sauf `skip` donné (liste de 2 000 titres au plus, qui les remplace) ; `auto_skip: {add?:[titre…], del?:[titre…]}` (3 000 titres au plus chacun, 1 à 300 caractères) : titres ajoutés aux exclusions (à la fin, sans doublon) ou retirés, comparés comme la page (première lettre en majuscule, « _ » en espace, apostrophes et guillemets typographiques ramenés à l'ASCII), appliqué après `auto` et **ignoré s'il ne reste pas de règle** ; au-delà de 2 000 exclusions (ou de 200 Ko pour tout `auto`), les plus anciennes sont oubliées (un retrait ne doit jamais échouer pour ça) ; forme invalide : `400`, rien d'écrit. `auto` compte dans les 5 Mo du compte. **`expect_updated_at`** (texte, 40 caractères au plus, seulement avec un `id`, sinon `400`) : enregistrement conditionnel, seulement si la collection rangée a encore ce `updated_at` (dans la même requête SQL que l'écriture) ; sinon `409 {error, conflict:true, target}` où `target` est la collection telle qu'elle est maintenant (`null` si elle a été supprimée : jamais recréée), et rien n'est écrit. L'ajout automatique de la page s'en sert (deux onglets, deux appareils), ainsi que « Arrêter » ; les autres actions de la page ne l'envoient pas (comportement d'avant) |
+| `POST /api/targets/save` | `{id?, name, items, source?, auto?, auto_skip?, expect_updated_at?, upload?}` | `{target}` : crée, ou remplace celle de cet `id` ; **sans `id` et avec une source `wp:…` ou `links:…`**, remplace la plus ancienne collection qui a déjà cette source (deux onglets, deux appareils ; comparée en entier : `links:<titre>`, `links:<titre>#<colonne>` et `links:<titre>#<colonne>#§<sections>` sont trois sources, et l'interface fait une collection par choix de colonne et de sections d'une page, 2026-10-19 ; l'ancienne source `links` sans « : » n'est pas concernée). **Taille** (2026-10-19, demande de l'utilisateur : plus de limite à 3 000 éléments ni à 600 Ko par création) : aucun nombre d'éléments maximal ; **1,7 Mo** d'éléments en JSON par collection (une ligne de D1 fait 2 Mo au plus, `auto` compris), **600 Ko par envoi** (au-delà, `400` : 3 000 éléments réalistes coûtent déjà ~2 ms de JS, loin des 10 ms) ; une collection plus lourde arrive **en morceaux** : `upload: {id (8 à 64 caractères [A-Za-z0-9_-], tiré par la page), part (0 à 99), last?}`. Un morceau sans `last` ne porte que ses `items` (non vides) : rangé dans `target_uploads` (sans ses crochets), réponse `{part}` ; trois envois en cours au plus par compte (les plus anciens partent), 1,7 Mo au plus chacun, effacés au bout d'une heure. Le dernier (`last: true`) porte le reste du corps et ses éléments (vides permis) : les morceaux 0 à `part - 1` doivent tous être là (sinon `400`, rien d'écrit), la taille de l'ensemble est contrôlée, puis la collection est écrite **en SQL** (`group_concat` des morceaux dans l'ordre : rien n'est relu en JavaScript) et les morceaux effacés, dans une transaction ; la réponse a alors `target.items = null` (la page garde ceux qu'elle a envoyés). **Ajout automatique** (2026-10-18, voir « Ajout automatique » dans « Onglet « Collections » ») : `auto` **absent = inchangé** (règles et exclusions gardées : « Modifier », « Réorganiser », un intercalaire, une fusion… n'ont rien à renvoyer), `null` = effacé (règles et exclusions), `{rules:[{k, v}], skip?}` = règles remplacées (`k` : `gtag` tag du jeu, `cat` catégorie du jeu, `tag` tag du classeur — `v` = le tag, ou `Catégorie/` pour toute une catégorie de tags — ; `v` nettoyé, 1 à 500 caractères ; 20 règles au plus ; doublons repliés, sans la casse pour `gtag` et `cat` ; liste vide = effacé) et exclusions gardées, sauf `skip` donné (liste de 2 000 titres au plus, qui les remplace) ; `auto_skip: {add?:[titre…], del?:[titre…]}` (20 000 titres au plus chacun, 1 à 300 caractères) : titres ajoutés aux exclusions (à la fin, sans doublon) ou retirés, comparés comme la page (première lettre en majuscule, « _ » en espace, apostrophes et guillemets typographiques ramenés à l'ASCII), appliqué après `auto` et **ignoré s'il ne reste pas de règle** ; au-delà de 2 000 exclusions (ou de 200 Ko pour tout `auto`), les plus anciennes sont oubliées (un retrait ne doit jamais échouer pour ça) ; forme invalide : `400`, rien d'écrit. `auto` compte dans les 5 Mo du compte. **`expect_updated_at`** (texte, 40 caractères au plus, seulement avec un `id`, sinon `400`) : enregistrement conditionnel, seulement si la collection rangée a encore ce `updated_at` (dans la même requête SQL que l'écriture) ; sinon `409 {error, conflict:true, target}` où `target` est la collection telle qu'elle est maintenant (`null` si elle a été supprimée : jamais recréée), et rien n'est écrit. L'ajout automatique de la page s'en sert (deux onglets, deux appareils), ainsi que « Arrêter » ; les autres actions de la page ne l'envoient pas (comportement d'avant) |
 | `POST /api/targets/delete` | `{id}` | `{ok:true}` |
-| `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), 1 à 3 000 cartes, `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
+| `POST /api/targets/from-game` | (clé principale **ou clé d'import**, CORS du jeu ; celle du favori) `{name, query, items:[{title, rarity, card_id, category?, image?}]}` : `query` = la recherche faite dans la Collection globale du jeu (1 à 100 caractères), au moins une carte (600 Ko au plus : un seul envoi), `rarity` ∈ C, PC, R, SR, UR, L (sinon `400`), `card_id` = `card.id` du jeu (texte, sert à écarter une carte lue deux fois, pas gardé) | `{target:{id, name, source, count, created_at, updated_at}}` (sans les éléments) : crée **toujours** une nouvelle collection (un `id` envoyé est ignoré), `source` = `wm:<query>`, éléments `{title, description: category ou null, image, status:'ok', rarity}` (toutes les images retirées si elles font dépasser 600 Ko : la page retrouve les vignettes sur Wikipédia) ; mêmes validations et quotas que `targets/save` |
 | `GET /api/members` | (il faut partager soi-même, sinon `403`) | `{members:[{id, name, pseudo, count, fetched_at, targets}]}` (`pseudo` : son pseudo dans le jeu, ou `null`) : les **autres** membres qui partagent, sauf les classeurs vides (ni carte ni collection) ; `id` = identifiant public, `count` = nombre de cartes différentes, `fetched_at` = dernière synchro, `targets` = `null` s'il ne montre pas ses collections à compléter, sinon `{count, updated_at}` (leur nombre et leur dernier changement) |
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url, v?}], part, next_part}` : pages de 1 000 cartes, sans étiquettes ; `v` = la cote de la carte telle que rangée dans le cache commun `prices` (`{"<rareté>[*]": {p, n, w, l, d}}`, voir « Le marché »), seulement quand elle en a une (pas pour `{}`, carte lue sans vente) |
 | `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?, sep?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre, au qid et à `sep: true` pour un intercalaire ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
@@ -205,8 +205,8 @@ updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` 
 automatique » ; colonne `targets.auto`, jamais montrée aux autres membres) ; `qid` (facultatif, identifiant Wikidata `Q…`) permet de reconnaître une carte possédée même si son titre
 diffère (renommage, redirection, homonymie) : l'interface rapproche d'abord par titre, puis par qid
 (`site/public/assets/match.js`, qids des cartes résolus dans le navigateur et gardés en cache), `status` = `ok` | `missing` (article introuvable) | `disambiguation` (page d'homonymie). Les `items` sont
-vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (au plus 3 000 éléments,
-100 collections par utilisateur). `source` = `catalog:<id>` pour une collection ajoutée jadis depuis le catalogue
+vérifiés **par l'interface** sur Wikipédia avant l'envoi ; le serveur ne fait que les ranger (1,7 Mo d'éléments au plus,
+50 collections par utilisateur). `source` = `catalog:<id>` pour une collection ajoutée jadis depuis le catalogue
 (retiré le 2026-10-16 ; elle reste une collection comme les autres), `wp:<nom de la catégorie>` pour une collection
 **créée depuis une catégorie de Wikipédia** (« Créer une collection » dans l'album de la catégorie, ou sur une
 proposition de `site/public/assets/propose.js` : catégories des cartes de l'utilisateur dont il possède au moins 5 % et
@@ -214,7 +214,8 @@ proposition de `site/public/assets/propose.js` : catégories des cartes de l'uti
 par catégorie et par compte, voir `targets/save`), `links:<titre de la page>` pour une collection **créée depuis les
 liens d'une page de Wikipédia** (« Créer une collection » dans l'album de la page ; titre tel que Wikipédia l'écrit,
 redirection suivie, avec ses espaces ; éléments avec leur `qid` et leur description Wikidata ; une seule par page et par
-compte, voir `targets/save`), `links:<titre de la page>#<colonne>` pour une collection **créée depuis la colonne clé des
+compte, voir `targets/save`), `links:<titre de la page>#<colonne>` (et `…#§<sections>` pour une partie de ses
+tableaux, voir « Colonne clé des tableaux d'une page ») pour une collection **créée depuis la colonne clé des
 tableaux d'une page** (libellé court de la colonne, « Nom » ; un titre de Wikipédia ne contient jamais « # » ; source
 coupée à 200 caractères ; éléments dans l'ordre des lignes, avec `qid` et description ; l'interface la compte comme LA
 collection de cette page), `wd` ou `cat` quand
@@ -457,7 +458,7 @@ favori `client:true`, `code` (`session`, `limit`, `antibot`, `game`, `network`, 
 (variable, 50 par défaut) ; 20 000 cartes par utilisateur ; étiquette = texte nettoyé, 60 caractères au plus (2 niveaux au plus dans le nom :
 « Catégorie/Sous-catégorie », catégories larges : Pays, Métiers, Lieux, Culture et œuvres, Sciences et nature, Histoire
 et événements, Organisations, Autres), 30 par carte, 50 000 par compte, 5 000 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par
-compte, 600 Ko chacune, 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente, trois envois en
+compte, sans nombre d'éléments maximal, 1,7 Mo chacune (600 Ko par envoi, en morceaux au-delà), 5 Mo au total ; import : 500 cartes et 40 morceaux par envoi, 8 Mo en attente, trois envois en
 cours au plus par classeur ; journal des synchros : 50 lignes et 30 jours par classeur, 30 signalements du favori par
 heure, 2 Ko par signalement ; corps JSON
 de 5 Mo au plus (4 Ko pour `/api/account`). Entrées du jeu invalides (sans titre, rareté inconnue, champs trop
@@ -505,7 +506,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   `GET /api/members/<id>/targets` = le membre et une page de collections par la clé primaire `(user_id, id)` (`id >
   curseur`) : une somme cumulée (`SUM … OVER`) de leur taille rangée garde celles qui commencent sous 512 Ko (la première
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre, au qid et au drapeau `sep` ; une réponse reste sous
-  ~1 Mo (une collection fait 600 Ko rangés au plus), même pour un compte à 5 Mo de collections.
+  ~2 Mo (une collection fait 1,7 Mo rangés au plus), même pour un compte à 5 Mo de collections.
 - **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
   partage pas ses collections ») ; « Échanges possibles »
   (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
@@ -793,7 +794,7 @@ Deux zones, dans cet ordre :
    (« Tout cocher » / « Tout décocher ») ; **« Ajouter N cartes »** = `POST /api/targets/save {id, name, items, source?}` :
    les éléments existants tels quels, puis les nouveaux à la fin (`{title, description: catégorie du jeu de la carte,
    image: null, status:'ok', qid?}`, qid s'il est connu), sans doublon (titre ou qid revérifiés à l'enregistrement) ;
-   limites de `targets.js` contrôlées avant l'envoi (3 000 éléments : « Décoche-en N », bouton grisé ; 600 Ko) ;
+   limite de `targets.js` contrôlée avant l'envoi (1,7 Mo) ;
    l'erreur du serveur s'affiche telle quelle (5 Mo par compte…). Une collection **faite d'une catégorie ou d'une page
    de Wikipédia** (`wp:` / `links:`) : l'ajout est permis et elle **garde sa source** (comme avec « Modifier », qui le
    permettait déjà ; aucune relecture automatique de la catégorie ne défait l'ajout) ; la fenêtre le dit (« les cartes
@@ -846,10 +847,9 @@ Deux zones, dans cet ordre :
      « 4 cartes ajoutées automatiquement : 1 à « Maladies », 2 à « Virus » et 1 à « Grande ». », mis à la suite du
      message encore affiché (« Mis à jour depuis wiki-masters.com : … »). Rien à ajouter : aucune requête (sans
      collection à règles, la page fait exactement les mêmes lectures qu'avant).
-   - **Limites** (celles de `targets.js`, vérifiées avant l'envoi) : seulement les cartes qui tiennent (3 000 éléments,
-     600 Ko d'éléments en JSON), dans l'ordre de A à Z ; les autres sont dites dans le message (« « Grande » est pleine :
-     2 cartes de ses règles d'ajout automatique n'ont pas pu y entrer (3 000 éléments et 600 Ko au plus par
-     collection). »), une fois (pas répété à chaque synchro tant que rien ne change) ; une erreur du serveur (5 Mo par
+   - **Limites** (celles de `targets.js`, vérifiées avant l'envoi) : seulement les cartes qui tiennent (1,7 Mo
+     d'éléments en JSON), dans l'ordre de A à Z ; les autres sont dites dans le message (« « Grande » est pleine :
+     2 cartes de ses règles d'ajout automatique n'ont pas pu y entrer (1,7 Mo au plus par collection). »), une fois (pas répété à chaque synchro tant que rien ne change) ; une erreur du serveur (5 Mo par
      compte…) : « Ajout automatique à « … » impossible : … », une fois aussi. Rien d'autre n'est touché.
    - **Où et pourquoi** : dans la page, pas dans le serveur à la fin d'un import. Seule la page rapproche les titres par
      qid (résolus sur Wikipédia ; le serveur n'a pas les qids des cartes) et replie tags et catégories exactement comme la
@@ -977,15 +977,13 @@ Deux zones, dans cet ordre :
    (« Mais « … » n'a pas pu être supprimée (…) : elle est restée telle quelle, supprime-la depuis son album. ») ; s'il n'y
    avait que la suppression, la fenêtre reste ouverte avec l'erreur. Réussite : « « Autre » fusionnée dans
    « Nom » : N éléments ajoutés, M déjà présents ; « Autre » supprimée. ». Classeur changé pendant l'enregistrement : la
-   suite est abandonnée. **Limites de `targets.js` vérifiées avant l'envoi** : plus de 3 000 éléments (« La collection
-   fusionnée aurait N éléments : 3 000 au plus. Retire d'abord K éléments de l'une des deux (« Modifier »). », bouton
-   grisé) ; plus de 600 Ko d'éléments en JSON (octets UTF-8) : si les images seules font dépasser, la fusion se fait
+   suite est abandonnée. **Limite de `targets.js` vérifiée avant l'envoi** : plus de 1,7 Mo d'éléments en JSON (octets UTF-8) : si les images seules font dépasser, la fusion se fait
    **sans les images** (`image: null` partout, comme `targets/from-game` : la page retrouve les vignettes sur Wikipédia ;
-   l'aperçu le dit), sinon « Collection fusionnée trop volumineuse : N Ko (même sans les images), 600 Ko au plus. »,
+   l'aperçu le dit), sinon « Collection fusionnée trop volumineuse : N Ko (même sans les images), 1,7 Mo au plus. »,
    bouton grisé. Les 5 Mo par compte restent contrôlés par le serveur (erreur affichée telle quelle).
 
    **Source** : la collection fusionnée garde **celle de la collection de départ** et aucune autre requête ne crée de
-   collection : jamais de doublon de source `wp:`/`links:` (une seule collection par catégorie ou par page). Partie
+   collection : jamais de doublon de source `wp:`/`links:` (une seule collection par catégorie, ou par choix d'une page). Partie
    d'une collection faite d'une catégorie ou d'une page : elle garde sa source et reste de A à Z (la fenêtre le dit, et
    n'offre pas d'intercalaire en tête), comme avec « Ajouter par tags du jeu » ou « Modifier ». L'autre faite d'une catégorie ou
    d'une page et supprimée : sa source disparaît avec elle (la fenêtre le dit) ; la catégorie peut de nouveau être créée
@@ -1032,12 +1030,12 @@ Deux zones, dans cet ordre :
      un album oublie cette Entrée. Une suggestion choisie : le focus va au titre de l'album ouvert (`#album-name`,
      `tabindex=-1`).
    - **Album d'une catégorie** (choisie dans les suggestions ou les propositions), badge « catégorie de Wikipédia » :
-     ses articles (`list=categorymembers`, espace principal, 3 000 au plus ; « inclure les sous-catégories (1 niveau :
+     ses articles (`list=categorymembers`, espace principal, 20 000 au plus ; « inclure les sous-catégories (1 niveau :
      N) » si elle en a, cochée d'emblée quand on l'ouvre depuis une proposition qui regroupe des sous-catégories), la
      progression avec tes cartes (titre puis qid), la rareté estimée des cases vides d'après les vues, comme les autres
      albums, de A à Z sans numéros ; « Voir sur Wikipédia » ; **« Créer une collection »** = `POST /api/targets/save
      {name, items, source:'wp:<nom>'}` (nommée comme la catégorie ; articles lus, avec ceux des sous-catégories si la
-     case est cochée ; impossible au-delà de 3 000 articles) : l'album devient celui de la nouvelle collection (dans
+     case est cochée ; impossible au-delà de 20 000 articles, ou si elle dépasse 1,7 Mo) : l'album devient celui de la nouvelle collection (dans
      « Mes collections »). Tu en as déjà une (source `wp:<nom>`) : **« Ouvrir ta collection »** à la place.
      « Créer une collection » de sa proposition en cours : le bouton attend (« Un instant… »), puis l'album passe à la
      collection créée ; jamais deux collections de même source (voir aussi `targets/save`).
@@ -1055,10 +1053,13 @@ Deux zones, dans cet ordre :
      « Liste de races bovines » : 355 sur 589 (330 par la nature seule). Progression, rareté estimée, de A à Z sans
      numéros, « Voir sur Wikipédia » (la page) ; **« Créer une collection »** = `POST /api/targets/save {name, items,
      source:'links:<titre>'}` (nom : le titre sans « Liste de / des / d' », première lettre en majuscule, 80 caractères
-     au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 3 000 articles
-     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même page, de tous ses liens ou d'une
-     colonne clé : une page ne donne qu'une collection) : **« Ouvrir ta collection »** (aussi « ta collection » dans les
-     suggestions).
+     au plus ; éléments `{title, description, image:null, status:'ok', qid}` ; impossible au-delà de 20 000 articles
+     gardés) : l'album devient celui de la nouvelle collection ; déjà faite (même source : même page, et même colonne et
+     mêmes sections) : **« Ouvrir ta collection »** (« ta collection », ou « N de tes collections », dans les
+     suggestions). Une page donne **une collection par choix** (2026-10-19) : tous ses liens, la colonne clé de tous ses
+     tableaux, ou de certaines sections ; l'album de la page cite celles déjà faites (« Tes collections de cette page :
+     … », chacune s'ouvre d'un clic), et l'album d'une collection faite d'une colonne clé a **« Autres sections de la
+     page »**, qui rouvre la page (tableaux et liens déjà lus dans la session : sans requête) pour en faire une autre.
    - **Colonne clé des tableaux d'une page** (2026-10-18, demande de l'utilisateur : « quand on crée une collection en
      partant d'une page de type liste qui contient une liste sous forme d'un ou plusieurs tableaux, l'interface doit
      proposer la colonne à choisir comme clé ») : dans « Liste des pays du monde », « Liste des présidents de la
@@ -1109,14 +1110,22 @@ Deux zones, dans cet ordre :
        tous, « mixte » (`indeterminate`) si une partie ; deux intertitres de même nom sous des parents différents (« En
        France » des gares desservies et des gares fermées) restent deux sections. Une case par tableau seulement sous une
        section qui en a plusieurs (ou à côté de sous-sections), et pour les tableaux sans intertitre (« Tableau 2 ·
-       <légende> (N articles) »). Rien ne se décoche s'il ne resterait aucun tableau (la case est alors grisée). Une page
-       ne donne toujours qu'une collection (`links:<titre>#<colonne>`), faite des tableaux cochés. Articles **dans l'ordre des tableaux et des lignes**,
+       <légende> (N articles) »). Rien ne se décoche s'il ne resterait aucun tableau (la case est alors grisée). Articles **dans l'ordre des tableaux et des lignes**,
        chacun une fois (un doublon garde sa première place), **numérotés** (tri « Ordre ») ; tout se recalcule sans
        requête. Sans colonne : la case de la nature dominante, comme avant.
      - **« Créer une collection »** avec une colonne : `POST /api/targets/save {name, items, source:'links:<titre>#<nom
        court de la colonne>'}` (mêmes nom et éléments que ci-dessus, dans l'ordre), message « Collection « … » créée : N
-       articles (colonne « Nom » des tableaux de la page, dans l'ordre), dans « Mes collections ». ». Plus de 3 000
-       articles : « décoche des tableaux ».
+       articles (colonne « Nom » des tableaux de la page, dans l'ordre), dans « Mes collections ». ». Plus de 20 000
+       articles : « décoche des tableaux ». **Une partie des tableaux seulement** (2026-10-19, demande de l'utilisateur :
+       « une par section, ou tout ensemble ») : source `links:<titre>#<colonne>#§<sections>`, une collection de plus ;
+       `<sections>` = les sections entièrement cochées les plus hautes, séparées par « + » (« À l'étranger », « En
+       Testlande + Gares fermées »), un intertitre qui a un homonyme dans la page précédé de celui au-dessus (« Gares
+       desservies en 2026 › En France »), et les tableaux cochés seuls sous une section en partie cochée (leur légende,
+       ou « Tableau N ») ; source de plus de 200 caractères : coupée, avec une empreinte (FNV-1a) du texte entier. Nom :
+       celui de la page, « — » et les sections (« Gares desservies par TGV — À l'étranger », 80 caractères au plus) ;
+       message « (colonne « Gare » des tableaux de la page, section « À l'étranger », dans l'ordre) » ; ligne de la
+       collection : « depuis la page Wikipédia « … », colonne « Gare », section « À l'étranger » ». Tout recoché : la
+       source de toute la colonne, celle d'avant.
      - **« Nouvelle collection »** (mots-clés), candidat « Page Wikipédia » : même lecture, même présélection et même
        « Colonne clé » (`#kw-key`, tous les tableaux, sans « Tableaux lus »), aperçu dans l'ordre des lignes (« Colonne
        « Nom » des tableaux de la page « … », dans l'ordre des lignes ») ; la collection y reste enregistrée sans source,
@@ -1153,7 +1162,7 @@ Deux zones, dans cet ordre :
         la plus grande, à taille égale la première de A à Z). La parente dit combien elle en regroupe (« Regroupe 3
         sous-catégories proposées : Jaune, Rouge et Vert. La collection est créée sous-catégories comprises. ») et son
         « Créer une collection » prend ses articles, ceux de ses sous-catégories (1 niveau) et ceux des propositions
-        regroupées plus bas (petites-filles) ; plus de 3 000 ainsi : ses articles et ceux des seules propositions
+        regroupées plus bas (petites-filles) ; plus de 20 000 ainsi : ses articles et ceux des seules propositions
         regroupées ; encore trop : refusé (l'ouvrir pour en faire une collection sans ses sous-catégories). Si la
         parente n'est pas proposable (seuils, retirée, couverte, déjà en collection), les filles restent.
      Chaque proposition dit pourquoi elle est là (« Tu as : Coquelicot, Fraise et 3 autres » : les cartes comptées).

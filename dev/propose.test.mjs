@@ -136,9 +136,11 @@ function makeClock(start = Date.UTC(2026, 9, 15)) {
 }
 // Résultats sortis du vm en objets ordinaires (deepStrictEqual compare aussi les prototypes).
 const plain = (x) => JSON.parse(JSON.stringify(x));
+// Seuil de taille des propositions ramené à 3 000 (par défaut : 20 000, MAX_MEMBERS) pour éprouver ses bords sur de
+// petits scénarios ; { maxSize: undefined } garde celui par défaut.
 const make = (opts, mod = P) => {
   const p = mod.createProposer(opts);
-  return { compute: async (...a) => plain(await p.compute(...a)), loadMembers: async (...a) => plain(await p.loadMembers(...a)),
+  return { compute: async (titles, o) => plain(await p.compute(titles, { maxSize: 3000, ...o })), loadMembers: async (...a) => plain(await p.loadMembers(...a)),
     uncached: (t) => p.uncached(t), clearCache: () => p.clearCache() };
 };
 const mk = (wiki, extra = {}) => {
@@ -254,7 +256,7 @@ function scenario() {
   for (const n of ['Naissance en 1950', 'Décès à 72 ans', 'Homonymie', 'Film sorti en 1998']) assert.equal(by[n], undefined, n);
   const infoAsked = wiki.calls.filter((p) => p.prop === 'categoryinfo').flatMap((p) => p.titles.split('|'));
   for (const n of ['Naissance en 1950', 'Décès à 72 ans', 'Homonymie', 'Film sorti en 1998', 'Seule']) assert.ok(!infoAsked.includes(C(n)), 'taille non demandée : ' + n);
-  ok('seuils (5 %, 2 cartes, taille 10 à 3 000) et bruit écarté avant les tailles');
+  ok('seuils (5 %, 2 cartes, taille 10 à maxSize) et bruit écarté avant les tailles');
   // Tri : ratio puis possédées décroissants.
   assert.deepEqual(list.map((r) => r.name), ['Animal de compagnie', 'Kampen', 'Félin', 'Énorme exact', 'Grand ensemble', 'Petit lot']);
   for (let i = 1; i < list.length; i++) assert.ok(list[i - 1].ratio > list[i].ratio || (list[i - 1].ratio === list[i].ratio && list[i - 1].owned >= list[i].owned));
@@ -386,6 +388,9 @@ function scenario() {
   assert.ok(b.some((r) => r.name === 'Trop petit'), 'taille 9 avec minSize 5');
   const c = await proposer.compute(sc.titles, { maxSize: 5000 });
   assert.ok(c.some((r) => r.name === 'Énorme de trop'));
+  // Par défaut, jusqu'à 20 000 articles (une collection en tient autant depuis le 2026-10-19).
+  const d = await proposer.compute(sc.titles, { maxSize: undefined });
+  assert.ok(d.some((r) => r.name === 'Énorme de trop'), '3 001 articles proposés par défaut');
   ok('options threshold, minCards, minSize, maxSize');
 }
 
@@ -560,7 +565,7 @@ function scenario() {
 {
   const members = {
     [C('Race bovine originaire de France')]: Array.from({ length: 1234 }, (_, i) => 'Race ' + i),
-    [C('Astéroïde')]: Array.from({ length: 3600 }, (_, i) => 'Astéroïde ' + i),
+    [C('Astéroïde')]: Array.from({ length: 20600 }, (_, i) => 'Astéroïde ' + i),
   };
   const wiki = makeWiki({ members });
   const { proposer } = mk(wiki);
@@ -571,13 +576,13 @@ function scenario() {
   assert.equal(wiki.calls.length, 3, '3 morceaux de 500');
   assert.ok(wiki.calls.every((p) => p.cmtitle === 'Catégorie:Race bovine originaire de France'));
   const b = await proposer.loadMembers('Catégorie:Astéroïde');
-  assert.equal(b.length, 3000, '3 000 au plus');
-  assert.equal(wiki.calls.length - 3, 6, 'arrêt dès 3 000');
+  assert.equal(b.length, 20000, '20 000 au plus');
+  assert.equal(wiki.calls.length - 3, 40, 'arrêt dès 20 000');
   const c = await proposer.loadMembers('Inexistante');
   assert.deepEqual(c, []);
   const d = await proposer.loadMembers('Astéroïde', { limit: 700 });
   assert.equal(d.length, 700);
-  ok('loadMembers : continuation, 3 000 au plus, préfixe ajouté');
+  ok('loadMembers : continuation, 20 000 au plus, préfixe ajouté');
 }
 
 // ------------------------------------------------------------------------------------------------ vraies données, sans réseau

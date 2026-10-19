@@ -763,7 +763,6 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
     { name: '', items: [] },
     { name: 'x'.repeat(81), items: [] },
     { name: 'ok', items: 'non' },
-    { name: 'ok', items: Array.from({ length: 3001 }, (_, i) => ({ title: `A${i}`, status: 'ok' })) },
     { name: 'ok', items: [{ title: 'A', status: 'peut-être' }] },
     { name: 'ok', items: [{ status: 'ok' }] },
     { id: 'pas valide !', name: 'ok', items: [] },
@@ -771,8 +770,9 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
     r = await call('POST', 'targets/save', { key: alice.key, body });
     assert.equal(r.status, 400, JSON.stringify(body).slice(0, 80));
   }
-  r = await call('POST', 'targets/save', { key: alice.key, body: { name: 'x'.repeat(80), items: Array.from({ length: 3000 }, (_, i) => ({ title: `Article ${i}`, status: 'ok' })) } });
-  assert.equal(r.status, 200);
+  // Plus de limite à 3 000 éléments (2026-10-19) : seulement leur taille.
+  r = await call('POST', 'targets/save', { key: alice.key, body: { name: 'x'.repeat(80), items: Array.from({ length: 5000 }, (_, i) => ({ title: `Article ${i}`, status: 'ok' })) } });
+  assert.equal(r.status, 200, JSON.stringify(r.json).slice(0, 200));
   for (let i = 2; i < 50; i++) {
     r = await call('POST', 'targets/save', { key: alice.key, body: { id: `c${i}`, name: `Collection ${i}`, items: [] } });
     assert.equal(r.status, 200);
@@ -791,7 +791,7 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   assert.deepEqual(r.json, { ok: true });
   r = await call('GET', 'targets', { key: alice.key });
   assert.equal(r.json.targets.length, 1);
-  assert.equal(r.json.targets[0].items.length, 3000);
+  assert.equal(r.json.targets[0].items.length, 5000);
 });
 
 await test('collections à compléter : une seule collection par catégorie de Wikipédia (source wp:)', async () => {
@@ -855,13 +855,61 @@ await test('collections à compléter : une seule collection par page de Wikipé
   await call('DELETE', 'me', { key: yan.key });
 });
 
-await test('collections à compléter : 600 Ko par collection, 5 Mo par compte', async () => {
+await test('collections à compléter : 600 Ko par envoi, 1,7 Mo par collection (en morceaux), 5 Mo par compte', async () => {
   const ivy = await signup('Ivy');
   // ~560 Ko d'éléments : 1 000 éléments avec une description de 500 caractères.
   const heavy = Array.from({ length: 1000 }, (_, i) => ({ title: `Article ${i}`, description: 'd'.repeat(500), status: 'ok' }));
   let r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'Trop', items: [...heavy, ...heavy.slice(0, 100)] } });
   assert.equal(r.status, 400);
   assert.match(r.json.error, /600 Ko/);
+  // En morceaux : deux de ~575 Ko et un de ~290 Ko (le dernier porte le reste du corps), assemblés dans l'ordre en SQL ; réponse sans
+  // les éléments ; plus rien en attente ensuite.
+  const parts = [0, 1, 2].map((k) => heavy.slice(0, k < 2 ? 1000 : 500).map((x, i) => ({ ...x, title: `Morceau ${k} n° ${i}` })));
+  const staged = () => env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM target_uploads').get().n;
+  const send = (k, last, extra = {}, id = 'envoi-ivy-1') => call('POST', 'targets/save', { key: ivy.key,
+    body: { items: parts[k], upload: { id, part: k, ...(last ? { last: true } : {}) }, ...(last ? { name: 'Grande', source: 'links:Grande page' } : {}), ...extra } });
+  r = await send(0, false);
+  assert.deepEqual([r.status, r.json], [200, { part: 0 }]);
+  r = await send(1, false);
+  assert.deepEqual([r.status, r.json], [200, { part: 1 }]);
+  assert.equal(staged(), 2);
+  r = await send(2, true);
+  assert.equal(r.status, 200, JSON.stringify(r.json).slice(0, 200));
+  assert.equal(r.json.target.items, null);
+  assert.equal(r.json.target.source, 'links:Grande page');
+  assert.equal(staged(), 0);
+  const big = (await call('GET', 'targets', { key: ivy.key })).json.targets.find((x) => x.id === r.json.target.id);
+  assert.equal(big.items.length, 2500);
+  assert.deepEqual(big.items.map((x) => x.title), parts.flat().map((x) => x.title));
+  assert.deepEqual(big.items[1500], { title: 'Morceau 1 n° 500', description: 'd'.repeat(500), image: null, status: 'ok' });
+  // Remplacée en morceaux, conditionnellement (expect_updated_at), avec un dernier morceau vide.
+  r = await send(0, false, {}, 'envoi-ivy-2');
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { id: big.id, name: 'Grande bis', items: [], upload: { id: 'envoi-ivy-2', part: 1, last: true }, expect_updated_at: big.updated_at } });
+  assert.equal(r.status, 200, JSON.stringify(r.json).slice(0, 200));
+  const bis = (await call('GET', 'targets', { key: ivy.key })).json.targets.find((x) => x.id === big.id);
+  assert.deepEqual([bis.name, bis.items.length, bis.items[0].title], ['Grande bis', 1000, 'Morceau 0 n° 0']);
+  // Un morceau manquant : rien n'est écrit.
+  r = await send(1, true, {}, 'envoi-ivy-3');
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /manquent/);
+  // Plus de 1,7 Mo en tout : refusé au morceau qui dépasse.
+  for (const k of [0, 1, 2]) await send(k, false, {}, 'envoi-ivy-4');
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { items: heavy, upload: { id: 'envoi-ivy-4', part: 3 } } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /1,7 Mo/);
+  r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'X', items: heavy, upload: { id: 'envoi-ivy-4', part: 3, last: true } } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /1,7 Mo/);
+  for (const upload of ['x', { id: 'court', part: 0 }, { id: 'envoi-ivy-5', part: -1 }, { id: 'envoi-ivy-5', part: 1.5 }]) {
+    r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'X', items: [], upload } });
+    assert.equal(r.status, 400, JSON.stringify(upload));
+    assert.match(r.json.error, /upload/);
+  }
+  // Trois envois en cours au plus : le plus ancien part.
+  for (const n of [5, 6, 7]) await call('POST', 'targets/save', { key: ivy.key, body: { items: heavy.slice(0, 1), upload: { id: `envoi-ivy-${n}`, part: 0 } } });
+  assert.deepEqual(env.DB.sqlite.prepare("SELECT DISTINCT upload_id AS u FROM target_uploads WHERE user_id = ? ORDER BY u").all(ivy.user.id).map((x) => x.u),
+    ['envoi-ivy-5', 'envoi-ivy-6', 'envoi-ivy-7']);
+  await call('POST', 'targets/delete', { key: ivy.key, body: { id: big.id } });
   // Les descriptions sont coupées à 500 caractères, sans séparer un emoji.
   r = await call('POST', 'targets/save', { key: ivy.key, body: { name: 'Coupe', items: [{ title: 'A', description: `${'e'.repeat(499)}😀z` }] } });
   assert.equal(r.json.target.items[0].description, 'e'.repeat(499));
@@ -1064,14 +1112,14 @@ await test("collection depuis une recherche du jeu (favori) : clé d'import sur 
     [{ name: 'X', query: 'x', items: [{ ...ok, card_id: 12 }] }, /card_id/],
     [{ name: 'X', query: 'x', items: [{ ...ok, title: '' }] }, /titre/],
     [{ name: 'X', query: 'x', items: [null] }, /invalide/],
-    [{ name: 'X', query: 'x', items: Array.from({ length: 3001 }, (_, i) => ({ ...ok, card_id: `c${i}` })) }, /3000/],
   ]) {
     r = await call('POST', 'targets/from-game', { key: importKey, body });
     assert.equal(r.status, 400, JSON.stringify(body).slice(0, 80));
     assert.match(r.json.error, re);
   }
   assert.equal((await call('GET', 'targets', { key: gus.key })).json.targets.length, 2);
-  // Quotas de saveTarget : 3 000 cartes permises, 600 Ko par collection, 50 collections, 5 Mo en tout.
+  // Quotas de saveTarget : pas de nombre de cartes maximal, 600 Ko par envoi (le favori envoie en une fois), 50
+  // collections, 5 Mo en tout.
   const big = Array.from({ length: 3000 }, (_, i) => ({ title: `Article ${i}`, rarity: 'C', card_id: `c${i}` }));
   r = await call('POST', 'targets/from-game', { key: importKey, body: { name: 'Grande', query: 'article', items: big } });
   assert.deepEqual([r.status, r.json.target.count], [200, 3000]);

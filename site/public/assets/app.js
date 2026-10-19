@@ -361,6 +361,35 @@
     }
     return data || {};
   }
+  // POST /api/targets/save : en un envoi tant que ses éléments font moins de TARGET_PART_BYTES en JSON, sinon en morceaux
+  // (upload {id, part, last} de targets.js), le dernier portant le reste du corps. La réponse d'un envoi en morceaux n'a
+  // pas les éléments (target.items = null) : ceux envoyés les remplacent. Marge sous les 600 Ko du serveur : il range
+  // chaque élément avec tous ses champs (description, image à null…).
+  const TARGET_PART_BYTES = 480 * 1024;
+  const uploadId = () => {
+    const a = new Uint8Array(12);
+    try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); }
+    return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
+  };
+  async function saveTargetApi(body) {
+    const items = Array.isArray(body.items) ? body.items : [];
+    const parts = [];
+    let cur = [];
+    let size = 2;
+    for (const it of items) {
+      const n = utf8Length(JSON.stringify(it)) + 40;
+      if (cur.length && size + n > TARGET_PART_BYTES) { parts.push(cur); cur = []; size = 2; }
+      cur.push(it);
+      size += n;
+    }
+    if (parts.length === 0) return api('POST', '/api/targets/save', body);
+    parts.push(cur);
+    const id = uploadId();
+    for (let k = 0; k < parts.length - 1; k++) await api('POST', '/api/targets/save', { items: parts[k], upload: { id, part: k } });
+    const r = await api('POST', '/api/targets/save', { ...body, items: parts[parts.length - 1], upload: { id, part: parts.length - 1, last: true } });
+    if (r.target && r.target.items === null) r.target = { ...r.target, items };
+    return r;
+  }
 
   // ================================================================ Wikipédia et Wikidata (depuis le navigateur)
   // Une requête à la fois par service, avec une petite pause ; 429 et 5xx : on attend (Retry-After s'il est lisible) et
@@ -795,18 +824,24 @@
   // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), depuis les liens d'une page de Wikipédia (source
   // « links:<titre> » : `page` = le titre, signalée « depuis la page Wikipédia « … » » ; « links:<titre>#<colonne> » quand
   // elle est faite de la colonne clé des tableaux de la page : `column` = le libellé de la colonne, et elle est ordonnée
-  // comme les lignes des tableaux ; un titre de Wikipédia ne contient jamais « # »), ou jadis ajoutées du catalogue
-  // (sources wm:, wd, cat, links, def, catalog:… ou aucune).
+  // comme les lignes des tableaux ; un titre de Wikipédia ne contient jamais « # ») ; « links:<titre>#<colonne>#§<sections> »
+  // quand elle n'est faite que de certaines sections de ses tableaux (pageSelection : `sections` = « En France », « À
+  // l'étranger › Allemagne + Suisse »…), ou jadis ajoutées du catalogue (sources wm:, wd, cat, links, def, catalog:… ou
+  // aucune).
   const isCatSource = (s) => typeof s === 'string' && s.startsWith('wp:');
   const PAGE_SRC = 'links:';
   const pageSourceParts = (s) => {
     if (typeof s !== 'string' || !s.startsWith(PAGE_SRC) || s.length <= PAGE_SRC.length) return null;
     const rest = s.slice(PAGE_SRC.length);
     const k = rest.indexOf('#');
-    return k < 0 ? { page: rest, column: null } : { page: rest.slice(0, k), column: rest.slice(k + 1) || null };
+    if (k < 0) return { page: rest, column: null, sections: null };
+    const col = rest.slice(k + 1);
+    const j = col.indexOf('#§');
+    return { page: rest.slice(0, k), column: (j < 0 ? col : col.slice(0, j)) || null, sections: j < 0 ? null : col.slice(j + 2) || null };
   };
   const pageOfSource = (s) => { const p = pageSourceParts(s); return p && p.page ? p.page : null; };
   const columnOfSource = (s) => { const p = pageSourceParts(s); return p ? p.column : null; };
+  const sectionsOfSource = (s) => { const p = pageSourceParts(s); return p ? p.sections : null; };
   // Thèmes du catalogue (retiré le 2026-10-16) qui n'avaient pas d'ordre (`ordered: false` dans catalog.json, repris de
   // git 9a62469) : leurs collections (source « catalog:<id> ») restent de A à Z, sans numéros.
   const UNORDERED_CATALOG = new Set(['vaches', 'chiens', 'chats', 'chevaux', 'cepages', 'fromages', 'constellations', 'pays', 'departements', 'regions',
@@ -820,7 +855,8 @@
       const cat = isCatSource(t.source);
       const page = pageOfSource(t.source);
       const column = page ? columnOfSource(t.source) : null;
-      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && (!page || !!column) && !unorderedSource(t.source), cat, page, column, t };
+      const sections = column ? sectionsOfSource(t.source) : null;
+      return { kind: 'target', id: t.id, key: 'target:' + t.id, name: t.name, items: t.items, ordered: !cat && (!page || !!column) && !unorderedSource(t.source), cat, page, column, sections, t };
     });
     return { all, mine: all };
   });
@@ -2199,7 +2235,6 @@
     });
     if (bad.length) { ed.error = 'À corriger : ' + bad.slice(0, 4).join(' ; ') + (bad.length > 4 ? ' ; …' : '.'); return; }
     if (!titles.length) { ed.error = 'Ajoute au moins un article, un par ligne.'; return; }
-    if (titles.length > 3000) { ed.error = `3 000 articles au plus par collection (il y en a ${fmt(titles.length)}).`; return; }
     const alive = () => S.editor === ed;
     ed.busy = true;
     try {
@@ -2248,7 +2283,7 @@
         const del = items.filter((i) => !before.has(titleKey(i.title)) && skipped.has(titleKey(i.title))).map((i) => i.title);
         if (add.length || del.length) body.auto_skip = { ...(add.length ? { add } : {}), ...(del.length ? { del } : {}) };
       }
-      const r = await api('POST', '/api/targets/save', body);
+      const r = await saveTargetApi(body);
       if (!alive()) return;
       if (r.target) upsertTarget(r.target); else await loadTargets();
       closeModal();
@@ -2277,7 +2312,7 @@
       });
       const body = { id: t.id, name: t.name, items };
       if (t.source) body.source = t.source;
-      const r = await api('POST', '/api/targets/save', body);
+      const r = await saveTargetApi(body);
       if (gen !== cardsGen) return; // classeur changé entre-temps
       if (r.target) upsertTarget(r.target); else await loadTargets();
     } catch (e) {
@@ -2361,7 +2396,7 @@
   async function saveItemsOf(t, items, extra) {
     const body = { id: t.id, name: t.name, items, ...extra };
     if (t.source) body.source = t.source;
-    const r = await api('POST', '/api/targets/save', body);
+    const r = await saveTargetApi(body);
     if (r.target) upsertTarget(r.target); else await loadTargets();
   }
   async function removeFromCollection(t, index) {
@@ -2585,7 +2620,7 @@
         ok: 'Passer en ordre manuel',
         run: async () => {
           const gen = cardsGen;
-          const r = await api('POST', '/api/targets/save', { id: t.id, name: t.name, items: az });
+          const r = await saveTargetApi({ id: t.id, name: t.name, items: az });
           if (gen !== cardsGen) return;
           if (r.target) upsertTarget(r.target); else await loadTargets();
           const nt = targets.value.find((x) => x.id === t.id);
@@ -2602,7 +2637,7 @@
       ok: 'Créer la copie et la réorganiser',
       run: async () => {
         const gen = cardsGen;
-        const r = await api('POST', '/api/targets/save', { name, items: az });
+        const r = await saveTargetApi({ name, items: az });
         if (gen !== cardsGen) return;
         if (r.target) upsertTarget(r.target); else await loadTargets();
         const nt = r.target ? targets.value.find((x) => x.id === r.target.id) : null;
@@ -2646,7 +2681,7 @@
   // Fusion de deux listes d'éléments (opts : sections = la collection a un ordre, head = la première carte ajoutée devient
   // un intercalaire) : {items, added (éléments ajoutés), present (éléments de l'autre déjà là), enriched (éléments déjà là
   // complétés), headMoot (la première carte ajoutée est déjà un intercalaire), changed, noImages (images retirées pour
-  // tenir dans 600 Ko), hadImages, kb (taille en Ko si elle ne tient pas), tooMany, tooBig, own (tes cartes après)}.
+  // tenir dans 1,7 Mo), hadImages, kb (taille en Ko si elle ne tient pas), tooBig, own (tes cartes après)}.
   function mergeTargetItems(base, other, opts) {
     const qidOf = (it) => it.qid || (resolver ? resolver.known(it.title) || null : null);
     const items = base.slice();
@@ -2689,7 +2724,7 @@
       items.push(item);
       added.push(item);
     }
-    // Limites de targets.js (3 000 éléments, 600 Ko d'éléments en JSON) ; trop lourde : sans les images, si elle tient.
+    // Limite de targets.js (1,7 Mo d'éléments en JSON) ; trop lourde : sans les images, si elle tient.
     const fits = (s) => s.length * 3 <= TARGET_MAX_BYTES || utf8Length(s) <= TARGET_MAX_BYTES;
     let out = items;
     let json = JSON.stringify(out);
@@ -2708,7 +2743,6 @@
       items: out, added, present, enriched, headMoot, noImages, hadImages, tooBig,
       changed: out.length !== base.length || (out.some((it, i) => it !== base[i]) && JSON.stringify(out) !== JSON.stringify(base)),
       kb: tooBig ? Math.ceil(utf8Length(json) / 1024) : 0,
-      tooMany: out.length > TARGET_MAX_ITEMS,
       own: out.reduce((n, it) => n + (findCard(it) ? 1 : 0), 0),
     };
   }
@@ -2745,8 +2779,7 @@
     const name = mergeName(mg);
     if (!name) { mg.error = 'Donne un nom à la collection fusionnée.'; return; }
     if (name.length > 80) { mg.error = 'Le nom de la collection fait 80 caractères au plus.'; return; }
-    if (info.tooMany) { mg.error = `La collection fusionnée aurait ${fmt(info.items.length)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus.`; return; }
-    if (info.tooBig) { mg.error = 'Collection fusionnée trop volumineuse : 600 Ko au plus.'; return; }
+    if (info.tooBig) { mg.error = 'Collection fusionnée trop volumineuse : 1,7 Mo au plus.'; return; }
     const save = info.changed || name !== t.name;
     if (!save && !mg.drop) { mg.error = `Rien à fusionner : les éléments de « ${o.name} » sont déjà tous dans « ${t.name} ».`; return; }
     const gen = cardsGen;
@@ -2765,7 +2798,7 @@
         }
         let r;
         try {
-          r = await api('POST', '/api/targets/save', body);
+          r = await saveTargetApi(body);
         } catch (e) {
           if (gen === cardsGen && S.merge === mg) mg.error = e.message;
           return;
@@ -2839,8 +2872,12 @@
   // « t:<Catégorie de tags>/ » (tags du classeur).
   const TAGADD_PAGE = 120; // cartes de l'aperçu affichées d'abord
   const TAGADD_MAX = 16; // propositions au plus par liste (celles du même nom et celles choisies à la main en plus)
-  const TARGET_MAX_ITEMS = 3000; // targets.js : MAX_ITEMS
-  const TARGET_MAX_BYTES = 600 * 1024; // targets.js : MAX_ITEMS_BYTES (éléments en JSON)
+  // targets.js : pas de nombre d'éléments maximal (2026-10-19), MAX_ITEMS_BYTES = 1,7 Mo d'éléments en JSON, envoyés en
+  // morceaux au-delà de 600 Ko par envoi (saveTargetApi).
+  const TARGET_MAX_BYTES = 1_700_000;
+  // Articles lus au plus depuis une source (catégorie, page, requête Wikidata, proposition) : au-delà, ils ne tiendraient
+  // pas dans 1,7 Mo (~70 octets par article au moins) ; l'album d'une source plus grande n'en montre que autant.
+  const LIST_MAX = 20000;
   const titleKey = (t) => (Match ? Match.normTitle(t) : normTitle(t));
   // Octets UTF-8 d'un texte (la limite de targets.js se compte en octets).
   const utf8Length = (s) => {
@@ -3202,8 +3239,7 @@
     if (rules.length > AUTO_MAX_RULES) { ta.error = `${fmt(AUTO_MAX_RULES)} règles au plus pour l'ajout automatique : décoche des tags ou des catégories, ou « Refaire à chaque synchro ».`; return; }
     if (!fresh.length && !st.changed) { ta.error = 'Ces cartes sont déjà toutes dans la collection.'; return; }
     const items = fresh.length ? [...t.items, ...fresh] : t.items;
-    if (items.length > TARGET_MAX_ITEMS) { ta.error = `${fmt(TARGET_MAX_ITEMS)} éléments au plus par collection : elle en aurait ${fmt(items.length)}. Décoche-en ${fmt(items.length - TARGET_MAX_ITEMS)}.`; return; }
-    if (fresh.length && utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) { ta.error = 'Collection trop volumineuse avec ces cartes : 600 Ko au plus. Décoche-en une partie.'; return; }
+    if (fresh.length && utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) { ta.error = 'Collection trop volumineuse avec ces cartes : 1,7 Mo au plus. Décoche-en une partie.'; return; }
     const body = { id: t.id, name: t.name, items };
     if (t.source) body.source = t.source;
     if (rules.length) {
@@ -3218,7 +3254,7 @@
     ta.busy = true;
     ta.error = '';
     try {
-      const r = await api('POST', '/api/targets/save', body);
+      const r = await saveTargetApi(body);
       if (gen !== cardsGen) return; // classeur changé entre-temps
       if (r.target) upsertTarget(r.target); else await loadTargets();
       if (S.tagAdd === ta) closeModal();
@@ -3313,17 +3349,15 @@
     const cands = [...found.values()].sort((a, b) => COLLATOR.compare(a.title, b.title));
     const fresh = [];
     let left = 0;
-    let room = TARGET_MAX_ITEMS - t.items.length;
     let bytes = cands.length ? utf8Length(JSON.stringify(t.items)) : 0;
     for (const c of cands) {
       const q = resolver ? resolver.known(c.title) || null : null;
       if (q && qids.has(q)) continue;
       const item = itemOfCard(c, q);
       const size = utf8Length(JSON.stringify(item)) + 1;
-      if (room <= 0 || bytes + size > TARGET_MAX_BYTES) { left++; continue; }
+      if (bytes + size > TARGET_MAX_BYTES) { left++; continue; }
       if (q) qids.add(q);
       fresh.push(item);
-      room--;
       bytes += size;
     }
     return { cands, fresh, left };
@@ -3373,13 +3407,13 @@
       let t = targets.value.find((x) => x.id === t0.id);
       for (let attempt = 0; t && autoOf(t) && attempt < 3; attempt++) {
         const plan = autoPlan(t);
-        const full = () => warn(t, `full:${t.items.length + plan.fresh.length}:${plan.left}`, `« ${t.name} » est pleine : ${cards$(plan.left)} de ses règles d'ajout automatique ${plural(plan.left, "n'a", "n'ont")} pas pu y entrer (${fmt(TARGET_MAX_ITEMS)} éléments et 600 Ko au plus par collection).`);
+        const full = () => warn(t, `full:${t.items.length + plan.fresh.length}:${plan.left}`, `« ${t.name} » est pleine : ${cards$(plan.left)} de ses règles d'ajout automatique ${plural(plan.left, "n'a", "n'ont")} pas pu y entrer (1,7 Mo au plus par collection).`);
         if (!plan.fresh.length) { if (plan.left) full(); break; }
         const body = { id: t.id, name: t.name, items: [...t.items, ...plan.fresh] };
         if (t.source) body.source = t.source;
         if (t.updated_at) body.expect_updated_at = t.updated_at;
         try {
-          const r = await api('POST', '/api/targets/save', body);
+          const r = await saveTargetApi(body);
           if (stale()) return;
           if (r.target) upsertTarget(r.target); else await loadTargets();
           added.push({ name: t.name, n: plan.fresh.length });
@@ -3423,7 +3457,7 @@
       if (t.source) body.source = t.source;
       if (t.updated_at) body.expect_updated_at = t.updated_at;
       try {
-        const r = await api('POST', '/api/targets/save', body);
+        const r = await saveTargetApi(body);
         if (gen !== cardsGen) return null;
         if (r.target) upsertTarget(r.target); else await loadTargets();
         return targets.value.find((x) => x.id === id) || null;
@@ -3889,9 +3923,9 @@
     }
     return null;
   }
-  // Articles de la collection créée d'une proposition : ceux de la catégorie (3 000 au plus) ; si elle en regroupe d'autres (p.subs :
+  // Articles de la collection créée d'une proposition : ceux de la catégorie (20 000 au plus) ; si elle en regroupe d'autres (p.subs :
   // propositions cachées sous elle), aussi ceux de ses sous-catégories (1 niveau) et des propositions regroupées plus bas
-  // (petites-filles…). Plus de 3 000 ainsi : ses articles et ceux des seules propositions regroupées ; encore trop : erreur.
+  // (petites-filles…). Plus de 20 000 ainsi : ses articles et ceux des seules propositions regroupées ; encore trop : erreur.
   async function proposalMembers(p) {
     if (!p.subs || !p.subs.length) return { members: await proposer.loadMembers(p.title, {}), withSubs: false };
     const byName = new Map(S.wp.list.map((x) => [x.name, x]));
@@ -3900,18 +3934,18 @@
     const add = (list) => { for (const m of list) if (!out.has(m.title)) out.set(m.title, m); };
     add(await categoryMembers(p.title, true, null));
     for (const n of p.subs) {
-      if (out.size > 3000) break;
+      if (out.size > LIST_MAX) break;
       if (!direct(n)) add(await categoryMembers(CAT_NS + n, false, null));
     }
-    if (out.size > 3000) {
+    if (out.size > LIST_MAX) {
       out.clear();
       add(await categoryMembers(p.title, false, null));
-      for (const n of p.subs) { if (out.size > 3000) break; add(await categoryMembers(CAT_NS + n, false, null)); }
+      for (const n of p.subs) { if (out.size > LIST_MAX) break; add(await categoryMembers(CAT_NS + n, false, null)); }
     }
-    if (out.size > 3000) throw new Error(`« ${p.name} » et les catégories qu'elle regroupe ont plus de 3 000 articles : trop pour une collection. Ouvre-la pour en faire une collection sans ses sous-catégories.`);
+    if (out.size > LIST_MAX) throw new Error(`« ${p.name} » et les catégories qu'elle regroupe ont plus de 20 000 articles : trop pour une collection. Ouvre-la pour en faire une collection sans ses sous-catégories.`);
     return { members: [...out.values()], withSubs: true };
   }
-  // « Créer une collection » d'une proposition : ses articles (directement dans la catégorie, 3 000 au plus ; avec ses
+  // « Créer une collection » d'une proposition : ses articles (directement dans la catégorie, 20 000 au plus ; avec ses
   // sous-catégories si elle en regroupe) deviennent une collection à compléter de source « wp:<nom> », nommée comme la
   // catégorie, dans « Mes collections ». On reste sur la liste. Classeur changé pendant la lecture (resetData) : rien
   // n'est enregistré.
@@ -3929,7 +3963,7 @@
       if (!members.length) throw new Error('Cette catégorie ne contient plus d\'articles.');
       const items = members.map((m) => ({ title: m.title, description: null, image: null, status: 'ok' }));
       const name = p.name.length > 80 ? p.name.slice(0, 79) + '…' : p.name;
-      const r = await api('POST', '/api/targets/save', { name, items, source: p.key });
+      const r = await saveTargetApi({ name, items, source: p.key });
       if (stale()) return;
       if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== p.key));
@@ -3991,10 +4025,12 @@
   const pageName = (t) => { const n = /^Liste\b/i.test(t) ? listName(t) : t; return n.length > 80 ? n.slice(0, 79) + '…' : n; };
   // Ta collection créée depuis une catégorie (source « wp:<nom> ») ou une page (« links:<titre> »), ou null.
   const collectionFor = (key) => targets.value.find((t) => t.source === key) || null;
-  // Une page ne donne qu'une collection, de tous ses liens (« links:<titre> ») ou de la colonne clé de ses tableaux
-  // (« links:<titre>#<colonne> ») : la plus ancienne des deux, ou null.
-  const pageCollection = (title) => targets.value.find((t) => pageOfSource(t.source) === title) || null;
-  const catCollection = (cv) => (cv.type === 'page' ? pageCollection(cv.title) : collectionFor(cv.key));
+  // Une page donne une collection par choix (2026-10-19, demande de l'utilisateur : « une par section, ou tout
+  // ensemble ») : de tous ses liens (« links:<titre> »), de la colonne clé de tous ses tableaux (« links:<titre>#<colonne> »)
+  // ou de certaines sections (« …#§<sections> ») ; pageCollections = toutes les tiennes, dans l'ordre de création.
+  const pageCollections = (title) => targets.value.filter((t) => pageOfSource(t.source) === title);
+  // Celle du choix en cours (même source que « Créer une collection »), ou null.
+  const catCollection = (cv) => collectionFor(cv.type === 'page' ? pageSelection(cv).source : cv.key);
   const pagesOf = (j) => ((j && j.query && j.query.pages) || []).slice().sort((a, b) => (a.index || 0) - (b.index || 0));
   const catSuggCache = new Map(); // texte replié (ou « url:<titre> ») -> suggestions
   let catSugCtrl = null;
@@ -4202,22 +4238,24 @@
   // Ouvre une page (suggestion « Pages de liste », adresse collée) : les articles qu'elle lie, comme un album (source
   // « links:<titre> », titre tel que Wikipédia l'écrit, redirection suivie), ou ceux de la colonne clé de ses tableaux
   // (tables : tableaux lus par pageTables ; cols : colonnes proposées (tableColumns) ; col : clé de la colonne choisie,
-  // '' = tous les liens, null = pas encore choisie ; tableOff : tableaux décochés).
-  function openPage(title) {
+  // '' = tous les liens, null = pas encore choisie ; tableOff : tableaux décochés). reuse (« Autres sections de la page »
+  // d'une de ses collections) : ses tableaux et ses liens déjà lus dans cette session servent sans requête.
+  function openPage(title, reuse) {
     const t = String(title || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
     if (!t) return;
     const key = PAGE_SRC + t;
     stopCategory();
     S.catView = { type: 'page', key, title: t, name: pageName(t), size: null, subcats: null, withSubs: false, links: null, allLinks: false,
-      tables: null, tablesError: '', cols: null, col: null, tableOff: [],
+      tables: null, tablesError: '', cols: null, col: null, tableOff: [], reuse: !!reuse,
       loading: true, error: '', items: null, total: 0, busy: false, step: '', queued: false };
     openAlbum('category', key);
     loadCategory();
   }
+  const pageCache = new Map(); // titre -> {tables, tablesError, links} des 3 dernières pages lues
   // Catégorie : taille (categoryinfo) si on ne la connaît pas, puis les articles (avec ceux des sous-catégories directes
   // si withSubs). Page : ses tableaux (pageTables) puis ses liens et leur nature (pageLinks), lus une fois ; les articles de
   // la colonne clé choisie (cv.col, présélectionnée par pickColumn), dans l'ordre des lignes, ou sinon ceux de la nature
-  // dominante seulement sauf si allLinks. 3 000 au plus, total = ce qui a été lu ou gardé (plus de 3 000 : trop grande
+  // dominante seulement sauf si allLinks. 20 000 au plus, total = ce qui a été lu ou gardé (plus de 20 000 : trop grande
   // pour une collection).
   // cv.step : où en est la lecture (montré pendant l'attente) ; cv.queued : « Créer une collection » cliqué pendant la
   // lecture, la collection est créée dès qu'elle finit (pas en cas d'erreur).
@@ -4234,6 +4272,9 @@
     cv.step = '';
     try {
       if (cv.type === 'page') {
+        // Page déjà lue dans cette session (rouverte pour en faire une autre collection) : rien n'est relu.
+        const cached = cv.reuse ? pageCache.get(cv.title) : null;
+        if (cached && !cv.tables && !cv.links) { cv.tables = cached.tables; cv.tablesError = cached.tablesError; }
         if (!cv.tables) {
           // Tableaux illisibles (Wikipédia en panne pour action=parse) : la page garde ses liens, la vue le dit.
           try { cv.tables = markRaw(await pageTables(cv.title, ctrl.signal, onStep)); } catch (e) {
@@ -4245,9 +4286,12 @@
           if (stale()) return;
         }
         if (!cv.links) {
-          const links = await pageLinks(cv.title, ctrl.signal, onStep);
+          const links = cached && cached.tables === cv.tables ? cached.links : await pageLinks(cv.title, ctrl.signal, onStep);
           if (stale()) return;
           cv.links = markRaw(links);
+          pageCache.delete(cv.title);
+          pageCache.set(cv.title, { tables: cv.tables, tablesError: cv.tablesError, links: cv.links });
+          while (pageCache.size > 3) pageCache.delete(pageCache.keys().next().value);
           const tc = tableColumns(cv.tables, links, cv.title);
           cv.cols = markRaw(tc.cols);
           if (cv.col === null) cv.col = pickColumn(tc, links, cv.title, cv.tables);
@@ -4256,7 +4300,7 @@
         const col = cv.col ? cv.cols.find((c) => c.key === cv.col) || null : null;
         const kept = col ? columnItems(col, cv.tableOff) : top && !cv.allLinks ? cv.links.items.filter((i) => i.fits) : cv.links.items;
         cv.total = kept.length;
-        cv.items = markRaw(kept.slice(0, 3000).map((i) => {
+        cv.items = markRaw(kept.slice(0, LIST_MAX).map((i) => {
           const it = { title: i.title, description: i.description || null, image: null, status: 'ok' };
           if (i.qid) it.qid = i.qid;
           return it;
@@ -4273,7 +4317,7 @@
       const list = await categoryMembers(cv.title, cv.withSubs, ctrl.signal, onStep);
       if (stale()) return;
       cv.total = list.length;
-      cv.items = markRaw(list.slice(0, 3000).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
+      cv.items = markRaw(list.slice(0, LIST_MAX).map((m) => ({ title: m.title, description: null, image: null, status: 'ok' })));
     } catch (e) {
       if (!stale() && e.name !== 'AbortError') cv.error = e.message;
     } finally {
@@ -4326,9 +4370,10 @@
   // « Créer une collection » (album d'une catégorie ou d'une page) : ses articles lus (avec les sous-catégories si la case
   // est cochée ; page : les articles liés gardés, avec leur qid et leur description Wikidata) deviennent une collection à
   // compléter de source « wp:<nom> » ou « links:<titre> » (« links:<titre>#<colonne> » faite de la colonne clé de ses
-  // tableaux), nommée comme la catégorie (page : « Liste de » retiré) ; l'album reste ouvert, devenu celui de la
-  // collection (Modifier, Supprimer). Une page n'en donne qu'une (pageCollection). Déjà faite, ou « Créer une collection » de
-  // sa proposition en cours (S.wp.busy, partagé) : pas de seconde collection de même source. Cliqué pendant la lecture
+  // tableaux, « …#§<sections> » de certaines de ses sections), nommée comme la catégorie (page : « Liste de » retiré,
+  // sections après « — ») ; l'album reste ouvert, devenu celui de la collection (Modifier, Supprimer). Une page en donne
+  // une par choix de colonne et de sections (pageSelection). Déjà faite, ou « Créer une collection » de sa proposition en
+  // cours (S.wp.busy, partagé) : pas de seconde collection de même source. Cliqué pendant la lecture
   // des articles (une page : ses liens puis leur nature sur Wikidata, plusieurs secondes) : retenu (cv.queued), la
   // collection est créée dès la fin de la lecture (loadCategory).
   async function createFromCategory() {
@@ -4340,27 +4385,29 @@
     if (cv.loading || !cv.items) { if (!cv.error) cv.queued = true; return; }
     if (!cv.items.length) return;
     const page = cv.type === 'page';
-    if (cv.total > 3000) { notify(page ? 'Cette page lie plus de 3 000 articles : trop pour une collection.' : 'Cette catégorie a plus de 3 000 articles : trop grande pour une collection.', true); return; }
+    if (cv.total > LIST_MAX) { notify(page ? 'Cette page lie plus de 20 000 articles : trop pour une collection.' : 'Cette catégorie a plus de 20 000 articles : trop grande pour une collection.', true); return; }
     if (cv.key.length > 200) { notify(page ? 'Le titre de cette page est trop long pour en faire une collection.' : 'Le nom de cette catégorie est trop long pour en faire une collection.', true); return; }
-    // Colonne clé des tableaux d'une page : source « links:<titre>#<colonne> » (libellé coupé pour tenir en 200 caractères).
-    const col = page && cv.col && cv.cols ? cv.cols.find((c) => c.key === cv.col) || null : null;
-    const source = col && cv.key.length < 199 ? (cv.key + '#' + col.name).slice(0, 200) : cv.key;
+    // Colonne clé des tableaux d'une page : source « links:<titre>#<colonne> », « …#§<sections> » pour une partie de ses
+    // tableaux (pageSelection).
+    const sel = page ? pageSelection(cv) : null;
+    const col = sel ? sel.col : null;
+    const source = sel ? sel.source : cv.key;
     const gen = cardsGen;
     const stale = () => gen !== cardsGen;
     cv.busy = true;
     S.wp.busy[cv.key] = true;
     try {
-      const name = cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
+      const name = sel ? sel.name : cv.name.length > 80 ? cv.name.slice(0, 79) + '…' : cv.name;
       const items = cv.items.map((it) => (it.qid ? { title: it.title, description: it.description || null, image: null, status: 'ok', qid: it.qid }
         : { title: it.title, description: it.description || null, image: null, status: 'ok' }));
-      const r = await api('POST', '/api/targets/save', { name, items, source });
+      const r = await saveTargetApi({ name, items, source });
       if (stale()) return;
       if (r.target) upsertTarget(r.target); else { await loadTargets(); if (stale()) return; }
       S.wp.list = markRaw(S.wp.list.filter((x) => x.key !== cv.key));
       const t = collectionFor(source);
       if (t && S.catView === cv) { stopCategory(); S.album = { kind: 'target', id: t.id }; }
       const used = col ? col.parts.filter((p) => !cv.tableOff.includes(p.t)).length : 0;
-      const how = cv.withSubs ? ', sous-catégories comprises' : col ? ` (colonne « ${col.name} » ${plural(used, 'du tableau', 'des tableaux')} de la page, dans l'ordre)`
+      const how = cv.withSubs ? ', sous-catégories comprises' : col ? ` (colonne « ${col.name} » ${plural(used, 'du tableau', 'des tableaux')} de la page${sel.sections ? `, ${sel.sections.includes(' + ') ? 'sections' : 'section'} « ${sel.sections} »` : ''}, dans l'ordre)`
         : page && cv.links && cv.links.top && !cv.allLinks ? ` (les « ${cv.links.top.label} » de la page)` : page ? ' (tous les liens de la page)' : '';
       notify(`Collection « ${name} » créée : ${fmt(items.length)} ${plural(items.length, 'article', 'articles')}${how}, dans « Mes collections ».`);
     } catch (e) {
@@ -4472,13 +4519,13 @@
       else { where.push(`?item wdt:P131* wd:${place.id} .`); parts.push(`Lieu : ${place.label}`); }
     }
     const body = where.join(' ');
-    const rows = await sparql(`SELECT ?item ?title ?desc WHERE { ${body} ${FR_ARTICLE} OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } } LIMIT 3001`, 3, signal);
+    const rows = await sparql(`SELECT ?item ?title ?desc WHERE { ${body} ${FR_ARTICLE} OPTIONAL { ?item schema:description ?desc . FILTER(LANG(?desc) = "fr") } } LIMIT ${LIST_MAX + 1}`, 3, signal);
     const items = rowsToItems(rows);
     const interp = parts.join(' · ');
     return {
       interp,
-      cand: { id: 'wd', source: 'wd', name: cap(text), size: items.length, tooBig: items.length > 3000, where: body, interp,
-        items: items.length > 3000 ? null : markRaw(items) },
+      cand: { id: 'wd', source: 'wd', name: cap(text), size: items.length, tooBig: items.length > LIST_MAX, where: body, interp,
+        items: items.length > LIST_MAX ? null : markRaw(items) },
     };
   }
   async function wdTop(where, n, signal) {
@@ -4506,10 +4553,10 @@
     return titles.slice(0, 20).map((t) => {
       const ci = info.get(t) || {};
       const size = Number(ci.pages) || 0;
-      return { id: 'cat:' + t, source: 'cat', title: t, name: cap(t.replace(/^Catégorie\s*:\s*/i, '')), size, subcats: Number(ci.subcats) || 0, tooBig: size > 3000 };
+      return { id: 'cat:' + t, source: 'cat', title: t, name: cap(t.replace(/^Catégorie\s*:\s*/i, '')), size, subcats: Number(ci.subcats) || 0, tooBig: size > LIST_MAX };
     }).filter((c) => c.size > 0 || c.subcats > 0).slice(0, 12);
   }
-  // Articles d'une catégorie (et de ses sous-catégories directes) ; s'arrête au-delà de 3 000.
+  // Articles d'une catégorie (et de ses sous-catégories directes) ; s'arrête au-delà de 20 000.
   // onStep(texte) : où en est la lecture (articles lus, sous-catégorie en cours), pour l'album qui attend.
   async function categoryMembers(title, withSubs, signal, onStep) {
     const out = new Map();
@@ -4518,10 +4565,10 @@
     const read = async (cat, type) => {
       const found = [];
       let cont = {};
-      for (let guard = 0; guard < 40; guard++) {
+      for (let guard = 0; guard < 50; guard++) {
         const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'categorymembers', cmtitle: cat, cmtype: type, cmlimit: '500', ...(type === 'page' ? { cmnamespace: '0' } : {}), ...cont }), 3, null, signal);
         for (const m of (j && j.query && j.query.categorymembers) || []) found.push(m.title);
-        if (!j.continue || (type === 'page' && out.size + found.length > 3000)) break;
+        if (!j.continue || (type === 'page' && out.size + found.length > LIST_MAX)) break;
         cont = j.continue;
         if (type === 'page') step(`Lecture des articles de la catégorie sur Wikipédia${where} : ${fmt(out.size + found.length)} articles lus…`);
       }
@@ -4532,7 +4579,7 @@
     if (withSubs) {
       const subs = await read(title, 'subcat');
       for (let k = 0; k < subs.length; k++) {
-        if (out.size > 3000) break;
+        if (out.size > LIST_MAX) break;
         where = ` (sous-catégorie ${fmt(k + 1)} sur ${fmt(subs.length)})`;
         step(`Lecture des articles de la catégorie sur Wikipédia${where} : ${fmt(out.size)} articles lus…`);
         for (const t of await read(subs[k], 'page')) if (!out.has(t)) out.set(t, { title: t, description: null, qid: null });
@@ -4583,7 +4630,7 @@
     const alias = {}; // redirections suivies (titre du lien -> article), pour retrouver les liens des tableaux
     let cont = {};
     step('Lecture des liens de la page sur Wikipédia…');
-    for (let guard = 0; guard < 12 && by.size < 5000; guard++) {
+    for (let guard = 0; guard < 50 && by.size <= LIST_MAX; guard++) {
       const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'links', titles: title, gplnamespace: '0', gpllimit: 'max', redirects: '1',
         prop: 'pageprops', ppprop: 'wikibase_item|disambiguation', ...cont }), 3, null, signal);
       Object.assign(alias, aliasOf((j && j.query) || {}));
@@ -4909,7 +4956,7 @@
   // TextExtracts dit pareil pour 99 % d'entre eux), 4 requêtes, ≈ 45 s ; « cathédrale » 598 → 558 ; « footballeur »
   // 49 676 → seulement les plus liés (436 sur les 500 premiers). Les résumés (prop=extracts, 20 par requête) coûtent
   // vingt fois plus de requêtes et Wikipédia répond 429 au bout d'une dizaine.
-  const DEF_MAX = 3000;
+  const DEF_MAX = 10000; // la recherche de Wikipédia ne va pas au-delà du 10 000e résultat
   const DEF_ART = new Set(['le', 'la', 'les', "l'", 'un', 'une', 'des']);
   const DEF_PREP = new Set(['de', 'du', 'des', "d'", 'en', 'à', 'a', 'au', 'aux', 'pour', 'sur', 'dans', 'chez', 'par', 'avec', 'sans', 'contre', 'entre', 'et', 'ou', 'qui', 'que', 'dont']);
   const DEF_SKIP = new Set(['de', 'du', 'des', 'la', 'le', 'les', 'l', 'd', 'en', 'et', 'au', 'aux', 'a', 'un', 'une', 'sur', 'pour', 'par', 'dans', 'the', 'of', 'saint', 'sainte', 'st']);
@@ -5004,7 +5051,7 @@
     return { id: 'def:' + t.query, source: 'def', name: t.name, size: n, tooBig: n > DEF_MAX, query: t.query, interp,
       terms: markRaw({ forms: t.forms, quals: t.quals }) };
   }
-  // Articles du candidat « Définition » : tous (au plus 3 000 résultats), ou les top plus liés depuis Wikipédia. Tri
+  // Articles du candidat « Définition » : tous (au plus 10 000 résultats : limite de la recherche de Wikipédia), ou les top plus liés depuis Wikipédia. Tri
   // explicite : par pertinence, les pages de 500 se recouvrent (mesuré : 15 doublons et autant d'absents sur 2 025) ;
   // par titre, aucun ; par liens entrants, 3.
   async function defPages(cand, top, signal, onProgress) {
@@ -5013,7 +5060,7 @@
     const seen = new Set();
     let checked = 0;
     let offset = 0;
-    for (let guard = 0; guard < 10 && offset < 10000; guard++) {
+    for (let guard = 0; guard < 20 && offset < 10000; guard++) {
       const want = top ? Math.min(500, Math.max(50, Math.ceil((top - items.length) * 1.3))) : 500;
       const j = await getJson(wikiQ, wpUrl({ action: 'query', generator: 'search', gsrsearch: cand.query, gsrnamespace: '0', gsrlimit: String(want), gsroffset: String(offset),
         gsrsort: top ? 'incoming_links_desc' : 'title_natural_asc', prop: 'cirrusdoc|description|pageprops', cdincludes: 'opening_text', ppprop: 'wikibase_item|disambiguation' }), 3, null, signal);
@@ -5130,7 +5177,7 @@
       } else items = await categoryMembers(cand.title, ch.withSubs, ctrl.signal);
       if (stale()) return;
       ch.total = items.length;
-      ch.items = markRaw(items.slice(0, 3000));
+      ch.items = markRaw(items.slice(0, LIST_MAX));
     } catch (e) {
       if (!stale() && e.name !== 'AbortError') ch.error = e.message;
     } finally {
@@ -5161,7 +5208,7 @@
     if (!ch || !ch.items || ed.busy) return;
     const name = ch.name.trim();
     if (!name) { ed.error = 'Donne un nom à ta collection.'; return; }
-    if (ch.total > 3000) { ed.error = 'Trop grande (plus de 3 000 articles) : précise ta recherche.'; return; }
+    if (ch.total > LIST_MAX) { ed.error = 'Trop grande (plus de 20 000 articles) : précise ta recherche.'; return; }
     ed.busy = true;
     ed.error = '';
     try {
@@ -5170,7 +5217,7 @@
         if (i.qid) it.qid = i.qid;
         return it;
       });
-      const r = await api('POST', '/api/targets/save', { name, items });
+      const r = await saveTargetApi({ name, items });
       if (S.editor !== ed) return;
       if (r.target) upsertTarget(r.target); else await loadTargets();
       closeModal();
@@ -5562,7 +5609,7 @@
         return item;
       });
       const name = copiedName(t);
-      const r = await api('POST', '/api/targets/save', { name, items });
+      const r = await saveTargetApi({ name, items });
       if (r.target) upsertTarget(r.target); else await loadTargets();
       const mine = r.target ? targets.value.find((x) => x.id === r.target.id) : null;
       if (mine) fr.copies = { ...fr.copies, [copyKey(f, t)]: mine.id };
@@ -6134,7 +6181,7 @@
   // Mention discrète d'une collection faite d'une catégorie ou d'une page de Wikipédia.
   function sourceKind(col) {
     if (col.cat) return h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia');
-    if (col.page) return h('span', { class: 'row-kind' }, `depuis la page Wikipédia « ${col.page} »${col.column ? `, colonne « ${col.column} »` : ''}`);
+    if (col.page) return h('span', { class: 'row-kind' }, `depuis la page Wikipédia « ${col.page} »${col.column ? `, colonne « ${col.column} »` : ''}${col.sections ? `, ${col.sections.includes(' + ') ? 'sections' : 'section'} « ${col.sections} »` : ''}`);
     return null;
   }
 
@@ -6314,13 +6361,13 @@
     });
     const option = ([m, i]) => {
       const page = m.type === 'page';
-      const mine = page ? pageCollection(m.title) : collectionFor('wp:' + m.name);
+      const mineN = page ? pageCollections(m.title).length : collectionFor('wp:' + m.name) ? 1 : 0;
       return h('li', {
         id: 'cat-opt-' + i, key: (page ? 'p:' : 'c:') + m.title, role: 'option', 'aria-selected': String(i === act), class: { active: i === act },
         onMousedown: (e) => { e.preventDefault(); chooseCat(m); }, onMouseenter: () => { cs.active = i; },
       }, [
         h('span', { class: 'prop-list__name' }, page ? m.title : m.name),
-        h('span', { class: 'prop-list__hint' }, mine ? 'ta collection'
+        h('span', { class: 'prop-list__hint' }, mineN ? (mineN > 1 ? `${fmt(mineN)} de tes collections` : 'ta collection')
           : !page && m.subcats ? `${fmt(m.subcats)} ${plural(m.subcats, 'sous-catégorie', 'sous-catégories')}` : ''),
         h('span', { class: 'prop-list__count num' }, page ? (m.list ? 'liste' : 'page') : `${fmt(m.pages)} ${plural(m.pages, 'article', 'articles')}`),
       ]);
@@ -6461,6 +6508,13 @@
     }
     return out;
   }
+  // Tes collections déjà faites depuis la page ouverte (une par choix de colonne et de sections) : chacune s'ouvre d'un clic.
+  function viewPageMine(pg) {
+    const mine = pageCollections(pg.title);
+    if (!mine.length) return null;
+    return h('p', { class: 'hint page-mine' }, [mine.length > 1 ? 'Tes collections de cette page : ' : 'Ta collection de cette page : ',
+      ...mine.flatMap((t, i) => [i ? ', ' : '', h('button', { key: t.id, class: 'linkish', type: 'button', onClick: () => openAlbum('target', t.id) }, t.name)]), '.']);
+  }
   // Sections des tableaux d'une colonne clé, d'après leurs intertitres (path de readTables) : un arbre
   // {label, kids (sous-sections, dans l'ordre de la page), own (tableaux juste sous cet intertitre), parts (tous ses
   // tableaux)} ; la racine (label '') garde les tableaux sans intertitre.
@@ -6480,6 +6534,46 @@
       cur.own.push(x);
     }
     return root;
+  }
+  // Choix en cours d'une page ouverte : {source, name, col, sections} de la collection que « Créer une collection »
+  // ferait. Sans colonne clé : « links:<titre> » ; la colonne et tous ses tableaux : « links:<titre>#<colonne> » ; une
+  // partie de ses tableaux : « …#§<sections> », les sections entièrement cochées les plus hautes (et les tableaux cochés
+  // seuls sous une section en partie cochée : leur légende, ou « Tableau N »), séparées par « + » ; un intertitre qui a un
+  // homonyme dans la page garde celui au-dessus (« Gares desservies en 2026 › En France »). Nom : celui de la page, « — »
+  // et les sections. Source de plus de 200 caractères : sections coupées, avec une empreinte de leur texte entier.
+  function pageSelection(cv) {
+    const col = cv.col && cv.cols ? cv.cols.find((c) => c.key === cv.col) || null : null;
+    if (!col) return { source: cv.key, name: cv.name, col: null, sections: null };
+    const all = cv.key.length < 199 ? (cv.key + '#' + col.name).slice(0, 200) : cv.key;
+    const off = new Set(cv.tableOff.filter((t) => col.parts.some((x) => x.t === t)));
+    if (!off.size) return { source: all, name: cv.name, col, sections: null };
+    const base = all.slice(0, 180);
+    const tree = pageSections(col, cv.tables);
+    const seen = new Map();
+    const count = (n) => { for (const k of n.kids) { seen.set(k.label, (seen.get(k.label) || 0) + 1); count(k); } };
+    count(tree);
+    const picks = [];
+    const tableLabel = (x) => { const tb = (cv.tables && cv.tables.list[x.t]) || {}; return tb.caption || `Tableau ${fmt(x.t + 1)}`; };
+    const walk = (node, parent) => {
+      const on = node.parts.filter((x) => !off.has(x.t));
+      if (!on.length) return;
+      if (node.label && on.length === node.parts.length) {
+        picks.push(seen.get(node.label) > 1 && parent ? `${parent} › ${node.label}` : node.label);
+        return;
+      }
+      for (const k of node.kids) walk(k, node.label);
+      for (const x of node.own) if (!off.has(x.t)) picks.push(tableLabel(x));
+    };
+    walk(tree, '');
+    const sections = picks.join(' + ');
+    let src = base + '#§' + sections;
+    if (src.length > 200) {
+      let hsh = 0x811c9dc5; // FNV-1a
+      for (let i = 0; i < sections.length; i++) { hsh ^= sections.charCodeAt(i); hsh = Math.imul(hsh, 0x01000193) >>> 0; }
+      src = src.slice(0, 200 - 9) + '…' + hsh.toString(36).padStart(8, '0').slice(-8);
+    }
+    const full = `${cv.name} — ${sections}`;
+    return { source: src, name: full.length > 80 ? full.slice(0, 79) + '…' : full, col, sections };
   }
   function viewAlbum() {
     const col = activeAlbum.value;
@@ -6531,7 +6625,7 @@
     // Wikipédia » ; collection : « Ajouter par tags du jeu », « Modifier », « Supprimer » (et « Voir sur Wikipédia »
     // pour celle faite d'une catégorie ou d'une page).
     const wpLink = (title) => h('a', { class: 'btn ghost', href: wikiUrl(title), target: '_blank', rel: 'noopener noreferrer' }, 'Voir sur Wikipédia ↗');
-    const tooBig = !!cv && cv.total > 3000;
+    const tooBig = !!cv && cv.total > LIST_MAX;
     const pg = cv && cv.type === 'page' ? cv : null; // page de Wikipédia ouverte : ses liens
     const pgTop = pg && pg.links ? pg.links.top : null;
     let actions;
@@ -6559,6 +6653,8 @@
         // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
         targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
         h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
+        // Faite des tableaux d'une page : la rouvrir pour en faire une autre collection (d'autres sections, tout ensemble).
+        col.page && col.column ? h('button', { class: 'btn', type: 'button', onClick: () => openPage(col.page, true) }, [icon('plus', 'sm'), 'Autres sections de la page']) : null,
         col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
       ];
     }
@@ -6579,13 +6675,14 @@
           ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
         // Page : la colonne clé de ses tableaux, ou les articles qu'elle lie (nature dominante seulement, ou tous).
         ...(pg ? viewPageSource(pg, reading) : []),
+        pg ? viewPageMine(pg) : null,
         reading ? (cv.error ? null : h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'),
           cv.step || (pg ? 'Lecture des liens de la page sur Wikipédia et de leur nature sur Wikidata…' : 'Lecture des articles de la catégorie sur Wikipédia…'),
           cv.queued ? ' La collection sera créée à la fin.' : ''])) : rarityBar(p.byR, p.total, 'bar big'),
         cv && cv.error ? h('p', { class: 'status err', role: 'alert' }, [cv.error, ' ', h('button', { class: 'linkish', type: 'button', onClick: () => loadCategory() }, 'Réessayer')]) : null,
-        tooBig ? h('p', { class: 'warn' }, pg && pg.col ? 'Plus de 3 000 articles dans cette colonne : trop pour une collection (décoche des tableaux). Seuls les 3 000 premiers sont montrés.'
-          : pg ? `Plus de 3 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 3 000 premiers sont montrés.`
-          : 'Plus de 3 000 articles : trop grande pour une collection. Seuls les 3 000 premiers sont montrés.') : null,
+        tooBig ? h('p', { class: 'warn' }, pg && pg.col ? 'Plus de 20 000 articles dans cette colonne : trop pour une collection (décoche des tableaux). Seuls les 20 000 premiers sont montrés.'
+          : pg ? `Plus de 20 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 20 000 premiers sont montrés.`
+          : 'Plus de 20 000 articles : trop grande pour une collection. Seuls les 20 000 premiers sont montrés.') : null,
         !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
         reading ? null : h('div', { class: 'missing-sum' }, missLine),
         w && w.costPriced ? h('div', { class: 'missing-sum worth-sum', title: "Pour chaque carte qui manque, la moins chère de ses cotes fiables (3 ventes au moins), toutes raretés d'exemplaire confondues : n'importe quel exemplaire remplit la case. Cotes connues : celles des cartes que ton favori a trouvées dans le jeu." }, [
@@ -8984,8 +9081,8 @@
     const big = c.tooBig;
     // Définition : le nombre d'articles qui citent la formule ; ceux qui la disent en ouverture sont triés au choix.
     const size = c.source === 'links' ? 'ses liens, triés à l\'ouverture'
-      : c.source === 'def' ? (big ? `plus de 3 000 articles (${fmt(c.size)} citent la formule)` : `${fmt(c.size)} ${plural(c.size, 'article cite', 'articles citent')} la formule, triés à l'ouverture`)
-        : big ? 'plus de 3 000 articles'
+      : c.source === 'def' ? (big ? `plus de 10 000 articles (${fmt(c.size)} citent la formule)` : `${fmt(c.size)} ${plural(c.size, 'article cite', 'articles citent')} la formule, triés à l'ouverture`)
+        : big ? 'plus de 20 000 articles'
           : `${fmt(c.size)} ${plural(c.size, 'article', 'articles')}` + (c.subcats ? ` · ${fmt(c.subcats)} sous-catégories` : '');
     let action;
     if (!big) action = h('button', { class: 'btn small primary', type: 'button', 'aria-label': 'Choisir ' + c.name, onClick: () => kwChoose(ed, c) }, 'Choisir');
@@ -9037,7 +9134,7 @@
         ch.source === 'links' && ch.links && ch.links.top && !kcol && cand ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: !ch.allLinks, disabled: ch.loading, onChange: () => kwToggleSubs(ed, cand) }),
           ` ne garder que les « ${ch.links.top.label} » (${fmt(ch.links.top.n)} sur ${fmt(ch.links.items.length)} articles liés : pays, régions et autres liens écartés)`]) : null,
-        ch.total > 3000 ? h('p', { class: 'warn' }, 'Trop grande (plus de 3 000 articles) : précise ta recherche.') : null,
+        ch.total > LIST_MAX ? h('p', { class: 'warn' }, 'Trop grande (plus de 20 000 articles) : précise ta recherche.') : null,
         ch.items && ch.items.length ? h('ol', { class: 'preview', 'aria-label': 'Aperçu des premiers articles' }, ch.items.slice(0, 20).map((i) => h('li', { key: i.title }, i.title))) : null,
         extra ? h('p', { class: 'note' }, `… et ${fmt(extra)} autres`) : null,
         ch.items && !ch.items.length && !ch.loading ? h('p', { class: 'muted' }, 'Aucun article dans ce candidat.') : null,
@@ -9045,7 +9142,7 @@
         errLine(ed.error),
         foot([
           closeBtn('Annuler'),
-          h('button', { class: 'btn primary', type: 'button', disabled: ed.busy || ch.loading || !ch.items || !ch.items.length || ch.total > 3000 || !ch.name.trim(),
+          h('button', { class: 'btn primary', type: 'button', disabled: ed.busy || ch.loading || !ch.items || !ch.items.length || ch.total > LIST_MAX || !ch.name.trim(),
             onClick: () => kwSave(ed) }, ed.busy ? 'Enregistrement…' : 'Enregistrer'),
         ]),
       ];
@@ -9077,7 +9174,7 @@
       h('label', { class: 'sr', for: 'ed-text' }, 'Articles, un par ligne'),
       h('textarea', { id: 'ed-text', class: 'field full', rows: 12, value: ed.text, spellcheck: 'false', 'aria-describedby': 'ed-sep-help',
         placeholder: 'Zeus\nHéra\nhttps://fr.wikipedia.org/wiki/Poséidon', onInput: (e) => { ed.text = e.target.value; ed.issues = null; } }),
-      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')}${seps ? ` · ${fmt(seps)} ${plural(seps, 'intercalaire', 'intercalaires')}` : ''} · 3 000 articles au plus`),
+      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')}${seps ? ` · ${fmt(seps)} ${plural(seps, 'intercalaire', 'intercalaires')}` : ''}`),
       ed.progress ? h('p', { class: 'progress-msg', role: 'status' }, ed.progress) : null,
       ed.issues ? h('div', { class: 'panel' }, [
         h('p', { class: 'warn' }, `${fmt(ed.issues.length)} ${plural(ed.issues.length, 'article pose', 'articles posent')} problème :`),
@@ -9162,8 +9259,6 @@
     const t = info.t;
     const preview = tagAddPreview.value;
     const n = tagAddPicked.value.length;
-    const after = t.items.length + n;
-    const tooMany = after > TARGET_MAX_ITEMS;
     const page = pageOfSource(t.source);
     const src = isCatSource(t.source) ? `de la catégorie Wikipédia « ${catName(t.source)} »` : page ? `de la page Wikipédia « ${page} »` : null;
     const already = (r) => (r.why !== 'often' && r.inside ? ` · ${fmt(r.inside)} déjà dans la collection` : '');
@@ -9259,11 +9354,10 @@
         autoNote ? h('p', { class: 'note' }, autoNote) : null,
       ]),
       tooManyRules ? h('p', { class: 'warn', role: 'alert' }, `${fmt(st.rules.length)} tags et catégories cochés : l'ajout automatique en garde ${fmt(AUTO_MAX_RULES)} au plus. Décoche-en ${fmt(st.rules.length - AUTO_MAX_RULES)}, ou décoche « Refaire à chaque synchro ».`) : null,
-      tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection aurait ${fmt(after)} éléments : ${fmt(TARGET_MAX_ITEMS)} au plus. Décoche-en ${fmt(after - TARGET_MAX_ITEMS)}.`) : null,
       errLine(ta.error),
       foot([
         closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: ta.busy || (!n && !(st && st.changed)) || tooMany || tooManyRules, onClick: () => saveTagAdd(ta) }, go),
+        h('button', { class: 'btn primary', type: 'button', disabled: ta.busy || (!n && !(st && st.changed)) || tooManyRules, onClick: () => saveTagAdd(ta) }, go),
       ]),
     ]);
   }
@@ -9308,7 +9402,7 @@
       const after = info.items.length;
       const name = mergeName(mg);
       const save = info.changed || name !== t.name;
-      ready = !info.tooMany && !info.tooBig && !!name && (save || mg.drop);
+      ready = !info.tooBig && !!name && (save || mg.drop);
       label = mg.drop ? (save ? `Fusionner et supprimer « ${o.name} »` : `Supprimer « ${o.name} »`) : 'Fusionner';
       const lines = [`Après la fusion : ${els(after)}, dont ${info.own ? fmt(info.own) : 'aucun'} que tu as.`];
       if (info.enriched) {
@@ -9317,7 +9411,7 @@
       }
       const seps = info.added.filter((it) => it.sep).map((it) => it.title);
       if (seps.length && info.sections) lines.push(`${plural(seps.length, 'Intercalaire', 'Intercalaires')} dans la partie ajoutée : ${namesText(seps, true)}.`);
-      if (info.noImages) lines.push('Sans les images : avec elles, la collection dépasserait 600 Ko (la page retrouve les vignettes sur Wikipédia).');
+      if (info.noImages) lines.push('Sans les images : avec elles, la collection dépasserait 1,7 Mo (la page retrouve les vignettes sur Wikipédia).');
       const oSrc = srcOf(o);
       detail = [
         h('p', { class: 'merge-sum', role: 'status' }, n ? [h('b', null, `${fmt(n)} ${plural(n, 'élément ajouté', 'éléments ajoutés')}`),
@@ -9346,8 +9440,7 @@
           h('p', { class: 'note' }, `« ${info.added[0].title} » commencera une nouvelle ligne de l'album (tri « Ordre ») ; c'est une carte comme les autres.`),
         ]) : null,
         srcOf(t) ? h('p', { class: 'note' }, `« ${t.name} » est faite de ${srcOf(t)} : la collection fusionnée garde cette source (ses éléments restent de A à Z) ; les éléments ajoutés viennent en plus de ses articles.`) : null,
-        info.tooMany ? h('p', { class: 'warn', role: 'alert' }, `La collection fusionnée aurait ${els(after)} : ${fmt(TARGET_MAX_ITEMS)} au plus. Retire d'abord ${els(after - TARGET_MAX_ITEMS)} de l'une des deux (« Modifier »).`) : null,
-        info.tooBig ? h('p', { class: 'warn', role: 'alert' }, `Collection fusionnée trop volumineuse : ${fmt(info.kb)} Ko${info.hadImages ? ' même sans les images' : ''}, 600 Ko au plus. Retire d'abord des éléments de l'une des deux (« Modifier »).`) : null,
+        info.tooBig ? h('p', { class: 'warn', role: 'alert' }, `Collection fusionnée trop volumineuse : ${fmt(info.kb)} Ko${info.hadImages ? ' même sans les images' : ''}, 1,7 Mo au plus. Retire d'abord des éléments de l'une des deux (« Modifier »).`) : null,
       ];
     }
     return h(Modal, { key: 'merge', title: `Fusionner « ${t.name} » avec…`, onClose: closeModal }, () => [

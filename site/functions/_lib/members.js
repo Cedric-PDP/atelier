@@ -18,8 +18,8 @@ import { randomToken } from './util.js';
 
 const PAGE_SIZE = 1000;
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
-// Collections d'un membre : pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil, 600 Ko
-// au plus), réduites en SQL au titre et au qid : une réponse reste sous ~1 Mo, quelle que soit la taille du compte.
+// Collections d'un membre : pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil, 1,7 Mo
+// au plus), réduites en SQL au titre et au qid : une réponse reste sous ~2 Mo, quelle que soit la taille du compte.
 const TARGETS_PAGE_BYTES = 512 * 1024;
 
 // PATCH /api/me {shared?, shared_targets?} : état du partage après la requête (validé), sans rien écrire.

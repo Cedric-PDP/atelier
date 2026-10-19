@@ -71,6 +71,15 @@ export const SCHEMA = [
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, upload_id, part)
   )`,
+  `CREATE TABLE IF NOT EXISTS target_uploads (
+    user_id TEXT NOT NULL,
+    upload_id TEXT NOT NULL,
+    part INTEGER NOT NULL,
+    items TEXT NOT NULL,
+    bytes INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, upload_id, part)
+  )`,
   `CREATE TABLE IF NOT EXISTS migrations (
     name TEXT PRIMARY KEY,
     run_id TEXT NOT NULL,
@@ -147,12 +156,14 @@ const ADDED_COLUMNS = [
   ['market', 'attempt', 'TEXT'],
 ];
 
-// Les morceaux en attente depuis plus d'une heure (import ou rafraîchissement abandonné) sont effacés.
+// Les morceaux en attente depuis plus d'une heure (import, rafraîchissement ou collection en morceaux abandonnés) sont
+// effacés.
 export function purgeStaging(db) {
   const limit = new Date(Date.now() - 3600_000).toISOString();
   return [
     db.prepare('DELETE FROM import_staging WHERE created_at < ?1').bind(limit),
     db.prepare('DELETE FROM refresh_staging WHERE created_at < ?1').bind(limit),
+    db.prepare('DELETE FROM target_uploads WHERE created_at < ?1').bind(limit),
   ];
 }
 

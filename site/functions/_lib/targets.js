@@ -1,13 +1,20 @@
 // Collections à compléter : rangées telles que l'interface les a vérifiées sur Wikipédia.
 
 import { HttpError, jsonText, raw } from './http.js';
+import { purgeStaging } from './db.js';
 import { byteLength, cleanText, nowIso, randomToken } from './util.js';
 
-// Quotas par compte (D1 gratuit : 500 Mo en tout).
-const MAX_ITEMS = 3000;
+// Quotas par compte (D1 gratuit : 500 Mo en tout). Pas de nombre d'éléments maximal (2026-10-19, demande de
+// l'utilisateur : plus de limite à 3 000 par collection) : seulement leur taille.
 const MAX_TARGETS = 50;
-const MAX_ITEMS_BYTES = 600 * 1024; // éléments d'une collection, en JSON
+// Éléments d'une collection, en JSON : une ligne de D1 fait 2 000 000 d'octets au plus, `auto` (200 Ko) compris.
+const MAX_ITEMS_BYTES = 1_700_000;
+// Éléments d'un envoi, en JSON (une collection plus lourde arrive en morceaux, `upload`) : 3 000 éléments réalistes
+// (~300 Ko) coûtent ~2 ms de JS (dev/api.test.mjs), un envoi reste loin des 10 ms d'un Worker gratuit.
+const MAX_PART_BYTES = 600 * 1024;
+const MAX_UPLOADS = 3; // collections envoyées en morceaux en même temps, par compte (au-delà : les plus anciennes partent)
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
+const MAX_SKIP_DELTA = 20000; // titres d'un auto_skip.add ou .del (n'en restent que MAX_SKIP)
 const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
 const QID = /^Q[1-9][0-9]{0,11}$/;
 // Rareté d'une carte dans le jeu (élément d'une collection créée depuis une recherche du jeu).
@@ -135,8 +142,8 @@ function nextAuto(body, stored) {
   let del = [];
   if (hasDelta) {
     if (typeof delta !== 'object' || Array.isArray(delta)) throw new HttpError(400, 'Le champ « auto_skip » doit être un objet {add?, del?}.');
-    if (delta.add !== undefined) add = titleList(delta.add, MAX_ITEMS, 'Exclusions ajoutées (auto_skip.add)');
-    if (delta.del !== undefined) del = titleList(delta.del, MAX_ITEMS, 'Exclusions retirées (auto_skip.del)');
+    if (delta.add !== undefined) add = titleList(delta.add, MAX_SKIP_DELTA, 'Exclusions ajoutées (auto_skip.add)');
+    if (delta.del !== undefined) del = titleList(delta.del, MAX_SKIP_DELTA, 'Exclusions retirées (auto_skip.del)');
   }
   let cur = storedAuto(stored);
   if (hasAuto) {
@@ -179,14 +186,31 @@ export async function listTargets(env, user) {
   return { targets: raw(`[${results.map((r) => jsonText(toTarget(r))).join(',')}]`) };
 }
 
-// POST /api/targets/save {id?, name, items, source?, auto?, auto_skip?, expect_updated_at?} : crée, ou remplace celle qui
-// a cet id (ajout automatique : voir nextAuto). expect_updated_at (avec un id) : seulement si la collection rangée a
-// encore ce updated_at, sinon 409 {conflict:true, target} (la collection d'aujourd'hui, ou null si elle a été supprimée)
-// et rien n'est écrit : l'ajout automatique de la page s'en sert pour ne jamais écraser ce qu'un autre onglet ou un autre
-// appareil vient d'enregistrer.
+// POST /api/targets/save {id?, name, items, source?, auto?, auto_skip?, expect_updated_at?, upload?} : crée, ou remplace
+// celle qui a cet id (ajout automatique : voir nextAuto). expect_updated_at (avec un id) : seulement si la collection
+// rangée a encore ce updated_at, sinon 409 {conflict:true, target} (la collection d'aujourd'hui, ou null si elle a été
+// supprimée) et rien n'est écrit : l'ajout automatique de la page s'en sert pour ne jamais écraser ce qu'un autre onglet
+// ou un autre appareil vient d'enregistrer.
+// Plus de 600 Ko d'éléments : en morceaux, `upload` = {id (tiré par la page), part (0, 1, 2…), last}. Un morceau sans
+// `last` ne porte que ses `items` (600 Ko au plus) : rangé dans target_uploads, réponse {part}. Le dernier porte aussi
+// le reste du corps ; ses éléments s'ajoutent aux autres, assemblés en SQL (sans les relire en JavaScript) dans la
+// collection, et la réponse a `target.items` = null (la page garde ceux qu'elle a envoyés). Morceaux manquants, ou de
+// plus d'une heure : 400, rien n'est écrit.
 export async function saveTarget(env, user, body) {
-  const { row, itemsJson } = await storeTarget(env, user, body);
-  return { target: raw(jsonText(toTarget(row, itemsJson))) };
+  const out = await storeTarget(env, user, body);
+  if (out.part !== undefined) return { part: out.part };
+  return { target: raw(jsonText(toTarget(out.row, out.chunked ? 'null' : out.itemsJson))) };
+}
+
+// `upload` d'un corps : null, ou {id, part, last}.
+function uploadOf(body) {
+  const u = body.upload;
+  if (u === undefined || u === null) return null;
+  if (typeof u !== 'object' || Array.isArray(u) || typeof u.id !== 'string' || !/^[A-Za-z0-9_-]{8,64}$/.test(u.id)
+    || !Number.isInteger(u.part) || u.part < 0 || u.part > 99) {
+    throw new HttpError(400, 'Le champ « upload » vaut {id, part, last?} (part de 0 à 99).');
+  }
+  return { id: u.id, part: u.part, last: u.last === true };
 }
 
 // POST /api/targets/from-game {name, query, items:[{title, rarity, card_id, category?, image?}]} : collection créée
@@ -197,7 +221,6 @@ export async function saveGameTarget(env, user, body) {
   if (!query || query.length > 100) throw new HttpError(400, 'La recherche (« query ») fait de 1 à 100 caractères.');
   if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
   if (!body.items.length) throw new HttpError(400, 'Aucune carte : la recherche ne donne rien à ranger.');
-  if (body.items.length > MAX_ITEMS) throw new HttpError(400, `${MAX_ITEMS} éléments au plus par collection.`);
   const seen = new Set();
   const items = [];
   body.items.forEach((item, i) => {
@@ -215,23 +238,50 @@ export async function saveGameTarget(env, user, body) {
     items.push({ title: item.title, description: typeof item.category === 'string' ? item.category : null,
       image: item.image, status: 'ok', rarity: item.rarity });
   });
-  // Grande recherche : sans les images si elles font dépasser 600 Ko (la page retrouve les vignettes sur Wikipédia).
-  if (byteLength(JSON.stringify(items)) > MAX_ITEMS_BYTES) for (const it of items) it.image = null;
+  // Grande recherche : sans les images si elles font dépasser 600 Ko (un seul envoi : la page retrouve les vignettes
+  // sur Wikipédia).
+  if (byteLength(JSON.stringify(items)) > MAX_PART_BYTES) for (const it of items) it.image = null;
   const { row, count } = await storeTarget(env, user, { name: body.name, items, source: `wm:${query}` });
   return { target: { id: row.id, name: row.name, source: row.source, count, created_at: row.created_at, updated_at: row.updated_at } };
 }
 
-// Range une collection (créée, ou remplacée si body.id existe déjà) après validation et contrôle des quotas.
+// Range une collection (créée, ou remplacée si body.id existe déjà) après validation et contrôle des quotas ; un morceau
+// d'un envoi en plusieurs (upload sans last) est seulement mis de côté : {part}.
 async function storeTarget(env, user, body) {
   const db = env.DB;
+  const up = uploadOf(body);
+  if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
+  const items = body.items.map(cleanItem);
+  let itemsJson = JSON.stringify(items);
+  const partSize = itemsJson.length > MAX_PART_BYTES ? Infinity : byteLength(itemsJson);
+  if (partSize > MAX_PART_BYTES) {
+    throw new HttpError(400, up ? 'Morceau trop volumineux : 600 Ko au plus.'
+      : 'Collection trop volumineuse pour un seul envoi : 600 Ko au plus (au-delà, en morceaux : « upload »).');
+  }
+  if (up && !up.last) {
+    if (!items.length) throw new HttpError(400, 'Morceau vide.');
+    await stashPart(db, user, up, itemsJson.slice(1, -1), partSize - 2);
+    return { part: up.part };
+  }
   const name = typeof body.name === 'string' ? cleanText(body.name) : '';
   if (!name || name.length > 80) throw new HttpError(400, 'Le nom de la collection fait de 1 à 80 caractères.');
-  if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
-  if (body.items.length > MAX_ITEMS) throw new HttpError(400, `${MAX_ITEMS} éléments au plus par collection.`);
-  const items = body.items.map(cleanItem);
-  const itemsJson = JSON.stringify(items);
-  const size = itemsJson.length > MAX_ITEMS_BYTES ? Infinity : byteLength(itemsJson);
-  if (size > MAX_ITEMS_BYTES) throw new HttpError(400, 'Collection trop volumineuse : 600 Ko au plus.');
+  // Dernier morceau : les précédents (0 à part - 1, tous là) et celui-ci font la collection.
+  let size = partSize;
+  let chunked = false;
+  if (up && up.part > 0) {
+    const st = await db.prepare(
+      'SELECT COUNT(*) AS n, MIN(part) AS lo, MAX(part) AS hi, COALESCE(SUM(bytes), 0) AS bytes FROM target_uploads WHERE user_id = ?1 AND upload_id = ?2',
+    ).bind(user.id, up.id).first();
+    if (!st || st.n !== up.part || st.lo !== 0 || st.hi !== up.part - 1) {
+      throw new HttpError(400, "Des morceaux de la collection manquent (envoi interrompu depuis plus d'une heure ?) : rien n'a été enregistré, réessaie.");
+    }
+    chunked = true;
+    // '[' + morceaux non vides séparés par des virgules + ']'.
+    const parts = st.n + (items.length ? 1 : 0);
+    size = st.bytes + (items.length ? partSize - 2 : 0) + (parts - 1) + 2;
+    itemsJson = null;
+  }
+  if (size > MAX_ITEMS_BYTES) throw new HttpError(400, 'Collection trop volumineuse : 1,7 Mo au plus.');
 
   let source = null;
   if (body.source !== undefined && body.source !== null) {
@@ -286,27 +336,60 @@ async function storeTarget(env, user, body) {
   const now = nowIso();
   const setAuto = auto === undefined ? 0 : 1;
   const autoText = auto === undefined ? null : auto;
-  const row = expect !== null
+  // Éléments : ?4, ou, envoyée en morceaux (?4 = l'envoi), ceux de target_uploads (le dernier compris) dans l'ordre,
+  // assemblés en SQL.
+  const itemsSql = chunked
+    ? `(SELECT '[' || group_concat(x, ',') || ']' FROM (SELECT items AS x FROM target_uploads WHERE user_id = ?1 AND upload_id = ?4 ORDER BY part))`
+    : '?4';
+  const items4 = chunked ? up.id : itemsJson;
+  const write = expect !== null
     // Remplacement conditionnel : rien n'est écrit si un autre enregistrement est passé entre-temps.
-    ? await db.prepare(
-      `UPDATE targets SET name = ?3, items = ?4, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END
+    ? db.prepare(
+      `UPDATE targets SET name = ?3, items = ${itemsSql}, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END
        WHERE user_id = ?1 AND id = ?2 AND updated_at = ?9
        RETURNING id, name, source, auto, created_at, updated_at`,
     )
-      .bind(user.id, id, name, itemsJson, source, now, setAuto, autoText, expect)
-      .first()
-    : await db.prepare(
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect)
+    : db.prepare(
       `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at, auto)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?6, ?8)
+       VALUES (?1, ?2, ?3, ${itemsSql}, ?5, ?6, ?6, ?8)
        ON CONFLICT (user_id, id) DO UPDATE SET
          name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at,
          auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END
        RETURNING id, name, source, auto, created_at, updated_at`,
     )
-      .bind(user.id, id, name, itemsJson, source, now, setAuto, autoText)
-      .first();
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText);
+  let row;
+  if (chunked) {
+    // Une transaction : le dernier morceau rangé, la collection écrite, les morceaux effacés.
+    const put = items.length ? [db.prepare('INSERT OR REPLACE INTO target_uploads (user_id, upload_id, part, items, bytes, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
+      .bind(user.id, up.id, up.part, JSON.stringify(items).slice(1, -1), partSize - 2, now)] : [];
+    const res = await db.batch([...put, write, db.prepare('DELETE FROM target_uploads WHERE user_id = ?1 AND upload_id = ?2').bind(user.id, up.id)]);
+    row = res[put.length].results[0] || null;
+  } else {
+    row = await write.first();
+  }
   if (!row) throw await conflict(db, user, id);
-  return { row, itemsJson, count: items.length };
+  return { row, itemsJson, chunked, count: items.length };
+}
+
+// Un morceau d'une collection envoyée en plusieurs (sans ses crochets), en attendant le dernier. Au plus MAX_UPLOADS
+// envois en cours par compte (les plus anciens partent), et pas plus de 1,7 Mo par envoi ; purge à une heure.
+async function stashPart(db, user, up, text, bytes) {
+  const st = await db.prepare(
+    'SELECT COALESCE(SUM(bytes), 0) AS bytes FROM target_uploads WHERE user_id = ?1 AND upload_id = ?2 AND part <> ?3',
+  ).bind(user.id, up.id, up.part).first();
+  if ((st ? st.bytes : 0) + bytes > MAX_ITEMS_BYTES) throw new HttpError(400, 'Collection trop volumineuse : 1,7 Mo au plus.');
+  await db.batch([
+    ...purgeStaging(db),
+    db.prepare(
+      `DELETE FROM target_uploads WHERE user_id = ?1 AND upload_id IN (
+         SELECT upload_id FROM target_uploads WHERE user_id = ?1 AND upload_id <> ?2
+         GROUP BY upload_id ORDER BY MAX(created_at) DESC, MAX(rowid) DESC LIMIT -1 OFFSET ${MAX_UPLOADS - 1})`,
+    ).bind(user.id, up.id),
+    db.prepare('INSERT OR REPLACE INTO target_uploads (user_id, upload_id, part, items, bytes, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
+      .bind(user.id, up.id, up.part, text, bytes, nowIso()),
+  ]);
 }
 
 // 409 d'un enregistrement conditionnel (expect_updated_at) : la collection telle qu'elle est maintenant (null si elle a

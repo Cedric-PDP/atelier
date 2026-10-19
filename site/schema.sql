@@ -109,6 +109,19 @@ CREATE TABLE IF NOT EXISTS import_staging (
     PRIMARY KEY (user_id, upload_id, part)
 );
 
+-- Morceaux d'une collection à compléter de plus de 600 Ko (POST /api/targets/save avec upload) en attendant le dernier :
+-- items = éléments en JSON sans les crochets, bytes = leur taille ; trois envois en cours au plus par utilisateur,
+-- 1,7 Mo au plus chacun. Effacés au bout d'une heure, ou dès que la collection est écrite.
+CREATE TABLE IF NOT EXISTS target_uploads (
+    user_id TEXT NOT NULL,
+    upload_id TEXT NOT NULL,
+    part INTEGER NOT NULL,
+    items TEXT NOT NULL,
+    bytes INTEGER NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, upload_id, part)
+);
+
 -- Modifications de données faites une seule fois par base (db.js, MIGRATIONS).
 CREATE TABLE IF NOT EXISTS migrations (
     name TEXT PRIMARY KEY,

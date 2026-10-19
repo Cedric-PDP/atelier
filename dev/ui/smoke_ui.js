@@ -320,6 +320,21 @@ function mockApi() {
       }
       if (p === '/api/targets') return json(200, { targets: st.targets });
       if (p === '/api/targets/save') {
+        // Envoi en morceaux (upload {id, part, last}, comme targets.js) : les morceaux sans last sont gardés, le dernier
+        // les reprend dans l'ordre ; la réponse n'a pas les éléments (items: null). Un envoi seul : 600 Ko au plus.
+        let chunked = false;
+        if (body.upload) {
+          const u = body.upload;
+          st.targetUploads = st.targetUploads || {};
+          const got = (st.targetUploads[u.id] = st.targetUploads[u.id] || []);
+          self.uploadParts = (self.uploadParts || 0) + 1;
+          if (!u.last) { got[u.part] = body.items; return json(200, { part: u.part }); }
+          if (got.length !== u.part || got.some((x) => !x)) return json(400, { error: 'Des morceaux de la collection manquent.' });
+          body = { ...body, items: [...got.flat(), ...body.items] };
+          delete st.targetUploads[u.id];
+          chunked = true;
+        } else if (Buffer.byteLength(JSON.stringify(body.items || [])) > 600 * 1024) return json(400, { error: 'Collection trop volumineuse pour un seul envoi : 600 Ko au plus.' });
+        if (Buffer.byteLength(JSON.stringify(body.items || [])) > 1_700_000) return json(400, { error: 'Collection trop volumineuse : 1,7 Mo au plus.' });
         if (!Array.isArray(body.items) || !body.items.every((i) => typeof i.title === 'string' && ['ok', 'missing', 'disambiguation'].includes(i.status))) return json(400, { error: 'items invalides' });
         let t = body.id ? st.targets.find((x) => x.id === body.id) : null;
         // Enregistrement conditionnel (expect_updated_at) : un autre est passé avant -> 409 avec la collection d'aujourd'hui
@@ -334,7 +349,7 @@ function mockApi() {
         Object.assign(t, { name: body.name, items: body.items, source: body.source || null, updated_at: 'y' + ++seq });
         if (auto !== undefined) t.auto = auto;
         st.targetsRev = (st.targetsRev || 0) + 1; // dernier changement, vu par les autres membres (GET /api/members)
-        return json(200, { target: t });
+        return json(200, { target: chunked ? { ...t, items: null } : t });
       }
       if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); st.targetsRev = (st.targetsRev || 0) + 1; return json(200, { ok: true }); }
       // Marché (SPEC.md, « Le marché ») : st.market = {value, history, live, live_at, prices} posé par le test ; cotes par
@@ -626,9 +641,9 @@ function wikiHandle(url) {
     if (/wdt:P279\* \?g/.test(q)) return { results: { bindings: /wd:Q638\b/.test(q) ? [{ c: uri('Q638'), g: uri('Q17537576') }] : [] } };
     if (/wdt:P106 wd:Q937857/.test(q)) {
       lastProbe = q;
-      const n = /LIMIT 3001/.test(q) ? 3001 : Number((q.match(/LIMIT (\d+)/) || [])[1]) || 0;
-      if (/LIMIT 3001/.test(q) && !/wdt:P27 wd:Q142/.test(q)) throw new Error('nationalité absente de la requête : ' + q);
-      if (!/LIMIT 3001/.test(q) && !/ORDER BY DESC\(\?sl\)/.test(q)) throw new Error('les plus connus doivent être triés par sitelinks');
+      const n = /LIMIT 20001/.test(q) ? 20001 : Number((q.match(/LIMIT (\d+)/) || [])[1]) || 0;
+      if (/LIMIT 20001/.test(q) && !/wdt:P27 wd:Q142/.test(q)) throw new Error('nationalité absente de la requête : ' + q);
+      if (!/LIMIT 20001/.test(q) && !/ORDER BY DESC\(\?sl\)/.test(q)) throw new Error('les plus connus doivent être triés par sitelinks');
       return { results: { bindings: Array.from({ length: n }, (_, i) => ({ item: uri('Q' + (900000 + i)), title: lit('Joueur ' + (i + 1)), desc: lit('footballeur français') })) } };
     }
     const b = [];
@@ -653,7 +668,7 @@ function wikiHandle(url) {
     if (p.srsearch.includes('"est une maladie"~1') && p.srsearch.includes('"sont des maladies"~1')) {
       return { query: { searchinfo: { totalhits: DEF_MALADIE.length }, search: [{ title: 'Grippe', snippet: hl('La grippe ou l&#039;influenza est une maladie infectieuse et contagieuse') }] } };
     }
-    if (p.srsearch.includes('"est une cathédrale"~1')) return { query: { searchinfo: { totalhits: 4200 }, search: [{ title: 'Cathédrale 1', snippet: hl('La cathédrale 1 est une cathédrale gothique') }] } };
+    if (p.srsearch.includes('"est une cathédrale"~1')) return { query: { searchinfo: { totalhits: 12000 }, search: [{ title: 'Cathédrale 1', snippet: hl('La cathédrale 1 est une cathédrale gothique') }] } };
     return { query: { searchinfo: { totalhits: 0 }, search: [] } };
   }
   // Cartes citées dans le chat (« # ») : articles par préfixe seuls (ARTICLE_PREFIX, par le texte tapé replié).
@@ -717,11 +732,11 @@ function wikiHandle(url) {
     if (p.gsrsearch.includes('"est une cathédrale"~1')) {
       if (p.gsrsort !== 'incoming_links_desc') throw new Error('les plus connus : tri par liens entrants attendu');
       const from = Number(p.gsroffset) || 0;
-      const to = Math.min(4200, from + Number(p.gsrlimit));
+      const to = Math.min(12000, from + Number(p.gsrlimit));
       const docs = [];
       for (let i = from; i < to; i++) docs.push(i % 4 === 3 ? { title: `Ville ${i + 1}`, open: `Ville ${i + 1} est une ville de France.`, q: 'Q' + (950000 + i) }
         : { title: `Cathédrale ${i + 1}`, open: `La cathédrale ${i + 1} est une cathédrale gothique.`, desc: 'cathédrale', q: 'Q' + (950000 + i) });
-      return { ...(to < 4200 ? { continue: { gsroffset: to, continue: 'gsroffset||' } } : {}), query: { pages: docs.map((d, k) => page(d, from + k)) } };
+      return { ...(to < 12000 ? { continue: { gsroffset: to, continue: 'gsroffset||' } } : {}), query: { pages: docs.map((d, k) => page(d, from + k)) } };
     }
     throw new Error('formule inattendue : ' + p.gsrsearch);
   }
@@ -777,7 +792,7 @@ function wikiHandle(url) {
     }) } };
   }
   if (p.prop === 'categoryinfo') {
-    const I = { 'Catégorie:Footballeur international français': { pages: 3, subcats: 1 }, 'Catégorie:Footballeur français': { pages: 12000, subcats: 40 },
+    const I = { 'Catégorie:Footballeur international français': { pages: 3, subcats: 1 }, 'Catégorie:Footballeur français': { pages: 32000, subcats: 40 },
       'Catégorie:Exemples de test': { pages: 40, subcats: 0 }, 'Catégorie:Autre essai': { pages: 50, subcats: 0 } };
     return { query: { pages: p.titles.split('|').map((title) => ({ title, categoryinfo: I[title] || catInfo(title) || { pages: 0, subcats: 0 } })) } };
   }
@@ -938,6 +953,20 @@ async function main() {
     if (key) headers['X-Classeur-Key'] = key;
     if (SERVER) { const r = await fetch(SERVER + p, { method, headers, body: body ? JSON.stringify(body) : undefined }); return { status: r.status, body: await r.json() }; }
     return api.handle(method, p, headers, body || {});
+  };
+  // Collection enregistrée par l'API, en morceaux (upload de targets.js) au-delà de 500 Ko d'éléments, comme la page.
+  const rawSave = async (key, body) => {
+    const items = body.items || [];
+    const size = Buffer.byteLength(JSON.stringify(items));
+    if (size <= 500 * 1024) return rawApi('POST', '/api/targets/save', key, body);
+    const n = Math.ceil(size / (450 * 1024));
+    const cut = Math.ceil(items.length / n);
+    const id = 'brut-' + Math.random().toString(36).slice(2, 12);
+    for (let k = 0; k < n - 1; k++) {
+      const r = await rawApi('POST', '/api/targets/save', key, { items: items.slice(k * cut, (k + 1) * cut), upload: { id, part: k } });
+      if (r.status !== 200) return r;
+    }
+    return rawApi('POST', '/api/targets/save', key, { ...body, items: items.slice((n - 1) * cut), upload: { id, part: n - 1, last: true } });
   };
   const makeOtherAccount = async (name) => {
     const r = await rawApi('POST', '/api/account', null, { code: SERVER ? (process.env.SIGNUP_CODE || 'dev') : 'dev', name });
@@ -1676,8 +1705,51 @@ async function main() {
       check(slotTitles().join(',') === 'Gare H' && box('Gares fermées').disabled && box('En Testlande', 1).disabled && !box('Gares desservies').disabled, 'seules les gares fermées : ' + slotTitles().join(','));
       await click(box('En Testlande'));
       check(slotTitles().join(',') === 'Gare A,Gare B,Gare C,Gare H' && !box('Gares fermées').disabled, '« En Testlande » (desservies) recochée : ' + slotTitles().join(','));
-      needButton('← Toutes les collections').click();
-      await settle();
+      // Une collection par choix de sections (2026-10-19) : « À l'étranger » seule, puis tout ensemble, chacune la sienne.
+      await click(box('Gares desservies'));
+      await click(box('Gares fermées'));
+      await click(box('En Testlande'));
+      check(slotTitles().join(',') === 'Gare D,Gare E,Gare F,Gare G', 'seulement « À l\'étranger » : ' + slotTitles().join(','));
+      const p0 = parseCalls.length;
+      const l0 = linkCalls.length;
+      needButton('Créer une collection').click();
+      check(await waitFor(() => has('Modifier') && has('Supprimer')), '« Créer une collection » (section) sans effet');
+      check(has('Collection « Gares de Testlande — À l\'étranger » créée : 4 articles (colonne « Gare » des tableaux de la page, section « À l\'étranger », dans l\'ordre), dans « Mes collections ».')
+        && at().includes('Gares de Testlande — À l\'étranger') && has('depuis la page Wikipédia « Liste des gares de Testlande », colonne « Gare », section « À l\'étranger »'), 'collection d\'une section : ' + at());
+      if (!SERVER) {
+        const t = api.st.targets.find((x) => x.source === 'links:' + GR_PAGE + '#Gare#§À l\'étranger');
+        check(t && t.name === 'Gares de Testlande — À l\'étranger' && t.items.map((i) => i.title).join(',') === 'Gare D,Gare E,Gare F,Gare G', 'collection d\'une section mal enregistrée : ' + JSON.stringify(t).slice(0, 300));
+      }
+      // « Autres sections de la page » : la page rouverte sans rien relire, tout coché ; ta collection de la page citée.
+      needButton('Autres sections de la page').click();
+      check(await waitFor(() => !!one('page-tables') && boxes().every((b) => b.checked) && !!buttonByText('Créer une collection'), 5000), 'page rouverte : ' + at());
+      check(parseCalls.length === p0 && linkCalls.length === l0, 'page rouverte : rien ne doit être relu, ' + (parseCalls.length - p0) + ' / ' + (linkCalls.length - l0));
+      check(text(one('page-mine')) === 'Ta collection de cette page : Gares de Testlande — À l\'étranger.', 'tes collections de la page : ' + text(one('page-mine') || { childNodes: [] }));
+      needButton('Créer une collection').click();
+      check(await waitFor(() => has('Collection « Gares de Testlande » créée : 8 articles (colonne « Gare » des tableaux de la page, dans l\'ordre), dans « Mes collections ».')), 'collection de toute la page : ' + at());
+      needButton('Autres sections de la page').click();
+      check(await waitFor(() => !!one('page-mine') && text(one('page-mine')).startsWith('Tes collections de cette page : Gares de Testlande — À l\'étranger, Gares de Testlande')
+        && !!buttonByText('Ouvrir ta collection'), 5000), 'deux collections de la page : ' + text(one('page-mine') || { childNodes: [] }));
+      // Le choix d'une collection déjà faite l'ouvre au lieu d'en créer une seconde.
+      await click(box('Gares fermées'));
+      await click(box('En Testlande'));
+      check(!!buttonByText('Ouvrir ta collection') && !buttonByText('Créer une collection'), 'sections déjà en collection : « Ouvrir ta collection » attendu');
+      await click(box('En Testlande'));
+      await click(box('À l\'étranger'));
+      check(!!buttonByText('Créer une collection') && slotTitles().join(',') === 'Gare A,Gare B,Gare C', 'autre choix : « Créer une collection » attendu, ' + slotTitles().join(','));
+      for (const name of ['Gares de Testlande — À l\'étranger', 'Gares de Testlande']) {
+        all((n) => n.tagName === 'BUTTON' && n.classList.contains('linkish') && text(n) === name)[0].click();
+        check(await waitFor(() => has('Supprimer') && one('album-title') && text(one('album-title')).startsWith(name)), 'collection « ' + name + ' » non ouverte');
+        needButton('Supprimer').click();
+        await settle();
+        modalBtn('Supprimer la collection').click();
+        await settle(60);
+        if (name !== 'Gares de Testlande') {
+          paste('https://fr.wikipedia.org/wiki/Liste_des_gares_de_Testlande');
+          check(await waitFor(() => !!one('page-mine'), 5000), 'page rouverte pour la suppression');
+        }
+      }
+      check(await waitFor(() => !rowNames(mineSection()).some((n) => n.startsWith('Gares de Testlande'))), 'collections des gares non supprimées');
     }
     // Adresse d'un autre site : rien n'est demandé à Wikipédia ; page absente : la recherche le dit.
     n0 = catSuggest.length;
@@ -1700,7 +1772,7 @@ async function main() {
   check(has('Interprétation : Métier : footballeur · Nationalité : France'), 'interprétation Wikidata absente : ' + text(one('modal')).slice(0, 400));
   const candTexts = cls('cand').map(text);
   check(candTexts.length === 3, 'trois candidats attendus : ' + candTexts.join(' / '));
-  check(candTexts[0].includes('Footballeur français') && candTexts[0].includes('plus de 3 000 articles · Wikidata') && candTexts[0].includes('Garder les plus connus'), 'candidat Wikidata incorrect : ' + candTexts[0]);
+  check(candTexts[0].includes('Footballeur français') && candTexts[0].includes('plus de 20 000 articles · Wikidata') && candTexts[0].includes('Garder les plus connus'), 'candidat Wikidata incorrect : ' + candTexts[0]);
   check(candTexts.some((t) => t.includes('Footballeur international français') && t.includes('3 articles · 1 sous-catégories · Catégorie Wikipédia')), 'candidat catégorie absent');
   check(cls('cand').some((c) => c.classList.contains('disabled') && text(c).includes('trop grande : précise ta recherche')), 'la catégorie trop grande doit être grisée');
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Garder les 100 plus connus')[0].click();
@@ -1845,7 +1917,7 @@ async function main() {
   for (let i = 0; i < 100 && !(has('Interprétation') && !has('Recherche…')); i++) await sleep(50);
   await settle();
   const bigDef = cls('cand').filter((c) => text(c).includes('Définition Wikipédia'))[0];
-  check(bigDef && text(bigDef).includes('plus de 3 000 articles (4 200 citent la formule)') && text(bigDef).includes('Garder les plus connus') && !text(bigDef).includes('Choisir'),
+  check(bigDef && text(bigDef).includes('plus de 10 000 articles (12 000 citent la formule)') && text(bigDef).includes('Garder les plus connus') && !text(bigDef).includes('Choisir'),
     'grand candidat « Définition » : ' + (bigDef ? text(bigDef) : cls('cand').map(text).join(' / ')));
   bigDef.querySelectorAll('button').filter((b) => b.getAttribute('aria-label') === 'Garder les 100 plus connus')[0].click();
   for (let i = 0; i < 100 && !cls('preview').length; i++) await sleep(50);
@@ -4145,23 +4217,41 @@ async function main() {
     }
 
     // Trois collections à règles (deux créées ici par l'API, avec leurs règles) : une notification pour toutes ; « Grande »
-    // (2 999 éléments) ne prend que la première de ses deux cartes (de A à Z), la notification le dit, rien ne casse.
+    // (à 100 octets des 1,7 Mo) ne prend que la première de ses deux cartes (de A à Z), envoyée en morceaux (plus de 600
+    // Ko), la notification le dit, rien ne casse.
     check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Virus', items: [itU('Grippe')], auto: { rules: [{ k: 'gtag', v: 'Virus' }] } })).status === 200, 'collection « Virus » refusée');
-    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Grande', items: Array.from({ length: 2999 }, (_, i) => itU('Élément ' + i, { qid: 'Q' + (7000000 + i) })),
-      auto: { rules: [{ k: 'cat', v: 'géant' }] } })).status === 200, 'collection « Grande » refusée');
+    const grande = [];
+    {
+      const room = 1_700_000 - 100;
+      let b = 1;
+      const full = (i) => itU('Élément ' + i, { qid: 'Q' + (7000000 + i), description: 'd'.repeat(400) });
+      for (let i = 0; ; i++) {
+        const n = Buffer.byteLength(JSON.stringify(full(i))) + 1;
+        if (b + n + 100 > room) break;
+        grande.push(full(i));
+        b += n;
+      }
+      const last = itU('Élément ' + grande.length, { qid: 'Q' + (7000000 + grande.length), description: '' });
+      last.description = 'd'.repeat(room - b - Buffer.byteLength(JSON.stringify(last)) - 1);
+      grande.push(last);
+      check(Buffer.byteLength(JSON.stringify(grande)) === room, 'remplissage de « Grande » : ' + Buffer.byteLength(JSON.stringify(grande)));
+      check((await rawSave(keyU, { name: 'Grande', items: grande, auto: { rules: [{ k: 'cat', v: 'géant' }] } })).status === 200, 'collection « Grande » refusée');
+    }
+    const parts0 = SERVER ? 0 : api.uploadParts;
     const w = await pageU();
     await settle(150);
     await more(mkU('v1', 'Herpès', 'infection virale', ['Virus']), mkU('v2', 'Zona', 'infection virale', ['Virus', 'Maladie']), mkU('g1', 'Séquoia', 'Géant'), mkU('g2', 'Baleine bleue', 'géant'));
     from = apiLog.length;
     await w.pg.live();
     check(await waitFor(() => w.toast().includes('4 cartes ajoutées automatiquement : 1 à « Maladies », 2 à « Virus » et 1 à « Grande ».')
-      && w.toast().includes("« Grande » est pleine : 1 carte de ses règles d'ajout automatique n'a pas pu y entrer (3 000 éléments et 600 Ko au plus par collection)."), 5000),
+      && w.toast().includes("« Grande » est pleine : 1 carte de ses règles d'ajout automatique n'a pas pu y entrer (1,7 Mo au plus par collection)."), 5000),
     'trois collections : notification ' + w.toast());
-    check(saves(from).length === 3, 'une requête par collection : ' + saves(from).length);
+    check(saves(from).length >= 4 && (SERVER || api.uploadParts - parts0 === saves(from).length - 2), 'une requête par collection, « Grande » en morceaux : ' + saves(from).length);
     check(titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche|Zona' && titlesOf(await colU('Virus')) === 'Grippe|Herpès|Zona',
       'trois collections : ' + titlesOf(await colU('Maladies')) + ' / ' + titlesOf(await colU('Virus')));
     const big = await colU('Grande');
-    check(big.items.length === 3000 && big.items[2999].title === 'Baleine bleue', 'collection pleine : ' + big.items.length + ' / ' + big.items[big.items.length - 1].title);
+    check(big.items.length === grande.length + 1 && big.items[grande.length].title === 'Baleine bleue' && big.items[0].title === 'Élément 0',
+      'collection pleine : ' + big.items.length + ' / ' + big.items[big.items.length - 1].title);
     // Une autre carte, hors des règles : « Grande » est toujours pleine, l'avertissement n'est pas répété ; aucune requête.
     await more(mkU('x1', 'Caillou', 'pierre'));
     from = apiLog.length;
@@ -4549,7 +4639,7 @@ async function main() {
     await sendImport(keyF, [mkF('f1', 'Zeus', 'L'), mkF('f2', 'Héra', 'R'), mkF('f3', 'Apollon', 'SR')]);
     const itF = (title, more) => ({ title, description: null, image: null, status: 'ok', ...more });
     const pad = (i) => String(i).padStart(4, '0');
-    const saveF = async (t) => check((await rawApi('POST', '/api/targets/save', keyF, t)).status === 200, `collection « ${t.name} » refusée`);
+    const saveF = async (t) => check((await rawSave(keyF, t)).status === 200, `collection « ${t.name} » refusée`);
     await saveF({ name: 'Olympe', items: [itF('Zeus'), itF('Héra'), itF('Poséidon'), itF('Athéna', { qid: 'Q37122' })] });
     // « Poseidon » : redirection vers « Poséidon » (même qid, résolu sur Wikipédia) ; « Pallas Athéna » : même qid
     // qu'« Athéna » ; Héra, déjà présente, ouvre une section : Hermès, la carte ajoutée suivante, l'ouvrira.
@@ -4558,12 +4648,13 @@ async function main() {
     await saveF({ name: 'Doublons', items: [itF('Zeus'), itF('Héra')] });
     await saveF({ name: 'Vaches', source: 'wp:Race bovine', items: [itF('Salers'), itF('Aubrac')] });
     await saveF({ name: 'Vaches 2', items: [itF('Aubrac', { qid: 'Q900200', description: 'race bovine' }), itF('Charolaise')] });
-    // Grandes collections (avec un qid : rien à résoudre sur Wikipédia).
-    await saveF({ name: 'Grande', items: Array.from({ length: 2998 }, (_, i) => itF('Article G' + pad(i), { qid: 'Q71' + pad(i) })) });
+    // Grandes collections (avec un qid : rien à résoudre sur Wikipédia). « Grande » : 1 699 867 octets, la fusion de 7
+    // éléments de plus ne tient plus dans 1,7 Mo.
+    await saveF({ name: 'Grande', items: Array.from({ length: 2998 }, (_, i) => itF('Article G' + pad(i), { qid: 'Q71' + pad(i), description: 'd'.repeat(481) })) });
     const desc = 'Une description de cinq cents caractères. '.repeat(12).slice(0, 500);
-    await saveF({ name: 'Longues A', items: Array.from({ length: 560 }, (_, i) => itF('Longue A' + pad(i), { description: desc, qid: 'Q72' + pad(i) })) });
-    await saveF({ name: 'Longues B', items: Array.from({ length: 560 }, (_, i) => itF('Longue B' + pad(i), { description: desc, qid: 'Q73' + pad(i) })) });
-    await saveF({ name: 'Images B', items: Array.from({ length: 300 }, (_, i) => itF('Image B' + pad(i), { image: `https://upload.wikimedia.org/b${i}/${'i'.repeat(940)}.jpg`, qid: 'Q74' + pad(i) })) });
+    await saveF({ name: 'Longues A', items: Array.from({ length: 1550 }, (_, i) => itF('Longue A' + pad(i), { description: desc, qid: 'Q72' + pad(i) })) });
+    await saveF({ name: 'Longues B', items: Array.from({ length: 1550 }, (_, i) => itF('Longue B' + pad(i), { description: desc, qid: 'Q73' + pad(i) })) });
+    await saveF({ name: 'Images B', items: Array.from({ length: 900 }, (_, i) => itF('Image B' + pad(i), { image: `https://upload.wikimedia.org/b${i}/${'i'.repeat(940)}.jpg`, qid: 'Q74' + pad(i) })) });
     const targetsF = async () => (await rawApi('GET', '/api/targets', keyF)).body.targets;
     const olympeId = (await targetsF()).find((x) => x.name === 'Olympe').id;
     ls.set('classeur-key', keyF);
@@ -4599,7 +4690,7 @@ async function main() {
     await settle();
     check(modal() && text(modal().querySelector('h2')) === 'Fusionner « Olympe » avec…', 'fenêtre « Fusionner avec… » absente');
     const ct = choices().map(text);
-    check(ct.length === 8 && ct.join(' | ').startsWith('Dieux grecs7 éléments | Doublons2 éléments | Grande2 998 éléments | Images B300 éléments | Longues A560 éléments | Longues B560 éléments | Vaches2 éléments')
+    check(ct.length === 8 && ct.join(' | ').startsWith('Dieux grecs7 éléments | Doublons2 éléments | Grande2 998 éléments | Images B900 éléments | Longues A1 550 éléments | Longues B1 550 éléments | Vaches2 éléments')
       && ct[6].includes('depuis la catégorie Wikipédia « Race bovine »') && ct[7] === 'Vaches 22 éléments' && !ct.some((x) => x.startsWith('Olympe')), 'collections proposées : ' + ct.join(' | '));
     check(primary() && text(primary()) === 'Fusionner' && primary().disabled && !box('merge-name'), 'rien de choisi : bouton grisé, pas encore de nom');
     // Tout est déjà là : rien à ajouter ; supprimer l'autre (coché d'emblée) reste possible, sinon rien à faire.
@@ -4652,13 +4743,13 @@ async function main() {
     check(ol.items[0].description === 'roi des dieux' && ol.items[0].image === 'https://upload.wikimedia.org/z2.jpg' && ol.items[0].rarity === 'L' && !ol.items[0].sep
       && ol.items[3].qid === 'Q37122' && !ol.items[1].sep, 'éléments déjà présents complétés, sans intercalaire de plus : ' + JSON.stringify(ol.items.slice(0, 4)));
     check(await waitFor(() => text(d.querySelector('.album-title')).includes("Dieux de l'Olympe") && text(d.querySelector('.album-title')).includes('3 sur 7')), 'album après la fusion');
-    // 3 000 éléments au plus : vérifié avant l'envoi.
+    // 1,7 Mo au plus : vérifié avant l'envoi (même sans les images).
     btnIn(d.body, 'Fusionner avec…').click();
     await settle();
     check(!choices().some((x) => text(x).startsWith('Dieux grecs')), 'la collection supprimée est encore proposée');
     await choose('Grande');
-    check(mtxt().includes("La collection fusionnée aurait 3 005 éléments : 3 000 au plus. Retire d'abord 5 éléments de l'une des deux") && primary().disabled,
-      'fusion de plus de 3 000 éléments : ' + mtxt().slice(-500));
+    check(mtxt().includes('Collection fusionnée trop volumineuse : ') && mtxt().includes('Ko même sans les images, 1,7 Mo au plus.') && primary().disabled,
+      'fusion de plus de 1,7 Mo : ' + mtxt().slice(-500));
     btnIn(modal(), 'Annuler').click();
     await settle(300);
     // Collection faite d'une catégorie : elle garde sa source, pas d'intercalaire en tête (de A à Z). Suppression de l'autre
@@ -4687,17 +4778,18 @@ async function main() {
     check(vac.source === 'wp:Race bovine' && vac.items.map((i) => i.title).join('|') === 'Salers|Aubrac|Charolaise' && vac.items[1].qid === 'Q900200' && vac.items[1].description === 'race bovine',
       'collection faite d\'une catégorie après la fusion : ' + JSON.stringify(vac));
     check(all.some((x) => x.name === 'Vaches 2') === !!api, '« Vaches 2 » doit rester si sa suppression est refusée');
-    // 600 Ko : trop lourde même sans images, refusée avant l'envoi ; trop lourde à cause des images : fusion sans elles.
+    // 1,7 Mo : trop lourde même sans images, refusée avant l'envoi ; trop lourde à cause des images : fusion sans elles
+    // (envoyée en morceaux).
     await back();
     await openRow('Longues A');
     btnIn(d.body, 'Fusionner avec…').click();
     await settle();
     await choose('Longues B');
-    check(/Collection fusionnée trop volumineuse : \d+ Ko, 600 Ko au plus\./.test(mtxt()) && !mtxt().includes('même sans les images') && primary().disabled, 'fusion de plus de 600 Ko : ' + mtxt().slice(-500));
+    check(/Collection fusionnée trop volumineuse : [\d  ]+ Ko, 1,7 Mo au plus\./.test(mtxt()) && !mtxt().includes('même sans les images') && primary().disabled, 'fusion de plus de 1,7 Mo : ' + mtxt().slice(-500));
     await choose('Images B');
-    check(mtxt().includes('300 éléments ajoutés, aucun déjà présent') && mtxt().includes('Sans les images : avec elles, la collection dépasserait 600 Ko') && !mtxt().includes('trop volumineuse')
+    check(mtxt().includes('900 éléments ajoutés, aucun déjà présent') && mtxt().includes('Sans les images : avec elles, la collection dépasserait 1,7 Mo') && !mtxt().includes('trop volumineuse')
       && !primary().disabled, 'fusion sans les images : ' + mtxt().slice(0, 900));
-    check(added().length === 31 && added()[30] === '… et 270 éléments de plus', 'aperçu des éléments ajoutés (30 montrés) : ' + added().slice(-2).join('|'));
+    check(added().length === 31 && added()[30] === '… et 870 éléments de plus', 'aperçu des éléments ajoutés (30 montrés) : ' + added().slice(-2).join('|'));
     box('merge-drop').click();
     await settle();
     check(text(primary()) === 'Fusionner', 'garder l\'autre : bouton « Fusionner »');
@@ -4706,9 +4798,9 @@ async function main() {
     all = await targetsF();
     const la = all.find((x) => x.name === 'Longues A');
     const ib = all.find((x) => x.name === 'Images B');
-    check(la.items.length === 860 && la.items.every((i) => i.image === null) && la.items[859].title === 'Image B0299' && ib && ib.items.length === 300 && ib.items[0].image,
+    check(la.items.length === 2450 && la.items.every((i) => i.image === null) && la.items[2449].title === 'Image B0899' && ib && ib.items.length === 900 && ib.items[0].image,
       'fusion sans les images : ' + la.items.length + ' éléments, ' + la.items.filter((i) => i.image).length + ' images ; « Images B » ' + (ib ? 'gardée' : 'absente'));
-    check(await waitFor(() => txt().includes('« Images B » fusionnée dans « Longues A » : 300 éléments ajoutés.')), 'confirmation de la fusion sans suppression');
+    check(await waitFor(() => txt().includes('« Images B » fusionnée dans « Longues A » : 900 éléments ajoutés.')), 'confirmation de la fusion sans suppression');
     console.log(`fusion : ${all.length} collections de Mila après trois fusions ; « Longues A » : ${la.items.length} éléments, ${Math.round(JSON.stringify(la.items).length / 1024)} Ko`);
   }
 
