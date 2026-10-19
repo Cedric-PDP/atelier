@@ -497,7 +497,9 @@ const REDIRECTS = { 'Poseidon': 'Poséidon', 'Tableau périodique': 'Tableau pé
 const listSearch = (s) => (/bovin/i.test(s) ? [{ title: 'Liste de races bovines' }, { title: 'Charolaise' }, { title: 'Liste des races bovines de France' }]
   : /couleur/i.test(s) ? [{ title: 'Liste de noms de couleur' }, { title: 'Couleur' }, { title: 'Liste de couleurs (pigments)' }] : []);
 // Articles par préfixe (espace 0) : leurs noms, sans précision entre parenthèses, sont essayés comme catégories.
-const ARTICLE_PREFIX = { viol: ['Violence', 'Violet (couleur)', 'Viola Davis'], couleur: ['Couleur', 'Couleur primaire'] };
+const ARTICLE_PREFIX = { viol: ['Violence', 'Violet (couleur)', 'Viola Davis'], couleur: ['Couleur', 'Couleur primaire'],
+  europe: ['Union européenne', 'Europe', 'Europe centrale', 'Peste'] }; // « europe » : un mot du titre, le titre exact, une carte d'Alek (par une redirection)
+const chatPrefix = []; // textes cherchés sur Wikipédia par l'autocomplétion « # » du chat
 // Catégories de Wikipédia (onglet Collections, zone « Catégories ») : taille (categoryinfo), articles et sous-catégories
 // (categorymembers). Pour « viol » : par préfixe Violence, Violet, Violoniste français (une homonymie, une catégorie
 // cachée et une vide écartées), Viol par son titre exact seulement (noPrefix : le préfixe de Wikipédia classe par
@@ -628,6 +630,12 @@ function wikiHandle(url) {
     }
     if (p.srsearch.includes('"est une cathédrale"~1')) return { query: { searchinfo: { totalhits: 4200 }, search: [{ title: 'Cathédrale 1', snippet: hl('La cathédrale 1 est une cathédrale gothique') }] } };
     return { query: { searchinfo: { totalhits: 0 }, search: [] } };
+  }
+  // Cartes citées dans le chat (« # ») : articles par préfixe seuls (ARTICLE_PREFIX, par le texte tapé replié).
+  if (p.list === 'prefixsearch' && !p.generator) {
+    if (p.psnamespace !== '0' || p.pslimit !== '8' || !p.pssearch) throw new Error('articles par préfixe (chat) incorrects : ' + url);
+    chatPrefix.push(p.pssearch);
+    return { batchcomplete: true, query: { prefixsearch: (ARTICLE_PREFIX[foldT(p.pssearch)] || []).map((title) => ({ ns: 0, title })) } };
   }
   // Suggestions de catégories : par préfixe (et, dans la même requête, les pages « Liste de… » et les articles par
   // préfixe), puis plein texte, avec leur taille (categoryinfo) dans la même réponse ; pages rendues dans le désordre
@@ -3807,6 +3815,19 @@ async function main() {
     type(field(), 'et #tuberc');
     await settle();
     check(!acList(), 'Échap : la liste ne doit pas revenir pour le même #');
+    // Une carte que tu n'as nulle part : les articles de Wikipédia qui commencent par le texte tapé (dès 2 lettres, après
+    // une pause de frappe) ; le titre exact en tête, puis par début du titre, puis par début d'un mot, et un article
+    // trouvé par une redirection (ici une carte d'Alek, avec sa rareté) en dernier.
+    const asked = chatPrefix.length;
+    type(field(), 'Vu #Europe');
+    check(await waitFor(() => acNames().join('|') === 'Europe|Europe centrale|Union européenne|Peste'), 'suggestions Wikipédia de « #Europe » : ' + acNames().join('|'));
+    const peste = acList().querySelectorAll('li')[3];
+    check(peste.querySelector('.pill') && !text(peste).includes('pas dans ton classeur') && text(acList().querySelectorAll('li')[0]).includes('pas dans ton classeur'),
+      'article de Wikipédia : ta carte avec sa rareté, les autres « pas dans ton classeur »');
+    check(chatPrefix.slice(asked).join('|') === 'Europe', 'une seule recherche Wikipédia attendue : ' + chatPrefix.slice(asked).join('|'));
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    check(field().value === 'Vu [[Europe]] ', '[[Europe]] attendu : « ' + field().value + ' »');
     for (const v of ["C'est le #1", 'C#maj', 'Rien #zzzz']) {
       type(field(), v);
       await settle();

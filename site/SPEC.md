@@ -656,12 +656,19 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     avant le curseur, en début de mot (pas « a@b.fr », « C#maj »), sur la même ligne, 60 caractères tapés au plus depuis,
     sans espace au début ni deux espaces de suite (un prénom ou un titre peut contenir des espaces). **Flèches** pour
     choisir, **Entrée** ou **Tab** pour insérer (Entrée n'envoie alors rien), **Échap** pour fermer (elle ne revient pas
-    pour ce `@` ou ce `#`), clic (à la souris : le champ garde le focus) ; quitter le champ la ferme. Rien de choisi : le
-    texte reste tel quel et Entrée envoie. 8 suggestions au plus, rangées : le nom commence par ce qui est tapé, puis un de
-    ses mots, puis (3 lettres ou plus) il le contient ;
-    - `#` suivi d'une **lettre** (« #1 » ne propose rien) : tes cartes (avec leur rareté), puis les éléments vérifiés de
-      tes collections et les cartes des amis déjà lues (« pas dans ton classeur »), une fois par titre ; à rang égal, les
-      tiennes d'abord, puis la plus courte. Insère `[[Titre]] ` (le texte tapé depuis le `#` est remplacé) ;
+    tant qu'on continue le même mot après ce `@` ou ce `#`), clic (à la souris : le champ garde le focus) ; quitter le champ la ferme. Rien de choisi : le
+    texte reste tel quel et Entrée envoie. 8 suggestions au plus, rangées : le nom tapé en entier, puis le nom commence par
+    ce qui est tapé, puis un de ses mots, puis (3 lettres ou plus) il le contient ;
+    - `#` suivi d'une **lettre** (« #1 » ne propose rien) : tes cartes (avec leur rareté), les éléments vérifiés de tes
+      collections et les cartes des amis déjà lues (« pas dans ton classeur »), et, dès 2 lettres, les **articles de
+      Wikipédia** qui commencent par le texte tapé (toute carte du jeu en est un ; retour de l'utilisateur du 2026-10-19 :
+      « #Europe » ne proposait pas Europe, absente de son classeur) : `list=prefixsearch` (espace 0, 8 au plus, dans
+      l'ordre de Wikipédia), 250 ms après la dernière frappe, dans la file des requêtes à Wikipédia ; une recherche
+      périmée est abandonnée ; « Recherche sur Wikipédia… » tant que rien d'autre n'est proposé ; Wikipédia indisponible :
+      les cartes connues seules. Une fois par titre ; un article trouvé par une redirection (son titre ne contient pas le
+      texte tapé) vient en dernier ; à rang égal, les tiennes d'abord, puis les autres cartes connues (la plus courte
+      d'abord), puis les articles dans l'ordre de Wikipédia. Insère `[[Titre]] ` (le texte tapé depuis le `#` est
+      remplacé) ;
     - `@` : les **membres qui montrent leurs cartes** (choix de l'utilisateur : seuls eux peuvent être mentionnés), sauf
       toi : les prénoms de « Entre amis » s'ils sont lus, sinon `GET /api/members` seul (sans leurs cartes), à
       l'ouverture du chat ou au premier `@`, au plus toutes les 10 min (`FRIENDS_TTL`). Comme ce point d'accès, il faut

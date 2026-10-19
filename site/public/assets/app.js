@@ -301,8 +301,11 @@
     // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
     // messages plus anciens ; newBelow = nouveaux messages arrivés sous la zone lue (on n'était pas en bas).
     // ac = autocomplétion du champ ouverte : {kind ('@' membre | '#' carte), start (position du @ ou du #), end (curseur),
-    // q (texte tapé après), active (suggestion surlignée)} ; acOff = position d'un @ ou # dont la liste a été fermée par Échap.
-    chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null },
+    // q (texte tapé après), active (suggestion surlignée)} ; acOff = {start, q} : le @ ou # dont la liste a été fermée par
+    // Échap, et ce qui était tapé (elle reste fermée tant qu'on continue ce mot) ;
+    // acWp = articles de Wikipédia qui commencent par le texte tapé après « # » ({q (replié), titles, loading}).
+    chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
+      acWp: { q: '', titles: [], loading: false } },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
@@ -7790,7 +7793,8 @@
   }
   // Autocomplétion du champ : « @ » propose les membres qui montrent leurs cartes (il faut montrer les siennes : c'est ce
   // que permet GET /api/members) et insère « @Prénom » ; « # » suivi d'une lettre propose des cartes (les tiennes, celles
-  // de tes collections, celles des amis déjà lues) et insère « [[Titre]] ». Flèches, Entrée ou Tab, Échap ; rien de
+  // de tes collections, celles des amis déjà lues, puis, dès 2 lettres, les articles de Wikipédia qui commencent par le
+  // texte tapé : toute carte du jeu en est un) et insère « [[Titre]] ». Flèches, Entrée ou Tab, Échap ; rien de
   // choisi : le texte reste tel quel.
   const CHAT_AC_MAX = 8;
   const CHAT_AC_SPAN = 60; // caractères tapés après le @ ou le # au plus
@@ -7834,21 +7838,72 @@
     for (const f of friendList.value) for (const c of f.cards || []) add(c.title, false);
     return [...out.values()];
   });
+  // Articles de Wikipédia par préfixe (list=prefixsearch, 8 au plus, dans l'ordre de Wikipédia : les plus consultés
+  // d'abord), 250 ms après la dernière frappe ; une recherche périmée est abandonnée.
+  let chatWpTimer = null;
+  let chatWpCtrl = null;
+  function stopChatWp() {
+    clearTimeout(chatWpTimer);
+    chatWpTimer = null;
+    if (chatWpCtrl) { chatWpCtrl.abort(); chatWpCtrl = null; }
+    if (S.chat.acWp.loading) S.chat.acWp = { q: '', titles: [], loading: false };
+  }
+  function chatWpSearch(text) {
+    const c = S.chat;
+    const q = text.trim();
+    const k = fold(q);
+    if (k.length < 2) { stopChatWp(); return; }
+    if (c.acWp.q === k) return; // déjà cherché, ou en cours
+    stopChatWp();
+    c.acWp = { q: k, titles: [], loading: true };
+    const gen = chatGen;
+    chatWpTimer = setTimeout(async () => {
+      chatWpTimer = null;
+      const ctrl = new AbortController();
+      chatWpCtrl = ctrl;
+      let titles = [];
+      try {
+        const j = await getJson(wikiQ, wpUrl({ action: 'query', list: 'prefixsearch', pssearch: q, psnamespace: '0', pslimit: String(CHAT_AC_MAX) }), 4, null, ctrl.signal);
+        titles = ((j && j.query && j.query.prefixsearch) || []).map((r) => String((r && r.title) || '')).filter(Boolean);
+      } catch (e) {
+        if (ctrl.signal.aborted) return; // Wikipédia indisponible : les cartes connues restent proposées
+      } finally {
+        if (chatWpCtrl === ctrl) chatWpCtrl = null;
+      }
+      if (gen === chatGen && c.acWp.q === k) c.acWp = { q: k, titles, loading: false };
+    }, 250);
+  }
   const chatAcList = computed(() => {
     const ac = S.chat.ac;
     if (!ac) return [];
     const q = fold(ac.q);
-    // Rang : commence par ce qui est tapé, puis un mot qui commence par lui, puis (3 lettres ou plus) le contient.
-    const rank = (f) => (f.startsWith(q) ? 0 : f.includes(' ' + q) ? 1 : q.length >= 3 && f.includes(q) ? 2 : -1);
+    // Rang : le nom tapé en entier, puis il commence par ce qui est tapé, puis un mot commence par lui, puis (3 lettres
+    // ou plus) il le contient.
+    const rank = (f) => (f === q.trim() ? -1 : f.startsWith(q) ? 0 : f.includes(' ' + q) ? 1 : q.length >= 3 && f.includes(q) ? 2 : 9);
     if (ac.kind === '@') {
       const me = chatNames.value.me;
-      return chatPeople.value.filter((n) => n.toLowerCase() !== me).map((n) => ({ n, r: rank(fold(n)) })).filter((x) => x.r >= 0)
-        .sort((a, b) => a.r - b.r || COLLATOR.compare(a.n, b.n)).slice(0, CHAT_AC_MAX)
+      return chatPeople.value.filter((n) => n.toLowerCase() !== me).map((n) => ({ n, r: rank(fold(n)) }))
+        .filter((x) => x.r < 9).sort((a, b) => a.r - b.r || COLLATOR.compare(a.n, b.n)).slice(0, CHAT_AC_MAX)
         .map(({ n }) => ({ key: 'm:' + n, label: '@' + n, insert: '@' + n }));
     }
     const hits = [];
-    for (const c of chatCardChoices.value) { const r = rank(c.f); if (r >= 0) hits.push([r, c]); }
-    return hits.sort(([ra, a], [rb, b]) => ra - rb || (b.own - a.own) || a.title.length - b.title.length || COLLATOR.compare(a.title, b.title))
+    const seen = new Set();
+    for (const c of chatCardChoices.value) { const r = rank(c.f); if (r < 9) { hits.push([r, c]); seen.add(titleKey(c.title)); } }
+    // Articles de Wikipédia pas déjà proposés ; un article trouvé par une redirection (son titre ne contient pas le texte
+    // tapé) vient après les autres. À rang égal : les tiennes, puis les autres cartes connues (la plus courte d'abord),
+    // puis les articles dans l'ordre de Wikipédia.
+    const wp = S.chat.acWp;
+    if (wp.q === fold(ac.q.trim())) {
+      wp.titles.forEach((title, i) => {
+        const k = titleKey(title);
+        if (seen.has(k)) return;
+        seen.add(k);
+        const f = fold(title);
+        const mine = findCard({ title }); // une de tes cartes, trouvée par une redirection : avec sa rareté
+        hits.push([Math.min(rank(f), 3), { title, f, own: !!mine, rarity: mine ? mine.rarity : null, wp: i + 1 }]);
+      });
+    }
+    return hits.sort(([ra, a], [rb, b]) => ra - rb || (b.own - a.own) || (a.wp || 0) - (b.wp || 0) || a.title.length - b.title.length || COLLATOR.compare(a.title, b.title))
       .slice(0, CHAT_AC_MAX).map(([, c]) => ({ key: 'c:' + c.title, label: c.title, insert: '[[' + c.title + ']]', own: c.own, rarity: c.rarity }));
   });
   // Après une frappe ou un déplacement du curseur : liste ouverte, mise à jour ou fermée.
@@ -7856,9 +7911,10 @@
     const c = S.chat;
     const caret = t && typeof t.selectionStart === 'number' ? t.selectionStart : c.draft.length;
     const tr = t && typeof t.selectionEnd === 'number' && t.selectionEnd !== caret ? null : chatTrigger(c.draft, caret);
-    if (!tr || c.acOff !== tr.start) c.acOff = null;
-    if (!tr || c.acOff !== null) { c.ac = null; return; }
-    if (tr.kind === '@') loadChatMembers();
+    const off = c.acOff;
+    if (!tr || !off || off.start !== tr.start || !tr.q.startsWith(off.q)) c.acOff = null;
+    if (!tr || c.acOff !== null) { c.ac = null; stopChatWp(); return; }
+    if (tr.kind === '@') { loadChatMembers(); stopChatWp(); } else chatWpSearch(tr.q);
     const same = c.ac && c.ac.kind === tr.kind && c.ac.start === tr.start && c.ac.q === tr.q;
     c.ac = { ...tr, active: same ? c.ac.active : 0 };
   }
@@ -7870,6 +7926,7 @@
     const ins = item.insert + (/^\s/.test(after) ? '' : ' ');
     const next = c.draft.slice(0, ac.start) + ins + after;
     c.ac = null;
+    stopChatWp();
     if (next.length > CHAT_MAX) { notify(`Ton message est trop long pour y ajouter « ${item.label} » (${CHAT_MAX} caractères au plus).`, true); return; }
     c.draft = next;
     c.sendError = '';
@@ -8050,7 +8107,9 @@
     chatRev = null;
     chatLastId = 0;
     chatAtBottom = true;
-    Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null });
+    Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
+      acWp: { q: '', titles: [], loading: false } });
+    stopChatWp();
   }
   async function sendChat(fromKey) {
     const c = S.chat;
@@ -8087,7 +8146,7 @@
     const ac = S.chat.ac;
     if (ac && !e.isComposing && e.keyCode !== 229) {
       const list = chatAcList.value;
-      if (e.key === 'Escape') { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); S.chat.acOff = ac.start; S.chat.ac = null; return; }
+      if (e.key === 'Escape') { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); S.chat.acOff = { start: ac.start, q: ac.q }; S.chat.ac = null; stopChatWp(); return; }
       if (list.length && (e.key === 'ArrowDown' || e.key === 'ArrowUp')) {
         e.preventDefault();
         ac.active = (Math.min(ac.active, list.length - 1) + (e.key === 'ArrowDown' ? 1 : list.length - 1)) % list.length;
@@ -8163,8 +8222,9 @@
     const list = ac ? chatAcList.value : [];
     const act = list.length ? Math.min(ac.active, list.length - 1) : 0;
     const open = list.length > 0;
-    // « @ » sans suggestion : pourquoi (il faut montrer ses cartes ; liste en cours de lecture).
-    const status = !ac || ac.kind !== '@' || open ? ''
+    // Sans suggestion : pourquoi (« @ » : il faut montrer ses cartes, liste en cours de lecture ; « # » : recherche en cours).
+    const status = !ac || open ? ''
+      : ac.kind === '#' ? (c.acWp.loading ? 'Recherche sur Wikipédia…' : '')
       : !sharing() ? 'Seuls les membres qui montrent leurs cartes peuvent être mentionnés, et il faut montrer les tiennes (Réglages) pour les voir ici.'
       : chatMembersJob && !chatPeople.value.length ? 'Lecture des membres…'
       : !ac.q && !chatPeople.value.length ? "Aucun autre membre ne montre ses cartes pour l'instant." : '';
@@ -8186,7 +8246,7 @@
           // Curseur déplacé (flèches, clic) : la liste suit le @ ou le # sous le curseur.
           onKeyup: (e) => { if (/^(ArrowLeft|ArrowRight|Home|End)$/.test(e.key)) updateChatAc(e.target); },
           onClick: (e) => updateChatAc(e.target),
-          onBlur: () => { c.ac = null; } }),
+          onBlur: () => { c.ac = null; stopChatWp(); } }),
         open ? h('ul', { id: 'chat-ac', class: 'prop-list chat-ac', role: 'listbox', 'aria-label': ac.kind === '@' ? 'Membres à mentionner' : 'Cartes à citer' }, list.map(option))
           : status ? h('p', { class: 'prop-list prop-list--empty chat-ac', role: 'status' }, status) : null,
       ]),
