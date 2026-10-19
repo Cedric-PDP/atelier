@@ -37,7 +37,7 @@
   const RAR_UP = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
     importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at',
-    chatRead: 'classeur-chat-lu', market: 'classeur-marche' };
+    chatRead: 'classeur-chat-lu', market: 'classeur-marche', sections: 'classeur-sections' };
   // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
@@ -874,7 +874,11 @@
     } else if (!col.ordered) slots = slots.slice().sort((a, b) => COLLATOR.compare(a.item.title, b.item.title));
     return slots;
   });
-  const visibleSlots = computed(() => albumSlots.value.slice(0, S.albumLimit));
+  const albumFold = computed(() => {
+    const col = activeAlbum.value;
+    return foldSlots(albumSlots.value, !!col && showSections(col.ordered, S.albumSort, S.albumFilter), col ? col.key : '');
+  });
+  const visibleSlots = computed(() => albumFold.value.slots.slice(0, S.albumLimit));
   // Mode réorganisation : un objet figé par élément du brouillon ({k : indice dans base, item, card, thumb}), puis dans
   // l'ordre en cours. Un déplacement ne refait que la liste ; une relecture (cartes, qids résolus, vignettes arrivées)
   // garde l'objet d'un élément dont rien n'a changé (roInfoPrev) : les vignettes dont ni l'objet, ni le numéro, ni l'état
@@ -901,7 +905,7 @@
   });
   // Cartes qu'on peut sélectionner dans la vue ouverte (Maj+clic pour une plage).
   const selectableIds = computed(() => (S.tab === 'collections' && activeAlbum.value
-    ? albumSlots.value.filter((s) => s.card).map((s) => s.card.id)
+    ? albumFold.value.slots.filter((s) => s.card).map((s) => s.card.id)
     : filtered.value.map((c) => c.id)));
   const openCard = computed(() => (S.openId ? cardById.value.get(S.openId) || null : null));
   const pendingInView = computed(() => {
@@ -5937,13 +5941,62 @@
   // seulement dans l'ordre de la collection, sans filtre ; ailleurs, il ne garde que son cadre.
   const showSections = (ordered, sort, filter) => !!ordered && sort === 'order' && filter === 'all';
   const gridBreak = (key) => h('div', { class: 'grid-break', key: 'sec:' + key, 'aria-hidden': 'true' });
-  function albumKids(slots, sections, render) {
+  // fold : foldSlots de l'album ; l'onglet d'un intercalaire suivi d'au moins une carte devient le bouton qui replie sa
+  // section (foldTab, dans un .sec-wrap autour de la carte). Des sections repliées qui se suivent partagent une ligne.
+  function albumKids(slots, sections, render, fold) {
     const kids = [];
+    let prevFolded = false;
     slots.forEach((s, n) => {
-      if (sections && n > 0 && s.item.sep) kids.push(gridBreak(s.key));
-      kids.push(render(s));
+      const sec = sections && s.item.sep && fold ? fold.sec.get(s.key) : null;
+      const folded = !!(sec && sec.n && sec.folded);
+      if (sections && n > 0 && s.item.sep && !(folded && prevFolded)) kids.push(gridBreak(s.key));
+      kids.push(sec && sec.n ? h('div', { class: ['sec-wrap', { folded }], key: 'w:' + s.key }, [render(s), foldTab(fold.album, s.item.title, sec)]) : render(s));
+      prevFolded = folded;
     });
     return kids;
+  }
+  // Sections repliées (2026-10-19, « replier toute la catégorie derrière la carte intercalaire ») : par album (col.key,
+  // fa.key chez un ami), les titres de ses intercalaires repliés, gardés dans ce navigateur. Seulement là où les sections
+  // existent (ordre de la collection, sans filtre) : ailleurs, tout reste visible.
+  const FOLDS = reactive((() => { const v = store.json(LS.sections); return v && typeof v === 'object' && !Array.isArray(v) ? v : {}; })());
+  const foldedIn = (album) => (Array.isArray(FOLDS[album]) ? FOLDS[album] : []);
+  function setFolded(album, titles) {
+    if (titles.length) FOLDS[album] = titles; else delete FOLDS[album];
+    store.set(LS.sections, JSON.stringify(FOLDS));
+  }
+  function toggleFold(album, title) {
+    const cur = foldedIn(album);
+    setFolded(album, cur.includes(title) ? cur.filter((t) => t !== title) : [...cur, title]);
+  }
+  // Une section repliée ne garde que son intercalaire. {slots (à montrer), sec (clé de l'intercalaire → {n : cartes de sa
+  // section, folded}), album}.
+  function foldSlots(slots, sections, album) {
+    const sec = new Map();
+    if (!sections) return { slots, sec, album };
+    const folded = new Set(foldedIn(album));
+    const out = [];
+    let cur = null;
+    for (const s of slots) {
+      if (s.item.sep) { cur = { n: 0, folded: folded.has(s.item.title) }; sec.set(s.key, cur); out.push(s); continue; }
+      if (cur) cur.n++;
+      if (!cur || !cur.folded) out.push(s);
+    }
+    return { slots: out, sec, album };
+  }
+  function foldTab(album, title, sec) {
+    const what = `la section « ${title} » (${cards$(sec.n)})`;
+    return h('button', { class: 'sec-fold', type: 'button', 'aria-expanded': String(!sec.folded), title: (sec.folded ? 'Déplier ' : 'Replier ') + what,
+      'aria-label': (sec.folded ? 'Déplier ' : 'Replier ') + what, onClick: () => toggleFold(album, title) },
+    [icon('chev', 'sm'), sec.folded ? h('span', { class: 'num' }, '+' + fmt(sec.n)) : null]);
+  }
+  // « Tout replier » / « Tout déplier » dans la barre de l'album, dès qu'une section a des cartes.
+  function foldAllButton(fold) {
+    const secs = [...fold.sec.entries()].filter(([, x]) => x.n);
+    if (!secs.length) return null;
+    const open = secs.some(([, x]) => !x.folded);
+    const titles = new Map(fold.slots.filter((s) => fold.sec.has(s.key)).map((s) => [s.key, s.item.title]));
+    return h('button', { class: 'btn small', type: 'button', onClick: () => setFolded(fold.album, open ? secs.map(([k]) => titles.get(k)) : []) },
+      [icon('chev', 'sm' + (open ? ' chev-down' : '')), open ? 'Tout replier' : 'Tout déplier']);
   }
   function viewCell(c, sep) {
     const sel = S.selected.has(c.id);
@@ -6433,7 +6486,7 @@
         col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
       ];
     }
-    const total = albumSlots.value.length;
+    const total = albumFold.value.slots.length;
     const shown = visibleSlots.value.length;
     // Valeur de la collection (tes cartes) et ce qu'il faudrait pour la compléter (SPEC.md, « Le marché »).
     const w = reading ? null : worthOf(col);
@@ -6480,6 +6533,7 @@
             seg('Prix ↑', S.albumSort === 'price-up', () => { S.albumSort = 'price-up'; loadMarket(false); }, 'Prix croissant'),
             seg('Prix ↓', S.albumSort === 'price-down', () => { S.albumSort = 'price-down'; loadMarket(false); }, 'Prix décroissant'),
           ]),
+          foldAllButton(albumFold.value),
         ]),
       ]),
       total ? h(AlbumGrid) : reading ? null : h('div', { class: 'empty-box' }, p.total ? 'Aucune carte ici.' : pg ? 'Cette page ne lie aucun article.' : col.cat ? 'Cette catégorie ne contient aucun article.' : [
@@ -7327,7 +7381,9 @@
       ? [h('button', { class: 'btn', type: 'button', key: 'ouvrir', onClick: () => openAlbum('target', copy.id) }, 'Ouvrir ma collection')]
       : t.items.length ? [h('button', { class: 'btn', type: 'button', key: 'copier', disabled: fr.copyBusy, onClick: () => copyFriendCollection(f, t) },
         [icon('plus', 'sm'), fr.copyBusy ? 'Un instant…' : 'Créer la même collection chez moi'])] : [];
-    const list = friendSlots.value;
+    const sections = showSections(fa.ordered, fr.albumSort, fr.albumFilter);
+    const fold = foldSlots(friendSlots.value, sections, fa.key);
+    const list = fold.slots;
     const shown = list.slice(0, fr.albumLimit);
     const setFilter = (v) => () => { fr.albumFilter = v; fr.albumLimit = ALBUM_PAGE; };
     const empty = fr.albumFilter === 'help' ? `Tu n'as aucune des cartes qui manquent à ${name} ici.`
@@ -7361,11 +7417,12 @@
             seg('Prix ↑', fr.albumSort === 'price-up', () => { fr.albumSort = 'price-up'; fr.albumLimit = ALBUM_PAGE; loadMarket(false); }, 'Prix croissant'),
             seg('Prix ↓', fr.albumSort === 'price-down', () => { fr.albumSort = 'price-down'; fr.albumLimit = ALBUM_PAGE; loadMarket(false); }, 'Prix décroissant'),
           ]),
+          foldAllButton(fold),
           h('span', { class: 'spacer' }),
           ...actions,
         ]),
       ]),
-      list.length ? h('div', { class: 'cardgrid' }, albumKids(shown, showSections(fa.ordered, fr.albumSort, fr.albumFilter), (s) => (s.card ? viewFriendAlbumCard(s, f) : viewFriendSlot(s, fa))))
+      list.length ? h('div', { class: 'cardgrid' }, albumKids(shown, sections, (s) => (s.card ? viewFriendAlbumCard(s, f) : viewFriendSlot(s, fa)), fold))
         : h('div', { class: 'empty-box' }, empty),
       shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, list.length - shown.length))} suivantes (${fmt(list.length - shown.length)} restantes)`)]) : null,
@@ -9081,7 +9138,7 @@
       const col = activeAlbum.value;
       const sections = !!col && showSections(col.ordered, S.albumSort, S.albumFilter);
       return h('div', { class: ['cardgrid', { selecting: S.selected.size > 0 }] },
-        albumKids(visibleSlots.value, sections, (s) => (s.card ? h(Cell, { key: s.key, card: s.card, sep: !!s.item.sep }) : viewSlot(s, col))));
+        albumKids(visibleSlots.value, sections, (s) => (s.card ? h(Cell, { key: s.key, card: s.card, sep: !!s.item.sep }) : viewSlot(s, col)), albumFold.value));
     },
   };
   // Glisser une vignette du mode réorganisation, en pointer events (souris, doigt et stylet de la même façon ; le

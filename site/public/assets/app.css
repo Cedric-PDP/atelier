@@ -322,6 +322,19 @@ button.tag:hover { border-color: var(--accent); color: var(--fg); }
 .sep-frame::before { content: ""; position: absolute; inset: -4px; z-index: -1; border: 1.5px solid var(--sep); border-radius: 18px; pointer-events: none; }
 .sep-frame::after { content: ""; position: absolute; z-index: -1; left: 12px; top: -10px; width: 40%; max-width: 80px; height: 8px; border-radius: 5px 5px 0 0; background: var(--sep); pointer-events: none; }
 .grid-break { grid-column: 1 / -1; height: 0; }
+/* Repli d'une section : l'onglet de l'intercalaire devient un bouton (chevron vers le bas ouverte, vers la droite et
+   « +6 » repliée) ; repliée, l'intercalaire montre une pile de cartes derrière lui. */
+.sec-wrap { position: relative; min-width: 0; }
+.sec-wrap .sep-frame::after { display: none; }
+.sec-fold { position: absolute; z-index: 7; left: 12px; top: -19px; height: 15px; min-width: 52px; display: inline-flex; align-items: center; gap: 2px;
+  padding: 0 8px 0 4px; border: 0; border-radius: 6px 6px 0 0; background: var(--sep); color: var(--ink); font: 700 11px/1 var(--f-body); cursor: pointer; }
+.sec-fold::before { content: ""; position: absolute; inset: -8px -6px -4px; }
+.sec-fold .ic { width: 13px; height: 13px; stroke-width: 2.6; transform: rotate(90deg); transition: transform 0.2s var(--ease); }
+.sec-fold[aria-expanded="false"] .ic { transform: none; }
+.sec-fold:hover { filter: brightness(1.08); }
+.sec-fold:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sec-wrap.folded .sep-frame::before { box-shadow: 5px 5px 0 -1.5px var(--bg), 5px 5px 0 0 var(--sep), 10px 10px 0 -1.5px var(--bg), 10px 10px 0 0 var(--sep); }
+.ic.chev-down { transform: rotate(90deg); }
 .sep-toggle { display: grid; gap: 2px; }
 .sep-toggle .check { font-weight: 600; }
 

@@ -3021,6 +3021,30 @@ async function main() {
     check(layout() === '[Sous-continent] Amérique du Nord', 'filtre « Manquantes » : ' + layout());
     btnIn('Toutes').click();
     await settle();
+    // Repli d'une section (onglet de l'intercalaire) : il ne reste que l'intercalaire, « +2 » ; gardé dans ce navigateur,
+    // sans effet hors des sections (tri par rareté) ; « Tout replier » (les sections repliées partagent une ligne) /
+    // « Tout déplier ».
+    {
+      const tab = (t) => d.querySelectorAll('.sec-fold').find((b) => (b.getAttribute('aria-label') || '').includes('« ' + t + ' »')) || null;
+      check(d.querySelectorAll('.sec-fold').length === 3 && tab('Continent').getAttribute('aria-expanded') === 'true', 'repli : trois onglets ouverts attendus');
+      tab('Continent').click();
+      await settle();
+      check(layout() === '[Continent] | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée' && tab('Continent').getAttribute('aria-expanded') === 'false'
+        && text(tab('Continent')).includes('+2') && (tab('Continent').getAttribute('aria-label') || '').startsWith('Déplier la section « Continent » (2 cartes)'), 'repli de « Continent » : ' + layout());
+      check(d.querySelectorAll('.sec-wrap.folded').length === 1 && (JSON.parse(ls.get('classeur-sections') || '{}')[Object.keys(JSON.parse(ls.get('classeur-sections') || '{}'))[0]] || []).join() === 'Continent',
+        'repli : non gardé dans le navigateur, ' + ls.get('classeur-sections'));
+      btnIn('Rareté').click();
+      await settle();
+      check(!d.querySelectorAll('.sec-fold').length && d.querySelectorAll('.sep-frame').length === 3 && layout().includes('Afrique'), 'tri par rareté : section repliée cachée, ' + layout());
+      btnIn('Ordre').click();
+      await settle();
+      btnIn('Tout replier').click();
+      await settle();
+      check(layout() === '[Continent] [Sous-continent] [Supercontinent]' && !!btnIn('Tout déplier'), 'tout replier : ' + layout());
+      btnIn('Tout déplier').click();
+      await settle();
+      check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée' && !ls.get('classeur-sections').includes('Continent'), 'tout déplier : ' + layout());
+    }
     // Éditeur : « # » devant les intercalaires ; « # » retiré de Supercontinent, ajouté (sans espace) à Pangée, enregistré
     // sans revérifier les articles (tous déjà connus).
     btnIn('Modifier').click();
@@ -3108,6 +3132,14 @@ async function main() {
     check(d.querySelectorAll('.album-title')[0].classList.contains('complete') && layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée',
       'album d\'Olga : en-tête doré et intercalaires attendus, ' + layout());
     check(!d.querySelectorAll('.sep-toggle').length && !d.querySelectorAll('button').some((b) => text(b).includes('Réorganiser')), 'album d\'Olga : rien à modifier (ni à réorganiser)');
+    {
+      const tab = d.querySelectorAll('.sec-fold').find((x) => (x.getAttribute('aria-label') || '').includes('« Sous-continent »'));
+      tab.click();
+      await settle();
+      check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Supercontinent] Pangée', 'album d\'Olga : section repliée, ' + layout());
+      d.querySelectorAll('.sec-fold').find((x) => (x.getAttribute('aria-label') || '').includes('« Sous-continent »')).click();
+      await settle();
+    }
   }
 
   // Propositions d'après les cartes, sans les sous-catégories (Iris : 8 cartes de couleurs). Rouge, Vert et Jaune sont

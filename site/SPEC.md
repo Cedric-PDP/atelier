@@ -1135,6 +1135,14 @@ Deux zones, dans cet ordre :
   (« Toutes ») et pour une collection qui a un ordre, un intercalaire **commence une nouvelle ligne** de la grille (une
   ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé) ; en tri
   « A → Z », « Rareté », « Prix ↑/↓ » ou avec un filtre, il ne garde que son cadre.
+- **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), l'onglet d'un
+  intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, chevron, `aria-expanded`, « Replier / Déplier
+  la section « … » (N cartes) »). Repliée, la section ne montre plus que son intercalaire, posé sur une **pile** (cadres
+  décalés derrière lui) avec « +N » sur l'onglet ; des sections repliées qui se suivent **partagent une ligne**. « Tout
+  replier » / « Tout déplier » dans la barre de l'album, dès qu'une section a des cartes. Les cartes repliées ne comptent
+  ni dans « Afficher les N suivantes » ni dans la sélection par plage (Maj+clic). Dans tes albums comme dans ceux d'un ami ;
+  rien n'est envoyé : les sections repliées sont gardées dans ce navigateur (`localStorage` `classeur-sections` : par
+  album, les titres de ses intercalaires repliés). En tri autre que « Ordre » ou avec un filtre, tout reste visible.
 - **Le changer** : dans l'éditeur (« Liste d'articles »), une ligne qui commence par « # » (« # Sous-continent », espaces
   après « # » permis ; « # » est interdit dans un titre de Wikipédia, donc sans ambiguïté) est un intercalaire ; à
   l'ouverture, l'éditeur écrit « # » devant les intercalaires ; une explication et le compte (« 20 lignes · 3
