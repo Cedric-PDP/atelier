@@ -1318,6 +1318,7 @@
     cards.value = [];
     targets.value = [];
     newIds.value = [];
+    routeOn = false; // l'adresse ne suit plus l'état jusqu'à ce que boot l'ait appliquée
     cardsRev = null;
     cardsGen++;
     cardsJob = Promise.resolve();
@@ -1453,7 +1454,7 @@
     }
   }
   function purgeGone() {
-    if (S.openId && !cardById.value.has(S.openId)) S.openId = null;
+    if (S.openId && !cardById.value.has(S.openId)) { S.openId = null; routeSync(); }
     for (const id of [...S.selected]) if (!cardById.value.has(id)) S.selected.delete(id);
   }
   function keepLocalTags(raw, edited) {
@@ -1577,7 +1578,7 @@
     const r = await api('GET', '/api/targets');
     if (gen !== cardsGen) return; // collections de l'ancien classeur : écartées
     targets.value = (Array.isArray(r.targets) ? r.targets : []).map(prepTarget);
-    if (S.album && S.album.kind === 'target' && !targets.value.some((t) => t.id === S.album.id)) S.album = null;
+    if (S.album && S.album.kind === 'target' && !targets.value.some((t) => t.id === S.album.id)) { S.album = null; routeSync(); }
   }
   function upsertTarget(t) {
     const next = prepTarget(t);
@@ -1632,6 +1633,7 @@
     }
     setKey(key);
     S.album = null;
+    clearRoute(); // l'adresse était celle de l'autre classeur
     await boot();
   }
 
@@ -1662,6 +1664,10 @@
     S.bootError = '';
     S.bootHint = '';
     S.boot = 'app';
+    const route = parseRoute(location.hash); // adresse de la vue (#/…), appliquée avant les données : voir la fin
+    applyRoute(route);
+    routeOn = true;
+    routeSync();
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
@@ -1673,7 +1679,15 @@
     S.loadingCards = false;
     afterCards();
     // Classeur vide : on commence par « Mettre à jour » (le favori).
-    if (!cards.value.length && S.tab === 'collections' && !S.album) openFavori();
+    if (!cards.value.length && S.tab === 'collections' && !S.album) { openFavori(); routeSync(); }
+    // Adresse arrivée avant les données : fiche de la carte (si l'on n'a pas changé de vue entre-temps), lien mort signalé.
+    const wantCard = route.p.get('carte');
+    if (wantCard && !S.openId && !S.modal && S.tab === route.tab) {
+      if (cardById.value.has(wantCard)) openCardById(wantCard); else notify("La carte de cette adresse n'est plus dans ton classeur.", true);
+    }
+    if (route.album && route.album.kind === 'target' && !targets.value.some((t) => t.id === route.album.id)) {
+      notify("La collection de cette adresse n'existe plus : elle a peut-être été supprimée.", true);
+    }
     startPageviews();
   }
 
@@ -5423,7 +5437,7 @@
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
-        if (fr.open && !list.some((f) => f.id === fr.open)) fr.open = null;
+        if (fr.open && !list.some((f) => f.id === fr.open)) { fr.open = null; routeSync(); } // a cessé de partager, ou adresse morte
         fr.status = 'ready';
         for (const f of list) {
           if (f.cards) continue;
@@ -9906,15 +9920,198 @@
     return checkRemote(false);
   }
 
+  // ================================================================ adresse de la page (#/…)
+  // Chaque vue a son adresse, pour qu'un rafraîchissement (ou une adresse gardée) la rouvre : onglet, collection,
+  // catégorie ou page de Wikipédia ouverte, classeur et collection d'un ami, « Échanges possibles », filtres et tris, fiche
+  // d'une de tes cartes (2026-10-20, demande de l'utilisateur). Dans le fragment : jamais envoyé au serveur, et le Worker ne
+  // sert que les fichiers de public/ (un chemin /collections/… y serait un 404). Le lien personnel (#cle=…) est lu et
+  // effacé avant (takeHashKey) : une adresse ne contient jamais la clé, et aucun paramètre ne s'appelle « cle ».
+  // L'état reste la seule source : routeHash le traduit en adresse, écrite par writeRoute ; une adresse lue (chargement,
+  // Précédent / Suivant, saisie) passe par applyRoute, qui ouvre la vue par les mêmes fonctions qu'un clic (setTab,
+  // openAlbum, openFriendAlbum…) pour garder leurs effets (lecture des amis, du marché…).
+  // Nouvelle vue = nouvelle entrée de l'historique (pushState) ; filtres, tris, fiche = même entrée (replaceState, regroupé
+  // par ROUTE_WAIT : les navigateurs limitent ces appels, et la recherche en fait un par lettre) ; corrections faites par
+  // la page (adresse appliquée, lien mort, classeur vide ouvert sur « Mettre à jour ») = même entrée aussi (routeSync).
+  const ROUTE_WAIT = 300;
+  const ALBUM_FILTERS = ['all', 'owned', 'missing'];
+  const ALBUM_SORTS = ['order', 'rarity', 'price-up', 'price-down'];
+  const FRIEND_FILTERS = ['all', 'missing'];
+  const FRIEND_CARD_SORTS = ['rarity', 'price-up', 'price-down', 'count', 'title'];
+  const FRIEND_ALBUM_FILTERS = ['all', 'has', 'lacks', 'help'];
+  let routeOn = false; // l'adresse suit l'état : classeur ouvert et adresse du chargement appliquée (boot)
+  let routeTimer = null;
+  let routePending = ''; // adresse que routeTimer écrira
+  // Les titres de Wikipédia gardent leurs « _ » à la place des espaces (comme dans ses adresses).
+  const encSeg = (s) => encodeURIComponent(s);
+  const encTitle = (s) => encodeURIComponent(String(s).replace(/ /g, '_')).replace(/%2C/g, ',').replace(/%3A/g, ':');
+  const decSeg = (s) => { try { return decodeURIComponent(s); } catch (e) { return s; } };
+  const routeNorm = (hash) => decSeg(String(hash || '').replace(/^#/, ''));
+  const routePath = (hash) => routeNorm(hash).split('?')[0] || '/collections';
+
+  const routeHash = computed(() => {
+    const p = new URLSearchParams();
+    const fr = S.friends;
+    const albumParams = (filter, sort, filters) => {
+      if (filter !== 'all' && filters.includes(filter)) p.set('filtre', filter);
+      if (sort !== 'order' && ALBUM_SORTS.includes(sort)) p.set('tri', sort);
+    };
+    let path = S.tab;
+    if (S.tab === 'collections' && S.album) {
+      const a = S.album;
+      if (a.kind === 'target') path = 'collections/' + encSeg(a.id);
+      else if (a.id.startsWith('wp:')) {
+        path = 'categorie/' + encTitle(a.id.slice(3));
+        if (S.catView && S.catView.key === a.id && S.catView.withSubs) p.set('sous', '1');
+      } else if (a.id.startsWith(PAGE_SRC)) path = 'page/' + encTitle(a.id.slice(PAGE_SRC.length));
+      albumParams(S.albumFilter, S.albumSort, ALBUM_FILTERS);
+    } else if (S.tab === 'cartes') {
+      if (S.q) p.set('q', S.q);
+      if (S.sort !== 'rarity') p.set('tri', S.sort);
+      for (const r of S.rarities) p.append('rarete', r);
+      for (const t of S.tagFilter) p.append('tag', t);
+      for (const t of S.gtagFilter) p.append('jeu', t);
+      if (S.untaggedOnly) p.set('sans-tag', '1');
+      if (S.newOnly) p.set('nouvelles', '1');
+    } else if (S.tab === 'amis') {
+      if (fr.open && fr.album != null) {
+        path = 'ami/' + encSeg(fr.open) + '/' + encSeg(fr.album);
+        albumParams(fr.albumFilter, fr.albumSort, FRIEND_ALBUM_FILTERS);
+        if (fr.albumFrom === 'trades') p.set('depuis', 'echanges');
+      } else if (fr.open) {
+        path = 'ami/' + encSeg(fr.open);
+        if (fr.q) p.set('q', fr.q);
+        if (fr.filter !== 'all') p.set('filtre', fr.filter);
+        if (fr.sort !== 'rarity') p.set('tri', fr.sort);
+      } else if (fr.page === 'trades') {
+        path = 'amis/echanges';
+        if (fr.trade !== 'all') p.set('qui', fr.trade);
+      }
+    }
+    if (S.openId) p.set('carte', S.openId);
+    const q = p.toString();
+    return path === 'collections' && !q ? '' : '#/' + path + (q ? '?' + q : ''); // liste des collections : adresse nue
+  });
+
+  // Adresse lue : {tab, album ({kind, id} d'une de tes collections, d'une catégorie ou d'une page), withSubs, friend,
+  // falbum, trades, p (paramètres)}. Ce qui ne se lit pas (onglet inconnu, fragment sans « #/ ») = « Collections ».
+  function parseRoute(hash) {
+    const raw = String(hash || '').replace(/^#/, '');
+    const r = { tab: 'collections', album: null, withSubs: false, friend: null, falbum: null, trades: false, p: new URLSearchParams() };
+    if (!raw.startsWith('/')) return r;
+    const qi = raw.indexOf('?');
+    if (qi >= 0) r.p = new URLSearchParams(raw.slice(qi + 1));
+    const seg = (qi >= 0 ? raw.slice(1, qi) : raw.slice(1)).split('/').filter(Boolean).map(decSeg);
+    const title = (s) => String(s || '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    const [a, b, c] = seg;
+    if (a === 'collections' && b) r.album = { kind: 'target', id: b };
+    else if (a === 'categorie' && title(b)) { r.album = { kind: 'category', id: 'wp:' + catName(CAT_NS + title(b)) }; r.withSubs = r.p.get('sous') === '1'; }
+    else if (a === 'page' && title(b)) r.album = { kind: 'category', id: PAGE_SRC + title(b) };
+    else if (a === 'ami' && b) { r.tab = 'amis'; r.friend = b; r.falbum = c || null; }
+    else if (a === 'amis' && b === 'echanges') { r.tab = 'amis'; r.trades = true; }
+    else if (TABS.some(([id]) => id === a)) r.tab = a;
+    return r;
+  }
+
+  // Ouvre la vue d'une adresse. Ce qui y est déjà ouvert n'est pas rouvert (une catégorie n'est pas relue).
+  function applyRoute(r) {
+    const p = r.p;
+    const pick = (k, ok, def) => { const v = p.get(k); return v != null && ok.includes(v) ? v : def; };
+    if (r.tab === 'collections') {
+      const a = r.album;
+      if (a) {
+        if (!(S.album && S.album.kind === a.kind && S.album.id === a.id)) {
+          if (a.kind === 'target') openAlbum('target', a.id);
+          else if (a.id.startsWith('wp:')) openCategory(CAT_NS + a.id.slice(3), r.withSubs ? { withSubs: true } : null);
+          else openPage(a.id.slice(PAGE_SRC.length));
+        }
+        Object.assign(S, { albumFilter: pick('filtre', ALBUM_FILTERS, 'all'), albumSort: pick('tri', ALBUM_SORTS, 'order') });
+        if (isPriceSort(S.albumSort)) loadMarket(false);
+      } else if (S.album) closeAlbum();
+      setTab('collections');
+    } else if (r.tab === 'cartes') {
+      setTab('cartes');
+      const list = (k, ok) => [...new Set(p.getAll(k).filter((v) => v && (!ok || ok.includes(v))))];
+      Object.assign(S, { q: p.get('q') || '', sort: pick('tri', SORTS.map(([v]) => v), 'rarity'), rarities: list('rarete', RARITIES), tagFilter: list('tag'),
+        gtagFilter: list('jeu'), untaggedOnly: p.get('sans-tag') === '1', newOnly: p.get('nouvelles') === '1' });
+      if (isPriceSort(S.sort)) loadMarket(false);
+    } else if (r.tab === 'amis') {
+      setTab('amis');
+      const fr = S.friends;
+      if (r.friend && r.falbum != null) {
+        const from = p.get('depuis') === 'echanges' ? 'trades' : null;
+        if (fr.open !== r.friend || fr.album !== r.falbum) openFriendAlbum(r.friend, r.falbum, from);
+        Object.assign(fr, { albumFilter: pick('filtre', FRIEND_ALBUM_FILTERS, 'all'), albumSort: pick('tri', ALBUM_SORTS, 'order'), albumFrom: from });
+      } else if (r.friend) {
+        if (fr.open !== r.friend || fr.album != null) openFriendBinder(r.friend);
+        Object.assign(fr, { q: p.get('q') || '', filter: pick('filtre', FRIEND_FILTERS, 'all'), sort: pick('tri', FRIEND_CARD_SORTS, 'rarity') });
+      } else if (r.trades) {
+        if (fr.page !== 'trades' || fr.open) openTrades(p.get('qui') || 'all'); else fr.trade = p.get('qui') || 'all';
+      } else if (fr.open || fr.page) {
+        Object.assign(fr, { open: null, album: null, albumFrom: null, page: null });
+        toTop();
+      }
+      if (isPriceSort(fr.albumSort) || isPriceSort(fr.sort)) loadMarket(false);
+    } else setTab(r.tab);
+    // Fiche d'une de tes cartes (pas encore chargées au démarrage : boot la rouvre ensuite).
+    const card = p.get('carte');
+    if (card) { if (S.openId !== card && cardById.value.has(card)) openCardById(card); } else if (S.openId || S.openMissing) closeCard();
+  }
+
+  // Écrit l'adresse de l'état. quiet : remplace l'entrée de l'historique au lieu d'en ajouter une.
+  function writeRoute(hash, quiet) {
+    if (routeNorm(hash) === routeNorm(location.hash)) {
+      clearTimeout(routeTimer);
+      routeTimer = null;
+      return;
+    }
+    const url = (h) => location.pathname + location.search + h;
+    if (!quiet && routePath(hash) === routePath(location.hash)) {
+      // Même vue : filtre, tri, recherche, fiche ; regroupés.
+      routePending = hash;
+      if (!routeTimer) routeTimer = setTimeout(routeFlush, ROUTE_WAIT);
+      return;
+    }
+    try {
+      if (routeTimer) { clearTimeout(routeTimer); routeTimer = null; history.replaceState(null, '', url(routePending)); } // l'entrée qu'on quitte garde ses filtres
+      if (quiet) history.replaceState(null, '', url(hash)); else history.pushState(null, '', url(hash));
+    } catch (e) { /* historique refusé (bac à sable) : l'adresse ne suit pas, le classeur marche */ }
+  }
+  function routeFlush() {
+    clearTimeout(routeTimer);
+    if (!routeTimer) return;
+    routeTimer = null;
+    try { history.replaceState(null, '', location.pathname + location.search + routePending); } catch (e) { /* voir writeRoute */ }
+  }
+  // Correction faite par la page : même entrée de l'historique.
+  function routeSync() { if (routeOn) writeRoute(routeHash.value, true); }
+  // Plus de classeur ouvert (accueil, autre classeur) : adresse remise à zéro.
+  function clearRoute() {
+    routeOn = false;
+    clearTimeout(routeTimer);
+    routeTimer = null;
+    if (/^#\//.test(location.hash)) { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* voir writeRoute */ } }
+  }
+  // Adresse changée par le navigateur (Précédent, Suivant, saisie dans la barre d'adresse).
+  function onRouteChange() {
+    if (!routeOn || routeNorm(location.hash) === routeNorm(routeHash.value)) return;
+    clearTimeout(routeTimer);
+    routeTimer = null;
+    applyRoute(parseRoute(location.hash));
+    routeSync(); // adresse incomplète ou morte : celle de la vue ouverte
+  }
+  watch(routeHash, (hash) => { if (routeOn) writeRoute(hash, false); });
+  watch(() => S.boot, (b) => { if (b === 'welcome') clearRoute(); });
+
   const Root = {
     name: 'Classeur',
     setup() {
       onMounted(() => {
         window.addEventListener('keydown', onKey);
-        window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); });
+        window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); else onRouteChange(); });
+        window.addEventListener('popstate', onRouteChange);
         document.addEventListener('visibilitychange', onVisible);
         // Ordre réorganisé pas encore enregistré : recharger ou fermer la page le demande d'abord (message du navigateur).
-        window.addEventListener('beforeunload', (e) => { if (S.reorder && S.reorder.dirty) { e.preventDefault(); e.returnValue = ''; } });
+        window.addEventListener('beforeunload', (e) => { routeFlush(); if (S.reorder && S.reorder.dirty) { e.preventDefault(); e.returnValue = ''; } });
         setLive();
         boot(LINK_KEY);
       });

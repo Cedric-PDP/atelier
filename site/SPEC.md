@@ -724,6 +724,41 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
 
   Pas de `DELETE` d'un seul message : une page ouverte ne le verrait pas partir (seule une nouvelle révision le lui dit).
 
+## Adresse de chaque vue (interface)
+
+Depuis le 2026-10-20 (demande de l'utilisateur : ne plus perdre la vue au rafraîchissement), chaque vue a son adresse,
+dans le **fragment** (`#/…`) : jamais envoyé au serveur, et le Worker ne sert que les fichiers de `public/` (un vrai
+chemin, `/collections/…`, y serait un 404 au rafraîchissement). Rien côté serveur.
+
+| Adresse | Vue |
+|---|---|
+| `/` (fragment vide) | « Collections », liste de tes collections |
+| `#/collections/<id>` | une de tes collections |
+| `#/categorie/<nom>` (`?sous=1` : sous-catégories comprises) · `#/page/<titre>` | une catégorie, une page de Wikipédia (titres avec « _ » à la place des espaces) |
+| `#/cartes` · `#/amis` · `#/marche` · `#/chat` · `#/maj` · `#/reglages` | les onglets |
+| `#/amis/echanges` (`?qui=me` ou l'identifiant public d'un membre) | « Échanges possibles » |
+| `#/ami/<id public>` · `#/ami/<id public>/<id de sa collection>` (`?depuis=echanges`) | le classeur d'un ami, une de ses collections |
+
+Paramètres, absents à leur valeur par défaut : « Mes cartes » `q`, `tri` (≠ `rarity`), `rarete` (répété), `tag`
+(répété, tags du classeur), `jeu` (répété, tags du jeu), `sans-tag=1`, `nouvelles=1` ; album (le tien ou celui d'un ami)
+`filtre`, `tri` (≠ `order`) ; classeur d'un ami `q`, `filtre=missing`, `tri` ; partout `carte=<id>` = fiche d'une de
+tes cartes (pas les cases vides). Une valeur inconnue revient à la valeur par défaut, une vue inconnue à « Collections ».
+
+- **Le lien personnel d'abord** : `#cle=…` est lu et effacé avant tout (`takeHashKey`) ; une adresse ne contient
+  donc jamais la clé, aucun paramètre ne s'appelle `cle`, et les valeurs sont encodées (une recherche « &cle=… » reste
+  une recherche). Copier la barre d'adresse à un ami ne lui donne rien d'autre qu'une vue, qu'il n'ouvre que dans son
+  propre classeur.
+- **L'état est la seule source** : l'adresse est calculée à partir de lui (`routeHash`) ; une adresse lue (chargement,
+  Précédent / Suivant, saisie) ouvre la vue par les mêmes fonctions qu'un clic (`applyRoute`), avec leurs effets.
+- **Historique** : une nouvelle vue (onglet, collection, ami…) ajoute une entrée ; filtres, tris, recherche et fiche
+  remplacent l'entrée courante, regroupés (300 ms : les navigateurs limitent ces appels) ; les corrections de la page
+  (adresse appliquée, lien mort, classeur vide ouvert sur « Mettre à jour ») la remplacent aussi.
+- **Au chargement**, la vue s'ouvre dès que le compte est lu ; la fiche, une fois les cartes là. Collection ou carte
+  disparue : message, puis la vue parente ; ami qui ne partage plus : « Entre amis ». Changer de classeur ou revenir à
+  l'accueil efface l'adresse.
+- Ne survivent pas au rafraîchissement : les brouillons (réorganisation — le navigateur demande avant de quitter —,
+  « Ajouter par tags du jeu », fusion), les fenêtres, la colonne et les sections choisies d'une page de Wikipédia.
+
 ## Onglet « Collections » (interface)
 
 Deux zones, dans cet ordre :

@@ -824,6 +824,30 @@ function wikiHandle(url) {
 }
 
 // ------------------------------------------------------------------ montage
+// Historique d'une page : entrées (adresses), position ; pushState / replaceState posent le fragment de location (« # »
+// seul = vide, comme un navigateur) ; back() / forward() changent d'entrée et envoient popstate à la fenêtre. log : les
+// appels, « push #/cartes » ou « replace #/cartes ».
+function fakeHistory(getCtx, win) {
+  const hashOf = (url) => { const i = String(url).indexOf('#'); const h = i < 0 ? '' : String(url).slice(i); return h === '#' ? '' : h; };
+  const hist = {
+    entries: null, index: 0, log: [],
+    init() { if (!hist.entries) hist.entries = [getCtx().location.hash || '']; },
+    replaceState(a, b, url) { hist.init(); const h = hashOf(url); hist.entries[hist.index] = h; getCtx().location.hash = h; getCtx().lastReplace = url; hist.log.push('replace ' + h); },
+    pushState(a, b, url) { hist.init(); const h = hashOf(url); hist.entries = hist.entries.slice(0, hist.index + 1); hist.entries.push(h); hist.index++; getCtx().location.hash = h; hist.log.push('push ' + h); },
+    go(n) {
+      hist.init();
+      const i = hist.index + n;
+      if (i < 0 || i >= hist.entries.length) return;
+      hist.index = i;
+      getCtx().location.hash = hist.entries[i];
+      for (const f of [...(win.listeners.popstate || [])]) f({ type: 'popstate' });
+    },
+    back() { hist.go(-1); },
+    forward() { hist.go(1); },
+  };
+  return hist;
+}
+
 async function main() {
   const { doc, win, walk } = makeDom();
   const api = SERVER ? null : mockApi();
@@ -844,7 +868,7 @@ async function main() {
       console: { log: console.log, warn: (...a) => { errors.push('warn: ' + a.join(' ')); }, error: (...a) => { errors.push('error: ' + a.map((x) => (x && x.stack) || x).join(' ')); } },
       document: doc, window: null, navigator: { clipboard: { writeText: async (t) => { copied.push(t); } } },
       location: { origin: ORIGIN, pathname: '/', search: '', hash: opts.hash || '', hostname: 'classeur.example' },
-      history: { replaceState: (a, b, url) => { ctx.location.hash = ''; ctx.lastReplace = url; } },
+      history: fakeHistory(() => ctx, win),
       localStorage: { getItem: (k) => (ls.has(k) ? ls.get(k) : null), setItem: (k, v) => ls.set(k, String(v)), removeItem: (k) => ls.delete(k) },
       setTimeout, clearTimeout, setInterval, clearInterval, Promise, Date, Math, JSON, Map, Set, WeakMap, WeakSet, Symbol, Proxy, Reflect, Object, Array, Number, String, Boolean, RegExp, Error, TypeError, SyntaxError,
       Intl, URL, URLSearchParams, encodeURIComponent, decodeURIComponent, encodeURI, decodeURI, isNaN, parseInt, parseFloat, Infinity, NaN, undefined,
@@ -1005,7 +1029,7 @@ async function main() {
     box.setAttribute('id', 'app');
     p.doc.body.appendChild(box);
     for (const file of [VUE, ...['match.js', 'propose.js', 'app.js'].map((m) => path.join(PUB, 'assets', m))]) vm.runInContext(fs.readFileSync(file, 'utf8'), c, { filename: path.basename(file) });
-    return { doc: p.doc, win: p.win, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
+    return { doc: p.doc, win: p.win, ctx: c, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
       longTimers, live: async () => { for (const f of [...longTimers.values()]) await f(); } };
   };
   const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
@@ -5198,6 +5222,113 @@ async function main() {
     await settle(300);
     check((await sepsOf()) === 'Continent=false, Sous-continent=false' && !d.querySelectorAll('.toast').some((n) => text(n).includes('détection automatique')), 'intercalaires annulés recochés à la réouverture : ' + (await sepsOf()));
     for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
+  }
+
+  // 34. Adresse de chaque vue (#/…, 2026-10-20) : rafraîchir (une page rouverte sur une adresse) rouvre la vue — onglet,
+  // collection, catégorie, filtres et tris, fiche, classeur d'un ami, échanges ; nouvelle vue = nouvelle entrée de
+  // l'historique, filtres et fiche = même entrée (regroupés) ; Précédent / Suivant ; liens morts signalés ; jamais la clé.
+  {
+    const key = ls.get('classeur-key');
+    const tl = (await rawApi('GET', '/api/targets', key)).body.targets;
+    const t = tl.find((x) => x.items.length >= 2 && !/^(wp|links):/.test(x.source || ''));
+    check(t, 'adresses : aucune collection pour le test');
+    const someCard = (await rawApi('GET', '/api/cards', key)).body.cards.find((c) => c.title);
+    const pages = [];
+    const open = async (hash) => {
+      const pg = openPage({ hash });
+      pages.push(pg);
+      for (let i = 0; i < 200 && !pg.doc.getElementById('tab-collections'); i++) await sleep(25);
+      await settle(150);
+      return pg;
+    };
+    const ptext = (pg) => text(pg.doc.body);
+    const pressed = (pg) => pg.doc.querySelectorAll('button[aria-pressed="true"]').map(text);
+    const albumName = (pg) => { const a = pg.doc.querySelector('.album-title'); return a && a.querySelector('h2') ? text(a.querySelector('h2')) : ''; };
+    const tabOn = (pg) => (pg.doc.querySelector('button[aria-selected="true"]') || { id: '' }).id;
+    const log = (pg) => pg.ctx.history.log;
+    const albumHash = '#/collections/' + encodeURIComponent(t.id) + '?filtre=missing&tri=rarity';
+
+    // Rafraîchi sur une collection filtrée et triée : rouverte telle quelle, sans nouvelle entrée.
+    const pa = await open(albumHash);
+    check(albumName(pa) === t.name && pressed(pa).includes('Manquantes') && pressed(pa).includes('Rareté'), 'adresse d\'une collection : ' + albumName(pa) + ' / ' + pressed(pa).join(','));
+    check(pa.ctx.location.hash === albumHash && !log(pa).some((x) => x.startsWith('push')), 'adresse d\'une collection réécrite : ' + pa.ctx.location.hash + ' ; ' + log(pa).join(', '));
+    // Autre onglet : nouvelle entrée ; recherche et tri : même entrée, une fois la saisie finie.
+    pa.doc.getElementById('tab-cartes').click();
+    await settle();
+    check(pa.ctx.location.hash === '#/cartes' && log(pa).at(-1) === 'push #/cartes', 'onglet « Mes cartes » : ' + log(pa).join(', '));
+    const q = pa.doc.getElementById('q');
+    for (const v of ['m', 'ma', 'mar']) { q.value = v; q.dispatch('input'); await sleep(20); }
+    check(pa.ctx.location.hash === '#/cartes', 'recherche : adresse écrite avant la fin de la saisie');
+    await sleep(400);
+    check(pa.ctx.location.hash === '#/cartes?q=mar' && log(pa).filter((x) => x.includes('q=')).length === 1, 'recherche : ' + log(pa).join(', '));
+    const sel = pa.doc.getElementById('sort');
+    sel.value = 'title';
+    sel.dispatch('change');
+    await sleep(400);
+    check(pa.ctx.location.hash === '#/cartes?q=mar&tri=title' && pa.ctx.history.entries.length === 2, 'tri : ' + log(pa).join(', '));
+    // Précédent : la collection, avec ses filtres ; Suivant : « Mes cartes » avec la recherche et le tri.
+    pa.ctx.history.back();
+    await settle(100);
+    check(albumName(pa) === t.name && pressed(pa).includes('Manquantes') && pa.ctx.location.hash === albumHash, 'Précédent : ' + albumName(pa) + ' ' + pa.ctx.location.hash);
+    pa.ctx.history.forward();
+    await settle(100);
+    check(tabOn(pa) === 'tab-cartes' && pa.doc.getElementById('q').value === 'mar' && pa.doc.getElementById('sort').value === 'title', 'Suivant : ' + tabOn(pa) + ' « ' + (pa.doc.getElementById('q') || {}).value + ' »');
+    check(pa.ctx.history.entries.length === 2, 'Précédent / Suivant ne doivent pas ajouter d\'entrée : ' + pa.ctx.history.entries.join(' | '));
+    // Retour à la liste des collections : adresse nue.
+    pa.doc.getElementById('tab-collections').click();
+    await settle();
+    pa.doc.querySelectorAll('button').find((b) => text(b).includes('Toutes les collections')).click();
+    await settle();
+    check(pa.ctx.location.hash === '', 'liste des collections : adresse nue attendue, ' + pa.ctx.location.hash);
+
+    // Rafraîchi sur une fiche : rouverte une fois les cartes là ; refermée : même entrée, sans « carte= ».
+    const cardHash = '#/cartes?q=' + encodeURIComponent(someCard.title).replace(/%20/g, '+') + '&carte=' + encodeURIComponent(someCard.id);
+    const pc = await open(cardHash);
+    check(pc.doc.querySelector('.fiche') && text(pc.doc.getElementById('detail-title')).includes(someCard.title), 'adresse d\'une fiche : fiche non rouverte');
+    check(pc.doc.getElementById('q').value === someCard.title, 'adresse d\'une fiche : recherche perdue');
+    pc.doc.body.dispatch('keydown', { key: 'Escape' });
+    await sleep(400);
+    check(!pc.doc.querySelector('.fiche') && !pc.ctx.location.hash.includes('carte=') && !log(pc).some((x) => x.startsWith('push')), 'fiche refermée : ' + log(pc).join(', '));
+
+    // Catégorie de Wikipédia (sous-catégories comprises) : relue et rouverte.
+    const pk = await open('#/categorie/Couleur?sous=1');
+    check(await waitFor(() => albumName(pk).includes('Couleur')) && pk.ctx.location.hash === '#/categorie/Couleur?sous=1', 'adresse d\'une catégorie : « ' + albumName(pk) + ' » ' + pk.ctx.location.hash);
+
+    // Liens morts : collection supprimée, carte disparue, vue inconnue ; signalés et remplacés (même entrée).
+    const pd = await open('#/collections/inconnue');
+    check(ptext(pd).includes("La collection de cette adresse n'existe plus") && pd.ctx.location.hash === '' && pd.ctx.history.entries.length === 1, 'collection morte : ' + pd.ctx.location.hash + ' ' + ptext(pd).slice(0, 200));
+    const pe = await open('#/cartes?carte=inconnue');
+    check(ptext(pe).includes("La carte de cette adresse n'est plus dans ton classeur") && pe.ctx.location.hash === '#/cartes', 'carte morte : ' + pe.ctx.location.hash);
+    const pf = await open('#/nimportequoi/12');
+    check(tabOn(pf) === 'tab-collections' && pf.ctx.location.hash === '', 'vue inconnue : ' + tabOn(pf) + ' ' + pf.ctx.location.hash);
+
+    // Entre amis : classeur d'un ami (filtre), échanges qui me concernent, ami qui n'existe pas.
+    const was = (await rawApi('GET', '/api/me', key)).body.shared;
+    if (!was) await rawApi('PATCH', '/api/me', key, { shared: true });
+    const members = (await rawApi('GET', '/api/members', key)).body.members || [];
+    const paul = members.find((m) => m.name === 'Paul');
+    if (paul) {
+      const pp = await open('#/ami/' + paul.id + '?filtre=missing');
+      check(await waitFor(() => pressed(pp).includes('Me manquent'), 5000) && pp.ctx.location.hash === '#/ami/' + paul.id + '?filtre=missing', 'adresse du classeur de Paul : ' + pressed(pp).join(',') + ' ' + pp.ctx.location.hash);
+      const pt = await open('#/amis/echanges?qui=me');
+      check(await waitFor(() => pressed(pt).includes('Ce qui me concerne'), 5000) && ptext(pt).includes('Échanges possibles'), 'adresse des échanges : ' + pressed(pt).join(','));
+      const pg = await open('#/ami/inconnu');
+      check(await waitFor(() => pg.ctx.location.hash === '#/amis', 5000) && pg.ctx.history.entries.length === 1, 'ami inconnu : ' + pg.ctx.location.hash);
+    } else check(SERVER, 'adresses : Paul ne partage plus ses cartes');
+    if (!was) await rawApi('PATCH', '/api/me', key, { shared: false });
+
+    // La clé : une recherche « &cle=… » reste un filtre (encodée), jamais lue comme un lien personnel.
+    const pq = await open('#/cartes');
+    const q2 = pq.doc.getElementById('q');
+    q2.value = '&cle=' + 'A'.repeat(43);
+    q2.dispatch('input');
+    await sleep(400);
+    check(!/(?:^#|&)cle=/.test(pq.ctx.location.hash), 'une recherche ne doit jamais ressembler à un lien personnel : ' + pq.ctx.location.hash);
+    const pr = await open(pq.ctx.location.hash);
+    check(pr.doc.getElementById('q').value === '&cle=' + 'A'.repeat(43) && ls.get('classeur-key') === key, 'recherche « &cle= » rouverte : ' + pr.doc.getElementById('q').value);
+    for (const pg of [pa, ...pages]) check(!log(pg).some((x) => /cle=[A-Za-z0-9_-]{20}/.test(decodeURIComponent(x)) && !x.includes('q=')), 'clé écrite dans l\'adresse : ' + log(pg).join(', '));
+    check(ls.get('classeur-key') === key, 'les adresses ont changé la clé gardée');
+    console.log(`adresses : ${pages.length} pages rouvertes sur une adresse${paul ? ', Entre amis compris' : ''} ; historique de la première : ${log(pa).join(', ')}`);
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.
