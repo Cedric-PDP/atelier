@@ -5942,16 +5942,13 @@
   const showSections = (ordered, sort, filter) => !!ordered && sort === 'order' && filter === 'all';
   const gridBreak = (key) => h('div', { class: 'grid-break', key: 'sec:' + key, 'aria-hidden': 'true' });
   // fold : foldSlots de l'album ; l'onglet d'un intercalaire suivi d'au moins une carte devient le bouton qui replie sa
-  // section (foldTab, dans un .sec-wrap autour de la carte). Des sections repliées qui se suivent partagent une ligne.
+  // section (foldTab, dans un .sec-wrap autour de la carte). Repliée ou non, une section garde sa ligne.
   function albumKids(slots, sections, render, fold) {
     const kids = [];
-    let prevFolded = false;
     slots.forEach((s, n) => {
+      if (sections && n > 0 && s.item.sep) kids.push(gridBreak(s.key));
       const sec = sections && s.item.sep && fold ? fold.sec.get(s.key) : null;
-      const folded = !!(sec && sec.n && sec.folded);
-      if (sections && n > 0 && s.item.sep && !(folded && prevFolded)) kids.push(gridBreak(s.key));
-      kids.push(sec && sec.n ? h('div', { class: ['sec-wrap', { folded }], key: 'w:' + s.key }, [render(s), foldTab(fold.album, s.item.title, sec)]) : render(s));
-      prevFolded = folded;
+      kids.push(sec && sec.n ? h('div', { class: ['sec-wrap', { folded: sec.folded }], key: 'w:' + s.key }, [render(s), foldTab(fold.album, s.item.title, sec)]) : render(s));
     });
     return kids;
   }

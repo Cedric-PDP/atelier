@@ -3022,8 +3022,7 @@ async function main() {
     btnIn('Toutes').click();
     await settle();
     // Repli d'une section (onglet de l'intercalaire) : il ne reste que l'intercalaire, « +2 » ; gardé dans ce navigateur,
-    // sans effet hors des sections (tri par rareté) ; « Tout replier » (les sections repliées partagent une ligne) /
-    // « Tout déplier ».
+    // sans effet hors des sections (tri par rareté) ; « Tout replier » (chaque section garde sa ligne) / « Tout déplier ».
     {
       const tab = (t) => d.querySelectorAll('.sec-fold').find((b) => (b.getAttribute('aria-label') || '').includes('« ' + t + ' »')) || null;
       check(d.querySelectorAll('.sec-fold').length === 3 && tab('Continent').getAttribute('aria-expanded') === 'true', 'repli : trois onglets ouverts attendus');
@@ -3040,7 +3039,7 @@ async function main() {
       await settle();
       btnIn('Tout replier').click();
       await settle();
-      check(layout() === '[Continent] [Sous-continent] [Supercontinent]' && !!btnIn('Tout déplier'), 'tout replier : ' + layout());
+      check(layout() === '[Continent] | [Sous-continent] | [Supercontinent]' && !!btnIn('Tout déplier'), 'tout replier : ' + layout());
       btnIn('Tout déplier').click();
       await settle();
       check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée' && !ls.get('classeur-sections').includes('Continent'), 'tout déplier : ' + layout());

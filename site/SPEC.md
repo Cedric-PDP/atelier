@@ -1138,7 +1138,7 @@ Deux zones, dans cet ordre :
 - **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), l'onglet d'un
   intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, chevron, `aria-expanded`, « Replier / Déplier
   la section « … » (N cartes) »). Repliée, la section ne montre plus que son intercalaire, posé sur une **pile** (cadres
-  décalés derrière lui) avec « +N » sur l'onglet ; des sections repliées qui se suivent **partagent une ligne**. « Tout
+  décalés derrière lui) avec « +N » sur l'onglet ; repliée ou non, une section **garde sa ligne**. « Tout
   replier » / « Tout déplier » dans la barre de l'album, dès qu'une section a des cartes. Les cartes repliées ne comptent
   ni dans « Afficher les N suivantes » ni dans la sélection par plage (Maj+clic). Dans tes albums comme dans ceux d'un ami ;
   rien n'est envoyé : les sections repliées sont gardées dans ce navigateur (`localStorage` `classeur-sections` : par
