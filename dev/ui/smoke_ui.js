@@ -79,7 +79,29 @@ function mockApi() {
   // Chat : un salon pour tous les comptes ; révision (rev) à la création puis à la suppression (marque vide gardée),
   // comme le serveur. `chatLimit` : le prochain envoi est refusé (429).
   const chat = { msgs: [], rev: 0, id: 0 };
-  const chatOut = (st, m) => ({ id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at });
+  // Collections citées, comme chat.js : un lien vers une collection (#/ami/<id public>/<id>, ou la sienne :
+  // #/collections/<id>) rangé `\uE000c:<compte>/<id>\uE001` (sans contrôle de l'hôte ici), retraduit pour chaque lecteur.
+  const COL_LINK = /\bhttps?:\/\/[^\s/#]+\/?#\/(?:ami\/([A-Za-z0-9_-]+)|collections)\/([A-Za-z0-9_-]+)(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
+  const chatStore = (st, text) => text.replace(/[\uE000\uE001]/g, '').replace(COL_LINK, (all, pid, tid) => {
+    const u = !pid || pid === st.pub ? st : users.find((x) => x.shared && x.sharedTargets && x.pub === pid);
+    return u && u.targets.some((t) => t.id === tid) ? `\uE000c:${u.id}/${tid}\uE001` : all;
+  });
+  const chatOut = (st, m) => {
+    const out = { id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at };
+    if (!m.text.includes('\uE000')) return out;
+    const refs = [];
+    const sees = !!(st.shared && st.pub);
+    out.text = m.text.replace(/\uE000c:([^/]+)\/([^\uE001]+)\uE001/g, (_, uid, tid) => {
+      const u = users.find((x) => x.id === uid);
+      const t = u && u.targets.find((x) => x.id === tid);
+      const mine = u === st;
+      refs.push(!t || (!mine && !(u.shared && u.sharedTargets)) ? { gone: true }
+        : { name: t.name, owner: u.name, mine, pid: !mine && sees ? u.pub : null, id: mine || sees ? tid : null });
+      return `\uE000${refs.length - 1}\uE001`;
+    });
+    out.refs = refs;
+    return out;
+  };
   const chatDrop = (m) => { if (!m.deleted) { m.deleted = true; m.text = ''; m.rev = ++chat.rev; } };
   function chatRoute(st, method, p, body) {
     const dm = p.match(/^\/api\/chat\/(\d+)$/);
@@ -96,7 +118,7 @@ function mockApi() {
       if (text.length > 500) return json(400, { error: 'Message trop long : 500 caractères au plus.' });
       if (!st.name) return json(400, { error: "Donne d'abord un prénom à ton classeur (Réglages, « Ton prénom ») : c'est lui que les autres membres verront." });
       if (self.chatLimit) return json(429, { error: 'Doucement : 10 messages par minute au plus. Réessaie dans 42 s.', retry_after: 42 });
-      const m = { id: ++chat.id, user: st.id, text, at: new Date().toISOString(), deleted: false, rev: ++chat.rev };
+      const m = { id: ++chat.id, user: st.id, text: chatStore(st, text), at: new Date().toISOString(), deleted: false, rev: ++chat.rev };
       chat.msgs.push(m);
       return json(201, { message: chatOut(st, m) });
     }
@@ -3954,8 +3976,8 @@ async function main() {
     const mt = text(lastMsg().querySelector('.chat-msg__text'));
     check(!lastMsg().querySelectorAll('b').length && !lastMsg().querySelectorAll('img').length && mt.includes('<b>gras</b>') && mt.includes('[[<img src=x onerror=alert(1)>]]'),
       'le texte du message ne doit jamais devenir du HTML : ' + mt);
-    check(txt().includes('Pour montrer une carte : # puis son titre, [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche. Pour mentionner un membre : @ puis son prénom.'),
-      'aide des cartes citées et des mentions absente sous le champ du chat');
+    check(txt().includes('Pour montrer une carte : # puis son titre, [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche. Pour une collection : #c: puis son nom, ou colle son lien. Pour mentionner un membre : @ puis son prénom.'),
+      'aide des cartes et collections citées et des mentions absente sous le champ du chat');
     const ficheA = () => d.querySelectorAll('.fiche')[0] || null;
     chips()[0].click();
     await settle(80);
@@ -5384,6 +5406,74 @@ async function main() {
     for (const pg of [pa, ...pages]) check(!log(pg).some((x) => /cle=[A-Za-z0-9_-]{20}/.test(decodeURIComponent(x)) && !x.includes('q=')), 'clé écrite dans l\'adresse : ' + log(pg).join(', '));
     check(ls.get('classeur-key') === key, 'les adresses ont changé la clé gardée');
     console.log(`adresses : ${pages.length} pages rouvertes sur une adresse${paul ? ', Entre amis compris' : ''} ; historique de la première : ${log(pa).join(', ')}`);
+  }
+
+  // 35. Collections citées dans le chat (demande du 2026-10-20) : « #c: » propose les collections (les tiennes, celles des
+  // amis qui les montrent) et insère leur lien ; dans le message, le nom de la collection (lien vers elle) et, dessous, sa
+  // ligne (éventail, progression de son propriétaire) ; pour qui ne montre pas ses cartes, son nom et son propriétaire
+  // seulement. Serveur simulé seulement (l'hôte de la page n'est pas celui d'un serveur de dev).
+  if (!SERVER) {
+    const keyT = await makeOtherAccount('Tiff');
+    const keyY = await makeOtherAccount('Yan');
+    const keyZ = await makeOtherAccount('Zed');
+    const mkC = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'pirate', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    await sendImport(keyT, [mkC('t1', 'Monkey D. Luffy', 'L'), mkC('t2', 'Roronoa Zoro', 'UR')]);
+    await sendImport(keyY, [mkC('y1', 'Nami', 'R')]);
+    const it0 = (title) => ({ title, description: null, image: null, status: 'ok' });
+    check((await rawApi('POST', '/api/targets/save', keyT, { name: 'Mugiwara', items: [it0('Monkey D. Luffy'), it0('Roronoa Zoro'), it0('Nami')] })).status === 200, 'collection « Mugiwara » refusée');
+    const tid = (await rawApi('GET', '/api/targets', keyT)).body.targets.find((t) => t.name === 'Mugiwara').id;
+    check((await rawApi('POST', '/api/targets/save', keyY, { name: 'Mugiwara (mes cartes)', items: [it0('Nami')] })).status === 200, 'collection de Yan refusée');
+    check((await rawApi('PATCH', '/api/me', keyT, { shared: true, shared_targets: true })).status === 200, 'partage de Tiff refusé');
+    check((await rawApi('PATCH', '/api/me', keyY, { shared: true })).status === 200, 'partage de Yan refusé');
+    const saved = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
+    ls.set('classeur-key', keyY);
+    ls.set('classeur-known', JSON.stringify([{ key: keyY, name: 'Yan' }]));
+    const py = openPage({ idb: 'absent', hash: '#/chat' });
+    const d = py.doc;
+    const field = () => d.getElementById('chat-input');
+    const acList = () => d.getElementById('chat-ac');
+    const acRows = () => (acList() ? acList().querySelectorAll('li').map((li) => text(li)) : []);
+    check(await waitFor(() => field()), 'chat de Yan non ouvert');
+    type(field(), 'Bravo Tiff pour #c:mugi');
+    await settle();
+    check(await waitFor(() => acRows().length === 2), 'suggestions de « #c:mugi » : ' + acRows().join(' | '));
+    check(acRows()[0] === 'Mugiwara (mes cartes)ta collection' && acRows()[1] === 'Mugiwarade Tiff' && acList().getAttribute('aria-label') === 'Collections à citer',
+      'suggestions de « #c:mugi » (la tienne d\'abord, puis celle de Tiff) : ' + acRows().join(' | '));
+    field().dispatch('keydown', { key: 'ArrowDown' });
+    await settle();
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    const pubT = (await rawApi('GET', '/api/members', keyY)).body.members.find((m) => m.name === 'Tiff').id;
+    const url = `${ORIGIN}/#/ami/${pubT}/${tid}`;
+    check(field().value === `Bravo Tiff pour ${url} `, 'lien de la collection inséré : « ' + field().value + ' »');
+    type(field(), field().value + '!');
+    field().dispatch('keydown', { key: 'Enter' });
+    const last = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    check(await waitFor(() => last() && last().classList.contains('mine') && last().querySelector('.chat-col')), 'message avec la collection citée absent');
+    const a = last().querySelector('.chat-col');
+    check(a.tagName === 'A' && text(a) === 'Mugiwara' && a.getAttribute('href') === `#/ami/${pubT}/${tid}` && !a.getAttribute('target')
+      && text(last().querySelector('.chat-msg__text')) === 'Bravo Tiff pour Mugiwara !', 'lien de la collection dans le message : ' + text(last()));
+    // Aperçu : la ligne de la collection de Tiff, avec SA progression (2 sur 3) et ce que Yan peut lui donner (Nami).
+    const rowIn = (m) => { const e = m && m.querySelector('.chat-embed'); return e ? e.querySelector('.row') : null; }; // le faux DOM ne lit pas « .a .b »
+    const row = () => rowIn(last());
+    check(await waitFor(() => row()), 'aperçu de la collection absent : ' + text(last()));
+    check((row().getAttribute('aria-label') || '').startsWith('Mugiwara : Tiff en a 2 sur 3') && text(row()).includes("Tu peux l'aider"), 'aperçu : ' + row().getAttribute('aria-label'));
+    // Zed ne montre pas ses cartes : le nom (sans lien) et le propriétaire, et pourquoi pas plus.
+    ls.set('classeur-key', keyZ);
+    ls.set('classeur-known', JSON.stringify([{ key: keyZ, name: 'Zed' }]));
+    const pz = openPage({ idb: 'absent', hash: '#/chat' });
+    const lastZ = () => { const l = pz.doc.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    check(await waitFor(() => lastZ() && lastZ().querySelector('.chat-col')), 'message de Yan absent chez Zed');
+    const z = lastZ();
+    check(z.querySelector('.chat-col').tagName === 'SPAN' && text(z.querySelector('.chat-col')) === 'Mugiwara' && !rowIn(z)
+      && text(z.querySelector('.chat-embed')).includes('Collection de Tiff') && text(z.querySelector('.chat-embed')).includes('Montre tes cartes'), 'collection citée vue par Zed : ' + text(z));
+    // Tiff ne montre plus ses collections : « collection non partagée », sans aperçu.
+    check((await rawApi('PATCH', '/api/me', keyT, { shared_targets: false })).status === 200, 'partage des collections de Tiff non coupé');
+    const r = await rawApi('GET', '/api/chat', keyY);
+    check(JSON.stringify(r.body.messages.at(-1).refs) === '[{"gone":true}]', 'collection plus montrée : ' + JSON.stringify(r.body.messages.at(-1).refs));
+    for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
+    console.log('collections citées : #c:, lien, aperçu (progression de son propriétaire), nom seul sans partage');
   }
 
   // Nouveautés : page à part (#/nouveautes), pastille « nouveau » tant que la dernière version n'a pas été vue dans ce

@@ -185,7 +185,7 @@ autre format (voir « Le favori »).
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url, v?}], part, next_part}` : pages de 1 000 cartes, sans étiquettes ; `v` = la cote de la carte telle que rangée dans le cache commun `prices` (`{"<rareté>[*]": {p, n, w, l, d}}`, voir « Le marché »), seulement quand elle en a une (pas pour `{}`, carte lue sans vente) |
 | `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?, sep?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre, au qid et à `sep: true` pour un intercalaire ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
-| `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
+| `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` (liens de collection déjà cités) ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
 | `GET /api/chat/last` | (sans clé) | `{last_at}` : heure du dernier message d'un membre (`null` sans message), suppressions sautées ; ni texte, ni auteur, ni numéro. Sert au skill « publier » (voir « Nouveautés ») |
 | `POST /api/market/plan` | (clé principale **ou clé d'import**, CORS du jeu ; 1 Ko au plus) `{v?, auto?}` : version du favori (`[A-Za-z0-9._-]`, 20 au plus, sinon ignorée), lecture automatique du mode relié (`true`) ou au clic ; corps vide accepté (favori d'avant le 2026-10-17) | `{cards:[card_id…], stale, fresh, wanted:[titre…], ids:{titre: card_id \| ""}, quota}` : cartes à coter (les tiennes, puis les cartes voulues dont le card_id est connu ; cote absente puis la plus ancienne d'abord, plus de 12 h ; 3 000 au plus), `stale`/`fresh` = à coter / cotées depuis moins de 12 h, `wanted` = titres des cartes qui manquent à tes collections (500 au plus), `ids` = ce que ton favori en a trouvé, `quota` = cotes encore acceptées aujourd'hui ; l'essai est noté (`market.attempt` = `{start, v, auto}`). `auto:true` moins de 5 min après le début du précédent essai de ce classeur (d'où qu'il vienne) : `{skip:true, until}` seulement, rien de lu ni d'écrit. Voir « Le marché » |
@@ -197,9 +197,10 @@ autre format (voir « Le favori »).
 | `GET /api/sync-log` | (clé principale seulement) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières synchros au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 | `POST /api/sync-log` | (clé principale **ou clé d'import**, CORS du jeu ; 2 Ko au plus, sinon `413`) `{message, kind?, via?, code?, reason?, ms?, read?, total?, v?}` : `message` non vide (sinon `400`), 300 caractères gardés ; `kind` `full` ou `quick` (autre valeur : `400`) ; `ms`, `read`, `total` entiers ≥ 0 (sinon `400`) ; `code` inconnu : `other` ; `via` autre que `clic`, `relie`, `script` : `clic` | `{ok:true}` : un échec vu par le favori lui-même, noté au journal (`result:'error'`, `data.client:true`) ; `429 {error}` au-delà de 30 signalements par heure pour ce classeur |
 
-**Message** (chat) : `{id, author, mine, text, created_at}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
+**Message** (chat) : `{id, author, mine, text, created_at, refs?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
-du compte.
+du compte. `refs` (seulement s'il cite des collections) : chaque `U+E000<n>U+E001` du texte désigne `refs[n]`,
+`{name, owner, mine, pid, id}` ou `{gone:true}`, voir « Chat », collections citées.
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, auto, created_at,
 updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` ou `null`, voir `targets/save` et « Ajout
@@ -600,7 +601,22 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   l'utilisateur du 2026-10-19 : « pouvoir ping un utilisateur ») : `@` suivi du **prénom** (`users.name`) d'un membre, tel
   quel dans le texte ; le serveur n'en sait rien (aucune table, aucun champ de plus) : c'est la page qui les reconnaît,
   voir « Interface ». Un prénom changé ne désigne plus les anciennes mentions (choix : les membres sont peu nombreux,
-  avec des prénoms différents ; deux prénoms identiques seraient mentionnés ensemble). Un message qui contient un lien
+  avec des prénoms différents ; deux prénoms identiques seraient mentionnés ensemble). **Collections citées** (demande de
+  l'utilisateur du 2026-10-20 : « Bravo Tiff pour la fin de ta collection <lien> ») : à l'envoi, un lien du site (même
+  hôte que la requête) vers une collection, `#/ami/<id public>/<id>` (paramètres de la vue compris) ou, la sienne,
+  `#/collections/<id>`, est rangé sous une **forme stable**, `U+E000c:<id du compte>/<id de la collection>U+E001` (l'id
+  public change à chaque réactivation du partage : un lien gardé tel quel mourrait). Seulement une collection que l'auteur
+  voit : la sienne (même s'il ne la montre pas), ou celle d'un membre qui montre ses collections ; sinon (inconnue, autre
+  site, membre qui ne les montre pas) le lien reste du texte. 5 par message au plus (les suivantes restent des liens).
+  Les deux bornes (U+E000, U+E001) sont retirées du texte envoyé : seul le serveur les écrit. À chaque lecture, une
+  requête de plus, seulement si les messages lus en citent (clés primaires de `users` et `targets`, 2 lignes par
+  collection), rend pour **celui qui lit** chaque collection comme `refs[n]` : `{name, owner, mine, pid, id}` = nom actuel
+  de la collection et prénom actuel de son propriétaire, **lisibles par tout le salon** (choix de l'utilisateur du
+  2026-10-20 : « nom et propriétaire », même pour qui ne montre pas ses cartes) ; `pid` (son id public) et `id` seulement
+  si le lecteur montre ses cartes (réciprocité : de quoi ouvrir `#/ami/<pid>/<id>`), ou `mine` et `id` pour la sienne ;
+  `{gone:true}` si elle est effacée, ou que son propriétaire ne montre plus ses collections (sauf pour lui). L'id interne
+  ne sort jamais du serveur ; `GET /api/chat/last` ne rend rien de tout cela. La console D1 montre la forme rangée.
+  Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
   à chaque lecture (jointure sur `users`) : un renommage vaut pour les anciens messages ; jamais l'id interne du compte
@@ -652,7 +668,16 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     albums ; « Vérification sur Wikipédia… » en attendant ; introuvable : « le titre cité dans le chat est peut-être mal
     écrit » ; une redirection vers une de tes cartes ouvre la tienne, et le qid appris sert aux pastilles). Sous le
     champ, une aide discrète (aussi sur téléphone) : « Pour montrer une carte : `#` puis son titre, `[[Titre de la
-    carte]]`, ou « Partager dans le chat » depuis sa fiche. Pour mentionner un membre : `@` puis son prénom. » ;
+    carte]]`, ou « Partager dans le chat » depuis sa fiche. Pour une collection : `#c:` puis son nom, ou colle son lien.
+    Pour mentionner un membre : `@` puis son prénom. » ;
+  - **collections citées** (2026-10-20) : dans le texte, son **nom** en lien vers elle (`#/collections/<id>`, la tienne,
+    ou `#/ami/<pid>/<id>`, ouvert dans la page) ; sans `id` (tu ne montres pas tes cartes) son nom seul, avec « Collection
+    de Tiff » en info-bulle ; `{gone}` : « collection non partagée » en italique. **Aperçu** sous le message, pour la
+    première : sa ligne, comme dans tes collections (`viewRow`) ou dans le classeur de l'ami (`viewFriendColRow` :
+    éventail, « 2 sur 3 » avec SES cartes, valeur, « Tu peux l'aider ») ; un message lu qui cite la collection d'un ami
+    lit « Entre amis » (`ensureFriends`, au plus toutes les 10 min). En attendant, ou sans partage : son nom et « Collection
+    de Tiff », plus « Lecture de sa progression… » ou « Montre tes cartes (Réglages) pour voir sa progression. » Un autre
+    lien vers une vue du classeur (`#/…`, même origine) s'ouvre aussi dans la page, sans nouvel onglet ;
   - **autocomplétion du champ** (2026-10-19), sur le modèle de la recherche de catégories (`role="combobox"`, liste
     `role="listbox"` **au-dessus** du champ, à cause du clavier du téléphone) : elle s'ouvre sur le `@` ou le `#` placé
     avant le curseur, en début de mot (pas « a@b.fr », « C#maj »), sur la même ligne, 60 caractères tapés au plus depuis,
@@ -671,6 +696,12 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
       texte tapé) vient en dernier ; à rang égal, les tiennes d'abord, puis les autres cartes connues (la plus courte
       d'abord), puis les articles dans l'ordre de Wikipédia. Insère `[[Titre]] ` (le texte tapé depuis le `#` est
       remplacé) ;
+    - `#c:` (2026-10-20) : des **collections**, pas des cartes : les tiennes (« ta collection »), puis, si tu montres tes
+      cartes, celles des amis qui les montrent (« de Tiff », lues avec « Entre amis », qui se charge au premier `#c:`) ;
+      `#c:` seul les propose toutes, de A à Z, les tiennes d'abord. Insère le **lien** de la collection
+      (`<origine>/#/collections/<id>` ou `<origine>/#/ami/<id public>/<id>`), que le serveur range sous sa forme stable.
+      Une des tiennes alors que tu ne montres pas tes collections : avertissement (les autres verront « collection non
+      partagée »), le lien est inséré quand même ;
     - `@` : les **membres qui montrent leurs cartes** (choix de l'utilisateur : seuls eux peuvent être mentionnés), sauf
       toi : les prénoms de « Entre amis » s'ils sont lus, sinon `GET /api/members` seul (sans leurs cartes), à
       l'ouverture du chat ou au premier `@`, au plus toutes les 10 min (`FRIENDS_TTL`). Comme ce point d'accès, il faut

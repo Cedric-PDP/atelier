@@ -14,6 +14,10 @@
 // - un envoi écrit le message (3 lignes avec ses deux index) et purge, dans le même lot, ce qui dépasse les 2 000
 //   plus récents (le plus ancien, par la clé primaire) ; les limites sont contrôlées dans l'INSERT même (index
 //   chat_by_user : 10 lignes au plus pour la minute, 300 pour la journée).
+// - Collections citées (2026-10-20) : un lien du site vers une collection (#/ami/<id public>/<id> ou, la sienne,
+//   #/collections/<id>) est rangé sous une forme stable, `\uE000c:<id du compte>/<id de la collection>\uE001` (l'id public
+//   change à chaque réactivation du partage), et retraduit à chaque lecture pour celui qui lit : nom de la collection et
+//   prénom de son propriétaire, de quoi l'ouvrir s'il en a le droit (voir citeRefs). L'id interne ne sort jamais du serveur.
 
 import { HttpError, json } from './http.js';
 
@@ -30,13 +34,20 @@ const CONTROLS = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F‪-‮⁦-⁩]/g;
 // Lien personnel d'un classeur (#cle=<clé>) : il ouvre le classeur de qui l'envoie, à qui le lit.
 const PERSONAL_LINK = /#cle=[A-Za-z0-9_-]{20,}/;
 const NEEDS_NFC = /\p{M}/u;
+// Bornes des collections citées (caractères d'usage privé) : rangées par le serveur seulement, retirées du texte envoyé.
+const REF_BOUNDS = /[\uE000\uE001]/g;
+const REF_MARK = /\uE000c:([A-Za-z0-9_-]{1,64})\/([A-Za-z0-9_-]{1,64})\uE001/g;
+// Lien du site vers une collection : son hôte, puis l'id public du membre (absent pour #/collections/, la sienne) et l'id
+// de la collection ; les paramètres de la vue (?filtre=…) font partie du lien, pas une ponctuation qui le suit.
+const COL_LINK = /\bhttps?:\/\/([A-Za-z0-9.:[\]-]+)\/?#\/(?:ami\/([A-Za-z0-9_-]{1,64})|collections)\/([A-Za-z0-9_-]{1,64})(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
+export const CHAT_MAX_REFS = 5; // collections citées par message (les suivantes restent des liens)
 
 // Texte d'un message : fins de ligne unifiées, tabulations en espaces, contrôles retirés, espaces de fin de ligne
 // retirés, trois lignes vides ou plus réduites à une, bords retirés. 1 à 500 caractères.
 export function cleanMessage(value) {
   if (typeof value !== 'string') throw new HttpError(400, 'Le message doit être un texte.');
   if (value.length > CHAT_MAX_CHARS * 4) throw new HttpError(400, `Message trop long : ${CHAT_MAX_CHARS} caractères au plus.`);
-  let text = value.replace(/\r\n?/g, '\n').replace(/\t/g, ' ').replace(CONTROLS, '');
+  let text = value.replace(/\r\n?/g, '\n').replace(/\t/g, ' ').replace(CONTROLS, '').replace(REF_BOUNDS, '');
   if (NEEDS_NFC.test(text)) text = text.normalize('NFC');
   text = text.replace(/[  ]+$/gm, '').replace(/\n{3,}/g, '\n\n').trim();
   if (!text) throw new HttpError(400, 'Message vide : écris quelque chose avant d\'envoyer.');
@@ -90,7 +101,70 @@ export function eraseChatOf(db, userId) {
     WHERE user_id = ?1`).bind(userId);
 }
 
-const message = (r) => ({ id: r.id, author: r.author ?? null, mine: !!r.mine, text: r.text, created_at: r.created_at });
+// Message tel que la page le reçoit. Ses collections citées : `\uE000<n>\uE001` dans le texte, n = rang dans `refs` (seulement
+// s'il y en a), chacune {name, owner, mine, pid, id} (pid et id : de quoi l'ouvrir, null si le lecteur ne le peut pas) ou
+// {gone: true} (effacée, ou que son propriétaire ne montre plus).
+function message(r, cited) {
+  const out = { id: r.id, author: r.author ?? null, mine: !!r.mine, text: r.text, created_at: r.created_at };
+  if (!cited || !r.text.includes('\uE000')) return out;
+  const refs = [];
+  out.text = r.text.replace(REF_MARK, (_, uid, tid) => {
+    refs.push(cited.get(uid + '/' + tid) || { gone: true });
+    return `\uE000${refs.length - 1}\uE001`;
+  });
+  out.refs = refs;
+  return out;
+}
+
+// Collections citées par des messages, vues par `user` : une requête (clés primaires de users et de targets), seulement
+// s'il y en a. Celles des autres : nom et prénom du propriétaire tant qu'il les montre (lisibles par tout le salon,
+// choix de l'utilisateur du 2026-10-20), l'id public de quoi l'ouvrir seulement si le lecteur montre ses cartes
+// (réciprocité, comme GET /api/members/<id>/targets). Les siennes : toujours, avec leur id.
+const CITED = `SELECT json_extract(r.value, '$[0]') AS uid, t.id AS tid, t.name, u.name AS owner, u.shared_targets AS st, u.public_id AS pid, u.shared
+  FROM json_each(?1) AS r
+  JOIN users AS u ON u.id = json_extract(r.value, '$[0]')
+  JOIN targets AS t ON t.user_id = u.id AND t.id = json_extract(r.value, '$[1]')`;
+async function citeRefs(db, user, rows) {
+  const keys = new Map();
+  for (const r of rows) for (const [, uid, tid] of (r.text || '').matchAll(REF_MARK)) keys.set(uid + '/' + tid, [uid, tid]);
+  if (!keys.size) return null;
+  const { results } = await db.prepare(CITED).bind(JSON.stringify([...keys.values()])).all();
+  const sees = !!(user.shared && user.public_id);
+  const cited = new Map();
+  for (const c of results) {
+    const mine = c.uid === user.id;
+    if (!mine && !(c.shared && c.st)) continue;
+    const pid = !mine && sees && c.pid ? c.pid : null;
+    cited.set(c.uid + '/' + c.tid, { name: c.name, owner: c.owner ?? null, mine, pid, id: mine || pid ? c.tid : null });
+  }
+  return cited;
+}
+
+// Envoi : les liens du site (même hôte que la requête) vers une collection que l'auteur voit (la sienne, ou celle d'un
+// membre qui montre ses collections) deviennent leur forme stable ; les autres liens restent tels quels.
+const OWNERS = `SELECT r.key AS k, t.user_id AS uid FROM json_each(?1) AS r
+  JOIN targets AS t ON t.id = json_extract(r.value, '$[1]') AND t.user_id = CASE WHEN json_extract(r.value, '$[0]') = '' THEN ?2
+    ELSE (SELECT id FROM users WHERE public_id = json_extract(r.value, '$[0]') AND shared = 1 AND shared_targets = 1) END`;
+async function storeRefs(db, user, text, host) {
+  const found = [];
+  for (const m of text.matchAll(COL_LINK)) {
+    if (found.length >= CHAT_MAX_REFS) break;
+    if (m[1].toLowerCase() !== host) continue;
+    const own = !m[2] || m[2] === user.public_id;
+    found.push({ at: m.index, end: m.index + m[0].length, pid: own ? '' : m[2], tid: m[3] });
+  }
+  if (!found.length) return text;
+  const { results } = await db.prepare(OWNERS).bind(JSON.stringify(found.map((f) => [f.pid, f.tid])), user.id).all();
+  const owner = new Map(results.map((r) => [Number(r.k), r.uid]));
+  let out = '';
+  let last = 0;
+  found.forEach((f, i) => {
+    if (!owner.has(i)) return;
+    out += text.slice(last, f.at) + `\uE000c:${owner.get(i)}/${f.tid}\uE001`;
+    last = f.end;
+  });
+  return out + text.slice(last);
+}
 const INT = /^\d{1,15}$/;
 function intParam(params, name) {
   const v = params.get(name);
@@ -112,7 +186,9 @@ export async function listChat(env, user, _body, request) {
   const db = env.DB;
   if (before !== null) {
     const { results } = await db.prepare(BEFORE).bind(user.id, CHAT_PAGE + 1, before).all();
-    return { messages: results.slice(0, CHAT_PAGE).reverse().map(message), older: results.length > CHAT_PAGE };
+    const rows = results.slice(0, CHAT_PAGE);
+    const cited = await citeRefs(db, user, rows);
+    return { messages: rows.reverse().map((r) => message(r, cited)), older: results.length > CHAT_PAGE };
   }
   // Curseur et messages dans la même transaction : un changement fait entre les deux revient à la lecture suivante.
   const [top, page] = await db.batch([
@@ -123,14 +199,15 @@ export async function listChat(env, user, _body, request) {
   const rev = head.rev ?? 0;
   const lastId = head.last_id ?? 0;
   const rows = page.results;
-  if (after === null) {
-    return { messages: rows.slice(0, CHAT_PAGE).reverse().map(message), rev, last_id: lastId, older: rows.length > CHAT_PAGE };
-  }
-  if (after > rev) return { reset: true, rev, last_id: lastId };
-  const more = rows.length > CHAT_PAGE;
+  if (after !== null && after > rev) return { reset: true, rev, last_id: lastId };
   const kept = rows.slice(0, CHAT_PAGE);
+  const cited = await citeRefs(db, user, kept);
+  if (after === null) {
+    return { messages: kept.reverse().map((r) => message(r, cited)), rev, last_id: lastId, older: rows.length > CHAT_PAGE };
+  }
+  const more = rows.length > CHAT_PAGE;
   return {
-    messages: kept.filter((r) => !r.deleted).map(message),
+    messages: kept.filter((r) => !r.deleted).map((r) => message(r, cited)),
     deleted: kept.filter((r) => r.deleted).map((r) => r.id),
     rev: more ? kept[kept.length - 1].rev : rev,
     last_id: lastId,
@@ -138,9 +215,9 @@ export async function listChat(env, user, _body, request) {
   };
 }
 
-// POST /api/chat {text} → 201 {message} ; 400 (texte, lien personnel, classeur sans prénom), 429 (limites).
-export async function postChat(env, user, body) {
-  const text = cleanMessage(body.text);
+// POST /api/chat {text} → 201 {message} (ses liens de collection déjà cités, voir storeRefs) ; 400 (texte, lien personnel, classeur sans prénom), 429 (limites).
+export async function postChat(env, user, body, request) {
+  const typed = cleanMessage(body.text);
   if (!user.name) {
     throw new HttpError(400, "Donne d'abord un prénom à ton classeur (Réglages, « Ton prénom ») : c'est lui que les autres membres verront.");
   }
@@ -149,13 +226,15 @@ export async function postChat(env, user, body) {
   const minute = new Date(now - 60_000).toISOString();
   const day = new Date(now - 86_400_000).toISOString();
   const db = env.DB;
+  const text = await storeRefs(db, user, typed, new URL(request.url).host.toLowerCase());
   const [ins] = await db.batch([
     db.prepare(INSERT).bind(user.id, text, at, minute, CHAT_PER_MINUTE, day, CHAT_PER_DAY, CHAT_ROOM_PER_DAY - 1),
     db.prepare(PURGE).bind(CHAT_KEEP),
   ]);
   const row = ins.results[0];
   if (!row) throw await limitError(db, user, now, minute, day);
-  return json({ message: { id: row.id, author: user.name, mine: true, text, created_at: row.created_at } }, 201);
+  const sent = { id: row.id, author: user.name, mine: true, text, created_at: row.created_at };
+  return json({ message: message(sent, await citeRefs(db, user, [sent])) }, 201);
 }
 
 async function limitError(db, user, now, minute, day) {

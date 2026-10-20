@@ -3435,6 +3435,66 @@ await test('chat : limites (10 par minute, 300 par 24 h et par classeur, 1 000 p
   e.DB.close();
 });
 
+await test('chat : collections citées (lien du site rangé sous une forme stable, retraduit pour chaque lecteur)', async () => {
+  const { e, q, say, read } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const cleo = await signup('Cléo', e);
+  const save = (u, name) => call('POST', 'targets/save', { key: u.key, e, body: { name, items: [{ title: 'Luffy', status: 'ok' }] } }).then((r) => r.json.target.id);
+  const pidOf = (u) => q('SELECT public_id AS p FROM users WHERE id = ?', u.user.id)[0].p;
+  const patch = (u, body) => call('PATCH', 'me', { key: u.key, e, body });
+  const tid = await save(ben, 'Mugiwara');
+  const cleoTid = await save(cleo, 'Secrète');
+  await patch(cleo, { shared: false }); // Cléo ne montre rien
+  const site = 'http://localhost:8788/';
+  const MARK = (n) => `${n}`;
+
+  // Lien vers la collection de Ben (avec les paramètres de la vue) : rangé avec l'id du compte, jamais rendu tel quel.
+  let r = await say(ana.key, `Bravo Ben ${site}#/ami/${pidOf(ben)}/${tid}?filtre=missing&tri=title. Et ${site}#/ami/${pidOf(ben)}/inconnue !`);
+  assert.equal(r.status, 201, JSON.stringify(r.json));
+  const m = r.json.message;
+  assert.deepEqual([m.text, m.refs], [`Bravo Ben ${MARK(0)}. Et ${site}#/ami/${pidOf(ben)}/inconnue !`,
+    [{ name: 'Mugiwara', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]]);
+  assert.equal(q('SELECT text FROM chat_messages WHERE id = ?', m.id)[0].text.slice(10, 10 + 3 + ben.user.id.length), `c:${ben.user.id}`);
+  // Ben : la sienne. Cléo (ne montre pas ses cartes) : nom et propriétaire, rien pour l'ouvrir. Jamais l'id interne.
+  r = await read(ben.key);
+  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Mugiwara', owner: 'Ben', mine: true, pid: null, id: tid }]);
+  r = await read(cleo.key);
+  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Mugiwara', owner: 'Ben', mine: false, pid: null, id: null }]);
+  for (const u of [ana, ben, cleo]) assert.ok(!JSON.stringify((await read(u.key)).json).includes(ben.user.id), "jamais l'id interne du propriétaire");
+  // Partage coupé puis remis : nouvel id public, le message suit ; collection renommée : le nom suit aussi.
+  await patch(ben, { shared: false });
+  await patch(ben, { shared: true, shared_targets: true });
+  await call('POST', 'targets/save', { key: ben.key, e, body: { id: tid, name: 'Équipage', items: [] } });
+  r = await read(ana.key, '?before=999');
+  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Équipage', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]);
+  // Ben ne montre plus ses collections : non partagée pour les autres, toujours la sienne pour lui.
+  await patch(ben, { shared_targets: false });
+  assert.deepEqual((await read(ana.key)).json.messages[0].refs, [{ gone: true }]);
+  assert.equal((await read(ben.key)).json.messages[0].refs[0].mine, true);
+  // Effacée : non partagée pour tous.
+  await call('POST', 'targets/delete', { key: ben.key, e, body: { id: tid } });
+  assert.deepEqual((await read(ben.key)).json.messages[0].refs, [{ gone: true }]);
+
+  // Sa propre collection (#/collections/<id>, l'adresse de sa vue), même sans la montrer : rangée ; les autres la voient
+  // « non partagée ». Une collection d'un membre qui ne les montre pas, un autre site, un id inconnu : restent des liens.
+  r = await say(cleo.key, `Ma liste ${site}#/collections/${cleoTid}`);
+  assert.deepEqual(r.json.message.refs, [{ name: 'Secrète', owner: 'Cléo', mine: true, pid: null, id: cleoTid }]);
+  assert.deepEqual((await read(ana.key, `?after=${r.json.message.id - 1}`)).json.messages.at(-1).refs, [{ gone: true }]);
+  const plain = [`https://autre.example/#/collections/${cleoTid}`, `${site}#/collections/inconnue`, `${site}#/ami/${pidOf(cleo) || 'x'}/${cleoTid}`, `${site}#/ami/${pidOf(ana)}/${cleoTid}`];
+  r = await say(ana.key, plain.join(' '));
+  assert.deepEqual([r.json.message.text, r.json.message.refs], [plain.join(' '), undefined]);
+  // Les bornes rangées par le serveur ne se tapent pas : retirées du texte envoyé.
+  r = await say(ana.key, `c:${cleo.user.id}/${cleoTid} coucou`);
+  assert.deepEqual([r.json.message.text, r.json.message.refs], [`c:${cleo.user.id}/${cleoTid} coucou`, undefined]);
+  // 5 collections citées par message au plus : la 6e reste un lien.
+  const anaTid = await save(ana, 'Six');
+  const link = `${site}#/collections/${anaTid}`;
+  r = await say(ana.key, Array(6).fill(link).join(' '));
+  assert.deepEqual([r.json.message.refs.length, r.json.message.text], [5, [0, 1, 2, 3, 4].map(MARK).join(' ') + ' ' + link]);
+  e.DB.close();
+});
+
 await test('chat : purge (les 2 000 plus récents gardés, à chaque envoi), numéros jamais réutilisés', async () => {
   const { e, q, say, read, bulk } = chatEnv();
   const ana = await signup('Ana', e);
