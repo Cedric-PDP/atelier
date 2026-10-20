@@ -2,13 +2,20 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#0c0d0c">
+<meta name="theme-color" content="#0c0d0c" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f8f7" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Classeur">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="referrer" content="no-referrer">
 <meta name="description" content="Le classeur : ta collection WikiMasters rangée hors du jeu, avec tes tags et tes collections à compléter.">
 <title>Le classeur · WikiMasters</title>
 <link rel="icon" href="/assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap">
@@ -49,6 +56,10 @@
   <symbol id="i-swords" viewBox="0 0 24 24"><polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/></symbol>
   <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M11.5 2.3a.6.6 0 0 1 1 0l2.6 5.3 5.8.8a.6.6 0 0 1 .3 1l-4.2 4.1 1 5.8a.6.6 0 0 1-.8.6L12 17.2l-5.2 2.7a.6.6 0 0 1-.8-.6l1-5.8-4.2-4.1a.6.6 0 0 1 .3-1l5.8-.8z"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8.5" r="3.3"/><path d="M3.5 19.5c.6-3.4 2.8-5.3 5.5-5.3s4.9 1.9 5.5 5.3"/><path d="M15.2 5.6a3.2 3.2 0 0 1 0 6"/><path d="M17 14.4c2 .6 3.2 2.4 3.6 5.1"/></symbol>
+  <symbol id="i-coins" viewBox="0 0 24 24"><ellipse cx="9.5" cy="7" rx="5.5" ry="2.5"/><path d="M4 7v4c0 1.4 2.5 2.5 5.5 2.5S15 12.4 15 11V7"/><path d="M9 16.8c.6.1 1.4.2 2 .2 3 0 5.5-1.1 5.5-2.5"/><ellipse cx="14.5" cy="13" rx="5.5" ry="2.5"/><path d="M9 13v4c0 1.4 2.5 2.5 5.5 2.5S20 18.4 20 17v-4"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><g fill="currentColor" stroke="none"><circle cx="5.5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="18.5" cy="12" r="1.8"/></g></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4.5 6.5h15M7.5 12h9M10.5 17.5h3"/></symbol>
   <symbol id="i-key" viewBox="0 0 24 24"><circle cx="8" cy="15.5" r="3.5"/><path d="M10.5 13l8-8M15.5 8l2.5 2.5M17.5 6l1.5 1.5"/></symbol>
 </svg>
 <div id="app"><p class="boot">Ouverture du classeur…</p></div>

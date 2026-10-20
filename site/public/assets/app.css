@@ -950,3 +950,162 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .page-tables .check b { font-weight: 600; }
 .page-tables .check { align-items: flex-start; min-width: 0; overflow-wrap: anywhere; }
 .page-tables .check input { margin-top: 3px; flex: none; }
+
+/* ------------------------------------------------------------------ téléphone : barre du haut, barre du bas, feuilles
+   Tout ce bloc ne vaut que sous 760 px : la version large ne change pas. Les éléments .m-only sont rendus partout mais
+   cachés au-delà. Sur téléphone, le bandeau et les onglets du haut (.top) laissent la place à une barre compacte
+   (.mbar : retour, titre de la vue, synchro) et à une barre flottante en bas (.mnav) ; « Plus » ouvre une feuille. */
+.m-only { display: none; }
+@media (max-width: 760px) {
+  :root {
+    --mbar-h: 56px;
+    --mnav-h: 64px;
+    --mnav-gap: max(10px, env(safe-area-inset-bottom, 0px));
+    --mnav-space: calc(var(--mnav-h) + var(--mnav-gap) + 14px);
+    --chrome: color-mix(in srgb, var(--surface) 82%, transparent);
+  }
+  .m-only { display: revert; }
+  .app > .top { display: none; }
+  .welcome .top .wrap { padding-top: calc(18px + env(safe-area-inset-top, 0px)); }
+  body { background: var(--bg); }
+  main.wrap { padding-block: 14px calc(var(--mnav-space) + 24px); }
+  ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
+
+  /* Barre du haut */
+  .mbar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; column-gap: 6px;
+    min-height: calc(var(--mbar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(8px, env(safe-area-inset-right, 0px)) 0 max(8px, env(safe-area-inset-left, 0px));
+    background: var(--chrome); -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px); border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
+  .mbar__mark { width: 44px; height: 44px; display: grid; place-items: center; }
+  .mbar__mark img { width: 26px; height: 26px; }
+  .mbar__back, .mbar__act { position: relative; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 99px; background: none; color: var(--fg); padding: 0; -webkit-tap-highlight-color: transparent; }
+  .mbar__back .ic, .mbar__act .ic { width: 22px; height: 22px; }
+  .mbar__back .ic.flip { transform: scaleX(-1); }
+  .mbar__back:active, .mbar__act:active { background: var(--surface-2); }
+  .mbar__act:disabled { color: var(--accent); cursor: default; }
+  .mbar__dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 99px; background: var(--warn); box-shadow: 0 0 0 2px var(--surface); }
+  .mbar__act.err .mbar__dot { background: var(--danger); }
+  .mbar__title { min-width: 0; display: grid; line-height: 1.2; }
+  .mbar__name { font: 600 17px/1.25 var(--f-head); letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbar__kicker { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mbar__status { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 0 8px 9px; font-size: 12.5px; color: var(--muted); }
+  .mbar__status.err { color: var(--danger); }
+  .mbar__status.warn { color: var(--warn); }
+
+  /* Barre du bas, flottante */
+  .mnav { position: fixed; z-index: 45; left: max(10px, env(safe-area-inset-left, 0px)); right: max(10px, env(safe-area-inset-right, 0px)); bottom: var(--mnav-gap);
+    height: var(--mnav-h); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 0 4px; border-radius: 22px;
+    background: color-mix(in srgb, var(--surface-2) 88%, transparent); -webkit-backdrop-filter: saturate(1.4) blur(18px); backdrop-filter: saturate(1.4) blur(18px);
+    border: 1px solid color-mix(in srgb, var(--border) 80%, transparent); box-shadow: 0 14px 34px -12px var(--shadow), 0 2px 6px -2px color-mix(in srgb, var(--shadow) 50%, transparent); }
+  .mnav.hide { display: none; }
+  .mnav__item { min-width: 0; display: grid; justify-items: center; align-content: center; gap: 3px; border: 0; background: none; padding: 0; color: var(--muted); -webkit-tap-highlight-color: transparent; }
+  .mnav__ic { position: relative; display: grid; place-items: center; width: 52px; height: 30px; border-radius: 99px; transition: background-color 0.2s var(--ease), color 0.2s; }
+  .mnav__ic .ic { width: 22px; height: 22px; stroke-width: 1.8; }
+  .mnav__label { max-width: 100%; font-size: 11px; font-weight: 600; letter-spacing: 0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mnav__item.on { color: var(--fg); }
+  .mnav__item.on .mnav__ic { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+  .mnav__item.on .mnav__ic .ic { stroke-width: 2.2; }
+  .mnav__item:active .mnav__ic { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .mnav__badge { position: absolute; top: -3px; left: 30px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; display: grid; place-items: center;
+    background: var(--accent); color: var(--accent-fg); font: 700 10.5px/1 var(--f-body); font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--surface-2); }
+  .mnav__badge.ping { background: var(--warn); }
+  .mnav__dot { position: absolute; top: 3px; right: 12px; width: 8px; height: 8px; border-radius: 99px; background: var(--accent); box-shadow: 0 0 0 2px var(--surface-2); }
+
+  /* Feuilles qui montent du bas : « Plus » et les filtres de « Mes cartes » */
+  .msheet-backdrop { position: fixed; inset: 0; z-index: 54; background: rgba(5, 6, 6, 0.55); }
+  .msheet, .cards-layout.m-facets .facets { position: fixed; z-index: 55; left: 0; right: 0; bottom: 0; max-height: 86dvh; overflow-y: auto; overscroll-behavior: contain;
+    padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    background: var(--surface); border-top: 1px solid var(--border); border-radius: 22px 22px 0 0; box-shadow: 0 -20px 50px -20px var(--shadow); }
+  .msheet__grab { display: block; width: 38px; height: 5px; margin: 4px auto 10px; border-radius: 99px; background: var(--border); }
+  .msheet-enter-active, .msheet-leave-active { transition: opacity 0.26s var(--ease); }
+  .msheet-enter-active .msheet, .msheet-leave-active .msheet { transition: transform 0.3s var(--ease); }
+  .msheet-enter-from, .msheet-leave-to { opacity: 0; }
+  .msheet-enter-from .msheet, .msheet-leave-to .msheet { transform: translateY(40%); }
+  .mmore { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .mmore__row { width: 100%; min-height: 60px; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto auto; align-items: center; gap: 12px; padding: 8px 6px; border: 0; border-radius: 14px; background: none; color: var(--fg); text-align: left; -webkit-tap-highlight-color: transparent; }
+  .mmore__row:active, .mmore__row.on { background: var(--surface-2); }
+  .mmore__ic { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--surface-2); color: var(--accent); }
+  .mmore__row.on .mmore__ic { background: color-mix(in srgb, var(--accent) 20%, transparent); }
+  .mmore__ic .ic { width: 20px; height: 20px; }
+  .mmore__text { min-width: 0; display: grid; gap: 1px; }
+  .mmore__text b { font: 600 15.5px/1.3 var(--f-head); }
+  .mmore__text span { font-size: 12.5px; color: var(--muted); line-height: 1.35; }
+  .mmore__flag { padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-fg); font-size: 11px; font-weight: 700; }
+  .mmore__flag.warn { background: color-mix(in srgb, var(--warn) 22%, transparent); color: var(--warn); }
+  .mmore__chev { color: var(--faint); }
+  .mmore__install { width: 100%; margin-top: 10px; min-height: 64px; display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 10px 10px 8px;
+    border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); border-radius: 16px; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); color: var(--fg); text-align: left; -webkit-tap-highlight-color: transparent; }
+  .mmore__install:active { background: color-mix(in srgb, var(--accent) 16%, var(--surface)); }
+  .mmore__install img { width: 40px; height: 40px; border-radius: 10px; }
+  .mmore__note { margin: 14px 6px 0; padding-top: 12px; border-top: 1px solid var(--border); font-size: 11.5px; color: var(--faint); line-height: 1.5; }
+
+  /* Accueil de « Collections » : le classeur en bref */
+  .mhome { display: grid; gap: 12px; margin-bottom: 26px; }
+  .mhome__title { font: 600 1.55rem/1.1 var(--f-head); letter-spacing: -0.025em; overflow-wrap: anywhere; }
+  .mhome__figs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
+  .mfig { min-width: 0; display: grid; gap: 1px; padding: 10px 10px 9px; }
+  .mfig + .mfig { border-left: 1px solid var(--border); }
+  .mfig b, .mfig .price { font: 600 1.15rem/1.2 var(--f-head); font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mfig span { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mhome__track { height: 6px; }
+  .mhome__sync { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: 12px; font-size: 13px; text-align: left;
+    border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--border)); background: color-mix(in srgb, var(--warn) 9%, var(--surface)); color: var(--fg); }
+  .mhome__sync b { color: var(--warn); }
+  .mhome__sync.err { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); background: color-mix(in srgb, var(--danger) 9%, var(--surface)); }
+  .mhome__sync.err b { color: var(--danger); }
+
+  /* Sous-vues : le retour est dans la barre du haut */
+  main .album-head > .back, main .back-line > .back:first-child { display: none; }
+
+  /* Mes cartes : recherche en tête, filtres dans une feuille */
+  .cards-main { display: flex; flex-direction: column; }
+  .cards-main > .search { order: -2; }
+  .cards-main > .mfilter { order: -1; }
+  .search { gap: 8px; }
+  .search input[type="search"] { flex: 1 1 100%; min-height: 44px; font-size: 16px; }
+  .search select { flex: 1 1 auto; min-height: 40px; }
+  .mfilter { display: inline-flex; align-self: flex-start; gap: 8px; margin-bottom: 12px; min-height: 40px; }
+  .mfilter.on { border-color: color-mix(in srgb, var(--accent) 55%, var(--border)); }
+  .mfilter__n { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 99px; display: grid; place-items: center; background: var(--accent); color: var(--accent-fg); font-size: 11.5px; font-weight: 700; }
+  .rarity-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; }
+  .rarity-filter::-webkit-scrollbar { display: none; }
+  .rarity-filter .chip { flex: none; }
+  .facets { display: none; }
+  .cards-layout.m-facets .facets { display: grid; gap: 20px; padding-top: 0; }
+  .facets__mhead { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 12px; margin: 0 -16px; padding: 6px 16px 12px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .facets__mhead .msheet__grab { grid-column: 1 / -1; margin-bottom: 4px; }
+  .facets__mhead h2 { font-size: 1.2rem; font-weight: 600; }
+
+  /* Chat : fil sur toute la hauteur, saisie collée en bas comme une messagerie */
+  .chat .section-head, .chat-note, .chat-hint { display: none; }
+  main.tab-chat { padding-bottom: calc(var(--mnav-space) + 8px); }
+  main.tab-chat .chat { height: calc(100dvh - var(--mbar-h) - env(safe-area-inset-top, 0px) - var(--mnav-space) - 22px); min-height: 340px; grid-template-rows: minmax(0, 1fr) auto auto; gap: 10px; }
+  main.tab-chat .chat-box { min-height: 0; }
+  main.tab-chat .chat-scroll { height: 100%; min-height: 0; padding: 12px 10px; border-radius: 18px; }
+  .chat-msg { max-width: 86%; }
+  .chat-form { grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 6px 8px; }
+  .chat-form > .chat-field { grid-column: 1; }
+  .chat-form > .chat-form__foot { grid-column: 2; flex-wrap: nowrap; gap: 6px; }
+  .chat-form > :not(.chat-field):not(.chat-form__foot) { grid-column: 1 / -1; }
+  .chat-form .chat-input { field-sizing: content; min-height: 46px; max-height: 30dvh; padding: 11px 16px; border-radius: 23px; font-size: 16px; resize: none; }
+  .chat-form__foot .btn.primary { min-height: 46px; border-radius: 23px; padding-inline: 18px; }
+  .chat-tip { display: none; font-size: 11.5px; }
+  .chat-form:focus-within .chat-tip { display: block; }
+
+  /* Bande de sélection, messages, fenêtres : au-dessus de la barre du bas, fenêtres en feuilles */
+  .bulk { bottom: var(--mnav-space); width: calc(100vw - 20px); padding: 10px 12px; }
+  .bulk .field { flex-basis: 100%; font-size: 16px; }
+  .reorder-bar { bottom: var(--mnav-space); width: calc(100vw - 20px); }
+  .toast { top: auto; bottom: calc(var(--mnav-space) + 6px); max-width: calc(100vw - 20px); }
+  .overlay { display: flex; flex-direction: column; padding: calc(28px + env(safe-area-inset-top, 0px)) 0 0; }
+  .overlay > .sheet, .overlay > .modal { margin-top: auto; width: 100%; max-height: none; border-radius: 22px 22px 0 0; border-bottom: 0;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); box-shadow: 0 -20px 50px -20px var(--shadow); }
+  .modal.newcol { min-height: 0; }
+  input.field, select.field, textarea.field, .field input, .field textarea { font-size: 16px; }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .msheet-enter-from .msheet, .msheet-leave-to .msheet { transform: none; }
+}
+
+/* ------------------------------------------------------------------ app installée */
+.modal h3.install-h { margin-top: 6px; font-size: 1rem; font-weight: 600; }
+.update > .app-note { grid-column: 1 / -1; }

@@ -11,3 +11,16 @@
 
 /assets/*
   Cache-Control: public, max-age=300, must-revalidate
+
+# App installée : le service worker et le manifeste sont toujours revalidés (une version figée du service worker
+# garderait une vieille interface) ; Service-Worker-Allowed n'est pas utile (sw.js est à la racine). Le service worker a
+# sa propre CSP (« ! » retire celle de /*) : ses fetch() vers Vue et les polices passent par connect-src.
+/sw.js
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; connect-src 'self' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://fonts.gstatic.com
+  Cache-Control: no-cache
+  Content-Type: text/javascript; charset=utf-8
+
+/manifest.webmanifest
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json; charset=utf-8

@@ -25,7 +25,7 @@ serveur (une catégorie suivie a la source `wp:<nom>`).
 
 | Chemin | Contenu |
 |---|---|
-| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
+| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `manifest.webmanifest`, `sw.js` et `assets/icon-*.png` / `apple-touch-icon.png` (app installée, voir plus bas), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
 | `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
@@ -57,6 +57,27 @@ Avec `--server`, le test de l'interface colle un faux cookie : le serveur local 
 lecture à wiki-masters.com, qui répond 401.
 
 Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Worker créé, voir SETUP.md).
+
+## Téléphone et app installée (2026-10-20)
+
+- **Interface téléphone** (sous 760 px, `@media (max-width: 760px)` à la fin de `app.css`) : barre du haut (retour,
+  titre de la vue, synchro), barre flottante en bas (Collections, Amis, Chat, Marché, Plus), feuille « Plus » (Mes
+  cartes, Mettre à jour, Réglages, Nouveautés, Installer l'app), filtres de « Mes cartes » et fenêtres en feuilles du
+  bas. Les éléments `.m-only` sont rendus partout mais cachés au-delà : **la version large ne doit pas changer**.
+- **App installée (PWA)** : `manifest.webmanifest` + `sw.js` (service worker à la racine, sa propre CSP dans
+  `_headers`). Le service worker prend **toujours le réseau d'abord** et ne garde une copie que pour ouvrir l'app sans
+  réseau ; il ne touche jamais `/api/*` (ni `/api/favori.js`), ni les illustrations de Wikimedia. Sans réseau, l'app
+  montre « Pas de connexion au classeur » et « Réessayer » (jamais « Oublier cette clé ») et se rouvre seule au retour
+  du réseau. Icônes tirées de `assets/icon.svg` (fond plein ; la « maskable » réduite à 78 % pour la zone sûre).
+- **Sur iPhone**, l'app installée ne partage pas le stockage de Safari : au premier lancement elle ne connaît pas la
+  clé. « Installer l'app » (feuille « Plus ») fait copier le lien personnel, et l'accueil de l'app met « J'ai déjà un
+  lien » en premier. Le favori se lance toujours dans le navigateur, jamais dans l'app (rappelé dans « Mettre à jour »).
+- **Changer le service worker** : changer `CACHE` (`classeur-v1` → `v2`) quand la stratégie change ; les anciens caches
+  sont effacés à l'activation. **Tout annuler** (service worker cassé chez les membres) : remplacer `sw.js` par
+  `self.addEventListener('install', () => self.skipWaiting()); self.addEventListener('activate', (e) => e.waitUntil(caches.keys().then((k) => Promise.all(k.map((x) => caches.delete(x)))).then(() => self.registration.unregister())));`
+  et retirer l'appel à `register` dans `app.js` ; le navigateur relit `sw.js` à chaque ouverture (`Cache-Control: no-cache`).
+- Testé dans Chrome (écran de 390 px simulé : critères d'installation, cache, ouverture hors ligne) ; **pas encore sur
+  un vrai iPhone ni un vrai Android**.
 
 ## Limites de Cloudflare gratuit (à respecter dans le code)
 

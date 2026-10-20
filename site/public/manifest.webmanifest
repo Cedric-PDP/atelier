@@ -1,0 +1,19 @@
+{
+  "id": "/",
+  "name": "Le classeur · WikiMasters",
+  "short_name": "Classeur",
+  "description": "Ta collection WikiMasters rangée hors du jeu, avec tes tags et tes collections à compléter.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0d0c",
+  "theme_color": "#0c0d0c",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

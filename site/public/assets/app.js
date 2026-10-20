@@ -230,6 +230,10 @@
     fetchedAt: null,
     loadingCards: false,
     tab: 'collections', // collections | cartes | maj | reglages
+    mMore: false, // téléphone : feuille « Plus » ouverte
+    mFacets: false, // téléphone : filtres de « Mes cartes » ouverts (feuille)
+    installReady: false, // le navigateur propose l'installation (beforeinstallprompt, Android et Chrome) : bouton « Installer »
+    installed: false, // l'app vient d'être installée depuis ce navigateur (appinstalled)
     album: null, // {kind: 'target', id} : collection ouverte ; {kind: 'category', id: 'wp:<nom>' | 'links:<titre>'} : catégorie ou page de Wikipédia ouverte (S.catView)
     albumFilter: 'all',
     albumSort: 'order',
@@ -6291,6 +6295,177 @@
     ])]);
   }
 
+  // ================================================================ rendu : téléphone (barre du haut, barre du bas, « Plus »)
+  // Sous 760 px, le bandeau et les onglets du haut laissent la place à une barre compacte (titre de la vue, retour,
+  // synchro) et à une barre flottante en bas ; le reste des onglets est dans la feuille « Plus ». Tout est rendu sur
+  // ordinateur aussi, mais caché par le CSS (.m-only) : la version large ne change pas.
+  const M_NAV = [['collections', 'Collections', 'album'], ['amis', 'Amis', 'users'], ['chat', 'Chat', 'chat'], ['marche', 'Marché', 'coins']];
+  const M_MORE = [['cartes', 'Mes cartes', 'grid', 'Toutes tes cartes, tes tags et les filtres'], ['maj', 'Mettre à jour', 'refresh', 'Le favori, la synchro et son journal'],
+    ['reglages', 'Réglages', 'gear', 'Prénom, pseudo, partage, lien personnel'], ['nouveautes', 'Nouveautés', 'spark', 'Ce qui a changé dans le classeur']];
+  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Mettre à jour', reglages: 'Réglages', nouveautes: 'Nouveautés' };
+  // ---------------------------------------------------------------- app installée (PWA)
+  // L'app installée (écran d'accueil) est la même page, ouverte sans barre d'adresse. Sur iPhone, elle a son propre
+  // stockage, séparé de Safari : au premier lancement elle ne connaît pas la clé, d'où « J'ai déjà un lien » en tête de
+  // l'accueil et le lien à copier dans « Installer l'app ». Le favori, lui, se lance toujours dans le navigateur.
+  const mq = (q) => { try { return typeof window.matchMedia === 'function' && window.matchMedia(q).matches; } catch { return false; } };
+  const STANDALONE = mq('(display-mode: standalone)') || (typeof navigator !== 'undefined' && navigator.standalone === true);
+  const UA = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
+  const IOS = /iPhone|iPad|iPod/.test(UA) || (/Macintosh/.test(UA) && (navigator.maxTouchPoints || 0) > 1);
+  let installEvent = null; // beforeinstallprompt gardé jusqu'au clic sur « Installer »
+  if (typeof window.addEventListener === 'function') {
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvent = e; S.installReady = true; });
+    window.addEventListener('appinstalled', () => { installEvent = null; S.installReady = false; S.installed = true; });
+    // Service worker (sw.js) : rend l'app installable et l'ouvre sans réseau ; jamais sur une adresse non sûre.
+    if (typeof navigator !== 'undefined' && navigator.serviceWorker && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+      window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js').catch(() => {}); });
+    }
+  }
+  async function installApp() {
+    if (!installEvent) return;
+    const e = installEvent;
+    installEvent = null;
+    S.installReady = false;
+    try { e.prompt(); const r = await e.userChoice; if (r && r.outcome === 'accepted') S.installed = true; } catch { /* refusée ou déjà montrée */ }
+  }
+  function openInstall() { S.mMore = false; S.modal = 'install'; }
+  function modalInstall() {
+    const how = S.installed ? h('p', { class: 'ok', role: 'status' }, "C'est installé : l'icône « Classeur » est sur ton écran d'accueil.")
+      : S.installReady ? h('div', { class: 'actions' }, [h('button', { class: 'btn primary', type: 'button', onClick: installApp }, [icon('upload', 'sm'), "Installer l'app"])])
+      : IOS ? h('ol', { class: 'steps' }, [
+        h('li', null, ['Dans Safari, touche le bouton ', h('strong', null, 'Partager'), ' (le carré avec une flèche vers le haut).']),
+        h('li', null, ['Choisis ', h('strong', null, "« Sur l'écran d'accueil »"), ' (fais défiler la liste si besoin), puis ', h('strong', null, '« Ajouter »'), '.']),
+      ])
+      : h('ol', { class: 'steps' }, [
+        h('li', null, ['Ouvre le menu du navigateur (', h('strong', null, '⋮'), ' en haut à droite dans Chrome).']),
+        h('li', null, ['Choisis ', h('strong', null, "« Installer l'application »"), ' ou ', h('strong', null, "« Ajouter à l'écran d'accueil »"), '.']),
+      ]);
+    return h(Modal, { key: 'install', title: "Installer l'app", onClose: closeModal }, () => [
+      h('p', null, "Le classeur s'ouvre alors depuis une icône de ton écran d'accueil, en plein écran, comme une app. C'est le même classeur : rien à télécharger d'un store."),
+      how,
+      h('h3', { class: 'install-h' }, IOS ? 'Au premier lancement (iPhone)' : 'Au premier lancement'),
+      h('p', null, IOS
+        ? "Sur iPhone, l'app ne voit pas ce que Safari a gardé : elle ne connaît pas encore ton classeur. Copie ton lien personnel maintenant, puis dans l'app choisis « J'ai déjà un lien » et colle-le."
+        : "En général, l'app ouvre directement ton classeur. Si elle te demande ton lien, choisis « J'ai déjà un lien » et colle celui-ci :"),
+      copyRow('install-link', personalLink.value, 'Ton lien personnel'),
+      h('p', { class: 'warn' }, 'Garde-le pour toi : quiconque a ce lien ouvre ton classeur.'),
+      h('h3', { class: 'install-h' }, 'Pour mettre à jour ta collection'),
+      h('p', null, "Le favori se lance toujours dans ton navigateur, sur wiki-masters.com : pas dans l'app. Une fois qu'il a fini, rouvre l'app, elle se met à jour toute seule."),
+      foot([closeBtn('Fermer')]),
+    ]);
+  }
+  const lastSyncBad = () => { const ls = S.me && S.me.last_sync; return !S.refresh.running && ls && (ls.result === 'error' || ls.result === 'warn') ? ls : null; };
+  // Sous-vue ouverte : le retour du haut fait ce que faisait le « ← … » du contenu (caché sur téléphone).
+  function mobileBack() {
+    const fr = S.friends;
+    if (S.tab === 'collections' && S.album) {
+      const col = activeAlbum.value;
+      return { title: col ? col.name : 'Collection', label: 'Toutes les collections', run: closeAlbum };
+    }
+    if (S.tab === 'amis') {
+      const f = fr.open ? friendList.value.find((x) => x.id === fr.open) : null;
+      const name = f ? friendName(f) : '';
+      if (fr.album) return { title: (friendAlbum.value && friendAlbum.value.name) || 'Collection', label: name ? `Classeur de ${name}` : 'Retour', run: closeFriendAlbum };
+      if (fr.open) return { title: name ? `Classeur de ${name}` : 'Classeur', label: 'Entre amis', run: closeFriendBinder };
+      if (fr.page === 'trades') return { title: 'Échanges possibles', label: 'Entre amis', run: closeTrades };
+    }
+    return null;
+  }
+  function mobileGo(tab) {
+    S.mMore = false;
+    S.mFacets = false;
+    if (S.tab !== tab) { setTab(tab); return; }
+    // Onglet déjà ouvert : retour à sa racine, puis en haut (comme une app).
+    if (tab === 'collections' && S.album) closeAlbum();
+    else if (tab === 'amis' && (S.friends.open || S.friends.page)) Object.assign(S.friends, { open: null, album: null, albumFrom: null, page: null });
+    if (typeof window.scrollTo === 'function') window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function viewMobileBar() {
+    const back = mobileBack();
+    const bad = lastSyncBad();
+    const running = S.refresh.running;
+    const sess = (S.me && S.me.session) || {};
+    return h('header', { class: ['mbar', 'm-only', { sub: !!back }] }, [
+      back ? h('button', { class: 'mbar__back', type: 'button', 'aria-label': 'Retour : ' + back.label, onClick: back.run }, [icon('chev', 'flip')])
+        : h('span', { class: 'mbar__mark', 'aria-hidden': 'true' }, [h('img', { src: '/assets/icon.svg', alt: '' })]),
+      h('div', { class: 'mbar__title' }, [
+        back ? h('span', { class: 'mbar__kicker' }, back.label) : null,
+        h('span', { class: 'mbar__name' }, back ? back.title : M_TITLE[S.tab] || 'Le classeur'),
+      ]),
+      h('button', { class: ['mbar__act', { bad: !!bad, err: S.refresh.error }], type: 'button', disabled: running,
+        'aria-label': running ? 'Rafraîchissement en cours' : (sess.has_cookie && !sess.expired ? 'Rafraîchir la collection' : 'Mettre à jour avec le favori'),
+        onClick: refreshCollection }, [icon('refresh', running ? 'spin' : ''), bad || S.refresh.error ? h('i', { class: 'mbar__dot', 'aria-hidden': 'true' }) : null]),
+      S.refresh.msg ? h('p', { class: ['mbar__status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, [
+        h('span', null, S.refresh.msg),
+        S.refresh.error && !running ? h('button', { class: 'linkish', type: 'button', onClick: openFavori }, 'Passer par le favori') : null,
+      ]) : null,
+    ]);
+  }
+  // Accueil de « Collections » sur téléphone : la synthèse du bandeau, en une carte compacte.
+  function viewMobileSummary() {
+    const total = cards.value.length;
+    const name = S.me && S.me.user && S.me.user.name;
+    const bad = lastSyncBad();
+    const counts = rarityCount.value;
+    const nCol = collections.value.mine.length;
+    const fig = (n, l) => h('div', { class: 'mfig' }, [h('b', null, n), h('span', null, l)]);
+    return h('section', { class: 'mhome m-only', 'aria-label': 'Ton classeur en bref' }, [
+      h('h1', { class: 'mhome__title' }, name ? `Le classeur de ${name}` : 'Le classeur'),
+      total ? h('div', { class: 'mhome__figs' }, [
+        fig(fmt(total), plural(total, 'carte', 'cartes')),
+        copies.value !== total ? fig(fmt(copies.value), 'exemplaires') : null,
+        fig(fmt(nCol), plural(nCol, 'collection', 'collections')),
+        M.value && M.value.priced ? h('div', { class: 'mfig' }, [priceTag(M.value.value), h('span', null, 'valeur')]) : fig(fmt(counts.L || 0), plural(counts.L || 0, 'légendaire', 'légendaires')),
+      ]) : h('p', { class: 'small muted' }, S.loadingCards ? 'Chargement de ta collection…' : 'Ton classeur est vide : envoie ta collection avec le favori.'),
+      total ? h('div', { class: 'track mhome__track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
+        RAR_UP.map((r) => (counts[r] ? h('i', { key: r, class: 'r' + r, style: { width: ((100 * counts[r]) / total).toFixed(3) + '%' } }) : null))) : null,
+      bad ? h('button', { class: ['mhome__sync', bad.result === 'error' ? 'err' : 'warn'], type: 'button', onClick: () => mobileGo('maj') }, [
+        h('span', null, [h('b', null, `Dernière synchro ${bad.result === 'error' ? 'en échec' : 'incomplète'}`), ` · ${syncWhen(bad.at)}`]), icon('chev', 'sm')])
+        : !total ? h('button', { class: 'btn primary', type: 'button', onClick: () => mobileGo('maj') }, [icon('bookmark', 'sm'), 'Mettre à jour']) : null,
+    ]);
+  }
+  function viewMobileNav() {
+    const inMore = M_MORE.some(([id]) => id === S.tab);
+    const unread = S.tab === 'chat' ? 0 : chatUnread.value;
+    const pings = unread ? chatUnreadPings.value : 0;
+    const moreDot = newsUnseen.value || !!lastSyncBad();
+    return h('nav', { class: ['mnav', 'm-only', { hide: S.mFacets && S.tab === 'cartes' }], 'aria-label': 'Sections' }, [
+      ...M_NAV.map(([id, label, ic]) => h('button', { key: id, class: ['mnav__item', { on: S.tab === id && !S.mMore }], type: 'button', 'aria-current': S.tab === id ? 'page' : null, onClick: () => mobileGo(id) }, [
+        h('span', { class: 'mnav__ic' }, [icon(ic), id === 'chat' && unread ? h('span', { class: ['mnav__badge', { ping: pings }] }, [pings ? '@' : '', unread > 99 ? '99+' : String(unread),
+          sr(` ${plural(unread, 'message non lu', 'messages non lus')}`)]) : null]),
+        h('span', { class: 'mnav__label' }, label),
+      ])),
+      h('button', { class: ['mnav__item', { on: S.mMore || inMore }], type: 'button', 'aria-expanded': String(S.mMore), 'aria-controls': 'mmore', onClick: () => { S.mFacets = false; S.mMore = !S.mMore; } }, [
+        h('span', { class: 'mnav__ic' }, [icon('more'), moreDot ? h('i', { class: 'mnav__dot', 'aria-hidden': 'true' }) : null]),
+        h('span', { class: 'mnav__label' }, inMore && !S.mMore ? M_TITLE[S.tab] : 'Plus'),
+      ]),
+    ]);
+  }
+  function viewMobileMore() {
+    if (!S.mMore) return null;
+    const bad = lastSyncBad();
+    return h('div', { class: 'msheet-wrap m-only' }, [
+      h('div', { class: 'msheet-backdrop', onClick: () => { S.mMore = false; } }),
+      h('div', { id: 'mmore', class: 'msheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Plus' }, [
+        h('span', { class: 'msheet__grab', 'aria-hidden': 'true' }),
+        h('ul', { class: 'mmore' }, M_MORE.map(([id, label, ic, hint]) => {
+          const flag = id === 'nouveautes' && newsUnseen.value ? 'nouveau' : id === 'maj' && bad ? (bad.result === 'error' ? 'échec' : 'incomplète') : '';
+          return h('li', { key: id }, [h('button', { class: ['mmore__row', { on: S.tab === id }], type: 'button', 'aria-current': S.tab === id ? 'page' : null, onClick: () => mobileGo(id) }, [
+            h('span', { class: 'mmore__ic' }, [icon(ic)]),
+            h('span', { class: 'mmore__text' }, [h('b', null, label), h('span', null, hint)]),
+            flag ? h('span', { class: ['mmore__flag', { warn: id === 'maj' }] }, flag) : null,
+            icon('chev', 'sm mmore__chev'),
+          ])]);
+        })),
+        STANDALONE ? null : h('button', { class: 'mmore__install', type: 'button', onClick: openInstall }, [
+          h('img', { src: '/assets/apple-touch-icon.png', alt: '', width: 40, height: 40 }),
+          h('span', { class: 'mmore__text' }, [h('b', null, "Installer l'app"), h('span', null, "Le classeur sur ton écran d'accueil, en plein écran")]),
+          icon('chev', 'sm mmore__chev'),
+        ]),
+        h('p', { class: 'mmore__note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes et les catégories de Wikipédia et de Wikidata.'),
+      ]),
+    ]);
+  }
+
   // ================================================================ rendu : onglet Collections
   // Une seule zone, « Mes collections » (toutes, quelle que soit leur origine), et un seul point d'entrée pour en créer :
   // « Nouvelle collection », une fenêtre avec un onglet par façon de faire (modalEditor) : par URL (ou nom) d'une catégorie
@@ -6898,6 +7073,11 @@
     const glist = gameTagList.value;
     const gshown = S.gtagsAll ? glist : glist.slice(0, GTAG_FACET);
     return h('aside', { class: 'facets', 'aria-label': 'Tags' }, [
+      h('div', { class: 'facets__mhead m-only' }, [
+        h('span', { class: 'msheet__grab', 'aria-hidden': 'true' }),
+        h('h2', null, 'Filtres'),
+        h('button', { class: 'btn small primary', type: 'button', onClick: () => { S.mFacets = false; } }, `Voir ${cards$(filtered.value.length)}`),
+      ]),
       h('div', { class: 'facet' }, [
         h('h3', null, 'Raccourcis'),
         h('div', { class: 'chips' }, [
@@ -6958,9 +7138,13 @@
     const counts = rarityCount.value;
     const total = filtered.value.length;
     const shown = visibleCards.value.length;
-    return h('div', { class: 'cards-layout' }, [
+    const nf = S.tagFilter.length + S.gtagFilter.length + (S.untaggedOnly ? 1 : 0) + (S.newOnly ? 1 : 0);
+    return h('div', { class: ['cards-layout', { 'm-facets': S.mFacets }] }, [
+      S.mFacets ? h('div', { class: 'msheet-backdrop m-only', onClick: () => { S.mFacets = false; } }) : null,
       viewFacets(),
       h('div', { class: 'cards-main' }, [
+        h('button', { class: ['btn', 'mfilter', 'm-only', { on: nf }], type: 'button', 'aria-expanded': String(S.mFacets), onClick: () => { S.mMore = false; S.mFacets = true; } },
+          [icon('filter', 'sm'), 'Tags et filtres', nf ? h('span', { class: 'mfilter__n' }, String(nf)) : null]),
         h('div', { class: 'search', role: 'search' }, [
           h('label', { class: 'sr', for: 'q' }, 'Chercher dans mes cartes'),
           h('input', { id: 'q', type: 'search', value: S.q, autocomplete: 'off', placeholder: 'Chercher un titre, une description, un tag  ( / )', onInput: (e) => { S.q = e.target.value; } }),
@@ -7133,7 +7317,9 @@
     ]);
   }
   function viewUpdate() {
-    return h('div', { class: 'update' }, [viewFavori(), viewCookie(), viewFullNext(), viewSyncLog()]);
+    return h('div', { class: 'update' }, [
+      STANDALONE ? h('p', { class: 'notice app-note' }, [h('strong', null, "Tu es dans l'app installée."), " Le favori se lance dans ton navigateur, sur wiki-masters.com, pas ici : ouvre le jeu dans Safari ou Chrome, touche le favori, puis reviens dans l'app, elle se met à jour toute seule."]) : null,
+      viewFavori(), viewCookie(), viewFullNext(), viewSyncLog()]);
   }
 
   // ================================================================ rendu : onglet Réglages
@@ -8964,7 +9150,8 @@
     else if (S.tab === 'nouveautes') panel = viewNews();
     else panel = S.album ? viewAlbum() : viewCollections();
     const page = S.tab === 'nouveautes'; // page à part, sans onglet : une région nommée par son titre
-    return h('main', { class: 'wrap', id: 'main' }, [
+    return h('main', { class: ['wrap', 'tab-' + S.tab], id: 'main' }, [
+      S.tab === 'collections' && !S.album ? viewMobileSummary() : null,
       h('section', page ? { id: 'panel-' + S.tab, 'aria-labelledby': 'h-news', key: S.tab }
         : { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
     ]);
@@ -9745,7 +9932,7 @@
       ]),
     ]);
   }
-  const MODALS = { editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {
@@ -9767,6 +9954,15 @@
         h('p', { class: 'notice' }, [h('strong', null, 'Garde-le pour toi.'), ' Quiconque a ce lien ouvre ton classeur. Range-le dans tes favoris ou un gestionnaire de mots de passe, et ne le partage pas : sans lui, tu ne pourras pas revenir depuis un autre navigateur.']),
         S.keyNotSaved ? h('p', { class: 'status err' }, 'Ce navigateur refuse de garder ta clé : sans ton lien, tu ne retrouveras pas ton classeur.') : null,
         h('div', { class: 'actions' }, [h('button', { class: 'btn primary', type: 'button', onClick: () => { S.welcome.created = null; boot(); } }, "C'est noté, ouvrir mon classeur")]),
+      ])];
+    } else if (S.key && (S.healthError || (S.bootError && !S.bootHint))) {
+      // Clé gardée mais classeur injoignable (pas de réseau, serveur en panne) : rien à créer ni à oublier, seulement
+      // réessayer (l'app installée s'ouvre aussi sans réseau ; « Oublier cette clé » y ferait perdre le classeur).
+      body = [h('section', { class: 'panel narrow offline', role: 'alert' }, [
+        h('h2', null, 'Pas de connexion au classeur'),
+        h('p', null, S.healthError || S.bootError),
+        h('p', { class: 'muted' }, 'Ton classeur est bien gardé sur cet appareil : il se rouvre dès que le réseau revient.'),
+        h('div', { class: 'actions' }, [h('button', { class: 'btn primary', type: 'button', onClick: () => boot() }, [icon('refresh', 'sm'), 'Réessayer'])]),
       ])];
     } else {
       const create = closed
@@ -9790,6 +9986,7 @@
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'submit' }, 'Ouvrir mon classeur')]),
       ]);
       body = [
+        STANDALONE && !S.key ? h('div', { class: 'notice' }, [h('p', null, [h('strong', null, "Bienvenue dans l'app."), " Elle ne connaît pas encore ton classeur : colle ton lien personnel ci-dessous (« Installer l'app » dans ton navigateur te l'a fait copier, sinon tu le trouves dans les Réglages, sur un appareil où le classeur est ouvert)."])]) : null,
         S.linkError ? h('div', { class: 'notice error', role: 'alert' }, [h('p', null, S.linkError)]) : null,
         S.bootError ? h('div', { class: 'notice error', role: 'alert' }, [
           h('p', null, S.bootError), S.bootHint ? h('p', null, S.bootHint) : null,
@@ -9805,7 +10002,7 @@
         notConfigured ? h('section', { class: 'panel' }, [
           h('h2', null, "Le classeur n'est pas encore configuré"),
           h('p', null, "L'administrateur doit lier la base de données D1 au projet Cloudflare Pages (voir SETUP.md), puis redéployer le site."),
-        ]) : h('div', { class: 'welcome-grid' }, [create, link]),
+        ]) : h('div', { class: 'welcome-grid' }, STANDALONE ? [link, create] : [create, link]),
         h('p', { class: 'small muted' }, "Le classeur lit ta collection seulement quand tu le demandes, comme la page « Collection » du jeu. Il ne joue jamais à ta place et n'écrit rien dans le jeu."),
       ];
     }
@@ -9815,6 +10012,9 @@
   // ================================================================ composants
   const Top = { name: 'Top', setup: () => viewTop };
   const Main = { name: 'Main', setup: () => viewMain };
+  const MBar = { name: 'MBar', setup: () => viewMobileBar };
+  const MNav = { name: 'MNav', setup: () => viewMobileNav };
+  const MMore = { name: 'MMore', setup: () => () => h(Transition, { name: 'msheet' }, () => viewMobileMore()) };
   const Cell = { name: 'Cell', props: { card: Object, sep: Boolean }, setup: (props) => () => viewCell(props.card, props.sep) };
   const CardGrid = {
     name: 'CardGrid',
@@ -10080,6 +10280,7 @@
     if (e.key === 'Escape') {
       if (S.modal) { e.preventDefault(); closeModal(); return; }
       if (S.openId || S.openMissing) { e.preventDefault(); closeCard(); return; }
+      if (S.mMore || S.mFacets) { e.preventDefault(); S.mMore = false; S.mFacets = false; return; }
       return;
     }
     const tag = (document.activeElement && document.activeElement.tagName) || '';
@@ -10326,6 +10527,8 @@
         window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); else onRouteChange(); });
         window.addEventListener('popstate', onRouteChange);
         document.addEventListener('visibilitychange', onVisible);
+        // Réseau revenu alors que le classeur n'a pas pu s'ouvrir (clé gardée) : on réessaie tout seul.
+        window.addEventListener('online', () => { if (S.boot === 'welcome' && S.key && (S.healthError || (S.bootError && !S.bootHint))) boot(); });
         // Ordre réorganisé pas encore enregistré : recharger ou fermer la page le demande d'abord (message du navigateur).
         window.addEventListener('beforeunload', (e) => { routeFlush(); if (S.reorder && S.reorder.dirty) { e.preventDefault(); e.returnValue = ''; } });
         setLive();
@@ -10335,7 +10538,7 @@
         let main;
         if (S.boot === 'loading') main = h('p', { class: 'boot', role: 'status' }, 'Ouverture du classeur…');
         else if (S.boot === 'welcome') main = h(Welcome);
-        else main = h('div', { class: 'app' }, [h(Top), h(Main), h(BulkBar), h(Fiche), h(Modals), h(TagList)]);
+        else main = h('div', { class: 'app' }, [h(MBar), h(Top), h(Main), h(BulkBar), h(MNav), h(MMore), h(Fiche), h(Modals), h(TagList)]);
         return [main, h(Notice)];
       };
     },
