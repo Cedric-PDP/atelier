@@ -32,7 +32,9 @@
           "title": "Chat",
           "items": [
             { "text": "Colle le lien d'une collection : le message affiche son nom et, dessous, sa progression.", "to": "#/chat", "link": "Chat" },
-            { "text": "`#c:` puis un nom propose tes collections et celles de tes amis." }
+            { "text": "`#c:` puis un nom propose tes collections et celles de tes amis." },
+            { "text": "`#u:` puis un prénom cite un membre, ou toi-même pour montrer ta page. Son nom devient un lien vers son classeur.", "to": "#/chat", "link": "Chat" },
+            { "text": "Sous le message, une carte avec son pseudo dans le jeu, ses cartes, ses collections (combien sont complètes) et la valeur de son classeur." }
           ]
         }
       ]
