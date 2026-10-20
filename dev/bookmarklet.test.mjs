@@ -78,10 +78,11 @@ const oneLine = (key, start) => favoriCode(src, SITE, key)
   else console.log('  (arbre syntaxique non comparé : acorn interne indisponible dans ce Node)');
 }
 // Taille une fois en adresse javascript: (makeBookmarklet) : Firefox refuse un favori de plus de 65 536 caractères.
-// 61 300 le 2026-10-17 (synchros sûres + cotes automatiques) : seuil à 64 000, il ne reste plus beaucoup de place.
+// 61 300 le 2026-10-17 (synchros sûres + cotes automatiques) : seuil à 64 000 ; 64 300 le 2026-10-20 (pastille du
+// téléphone) : seuil à 65 000, la dernière marge avant la limite de Firefox.
 {
   const url = 'javascript:' + encodeURI(favoriCode(src, 'https://classeur.cedric-pdp.workers.dev', 'k'.repeat(43))).replace(/#/g, '%23');
-  assert.ok(url.length < 64000, `favori trop long pour Firefox : ${url.length} caractères (65 536 au plus, garder de la marge)`);
+  assert.ok(url.length < 65000, `favori trop long pour Firefox : ${url.length} caractères (65 536 au plus, garder de la marge)`);
   console.log(`favori : ${url.length} caractères en adresse javascript:`);
 }
 
@@ -906,7 +907,7 @@ const SITE_ERRORS = { 500: 'Erreur interne du serveur.', 503: 'La base du classe
 // en vie) ; sinon les autres pages sont déchargées (rechargement). storage : le localStorage de la page (un neuf par
 // défaut ; le même objet pour deux pages = le même navigateur ; null : absent ; 'refused' : accès refusé).
 // onPost(body, route) : appelé à chaque envoi au classeur, avant sa réponse.
-async function openGame({ start = 'click', pathname = '/collection', answers = [], tab = false, storage = memoryStorage(), onPost = null, cookie = '' } = {}) {
+async function openGame({ start = 'click', pathname = '/collection', answers = [], tab = false, storage = memoryStorage(), onPost = null, cookie = '', width } = {}) {
   const { doc } = makeDom();
   doc.cookie = cookie; // cookies de la page lisibles en JavaScript (session du jeu : supa.cookie)
   if (!tab) {
@@ -1012,6 +1013,7 @@ async function openGame({ start = 'click', pathname = '/collection', answers = [
     URL, URLSearchParams, Date, Promise, JSON, Math, Number, String, Array, Object, Error, TypeError, console, atob,
     prompt: () => (answers.length ? answers.shift() : null),
   };
+  if (width) Object.assign(ctx, { innerWidth: width, innerHeight: 800 }); // téléphone : moins de 760 px ; sinon écran large
   if (storage === 'refused') Object.defineProperty(ctx, 'localStorage', { get() { throw new Error('SecurityError : accès au stockage refusé'); } });
   else if (storage) ctx.localStorage = storage;
   ctx.window = ctx;
@@ -1392,6 +1394,34 @@ await test('script Tampermonkey (« load ») : relié dès le chargement, rien d
   g = await openGame({ start: 'load', pathname: '/global-collection' });
   assert.ok(!/que veux-tu faire/.test(g.text()) && !/Créer une collection/.test(g.text()), g.text());
   assert.deepEqual(g.since(0), []);
+});
+
+await test('téléphone : réduit, l\'encart est une pastille sans boutons au-dessus de la barre du jeu, qu\'on touche pour déplier ; sa place gardée', async () => {
+  await fresh60();
+  const st = memoryStorage();
+  const g = await openGame({ start: 'load', width: 390, storage: st });
+  const boxEl = () => g.ctx.document.getElementById('classeur-favori');
+  const shown = () => boxEl().querySelectorAll('button').filter((b) => b.style.display !== 'none' && b.parentNode.style.display !== 'none').map((b) => b.textContent);
+  assert.match(boxEl().style.cssText, /border-radius:99px/, 'pastille');
+  assert.match(boxEl().style.cssText, /bottom:76px/, 'au-dessus de la barre du bas du jeu');
+  assert.deepEqual(shown(), [], 'aucun bouton sur la pastille');
+  assert.equal(g.status(), 'Classeur relié · synchro après ta prochaine action dans le jeu');
+  boxEl().click();
+  assert.match(boxEl().style.cssText, /left:8px;right:8px/, 'déplié sur toute la largeur');
+  assert.deepEqual(shown(), ['Synchroniser', 'Mettre à jour les cotes', 'Réduire', 'Arrêter', 'Couper les cotes automatiques']);
+  g.press('Réduire');
+  assert.match(boxEl().style.cssText, /border-radius:99px/, '« Réduire » ne rouvre pas la pastille');
+  st.setItem('classeur:pastille', JSON.stringify([20, 100]));
+  Object.assign(boxEl(), { offsetWidth: 200, offsetHeight: 24 });
+  boxEl().click();
+  g.press('Réduire');
+  assert.equal(boxEl().style.left, '20px');
+  assert.equal(boxEl().style.top, '100px');
+  st.setItem('classeur:pastille', JSON.stringify([900, -50]));
+  boxEl().click();
+  g.press('Réduire');
+  assert.deepEqual([boxEl().style.left, boxEl().style.top], ['186px', '4px'], 'place ramenée dans l\'écran');
+  g.press('Arrêter');
 });
 
 const FULL0 = '/api/my-collection?sort=rarity&page=0&stats=0';

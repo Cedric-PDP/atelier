@@ -1477,7 +1477,11 @@ requêtes ne sont pas touchées. Ne rien attacher créerait à l'inverse un reje
   si un autre script l'a enveloppé à son tour, il reste en place et l'enveloppe du favori ne fait plus que passer la
   main ; encart retiré ; **la synchro en cours s'arrête aussi** : la requête déjà partie finit seule, puis plus rien n'est
   lu ni envoyé — contrôle avant chaque lecture et chaque envoi, donc entre deux pages ou deux morceaux). L'encart est
-  remis dans la page si le jeu l'en retire en se redessinant. Sous la ligne d'état, une ligne « Cotes : … » (voir « Le
+  remis dans la page si le jeu l'en retire en se redessinant. **Sur téléphone** (écran de moins de 760 px, 2026-10-20) :
+  l'encart se tient au-dessus de la barre du bas du jeu (76 px), déplié sur toute la largeur ; réduit, c'est une
+  **pastille** (ligne d'état seule, sans boutons ni ligne des cotes) qu'on touche pour déplier et qu'on fait glisser où
+  l'on veut (au-delà de 6 px, c'est un glissement) ; sa place est gardée dans le localStorage de wiki-masters.com
+  (`classeur:pastille`, `[x, y]`), ramenée dans l'écran à chaque réduction. Sous la ligne d'état, une ligne « Cotes : … » (voir « Le
   marché », « Cotes automatiques »).
 - Erreur d'une synchro automatique : encart déplié avec le message. **Classeur injoignable ou en erreur** : la demande
   d'état échoue, rien n'est lu dans le jeu. Une erreur qui arrête tout (session, limite de lectures automatiques du jeu,

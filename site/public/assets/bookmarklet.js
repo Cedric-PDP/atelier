@@ -71,11 +71,22 @@
   }
   var WIDE = "position:fixed;z-index:2147483647;right:16px;bottom:16px;width:min(340px,calc(100vw - 32px));padding:14px 16px;border-radius:12px;background:#131615;color:#f2f4f3;font:14px/1.45 system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.45);border:1px solid #2e3431";
   var SMALL = "position:fixed;z-index:2147483647;right:16px;bottom:16px;max-width:calc(100vw - 32px);padding:4px 10px 8px;border-radius:10px;background:#131615;color:#f2f4f3;font:12.5px/1.4 system-ui,sans-serif;box-shadow:0 6px 18px rgba(0,0,0,.4);border:1px solid #2e3431;opacity:.94";
+  // Téléphone (sous 760 px, comme l'interface du classeur) : déplié, l'encart se tient au-dessus de la barre du bas du jeu
+  // (76 px) ;
+  // réduit, c'est une pastille (ligne d'état seule, sans boutons) qu'on touche pour la déplier et qu'on fait glisser où
+  // l'on veut. Sa place est gardée dans le localStorage de wiki-masters.com, clé PILL ([x, y] en px, rien d'autre).
+  var PILL = "classeur:pastille";
+  var phone = function () {
+    return window.innerWidth < 760;
+  };
+  var ABOVE = "bottom:76px";
+  var PHONE_WIDE = WIDE.replace("right:16px;bottom:16px;width:min(340px,calc(100vw - 32px))", "left:8px;right:8px;max-height:70vh;overflow:auto;" + ABOVE);
+  var PHONE_PILL = SMALL.replace("right:16px;bottom:16px", "right:8px;overflow:hidden;cursor:pointer;touch-action:none;" + ABOVE).replace("4px 10px 8px;border-radius:10px", "5px 11px;border-radius:99px");
   var box = document.createElement("div");
   box.id = BOX_ID;
   box.setAttribute("role", "status");
   box.setAttribute("aria-live", "polite");
-  box.style.cssText = WIDE;
+  box.style.cssText = phone() ? PHONE_WIDE : WIDE;
   var title = document.createElement("div");
   title.textContent = "Le classeur";
   title.style.cssText = "font-weight:700;margin-bottom:4px";
@@ -1480,19 +1491,75 @@
   mnote.style.cssText = "margin-top:8px;font-size:11.5px;line-height:1.35;color:#98a29d";
   mnote.textContent = "Cotes : lecture directe de la base du jeu avec ta session, à ton clic et toutes les 20 min tant que cet onglet est visible (et après tes enchères et ventes), 1 requête/s, 30 au plus, sans passer par les pages du marché, qui limitent les outils. Plus risqué qu'une synchro.";
   var mkToggle = null;
+  var pill = false;
+  var dragged = false;
+  var at = function (x, y) {
+    box.style.left = Math.max(4, Math.min(x, window.innerWidth - box.offsetWidth - 4)) + "px";
+    box.style.top = Math.max(4, Math.min(y, window.innerHeight - box.offsetHeight - 4)) + "px";
+    box.style.right = box.style.bottom = "auto";
+  };
+  // Glisser la pastille (doigt ou souris) ; un déplacement de moins de 6 px reste un toucher, qui déplie l'encart.
+  box.addEventListener("pointerdown", function (e) {
+    if (!pill) {
+      return;
+    }
+    var dx = e.clientX - box.offsetLeft;
+    var dy = e.clientY - box.offsetTop;
+    dragged = false;
+    var move = function (m) {
+      dragged = dragged || Math.abs(m.clientX - e.clientX) + Math.abs(m.clientY - e.clientY) > 6;
+      if (dragged) {
+        at(m.clientX - dx, m.clientY - dy);
+      }
+    };
+    var up = function () {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      if (dragged) {
+        try {
+          window.localStorage.setItem(PILL, JSON.stringify([box.offsetLeft, box.offsetTop]));
+        } catch (err) {
+          // Stockage refusé : la pastille reste là jusqu'au rechargement.
+        }
+      }
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  });
+  // Le clic de « Réduire » remonte jusqu'ici : il ne doit pas rouvrir la pastille qu'il vient de faire.
+  box.addEventListener("click", function (e) {
+    if (pill && !dragged && e.target.tagName !== "BUTTON") {
+      fold(false);
+    }
+    dragged = false;
+  });
   // Encart réduit en badge (true) ou déplié.
   var fold = function (yes) {
     folded = yes;
     live.foldPlan += 1;
+    pill = yes && phone();
+    foot.childNodes.forEach(function (c) {
+      c.style.display = pill && c !== status ? "none" : "";
+    });
     title.style.display = yes ? "none" : "";
     text.style.display = yes ? "none" : "";
     extra.style.display = yes ? "none" : "";
     menu.style.display = yes ? "none" : "";
     mnote.style.display = yes ? "none" : "";
-    box.style.cssText = yes ? SMALL : WIDE;
+    box.style.cssText = pill ? PHONE_PILL : yes ? SMALL : phone() ? PHONE_WIDE : WIDE;
     status.style.marginTop = yes ? "4px" : "10px";
+    status.style.whiteSpace = pill ? "nowrap" : "";
     foldBtn.textContent = yes ? "Détails" : "Réduire";
     keep();
+    var p = null;
+    try {
+      p = pill && JSON.parse(window.localStorage.getItem(PILL));
+    } catch (e) {
+      p = null;
+    }
+    if (p) {
+      at(p[0], p[1]);
+    }
   };
   var badge = function () {
     if (!live || !live.on) {
