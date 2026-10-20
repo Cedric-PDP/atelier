@@ -37,7 +37,7 @@
   const RAR_UP = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
     importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at',
-    chatRead: 'classeur-chat-lu', market: 'classeur-marche', sections: 'classeur-sections' };
+    chatRead: 'classeur-chat-lu', market: 'classeur-marche', sections: 'classeur-sections', newsSeen: 'classeur-nouveautes-vu' };
   // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
   const DAY = 864e5;
@@ -306,6 +306,9 @@
     // acWp = articles de Wikipédia qui commencent par le texte tapé après « # » ({q (replié), titles, loading}).
     chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
       acWp: { q: '', titles: [], loading: false } },
+    // « Nouveautés » (/nouveautes.json) : status idle | loading | ready | error ; seen = dernière version vue dans ce
+    // navigateur (localStorage) ; fresh = versions pas encore vues à l'ouverture de la page (« Nouveau » le temps de la visite).
+    news: { status: 'idle', seen: store.get(LS.newsSeen), fresh: [] },
   });
   // Les cartes et les collections peuvent être nombreuses : tableaux non profonds d'objets figés (markRaw).
   const cards = shallowRef([]);
@@ -1668,6 +1671,7 @@
     applyRoute(route);
     routeOn = true;
     routeSync();
+    loadNews(true); // pastille « nouveau » du lien Nouveautés, messages système du chat
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
@@ -6274,10 +6278,16 @@
         h('p', { class: 'note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes et les catégories de Wikipédia et de Wikidata.'),
       ]),
       viewSummary(),
-      h('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'Sections' }, TABS.map(([id, label]) => h('button', {
-        key: id, id: 'tab-' + id, type: 'button', role: 'tab', 'aria-selected': String(S.tab === id), 'aria-controls': 'panel-' + id,
-        tabindex: S.tab === id ? '0' : '-1', onClick: () => setTab(id), onKeydown: onTabKey,
-      }, id === 'chat' ? chatTabLabel(label) : label))),
+      h('div', { class: 'tabs-row' }, [
+        h('nav', { class: 'tabs', role: 'tablist', 'aria-label': 'Sections' }, TABS.map(([id, label]) => h('button', {
+          key: id, id: 'tab-' + id, type: 'button', role: 'tab', 'aria-selected': String(S.tab === id), 'aria-controls': 'panel-' + id,
+          // Page hors des onglets (« Nouveautés ») : le premier onglet reste joignable au clavier.
+          tabindex: S.tab === id || (id === TABS[0][0] && !TABS.some(([t]) => t === S.tab)) ? '0' : '-1', onClick: () => setTab(id), onKeydown: onTabKey,
+        }, id === 'chat' ? chatTabLabel(label) : label))),
+        // « Nouveautés » : une page à part (pas un onglet), pastille tant que la dernière version n'a pas été vue ici.
+        h('a', { class: ['news-link', { on: S.tab === 'nouveautes' }], href: '#/nouveautes', 'aria-current': S.tab === 'nouveautes' ? 'page' : null },
+          [icon('spark', 'sm'), 'Nouveautés', newsUnseen.value ? h('span', { class: 'news-dot' }, ['nouveau', sr(' : une version que tu n\'as pas encore vue')]) : null]),
+      ]),
     ])]);
   }
 
@@ -8372,6 +8382,112 @@
     });
   }
 
+  // ================================================================ nouveautés : journal des versions, annonces du chat
+  // Contrat : SPEC.md, « Nouveautés ». Un fichier publié avec le site, /nouveautes.json, rien dans la base : `versions` =
+  // le journal des changements (page « Nouveautés », #/nouveautes), `chat` = les messages système du chat (discrets,
+  // centrés, avec un lien vers la page). Les deux s'écrivent à la main et séparément : ajouter une version n'annonce rien
+  // dans le chat. Lu à l'ouverture du classeur, puis à l'ouverture du chat ou de la page, au plus toutes les 10 min.
+  // Tout est revérifié ici (le fichier est du texte : jamais de HTML ; liens internes en « #/… » seulement).
+  const NEWS_URL = '/nouveautes.json';
+  const NEWS_TTL = 10 * 60 * 1000;
+  const NEWS_ROUTE = /^#\/[^\s#<>"]{0,300}$/;
+  const NEWS_DAY = /^\d{4}-\d{2}-\d{2}$/;
+  const news = shallowRef({ versions: [], chat: [] });
+  let newsAt = 0;
+  let newsJob = null;
+  const newsStr = (v, max) => (typeof v === 'string' && v.trim() && v.length <= max ? v.trim() : null);
+  const newsList = (v, max) => (Array.isArray(v) ? v.slice(0, max).filter((x) => x && typeof x === 'object') : []);
+  // {versions:[{id, date, title, intro, sections:[{icon, title, items:[{text, to, link}]}]}] (la plus récente d'abord),
+  // chat:[{sys:true, id, at, text, version}] (du plus ancien au plus récent)} ; ce qui ne se lit pas est écarté.
+  function cleanNews(d) {
+    const versions = [];
+    for (const v of newsList(d && d.versions, 200)) {
+      const id = newsStr(v.id, 60);
+      const date = typeof v.date === 'string' && NEWS_DAY.test(v.date) && dateOf(v.date + 'T12:00:00Z') ? v.date : null;
+      if (!id || !date || versions.some((x) => x.id === id)) continue;
+      const sections = [];
+      for (const s of newsList(v.sections, 30)) {
+        const items = [];
+        for (const it of newsList(s.items, 50)) {
+          const text = newsStr(it.text, 600);
+          const to = typeof it.to === 'string' && NEWS_ROUTE.test(it.to) ? it.to : null;
+          if (text) items.push(Object.freeze({ text, to, link: to ? newsStr(it.link, 60) || 'Voir' : null }));
+        }
+        const title = newsStr(s.title, 120);
+        if (title && items.length) sections.push(Object.freeze({ icon: newsStr(s.icon, 8), title, items }));
+      }
+      if (sections.length) versions.push(Object.freeze({ id, date, title: newsStr(v.title, 120), intro: newsStr(v.intro, 600), sections }));
+    }
+    versions.sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1));
+    const chat = [];
+    for (const m of newsList(d && d.chat, 100)) {
+      const id = newsStr(m.id, 60);
+      const at = typeof m.at === 'string' ? dateOf(m.at) : null;
+      const text = newsStr(m.text, 300);
+      if (!id || !at || !text || chat.some((x) => x.id === id)) continue;
+      const version = newsStr(m.version, 60);
+      chat.push(Object.freeze({ sys: true, id, at: at.toISOString(), text, version: versions.some((v) => v.id === version) ? version : null }));
+    }
+    chat.sort((a, b) => (a.at === b.at ? 0 : a.at < b.at ? -1 : 1));
+    return markRaw({ versions, chat });
+  }
+  function loadNews(force) {
+    if (newsJob || (!force && newsAt && Date.now() - newsAt < NEWS_TTL)) return newsJob;
+    if (S.news.status !== 'ready') S.news.status = 'loading';
+    newsJob = (async () => {
+      try {
+        const r = await fetch(NEWS_URL, { cache: 'no-cache' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        news.value = cleanNews(await r.json());
+        S.news.status = 'ready';
+        newsAt = Date.now();
+      } catch (e) {
+        if (S.news.status !== 'ready') S.news.status = 'error';
+        newsAt = Date.now() - NEWS_TTL + 60000; // nouvel essai dans une minute
+      } finally {
+        newsJob = null;
+      }
+    })();
+    return newsJob;
+  }
+  const newsLatest = computed(() => (news.value.versions[0] || null));
+  // Une version que ce navigateur n'a pas encore vue : pastille sur le lien « Nouveautés » du bandeau.
+  const newsUnseen = computed(() => !!newsLatest.value && newsLatest.value.id !== S.news.seen && S.tab !== 'nouveautes');
+  // Page ouverte (et versions lues) : la dernière est vue ; celles d'après la précédente vue (la dernière seule si aucune
+  // ne l'a été) restent « Nouveau » le temps de la visite.
+  watch(() => (S.boot === 'app' && S.tab === 'nouveautes' && newsLatest.value ? newsLatest.value.id : ''), (id) => {
+    if (!id || id === S.news.seen) return;
+    const list = news.value.versions;
+    const old = list.findIndex((v) => v.id === S.news.seen);
+    S.news.fresh = list.slice(0, old > 0 ? old : 1).map((v) => v.id);
+    S.news.seen = id;
+    store.set(LS.newsSeen, id);
+  });
+  watch(() => S.boot === 'app' && (S.tab === 'nouveautes' || S.tab === 'chat'), (on) => { if (on) loadNews(false); });
+  // Messages système à placer dans le fil du chat : ceux d'après le plus ancien message chargé (tous s'il n'y en a pas
+  // de plus anciens), une fois le chat lu.
+  const chatSystem = computed(() => {
+    const c = S.chat;
+    const list = chatMsgs.value;
+    if (c.status !== 'ready' && !list.length) return [];
+    const from = c.older && list.length ? list[0].at : '';
+    return news.value.chat.filter((m) => m.at >= from);
+  });
+  // Fil du chat : messages des membres et messages système, par heure (à heure égale, le message système d'abord).
+  const chatTimeline = computed(() => {
+    const sys = chatSystem.value;
+    const list = chatMsgs.value;
+    if (!sys.length) return list;
+    const out = [];
+    let i = 0;
+    for (const m of list) {
+      while (i < sys.length && sys[i].at <= m.at) out.push(sys[i++]);
+      out.push(m);
+    }
+    while (i < sys.length) out.push(sys[i++]);
+    return out;
+  });
+
   // ---------------------------------------------------------------- rendu du chat
   // Badge des non-lus, et à côté « @2 » (couleur d'alerte) pour ceux qui te mentionnent.
   function chatTabLabel(label) {
@@ -8403,6 +8519,15 @@
       h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
         : p.at ? h('span', { class: ['chat-at', { me: p.me }], title: p.me ? null : pseudoTip({ pseudo: pseudoOf(p.text.slice(1)) }) }, p.text)
         : p.url ? h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text) : p.text))),
+    ]);
+  }
+  // Message système (nouveautes.json) : une ligne discrète, centrée, en petit, sans auteur ni bulle, avec un lien vers la
+  // page « Nouveautés ».
+  function viewChatSystem(m) {
+    return h('p', { key: 'sys-' + m.id, class: 'chat-sys' }, [
+      h('span', { class: 'chat-sys__text' }, m.text),
+      ' · ', h('a', { href: '#/nouveautes' }, 'Voir les nouveautés'),
+      ' · ', h('time', { datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
     ]);
   }
   // Pastille d'une carte citée : ta carte (avec sa rareté), ou une carte que tu n'as pas (bord en pointillés).
@@ -8472,7 +8597,8 @@
         h('div', { id: 'chat-scroll', class: 'chat-scroll', role: 'log', 'aria-label': 'Messages du chat', tabindex: '0', onScroll: onChatScroll }, [
           c.older ? h('div', { class: 'chat-older' }, [h('button', { class: 'btn small', type: 'button', disabled: c.olderBusy, onClick: loadOlderChat },
             c.olderBusy ? 'Chargement…' : 'Charger les messages plus anciens')]) : null,
-          h('div', { class: 'chat-list' }, list.length ? list.map(viewChatMsg) : [h('p', { class: 'chat-empty' }, empty)]),
+          h('div', { class: 'chat-list' }, list.length ? chatTimeline.value.map((m) => (m.sys ? viewChatSystem(m) : viewChatMsg(m)))
+            : [...chatSystem.value.map(viewChatSystem), h('p', { class: 'chat-empty' }, empty)]),
         ]),
         c.newBelow ? h('button', { class: 'chat-below', type: 'button', onClick: chatToBottom }, 'Nouveaux messages ↓') : null,
       ]),
@@ -8483,6 +8609,39 @@
         h('div', { class: 'actions' }, [h('button', { class: 'btn small', type: 'button', onClick: openSettings }, 'Choisir mon prénom')]),
       ]),
     ]);
+  }
+
+  // ================================================================ rendu : page Nouveautés
+  // Le journal des versions, la plus récente en haut : date à gauche (au-dessus sur téléphone), puis une rubrique par
+  // thème, une ligne par changement, avec un lien vers la vue concernée.
+  const newsDate = (day) => { const d = dateOf(day + 'T12:00:00Z'); return d ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : day; };
+  // Texte d'un changement : `code` en <code>, le reste en texte brut.
+  const newsText = (t) => t.split(/`([^`\n]{1,80})`/).map((x, i) => (i % 2 ? h('code', null, x) : x));
+  function viewNews() {
+    const list = news.value.versions;
+    const st = S.news.status;
+    const head = h('div', { class: 'section-head' }, [h('h2', { id: 'h-news' }, 'Nouveautés'), h('small', null, 'Ce qui a changé dans le classeur')]);
+    if (!list.length) {
+      return h('div', { class: 'news' }, [head, st === 'error'
+        ? h('div', { class: 'chat-error' }, [h('p', { class: 'status err', role: 'alert' }, "Les nouveautés n'ont pas pu être lues."),
+          h('button', { class: 'btn small', type: 'button', onClick: () => loadNews(true) }, 'Réessayer')])
+        : h('p', { class: 'muted' }, st === 'ready' ? "Rien de neuf pour l'instant." : 'Chargement…')]);
+    }
+    return h('div', { class: 'news' }, [head, h('ol', { class: 'news-list' }, list.map((v) => h('li', { key: v.id, id: 'v-' + v.id, class: 'news-ver' }, [
+      h('div', { class: 'news-ver__when' }, [
+        h('time', { datetime: v.date }, newsDate(v.date)),
+        S.news.fresh.includes(v.id) ? h('span', { class: 'news-new' }, 'Nouveau') : null,
+      ]),
+      h('div', { class: 'news-ver__body' }, [
+        v.title ? h('h3', { class: 'news-ver__title' }, v.title) : null,
+        v.intro ? h('p', { class: 'news-ver__intro' }, newsText(v.intro)) : null,
+        ...v.sections.map((g, i) => h('section', { key: i, class: 'news-group' }, [
+          h('h4', null, [g.icon ? h('span', { class: 'news-group__icon', 'aria-hidden': 'true' }, g.icon) : null, g.title]),
+          h('ul', null, g.items.map((it, j) => h('li', { key: j }, [...newsText(it.text),
+            it.to ? [' ', h('a', { class: 'news-go', href: it.to }, [it.link, ' →'])] : null]))),
+        ])),
+      ]),
+    ])))]);
   }
 
   // ================================================================ rendu : onglet Marché, cotes des fiches
@@ -8802,9 +8961,12 @@
     else if (S.tab === 'amis') panel = viewFriends();
     else if (S.tab === 'chat') panel = viewChat();
     else if (S.tab === 'marche') panel = viewMarket();
+    else if (S.tab === 'nouveautes') panel = viewNews();
     else panel = S.album ? viewAlbum() : viewCollections();
+    const page = S.tab === 'nouveautes'; // page à part, sans onglet : une région nommée par son titre
     return h('main', { class: 'wrap', id: 'main' }, [
-      h('section', { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
+      h('section', page ? { id: 'panel-' + S.tab, 'aria-labelledby': 'h-news', key: S.tab }
+        : { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
     ]);
   }
   function viewBulk() {
@@ -10062,7 +10224,7 @@
     else if (a === 'page' && title(b)) r.album = { kind: 'category', id: PAGE_SRC + title(b) };
     else if (a === 'ami' && b) { r.tab = 'amis'; r.friend = b; r.falbum = c || null; }
     else if (a === 'amis' && b === 'echanges') { r.tab = 'amis'; r.trades = true; }
-    else if (TABS.some(([id]) => id === a)) r.tab = a;
+    else if (TABS.some(([id]) => id === a) || a === 'nouveautes') r.tab = a;
     return r;
   }
 

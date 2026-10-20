@@ -858,6 +858,8 @@ async function main() {
   const apiLog = []; // appels à /api/ de toutes les pages, « GET /api/cards?since=3 »
   const apiKeyLog = []; // les mêmes, avec la clé envoyée et l'heure : {call, key, at}
   const catalogFetches = []; // demandes de /catalog.json (aucune attendue)
+  // /nouveautes.json servi aux pages : le vrai fichier (body null), ou un texte d'essai ; status ≠ 200 : fichier absent.
+  const newsFile = { body: null, status: 200, fetches: 0 };
   // Contexte d'une page du classeur ; toutes les pages sont dans le même navigateur (localStorage, IndexedDB, API).
   // opts.idb : 'absent' (pas d'IndexedDB) ou 'refusé' (son accès lève une erreur, comme un stockage bloqué) ;
   // opts.hold(url) : promesse attendue avant de répondre à un appel de l'API ; opts.wikiHold(url) : de même pour
@@ -924,6 +926,11 @@ async function main() {
         const file = path.join(PUB, url);
         const text = fs.readFileSync(file, 'utf8');
         return { ok: true, status: 200, headers: { get: () => null }, json: async () => JSON.parse(text), text: async () => text };
+      }
+      if (url === '/nouveautes.json') {
+        newsFile.fetches++;
+        const body = newsFile.body ?? fs.readFileSync(path.join(PUB, 'nouveautes.json'), 'utf8');
+        return { ok: newsFile.status === 200, status: newsFile.status, headers: { get: () => null }, json: async () => JSON.parse(body) };
       }
       if (!url.startsWith('/api/')) throw new Error('adresse inattendue : ' + url);
       apiLog.push(method + ' ' + url);
@@ -5377,6 +5384,87 @@ async function main() {
     for (const pg of [pa, ...pages]) check(!log(pg).some((x) => /cle=[A-Za-z0-9_-]{20}/.test(decodeURIComponent(x)) && !x.includes('q=')), 'clé écrite dans l\'adresse : ' + log(pg).join(', '));
     check(ls.get('classeur-key') === key, 'les adresses ont changé la clé gardée');
     console.log(`adresses : ${pages.length} pages rouvertes sur une adresse${paul ? ', Entre amis compris' : ''} ; historique de la première : ${log(pa).join(', ')}`);
+  }
+
+  // Nouveautés : page à part (#/nouveautes), pastille « nouveau » tant que la dernière version n'a pas été vue dans ce
+  // navigateur, liens internes, messages système du chat (nouveautes.json, contrat : SPEC.md, « Nouveautés »).
+  {
+    // Le vrai fichier : chaque version, rubrique, ligne, lien interne et message système se lit (rien d'écarté).
+    const real = JSON.parse(fs.readFileSync(path.join(PUB, 'nouveautes.json'), 'utf8'));
+    check(Array.isArray(real.versions) && real.versions.length && Array.isArray(real.chat), 'nouveautes.json : versions et chat attendus');
+    for (const v of real.versions) {
+      check(typeof v.id === 'string' && v.id && /^\d{4}-\d{2}-\d{2}$/.test(v.date) && Array.isArray(v.sections) && v.sections.length, 'nouveautes.json : version mal formée ' + JSON.stringify(v).slice(0, 200));
+      for (const g of v.sections) {
+        check(typeof g.title === 'string' && g.title && Array.isArray(g.items) && g.items.length, 'nouveautes.json : rubrique mal formée ' + JSON.stringify(g).slice(0, 200));
+        for (const it of g.items) {
+          check(typeof it.text === 'string' && it.text && it.text.length <= 600, 'nouveautes.json : ligne mal formée ' + JSON.stringify(it));
+          if (it.to != null) check(/^#\/(collections|cartes|amis|marche|chat|maj|reglages|nouveautes)(\/|\?|$)/.test(it.to) && typeof it.link === 'string', 'nouveautes.json : lien interne inconnu ' + it.to);
+        }
+      }
+    }
+    for (const m of real.chat) check(real.versions.some((v) => v.id === m.version) && !Number.isNaN(Date.parse(m.at)) && m.text, 'nouveautes.json : message système mal formé ' + JSON.stringify(m));
+
+    const nowIso = new Date().toISOString();
+    newsFile.body = JSON.stringify({
+      versions: [
+        { id: 'v1', date: '2026-10-01', sections: [{ title: 'Ancienne', items: [{ text: 'Première version' }] }] },
+        { id: 'v2', date: '2026-10-21', title: 'Le chat', sections: [
+          { icon: '💬', title: 'Chat', items: [{ text: 'Tape `@` pour mentionner.', to: '#/chat', link: 'Chat' }, { text: '<b>pas de HTML</b>', to: 'https://exemple.fr/', link: 'Ailleurs' }] },
+          { title: 'Vide', items: [] }] },
+        { id: 'sans-date', sections: [{ title: 'X', items: [{ text: 'écartée' }] }] },
+      ],
+      chat: [{ id: 'm2', at: nowIso, text: 'Nouvelle version du classeur disponible', version: 'v2' }, { id: 'sans-heure', text: 'écarté' }],
+    });
+    ls.set('classeur-nouveautes-vu', 'v1');
+    const follow = async (pg, href) => { // clic sur un lien « #/… » : nouvelle entrée, puis hashchange
+      pg.ctx.history.pushState(null, '', href);
+      for (const f of [...(pg.win.listeners.hashchange || [])]) f({ type: 'hashchange' });
+      await settle(80);
+    };
+    const pg = openPage({});
+    const pt = () => text(pg.doc.body);
+    const link = () => pg.doc.querySelector('.news-link');
+    check(await waitFor(() => link() && text(link()).includes('nouveau')), 'Nouveautés : pastille « nouveau » absente : ' + (link() ? text(link()) : 'pas de lien'));
+    check(link().getAttribute('href') === '#/nouveautes', 'Nouveautés : lien du bandeau ' + link().getAttribute('href'));
+    await follow(pg, '#/nouveautes');
+    const vers = pg.doc.querySelectorAll('.news-ver');
+    check(pg.doc.getElementById('h-news') && vers.length === 2, 'Nouveautés : 2 versions attendues (sans celle sans date), ' + vers.length + '\n' + pt().slice(0, 600));
+    check(text(vers[0]).includes('21 octobre 2026') && text(vers[0]).includes('Nouveau') && text(vers[0]).includes('Le chat') && !text(vers[1]).includes('Nouveau'),
+      'Nouveautés : la plus récente en tête, seule « Nouveau » : ' + text(vers[0]) + ' | ' + text(vers[1]));
+    check(!text(vers[0]).includes('Vide') && text(vers[0]).includes('<b>pas de HTML</b>') && !vers[0].querySelectorAll('b').length, 'Nouveautés : rubrique vide affichée, ou HTML interprété');
+    check(vers[0].querySelectorAll('code').map(text).join() === '@', 'Nouveautés : `@` en code attendu');
+    const gos = vers[0].querySelectorAll('a.news-go');
+    check(gos.length === 1 && gos[0].getAttribute('href') === '#/chat', 'Nouveautés : seul le lien interne doit rester : ' + gos.map((a) => a.getAttribute('href')).join());
+    check(!text(link()).includes('nouveau') && link().getAttribute('aria-current') === 'page' && ls.get('classeur-nouveautes-vu') === 'v2', 'Nouveautés : version non marquée vue');
+    check(!pg.doc.querySelector('button[aria-selected="true"]') && pg.doc.getElementById('tab-collections').getAttribute('tabindex') === '0', 'Nouveautés : aucun onglet ne doit être sélectionné, le premier joignable');
+    check(pg.ctx.location.hash === '#/nouveautes', 'Nouveautés : adresse ' + pg.ctx.location.hash);
+    // Lien interne vers le chat : le message système y est, discret, avec son lien vers la page, après les messages plus anciens.
+    await follow(pg, '#/chat');
+    check(pg.doc.getElementById('tab-chat').getAttribute('aria-selected') === 'true', 'Nouveautés : le lien « Chat » n\'ouvre pas le chat');
+    check(await waitFor(() => pg.doc.querySelectorAll('.chat-sys').length === 1), 'chat : message système absent : ' + pg.doc.querySelectorAll('.chat-sys').length);
+    const sys = pg.doc.querySelector('.chat-sys');
+    check(text(sys).includes('Nouvelle version du classeur disponible') && sys.querySelector('a').getAttribute('href') === '#/nouveautes' && !sys.querySelector('.chat-msg__who'),
+      'chat : message système mal rendu : ' + text(sys));
+    const kids = [...pg.doc.querySelector('.chat-list').childNodes].filter((n) => n.nodeType === 1);
+    check(kids[kids.length - 1] === sys || !pg.doc.querySelectorAll('.chat-msg').length, 'chat : le message système (le plus récent) doit être en bas du fil');
+    check(text(pg.doc.getElementById('tab-chat')) === 'Chat' || !text(pg.doc.getElementById('tab-chat')).includes('1 message'), 'chat : le message système ne compte pas dans les non-lus');
+    // Le lien du message système ramène à la page ; rouverte, plus de pastille ni de « Nouveau ».
+    await follow(pg, sys.querySelector('a').getAttribute('href'));
+    check(pg.doc.getElementById('h-news'), 'chat : le lien du message système n\'ouvre pas les nouveautés');
+    const p2 = openPage({ hash: '#/nouveautes' });
+    check(await waitFor(() => p2.doc.querySelectorAll('.news-ver').length === 2), 'Nouveautés : page non rouverte sur son adresse');
+    check(!p2.doc.querySelector('.news-dot') && !p2.doc.querySelector('.news-new'), 'Nouveautés : version vue encore signalée');
+    // Fichier absent : ni pastille ni message système, la page le dit et propose de réessayer ; le reste marche.
+    newsFile.status = 404;
+    ls.delete('classeur-nouveautes-vu');
+    const p3 = openPage({ hash: '#/nouveautes' });
+    check(await waitFor(() => text(p3.doc.body).includes("Les nouveautés n'ont pas pu être lues.")), 'Nouveautés : fichier absent non signalé');
+    check(!p3.doc.querySelector('.news-dot'), 'Nouveautés : pastille sans fichier');
+    newsFile.status = 200;
+    newsFile.body = null;
+    p3.doc.querySelectorAll('button').find((b) => text(b) === 'Réessayer').click();
+    check(await waitFor(() => p3.doc.querySelectorAll('.news-ver').length === real.versions.length), 'Nouveautés : « Réessayer » ne relit pas le fichier');
+    console.log(`nouveautés : ${newsFile.fetches} lectures de /nouveautes.json ; vrai fichier : ${real.versions.length} ${real.versions.length > 1 ? 'versions' : 'version'}, ${real.chat.length} message(s) système`);
   }
 
   // Icônes : toutes celles utilisées existent dans le sprite.

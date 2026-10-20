@@ -1,0 +1,56 @@
+{
+  "versions": [
+    {
+      "id": "2026-10-19",
+      "date": "2026-10-19",
+      "sections": [
+        {
+          "icon": "✨",
+          "title": "Nouvelle collection",
+          "items": [
+            { "text": "Un bouton unique « Nouvelle collection », avec un onglet par méthode : URL, mots-clés, liste, propositions, depuis le jeu.", "to": "#/collections", "link": "Mes collections" }
+          ]
+        },
+        {
+          "icon": "📄",
+          "title": "Pages Wikipédia",
+          "items": [
+            { "text": "Choisis les sections d'une page (« En France », « À l'étranger »…), avec une collection par section si tu veux." },
+            { "text": "Les collections peuvent maintenant dépasser 3 000 cartes." }
+          ]
+        },
+        {
+          "icon": "🗂️",
+          "title": "Albums",
+          "items": [
+            { "text": "Replie une section en cliquant sur son intercalaire, ou utilise « Tout replier »." }
+          ]
+        },
+        {
+          "icon": "💬",
+          "title": "Chat",
+          "items": [
+            { "text": "`@` pour mentionner un ami, `#` pour citer une carte.", "to": "#/chat", "link": "Chat" }
+          ]
+        },
+        {
+          "icon": "🎮",
+          "title": "Pseudo du jeu",
+          "items": [
+            { "text": "Le pseudo WikiMasters s'affiche à côté du prénom, dans le chat et dans « Entre amis ».", "to": "#/amis", "link": "Entre amis" }
+          ]
+        },
+        {
+          "icon": "🔗",
+          "title": "Navigation",
+          "items": [
+            { "text": "Chaque vue a son adresse : rafraîchir la page garde ta place et tes filtres, et Précédent / Suivant fonctionnent." }
+          ]
+        }
+      ]
+    }
+  ],
+  "chat": [
+    { "id": "2026-10-19", "at": "2026-10-19T23:30:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-19" }
+  ]
+}

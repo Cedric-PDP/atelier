@@ -724,6 +724,59 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
 
   Pas de `DELETE` d'un seul message : une page ouverte ne le verrait pas partir (seule une nouvelle révision le lui dit).
 
+## Nouveautés (journal des versions, messages système du chat)
+
+Demande de l'utilisateur du 2026-10-20 : une page « Nouveautés » qui montre aux membres un journal des changements
+clair, concis et facile à lire, et un message système dans le chat qui annonce une nouvelle version. **Aucune
+publication automatique** : ce qui fait une version, et quand l'annoncer dans le chat, est à décider plus tard. Cette
+section ne fournit que les briques.
+
+**Un fichier statique, `site/public/nouveautes.json`**, publié avec le site comme le reste de `public/` : rien dans la
+base, aucun point d'accès, aucun secret. Publier veut dire modifier le fichier, puis pousser `wikimasters`. Le fichier a
+deux listes **indépendantes** : ajouter une version n'écrit rien dans le chat, et un message du chat ne s'écrit qu'à la
+main.
+
+```json
+{
+  "versions": [
+    { "id": "2026-10-19", "date": "2026-10-19", "title": "facultatif", "intro": "facultatif",
+      "sections": [ { "icon": "💬", "title": "Chat",
+        "items": [ { "text": "`@` pour mentionner un ami.", "to": "#/chat", "link": "Chat" } ] } ] }
+  ],
+  "chat": [ { "id": "2026-10-19", "at": "2026-10-19T23:30:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-19" } ]
+}
+```
+
+- **Version** : `id`, unique, au plus 60 caractères ; `date`, au format `AAAA-MM-JJ`. Les autres champs sont facultatifs :
+  `title` (120 caractères), `intro` (600). `sections` est une liste de rubriques `{icon?, title, items}`. `icon` est un
+  emoji (8 caractères au plus), `title` en fait 120 au plus. Chaque ligne `{text, to?, link?}` a un `text` de 600
+  caractères au plus, en texte brut, où seul `` `code` `` est mis en forme. `to` est un lien **interne**, une adresse
+  `#/…` de la section « Adresse de chaque vue » ; tout autre lien est retiré. `link` est le libellé du lien (« Voir » par
+  défaut). La page trie les versions de la plus récente à la plus ancienne. Elle écarte une version sans `id` ou sans
+  date valide, une rubrique sans ligne, une ligne vide. Au plus 200 versions, 30 rubriques par version, 50 lignes par
+  rubrique.
+- **Message système** (`chat`) : `id` unique ; `at`, l'heure ISO à laquelle il prend place dans le fil ; `text`, 300
+  caractères au plus, en texte brut ; `version` (facultatif), l'`id` d'une version. Au plus 100 messages.
+- **Lecture** : `GET /nouveautes.json` (`cache: no-cache`), à l'ouverture du classeur, puis à l'ouverture du chat ou de
+  la page, au plus toutes les 10 min. Si la lecture échoue, la page fait un nouvel essai au plus tôt 1 min après.
+  Fichier absent ou illisible : ni pastille ni message système, et la page dit « Les nouveautés n'ont pas pu être
+  lues. » avec un bouton « Réessayer ».
+
+**Interface** :
+- **Lien « Nouveautés »** au bout de la ligne des onglets. C'est une page à part (`#/nouveautes`), pas un onglet : aucun
+  onglet n'y est sélectionné, et le premier reste joignable au clavier. Une pastille « nouveau » s'affiche tant que la
+  version la plus récente n'a pas été vue **dans ce navigateur** : `localStorage` `classeur-nouveautes-vu` garde l'`id`
+  de la dernière version vue, avec des accès protégés, et « Oublier ce navigateur » l'efface.
+- **Page** : une version par bloc, la plus récente en haut. La date est à gauche (au-dessus sur téléphone), puis
+  viennent une rubrique par thème et une ligne par changement, avec son lien « Chat → ». Les versions que ce navigateur
+  n'avait pas encore vues portent l'étiquette « Nouveau » le temps de la visite (la plus récente seule, la première
+  fois).
+- **Chat** : chaque message système est une ligne discrète, petite, grise et centrée, sans bulle ni auteur : « Nouvelle
+  version du classeur disponible · Voir les nouveautés · <heure> ». Le lien mène à `#/nouveautes`. La ligne est placée
+  par son heure parmi les messages, et seulement si elle est plus récente que le plus ancien message chargé (toutes les
+  lignes s'affichent quand il n'y a pas de messages plus anciens). Elle ne compte pas dans les non-lus, ne se supprime
+  pas et n'entre pas dans les limites du salon.
+
 ## Adresse de chaque vue (interface)
 
 Depuis le 2026-10-20 (demande de l'utilisateur : ne plus perdre la vue au rafraîchissement), chaque vue a son adresse,
@@ -736,6 +789,7 @@ chemin, `/collections/…`, y serait un 404 au rafraîchissement). Rien côté s
 | `#/collections/<id>` | une de tes collections |
 | `#/categorie/<nom>` (`?sous=1` : sous-catégories comprises) · `#/page/<titre>` | une catégorie, une page de Wikipédia (titres avec « _ » à la place des espaces) |
 | `#/cartes` · `#/amis` · `#/marche` · `#/chat` · `#/maj` · `#/reglages` | les onglets |
+| `#/nouveautes` | la page « Nouveautés » (hors des onglets, voir « Nouveautés ») |
 | `#/amis/echanges` (`?qui=me` ou l'identifiant public d'un membre) | « Échanges possibles » |
 | `#/ami/<id public>` · `#/ami/<id public>/<id de sa collection>` (`?depuis=echanges`) | le classeur d'un ami, une de ses collections |
 

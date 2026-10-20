@@ -25,7 +25,7 @@ serveur (une catégorie suivie a la source `wp:<nom>`).
 
 | Chemin | Contenu |
 |---|---|
-| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
+| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
 | `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
