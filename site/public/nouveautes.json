@@ -26,6 +26,14 @@
           "items": [
             { "text": "Sans connexion, le classeur propose seulement « Réessayer » et se rouvre seul quand le réseau revient." }
           ]
+        },
+        {
+          "icon": "💬",
+          "title": "Chat",
+          "items": [
+            { "text": "Colle le lien d'une collection : le message affiche son nom et, dessous, sa progression.", "to": "#/chat", "link": "Chat" },
+            { "text": "`#c:` puis un nom propose tes collections et celles de tes amis." }
+          ]
         }
       ]
     },
