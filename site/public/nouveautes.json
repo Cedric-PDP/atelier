@@ -1,6 +1,35 @@
 {
   "versions": [
     {
+      "id": "2026-10-20",
+      "date": "2026-10-20",
+      "sections": [
+        {
+          "icon": "📱",
+          "title": "Sur téléphone",
+          "items": [
+            { "text": "Nouvelle navigation : une barre en bas pour Collections, Amis, Chat et Marché, et « Plus » pour le reste.", "to": "#/collections", "link": "Collections" },
+            { "text": "Une flèche en haut à gauche pour revenir en arrière, et le bouton de synchro toujours à portée de pouce." },
+            { "text": "Dans Mes cartes, les tags et filtres s'ouvrent depuis le bas de l'écran ; le chat prend toute la hauteur.", "to": "#/cartes", "link": "Mes cartes" }
+          ]
+        },
+        {
+          "icon": "📲",
+          "title": "App",
+          "items": [
+            { "text": "Installe le classeur sur ton écran d'accueil : « Plus » › « Installer l'app ». Sur iPhone, copie ton lien personnel avant : l'app te le demandera au premier lancement." }
+          ]
+        },
+        {
+          "icon": "🔌",
+          "title": "Sans réseau",
+          "items": [
+            { "text": "Sans connexion, le classeur propose seulement « Réessayer » et se rouvre seul quand le réseau revient." }
+          ]
+        }
+      ]
+    },
+    {
       "id": "2026-10-19",
       "date": "2026-10-19",
       "sections": [
@@ -51,6 +80,7 @@
     }
   ],
   "chat": [
-    { "id": "2026-10-19", "at": "2026-10-19T23:30:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-19" }
+    { "id": "2026-10-19", "at": "2026-10-19T23:30:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-19" },
+    { "id": "2026-10-20", "at": "2026-10-20T07:24:03Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-20" }
   ]
 }
