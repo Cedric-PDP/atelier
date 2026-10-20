@@ -7949,8 +7949,8 @@
   // ni retour à la ligne). Le texte envoyé ne change pas ; la page la montre en pastille qui ouvre la fiche de la carte.
   const CHAT_CARD = /\[\[([^[\]{}|#<>\n]{1,300})\]\]/g;
   // Collection citée (2026-10-20) : le serveur range un lien du site vers une collection sous une forme stable et la rend
-  // dans le texte comme `\uE000<n>\uE001`, n = rang dans `refs` du message (nom, propriétaire, de quoi l'ouvrir).
-  const CHAT_REF = /\uE000(\d{1,2})\uE001/g;
+  // par son nom, en clair dans le texte ; `refs` du message dit où (at, len) et ce qu'elle est (propriétaire, de quoi
+  // l'ouvrir).
   const REF_ID = /^[A-Za-z0-9_-]{1,64}$/;
   const chatMsgs = shallowRef([]);
   let chatRev = null;
@@ -8025,15 +8025,16 @@
     if (last < text.length) out.push({ text: text.slice(last) });
     return out;
   }
-  // Morceaux d'un message : collections citées ({text: nom, col: ref}), puis, entre elles, cardParts.
+  // Morceaux d'un message : collections citées ({text: nom, col: ref}, à leur place dans le texte, dans l'ordre et sans
+  // chevauchement ; les autres sont ignorées), puis, entre elles, cardParts.
   function chatParts(text, refs) {
     const out = [];
     let last = 0;
-    for (const m of text.matchAll(CHAT_REF)) {
-      const ref = refs[Number(m[1])] || { gone: true };
-      if (m.index > last) out.push(...cardParts(text.slice(last, m.index)));
-      out.push({ text: ref.gone ? 'collection non partagée' : ref.name, col: ref });
-      last = m.index + m[0].length;
+    for (const ref of refs) {
+      if (ref.at < last || ref.at + ref.len > text.length) continue;
+      if (ref.at > last) out.push(...cardParts(text.slice(last, ref.at)));
+      out.push({ text: text.slice(ref.at, ref.at + ref.len), col: ref });
+      last = ref.at + ref.len;
     }
     if (last < text.length) out.push(...cardParts(text.slice(last)));
     return out;
@@ -8126,18 +8127,21 @@
     const id = Number(m && m.id);
     if (!Number.isInteger(id) || id <= 0) return null;
     const text = String(m.text || '');
-    const refs = (Array.isArray(m.refs) ? m.refs : []).map(prepChatRef);
+    const refs = (Array.isArray(m.refs) ? m.refs : []).map(prepChatRef).filter(Boolean);
     return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''),
       parts: chatParts(text, refs), refs });
   }
-  // Collection citée telle que le serveur la rend : {name, owner, mine, pid, id} (pid : son propriétaire, si tu peux
-  // ouvrir ses collections ; id : la collection, si tu peux l'ouvrir), sinon {gone: true}.
+  // Collection citée telle que le serveur la rend : {at, len, name, owner, mine, pid, id} (pid : son propriétaire, si tu
+  // peux ouvrir ses collections ; id : la collection, si tu peux l'ouvrir), ou {at, len, gone: true} ; sans place valide :
+  // ignorée (son nom reste du texte).
   function prepChatRef(r) {
-    if (!r || typeof r !== 'object' || r.gone || typeof r.name !== 'string') return { gone: true };
+    if (!r || typeof r !== 'object' || !Number.isInteger(r.at) || !Number.isInteger(r.len) || r.at < 0 || r.len <= 0) return null;
+    const { at, len } = r;
+    if (r.gone || typeof r.name !== 'string') return { at, len, gone: true };
     const mine = r.mine === true;
     const pid = !mine && typeof r.pid === 'string' && REF_ID.test(r.pid) ? r.pid : null;
     const id = (mine || pid) && typeof r.id === 'string' && REF_ID.test(r.id) ? r.id : null;
-    return { name: r.name || 'Sans nom', owner: typeof r.owner === 'string' && r.owner ? r.owner : null, mine, pid: id ? pid : null, id };
+    return { at, len, name: r.name || 'Sans nom', owner: typeof r.owner === 'string' && r.owner ? r.owner : null, mine, pid: id ? pid : null, id };
   }
   const chatRefHref = (ref) => (!ref.id ? null : ref.mine ? '#/collections/' + encodeURIComponent(ref.id) : `#/ami/${encodeURIComponent(ref.pid)}/${encodeURIComponent(ref.id)}`);
   // Des messages lus citent la collection d'un ami : ses cartes et ses collections (« Entre amis ») pour en montrer la
@@ -8770,19 +8774,20 @@
       ]),
       h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
         : p.at ? h('span', { class: ['chat-at', { me: p.me }], title: p.me ? null : pseudoTip({ pseudo: pseudoOf(p.text.slice(1)) }) }, p.text)
-        : p.col ? viewChatColLink(p.col)
+        : p.col ? viewChatColLink(p)
         : p.url ? (p.local ? h('a', { href: p.url }, p.text) : h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text)) : p.text))),
       viewChatColEmbed(m.refs.find((r) => !r.gone)),
     ]);
   }
   // Collection citée, dans le texte : un lien vers elle (son nom), sinon son nom seul (tu ne montres pas tes cartes), ou
   // « collection non partagée » (effacée, ou que son propriétaire ne montre plus).
-  function viewChatColLink(ref) {
-    if (ref.gone) return h('span', { class: 'chat-col gone', title: "Cette collection a été effacée, ou son propriétaire ne la montre plus" }, 'collection non partagée');
+  function viewChatColLink(p) {
+    const ref = p.col;
+    if (ref.gone) return h('span', { class: 'chat-col gone', title: "Cette collection a été effacée, ou son propriétaire ne la montre plus" }, p.text);
     const owner = ref.mine ? 'Ta collection' : `Collection de ${ref.owner || 'quelqu\'un'}`;
     const href = chatRefHref(ref);
-    return href ? h('a', { class: 'chat-col', href, title: owner + ' : l\'ouvrir' }, ref.name)
-      : h('span', { class: 'chat-col', title: owner + ' : montre tes cartes (Réglages) pour l\'ouvrir' }, ref.name);
+    return href ? h('a', { class: 'chat-col', href, title: owner + ' : l\'ouvrir' }, p.text)
+      : h('span', { class: 'chat-col', title: owner + ' : montre tes cartes (Réglages) pour l\'ouvrir' }, p.text);
   }
   // Aperçu sous le message (la première collection citée) : sa ligne, comme dans tes collections ou le classeur de l'ami
   // (éventail, progression, ce que tu peux lui donner) ; sinon son nom et son propriétaire, et pourquoi pas plus.

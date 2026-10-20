@@ -89,16 +89,24 @@ function mockApi() {
   const chatOut = (st, m) => {
     const out = { id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at };
     if (!m.text.includes('\uE000')) return out;
+    // Nom de la collection en clair dans le texte, sa place (at, len) dans refs.
     const refs = [];
     const sees = !!(st.shared && st.pub);
-    out.text = m.text.replace(/\uE000c:([^/]+)\/([^\uE001]+)\uE001/g, (_, uid, tid) => {
-      const u = users.find((x) => x.id === uid);
-      const t = u && u.targets.find((x) => x.id === tid);
+    let txt = '';
+    let last = 0;
+    for (const x of m.text.matchAll(/\uE000c:([^/]+)\/([^\uE001]+)\uE001/g)) {
+      const u = users.find((y) => y.id === x[1]);
+      const t = u && u.targets.find((y) => y.id === x[2]);
       const mine = u === st;
-      refs.push(!t || (!mine && !(u.shared && u.sharedTargets)) ? { gone: true }
-        : { name: t.name, owner: u.name, mine, pid: !mine && sees ? u.pub : null, id: mine || sees ? tid : null });
-      return `\uE000${refs.length - 1}\uE001`;
-    });
+      const c = !t || (!mine && !(u.shared && u.sharedTargets)) ? { gone: true }
+        : { name: t.name, owner: u.name, mine, pid: !mine && sees ? u.pub : null, id: mine || sees ? x[2] : null };
+      const shown = c.gone ? 'collection non partagée' : c.name;
+      txt += m.text.slice(last, x.index);
+      refs.push({ at: txt.length, len: shown.length, ...c });
+      txt += shown;
+      last = x.index + x[0].length;
+    }
+    out.text = txt + m.text.slice(last);
     out.refs = refs;
     return out;
   };
@@ -5471,7 +5479,7 @@ async function main() {
     // Tiff ne montre plus ses collections : « collection non partagée », sans aperçu.
     check((await rawApi('PATCH', '/api/me', keyT, { shared_targets: false })).status === 200, 'partage des collections de Tiff non coupé');
     const r = await rawApi('GET', '/api/chat', keyY);
-    check(JSON.stringify(r.body.messages.at(-1).refs) === '[{"gone":true}]', 'collection plus montrée : ' + JSON.stringify(r.body.messages.at(-1).refs));
+    check(JSON.stringify(r.body.messages.at(-1).refs) === '[{"at":16,"len":23,"gone":true}]', 'collection plus montrée : ' + JSON.stringify(r.body.messages.at(-1).refs));
     for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
     console.log('collections citées : #c:, lien, aperçu (progression de son propriétaire), nom seul sans partage');
   }

@@ -16,8 +16,9 @@
 //   chat_by_user : 10 lignes au plus pour la minute, 300 pour la journée).
 // - Collections citées (2026-10-20) : un lien du site vers une collection (#/ami/<id public>/<id> ou, la sienne,
 //   #/collections/<id>) est rangé sous une forme stable, `\uE000c:<id du compte>/<id de la collection>\uE001` (l'id public
-//   change à chaque réactivation du partage), et retraduit à chaque lecture pour celui qui lit : nom de la collection et
-//   prénom de son propriétaire, de quoi l'ouvrir s'il en a le droit (voir citeRefs). L'id interne ne sort jamais du serveur.
+//   change à chaque réactivation du partage), et retraduit à chaque lecture pour celui qui lit : nom de la collection en
+//   clair dans le texte (une page d'avant cette fonction le montre tel quel), et à part sa position, le prénom de son
+//   propriétaire et de quoi l'ouvrir s'il en a le droit (voir citeRefs). L'id interne ne sort jamais du serveur.
 
 import { HttpError, json } from './http.js';
 
@@ -101,17 +102,26 @@ export function eraseChatOf(db, userId) {
     WHERE user_id = ?1`).bind(userId);
 }
 
-// Message tel que la page le reçoit. Ses collections citées : `\uE000<n>\uE001` dans le texte, n = rang dans `refs` (seulement
-// s'il y en a), chacune {name, owner, mine, pid, id} (pid et id : de quoi l'ouvrir, null si le lecteur ne le peut pas) ou
-// {gone: true} (effacée, ou que son propriétaire ne montre plus).
+// Message tel que la page le reçoit. Ses collections citées (`refs`, seulement s'il y en a) : leur nom en clair dans le
+// texte (« collection non partagée » sinon), jamais les bornes rangées ; chacune {at, len, name, owner, mine, pid, id}
+// (at, len : sa place dans le texte, en unités UTF-16 ; pid et id : de quoi l'ouvrir, null si le lecteur ne le peut pas)
+// ou {at, len, gone: true} (effacée, ou que son propriétaire ne montre plus).
+const GONE_TEXT = 'collection non partagée';
 function message(r, cited) {
   const out = { id: r.id, author: r.author ?? null, mine: !!r.mine, text: r.text, created_at: r.created_at };
-  if (!cited || !r.text.includes('\uE000')) return out;
+  if (!r.text.includes('\uE000')) return out;
   const refs = [];
-  out.text = r.text.replace(REF_MARK, (_, uid, tid) => {
-    refs.push(cited.get(uid + '/' + tid) || { gone: true });
-    return `\uE000${refs.length - 1}\uE001`;
-  });
+  let text = '';
+  let last = 0;
+  for (const m of r.text.matchAll(REF_MARK)) {
+    const c = (cited && cited.get(m[1] + '/' + m[2])) || { gone: true };
+    text += r.text.slice(last, m.index);
+    const shown = c.gone ? GONE_TEXT : c.name;
+    refs.push({ at: text.length, len: shown.length, ...c });
+    text += shown;
+    last = m.index + m[0].length;
+  }
+  out.text = text + r.text.slice(last);
   out.refs = refs;
   return out;
 }

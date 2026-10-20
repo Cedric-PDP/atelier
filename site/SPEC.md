@@ -199,8 +199,9 @@ autre format (voir « Le favori »).
 
 **Message** (chat) : `{id, author, mine, text, created_at, refs?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
-du compte. `refs` (seulement s'il cite des collections) : chaque `U+E000<n>U+E001` du texte désigne `refs[n]`,
-`{name, owner, mine, pid, id}` ou `{gone:true}`, voir « Chat », collections citées.
+du compte. `refs` (seulement s'il cite des collections) : le nom de chacune est en clair dans `text`, à la place
+`{at, len}` (unités UTF-16) ; `{at, len, name, owner, mine, pid, id}` ou `{at, len, gone:true}`, voir « Chat »,
+collections citées.
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, auto, created_at,
 updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` ou `null`, voir `targets/save` et « Ajout
@@ -610,11 +611,15 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   site, membre qui ne les montre pas) le lien reste du texte. 5 par message au plus (les suivantes restent des liens).
   Les deux bornes (U+E000, U+E001) sont retirées du texte envoyé : seul le serveur les écrit. À chaque lecture, une
   requête de plus, seulement si les messages lus en citent (clés primaires de `users` et `targets`, 2 lignes par
-  collection), rend pour **celui qui lit** chaque collection comme `refs[n]` : `{name, owner, mine, pid, id}` = nom actuel
+  collection), rend pour **celui qui lit** chaque collection : son nom en clair **dans le texte** (« collection non
+  partagée » pour `gone`), jamais les bornes rangées. Une page d'avant cette fonction (app ouverte depuis la veille, sans
+  rechargement) montre donc le nom tel quel ; retour de l'utilisateur du 2026-10-20 : les bornes envoyées telles quelles
+  s'affichaient « no glyph 0 no glyph » sur téléphone. Et à part, dans `refs`, dans l'ordre du texte :
+  `{at, len, name, owner, mine, pid, id}` = sa place dans le texte, nom actuel
   de la collection et prénom actuel de son propriétaire, **lisibles par tout le salon** (choix de l'utilisateur du
   2026-10-20 : « nom et propriétaire », même pour qui ne montre pas ses cartes) ; `pid` (son id public) et `id` seulement
   si le lecteur montre ses cartes (réciprocité : de quoi ouvrir `#/ami/<pid>/<id>`), ou `mine` et `id` pour la sienne ;
-  `{gone:true}` si elle est effacée, ou que son propriétaire ne montre plus ses collections (sauf pour lui). L'id interne
+  `{at, len, gone:true}` si elle est effacée, ou que son propriétaire ne montre plus ses collections (sauf pour lui). L'id interne
   ne sort jamais du serveur ; `GET /api/chat/last` ne rend rien de tout cela. La console D1 montre la forme rangée.
   Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui

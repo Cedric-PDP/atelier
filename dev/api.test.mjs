@@ -3447,51 +3447,57 @@ await test('chat : collections citées (lien du site rangé sous une forme stabl
   const cleoTid = await save(cleo, 'Secrète');
   await patch(cleo, { shared: false }); // Cléo ne montre rien
   const site = 'http://localhost:8788/';
-  const MARK = (n) => `${n}`;
+  // Collections citées d'un message lu, sans leur place dans le texte (vérifiée à part).
+  const refsOf = (msg) => msg.refs && msg.refs.map(({ at, len, ...x }) => x);
 
-  // Lien vers la collection de Ben (avec les paramètres de la vue) : rangé avec l'id du compte, jamais rendu tel quel.
+  // Lien vers la collection de Ben (avec les paramètres de la vue) : rangé avec l'id du compte, jamais rendu tel quel ;
+  // rendu avec le nom de la collection en clair dans le texte (une page d'avant cette fonction le montre tel quel) et sa
+  // place (at, len).
   let r = await say(ana.key, `Bravo Ben ${site}#/ami/${pidOf(ben)}/${tid}?filtre=missing&tri=title. Et ${site}#/ami/${pidOf(ben)}/inconnue !`);
   assert.equal(r.status, 201, JSON.stringify(r.json));
   const m = r.json.message;
-  assert.deepEqual([m.text, m.refs], [`Bravo Ben ${MARK(0)}. Et ${site}#/ami/${pidOf(ben)}/inconnue !`,
-    [{ name: 'Mugiwara', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]]);
-  assert.equal(q('SELECT text FROM chat_messages WHERE id = ?', m.id)[0].text.slice(10, 10 + 3 + ben.user.id.length), `c:${ben.user.id}`);
+  assert.deepEqual([m.text, m.refs], [`Bravo Ben Mugiwara. Et ${site}#/ami/${pidOf(ben)}/inconnue !`,
+    [{ at: 10, len: 8, name: 'Mugiwara', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]]);
+  assert.ok(!/[\uE000\uE001]/.test(JSON.stringify((await read(ana.key)).json)), 'jamais les bornes rangées');
+  assert.equal(q('SELECT text FROM chat_messages WHERE id = ?', m.id)[0].text.slice(10, 10 + 3 + ben.user.id.length), `\uE000c:${ben.user.id}`);
   // Ben : la sienne. Cléo (ne montre pas ses cartes) : nom et propriétaire, rien pour l'ouvrir. Jamais l'id interne.
   r = await read(ben.key);
-  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Mugiwara', owner: 'Ben', mine: true, pid: null, id: tid }]);
+  assert.deepEqual(refsOf(r.json.messages[0]), [{ name: 'Mugiwara', owner: 'Ben', mine: true, pid: null, id: tid }]);
   r = await read(cleo.key);
-  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Mugiwara', owner: 'Ben', mine: false, pid: null, id: null }]);
+  assert.deepEqual(refsOf(r.json.messages[0]), [{ name: 'Mugiwara', owner: 'Ben', mine: false, pid: null, id: null }]);
   for (const u of [ana, ben, cleo]) assert.ok(!JSON.stringify((await read(u.key)).json).includes(ben.user.id), "jamais l'id interne du propriétaire");
   // Partage coupé puis remis : nouvel id public, le message suit ; collection renommée : le nom suit aussi.
   await patch(ben, { shared: false });
   await patch(ben, { shared: true, shared_targets: true });
   await call('POST', 'targets/save', { key: ben.key, e, body: { id: tid, name: 'Équipage', items: [] } });
   r = await read(ana.key, '?before=999');
-  assert.deepEqual(r.json.messages[0].refs, [{ name: 'Équipage', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]);
+  assert.deepEqual([r.json.messages[0].text.slice(0, 20), r.json.messages[0].refs], ['Bravo Ben Équipage. ',
+    [{ at: 10, len: 8, name: 'Équipage', owner: 'Ben', mine: false, pid: pidOf(ben), id: tid }]]);
   // Ben ne montre plus ses collections : non partagée pour les autres, toujours la sienne pour lui.
   await patch(ben, { shared_targets: false });
-  assert.deepEqual((await read(ana.key)).json.messages[0].refs, [{ gone: true }]);
+  r = await read(ana.key);
+  assert.deepEqual([r.json.messages[0].text.slice(0, 33), r.json.messages[0].refs], ['Bravo Ben collection non partagée', [{ at: 10, len: 23, gone: true }]]);
   assert.equal((await read(ben.key)).json.messages[0].refs[0].mine, true);
   // Effacée : non partagée pour tous.
   await call('POST', 'targets/delete', { key: ben.key, e, body: { id: tid } });
-  assert.deepEqual((await read(ben.key)).json.messages[0].refs, [{ gone: true }]);
+  assert.deepEqual(refsOf((await read(ben.key)).json.messages[0]), [{ gone: true }]);
 
   // Sa propre collection (#/collections/<id>, l'adresse de sa vue), même sans la montrer : rangée ; les autres la voient
   // « non partagée ». Une collection d'un membre qui ne les montre pas, un autre site, un id inconnu : restent des liens.
   r = await say(cleo.key, `Ma liste ${site}#/collections/${cleoTid}`);
-  assert.deepEqual(r.json.message.refs, [{ name: 'Secrète', owner: 'Cléo', mine: true, pid: null, id: cleoTid }]);
-  assert.deepEqual((await read(ana.key, `?after=${r.json.message.id - 1}`)).json.messages.at(-1).refs, [{ gone: true }]);
+  assert.deepEqual([r.json.message.text, r.json.message.refs], ['Ma liste Secrète', [{ at: 9, len: 7, name: 'Secrète', owner: 'Cléo', mine: true, pid: null, id: cleoTid }]]);
+  assert.deepEqual(refsOf((await read(ana.key)).json.messages.at(-1)), [{ gone: true }]);
   const plain = [`https://autre.example/#/collections/${cleoTid}`, `${site}#/collections/inconnue`, `${site}#/ami/${pidOf(cleo) || 'x'}/${cleoTid}`, `${site}#/ami/${pidOf(ana)}/${cleoTid}`];
   r = await say(ana.key, plain.join(' '));
   assert.deepEqual([r.json.message.text, r.json.message.refs], [plain.join(' '), undefined]);
   // Les bornes rangées par le serveur ne se tapent pas : retirées du texte envoyé.
-  r = await say(ana.key, `c:${cleo.user.id}/${cleoTid} coucou`);
+  r = await say(ana.key, `\uE000c:${cleo.user.id}/${cleoTid}\uE001 coucou`);
   assert.deepEqual([r.json.message.text, r.json.message.refs], [`c:${cleo.user.id}/${cleoTid} coucou`, undefined]);
   // 5 collections citées par message au plus : la 6e reste un lien.
   const anaTid = await save(ana, 'Six');
   const link = `${site}#/collections/${anaTid}`;
   r = await say(ana.key, Array(6).fill(link).join(' '));
-  assert.deepEqual([r.json.message.refs.length, r.json.message.text], [5, [0, 1, 2, 3, 4].map(MARK).join(' ') + ' ' + link]);
+  assert.deepEqual([r.json.message.refs.map((x) => x.at), r.json.message.text], [[0, 4, 8, 12, 16], 'Six Six Six Six Six ' + link]);
   e.DB.close();
 });
 
