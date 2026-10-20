@@ -134,6 +134,8 @@ export async function getMe(env, user) {
     prefs: raw(user.prefs || '{}'), // objet JSON rangé tel quel par PATCH /api/me
     shared: !!user.shared, // montre ses cartes aux autres membres (partage entre membres, members.js)
     shared_targets: !!(user.shared && user.shared_targets), // et ses collections à compléter (réglage à part)
+    // son identifiant public tant qu'il partage (celui que les autres voient) : la page se propose après « #u: » du chat
+    public_id: user.shared ? user.public_id || null : null,
     last_chat_id: user.last_chat_id ?? 0, // dernier message du chat (supprimé ou non) : la page en déduit le badge des non-lus
     market_at: user.market_at || null, // dernier envoi du favori au marché (market.js) : la page relit alors l'onglet « Marché »
     // Dernière ligne du journal des synchros ({at, kind, via, result, message}, synclog.js), ou null.
@@ -183,7 +185,8 @@ export async function patchMe(env, user, body) {
       .bind(user.id)
       .run();
   }
-  return { user: publicUser({ ...user, name, game_pseudo: pseudo }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets };
+  return { user: publicUser({ ...user, name, game_pseudo: pseudo }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets,
+    public_id: shared ? publicId : null };
 }
 
 // La clé d'import est aussi gardée chiffrée (import_key_enc : AES-GCM de COOKIE_SECRET, donnée associée

@@ -229,7 +229,7 @@ function mockApi() {
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
-          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
+          shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
           market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null });
       }
       if (p === '/api/me' && method === 'PATCH') {
@@ -253,7 +253,7 @@ function mockApi() {
           st.sharedTargets = body.shared_targets;
         }
         if ('name' in body) st.name = body.name;
-        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets) });
+        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null });
       }
       // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
       // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
@@ -5530,6 +5530,26 @@ async function main() {
     const acList = () => d.getElementById('chat-ac');
     const acRows = () => (acList() ? acList().querySelectorAll('li').map((li) => text(li)) : []);
     check(await waitFor(() => field()), 'chat de Vic non ouvert');
+    // « #u: » seul : toi d'abord (ton classeur), puis les autres.
+    type(field(), '#u:');
+    await settle();
+    check(await waitFor(() => acRows().length >= 2), 'suggestions de « #u: » : ' + acRows().join(' | '));
+    check(acRows()[0] === 'Victoi : ton classeur', 'suggestions de « #u: » (toi d\'abord) : ' + acRows().join(' | '));
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    const pubV = (await rawApi('GET', '/api/me', keyV)).body.public_id;
+    check(pubV && field().value === `${ORIGIN}/#/ami/${pubV} `, 'ton lien inséré : « ' + field().value + ' »');
+    field().dispatch('keydown', { key: 'Enter' });
+    const lastV = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    check(await waitFor(() => lastV() && lastV().querySelector('.chat-user')), 'message te citant absent');
+    const me = lastV().querySelector('.chat-user');
+    check(text(me) === 'Vic' && me.getAttribute('href') === '#/cartes' && text(lastV().querySelector('.chat-member')).includes('1 carte'), 'toi cité : ' + text(lastV()));
+    // Ton lien tel que les autres le voient (#/ami/<ton id public>) ouvre tes cartes.
+    const go = async (href) => { pv.ctx.history.pushState(null, '', href); for (const f of [...(pv.win.listeners.hashchange || [])]) f({ type: 'hashchange' }); await settle(80); };
+    await go('#/ami/' + pubV);
+    check(await waitFor(() => d.getElementById('q') && pv.ctx.location.hash === '#/cartes'), 'ton propre lien n\'ouvre pas tes cartes : ' + pv.ctx.location.hash);
+    await go('#/chat');
+    check(await waitFor(() => field()), 'retour au chat de Vic');
     type(field(), 'Regardez #u:um');
     await settle();
     check(await waitFor(() => acRows().length === 1), 'suggestions de « #u:um » : ' + acRows().join(' | '));
@@ -5541,7 +5561,7 @@ async function main() {
     type(field(), field().value + '!');
     field().dispatch('keydown', { key: 'Enter' });
     const last = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
-    check(await waitFor(() => last() && last().classList.contains('mine') && last().querySelector('.chat-user')), 'message avec le membre cité absent');
+    check(await waitFor(() => last() && last().classList.contains('mine') && text(last()).includes('Regardez') && last().querySelector('.chat-user')), 'message avec le membre cité absent');
     const a = last().querySelector('.chat-user');
     check(a.tagName === 'A' && text(a) === 'Uma' && a.getAttribute('href') === `#/ami/${pubU}` && (a.getAttribute('title') || '').includes('UmaDu75')
       && text(last().querySelector('.chat-msg__text')) === 'Regardez Uma !', 'lien du membre dans le message : ' + text(last()));

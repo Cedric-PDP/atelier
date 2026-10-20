@@ -1004,6 +1004,8 @@
   // ---------------------------------------------------------------- « Entre amis » : qui a quoi
   const sharing = () => !!(S.me && S.me.shared);
   const sharingTargets = () => !!(S.me && S.me.shared && S.me.shared_targets); // et ses collections à compléter
+  // Ton identifiant public (celui que voient les autres membres), tant que tu montres tes cartes ; null avant (ancien serveur).
+  const myPid = () => (sharing() && typeof S.me.public_id === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(S.me.public_id) ? S.me.public_id : null);
   const friendName = (f) => f.name || 'Sans prénom';
   // Pseudo dans le jeu d'un membre (s'il l'a donné, Réglages), en info-bulle de son prénom : partout où il apparaît, sans
   // l'alourdir (la ligne de « Entre amis » et le haut de son classeur le montrent en clair).
@@ -5552,7 +5554,7 @@
     try {
       const r = await api('PATCH', '/api/me', { shared: !!on });
       const now = r && typeof r.shared === 'boolean' ? r.shared : !!on;
-      if (S.me) { S.me.shared = now; S.me.shared_targets = !!(now && r && r.shared_targets === true); }
+      if (S.me) { S.me.shared = now; S.me.shared_targets = !!(now && r && r.shared_targets === true); S.me.public_id = now && r && typeof r.public_id === 'string' ? r.public_id : null; }
       clearFriends();
       if (now) {
         notify('Tes cartes sont montrées aux autres membres qui montrent les leurs.');
@@ -8298,14 +8300,21 @@
     }
     return out;
   });
-  // Membres proposés après « #u: » : ceux qui montrent leurs cartes (« Entre amis » s'il est lu, sinon GET /api/members
-  // seul ; il faut montrer les siennes). Insère le lien de son classeur : le serveur le range sous une forme stable.
+  // Membres proposés après « #u: » : toi (pour montrer ton classeur), puis ceux qui montrent leurs cartes (« Entre amis »
+  // s'il est lu, sinon GET /api/members seul ; il faut montrer les siennes). Insère le lien de son classeur : le serveur le
+  // range sous une forme stable.
   const chatUserChoices = computed(() => {
     if (!sharing()) return [];
     const site = location.origin + '/#/ami/';
     const src = friendList.value.length ? friendList.value : chatMembers.value;
-    return src.filter((f) => f.id && REF_ID.test(f.id)).map((f) => ({ key: f.id, name: friendName(f), f: fold(friendName(f)), pseudo: f.pseudo || null,
+    const out = src.filter((f) => f.id && REF_ID.test(f.id)).map((f) => ({ key: f.id, name: friendName(f), f: fold(friendName(f)), mine: false, pseudo: f.pseudo || null,
       url: site + encodeURIComponent(f.id) }));
+    const pid = myPid();
+    if (pid) {
+      const name = (S.me.user && S.me.user.name) || 'Moi';
+      out.unshift({ key: pid, name, f: fold(name) + ' moi toi', mine: true, pseudo: null, url: site + encodeURIComponent(pid) });
+    }
+    return out;
   });
   // Articles de Wikipédia par préfixe (list=prefixsearch, 8 au plus, dans l'ordre de Wikipédia : les plus consultés
   // d'abord), 250 ms après la dernière frappe ; une recherche périmée est abandonnée.
@@ -8362,8 +8371,8 @@
     }
     if (ac.kind === 'u') {
       return chatUserChoices.value.map((x) => ({ x, r: rank(x.f) })).filter((y) => y.r < 9)
-        .sort((a, b) => a.r - b.r || COLLATOR.compare(a.x.name, b.x.name)).slice(0, CHAT_AC_MAX)
-        .map(({ x }) => ({ key: 'u:' + x.key, label: x.name, insert: x.url, hint: x.pseudo }));
+        .sort((a, b) => a.r - b.r || b.x.mine - a.x.mine || COLLATOR.compare(a.x.name, b.x.name)).slice(0, CHAT_AC_MAX)
+        .map(({ x }) => ({ key: 'u:' + x.key, label: x.name, insert: x.url, hint: x.mine ? 'toi : ton classeur' : x.pseudo, self: x.mine }));
     }
     const hits = [];
     const seen = new Set();
@@ -8945,7 +8954,7 @@
       it.own ? pill(it.rarity) : null,
       h('span', { class: 'prop-list__name' }, it.label),
       ac.kind === '#' && !it.own ? h('span', { class: 'prop-list__hint' }, 'pas dans ton classeur')
-        : it.hint ? h('span', { class: 'prop-list__hint', title: it.col ? null : 'Pseudo dans le jeu' }, it.hint) : null,
+        : it.hint ? h('span', { class: 'prop-list__hint', title: it.col || it.self ? null : 'Pseudo dans le jeu' }, it.hint) : null,
     ]);
     return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
       h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
@@ -10633,6 +10642,12 @@
 
   // Ouvre la vue d'une adresse. Ce qui y est déjà ouvert n'est pas rouvert (une catégorie n'est pas relue).
   function applyRoute(r) {
+    // Ton propre classeur vu par les autres (#/ami/<ton id public>, lien cité dans le chat) : tes cartes, ou ta collection.
+    if (r.friend && r.friend === myPid()) {
+      if (r.falbum) { r.tab = 'collections'; r.album = { kind: 'target', id: r.falbum }; } else r.tab = 'cartes';
+      r.friend = null;
+      r.falbum = null;
+    }
     const p = r.p;
     const pick = (k, ok, def) => { const v = p.get(k); return v != null && ok.includes(v) ? v : def; };
     if (r.tab === 'collections') {

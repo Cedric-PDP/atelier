@@ -3513,6 +3513,10 @@ await test('chat : membres cités (lien vers son classeur rangé sous une forme 
   const site = 'http://localhost:8788/';
   const tid = (await call('POST', 'targets/save', { key: ben.key, e, body: { name: 'Équipage', items: [{ title: 'Luffy', status: 'ok' }] } })).json.target.id;
   const membersOf = (msg) => msg.members && msg.members.map(({ at, len, ...x }) => x);
+  // Son propre id public (pour se citer) : rendu par GET et PATCH /api/me tant qu'on partage, null sinon.
+  assert.deepEqual([(await call('GET', 'me', { key: ana.key, e })).json.public_id, (await call('GET', 'me', { key: cleo.key, e })).json.public_id], [pidOf(ana), null]);
+  assert.equal((await patch(cleo, { shared: true })).json.public_id, pidOf(cleo));
+  assert.equal((await patch(cleo, { shared: false })).json.public_id, null);
 
   // Lien vers le classeur de Ben (paramètres compris), suivi d'un lien vers sa collection : les deux rangés, dans l'ordre ;
   // le prénom en clair dans le texte, à part dans `members` (jamais dans `refs`, qu'une page d'avant prendrait pour une
