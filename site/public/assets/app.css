@@ -622,6 +622,16 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .chat-embed__info { display: grid; gap: 2px; min-width: 0; }
 .chat-embed__name { font: 600 14px/1.3 var(--f-head); overflow-wrap: anywhere; }
 .chat-embed__owner, .chat-embed__why { font-size: 12px; color: var(--muted); }
+/* Membre cité (2026-10-20) : son prénom dans le texte, puis un aperçu (initiale, prénom, pseudo dans le jeu, chiffres
+   de son classeur). */
+.chat-member { align-items: center; }
+.chat-member .avatar.sm { flex: none; width: 32px; height: 32px; font-size: 14px; }
+.chat-member__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.chat-member__head a.chat-embed__name { color: var(--link); text-decoration: none; }
+.chat-member__head a.chat-embed__name:hover { text-decoration: underline; }
+.chat-member__pseudo { font-size: 12px; color: var(--muted); }
+.chat-member__figs { display: flex; flex-wrap: wrap; gap: 2px 12px; font-size: 12px; color: var(--muted); }
+.chat-member__figs b { color: var(--fg); }
 .chat-tip { font-size: 12px; color: var(--faint); }
 /* Mentions : pastille « @Prénom », la tienne plus marquée ; message qui te mentionne mis en avant (bord et fond d'alerte). */
 .chat-at { font-weight: 700; color: var(--link); }

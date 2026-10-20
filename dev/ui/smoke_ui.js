@@ -82,19 +82,38 @@ function mockApi() {
   // Collections citées, comme chat.js : un lien vers une collection (#/ami/<id public>/<id>, ou la sienne :
   // #/collections/<id>) rangé `\uE000c:<compte>/<id>\uE001` (sans contrôle de l'hôte ici), retraduit pour chaque lecteur.
   const COL_LINK = /\bhttps?:\/\/[^\s/#]+\/?#\/(?:ami\/([A-Za-z0-9_-]+)|collections)\/([A-Za-z0-9_-]+)(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
+  // Membres cités (2026-10-20) : un lien vers le classeur d'un membre qui montre ses cartes (#/ami/<id public>) rangé
+  // `\uE000u:<compte>\uE001`, rendu à part dans `members`.
+  const USER_LINK = /\bhttps?:\/\/[^\s/#]+\/?#\/ami\/([A-Za-z0-9_-]+)(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
   const chatStore = (st, text) => text.replace(/[\uE000\uE001]/g, '').replace(COL_LINK, (all, pid, tid) => {
     const u = !pid || pid === st.pub ? st : users.find((x) => x.shared && x.sharedTargets && x.pub === pid);
     return u && u.targets.some((t) => t.id === tid) ? `\uE000c:${u.id}/${tid}\uE001` : all;
+  }).replace(USER_LINK, (all, pid) => {
+    const u = users.find((x) => x.shared && x.pub === pid);
+    return u ? `\uE000u:${u.id}\uE001` : all;
   });
   const chatOut = (st, m) => {
     const out = { id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at };
     if (!m.text.includes('\uE000')) return out;
     // Nom de la collection en clair dans le texte, sa place (at, len) dans refs.
     const refs = [];
+    const members = [];
     const sees = !!(st.shared && st.pub);
     let txt = '';
     let last = 0;
-    for (const x of m.text.matchAll(/\uE000c:([^/]+)\/([^\uE001]+)\uE001/g)) {
+    for (const x of m.text.matchAll(/\uE000(?:c:([^/]+)\/([^\uE001]+)|u:([^\uE001]+))\uE001/g)) {
+      if (x[3]) {
+        const u = users.find((y) => y.id === x[3]);
+        const mine = u === st;
+        const open = u && !mine && sees && u.shared && u.pub;
+        const c = !u ? { gone: true } : { name: u.name || 'membre sans prénom', mine, pid: open ? u.pub : null, pseudo: open ? u.pseudo || null : null };
+        const shown = c.gone ? 'classeur supprimé' : c.name;
+        txt += m.text.slice(last, x.index);
+        members.push({ at: txt.length, len: shown.length, ...c });
+        txt += shown;
+        last = x.index + x[0].length;
+        continue;
+      }
       const u = users.find((y) => y.id === x[1]);
       const t = u && u.targets.find((y) => y.id === x[2]);
       const mine = u === st;
@@ -107,7 +126,8 @@ function mockApi() {
       last = x.index + x[0].length;
     }
     out.text = txt + m.text.slice(last);
-    out.refs = refs;
+    if (refs.length) out.refs = refs;
+    if (members.length) out.members = members;
     return out;
   };
   const chatDrop = (m) => { if (!m.deleted) { m.deleted = true; m.text = ''; m.rev = ++chat.rev; } };
@@ -3984,7 +4004,7 @@ async function main() {
     const mt = text(lastMsg().querySelector('.chat-msg__text'));
     check(!lastMsg().querySelectorAll('b').length && !lastMsg().querySelectorAll('img').length && mt.includes('<b>gras</b>') && mt.includes('[[<img src=x onerror=alert(1)>]]'),
       'le texte du message ne doit jamais devenir du HTML : ' + mt);
-    check(txt().includes('Pour montrer une carte : # puis son titre, [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche. Pour une collection : #c: puis son nom, ou colle son lien. Pour mentionner un membre : @ puis son prénom.'),
+    check(txt().includes('Pour montrer une carte : # puis son titre, [[Titre de la carte]], ou « Partager dans le chat » depuis sa fiche. Pour une collection : #c: puis son nom, ou colle son lien. Pour un membre : @ puis son prénom pour le mentionner, #u: pour montrer son classeur.'),
       'aide des cartes et collections citées et des mentions absente sous le champ du chat');
     const ficheA = () => d.querySelectorAll('.fiche')[0] || null;
     chips()[0].click();
@@ -5482,6 +5502,66 @@ async function main() {
     check(JSON.stringify(r.body.messages.at(-1).refs) === '[{"at":16,"len":23,"gone":true}]', 'collection plus montrée : ' + JSON.stringify(r.body.messages.at(-1).refs));
     for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
     console.log('collections citées : #c:, lien, aperçu (progression de son propriétaire), nom seul sans partage');
+  }
+
+  // 36. Membres cités dans le chat (demande du 2026-10-20) : « #u: » propose les membres qui montrent leurs cartes et
+  // insère le lien de leur classeur ; dans le message, son prénom (lien vers son classeur) et, dessous, son pseudo dans le
+  // jeu et les chiffres de son classeur (cartes, collections, complètes) ; pour qui ne montre pas ses cartes, le prénom
+  // seul. Serveur simulé seulement.
+  if (!SERVER) {
+    const keyU = await makeOtherAccount('Uma');
+    const keyV = await makeOtherAccount('Vic');
+    const keyW = await makeOtherAccount('Wil');
+    const mkC = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'x', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    await sendImport(keyU, [mkC('u1', 'Mercure', 'L'), mkC('u2', 'Vénus', 'R'), mkC('u3', 'Mars', 'C')]);
+    await sendImport(keyV, [mkC('v1', 'Terre', 'R')]);
+    const it0 = (title) => ({ title, description: null, image: null, status: 'ok' });
+    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Planètes telluriques', items: [it0('Mercure'), it0('Vénus'), it0('Terre'), it0('Mars')] })).status === 200, 'collection d\'Uma refusée');
+    check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Intérieures', items: [it0('Mercure'), it0('Vénus')] })).status === 200, 'collection d\'Uma refusée');
+    check((await rawApi('PATCH', '/api/me', keyU, { shared: true, shared_targets: true, pseudo: 'UmaDu75' })).status === 200, 'partage d\'Uma refusé');
+    check((await rawApi('PATCH', '/api/me', keyV, { shared: true })).status === 200, 'partage de Vic refusé');
+    const saved = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
+    ls.set('classeur-key', keyV);
+    ls.set('classeur-known', JSON.stringify([{ key: keyV, name: 'Vic' }]));
+    const pv = openPage({ idb: 'absent', hash: '#/chat' });
+    const d = pv.doc;
+    const field = () => d.getElementById('chat-input');
+    const acList = () => d.getElementById('chat-ac');
+    const acRows = () => (acList() ? acList().querySelectorAll('li').map((li) => text(li)) : []);
+    check(await waitFor(() => field()), 'chat de Vic non ouvert');
+    type(field(), 'Regardez #u:um');
+    await settle();
+    check(await waitFor(() => acRows().length === 1), 'suggestions de « #u:um » : ' + acRows().join(' | '));
+    check(acRows()[0] === 'UmaUmaDu75' && acList().getAttribute('aria-label') === 'Membres à citer', 'suggestion de « #u:um » (prénom et pseudo) : ' + acRows().join(' | '));
+    field().dispatch('keydown', { key: 'Enter' });
+    await settle();
+    const pubU = (await rawApi('GET', '/api/members', keyV)).body.members.find((m) => m.name === 'Uma').id;
+    check(field().value === `Regardez ${ORIGIN}/#/ami/${pubU} `, 'lien du classeur inséré : « ' + field().value + ' »');
+    type(field(), field().value + '!');
+    field().dispatch('keydown', { key: 'Enter' });
+    const last = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    check(await waitFor(() => last() && last().classList.contains('mine') && last().querySelector('.chat-user')), 'message avec le membre cité absent');
+    const a = last().querySelector('.chat-user');
+    check(a.tagName === 'A' && text(a) === 'Uma' && a.getAttribute('href') === `#/ami/${pubU}` && (a.getAttribute('title') || '').includes('UmaDu75')
+      && text(last().querySelector('.chat-msg__text')) === 'Regardez Uma !', 'lien du membre dans le message : ' + text(last()));
+    // Aperçu : pseudo (lien vers son profil du jeu), 3 cartes, 2 collections dont 1 complète (Intérieures).
+    const card = () => last().querySelector('.chat-member');
+    check(await waitFor(() => card() && text(card()).includes('2 collections')), 'aperçu du membre : ' + (card() ? text(card()) : 'absent'));
+    const figs = text(card());
+    check(figs.includes('3 cartes') && figs.includes('1 complète') && card().querySelector('.chat-member__pseudo').getAttribute('href') === 'https://www.wiki-masters.com/profile/UmaDu75',
+      'chiffres du membre : ' + figs);
+    // Wil ne montre pas ses cartes : le prénom, sans lien ni chiffres, et pourquoi.
+    ls.set('classeur-key', keyW);
+    ls.set('classeur-known', JSON.stringify([{ key: keyW, name: 'Wil' }]));
+    const pw = openPage({ idb: 'absent', hash: '#/chat' });
+    const lastW = () => { const l = pw.doc.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
+    check(await waitFor(() => lastW() && lastW().querySelector('.chat-user')), 'message de Vic absent chez Wil');
+    const w = lastW();
+    check(w.querySelector('.chat-user').tagName === 'SPAN' && !w.querySelector('.chat-member__pseudo') && !w.querySelector('.chat-member__figs')
+      && text(w.querySelector('.chat-member')).includes('Montre tes cartes'), 'membre cité vu par Wil : ' + text(w));
+    for (const [k, v] of saved) if (v == null) ls.delete(k); else ls.set(k, v);
+    console.log('membres cités : #u:, lien, aperçu (pseudo, cartes, collections, complètes), prénom seul sans partage');
   }
 
   // Nouveautés : page à part (#/nouveautes), pastille « nouveau » tant que la dernière version n'a pas été vue dans ce

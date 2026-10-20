@@ -621,6 +621,17 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   si le lecteur montre ses cartes (réciprocité : de quoi ouvrir `#/ami/<pid>/<id>`), ou `mine` et `id` pour la sienne ;
   `{at, len, gone:true}` si elle est effacée, ou que son propriétaire ne montre plus ses collections (sauf pour lui). L'id interne
   ne sort jamais du serveur ; `GET /api/chat/last` ne rend rien de tout cela. La console D1 montre la forme rangée.
+  **Membres cités** (demande de l'utilisateur du 2026-10-20 : « l'intégration d'un user du classeur ») : de même, un lien
+  du site vers le classeur d'un membre qui montre ses cartes, `#/ami/<id public>` (sans collection, paramètres compris),
+  le sien compris, est rangé `U+E000u:<id du compte>U+E001` ; sinon (membre qui ne montre pas ses cartes, inconnu, autre
+  site) il reste du texte. Les 5 citations par message comptent collections et membres ensemble, dans l'ordre du texte.
+  À la lecture, une requête de plus s'il y en a (clé primaire de `users`, une ligne par membre) : son **prénom actuel**
+  en clair dans le texte (« membre sans prénom » sans prénom, « classeur supprimé » si le compte n'existe plus), et à
+  part, dans **`members`** (pas dans `refs` : une page d'avant cette fonction n'y voit que le prénom, en texte),
+  `{at, len, name, mine, pid, pseudo}` : `pid` (son id public) et `pseudo` (son pseudo dans le jeu) seulement s'il
+  montre ses cartes et que le lecteur montre les siennes (comme `GET /api/members`), jamais pour soi ; ou
+  `{at, len, gone:true}`. Les chiffres de l'aperçu ne viennent pas du serveur : la page les tire de ce qu'elle a déjà lu
+  (voir « Interface »).
   Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
@@ -674,7 +685,7 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     écrit » ; une redirection vers une de tes cartes ouvre la tienne, et le qid appris sert aux pastilles). Sous le
     champ, une aide discrète (aussi sur téléphone) : « Pour montrer une carte : `#` puis son titre, `[[Titre de la
     carte]]`, ou « Partager dans le chat » depuis sa fiche. Pour une collection : `#c:` puis son nom, ou colle son lien.
-    Pour mentionner un membre : `@` puis son prénom. » ;
+    Pour un membre : `@` puis son prénom pour le mentionner, `#u:` pour montrer son classeur. » ;
   - **collections citées** (2026-10-20) : dans le texte, son **nom** en lien vers elle (`#/collections/<id>`, la tienne,
     ou `#/ami/<pid>/<id>`, ouvert dans la page) ; sans `id` (tu ne montres pas tes cartes) son nom seul, avec « Collection
     de Tiff » en info-bulle ; `{gone}` : « collection non partagée » en italique. **Aperçu** sous le message, pour la
@@ -683,6 +694,14 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     lit « Entre amis » (`ensureFriends`, au plus toutes les 10 min). En attendant, ou sans partage : son nom et « Collection
     de Tiff », plus « Lecture de sa progression… » ou « Montre tes cartes (Réglages) pour voir sa progression. » Un autre
     lien vers une vue du classeur (`#/…`, même origine) s'ouvre aussi dans la page, sans nouvel onglet ;
+  - **membres cités** (2026-10-20) : dans le texte, son **prénom** en lien vers son classeur (`#/ami/<pid>`, `#/cartes`
+    pour toi ; pseudo dans le jeu en info-bulle), sans `pid` son prénom seul, « classeur supprimé » en italique.
+    **Aperçu** sous le message, pour le premier (après celui d'une collection citée) : initiale, prénom, pseudo dans le
+    jeu (lien vers son profil du jeu) et les chiffres de son classeur : cartes différentes, collections (« collections
+    non partagées » s'il ne les montre pas) et combien sont complètes (avec SES cartes, comme `viewFriendColRow`), valeur
+    (comme « Entre amis »), tirés d'« Entre amis » (`ensureFriends`, au plus toutes les 10 min) ; pour toi, de ton
+    classeur. En attendant ou sans partage : « Lecture de son classeur… », « Montre tes cartes (Réglages) pour voir son
+    classeur. » ou « Ne montre pas ses cartes. » ;
   - **autocomplétion du champ** (2026-10-19), sur le modèle de la recherche de catégories (`role="combobox"`, liste
     `role="listbox"` **au-dessus** du champ, à cause du clavier du téléphone) : elle s'ouvre sur le `@` ou le `#` placé
     avant le curseur, en début de mot (pas « a@b.fr », « C#maj »), sur la même ligne, 60 caractères tapés au plus depuis,
@@ -707,6 +726,9 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
       (`<origine>/#/collections/<id>` ou `<origine>/#/ami/<id public>/<id>`), que le serveur range sous sa forme stable.
       Une des tiennes alors que tu ne montres pas tes collections : avertissement (les autres verront « collection non
       partagée »), le lien est inséré quand même ;
+    - `#u:` (2026-10-20) : les **membres qui montrent leurs cartes** (comme `@`, sans toi ; il faut montrer les tiennes),
+      avec leur pseudo dans le jeu ; insère le **lien** de son classeur (`<origine>/#/ami/<id public>`), que le serveur
+      range sous sa forme stable ;
     - `@` : les **membres qui montrent leurs cartes** (choix de l'utilisateur : seuls eux peuvent être mentionnés), sauf
       toi : les prénoms de « Entre amis » s'ils sont lus, sinon `GET /api/members` seul (sans leurs cartes), à
       l'ouverture du chat ou au premier `@`, au plus toutes les 10 min (`FRIENDS_TTL`). Comme ce point d'accès, il faut

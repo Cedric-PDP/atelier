@@ -19,6 +19,9 @@
 //   change à chaque réactivation du partage), et retraduit à chaque lecture pour celui qui lit : nom de la collection en
 //   clair dans le texte (une page d'avant cette fonction le montre tel quel), et à part sa position, le prénom de son
 //   propriétaire et de quoi l'ouvrir s'il en a le droit (voir citeRefs). L'id interne ne sort jamais du serveur.
+// - Membres cités (2026-10-20) : de même, un lien vers le classeur d'un membre qui montre ses cartes (#/ami/<id public>)
+//   est rangé sous la forme `\uE000u:<id du compte>\uE001`, rendu par son prénom actuel dans le texte et, à part (`members`,
+//   qu'une page d'avant ignore), de quoi l'ouvrir et son pseudo dans le jeu pour un lecteur qui montre ses cartes.
 
 import { HttpError, json } from './http.js';
 
@@ -37,11 +40,14 @@ const PERSONAL_LINK = /#cle=[A-Za-z0-9_-]{20,}/;
 const NEEDS_NFC = /\p{M}/u;
 // Bornes des collections citées (caractères d'usage privé) : rangées par le serveur seulement, retirées du texte envoyé.
 const REF_BOUNDS = /[\uE000\uE001]/g;
-const REF_MARK = /\uE000c:([A-Za-z0-9_-]{1,64})\/([A-Za-z0-9_-]{1,64})\uE001/g;
+// c:<id du compte>/<id de la collection> (collection) ou u:<id du compte> (membre).
+const REF_MARK = /\uE000(?:c:([A-Za-z0-9_-]{1,64})\/([A-Za-z0-9_-]{1,64})|u:([A-Za-z0-9_-]{1,64}))\uE001/g;
 // Lien du site vers une collection : son hôte, puis l'id public du membre (absent pour #/collections/, la sienne) et l'id
 // de la collection ; les paramètres de la vue (?filtre=…) font partie du lien, pas une ponctuation qui le suit.
 const COL_LINK = /\bhttps?:\/\/([A-Za-z0-9.:[\]-]+)\/?#\/(?:ami\/([A-Za-z0-9_-]{1,64})|collections)\/([A-Za-z0-9_-]{1,64})(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
-export const CHAT_MAX_REFS = 5; // collections citées par message (les suivantes restent des liens)
+// Lien du site vers le classeur d'un membre : #/ami/<id public>, sans collection (paramètres de la vue compris).
+const USER_LINK = /\bhttps?:\/\/([A-Za-z0-9.:[\]-]+)\/?#\/ami\/([A-Za-z0-9_-]{1,64})(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
+export const CHAT_MAX_REFS = 5; // collections et membres cités par message (les suivants restent des liens)
 
 // Texte d'un message : fins de ligne unifiées, tabulations en espaces, contrôles retirés, espaces de fin de ligne
 // retirés, trois lignes vides ou plus réduites à une, bords retirés. 1 à 500 caractères.
@@ -102,27 +108,41 @@ export function eraseChatOf(db, userId) {
     WHERE user_id = ?1`).bind(userId);
 }
 
-// Message tel que la page le reçoit. Ses collections citées (`refs`, seulement s'il y en a) : leur nom en clair dans le
-// texte (« collection non partagée » sinon), jamais les bornes rangées ; chacune {at, len, name, owner, mine, pid, id}
-// (at, len : sa place dans le texte, en unités UTF-16 ; pid et id : de quoi l'ouvrir, null si le lecteur ne le peut pas)
-// ou {at, len, gone: true} (effacée, ou que son propriétaire ne montre plus).
+// Message tel que la page le reçoit, ses citations rendues en clair dans le texte, jamais les bornes rangées (at, len :
+// leur place dans le texte, en unités UTF-16), chaque liste seulement s'il y en a :
+// - `refs`, ses collections : {at, len, name, owner, mine, pid, id} (pid et id : de quoi l'ouvrir, null si le lecteur ne
+//   le peut pas) ou {at, len, gone: true} (effacée, ou que son propriétaire ne montre plus) ;
+// - `members`, ses membres : {at, len, name, mine, pid, pseudo} (pid : de quoi ouvrir son classeur, pseudo : son pseudo
+//   dans le jeu, null si le lecteur ne le peut pas) ou {at, len, gone: true} (classeur supprimé). À part de `refs` : une
+//   page d'avant cette fonction n'en montre que le prénom, en texte.
 const GONE_TEXT = 'collection non partagée';
+const GONE_USER = 'classeur supprimé';
+const NO_NAME = 'membre sans prénom';
 function message(r, cited) {
   const out = { id: r.id, author: r.author ?? null, mine: !!r.mine, text: r.text, created_at: r.created_at };
   if (!r.text.includes('\uE000')) return out;
   const refs = [];
+  const members = [];
   let text = '';
   let last = 0;
   for (const m of r.text.matchAll(REF_MARK)) {
-    const c = (cited && cited.get(m[1] + '/' + m[2])) || { gone: true };
     text += r.text.slice(last, m.index);
-    const shown = c.gone ? GONE_TEXT : c.name;
-    refs.push({ at: text.length, len: shown.length, ...c });
+    let shown;
+    if (m[3]) {
+      const u = (cited && cited.get('u:' + m[3])) || { gone: true };
+      shown = u.gone ? GONE_USER : u.name || NO_NAME;
+      members.push({ at: text.length, len: shown.length, ...(u.gone ? u : { ...u, name: shown }) });
+    } else {
+      const c = (cited && cited.get(m[1] + '/' + m[2])) || { gone: true };
+      shown = c.gone ? GONE_TEXT : c.name;
+      refs.push({ at: text.length, len: shown.length, ...c });
+    }
     text += shown;
     last = m.index + m[0].length;
   }
   out.text = text + r.text.slice(last);
-  out.refs = refs;
+  if (refs.length) out.refs = refs;
+  if (members.length) out.members = members;
   return out;
 }
 
@@ -134,13 +154,33 @@ const CITED = `SELECT json_extract(r.value, '$[0]') AS uid, t.id AS tid, t.name,
   FROM json_each(?1) AS r
   JOIN users AS u ON u.id = json_extract(r.value, '$[0]')
   JOIN targets AS t ON t.user_id = u.id AND t.id = json_extract(r.value, '$[1]')`;
+// Membres cités : leur prénom (lisible par tout le salon, comme l'auteur d'un message) ; l'id public et le pseudo dans le
+// jeu seulement s'il montre ses cartes et que le lecteur montre les siennes (comme GET /api/members). Une requête (clé
+// primaire de users), seulement s'il y en a.
+const CITED_USERS = `SELECT u.id AS uid, u.name, u.game_pseudo AS pseudo, u.public_id AS pid, u.shared
+  FROM json_each(?1) AS r JOIN users AS u ON u.id = r.value`;
 async function citeRefs(db, user, rows) {
   const keys = new Map();
-  for (const r of rows) for (const [, uid, tid] of (r.text || '').matchAll(REF_MARK)) keys.set(uid + '/' + tid, [uid, tid]);
-  if (!keys.size) return null;
-  const { results } = await db.prepare(CITED).bind(JSON.stringify([...keys.values()])).all();
+  const uids = new Set();
+  for (const r of rows) {
+    for (const [, uid, tid, member] of (r.text || '').matchAll(REF_MARK)) {
+      if (member) uids.add(member);
+      else keys.set(uid + '/' + tid, [uid, tid]);
+    }
+  }
+  if (!keys.size && !uids.size) return null;
+  const [cols, people] = await Promise.all([
+    keys.size ? db.prepare(CITED).bind(JSON.stringify([...keys.values()])).all() : { results: [] },
+    uids.size ? db.prepare(CITED_USERS).bind(JSON.stringify([...uids])).all() : { results: [] },
+  ]);
+  const { results } = cols;
   const sees = !!(user.shared && user.public_id);
   const cited = new Map();
+  for (const u of people.results) {
+    const mine = u.uid === user.id;
+    const open = !mine && sees && u.shared && u.pid;
+    cited.set('u:' + u.uid, { name: u.name || '', mine, pid: open ? u.pid : null, pseudo: open && u.pseudo ? u.pseudo : null });
+  }
   for (const c of results) {
     const mine = c.uid === user.id;
     if (!mine && !(c.shared && c.st)) continue;
@@ -151,28 +191,42 @@ async function citeRefs(db, user, rows) {
 }
 
 // Envoi : les liens du site (même hôte que la requête) vers une collection que l'auteur voit (la sienne, ou celle d'un
-// membre qui montre ses collections) deviennent leur forme stable ; les autres liens restent tels quels.
+// membre qui montre ses collections), ou vers le classeur d'un membre qui montre ses cartes (le sien compris), deviennent
+// leur forme stable ; les autres liens restent tels quels.
 const OWNERS = `SELECT r.key AS k, t.user_id AS uid FROM json_each(?1) AS r
   JOIN targets AS t ON t.id = json_extract(r.value, '$[1]') AND t.user_id = CASE WHEN json_extract(r.value, '$[0]') = '' THEN ?2
     ELSE (SELECT id FROM users WHERE public_id = json_extract(r.value, '$[0]') AND shared = 1 AND shared_targets = 1) END`;
+const USERS = 'SELECT r.key AS k, u.id AS uid FROM json_each(?1) AS r JOIN users AS u ON u.public_id = r.value AND u.shared = 1';
 async function storeRefs(db, user, text, host) {
-  const found = [];
+  const all = [];
   for (const m of text.matchAll(COL_LINK)) {
-    if (found.length >= CHAT_MAX_REFS) break;
     if (m[1].toLowerCase() !== host) continue;
     const own = !m[2] || m[2] === user.public_id;
-    found.push({ at: m.index, end: m.index + m[0].length, pid: own ? '' : m[2], tid: m[3] });
+    all.push({ at: m.index, end: m.index + m[0].length, pid: own ? '' : m[2], tid: m[3] });
   }
+  for (const m of text.matchAll(USER_LINK)) {
+    if (m[1].toLowerCase() === host) all.push({ at: m.index, end: m.index + m[0].length, pid: m[2], tid: null });
+  }
+  // Les 5 premiers dans l'ordre du texte (les deux formes ne se chevauchent pas : un lien de membre n'a pas de « / »
+  // après l'id public).
+  const found = all.sort((a, b) => a.at - b.at).slice(0, CHAT_MAX_REFS);
   if (!found.length) return text;
-  const { results } = await db.prepare(OWNERS).bind(JSON.stringify(found.map((f) => [f.pid, f.tid])), user.id).all();
-  const owner = new Map(results.map((r) => [Number(r.k), r.uid]));
+  const cols = found.filter((f) => f.tid);
+  const users = found.filter((f) => !f.tid);
+  const [c, u] = await Promise.all([
+    cols.length ? db.prepare(OWNERS).bind(JSON.stringify(cols.map((f) => [f.pid, f.tid])), user.id).all() : { results: [] },
+    users.length ? db.prepare(USERS).bind(JSON.stringify(users.map((f) => f.pid))).all() : { results: [] },
+  ]);
+  const mark = new Map();
+  for (const r of c.results) { const f = cols[Number(r.k)]; mark.set(f, `\uE000c:${r.uid}/${f.tid}\uE001`); }
+  for (const r of u.results) mark.set(users[Number(r.k)], `\uE000u:${r.uid}\uE001`);
   let out = '';
   let last = 0;
-  found.forEach((f, i) => {
-    if (!owner.has(i)) return;
-    out += text.slice(last, f.at) + `\uE000c:${owner.get(i)}/${f.tid}\uE001`;
+  for (const f of found) {
+    if (!mark.has(f)) continue;
+    out += text.slice(last, f.at) + mark.get(f);
     last = f.end;
-  });
+  }
   return out + text.slice(last);
 }
 const INT = /^\d{1,15}$/;

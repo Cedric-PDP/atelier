@@ -3501,6 +3501,55 @@ await test('chat : collections citées (lien du site rangé sous une forme stabl
   e.DB.close();
 });
 
+await test('chat : membres cités (lien vers son classeur rangé sous une forme stable, prénom en clair, pseudo et lien pour qui partage)', async () => {
+  const { e, q, say, read } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const cleo = await signup('Cléo', e);
+  const pidOf = (u) => q('SELECT public_id AS p FROM users WHERE id = ?', u.user.id)[0].p;
+  const patch = (u, body) => call('PATCH', 'me', { key: u.key, e, body });
+  await patch(ben, { pseudo: 'Mugi' });
+  await patch(cleo, { shared: false }); // Cléo ne montre rien
+  const site = 'http://localhost:8788/';
+  const tid = (await call('POST', 'targets/save', { key: ben.key, e, body: { name: 'Équipage', items: [{ title: 'Luffy', status: 'ok' }] } })).json.target.id;
+  const membersOf = (msg) => msg.members && msg.members.map(({ at, len, ...x }) => x);
+
+  // Lien vers le classeur de Ben (paramètres compris), suivi d'un lien vers sa collection : les deux rangés, dans l'ordre ;
+  // le prénom en clair dans le texte, à part dans `members` (jamais dans `refs`, qu'une page d'avant prendrait pour une
+  // collection).
+  let r = await say(ana.key, `Salut ${site}#/ami/${pidOf(ben)}?q=luffy, bravo pour ${site}#/ami/${pidOf(ben)}/${tid} !`);
+  assert.equal(r.status, 201, JSON.stringify(r.json));
+  let m = r.json.message;
+  assert.deepEqual([m.text, m.members, m.refs.map((x) => x.at)], ['Salut Ben, bravo pour Équipage !',
+    [{ at: 6, len: 3, name: 'Ben', mine: false, pid: pidOf(ben), pseudo: 'Mugi' }], [22]]);
+  assert.equal(q('SELECT text FROM chat_messages WHERE id = ?', m.id)[0].text.slice(6, 6 + 3 + ben.user.id.length + 1), `u:${ben.user.id}`);
+  // Ben : lui-même (ni lien ni pseudo : sa page sait qui il est). Cléo (ne montre pas ses cartes) : le prénom seul.
+  assert.deepEqual(membersOf((await read(ben.key)).json.messages[0]), [{ name: 'Ben', mine: true, pid: null, pseudo: null }]);
+  assert.deepEqual(membersOf((await read(cleo.key)).json.messages[0]), [{ name: 'Ben', mine: false, pid: null, pseudo: null }]);
+  for (const u of [ana, ben, cleo]) assert.ok(!JSON.stringify((await read(u.key)).json).includes(ben.user.id), "jamais l'id interne");
+  // Partage coupé puis remis (nouvel id public) et renommé : le message suit. Partage coupé : le prénom seul.
+  await patch(ben, { shared: false });
+  assert.deepEqual(membersOf((await read(ana.key)).json.messages[0]), [{ name: 'Ben', mine: false, pid: null, pseudo: null }]);
+  await patch(ben, { shared: true, name: 'Benoît' });
+  r = await read(ana.key);
+  assert.deepEqual([r.json.messages[0].text.slice(0, 12), membersOf(r.json.messages[0])], ['Salut Benoît', [{ name: 'Benoît', mine: false, pid: pidOf(ben), pseudo: 'Mugi' }]]);
+  // Un membre qui ne montre pas ses cartes, un autre site, un id inconnu : restent des liens. Le sien : rangé.
+  const plain = [`${site}#/ami/x${pidOf(ana)}`, `https://autre.example/#/ami/${pidOf(ben)}`, `${site}#/ami/inconnu`];
+  r = await say(ana.key, plain.join(' '));
+  assert.deepEqual([r.json.message.text, r.json.message.members], [plain.join(' '), undefined]);
+  r = await say(ana.key, `Moi : ${site}#/ami/${pidOf(ana)}`);
+  assert.deepEqual([r.json.message.text, membersOf(r.json.message)], ['Moi : Ana', [{ name: 'Ana', mine: true, pid: null, pseudo: null }]]);
+  // Classeur supprimé : « classeur supprimé » pour tous.
+  await call('DELETE', 'me', { key: ben.key, e });
+  r = await read(ana.key);
+  const first = r.json.messages.find((x) => x.text.startsWith('Salut'));
+  assert.deepEqual([first.text, first.members], ['Salut classeur supprimé, bravo pour collection non partagée !', [{ at: 6, len: 17, gone: true }]]);
+  // 5 citations par message au plus, membres et collections confondus.
+  r = await say(ana.key, Array(6).fill(`${site}#/ami/${pidOf(ana)}`).join(' '));
+  assert.deepEqual([r.json.message.members.length, r.json.message.text.endsWith(pidOf(ana))], [5, true]);
+  e.DB.close();
+});
+
 await test('chat : purge (les 2 000 plus récents gardés, à chaque envoi), numéros jamais réutilisés', async () => {
   const { e, q, say, read, bulk } = chatEnv();
   const ana = await signup('Ana', e);

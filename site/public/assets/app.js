@@ -8025,15 +8025,16 @@
     if (last < text.length) out.push({ text: text.slice(last) });
     return out;
   }
-  // Morceaux d'un message : collections citées ({text: nom, col: ref}, à leur place dans le texte, dans l'ordre et sans
-  // chevauchement ; les autres sont ignorées), puis, entre elles, cardParts.
-  function chatParts(text, refs) {
+  // Morceaux d'un message : collections et membres cités ({text: nom, col: ref} ou {text: prénom, member: ref}, à leur
+  // place dans le texte, dans l'ordre et sans chevauchement ; les autres sont ignorés), puis, entre eux, cardParts.
+  function chatParts(text, refs, members) {
     const out = [];
     let last = 0;
-    for (const ref of refs) {
+    const all = [...refs.map((ref) => ({ ref, col: ref })), ...members.map((ref) => ({ ref, member: ref }))].sort((a, b) => a.ref.at - b.ref.at);
+    for (const { ref, col, member } of all) {
       if (ref.at < last || ref.at + ref.len > text.length) continue;
       if (ref.at > last) out.push(...cardParts(text.slice(last, ref.at)));
-      out.push({ text: text.slice(ref.at, ref.at + ref.len), col: ref });
+      out.push(col ? { text: text.slice(ref.at, ref.at + ref.len), col } : { text: text.slice(ref.at, ref.at + ref.len), member });
       last = ref.at + ref.len;
     }
     if (last < text.length) out.push(...cardParts(text.slice(last)));
@@ -8116,7 +8117,7 @@
     const parts = [];
     let me = false;
     for (const p of m.parts) {
-      if (p.card || p.url || p.col) { parts.push(p); continue; }
+      if (p.card || p.url || p.col || p.member) { parts.push(p); continue; }
       for (const q of atParts(p.text, names)) { parts.push(q); if (q.me) me = true; }
     }
     x = { names, parts, me: me && !m.mine };
@@ -8128,8 +8129,20 @@
     if (!Number.isInteger(id) || id <= 0) return null;
     const text = String(m.text || '');
     const refs = (Array.isArray(m.refs) ? m.refs : []).map(prepChatRef).filter(Boolean);
+    const members = (Array.isArray(m.members) ? m.members : []).map(prepChatMember).filter(Boolean);
     return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''),
-      parts: chatParts(text, refs), refs });
+      parts: chatParts(text, refs, members), refs, members });
+  }
+  // Membre cité tel que le serveur le rend : {at, len, name, mine, pid, pseudo} (pid : de quoi ouvrir son classeur,
+  // pseudo : son pseudo dans le jeu, si tu montres tes cartes et lui les siennes), ou {at, len, gone: true} (classeur
+  // supprimé) ; sans place valide : ignoré (son prénom reste du texte).
+  function prepChatMember(r) {
+    if (!r || typeof r !== 'object' || !Number.isInteger(r.at) || !Number.isInteger(r.len) || r.at < 0 || r.len <= 0) return null;
+    const { at, len } = r;
+    if (r.gone || typeof r.name !== 'string') return { at, len, gone: true };
+    const mine = r.mine === true;
+    const pid = !mine && typeof r.pid === 'string' && REF_ID.test(r.pid) ? r.pid : null;
+    return { at, len, name: r.name || 'Sans prénom', mine, pid, pseudo: pid && typeof r.pseudo === 'string' && r.pseudo ? r.pseudo : null };
   }
   // Collection citée telle que le serveur la rend : {at, len, name, owner, mine, pid, id} (pid : son propriétaire, si tu
   // peux ouvrir ses collections ; id : la collection, si tu peux l'ouvrir), ou {at, len, gone: true} ; sans place valide :
@@ -8147,7 +8160,7 @@
   // Des messages lus citent la collection d'un ami : ses cartes et ses collections (« Entre amis ») pour en montrer la
   // progression dans l'aperçu, au plus toutes les 10 min, comme l'onglet.
   function loadCitedFriends() {
-    if (sharing() && chatMsgs.value.some((m) => m.refs.some((r) => r.pid))) ensureFriends();
+    if (sharing() && chatMsgs.value.some((m) => m.refs.some((r) => r.pid) || m.members.some((r) => r.pid))) ensureFriends();
   }
   // Pastille d'une carte citée : la fiche de ta carte, sinon celle d'une carte que tu n'as pas (ce qu'en disent tes
   // collections, puis l'article vérifié sur Wikipédia : checkChatCard).
@@ -8252,7 +8265,7 @@
     const job = api('GET', '/api/members').then((r) => {
       if (gen !== friendsGen) return;
       chatMembers.value = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.name === 'string' && m.name)
-        .map((m) => markRaw({ name: m.name, pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null }));
+        .map((m) => markRaw({ id: typeof m.id === 'string' ? m.id : '', name: m.name, pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null }));
       chatMembersAt = Date.now();
     }).catch(() => { /* la liste reste vide : on tape le prénom à la main */ }).finally(() => { if (chatMembersJob === job) chatMembersJob = null; });
     chatMembersJob = job;
@@ -8284,6 +8297,15 @@
       }
     }
     return out;
+  });
+  // Membres proposés après « #u: » : ceux qui montrent leurs cartes (« Entre amis » s'il est lu, sinon GET /api/members
+  // seul ; il faut montrer les siennes). Insère le lien de son classeur : le serveur le range sous une forme stable.
+  const chatUserChoices = computed(() => {
+    if (!sharing()) return [];
+    const site = location.origin + '/#/ami/';
+    const src = friendList.value.length ? friendList.value : chatMembers.value;
+    return src.filter((f) => f.id && REF_ID.test(f.id)).map((f) => ({ key: f.id, name: friendName(f), f: fold(friendName(f)), pseudo: f.pseudo || null,
+      url: site + encodeURIComponent(f.id) }));
   });
   // Articles de Wikipédia par préfixe (list=prefixsearch, 8 au plus, dans l'ordre de Wikipédia : les plus consultés
   // d'abord), 250 ms après la dernière frappe ; une recherche périmée est abandonnée.
@@ -8338,6 +8360,11 @@
         .sort((a, b) => a.r - b.r || b.x.mine - a.x.mine || COLLATOR.compare(a.x.name, b.x.name)).slice(0, CHAT_AC_MAX)
         .map(({ x }) => ({ key: 'col:' + x.key, label: x.name, insert: x.url, hint: x.mine ? 'ta collection' : 'de ' + x.owner, col: x }));
     }
+    if (ac.kind === 'u') {
+      return chatUserChoices.value.map((x) => ({ x, r: rank(x.f) })).filter((y) => y.r < 9)
+        .sort((a, b) => a.r - b.r || COLLATOR.compare(a.x.name, b.x.name)).slice(0, CHAT_AC_MAX)
+        .map(({ x }) => ({ key: 'u:' + x.key, label: x.name, insert: x.url, hint: x.pseudo }));
+    }
     const hits = [];
     const seen = new Set();
     for (const c of chatCardChoices.value) { const r = rank(c.f); if (r < 9) { hits.push([r, c]); seen.add(titleKey(c.title)); } }
@@ -8366,10 +8393,10 @@
     const off = c.acOff;
     if (!tr || !off || off.start !== tr.start || !tr.q.startsWith(off.tq)) c.acOff = null;
     if (!tr || c.acOff !== null) { c.ac = null; stopChatWp(); return; }
-    // « #c: » : une collection (les tiennes, celles des amis), pas une carte.
-    const kind = tr.kind === '#' && /^c:/i.test(tr.q) ? 'c' : tr.kind;
-    const q = kind === 'c' ? tr.q.slice(2) : tr.q;
-    if (kind === '@') { loadChatMembers(); stopChatWp(); } else if (kind === 'c') { ensureFriends(); stopChatWp(); } else chatWpSearch(q);
+    // « #c: » : une collection (les tiennes, celles des amis), « #u: » : un membre, pas une carte.
+    const kind = tr.kind === '#' && /^[cu]:/i.test(tr.q) ? tr.q.charAt(0).toLowerCase() : tr.kind;
+    const q = kind === 'c' || kind === 'u' ? tr.q.slice(2) : tr.q;
+    if (kind === '@' || kind === 'u') { loadChatMembers(); stopChatWp(); } else if (kind === 'c') { ensureFriends(); stopChatWp(); } else chatWpSearch(q);
     const same = c.ac && c.ac.kind === kind && c.ac.start === tr.start && c.ac.q === q;
     c.ac = { ...tr, tq: tr.q, kind, q, active: same ? c.ac.active : 0 };
   }
@@ -8775,8 +8802,70 @@
       h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
         : p.at ? h('span', { class: ['chat-at', { me: p.me }], title: p.me ? null : pseudoTip({ pseudo: pseudoOf(p.text.slice(1)) }) }, p.text)
         : p.col ? viewChatColLink(p)
+        : p.member ? viewChatMemberLink(p)
         : p.url ? (p.local ? h('a', { href: p.url }, p.text) : h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text)) : p.text))),
       viewChatColEmbed(m.refs.find((r) => !r.gone)),
+      viewChatMemberEmbed(m.members.find((r) => !r.gone)),
+    ]);
+  }
+  // Membre cité, dans le texte : son prénom en lien vers son classeur (« Mes cartes » pour toi), avec son pseudo dans le
+  // jeu en info-bulle ; sans lien (tu ne montres pas tes cartes, ou lui plus les siennes) : son prénom seul ; « classeur
+  // supprimé » en italique.
+  function viewChatMemberLink(p) {
+    const ref = p.member;
+    if (ref.gone) return h('span', { class: 'chat-col gone', title: 'Ce classeur a été supprimé' }, p.text);
+    const tip = ref.pseudo ? ` (pseudo dans le jeu : ${ref.pseudo})` : '';
+    if (ref.mine) return h('a', { class: 'chat-col chat-user', href: '#/cartes', title: 'Toi : ouvrir tes cartes' }, p.text);
+    return ref.pid ? h('a', { class: 'chat-col chat-user', href: '#/ami/' + encodeURIComponent(ref.pid), title: `Ouvrir le classeur de ${ref.name}${tip}` }, p.text)
+      : h('span', { class: 'chat-col chat-user', title: sharing() ? `${ref.name} ne montre pas ses cartes` : 'Montre tes cartes (Réglages) pour ouvrir son classeur' }, p.text);
+  }
+  // Aperçu sous le message (le premier membre cité) : prénom, pseudo dans le jeu (lien vers son profil du jeu) et quelques
+  // chiffres de son classeur : cartes différentes, collections (et combien sont complètes), valeur. Ceux d'un ami viennent
+  // d'« Entre amis » (ses cartes et ses collections, s'il les montre) ; les tiens, de ton classeur.
+  function viewChatMemberEmbed(ref) {
+    if (!ref) return null;
+    let st = null;
+    let pseudo = ref.pseudo;
+    let href = null;
+    if (ref.mine) {
+      const all = collections.value.all;
+      st = { cards: cards.value.length, cols: all.length, done: all.filter((col) => { const p = progressOf(col); return p.total > 0 && p.own >= p.total; }).length,
+        worth: M.value && M.value.priced ? M.value.value : null };
+      pseudo = (S.me && S.me.user && S.me.user.pseudo) || null;
+      href = '#/cartes';
+    } else if (ref.pid) {
+      void qidVersion.value;
+      href = '#/ami/' + encodeURIComponent(ref.pid);
+      const f = friendList.value.find((x) => x.id === ref.pid);
+      if (f && f.cards) {
+        const fw = friendWorths.value.get(f.id);
+        let done = null;
+        if (f.targets) {
+          const index = friendIndexOf(f.id);
+          done = f.targets.filter((t) => { const p = friendProgressFor(index, t); return p.total > 0 && p.own >= p.total; }).length;
+        }
+        st = { cards: f.count, cols: f.tshare ? f.tcount : null, done, worth: fw && fw.priced ? fw.value : null };
+        pseudo = f.pseudo || pseudo;
+      }
+    }
+    const why = st || ref.mine ? null : !sharing() ? 'Montre tes cartes (Réglages) pour voir son classeur.'
+      : !ref.pid ? 'Ne montre pas ses cartes.' : friendsJob ? 'Lecture de son classeur…' : null;
+    const fig = (n, one, many) => h('span', { class: 'chat-member__fig' }, [h('b', null, fmt(n)), ' ' + plural(n, one, many)]);
+    return h('div', { class: 'chat-embed chat-embed--light chat-member' }, [
+      h('span', { class: 'avatar sm', 'aria-hidden': 'true' }, initialOf(ref.name)),
+      h('span', { class: 'chat-embed__info' }, [
+        h('span', { class: 'chat-member__head' }, [
+          href ? h('a', { class: 'chat-embed__name', href }, ref.mine ? `${ref.name} (toi)` : ref.name) : h('span', { class: 'chat-embed__name' }, ref.name),
+          pseudo ? h('a', { class: 'chat-member__pseudo', href: gameProfileUrl(pseudo), target: '_blank', rel: 'noopener noreferrer', title: 'Son profil dans le jeu' }, pseudo + ' ↗') : null,
+        ]),
+        st ? h('span', { class: 'chat-member__figs' }, [
+          fig(st.cards, 'carte', 'cartes'),
+          st.cols === null ? h('span', { class: 'chat-member__fig muted' }, 'collections non partagées')
+            : [fig(st.cols, 'collection', 'collections'), st.done !== null && st.cols ? h('span', { class: 'chat-member__fig' }, [h('b', null, fmt(st.done)), ' ' + plural(st.done, 'complète', 'complètes')]) : null],
+          st.worth !== null ? h('span', { class: 'chat-member__fig', title: ref.mine ? 'Valeur de ton classeur (onglet « Marché »)' : FRIEND_WORTH }, ['valeur ', priceTag(st.worth)]) : null,
+        ]) : null,
+        why ? h('span', { class: 'chat-embed__why', role: ref.pid ? 'status' : null }, why) : null,
+      ]),
     ]);
   }
   // Collection citée, dans le texte : un lien vers elle (son nom), sinon son nom seul (tu ne montres pas tes cartes), ou
@@ -8842,6 +8931,8 @@
     // Sans suggestion : pourquoi (« @ » : il faut montrer ses cartes, liste en cours de lecture ; « # » : recherche en cours).
     const status = !ac || open ? ''
       : ac.kind === '#' ? (c.acWp.loading ? 'Recherche sur Wikipédia…' : '')
+      : ac.kind === 'u' ? (!sharing() ? 'Seuls les membres qui montrent leurs cartes peuvent être cités, et il faut montrer les tiennes (Réglages) pour les voir ici.'
+        : chatMembersJob && !chatUserChoices.value.length ? 'Lecture des membres…' : `Aucun membre${ac.q.trim() ? ` ne s'appelle « ${ac.q.trim()} »` : ' ne montre ses cartes pour l\'instant'}.`)
       : ac.kind === 'c' ? (sharing() && friendsJob ? 'Lecture des collections des membres…'
         : `Aucune collection${ac.q.trim() ? ` ne s'appelle « ${ac.q.trim()} »` : ''}${sharing() ? '' : ' parmi les tiennes (montre tes cartes, Réglages, pour citer celles des autres membres)'}.`)
       : !sharing() ? 'Seuls les membres qui montrent leurs cartes peuvent être mentionnés, et il faut montrer les tiennes (Réglages) pour les voir ici.'
@@ -8867,7 +8958,7 @@
           onKeyup: (e) => { if (/^(ArrowLeft|ArrowRight|Home|End)$/.test(e.key)) updateChatAc(e.target); },
           onClick: (e) => updateChatAc(e.target),
           onBlur: () => { c.ac = null; stopChatWp(); } }),
-        open ? h('ul', { id: 'chat-ac', class: 'prop-list chat-ac', role: 'listbox', 'aria-label': ac.kind === '@' ? 'Membres à mentionner' : ac.kind === 'c' ? 'Collections à citer' : 'Cartes à citer' }, list.map(option))
+        open ? h('ul', { id: 'chat-ac', class: 'prop-list chat-ac', role: 'listbox', 'aria-label': ac.kind === '@' ? 'Membres à mentionner' : ac.kind === 'u' ? 'Membres à citer' : ac.kind === 'c' ? 'Collections à citer' : 'Cartes à citer' }, list.map(option))
           : status ? h('p', { class: 'prop-list prop-list--empty chat-ac', role: 'status' }, status) : null,
       ]),
       h('div', { class: 'chat-form__foot' }, [
@@ -8878,8 +8969,8 @@
       errLine(c.sendError),
       // Aide (aussi sur téléphone, contrairement aux raccourcis) : citer une carte.
       h('p', { id: 'chat-tip', class: 'chat-tip' }, ['Pour montrer une carte : ', h('code', null, '#'), ' puis son titre, ', h('code', null, '[[Titre de la carte]]'),
-        ', ou « Partager dans le chat » depuis sa fiche. Pour une collection : ', h('code', null, '#c:'), ' puis son nom, ou colle son lien. Pour mentionner un membre : ',
-        h('code', null, '@'), ' puis son prénom.']),
+        ', ou « Partager dans le chat » depuis sa fiche. Pour une collection : ', h('code', null, '#c:'), ' puis son nom, ou colle son lien. Pour un membre : ', h('code', null, '@'),
+        ' puis son prénom pour le mentionner, ', h('code', null, '#u:'), ' pour montrer son classeur.']),
     ]);
   }
   function viewChat() {
