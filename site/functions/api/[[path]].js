@@ -11,7 +11,7 @@ import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
 import { deleteTarget, listTargets, saveGameTarget, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
-import { deleteChat, listChat, postChat } from '../_lib/chat.js';
+import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices, marketPlan, postFail, postLive, postPrices } from '../_lib/market.js';
 import { listSyncLog, reportSync } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
@@ -53,6 +53,7 @@ const ROUTES = {
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
   chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs ; jamais la clé d'import
   'chat/*': { DELETE: [deleteChat, 'main'] }, // chat/<numéro du message> : par son auteur
+  'chat/last': { GET: [lastChat, false] }, // heure du dernier message, sans clé (outil de publication des nouveautés)
   market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
   'market/prices': { GET: [listPrices, 'main'], POST: [postPrices, 'import'] }, // cotes : lues par la page, envoyées par le favori
   'market/plan': { POST: [marketPlan, 'import'] }, // favori : cartes à coter, titres des cartes voulues

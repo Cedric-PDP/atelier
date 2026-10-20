@@ -3338,6 +3338,22 @@ await test('chat : envoi, lecture (100 plus récents, ?after, ?before), auteur =
   e.DB.close();
 });
 
+await test('chat : GET /api/chat/last, sans clé, rend seulement l\'heure du dernier message (suppressions sautées)', async () => {
+  const { e, say, del } = chatEnv();
+  const last = () => call('GET', 'chat/last', { e });
+  let r = await last();
+  assert.deepEqual([r.status, r.json], [200, { last_at: null }]);
+  const ana = await signup('Ana', e);
+  const a1 = (await say(ana.key, 'Premier')).json.message;
+  const a2 = (await say(ana.key, 'Second, secret')).json.message;
+  r = await last();
+  assert.deepEqual(r.json, { last_at: a2.created_at }, 'rien d\'autre que l\'heure');
+  await del(ana.key, a2.id);
+  assert.deepEqual((await last()).json, { last_at: a1.created_at }, 'message supprimé sauté');
+  assert.equal((await call('POST', 'chat/last', { e, body: {} })).status, 405);
+  e.DB.close();
+});
+
 await test("chat : suppression par l'auteur seulement (403 sur celui d'un autre, 404), propagée aux pages ouvertes par ?after", async () => {
   const { e, q, say, read, del } = chatEnv();
   const ana = await signup('Ana', e);

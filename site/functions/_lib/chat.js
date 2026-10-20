@@ -176,6 +176,15 @@ async function limitError(db, user, now, minute, day) {
   return new HttpError(429, 'Envoi refusé un instant : réessaie.', { retry_after: 1 });
 }
 
+// GET /api/chat/last (sans clé) → {last_at} : heure du dernier message d'un membre (null sans message), rien d'autre (ni
+// texte, ni auteur, ni numéro). Sert à l'outil de publication des nouveautés (skill « publier ») : une annonce du chat
+// (nouveautes.json) plus récente que lui est la dernière chose du fil. Lu par la clé primaire en partant de la fin
+// (marques de suppression sautées).
+export async function lastChat(env) {
+  const row = await env.DB.prepare('SELECT created_at FROM chat_messages WHERE deleted = 0 ORDER BY id DESC LIMIT 1').first();
+  return { last_at: row ? row.created_at : null };
+}
+
 // DELETE /api/chat/<id> : par son auteur seulement (403 sinon, 404 s'il n'existe plus). Déjà supprimé par lui : ok.
 export async function deleteChat(env, user, _body, request) {
   const m = new URL(request.url).pathname.match(/\/chat\/(\d{1,15})\/?$/);
