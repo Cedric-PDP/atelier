@@ -6,7 +6,7 @@
 // cookie de session de ses pages : il est refait à partir de la session gardée, jamais donné au navigateur.
 
 import { HttpError } from './http.js';
-import { AUTH_COOKIE, acquireLease, authFromCookie, freshAuth, inList, releaseLease, renewSession, sealSession, sessionOf, supaGet } from './game.js';
+import { AUTH_COOKIE, acquireLease, authFromCookie, inList, releaseLease, renewSession, sealSession, sessionOf, supaGet } from './game.js';
 import { bytesToBase64, nowIso } from './util.js';
 
 export const GAME_ORIGIN = 'https://www.wiki-masters.com';
@@ -92,7 +92,8 @@ async function copiesOf(env, user, s, uid, ids) {
   const out = new Map();
   if (!ids.length) return out;
   const { rows } = await supaGet(env, user, s,
-    `user_cards?select=id,card_id,count,starred,is_shiny,obtained_at&user_id=eq.${encodeURIComponent(uid)}&card_id=in.${inList(ids)}&limit=1000`);
+    `user_cards?select=id,card_id,count,starred,is_shiny,obtained_at&user_id=eq.${encodeURIComponent(uid)}&card_id=in.${inList(ids)}&limit=1000`,
+    { retry: s.leased });
   for (const r of rows) {
     if (!r || typeof r.id !== 'string' || typeof r.card_id !== 'string') continue;
     if (!out.has(r.card_id)) out.set(r.card_id, []);
@@ -165,21 +166,28 @@ export async function createTrade(env, user, body) {
   const hisTitles = new Map(theirs.results.map((r) => [r.card_id, r.title]));
   const title = (m, id) => m.get(id) || id;
 
+  // Le bail n'est indispensable que pour renouveler la session (deux renouvellements en même temps la fermeraient). Une
+  // lecture automatique peut le tenir plusieurs minutes : si la session vaut encore plus de TRADE_MARGIN_MS, l'échange
+  // part sans bail et sans jamais la renouveler (le jeton d'accès reste valable même si la lecture la renouvelle).
   const lease = await acquireLease(db, user.id, LEASE_MS);
-  if (!lease) throw new HttpError(409, 'Une lecture de ton compte du jeu est en cours : réessaie dans un instant.');
   try {
-    // Session relue sous le bail : une lecture a pu la renouveler depuis l'authentification (son jeton de renouvellement
+    // Session relue après le bail : une lecture a pu la renouveler depuis l'authentification (son jeton de renouvellement
     // d'avant ne resservirait pas).
     const now = await db.prepare('SELECT game_session_enc, game_session_v, game_session_lost, game_uid FROM users WHERE id = ?1').bind(user.id).first();
     const s = await sessionOf(env, { ...user, ...now });
     if (!s.uid) throw new HttpError(401, 'Relie à nouveau ton compte du jeu (onglet « Synchro ») : il manque ton identifiant de joueur.', { needs_link: true });
-    if ((Number(s.auth.expires_at) || 0) * 1000 - Date.now() < TRADE_MARGIN_MS) await renewSession(env, user, s);
-    else await freshAuth(env, user, s);
+    s.leased = !!lease;
+    if ((Number(s.auth.expires_at) || 0) * 1000 - Date.now() < TRADE_MARGIN_MS) {
+      if (!lease) {
+        throw new HttpError(409, 'Une lecture automatique de ton compte du jeu est en cours et ta session doit être renouvelée : réessaie dans quelques minutes.');
+      }
+      await renewSession(env, user, s);
+    }
 
     // L'ami dans le jeu : le compte qu'il a relié, sinon son pseudo (Réglages).
     let recipient = friend.game_uid || null;
     if (!recipient && friend.game_pseudo) {
-      const { rows } = await supaGet(env, user, s, `profiles?select=id&username=eq.${encodeURIComponent(friend.game_pseudo)}&limit=2`);
+      const { rows } = await supaGet(env, user, s, `profiles?select=id&username=eq.${encodeURIComponent(friend.game_pseudo)}&limit=2`, { retry: s.leased });
       if (rows.length === 1 && typeof rows[0].id === 'string') recipient = rows[0].id;
     }
     if (!recipient && !friend.game_pseudo) {
@@ -244,6 +252,6 @@ export async function createTrade(env, user, body) {
       url: GAME_ORIGIN + '/trades',
     };
   } finally {
-    await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
+    if (lease) await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
   }
 }

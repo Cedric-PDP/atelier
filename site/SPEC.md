@@ -697,7 +697,11 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   « Tu donnes 2 cartes, tu reçois 1 carte. », 40 cartes au plus. Sans compte du jeu relié : avertissement, envoi
   désactivé et « Relier mon compte ». « Proposer l'échange dans le jeu » appelle `POST /api/trades/create` ; une erreur
   reste dans la fenêtre ; une réussite dit ce qui part et ce qui arrive, et donne le lien vers les échanges du jeu. Le
-  serveur, avec la session reliée du membre (sous son bail, 2 min) :
+  serveur, avec la session reliée du membre, sous son bail (2 min) s'il est libre. Une lecture automatique peut tenir ce
+  bail plusieurs minutes : il ne sert qu'à éviter deux renouvellements de la session en même temps, donc l'échange part
+  **sans bail** si la session vaut encore plus de 5 min (aucun renouvellement, ni d'avance ni sur un `401` ; le jeton
+  d'accès reste valable même si la lecture renouvelle la session). Sans bail et session à renouveler : `409` « réessaie
+  dans quelques minutes » (2026-10-22 : un second échange tombait sur une lecture automatique en cours) :
   1. l'ami dans le jeu : le compte qu'il a relié (`game_uid`), sinon son pseudo (`profiles?username=eq.…`) ; ni l'un ni
      l'autre : `409` ;
   2. le jeton d'accès renouvelé d'avance s'il expire dans moins de **5 min** (le jeu, lui, renouvelle à 90 s : il n'a

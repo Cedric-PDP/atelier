@@ -3556,8 +3556,20 @@ await test('échange : POST /api/trades/create propose un échange dans le jeu (
 
   // Bail pris par une lecture en cours ; compte du jeu pas relié ; partage coupé.
   e.DB.sqlite.prepare('UPDATE users SET game_uid = ? WHERE id = ?').run(benUid, ben.user.id);
-  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(new Date(Date.now() + 60_000).toISOString(), ana.user.id);
-  assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 409);
+  // Bail pris par une lecture automatique (elle peut le tenir plusieurs minutes) : session fraîche → l'échange part quand même,
+  // sans renouvellement et sans toucher au bail ; session à renouveler → 409, rien d'envoyé.
+  const held = new Date(Date.now() + 60_000).toISOString();
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(held, ana.user.id);
+  supa.calls = [];
+  const before = supa.trades.length;
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([supa.trades.length, supa.tokens().length, userRow(ana.user.id, e).sync_lock], [before + 1, 0, held]);
+  const s1 = await sessionOf(e, userRow(ana.user.id, e));
+  pa.expires_at = Math.floor(Date.now() / 1000) + 200;
+  e.DB.sqlite.prepare('UPDATE users SET game_session_enc = ? WHERE id = ?').run(await sealSession(e, ana.user.id, { ...s1.auth, expires_at: pa.expires_at }), ana.user.id);
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.deepEqual([r.status, /réessaie dans quelques minutes/.test(r.json.error), supa.trades.length, supa.tokens().length], [409, true, before + 1, 0]);
   e.DB.sqlite.prepare('UPDATE users SET sync_lock = NULL WHERE id = ?').run(ana.user.id);
   const cleo = await signup('Cléo', e);
   r = await create({ member: pub(ben), give: [anaCards[0].id] }, cleo);
