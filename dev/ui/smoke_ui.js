@@ -258,7 +258,7 @@ function mockApi() {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
-          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null });
+          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -284,9 +284,13 @@ function mockApi() {
           if (typeof body.auto_sync !== 'boolean') return json(400, { error: '« auto_sync » vaut true ou false.' });
           st.autoSync = body.auto_sync;
         }
+        if ('fast_sync' in body) {
+          if (typeof body.fast_sync !== 'boolean') return json(400, { error: '« fast_sync » vaut true ou false.' });
+          st.fastSync = body.fast_sync;
+        }
         if ('name' in body) st.name = body.name;
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
-          auto_sync: st.autoSync });
+          auto_sync: st.autoSync, fast_sync: !!st.fastSync });
       }
       // « Proposer un échange » : créé dans le jeu par le serveur (ici, gardé dans api.trades) ; titres des cartes de chacun.
       if (p === '/api/trades/create' && method === 'POST') {
@@ -2471,6 +2475,19 @@ async function main() {
 
   // 16. Changer ma clé : nouveau lien montré, ancienne clé oubliée
   await goTab('reglages');
+  {
+    // « Synchro rapide du marché » : décochée par défaut, PATCH /api/me {fast_sync} au clic.
+    const fast = byId('set-fast-sync');
+    check(fast && !fast.checked && has('à tes risques'), '« Synchro rapide du marché » absente ou cochée par défaut');
+    fast.checked = true;
+    fast.dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    check(byId('set-fast-sync').checked && (SERVER || api.st.fastSync === true), '« Synchro rapide du marché » non cochée');
+    byId('set-fast-sync').checked = false;
+    byId('set-fast-sync').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    check(!byId('set-fast-sync').checked && (SERVER || api.st.fastSync === false), '« Synchro rapide du marché » non décochée');
+  }
   check(has("Un lien ouvert reste dans l'historique du navigateur"), "l'avertissement sur l'historique manque");
   needButton('Changer ma clé').click();
   await settle();

@@ -9,7 +9,7 @@ import { eraseChatOf } from './chat.js';
 
 export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
   + 'shared_targets, last_sync, game_pseudo, game_session_enc, game_uid, game_session_v, game_session_at, game_session_lost, sync_lock, '
-  + 'sync_click_at, auto_sync, sync_fails, link_hash, link_until';
+  + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -152,12 +152,14 @@ export async function getMe(env, user) {
     market_at: user.market_at || null, // dernière lecture du marché (market.js) : la page relit alors l'onglet « Marché »
     // Dernière ligne du journal des synchros ({at, kind, via, result, message}, synclog.js), ou null.
     last_sync: user.last_sync ? raw(user.last_sync) : null,
+    fast_sync: !!user.fast_sync, // réglage « Synchro rapide du marché » (essai, marketread.js)
     session: sessionView(user),
   };
 }
 
-// PATCH /api/me {name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?} : `auto_sync` (booléen) permet ou coupe les
-// lectures automatiques de la collection et du marché ; `shared` (booléen) active ou coupe le partage entre membres,
+// PATCH /api/me {name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?, fast_sync?} : `auto_sync` (booléen) permet ou
+// coupe les lectures automatiques de la collection et du marché ; `fast_sync` (booléen, coupé par défaut) lit le marché plus
+// vite (marketread.js) ; `shared` (booléen) active ou coupe le partage entre membres,
 // `shared_targets` (booléen, seulement avec `shared`) celui des collections à compléter (members.js) ; `prefs` (objet JSON de 4 Ko au plus) remplace les préférences entières ; son
 // contenu n'est pas vérifié (l'interface y range ce qu'elle veut).
 export async function patchMe(env, user, body) {
@@ -167,8 +169,10 @@ export async function patchMe(env, user, body) {
   const hasShared = sharing.touched;
   const hasAuto = Object.hasOwn(body, 'auto_sync');
   if (hasAuto && typeof body.auto_sync !== 'boolean') throw new HttpError(400, '« auto_sync » vaut true ou false.');
+  const hasFast = Object.hasOwn(body, 'fast_sync');
+  if (hasFast && typeof body.fast_sync !== 'boolean') throw new HttpError(400, '« fast_sync » vaut true ou false.');
   const hasPseudo = Object.hasOwn(body, 'pseudo');
-  if (!hasName && !hasPrefs && !hasShared && !hasAuto && !hasPseudo) throw new HttpError(400, 'Rien à modifier : indique un nom, un pseudo, des préférences, le partage ou la synchro automatique.');
+  if (!hasName && !hasPrefs && !hasShared && !hasAuto && !hasFast && !hasPseudo) throw new HttpError(400, 'Rien à modifier : indique un nom, un pseudo, des préférences, le partage ou la synchro.');
   const name = hasName ? cleanName(body.name) : user.name;
   const pseudo = hasPseudo ? cleanPseudo(body.pseudo) : user.game_pseudo || null;
   let prefs = user.prefs || '{}';
@@ -183,11 +187,12 @@ export async function patchMe(env, user, body) {
   // Partage entre membres (choisi, désactivé par défaut ; identifiant public tiré à chaque activation) : patchSharing.
   const { shared, publicId, sharedTargets } = sharing;
   const autoSync = hasAuto ? (body.auto_sync ? 1 : 0) : user.auto_sync ? 1 : 0;
-  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5, game_pseudo = ?6, auto_sync = ?7 WHERE id = ?8')
-    .bind(name, prefs, shared, publicId, sharedTargets, pseudo, autoSync, user.id)
+  const fastSync = hasFast ? (body.fast_sync ? 1 : 0) : user.fast_sync ? 1 : 0;
+  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5, game_pseudo = ?6, auto_sync = ?7, fast_sync = ?8 WHERE id = ?9')
+    .bind(name, prefs, shared, publicId, sharedTargets, pseudo, autoSync, fastSync, user.id)
     .run();
   return { user: publicUser({ ...user, name, game_pseudo: pseudo }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets,
-    public_id: shared ? publicId : null, auto_sync: !!autoSync };
+    public_id: shared ? publicId : null, auto_sync: !!autoSync, fast_sync: !!fastSync };
 }
 
 // POST /api/key/rotate : nouvelle clé principale (l'ancienne cesse de marcher).

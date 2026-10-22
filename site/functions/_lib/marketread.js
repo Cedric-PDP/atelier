@@ -3,7 +3,8 @@
 // automatiques (cron.js). Une passe : plan du classeur (cartes à coter, cartes qui manquent aux collections), enchères et
 // ventes du joueur, titres -> cartes du jeu, enchères en cours sur les cartes voulues et leurs cotes ; la lecture du
 // marché est alors rangée ; puis les cotes des cartes du plan (les plus anciennes d'abord) tant que le plafond le permet.
-// Une requête par seconde au plus, SUPA_MAX par passe (la suivante reprend aux cotes les plus anciennes) ; les cotes lues
+// Une requête par seconde au plus, SUPA_MAX par passe (la suivante reprend aux cotes les plus anciennes ; plus vite pour les
+// membres qui ont coché « Synchro rapide du marché », voir FAST_*) ; les cotes lues
 // sont gardées même si une erreur arrête tout, et l'échec noté avec sa raison (market.attempt). Cotes : médiane des 30
 // ventes les plus récentes par rareté d'exemplaire et brillance, sur 90 jours ; fiable dès 3 ventes ; celle d'il y a
 // 7 jours ; la dernière vente. Jamais l'identifiant du joueur dans le jeu dans ce qui est rangé.
@@ -13,10 +14,16 @@ import { HttpError } from './http.js';
 import { RARITIES } from './cards.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet } from './game.js';
 import { LEASE_MS } from './refresh.js';
-import { PART_PRICES, lastAttempt, planFor, writeFail, writeLive, writePrices } from './market.js';
+import { PART_PRICES, PLAN_CARDS, lastAttempt, planFor, writeFail, writeLive, writePrices } from './market.js';
 import { cleanText } from './util.js';
 
 export const SUPA_MAX = 30;
+// Essai de rythme plus rapide (2026-10-22), seulement pour les membres qui l'ont choisi (users.fast_sync, case « Synchro
+// rapide du marché », coupée par défaut) : eux seuls prennent le risque d'être vus ou limités par le jeu ; les autres
+// gardent SUPA_GAP_MS et SUPA_MAX.
+export const FAST_GAP_MS = 250;
+export const FAST_MAX = 60;
+const FAST_PLAN = PLAN_CARDS * 2;
 export const CLICK_GAP_MS = 60_000;
 const HOUR = 3600_000;
 const DAY = 86400_000;
@@ -107,7 +114,7 @@ export async function marketPass(env, user, { via, auto = false } = {}) {
       throw err;
     }
     s.via = via;
-    const plan = await planFor(db, user, { auto });
+    const plan = await planFor(db, user, { auto, cards: user.fast_sync ? FAST_PLAN : PLAN_CARDS });
     if (plan.skip) return { skip: true, until: plan.until };
     if (!(plan.quota > 0)) {
       const why = "Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu.";
@@ -123,10 +130,12 @@ export async function marketPass(env, user, { via, auto = false } = {}) {
 async function read(env, user, s, plan, auto) {
   const db = env.DB;
   const uid = s.uid || user.game_uid || '';
+  const fast = !!user.fast_sync;
+  const max = fast ? FAST_MAX : SUPA_MAX;
   let n = 0;
-  const room = () => n < SUPA_MAX;
+  const room = () => n < max;
   const supa = async (path) => {
-    const gap = n ? SUPA_GAP_MS : 0;
+    const gap = n ? (fast ? FAST_GAP_MS : SUPA_GAP_MS) : 0;
     n += 1;
     return (await supaGet(env, user, s, path, { gap })).rows;
   };

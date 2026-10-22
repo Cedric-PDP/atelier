@@ -21,6 +21,7 @@
 -- comparer-échanger) ; game_session_at = liaison ou dernier renouvellement ; game_session_lost = pourquoi la session ne
 -- sert plus (« révoquée », « illisible »), NULL sinon. sync_lock = bail d'une lecture en cours (collection ou marché),
 -- heure ISO de fin ; sync_click_at = dernier « Rafraîchir » (un par minute) ; auto_sync = lectures automatiques permises ;
+-- fast_sync = marché lu plus vite (essai choisi par le membre, coupé par défaut) ;
 -- sync_fails = échecs d'affilée des lectures automatiques ; link_hash / link_until = SHA-256 et fin du jeton de liaison en
 -- cours (favori « Relier »).
 -- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS users (
     sync_lock TEXT,
     sync_click_at TEXT,
     auto_sync INTEGER NOT NULL DEFAULT 1,
+    fast_sync INTEGER NOT NULL DEFAULT 0,
     sync_fails INTEGER NOT NULL DEFAULT 0,
     link_hash TEXT,
     link_until TEXT

@@ -269,6 +269,7 @@
     // expiration, l'heure de la session reliée à sa création (sa liaison la change) ; clicked = favori cliqué ici.
     link: { token: '', until: '', at: null, busy: false, error: '', clicked: false },
     auto: { busy: false, error: '' }, // case « Synchro automatique » (PATCH /api/me {auto_sync})
+    fast: { busy: false, error: '' }, // case « Synchro rapide du marché » de Réglages (PATCH /api/me {fast_sync})
     editor: null,
     confirm: null,
     tagEdit: null,
@@ -1946,6 +1947,20 @@
       S.auto.error = e.message;
     } finally {
       S.auto.busy = false;
+    }
+  }
+
+  // « Synchro rapide du marché » (PATCH /api/me {fast_sync}, coupée par défaut) : essai d'un rythme plus rapide, à ses risques.
+  async function setFastSync(on) {
+    if (S.fast.busy) return;
+    Object.assign(S.fast, { busy: true, error: '' });
+    try {
+      const r = await api('PATCH', '/api/me', { fast_sync: on });
+      if (S.me) S.me.fast_sync = typeof r.fast_sync === 'boolean' ? r.fast_sync : on;
+    } catch (e) {
+      S.fast.error = e.message;
+    } finally {
+      S.fast.busy = false;
     }
   }
 
@@ -7322,6 +7337,15 @@
         h('p', { class: 'small muted' }, SHARE_WHAT),
         sharing() ? h('p', { class: 'small muted' }, SHARE_TARGETS_WHAT) : null,
         errLine(S.friends.shareError),
+      ]),
+      section('Synchro rapide du marché', [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-fast-sync', checked: !!(S.me && S.me.fast_sync), disabled: S.fast.busy,
+            onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.fast_sync); setFastSync(want); } }),
+          'Lire le marché plus vite (essai)',
+        ]),
+        h('p', { class: 'small muted' }, "Les cotes se lisent quatre fois plus vite (une requête toutes les 250 ms au lieu d'une par seconde) et deux fois plus par passe (60 requêtes au lieu de 30). Le jeu pourrait remarquer ce rythme et limiter, voire sanctionner, ton compte : c'est un essai, à tes risques. Désactivé par défaut."),
+        errLine(S.fast.error),
       ]),
       section('Ce navigateur', [
         h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé et tout ce qu'il garde du classeur. Ton classeur reste intact : ton lien le rouvre."),

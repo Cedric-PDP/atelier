@@ -33,6 +33,7 @@ export const SCHEMA = [
     sync_lock TEXT,
     sync_click_at TEXT,
     auto_sync INTEGER NOT NULL DEFAULT 1,
+    fast_sync INTEGER NOT NULL DEFAULT 0,
     sync_fails INTEGER NOT NULL DEFAULT 0,
     link_hash TEXT,
     link_until TEXT
@@ -177,6 +178,7 @@ const ADDED_COLUMNS = [
   ['users', 'sync_lock', 'TEXT'],
   ['users', 'sync_click_at', 'TEXT'],
   ['users', 'auto_sync', 'INTEGER NOT NULL DEFAULT 1'],
+  ['users', 'fast_sync', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'sync_fails', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'link_hash', 'TEXT'],
   ['users', 'link_until', 'TEXT'],

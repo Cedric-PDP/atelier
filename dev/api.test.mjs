@@ -3268,6 +3268,29 @@ await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au 
   e.DB.close();
 });
 
+await test('marché : « Synchro rapide du marché » (fast_sync), 60 requêtes par passe pour qui l\'a cochée seulement', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const many = (p) => (uid) => Array.from({ length: 6000 }, (_, i) => rowOf({ id: `${p}${String(i).padStart(4, '0')}`, title: `${p} ${i}`, rarity: 'C', count: 1 }, { uid }));
+  const fast = await marketMember('Rapide', e, many('f'));
+  const slow = await marketMember('Lent', e, many('s'));
+  assert.equal((await call('GET', 'me', { key: fast.u.key, e })).json.fast_sync, false, 'coupée par défaut');
+  for (const bad of ['oui', 1, null]) assert.equal((await call('PATCH', 'me', { key: fast.u.key, e, body: { fast_sync: bad } })).status, 400, JSON.stringify(bad));
+  let r = await call('PATCH', 'me', { key: fast.u.key, e, body: { fast_sync: true } });
+  assert.deepEqual([r.status, r.json.fast_sync, r.json.auto_sync], [200, true, true]);
+  assert.equal((await call('GET', 'me', { key: fast.u.key, e })).json.fast_sync, true);
+  let n0 = supa.rest().length;
+  r = await fast.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.rest().length - n0, 60, 'plafond de 60 requêtes avec la case cochée');
+  n0 = supa.rest().length;
+  r = await slow.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.rest().length - n0, 30, 'les autres gardent 30 requêtes');
+  clearMarketGame();
+  e.DB.close();
+});
+
 await test('marché : lot partiel au plafond (seules les cartes lues en entier gardées)', async () => {
   const e = makeEnv();
   clearMarketGame();

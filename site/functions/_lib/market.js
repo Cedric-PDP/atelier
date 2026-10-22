@@ -10,7 +10,7 @@ import { RARITIES, decodeCursor, encodeCursor, isDate } from './cards.js';
 import { byteLength, cleanText, nowIso } from './util.js';
 
 export const FRESH_MS = 12 * 3600_000; // une cote lue il y a moins de 12 h n'est pas relue (plan)
-const PLAN_CARDS = 3000; // cartes à coter rendues par le plan (une passe en lit moins)
+export const PLAN_CARDS = 3000; // cartes à coter rendues par le plan (une passe en lit moins ; plus pour FAST_SYNC)
 const PLAN_WANTED = 500; // titres des cartes qui manquent aux collections, surveillés aux enchères
 const IDS_MAX = 2000; // titres -> card_id gardés par compte
 export const PART_PRICES = 500; // cotes par envoi
@@ -113,7 +113,7 @@ const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id
   )
   SELECT 0 AS h, NULL AS id, (SELECT COUNT(*) FROM x WHERE at IS NULL OR at < ?2) AS stale, (SELECT COUNT(*) FROM x WHERE at >= ?2) AS fresh
   UNION ALL
-  SELECT * FROM (SELECT 1, id, NULL, NULL FROM x WHERE at IS NULL OR at < ?2 ORDER BY at IS NOT NULL, at, w, id LIMIT ${PLAN_CARDS})`;
+  SELECT * FROM (SELECT 1, id, NULL, NULL FROM x WHERE at IS NULL OR at < ?2 ORDER BY at IS NOT NULL, at, w, id LIMIT ?3)`;
 
 // Titres des cartes qui manquent aux collections (éléments vérifiés, titre absent des cartes du classeur), des
 // collections changées le plus récemment d'abord, dans leur ordre. Rapprochement par titre seulement : le serveur n'a
@@ -174,8 +174,8 @@ export async function lastAttempt(db, userId) {
 // Ce qu'une passe doit lire : {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}, quota}.
 // auto : lecture automatique, refusée ({skip: true, until}, rien d'autre de lu ni d'écrit) si une lecture de ce classeur
 // a commencé il y a moins de 5 min. Sinon l'essai est noté (start, v, auto) : la page voit qu'une lecture a commencé,
-// puis comment elle a fini.
-export async function planFor(db, user, { auto = false } = {}) {
+// puis comment elle a fini. cards : nombre de cartes à coter rendues au plus.
+export async function planFor(db, user, { auto = false, cards = PLAN_CARDS } = {}) {
   const row = await db.prepare('SELECT ids, attempt FROM market WHERE user_id = ?1').bind(user.id).first();
   const since = Date.parse((parseAttempt(row && row.attempt) || {}).start);
   if (auto && since > Date.now() - AUTO_GAP && since <= Date.now() + 60_000) {
@@ -183,7 +183,7 @@ export async function planFor(db, user, { auto = false } = {}) {
   }
   const cutoff = new Date(Date.now() - FRESH_MS).toISOString();
   const [plan, wanted, quota] = await db.batch([
-    db.prepare(PLAN).bind(user.id, cutoff),
+    db.prepare(PLAN).bind(user.id, cutoff, cards),
     db.prepare(WANTED).bind(user.id),
     db.prepare(QUOTA).bind(user.id),
     db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify({ start: nowIso(), v: READER, auto: !!auto })),
