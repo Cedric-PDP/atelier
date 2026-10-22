@@ -1,6 +1,50 @@
 {
   "versions": [
     {
+      "id": "2026-10-22",
+      "date": "2026-10-22",
+      "sections": [
+        {
+          "icon": "🔗",
+          "title": "Synchro",
+          "items": [
+            { "text": "Relie ton compte du jeu une fois : le classeur lit ensuite ta collection tout seul, toutes les 10 minutes, sur n'importe quel appareil. Il faut relier à nouveau ton compte aujourd'hui : l'ancienne synchro ne marche plus.", "to": "#/maj", "link": "Synchro" },
+            { "text": "Pour relier, ouvre une fenêtre privée, connecte-toi au jeu, clique le favori « Relier » puis ferme la fenêtre sans te déconnecter. Si tu te déconnectes du jeu, il faudra relier à nouveau." },
+            { "text": "« Rafraîchir » lit ta collection quand tu veux (une fois par minute au plus). Le journal « Dernières synchros » garde les dernières lectures, réussies ou non." },
+            { "text": "La case « Synchro automatique » coupe les lectures sans clic, si tu préfères ne lire qu'à la demande." }
+          ]
+        },
+        {
+          "icon": "🧹",
+          "title": "Favori, clé d'import, Tampermonkey : terminés",
+          "items": [
+            { "text": "Le favori de synchro, la clé d'import et le script Tampermonkey ne servent plus : tu peux les supprimer de ton navigateur. Le cookie à coller et le fichier HAR restent comme secours, dans « Synchro »." }
+          ]
+        },
+        {
+          "icon": "💰",
+          "title": "Marché",
+          "items": [
+            { "text": "Les cotes et la lecture du marché sont faites par le classeur toutes les 20 minutes. « Mettre à jour les cotes » les relit à la demande.", "to": "#/marche", "link": "Marché" }
+          ]
+        },
+        {
+          "icon": "✨",
+          "title": "Depuis le jeu",
+          "items": [
+            { "text": "Une vraie recherche dans les cartes du jeu : « Nouvelle collection » › « Depuis le jeu » fait une collection avec la rareté de chaque carte. Il faut avoir relié ton compte.", "to": "#/collections", "link": "Mes collections" }
+          ]
+        },
+        {
+          "icon": "📜",
+          "title": "Règles du jeu",
+          "items": [
+            { "text": "Le classeur lit maintenant la base du jeu régulièrement, sans que tu cliques, depuis des adresses Cloudflare. Il n'écrit jamais dans le jeu. Le jeu peut ne pas aimer : tu peux couper la synchro automatique à tout moment.", "to": "#/maj", "link": "Synchro" }
+          ]
+        }
+      ]
+    },
+    {
       "id": "2026-10-20",
       "date": "2026-10-20",
       "sections": [
