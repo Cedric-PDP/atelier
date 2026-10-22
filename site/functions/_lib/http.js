@@ -1,5 +1,7 @@
 // Réponses JSON, erreurs et lecture du corps des requêtes.
 
+import { cleanMessage } from './synclog.js';
+
 export const MAX_BODY = 5 * 1024 * 1024; // 5 Mo
 
 // Erreur destinée au client : statut HTTP + message en français (+ champs en plus, comme needs_link).
@@ -61,7 +63,9 @@ export function errorResponse(err) {
       error: 'La base du classeur est pleine ou a atteint son quota du jour : réessaie demain, ou préviens la personne qui le gère.',
     }, 503);
   }
-  return json({ error: 'Erreur interne du serveur.' }, 500);
+  // Un extrait de l'erreur (secrets masqués) : sans accès aux journaux du Worker, c'est le seul moyen de la connaître.
+  const detail = err && err.message ? ` (${cleanMessage(err.message, 160)})` : '';
+  return json({ error: `Erreur interne du serveur${detail}.` }, 500);
 }
 
 // Lit un corps JSON (objet) en s'arrêtant dès que la limite est dépassée. Corps vide = {}.

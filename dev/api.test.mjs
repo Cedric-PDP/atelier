@@ -290,7 +290,7 @@ await test('erreurs de D1 (base pleine, quota, ligne trop grosse) → 503 lisibl
   const bug = { prepare: (sql) => env.DB.prepare(sql), batch: async () => { throw new TypeError('x is not a function'); } };
   const r = await call('POST', 'account', { body: { code: 'invitation' }, e: { ...env, DB: bug } });
   assert.equal(r.status, 500);
-  assert.equal(r.json.error, 'Erreur interne du serveur.');
+  assert.equal(r.json.error, 'Erreur interne du serveur (x is not a function).');
 });
 
 // --- Inscription et authentification ----------------------------------------------------------------------------
