@@ -864,6 +864,21 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .trade-note .linkish { font-size: 13px; }
 .album-head + .trade-note, .trade-note + .fcols, .trade-note + .empty-box { margin-bottom: 12px; }
 .trade__arrow { color: var(--accent); font-weight: 700; }
+/* « Proposer un échange » : bouton du bloc toi ↔ ami, fenêtre à deux listes (tu donnes, tu reçois). */
+.fcol__head .trade__new { margin-left: auto; }
+.trade-sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.trade-pick { border: 0; margin: 0; padding: 0; min-width: 0; }
+.trade-pick legend { padding: 0; margin-bottom: 8px; font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+.trade-pick legend .n { text-transform: none; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+.trade-pick__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 40vh; overflow-y: auto; }
+.modal .trade-pick__list li { display: grid; gap: 2px; padding: 6px 10px; border: 1px solid transparent; border-radius: 9px; background: var(--surface-2); color: var(--fg); }
+.modal .trade-pick__list li.on { border-color: var(--accent); }
+.trade-pick__list .check { min-width: 0; align-items: center; gap: 6px; overflow-wrap: anywhere; cursor: pointer; }
+.trade-pick__list .check input { flex: none; }
+.trade-pick__title { min-width: 0; font-weight: 600; }
+.trade-pick__list .why { padding-left: 22px; font-size: 12px; color: var(--faint); overflow-wrap: anywhere; }
+.trade-pick__all { margin: 6px 0 0; font-size: 12.5px; }
+.modal .trade-done { color: var(--fg); }
 .fitem--static { cursor: default; }
 .fitem--static:hover { border-color: transparent; }
 #trade-member { flex: 0 1 200px; }
@@ -981,6 +996,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
    (.mbar : retour, titre de la vue, synchro) et à une barre flottante en bas (.mnav) ; « Plus » ouvre une feuille. */
 .m-only { display: none; }
 @media (max-width: 760px) {
+  .trade-sides { grid-template-columns: minmax(0, 1fr); }
   :root {
     --mbar-h: 56px;
     --mnav-h: 64px;

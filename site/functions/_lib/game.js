@@ -3,8 +3,8 @@
 // Supabase renouvelle par rotation et ferme toute la session quand un jeton de renouvellement resservirait ailleurs).
 // Gardée chiffrée (users.game_session_enc), renouvelée par le serveur avant expiration, sous verrou : la version
 // (game_session_v) est comparée et incrémentée dans la même requête, qui perd reprend la session la plus récente ; le bail
-// (sync_lock) empêche deux lectures en même temps avec la même session. Lecture seule : rien n'est jamais écrit dans le jeu,
-// et aucun en-tête n'imite un navigateur.
+// (sync_lock) empêche deux lectures en même temps avec la même session. Lecture seule, sauf une
+// proposition d'échange à un ami (trades.js, seule écriture dans le jeu) ; aucun en-tête n'imite un navigateur.
 
 import { HttpError } from './http.js';
 import { cookieFromHar, decryptCookie, encryptCookie } from './session.js';

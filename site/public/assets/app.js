@@ -263,7 +263,7 @@
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link | arrange | tagadd | merge | install
+    modal: null, // editor | confirm | tag | switch | link | arrange | tagadd | merge | install | trade
     session: { cookie: '', busy: false, error: '' }, // liaison en secours : cookie collé ou HAR
     // « Relier mon compte » (onglet « Synchro ») : jeton à usage unique du favori « Relier » (POST /api/link), son
     // expiration, l'heure de la session reliée à sa création (sa liaison la change) ; clicked = favori cliqué ici.
@@ -276,6 +276,7 @@
     // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
     merge: null,
+    tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), busy, error, done}
     // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
     reorder: null,
     settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
@@ -3497,6 +3498,7 @@
     if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
     if (m === 'tagadd') S.tagAdd = null;
     if (m === 'merge') S.merge = null;
+    if (m === 'trade') S.tradeNew = null;
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -5404,6 +5406,39 @@
     toTop();
   }
   function closeTrades() { S.friends.page = null; toTop(); }
+  // « Proposer un échange » avec un ami : ses cartes qui complètent tes collections et les tiennes qui complètent les
+  // siennes (les couples toi → lui et lui → toi des échanges possibles, tous, doubles compris), doubles cochés d'avance.
+  const TRADE_MAX = 40; // cartes d'un échange, des deux côtés (comme le serveur)
+  function tradeRowsWith(f) {
+    const pairs = trades.value.pairs;
+    const give = (pairs.find((p) => p.x.me && p.z.id === f.id) || { rows: [] }).rows;
+    const get = (pairs.find((p) => p.z.me && p.x.id === f.id) || { rows: [] }).rows;
+    return { give, get };
+  }
+  function openTradeNew(f) {
+    const { give, get } = tradeRowsWith(f);
+    const pick = (rows) => rows.filter((r) => r.dup).map((r) => r.card.id);
+    S.tradeNew = { f, give: pick(give), get: pick(get), busy: false, error: '', done: null };
+    S.modal = 'trade';
+  }
+  function toggleTradeCard(tn, side, id) {
+    const list = tn[side];
+    tn[side] = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
+    tn.error = '';
+  }
+  async function sendTrade(tn) {
+    if (tn.busy) return;
+    tn.busy = true;
+    tn.error = '';
+    try {
+      const r = await api('POST', '/api/trades/create', { member: tn.f.id, give: tn.give, get: tn.get });
+      tn.done = { given: r.given || [], received: r.received || [], url: r.url || 'https://www.wiki-masters.com/trades' };
+    } catch (e) {
+      tn.error = e.message;
+    } finally {
+      tn.busy = false;
+    }
+  }
   // Album d'une collection d'un ami (lecture seule) : depuis « Ses collections » de son classeur, la fiche d'une de ses
   // cartes, « Échanges possibles » ou « Ce qui pourrait intéresser tes amis » (from = 'trades' : un lien y ramène, avec
   // le filtre gardé). « ← Retour au classeur de Paul » ramène à son classeur.
@@ -7208,7 +7243,7 @@
   // ================================================================ rendu : onglet Entre amis
   const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni la session du jeu reliée ; tes collections à compléter seulement si tu le choisis en plus.';
   const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections (avec la mention « depuis la catégorie Wikipédia » pour celles faites d\'une catégorie) et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
-  const TRADE_NOTE = 'Le classeur ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre vous.';
+  const TRADE_NOTE = 'Le classeur montre qui a quoi. « Proposer un échange » crée la proposition dans le jeu, à ton nom : rien ne bouge tant que ton ami ne l\'a pas acceptée dans le jeu.';
   const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
   const syncedOn = (f) => (f.fetched_at ? `synchro du ${dateDay(f.fetched_at)}` : 'pas encore synchronisé');
   function holderChips(list) {
@@ -7359,6 +7394,8 @@
       h('div', { class: 'fcol__head' }, [
         h('span', { class: 'fcol__name' }, [personWho(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(p.z)]),
         h('span', { class: 'fcol__sum' }, tradeSum(p)),
+        p.x.me !== p.z.me ? h('button', { class: 'btn small trade__new', type: 'button', onClick: () => openTradeNew(p.x.me ? p.z.f : p.x.f) },
+          `Proposer un échange à ${friendName(p.x.me ? p.z.f : p.x.f)}`) : null,
       ]),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
       moreToggle(key, p.rows.length),
@@ -9952,6 +9989,65 @@
       ]),
     ]);
   }
+  // « Proposer un échange » : deux listes à cocher (ce que tu donnes, ce que tu reçois), puis la proposition est créée dans
+  // le jeu par le serveur, avec ta session reliée (POST /api/trades/create).
+  function modalTrade() {
+    const tn = S.tradeNew;
+    if (!tn) return null;
+    const name = friendName(tn.f);
+    const title = `Proposer un échange à ${name}`;
+    const cards = (n) => `${fmt(n)} ${plural(n, 'carte', 'cartes')}`;
+    if (tn.done) {
+      const d = tn.done;
+      const list = (xs) => namesText(xs.map((c) => c.title), true);
+      return h(Modal, { key: 'trade', title, onClose: closeModal }, () => [
+        h('p', { class: 'trade-done', role: 'status' }, [h('b', null, `Échange proposé à ${name} dans le jeu.`),
+          d.given.length ? ` Tu donnes ${list(d.given)}.` : ' Tu ne donnes rien.', d.received.length ? ` Tu reçois ${list(d.received)}.` : ' Tu ne reçois rien.']),
+        h('p', { class: 'note' }, `Rien ne bouge tant que ${name} ne l'a pas acceptée dans le jeu (Échanges). Tu peux l'y annuler.`),
+        foot([h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener' }, 'Ouvrir les échanges du jeu'), closeBtn()]),
+      ]);
+    }
+    const sess = (S.me && S.me.session) || {};
+    const linked = !!sess.linked && !sess.lost;
+    const { give, get } = tradeRowsWith(tn.f);
+    const n = tn.give.length + tn.get.length;
+    const row = (side, r) => {
+      const on = tn[side].includes(r.card.id);
+      return h('li', { key: r.card.id, class: { on } }, [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: on, disabled: tn.busy, onChange: () => toggleTradeCard(tn, side, r.card.id) }),
+          pill(r.card.rarity), h('span', { class: 'trade-pick__title' }, r.card.title),
+          r.dup ? h('span', { class: 'holder dup', title: `${side === 'give' ? 'Tu en as' : name + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null]),
+        h('span', { class: 'why' }, '→ ' + colsText(r.cols, ', ')),
+      ]);
+    };
+    const side = (key, legend, rows, empty) => h('fieldset', { class: 'trade-pick' }, [
+      h('legend', null, [legend, h('span', { class: 'n' }, ` · ${fmt(tn[key].length)} / ${fmt(rows.length)}`)]),
+      rows.length ? h('ul', { class: 'trade-pick__list' }, rows.map((r) => row(key, r))) : h('p', { class: 'note' }, empty),
+      rows.length > 1 ? h('p', { class: 'trade-pick__all' }, [
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.map((r) => r.card.id); tn.error = ''; } }, 'Tout cocher'), ' · ',
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = []; } }, 'Rien'),
+        ' · ',
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => r.dup).map((r) => r.card.id); } }, 'Les doubles')]) : null,
+    ]);
+    return h(Modal, { key: 'trade', title, wide: true, onClose: closeModal }, () => [
+      h('p', null, `Coche les cartes de l'échange, parmi celles que vous avez l'un pour l'autre (les doubles sont cochés d'avance). Le classeur crée la proposition dans le jeu, à ton nom ; ${name} l'accepte ou la refuse dans le jeu.`),
+      linked ? null : h('p', { class: 'warn', role: 'alert' }, ['Relie d\'abord ton compte du jeu : le classeur crée l\'échange avec ta session. ',
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, 'Relier mon compte')]),
+      h('div', { class: 'trade-sides' }, [
+        side('give', 'Tu donnes', give, tn.f.tshare ? `Aucune de tes cartes ne complète les collections de ${name}.` : `${name} ne partage pas ses collections : impossible de savoir ce qui lui manque.`),
+        side('get', 'Tu reçois', get, `Aucune carte de ${name} ne complète tes collections.`),
+      ]),
+      h('p', { class: 'merge-sum', role: 'status' }, n ? `Tu donnes ${cards(tn.give.length)}, tu reçois ${cards(tn.get.length)}.` : 'Aucune carte cochée.'),
+      n > TRADE_MAX ? h('p', { class: 'warn', role: 'alert' }, `${fmt(TRADE_MAX)} cartes au plus par échange.`) : null,
+      errLine(tn.error),
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !n || n > TRADE_MAX, onClick: () => sendTrade(tn) },
+          tn.busy ? 'Création dans le jeu…' : 'Proposer l\'échange dans le jeu'),
+      ]),
+    ]);
+  }
   // Lien d'un autre classeur ouvert alors qu'une clé est déjà gardée : on demande.
   function modalSwitch() {
     const ask = S.switchAsk;
@@ -9978,7 +10074,7 @@
     ]);
   }
 
-  const MODALS = { install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { trade: modalTrade, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

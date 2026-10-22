@@ -65,6 +65,8 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 function mockApi() {
   const users = [];
   const calls = [];
+  const trades = []; // échanges proposés (POST /api/trades/create)
+  let tradeFail = null; // {status, error} : le prochain échange est refusé
   let seq = 0;
   const mk = (p) => (p + '_'.repeat(43)).slice(0, 43);
   const json = (status, body) => ({ status, body });
@@ -227,6 +229,9 @@ function mockApi() {
     },
     // Compte du jeu relié sans passer par le favori.
     link(key) { linkUser(users.find((x) => x.key === key)); },
+    trades,
+    failTrade(r) { tradeFail = r; },
+    isLinked(key) { return !!(users.find((x) => x.key === key) || {}).linked; },
     handle(method, p, headers, body) {
       calls.push([method, p, body]);
       if (p === '/api/health') return json(200, { ok: true, db: true, cookie_secret: true, signup_open: true });
@@ -282,6 +287,16 @@ function mockApi() {
         if ('name' in body) st.name = body.name;
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
           auto_sync: st.autoSync });
+      }
+      // « Proposer un échange » : créé dans le jeu par le serveur (ici, gardé dans api.trades) ; titres des cartes de chacun.
+      if (p === '/api/trades/create' && method === 'POST') {
+        if (!st.linked) return json(401, { error: "Aucun compte du jeu relié : relie ton compte dans l'onglet « Synchro ».", needs_link: true });
+        const f = users.find((u) => u !== st && u.shared && u.pub && u.pub === (body || {}).member);
+        if (!f) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses cartes.' });
+        if (tradeFail) { const r = tradeFail; tradeFail = null; return json(r.status, { error: r.error }); }
+        const titles = (u, ids) => (ids || []).map((id) => ({ id, title: (u.cards.find((c) => c.id === id) || {}).title || id }));
+        trades.push({ from: st.name, to: f.name, give: body.give || [], get: body.get || [] });
+        return json(200, { trade: { id: 'echange-' + trades.length, status: 'pending' }, given: titles(st, body.give), received: titles(f, body.get), url: 'https://www.wiki-masters.com/trades' });
       }
       // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
       // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
@@ -2876,6 +2891,52 @@ async function main() {
         check(one('fiche--missing') && text(one('fiche--missing')).includes('Mars (planète)'), 'clic sur une carte de Paul pour toi : fiche de la case vide attendue');
         one('fiche--missing').querySelector('.close').click();
         await settle();
+      }
+      // « Proposer un échange » : un bouton par bloc toi ↔ ami ; la fenêtre reprend les deux couples avec cet ami (toutes
+      // les cartes, doubles cochés d'avance), puis l'échange part au serveur (POST /api/trades/create).
+      if (!SERVER) {
+        const btnIn = (pr, t) => (pr ? pr.querySelectorAll('button').find((b) => text(b) === t) : null) || null;
+        check(btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul') && btnIn(pair('Paul → Toi'), 'Proposer un échange à Paul') && btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa'),
+          '« Proposer un échange » absent des blocs toi ↔ ami');
+        const md = () => one('modal');
+        const side = (i) => (md() ? md().querySelectorAll('.trade-pick')[i] : null);
+        const titlesOf = (i, on) => side(i).querySelectorAll('li').filter((li) => !on || li.querySelector('input').checked).map((li) => text(li.querySelector('.trade-pick__title')));
+        const send = () => md().querySelectorAll('button').find((b) => text(b) === "Proposer l'échange dans le jeu");
+        btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul').click();
+        await settle();
+        check(md() && text(md()).includes('Proposer un échange à Paul'), 'fenêtre « Proposer un échange » absente');
+        check(titlesOf(0).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && titlesOf(1).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5',
+          'cartes de la fenêtre : ' + titlesOf(0).join(' | ') + ' / ' + titlesOf(1).join(' | '));
+        check(titlesOf(0, true).join(' | ') === 'Article 7 | Rihanna | Terre' && titlesOf(1, true).join(' | ') === 'Mars (planète)',
+          'doubles cochés d\'avance : ' + titlesOf(0, true).join(' | ') + ' / ' + titlesOf(1, true).join(' | '));
+        check(text(md()).includes('Tu donnes 3 cartes, tu reçois 1 carte.'), 'résumé de la fenêtre : ' + text(md()).slice(-300));
+        // Décocher Rihanna, cocher Article 5.
+        side(0).querySelectorAll('li')[1].querySelector('input').dispatch('change');
+        side(1).querySelectorAll('li')[2].querySelector('input').dispatch('change');
+        await settle();
+        check(text(md()).includes('Tu donnes 2 cartes, tu reçois 2 cartes.'), 'résumé après changement : ' + text(md()).slice(-300));
+        side(0).querySelectorAll('button').find((b) => text(b) === 'Rien').click();
+        side(1).querySelectorAll('button').find((b) => text(b) === 'Rien').click();
+        await settle();
+        check(text(md()).includes('Aucune carte cochée.') && send().disabled, 'rien de coché : envoi désactivé attendu');
+        side(1).querySelectorAll('button').find((b) => text(b) === 'Les doubles').click();
+        side(0).querySelectorAll('li')[0].querySelector('input').dispatch('change');
+        await settle();
+        check(text(md()).includes('Tu donnes 1 carte, tu reçois 1 carte.'), 'résumé (Article 7 contre Mars) : ' + text(md()).slice(-300));
+        // Refus du jeu : message dans la fenêtre, rien de créé ; puis l'envoi réussi.
+        api.failTrade({ status: 409, error: "Le jeu a refusé l'échange : « Carte déjà engagée »." });
+        send().click();
+        await settle(80);
+        check(api.trades.length === 0 && md() && text(md()).includes('Carte déjà engagée'), 'refus du jeu non affiché : ' + text(md()).slice(-300));
+        send().click();
+        await settle(80);
+        const tr = api.trades[0];
+        check(api.trades.length === 1 && tr.to === 'Paul' && tr.give.length === 1 && tr.get.join() === 'p-mars', 'échange envoyé : ' + JSON.stringify(api.trades));
+        check(md() && text(md()).includes('Échange proposé à Paul dans le jeu.') && text(md()).includes('Tu reçois « Mars (planète) »')
+          && md().querySelectorAll('a').some((x) => x.getAttribute('href') === 'https://www.wiki-masters.com/trades'), 'fin de l\'échange : ' + text(md()));
+        md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
+        await settle();
+        check(!md(), 'fenêtre fermée attendue');
       }
       exactButton('Tout le monde').click();
       await settle();

@@ -17,6 +17,7 @@ import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
 import { createLink, linkWithToken } from '../_lib/link.js';
+import { createTrade } from '../_lib/trades.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -56,12 +57,13 @@ const ROUTES = {
   'market/refresh': { POST: [refreshMarket, 'main'] }, // « Mettre à jour les cotes » : une passe de marché
   'game/cards': { GET: [searchCards, 'main'] }, // cartes du jeu par titre (« Depuis le jeu »)
   'sync-log': { GET: [listSyncLog, 'main'] }, // journal des synchros
+  'trades/create': { POST: [createTrade, 'main'] }, // proposer un échange à un ami, dans le jeu (seule écriture dans le jeu)
 };
 // Chemins avec un paramètre → leur entrée dans ROUTES.
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {

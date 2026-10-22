@@ -5,12 +5,16 @@
 // PostgREST : GET /rest/v1/<table> (user_cards, profiles, cards, auctions, auction_bids), filtres eq. gte. gt. in. ilike.,
 // order, limit (1 000 au plus), offset, Prefer: count=exact (en-tête content-range) ; RLS simulée. Le `select` est
 // ignoré : les lignes sont rangées déjà embarquées (card, tags: [{tag}]). Toute écriture est refusée.
+// Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=… et
+// POST /api/trades (la seule écriture : une proposition d'échange, relevée dans le HAR du 2026-10-22). RLS de user_cards :
+// ses propres exemplaires seulement, sauf `readOthers` (ceux de tout le monde, comme si le jeu les laissait lire).
 
 import assert from 'node:assert/strict';
 
 export const SUPABASE = 'https://cyrxjeppjqsxxjayfrur.supabase.co';
 export const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImN5cnhqZXBwanFzeHhqYXlmcnVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4ODAzMzksImV4cCI6MjA4OTQ1NjMzOX0.BZluyXygNxuQGDPxFX1zG5i-cqp10CVK-8GGtuak4Rg';
 export const AUTH_COOKIE = 'sb-cyrxjeppjqsxxjayfrur-auth-token';
+export const GAME = 'https://www.wiki-masters.com';
 const REUSE_MS = 10_000;
 
 const b64url = (t) => Buffer.from(t, 'utf8').toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -80,6 +84,9 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     limit: null, // 429 | 'automation_limit' : lectures limitées par le jeu
     noCount: false,
     after: null, // (n) → appelé après chaque lecture PostgREST
+    readOthers: false, // RLS de user_cards : true = les exemplaires de tout le monde se lisent
+    trades: [], // échanges créés par POST /api/trades
+    tradeReply: null, // (body) → {status, body, setCookie?} pour forcer la réponse de POST /api/trades
     reset() {
       this.players.clear();
       this.cards = [];
@@ -88,6 +95,9 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.limit = null;
       this.noCount = false;
       this.after = null;
+      this.readOthers = false;
+      this.trades = [];
+      this.tradeReply = null;
     },
     restore() {
       globalThis.fetch = previous;
@@ -176,7 +186,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     const table = u.pathname.slice('/rest/v1/'.length);
     const all = [...supa.players.values()];
     const source = {
-      user_cards: () => me.cards,
+      user_cards: () => (supa.readOthers ? all.flatMap((p) => p.cards) : me.cards),
       profiles: () => all.map((p) => ({ id: p.uid, username: p.username })),
       cards: () => supa.cards,
       auctions: () => all.flatMap((p) => p.auctions).filter((a) => a.status === 'active' || a.seller_id === me.uid || a.winner_id === me.uid
@@ -211,7 +221,58 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     return reply(page, 200, headers);
   }
 
+  // Site du jeu : joueur d'après le jeton d'accès de son cookie de session (refait par le serveur du classeur).
+  function byCookie(h) {
+    const m = new RegExp(`(?:^|; )${AUTH_COOKIE}=base64-([^;]+)`).exec(h.get('cookie') || '');
+    if (!m) return null;
+    let auth;
+    try { auth = JSON.parse(Buffer.from(m[1].replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); } catch { return null; }
+    for (const p of supa.players.values()) if (p.access && p.access === auth.access_token && p.expires_at * 1000 > now()) return p;
+    return null;
+  }
+  async function site(url, init = {}) {
+    const u = new URL(url);
+    const method = (init.method || 'GET').toUpperCase();
+    const h = new Headers(init.headers || {});
+    const call = { method, url: String(url), path: u.pathname, headers: Object.fromEntries(h), body: init.body ?? null, at: Date.now() };
+    supa.calls.push(call);
+    assert.ok(!h.has('user-agent'), 'aucun User-Agent posé par le serveur');
+    const me = byCookie(h);
+    if (!me) return reply({ error: 'Non authentifié' }, 401);
+    let m;
+    if (method === 'GET' && (m = /^\/api\/profile\/([^/]+)\/collection$/.exec(u.pathname))) {
+      const name = decodeURIComponent(m[1]);
+      const p = [...supa.players.values()].find((x) => x.username === name);
+      if (!p) return reply({ error: 'Profil introuvable' }, 404);
+      const q = (u.searchParams.get('q') || '').toLowerCase();
+      const rows = p.cards.filter((r) => !q || String(r.card && r.card.wikipedia_title).toLowerCase().includes(q)).slice(0, 50);
+      return reply({ collection: rows, total: rows.length, rarityCounts: {}, tagOptions: [], profileId: p.uid, pendingTradeCardIds: [] });
+    }
+    if (method === 'POST' && u.pathname === '/api/trades') {
+      assert.equal(h.get('origin'), GAME, 'Origin du jeu');
+      const body = JSON.parse(init.body || '{}');
+      if (supa.tradeReply) {
+        const f = supa.tradeReply(body);
+        if (f.network) throw new TypeError('fetch failed');
+        return reply(f.body ?? {}, f.status, f.setCookie ? { 'set-cookie': f.setCookie } : {});
+      }
+      const to = supa.players.get(body.recipient_id);
+      if (!to || to === me) return reply({ error: 'Destinataire invalide' }, 400);
+      for (const it of body.items || []) {
+        const owner = it.offered_by === me.uid ? me : it.offered_by === to.uid ? to : null;
+        if (!owner || !owner.cards.some((r) => r.id === it.user_card_id && r.card_id === it.card_id)) return reply({ error: 'Carte invalide' }, 400);
+      }
+      const trade = { id: `echange-${supa.trades.length + 1}`, initiator_id: me.uid, recipient_id: to.uid, status: 'pending', items: body.items,
+        initiator_wikibidous: body.initiator_wikibidous, recipient_wikibidous: body.recipient_wikibidous };
+      supa.trades.push(trade);
+      const { items, ...out } = trade;
+      return reply({ trade: out }, 201);
+    }
+    throw new Error('route du jeu inattendue : ' + method + ' ' + url);
+  }
+
   globalThis.fetch = async (url, init) => {
+    if (String(url).startsWith(GAME + '/')) return site(url, init);
     if (!String(url).startsWith(SUPABASE + '/')) throw new Error('adresse inattendue : ' + url);
     return handle(url, init);
   };

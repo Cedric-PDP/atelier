@@ -3438,6 +3438,136 @@ await test('GET /api/game/cards?q= : recherche ilike (q échappé), version fran
   e.DB.close();
 });
 
+await test('échange : POST /api/trades/create propose un échange dans le jeu (exemplaires lus, cookie refait, repli par le profil, refus)', async () => {
+  const e = makeEnv();
+  supa.reset();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const anaCards = synth(4, 900);
+  const benCards = synth(4, 950);
+  await seedCards(ana.key, anaCards, { e });
+  await seedCards(ben.key, benCards, { e });
+  const anaUid = uidOf(ana.key);
+  const benUid = uidOf(ben.key);
+  supa.player(benUid).username = 'BenJeu';
+  assert.equal((await call('PATCH', 'me', { key: ben.key, e, body: { pseudo: 'BenJeu' } })).status, 200);
+  const pub = (u) => e.DB.sqlite.prepare('SELECT public_id FROM users WHERE id = ?').get(u.user.id).public_id;
+  const create = (body, u = ana) => call('POST', 'trades/create', { key: u.key, e, body });
+  const site = () => supa.calls.filter((c) => c.url.startsWith('https://www.wiki-masters.com/'));
+
+  // Corps mal formés, ami inconnu.
+  for (const bad of [{}, { member: 'x y', give: [anaCards[0].id] }, { member: pub(ben) }, { member: pub(ben), give: 'x' }, { member: pub(ben), give: ['a b'] },
+    { member: pub(ben), give: Array.from({ length: 41 }, (_, i) => 'c' + i) }]) {
+    assert.equal((await create(bad)).status, 400, JSON.stringify(bad));
+  }
+  assert.equal((await create({ member: 'inconnu', give: [anaCards[0].id] })).status, 404);
+  assert.equal(supa.trades.length, 0);
+
+  // La base du jeu ne laisse pas lire les exemplaires de Ben : repli par sa page de profil (son pseudo), une recherche par titre.
+  supa.calls = [];
+  let r = await create({ member: pub(ben), give: [anaCards[0].id, anaCards[1].id], get: [benCards[2].id] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.trade, { id: 'echange-1', status: 'pending' });
+  assert.deepEqual(r.json.given.map((c) => c.title), [anaCards[0].title, anaCards[1].title]);
+  assert.deepEqual(r.json.received.map((c) => c.title), [benCards[2].title]);
+  assert.equal(r.json.url, 'https://www.wiki-masters.com/trades');
+  const t1 = supa.trades[0];
+  assert.deepEqual([t1.initiator_id, t1.recipient_id, t1.initiator_wikibidous, t1.recipient_wikibidous], [anaUid, benUid, 0, 0]);
+  assert.deepEqual(t1.items, [
+    { user_card_id: `ex-${anaCards[0].id}`, card_id: anaCards[0].id, offered_by: anaUid },
+    { user_card_id: `ex-${anaCards[1].id}`, card_id: anaCards[1].id, offered_by: anaUid },
+    { user_card_id: `ex-${benCards[2].id}`, card_id: benCards[2].id, offered_by: benUid },
+  ]);
+  assert.deepEqual(site().map((c) => c.method + ' ' + c.path), ['GET /api/profile/BenJeu/collection', 'POST /api/trades']);
+  assert.equal(new URL(site()[0].url).searchParams.get('q'), benCards[2].title);
+  // Rien de la session dans la réponse ; le cookie refait ne part qu'au jeu.
+  for (const tok of [supa.player(anaUid).access, supa.player(anaUid).refresh]) assert.ok(!JSON.stringify(r.json).includes(tok), 'jeton absent de la réponse');
+  assert.ok(site()[1].headers.cookie.startsWith('sb-cyrxjeppjqsxxjayfrur-auth-token=base64-'));
+  assert.equal(userRow(ana.user.id, e).sync_lock, null, 'bail rendu');
+
+  // Exemplaires lisibles dans la base du jeu : pas de lecture du profil ; l'exemplaire donné est le moins précieux.
+  supa.readOthers = true;
+  supa.player(anaUid).cards.push(rowOf(anaCards[3], { uid: anaUid, eid: 'ex-brillant' }));
+  supa.player(anaUid).cards.find((x) => x.id === `ex-${anaCards[3].id}`).starred = true;
+  supa.player(anaUid).cards.find((x) => x.id === 'ex-brillant').is_shiny = true;
+  supa.player(anaUid).cards.push(rowOf(anaCards[3], { uid: anaUid, eid: 'ex-simple' }));
+  supa.calls = [];
+  r = await create({ member: pub(ben), give: [anaCards[3].id], get: [] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(supa.trades[1].items, [{ user_card_id: 'ex-simple', card_id: anaCards[3].id, offered_by: anaUid }]);
+  assert.deepEqual(site().map((c) => c.path), ['/api/trades']);
+  r = await create({ member: pub(ben), get: [benCards[0].id] });
+  assert.equal(r.status, 200);
+  assert.deepEqual(site().map((c) => c.path), ['/api/trades', '/api/trades'], 'cartes de Ben lues dans la base');
+
+  // Une carte qui n'est plus dans le jeu : rien n'est envoyé.
+  const n = supa.trades.length;
+  supa.player(anaUid).cards = supa.player(anaUid).cards.filter((x) => x.card_id !== anaCards[2].id);
+  r = await create({ member: pub(ben), give: [anaCards[2].id] });
+  assert.deepEqual([r.status, r.json.error.includes(anaCards[2].title)], [409, true], JSON.stringify(r.json));
+  supa.player(benUid).cards = supa.player(benUid).cards.filter((x) => x.card_id !== benCards[1].id);
+  r = await create({ member: pub(ben), get: [benCards[1].id] });
+  assert.deepEqual([r.status, r.json.error.includes(benCards[1].title)], [409, true], JSON.stringify(r.json));
+  assert.equal(supa.trades.length, n);
+
+  // Refus du jeu (message repris), panne (on ne sait pas : vérifier dans le jeu), session refusée.
+  supa.tradeReply = () => ({ status: 400, body: { error: 'Carte déjà engagée dans un échange' } });
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.deepEqual([r.status, r.json.error], [409, "Le jeu a refusé l'échange : « Carte déjà engagée dans un échange »."]);
+  supa.tradeReply = () => ({ network: true });
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.deepEqual([r.status, /regarde dans le jeu/.test(r.json.error)], [502, true]);
+  supa.tradeReply = () => ({ status: 500, body: {} });
+  assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 502);
+  supa.tradeReply = () => ({ status: 401, body: { error: 'Non authentifié' } });
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.equal(r.status, 502);
+  assert.equal(userRow(ana.user.id, e).game_session_lost, null, 'session pas déclarée perdue');
+
+  // Le jeu renouvelle la session pendant l'appel (Set-Cookie) : la nouvelle est gardée.
+  const pa = supa.player(anaUid);
+  supa.tradeReply = () => {
+    supa.mint(pa);
+    const v = /sb-cyrxjeppjqsxxjayfrur-auth-token=[^;]+/.exec(supa.sessionCookie({ uid: anaUid }))[0];
+    return { status: 201, body: { trade: { id: 'echange-renouvele', status: 'pending' } }, setCookie: v + '; Path=/; HttpOnly; Secure; SameSite=Lax' };
+  };
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  supa.tradeReply = null;
+  assert.equal((await sessionOf(e, userRow(ana.user.id, e))).auth.refresh_token, pa.refresh, 'session renouvelée gardée');
+  assert.equal((await refreshNow(ana.key, e)).status, 200, 'la session gardée sert encore');
+
+  // Session presque expirée : renouvelée avant l'appel au jeu (le jeu n'a jamais à le faire).
+  pa.expires_at = Math.floor(Date.now() / 1000) + 200;
+  const s0 = await sessionOf(e, userRow(ana.user.id, e));
+  e.DB.sqlite.prepare('UPDATE users SET game_session_enc = ? WHERE id = ?').run(await sealSession(e, ana.user.id, { ...s0.auth, expires_at: pa.expires_at }), ana.user.id);
+  supa.calls = [];
+  assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 200);
+  assert.equal(supa.tokens().length, 1, 'un renouvellement avant l\'appel');
+
+  // Ben sans compte relié : son pseudo suffit (profil du jeu) ; ni l'un ni l'autre : impossible.
+  e.DB.sqlite.prepare('UPDATE users SET game_uid = NULL WHERE id = ?').run(ben.user.id);
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.trades[supa.trades.length - 1].recipient_id, benUid);
+  e.DB.sqlite.prepare('UPDATE users SET game_pseudo = NULL WHERE id = ?').run(ben.user.id);
+  r = await create({ member: pub(ben), give: [anaCards[0].id] });
+  assert.deepEqual([r.status, /ni relié son compte du jeu ni donné son pseudo/.test(r.json.error)], [409, true]);
+
+  // Bail pris par une lecture en cours ; compte du jeu pas relié ; partage coupé.
+  e.DB.sqlite.prepare('UPDATE users SET game_uid = ? WHERE id = ?').run(benUid, ben.user.id);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(new Date(Date.now() + 60_000).toISOString(), ana.user.id);
+  assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 409);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = NULL WHERE id = ?').run(ana.user.id);
+  const cleo = await signup('Cléo', e);
+  r = await create({ member: pub(ben), give: [anaCards[0].id] }, cleo);
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  await call('PATCH', 'me', { key: ana.key, e, body: { shared: false } });
+  assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 403);
+  supa.reset();
+  e.DB.close();
+});
+
 await test('DELETE /api/me efface tout', async () => {
   await call('POST', 'targets/save', { key: alice.key, body: { name: 'À effacer', items: [] } });
   env.DB.sqlite.prepare("INSERT INTO refresh_staging (user_id, page, entries, created_at) VALUES (?, 0, '[]', ?)").run(alice.user.id, new Date().toISOString());

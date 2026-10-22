@@ -166,6 +166,7 @@ plus faite.
 | `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
 | `POST /api/market/refresh` | `{}` | `{ok:true, read, left, deals, running}` : « Mettre à jour les cotes », une **passe de lecture du marché** par le serveur avec la session reliée (voir « Le marché ») : `read` = cotes lues, `left` = cotes du plan restant à lire, `deals` = bonnes affaires, `running` = tes mises en cours. `401 {error, needs_link:true}` aucun compte relié ou session « à relier » ; `409` une passe, ou une lecture de la collection, est déjà en cours ; `429 {error, retry_after}` (**secondes**, 60 au plus) la dernière passe de ce classeur a commencé il y a moins de 60 s, **même finie**, d'où qu'elle vienne ; `429 {error, quota:0}` quota du jour des cotes atteint (rien n'est lu) ; `429 {error, limited:true}` le jeu limite les lectures ; `502`. Un échec en cours de passe garde les cotes déjà lues et note sa raison dans `attempt.why` |
 | `GET /api/game/cards?q=` | (clé principale) `q` : 1 à 100 caractères (sinon `400`) | `{cards:[{card_id, title, rarity, category, image}], more}` : les cartes du jeu dont le **titre contient** `q` (une requête `cards?wikipedia_title=ilike.*q*` avec la session reliée), dans l'ordre des titres, 200 au plus (`more:true` : il y en a d'autres) ; la version française d'un même titre l'emporte, une rareté inconnue est écartée, `image` = `null` si la carte la cache. `401 {error, needs_link:true}`, `429 {limited:true}`, `502`. Sert « Depuis le jeu » (voir « Onglet « Collections » »). **Non vérifié sur la vraie base** : le filtre `ilike` sur `wikipedia_title`, et ce que la sécurité par rangée du jeu laisse voir à un joueur (la recherche pourrait rendre moins que la « Collection globale » du jeu) |
+| `POST /api/trades/create` | (clé principale) `{member, give?, get?}` : `member` = identifiant public de l'ami, `give` / `get` = ids de cartes du jeu (tes cartes, les siennes), au moins une, 40 au plus ; 8 Ko | `{trade:{id, status}, given:[{id, title}], received:[{id, title}], url}` : la proposition d'échange **créée dans le jeu** (en attente : l'ami l'accepte dans le jeu), voir « Proposer un échange ». `403` sans partage ; `404` ami inconnu ou qui ne partage pas ; `401 needs_link` sans compte relié ; `409` carte absente du jeu (titres nommés), ami introuvable dans le jeu, bail pris, ou refus du jeu (son message repris) ; `502` panne ou réponse inattendue du jeu (« regarde dans le jeu s'il a été créé ») ; `429` limite du jeu |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
 **Message** (chat) : `{id, author, mine, text, created_at, refs?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
@@ -243,7 +244,8 @@ au plus).
 
 Depuis le 2026-10-22, le classeur lit la collection et le marché **directement dans la base du jeu** (Supabase, projet
 `cyrxjeppjqsxxjayfrur` : Auth et PostgREST), avec **une session du jeu par membre gardée par le serveur** (`game.js`,
-`session.js`, `link.js`). Rien n'est jamais écrit dans le jeu.
+`session.js`, `link.js`). Une seule écriture dans le jeu : la **proposition d'un échange** à un ami (`POST /api/trades/create`,
+`trades.js`, voir « Proposer un échange ») ; rien d'autre.
 
 **Pourquoi une session dédiée, née en fenêtre privée.** Le jeu n'a qu'une connexion par e-mail et mot de passe, derrière un
 captcha (relevé du 2026-10-22 : `GET /auth/v1/settings` ne donne que `external.email: true` ; `POST
@@ -301,7 +303,9 @@ désactive (`GET /api/health` : `cookie_secret:false`).
 « anon » du jeu>` (livrée dans le code de sa page, rôle `anon` : seule, elle n'ouvre rien) et `Authorization: Bearer <jeton
 d'accès du membre>`, `Accept: application/json`. **Aucun en-tête n'imite un navigateur** (`User-Agent` de la plateforme
 Cloudflare : le jeu peut donc reconnaître un client automatique, c'est un choix assumé). Une erreur réseau ou `5xx` est
-retentée deux fois (1 s, puis 2 s) ; ensuite `502` « La base du jeu ne répond pas ».
+retentée deux fois (1 s, puis 2 s) ; ensuite `502` « La base du jeu ne répond pas ». **Seule exception** : la proposition
+d'échange passe par les routes du site du jeu (`https://www.wiki-masters.com/api/…`), qui n'acceptent que le cookie de
+session de ses pages (voir « Proposer un échange »).
 
 **Renouvellement** (`renewSession`). Le jeton d'accès est renouvelé **d'avance** quand il expire dans moins de 120 s
 (`freshAuth`, avant chaque lecture, collection ou marché, cron compris ; une lecture de recherche ne le fait qu'au premier
@@ -686,6 +690,35 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   comme sur toute ligne pour un ami, le nom de ses collections : son album). Calcul
   dans le navigateur (`trades`, propriété calculée : refait quand les cartes, les collections ou les qids changent ;
   ~120 ms pour 6 personnes de 5 000 cartes et 30 000 éléments de collection), filtre à part.
+- **Proposer un échange** (2026-10-22) : un bouton « Proposer un échange à Paul » sur chaque bloc entre toi et un ami
+  (« Toi → Paul » et « Paul → Toi »). La fenêtre reprend ces deux couples, **toutes** les cartes (pas seulement les
+  doubles) : « Tu donnes » (tes cartes qui complètent ses collections) et « Tu reçois » (les siennes qui complètent les
+  tiennes), cases à cocher, **doubles cochés d'avance**, « Tout cocher · Rien · Les doubles » par colonne, le résumé
+  « Tu donnes 2 cartes, tu reçois 1 carte. », 40 cartes au plus. Sans compte du jeu relié : avertissement, envoi
+  désactivé et « Relier mon compte ». « Proposer l'échange dans le jeu » appelle `POST /api/trades/create` ; une erreur
+  reste dans la fenêtre ; une réussite dit ce qui part et ce qui arrive, et donne le lien vers les échanges du jeu. Le
+  serveur, avec la session reliée du membre (sous son bail, 2 min) :
+  1. l'ami dans le jeu : le compte qu'il a relié (`game_uid`), sinon son pseudo (`profiles?username=eq.…`) ; ni l'un ni
+     l'autre : `409` ;
+  2. le jeton d'accès renouvelé d'avance s'il expire dans moins de **5 min** (le jeu, lui, renouvelle à 90 s : il n'a
+     jamais à le faire pendant l'appel ; un jeton de renouvellement ne sert qu'une fois) ;
+  3. un exemplaire de chaque carte : `user_cards?select=id,card_id,count,starred,is_shiny,obtained_at&user_id=eq.…&card_id=in.(…)`
+     pour les tiennes ; pour les siennes, la même lecture, et si la base du jeu n'en rend aucune (RLS, **non vérifié**),
+     la page de profil du jeu, `GET /api/profile/<pseudo>/collection?q=<titre>&pending=1` (une par carte, 300 ms entre
+     deux ; exemplaires de `pendingTradeCardIds` écartés). Exemplaire choisi : ni étoilé ni brillant si possible, puis le
+     plus gros paquet, puis le plus récent. Une carte introuvable d'un côté : `409` qui la nomme, rien n'est envoyé ;
+  4. `POST https://www.wiki-masters.com/api/trades` `{recipient_id, items:[{user_card_id, card_id, offered_by}],
+     initiator_wikibidous: 0, recipient_wikibidous: 0}` → `201 {trade:{id, status:"pending", …}}` (relevé dans un HAR du
+     2026-10-22). En-têtes : `Cookie` = le cookie de session des pages du jeu **refait** depuis la session gardée
+     (`sb-…-auth-token=base64-` + JSON `{access_token, token_type, expires_in, expires_at, refresh_token, user:{id}}`),
+     `Origin` et `Referer` du jeu, `Accept`, `Content-Type` ; jamais d'en-tête de navigateur. **Une seule tentative**
+     (une écriture ne se rejoue pas) : panne ou `5xx` → `502` « regarde dans le jeu s'il a été créé ». `401`/`403` ou
+     redirection : `502` (« propose-le dans le jeu ») sans déclarer la session perdue. Autre refus : `409` avec le message
+     du jeu (300 caractères au plus). Un `Set-Cookie` de la session du jeu dans la réponse (renouvellement fait par le jeu)
+     est **gardé** (version comparée et incrémentée, comme un renouvellement), sinon la rotation fermerait la session.
+  Rien n'est écrit au journal des synchros (ce n'est pas une synchro ; l'échange se voit dans le jeu). **Non vérifié sur
+  le jeu** : que sa route accepte ce cookie refait (en particulier `user` réduit à `{id}`), et la lecture des exemplaires
+  d'un autre joueur dans sa base. Pas d'acceptation, d'annulation ni de wikibidous depuis le classeur.
 - **Chargement** : à la demande (ouverture de l'onglet, d'un album ou d'une case vide, si tu partages), par pages de
   1 000, gardé en mémoire le temps de la visite, **jamais dans IndexedDB** ; la liste des membres est relue à chaque
   ouverture de l'onglet (sinon au plus toutes les 10 min) et les cartes d'un ami ne le sont que si sa synchro ou son
@@ -703,8 +736,8 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   de rareté plus basse comptés dans la plus haute), et ses cotes restent celles de la lecture de ses cartes pendant la
   visite (relues quand sa synchro change, ou au rechargement de la page). Seulement pour un membre qui montre ses cartes
   (sinon `404`, comme ses cartes) ; rien pour un ami dont aucune carte n'est cotée.
-- **Règles du jeu** : le classeur ne fait que montrer qui a quoi. Les échanges se font dans le jeu, par les joueurs ;
-  rien n'est automatisé vers le jeu.
+- **Règles du jeu** : le classeur montre qui a quoi. Il peut **proposer** un échange dans le jeu, au nom du membre qui le
+  demande (« Proposer un échange ») ; l'accepter, le refuser ou l'annuler se fait dans le jeu, par les joueurs.
 
 ## Chat
 
@@ -1673,7 +1706,8 @@ le serveur lit. La page garde les messages d'échec, l'âge de la lecture et le 
 ## Règles du jeu
 
 Les règles de WikiMasters (« Règles de la communauté » §3, CGU §6) interdisent les outils qui jouent ou **interagissent à la place du
-joueur**. Le classeur ne joue pas, ne clique rien, n'écrit jamais dans le jeu et ne pose jamais d'étiquette dans le jeu. **Mais, depuis le
+joueur**. Le classeur ne joue pas, ne clique rien et ne pose jamais d'étiquette dans le jeu ; il n'y écrit qu'une chose, depuis le 2026-10-22 : la
+**proposition d'un échange**, au clic du membre (ci-dessous). **Mais, depuis le
 2026-10-22, il lit la base du jeu régulièrement et automatiquement, sans geste du joueur**, ce qu'il ne faisait pas avant : c'est un choix
 assumé de l'utilisateur, décrit ici tel qu'il est.
 
@@ -1688,7 +1722,11 @@ assumé de l'utilisateur, décrit ici tel qu'il est.
 - **Renouvellement** de la session : à chaque passage, un jeton qui expire dans moins de 2 minutes est renouvelé (`auth/v1/token`).
 - Au clic du membre (« Rafraîchir », « Mettre à jour les cotes », « Depuis le jeu »), les mêmes lectures partent aussitôt (une par minute au plus
   pour les deux premières).
-- **Aucune écriture, aucune imitation de navigateur** : les en-têtes sont `apikey` (clé publique du jeu), `Authorization: Bearer` (la session du
+- **Une seule écriture, au clic** : « Proposer l'échange dans le jeu » (voir « Partage entre membres », « Proposer un échange ») crée une
+  proposition en attente au nom du membre, par la route du site du jeu (`POST /api/trades`) avec son cookie de session refait par le serveur. C'est
+  exactement ce que ferait le joueur dans l'écran d'échange du jeu, mais **depuis le serveur, à sa place** : c'est ce que ces règles visent (« interagir
+  à la place du joueur ») ; choix assumé de l'utilisateur (2026-10-22). Jamais sans clic, jamais d'acceptation, de refus ni d'annulation.
+- **Aucune imitation de navigateur** : pour les lectures, les en-têtes sont `apikey` (clé publique du jeu), `Authorization: Bearer` (la session du
   membre) et `Accept` ; le `User-Agent` est celui de la plateforme, pas celui d'un navigateur.
 - Pour 50 membres reliés, c'est au plus de l'ordre de 4 500 requêtes par heure vers le jeu pour le marché, plus une vérification par membre toutes
   les 10 minutes pour la collection.

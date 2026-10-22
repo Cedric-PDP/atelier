@@ -10,7 +10,7 @@
 // réduites au nom de chaque collection et, pour chaque élément vérifié, à son titre, à son qid et à son drapeau
 // d'intercalaire (GET /api/members/<id>/targets). Jamais leurs descriptions, images, statuts, source (recherche tapée,
 // catégorie) ni dates : seulement si c'est une catégorie de Wikipédia suivie (kind).
-// Le site ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre joueurs.
+// Le site montre qui a quoi ; il peut proposer un échange dans le jeu (trades.js), que l'ami accepte dans le jeu.
 
 import { HttpError, raw } from './http.js';
 import { decodeCursor, encodeCursor } from './cards.js';
