@@ -1,5 +1,6 @@
 {
   "versions": [
+    {"id": "2026-10-22", "date": "2026-10-22", "sections": [{"icon": "🤝", "title": "Échanges", "items": [{"text": "« Proposer un échange » dans « Échanges possibles » : coche ce que tu donnes et ce que tu reçois, et le classeur crée la proposition dans le jeu. Ton ami l'accepte dans le jeu.", "to": "#/amis/echanges", "link": "Échanges possibles"}]}]},
     {
       "id": "2026-10-20",
       "date": "2026-10-20",
