@@ -1,6 +1,10 @@
 {
   "versions": [
-    {"id": "2026-10-22", "date": "2026-10-22", "sections": [{"icon": "🤝", "title": "Échanges", "items": [{"text": "« Proposer un échange » dans « Échanges possibles » : coche ce que tu donnes et ce que tu reçois, et le classeur crée la proposition dans le jeu. Ton ami l'accepte dans le jeu.", "to": "#/amis/echanges", "link": "Échanges possibles"}]}]},
+    {"id": "2026-10-22", "date": "2026-10-22", "sections": [{"icon": "🤝", "title": "Échanges", "items": [{"text": "« Proposer un échange » dans « Échanges possibles » : coche ce que tu donnes et ce que tu reçois, et le classeur crée la proposition dans le jeu. Ton ami l'accepte dans le jeu.", "to": "#/amis/echanges", "link": "Échanges possibles"}]},
+      {"icon": "🏷️", "title": "Marché", "items": [
+        {"text": "La fiche d'une carte montre ses enchères en cours, de la moins chère à la plus chère. Pour chacune : le prix comparé à la cote, le temps restant, le nombre de mises, qui mène et qui vend.", "to": "#/cartes", "link": "Mes cartes"},
+        {"text": "La fiche montre aussi la courbe des prix de vente de la carte, par rareté."},
+        {"text": "« Ouvrir dans le jeu ↗ » sur chaque enchère, dans les fiches et dans l'onglet Marché.", "to": "#/marche", "link": "Marché"}]}]},
     {
       "id": "2026-10-20",
       "date": "2026-10-20",
