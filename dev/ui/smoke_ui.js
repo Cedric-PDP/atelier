@@ -225,6 +225,8 @@ function mockApi() {
       u.game = list;
       return importCards(u, list, { totalUnique: list.length });
     },
+    // Compte du jeu relié sans passer par le favori.
+    link(key) { linkUser(users.find((x) => x.key === key)); },
     handle(method, p, headers, body) {
       calls.push([method, p, body]);
       if (p === '/api/health') return json(200, { ok: true, db: true, cookie_secret: true, signup_open: true });
@@ -430,6 +432,24 @@ function mockApi() {
       if (p === '/api/market' && method === 'GET') {
         const m = st.market || {};
         return json(200, { value: m.value || { value: 0, priced: 0, cards: st.cards.length, approx: 0 }, history: m.history || [], live: m.live || null, live_at: m.live_at || null, attempt: m.attempt || null });
+      }
+      // « Mettre à jour les cotes » : une passe du serveur (une par minute), qui pose la lecture du marché de ce membre.
+      if (p === '/api/market/refresh' && method === 'POST') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu pour lire le marché.', needs_link: true });
+        const wait = 60_000 - (Date.now() - (st.marketClickAt || 0));
+        if (wait > 0) return json(429, { error: "Cotes déjà lues il y a moins d'une minute : patiente un instant.", retry_after: Math.ceil(wait / 1000) });
+        st.marketClickAt = Date.now();
+        const now = new Date().toISOString();
+        st.market = { ...(st.market || {}), live: { deals: [], bids: [], sales: [] }, live_at: now, market_at: now, attempt: { start: now, end: now, ok: true, v: 'serveur' } };
+        return json(200, { ok: true, read: 12, left: 30, deals: 3, running: 2 });
+      }
+      // « Depuis le jeu » : les cartes du jeu dont le titre contient q (self.gameCards, lignes de la table `cards`).
+      if (p.startsWith('/api/game/cards') && method === 'GET') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu pour chercher dans ses cartes.', needs_link: true });
+        const q = (new URL('http://x' + p).searchParams.get('q') || '').trim().toLowerCase();
+        if (!q || q.length > 100) return json(400, { error: 'Recherche : de 1 à 100 caractères (paramètre « q »).' });
+        const found = (self.gameCards || []).filter((c) => c.wikipedia_title.toLowerCase().includes(q)).sort((a, b) => (a.wikipedia_title < b.wikipedia_title ? -1 : 1));
+        return json(200, { cards: found.slice(0, 200).map((c) => ({ card_id: String(c.id), title: c.wikipedia_title, rarity: c.rarity, category: c.category || null, image: c.hide_image ? null : c.image_url || null })), more: found.length > 200 });
       }
       if (p.startsWith('/api/market/prices') && method === 'GET') {
         const part = new URL('http://x' + p).searchParams.get('part') || '0';
@@ -1099,6 +1119,12 @@ async function main() {
     if (SERVER) return fakeGame('collection', { key, cards: rows });
     return api.seed(key, rows);
   };
+  // Cartes de la table `cards` du jeu (lignes {id, wikipedia_title, rarity, category, image_url, lang}) : celles que cherche
+  // « Depuis le jeu ».
+  const setGameTable = async (rows) => {
+    if (SERVER) return fakeGame('cartes', { cards: rows });
+    api.gameCards = rows;
+  };
   // Collection du compte dans le jeu (sans la lire) et cookie d'une fenêtre privée connectée à ce compte.
   const setGame = async (key, list) => {
     const rows = list.map(({ tags, ...c }) => c);
@@ -1432,7 +1458,7 @@ async function main() {
     check(byId('newcol-tab-mots').getAttribute('aria-selected') === 'true' && byId('kw') && intro().includes('Décris un thème'), 'flèche droite : « Par mots-clés » attendu');
     byId('newcol-tab-mots').dispatch('keydown', { key: 'End' });
     await settle();
-    check(byId('newcol-tab-jeu').getAttribute('aria-selected') === 'true' && intro().includes('Collection globale') && (has('Voir mon favori') || has('Installer le favori')), 'Fin : « Depuis le jeu » attendu, ' + intro());
+    check(byId('newcol-tab-jeu').getAttribute('aria-selected') === 'true' && intro().includes('interroge la base du jeu') && byId('game-q') && has('Chercher'), 'Fin : « Depuis le jeu » attendu, ' + intro());
     byId('newcol-tab-jeu').dispatch('keydown', { key: 'ArrowRight' });
     await settle();
     check(byId('newcol-tab-url').getAttribute('aria-selected') === 'true', 'flèche droite sur le dernier onglet : retour au premier attendu');
@@ -3176,6 +3202,60 @@ async function main() {
     await settle(400);
   }
 
+  // « Depuis le jeu » : recherche dans les cartes du jeu (GET /api/game/cards, faite par le serveur avec la session reliée),
+  // puis une collection qui garde la rareté du jeu de chaque carte (source wm:<recherche>). Sans compte relié : renvoi vers
+  // l'onglet « Synchro ».
+  {
+    const keyH = await makeOtherAccount('Hortense');
+    await setGameTable([
+      { id: 'gv1', wikipedia_title: 'Vache', rarity: 'R', category: 'mammifère domestique', image_url: 'https://upload.wikimedia.org/vache.jpg', lang: 'fr' },
+      { id: 'gv2', wikipedia_title: 'Vache Highland', rarity: 'L', category: null, image_url: null, lang: 'fr' },
+      { id: 'gv3', wikipedia_title: 'Dragon', rarity: 'C', category: 'créature', image_url: null, lang: 'fr' },
+    ]);
+    ls.set('classeur-key', keyH);
+    ls.set('classeur-known', JSON.stringify([{ key: keyH, name: 'Hortense' }]));
+    const p = openPage({ idb: 'absent' });
+    check(await waitFor(() => text(p.doc.body).includes('Collections')), 'Depuis le jeu : classeur de Hortense non ouvert');
+    p.doc.getElementById('tab-collections').click();
+    await settle();
+    await openNewIn(p.doc, 'jeu');
+    check(!p.doc.getElementById('game-q') && text(p.doc.body).includes('relie-le une fois') && p.doc.querySelectorAll('button').some((b) => text(b).includes('Relier mon compte')),
+      'Depuis le jeu sans compte relié : renvoi vers « Synchro » attendu : ' + text(p.doc.getElementById('newcol-panel')));
+    await closeNewIn(p.doc);
+    // Compte relié (le faux jeu relie en lisant une collection) : la page le sait en relisant GET /api/me.
+    if (SERVER) await seedCards(keyH, [{ id: 'h1', title: 'Hortensia', rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 1, category: 'x', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }]);
+    else api.link(keyH);
+    await p.live();
+    await settle(120);
+    await openNewIn(p.doc, 'jeu');
+    const q = p.doc.getElementById('game-q');
+    check(q, 'Depuis le jeu : champ de recherche absent après la liaison : ' + text(p.doc.getElementById('newcol-panel')));
+    const seen = () => text(p.doc.getElementById('newcol-panel'));
+    const press = (label) => p.doc.querySelectorAll('button').find((b) => text(b).includes(label));
+    const search = (v) => { q.value = v; q.dispatch('input'); press('Chercher').click(); };
+    search('vache');
+    check(await waitFor(() => seen().includes('Vache Highland')), 'Depuis le jeu : résultats absents : ' + seen());
+    const pills = p.doc.getElementById('newcol-panel').querySelectorAll('.pill').map(text);
+    check(seen().includes('mammifère domestique') && !seen().includes('Dragon') && pills.join(',') === 'R,L', 'Depuis le jeu : cartes ou raretés trouvées : ' + seen() + ' / ' + pills);
+    check(press('Créer la collection « vache » (2 cartes)'), 'Depuis le jeu : bouton « Créer la collection » absent : ' + seen());
+    // Une recherche sans résultat ne propose rien à créer.
+    search('licorne');
+    check(await waitFor(() => seen().includes('Aucune carte du jeu ne porte ce nom')), 'Depuis le jeu : recherche vide non dite : ' + seen());
+    check(press('Créer la collection').disabled, 'Depuis le jeu : création possible sans carte');
+    search('vache');
+    check(await waitFor(() => seen().includes('Vache Highland')), 'Depuis le jeu : seconde recherche absente');
+    press('Créer la collection « vache »').click();
+    check(await waitFor(() => !p.doc.getElementById('newcol-panel')), 'Depuis le jeu : fenêtre non refermée après la création');
+    await settle(80);
+    const made = (await rawApi('GET', '/api/targets', keyH)).body.targets.find((t) => t.source === 'wm:vache');
+    check(made && made.name === 'vache' && made.items.length === 2 && made.items[0].title === 'Vache' && made.items[0].rarity === 'R' && made.items[1].rarity === 'L'
+      && made.items[0].description === 'mammifère domestique' && made.items[0].status === 'ok', 'Depuis le jeu : collection mal enregistrée : ' + JSON.stringify(made));
+    if (!SERVER) check(api.calls.some(([m, pp, b]) => m === 'POST' && pp === '/api/targets/save' && b.source === 'wm:vache' && b.items.length === 2 && b.items.every((x) => x.rarity)), 'Depuis le jeu : envoi mal formé');
+    check(apiLog.filter((x) => x.startsWith('GET /api/game/cards?q=')).length === 3, 'Depuis le jeu : trois recherches attendues : ' + apiLog.filter((x) => x.includes('game/cards')).join(', '));
+    check(text(p.doc.body).includes('Collection « vache » créée'), 'Depuis le jeu : message de création absent');
+    console.log('depuis le jeu : collection « vache » créée (' + made.items.length + ' cartes, source ' + made.source + ')');
+  }
+
   // Intercalaires et collections complètes (Ninon ; Olga, une amie qui montre ses collections). Un intercalaire (sep: true)
   // est une vraie carte qui ouvre une section : cadre à onglet (carte possédée ou case vide), nouvelle ligne de la grille
   // dans l'ordre de la collection (gridBreak), cadre seul en tri par rareté ou avec un filtre ; « # » dans l'éditeur (relu
@@ -4399,6 +4479,7 @@ async function main() {
   // rareté). Données posées dans l'API simulée (le favori les enverrait).
   if (!SERVER) {
     const keyM = await makeOtherAccount('Mona');
+    api.link(keyM);
     const um = api.users.find((u) => u.key === keyM);
     const mc = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null, count, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', ...extra });
     const ventes = Array.from({ length: 24 }, (_, i) => mc('v' + String(i + 1).padStart(2, '0'), 'Vente ' + String(i + 1).padStart(2, '0'), 'C', 1, { variants: { C: 1 } }));
@@ -4418,7 +4499,7 @@ async function main() {
       value: { value: 1234, priced: 2, cards: 3, approx: 1 },
       history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
       live_at: new Date().toISOString(),
-      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 3, auto: true },
+      attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 'serveur', auto: true },
       live: {
         // Voulue A deux fois (la moins chère reste, l'autre comptée) ; Voulue B finie depuis la lecture ; Marché 3, que
         // Mona a maintenant : ni l'une ni l'autre montrées.
@@ -4497,8 +4578,8 @@ async function main() {
         'bonnes affaires, doublons, enchères finies ou cartes déjà là : ' + buy);
     }
     check(panel().includes('Plus montrées : 1 enchère finie depuis la lecture, 1 carte que tu as maintenant.'), 'bonnes affaires écartées non dites : ' + panel());
-    // Âge de la lecture, essai réussi d'un favori à jour : rien d'autre à dire.
-    check(panel().includes("Lecture du marché par ton favori : à l'instant") && !panel().includes("n'est pas à jour") && !panel().includes('Dernier essai'), 'âge de la lecture du marché : ' + panel().slice(0, 900));
+    // Âge de la lecture, essai réussi : rien d'autre à dire.
+    check(panel().includes("Lecture du marché par le classeur : à l'instant") && !panel().includes("n'est pas à jour") && !panel().includes('Dernier essai'), 'âge de la lecture du marché : ' + panel().slice(0, 900));
     // Sections : « à acheter » et « à vendre » côte à côte, puis « Mes enchères » sur toute la largeur (plus de « Cartes
     // qui bougent ») ; accordéon, « Mes enchères » fermée par défaut (rien de rendu), état gardé par classeur.
     const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
@@ -4541,7 +4622,7 @@ async function main() {
       check(d.getElementById('sell-hide-col') && d.getElementById('sell-hide-col').checked === true, '« Cacher les cartes de mes collections » absente ou décochée par défaut');
       check(rows().length === 20 && rows().slice(0, 8).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21 | Vente 20 | Vente 19 | Vente 18 | Vente 17' && !rows().some((t) => t.startsWith('Marché')),
         'à vendre (20 premières) : ' + rows().join(' | '));
-      check(text(sell()).includes('1 carte sans cote fiable : ton favori les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
+      check(text(sell()).includes('1 carte sans cote fiable : le classeur les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
       const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
       check(more && text(more) === 'Afficher 1 de plus (1 restante)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
       more.click();
@@ -4576,7 +4657,8 @@ async function main() {
     // Mes enchères et mes ventes.
     check(panel().includes('ta mise 8W · enchère actuelle 9W · cote 10W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
     check(panel().includes('départ 5W · vendue 12W · cote 20W (−40 %)'), 'mes ventes : ' + panel());
-    check(panel().includes("il lit directement la base du jeu avec ta session, à ton clic sur « Mettre à jour les cotes » et, tant qu'il est relié à un onglet du jeu visible, toutes les 20 minutes") && panel().includes('« Couper les cotes automatiques »'), 'avertissement des règles absent');
+    check(panel().includes('sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro »)') && panel().includes('une passe par membre toutes les 20 minutes')
+      && panel().includes('30 requêtes, une par seconde') && panel().includes("la passe s'arrête et la suivante est sautée"), 'avertissement des règles absent');
     // Aucun « 12 W » (espace avant le W) ; les montants de l'onglet en vert (classe w), hors écarts (hausse, baisse).
     check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
     check(d.getElementById('panel-marche').querySelectorAll('.w').length >= 12 && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W', "montants de l'onglet Marché : classe w attendue");
@@ -4691,38 +4773,62 @@ async function main() {
     await settle(40);
     d.getElementById('tab-marche').click();
     await settle(40);
-    // Nouvel envoi du favori (market_at de GET /api/me, relu chaque minute) : l'onglet est relu, une fois. Ici un essai
-    // raté d'un favori pas à jour : la raison et le remède sont dits ; puis une lecture de 3 h : elle est dite ancienne ;
-    // puis jamais de lecture ni d'essai : quoi faire.
+    // Nouvelle lecture du serveur (market_at de GET /api/me, relu chaque minute) : l'onglet est relu, une fois. Ici un essai
+    // raté : la raison est dite ; puis une lecture de 3 h : elle est dite ancienne ; puis « Mettre à jour les cotes » (une
+    // passe du serveur, une par minute) ; puis jamais de lecture ni d'essai : quoi faire.
     {
       const reads = () => apiLog.filter((x) => x === 'GET /api/market').length;
       const now = new Date().toISOString();
       const n0 = reads();
-      um.market.attempt = { start: now, end: now, ok: false, why: 'Ta session du jeu a expiré dans cette page : recharge la page du jeu (F5), puis clique « Mettre à jour les cotes ».', v: '2026-10-16', auto: true };
+      um.market.attempt = { start: now, end: now, ok: false, why: 'Ta session du jeu a été révoquée : relie ton compte (onglet « Synchro »).', v: 'serveur', auto: true };
       um.market.market_at = now;
       await pm.live();
       await settle(80);
-      check(reads() === n0 + 1, `onglet relu après un envoi du favori : ${reads() - n0} lecture(s)`);
-      check(panel().includes("Dernier essai de ton favori, à l'instant (lecture automatique) : Ta session du jeu a expiré dans cette page : recharge la page du jeu (F5)"), 'essai raté non dit : ' + panel().slice(0, 1200));
-      check(panel().includes("Ton favori n'est pas à jour") && panel().includes('glisse le nouveau favori dans ta barre'), 'favori pas à jour non dit');
+      check(reads() === n0 + 1, `onglet relu après une lecture du serveur : ${reads() - n0} lecture(s)`);
+      check(panel().includes("Dernier essai, à l'instant (automatique) : Ta session du jeu a été révoquée : relie ton compte (onglet « Synchro »)."), 'essai raté non dit : ' + panel().slice(0, 1200));
+      check(!/(ton|le|du) favori/i.test(panel()), 'le marché parle encore du favori : ' + panel().slice(0, 1200));
       await pm.live();
       await settle(40);
-      check(reads() === n0 + 1, 'onglet relu sans nouvel envoi du favori');
+      check(reads() === n0 + 1, 'onglet relu sans nouvelle lecture');
       const later = new Date(Date.now() + 1000).toISOString();
       um.market.live_at = new Date(Date.now() - 3 * 3600_000).toISOString();
-      um.market.attempt = { start: later, end: later, ok: true, v: 3, auto: true };
+      um.market.attempt = { start: later, end: later, ok: true, v: 'serveur', auto: true };
       um.market.market_at = later;
       await pm.live();
       await settle(80);
-      check(panel().includes('Lecture du marché par ton favori : il y a 3 h') && panel().includes('Elle date de plus de 2 h') && !panel().includes('Dernier essai') && !panel().includes("n'est pas à jour"),
+      check(panel().includes('Lecture du marché par le classeur : il y a 3 h') && panel().includes('Elle date de plus de 2 h') && !panel().includes('Dernier essai'),
         'lecture ancienne : ' + panel().slice(0, 1200));
+      // « Mettre à jour les cotes » : POST /api/market/refresh, puis le marché est relu ; un second clic tout de suite est refusé
+      // (429) et dit combien attendre ; un compte délié côté serveur (401 needs_link) est dit.
+      check(!btn('Relire') && btn('Mettre à jour les cotes'), '« Mettre à jour les cotes » attendu à la place de « Relire »');
+      const mark2 = apiLog.length;
+      btn('Mettre à jour les cotes').click();
+      await settle(120);
+      const sent = apiLog.slice(mark2);
+      check(sent[0] === 'POST /api/market/refresh' && sent[1] === 'GET /api/market' && sent.filter((x) => x === 'POST /api/market/refresh').length === 1, 'mise à jour des cotes : appels ' + sent.join(', '));
+      check(panel().includes('Cotes lues : 12 cartes (il en reste 30) · 3 bonnes affaires · 2 enchères en cours') && panel().includes("Lecture du marché par le classeur : à l'instant"),
+        'résultat de la mise à jour des cotes : ' + panel().slice(0, 600));
+      btn('Mettre à jour les cotes').click();
+      await settle(80);
+      check(/Cotes déjà lues il y a moins d'une minute : patiente un instant\. \(encore \d+ s\)/.test(panel()), 'second clic : attente non dite : ' + panel().slice(0, 600));
+      um.linked = false;
+      um.marketClickAt = 0;
+      btn('Mettre à jour les cotes').click();
+      await settle(80);
+      check(panel().includes('Relie ton compte du jeu pour lire le marché.') && !panel().includes('Cotes lues'), 'compte délié côté serveur : message attendu : ' + panel().slice(0, 600));
+      um.linked = true;
+      d.getElementById('tab-marche').click();
+      await settle(40);
     }
     // Classeur sans cote : l'onglet dit comment en avoir, sans valeur dans le bandeau.
-    um.market = null;
-    btn('Relire').click();
-    await settle(80);
-    check(panel().includes('Pas encore de cote : ouvre wiki-masters.com et clique ton favori') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
-    check(panel().includes("Ton favori n'a encore jamais lu le marché. Sur wiki-masters.com, clique-le : une minute après"), 'jamais de lecture : quoi faire non dit');
+    {
+      const later = new Date(Date.now() + 5000).toISOString();
+      um.market = { market_at: later };
+      await pm.live();
+      await settle(80);
+    }
+    check(panel().includes('Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») puis clique « Mettre à jour les cotes »') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    check(panel().includes("Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Mettre à jour les cotes »."), 'jamais de lecture : quoi faire non dit');
     {
       const pm2 = openPage({ idb: 'absent' });
       check(await waitFor(() => pm2.count() === 29), 'classeur de Mona non rouvert');

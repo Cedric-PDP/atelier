@@ -135,12 +135,14 @@ async function serveApi(req, res, url) {
   res.end(Buffer.from(await response.arrayBuffer()));
 }
 
-// FAUX_JEU=1 : le jeu est simulé (dev/supabase.mjs) au lieu de la vraie base Supabase, avec deux routes de test, sans clé
+// FAUX_JEU=1 : le jeu est simulé (dev/supabase.mjs) au lieu de la vraie base Supabase, avec trois routes de test, sans clé
 // (le test de l'interface, smoke_ui.js --server=…) :
 //   POST /__jeu/joueur {key, cards, username?} → {cookie} : la collection du joueur dans le jeu (cartes sous la forme de
 //     GET /api/cards, un exemplaire par entrée de `variants`), et le cookie d'une fenêtre privée connectée à son compte ;
 //   POST /__jeu/collection {key, cards} → la réponse de POST /api/refresh : la même collection, compte relié s'il ne l'est
-//     pas, puis lue par le serveur (sans la limite d'un clic par minute).
+//     pas, puis lue par le serveur (sans la limite d'un clic par minute) ;
+//   POST /__jeu/cartes {cards} → {count} : les cartes de la table `cards` du jeu (celles que cherche « Depuis le jeu »),
+//     lignes {id, wikipedia_title, rarity, category, image_url, hide_image?, lang?}.
 const fauxJeu = /^(1|true|oui)$/i.test(process.env.FAUX_JEU || '') ? await fakeGame() : null;
 
 async function fakeGame() {
@@ -173,6 +175,10 @@ async function fakeGame() {
       const { uid } = await player(body);
       return { cookie: supa.sessionCookie({ uid }) };
     },
+    async cartes(body) {
+      supa.cards = Array.isArray(body.cards) ? body.cards : [];
+      return { count: supa.cards.length };
+    },
     async collection(body) {
       let { user, uid } = await player(body);
       if (user.game_uid !== uid || !user.game_session_enc || user.game_session_lost) {
@@ -191,7 +197,7 @@ async function serveFakeGame(req, res, url) {
   let status = 200;
   let out;
   try {
-    if (req.method !== 'POST' || !['joueur', 'collection'].includes(action)) throw Object.assign(new Error('Route du faux jeu inconnue.'), { status: 404 });
+    if (req.method !== 'POST' || !['joueur', 'collection', 'cartes'].includes(action)) throw Object.assign(new Error('Route du faux jeu inconnue.'), { status: 404 });
     out = await fauxJeu[action](JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'));
   } catch (err) {
     status = err.status || 500;
@@ -228,5 +234,5 @@ server.listen(PORT, () => {
   console.log(`  base       : ${process.env.DB_PATH || path.join(here, 'local.sqlite')}`);
   console.log(`  SIGNUP_CODE : ${env.SIGNUP_CODE === '' ? '(vide : inscriptions fermées)' : env.SIGNUP_CODE}`);
   console.log(`  COOKIE_SECRET : ${process.env.COOKIE_SECRET ? '(depuis l\'environnement)' : env.COOKIE_SECRET + ' (valeur de dev)'}`);
-  if (fauxJeu) console.log('  jeu        : simulé (FAUX_JEU), routes /__jeu/joueur et /__jeu/collection');
+  if (fauxJeu) console.log('  jeu        : simulé (FAUX_JEU), routes /__jeu/joueur, /__jeu/collection et /__jeu/cartes');
 });
