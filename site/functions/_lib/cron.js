@@ -1,6 +1,6 @@
 // Lectures sans geste du joueur, lancées par les déclencheurs planifiés de Cloudflare (wrangler.jsonc, `triggers`) :
 // la collection de chaque membre relié (vérifiée toutes les 10 minutes, relue en entier si elle a bougé et au moins toutes
-// les 6 heures), le marché sur le rythme MARKET_CRON. Une passe par déclencheur, un bail par passe (cron_state) pour que deux
+// les 6 heures), le marché de chaque membre relié (cotes, enchères et ventes : une passe toutes les 20 minutes au plus). Une passe par déclencheur, un bail par passe (cron_state) pour que deux
 // invocations ne se chevauchent pas. Garde-fous : SYNC_PAUSED suspend tout, un membre sans « Synchro automatique » ou en
 // pause (FAILS_MAX échecs d'affilée) est sauté, une limite du jeu (429, automation_limit) arrête la passe et saute la suivante.
 
@@ -10,6 +10,7 @@ import { acquireLease, freshAuth, releaseLease, sessionOf } from './game.js';
 import { syncState } from './import.js';
 import { FAILS_MAX, LEASE_MS, checkCollection, readCollection } from './refresh.js';
 import { errorEntry, writeLog } from './synclog.js';
+import { marketPass } from './marketread.js';
 
 export { FAILS_MAX, LEASE_MS };
 export const COLLECTION_CRON = '*/10 * * * *';
@@ -17,6 +18,7 @@ export const MARKET_CRON = '5-59/20 * * * *';
 export const FULL_EVERY_MS = 6 * 3600_000;
 export const CRON_BUDGET_MS = 10 * 60_000;
 export const SKIP_AFTER_LIMIT_MS = { collection: 15 * 60_000, market: 25 * 60_000 };
+export const MARKET_EVERY_MS = 20 * 60_000;
 
 const plural = (n, one, many) => (n > 1 ? many : one);
 
@@ -51,7 +53,7 @@ export async function skipNext(db, name, ms, now = Date.now()) {
   await db.prepare('UPDATE cron_state SET skip_until = ?2 WHERE name = ?1').bind(name, new Date(now + ms).toISOString()).run();
 }
 
-const HANDLERS = { collection: collectionPass, market: null };
+const HANDLERS = { collection: collectionPass, market: marketCronPass };
 
 // Déclencheur `cron` (expression de wrangler.jsonc) → une passe. Rend le résultat noté dans cron_state, ou null si rien
 // n'a été fait (configuration absente, SYNC_PAUSED, passe précédente encore en cours ou sautée).
@@ -134,5 +136,47 @@ async function collectionPass(env, { now }) {
   }
   const text = `${counts.checked} ${plural(counts.checked, 'membre vérifié', 'membres vérifiés')}, ${counts.read} ${plural(counts.read, 'relu', 'relus')}, `
     + `${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`;
+  return limited ? `limite du jeu (${text})` : text;
+}
+
+// Début de la dernière passe de marché de chaque compte (market.attempt.start), les plus anciennes d'abord : une passe
+// dure environ 30 s par membre (30 requêtes à une par seconde), tous ne tiennent pas dans un tick ; l'ordre fait tourner.
+const byLastMarket = `(SELECT CASE WHEN json_valid(m.attempt) THEN json_extract(m.attempt, '$.start') END FROM market AS m
+  WHERE m.user_id = users.id), id`;
+
+async function marketCronPass(env, { now }) {
+  const db = env.DB;
+  const start = Date.now();
+  const counts = { read: 0, failed: 0 };
+  let limited = false;
+  const { results } = await db.prepare(
+    "SELECT user_id, CASE WHEN json_valid(attempt) THEN json_extract(attempt, '$.start') END AS start FROM market WHERE attempt IS NOT NULL",
+  ).all();
+  const lastStart = new Map(results.map((r) => [r.user_id, Date.parse(r.start || '')]));
+  for (const member of await eligibleMembers(db, byLastMarket)) {
+    if (Date.now() - start >= CRON_BUDGET_MS) break;
+    const since = lastStart.get(member.id);
+    if (since > now - MARKET_EVERY_MS && since <= now + 60_000) continue; // lu il y a moins de 20 min (clic compris)
+    try {
+      const r = await marketPass(env, member, { via: 'cron', auto: true });
+      if (r.skip) continue;
+      counts.read++;
+      await noteSuccess(db, member.id);
+    } catch (err) {
+      const extra = (err && err.extra) || {};
+      if (extra.needs_link) continue; // noté dans l'essai (et au journal par game.js) ; le membre n'est plus éligible
+      if (err && err.status === 409) continue; // une autre lecture tient sa session : sauté, sans échec
+      if (extra.limited) {
+        await skipNext(db, 'market', SKIP_AFTER_LIMIT_MS.market, now);
+        counts.failed++;
+        limited = true;
+        break;
+      }
+      if (extra.quota !== undefined) continue; // quota du jour des cotes : pas un échec du membre
+      counts.failed++;
+      await noteFailure(db, member.id);
+    }
+  }
+  const text = `${counts.read} ${plural(counts.read, 'membre lu', 'membres lus')}, ${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`;
   return limited ? `limite du jeu (${text})` : text;
 }

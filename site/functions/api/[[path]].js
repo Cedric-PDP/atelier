@@ -12,6 +12,7 @@ import { deleteTarget, listTargets, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices } from '../_lib/market.js';
+import { refreshMarket, searchCards } from '../_lib/marketread.js';
 import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
@@ -52,6 +53,8 @@ const ROUTES = {
   'chat/last': { GET: [lastChat, false] }, // heure du dernier message, sans clé (outil de publication des nouveautés)
   market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
   'market/prices': { GET: [listPrices, 'main'] }, // cotes de mes cartes et des cartes voulues
+  'market/refresh': { POST: [refreshMarket, 'main'] }, // « Mettre à jour les cotes » : une passe de marché
+  'game/cards': { GET: [searchCards, 'main'] }, // cartes du jeu par titre (« Depuis le jeu »)
   'sync-log': { GET: [listSyncLog, 'main'] }, // journal des synchros
 };
 // Chemins avec un paramètre → leur entrée dans ROUTES.

@@ -2911,7 +2911,6 @@ await test('cron collection : synchro automatique coupée, membre en pause, SYNC
   assert.equal(supa.calls.length, n1);
   assert.equal(e.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM cron_state WHERE last_at IS NOT NULL").get().n, 1, 'la passe suspendue ne note rien');
   assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec');
-  assert.equal(await runCron(e, MARKET_CRON), null, 'le marché n’a pas encore de gestionnaire');
   e.DB.close();
 });
 
@@ -3094,6 +3093,348 @@ await test('marché : GET /api/market/prices (cotes de mes cartes et des cartes 
   assert.equal(value.json.value.cards, 1500);
   console.log(`    marché : page de 1 000 cotes JS ${ms(pages[0].js)} | valeur JS ${ms(value.js)} (SQLite ${ms(value.sql)})`);
   assert.ok(pages[0].js < 10 && value.js < 10, 'trop de JavaScript');
+  e.DB.close();
+});
+
+// --- Marché : passes de lecture dans la base du jeu (simulée) ------------------------------------------------------
+
+const H = 3600_000;
+const isoAgo = (ms) => new Date(Date.now() - ms).toISOString();
+const restPaths = (from) => supa.rest().slice(from).map((c) => decodeURIComponent(c.url.slice('https://cyrxjeppjqsxxjayfrur.supabase.co/rest/v1/'.length)));
+// Vente conclue (cache des cotes) et enchère en cours, rangées dans le jeu par un vendeur tiers.
+const seller = () => supa.player('vendeur-tiers');
+const sale = (card, rarity, price, ageMs, shiny = false) => ({ id: `v${seller().auctions.length}`, card_id: card, status: 'settled_sold', snapshot_rarity: rarity, is_shiny: shiny,
+  final_price: price, settled_at: isoAgo(ageMs), end_at: isoAgo(ageMs + 1000), seller_id: 'vendeur', winner_id: 'acheteur' });
+const addAuctions = (...xs) => seller().auctions.push(...xs);
+const clearMarketGame = () => {
+  seller().auctions = [];
+  supa.cards = [];
+};
+// Cartes possédées c0…c(n-1), titrées « Carte i », rareté C.
+const ownCards = (uid, n, extra = {}) => Array.from({ length: n }, (_, i) => rowOf({ id: `c${i}`, title: `Carte ${i}`, rarity: 'C', count: 1 }, { uid, eid: `e${i}`, ...(extra[i] || {}) }));
+async function marketMember(name, e, cards = (uid) => ownCards(uid, 3)) {
+  const u = await signup(name, e);
+  const uid = uidOf(u.key);
+  await seedCards(u.key, cards(uid), { e });
+  const market = async () => (await call('GET', 'market', { key: u.key, e })).json;
+  // « Mettre à jour les cotes », sans la limite d'une passe par minute (les tests en enchaînent).
+  const press = () => {
+    e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE user_id = ? AND json_valid(attempt)").run(isoAgo(10 * 60_000), u.user.id);
+    return call('POST', 'market/refresh', { key: u.key, e, body: {} });
+  };
+  return { u, uid, id: u.user.id, market, press };
+}
+const priceOf = (e, id) => {
+  const row = e.DB.sqlite.prepare('SELECT data FROM prices WHERE card_id = ?').get(id);
+  return row ? JSON.parse(row.data) : undefined;
+};
+
+await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brillance et rareté à part ; bonnes affaires, enchères, ventes ; titres résolus ; une requête par seconde)', async () => {
+  const e = makeEnv({ REFRESH_PAUSE_MS: '15' });
+  clearMarketGame();
+  const m = await marketMember('Mia', e, (uid) => ownCards(uid, 60, { 4: { snapshot_rarity: 'R' } }));
+  const { uid } = m;
+  const item = (title) => ({ title, description: null, image: null, status: 'ok' });
+  const odd = 'Avec, virgule (et "guillemets")';
+  assert.equal((await call('POST', 'targets/save', { key: m.u.key, e, body: { name: 'Envies', items: ['Voulue 1', 'Voulue 2', odd, 'Carte 3', 'Inconnue'].map(item) } })).status, 200);
+  supa.cards = [{ id: 'w1', wikipedia_title: 'Voulue 1', lang: 'fr' }, { id: 'w2-en', wikipedia_title: 'Voulue 2', lang: 'en' }, { id: 'w2', wikipedia_title: 'Voulue 2', lang: 'fr' },
+    { id: 'w3', wikipedia_title: odd, lang: 'fr' }, { id: 'c3', wikipedia_title: 'Carte 3', lang: 'fr' }];
+  // Ventes : c0 en R (40, dont 12 de plus de 7 jours), en R brillante (3), en C (2 : pas fiable) ; c2 : une seule, de plus
+  // de 90 jours (pas lue) ; les cartes voulues w1 (R), w2 (SR), w3 (C).
+  for (let i = 0; i < 40; i++) addAuctions(sale('c0', 'R', i + 1, (i * 6 + 1) * H));
+  addAuctions(sale('c0', 'R', 999, 2 * H, true), sale('c0', 'R', 100, 3 * H, true), sale('c0', 'R', 200, 4 * H, true));
+  addAuctions(sale('c0', 'C', 5, H), sale('c0', 'C', 7, 2 * H), sale('c2', 'C', 50, 100 * 24 * H));
+  for (let i = 0; i < 5; i++) addAuctions(sale('w1', 'R', 100, i * H), sale('w2', 'SR', 100, i * H));
+  for (let i = 0; i < 3; i++) addAuctions(sale('w3', 'C', 100, i * H));
+  const card = (t) => ({ wikipedia_title: t, image_url: 'https://upload.wikimedia.org/' + t.length + '.jpg', hide_image: false });
+  const soon = (ms) => new Date(Date.now() + ms).toISOString();
+  const active = (id, cardId, rarity, extra) => ({ id, card_id: cardId, status: 'active', snapshot_rarity: rarity, is_shiny: false, seller_id: 'vendeur', current_bid: null,
+    current_bidder_id: null, base_amount: 10, card: card('Titre du jeu ' + cardId), ...extra });
+  addAuctions(
+    active('a1', 'w1', 'R', { base_amount: 50, end_at: soon(H) }), // sans enchère, 50 % de la cote
+    active('a1b', 'w1', 'R', { base_amount: 90, end_at: soon(1.5 * H) }), // sans enchère, finit dans moins de 2 h, départ ≤ cote
+    active('a2', 'w2', 'SR', { current_bid: 70, current_bidder_id: 'quelqu-un', base_amount: 20, end_at: soon(5 * H) }), // 70 % de la cote
+    active('a3', 'w3', 'C', { current_bid: 95, current_bidder_id: 'quelqu-un', end_at: soon(3 * H) }), // 95 % : pas une affaire
+    active('a3b', 'w3', 'C', { base_amount: 90, end_at: soon(3 * H) }), // sans enchère mais plus de 2 h
+    active('a4', 'w1', 'R', { seller_id: uid, base_amount: 1, end_at: soon(H) }), // la mienne
+    active('a5', 'w1', 'R', { is_shiny: true, base_amount: 1, end_at: soon(H) }), // brillante : pas de cote
+    active('a6', 'w3', 'C', { current_bid: 85, current_bidder_id: uid, end_at: soon(4 * H) }), // j'y mène, 85 % : pas une affaire
+    // Mes ventes : en cours avec une enchère, vendue, invendue, trop ancienne.
+    active('s1', 'c5', 'C', { seller_id: uid, base_amount: 30, current_bid: 35, current_bidder_id: 'x', end_at: soon(2 * H) }),
+    { ...active('s2', 'c6', 'C', { seller_id: uid, base_amount: 30, end_at: isoAgo(30 * H) }), status: 'settled_sold', final_price: 70 },
+    { ...active('s3', 'c7', 'C', { seller_id: uid, base_amount: 30, end_at: isoAgo(40 * H) }), status: 'settled_unsold' },
+    { ...active('s4', 'c8', 'C', { seller_id: uid, base_amount: 30, end_at: isoAgo(20 * 24 * H) }), status: 'settled_sold', final_price: 1 },
+    { ...active('a7', 'c9', 'C', { end_at: isoAgo(5 * H) }), status: 'settled_sold', final_price: 80, winner_id: uid },
+    { ...active('a8', 'c9', 'C', { end_at: isoAgo(6 * H) }), status: 'settled_sold', final_price: 120, winner_id: 'autre' },
+  );
+  const auctionOf = (id) => seller().auctions.find((a) => a.id === id);
+  const bid = (auction, amount, ageMs) => ({ bidder_id: uid, amount, placed_at: isoAgo(ageMs), auction: auctionOf(auction) });
+  supa.player(uid).bids = [bid('a6', 85, H), bid('a6', 40, 2 * H), bid('a7', 80, 6 * H), bid('a8', 110, 7 * H), bid('a8', 5, 30 * 24 * H)];
+  for (let i = 5; i < 10; i++) addAuctions(sale(`c${i}`, 'C', 40, i * H), sale(`c${i}`, 'C', 50, i * H), sale(`c${i}`, 'C', 60, i * H));
+  const t0 = Date.now();
+  const n0 = supa.rest().length;
+  const r = await m.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { ok: true, read: 63, left: 0, deals: 2, running: 1 });
+  // Rythme et plafond : 30 requêtes au plus, une pause d'une seconde (ici REFRESH_PAUSE_MS) avant chacune sauf la première.
+  const calls = supa.rest().slice(n0);
+  assert.equal(calls.length, 6);
+  for (let i = 1; i < calls.length; i++) assert.ok(calls[i].at - calls[i - 1].at >= 14, `requêtes ${i} et ${i + 1} sans pause`);
+  const paths = restPaths(n0);
+  assert.ok(paths[0].startsWith('auction_bids?') && paths[0].includes(`bidder_id=eq.${uid}`), 'mes enchères d\'abord');
+  assert.ok(paths[1].startsWith('auctions?') && paths[1].includes(`seller_id=eq.${uid}`), 'puis mes ventes');
+  assert.ok(paths[2].startsWith('cards?') && paths[2].includes('wikipedia_title=in.("Voulue 1","Voulue 2","Avec, virgule (et \\"guillemets\\")","Inconnue")'), 'titres entre guillemets');
+  assert.ok(paths[3].includes('status=eq.active') && paths[3].includes('card_id=in.("w1","w2","w3")') && paths[3].includes('order=end_at'), 'enchères en cours des cartes voulues');
+  assert.ok(paths[4].includes('card_id=in.("w1","w3","w2","c9","c5")'), 'cotes des enchères (les miennes comprises) avant celles du plan : ' + paths[4]);
+  assert.ok(paths.filter((p) => p.includes('status=eq.settled_sold')).every((p) => p.includes('order=card_id,settled_at.desc,id&limit=1000&offset=')), 'ventes : ordre stable, pages de 1 000');
+  // Les cotes rangées (cache commun).
+  assert.deepEqual(priceOf(e, 'c0').R, { p: 15.5, n: 40, w: 34.5, l: 1, d: seller().auctions[0].settled_at });
+  assert.ok(Date.parse(priceOf(e, 'c0').R.d) <= t0 - H + 50);
+  assert.deepEqual(priceOf(e, 'c0')['R*'], { p: 200, n: 3, w: null, l: 999, d: seller().auctions[40].settled_at }, 'brillantes à part');
+  assert.deepEqual(priceOf(e, 'c0').C, { p: 6, n: 2, w: null, l: 5, d: seller().auctions[43].settled_at }, 'rareté d\'exemplaire à part (2 ventes : pas fiable)');
+  assert.deepEqual([priceOf(e, 'c1'), priceOf(e, 'c2')], [{}, {}], 'sans vente sur 90 jours : datée, sans cote');
+  assert.equal(priceOf(e, 'c5').C.p, 50);
+  // La lecture du marché, montrée par la page ; l'essai noté réussi, lu par le serveur.
+  const mk = await m.market();
+  assert.deepEqual(mk.live.deals.map((d) => [d.a, d.ask, d.bid, d.cote, d.t]), [['a1', 50, false, 100, 'Voulue 1'], ['a2', 70, true, 100, 'Voulue 2']]);
+  assert.deepEqual(mk.live.deals.map((d) => d.more), [1, 0], 'la moins chère par carte, les autres comptées (a1b)');
+  assert.deepEqual(mk.live.bids.map((b) => [b.a, b.st, b.mine, b.cur, b.lead, b.cote]), [['a6', 'run', 85, 85, true, 100], ['a7', 'won', 80, 80, false, 50], ['a8', 'lost', 110, 120, false, 50]]);
+  assert.deepEqual(mk.live.sales.map((x) => [x.a, x.st, x.base, x.cur, x.bid]), [['s1', 'run', 30, 35, true], ['a4', 'run', 1, null, false], ['s2', 'sold', 30, 70, false], ['s3', 'unsold', 30, null, false]]);
+  assert.equal(mk.live.deals[0].img, 'https://upload.wikimedia.org/' + 'Titre du jeu w1'.length + '.jpg');
+  assert.ok(!JSON.stringify(mk.live).includes(uid) && !JSON.stringify(mk.live).includes('quelqu-un'), 'identifiants du jeu dans la lecture du marché');
+  assert.deepEqual([mk.attempt.ok, mk.attempt.v, mk.attempt.auto, 'why' in mk.attempt], [true, 'serveur', false, false]);
+  assert.deepEqual(mk.value, { value: 250, priced: 5, cards: 60, approx: 0 });
+  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.market_at, mk.attempt.end > mk.live_at ? mk.attempt.end : mk.live_at);
+  // Titres -> cartes gardés, "" compris (aucune carte de ce titre), jamais l'identifiant du joueur.
+  const ids = JSON.parse(e.DB.sqlite.prepare('SELECT ids FROM market WHERE user_id = ?').get(m.id).ids);
+  assert.deepEqual(ids, { 'Voulue 1': 'w1', 'Voulue 2': 'w2', [odd]: 'w3', Inconnue: '' });
+  assert.ok(!JSON.stringify(e.DB.sqlite.prepare('SELECT * FROM market WHERE user_id = ?').get(m.id)).includes(uid));
+  // Passe suivante : titres déjà résolus pas recherchés, cotes fraîches (moins de 12 h) pas relues ; les cartes des
+  // enchères, elles, le sont toujours.
+  const n1 = supa.rest().length;
+  const again = await m.press();
+  assert.deepEqual([again.status, again.json.left], [200, 0]);
+  const p1 = restPaths(n1);
+  assert.ok(!p1.some((p) => p.startsWith('cards?')), 'titres déjà résolus redemandés');
+  assert.ok(!p1.some((p) => p.includes('status=eq.settled_sold') && p.includes('"c1"')), 'cote fraîche relue');
+  assert.ok(p1.some((p) => p.includes('status=eq.settled_sold') && p.includes('"w1"')), 'cote d\'une enchère en cours toujours relue');
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au plus par passe, la suivante reprend, quota du jour', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  // Plan : own-a fraîche (pas relue), own-b de plus de 12 h, own-c très ancienne, own-d jamais lue.
+  const p = await marketMember('Paz', e, (uid) => ['a', 'b', 'c', 'd'].map((x) => rowOf({ id: `own-${x}`, title: `Titre ${x}`, rarity: 'C', count: 1 }, { uid })));
+  putPrice(e, 'own-a', {});
+  for (const [id, at] of [['own-b', '2026-10-15T00:00:00.000Z'], ['own-c', '2026-09-01T00:00:00.000Z']]) {
+    putPrice(e, id, {});
+    e.DB.sqlite.prepare('UPDATE prices SET read_at = ? WHERE card_id = ?').run(at, id);
+  }
+  let n0 = supa.rest().length;
+  let r = await p.press();
+  assert.deepEqual([r.status, r.json.read, r.json.left], [200, 3, 0], JSON.stringify(r.json));
+  assert.ok(restPaths(n0).some((x) => x.includes('card_id=in.("own-d","own-c","own-b")')), restPaths(n0).join('\n'));
+  // 2 950 cartes : 2 requêtes (enchères, ventes) + 28 de cotes ; la première carte a 1 200 ventes (deux pages).
+  const m = await marketMember('Pio', e, (uid) => Array.from({ length: 2950 }, (_, i) => rowOf({ id: `p${String(i).padStart(4, '0')}`, title: `P ${i}`, rarity: 'C', count: 1 }, { uid })));
+  for (let i = 0; i < 1200; i++) addAuctions(sale('p0000', 'C', 10 + (i % 7), (i + 1) * 60_000));
+  n0 = supa.rest().length;
+  r = await m.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.rest().length - n0, 30, 'plafond de 30 requêtes');
+  assert.deepEqual([r.json.read, r.json.left], [2700, 250]);
+  const paths = restPaths(n0);
+  assert.deepEqual(paths.filter((x) => x.includes('"p0000"')).map((x) => x.match(/offset=(\d+)/)[1]), ['0', '1000'], 'deux pages, dans le même ordre');
+  assert.equal(priceOf(e, 'p0000').C.n, 1200);
+  const asked = (list) => list.filter((x) => x.includes('settled_sold')).flatMap((x) => x.match(/card_id=in\.\(([^)]*)\)/)[1].split(',').map((s) => s.replace(/"/g, '')));
+  const before = new Set(asked(paths));
+  n0 = supa.rest().length;
+  r = await m.press();
+  assert.deepEqual([r.status, r.json.read, r.json.left], [200, 250, 0]);
+  const now = asked(restPaths(n0));
+  assert.equal(new Set(now).size, 250);
+  assert.ok(now.every((id) => !before.has(id)), 'la passe suivante reprend là où la première s\'est arrêtée');
+  // Quota du classeur atteint : rien n'est lu, 429, la raison notée dans l'essai.
+  e.DB.sqlite.prepare("UPDATE market SET quota_n = 15000, quota_day = ? WHERE user_id = ?").run(todayUtc(), m.id);
+  n0 = supa.calls.length;
+  r = await m.press();
+  assert.deepEqual([r.status, r.json.quota], [429, 0]);
+  assert.match(r.json.error, /^Quota du jour des cotes atteint pour ton classeur \(ou pour tout le site\) : reprise demain\. Rien n'a été lu\.$/);
+  assert.equal(supa.calls.length, n0);
+  const a = (await m.market()).attempt;
+  assert.deepEqual([a.ok, a.why, a.v], [false, r.json.error, 'serveur']);
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('marché : lot partiel au plafond (seules les cartes lues en entier gardées)', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  // 30 requêtes : enchères, ventes, puis le premier lot de 100 cartes dont la première a 28 000 ventes (28 pages pleines) :
+  // le plafond tombe au milieu, aucune carte de ce lot n'est lue en entier sauf celles d'avant la dernière vue.
+  const m = await marketMember('Lou', e, (uid) => Array.from({ length: 100 }, (_, i) => rowOf({ id: `k${String(i).padStart(3, '0')}`, title: `K ${i}`, rarity: 'C', count: 1 }, { uid })));
+  for (let i = 0; i < 27_500; i++) addAuctions(sale('k000', 'C', 10, (i + 1) * 1000));
+  for (let i = 0; i < 600; i++) addAuctions(sale('k001', 'C', 20, (i + 1) * 1000));
+  const r = await m.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  // 28 pages lues : k000 entière (27 500), puis 500 de k001 : k001 coupée (dernière vue) n'est pas gardée, ni les autres.
+  assert.deepEqual([r.json.read, r.json.left], [1, 99]);
+  assert.equal(priceOf(e, 'k000').C.n, 27_500);
+  assert.equal(priceOf(e, 'k001'), undefined);
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('marché : limite du jeu (429, automation_limit) au milieu → cotes déjà lues gardées, essai raté avec sa raison ; session à relier ; une passe à la fois ; une par minute', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const m = await marketMember('Max', e, (uid) => Array.from({ length: 450 }, (_, i) => rowOf({ id: `q${String(i).padStart(3, '0')}`, title: `Q ${i}`, rarity: 'C', count: 1 }, { uid })));
+  for (const [status, body] of [[429, { message: 'Too Many Requests' }], [403, { code: 'automation_limit', message: 'Trop de requêtes' }]]) {
+    e.DB.sqlite.prepare("UPDATE prices SET read_at = '2000-01-01T00:00:00.000Z'").run();
+    seller().auctions = [sale('q000', 'C', 10, H), sale('q000', 'C', 12, H), sale('q000', 'C', 14, H)];
+    // Requêtes : mes enchères, mes ventes, puis les lots de 100 ; la 5e (3e lot) est refusée : la lecture du marché était
+    // déjà rangée.
+    const base = supa.calls.length;
+    supa.fail = (url, n) => (n === base + 5 ? { status, body } : null);
+    const r = await m.press();
+    supa.fail = null;
+    assert.deepEqual([r.status, r.json.limited], [429, true], JSON.stringify(r.json));
+    assert.equal(r.json.error, 'Le jeu limite les lectures automatiques : réessaie plus tard. 200 cotes lues avant l\'arrêt ont été gardées, avec les bonnes affaires et tes enchères.');
+    assert.equal(supa.calls.length - base, 5, 'plus rien après le refus');
+    assert.equal(priceOf(e, 'q000').C.p, 12);
+    const mk = await m.market();
+    assert.deepEqual([mk.attempt.ok, mk.attempt.why, mk.attempt.v], [false, r.json.error, 'serveur']);
+    assert.ok(mk.live, 'lecture du marché rangée avant le refus');
+  }
+  // Refus dès la première requête : rien de lu, la raison seule.
+  let base = supa.calls.length;
+  supa.fail = (url, n) => (n === base + 1 ? { status: 429, body: {} } : null);
+  let r = await m.press();
+  supa.fail = null;
+  assert.deepEqual([r.status, r.json.error], [429, 'Le jeu limite les lectures automatiques : réessaie plus tard.']);
+  // Une passe à la fois par compte (bail partagé avec la lecture de la collection) : 409, rien demandé au jeu.
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(new Date(Date.now() + 60_000).toISOString(), m.id);
+  base = supa.calls.length;
+  r = await m.press();
+  assert.equal(r.status, 409);
+  assert.equal(supa.calls.length, base);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = NULL WHERE id = ?').run(m.id);
+  // Une par minute : moins d'une minute après le début de la précédente, 429 retry_after.
+  assert.equal((await m.press()).status, 200);
+  r = await call('POST', 'market/refresh', { key: m.u.key, e, body: {} });
+  assert.equal(r.status, 429);
+  assert.ok(r.json.retry_after >= 1 && r.json.retry_after <= 60, JSON.stringify(r.json));
+  assert.equal(userRow(m.id, e).sync_lock, null, 'bail rendu');
+  // Session à relier : 401 needs_link, l'essai noté raté avec la raison.
+  e.DB.sqlite.prepare("UPDATE users SET game_session_lost = 'révoquée' WHERE id = ?").run(m.id);
+  base = supa.calls.length;
+  r = await m.press();
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  assert.equal(supa.calls.length, base);
+  const a = (await m.market()).attempt;
+  assert.deepEqual([a.ok, /relie ton compte/.test(a.why)], [false, true]);
+  assert.equal(userRow(m.id, e).sync_lock, null, 'bail rendu');
+  // Sans compte du jeu relié.
+  const v = await signup('Nil', e);
+  r = await call('POST', 'market/refresh', { key: v.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('cron marché : membres éligibles, lus il y a moins de 20 min sautés, limite du jeu → passe arrêtée et suivante sautée', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const a = await marketMember('Mka', e);
+  const b = await marketMember('Mkb', e);
+  const c = await marketMember('Mkc', e);
+  e.DB.sqlite.prepare('UPDATE users SET auto_sync = 0 WHERE id = ?').run(c.id);
+  // b : lu au clic il y a 10 min → sauté.
+  assert.equal((await b.press()).status, 200);
+  let n0 = supa.rest().length;
+  assert.equal(await runCron(e, MARKET_CRON), '1 membre lu, 0 échec');
+  assert.ok(supa.rest().length > n0);
+  let at = (await a.market()).attempt;
+  assert.deepEqual([at.ok, at.auto, at.v], [true, true, 'serveur']);
+  assert.equal((await c.market()).attempt, null, 'synchro automatique coupée');
+  // Tout le monde lu il y a moins de 20 min : rien.
+  n0 = supa.calls.length;
+  assert.equal(await runCron(e, MARKET_CRON), '0 membre lu, 0 échec');
+  assert.equal(supa.calls.length, n0);
+  // 25 min plus tard, limite du jeu : passe arrêtée au premier membre, la suivante sautée, celle d'après passe.
+  e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(25 * 60_000));
+  supa.limit = 'automation_limit';
+  after(() => { supa.limit = null; });
+  n0 = supa.rest().length;
+  assert.equal(await runCron(e, MARKET_CRON), 'limite du jeu (0 membre lu, 1 échec)');
+  assert.equal(supa.rest().length - n0, 1);
+  assert.equal([a, b].filter((x) => userRow(x.id, e).sync_fails > 0).length, 0, 'une limite n\'est pas un échec du membre');
+  const skip = e.DB.sqlite.prepare("SELECT skip_until, running_until FROM cron_state WHERE name = 'market'").get();
+  assert.ok(Date.parse(skip.skip_until) > Date.now() + 24 * 60_000);
+  assert.equal(skip.running_until, null);
+  supa.limit = null;
+  assert.equal(await runCron(e, MARKET_CRON), null, 'passe suivante sautée');
+  e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(60 * 60_000));
+  assert.equal(await runCron(e, MARKET_CRON, { now: Date.now() + 26 * 60_000 }), '2 membres lus, 0 échec');
+  // Trois échecs d'affilée → membre en pause (le même compteur que la collection).
+  supa.fail = (url) => (url.includes('/rest/') ? { status: 502 } : null);
+  after(() => { supa.fail = null; });
+  e.DB.sqlite.prepare('UPDATE users SET auto_sync = 0 WHERE id = ?').run(b.id);
+  for (let k = 1; k <= 3; k++) {
+    e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(60 * 60_000));
+    e.DB.sqlite.prepare('UPDATE cron_state SET skip_until = NULL').run();
+    assert.equal(await runCron(e, MARKET_CRON), '0 membre lu, 1 échec');
+    assert.equal(userRow(a.id, e).sync_fails, k);
+  }
+  at = (await a.market()).attempt;
+  assert.deepEqual([at.ok, /^La base du jeu ne répond pas/.test(at.why)], [false, true]);
+  assert.equal((await call('GET', 'me', { key: a.u.key, e })).json.session.paused, true);
+  e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(60 * 60_000));
+  n0 = supa.calls.length;
+  assert.equal(await runCron(e, MARKET_CRON), '0 membre lu, 0 échec');
+  assert.equal(supa.calls.length, n0, 'membre en pause : sauté');
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('GET /api/game/cards?q= : recherche ilike (q échappé), version française d\'un même titre, rareté inconnue écartée, 200 au plus', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const m = await marketMember('Gus', e);
+  const c = (id, t, extra = {}) => ({ id, wikipedia_title: t, rarity: 'R', category: 'Animaux', image_url: `https://img.example/${id}.jpg`, hide_image: false, lang: 'fr', ...extra });
+  supa.cards = [c(10, 'Vache', { lang: 'en' }), c(11, 'Vache'), c(12, 'La vache qui rit', { hide_image: true }), c(13, 'Taureau'), c(14, 'Vache (homonymie)', { rarity: 'X' }),
+    c(15, '100% vache'), c(16, '1000 vaches'), c(17, 'Vache_folle')];
+  const search = (q, key = m.u.key) => call('GET', `game/cards?q=${encodeURIComponent(q)}`, { key, e });
+  const n0 = supa.rest().length;
+  let r = await search('vache');
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.cards.map((x) => [x.card_id, x.title]), [['15', '100% vache'], ['16', '1000 vaches'], ['12', 'La vache qui rit'], ['11', 'Vache'], ['17', 'Vache_folle']]);
+  assert.deepEqual(r.json.cards.find((x) => x.card_id === '12'), { card_id: '12', title: 'La vache qui rit', rarity: 'R', category: 'Animaux', image: null });
+  assert.equal(r.json.cards.find((x) => x.card_id === '11').image, 'https://img.example/11.jpg');
+  assert.equal(r.json.more, false);
+  const [one] = supa.rest().slice(n0);
+  assert.equal(supa.rest().length - n0, 1);
+  assert.match(one.url, /cards\?select=id,wikipedia_title,rarity,category,image_url,hide_image,lang&wikipedia_title=ilike\.\*vache\*&order=wikipedia_title,id&limit=201$/);
+  // Jokers de LIKE pris à la lettre ; virgules et parenthèses encodées.
+  r = await search('100%');
+  assert.deepEqual(r.json.cards.map((x) => x.card_id), ['15']);
+  r = await search('e_f');
+  assert.deepEqual(r.json.cards.map((x) => x.card_id), ['17']);
+  const last = supa.rest().at(-1).url;
+  assert.ok(last.includes('ilike.*e%5C_f*'), last);
+  await search('a,b(c)');
+  assert.ok(supa.rest().at(-1).url.includes('ilike.*a%2Cb%28c%29*'), supa.rest().at(-1).url);
+  // Plus de 200 : more.
+  supa.cards = Array.from({ length: 250 }, (_, i) => c(1000 + i, `Vache ${String(i).padStart(3, '0')}`));
+  r = await search('vache');
+  assert.deepEqual([r.json.cards.length, r.json.more], [200, true]);
+  for (const q of ['', '   ', 'x'.repeat(101)]) assert.equal((await search(q)).status, 400, JSON.stringify(q));
+  assert.equal((await call('GET', 'game/cards?q=vache', { e })).status, 401);
+  const v = await signup('Ned', e);
+  r = await search('vache', v.key);
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  clearMarketGame();
   e.DB.close();
 });
 

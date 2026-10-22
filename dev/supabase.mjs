@@ -30,7 +30,22 @@ function pgList(v) {
   return out;
 }
 
-const reply = (body, status = 200, headers = {}) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
+// Motif ilike de PostgREST → expression régulière : « * » devient « % » (comme PostgREST), puis LIKE : % = n'importe quoi,
+// _ = un caractère, \x = x à la lettre.
+function likeRe(pattern) {
+  let re = '';
+  const p = pattern.replace(/\*/g, '%');
+  for (let i = 0; i < p.length; i++) {
+    const ch = p[i];
+    if (ch === '\\' && i + 1 < p.length) re += p[++i].replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    else if (ch === '%') re += '.*';
+    else if (ch === '_') re += '.';
+    else re += ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+  return new RegExp('^' + re + '$', 'is');
+}
+
+const reply = (body,status = 200, headers = {}) => new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
 
 // Carte des tests (forme CarteImport : {id, title, rarity, atk, def, quality, pageviews, category, image, url, count, shiny,
 // starred, obtained_at}) → ligne user_cards embarquée. tags : noms, ou objets {id, name, color}.
@@ -120,7 +135,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     const u = new URL(url);
     const method = (init.method || 'GET').toUpperCase();
     const h = new Headers(init.headers || {});
-    const call = { method, url: String(url), path: u.pathname, headers: Object.fromEntries(h), body: init.body ?? null };
+    const call = { method, url: String(url), path: u.pathname, headers: Object.fromEntries(h), body: init.body ?? null, at: Date.now() };
     supa.calls.push(call);
     assert.ok(!h.has('user-agent'), 'aucun User-Agent posé par le serveur');
     if (h.get('apikey') !== ANON) return reply({ message: 'Invalid API key' }, 401);
@@ -176,10 +191,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       if (v.startsWith('gte.')) return x !== null && x >= v.slice(4);
       if (v.startsWith('gt.')) return x !== null && x > v.slice(3);
       if (v.startsWith('in.')) return pgList(v).includes(x);
-      if (v.startsWith('ilike.')) {
-        const re = new RegExp('^' + v.slice(6).split('*').map((s) => s.replace(/[.+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$', 'i');
-        return x !== null && re.test(x);
-      }
+      if (v.startsWith('ilike.')) return x !== null && likeRe(v.slice(6)).test(x);
       throw new Error('filtre inattendu : ' + k + '=' + v);
     }));
     const order = (u.searchParams.get('order') || '').split(',').filter(Boolean).map((o) => o.split('.'));

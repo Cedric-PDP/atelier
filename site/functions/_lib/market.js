@@ -1,9 +1,8 @@
 // Le marché : cotes des cartes (cache commun à tous les classeurs), valeur du classeur jour par jour, et dernière
-// lecture du marché par le favori (bonnes affaires, enchères et ventes du joueur). Contrat : SPEC.md, « Le marché ».
-// Ce serveur n'a aucune session du jeu et n'appelle jamais le jeu ni sa base (Supabase) : tout est lu par le favori,
-// dans la page du jeu, avec la session du joueur (à son clic, ou en mode relié toutes les 20 min et après ses enchères
-// et ventes) ; ici, on vérifie, on range et on montre, et on garde le dernier essai du favori (réussi ou non, avec la
-// raison) pour que la page dise quoi faire.
+// lecture du marché (bonnes affaires, enchères et ventes du joueur). Contrat : SPEC.md, « Le marché ».
+// Le serveur lit la base du jeu (Supabase) avec la session dédiée de chaque membre (marketread.js : à son clic, et par
+// les lectures automatiques) ; ici, on vérifie ce qui a été calculé, on range et on montre, et on garde le dernier essai
+// (réussi ou non, avec la raison) pour que la page dise quoi faire.
 // Limite de calcul (10 ms de JavaScript par requête) : les jointures et les sommes se font dans D1.
 
 import { HttpError, raw } from './http.js';
@@ -11,10 +10,10 @@ import { RARITIES, decodeCursor, encodeCursor, isDate } from './cards.js';
 import { byteLength, cleanText, nowIso } from './util.js';
 
 export const FRESH_MS = 12 * 3600_000; // une cote lue il y a moins de 12 h n'est pas relue (plan)
-const PLAN_CARDS = 3000; // cartes à coter rendues par le plan (un passage du favori en lit moins)
+const PLAN_CARDS = 3000; // cartes à coter rendues par le plan (une passe en lit moins)
 const PLAN_WANTED = 500; // titres des cartes qui manquent aux collections, surveillés aux enchères
 const IDS_MAX = 2000; // titres -> card_id gardés par compte
-const PART_PRICES = 500; // cotes par envoi
+export const PART_PRICES = 500; // cotes par envoi
 // Quotas du jour des cotes : une cote = une ligne écrite (et son index). Abonnement payant (2026-10-17) : 50 millions
 // de lignes écrites par mois comprises ; avant, D1 gratuit (100 000 par jour pour tout) imposait 3 000 et 30 000.
 export const QUOTA_USER = 15000;
@@ -24,8 +23,7 @@ const VALUE_GAP = 3600_000; // après un import, la valeur du jour est recalcul�
 // avant (les enchères changent vite), mais les mises et les ventes du joueur restent utiles.
 const LIVE_MS = 7 * 86400_000;
 const LIVE_BYTES = 256 * 1024;
-// Lectures automatiques (mode relié) : jamais deux à moins de 5 min d'intervalle pour un classeur, tous navigateurs et
-// appareils confondus (le favori en fait une toutes les 20 min, et après une enchère ou une vente vue dans le jeu).
+// Lecture automatique : jamais à moins de 5 min du début de la précédente pour un classeur, d'où qu'elle vienne.
 export const AUTO_GAP = 5 * 60_000;
 const WHY_MAX = 300;
 const VERSION = /^[A-Za-z0-9._-]{1,20}$/;
@@ -102,10 +100,10 @@ export async function valueAfterCards(db, userId) {
   }
 }
 
-// ---------------------------------------------------------------- plan du favori (clé d'import)
+// ---------------------------------------------------------------- plan d'une passe
 // Cartes possédées et cartes voulues dont le card_id est connu, cote absente ou de plus de 12 h, la plus ancienne
-// d'abord (les possédées avant les voulues à égalité) : un passage du favori s'arrête au plafond de ses requêtes, le
-// suivant reprend là. stale / fresh : nombre de cartes à coter et déjà cotées il y a moins de 12 h.
+// d'abord (les possédées avant les voulues à égalité) : une passe s'arrête au plafond de ses requêtes, la suivante
+// reprend là. stale / fresh : nombre de cartes à coter et déjà cotées il y a moins de 12 h.
 const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id = ?1),
   want AS (SELECT j.value AS id, 1 AS w FROM market AS m, json_each(m.ids) AS j
     WHERE m.user_id = ?1 AND j.type = 'text' AND j.value <> ''),
@@ -150,9 +148,9 @@ const parseIds = (text) => {
   }
 };
 
-// Dernier essai du favori (colonne market.attempt, texte JSON) : {start, v, auto} posé par le plan, puis {end, ok} à la
-// fin (cotes envoyées avec last: true : ok = true ; POST /api/market/fail : ok = false et why, la raison dite au joueur).
-// Rien du jeu (ni jeton ni identifiant) : des heures, la version du favori et un message.
+// Dernier essai (colonne market.attempt, texte JSON) : {start, v, auto} posé par le plan, puis {end, ok} à la fin
+// (cotes écrites avec last : ok = true ; échec : ok = false et why, la raison dite au joueur). Rien du jeu (ni jeton ni
+// identifiant) : des heures, qui a lu (v) et un message.
 const parseAttempt = (text) => {
   try {
     const o = JSON.parse(text || 'null');
@@ -161,20 +159,23 @@ const parseAttempt = (text) => {
     return null;
   }
 };
-// Version du favori : un entier (VERSION de bookmarklet.js), ou un texte court (favori du 17/10 au matin : « 2026-10-17 »).
+// v : « serveur » ; les essais d'avant la lecture par le serveur gardent leur version (un entier, ou un texte court).
 const cleanVersion = (v) => (Number.isInteger(v) && v >= 0 && v < 1e6 ? v : typeof v === 'string' && VERSION.test(v) ? v : null);
+export const READER = 'serveur';
 const SET_ATTEMPT = `INSERT INTO market (user_id, attempt) VALUES (?1, ?2)
   ON CONFLICT (user_id) DO UPDATE SET attempt = excluded.attempt`;
 
-// POST /api/market/plan {v?, auto?} (clé principale ou clé d'import, CORS du jeu ; celle du favori) : ce que le favori
-// doit lire. {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}, quota}. C'est la seule
-// lecture permise à la clé d'import : des identifiants de cartes et des titres, jamais les étiquettes ni le reste du
-// classeur. v : version du favori ; auto : lecture automatique du mode relié, refusée ({skip: true, until}, rien d'autre
-// de lu ni d'écrit) si une lecture de ce classeur a commencé il y a moins de 5 min, d'où qu'elle vienne. Sinon l'essai
-// est noté (start, v, auto) : la page voit qu'une lecture a commencé, puis comment elle a fini.
-export async function marketPlan(env, user, body) {
-  const db = env.DB;
-  const auto = !!body && body.auto === true;
+// Dernier essai du compte (null s'il n'y en a jamais eu).
+export async function lastAttempt(db, userId) {
+  const row = await db.prepare('SELECT attempt FROM market WHERE user_id = ?1').bind(userId).first();
+  return parseAttempt(row && row.attempt);
+}
+
+// Ce qu'une passe doit lire : {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}, quota}.
+// auto : lecture automatique, refusée ({skip: true, until}, rien d'autre de lu ni d'écrit) si une lecture de ce classeur
+// a commencé il y a moins de 5 min. Sinon l'essai est noté (start, v, auto) : la page voit qu'une lecture a commencé,
+// puis comment elle a fini.
+export async function planFor(db, user, { auto = false } = {}) {
   const row = await db.prepare('SELECT ids, attempt FROM market WHERE user_id = ?1').bind(user.id).first();
   const since = Date.parse((parseAttempt(row && row.attempt) || {}).start);
   if (auto && since > Date.now() - AUTO_GAP && since <= Date.now() + 60_000) {
@@ -185,7 +186,7 @@ export async function marketPlan(env, user, body) {
     db.prepare(PLAN).bind(user.id, cutoff),
     db.prepare(WANTED).bind(user.id),
     db.prepare(QUOTA).bind(user.id),
-    db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify({ start: nowIso(), v: cleanVersion(body && body.v), auto })),
+    db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify({ start: nowIso(), v: READER, auto: !!auto })),
   ]);
   const head = plan.results.find((r) => r.h === 0) || { stale: 0, fresh: 0 };
   const titles = wanted.results.map((r) => r.t);
@@ -202,26 +203,20 @@ export async function marketPlan(env, user, body) {
   };
 }
 
-// POST /api/market/fail {why, v?, auto?} (clé principale ou clé d'import, CORS du jeu) : le favori dit pourquoi sa lecture
-// a échoué (session du jeu introuvable ou expirée, limite du jeu, base du jeu en erreur…), avec le message qu'il a montré
-// au joueur ; la page le répète (« Dernier essai de ton favori : … »). 300 caractères au plus ; un texte qui ressemble à
-// un jeton (JWT) est masqué par prudence (le favori n'en met jamais).
-export async function postFail(env, user, body) {
-  const why = typeof body.why === 'string' ? cleanText(body.why) : '';
-  if (!why || why.length > WHY_MAX) throw bad(`« why » : un message de 1 à ${WHY_MAX} caractères.`);
-  const db = env.DB;
-  const row = await db.prepare('SELECT attempt FROM market WHERE user_id = ?1').bind(user.id).first();
-  const prev = parseAttempt(row && row.attempt);
+// Échec d'une passe : sa raison (le message dit au joueur), nettoyée, 300 caractères au plus ; un texte qui ressemble à
+// un jeton (JWT) est masqué par prudence.
+export async function writeFail(db, user, { why, auto = false }) {
+  const text = cleanText(String(why ?? '')).replace(/eyJ[\w-]{8,}(\.[\w-]*){1,2}/g, '[jeton masqué]').slice(0, WHY_MAX) || 'Erreur inconnue.';
+  const prev = await lastAttempt(db, user.id);
   const now = nowIso();
   await db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify({
     start: prev ? prev.start : now,
-    v: cleanVersion(body.v) ?? (prev && cleanVersion(prev.v)),
-    auto: body.auto === true,
+    v: prev ? cleanVersion(prev.v) ?? READER : READER,
+    auto: !!auto,
     end: now,
     ok: false,
-    why: why.replace(/eyJ[\w-]{8,}(\.[\w-]*){1,2}/g, '[jeton masqué]'),
+    why: text,
   })).run();
-  return { ok: true };
 }
 
 // ---------------------------------------------------------------- cotes (cache commun, sans user_id)
@@ -251,17 +246,13 @@ function cleanPriceEntry(e, i) {
   return [e.id, JSON.stringify(out)];
 }
 
-// POST /api/market/prices {prices: [{id, v}], last?} (clé principale ou clé d'import, CORS du jeu) : 500 cotes au plus
-// par envoi, remplacées en entier (une carte relue a toutes ses ventes récentes), datées de maintenant. Quotas du jour :
-// 15 000 par compte, 150 000 pour tout le site (429 au-delà, rien d'écrit). `last: true` : fin du passage du favori, la
-// valeur du jour de ce classeur est recalculée et son essai noté fini (ok ; un échec annoncé ensuite par
-// POST /api/market/fail le remplace).
-export async function postPrices(env, user, body) {
-  const db = env.DB;
-  const list = Array.isArray(body.prices) ? body.prices : null;
-  if (!list) throw bad('Il manque les cotes (champ « prices »).');
+// Cotes lues par une passe, [{id, v}] : 500 au plus par appel, contrôlées (cleanPriceEntry), remplacées en entier (une
+// carte relue a toutes ses ventes récentes), datées de maintenant. Quotas du jour : 15 000 par compte, 150 000 pour tout
+// le site (429 au-delà, rien d'écrit). last : fin de la passe, la valeur du jour de ce classeur est recalculée et son
+// essai noté fini (ok ; un échec noté ensuite par writeFail le remplace).
+export async function writePrices(db, user, list, last = false) {
+  if (!Array.isArray(list)) throw bad('Il manque les cotes.');
   if (list.length > PART_PRICES) throw bad(`${PART_PRICES} cotes au plus par envoi.`);
-  if (body.last !== undefined && typeof body.last !== 'boolean') throw bad('Le champ « last » doit être vrai ou faux.');
   const rows = list.map(cleanPriceEntry);
   const seen = new Set(rows.map((r) => r[0]));
   if (seen.size !== rows.length) throw bad('Une carte est cotée deux fois dans le même envoi.');
@@ -284,7 +275,7 @@ export async function postPrices(env, user, body) {
       db.prepare(bump).bind('*', d, rows.length),
     ]);
   }
-  if (body.last === true) {
+  if (last === true) {
     const prev = await db.prepare(TODAY_POINT).bind(user.id, d).first();
     await saveValue(db, user.id, await computeValue(db, user.id), prev, true);
     await db.prepare(`UPDATE market SET attempt = json_remove(json_set(attempt, '$.end', ?2, '$.ok', json('true')), '$.why')
@@ -293,8 +284,8 @@ export async function postPrices(env, user, body) {
   return { written: rows.length, quota: left - rows.length };
 }
 
-// ---------------------------------------------------------------- lecture du marché (clé d'import), montrée par la page
-// Ce que le favori a lu à son dernier passage, pour l'onglet « Marché » : bonnes affaires (enchères en cours sur des
+// ---------------------------------------------------------------- lecture du marché, montrée par la page
+// Ce que la dernière passe a lu, pour l'onglet « Marché » : bonnes affaires (enchères en cours sur des
 // cartes qui manquent aux collections, la meilleure par carte ; more = autres enchères intéressantes sur la même carte),
 // enchères posées par le joueur et ses ventes. Une ligne par compte, remplacée à chaque passage, oubliée au bout de
 // 7 jours. Jamais l'identifiant du joueur dans le jeu ni celui des enchérisseurs.
@@ -317,7 +308,7 @@ const FIELDS = {
   base: amount,
   more: (v) => v === 0 || count(v),
 };
-// Valeur d'un champ absent : null pour ceux qui peuvent l'être ; more = 0 (favori d'avant le 2026-10-17).
+// Valeur d'un champ absent : null pour ceux qui peuvent l'être ; more = 0.
 const ABSENT = { img: null, cote: null, n: null, cur: null, more: 0 };
 const KINDS = {
   deals: { max: 50, fields: ['a', 'id', 't', 'r', 's', 'img', 'end', 'cote', 'n', 'ask', 'bid', 'lead', 'more'], st: null },
@@ -348,12 +339,10 @@ function cleanLive(body) {
   return out;
 }
 
-// POST /api/market/live {ids?, deals?, bids?, sales?} (clé principale ou clé d'import, CORS du jeu). ids : titres des
-// cartes voulues -> card_id du jeu ("" : aucune carte de ce titre), relevés par le favori, ajoutés à ceux déjà connus
-// (2 000 au plus). 256 Ko au plus (413 au-delà ; le favori allège sa lecture avant). Les lectures de plus de 7 jours de
-// tous les comptes sont effacées au passage.
-export async function postLive(env, user, body) {
-  const db = env.DB;
+// Lecture du marché d'une passe, {ids?, deals?, bids?, sales?}, contrôlée (cleanLive). ids : titres des cartes voulues ->
+// card_id du jeu ("" : aucune carte de ce titre), ajoutés à ceux déjà connus (2 000 au plus). 256 Ko au plus (413 ;
+// la passe allège sa lecture avant). Les lectures de plus de 7 jours de tous les comptes sont effacées au passage.
+export async function writeLive(db, user, body) {
   const ids = body.ids === undefined ? {} : body.ids;
   if (!ids || typeof ids !== 'object' || Array.isArray(ids)) throw bad('« ids » : un objet {titre: identifiant}.');
   const fresh = Object.entries(ids);
@@ -383,7 +372,7 @@ export async function postLive(env, user, body) {
 // ---------------------------------------------------------------- la page (clé principale)
 // GET /api/market : valeur du classeur (calculée maintenant, et le point du jour mis à jour s'il a changé : les cotes ont
 // pu bouger depuis, relues par un autre membre), son historique (un point par jour), la dernière lecture du marché (de
-// moins de 7 jours) et le dernier essai du favori (attempt : {start, end?, ok?, why?, v, auto}, null s'il n'y en a
+// moins de 7 jours) et le dernier essai (attempt : {start, end?, ok?, why?, v, auto}, null s'il n'y en a
 // jamais eu).
 export async function getMarket(env, user) {
   const db = env.DB;
