@@ -552,6 +552,9 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .drop strong { font: 600 1.05rem var(--f-head); }
 .drop input { font-size: 12.5px; max-width: 100%; }
 .drop.disabled { opacity: 0.55; cursor: default; }
+.secours { border-top: 1px solid var(--border); padding-top: 10px; }
+.secours summary { cursor: pointer; font-size: 13px; color: var(--link); }
+.secours[open] { display: grid; gap: 10px; }
 .settings { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; align-items: start; }
 .danger-zone { border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
 .known { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
@@ -812,7 +815,7 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 .wp-progress { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
 .wp-progress progress { width: min(280px, 100%); height: 8px; accent-color: var(--accent); }
 
-/* Fenêtre « Mettre à jour avec le favori » : attente de l'envoi, puis confirmation. */
+/* Attente (liaison du compte du jeu, lecture en cours), puis confirmation. */
 .wait-line { display: flex; align-items: center; gap: 8px; color: var(--muted); margin: 6px 0 0; }
 .wait-line .ic { color: var(--accent); }
 p.ok { color: var(--accent); font-weight: 600; }

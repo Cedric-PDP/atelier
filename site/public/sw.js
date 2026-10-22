@@ -1,7 +1,7 @@
 // Service worker du classeur (app installée sur l'écran d'accueil). Volontairement minimal : il ne sert qu'à ouvrir
 // l'app sans réseau et à la rendre installable. Toujours le réseau d'abord : le cache ne sert qu'en secours, pour qu'une
 // version figée de l'interface ne parle jamais à une API qui a changé.
-// - jamais /api/* (cartes, chat, favori court /api/favori.js…) ni ce qui n'est pas un GET ;
+// - jamais /api/* (cartes, chat, code du favori « Relier » /api/favori.js…) ni ce qui n'est pas un GET ;
 // - page et fichiers du site : réseau, copie gardée, copie servie hors ligne ;
 // - Vue (cdnjs) et polices Google : même chose (adresses versionnées) ; illustrations de Wikimedia : jamais.
 // Pour tout annuler : remplacer ce fichier par un service worker qui se désinstalle (README, « App installée »).

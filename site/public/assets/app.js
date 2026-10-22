@@ -36,7 +36,7 @@
   // Ordre d'affichage des légendes : de la plus commune à la plus rare, comme dans le jeu.
   const RAR_UP = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
   const LS = { key: 'classeur-key', target: 'classeur-target', folded: 'classeur-tags-folded', pv: 'classeur-pv', sugg: 'classeur-sugg',
-    importKey: 'classeur-import-key', known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at',
+    known: 'classeur-known', natGroup: 'classeur-natgroup', tagCats: 'classeur-tagcats', proposeAt: 'classeur-propose-at',
     chatRead: 'classeur-chat-lu', market: 'classeur-marche', sections: 'classeur-sections', newsSeen: 'classeur-nouveautes-vu' };
   // Clé du classeur : 32 octets en base64url (43 caractères). Un lien plus court a été tronqué.
   const KEY_RE = /^[A-Za-z0-9_-]{43,128}$/;
@@ -109,7 +109,7 @@
     for (const [limit, r] of PV_STEPS) if (views < limit) return r;
     return 'L';
   };
-  // Rareté relevée dans le jeu (collection créée par le favori depuis la Collection globale), sinon null.
+  // Rareté relevée dans le jeu (collection créée depuis les cartes du jeu), sinon null.
   const realRarity = (item) => (item && RARITIES.includes(item.rarity) ? item.rarity : null);
   const addTo = (tags, tag) => (tags.includes(tag) || tags.length >= 30 ? tags : [...tags, tag]);
   const dateOf = (iso) => { const d = new Date(iso); return iso && !Number.isNaN(d.getTime()) ? d : null; };
@@ -124,6 +124,7 @@
     del(k) { try { localStorage.removeItem(k); } catch (e) { /* rien à faire */ } },
     json(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } },
   };
+  store.del('classeur-import-key'); // clés d'import de l'ancienne synchro (retirée le 22 octobre 2026) : plus rien ne les lit
 
   // Cache par titre dans localStorage, avec une durée de vie ; écrit par paquets.
   function makeCache(name, ttl) {
@@ -261,12 +262,13 @@
     tagSearch: '',
     tagsAll: false,
     refresh: { running: false, msg: '', error: false, warn: false },
-    // Fenêtre « Mettre à jour avec le favori » ; failed = échec signalé par le favori pendant qu'elle est ouverte (journal
-    // des synchros, last_sync de GET /api/me), lastAt = dernière ligne du journal à son ouverture.
-    sync: { done: false, msg: '', before: null, expired: false, hasFavori: false, others: {}, elsewhere: null, failed: '', lastAt: null },
     notice: null,
-    modal: null, // editor | confirm | tag | switch | link | arrange | sync | tagadd | merge
-    session: { cookie: '', busy: false, error: '' },
+    modal: null, // editor | confirm | tag | switch | link | arrange | tagadd | merge | install
+    session: { cookie: '', busy: false, error: '' }, // liaison en secours : cookie collé ou HAR
+    // « Relier mon compte » (onglet « Synchro ») : jeton à usage unique du favori « Relier » (POST /api/link), son
+    // expiration, l'heure de la session reliée à sa création (sa liaison la change) ; clicked = favori cliqué ici.
+    link: { token: '', until: '', at: null, busy: false, error: '', clicked: false },
+    auto: { busy: false, error: '' }, // case « Synchro automatique » (PATCH /api/me {auto_sync})
     editor: null,
     confirm: null,
     tagEdit: null,
@@ -278,7 +280,6 @@
     reorder: null,
     settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
     copied: '',
-    bm: { src: null, error: '', clicked: false, importKey: null, busy: false, checking: false, stale: false },
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
     prefs: { hidden_proposals: [], hide_proposals: false }, // préférences du compte (GET/PATCH /api/me) : propositions retirées, masquées
     tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
@@ -363,8 +364,8 @@
     try { data = await r.json(); } catch (e) { data = null; }
     if (!r.ok) {
       const msg = (data && typeof data.error === 'string' && data.error) || `Le classeur a répondu ${r.status}.`;
-      // Clé inconnue (classeur supprimé, lien erroné) : retour à l'accueil. Une session WikiMasters expirée n'est pas concernée.
-      if (r.status === 401 && keyed && !(opts && opts.key) && !(data && data.needs_session) && S.boot === 'app') lostKey(msg);
+      // Clé inconnue (classeur supprimé, lien erroné) : retour à l'accueil. Un compte du jeu à relier n'est pas concerné.
+      if (r.status === 401 && keyed && !(opts && opts.key) && !(data && data.needs_link) && S.boot === 'app') lostKey(msg);
       throw new ApiError(r.status, msg, data);
     }
     return data || {};
@@ -827,8 +828,8 @@
   });
   const visibleCards = computed(() => filtered.value.slice(0, S.limit));
 
-  // Collections à compléter du serveur (targets), toutes dans « Mes collections » : créées par le favori depuis la
-  // Collection globale du jeu, à la main dans « Nouvelle collection », depuis une catégorie de Wikipédia (source
+  // Collections à compléter du serveur (targets), toutes dans « Mes collections » : créées depuis les cartes du jeu, à la
+  // main dans « Nouvelle collection », depuis une catégorie de Wikipédia (source
   // « wp:<nom> » : `cat`, signalée « depuis la catégorie Wikipédia »), depuis les liens d'une page de Wikipédia (source
   // « links:<titre> » : `page` = le titre, signalée « depuis la page Wikipédia « … » » ; « links:<titre>#<colonne> » quand
   // elle est faite de la colonne clé des tableaux de la page : `column` = le libellé de la colonne, et elle est ordonnée
@@ -987,17 +988,13 @@
     return collections.value.all.filter((col) => col.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)));
   }
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
-  // Le favori n'embarque que la clé d'import (elle ne permet que d'envoyer des cartes), jamais la clé principale.
-  const bookmarkletUrl = computed(() => (S.bm.src && S.bm.importKey ? makeBookmarklet(S.bm.src, location.origin, S.bm.importKey) : ''));
-  // Favori court (téléphone, 2026-10-18 : le favori complet, ≈ 62 000 caractères, fait planter les navigateurs de
-  // téléphone) : il pose la clé d'import dans window.__classeurCourt, puis charge le code du favori depuis le classeur
-  // (GET /api/favori.js), à chaque clic : toujours la dernière version, mais il faut le réseau, et ce code vient du
-  // classeur à chaque fois (le favori complet, lui, est figé à son installation).
-  const shortFavoriUrl = computed(() => {
-    if (!S.bm.importKey) return '';
-    const code = `(function(){window.__classeurCourt={k:${JSON.stringify(S.bm.importKey)}};var s=document.createElement("script");`
-      + `s.src=${JSON.stringify(location.origin + '/api/favori.js')}+"?t="+Date.now();`
-      + 's.onerror=function(){alert("Le classeur ne répond pas : réessaie dans un instant.")};document.head.appendChild(s)})()';
+  // Favori « Relier » : pose le jeton à usage unique dans window.__classeurLien et charge le code de liaison depuis le
+  // classeur (GET /api/favori.js, relier.js). Court, pour marcher sur téléphone ; le jeton ne passe jamais par l'adresse du
+  // script, et ne vaut que 30 minutes et une liaison.
+  const relierUrl = computed(() => {
+    if (!S.link.token) return '';
+    const code = `(function(){window.__classeurLien={t:${JSON.stringify(S.link.token)}};var s=document.createElement("script");`
+      + `s.src=${JSON.stringify(location.origin + '/api/favori.js')};s.async=true;document.documentElement.appendChild(s)})();`;
     return 'javascript:' + encodeURI(code).replace(/#/g, '%23');
   });
 
@@ -1306,20 +1303,6 @@
     saveKnown();
   }
   function forgetKnown(key) { S.known = S.known.filter((x) => x.key !== key); saveKnown(); }
-  // Clé d'import gardée pour un compte donné : {user, key}. Celle d'un autre classeur ne compte pas.
-  // Clés d'import gardées par compte : {<id du compte>: clé} (l'ancien format {user, key} est encore lu).
-  function importKeys() {
-    const v = store.json(LS.importKey);
-    if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
-    if (typeof v.user === 'string') return typeof v.key === 'string' && v.key ? { [v.user]: v.key } : {};
-    return v;
-  }
-  function storedImportKey() {
-    const me = S.me && S.me.user;
-    const k = me ? importKeys()[me.id] : null;
-    return typeof k === 'string' && k ? k : null;
-  }
-
   function resetData() {
     // Écriture du cache en attente : faite tout de suite, avec les cartes du classeur qu'on quitte.
     clearTimeout(cacheTimer);
@@ -1338,7 +1321,8 @@
     S.refresh.msg = '';
     S.refresh.error = false;
     S.refresh.warn = false;
-    S.bm.importKey = null;
+    stopLinkWatch();
+    Object.assign(S.link, { token: '', until: '', at: null, busy: false, error: '', clicked: false });
     Object.assign(syncLog, { entries: null, error: '' }); // journal des synchros : celui de l'autre classeur
     S.prefs = normPrefs({});
     S.arrange = null;
@@ -1413,9 +1397,10 @@
     const me = await api('GET', '/api/me');
     if (gen !== cardsGen) return me; // classeur changé entre-temps (resetData) : réponse de l'ancien, écartée
     // Dernière synchro connue avant cette réponse (undefined : première lecture du compte, rien à annoncer).
-    const lastBefore = S.me ? (S.me.last_sync ? S.me.last_sync.at : null) : undefined;
+    const lastBefore = S.me ? S.me.last_sync || null : undefined;
     S.me = me;
     noteLastSync(lastBefore, me.last_sync);
+    noteLinked(me.session);
     if (S.key && me.user) remember(S.key, me.user.name || '');
     chatNote(me); // dernier message du chat (badge des non-lus)
     // Préférences changées ici (savePrefs) avant la réponse, ou encore en route à l'envoi : la réponse peut les précéder,
@@ -1689,8 +1674,8 @@
     if (stale()) return;
     S.loadingCards = false;
     afterCards();
-    // Classeur vide : on commence par « Mettre à jour » (le favori).
-    if (!cards.value.length && S.tab === 'collections' && !S.album) { openFavori(); routeSync(); }
+    // Classeur vide : on commence par « Synchro » (relier son compte du jeu).
+    if (!cards.value.length && S.tab === 'collections' && !S.album) { openSyncTab(); routeSync(); }
     // Adresse arrivée avant les données : fiche de la carte (si l'on n'a pas changé de vue entre-temps), lien mort signalé.
     const wantCard = route.p.get('carte');
     if (wantCard && !S.openId && !S.modal && S.tab === route.tab) {
@@ -1737,9 +1722,9 @@
   }
 
   // ---------------------------------------------------------------- journal des synchros
-  // GET /api/sync-log : les dernières synchros du classeur, réussies ou non (favori, favori relié, script Tampermonkey,
-  // cookie), avec leur message ; lu à l'ouverture de « Mettre à jour », quand une synchro arrive pendant qu'il est
-  // ouvert (last_sync de GET /api/me change) et sur « Actualiser ».
+  // GET /api/sync-log : les dernières synchros du classeur, réussies ou non (au clic, automatiques, liaison du compte du
+  // jeu), avec leur message ; lu à l'ouverture de « Synchro », quand une synchro arrive pendant qu'il est ouvert
+  // (last_sync de GET /api/me change) et sur « Actualiser ».
   const syncLog = reactive({ entries: null, busy: false, error: '' });
   async function loadSyncLog() {
     if (syncLog.busy || !S.key) return;
@@ -1759,11 +1744,12 @@
       syncLog.busy = false;
     }
   }
-  const VIA_LABEL = { clic: 'Favori', relie: 'Favori relié', script: 'Script Tampermonkey', cookie: 'Cookie' };
-  const KIND_LABEL = { full: 'lecture complète', quick: 'synchro rapide' };
+  const VIA_LABEL = { clic: 'Clic', cron: 'Automatique', relier: 'Liaison' };
+  // « quick » : ancienne synchro rapide, dans les lignes d'avant le 22 octobre 2026.
+  const KIND_LABEL = { full: 'lecture complète', session: 'compte', quick: 'synchro rapide' };
   const RESULT_LABEL = { ok: 'réussie', warn: 'incomplète', error: 'échec' };
-  // « Favori relié · synchro rapide » (un favori d'avant le journal n'envoie pas son chemin : « Favori »).
-  const syncKind = (via, kind) => `${VIA_LABEL[via] || 'Favori'} · ${KIND_LABEL[kind] || 'synchro'}`;
+  // « Automatique · lecture complète » ; une ligne d'un ancien chemin (retiré) : « Synchro ».
+  const syncKind = (via, kind) => `${VIA_LABEL[via] || 'Synchro'} · ${KIND_LABEL[kind] || 'synchro'}`;
   // Heure d'une synchro : « aujourd'hui à 14:32 », « hier à 09:10 », sinon « 16 octobre à 14:32 ».
   function syncWhen(iso) {
     const d = dateOf(iso);
@@ -1774,21 +1760,13 @@
     if (d.toDateString() === new Date(now.getTime() - 86400000).toDateString()) return `hier à ${hm}`;
     return `${dateDay(iso)} à ${hm}`;
   }
-  // Version du favori servi (bookmarklet.js, « var VERSION = 3; ») ; la dernière synchro faite par un favori (ou un
-  // script) plus ancien le fait remplacer.
-  const favoriVersion = computed(() => { const m = S.bm.src && S.bm.src.match(/var VERSION = (\d+);/); return m ? Number(m[1]) : null; });
-  const oldFavori = computed(() => {
-    const v = favoriVersion.value;
-    const last = (syncLog.entries || []).find((x) => (x.data || {}).via !== 'cookie' && (x.result !== 'error' || (x.data || {}).client));
-    return !!(v && last && !(Number((last.data || {}).v) >= v));
-  });
-  // Dernière ligne du journal (GET /api/me) : un nouvel échec du favori (cliqué dans un autre onglet, ou relié) est
-  // annoncé ; « Mettre à jour » ouvert relit le journal. Les échecs du rafraîchissement par cookie s'affichent déjà.
+  // Dernière ligne du journal (GET /api/me) : un nouvel échec d'une lecture automatique est annoncé (une seule fois par
+  // message : le serveur regroupe le même échec répété), « Synchro » ouvert relit le journal. Les échecs au clic
+  // s'affichent déjà à côté du bouton.
   function noteLastSync(before, ls) {
-    if (!ls || ls.at === before) return;
-    // Une synchro du favori depuis le dernier rafraîchissement par cookie : son message, dépassé, laisse la place.
-    if (before !== undefined && ls.via !== 'cookie' && !S.refresh.running) Object.assign(S.refresh, { msg: '', error: false, warn: false });
-    if (before !== undefined && ls.result === 'error' && ls.via !== 'cookie' && S.modal !== 'sync') notify(`La dernière synchro du favori a échoué : ${ls.message}`, true);
+    if (!ls || (before && ls.at === before.at)) return;
+    if (before !== undefined && ls.via !== 'clic' && !S.refresh.running) Object.assign(S.refresh, { msg: '', error: false, warn: false });
+    if (before !== undefined && ls.result === 'error' && ls.via !== 'clic' && !(before && before.message === ls.message)) notify(`La dernière synchro a échoué : ${ls.message}`, true);
     if (S.tab === 'maj') loadSyncLog();
   }
 
@@ -1806,136 +1784,98 @@
     if (skipped > 0) parts.push(`${fmt(skipped)} ${plural(skipped, 'ignorée', 'ignorées')} (sans titre ou rareté inconnue)`);
     return parts.join(' · ');
   }
-  // Lecture complète non vérifiée (complete:false) : ce qui s'est passé et quoi faire ; aucune carte n'a été retirée.
+  // Lecture non vérifiée (complete:false) : ce qui s'est passé et quoi faire ; aucune carte n'a été retirée.
   function incompleteNote(res) {
     const kept = Number(res.kept) || 0;
-    return (res.moved ? ' · ta collection a bougé pendant la lecture' : ' · il en manque par rapport au total du jeu')
-      + ` : aucune carte retirée${kept ? ` (${fmt(kept)} ${plural(kept, 'non vue, gardée', 'non vues, gardées')})` : ''}, relance dans un moment`;
+    return (res.moved ? ' · ta collection a bougé pendant la lecture (compte du jeu différent avant et après)' : ' · moins d\'exemplaires lus que le jeu n\'en compte')
+      + ` : aucune carte retirée${kept ? ` (${fmt(kept)} ${plural(kept, 'non vue, gardée', 'non vues, gardées')})` : ''}, rafraîchis dans un moment`;
   }
   async function refreshCollection() {
     if (S.refresh.running) return;
     const sess = (S.me && S.me.session) || {};
-    if (!sess.has_cookie || sess.expired) { openSync(); return; }
+    if (!sess.linked) { openSyncTab(); return; }
     await runRefresh();
   }
-  // Sans cookie, le classeur ne peut pas lire le jeu : c'est le favori, cliqué sur wiki-masters.com, qui envoie les
-  // cartes. La fenêtre guide l'utilisateur, puis surveille l'arrivée de l'envoi (GET /api/me toutes les 4 s, 15 min au
-  // plus, seulement pendant qu'elle est ouverte) et recharge la collection dès qu'il est là. Les autres classeurs connus
-  // ne sont relus qu'à l'ouverture, puis toutes les 30 s pendant les 3 premières minutes : chaque GET /api/me compte les
-  // cartes de son compte sur le serveur (lignes lues, sur le quota quotidien de la base).
-  const SYNC_OTHERS_EVERY = 30 * 1000;
-  const SYNC_OTHERS_FOR = 3 * 60 * 1000;
-  let syncTimer = null;
-  function stopSync() { if (syncTimer) { clearInterval(syncTimer); syncTimer = null; } }
-  function openSync() {
-    if (S.modal) closeModal();
-    const sess = (S.me && S.me.session) || {};
-    Object.assign(S.sync, { done: false, msg: '', before: S.me ? S.me.fetched_at || null : null, expired: !!(sess.has_cookie && sess.expired), hasFavori: !!storedImportKey() || !!(S.me && S.me.has_import_key), others: {}, elsewhere: null,
-      failed: '', lastAt: S.me && S.me.last_sync ? S.me.last_sync.at : null });
-    // Les autres classeurs connus de ce navigateur (un ami, un second compte) : le favori envoie vers le classeur pour
-    // lequel il a été créé, qui n'est pas forcément celui ouvert ici. On note leur dernier envoi pour repérer le bon.
-    const others = S.known.filter((k) => k.key !== S.key).slice(0, 6);
-    for (const k of others) {
-      api('GET', '/api/me', undefined, { key: k.key })
-        .then((m) => { if (S.modal === 'sync') S.sync.others[k.key] = { name: (m.user && m.user.name) || k.name || '', at: m.fetched_at || null }; })
-        .catch(() => {});
-    }
-    S.modal = 'sync';
-    stopSync();
-    const started = Date.now();
-    let othersAt = started; // dernière relecture des autres classeurs (la première : à l'ouverture, ci-dessus)
-    let busy = false;
-    syncTimer = setInterval(async () => {
-      if (S.modal !== 'sync' || S.sync.done || Date.now() - started > 15 * 60 * 1000) { stopSync(); return; }
-      if (busy) return;
-      busy = true;
-      try {
-        await loadMe();
-        const now = S.me && S.me.fetched_at;
-        // Échec signalé par le favori depuis l'ouverture de la fenêtre (session du jeu, limite de lectures…) : dit ici.
-        const ls = S.me && S.me.last_sync;
-        if (ls && ls.at !== S.sync.lastAt && ls.result === 'error' && ls.via !== 'cookie') S.sync.failed = ls.message;
-        // Envoi arrivé dans un autre classeur de ce navigateur ? (toutes les 30 s, pendant 3 min)
-        const t = Date.now();
-        if (!(now && now !== S.sync.before) && !S.sync.elsewhere && t - started <= SYNC_OTHERS_FOR && t - othersAt >= SYNC_OTHERS_EVERY) {
-          othersAt = t;
-          for (const [k, o] of Object.entries(S.sync.others)) {
-            const m = await api('GET', '/api/me', undefined, { key: k }).catch(() => null);
-            if (m && m.fetched_at && m.fetched_at !== o.at) { S.sync.elsewhere = { key: k, name: (m.user && m.user.name) || o.name || '' }; break; }
-          }
-        }
-        if (now && now !== S.sync.before) {
-          stopSync();
-          const newCount = Array.isArray(S.me.new_ids) ? S.me.new_ids.length : 0;
-          await syncCards(S.me);
-          startPageviews();
-          afterCards();
-          S.sync.done = true;
-          S.sync.msg = `Collection mise à jour : ${cards$(cards.value.length)}${newCount ? ', ' + fmt(newCount) + ' ' + plural(newCount, 'nouvelle', 'nouvelles') : ''}.`;
-          // Lecture incomplète (rien de retiré) : le journal dit quoi faire.
-          const last = S.me.last_sync;
-          if (last && last.result === 'warn') S.sync.msg += ' ' + last.message;
-          notify(S.sync.msg);
-        }
-      } catch (e) { /* le prochain tour réessaie */ } finally { busy = false; }
-    }, 4000);
-  }
+  // « Rafraîchir » : le serveur lit toute la collection dans la base du jeu (POST /api/refresh, une fois par minute au
+  // plus), avec la session reliée.
   async function runRefresh() {
     if (S.refresh.running) return;
     Object.assign(S.refresh, { running: true, error: false, warn: false, msg: 'Lecture de ta collection sur WikiMasters…' });
     try {
-      let page = 0;
-      let res = null;
-      let run = null; // jeton de cette lecture (page 0) : une autre lecture commencée entre-temps (autre onglet) l'arrête
-      for (let guard = 0; guard < 5000; guard++) {
-        // Relecture complète demandée (onglet « Mettre à jour ») : jamais de synchro rapide.
-        res = await api('POST', '/api/refresh', page === 0 ? (S.me && S.me.next_full ? { page, full: true } : { page }) : run ? { page, run } : { page });
-        if (res.done) break;
-        if (page === 0 && typeof res.run === 'string') run = res.run;
-        const next = Number(res.next_page);
-        if (!Number.isFinite(next) || next <= page) throw new Error('Réponse inattendue du classeur pendant le rafraîchissement : relance-le.');
-        page = next;
-        const got = Number(res.fetched);
-        const total = Number(res.total);
-        S.refresh.msg = Number.isFinite(got) && got > 0
-          ? `Lecture de ta collection… ${fmt(got)}${Number.isFinite(total) && total > 0 ? ' sur ' + fmt(total) : ''} exemplaires`
-          : `Lecture de ta collection… ${fmt(page)} ${plural(page, 'page lue', 'pages lues')}`;
-      }
-      if (!res || !res.done) throw new Error("Le rafraîchissement ne s'est pas terminé : relance-le.");
-      S.refresh.msg = importSummary(res);
-      if (res.complete === false && !res.superseded) {
+      const res = await api('POST', '/api/refresh', {});
+      if (res.empty) {
         S.refresh.warn = true;
-        S.refresh.msg += incompleteNote(res);
+        S.refresh.msg = "Collection vide dans le jeu : rien n'a été changé.";
+      } else {
+        S.refresh.msg = importSummary(res);
+        if (res.complete === false && !res.superseded) {
+          S.refresh.warn = true;
+          S.refresh.msg += incompleteNote(res);
+        }
       }
       await Promise.all([syncCards(), loadMe()]);
       startPageviews();
       afterCards();
     } catch (e) {
       S.refresh.error = true;
-      S.refresh.msg = e.message;
-      if (e.data && e.data.needs_session) {
-        await loadMe().catch(() => {});
-        openSession(e.message);
-      }
+      const wait = e.data && Number(e.data.retry_after);
+      S.refresh.msg = e.message + (e.status === 429 && wait > 0 ? ` (encore ${fmt(Math.ceil(wait))} s)` : '');
+      if (e.data && e.data.needs_link) await loadMe().catch(() => {});
     } finally {
       S.refresh.running = false;
       if (S.tab === 'maj') loadSyncLog();
     }
   }
 
-  // ---------------------------------------------------------------- session WikiMasters
-  function openSession(error) {
-    S.session.error = typeof error === 'string' ? error : '';
-    S.session.cookie = '';
-    openFavori();
+  // ---------------------------------------------------------------- compte du jeu relié
+  // « Relier mon compte » : un jeton à usage unique (POST /api/link, 30 min), embarqué dans le favori « Relier » que le
+  // membre clique dans une fenêtre privée connectée au jeu ; la session de cette fenêtre, que personne d'autre n'utilise,
+  // devient celle du classeur. Pendant que le jeton vaut, GET /api/me est relu toutes les 4 s (onglet visible) : la
+  // liaison change session.at, puis une première lecture part.
+  const LINK_WATCH_EVERY = 4000;
+  let linkTimer = null;
+  function stopLinkWatch() { if (linkTimer) { clearInterval(linkTimer); linkTimer = null; } }
+  function watchLink() {
+    stopLinkWatch();
+    let busy = false;
+    linkTimer = setInterval(async () => {
+      if (!S.link.token || Date.parse(S.link.until) < Date.now()) { stopLinkWatch(); return; }
+      if (busy || document.visibilityState !== 'visible') return;
+      busy = true;
+      try { await loadMe(); } catch (e) { /* le prochain tour réessaie */ } finally { busy = false; }
+    }, LINK_WATCH_EVERY);
+  }
+  async function createLink() {
+    if (S.link.busy) return;
+    Object.assign(S.link, { busy: true, error: '', clicked: false });
+    try {
+      const r = await api('POST', '/api/link', {});
+      if (typeof r.token !== 'string' || !r.token) throw new Error("Le classeur n'a pas renvoyé de lien de liaison : réessaie.");
+      const sess = (S.me && S.me.session) || {};
+      Object.assign(S.link, { token: r.token, until: r.until || '', at: sess.linked ? sess.at || null : null });
+      watchLink();
+    } catch (e) {
+      S.link.error = e.message;
+    } finally {
+      S.link.busy = false;
+    }
+  }
+  // Session reliée par le favori pendant que le jeton valait (GET /api/me) : le favori a servi, on lit la collection.
+  function noteLinked(sess) {
+    if (!S.link.token || !sess || !sess.linked || (sess.at || null) === S.link.at) return;
+    stopLinkWatch();
+    Object.assign(S.link, { token: '', until: '', at: null, clicked: false, error: '' });
+    notify('Compte du jeu relié : lecture de ta collection…');
+    runRefresh();
   }
   async function sendSession(body) {
     S.session.busy = true;
     S.session.error = '';
     try {
-      await api('POST', '/api/session', body);
+      const r = await api('POST', '/api/session', body);
       S.session.cookie = '';
-      closeModal();
+      if (S.me && r.session) S.me.session = r.session;
+      notify(`Compte du jeu relié${r.pseudo ? ` (${r.pseudo})` : ''} : lecture de ta collection…`);
       await loadMe().catch(() => {});
       runRefresh();
     } catch (e) {
@@ -1946,7 +1886,7 @@
   }
   function submitCookie() {
     const cookie = S.session.cookie.trim().replace(/^cookie\s*:\s*/i, '').trim();
-    if (!cookie) { S.session.error = "Colle la valeur de l'en-tête Cookie."; return; }
+    if (!cookie) { S.session.error = "Colle la valeur de l'en-tête Cookie, copiée depuis ta fenêtre privée."; return; }
     sendSession({ cookie });
   }
   const isGameUrl = (url) => {
@@ -1962,7 +1902,7 @@
     let har = null;
     try { har = JSON.parse(await file.text()); } catch (e) { har = null; }
     if (!har || !har.log || !Array.isArray(har.log.entries)) {
-      S.session.error = "Ce fichier n'est pas un export HAR lisible : exporte-le à nouveau depuis l'onglet Réseau.";
+      S.session.error = "Ce fichier n'est pas un export HAR lisible : exporte-le à nouveau depuis l'onglet Réseau de ta fenêtre privée.";
       return;
     }
     const entries = har.log.entries
@@ -1980,17 +1920,31 @@
     entries.sort((a, b) => mine(b) - mine(a));
     await sendSession({ har: { log: { entries: entries.slice(0, 20) } } });
   }
+  // « Oublier la liaison » : le classeur efface sa session du jeu (DELETE /api/session), sans te déconnecter du jeu.
   async function forgetSession() {
     S.session.busy = true;
     S.session.error = '';
     try {
       await api('DELETE', '/api/session');
       await loadMe();
-      notify('Session WikiMasters oubliée.');
+      notify('Liaison oubliée : le classeur ne lit plus ton compte du jeu.');
     } catch (e) {
       S.session.error = e.message;
     } finally {
       S.session.busy = false;
+    }
+  }
+  // « Synchro automatique » (PATCH /api/me {auto_sync}) : le serveur lit tout seul la collection et le marché, ou seulement au clic.
+  async function setAutoSync(on) {
+    if (S.auto.busy) return;
+    Object.assign(S.auto, { busy: true, error: '' });
+    try {
+      const r = await api('PATCH', '/api/me', { auto_sync: on });
+      if (S.me && S.me.session) S.me.session.auto_sync = typeof r.auto_sync === 'boolean' ? r.auto_sync : on;
+    } catch (e) {
+      S.auto.error = e.message;
+    } finally {
+      S.auto.busy = false;
     }
   }
 
@@ -2007,7 +1961,7 @@
     S.catSearch.enter = false; // Entrée en attente dans la recherche des catégories : oubliée (on est passé ailleurs)
     if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false,
       pseudo: (S.me && S.me.user && S.me.user.pseudo) || '', pBusy: false, pError: '', pSaved: false });
-    if (tab === 'maj') prepareFavori();
+    if (tab === 'maj') loadSyncLog();
     if (tab === 'amis') loadFriends(true);
     if (tab === 'marche') loadMarket(Date.now() - M.at > 20000); // les cotes ont pu être relues dans le jeu entre-temps
     toTop();
@@ -2284,7 +2238,7 @@
         if (kept.has(it.title)) { if (seps.has(t)) kept.get(it.title).sep = true; continue; }
         const item = { title: it.title, description: it.description || null, image: it.image || null, status: it.status || 'ok' };
         if (it.qid) item.qid = it.qid;
-        if (realRarity(it)) item.rarity = it.rarity; // rareté du jeu (collection créée par le favori) : gardée
+        if (realRarity(it)) item.rarity = it.rarity; // rareté du jeu (collection créée depuis le jeu) : gardée
         if (seps.has(t)) item.sep = true;
         else if (it.sep === true || it.sep === false) item.sep = false; // « # » retiré (ou déjà décoché) : choix gardé
         kept.set(it.title, item);
@@ -2883,14 +2837,14 @@
   // Demande de l'utilisateur (2026-10-17) : « Alek a une collection maladie et doit avoir plein de cartes avec le tag
   // maladie qui ne sont pas dedans » ; précisée le 2026-10-18 : « je parlais [des tags] de wiki-masters, pas ceux en
   // automatique ». Ce sont les **tags du jeu** : les étiquettes que le joueur pose lui-même sur ses cartes dans
-  // wiki-masters.com (gtags, lus par le favori depuis le 18 octobre 2026). Proposés d'abord, parmi ceux de tes cartes :
+  // wiki-masters.com (gtags, lus avec la collection depuis le 18 octobre 2026). Proposés d'abord, parmi ceux de tes cartes :
   // ceux dont le nom ressemble à celui de la collection (mots repliés : accents, casse, articles, pluriel et féminin
   // ignorés) — même nom (« Maladies » ↔ « Maladie », coché d'emblée), plus précis (« Maladies tropicales ») ou plus large
   // (« Maladie » pour « Maladies rares ») —, puis ceux que portent beaucoup de tes cartes déjà dans la collection (2 au
   // moins, et 20 % d'entre elles), et ceux choisis à la main. Puis, pareil, les **catégories du jeu** (card.category : le
   // texte que le jeu montre sous le titre, « maladie », « chanteuse barbadienne ») ; « portées par beaucoup de ses
-  // éléments » compte la catégorie de ta carte, sinon la description de l'élément (celle du jeu pour une collection du
-  // favori, celle de Wikidata sinon, le même texte en général : 2 au moins, et 20 % des éléments qui en ont une). Tes tags
+  // éléments » compte la catégorie de ta carte, sinon la description de l'élément (celle du jeu pour une collection faite
+  // depuis le jeu, celle de Wikidata sinon, le même texte en général : 2 au moins, et 20 % des éléments qui en ont une). Tes tags
   // du classeur ne viennent qu'en dernier, repliés, jamais cochés d'emblée (l'utilisateur ne les veut pas comme base).
   // Pour chaque proposition : tes cartes qui la portent et ne sont pas encore dans la collection (titre puis qid, comme
   // l'album ; une seule par titre). Les cartes cochées s'ajoutent à la fin de la collection (POST /api/targets/save,
@@ -3303,7 +3257,7 @@
   // Demande de l'utilisateur (2026-10-18) : « Quand il y a déjà eu un "Ajouter par tags du jeu", automatiser pour le faire
   // à chaque synchro. » La fenêtre retient ce qui y a été coché (tags du jeu, catégories du jeu, tags du classeur) comme
   // règles de la collection : t.auto = {rules:[{k:'gtag'|'cat'|'tag', v}], skip:[titres exclus]} (colonne `auto` de
-  // targets, jamais montrée aux amis). À chaque arrivée de cartes dans la page (ouverture du classeur, synchro du favori,
+  // targets, jamais montrée aux amis). À chaque arrivée de cartes dans la page (ouverture du classeur, lecture de la collection,
   // relecture ?since : afterCards), runAutoAdd ajoute à chaque collection qui a des règles tes cartes qui y répondent, ni
   // déjà dedans (titre puis qid, comme la fenêtre), ni exclues (décochées dans l'aperçu, retirées ensuite de la
   // collection : skip), à la fin, avec les mêmes champs que la fenêtre ; une requête par collection, une seule
@@ -3529,7 +3483,7 @@
     }
   }
 
-  // ---------------------------------------------------------------- fenêtres, réglages, favori
+  // ---------------------------------------------------------------- fenêtres, réglages
   function closeModal() {
     const m = S.modal;
     S.modal = null;
@@ -3542,7 +3496,6 @@
     if (m === 'arrange') { if (arrangeCtrl) arrangeCtrl.abort(); S.arrange = null; }
     if (m === 'tagadd') S.tagAdd = null;
     if (m === 'merge') S.merge = null;
-    if (m === 'sync') stopSync();
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -3610,7 +3563,7 @@
   function askForget() {
     openConfirm({
       title: 'Oublier ce navigateur ?',
-      text: "Ce navigateur oubliera la clé de ton classeur, les autres classeurs ouverts ici, la clé de ton favori et les données gardées de Wikipédia. Ton classeur reste intact : ton lien personnel le rouvre (vérifie que tu l'as bien gardé). Le favori déjà installé continue de marcher.",
+      text: "Ce navigateur oubliera la clé de ton classeur, les autres classeurs ouverts ici et les données gardées de Wikipédia. Ton classeur reste intact, avec ton compte du jeu relié : ton lien personnel le rouvre (vérifie que tu l'as bien gardé).",
       ok: 'Oublier ce navigateur',
       run: async () => { forgetKey(); },
     });
@@ -3618,7 +3571,7 @@
   function askDeleteAccount() {
     openConfirm({
       title: 'Supprimer ton classeur ?',
-      text: "Tes cartes rangées, tes tags, tes collections à compléter et ta session WikiMasters seront effacés du classeur, tes messages du chat aussi (pour tout le monde), et ton lien ne marchera plus. C'est définitif. Ta collection dans le jeu n'est pas touchée.",
+      text: "Tes cartes rangées, tes tags, tes collections à compléter et la session du jeu reliée seront effacés du classeur, tes messages du chat aussi (pour tout le monde), et ton lien ne marchera plus. C'est définitif. Ta collection dans le jeu n'est pas touchée.",
       ok: 'Supprimer mon classeur',
       danger: true,
       run: async () => {
@@ -3627,14 +3580,10 @@
         await api('DELETE', '/api/me');
         forgetKnown(key);
         const others = S.known.slice();
-        // Clés d'import (favoris) des autres comptes : gardées ; seule celle du classeur supprimé part.
-        const favoris = user ? importKeys() : {};
-        if (user) delete favoris[user];
         forgetKey(user || undefined);
-        // Les autres classeurs ouverts dans ce navigateur restent connus, avec leur favori.
+        // Les autres classeurs ouverts dans ce navigateur restent connus.
         S.known = others;
         saveKnown();
-        if (Object.keys(favoris).length) store.set(LS.importKey, JSON.stringify(favoris));
         notify('Ton classeur a été supprimé.');
       },
     });
@@ -3657,154 +3606,13 @@
       after: () => { S.modal = 'link'; },
     });
   }
-  async function loadBookmarkletSource() {
-    if (S.bm.src != null) return;
-    S.bm.error = '';
-    try {
-      const r = await fetch('/assets/bookmarklet.js', { cache: 'no-cache' });
-      if (!r.ok) throw new Error(String(r.status));
-      S.bm.src = await r.text();
-    } catch (e) {
-      S.bm.error = "Le favori n'a pas pu être préparé : recharge la page, puis réessaie.";
-    }
-  }
-  // Clé d'import gardée dans ce navigateur (classeur-import-key, par classeur) : posée, ou retirée (k = null).
-  function keepImportKey(k) {
-    const me = S.me && S.me.user;
-    if (me) {
-      const all = importKeys();
-      if (k) all[me.id] = k; else delete all[me.id];
-      store.set(LS.importKey, JSON.stringify(all));
-    }
-    S.bm.importKey = k;
-  }
-  // Clé du favori : celle du classeur (GET /api/import-key), la même sur tous les appareils, même si ce navigateur en
-  // garde une autre. Favori créé avant que le classeur n'en garde une copie (404) : la clé gardée ici est adoptée si c'est
-  // celle du favori en cours (POST /api/import-key/adopt), oubliée sinon (409 : périmée, un favori plus récent a été créé
-  // ailleurs ; avant le 2026-10-18, la page reproposait ce favori périmé sans fin). Classeur injoignable : celle d'ici.
-  async function syncImportKey() {
-    const stored = storedImportKey();
-    S.bm.checking = true;
-    try {
-      try {
-        const r = await api('GET', '/api/import-key');
-        if (r && typeof r.import_key === 'string' && r.import_key) { keepImportKey(r.import_key); S.bm.stale = false; return; }
-      } catch (e) {
-        if (e.status !== 404) { S.bm.importKey = stored; return; }
-      }
-      if (!stored) { S.bm.importKey = null; return; }
-      try {
-        const r = await api('POST', '/api/import-key/adopt', { import_key: stored });
-        keepImportKey(r.import_key || stored);
-        S.bm.stale = false;
-      } catch (e) {
-        if (e.status === 409) { keepImportKey(null); S.bm.stale = true; } else S.bm.importKey = stored;
-      }
-    } finally {
-      S.bm.checking = false;
-    }
-  }
-  // Prépare le favori (source, clé d'import du classeur) et le journal des synchros pour l'onglet « Mettre à jour ».
-  async function prepareFavori() {
-    S.bm.clicked = false;
-    S.bm.importKey = null;
-    loadSyncLog();
-    await Promise.all([syncImportKey(), loadBookmarkletSource()]);
-  }
-  function openFavori() {
+  // Onglet « Synchro » (id « maj ») : état du compte du jeu relié, liaison, « Rafraîchir », journal.
+  function openSyncTab() {
     if (S.modal) closeModal();
     S.openId = null;
     S.openMissing = null;
-    S.tab = 'maj';
-    prepareFavori();
+    if (S.tab === 'maj') loadSyncLog(); else setTab('maj');
     toTop();
-  }
-  // Nouvelle clé d'import (POST /api/import-key) : l'ancien favori, où qu'il soit, cesse de marcher.
-  async function createImportKey() {
-    if (S.bm.busy) return false;
-    S.bm.busy = true;
-    S.bm.error = '';
-    try {
-      const r = await api('POST', '/api/import-key');
-      if (!r.import_key || typeof r.import_key !== 'string') throw new Error("Le classeur n'a pas renvoyé de clé d'import : réessaie.");
-      const me = S.me && S.me.user;
-      keepImportKey(r.import_key);
-      S.bm.stale = false;
-      if (S.me) S.me.has_import_key = true;
-      return true;
-    } catch (e) {
-      S.bm.error = e.message;
-      return false;
-    } finally {
-      S.bm.busy = false;
-    }
-  }
-  function askRegenerate() {
-    openConfirm({
-      title: 'Régénérer le favori ?',
-      text: "Le favori reçoit une nouvelle clé d'import. L'ancien favori cessera de marcher partout : il faudra remplacer celui de ta barre de favoris, et sur tes autres navigateurs. À faire si ton favori a pu être vu ou copié par quelqu'un d'autre.",
-      ok: 'Régénérer le favori',
-      run: async () => {
-        if (!(await createImportKey())) throw new Error(S.bm.error || "Le favori n'a pas pu être régénéré.");
-        await loadBookmarkletSource();
-      },
-      after: () => { openFavori(); notify('Nouveau favori prêt : remplace l\'ancien dans ta barre de favoris.'); },
-    });
-  }
-  // Met bookmarklet.js sur une ligne (commentaires en lignes à part, instructions finies par « ; ») et y place l'adresse
-  // du classeur et la clé. Les espaces du code qui ne séparent pas deux mots (« var x », « return x ») sont retirés,
-  // jamais dans une chaîne "…" ou '…' ni dans une expression régulière (reconnue à ce qui la précède : « ( , = : [ ! & | ?
-  // { } ; + - * % < > ~ ^ », ou return, typeof…) : chaque espace coûte 3 caractères une fois encodé (%20), et Firefox
-  // refuse un favori de plus de 65 536 caractères (54 600 avec, 73 200 sans, le 2026-10-17). Fonction autonome : le test
-  // du favori (dev/bookmarklet.test.mjs) la reprend telle quelle.
-  function favoriCode(src, site, key) {
-    const code = src.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !l.startsWith('//')).join(' ');
-    const word = (c) => /[\w$\u0080-\uffff]/.test(c || '');
-    let out = '';
-    const regexHere = () => {
-      const t = out.replace(/\s+$/, '');
-      return !t || '(,=:[!&|?{};+-*%<>~^'.includes(t.slice(-1)) || /(^|[^\w$])(return|typeof|case|do|else|in|of|new|delete|void|throw)$/.test(t);
-    };
-    for (let i = 0; i < code.length;) {
-      const c = code[i];
-      let j = i + 1;
-      if (c === '"' || c === "'") {
-        while (j < code.length && code[j] !== c) j += code[j] === '\\' ? 2 : 1;
-        out += code.slice(i, j + 1);
-        i = j + 1;
-      } else if (c === '/' && regexHere()) {
-        for (let cls = false; j < code.length && (cls || code[j] !== '/'); j++) {
-          if (code[j] === '\\') j++;
-          else if (code[j] === '[') cls = true;
-          else if (code[j] === ']') cls = false;
-        }
-        out += code.slice(i, j + 1);
-        i = j + 1;
-      } else if (c === ' ') {
-        while (code[i] === ' ') i++;
-        const a = out.slice(-1);
-        const b = code[i];
-        if ((word(a) && word(b)) || (a === b && (a === '+' || a === '-')) || (a === '/' && (b === '/' || b === '*'))) out += ' ';
-      } else {
-        out += c;
-        i = j;
-      }
-    }
-    return out.replace('"__SITE__"', JSON.stringify(site)).replace('"__KEY__"', JSON.stringify(key));
-  }
-  // Le favori : une adresse javascript: (encodeURI, plus « # » qui couperait l'adresse).
-  function makeBookmarklet(src, site, key) {
-    return 'javascript:' + encodeURI(favoriCode(src, site, key)).replace(/#/g, '%23');
-  }
-  // Le script Tampermonkey / Violentmonkey (facultatif) : le même code, avec "__START__" = "load" (relié dès le
-  // chargement de chaque page du jeu, rien n'est lu avant une action du joueur), sous l'en-tête du gestionnaire.
-  // @grant none : il tourne dans la page, comme le favori (il doit voir le window.fetch de la page).
-  function makeUserscript(src, site, key) {
-    const version = (src.match(/var VERSION = (\d+);/) || [])[1] || '1'; // celle du favori
-    return ['// ==UserScript==', '// @name         Le classeur, relié à WikiMasters', `// @namespace    ${site}`, `// @version      ${version}`,
-      '// @description  Après tes actions dans le jeu (paquet, défausse, enchère, échange), relit tes nouvelles cartes et les envoie à ton classeur. Lecture seule.',
-      '// @match        https://www.wiki-masters.com/*', '// @match        https://wiki-masters.com/*', '// @run-at       document-idle',
-      '// @grant        none', '// @noframes', '// ==/UserScript==', favoriCode(src, site, key).replace('"__START__"', '"load"'), ''].join('\n');
   }
   async function copy(text, id) {
     let ok = false;
@@ -6217,7 +6025,7 @@
   }
 
   // ================================================================ rendu : bandeau et onglets
-  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['marche', 'Marché'], ['chat', 'Chat'], ['maj', 'Mettre à jour'], ['reglages', 'Réglages']];
+  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['marche', 'Marché'], ['chat', 'Chat'], ['maj', 'Synchro'], ['reglages', 'Réglages']];
   function onTabKey(e) {
     const i = TABS.findIndex(([id]) => id === S.tab);
     let j = -1;
@@ -6238,9 +6046,9 @@
     const lastBad = !S.refresh.msg && !S.refresh.running && ls && (ls.result === 'error' || ls.result === 'warn') ? ls : null;
     const refreshBits = [
       h('button', { class: 'btn small', type: 'button', disabled: S.refresh.running, onClick: refreshCollection },
-        [icon('refresh', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : (sess.has_cookie && !sess.expired ? 'Rafraîchir la collection' : 'Mettre à jour avec le favori')]),
+        [icon(sess.linked ? 'refresh' : 'link', S.refresh.running ? 'spin' : ''), S.refresh.running ? 'Rafraîchissement…' : (sess.linked ? 'Rafraîchir la collection' : 'Relier mon compte')]),
       h('span', { class: ['status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, S.refresh.msg),
-      S.refresh.error && !S.refresh.running ? h('button', { class: 'linkish', type: 'button', onClick: openFavori }, 'Passer par le favori') : null,
+      S.refresh.error && !S.refresh.running && !sess.linked ? h('button', { class: 'linkish', type: 'button', onClick: openSyncTab }, 'Relier mon compte') : null,
       lastBad ? h('span', { class: ['status', 'last-sync', lastBad.result === 'error' ? 'err' : 'warn'] },
         `Dernière synchro ${lastBad.result === 'error' ? 'en échec' : 'incomplète'} (${syncKind(lastBad.via, lastBad.kind)}, ${syncWhen(lastBad.at)}) : ${lastBad.message}`) : null,
       lastBad ? h('button', { class: 'linkish', type: 'button', onClick: () => setTab('maj') }, 'Dernières synchros') : null,
@@ -6248,7 +6056,7 @@
     if (!total) {
       return h('div', { class: 'summary' }, [
         h('div', { class: 'figures' }, [h('div', { class: 'figure wide' }, [h('span', null, S.loadingCards ? 'Chargement de ta collection…'
-          : "Ton classeur est vide : ouvre « Mettre à jour » pour y envoyer ta collection avec le favori.")])]),
+          : "Ton classeur est vide : relie ton compte du jeu dans « Synchro ».")])]),
         h('div', { class: 'refresh-line' }, refreshBits),
       ]);
     }
@@ -6271,7 +6079,7 @@
         h('div', { class: 'rlegend' }, [
           ...RAR_UP.map((r) => h('span', { key: r }, [pill(r), ' ', h('b', null, fmt(counts[r] || 0))])),
           S.fetchedAt ? h('span', { class: 'stamp' }, `· instantané du ${dateShort(S.fetchedAt)}`) : null,
-          sess.has_cookie && sess.expired ? h('span', { class: 'stamp warn' }, '· session WikiMasters expirée') : null,
+          sess.lost ? h('span', { class: 'stamp warn' }, '· compte du jeu à relier') : null,
         ]),
       ]),
       h('div', { class: 'refresh-line' }, refreshBits),
@@ -6303,13 +6111,13 @@
   // synchro) et à une barre flottante en bas ; le reste des onglets est dans la feuille « Plus ». Tout est rendu sur
   // ordinateur aussi, mais caché par le CSS (.m-only) : la version large ne change pas.
   const M_NAV = [['collections', 'Collections', 'album'], ['amis', 'Amis', 'users'], ['chat', 'Chat', 'chat'], ['marche', 'Marché', 'coins']];
-  const M_MORE = [['cartes', 'Mes cartes', 'grid', 'Toutes tes cartes, tes tags et les filtres'], ['maj', 'Mettre à jour', 'refresh', 'Le favori, la synchro et son journal'],
+  const M_MORE = [['cartes', 'Mes cartes', 'grid', 'Toutes tes cartes, tes tags et les filtres'], ['maj', 'Synchro', 'refresh', 'Ton compte du jeu, la synchro et son journal'],
     ['reglages', 'Réglages', 'gear', 'Prénom, pseudo, partage, lien personnel'], ['nouveautes', 'Nouveautés', 'spark', 'Ce qui a changé dans le classeur']];
-  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Mettre à jour', reglages: 'Réglages', nouveautes: 'Nouveautés' };
+  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Synchro', reglages: 'Réglages', nouveautes: 'Nouveautés' };
   // ---------------------------------------------------------------- app installée (PWA)
   // L'app installée (écran d'accueil) est la même page, ouverte sans barre d'adresse. Sur iPhone, elle a son propre
   // stockage, séparé de Safari : au premier lancement elle ne connaît pas la clé, d'où « J'ai déjà un lien » en tête de
-  // l'accueil et le lien à copier dans « Installer l'app ». Le favori, lui, se lance toujours dans le navigateur.
+  // l'accueil et le lien à copier dans « Installer l'app ». La liaison du compte du jeu, elle, se fait dans le navigateur.
   const mq = (q) => { try { return typeof window.matchMedia === 'function' && window.matchMedia(q).matches; } catch { return false; } };
   const STANDALONE = mq('(display-mode: standalone)') || (typeof navigator !== 'undefined' && navigator.standalone === true);
   const UA = (typeof navigator !== 'undefined' && navigator.userAgent) || '';
@@ -6352,7 +6160,7 @@
       copyRow('install-link', personalLink.value, 'Ton lien personnel'),
       h('p', { class: 'warn' }, 'Garde-le pour toi : quiconque a ce lien ouvre ton classeur.'),
       h('h3', { class: 'install-h' }, 'Pour mettre à jour ta collection'),
-      h('p', null, "Le favori se lance toujours dans ton navigateur, sur wiki-masters.com : pas dans l'app. Une fois qu'il a fini, rouvre l'app, elle se met à jour toute seule."),
+      h('p', null, "Rien à faire dans l'app : une fois ton compte du jeu relié (onglet « Synchro »), le classeur lit ta collection tout seul. La liaison, elle, se fait dans une fenêtre privée du navigateur, pas dans l'app."),
       foot([closeBtn('Fermer')]),
     ]);
   }
@@ -6395,11 +6203,11 @@
         h('span', { class: 'mbar__name' }, back ? back.title : M_TITLE[S.tab] || 'Le classeur'),
       ]),
       h('button', { class: ['mbar__act', { bad: !!bad, err: S.refresh.error }], type: 'button', disabled: running,
-        'aria-label': running ? 'Rafraîchissement en cours' : (sess.has_cookie && !sess.expired ? 'Rafraîchir la collection' : 'Mettre à jour avec le favori'),
+        'aria-label': running ? 'Rafraîchissement en cours' : (sess.linked ? 'Rafraîchir la collection' : 'Relier mon compte du jeu'),
         onClick: refreshCollection }, [icon('refresh', running ? 'spin' : ''), bad || S.refresh.error ? h('i', { class: 'mbar__dot', 'aria-hidden': 'true' }) : null]),
       S.refresh.msg ? h('p', { class: ['mbar__status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, [
         h('span', null, S.refresh.msg),
-        S.refresh.error && !running ? h('button', { class: 'linkish', type: 'button', onClick: openFavori }, 'Passer par le favori') : null,
+        S.refresh.error && !running && !sess.linked ? h('button', { class: 'linkish', type: 'button', onClick: openSyncTab }, 'Relier mon compte') : null,
       ]) : null,
     ]);
   }
@@ -6418,12 +6226,12 @@
         copies.value !== total ? fig(fmt(copies.value), 'exemplaires') : null,
         fig(fmt(nCol), plural(nCol, 'collection', 'collections')),
         M.value && M.value.priced ? h('div', { class: 'mfig' }, [priceTag(M.value.value), h('span', null, 'valeur')]) : fig(fmt(counts.L || 0), plural(counts.L || 0, 'légendaire', 'légendaires')),
-      ]) : h('p', { class: 'small muted' }, S.loadingCards ? 'Chargement de ta collection…' : 'Ton classeur est vide : envoie ta collection avec le favori.'),
+      ]) : h('p', { class: 'small muted' }, S.loadingCards ? 'Chargement de ta collection…' : 'Ton classeur est vide : relie ton compte du jeu pour y amener ta collection.'),
       total ? h('div', { class: 'track mhome__track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
         RAR_UP.map((r) => (counts[r] ? h('i', { key: r, class: 'r' + r, style: { width: ((100 * counts[r]) / total).toFixed(3) + '%' } }) : null))) : null,
       bad ? h('button', { class: ['mhome__sync', bad.result === 'error' ? 'err' : 'warn'], type: 'button', onClick: () => mobileGo('maj') }, [
         h('span', null, [h('b', null, `Dernière synchro ${bad.result === 'error' ? 'en échec' : 'incomplète'}`), ` · ${syncWhen(bad.at)}`]), icon('chev', 'sm')])
-        : !total ? h('button', { class: 'btn primary', type: 'button', onClick: () => mobileGo('maj') }, [icon('bookmark', 'sm'), 'Mettre à jour']) : null,
+        : !total ? h('button', { class: 'btn primary', type: 'button', onClick: () => mobileGo('maj') }, [icon('link', 'sm'), 'Relier mon compte']) : null,
     ]);
   }
   function viewMobileNav() {
@@ -6625,7 +6433,7 @@
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
           : h('div', { class: 'empty-box' }, [
-            h('p', null, "Aucune collection pour l'instant. Crée-en une depuis l'adresse d'une page ou d'une catégorie de Wikipédia, par mots-clés, avec une liste d'articles, parmi les propositions faites d'après tes cartes, ou depuis le jeu avec ton favori."),
+            h('p', null, "Aucune collection pour l'instant. Crée-en une depuis l'adresse d'une page ou d'une catégorie de Wikipédia, par mots-clés, avec une liste d'articles, parmi les propositions faites d'après tes cartes, ou depuis les cartes du jeu."),
             add('Nouvelle collection'),
             props ? h('button', { class: 'linkish', type: 'button', onClick: () => openEditor(null, 'props') },
               `Voir les ${fmt(props)} ${plural(props, 'proposition', 'propositions')} d'après tes cartes`) : null,
@@ -7093,7 +6901,7 @@
         glist.length ? h('div', { class: 'chips' }, gshown.map((g) => h('button', { key: 'g:' + g.key, class: 'chip gchip', type: 'button', style: gtagStyle(g.color),
           'aria-pressed': String(S.gtagFilter.includes(g.key)), title: `Tag posé dans le jeu · Ctrl/⌘+clic : combiner`, onClick: (e) => toggleGtagFilter(g.key, e) },
         [h('span', { class: 'chip__label' }, g.label), h('span', { class: 'n' }, fmt(g.n))])))
-          : h('p', { class: 'small muted' }, "Aucun tag du jeu lu pour l'instant : ceux que tu poses sur tes cartes dans wiki-masters.com arrivent avec une mise à jour complète par le favori (celui du 18 octobre 2026 ou plus récent)."),
+          : h('p', { class: 'small muted' }, "Aucun tag du jeu lu pour l'instant : ceux que tu poses sur tes cartes dans wiki-masters.com arrivent avec la prochaine lecture de ta collection (onglet « Synchro »)."),
         glist.length > GTAG_FACET ? h('button', { class: 'linkish', type: 'button', onClick: () => { S.gtagsAll = !S.gtagsAll; } },
           S.gtagsAll ? 'Afficher moins' : `Afficher les ${fmt(glist.length - GTAG_FACET)} autres`) : null,
       ]),
@@ -7135,7 +6943,7 @@
       return h('div', { class: 'empty-box big' }, [
         h('h2', null, 'Ton classeur est vide'),
         h('p', null, 'Ta collection apparaîtra ici : chaque carte avec son illustration, sa rareté, son attaque, sa défense et tes tags.'),
-        h('button', { class: 'btn primary', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
+        h('button', { class: 'btn primary', type: 'button', onClick: openSyncTab }, [icon('link', 'sm'), 'Relier mon compte du jeu']),
       ]);
     }
     const counts = rarityCount.value;
@@ -7168,125 +6976,106 @@
     ]);
   }
 
-  // ================================================================ rendu : onglet Mettre à jour
+  // ================================================================ rendu : onglet Synchro
   function copyRow(id, value, label) {
     return h('div', { class: 'copy-row' }, [
       h('input', { id, class: 'field', readonly: true, value, 'aria-label': label, onFocus: (e) => e.target.select() }),
       h('button', { class: 'btn', type: 'button', disabled: !value, onClick: () => copy(value, id) }, [icon(S.copied === id ? 'check' : 'copy', 'sm'), S.copied === id ? 'Copié' : 'Copier']),
     ]);
   }
-  // Le même favori en script Tampermonkey (makeUserscript), proposé replié sous le favori.
-  const userscriptText = computed(() => (S.bm.src && S.bm.importKey ? makeUserscript(S.bm.src, location.origin, S.bm.importKey) : ''));
-  function viewUserscript() {
-    const us = userscriptText.value;
-    if (!us) return null;
-    return h('details', { class: 'userscript' }, [
-      h('summary', null, 'Sans cliquer à chaque fois : le script Tampermonkey (facultatif)'),
-      h('p', { class: 'small muted' }, "Avec l'extension Tampermonkey ou Violentmonkey, ce script relie le classeur à chaque page du jeu que tu ouvres, sans clic : rien n'est lu avant ta première action (paquet, défausse, enchère, échange). Installation : dans l'extension, « Créer un nouveau script », remplace tout par ce texte, puis enregistre."),
-      h('p', { class: 'small warn' }, "À savoir : il tourne sur toutes les pages du jeu sans geste de ta part (le favori, lui, attend ton clic). Il porte la clé d'import, comme le favori : si ton extension synchronise tes scripts (Google Drive, Dropbox…), la clé y part aussi. Régénérer le favori arrête aussi ce script : recolle-le alors."),
-      h('div', { class: 'copy-row' }, [
-        h('textarea', { id: 'us-code', class: 'field', rows: 3, readonly: true, value: us, spellcheck: 'false', 'aria-label': 'Script Tampermonkey', onFocus: (e) => e.target.select() }),
-        h('button', { class: 'btn', type: 'button', onClick: () => copy(us, 'us-code') }, [icon(S.copied === 'us-code' ? 'check' : 'copy', 'sm'), S.copied === 'us-code' ? 'Copié' : 'Copier']),
-      ]),
-    ]);
-  }
-  function viewFavori() {
-    const url = bookmarkletUrl.value;
-    const hasKey = !!S.bm.importKey;
-    const elsewhere = !!(S.me && S.me.has_import_key);
-    let button;
-    if (!hasKey && S.bm.checking) {
-      button = h('p', { class: 'muted', role: 'status' }, 'Préparation du favori…');
-    } else if (!hasKey) {
-      button = h('div', { class: 'notice' }, [
-        h('p', null, "Pour fabriquer ton favori, le classeur crée une clé d'import : elle ne sert qu'à envoyer des cartes, jamais à ouvrir ton classeur."),
-        S.bm.stale ? h('p', { class: 'warn', role: 'status' }, "Le favori gardé dans ce navigateur était périmé : un favori plus récent a été créé sur un autre appareil ou navigateur, avant que le classeur ne garde sa clé. Crée un nouveau favori ici et remplace l'ancien dans ta barre ; ensuite, tes autres appareils retrouveront ce même favori ici, sans le recréer.")
-          : elsewhere ? h('p', { class: 'warn' }, 'Tu as déjà un favori (sur un autre navigateur, ou avant que celui-ci ne l\'oublie) : en créer un ici le remplace, et l\'ancien cessera de marcher.') : null,
-        h('button', { class: 'btn primary', type: 'button', disabled: S.bm.busy, onClick: createImportKey }, S.bm.busy ? 'Création…' : elsewhere || S.bm.stale ? 'Créer un nouveau favori' : 'Créer mon favori'),
-        errLine(S.bm.error),
-      ]);
-    } else if (url) {
-      button = h('p', { class: 'bm-line' }, [h('a', { class: 'bookmarklet', href: url, title: 'Glisse-moi dans ta barre de favoris',
-        onClick: (e) => { e.preventDefault(); S.bm.clicked = true; } }, [icon('bookmark'), 'Classeur WikiMasters'])]);
-    } else button = S.bm.error ? errLine(S.bm.error) : h('p', { class: 'muted', role: 'status' }, 'Préparation du favori…');
+  // Compte du jeu relié : état, « Rafraîchir maintenant », « Synchro automatique », « Oublier la liaison ».
+  function viewGameAccount() {
+    const sess = (S.me && S.me.session) || {};
+    const pseudo = S.me && S.me.user && S.me.user.pseudo;
+    const ss = S.session;
+    let state;
+    if (sess.linked) {
+      const when = [sess.checked_at ? `dernière vérification ${agoText(sess.checked_at)}` : '', sess.full_at ? `dernière lecture complète ${agoText(sess.full_at)}` : 'pas encore de lecture complète vérifiée'].filter(Boolean);
+      state = [
+        h('p', { class: 'session-line' }, [h('span', { class: ['dot', 'on'] }), `Compte du jeu relié${pseudo ? ` (${pseudo})` : ''}`]),
+        h('p', { class: 'small muted' }, when.join(' · ') + '.'),
+      ];
+    } else if (sess.lost) {
+      state = [
+        h('p', { class: 'session-line' }, [h('span', { class: ['dot', 'off'] }), `À relier : ${sess.lost}`]),
+        h('p', { class: 'small muted' }, "Le jeu a fermé la session du classeur (une déconnexion du jeu, sur n'importe lequel de tes appareils, la ferme aussi). Relie ton compte à nouveau, ci-dessous."),
+      ];
+    } else {
+      state = [
+        h('p', { class: 'session-line' }, [h('span', { class: 'dot' }), 'Aucun compte du jeu relié']),
+        h('p', { class: 'small muted' }, "Relie-le une fois, ci-dessous : ensuite, le classeur lit ta collection tout seul dans la base du jeu, quel que soit l'appareil où tu joues."),
+      ];
+    }
     return h('div', { class: 'panel' }, [
-      h('h2', null, 'Le favori, le chemin conseillé'),
-      h('p', null, "Sur wiki-masters.com, un clic sur le favori lit ta collection (comme la page « Collection » du jeu) et l'envoie à ton classeur. Il se sert de ta session dans ton navigateur : rien à copier, rien qui expire. Il ne fait que lire : rien n'est écrit dans le jeu."),
-      h('ol', { class: 'steps' }, [h('li', null, 'Glisse ce bouton dans ta barre de favoris :')]),
-      button,
-      S.bm.clicked ? h('p', { class: 'warn', role: 'status' }, 'Pas ici : glisse le bouton dans ta barre de favoris, puis clique-le sur wiki-masters.com.') : null,
-      h('ol', { class: 'steps', start: 2 }, [
-        h('li', null, 'Ouvre wiki-masters.com, avec ta session ouverte.'),
-        h('li', null, 'Clique le favori : un encart montre la lecture, puis le nombre de cartes envoyées. Reviens ici : le classeur se met à jour.'),
-      ]),
-      h('p', null, "Ensuite, le favori reste relié à la page du jeu jusqu'à ce que tu la recharges : après tes actions (paquet ouvert, carte défaussée, mise aux enchères, échange), il renvoie tout seul tes nouvelles cartes, et ce classeur se met à jour pendant qu'il est ouvert. Il ne fait toujours que lire : il regarde passer les requêtes que la page du jeu fait d'elle-même, sans en envoyer ni en modifier, puis relit tes nouvelles cartes (au plus une fois par minute). Il ne joue pas et ne clique rien. Le badge « Classeur relié » le rappelle ; « Arrêter » le coupe."),
-      h('p', { class: 'small muted' }, "Sur la page « Collection globale » du jeu, fais une recherche (« vache »…) puis clique le favori : il propose aussi d'en faire une collection à compléter, avec la vraie rareté de chaque carte dans le jeu."),
-      h('p', { class: 'small muted' }, "« Mettre à jour les cotes », dans l'encart du favori : il lit les cotes du marché, les bonnes affaires et tes enchères pour l'onglet « Marché », directement dans la base du jeu avec ta session ; relié, il le fait aussi tout seul toutes les 20 minutes et après tes enchères et tes ventes (voir « À savoir » dans cet onglet ; « Couper les cotes automatiques » dans son encart). Un favori installé avant le 17 octobre 2026 ne lit les cotes qu'au clic (avant le 16, il n'a pas ce bouton) : glisse à nouveau celui-ci dans ta barre."),
-      h('p', { class: 'small muted' }, ['Barre de favoris cachée ? ', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'),
-        ' (', h('kbd', null, '⌘'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' sur Mac).']),
-      hasKey ? h('h3', null, 'Sur téléphone : le favori court') : null,
-      hasKey ? h('p', { class: 'small muted' }, "Le favori complet est trop long pour un téléphone (il fait planter le navigateur). Crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ce favori court ; puis, sur wiki-masters.com, tape « Classeur » dans la barre d'adresse et choisis le favori. Il charge le code du favori depuis le classeur à chaque clic : il faut le réseau, et c'est toujours la dernière version (pas besoin de le recréer après une mise à jour). Il marche aussi sur ordinateur.") : null,
-      hasKey ? copyRow('bm-short', shortFavoriUrl.value, 'Adresse du favori court') : null,
-      hasKey ? h('h3', null, 'Le créer à la main (ordinateur)') : null,
-      hasKey ? h('p', { class: 'small muted' }, "Si le glisser ne marche pas : crée un favori sur n'importe quelle page, nomme-le « Classeur », et remplace son adresse par ceci.") : null,
-      hasKey ? copyRow('bm-url', url, 'Adresse du favori') : null,
-      hasKey ? h('p', { class: 'small muted' }, "Le favori contient sa clé d'import : quelqu'un qui l'aurait pourrait envoyer des cartes dans ton classeur ou y créer des collections, sans pouvoir l'ouvrir. Ne le partage pas ; s'il a fuité, régénère-le dans les Réglages.") : null,
-      hasKey ? viewUserscript() : null,
+      h('h2', null, 'Ton compte du jeu'),
+      ...state,
+      sess.linked ? h('div', { class: 'refresh-line' }, [
+        h('button', { class: 'btn primary', type: 'button', disabled: S.refresh.running, onClick: runRefresh },
+          [icon('refresh', S.refresh.running ? 'sm spin' : 'sm'), S.refresh.running ? 'Lecture…' : 'Rafraîchir maintenant']),
+        h('span', { class: ['status', { err: S.refresh.error, warn: S.refresh.warn }], 'aria-live': 'polite' }, S.refresh.msg),
+      ]) : null,
+      sess.linked && sess.paused ? h('p', { class: 'notice warn-box', role: 'status' }, `Synchro automatique en pause après ${fmt(sess.fails)} échecs d'affilée : « Rafraîchir maintenant » la relance.`) : null,
+      sess.linked ? h('label', { class: 'check' }, [
+        h('input', { type: 'checkbox', id: 'set-auto-sync', checked: !!sess.auto_sync, disabled: S.auto.busy,
+          onChange: (e) => { const want = e.target.checked; e.target.checked = !!sess.auto_sync; setAutoSync(want); } }),
+        'Synchro automatique',
+      ]) : null,
+      sess.linked ? h('p', { class: 'small muted' }, "Toutes les 10 minutes, le classeur vérifie ta collection dans la base du jeu et la relit si elle a changé (au moins toutes les 6 h) ; les cotes toutes les 20 minutes. Décoche pour ne lire qu'au clic.") : null,
+      errLine(S.auto.error),
+      sess.linked || sess.lost ? h('div', { class: 'actions' }, [
+        h('button', { class: 'btn danger', type: 'button', disabled: ss.busy, onClick: forgetSession }, 'Oublier la liaison'),
+      ]) : null,
+      sess.linked || sess.lost ? h('p', { class: 'small muted' }, "Le classeur efface sa session du jeu : il ne lit plus rien jusqu'à la prochaine liaison. Ton compte du jeu n'est pas touché.") : null,
     ]);
   }
-  function viewCookie() {
+  // « Relier mon compte » : le favori « Relier » (jeton à usage unique), et en secours le cookie collé ou un HAR, toujours
+  // depuis une fenêtre privée.
+  function viewLink() {
+    const lk = S.link;
     const ss = S.session;
     const sess = (S.me && S.me.session) || {};
     const noSecret = !!(S.health && S.health.cookie_secret === false);
+    const url = relierUrl.value;
+    const expired = !!(lk.token && lk.until && Date.parse(lk.until) < Date.now());
     const off = noSecret || ss.busy;
-    const dot = !sess.has_cookie ? '' : sess.expired ? 'off' : 'on';
-    const label = !sess.has_cookie ? 'Pas de session WikiMasters enregistrée'
-      : sess.expired ? 'Session WikiMasters expirée' : 'Session WikiMasters enregistrée' + (sess.updated_at ? ' le ' + dateDay(sess.updated_at) : '');
     return h('div', { class: 'panel' }, [
-      h('h2', null, sess.expired ? 'Ta session WikiMasters a expiré' : 'En secours : ton cookie WikiMasters'),
-      h('p', { class: 'session-line' }, [h('span', { class: ['dot', dot] }), label]),
-      h('p', null, "Le classeur garde alors ta session chiffrée et s'en sert pour lire ta collection quand tu cliques « Rafraîchir la collection »."),
-      h('p', { class: 'notice warn-box' }, 'Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
-      noSecret ? h('p', { class: 'warn' }, "Le collage du cookie est désactivé sur ce classeur : l'administrateur n'a pas encore réglé sa clé de chiffrement (COOKIE_SECRET). Utilise le favori.") : null,
-      h('ol', { class: 'steps' }, [
-        h('li', null, ['Sur wiki-masters.com, avec ta session ouverte, ouvre les outils de développement (', h('kbd', null, 'F12'), '), onglet Réseau, puis recharge ta page Collection.']),
-        h('li', null, ['Clique la requête ', h('code', null, 'my-collection'), ', puis dans les en-têtes de la requête, copie la valeur de ', h('code', null, 'Cookie'), '.']),
+      h('h2', null, sess.linked ? 'Relier à nouveau' : 'Relier mon compte du jeu'),
+      h('p', null, "Le classeur garde sa propre session du jeu, ouverte dans une fenêtre privée : elle ne se mêle pas à celle de ton navigateur, où tu restes connecté. Elle ne sert qu'à lire ta collection et le marché : rien n'est écrit dans le jeu."),
+      noSecret ? h('p', { class: 'warn' }, "La liaison est désactivée sur ce classeur : l'administrateur n'a pas encore réglé sa clé de chiffrement (COOKIE_SECRET).") : null,
+      !url || expired ? h('div', { class: 'actions' }, [
+        h('button', { class: sess.linked ? 'btn' : 'btn primary', type: 'button', disabled: lk.busy || noSecret, onClick: createLink },
+          [icon('link', 'sm'), lk.busy ? 'Préparation…' : expired ? 'Refaire le favori' : 'Relier mon compte']),
+      ]) : null,
+      expired ? h('p', { class: 'warn', role: 'status' }, 'Ce favori a expiré (il vaut 30 minutes) : refais-en un.') : null,
+      errLine(lk.error),
+      url && !expired ? h('p', { class: 'bm-line' }, [h('a', { class: 'bookmarklet', href: url, title: 'Glisse-moi dans ta barre de favoris',
+        onClick: (e) => { e.preventDefault(); lk.clicked = true; } }, [icon('bookmark'), 'Relier au classeur'])]) : null,
+      url && !expired && lk.clicked ? h('p', { class: 'warn', role: 'status' }, 'Pas ici : glisse le bouton dans ta barre de favoris (ou copie son adresse), puis clique-le sur wiki-masters.com, dans ta fenêtre privée.') : null,
+      url && !expired ? copyRow('link-url', url, 'Adresse du favori (téléphone : colle-la dans un favori)') : null,
+      url && !expired ? h('ol', { class: 'steps' }, [
+        h('li', null, ['Ouvre une ', h('strong', null, 'fenêtre privée'), ' (', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'N'), ', ',
+          h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'P'), ' sur Firefox, onglet privé sur téléphone) et connecte-toi à wiki-masters.com.']),
+        h('li', null, 'Clique le favori « Relier au classeur » (ou colle son adresse dans la barre d\'adresse).'),
+        h('li', null, ['Ferme la fenêtre privée ', h('strong', null, 'sans te déconnecter'), '.']),
+      ]) : null,
+      url && !expired ? h('p', { class: 'small muted' }, 'Le favori vaut 30 minutes et ne sert qu\'une fois : rien de durable ne reste dans ta barre.') : null,
+      url && !expired ? h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'), ' En attente de la liaison… ce classeur se met à jour dès qu\'elle est faite.']) : null,
+      h('p', { class: 'small muted' }, "Pourquoi une fenêtre privée : le jeu renouvelle sa session régulièrement, et une session partagée entre ton navigateur et le classeur finit fermée des deux côtés. Se déconnecter du jeu, sur n'importe quel appareil, ferme aussi celle du classeur : il faudra relier à nouveau."),
+      h('details', { class: 'secours' }, [
+        h('summary', null, 'En secours : coller le cookie ou déposer un HAR'),
+        h('p', { class: 'small muted' }, ['Depuis une fenêtre privée connectée au jeu : outils de développement (', h('kbd', null, 'F12'), ') → Réseau → une requête vers wiki-masters.com → en-tête ',
+          h('code', null, 'Cookie'), '. Copie sa valeur et colle-la ici, puis ferme la fenêtre privée sans te déconnecter.']),
+        h('label', { class: 'sr', for: 'cookie-input' }, 'Valeur de l\'en-tête Cookie'),
+        h('textarea', { id: 'cookie-input', rows: 3, value: ss.cookie, disabled: off, spellcheck: 'false', autocomplete: 'off',
+          placeholder: 'sb-…-auth-token.0=…; sb-…-auth-token.1=…', onInput: (e) => { ss.cookie = e.target.value; } }),
+        h('label', { class: ['drop', { disabled: noSecret }] }, [h('strong', null, 'Ou dépose un export HAR'), h('span', { class: 'muted' }, 'fichier .har de l\'onglet Réseau de ta fenêtre privée, ou clique pour le choisir'),
+          h('input', { type: 'file', accept: '.har,application/json', disabled: off, onChange: uploadHar })]),
+        h('p', { class: 'small muted' }, "Du fichier HAR, seuls l'adresse et le cookie des requêtes vers wiki-masters.com sont envoyés ; le reste ne quitte pas ton navigateur. Dans Chrome ou Edge, l'export par défaut retire les cookies : choisis l'export « avec données sensibles »."),
+        errLine(ss.error),
+        h('div', { class: 'actions' }, [
+          h('button', { class: 'btn', type: 'button', disabled: off || !ss.cookie.trim(), onClick: submitCookie }, ss.busy ? 'Liaison…' : 'Relier avec ce cookie'),
+        ]),
       ]),
-      h('label', { class: 'sr', for: 'cookie-input' }, 'Valeur de l\'en-tête Cookie'),
-      h('textarea', { id: 'cookie-input', rows: 3, value: ss.cookie, disabled: off, spellcheck: 'false', autocomplete: 'off',
-        placeholder: 'sb-…-auth-token.0=…; sb-…-auth-token.1=…', onInput: (e) => { ss.cookie = e.target.value; } }),
-      h('label', { class: ['drop', { disabled: noSecret }] }, [h('strong', null, 'Ou dépose un export HAR'), h('span', { class: 'muted' }, 'fichier .har de l\'onglet Réseau, ou clique pour le choisir'),
-        h('input', { type: 'file', accept: '.har,application/json', disabled: off, onChange: uploadHar })]),
-      h('p', { class: 'small muted' }, "Du fichier HAR, seuls l'adresse et le cookie des requêtes vers wiki-masters.com sont envoyés ; le reste ne quitte pas ton navigateur. Dans Chrome ou Edge, l'export par défaut retire les cookies : choisis l'export « avec données sensibles »."),
-      errLine(ss.error),
-      h('div', { class: 'actions' }, [
-        h('button', { class: 'btn', type: 'button', disabled: off || !ss.cookie.trim(), onClick: submitCookie }, ss.busy ? 'Enregistrement…' : 'Enregistrer le cookie et rafraîchir'),
-        sess.has_cookie ? h('button', { class: 'btn danger', type: 'button', disabled: ss.busy, onClick: forgetSession }, 'Oublier la session') : null,
-      ]),
-    ]);
-  }
-  // Relecture complète à la prochaine mise à jour (PATCH /api/me {force_full}) : seul remède à ce que la synchro rapide
-  // ne voit pas (échange de deux cartes de même rareté, carte retirée des favoris dans le jeu…).
-  const fullNext = reactive({ busy: false, error: '' });
-  async function armFullRead() {
-    Object.assign(fullNext, { busy: true, error: '' });
-    try {
-      await api('PATCH', '/api/me', { force_full: true });
-      if (S.me) S.me.next_full = true;
-    } catch (e) {
-      fullNext.error = e.message;
-    } finally {
-      fullNext.busy = false;
-    }
-  }
-  function viewFullNext() {
-    const armed = !!(S.me && S.me.next_full);
-    return h('div', { class: 'panel', style: { gridColumn: '1 / -1' } }, [
-      h('h3', null, 'Tout relire'),
-      h('p', { class: 'small muted' }, "D'habitude, le favori et le rafraîchissement ne lisent que tes nouvelles cartes. Un échange de deux cartes de même rareté, ou une carte retirée de tes favoris dans le jeu, peut leur échapper jusqu'à la relecture complète de la semaine."),
-      armed ? h('p', { class: 'small', role: 'status' }, [icon('check', 'sm'), ' La prochaine mise à jour relira toute ta collection.'])
-        : h('button', { class: 'btn small', type: 'button', disabled: fullNext.busy, onClick: armFullRead }, 'La prochaine mise à jour relira toute ta collection'),
-      errLine(fullNext.error),
     ]);
   }
   // « Dernières synchros » (journal des synchros) : heure, chemin et type, résultat, message lisible ; les 20 plus récentes.
@@ -7295,14 +7084,13 @@
     const rows = (list || []).slice(0, 20);
     let body;
     if (list === null) body = h('p', { class: 'small muted', role: 'status' }, syncLog.busy ? 'Lecture du journal…' : '');
-    else if (!rows.length) body = h('p', { class: 'small muted' }, 'Aucune synchro notée pour l\'instant : elles apparaîtront ici (favori, favori relié, cookie), réussies ou non.');
+    else if (!rows.length) body = h('p', { class: 'small muted' }, "Aucune synchro notée pour l'instant : les lectures de ta collection (au clic ou automatiques) et la liaison de ton compte apparaîtront ici, réussies ou non. Une vérification sans changement n'est pas notée.");
     else body = h('ul', { class: 'synclog-list' }, rows.map((x, i) => viewSyncRow(x, i)));
     return h('div', { class: 'panel synclog', style: { gridColumn: '1 / -1' } }, [
       h('div', { class: 'synclog-head' }, [
         h('h3', null, 'Dernières synchros'),
         h('button', { class: 'btn small ghost', type: 'button', disabled: syncLog.busy, onClick: loadSyncLog }, [icon('refresh', syncLog.busy ? 'sm spin' : 'sm'), 'Actualiser']),
       ]),
-      oldFavori.value ? h('p', { class: 'notice warn-box' }, "Ta dernière synchro vient d'un favori d'avant le 18 octobre 2026 : glisse le nouveau favori (ci-dessus) dans ta barre à la place de l'ancien, et recolle le script Tampermonkey si tu t'en sers. Le nouveau lit aussi les tags que tu poses sur tes cartes dans le jeu, relit une page restée vide, vérifie que ta collection n'a pas bougé pendant la lecture et signale ici ses échecs.") : null,
       body,
       errLine(syncLog.error),
     ]);
@@ -7321,8 +7109,8 @@
   }
   function viewUpdate() {
     return h('div', { class: 'update' }, [
-      STANDALONE ? h('p', { class: 'notice app-note' }, [h('strong', null, "Tu es dans l'app installée."), " Le favori se lance dans ton navigateur, sur wiki-masters.com, pas ici : ouvre le jeu dans Safari ou Chrome, touche le favori, puis reviens dans l'app, elle se met à jour toute seule."]) : null,
-      viewFavori(), viewCookie(), viewFullNext(), viewSyncLog()]);
+      STANDALONE ? h('p', { class: 'notice app-note' }, [h('strong', null, "Tu es dans l'app installée."), " Pour relier ton compte, il faut une fenêtre privée du navigateur : copie l'adresse du favori ci-dessous, puis colle-la dans un onglet privé de Safari ou Chrome où tu es connecté au jeu. Ensuite, l'app suit ta collection toute seule."]) : null,
+      viewGameAccount(), viewLink(), viewSyncLog()]);
   }
 
   // ================================================================ rendu : onglet Réglages
@@ -7358,13 +7146,6 @@
         h('p', { class: 'small muted' }, "Un lien ouvert reste dans l'historique du navigateur : sur un appareil partagé, efface-le de l'historique, ou change ta clé."),
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: askRotate }, [icon('key', 'sm'), 'Changer ma clé'])]),
       ]),
-      section('Le favori', [
-        h('p', null, "Pour envoyer ta collection au classeur depuis wiki-masters.com, en un clic. Il a sa propre clé, qui ne sert qu'à envoyer des cartes."),
-        h('div', { class: 'actions' }, [
-          h('button', { class: 'btn', type: 'button', onClick: openFavori }, [icon('bookmark', 'sm'), 'Installer le favori']),
-          S.me && S.me.has_import_key ? h('button', { class: 'btn', type: 'button', onClick: askRegenerate }, [icon('refresh', 'sm'), 'Régénérer le favori']) : null,
-        ]),
-      ]),
       others.length ? section('Autres classeurs ouverts dans ce navigateur', [
         h('ul', { class: 'known' }, others.map((k) => h('li', { key: k.key, class: 'line' }, [
           h('span', { class: 'known-name' }, knownLabel(k)),
@@ -7393,14 +7174,14 @@
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: askForget }, 'Oublier ce navigateur')]),
       ]),
       section('Supprimer mon classeur', [
-        h('p', null, 'Efface définitivement tes cartes rangées, tes tags, tes collections, ta session WikiMasters et tes messages du chat.'),
+        h('p', null, 'Efface définitivement tes cartes rangées, tes tags, tes collections, la session du jeu reliée et tes messages du chat.'),
         h('div', { class: 'actions' }, [h('button', { class: 'btn danger', type: 'button', onClick: askDeleteAccount }, [icon('trash', 'sm'), 'Supprimer mon classeur'])]),
       ], 'danger-zone'),
     ]);
   }
 
   // ================================================================ rendu : onglet Entre amis
-  const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni ta session WikiMasters ; tes collections à compléter seulement si tu le choisis en plus.';
+  const SHARE_WHAT = 'Ce qui est montré : ton prénom, ton nombre de cartes, la date de ta dernière synchro et, pour chaque carte, son titre, sa rareté, tes exemplaires, si elle est brillante, son illustration et son lien Wikipédia. Jamais tes tags, tes clés ni la session du jeu reliée ; tes collections à compléter seulement si tu le choisis en plus.';
   const SHARE_TARGETS_WHAT = 'Avec « et mes collections à compléter » : le nom de chacune de tes collections (avec la mention « depuis la catégorie Wikipédia » pour celles faites d\'une catégorie) et les titres de leurs articles, pour que tes amis voient lesquelles de leurs cartes les complètent. Jamais leurs descriptions ni la recherche qui les a créées ; seulement aux membres qui montrent leurs cartes.';
   const TRADE_NOTE = 'Le classeur ne fait que montrer qui a quoi : les échanges se font dans le jeu, entre vous.';
   const FRIEND_ROWS = 8; // lignes montrées par bloc avant « Voir les … »
@@ -9779,11 +9560,11 @@
     ['jeu', 'Depuis le jeu', 'bookmark', "Sur wiki-masters.com, fais une recherche dans la « Collection globale » (« vache »…), puis clique ton favori : il propose d'en faire une collection, avec la rareté de chaque carte dans le jeu."],
   ];
   function viewNewFromGame() {
-    const has = !!storedImportKey() || !!(S.me && S.me.has_import_key);
+    const has = !!(S.me && S.me.session && S.me.session.linked);
     return [
       h('p', { class: 'small muted' }, has ? 'Ton favori est installé : la collection apparaîtra ici dès que tu l\'auras créée sur wiki-masters.com.'
         : "Il te faut d'abord le favori (un bouton à glisser dans ta barre de favoris) : c'est aussi lui qui met ta collection à jour."),
-      h('div', { class: 'row-actions' }, [h('button', { class: has ? 'btn small' : 'btn small primary', type: 'button', onClick: openFavori },
+      h('div', { class: 'row-actions' }, [h('button', { class: has ? 'btn small' : 'btn small primary', type: 'button', onClick: openSyncTab },
         [icon('bookmark', 'sm'), has ? 'Voir mon favori' : 'Installer le favori'])]),
     ];
   }
@@ -9878,7 +9659,7 @@
   // « Ajouter N cartes ». Nom du bouton : ce que l'utilisateur appelle « les tags de wiki-masters » (2026-10-18) ; les
   // catégories du jeu viennent en second dans la même fenêtre.
   const TAGADD_TITLE = 'Ajouter par tags du jeu';
-  const NO_GTAGS = "Ton favori n'a encore lu aucun tag du jeu : relance une mise à jour complète (onglet « Mettre à jour » : « La prochaine mise à jour relira toute ta collection », puis le favori sur wiki-masters.com ; il faut celui du 18 octobre 2026 ou plus récent). Si tu n'as posé aucun tag sur tes cartes dans le jeu, les catégories du jeu ci-dessous suffisent.";
+  const NO_GTAGS = "Aucun tag du jeu lu pour l'instant : ils arrivent avec chaque lecture de ta collection (onglet « Synchro », « Rafraîchir maintenant »). Si tu n'as posé aucun tag sur tes cartes dans le jeu, les catégories du jeu ci-dessous suffisent.";
   function modalTagAdd() {
     const ta = S.tagAdd;
     if (!ta) return null;
@@ -9933,7 +9714,7 @@
     const nSkip = st && st.had ? st.had.skip.length : 0;
     const tooManyRules = !!st && st.rules.length > AUTO_MAX_RULES;
     const autoNote = ta.auto
-      ? `Les tags et catégories cochés sont gardés : à chaque synchro du favori (ou à l'ouverture du classeur), tes nouvelles cartes qui les portent s'ajoutent à la fin. Une carte décochée dans l'aperçu, ou retirée ensuite de la collection, n'est jamais rajoutée${nSkip ? ` (${cards$(nSkip)} ${plural(nSkip, 'exclue', 'exclues')} pour l'instant)` : ''}.`
+      ? `Les tags et catégories cochés sont gardés : à chaque lecture de ta collection (ou à l'ouverture du classeur), tes nouvelles cartes qui les portent s'ajoutent à la fin. Une carte décochée dans l'aperçu, ou retirée ensuite de la collection, n'est jamais rajoutée${nSkip ? ` (${cards$(nSkip)} ${plural(nSkip, 'exclue', 'exclues')} pour l'instant)` : ''}.`
       : st && st.had ? "Décochée : l'ajout automatique de cette collection s'arrête (les cartes déjà ajoutées restent)." : null;
     const go = ta.busy ? 'Enregistrement…' : n ? `Ajouter ${cards$(n)}` : st && st.changed ? (st.rules.length ? 'Enregistrer les règles' : "Arrêter l'ajout automatique") : 'Ajouter';
     return h(Modal, { key: 'tagadd', wide: true, title: TAGADD_TITLE, onClose: closeModal }, () => [
@@ -9943,7 +9724,7 @@
         noOther: "aucun autre de tes tags du jeu ne s'en approche", noName: 'aucun de tes tags du jeu ne ressemble au nom', often: info.own >= 2,
         noOften: "aucun n'est porté par plusieurs de tes cartes de la collection", more: (k) => plural(k, 'autre tag proposé', 'autres tags proposés') }),
       ...section(info.cats, { title: 'Catégories du jeu', label: 'Catégories du jeu proposées', has: info.hasCats, quote: true, of: 'de catégorie',
-        empty: "Aucune de tes cartes n'a de catégorie du jeu (le texte que le jeu affiche sous leur titre) : relance une mise à jour avec le favori, puis reviens ici.",
+        empty: "Aucune de tes cartes n'a de catégorie du jeu (le texte que le jeu affiche sous leur titre) : rafraîchis ta collection (onglet « Synchro »), puis reviens ici.",
         noOther: "aucune autre catégorie du jeu ne s'en approche", noName: 'aucune catégorie du jeu de tes cartes ne ressemble au nom', often: info.known >= 2,
         noOften: "aucune n'est portée par beaucoup de ses éléments", more: (k) => plural(k, 'autre catégorie proposée', 'autres catégories proposées') }),
       choices.length ? h('form', { class: 'tagadd-other', onSubmit: (e) => { e.preventDefault(); addTagAddKey(ta); } }, [
@@ -10111,39 +9892,7 @@
     ]);
   }
 
-  function modalSync() {
-    const y = S.sync;
-    const close = () => closeModal();
-    if (y.done) {
-      return h(Modal, { key: 'sync', title: 'Collection mise à jour', onClose: close }, () => [
-        h('p', { class: 'ok', role: 'status' }, y.msg),
-        foot([h('button', { class: 'btn primary', type: 'button', onClick: close }, 'Fermer')]),
-      ]);
-    }
-    return h(Modal, { key: 'sync', title: 'Mettre à jour ta collection', onClose: close }, () => [
-      h('p', null, "Le classeur ne peut pas lire le jeu tout seul : c'est ton favori, cliqué sur wiki-masters.com où tu es connecté, qui lui envoie ta collection."),
-      h('p', { class: 'note' }, ['Classeur ouvert ici : ', h('strong', null, (S.me && S.me.user && S.me.user.name) ? 'celui de ' + S.me.user.name : 'sans nom'),
-        S.known.some((k) => k.key !== S.key) ? '. Le favori envoie dans le classeur pour lequel il a été créé : si ce n\x27est pas celui-ci, change de classeur dans les Réglages.' : '.']),
-      y.elsewhere ? h('p', { class: 'warn', role: 'alert' }, [
-        `Tes cartes sont arrivées dans le classeur ${y.elsewhere.name ? 'de ' + y.elsewhere.name : 'd\x27un autre compte'}, pas dans celui ouvert ici. `,
-        h('button', { class: 'btn small primary', type: 'button', onClick: () => { const k = y.elsewhere.key; closeModal(); switchTo(k); } }, `Ouvrir ${y.elsewhere.name ? 'le classeur de ' + y.elsewhere.name : 'ce classeur'}`),
-      ]) : null,
-      h('ol', { class: 'steps' }, [
-        h('li', null, [h('a', { class: 'btn primary small', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener' }, 'Ouvrir wiki-masters.com')]),
-        h('li', null, ['Clique ton favori « Classeur WikiMasters » dans la barre de favoris (', h('kbd', null, 'Ctrl'), '+', h('kbd', null, 'Maj'), '+', h('kbd', null, 'B'), ' pour l\x27afficher). Un encart montre la lecture, puis l\x27envoi.']),
-        h('li', null, 'Reviens ici : le classeur se met à jour tout seul.'),
-      ]),
-      h('p', { class: 'wait-line', role: 'status' }, [icon('refresh', 'spin'), ' En attente de ton favori…']),
-      y.failed ? h('p', { class: 'notice error', role: 'alert' }, ['Le favori a signalé un échec : ', y.failed, ' Fais ce qu\x27il demande, puis clique-le à nouveau.']) : null,
-      y.expired ? h('p', { class: 'note' }, 'Ta session collée a expiré : le favori la remplace, sans rien coller.') : null,
-      !y.hasFavori ? h('p', { class: 'note' }, ['Pas encore de favori ? ', h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openFavori(); } }, 'Installer le favori')]) : null,
-      foot([
-        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openFavori(); } }, 'Voir le favori et les autres façons'),
-        h('button', { class: 'btn', type: 'button', onClick: close }, 'Fermer'),
-      ]),
-    ]);
-  }
-  const MODALS = { install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, sync: modalSync, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {
@@ -10214,7 +9963,7 @@
           h('h2', null, "Le classeur n'est pas encore configuré"),
           h('p', null, "L'administrateur doit lier la base de données D1 au projet Cloudflare Pages (voir SETUP.md), puis redéployer le site."),
         ]) : h('div', { class: 'welcome-grid' }, STANDALONE ? [link, create] : [create, link]),
-        h('p', { class: 'small muted' }, "Le classeur lit ta collection seulement quand tu le demandes, comme la page « Collection » du jeu. Il ne joue jamais à ta place et n'écrit rien dans le jeu."),
+        h('p', { class: 'small muted' }, "Une fois ton compte du jeu relié, le classeur lit ta collection dans la base du jeu, tout seul et quand tu le demandes. Il ne joue jamais à ta place et n'écrit rien dans le jeu."),
       ];
     }
     return h('div', { class: 'welcome' }, [head, h('main', { class: 'wrap welcome-main' }, body)]);
@@ -10501,16 +10250,16 @@
     }
   }
   // Retour sur l'onglet, puis toutes les 60 s tant qu'il reste visible (LIVE_EVERY) : cards_rev (GET /api/me) dit si
-  // quelque chose a changé (envoi du favori, cliqué ou relié à la page du jeu ; tags modifiés sur un autre appareil), et
+  // quelque chose a changé (lecture automatique de la collection par le serveur ; tags modifiés sur un autre appareil), et
   // les cartes ne sont relues (?since) que dans ce cas. Sans lui (ancien serveur), seul un nouvel envoi (fetched_at)
   // recharge, comme avant. GET /api/me ne lit qu'une ligne de la base (le compte, par l'index unique de sa clé). Onglet
-  // caché : minuterie arrêtée, aucune requête. poll = true : relecture périodique, sautée si une autre est en cours, si
-  // les cartes se chargent ou si la fenêtre du favori (qui relit déjà toutes les 4 s) est ouverte.
+  // caché : minuterie arrêtée, aucune requête. poll = true : relecture périodique, sautée si une autre est en cours ou si
+  // les cartes se chargent.
   const LIVE_EVERY = 60 * 1000;
   let liveTimer = null;
   let livePolling = false;
   async function checkRemote(poll) {
-    if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running || S.modal === 'sync') return;
+    if (document.visibilityState !== 'visible' || S.boot !== 'app' || S.refresh.running) return;
     if (poll && (livePolling || S.loadingCards)) return;
     if (poll) livePolling = true;
     try {
