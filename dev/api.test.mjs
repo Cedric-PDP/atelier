@@ -385,12 +385,98 @@ await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et
   assert.deepEqual((await call('GET', 'members', { key: b.key, e })).json.members.map((m) => m.pseudo), [null]);
 });
 
-await test('GET /api/favori.js : aucun code servi pour l\'instant (404), sans clé', async () => {
-  const e = makeEnv({ ASSETS: { fetch: async () => new Response('fichier') } });
+await test('GET /api/favori.js : relier.js servi sans __SITE__, sans clé, jamais en cache', async () => {
+  const code = await readFile(path.join(root, 'site', 'public', 'assets', 'relier.js'), 'utf8');
+  assert.ok(code.includes('__SITE__'));
+  const e = makeEnv({ ASSETS: { fetch: async (req) => new URL(req.url).pathname === '/assets/relier.js' ? new Response(code) : new Response('', { status: 404 }) } });
   let res = await onRequest({ request: new Request('https://classeur.example/api/favori.js'), env: e, params: {}, waitUntil() {} });
-  assert.equal(res.status, 404);
+  assert.equal(res.status, 200);
+  const text = await res.text();
+  assert.ok(text.includes('__classeurLien') && text.includes('"https://classeur.example"') && !text.includes('__SITE__'));
+  assert.equal(res.headers.get('cache-control'), 'no-store');
+  assert.equal(res.headers.get('x-content-type-options'), 'nosniff');
+  new Function(text); // syntaxe valide
   res = await onRequest({ request: new Request('https://classeur.example/api/favori.js', { method: 'POST' }), env: e, params: {}, waitUntil() {} });
   assert.equal(res.status, 405);
+});
+
+await test('liaison par favori : jeton à usage unique (30 min), dépôt de session avec CORS du jeu', async () => {
+  const e = makeEnv();
+  const u = await signup('Lia', e);
+  const GAME = 'https://www.wiki-masters.com';
+  const deposit = (token, cookie, headers = { origin: GAME }) => call('POST', 'link/session', { e, headers, body: { token, cookie } });
+  const uid = 'uid-lien-1';
+  supa.addPlayer(uid, { username: 'Lia_7' });
+
+  assert.equal((await call('POST', 'link', { e })).status, 401, 'créer un jeton demande la clé');
+  let r = await call('POST', 'link', { key: u.key, e });
+  assert.equal(r.status, 200);
+  const { token, until } = r.json;
+  assert.match(token, /^[A-Za-z0-9_-]{20,64}$/);
+  let row = userRow(u.user.id, e);
+  assert.equal(row.link_hash, await sha256Hex(token));
+  assert.equal(row.link_until, until);
+  assert.ok(Math.abs(Date.parse(until) - Date.now() - 30 * 60 * 1000) < 5000);
+  // Un nouveau jeton remplace l'ancien.
+  const second = (await call('POST', 'link', { key: u.key, e })).json.token;
+  assert.equal((await deposit(token, supa.sessionCookie({ uid }))).status, 401, 'ancien jeton remplacé');
+
+  // OPTIONS : 204 avec les en-têtes du jeu ; une autre origine n'en reçoit pas.
+  r = await call('OPTIONS', 'link/session', { e, headers: { origin: GAME } });
+  assert.equal(r.status, 204);
+  assert.equal(r.headers.get('access-control-allow-origin'), GAME);
+  assert.equal(r.headers.get('access-control-allow-headers'), 'content-type');
+  r = await call('OPTIONS', 'link/session', { e, headers: { origin: 'https://autre.example' } });
+  assert.equal(r.headers.get('access-control-allow-origin'), null);
+
+  // Dépôt : sans clé, la session vérifiée auprès du jeu est gardée, le jeton consommé.
+  r = await deposit(second, supa.sessionCookie({ uid }));
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.ok, r.json.pseudo], [true, 'Lia_7']);
+  assert.equal(r.headers.get('access-control-allow-origin'), GAME);
+  row = userRow(u.user.id, e);
+  assert.deepEqual([row.game_uid, row.link_hash, row.link_until], [uid, null, null]);
+  const [line] = (await call('GET', 'sync-log', { key: u.key, e })).json.entries;
+  assert.deepEqual([line.kind, line.data.via], ['session', 'relier']);
+  assert.equal((await deposit(second, supa.sessionCookie({ uid }))).status, 401, 'second dépôt avec le même jeton');
+  assert.match((await deposit(second, supa.sessionCookie({ uid }))).json.error, /périmé ou déjà utilisé/);
+
+  // Autre origine : la réponse reste, sans en-tête CORS (c'est le navigateur qui bloque).
+  const third = (await call('POST', 'link', { key: u.key, e })).json.token;
+  r = await deposit(third, supa.sessionCookie({ uid }), { origin: 'https://autre.example' });
+  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [200, null]);
+
+  // Jeton expiré, inconnu ou mal formé : 401, la session n'est pas lue.
+  const fourth = (await call('POST', 'link', { key: u.key, e })).json.token;
+  e.DB.sqlite.prepare('UPDATE users SET link_until = ? WHERE id = ?').run(new Date(Date.now() - 1000).toISOString(), u.user.id);
+  const n0 = supa.calls.length;
+  for (const t of [fourth, 'inconnu-inconnu-inconnu-inconnu', 'court', '', undefined, 42]) {
+    r = await deposit(t, supa.sessionCookie({ uid }));
+    assert.equal(r.status, 401, String(t));
+  }
+  assert.equal(supa.calls.length, n0);
+
+  // Cookie sans session du jeu : 400 (le jeton n'est pas consommé : rien n'a été tenté).
+  const fifth = (await call('POST', 'link', { key: u.key, e })).json.token;
+  assert.equal((await deposit(fifth, 'theme=sombre; autre=1')).status, 400);
+  assert.equal((await deposit(fifth, 12)).status, 400);
+
+  // Compte du jeu déjà relié à un autre classeur : 409, jeton consommé quand même.
+  const v = await signup('Victor', e);
+  r = await deposit(fifth, supa.sessionCookie({ uid }));
+  assert.equal(r.status, 200, 'le même classeur peut relier à nouveau son propre compte');
+  const vt = (await call('POST', 'link', { key: v.key, e })).json.token;
+  r = await deposit(vt, supa.sessionCookie({ uid }));
+  assert.equal(r.status, 409, JSON.stringify(r.json));
+  assert.match(r.json.error, /déjà relié/);
+  assert.equal(userRow(v.user.id, e).link_hash, null, 'jeton consommé');
+  assert.equal(userRow(v.user.id, e).game_uid, null);
+  assert.equal((await deposit(vt, supa.sessionCookie({ uid }))).status, 401);
+
+  // Corps trop gros : 20 Ko au plus.
+  r = await deposit(vt, 'a=' + 'x'.repeat(21 * 1024));
+  assert.equal(r.status, 413);
+  e.DB.close();
 });
 
 await test('authentification et /api/me', async () => {

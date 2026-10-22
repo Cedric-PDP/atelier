@@ -15,13 +15,14 @@ import { getMarket, listPrices } from '../_lib/market.js';
 import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
+import { createLink, linkWithToken } from '../_lib/link.js';
 
-// Seuls les points d'accès appelés depuis une page du jeu (sous ses deux noms) acceptent ces origines.
+// Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
-const CORS_PATHS = new Set([]);
+const CORS_PATHS = new Set(['link/session']);
 const CORS_HEADERS = {
   'access-control-allow-methods': 'POST, OPTIONS',
-  'access-control-allow-headers': 'content-type, x-classeur-key',
+  'access-control-allow-headers': 'content-type',
   'access-control-max-age': '86400',
 };
 
@@ -35,6 +36,8 @@ const ROUTES = {
   cards: { GET: [listCards, 'main'] },
   session: { POST: [saveSession, 'main'], DELETE: [deleteSession, 'main'] },
   refresh: { POST: [refresh, 'main'] },
+  link: { POST: [createLink, 'main'] }, // jeton de liaison à usage unique
+  'link/session': { POST: [linkWithToken, false] }, // dépôt de la session par le favori « Relier » (CORS du jeu)
   'tags/set': { POST: [setTags, 'main'] },
   'tags/bulk': { POST: [bulkTags, 'main'] },
   'tags/rename': { POST: [renameTag, 'main'] },
@@ -55,7 +58,7 @@ const ROUTES = {
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {
