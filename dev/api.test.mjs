@@ -1,4 +1,4 @@
-// Tests de l'API : appelle onRequest directement, D1 simulée en mémoire, jeu simulé (fetch remplacé).
+// Tests de l'API : appelle onRequest directement, D1 simulée en mémoire, base du jeu simulée (dev/supabase.mjs).
 //   node dev/api.test.mjs      → doit finir par « API OK »
 
 import assert from 'node:assert/strict';
@@ -7,6 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createD1 } from './d1.mjs';
+import { ANON, mockSupabase, rowOf } from './supabase.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -14,17 +15,17 @@ const lib = (f) => pathToFileURL(path.join(root, 'site', 'functions', f)).href;
 const { onRequest } = await import(lib('api/[[path]].js'));
 const { SCHEMA } = await import(lib('_lib/db.js'));
 const { decryptCookie } = await import(lib('_lib/session.js'));
+const { openSession, renewSession, sealSession, sessionOf } = await import(lib('_lib/game.js'));
+const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
-const { QUOTA_USER, QUOTA_ALL, AUTO_GAP } = await import(lib('_lib/market.js'));
-const { tagSig } = await import(lib('_lib/cards.js'));
 
-const realFetch = globalThis.fetch;
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
 const owned = JSON.parse(await readFile(path.join(root, 'data', 'owned.json'), 'utf8')).cards;
+const supa = mockSupabase();
 
 function makeEnv(extra = {}) {
-  return { DB: createD1(':memory:'), COOKIE_SECRET: SECRET, SIGNUP_CODE: 'invitation', ...extra };
+  return { DB: createD1(':memory:'), COOKIE_SECRET: SECRET, SIGNUP_CODE: 'invitation', REFRESH_PAUSE_MS: '0', ...extra };
 }
 let env = makeEnv();
 
@@ -43,8 +44,9 @@ async function call(method, route, { body, key, headers = {}, raw, e = env } = {
 }
 
 const rows = (sql, ...p) => env.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
+const userRow = (id, e = env) => ({ ...e.DB.sqlite.prepare('SELECT * FROM users WHERE id = ?').get(id) });
 
-// Écritures sur la table cards, comptées par des déclencheurs (pour vérifier qu'un import n'écrit que les différences).
+// Écritures sur la table cards, comptées par des déclencheurs (pour vérifier qu'une lecture n'écrit que les différences).
 function countCardWrites(on) {
   const db = env.DB.sqlite;
   if (!on) {
@@ -58,7 +60,7 @@ function countCardWrites(on) {
   return () => db.prepare('SELECT COUNT(*) AS n FROM _w').get().n;
 }
 
-// Entrée brute au format du jeu, fabriquée depuis une carte de data/owned.json.
+// Ligne user_cards de la base du jeu (carte et tags embarqués), fabriquée depuis une carte de data/owned.json.
 function rawEntry(card, extra = {}) {
   return {
     id: `entree-${card.id}`,
@@ -68,31 +70,31 @@ function rawEntry(card, extra = {}) {
       def: card.def,
       lang: 'fr',
       rarity: card.r,
-      q_score: 40 + (parseInt(card.id.slice(0, 4), 16) % 200) / 4, // stable d'un import à l'autre
+      q_score: 40 + (parseInt(card.id.slice(0, 4), 16) % 200) / 4, // stable d'une lecture à l'autre
       category: card.c,
       image_url: card.img,
       pageviews: card.pv,
-      created_at: '2026-01-01T00:00:00.000Z',
       hide_image: false,
       wikipedia_url: `https://fr.wikipedia.org/wiki/${encodeURIComponent(card.t.replace(/ /g, '_'))}`,
       wikipedia_title: card.t,
     },
-    tags: [{ id: 't1', name: 'TagDuJeu' }],
+    tags: [{ tag: { id: 't1', name: 'TagDuJeu', color: null } }],
     count: card.n,
     card_id: card.id,
     starred: card.f,
     user_id: GAME_USER,
     is_shiny: card.s,
     obtained_at: `${card.at.replace(' ', 'T')}:00.000Z`,
+    snapshot_rarity: null,
+    snapshot_atk: null,
+    snapshot_def: null,
     ...extra,
   };
 }
 const entriesFor = (cards) => cards.map((c) => rawEntry(c));
-// Compteurs du jeu qui correspondent exactement à des entrées brutes ou à des CarteImport : lecture vérifiée complète.
-const statsOf = (list) => ({ total: list.reduce((n, x) => n + (x.count ?? 1), 0), totalUnique: new Set(list.map((x) => x.card_id ?? x.id)).size });
-const tiny = (i) => ({ id: `e${i}`, card_id: `c${i}`, count: 1, card: { id: `c${i}`, wikipedia_title: `Carte ${i}`, rarity: 'C' } });
 
-// CarteImport (ce qu'envoie le favori, déjà regroupée), depuis une carte de data/owned.json.
+// Carte des tests (forme d'une carte du classeur), depuis une carte de data/owned.json ; rowOf (dev/supabase.mjs) en fait
+// une ligne du jeu.
 const carte = (c, id = c.id) => ({
   id,
   title: c.t,
@@ -111,36 +113,50 @@ const carte = (c, id = c.id) => ({
 });
 const synth = (n, from = 0) => Array.from({ length: n }, (_, k) => carte(owned[(from + k) % owned.length], `carte-${String(from + k).padStart(5, '0')}`));
 
-// Envoi par morceaux de 500 (comme le favori) ; rend la réponse du dernier morceau. Compteurs du jeu : ceux des cartes
-// envoyées par défaut (lecture vérifiée, comme le favori) ; stats: null pour un envoi sans compteurs.
-let uploads = 0;
-async function upload(key, cards, { e = env, stats = statsOf(cards), size = 500 } = {}) {
-  const uploadId = `envoi-${++uploads}`;
-  const parts = Math.max(1, Math.ceil(cards.length / size));
-  let r;
-  for (let p = 0; p < parts; p++) {
-    const last = p === parts - 1;
-    r = await call('POST', 'import', {
-      key,
-      e,
-      body: { upload_id: uploadId, part: p, last, cards: cards.slice(p * size, (p + 1) * size), stats: last ? stats ?? undefined : undefined, source: 'favori' },
-    });
-    if (!last) assert.deepEqual(r.json, { ok: true, received: (p + 1) * size, skipped: 0 }, JSON.stringify(r.json));
-  }
-  return r;
-}
-
-// CarteImport minimales (~80 octets) : pour les très grandes collections (l'attente d'un import fait 8 Mo au plus).
+// Cartes minimales : pour les très grandes collections.
 const mini = (n, from = 0) => Array.from({ length: n }, (_, k) => ({
   id: `mini-${String(from + k).padStart(5, '0')}`, title: `Carte ${from + k}`, rarity: 'C', count: 1,
 }));
+
+// Cotes (cache commun des ventes) : rangées directement dans la base.
+const cote = (p, n, extra = {}) => ({ p, n, w: null, l: p, d: '2026-10-15T10:00:00.000Z', ...extra });
+const putPrice = (e, id, v) => e.DB.sqlite.prepare('INSERT OR REPLACE INTO prices (card_id, data, read_at) VALUES (?, ?, ?)').run(id, JSON.stringify(v), new Date().toISOString());
+
+// Compte du jeu d'un classeur dans les tests : tiré de sa clé (stable), sauf celui d'Alice (GAME_USER).
+const uidOf = (key) => 'uid-' + key.slice(0, 12);
+// Relie le compte du jeu `uid` au classeur (POST /api/session, cookie copié d'une fenêtre privée).
+async function linkGame(key, { e = env, uid = uidOf(key), ...cookie } = {}) {
+  supa.player(uid);
+  return call('POST', 'session', { key, e, body: { cookie: supa.sessionCookie({ uid, ...cookie }) } });
+}
+// « Rafraîchir », sans la limite d'un clic par minute (les tests en enchaînent).
+async function refreshNow(key, e = env) {
+  e.DB.sqlite.prepare('UPDATE users SET sync_click_at = NULL WHERE key_hash = ?').run(await sha256Hex(key));
+  return call('POST', 'refresh', { key, e, body: {} });
+}
+// Pose la collection dans le jeu (cartes des tests, ou lignes user_cards), relie le compte s'il ne l'est pas, puis
+// rafraîchit : lecture vérifiée (le compte exact du jeu est celui des lignes).
+async function setGameCards(key, cards, { e = env, uid } = {}) {
+  const linked = e.DB.sqlite.prepare('SELECT game_session_enc AS s, game_uid AS uid FROM users WHERE key_hash = ?').get(await sha256Hex(key));
+  const who = uid ?? (linked && linked.s ? linked.uid : uidOf(key));
+  supa.player(who).cards = cards.map((c) => (c && c.card !== undefined ? { ...c, user_id: who } : rowOf(c, { uid: who })));
+  if (!linked || !linked.s) assert.equal((await linkGame(key, { e, uid: who })).status, 200);
+  return who;
+}
+async function seedCards(key, cards, opts = {}) {
+  await setGameCards(key, cards, opts);
+  const r = await refreshNow(key, opts.e);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  return r;
+}
 
 // Mesure du coût d'un appel. process.cpuUsage() n'avance que par pas de 15,6 ms sous Windows, et le shim
 // node:sqlite tourne dans le même fil que le gestionnaire. Donc :
 // - SQLite : CPU compté par le shim autour de chaque requête (sqlCpuMs), moyenné sur plusieurs appels réels ;
 // - JavaScript du gestionnaire : l'appel réel est enregistré (résultats de chaque requête D1, dans l'ordre), puis
 //   rejoué n fois contre une fausse base qui rend ces résultats sans rien calculer ; CPU total / n.
-//   Le rejeu compte aussi Request/Response d'undici (natifs dans Workers) et, pour /api/refresh, le jeu simulé.
+//   Le rejeu compte aussi Request/Response d'undici (natifs dans Workers) et, pour /api/refresh, le faux Supabase
+//   (réponses JSON fabriquées puis décodées).
 function recorder(db) {
   const log = [];
   const wrap = (st) => ({
@@ -191,6 +207,7 @@ const ms = (x) => `${x.toFixed(1)} ms`;
 const report = (label, runs) => {
   const m = (k) => mean(runs.map((r) => r[k]));
   console.log(`    ${label} : JS ${ms(m('js'))} | SQLite ${ms(m('sql'))} (${runs.length} appels réels, ${runs.length * 20} rejeux)`);
+  return m('js');
 };
 
 const results = [];
@@ -235,7 +252,7 @@ await test('health et 503 sans base', async () => {
   assert.equal(r.status, 200);
   assert.deepEqual(r.json, { ok: false, db: false, cookie_secret: true, signup_open: true });
   assert.ok(!JSON.stringify(r.json).includes(SECRET));
-  for (const [m, p] of [['GET', 'me'], ['POST', 'account'], ['POST', 'import'], ['GET', 'nimporte']]) {
+  for (const [m, p] of [['GET', 'me'], ['POST', 'account'], ['POST', 'refresh'], ['GET', 'nimporte']]) {
     r = await call(m, p, { e: noDb, body: m === 'POST' ? {} : undefined });
     assert.equal(r.status, 503, p);
     assert.equal(r.json.error, "Le classeur n'est pas encore configuré : la base D1 n'est pas liée (variable DB).");
@@ -335,51 +352,15 @@ await test('inscription : prénom déjà pris refusé, classeur jamais utilisé 
   assert.equal(r.status, 409);
   assert.match(r.json.error, /Il existe déjà un classeur « trykh4r »\..*lien personnel.*Réglages/);
   assert.equal((await call('GET', 'me', { key: second.key, e })).status, 200, 'le classeur existant ne doit pas bouger');
-  // Accents : « Cléo » = « cleo » ; un favori créé suffit à dire le classeur utilisé.
+  // Accents : « Cléo » = « cleo » ; un compte du jeu relié suffit à dire le classeur utilisé.
   const cleo = await signup('Cléo', e);
-  await call('POST', 'import-key', { key: cleo.key, e });
+  assert.equal((await linkGame(cleo.key, { e })).status, 200);
   r = await call('POST', 'account', { body: { code: 'invitation', name: 'cleo' }, e });
   assert.equal(r.status, 409);
   // Sans prénom, ou un autre prénom : pas de contrôle.
   assert.equal((await call('POST', 'account', { body: { code: 'invitation' }, e })).status, 201);
   assert.equal((await call('POST', 'account', { body: { code: 'invitation' }, e })).status, 201);
   assert.equal((await call('POST', 'account', { body: { code: 'invitation', name: 'Trykh4r bis' }, e })).status, 201);
-});
-
-await test("clé du favori : la même sur tous les appareils (copie chiffrée), adoption d'une ancienne, favori périmé", async () => {
-  const e = makeEnv();
-  const u = await signup('Favori', e);
-  const getKey = (key = u.key) => call('GET', 'import-key', { key, e });
-  // Pas encore de favori : 404.
-  assert.equal((await getKey()).status, 404);
-  const k1 = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
-  assert.match(k1, /^[A-Za-z0-9_-]{43}$/);
-  // Un autre appareil (même clé principale) retrouve la même clé, sans en créer une nouvelle.
-  let r = await getKey();
-  assert.deepEqual([r.status, r.json.import_key], [200, k1]);
-  const enc = e.DB.sqlite.prepare('SELECT import_key_enc FROM users WHERE id = ?').get(u.user.id).import_key_enc;
-  assert.ok(enc && !enc.includes(k1), 'copie chiffrée, jamais en clair');
-  // La clé d'import elle-même ne la lit pas (clé principale seulement).
-  assert.equal((await getKey(k1)).status, 401);
-  // Favori d'avant la copie (import_key_enc vide) : 404, puis la bonne clé est adoptée, une périmée refusée (409).
-  e.DB.sqlite.prepare('UPDATE users SET import_key_enc = NULL WHERE id = ?').run(u.user.id);
-  assert.equal((await getKey()).status, 404);
-  r = await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: 'p'.repeat(43) } });
-  assert.equal(r.status, 409);
-  assert.match(r.json.error, /Favori périmé/);
-  assert.equal((await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: 'court' } })).status, 400);
-  r = await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: k1 } });
-  assert.deepEqual([r.status, r.json.import_key], [200, k1]);
-  assert.equal((await getKey()).json.import_key, k1);
-  // Nouveau favori : l'ancienne clé cesse de marcher partout, et tous les appareils reprennent la nouvelle.
-  const k2 = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
-  assert.equal((await getKey()).json.import_key, k2);
-  assert.equal((await call('POST', 'import-key/adopt', { key: u.key, e, body: { import_key: k1 } })).status, 409);
-  // Sans COOKIE_SECRET : le favori se crée toujours, sans copie (404 ensuite, comme avant).
-  const e2 = makeEnv({ COOKIE_SECRET: '' });
-  const v = await signup('Sans secret', e2);
-  assert.equal((await call('POST', 'import-key', { key: v.key, e: e2 })).status, 200);
-  assert.equal((await call('GET', 'import-key', { key: v.key, e: e2 })).status, 404);
 });
 
 await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et aux membres qui partagent', async () => {
@@ -395,7 +376,7 @@ await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et
   await patchMe(a, { name: 'Aude' });
   assert.equal((await call('GET', 'me', { key: a.key, e })).json.user.pseudo, 'Aude_42');
   // Basile (qui partage, comme Aude, par défaut) le voit dans la liste des membres ; Aude, une carte pour être listée.
-  await upload(a.key, synth(1, 700), { e });
+  await seedCards(a.key, synth(1, 700), { e });
   r = await call('GET', 'members', { key: b.key, e });
   assert.deepEqual(r.json.members.map((m) => [m.name, m.pseudo]), [['Aude', 'Aude_42']]);
   r = await patchMe(a, { pseudo: '' });
@@ -403,15 +384,10 @@ await test('pseudo dans le jeu : réglé par PATCH /api/me, rendu par /api/me et
   assert.deepEqual((await call('GET', 'members', { key: b.key, e })).json.members.map((m) => m.pseudo), [null]);
 });
 
-await test('favori court : GET /api/favori.js (code du favori, sans clé ni cache, 503 sans fichiers liés)', async () => {
-  const e = makeEnv({ ASSETS: { fetch: async (req) => new Response(await readFile(path.join(root, 'site', 'public', new URL(req.url).pathname))) } });
+await test('GET /api/favori.js : aucun code servi pour l\'instant (404), sans clé', async () => {
+  const e = makeEnv({ ASSETS: { fetch: async () => new Response('fichier') } });
   let res = await onRequest({ request: new Request('https://classeur.example/api/favori.js'), env: e, params: {}, waitUntil() {} });
-  assert.equal(res.status, 200);
-  assert.equal(res.headers.get('cache-control'), 'no-store');
-  const js = await res.text();
-  assert.ok(js.includes('var SITE = "https://classeur.example";') && js.includes('window.__classeurCourt') && !js.includes('var KEY = "__KEY__"'));
-  res = await onRequest({ request: new Request('https://classeur.example/api/favori.js'), env: makeEnv(), params: {}, waitUntil() {} });
-  assert.equal(res.status, 503);
+  assert.equal(res.status, 404);
   res = await onRequest({ request: new Request('https://classeur.example/api/favori.js', { method: 'POST' }), env: e, params: {}, waitUntil() {} });
   assert.equal(res.status, 405);
 });
@@ -430,8 +406,17 @@ await test('authentification et /api/me', async () => {
   assert.equal(r.json.cards_rev, 0);
   assert.equal(r.json.fetched_at, null);
   assert.deepEqual(r.json.new_ids, []);
-  assert.deepEqual(r.json.session, { has_cookie: false, expired: false, updated_at: null });
-  assert.equal(r.json.has_import_key, false);
+  assert.deepEqual(r.json.session, { linked: false, lost: null, at: null, auto_sync: true, paused: false, fails: 0, checked_at: null, full_at: null });
+  assert.ok(!('has_import_key' in r.json) && !('next_full' in r.json));
+  // Réglage « Synchro automatique » (booléen seulement) ; force_full n'existe plus.
+  for (const bad of ['oui', 1, null]) assert.equal((await call('PATCH', 'me', { key: alice.key, body: { auto_sync: bad } })).status, 400, JSON.stringify(bad));
+  assert.equal((await call('PATCH', 'me', { key: alice.key, body: { force_full: true } })).status, 400);
+  r = await call('PATCH', 'me', { key: alice.key, body: { auto_sync: false } });
+  assert.deepEqual([r.status, r.json.auto_sync], [200, false]);
+  assert.equal((await call('GET', 'me', { key: alice.key })).json.session.auto_sync, false);
+  await call('PATCH', 'me', { key: alice.key, body: { name: 'Alice' } });
+  assert.equal((await call('GET', 'me', { key: alice.key })).json.session.auto_sync, false, 'les autres réglages ne le touchent pas');
+  await call('PATCH', 'me', { key: alice.key, body: { auto_sync: true } });
   r = await call('PATCH', 'me', { key: alice.key, body: { name: ' Alice ' } });
   assert.equal(r.status, 200);
   assert.equal(r.json.user.name, 'Alice');
@@ -439,37 +424,22 @@ await test('authentification et /api/me', async () => {
   assert.equal(r.status, 404);
   r = await call('PUT', 'me', { key: alice.key });
   assert.equal(r.status, 405);
-  r = await call('POST', 'import', { key: alice.key, raw: '{pas du json', headers: { 'content-type': 'application/json' } });
+  r = await call('POST', 'session', { key: alice.key, raw: '{pas du json', headers: { 'content-type': 'application/json' } });
   assert.equal(r.status, 400);
   assert.match(r.json.error, /JSON/);
 });
 
-await test("clé d'import (favori) et renouvellement de la clé principale", async () => {
+await test('renouvellement de la clé principale ; routes de l\'ancien favori retirées', async () => {
   const hana = await signup('Hana');
-  let r = await call('POST', 'import-key', { key: hana.key });
-  assert.equal(r.status, 200);
-  const first = r.json.import_key;
-  assert.match(first, /^[A-Za-z0-9_-]{43}$/);
-  assert.equal((await call('GET', 'me', { key: hana.key })).json.has_import_key, true);
-  assert.ok(!JSON.stringify(rows('SELECT * FROM users')).includes(first), "clé d'import en clair stockée");
-  // La clé d'import ne sert qu'à POST /api/import.
-  r = await call('POST', 'import', { key: first, body: { cards: synth(3) } });
-  assert.deepEqual(r.json, { count: 3, new_ids: [], complete: null, skipped: 0, removed: 0, kept: 0 });
-  for (const [m, p, body] of [['GET', 'me'], ['GET', 'cards'], ['POST', 'import-key', {}], ['POST', 'key/rotate', {}],
-    ['POST', 'tags/set', { card_id: synth(1)[0].id, tags: ['x'] }], ['DELETE', 'me'], ['POST', 'session', { cookie: 'a=1' }]]) {
-    assert.equal((await call(m, p, { key: first, body })).status, 401, `${m} ${p}`);
-  }
-  // Une nouvelle clé d'import remplace l'ancienne.
-  const second = (await call('POST', 'import-key', { key: hana.key })).json.import_key;
-  assert.notEqual(second, first);
-  assert.equal((await call('POST', 'import', { key: first, body: { cards: synth(3) } })).status, 401);
-  assert.equal((await call('POST', 'import', { key: second, body: { cards: synth(4) } })).status, 200);
-  // Nouvelle clé principale : l'ancienne ne marche plus, la clé d'import reste.
-  r = await call('POST', 'key/rotate', { key: hana.key });
+  await seedCards(hana.key, synth(4));
+  const r = await call('POST', 'key/rotate', { key: hana.key });
   assert.match(r.json.key, /^[A-Za-z0-9_-]{43}$/);
   assert.equal((await call('GET', 'me', { key: hana.key })).status, 401);
   assert.equal((await call('GET', 'me', { key: r.json.key })).json.card_count, 4);
-  assert.equal((await call('POST', 'import', { key: second, body: { cards: synth(2) } })).status, 200);
+  for (const p of ['import', 'import-key', 'import-key/adopt', 'targets/from-game', 'market/plan', 'market/live', 'market/fail']) {
+    assert.equal((await call('POST', p, { key: r.json.key, body: {} })).status, 404, p);
+  }
+  for (const p of ['market/prices', 'sync-log']) assert.equal((await call('POST', p, { key: r.json.key, body: {} })).status, 405, p);
   assert.equal((await call('DELETE', 'me', { key: r.json.key })).status, 200);
 });
 
@@ -508,38 +478,31 @@ await test('préférences : {} par défaut, remplacement entier, 4 Ko, objet seu
   assert.equal(r.status, 200);
   r = await call('PATCH', 'me', { key: kim.key, body: {} });
   assert.equal(r.status, 400);
-  // Chaque compte a les siennes ; la clé d'import ne peut ni les lire ni les écrire.
+  // Chaque compte a les siennes.
   assert.deepEqual((await call('GET', 'me', { key: lea.key })).json.prefs, {});
   await call('PATCH', 'me', { key: lea.key, body: { prefs: { hide_catalog: true } } });
   assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.x.length, 4000);
-  const importKey = (await call('POST', 'import-key', { key: kim.key })).json.import_key;
-  assert.equal((await call('PATCH', 'me', { key: importKey, body: { prefs: { pirate: true } } })).status, 401);
-  assert.equal((await call('GET', 'me', { key: importKey })).status, 401);
-  assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.pirate, undefined);
   await call('DELETE', 'me', { key: kim.key });
   await call('DELETE', 'me', { key: lea.key });
 });
 
-// --- Import ---------------------------------------------------------------------------------------------------
+// --- Lecture de la collection --------------------------------------------------------------------------------
 
 const base = owned.slice(0, 150);
 const dup = base[5];
 const pic = base.find((c, i) => i < 120 && c.img);
 const pic2 = base.find((c, i) => i < 120 && c.img && c !== pic);
 
-await test('premier import : regroupement, hide_image, sans user_id, new_ids vide', async () => {
+await test('première lecture : regroupement, hide_image, entrées invalides, sans user_id du jeu, new_ids vide', async () => {
   const entries = entriesFor(base.slice(0, 120));
   entries.find((e) => e.card_id === pic.id).card.hide_image = true;
   entries.push(rawEntry(dup, { id: 'dup-a', count: 2, is_shiny: true, obtained_at: '2026-01-02T10:00:00.000Z' }));
   entries.push(rawEntry(dup, { id: 'dup-b', count: 1, starred: true, obtained_at: '2026-12-31T10:00:00.000Z' }));
-  entries.push(rawEntry(base[6])); // même exemplaire vu deux fois : compte une fois
-  entries.push({ foo: 1 }, null); // entrées inexploitables : ignorées
-  const r = await call('POST', 'import', {
-    key: alice.key,
-    body: { collection: entries, stats: { total: 123, totalUnique: 120, rarityCounts: {} }, source: 'favori' },
-  });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { count: 120, new_ids: [], complete: true, skipped: 2, removed: 0, kept: 0 });
+  // Entrées inexploitables : ignorées, mais comptées comme exemplaires lus (la lecture reste vérifiée).
+  entries.push({ id: 'sans-carte', card_id: null, count: 1, card: null, tags: [], obtained_at: '2026-01-03T00:00:00.000Z' });
+  entries.push(rawEntry(base[140], { id: 'rarete-inconnue', card: { ...rawEntry(base[140]).card, rarity: 'X' } }));
+  const r = await seedCards(alice.key, entries, { uid: GAME_USER });
+  assert.deepEqual(r.json, { count: 120, fresh: 120, new_ids: [], complete: true, skipped: 2, removed: 0, kept: 0 });
 
   const cards = (await call('GET', 'cards', { key: alice.key })).json;
   assert.equal(cards.cards.length, 120);
@@ -567,21 +530,23 @@ await test('premier import : regroupement, hide_image, sans user_id, new_ids vid
   assert.equal(one.category, base[0].c);
   assert.ok(one.url.startsWith('https://fr.wikipedia.org/wiki/'));
   assert.deepEqual(one.tags, []);
-  // Tags posés dans le jeu (entry.tags, objets {id, name}) : gardés dans la carte (gtags), jamais parmi les tags du classeur.
+  // Tags posés dans le jeu (user_card_tags, objets {id, name, color}) : gardés dans la carte (gtags), jamais parmi les tags
+  // du classeur.
   assert.deepEqual(one.gtags, ['TagDuJeu']);
-  const everything = JSON.stringify(['users', 'cards', 'tags', 'targets', 'refresh_staging'].map((t) => rows(`SELECT * FROM ${t}`)));
-  assert.ok(!everything.includes(GAME_USER), 'user_id du jeu stocké');
+  const everything = JSON.stringify(['cards', 'tags', 'targets', 'refresh_staging'].map((t) => rows(`SELECT * FROM ${t}`)));
+  assert.ok(!everything.includes(GAME_USER), 'user_id du jeu stocké avec les cartes');
   assert.ok(!JSON.stringify(rows('SELECT * FROM tags')).includes('TagDuJeu'), 'tag du jeu mêlé aux tags du classeur');
   const me = (await call('GET', 'me', { key: alice.key })).json;
   assert.equal(me.card_count, 120);
+  assert.ok(me.session.full_at && me.session.checked_at === me.session.full_at, JSON.stringify(me.session));
 });
 
-await test('second import : nouveautés, suppressions (lecture vérifiée seulement), seules les différences écrites', async () => {
+await test('lecture suivante : nouveautés, retraits (lecture vérifiée seulement), seules les différences écrites ; incomplète, sans compte, collection qui bouge, vide : rien de retiré', async () => {
+  const alicePlayer = supa.player(GAME_USER);
   const next = base.slice(10, 130).map((c) => (c === base[20] ? { ...c, n: c.n + 1 } : c));
   const writes = countCardWrites(true);
-  const r = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(next), stats: statsOf(entriesFor(next)), source: 'favori' } });
-  assert.equal(r.status, 200);
-  assert.deepEqual([r.json.count, r.json.complete, r.json.removed, r.json.kept], [120, true, 10, 0]);
+  const r = await seedCards(alice.key, entriesFor(next));
+  assert.deepEqual([r.json.count, r.json.fresh, r.json.complete, r.json.removed, r.json.kept], [120, 10, true, 10, 0]);
   assert.deepEqual([...r.json.new_ids].sort(), base.slice(120, 130).map((c) => c.id).sort());
   // 10 ajoutées + 1 modifiée + 10 retirées
   assert.equal(writes(), 21);
@@ -591,33 +556,53 @@ await test('second import : nouveautés, suppressions (lecture vérifiée seulem
   const ids = new Set(cards.cards.map((c) => c.id));
   assert.ok(!ids.has(base[0].id) && ids.has(base[125].id));
   assert.equal(cards.cards.find((c) => c.id === base[20].id).count, base[20].n + 1);
-  const again = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(next), stats: { totalUnique: 999 } } });
-  assert.deepEqual(again.json, { count: 120, new_ids: [], complete: false, skipped: 0, removed: 0, kept: 0 });
-  // Lecture tronquée (la moitié des pages, plus une carte nouvelle) : le jeu compte 121 cartes, 61 lues. Rien n'est retiré
-  // ni modifié (base[20] lue avec un exemplaire de moins garde les siens) ; seule la carte absente du classeur entre.
+  // Relue sans nouveauté : rien d'écrit, les nouvelles cartes de la lecture précédente restent marquées.
+  const again = await refreshNow(alice.key);
+  assert.deepEqual([again.json.count, again.json.fresh, again.json.complete, again.json.removed], [120, 0, true, 0]);
+  assert.deepEqual([...again.json.new_ids].sort(), [...r.json.new_ids].sort());
+  assert.deepEqual([...(await call('GET', 'me', { key: alice.key })).json.new_ids].sort(), [...r.json.new_ids].sort());
+  // Lecture incomplète (la moitié des exemplaires, plus une carte nouvelle) : le jeu en compte 121, 61 lus. Rien n'est
+  // retiré ni modifié (base[20] lue avec un exemplaire de moins garde les siens) ; seule la carte absente du classeur entre.
   const half = [...entriesFor(next.slice(0, 60).map((c) => (c === next[10] ? { ...c, n: 1 } : c))), rawEntry(base[130])];
-  const cut = await call('POST', 'import', { key: alice.key, body: { collection: half, stats: { total: 122, totalUnique: 121 } } });
-  assert.deepEqual(cut.json, { count: 121, new_ids: [base[130].id], complete: false, skipped: 0, removed: 0, kept: 60 });
+  await setGameCards(alice.key, half);
+  alicePlayer.phantom = 60;
+  const cut = await refreshNow(alice.key);
+  alicePlayer.phantom = 0;
+  assert.deepEqual(cut.json, { count: 121, fresh: 1, new_ids: [base[130].id], complete: false, skipped: 0, removed: 0, kept: 60 });
   let now = (await call('GET', 'cards', { key: alice.key })).json.cards;
   assert.equal(now.length, 121);
   assert.equal(now.find((c) => c.id === base[20].id).count, base[20].n + 1, 'carte déjà là : pas modifiée par une lecture incomplète');
   assert.equal((await call('GET', 'me', { key: alice.key })).json.card_count, 121);
-  // Sans compteurs du jeu (lecture non vérifiable) : rien n'est retiré non plus.
-  const blind = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(base.slice(0, 5)) } });
+  let st = JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', alice.user.id)[0].sync_state);
+  assert.deepEqual([st.rows, st.complete, st.full_at < st.checked_at], [121, false, true], 'full_at : dernière lecture vérifiée seulement');
+  // Sans compte exact du jeu (lecture non vérifiable) : rien n'est retiré non plus.
+  await setGameCards(alice.key, entriesFor(base.slice(0, 5)));
+  supa.noCount = true;
+  const blind = await refreshNow(alice.key);
+  supa.noCount = false;
   assert.deepEqual([blind.json.count, blind.json.complete, blind.json.removed, blind.json.kept], [126, null, 0, 121]);
-  // Compteurs différents avant et après la lecture (la collection a bougé) : rien n'est retiré, même si elle colle.
-  const moved = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(next), stats: statsOf(entriesFor(next)), stats_end: { total: 120, totalUnique: 119 } } });
+  // Compte différent avant et après la lecture (une carte obtenue pendant) : rien n'est retiré, même si elle colle.
+  await setGameCards(alice.key, entriesFor(next));
+  const rest0 = supa.rest().length;
+  supa.after = (n) => { if (n === rest0 + 1) alicePlayer.cards.push({ ...rawEntry(base[140]), user_id: GAME_USER, obtained_at: '2020-01-01T00:00:00.000Z' }); };
+  after(() => { supa.after = null; });
+  const moved = await refreshNow(alice.key);
+  supa.after = null;
   assert.deepEqual([moved.json.count, moved.json.complete, moved.json.moved, moved.json.removed, moved.json.kept], [126, false, true, 0, 6]);
   // Une lecture vérifiée remet tout d'aplomb.
-  const fix = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(next), stats: statsOf(entriesFor(next)) } });
+  const fix = await seedCards(alice.key, entriesFor(next));
   assert.deepEqual([fix.json.count, fix.json.complete, fix.json.removed], [120, true, 6]);
   now = (await call('GET', 'cards', { key: alice.key })).json.cards;
   assert.ok(!now.some((c) => c.id === base[130].id || c.id === base[0].id));
-  const bad = await call('POST', 'import', { key: alice.key, body: { collection: 'non' } });
-  assert.equal(bad.status, 400);
-  const empty = await call('POST', 'import', { key: alice.key, body: { collection: [] } });
-  assert.equal(empty.status, 400);
+  // Collection vide dans le jeu : rien n'est changé, une ligne « warn » au journal.
+  await setGameCards(alice.key, []);
+  const empty = await refreshNow(alice.key);
+  assert.deepEqual([empty.status, empty.json], [200, { count: 0, empty: true }]);
+  const [line] = (await call('GET', 'sync-log', { key: alice.key })).json.entries;
+  assert.deepEqual([line.kind, line.result, line.message], ['full', 'warn', "Collection vide dans le jeu : rien n'a été changé."]);
   assert.equal((await call('GET', 'me', { key: alice.key })).json.card_count, 120);
+  assert.equal(rows('SELECT sync_lock FROM users WHERE id = ?', alice.user.id)[0].sync_lock, null);
+  await setGameCards(alice.key, entriesFor(next));
 });
 
 // --- Étiquettes -----------------------------------------------------------------------------------------------
@@ -689,12 +674,12 @@ await test('étiquettes gardées quand la carte disparaît puis revient', async 
   const gone = base[10];
   await call('POST', 'tags/set', { key: alice.key, body: { card_id: gone.id, tags: ['Garder'] } });
   const without = base.slice(11, 130);
-  let r = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(without), stats: statsOf(entriesFor(without)) } });
+  let r = await seedCards(alice.key, entriesFor(without));
   assert.equal(r.json.count, 119);
   assert.deepEqual(rows('SELECT tag FROM tags WHERE card_id = ?', gone.id), [{ tag: 'Garder' }]);
   let cards = (await call('GET', 'cards', { key: alice.key })).json.cards;
   assert.ok(!cards.some((c) => c.id === gone.id));
-  r = await call('POST', 'import', { key: alice.key, body: { collection: entriesFor(base.slice(10, 130)) } });
+  r = await seedCards(alice.key, entriesFor(base.slice(10, 130)));
   assert.deepEqual(r.json.new_ids, [gone.id]);
   cards = (await call('GET', 'cards', { key: alice.key })).json.cards;
   assert.deepEqual(cards.find((c) => c.id === gone.id).tags, ['Garder']);
@@ -1037,994 +1022,334 @@ await test('collections à compléter : ajout automatique (règles, exclusions, 
   assert.equal(rows("SELECT COUNT(*) AS n FROM targets WHERE auto LIKE '%Règle-secrète%'")[0].n, 0);
 });
 
-await test("collection depuis une recherche du jeu (favori) : clé d'import sur cette route seulement, CORS, validation, rareté, quotas", async () => {
-  const gus = await signup('Gus');
-  const importKey = (await call('POST', 'import-key', { key: gus.key })).json.import_key;
-  const game = { origin: 'https://www.wiki-masters.com' };
-  const items = [
-    { title: 'Vache', rarity: 'R', card_id: 'c-vache', category: 'mammifère domestique', image: 'https://upload.wikimedia.org/vache.jpg' },
-    { title: 'Vache Highland', rarity: 'UR', card_id: 'c-highland', category: null, image: null },
-    { title: 'Vache', rarity: 'R', card_id: 'c-vache' }, // relue (pages qui se chevauchent) : gardée une fois
-    { title: 'Vache folle', rarity: 'C', card_id: 'c-folle', image: 'javascript:alert(1)', extra: 'ignoré' },
-  ];
-  // Clé d'import, depuis le jeu : collection créée, rareté du jeu gardée, catégorie en description, source wm:<recherche>.
-  let r = await call('POST', 'targets/from-game', { key: importKey, headers: game, body: { name: ' Vaches ', query: 'vache', items } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  const t = r.json.target;
-  assert.deepEqual([t.name, t.source, t.count], ['Vaches', 'wm:vache', 3]);
-  assert.ok(!('items' in t), 'réponse compacte (sans les éléments)');
-  const listed = (await call('GET', 'targets', { key: gus.key })).json.targets.find((x) => x.id === t.id);
-  assert.deepEqual(listed.items, [
-    { title: 'Vache', description: 'mammifère domestique', image: 'https://upload.wikimedia.org/vache.jpg', status: 'ok', rarity: 'R' },
-    { title: 'Vache Highland', description: null, image: null, status: 'ok', rarity: 'UR' },
-    { title: 'Vache folle', description: null, image: null, status: 'ok', rarity: 'C' },
-  ]);
-  // La clé principale marche aussi ; toujours une nouvelle collection (un id envoyé est ignoré : rien n'est remplacé).
-  r = await call('POST', 'targets/from-game', { key: gus.key, body: { id: t.id, name: 'Vaches 2', query: 'vache', items: items.slice(0, 1) } });
-  assert.equal(r.status, 200);
-  assert.notEqual(r.json.target.id, t.id);
-  assert.equal((await call('GET', 'targets', { key: gus.key })).json.targets.length, 2);
-  // La rareté passe aussi par targets/save (la page la garde quand on modifie la collection) ; inconnue = ignorée.
-  r = await call('POST', 'targets/save', { key: gus.key, body: { id: t.id, name: 'Vaches', source: 'wm:vache',
-    items: [{ title: 'Vache', status: 'ok', rarity: 'R' }, { title: 'Bœuf', status: 'ok', rarity: 'X' }] } });
-  assert.deepEqual(r.json.target.items.map((x) => x.rarity ?? null), ['R', null]);
-  // La clé d'import ne sert qu'à créer : ni lire, ni modifier, ni supprimer une collection (et pas de CORS ailleurs).
-  for (const [m, p, body] of [['GET', 'targets'], ['POST', 'targets/save', { id: t.id, name: 'Pirate', items: [] }], ['POST', 'targets/delete', { id: t.id }]]) {
-    r = await call(m, p, { key: importKey, body, headers: game });
-    assert.equal(r.status, 401, `${m} ${p}`);
-    assert.equal(r.headers.get('access-control-allow-origin'), null, `pas de CORS sur ${p}`);
-  }
-  assert.equal((await call('GET', 'targets', { key: gus.key })).json.targets.find((x) => x.id === t.id).name, 'Vaches');
-  // CORS : préflight du jeu (avec ou sans www), pas pour un autre site ; les erreurs aussi.
-  r = await call('OPTIONS', 'targets/from-game', { headers: { ...game, 'access-control-request-method': 'POST' } });
-  assert.equal(r.status, 204);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  assert.equal(r.headers.get('access-control-allow-methods'), 'POST, OPTIONS');
-  assert.equal(r.headers.get('access-control-allow-headers'), 'content-type, x-classeur-key');
-  assert.match(r.headers.get('vary'), /Origin/);
-  r = await call('OPTIONS', 'targets/from-game', { headers: { origin: 'https://wiki-masters.com' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://wiki-masters.com');
-  for (const origin of ['https://evil.example', 'http://wiki-masters.com']) {
-    r = await call('OPTIONS', 'targets/from-game', { headers: { origin } });
-    assert.equal(r.headers.get('access-control-allow-origin'), null, origin);
-  }
-  r = await call('POST', 'targets/from-game', { key: importKey, headers: { origin: 'https://evil.example' }, body: { name: 'X', query: 'x', items: [] } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  r = await call('POST', 'targets/from-game', { headers: game, body: { name: 'X', query: 'x', items: [] } });
-  assert.equal(r.status, 401);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com', 'les erreurs aussi');
-  r = await call('OPTIONS', 'targets/save', { headers: game });
-  assert.equal(r.status, 405);
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  // Validation : 400 lisible, rien d'écrit.
-  const ok = { title: 'A', rarity: 'C', card_id: 'a' };
-  for (const [body, re] of [
-    [{ name: 'X', query: '', items: [ok] }, /recherche/],
-    [{ name: 'X', query: 'q'.repeat(101), items: [ok] }, /recherche/],
-    [{ name: 'X', items: [ok] }, /recherche/],
-    [{ name: '', query: 'x', items: [ok] }, /nom/],
-    [{ name: 'x'.repeat(81), query: 'x', items: [ok] }, /nom/],
-    [{ name: 'X', query: 'x', items: 'non' }, /liste/],
-    [{ name: 'X', query: 'x', items: [] }, /Aucune carte/],
-    [{ name: 'X', query: 'x', items: [{ ...ok, rarity: 'X' }] }, /rareté inconnue/],
-    [{ name: 'X', query: 'x', items: [{ ...ok, rarity: undefined }] }, /rareté inconnue/],
-    [{ name: 'X', query: 'x', items: [{ ...ok, card_id: 12 }] }, /card_id/],
-    [{ name: 'X', query: 'x', items: [{ ...ok, title: '' }] }, /titre/],
-    [{ name: 'X', query: 'x', items: [null] }, /invalide/],
-  ]) {
-    r = await call('POST', 'targets/from-game', { key: importKey, body });
-    assert.equal(r.status, 400, JSON.stringify(body).slice(0, 80));
-    assert.match(r.json.error, re);
-  }
-  assert.equal((await call('GET', 'targets', { key: gus.key })).json.targets.length, 2);
-  // Quotas de saveTarget : pas de nombre de cartes maximal, 600 Ko par envoi (le favori envoie en une fois), 50
-  // collections, 5 Mo en tout.
-  const big = Array.from({ length: 3000 }, (_, i) => ({ title: `Article ${i}`, rarity: 'C', card_id: `c${i}` }));
-  r = await call('POST', 'targets/from-game', { key: importKey, body: { name: 'Grande', query: 'article', items: big } });
-  assert.deepEqual([r.status, r.json.target.count], [200, 3000]);
-  // 3 000 cartes avec leurs images dépassent 600 Ko : rangées sans les images (la page retrouve les vignettes).
-  const pictured = big.map((x) => ({ ...x, image: `https://upload.wikimedia.org/wikipedia/commons/thumb/${'x'.repeat(200)}/${x.card_id}.jpg` }));
-  r = await call('POST', 'targets/from-game', { key: importKey, body: { name: 'Avec images', query: 'article', items: pictured } });
-  assert.deepEqual([r.status, r.json.target.count], [200, 3000], JSON.stringify(r.json));
-  const stored = (await call('GET', 'targets', { key: gus.key })).json.targets.find((x) => x.id === r.json.target.id);
-  assert.ok(stored.items.every((x) => x.image === null && x.rarity === 'C'));
-  await call('POST', 'targets/delete', { key: gus.key, body: { id: r.json.target.id } });
-  const heavy = big.slice(0, 1000).map((x) => ({ ...x, category: 'd'.repeat(500) }));
-  r = await call('POST', 'targets/from-game', { key: importKey, body: { name: 'Trop', query: 'article', items: [...heavy, ...big.slice(1000, 1100).map((x) => ({ ...x, category: 'd'.repeat(500) }))] } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /600 Ko/);
-  for (let i = 3; i < 50; i++) {
-    r = await call('POST', 'targets/from-game', { key: importKey, body: { name: `C${i}`, query: 'x', items: [ok] } });
-    assert.equal(r.status, 200, `collection ${i}`);
-  }
-  r = await call('POST', 'targets/from-game', { key: importKey, body: { name: 'La 51e', query: 'x', items: [ok] } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /50 collections/);
-  await call('DELETE', 'me', { key: gus.key });
-  const hal = await signup('Hal');
-  for (let i = 0; i < 9; i++) {
-    r = await call('POST', 'targets/from-game', { key: hal.key, body: { name: `Lourde ${i}`, query: 'article', items: heavy } });
-    assert.equal(r.status, 200, `collection lourde ${i}`);
-  }
-  r = await call('POST', 'targets/from-game', { key: hal.key, body: { name: 'Lourde 9', query: 'article', items: heavy } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /5 Mo/);
-  await call('DELETE', 'me', { key: hal.key });
-});
-
-// --- Session WikiMasters --------------------------------------------------------------------------------------
-
-const storedCookie = async (user, e = env) => {
-  const [u] = e.DB.sqlite.prepare('SELECT cookie_enc FROM users WHERE id = ?').all(user.user.id);
-  return u.cookie_enc ? decryptCookie(e, user.user.id, u.cookie_enc) : null;
-};
-
-await test('session : cookie collé, chiffré, COOKIE_SECRET absent, suppression', async () => {
-  let r = await call('POST', 'session', { key: alice.key, body: { cookie: 'Cookie: sid=abc123; theme=sombre\n' } });
-  assert.deepEqual(r.json, { ok: true });
-  const [u] = rows('SELECT cookie_enc, cookie_updated_at FROM users WHERE id = ?', alice.user.id);
-  assert.ok(!u.cookie_enc.includes('abc123'));
-  assert.ok(Buffer.from(u.cookie_enc, 'base64').length >= 12 + 16 + 'sid=abc123; theme=sombre'.length);
-  assert.equal(await storedCookie(alice), 'sid=abc123; theme=sombre');
-  let me = (await call('GET', 'me', { key: alice.key })).json;
-  assert.equal(me.session.has_cookie, true);
-  assert.equal(me.session.expired, false);
-  assert.equal(me.session.updated_at, u.cookie_updated_at);
-  for (const cookie of ['', 'pas de paire', 'sid=é', 42]) {
-    r = await call('POST', 'session', { key: alice.key, body: { cookie } });
-    assert.equal(r.status, 400, String(cookie));
-  }
-  const noSecret = { ...env, COOKIE_SECRET: undefined };
-  r = await call('POST', 'session', { key: alice.key, body: { cookie: 'sid=1' }, e: noSecret });
-  assert.equal(r.status, 500);
-  assert.match(r.json.error, /COOKIE_SECRET n'est pas configuré/);
-  r = await call('DELETE', 'session', { key: alice.key });
-  assert.deepEqual(r.json, { ok: true });
-  me = (await call('GET', 'me', { key: alice.key })).json;
-  assert.deepEqual(me.session, { has_cookie: false, expired: false, updated_at: null });
-});
-
-await test('session : HAR avec cookie (préférence my-collection, casse, HTTP/2), nettoyé, sans le jeu', async () => {
-  const req = (url, headers, cookies) => ({ request: { url, headers, cookies } });
-  const har = {
-    log: {
-      entries: [
-        req('https://example.com/', [{ name: 'Cookie', value: 'autre=site' }]),
-        req('https://www.wiki-masters.com/api/my-collection?sort=rarity&page=0&stats=0', [
-          { name: 'COOKIE', value: 'sid=collection' },
-          { name: 'cookie', value: 'prefs=1' },
-        ]),
-        req('https://www.wiki-masters.com/collection', [{ name: 'Cookie', value: 'sid=page' }]),
-        req('https://www.wiki-masters.com/api/me', [{ name: 'cookie', value: 'sid=api' }]),
-      ],
-    },
-  };
-  let r = await call('POST', 'session', { key: alice.key, body: { har } });
-  assert.deepEqual(r.json, { ok: true });
-  assert.equal(await storedCookie(alice), 'sid=collection; prefs=1');
-  // Le jeu sans « www » compte aussi.
-  r = await call('POST', 'session', { key: alice.key, body: { har: { log: { entries: [req('https://wiki-masters.com/api/my-collection?page=0', [{ name: 'Cookie', value: 'sid=nu' }])] } } } });
-  assert.equal(r.status, 200);
-  assert.equal(await storedCookie(alice), 'sid=nu');
-  // HAR passé en texte, cookie seulement dans request.cookies
-  const har2 = { log: { entries: [req('https://www.wiki-masters.com/api/my-collection?page=1', [], [{ name: 'sid', value: 'tableau' }])] } };
-  r = await call('POST', 'session', { key: alice.key, body: { har: JSON.stringify(har2) } });
-  assert.equal(r.status, 200);
-  assert.equal(await storedCookie(alice), 'sid=tableau');
-
-  const cleaned = { log: { entries: [req('https://www.wiki-masters.com/api/my-collection?page=0', [{ name: 'accept', value: '*/*' }], [])] } };
-  r = await call('POST', 'session', { key: alice.key, body: { har: cleaned } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /nettoyé/);
-  assert.match(r.json.error, /données sensibles/);
-  assert.match(r.json.error, /en-tête Cookie/);
-  r = await call('POST', 'session', { key: alice.key, body: { har: { log: { entries: [req('https://example.com/', [{ name: 'Cookie', value: 'a=1' }])] } } } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /aucune requête vers wiki-masters\.com/);
-  r = await call('POST', 'session', { key: alice.key, body: { har: { pas: 'un har' } } });
-  assert.equal(r.status, 400);
-  r = await call('POST', 'session', { key: alice.key, body: {} });
-  assert.equal(r.status, 400);
-  assert.equal(await storedCookie(alice), 'sid=tableau', 'un envoi refusé ne touche pas au cookie gardé');
-});
-
-// --- Rafraîchissement par cookie ------------------------------------------------------------------------------
-
-// Jeu simulé : stats + pages de 50 entrées (sort=added : de la plus récente à la plus ancienne) ; options pour
-// Set-Cookie, statuts d'erreur (corps JSON), réponses brutes [statut, corps, type] (redirection, page HTML), panne réseau.
-function mockGame(entries, { stats, setCookie = {}, status = {}, raw = {}, down = false } = {}) {
-  const calls = [];
-  const pages = [];
-  const added = [];
-  const recent = [...entries].sort((a, b) => (a.obtained_at < b.obtained_at ? 1 : a.obtained_at > b.obtained_at ? -1 : 0));
-  for (let p = 0; p * 50 <= entries.length; p++) {
-    pages.push(JSON.stringify({ collection: entries.slice(p * 50, p * 50 + 50) }));
-    added.push(JSON.stringify({ collection: recent.slice(p * 50, p * 50 + 50) }));
-  }
-  globalThis.fetch = async (url, init = {}) => {
-    const u = new URL(url);
-    const h = new Headers(init.headers);
-    calls.push({ url: String(url), cookie: h.get('cookie'), accept: h.get('accept'), redirect: init.redirect, at: performance.now() });
-    if (down) throw new TypeError('fetch failed');
-    const isStats = u.pathname === '/api/my-collection/stats';
-    const page = isStats ? 'stats' : Number(u.searchParams.get('page'));
-    const headers = [['content-type', 'application/json']];
-    for (const v of setCookie[page] || []) headers.push(['set-cookie', v]);
-    if (raw[page]) {
-      const [st, body, type] = raw[page];
-      headers[0][1] = type;
-      if (st >= 300 && st < 400) headers.push(['location', 'https://www.wiki-masters.com/login']);
-      return new Response(body, { status: st, headers });
-    }
-    if (status[page]) return new Response(JSON.stringify({ error: 'non' }), { status: status[page], headers });
-    const body = isStats
-      ? JSON.stringify(stats ?? { total: entries.length, totalUnique: new Set(entries.map((e) => e.card_id)).size, rarityCounts: {}, tagOptions: ['TagDuJeu'] })
-      : ((u.searchParams.get('sort') === 'added' ? added : pages)[page] ?? '{"collection":[]}');
-    return new Response(body, { status: 200, headers });
-  };
-  return calls;
-}
+// --- Session du jeu (reliée au classeur) et lecture de la collection ---------------------------------------------
 
 let bob;
-await test('refresh : sans cookie → 401 needs_session', async () => {
+await test('refresh : sans compte du jeu relié → 401 needs_link, rien demandé au jeu', async () => {
   bob = await signup('Bob');
-  const calls = mockGame([]);
-  const r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.equal(r.json.needs_session, true);
-  assert.equal(calls.length, 0);
-});
-
-await test('refresh : 3 pages, en-têtes, pause de 250 ms, Set-Cookie fusionné, fin et import', async () => {
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=ancien; vieux=x; autre=2' } });
-  const entries = entriesFor(base.slice(0, 120));
-  const calls = mockGame(entries, {
-    setCookie: { 1: ['sid=nouveau; Path=/; HttpOnly; Secure; SameSite=Lax', 'ajout=1; Path=/', 'vieux=; Max-Age=0; Path=/'] },
-  });
+  const n0 = supa.calls.length;
   const r = await call('POST', 'refresh', { key: bob.key, body: {} });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { done: true, count: 120, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
-  assert.deepEqual(calls.map((c) => c.url), [
-    'https://www.wiki-masters.com/api/my-collection/stats?sort=rarity',
-    'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=0&stats=0',
-    'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=1&stats=0',
-    'https://www.wiki-masters.com/api/my-collection?sort=rarity&page=2&stats=0',
-  ]);
-  for (const c of calls) {
-    assert.equal(c.accept, 'application/json');
-    assert.equal(c.redirect, 'manual');
-  }
-  assert.equal(calls[2].cookie, 'sid=ancien; vieux=x; autre=2');
-  assert.equal(calls[3].cookie, 'sid=nouveau; autre=2; ajout=1');
-  for (let i = 1; i < calls.length; i++) assert.ok(calls[i].at - calls[i - 1].at >= 240, `pause ${i}`);
-  assert.equal(await storedCookie(bob), 'sid=nouveau; autre=2; ajout=1');
-  assert.equal(rows('SELECT * FROM refresh_staging').length, 0);
-  const cards = (await call('GET', 'cards', { key: bob.key })).json.cards;
-  assert.equal(cards.length, 120);
-  const everything = JSON.stringify(['users', 'cards', 'tags', 'refresh_staging'].map((t) => rows(`SELECT * FROM ${t}`)));
-  assert.ok(!everything.includes(GAME_USER));
+  assert.deepEqual([r.status, r.json.needs_link, supa.calls.length], [401, true, n0]);
+  const [e] = (await call('GET', 'sync-log', { key: bob.key })).json.entries;
+  assert.deepEqual([e.kind, e.result, e.data.status, e.data.via], ['full', 'error', 401, 'clic']);
 });
 
-await test('refresh par appels de 10 pages (42 pages), progression, reprise impossible sans le début', async () => {
-  const e2 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const carol = await signup('Carol', e2);
-  await call('POST', 'session', { key: carol.key, body: { cookie: 'sid=carol' }, e: e2 });
-  let r = await call('POST', 'refresh', { key: carol.key, body: { page: 10 }, e: e2 });
-  assert.equal(r.status, 409);
-  r = await call('POST', 'refresh', { key: carol.key, body: { page: 'x' }, e: e2 });
-  assert.equal(r.status, 400);
+const harOf = (cookie, url = 'https://www.wiki-masters.com/api/my-collection?page=0') => ({ log: { entries: [{ request: { url, headers: [{ name: 'Cookie', value: cookie }] } }] } });
 
-  const entries = Array.from({ length: 41 * 50 + 10 }, (_, i) => tiny(i));
-  // Le même exemplaire vu sur deux pages (collection qui bouge pendant la lecture) ne compte qu'une fois ;
-  // deux exemplaires d'une même carte sur deux pages sont additionnés.
-  entries[50] = { ...entries[49] };
-  entries[100] = { ...tiny(99), id: 'autre-exemplaire', count: 2 };
-  // Entrées invalides (mêmes règles que le favori) : ignorées et comptées.
-  entries[3] = { ...tiny(3), card: { ...tiny(3).card, rarity: 'Z' } };
-  entries[620] = { ...tiny(620), card: { ...tiny(620).card, wikipedia_title: 't'.repeat(501) } };
-  let calls = mockGame(entries);
-  r = await call('POST', 'refresh', { key: carol.key, body: { page: 0 }, e: e2 });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  const run = r.json.run;
-  assert.match(run, /^[A-Za-z0-9_-]{12}$/, 'jeton de lecture');
-  assert.deepEqual(r.json, { done: false, next_page: 10, run, fetched: 500, total: 2060, skipped: 1 });
-  assert.equal(calls.length, 11); // stats + 10 pages
-  const responses = [r.json];
-  while (!r.json.done) {
-    r = await call('POST', 'refresh', { key: carol.key, body: { page: r.json.next_page, run: r.json.run }, e: e2 });
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-    responses.push(r.json);
-  }
-  assert.equal(responses.length, 5);
-  assert.deepEqual(responses.slice(1, 4).map((x) => x.fetched), [1000, 1500, 2000]);
-  // complete : les 2 cartes qui manquent par rapport à totalUnique sont les 2 invalides (le jeu les compte, le classeur
-  // ne peut pas les ranger) : relancer n'y changerait rien.
-  assert.deepEqual(r.json, { done: true, count: 2056, new_ids: [], complete: true, skipped: 2, removed: 0, kept: 0 });
-  // stats + 42 pages + stats relues à la fin (lecture en plusieurs appels : la collection a-t-elle bougé ?).
-  assert.equal(calls.length, 44);
-  assert.equal(calls.filter((c) => c.url.includes('/stats')).length, 2);
-  assert.ok(calls.at(-1).url.includes('/stats'));
-  assert.equal(e2.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM refresh_staging').get().n, 0);
-  const cards = (await call('GET', 'cards', { key: carol.key, e: e2 })).json.cards;
-  assert.equal(cards.length, 2056);
-  assert.ok(!cards.some((c) => c.id === 'c3' || c.id === 'c620'));
-  assert.equal(cards.find((c) => c.id === 'c49').count, 1);
-  assert.equal(cards.find((c) => c.id === 'c99').count, 3);
-
-  // Un second rafraîchissement donne les nouveautés.
-  entries.push(tiny(5000));
-  calls = mockGame(entries);
-  r = await call('POST', 'refresh', { key: carol.key, body: {}, e: e2 });
-  while (!r.json.done) r = await call('POST', 'refresh', { key: carol.key, body: { page: r.json.next_page }, e: e2 });
-  assert.deepEqual(r.json, { done: true, count: 2057, new_ids: ['c5000'], complete: true, skipped: 2, removed: 0, kept: 0 });
-
-  // Pages en attente depuis plus d'une heure : effacées, la reprise est refusée.
-  r = await call('POST', 'refresh', { key: carol.key, body: {}, e: e2 });
-  e2.DB.sqlite.prepare("UPDATE refresh_staging SET created_at = '2000-01-01T00:00:00.000Z'").run();
-  r = await call('POST', 'refresh', { key: carol.key, body: { page: 10 }, e: e2 });
-  assert.equal(r.status, 409);
-  assert.equal(e2.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM refresh_staging').get().n, 0);
-});
-
-await test('refresh : 401 du jeu → session expirée ; 5xx et panne → 502 sans expirer', async () => {
-  const entries = entriesFor(base.slice(0, 60));
-  let calls = mockGame(entries, { status: { 1: 503 } });
-  let r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 502);
-  assert.ok(r.json.error);
-  assert.equal(r.json.needs_session, undefined);
-  calls = mockGame(entries, { down: true });
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 502);
-  assert.equal((await call('GET', 'me', { key: bob.key })).json.session.expired, false);
-
-  calls = mockGame(entries, { status: { 0: 401 }, setCookie: { stats: ['sid=tourne; Path=/'] } });
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.deepEqual(r.json, { error: 'Ta session WikiMasters a expiré : colle un nouveau cookie.', needs_session: true });
-  assert.equal(await storedCookie(bob), 'sid=tourne; autre=2; ajout=1', "Set-Cookie gardé même en cas d'échec");
-  let me = (await call('GET', 'me', { key: bob.key })).json;
-  assert.equal(me.session.expired, true);
-  assert.equal(me.session.has_cookie, true);
-  const n = calls.length;
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.equal(r.json.needs_session, true);
-  assert.equal(calls.length, n, "session expirée : le jeu n'est plus appelé");
-
-  mockGame(entries, { status: { stats: 403 } });
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=frais' } });
-  me = (await call('GET', 'me', { key: bob.key })).json;
-  assert.equal(me.session.expired, false);
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.equal(r.json.needs_session, true);
-  globalThis.fetch = realFetch;
-});
-
-await test('refresh : redirection = session expirée, 403 non JSON = anti-robots, Set-Cookie filtrés, cookie écrit avant les pages', async () => {
-  const entries = entriesFor(base.slice(0, 60));
-  const expired = async () => (await call('GET', 'me', { key: bob.key })).json.session.expired;
-  // Redirection (vers la page de connexion) : pas suivie, session expirée.
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1' } });
-  let calls = mockGame(entries, { raw: { 0: [302, null, 'text/html'] } });
-  let r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.equal(r.json.needs_session, true);
-  assert.equal(await expired(), true);
-  assert.ok(calls.every((c) => c.redirect === 'manual'));
-  // 403 avec une page HTML (protection anti-robots) : 502, la session n'est pas touchée.
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1' } });
-  mockGame(entries, { raw: { stats: [403, '<html><title>Just a moment...</title></html>', 'text/html'] } });
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 502);
-  assert.match(r.json.error, /anti-robots/);
-  assert.equal(r.json.needs_session, undefined);
-  assert.equal(await expired(), false);
-  // 403 en JSON : le jeu refuse la session.
-  mockGame(entries, { raw: { 0: [403, '{"error":"Unauthorized"}', 'application/json'] } });
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 401);
-  assert.equal(await expired(), true);
-
-  // Set-Cookie : seuls ceux du jeu (sans Domain, ou Domain wiki-masters.com) sont gardés.
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=1; b=2' } });
-  mockGame(entries, {
-    setCookie: {
-      stats: ['sid=2; Domain=.wiki-masters.com; Path=/', 'pub=1; Domain=ads.example.com', 'b=3; domain=WWW.wiki-masters.com'],
-      0: ['autre=x; Domain=wiki-masters.com.evil.example'],
-    },
-  });
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0 } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.equal(await storedCookie(bob), 'sid=2; b=3');
-
-  // Écriture des pages en échec (base pleine) : le cookie renouvelé est quand même gardé.
-  await call('POST', 'session', { key: bob.key, body: { cookie: 'sid=avant' } });
-  mockGame(entries, { setCookie: { stats: ['sid=apres; Path=/'] } });
-  const quiet = console.error;
-  console.error = () => {};
-  after(() => { console.error = quiet; });
-  const full = {
-    prepare: (sql) => env.DB.prepare(sql),
-    batch: async (sts) => {
-      if (sts.some((s) => s.sql.includes('INSERT OR REPLACE INTO refresh_staging'))) throw new Error('D1_ERROR: database or disk is full: SQLITE_FULL');
-      return env.DB.batch(sts);
-    },
-  };
-  r = await call('POST', 'refresh', { key: bob.key, body: { page: 0, full: true }, e: { ...env, DB: full } });
-  assert.equal(r.status, 503);
-  assert.equal(await storedCookie(bob), 'sid=apres');
-  globalThis.fetch = realFetch;
-});
-
-// --- Synchro rapide (seulement les nouveautés) ------------------------------------------------------------------
-
-await test('import : synchro rapide du favori (state, delta additionné, compteurs du jeu contrôlés, needs_full et sa raison)', async () => {
-  const dave = await signup('Dave');
-  const state = async () => (await call('POST', 'import', { key: dave.key, body: { mode: 'state' } })).json;
-  const syncRow = () => JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', dave.user.id)[0].sync_state);
-  // Heure du serveur (début de la synchro, renvoyée avec la lecture) et version la plus récente du favori.
-  const s0 = await state();
-  assert.deepEqual([s0.quick, s0.last_at, s0.full_at, s0.v], [false, null, null, 3]);
-  assert.ok(Math.abs(Date.parse(s0.now) - Date.now()) < 5000, s0.now);
-  // Sans lecture complète d'abord : pas de synchro rapide.
-  let r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: { total: 0, totalUnique: 0 }, rows: 0, copies: 0 } });
-  assert.deepEqual(r.json, { needs_full: true, reason: 'state' });
-  // Lecture complète : 30 cartes (un exemplaire chacune), compteurs, exemplaires lus et date du plus récent gardés.
-  const base30 = synth(30);
-  const rc = (cards) => cards.reduce((o, c) => ({ ...o, [c.rarity]: (o[c.rarity] || 0) + c.count }), {});
-  r = await call('POST', 'import', { key: dave.key, body: { upload_id: 'complet', part: 0, last: true, cards: base30, stats: { total: 30, totalUnique: 30, rarityCounts: rc(base30) }, rows: 30, copies: 30, last_at: '2026-10-15T09:00:00.000Z', source: 'favori' } });
-  assert.deepEqual([r.json.count, r.json.complete], [30, true]);
-  let st = await state();
-  assert.equal(st.quick, true);
-  assert.equal(st.last_at, '2026-10-15T09:00:00.000Z');
-  assert.deepEqual([syncRow().unit, syncRow().count, syncRow().invalid], ['both', 30, 0], 'autant de lignes que d\'exemplaires : unité ambiguë');
-  // Deux nouveautés : une carte nouvelle, un exemplaire (brillant) de plus d'une carte déjà là.
-  const before = (await call('GET', 'cards', { key: dave.key })).json.cards.find((c) => c.id === base30[0].id);
-  const fresh = [{ ...carte(owned[40], 'nouvelle-carte'), count: 1, obtained_at: '2026-10-15T10:00:00.000Z' },
-    { ...base30[0], count: 1, shiny: true, obtained_at: '2026-10-15T10:00:00.000Z' }];
-  let game = { total: 32, totalUnique: 31, rarityCounts: rc([...base30, ...fresh]) };
-  const writes = countCardWrites(true);
-  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: fresh, stats: game, rows: 2, copies: 2, last_at: '2026-10-15T10:00:00.000Z' } });
-  assert.deepEqual(r.json, { count: 31, new_ids: ['nouvelle-carte'], complete: true, skipped: 0, quick: true });
-  assert.equal(writes(), 2, 'deux écritures seulement');
-  countCardWrites(false);
-  const cards = (await call('GET', 'cards', { key: dave.key })).json.cards;
-  const after = cards.find((c) => c.id === base30[0].id);
-  assert.equal(after.count, before.count + 1);
-  assert.equal(after.shiny, true);
-  assert.equal(after.obtained_at, before.obtained_at, 'la plus ancienne date reste');
-  assert.equal(after.title, before.title);
-  const added = cards.find((c) => c.id === 'nouvelle-carte');
-  assert.equal(added.count, 1);
-  assert.equal(added.starred, owned[40].f);
-  st = await state();
-  assert.equal(st.last_at, '2026-10-15T10:00:00.000Z');
-  assert.equal((await call('GET', 'me', { key: dave.key })).json.card_count, 31, 'nombre de cartes tenu à jour par la synchro');
-  // Rien de nouveau, compteurs inchangés : rien d'écrit dans les cartes, synchro datée.
-  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], stats: game, rows: 0, copies: 0 } });
-  assert.deepEqual(r.json, { count: 31, new_ids: [], complete: true, skipped: 0, quick: true });
-  assert.equal((await state()).last_at, '2026-10-15T10:00:00.000Z', 'last_at ne recule pas');
-  const snapshot = JSON.stringify(rows('SELECT * FROM cards WHERE user_id = ? ORDER BY card_id', dave.user.id));
-  const refused = async (body, reason, label) => {
-    const res = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], rows: 0, copies: 0, ...body } });
-    assert.deepEqual(res.json, { needs_full: true, reason }, label);
-  };
-  // Une carte partie (vente, enchère) : les compteurs ne collent plus.
-  await refused({ stats: { ...game, total: 31, totalUnique: 30 } }, 'counts', 'carte partie');
-  // Une vente et un achat de même rareté : total inchangé, mais une nouveauté lue.
-  const other = { ...carte(owned[41], 'autre-carte'), count: 1 };
-  await refused({ cards: [other], rows: 1, copies: 1, stats: game }, 'counts', 'vente + achat');
-  // Un exemplaire ajouté à une carte déjà là sans nouvelle entrée (total +1, rien lu).
-  await refused({ stats: { ...game, total: 33, rarityCounts: rc([...base30, ...fresh, base30[1]]) } }, 'counts', 'pile sans nouvelle entrée');
-  // Échange 1 contre 1 entre raretés différentes, la carte reçue datée d'avant la dernière synchro (rien de nouveau à
-  // lire) : total et totalUnique inchangés, mais rarityCounts a bougé (une C de moins, une R de plus).
-  const swapped = { ...game.rarityCounts, C: game.rarityCounts.C - 1, R: (game.rarityCounts.R || 0) + 1 };
-  await refused({ stats: { ...game, rarityCounts: swapped } }, 'counts', 'échange entre raretés');
-  // rarityCounts qui ne somme pas à total (le jeu compterait autre chose) : pas comparé.
-  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, rarityCounts: { C: 1 } } } });
-  assert.equal(r.json.quick, true);
-  game = { ...game, rarityCounts: { C: 1 } };
-  // Unité ambiguë (autant de lignes que d'exemplaires à la lecture complète) : une ligne de 2 exemplaires est refusée.
-  await refused({ cards: [{ ...other, count: 2 }], rows: 1, copies: 2, stats: { ...game, total: 34, totalUnique: 32 } }, 'counts', 'pile en unité ambiguë');
-  // Carte invalide parmi les nouveautés, ou écartée par le favori (copies ≠ celles reçues, ignored > 0).
-  await refused({ cards: [{ id: 'x', title: '', rarity: 'C', count: 1 }], rows: 1, copies: 1, stats: { ...game, total: 33, totalUnique: 32 } }, 'invalid', 'carte invalide');
-  await refused({ cards: [other], rows: 2, copies: 2, stats: { ...game, total: 34, totalUnique: 33 } }, 'invalid', 'entrée écartée par un ancien favori');
-  await refused({ cards: [other], rows: 1, copies: 1, ignored: 1, stats: { ...game, total: 33, totalUnique: 32 } }, 'invalid', 'ignored');
-  // Au-delà de 20 000 cartes, la synchro rapide ne passe pas (la relecture complète refusera le classeur).
-  const real = rows('SELECT sync_state FROM users WHERE id = ?', dave.user.id)[0].sync_state;
-  env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.count', 20000) WHERE id = ?").run(dave.user.id);
-  await refused({ cards: [other], rows: 1, copies: 1, stats: { ...game, total: 33, totalUnique: 20001 } }, 'max_cards', '20 000 cartes');
-  env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(real, dave.user.id);
-  assert.equal(JSON.stringify(rows('SELECT * FROM cards WHERE user_id = ? ORDER BY card_id', dave.user.id)), snapshot, 'rien d\'écrit');
-  // Compteurs du jeu donnés en texte : lus comme des nombres.
-  r = await call('POST', 'import', { key: dave.key, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { total: '32', totalUnique: ' 31 ', rarityCounts: { C: '1' } } } });
-  assert.equal(r.json.quick, true);
-  // Requêtes mal formées.
-  for (const body of [{ mode: 'autre' }, { mode: 'delta', stats: {}, rows: 0, copies: 0 }, { mode: 'delta', cards: [], rows: -1, copies: 0 },
-    { mode: 'delta', cards: [], rows: 0, copies: 0, last_at: 'hier' }, { cards: [], last_at: 12 }, { cards: [], rows: 'x' }, { cards: [], ignored: -1 }]) {
-    r = await call('POST', 'import', { key: dave.key, body });
+await test('session : cookie collé (entier, en morceaux, sans préfixe) ou HAR, vérifiée auprès du jeu, chiffrée ; GET /api/me ; oubli', async () => {
+  const e = makeEnv();
+  const u = await signup('Sam', e);
+  const uid = 'uid-sam';
+  supa.addPlayer(uid, { username: 'Sam_42' });
+  let me = (await call('GET', 'me', { key: u.key, e })).json;
+  assert.deepEqual(me.session, { linked: false, lost: null, at: null, auto_sync: true, paused: false, fails: 0, checked_at: null, full_at: null });
+  assert.ok(!('next_full' in me) && !('has_import_key' in me));
+  // Refus : rien à lire, cookie sans session du jeu, cookie invalide ou illisible, HAR sans requête du jeu.
+  for (const [body, re] of [[{}, /fenêtre privée/], [{ cookie: 'theme=sombre; autre=1' }, /sb-…-auth-token/], [{ cookie: 'pas un cookie' }, /Cookie invalide/],
+    [{ cookie: 'sb-cyrxjeppjqsxxjayfrur-auth-token=base64-!!!' }, /sb-…-auth-token/], [{ har: { log: { entries: [] } } }, /aucune requête/]]) {
+    const r = await call('POST', 'session', { key: u.key, e, body });
     assert.equal(r.status, 400, JSON.stringify(body));
+    assert.match(r.json.error, re);
   }
-  // La clé d'import du favori suffit (state et delta passent par /api/import).
-  const imp = (await call('POST', 'import-key', { key: dave.key })).json.import_key;
-  r = await call('POST', 'import', { key: imp, body: { mode: 'state' } });
-  assert.equal(r.status, 200);
-  assert.equal(r.json.quick, true);
-  // Deux synchros rapides en même temps (deux onglets, favori + rafraîchissement), avec la latence d'un aller-retour D1
-  // entre la lecture de l'état et l'écriture : une seule passe, l'autre demande une relecture complète.
-  const slow = { ...env, DB: { prepare: (sql) => env.DB.prepare(sql), batch: async (sts) => { await new Promise((ok) => setTimeout(ok, 5)); return env.DB.batch(sts); } } };
-  const twin = { mode: 'delta', cards: [{ ...other, obtained_at: '2026-10-15T11:00:00.000Z' }], rows: 1, copies: 1, last_at: '2026-10-15T11:00:00.000Z', stats: { ...game, total: 33, totalUnique: 32 } };
-  const pair = await Promise.all([0, 1].map(() => call('POST', 'import', { key: imp, body: twin, e: slow })));
-  assert.deepEqual(pair.map((x) => x.json.quick === true ? 'ok' : x.json.reason).sort(), ['ok', 'race'], JSON.stringify(pair.map((x) => x.json)));
-  assert.equal((await call('GET', 'cards', { key: dave.key })).json.cards.find((c) => c.id === 'autre-carte').count, 1, 'nouveauté comptée une fois');
-  assert.equal(syncRow().count, 32);
-  // Relecture complète demandée (PATCH /api/me {force_full}, clé principale) : la synchro rapide n'est plus armée.
-  assert.equal((await call('GET', 'me', { key: dave.key })).json.next_full, false);
-  assert.equal((await call('PATCH', 'me', { key: imp, body: { force_full: true } })).status, 401, 'pas avec la clé du favori');
-  assert.equal((await call('PATCH', 'me', { key: dave.key, body: { force_full: 1 } })).status, 400);
-  r = await call('PATCH', 'me', { key: dave.key, body: { force_full: true } });
-  assert.equal(r.status, 200);
-  assert.equal((await call('GET', 'me', { key: dave.key })).json.next_full, true);
-  assert.equal((await state()).quick, false);
-  await refused({ stats: { ...game, total: 33, totalUnique: 32 } }, 'state', 'relecture complète demandée');
-  // Plus d'une semaine sans lecture complète : synchro rapide refusée.
-  env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.full_at', '2026-01-01T00:00:00.000Z') WHERE id = ?").run(dave.user.id);
-  assert.equal((await state()).quick, false);
-  await refused({ stats: { ...game, total: 33, totalUnique: 32 } }, 'state', 'plus d\'une semaine');
-});
-
-await test('import complet : synchro rapide armée seulement si la lecture est complète, unité de total apprise, rareté la plus haute', async () => {
-  const fay = await signup('Fay');
-  const quick = async () => (await call('POST', 'import', { key: fay.key, body: { mode: 'state' } })).json.quick;
-  const unit = () => JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', fay.user.id)[0].sync_state).unit;
-  const full = (cards, extra) => call('POST', 'import', { key: fay.key, body: { upload_id: `u${++uploads}`, part: 0, last: true, cards, last_at: '2026-10-15T09:00:00.000Z', ...extra } });
-  const cards = synth(40);
-  // Lecture tronquée (une page vide passagère) : les cartes lues absentes du classeur entrent, rien n'est retiré, rien
-  // n'arme la synchro rapide, et la suivante relit tout.
-  let r = await full(cards.slice(0, 30), { stats: { total: 40, totalUnique: 40 }, rows: 30, copies: 30 });
-  assert.deepEqual([r.json.count, r.json.complete], [30, false]);
-  assert.equal(await quick(), false);
-  // Même nombre de lignes, mais une carte lue deux fois et une jamais (pagination instable) : incomplète aussi. Une
-  // lecture plus courte ensuite ne retire rien (les 39 restent).
-  r = await full(cards.slice(0, 39), { stats: { total: 40, totalUnique: 40 }, rows: 40, copies: 40 });
-  assert.deepEqual([r.json.complete, await quick()], [false, false]);
-  r = await full(cards.slice(0, 10), { stats: { total: 40, totalUnique: 40 }, rows: 10, copies: 10 });
-  assert.deepEqual([r.json.count, r.json.complete, r.json.removed, r.json.kept], [39, false, 0, 29]);
-  assert.equal((await call('GET', 'cards', { key: fay.key })).json.cards.length, 39);
-  // Complète, avec 2 cartes que le favori n'a pas pu lire (ignored) et une que le serveur refuse : elles comptent dans
-  // totalUnique, la lecture est complète et armée (relancer n'y changerait rien).
-  r = await full([...cards.slice(0, 37), { ...cards[37], obtained_at: 'hier' }], { stats: { total: 40, totalUnique: 40 }, rows: 40, copies: 40, ignored: 2 });
-  assert.deepEqual([r.json.count, r.json.complete, r.json.skipped, await quick(), unit()], [37, true, 1, true, 'both']);
-  // total = exemplaires (une pile de 3) : unité « copies », une ligne de 2 exemplaires passe en synchro rapide.
-  const piled = [{ ...cards[0], count: 3 }, ...cards.slice(1, 40)];
-  r = await full(piled, { stats: { total: 42, totalUnique: 40 }, rows: 40, copies: 42 });
-  assert.deepEqual([r.json.complete, await quick(), unit()], [true, true, 'copies']);
-  r = await call('POST', 'import', { key: fay.key, body: { mode: 'delta', cards: [{ ...cards[1], count: 2, obtained_at: '2026-10-16T00:00:00.000Z' }], rows: 1, copies: 2, stats: { total: 44, totalUnique: 40 } } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  assert.equal((await call('GET', 'cards', { key: fay.key })).json.cards.find((c) => c.id === cards[1].id).count, 3);
-  // Unité « copies » : un exemplaire ajouté à une pile, date inchangée (rien à lire) → refusé ; avec la date remise à
-  // neuf (la ligne relue avec ses 2 exemplaires, total +1) → refusé aussi (pas d'addition fausse).
-  r = await call('POST', 'import', { key: fay.key, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { total: 45, totalUnique: 40 } } });
-  assert.deepEqual(r.json, { needs_full: true, reason: 'counts' });
-  r = await call('POST', 'import', { key: fay.key, body: { mode: 'delta', cards: [{ ...cards[2], count: 2, obtained_at: '2026-10-17T00:00:00.000Z' }], rows: 1, copies: 2, stats: { total: 45, totalUnique: 40 } } });
-  assert.deepEqual(r.json, { needs_full: true, reason: 'counts' });
-  // total = lignes alors que des piles existent : la synchro rapide ne verrait pas un exemplaire ajouté à une pile.
-  r = await full(piled, { stats: { total: 40, totalUnique: 40 }, rows: 40, copies: 42 });
-  assert.deepEqual([r.json.complete, await quick(), unit()], [true, false, 'rows']);
-  // Ni l'un ni l'autre : pas armée.
-  r = await full(piled, { stats: { total: 41, totalUnique: 40 }, rows: 40, copies: 42 });
-  assert.deepEqual([r.json.complete, await quick(), unit()], [true, false, null]);
-  // Sans exemplaires lus envoyés (cartes regroupées d'un autre client) : comptés sur les cartes reçues.
-  r = await full(cards, { stats: { total: 40, totalUnique: 40 } });
-  assert.deepEqual([await quick(), unit()], [true, 'both']);
-
-  // Rareté d'une carte possédée en plusieurs raretés : la plus haute (C < PC < R < SR < UR < L), pas la plus grande
-  // en texte (« R » > « L »), à l'import complet comme en synchro rapide.
-  const one = (id, rarity, eid, at) => ({ id: eid, card_id: id, count: 1, obtained_at: at, card: { id, wikipedia_title: `Carte ${id}`, rarity } });
-  r = await call('POST', 'import', { key: fay.key, body: { collection: [one('m1', 'L', 'a', '2026-10-01T00:00:00.000Z'), one('m1', 'R', 'b', '2026-10-01T00:00:00.000Z'),
-    one('m2', 'UR', 'c', '2026-10-01T00:00:00.000Z'), one('m2', 'L', 'd', '2026-10-01T00:00:00.000Z'), one('m3', 'R', 'e', '2026-10-02T00:00:00.000Z')],
-  stats: { total: 5, totalUnique: 3, rarityCounts: { L: 2, R: 2, UR: 1 } } } });
-  assert.deepEqual([r.json.count, r.json.complete, await quick(), unit()], [3, true, true, 'both']);
-  let got = Object.fromEntries((await call('GET', 'cards', { key: fay.key })).json.cards.map((c) => [c.id, c.rarity]));
-  assert.deepEqual(got, { m1: 'L', m2: 'L', m3: 'R' });
-  r = await call('POST', 'import', { key: fay.key, body: { mode: 'delta', cards: [{ id: 'm3', title: 'Carte m3', rarity: 'SR', count: 1, obtained_at: '2026-10-03T00:00:00.000Z' }], rows: 1, copies: 1, stats: { total: 6, totalUnique: 3, rarityCounts: { L: 2, R: 2, UR: 1, SR: 1 } } } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  r = await call('POST', 'import', { key: fay.key, body: { mode: 'delta', cards: [{ id: 'm1', title: 'Carte m1', rarity: 'C', count: 1, obtained_at: '2026-10-04T00:00:00.000Z' }], rows: 1, copies: 1, stats: { total: 7, totalUnique: 3, rarityCounts: { L: 2, R: 2, UR: 1, SR: 1, C: 1 } } } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  got = Object.fromEntries((await call('GET', 'cards', { key: fay.key })).json.cards.map((c) => [c.id, [c.rarity, c.count]]));
-  assert.deepEqual(got, { m1: ['L', 3], m2: ['L', 2], m3: ['SR', 2] });
-  await call('DELETE', 'me', { key: fay.key });
-});
-
-await test('synchro rapide : plan de SQLite (jamais toute la collection : ni COUNT(*), ni NOT IN sur les cartes du compte)', async () => {
-  const gus = await signup('Gus');
-  await call('POST', 'import', { key: gus.key, body: { cards: mini(50), stats: { total: 50, totalUnique: 50 }, rows: 50, copies: 50, last_at: '2026-10-15T09:00:00.000Z' } });
-  const seen = [];
-  const spy = { ...env, DB: { prepare: (sql) => { seen.push(sql); return env.DB.prepare(sql); }, batch: (s) => env.DB.batch(s) } };
-  const r = await call('POST', 'import', { e: spy, key: gus.key, body: { mode: 'delta', cards: mini(2, 50), rows: 2, copies: 2, stats: { total: 52, totalUnique: 52 }, last_at: '2026-10-16T09:00:00.000Z' } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  await call('GET', 'me', { e: spy, key: gus.key });
-  // Une recherche des cartes du compte sans card_id ni rev = un parcours de toute la collection (une ligne lue par carte).
-  const scans = seen.filter((sql) => /^\s*(SELECT|WITH|UPDATE|INSERT|DELETE)\b/i.test(sql)).flatMap((sql) => env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((x) => x.detail))
-    .filter((l) => /^(SCAN|SEARCH) (cards|c)\b/.test(l) && !/card_id=\?|rev[=>]\?/.test(l));
-  assert.deepEqual(scans, [], seen.join('\n---\n'));
-  assert.ok(!seen.some((s) => /COUNT\(\*\) AS n FROM cards/.test(s)), 'GET /api/me ne compte plus les cartes');
-  await call('DELETE', 'me', { key: gus.key });
-});
-
-await test('refresh : synchro rapide (sort=added, arrêt à la dernière synchro), relecture complète si une carte est partie', async () => {
-  const e3 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const erin = await signup('Erin', e3);
-  await call('POST', 'session', { key: erin.key, body: { cookie: 'sid=erin' }, e: e3 });
-  const at = (i) => `2026-10-${String(1 + Math.floor(i / 24)).padStart(2, '0')}T${String(i % 24).padStart(2, '0')}:00:00.000Z`;
-  const entries = base.slice(0, 120).map((c, i) => rawEntry(c, { obtained_at: at(i) }));
-  // Première fois : lecture complète (aucune synchro connue).
-  const rev = async () => (await call('GET', 'me', { key: erin.key, e: e3 })).json.cards_rev;
-  let calls = mockGame(entries);
-  let r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
-  assert.equal(r.json.done, true);
-  assert.equal(r.json.count, 120);
-  assert.ok(!calls.some((c) => c.url.includes('sort=added')));
-  assert.equal(await rev(), 1);
-  // Trois nouveautés : deux cartes nouvelles, un exemplaire de plus d'une carte déjà là (entrée à part).
-  const more = [...entries,
-    rawEntry(base[120], { obtained_at: '2026-10-20T10:00:00.000Z' }),
-    rawEntry(base[121], { obtained_at: '2026-10-20T11:00:00.000Z' }),
-    rawEntry(base[5], { id: 'second-exemplaire', count: 1, obtained_at: '2026-10-20T12:00:00.000Z' })];
-  calls = mockGame(more);
-  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
+  const calls0 = supa.calls.length;
+  let r = await call('POST', 'session', { key: u.key, e, body: { cookie: supa.sessionCookie({ uid }) } });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.equal(r.json.quick, true);
-  assert.equal(r.json.count, 122);
-  assert.deepEqual([...r.json.new_ids].sort(), [base[120].id, base[121].id].sort());
-  assert.deepEqual(calls.map((c) => c.url), [
-    'https://www.wiki-masters.com/api/my-collection/stats?sort=rarity',
-    'https://www.wiki-masters.com/api/my-collection?sort=added&page=0&stats=0',
-  ]);
-  const five = (await call('GET', 'cards', { key: erin.key, e: e3 })).json.cards.find((c) => c.id === base[5].id);
-  assert.equal(five.count, base[5].n + 1);
-  assert.equal(await rev(), 2);
-  // Une carte vendue entre-temps : contrôle des compteurs en échec → relecture complète dans le même appel.
-  const sold = more.filter((e) => e.card_id !== base[7].id);
-  calls = mockGame(sold);
-  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
-  assert.equal(r.json.done, true);
-  assert.equal(r.json.quick, undefined);
-  assert.equal(r.json.count, 121);
-  assert.ok(calls.some((c) => c.url.includes('sort=added')) && calls.some((c) => c.url.includes('sort=rarity&page=0')));
-  assert.equal(await rev(), 3);
-  const d = (await call('GET', 'cards?since=2', { key: erin.key, e: e3 })).json;
-  assert.deepEqual([d.delta, d.cards, d.gone], [true, [], [base[7].id]]);
-  // full: true → jamais de synchro rapide. Même collection : la révision ne bouge pas.
-  calls = mockGame(sold);
-  r = await call('POST', 'refresh', { key: erin.key, body: { full: true }, e: e3 });
-  assert.equal(r.json.count, 121);
-  assert.ok(!calls.some((c) => c.url.includes('sort=added')));
-  assert.equal(await rev(), 3);
-  // Un tri que le jeu ne respecterait pas (ordre croissant) : refusé, relecture complète.
-  const late = [...sold, rawEntry(base[122], { obtained_at: '2026-10-21T10:00:00.000Z' })];
-  calls = mockGame(late);
-  const realMock = globalThis.fetch;
-  globalThis.fetch = async (url, init) => realMock(String(url).replace('sort=added', 'sort=rarity'), init);
-  r = await call('POST', 'refresh', { key: erin.key, body: {}, e: e3 });
-  assert.equal(r.json.count, 122);
-  assert.equal(r.json.quick, undefined);
-  globalThis.fetch = realFetch;
-  assert.equal(await rev(), 4);
-});
-
-await test('refresh : synchro rapide ratée → lecture complète dans le même appel (pages comptées), carte la plus récente partie, last_at, limite de lectures, course avec le favori', async () => {
-  const e5 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const hal = await signup('Hal', e5);
-  await call('POST', 'session', { key: hal.key, body: { cookie: 'sid=hal' }, e: e5 });
-  const at = (i) => new Date(Date.UTC(2026, 9, 1) + i * 60_000).toISOString();
-  const entry = (i, extra = {}) => ({ ...tiny(i), obtained_at: at(i), ...extra });
-  const state = () => JSON.parse(e5.DB.sqlite.prepare('SELECT sync_state FROM users WHERE id = ?').get(hal.user.id).sync_state);
-  const expired = async () => (await call('GET', 'me', { key: hal.key, e: e5 })).json.session.expired;
-  const cardOf = async (id) => (await call('GET', 'cards', { key: hal.key, e: e5 })).json.cards.find((c) => c.id === id);
-  const run = async (body = {}) => {
-    let r = await call('POST', 'refresh', { key: hal.key, body, e: e5 });
-    while (r.status === 200 && !r.json.done) r = await call('POST', 'refresh', { key: hal.key, body: { page: r.json.next_page }, e: e5 });
-    return r;
-  };
-  let entries = Array.from({ length: 120 }, (_, i) => entry(i));
-  let calls = mockGame(entries);
-  let r = await run();
-  assert.deepEqual([r.json.count, r.json.complete, state().unit, state().last_at], [120, true, 'both', at(119)]);
-
-  // Le tri « added » en erreur (400) ou sans JSON : relecture complète dans le même appel, session intacte.
-  entries = [...entries, entry(500)];
-  for (const [status, body, type] of [[400, '{"error":"tri inconnu"}', 'application/json'], [200, '<html></html>', 'text/html']]) {
-    calls = mockGame(entries);
-    const inner = globalThis.fetch;
-    globalThis.fetch = async (url, init) => (String(url).includes('sort=added')
-      ? new Response(body, { status, headers: { 'content-type': type } }) : inner(url, init));
-    r = await run();
+  assert.deepEqual([r.json.ok, r.json.pseudo, r.json.session.linked, r.json.session.lost], [true, 'Sam_42', true, null]);
+  assert.deepEqual(supa.calls.slice(calls0).map((c) => c.path), ['/auth/v1/user', '/rest/v1/profiles'], 'vérifiée, pas renouvelée (jeton frais)');
+  let row = userRow(u.user.id, e);
+  assert.deepEqual([row.game_uid, row.game_session_v, row.game_pseudo], [uid, 1, 'Sam_42'], 'pseudo vide : rempli par celui du jeu');
+  const p = supa.players.get(uid);
+  assert.ok(!JSON.stringify(row).includes(p.access) && !JSON.stringify(row).includes(p.refresh), 'jetons du jeu stockés en clair');
+  assert.deepEqual(await openSession(e, u.user.id, row.game_session_enc), { access_token: p.access, refresh_token: p.refresh, expires_at: p.expires_at, uid });
+  await assert.rejects(decryptCookie(e, 'game-session:autre', row.game_session_enc), 'chiffré pour ce compte seulement');
+  me = (await call('GET', 'me', { key: u.key, e })).json;
+  assert.deepEqual([me.session.linked, me.session.at, me.user.pseudo], [true, row.game_session_at, 'Sam_42']);
+  const [line] = (await call('GET', 'sync-log', { key: u.key, e })).json.entries;
+  assert.deepEqual([line.kind, line.result, line.message, line.data.via], ['session', 'ok', 'Compte du jeu relié (Sam_42).', 'clic']);
+  // Morceaux .0, .1… (dans le désordre), forme sans préfixe, HAR (objet ou texte) : le même compte, version +1 à chaque fois.
+  const chunked = supa.sessionCookie({ uid, chunk: 100 }).split('; ');
+  assert.ok(chunked.length > 3);
+  for (const body of [{ cookie: [chunked[0], ...chunked.slice(1).reverse()].join('; ') }, { cookie: supa.sessionCookie({ uid, prefix: false }) },
+    { har: harOf(supa.sessionCookie({ uid, chunk: 3180 })) }, { har: JSON.stringify(harOf(supa.sessionCookie({ uid }))) }]) {
+    r = await call('POST', 'session', { key: u.key, e, body });
     assert.equal(r.status, 200, JSON.stringify(r.json));
-    assert.deepEqual([r.json.done, r.json.quick, r.json.count], [true, undefined, 121]);
   }
-  assert.equal(await expired(), false);
-  assert.equal(state().last_at, at(500));
-
-  // Échange 1 contre 1 de même rareté, la carte reçue datée d'avant la dernière synchro : les compteurs ne bougent pas,
-  // mais la carte donnée était la plus récente de la dernière synchro (last_at) : introuvable → relecture complète.
-  entries = [...entries.filter((e) => e.card_id !== 'c500'), entry(700, { obtained_at: at(5) })];
-  calls = mockGame(entries);
-  r = await run();
-  assert.deepEqual([r.json.quick, r.json.count, r.json.new_ids], [undefined, 121, ['c700']]);
-  assert.ok(calls.some((c) => c.url.includes('sort=rarity')));
-  assert.equal(await cardOf('c500'), undefined);
-
-  // Le plus récent exemplaire est invalide (rareté inconnue) : last_at le prend quand même ; la synchro suivante, sans
-  // nouveauté, est rapide (2 requêtes au jeu) au lieu de tout relire à chaque fois.
-  entries = [...entries, entry(600, { card: { id: 'c600', wikipedia_title: 'Rareté inconnue', rarity: 'M' } })];
-  mockGame(entries);
-  r = await run();
-  assert.deepEqual([r.json.quick, r.json.skipped, r.json.complete, state().last_at, state().invalid], [undefined, 1, true, at(600), 1]);
-  calls = mockGame(entries);
-  r = await run();
-  assert.deepEqual([r.json.quick, r.json.count, calls.length], [true, 121, 2]);
-
-  // Plus de 450 nouveautés : la synchro rapide lit 9 pages, échoue, et l'appel ne lit qu'une page de la lecture complète
-  // (10 pages décodées au plus par appel) ; next_page = la page suivante réellement.
-  for (let i = 0; i < 460; i++) entries.push(entry(1000 + i));
-  calls = mockGame(entries);
-  r = await call('POST', 'refresh', { key: hal.key, body: {}, e: e5 });
-  assert.deepEqual([r.json.done, r.json.next_page, r.json.fetched], [false, 1, 50]);
-  assert.deepEqual([calls.length, calls.filter((c) => c.url.includes('sort=added')).length], [11, 9]);
-  while (!r.json.done) r = await call('POST', 'refresh', { key: hal.key, body: { page: r.json.next_page }, e: e5 });
-  assert.deepEqual([r.json.count, r.json.complete], [581, true]);
-
-  // 403 en JSON avec code « automation_limit » (limite de lectures automatiques du jeu) : message à part, 429, la session
-  // n'est pas marquée expirée ; pendant la synchro rapide, tout s'arrête aussi (pas de relecture complète derrière).
-  for (const [page, n] of [[1, null], [0, 2]]) {
-    calls = mockGame(entries, { raw: { [page]: [403, '{"code":"automation_limit","error":"Trop de requêtes automatisées"}', 'application/json'] } });
-    r = await call('POST', 'refresh', { key: hal.key, body: { full: page === 1 }, e: e5 });
-    assert.deepEqual([r.status, r.json], [429, { error: 'Le jeu limite les lectures automatiques : réessaie plus tard.' }]);
-    if (n !== null) assert.equal(calls.length, n);
-    assert.equal(await expired(), false);
-  }
-
-  // Le favori fait sa synchro rapide pendant que le rafraîchissement lit le jeu (après son authentification) : la
-  // nouveauté ne doit compter qu'une fois. Le rafraîchissement voit que l'état a changé et relit tout.
-  entries = [...entries, entry(3, { id: 'e3-bis', obtained_at: at(5000) })];
-  const stats = { total: entries.length, totalUnique: new Set(entries.map((e) => e.card_id)).size };
-  mockGame(entries);
-  const inner = globalThis.fetch;
-  let favori = null;
-  globalThis.fetch = async (url, init) => {
-    if (String(url).includes('sort=added') && !favori) {
-      favori = (await call('POST', 'import', { key: hal.key, e: e5, body: { mode: 'delta', cards: [{ id: 'c3', title: 'Carte 3', rarity: 'C', count: 1, obtained_at: at(5000) }], rows: 1, copies: 1, stats, last_at: at(5000) } })).json;
-    }
-    return inner(url, init);
-  };
-  r = await run();
-  assert.equal(favori.quick, true, JSON.stringify(favori));
-  assert.deepEqual([r.json.done, r.json.quick, r.json.count], [true, undefined, 581]);
-  assert.equal((await cardOf('c3')).count, 2, 'exemplaire compté une seule fois');
-  globalThis.fetch = realFetch;
+  assert.equal(userRow(u.user.id, e).game_session_v, 5);
+  // Le pseudo réglé par le membre n'est pas remplacé.
+  await call('PATCH', 'me', { key: u.key, e, body: { pseudo: 'Autre' } });
+  await call('POST', 'session', { key: u.key, e, body: { cookie: supa.sessionCookie({ uid }) } });
+  assert.equal(userRow(u.user.id, e).game_pseudo, 'Autre');
+  // Sans COOKIE_SECRET : 500, rien de gardé.
+  const e2 = makeEnv({ COOKIE_SECRET: '' });
+  const v = await signup('Sans secret', e2);
+  r = await call('POST', 'session', { key: v.key, e: e2, body: { cookie: supa.sessionCookie({ uid: 'uid-sans-secret' }) } });
+  assert.equal(r.status, 500);
+  assert.match(r.json.error, /COOKIE_SECRET/);
+  assert.equal(userRow(v.user.id, e2).game_session_enc, null);
+  // Oubli : session, compte du jeu et lecture en attente effacés ; le jeu n'est pas appelé (pas de déconnexion).
+  e.DB.sqlite.prepare("INSERT INTO refresh_staging (user_id, page, entries, created_at) VALUES (?, 0, '[]', ?)").run(u.user.id, new Date().toISOString());
+  const calls1 = supa.calls.length;
+  r = await call('DELETE', 'session', { key: u.key, e });
+  assert.deepEqual(r.json, { ok: true });
+  assert.equal(supa.calls.length, calls1);
+  row = userRow(u.user.id, e);
+  assert.deepEqual([row.game_session_enc, row.game_uid, row.game_session_at, row.game_session_v], [null, null, null, 7]);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM refresh_staging WHERE user_id = ?').get(u.user.id).n, 0);
+  assert.equal((await call('GET', 'me', { key: u.key, e })).json.session.linked, false);
+  r = await call('POST', 'refresh', { key: u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  assert.match(r.json.error, /Aucun compte du jeu relié/);
 });
 
-// --- CORS et limites ------------------------------------------------------------------------------------------
-
-await test('CORS de /api/import uniquement pour wiki-masters.com (avec ou sans www)', async () => {
-  const origin = { origin: 'https://www.wiki-masters.com' };
-  let r = await call('OPTIONS', 'import', {
-    headers: { ...origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type, x-classeur-key' },
-  });
-  assert.equal(r.status, 204);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  assert.equal(r.headers.get('access-control-allow-methods'), 'POST, OPTIONS');
-  assert.equal(r.headers.get('access-control-allow-headers'), 'content-type, x-classeur-key');
-  assert.ok(Number(r.headers.get('access-control-max-age')) > 0);
-  r = await call('OPTIONS', 'import', { headers: { origin: 'https://evil.example' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  r = await call('POST', 'import', { key: alice.key, headers: origin, body: { collection: entriesFor(base.slice(10, 130)), source: 'favori' } });
+await test('session : compte pris dans le jeu (auth/v1/user, jamais le cookie), déjà relié ailleurs → 409, refusée par le jeu → 401, jeton presque expiré renouvelé d\'abord', async () => {
+  const e = makeEnv();
+  const a = await signup('Ada', e);
+  const b = await signup('Bea', e);
+  supa.addPlayer('uid-ada', { username: 'ada' });
+  supa.addPlayer('uid-bea');
+  // Cookie d'Ada qui prétend être Bea : le classeur relie Ada, celle que le jeu reconnaît.
+  let r = await call('POST', 'session', { key: a.key, e, body: { cookie: supa.sessionCookie({ uid: 'uid-ada', claim: 'uid-bea' }) } });
   assert.equal(r.status, 200);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  assert.equal(r.headers.get('cache-control'), 'no-store');
-  r = await call('POST', 'import', { headers: origin, body: { collection: [] } });
+  assert.equal(userRow(a.user.id, e).game_uid, 'uid-ada');
+  // Le même compte du jeu ne se relie pas à un second classeur.
+  r = await call('POST', 'session', { key: b.key, e, body: { cookie: supa.sessionCookie({ uid: 'uid-ada' }) } });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /déjà relié à un autre classeur/);
+  assert.equal(userRow(b.user.id, e).game_session_enc, null);
+  // Bea n'a pas de pseudo dans le jeu : le sien reste vide.
+  r = await call('POST', 'session', { key: b.key, e, body: { cookie: supa.sessionCookie({ uid: 'uid-bea' }) } });
+  assert.deepEqual([r.status, r.json.pseudo, userRow(b.user.id, e).game_pseudo], [200, null, null]);
+  // Session refusée par le jeu (jeton d'accès qu'il ne reconnaît plus) : 401, rien de gardé.
+  const c = await signup('Cyd', e);
+  const p = supa.addPlayer('uid-cyd');
+  const cookie = supa.sessionCookie({ uid: 'uid-cyd' });
+  p.access = 'jeton-que-le-jeu-ne-connait-plus';
+  r = await call('POST', 'session', { key: c.key, e, body: { cookie } });
   assert.equal(r.status, 401);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com', 'les erreurs aussi');
-  r = await call('POST', 'import', { key: alice.key, headers: { origin: 'https://evil.example' }, body: { collection: entriesFor(base.slice(10, 130)) } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  r = await call('GET', 'me', { key: alice.key, headers: origin });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  r = await call('OPTIONS', 'me', { headers: origin });
-  assert.equal(r.status, 405);
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  // Le jeu sans « www » : même accord, l'origine est renvoyée telle quelle.
-  r = await call('OPTIONS', 'import', { headers: { origin: 'https://wiki-masters.com' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://wiki-masters.com');
-  r = await call('OPTIONS', 'import', { headers: { origin: 'http://wiki-masters.com' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  assert.match(r.headers.get('vary'), /Origin/);
-});
-
-await test('import par morceaux (CarteImport) : réponses, stats, nouveautés', async () => {
-  const erin = await signup('Erin');
-  const cards = synth(1200);
-  let r = await upload(erin.key, cards, { stats: { total: 1300, totalUnique: 1200, rarityCounts: {}, tagOptions: ['x'] } });
+  assert.match(r.json.error, /fenêtre privée/);
+  assert.equal(userRow(c.user.id, e).game_session_enc, null);
+  // Jeton qui expire dans moins de 2 min : renouvelé d'abord (un POST token), la session gardée est la nouvelle.
+  const q = supa.addPlayer('uid-cyd2', { expiresIn: 60 });
+  const old = q.refresh;
+  const t0 = supa.tokens().length;
+  r = await call('POST', 'session', { key: c.key, e, body: { cookie: supa.sessionCookie({ uid: 'uid-cyd2' }) } });
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { count: 1200, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
-  let got = (await call('GET', 'cards', { key: erin.key })).json.cards;
-  assert.equal(got.length, 1200);
-  assert.deepEqual(got[0], { ...cards[0], tags: [] });
-  assert.equal(rows('SELECT COUNT(*) AS n FROM import_staging')[0].n, 0);
-
-  // Second envoi, vérifié par les compteurs du jeu : 100 retirées, 50 ajoutées, 1 modifiée ; seules ces lignes sont écrites.
-  const next = [...cards.slice(100), ...synth(50, 5000)];
-  next[0] = { ...next[0], count: 7 };
-  const writes = countCardWrites(true);
-  r = await upload(erin.key, next, { stats: statsOf(next) });
-  assert.deepEqual([r.json.count, r.json.complete, r.json.removed, r.json.kept], [1150, true, 100, 0]);
-  assert.deepEqual([...r.json.new_ids].sort(), synth(50, 5000).map((c) => c.id));
-  assert.equal(writes(), 151);
-  countCardWrites(false);
-  got = (await call('GET', 'cards', { key: erin.key })).json.cards;
-  assert.equal(got.find((c) => c.id === next[0].id).count, 7);
-  assert.ok(!got.some((c) => c.id === cards[0].id));
-
-  // Envoi sans upload_id = un seul morceau (compatibilité) ; sans compteurs du jeu, il ne retire rien.
-  r = await call('POST', 'import', { key: erin.key, body: { cards: next.slice(0, 500) } });
-  assert.deepEqual(r.json, { count: 1150, new_ids: [], complete: null, skipped: 0, removed: 0, kept: 650 });
+  assert.equal(supa.tokens().length, t0 + 1);
+  const s = await openSession(e, c.user.id, userRow(c.user.id, e).game_session_enc);
+  assert.deepEqual([s.refresh_token === old, s.refresh_token, s.uid], [false, q.refresh, 'uid-cyd2']);
 });
 
-await test('import par morceaux : cartes invalides ignorées, morceaux manquants, plusieurs envois en même temps, dernier morceau renvoyé, quotas, purge', async () => {
-  const frank = await signup('Frank');
-  const ok = synth(1)[0];
-  const bad = [
-    { ...ok, id: '' }, { ...ok, id: 42 }, { ...ok, title: '' }, { ...ok, title: 'x'.repeat(501) },
-    { ...ok, rarity: 'XL' }, { ...ok, rarity: null }, { ...ok, atk: '12' }, { ...ok, quality: 'beaucoup' },
-    { ...ok, image: 'javascript:alert(1)' }, { ...ok, url: 'ftp://x' }, { ...ok, url: `https://x/${'y'.repeat(2000)}` },
-    { ...ok, count: 0 }, { ...ok, count: 1.5 }, { ...ok, shiny: 'oui' }, { ...ok, obtained_at: 'hier' },
-    { ...ok, category: 12 }, 'texte', null,
-  ];
-  // Favori (CarteImport) : les cartes invalides sont ignorées et comptées, les autres importées.
-  let r = await call('POST', 'import', { key: frank.key, body: { cards: [ok, ...bad, { ...ok, id: 'autre', extra: 'ignoré', tags: ['x'] }] } });
-  assert.deepEqual(r.json, { count: 2, new_ids: [], complete: null, skipped: bad.length, removed: 0, kept: 0 });
-  assert.ok(!rows('SELECT data FROM cards WHERE user_id = ?', frank.user.id).some((x) => x.data.includes('ignoré')));
-  // Entrées brutes : mêmes règles (titre, catégorie, adresses, rareté, identifiants d'exemplaire).
-  const good = rawEntry(base[0]);
-  const rawBad = [
-    { ...good, card: { ...good.card, wikipedia_title: 't'.repeat(501) } },
-    { ...good, card: { ...good.card, image_url: `https://x/${'y'.repeat(2000)}` } },
-    { ...good, card: { ...good.card, rarity: 'XL' } },
-    { ...good, id: 'e'.repeat(101) },
-    { foo: 1 },
-  ];
-  // (Sans compteurs du jeu : rien n'est retiré, les deux cartes d'avant restent.)
-  r = await call('POST', 'import', { key: frank.key, body: { collection: [good, ...rawBad] } });
-  assert.deepEqual(r.json, { count: 3, new_ids: [base[0].id], complete: null, skipped: rawBad.length, removed: 0, kept: 2 });
-  r = await call('POST', 'import', { key: frank.key, body: { cards: [ok] } });
+await test('refresh : 3 000 exemplaires = 4 pages + 1 contrôle (5 lectures PostgREST), aucun renouvellement, pages rangées par 500', async () => {
+  const e = makeEnv();
+  const u = await signup('Tess', e);
+  assert.equal((await linkGame(u.key, { e })).status, 200);
+  const uid = uidOf(u.key);
+  supa.player(uid).cards = mini(3000).map((c, i) => rowOf(c, { uid, obtained_at: new Date(Date.UTC(2026, 0, 1) + i * 60_000).toISOString() }));
+  const staged = [];
+  supa.after = () => { staged.push(e.DB.sqlite.prepare('SELECT page, json_array_length(entries) AS n FROM refresh_staging WHERE user_id = ? ORDER BY page').all(u.user.id).map((x) => [x.page, x.n])); };
+  after(() => { supa.after = null; });
+  const rest0 = supa.rest().length;
+  const tok0 = supa.tokens().length;
+  const r = await call('POST', 'refresh', { key: u.key, e, body: {} });
+  supa.after = null;
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.count, r.json.fresh, r.json.complete, r.json.removed, r.json.skipped], [3000, 3000, true, 0, 0]);
+  const calls = supa.rest().slice(rest0);
+  assert.equal(calls.length, 5);
+  assert.equal(supa.tokens().length, tok0, 'jeton de plus de 2 min : aucun POST token');
+  const q = calls.map((c) => new URL(c.url).searchParams);
+  assert.deepEqual(q.map((s) => s.get('offset')), ['0', '1000', '2000', '3000', null]);
+  assert.ok(q.slice(0, 4).every((s) => s.get('limit') === '1000' && s.get('order') === 'obtained_at.desc,id.asc' && s.get('user_id') === 'eq.' + uid
+    && s.get('select').startsWith('id,card_id,') && s.get('select').includes('tags:user_card_tags(tag:tags(id,name,color))')));
+  assert.deepEqual([q[4].get('select'), q[4].get('limit'), q[4].get('user_id')], ['obtained_at', '1', 'eq.' + uid]);
+  assert.deepEqual(calls.map((c) => c.headers.prefer || null), ['count=exact', null, null, null, 'count=exact']);
+  for (const c of calls) assert.deepEqual([c.headers.apikey, c.headers.authorization], [ANON, 'Bearer ' + supa.player(uid).access]);
+  // Pendant la lecture : chaque page de 1 000 rangée en deux lignes de 500 ; tout effacé à la fin.
+  assert.deepEqual(staged[3], [[0, 500], [1, 500], [2, 500], [3, 500], [4, 500], [5, 500]]);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM refresh_staging').get().n, 0);
+  const row = userRow(u.user.id, e);
+  const st = JSON.parse(row.sync_state);
+  assert.deepEqual([st.count, st.rows, st.complete, st.last_at, st.full_at === st.checked_at], [3000, 3000, true, supa.player(uid).cards[2999].obtained_at, true]);
+  assert.deepEqual([row.sync_lock, row.game_session_v], [null, 1], 'bail rendu, session inchangée');
+  const me = (await call('GET', 'me', { key: u.key, e })).json;
+  assert.deepEqual([me.card_count, me.session.full_at, me.session.checked_at], [3000, st.full_at, st.checked_at]);
+});
+
+await test('refresh : jeton renouvelé avant expiration (version +1), 401 → un renouvellement puis nouvel essai ; révoquée → à relier, ligne au journal', async () => {
+  const e = makeEnv();
+  const u = await signup('Ugo', e);
+  const uid = uidOf(u.key);
+  assert.equal((await linkGame(u.key, { e })).status, 200);
+  const p = supa.player(uid);
+  p.cards = synth(5).map((c) => rowOf(c, { uid }));
+  // Session gardée qui expire dans 60 s : un POST token avant de lire.
+  const s0 = await openSession(e, u.user.id, userRow(u.user.id, e).game_session_enc);
+  e.DB.sqlite.prepare('UPDATE users SET game_session_enc = ? WHERE id = ?')
+    .run(await sealSession(e, u.user.id, { ...s0, expires_at: Math.floor(Date.now() / 1000) + 60 }), u.user.id);
+  const v0 = userRow(u.user.id, e).game_session_v;
+  let t0 = supa.tokens().length;
+  let r = await refreshNow(u.key, e);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.tokens().length, t0 + 1);
+  assert.deepEqual(JSON.parse(supa.tokens().at(-1).body), { refresh_token: s0.refresh_token });
+  let row = userRow(u.user.id, e);
+  assert.equal(row.game_session_v, v0 + 1);
+  let s = await openSession(e, u.user.id, row.game_session_enc);
+  assert.deepEqual([s.access_token, s.refresh_token, s.uid], [p.access, p.refresh, uid]);
+  assert.ok(s.expires_at * 1000 > Date.now() + 3000_000);
+  // Jeton d'accès refusé par PostgREST (401) : renouvelé une fois, la lecture reprend.
+  p.access = 'acces-change-par-le-jeu';
+  t0 = supa.tokens().length;
+  const rest0 = supa.rest().length;
+  r = await refreshNow(u.key, e);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(supa.tokens().length, t0 + 1);
+  assert.deepEqual(supa.rest().slice(rest0).map((c) => c.headers.authorization === 'Bearer ' + p.access), [false, true, true]);
+  assert.equal(userRow(u.user.id, e).game_session_v, v0 + 2);
+  // Révoquée (déconnexion du jeu) : 401 needs_link, session perdue, ligne « session » au journal ; plus aucun appel au jeu.
+  p.access = 'autre';
+  p.refresh = null;
+  p.prev = null;
+  r = await refreshNow(u.key, e);
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  assert.match(r.json.error, /révoquée/);
+  assert.equal(userRow(u.user.id, e).game_session_lost, 'révoquée');
+  const log = (await call('GET', 'sync-log', { key: u.key, e })).json.entries;
+  assert.deepEqual(log.slice(0, 2).map((x) => [x.kind, x.result, x.data.via]), [['full', 'error', 'clic'], ['session', 'error', 'clic']]);
+  assert.match(log[1].message, /^Session du jeu révoquée/);
+  assert.ok(!JSON.stringify(log).includes('cookie'), 'les messages parlent de relier, jamais de cookie');
+  const me = (await call('GET', 'me', { key: u.key, e })).json.session;
+  assert.deepEqual([me.linked, me.lost], [false, 'révoquée']);
+  const n0 = supa.calls.length;
+  r = await refreshNow(u.key, e);
+  assert.deepEqual([r.status, r.json.needs_link, supa.calls.length], [401, true, n0]);
+  assert.match(r.json.error, /n'est plus valable \(révoquée\) : relie ton compte/);
+  // Relier à nouveau répare tout.
+  supa.mint(p);
+  assert.equal((await linkGame(u.key, { e })).status, 200);
+  assert.equal(userRow(u.user.id, e).game_session_lost, null);
+  assert.equal((await refreshNow(u.key, e)).status, 200);
+  // Secret du serveur changé : session illisible, à relier.
+  r = await refreshNow(u.key, { ...e, COOKIE_SECRET: 'un-autre-secret' });
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  assert.match(r.json.error, /plus lisible/);
+});
+
+await test('renouvellement : deux en même temps → une seule rotation, l\'autre reprend la session la plus récente (version comparée)', async () => {
+  const e = makeEnv();
+  const u = await signup('Rae', e);
+  assert.equal((await linkGame(u.key, { e })).status, 200);
+  const p = supa.player(uidOf(u.key));
+  const user = userRow(u.user.id, e);
+  const first = p.refresh;
+  const [a, b] = [await sessionOf(e, user), await sessionOf(e, user)];
+  const t0 = supa.tokens().length;
+  await Promise.all([renewSession(e, user, a), renewSession(e, user, b)]);
+  assert.equal(supa.tokens().length, t0 + 2);
+  assert.equal(p.prev.refresh, first, 'une seule rotation');
+  assert.deepEqual([a.auth.refresh_token, b.auth.refresh_token, a.v, b.v], [p.refresh, p.refresh, user.game_session_v + 1, user.game_session_v + 1]);
+  const row = userRow(u.user.id, e);
+  assert.deepEqual([row.game_session_v, row.game_session_lost], [user.game_session_v + 1, null]);
+  assert.equal((await openSession(e, u.user.id, row.game_session_enc)).refresh_token, p.refresh);
+  // Une session gardée renouvelée ailleurs pendant qu'on tenait l'ancienne (jeton refusé, 400) : la plus récente est
+  // reprise, le membre n'est pas « à relier ».
+  const stale = { auth: { ...a.auth, refresh_token: first }, v: user.game_session_v, uid: a.uid };
+  p.prev.at = Date.now() - 60_000;
+  await renewSession(e, user, stale);
+  assert.deepEqual([stale.v, stale.auth.refresh_token, userRow(u.user.id, e).game_session_lost], [row.game_session_v, a.auth.refresh_token, null]);
+});
+
+await test('refresh : une lecture à la fois par compte (bail : 409), « Rafraîchir » une fois par minute (429 retry_after), limites et pannes du jeu', async () => {
+  const e = makeEnv();
+  const u = await signup('Lino', e);
+  await seedCards(u.key, synth(3), { e });
+  const log = async () => (await call('GET', 'sync-log', { key: u.key, e })).json.entries;
+  let inner = null;
+  supa.after = async () => { if (inner === null) inner = await refreshNow(u.key, e); };
+  after(() => { supa.after = null; supa.limit = null; supa.fail = null; });
+  let r = await refreshNow(u.key, e);
+  supa.after = null;
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(inner.status, 409);
+  assert.match(inner.json.error, /déjà en cours/);
+  // Un clic de plus dans la minute : 429, rien lu ; ni l'un ni l'autre refus n'est noté au journal.
+  const rest0 = supa.rest().length;
+  r = await call('POST', 'refresh', { key: u.key, e, body: {} });
+  assert.equal(r.status, 429);
+  assert.ok(Number.isInteger(r.json.retry_after) && r.json.retry_after >= 1 && r.json.retry_after <= 60, JSON.stringify(r.json));
+  assert.match(r.json.error, /moins d'une minute/);
+  assert.equal(supa.rest().length, rest0);
+  assert.deepEqual((await log()).slice(0, 1).map((x) => [x.kind, x.result]), [['full', 'ok']]);
+  // Un bail échu (lecture interrompue) ne bloque plus.
+  e.DB.sqlite.prepare("UPDATE users SET sync_lock = '2026-01-01T00:00:00.000Z' WHERE id = ?").run(u.user.id);
+  assert.equal((await refreshNow(u.key, e)).status, 200);
+  // Limite du jeu (429, ou 403 automation_limit) : 429 {limited}, bail rendu, ligne au journal.
+  for (const limit of [429, 'automation_limit']) {
+    supa.limit = limit;
+    r = await refreshNow(u.key, e);
+    supa.limit = null;
+    assert.deepEqual([r.status, r.json.limited, r.json.error], [429, true, 'Le jeu limite les lectures automatiques : réessaie plus tard.']);
+    assert.equal(userRow(u.user.id, e).sync_lock, null);
+    assert.deepEqual((await log())[0].message, r.json.error);
+  }
+  // Base du jeu en panne (5xx, réseau) : deux nouveaux essais, puis 502 ; autre refus (4xx) : 502 aussitôt.
+  for (const [fail, tries, re] of [[{ status: 503 }, 3, /ne répond pas/], [{ network: true }, 3, /ne répond pas/], [{ status: 404, body: { message: 'x' } }, 1, /refusé une lecture \(404\)/]]) {
+    const n0 = supa.calls.length;
+    supa.fail = (url) => (url.includes('/rest/') ? fail : null);
+    r = await refreshNow(u.key, e);
+    supa.fail = null;
+    assert.equal(r.status, 502);
+    assert.match(r.json.error, re);
+    assert.equal(supa.calls.length - n0, tries);
+    assert.equal(userRow(u.user.id, e).sync_lock, null);
+  }
+  assert.equal((await refreshNow(u.key, e)).status, 200);
+});
+
+await test('migration : ancien cookie et clé d\'import vidés, colonnes de la session du jeu ajoutées à une base existante', async () => {
+  const old = makeEnv();
+  old.DB.sqlite.exec(`CREATE TABLE users (id TEXT PRIMARY KEY, name TEXT, key_hash TEXT NOT NULL UNIQUE, import_key_hash TEXT, created_at TEXT NOT NULL,
+    fetched_at TEXT, new_ids TEXT NOT NULL DEFAULT '[]', cookie_enc TEXT, cookie_updated_at TEXT, session_expired INTEGER NOT NULL DEFAULT 0, import_key_enc TEXT)`);
+  old.DB.sqlite.prepare(`INSERT INTO users (id, key_hash, import_key_hash, created_at, cookie_enc, cookie_updated_at, session_expired, import_key_enc)
+    VALUES ('ancien', ?, 'hash-import', '2026-10-01', 'cookie-chiffre', '2026-10-20T00:00:00.000Z', 1, 'cle-chiffree')`).run(await sha256Hex('cle-ancienne'));
+  const r = await call('GET', 'me', { key: 'cle-ancienne', e: old });
   assert.equal(r.status, 200);
-
-  r = await call('POST', 'import', { key: frank.key, body: { cards: synth(501) } });
-  assert.equal(r.status, 400);
-  assert.match(r.json.error, /500 cartes au plus/);
-  r = await call('POST', 'import', { key: frank.key, body: { collection: Array.from({ length: 501 }, (_, i) => tiny(i)) } });
-  assert.equal(r.status, 400);
-  for (const body of [
-    { upload_id: 'a b', part: 0, cards: [ok] },
-    { upload_id: 'a', part: -1, cards: [ok] },
-    { upload_id: 'a', part: 40, cards: [ok] },
-    { upload_id: 'a', part: 0, last: 'oui', cards: [ok] },
-    { upload_id: 'a', part: 0 },
-    { cards: [ok], stats: [1] },
-  ]) {
-    r = await call('POST', 'import', { key: frank.key, body });
-    assert.equal(r.status, 400, JSON.stringify(body));
-  }
-
-  // Un morceau renvoyé (nouvel essai) remplace le précédent au lieu de s'ajouter.
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 0, last: false, cards: synth(10) } });
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 0, last: false, cards: [...synth(10), 'x'] } });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'C', part: 1, last: true, cards: synth(5, 10), stats: { totalUnique: 15 } } });
-  assert.equal(r.json.count, 15);
-  assert.equal(r.json.skipped, 1);
-  assert.deepEqual([...r.json.new_ids].sort(), synth(14, 1).map((c) => c.id));
-  assert.equal((await call('GET', 'cards', { key: frank.key })).json.cards.find((c) => c.id === ok.id).count, ok.count);
-
-  // Morceau manquant.
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'trou', part: 0, last: false, cards: synth(10) } });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'trou', part: 2, last: true, cards: synth(10, 20) } });
-  assert.equal(r.status, 409);
-  assert.match(r.json.error, /Envoi incomplet.*n'a pas été modifié/);
-  assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE upload_id = 'trou'")[0].n, 0, 'envoi impossible à finir : effacé');
-  // Deux envois en même temps (deux onglets, favori relié et clic) : chacun garde ses morceaux et aboutit.
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'A', part: 0, last: false, cards: synth(10) } });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'B', part: 0, last: false, cards: [...synth(10, 10), null] } });
-  assert.deepEqual(r.json, { ok: true, received: 10, skipped: 1 });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'A', part: 1, last: true, cards: synth(10, 20) } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'B', part: 1, last: true, cards: synth(5, 30) } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  // Trois envois en cours au plus : un quatrième abandonne le plus ancien, dont le dernier morceau répond 409.
-  for (const id of ['E1', 'E2', 'E3', 'E4']) await call('POST', 'import', { key: frank.key, body: { upload_id: id, part: 0, last: false, cards: synth(2) } });
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'E1', part: 1, last: true, cards: synth(2, 2) } });
-  assert.equal(r.status, 409);
-  for (const id of ['E3', 'E4']) {
-    r = await call('POST', 'import', { key: frank.key, body: { upload_id: id, part: 1, last: true, cards: synth(2, 2) } });
-    assert.equal(r.status, 200, id);
-  }
-  // Dernier morceau renvoyé après coup (réponse perdue) : même résultat, rien de plus d'écrit, pas de 409.
-  const writes = countCardWrites(true);
-  r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'E4', part: 1, last: true, cards: synth(2, 2) } });
-  assert.deepEqual([r.status, r.json.count, r.json.again, writes()], [200, (await call('GET', 'me', { key: frank.key })).json.card_count, true, 0]);
-  countCardWrites(false);
-  assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE user_id = ?", frank.user.id)[0].n, 0);
-  // 8 Mo au plus en attente pour un envoi : des cartes lourdes (catégorie de 450 caractères, ~600 octets en attente)
-  // dépassent la limite vers le 28e morceau, bien avant les 40 morceaux permis.
-  const big = synth(20_000).map((c) => ({ ...c, category: 'c'.repeat(450) }));
-  let status = 200;
-  let p = 0;
-  for (; p < 40 && status === 200; p++) {
-    r = await call('POST', 'import', { key: frank.key, body: { upload_id: 'gros', part: p, last: false, cards: big.slice(p * 500, (p + 1) * 500) } });
-    status = r.status;
-  }
-  assert.equal(status, 413, `morceau ${p - 1}`);
-  assert.ok(p - 1 >= 12, `refusé dès le morceau ${p - 1}`);
-  assert.match(r.json.error, /8 Mo/);
-  const staged = rows("SELECT SUM(length(CAST(cards AS BLOB))) AS b FROM import_staging WHERE upload_id = 'gros'")[0].b;
-  assert.ok(staged <= 8 * 1024 * 1024 && staged > 7 * 1024 * 1024, String(staged));
-
-  // Morceaux de plus d'une heure (de n'importe qui) : effacés au premier import venu.
-  env.DB.sqlite.prepare("INSERT INTO import_staging (user_id, upload_id, part, cards, created_at) VALUES ('quelqu-un', 'vieux', 0, '[]', '2000-01-01T00:00:00.000Z')").run();
-  await call('POST', 'import', { key: frank.key, body: { upload_id: 'D', part: 0, last: false, cards: [ok] } });
-  assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE user_id = 'quelqu-un'")[0].n, 0);
-  // L'envoi « gros » reste en cours à côté de D ; deux envois de plus, et c'est le plus ancien : abandonné.
-  assert.ok(rows("SELECT COUNT(*) AS n FROM import_staging WHERE upload_id = 'gros'")[0].n > 0);
-  for (const id of ['D2', 'D3']) await call('POST', 'import', { key: frank.key, body: { upload_id: id, part: 0, last: false, cards: [ok] } });
-  assert.equal(rows("SELECT COUNT(*) AS n FROM import_staging WHERE upload_id = 'gros'")[0].n, 0, 'le plus ancien des envois en cours est abandonné');
-});
-
-await test("import par morceaux (entrées brutes) : exemplaires regroupés d'un morceau à l'autre", async () => {
-  const gina = await signup('Gina');
-  const a = base[0];
-  const part0 = [rawEntry(a, { id: 'x1', count: 1, obtained_at: '2026-05-01T00:00:00.000Z' }), rawEntry(base[1])];
-  const part1 = [
-    rawEntry(a, { id: 'x2', count: 2, is_shiny: true, obtained_at: '2026-02-01T00:00:00.000Z' }),
-    rawEntry(a, { id: 'x1', count: 1, obtained_at: '2026-05-01T00:00:00.000Z' }), // même exemplaire, déjà vu
-  ];
-  let r = await call('POST', 'import', { key: gina.key, body: { upload_id: 'brut', part: 0, last: false, collection: part0 } });
-  assert.deepEqual(r.json, { ok: true, received: 2, skipped: 0 });
-  r = await call('POST', 'import', { key: gina.key, body: { upload_id: 'brut', part: 1, last: true, collection: part1, stats: { totalUnique: 2 } } });
-  assert.deepEqual(r.json, { count: 2, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
-  const card = (await call('GET', 'cards', { key: gina.key })).json.cards.find((c) => c.id === a.id);
-  assert.equal(card.count, 3);
-  assert.equal(card.shiny, true);
-  assert.equal(card.obtained_at, '2026-02-01T00:00:00.000Z');
-  assert.ok(!JSON.stringify(rows('SELECT * FROM cards')).includes(GAME_USER));
+  assert.deepEqual(r.json.session, { linked: false, lost: null, at: null, auto_sync: true, paused: false, fails: 0, checked_at: null, full_at: null });
+  const row = { ...old.DB.sqlite.prepare("SELECT * FROM users WHERE id = 'ancien'").get() };
+  assert.deepEqual([row.cookie_enc, row.cookie_updated_at, row.session_expired, row.import_key_hash, row.import_key_enc], [null, null, 0, null, null]);
+  assert.deepEqual([row.game_session_v, row.auto_sync, row.sync_fails, row.game_session_enc], [0, 1, 0, null]);
+  assert.equal(old.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM migrations WHERE name = 'session-serveur-2026-10-22'").get().n, 1);
+  const indexes = old.DB.sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'index'").all().map((x) => x.name);
+  assert.ok(indexes.includes('users_by_game_uid') && indexes.includes('users_by_link'), indexes.join(','));
+  assert.deepEqual(old.DB.sqlite.prepare('PRAGMA table_info(cron_state)').all().map((c) => c.name), ['name', 'running_until', 'skip_until', 'last_at', 'last_result']);
+  // Relier un classeur existant marche aussitôt.
+  supa.addPlayer('uid-ancien');
+  assert.equal((await linkGame('cle-ancienne', { e: old, uid: 'uid-ancien' })).status, 200);
 });
 
 await test('corps trop gros (5 Mo), 20 000 cartes au plus, lecture par pages', async () => {
-  const big = JSON.stringify({ collection: [], pad: 'x'.repeat(5 * 1024 * 1024) });
-  let r = await call('POST', 'import', { key: alice.key, raw: big, headers: { 'content-type': 'application/json' } });
+  const big = JSON.stringify({ cookie: 'a=1', pad: 'x'.repeat(5 * 1024 * 1024) });
+  let r = await call('POST', 'session', { key: alice.key, raw: big, headers: { 'content-type': 'application/json' } });
   assert.equal(r.status, 413);
   assert.match(r.json.error, /5 Mo/);
-  r = await call('POST', 'import', { key: alice.key, raw: '{}', headers: { 'content-length': String(6 * 1024 * 1024) } });
+  r = await call('POST', 'session', { key: alice.key, raw: '{}', headers: { 'content-length': String(6 * 1024 * 1024) } });
   assert.equal(r.status, 413);
 
-  // 20 000 cartes : 40 morceaux de 500 (cartes minimales).
+  // 20 000 cartes (cartes minimales) : 20 pages du jeu.
   const dave = await signup('Dave');
-  r = await upload(dave.key, mini(20_000), { stats: { totalUnique: 20_000 } });
-  assert.deepEqual(r.json, { count: 20_000, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
+  r = await seedCards(dave.key, mini(20_000));
+  assert.deepEqual(r.json, { count: 20_000, fresh: 20_000, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
   const all = (await call('GET', 'cards', { key: dave.key })).json;
   assert.equal(all.cards.length, 20_000);
 
-  // 20 001 cartes : possible seulement par le rafraîchissement (plus de 40 morceaux) ; refusé à la fin.
-  const e4 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const zed = await signup('Zed', e4);
-  await call('POST', 'session', { key: zed.key, e: e4, body: { cookie: 'sid=z' } });
-  mockGame(Array.from({ length: 20_001 }, (_, i) => tiny(i)));
-  r = await call('POST', 'refresh', { key: zed.key, e: e4, body: {} });
-  while (r.status === 200 && !r.json.done) r = await call('POST', 'refresh', { key: zed.key, e: e4, body: { page: r.json.next_page } });
-  globalThis.fetch = realFetch;
+  // 20 001 cartes : refusé à la fin, rien d'écrit.
+  const zed = await signup('Zed');
+  await setGameCards(zed.key, mini(20_001));
+  r = await refreshNow(zed.key);
   assert.equal(r.status, 400);
   assert.match(r.json.error, /20 000 cartes/);
+  assert.equal((await call('GET', 'me', { key: zed.key })).json.card_count, 0);
+  supa.player(uidOf(zed.key)).cards = [];
 
   // Lecture par pages de 1 000 (curseur opaque) : mêmes cartes, dans le même ordre, avec leurs étiquettes.
   for (let k = 0; k < 4; k++) {
@@ -2058,11 +1383,12 @@ await test('corps trop gros (5 Mo), 20 000 cartes au plus, lecture par pages', a
   r = await call('DELETE', 'me', { key: dave.key });
   assert.deepEqual(r.json, { ok: true });
   await call('DELETE', 'me', { key: nobody.key });
+  supa.player(uidOf(dave.key)).cards = [];
 });
 
 await test('étiquettes : 5 000 changements par appel, 50 000 par compte (orphelines comprises)', async () => {
   const jo = await signup('Jo');
-  await upload(jo.key, mini(6000));
+  await seedCards(jo.key, mini(6000));
   const ids = mini(6000).map((c) => c.id);
   let r = await call('POST', 'tags/bulk', { key: jo.key, body: { card_ids: ids.slice(0, 5001), add: ['a'] } });
   assert.equal(r.status, 400);
@@ -2098,15 +1424,15 @@ await test('étiquettes : 5 000 changements par appel, 50 000 par compte (orphel
 
 const idsOf = (cards) => cards.map((c) => c.id);
 
-await test('lecture incrémentale : import complet puis delta (nouvelle, modifiée, retirée puis revenue), synchro rapide', async () => {
+await test('lecture incrémentale : lecture complète puis delta (nouvelle, modifiée, retirée puis revenue)', async () => {
   const lou = await signup('Lou');
   const rev = async () => (await call('GET', 'me', { key: lou.key })).json.cards_rev;
   const since = async (r) => (await call('GET', `cards?since=${r}`, { key: lou.key })).json;
   assert.equal(await rev(), 0);
   assert.deepEqual(await since(0), { rev: 0, delta: true, cards: [], gone: [], fetched_at: null, new_ids: [] });
-  // Premier import complet : révision 1 ; depuis 0, toutes les cartes, au même format que GET /api/cards.
+  // Première lecture : révision 1 ; depuis 0, toutes les cartes, au même format que GET /api/cards.
   const first = synth(30);
-  let r = await call('POST', 'import', { key: lou.key, body: { cards: first } });
+  let r = await seedCards(lou.key, first);
   assert.equal(r.json.count, 30);
   assert.equal(await rev(), 1);
   const all = (await call('GET', 'cards', { key: lou.key })).json;
@@ -2115,10 +1441,10 @@ await test('lecture incrémentale : import complet puis delta (nouvelle, modifi�
   assert.deepEqual(Object.keys(d), ['rev', 'delta', 'cards', 'gone', 'fetched_at', 'new_ids']);
   assert.deepEqual([d.rev, d.delta, d.gone, d.fetched_at], [1, true, [], all.fetched_at]);
   assert.deepEqual(d.cards, all.cards);
-  // Second import : une carte retirée (first[0]), une modifiée (first[5]), une nouvelle ; le reste identique.
+  // Seconde lecture : une carte retirée (first[0]), une modifiée (first[5]), une nouvelle ; le reste identique.
   const fresh = synth(1, 30)[0];
   const second = [...first.slice(1).map((c) => (c === first[5] ? { ...c, count: c.count + 1 } : c)), fresh];
-  r = await call('POST', 'import', { key: lou.key, body: { cards: second, stats: statsOf(second) } });
+  r = await seedCards(lou.key, second);
   assert.deepEqual(r.json.new_ids, [fresh.id]);
   assert.equal(await rev(), 2);
   d = await since(1);
@@ -2130,47 +1456,15 @@ await test('lecture incrémentale : import complet puis delta (nouvelle, modifi�
   assert.deepEqual(d.new_ids, [fresh.id]);
   assert.deepEqual(await since(2), { rev: 2, delta: true, cards: [], gone: [], fetched_at: d.fetched_at, new_ids: [fresh.id] });
   // La même collection une deuxième fois : rien d'écrit, la révision ne bouge pas.
-  await call('POST', 'import', { key: lou.key, body: { cards: second } });
+  await seedCards(lou.key, second);
   assert.equal(await rev(), 2);
   // La carte retirée revient : révision 3, renvoyée depuis 2 comme depuis 1, et plus du tout dans `gone`.
-  await call('POST', 'import', { key: lou.key, body: { cards: [first[0], ...second] } });
+  await seedCards(lou.key, [first[0], ...second]);
   assert.equal(await rev(), 3);
   d = await since(2);
   assert.deepEqual([idsOf(d.cards), d.gone], [[first[0].id], []]);
   d = await since(1);
   assert.deepEqual([idsOf(d.cards), d.gone], [[first[0].id, first[5].id, fresh.id], []]);
-  assert.equal(rows('SELECT COUNT(*) AS n FROM cards_gone WHERE user_id = ?', lou.user.id)[0].n, 0);
-
-  // Synchro rapide : une lecture complète avec les compteurs du jeu (total = exemplaires : une carte en a 2 ; identique :
-  // révision inchangée), puis les
-  // nouveautés (une carte nouvelle, un exemplaire de plus d'une carte déjà là) → une révision.
-  const current = async () => (await call('GET', 'cards', { key: lou.key })).json.cards;
-  r = await call('POST', 'import', { key: lou.key, body: { cards: await current(), stats: { total: 32, totalUnique: 31 }, rows: 31, copies: 32, last_at: '2026-10-15T09:00:00.000Z' } });
-  assert.equal(r.json.count, 31);
-  assert.equal(await rev(), 3);
-  const quick = (cards, stats, n) => call('POST', 'import', { key: lou.key, body: { mode: 'delta', cards, stats, rows: n, copies: n } });
-  const nouvelle = { ...carte(owned[40], 'nouvelle'), count: 1 };
-  r = await quick([nouvelle, { ...first[1], count: 1 }], { total: 34, totalUnique: 32 }, 2);
-  assert.equal(r.json.quick, true);
-  assert.equal(await rev(), 4);
-  d = await since(3);
-  assert.deepEqual([idsOf(d.cards), d.gone], [[first[1].id, 'nouvelle'], []]);
-  assert.equal(d.cards[0].count, first[1].count + 1);
-  r = await quick([], { total: 34, totalUnique: 32 }, 0);
-  assert.equal(r.json.quick, true);
-  assert.equal(await rev(), 4, 'rien de nouveau : révision inchangée');
-  // Une carte retirée par une lecture complète, puis revenue par une synchro rapide : plus retirée.
-  r = await call('POST', 'import', { key: lou.key, body: { cards: (await current()).filter((c) => c.id !== first[2].id), stats: { total: 33, totalUnique: 31 } } });
-  assert.equal(await rev(), 5);
-  d = await since(4);
-  assert.deepEqual([d.cards, d.gone], [[], [first[2].id]]);
-  r = await quick([{ ...first[2], obtained_at: '2026-10-16T09:00:00.000Z' }], { total: 34, totalUnique: 32 }, 1);
-  assert.equal(r.json.quick, true);
-  assert.equal(await rev(), 6);
-  for (const from of [5, 4]) {
-    d = await since(from);
-    assert.deepEqual([idsOf(d.cards), d.gone], [[first[2].id], []], `depuis ${from}`);
-  }
   assert.equal(rows('SELECT COUNT(*) AS n FROM cards_gone WHERE user_id = ?', lou.user.id)[0].n, 0);
   await call('DELETE', 'me', { key: lou.key });
 });
@@ -2178,7 +1472,7 @@ await test('lecture incrémentale : import complet puis delta (nouvelle, modifi�
 await test('lecture incrémentale : étiquettes (set, bulk, rename) → révision et cartes renvoyées', async () => {
   const mo = await signup('Mo');
   const ten = synth(10);
-  await upload(mo.key, ten);
+  await seedCards(mo.key, ten);
   const [a, b, c] = idsOf(ten);
   const rev = async () => (await call('GET', 'me', { key: mo.key })).json.cards_rev;
   const changed = async (r) => (await call('GET', `cards?since=${r}`, { key: mo.key })).json.cards.map((x) => [x.id, x.tags]);
@@ -2213,13 +1507,13 @@ await test('lecture incrémentale : étiquettes (set, bulk, rename) → révisio
   assert.deepEqual((await changed(1)).map(([id]) => id), [a, b, c]);
   // Étiquette d'une carte retirée (gardée) renommée : seules les cartes du classeur changent ; la carte revenue
   // arrive avec ses étiquettes à jour.
-  await upload(mo.key, ten.slice(1), { stats: statsOf(ten.slice(1)) });
+  await seedCards(mo.key, ten.slice(1));
   assert.equal(await rev(), 8);
   await post('tags/rename', { from: 'Vert', to: 'Jaune' });
   assert.equal(await rev(), 9);
   let d = (await call('GET', 'cards?since=8', { key: mo.key })).json;
   assert.deepEqual([d.cards.map((x) => [x.id, x.tags]), d.gone], [[[b, ['Jaune']]], []]);
-  await upload(mo.key, ten);
+  await seedCards(mo.key, ten);
   d = (await call('GET', 'cards?since=9', { key: mo.key })).json;
   assert.deepEqual([d.rev, d.cards.map((x) => [x.id, x.tags]), d.gone], [10, [[a, ['Jaune']]], []]);
   await call('DELETE', 'me', { key: mo.key });
@@ -2238,7 +1532,7 @@ await test('lecture incrémentale : since invalide (400), delta:false (révision
   // Révision inconnue (plus grande que celle du classeur : base recréée, autre classeur).
   assert.deepEqual(await since(5), { rev: 0, delta: false });
   // 1 000 cartes changées au plus.
-  await upload(ned.key, mini(3000));
+  await seedCards(ned.key, mini(3000));
   assert.equal((await call('POST', 'tags/bulk', { key: ned.key, body: { card_ids: idsOf(mini(1000)), add: ['Mille'] } })).status, 200);
   let d = await since(1);
   assert.deepEqual([d.rev, d.delta, d.cards.length, d.gone.length], [2, true, 1000, 0]);
@@ -2249,34 +1543,34 @@ await test('lecture incrémentale : since invalide (400), delta:false (révision
   // Les retraits comptent aussi : 1 000 retirées → delta, gardées toutes.
   const gone = () => rows('SELECT COUNT(*) AS n FROM cards_gone WHERE user_id = ?', ned.user.id)[0].n;
   const floor = () => rows('SELECT cards_gone_floor AS f FROM users WHERE id = ?', ned.user.id)[0].f;
-  await upload(ned.key, mini(2000));
+  await seedCards(ned.key, mini(2000));
   d = await since(3);
   assert.deepEqual([d.rev, d.delta, d.cards.length, d.gone.length], [4, true, 0, 1000]);
   assert.deepEqual([gone(), floor()], [1000, 0]);
   // Une de plus : 1 001 retraits, les plus anciens (révision 4) sont élagués, le plancher monte à 4.
-  await upload(ned.key, mini(1999));
+  await seedCards(ned.key, mini(1999));
   assert.deepEqual([gone(), floor()], [1, 4]);
   assert.deepEqual(await since(3), { rev: 5, delta: false });
   d = await since(4);
   assert.deepEqual([d.delta, d.cards, d.gone], [true, [], ['mini-01999']]);
   // Deux fois 600 retraits : la révision 6 est élaguée à son tour (seule la 7, la plus récente, reste).
-  await upload(ned.key, mini(1399));
+  await seedCards(ned.key, mini(1399));
   assert.deepEqual([gone(), floor()], [601, 4]);
-  await upload(ned.key, mini(799));
+  await seedCards(ned.key, mini(799));
   assert.deepEqual([gone(), floor()], [600, 6]);
   assert.deepEqual(await since(5), { rev: 7, delta: false });
   d = await since(6);
   assert.deepEqual([d.delta, d.cards.length, d.gone.length], [true, 0, 600]);
   // Une carte retirée qui revient n'est plus dans `gone`.
-  await upload(ned.key, mini(800));
+  await seedCards(ned.key, mini(800));
   d = await since(6);
   assert.deepEqual([d.rev, idsOf(d.cards), d.gone.length, d.gone.includes('mini-00799')], [8, ['mini-00799'], 599, false]);
   // Une opération qui ne fait que retirer plus de 1 000 cartes : aucune marque de retrait une à une (l'élagage les
   // effacerait aussitôt : deux écritures par carte pour rien), une seule marque de débordement ; la révision avance quand
   // même, et le plancher monte jusqu'à elle.
-  await upload(ned.key, mini(2500));
+  await seedCards(ned.key, mini(2500));
   env.DB.sqlite.exec('CREATE TABLE _g (n INTEGER); CREATE TRIGGER g_ins AFTER INSERT ON cards_gone BEGIN INSERT INTO _g VALUES (1); END;');
-  await upload(ned.key, mini(10));
+  await seedCards(ned.key, mini(10));
   assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM _g').get().n, 1, 'une seule marque (débordement)');
   env.DB.sqlite.exec('DROP TRIGGER g_ins; DROP TABLE _g');
   assert.equal(rows('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?', ned.user.id)[0].n, 10);
@@ -2290,7 +1584,7 @@ await test('lecture incrémentale : since invalide (400), delta:false (révision
 
 await test('lecture incrémentale : rev lue avant les cartes (première page, lecture d\'un coup), base existante migrée', async () => {
   const oz = await signup('Oz');
-  await upload(oz.key, mini(2500));
+  await seedCards(oz.key, mini(2500));
   // Base qui pose une étiquette juste avant de lire les cartes d'une requête (après l'authentification).
   const during = (marker, cardId, tag) => {
     let fired = false;
@@ -2350,7 +1644,7 @@ await test('lecture incrémentale : rev lue avant les cartes (première page, le
   assert.deepEqual((await call('GET', 'cards?since=0', { key: k, e: old })).json.cards, []);
   await call('POST', 'tags/set', { key: k, e: old, body: { card_id: 'c1', tags: ['Ancien'] } });
   assert.deepEqual((await call('GET', 'cards?since=0', { key: k, e: old })).json.cards.map((c) => c.tags), [['Ancien']]);
-  await call('POST', 'import', { key: k, e: old, body: { cards: mini(2), stats: statsOf(mini(2)) } });
+  await seedCards(k, mini(2), { e: old });
   d = (await call('GET', 'cards?since=1', { key: k, e: old })).json;
   assert.deepEqual([d.rev, idsOf(d.cards), d.gone], [2, ['mini-00000', 'mini-00001'], ['c1']]);
 });
@@ -2360,7 +1654,7 @@ await test('lecture incrémentale : réponse ?since en morceaux d\'environ 1 Mo 
   // 1 000 cartes de ~4,5 Ko (catégorie, adresse et image longues, permises) : ~4,5 Mo de changements.
   const heavy = mini(1000).map((c, i) => ({ ...c, category: 'c'.repeat(500), url: `https://fr.wikipedia.org/wiki/${'u'.repeat(1900)}${i}`,
     image: `https://upload.wikimedia.org/${'i'.repeat(1900)}${i}` }));
-  await upload(ivy.key, heavy);
+  await seedCards(ivy.key, heavy);
   const parts = [];
   const spy = { ...env, DB: { prepare: (sql) => {
     const st = env.DB.prepare(sql);
@@ -2379,7 +1673,7 @@ await test('lecture incrémentale : réponse ?since en morceaux d\'environ 1 Mo 
 
 await test('lecture incrémentale : plan de SQLite (index par révision, jamais toute la collection ni toutes les étiquettes)', async () => {
   const pat = await signup('Pat');
-  await upload(pat.key, mini(3));
+  await seedCards(pat.key, mini(3));
   await call('POST', 'tags/set', { key: pat.key, body: { card_id: 'mini-00000', tags: ['a'] } });
   const seen = [];
   const spy = { ...env, DB: { prepare: (sql) => { seen.push(sql); return env.DB.prepare(sql); }, batch: (s) => env.DB.batch(s) } };
@@ -2397,9 +1691,9 @@ await test('lecture incrémentale : plan de SQLite (index par révision, jamais 
 
 await test('GET /api/me (relu toutes les minutes par la page visible) : une requête, une ligne (le compte, par sa clé) ; ancien classeur sans compteur : compté une seule fois', async () => {
   const kim = await signup('Kim');
-  await upload(kim.key, mini(40));
+  await seedCards(kim.key, mini(40));
   const seen = [];
-  let during = null; // écriture faite pendant le COUNT (import concurrent simulé)
+  let during = null; // écriture faite pendant le COUNT (lecture concurrente simulée)
   const spy = { ...env, DB: { prepare: (sql) => { seen.push(sql); if (during && /COUNT\(\*\)/.test(sql)) { during(); during = null; } return env.DB.prepare(sql); }, batch: (s) => env.DB.batch(s) } };
   const me = async () => { seen.length = 0; return (await call('GET', 'me', { key: kim.key, e: spy })).json; };
   await me(); // schéma appliqué une fois par base et par instance (ensureSchema), pas à chaque appel
@@ -2413,24 +1707,23 @@ await test('GET /api/me (relu toutes les minutes par la page visible) : une requ
   assert.deepEqual(plan.slice(1, 3), ['SCALAR SUBQUERY 1', 'SEARCH chat_messages'], plan.join('\n'));
   assert.match(plan[3], /^CORRELATED SCALAR SUBQUERY \d$/, plan.join('\n'));
   assert.match(plan[4], /^SEARCH m USING INDEX sqlite_autoindex_market_1 \(user_id=\?\)$/, plan.join('\n'));
-  // Classeur importé avant le compteur (sync_state absent, ou ancien format sans unit, invalid ni count) : compté une
-  // fois, puis gardé ; le reste de l'état est intact et la synchro rapide reste coupée (relecture complète).
+  // Classeur d'avant le compteur (sync_state absent, ou ancien format sans count) : compté une fois, puis gardé ; le reste
+  // de l'état est intact.
   const setState = (v) => env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(v, kim.user.id);
   const stateOf = () => rows('SELECT sync_state FROM users WHERE id = ?', kim.user.id)[0].sync_state;
   const old = JSON.stringify({ stats: { total: 40, totalUnique: 40, rarityCounts: null }, last_at: '2026-10-01T00:00:00.000Z', full_at: new Date().toISOString() });
   for (const before of [null, old]) {
     setState(before);
     let m = await me();
-    assert.deepEqual([m.card_count, m.next_full], [40, true]);
+    assert.equal(m.card_count, 40);
     assert.ok(seen.some((s) => /COUNT\(\*\)/.test(s)), 'compté une fois');
     m = await me();
-    assert.deepEqual([m.card_count, m.next_full, seen.length], [40, true, 1], 'compteur gardé : plus de COUNT');
+    assert.deepEqual([m.card_count, seen.length], [40, 1], 'compteur gardé : plus de COUNT');
     const st = JSON.parse(stateOf());
     assert.equal(st.count, 40);
     if (before) assert.deepEqual({ ...st, count: undefined }, { ...JSON.parse(before), count: undefined });
-    assert.equal((await call('POST', 'import', { key: kim.key, body: { mode: 'state' } })).json.quick, false);
   }
-  // Un import fini pendant le COUNT a écrit son état : il n'est pas écrasé (comparer-échanger).
+  // Une lecture finie pendant le COUNT a écrit son état : il n'est pas écrasé (comparer-échanger).
   setState(null);
   during = () => setState('{"tok":"import-concurrent"}');
   assert.equal((await me()).card_count, 40);
@@ -2438,12 +1731,9 @@ await test('GET /api/me (relu toutes les minutes par la page visible) : une requ
   await call('DELETE', 'me', { key: kim.key });
 });
 
-await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
-  const e3 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const runs = {
-    part: [], refresh: [], fin1k: [], fin5k: [], fin20k: [], cards1k: [], cards20k: [], cardsPage: [], bulk: [], target: [],
-    since1k: [], since20k: [], sinceNo: [], delta: [], quickFail: [],
-  };
+await test('mesures de CPU (refresh de 3 000 exemplaires, finalisation, lectures du classeur)', async () => {
+  const e3 = makeEnv();
+  const runs = { refresh: [], fin1k: [], fin5k: [], fin20k: [], cards1k: [], cards20k: [], cardsPage: [], bulk: [], target: [], since1k: [], since20k: [], sinceNo: [] };
   // Collection à compléter réaliste : 3 000 éléments (titre, description, une image sur deux), un peu d'accents.
   const items = Array.from({ length: 3000 }, (_, i) => ({
     title: i % 7 ? `Article numéro ${i}` : `Élément ${i}`,
@@ -2451,32 +1741,44 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
     image: i % 2 ? null : `https://upload.wikimedia.org/x/${i}.jpg`,
     status: i % 50 ? 'ok' : 'missing',
   }));
-  mockGame(entriesFor(owned.slice(0, 1043)));
-  for (let k = 0; k < 8; k++) {
-    // Un morceau intermédiaire de 500 cartes.
+  for (let k = 0; k < 6; k++) {
+    // Un « Rafraîchir » de 3 000 exemplaires réalistes (cartes de data/owned.json, avec un tag du jeu) : 4 pages + contrôle.
     const u = await signup(`Mesure ${k}`, e3);
-    runs.part.push(await profile('POST', 'import', { key: u.key, e: e3, body: { upload_id: 'm', part: 0, last: false, cards: synth(500) } }));
-    // Un appel de rafraîchissement : stats + 10 pages de 50 entrées.
-    await call('POST', 'session', { key: u.key, e: e3, body: { cookie: 'sid=mesure' } });
-    const m = await profile('POST', 'refresh', { key: u.key, e: e3, body: { page: 0 } });
-    assert.equal(m.json.fetched, 500);
+    const uid = await setGameCards(u.key, [], { e: e3 });
+    supa.player(uid).cards = synth(3000).map((c, i) => rowOf(c, { uid, obtained_at: new Date(Date.UTC(2026, 0, 1) + i * 60_000).toISOString(), tags: ['Favori'] }));
+    const rest0 = supa.rest().length;
+    const m = await profile('POST', 'refresh', { key: u.key, e: e3, body: {} });
+    assert.deepEqual([m.status, m.json.count, m.json.complete], [200, 3000, true], m.text.slice(0, 200));
+    assert.equal(supa.rest().length - rest0, 5 * 21, '5 lectures PostgREST par appel (rejeux compris)');
     runs.refresh.push(m);
-    // Une collection à compléter de 3 000 éléments.
     const t = await profile('POST', 'targets/save', { key: u.key, e: e3, body: { id: 'mesure', name: 'Mesure', items, source: 'catalog:x' } });
     assert.equal(t.status, 200, JSON.stringify(t.json).slice(0, 200));
     runs.target.push(t);
+    supa.player(uid).cards = [];
   }
-  globalThis.fetch = realFetch;
-  // Finalisations : le dernier morceau est vide, on ne mesure que la finalisation. 20 000 : cartes minimales.
+  // Finalisations seules (table d'attente déjà remplie, comme par une lecture) : 20 000 = cartes minimales.
+  const finalize = async (user, n, cards) => {
+    const now = new Date().toISOString();
+    const ins = e3.DB.sqlite.prepare('INSERT INTO refresh_staging (user_id, page, entries, skipped, created_at) VALUES (?, ?, ?, 0, ?)');
+    for (let p = 0; p * 500 < n; p++) ins.run(user.id, p, JSON.stringify(cards.slice(p * 500, (p + 1) * 500)), now);
+    const opts = (db) => ({ source: REFRESH_SOURCE, key: 0, exact: { before: n, after: n, lastBefore: null, lastAfter: null }, started: now,
+      clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)] });
+    const rec = recorder(e3.DB);
+    const sql0 = e3.DB.sqlCpuMs;
+    const res = await finalizeImport(rec.db, user, opts(rec.db));
+    const sql = e3.DB.sqlCpuMs - sql0;
+    const dbs = Array.from({ length: 20 }, () => replayDb(rec.log));
+    const cpu0 = process.cpuUsage();
+    for (const db of dbs) await finalizeImport(db, user, opts(db));
+    const cpu = process.cpuUsage(cpu0);
+    return { res, js: (cpu.user + cpu.system) / 1000 / 20, sql };
+  };
   for (const [n, slot, times, make] of [[1000, 'fin1k', 6, synth], [5000, 'fin5k', 4, synth], [20_000, 'fin20k', 3, mini]]) {
     for (let k = 0; k < times; k++) {
       const v = await signup(`Fin ${n} ${k}`, e3);
       const cards = make(n);
-      for (let p = 0; p * 500 < n; p++) {
-        await call('POST', 'import', { key: v.key, e: e3, body: { upload_id: 'f', part: p, last: false, cards: cards.slice(p * 500, (p + 1) * 500) } });
-      }
-      const m = await profile('POST', 'import', { key: v.key, e: e3, body: { upload_id: 'f', part: n / 500 - 1, last: true, cards: cards.slice(n - 500) } });
-      assert.equal(m.json.count, n);
+      const m = await finalize({ id: v.user.id, sync_state: null }, n, cards);
+      assert.equal(m.res.count, n);
       runs[slot].push(m);
       // Lecture incrémentale : 1 000 cartes changées (étiquette ajoutée), le plus qu'elle renvoie.
       const touch = (list, tag) => call('POST', 'tags/bulk', { key: v.key, e: e3, body: { card_ids: list.map((c) => c.id), add: [tag] } });
@@ -2503,36 +1805,11 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
       await call('DELETE', 'me', { key: v.key, e: e3 });
     }
   }
-  // Synchro rapide : 500 nouveautés (le plus qu'un envoi du favori accepte) sur un classeur de 1 000 cartes ; et
-  // rafraîchissement page 0 dont la synchro rapide échoue (plus de 450 nouveautés) : stats + 9 pages triées par date +
-  // 1 page de la lecture complète, jamais plus de 10 pages décodées dans l'appel.
-  const olds = entriesFor(owned.slice(0, 600));
-  const late = owned.slice(0, 460).map((c, i) => rawEntry(c, { id: `n${i}`, obtained_at: `2027-01-01T0${Math.floor(i / 60) % 10}:${String(i % 60).padStart(2, '0')}:00.000Z` }));
-  for (let k = 0; k < 4; k++) {
-    const u = await signup(`Rapide ${k}`, e3);
-    const cards = synth(1000);
-    await call('POST', 'import', { key: u.key, e: e3, body: { upload_id: 'r', part: 0, last: false, cards: cards.slice(0, 500), stats: { total: 1000, totalUnique: 1000 }, rows: 1000, copies: 1000, last_at: '2026-10-15T09:00:00.000Z' } });
-    await call('POST', 'import', { key: u.key, e: e3, body: { upload_id: 'r', part: 1, last: true, cards: cards.slice(500) } });
-    const m = await profile('POST', 'import', { key: u.key, e: e3, body: { mode: 'delta', cards: synth(500, 5000), rows: 500, copies: 500, stats: { total: 1500, totalUnique: 1500 }, last_at: '2026-10-16T09:00:00.000Z' } });
-    assert.equal(m.json.quick, true, JSON.stringify(m.json));
-    runs.delta.push(m);
-    const w = await signup(`Ratée ${k}`, e3);
-    await call('POST', 'session', { key: w.key, e: e3, body: { cookie: 'sid=r' } });
-    mockGame(olds);
-    let r = await call('POST', 'refresh', { key: w.key, e: e3, body: {} });
-    while (!r.json.done) r = await call('POST', 'refresh', { key: w.key, e: e3, body: { page: r.json.next_page } });
-    mockGame([...olds, ...late]);
-    const q = await profile('POST', 'refresh', { key: w.key, e: e3, body: { page: 0 } });
-    assert.deepEqual([q.json.done, q.json.next_page, q.json.fetched], [false, 1, 50], JSON.stringify(q.json));
-    runs.quickFail.push(q);
-  }
-  globalThis.fetch = realFetch;
-  report('morceau de 500 cartes', runs.part);
-  report('refresh, stats + 10 pages', runs.refresh);
+  const refreshJs = report('refresh, 3 000 exemplaires (4 pages + contrôle, faux Supabase compris)', runs.refresh);
   report('targets/save, 3 000 éléments', runs.target);
-  report('dernier morceau + finalisation, 1 000 cartes', runs.fin1k);
-  report('dernier morceau + finalisation, 5 000 cartes', runs.fin5k);
-  report('dernier morceau + finalisation, 20 000 cartes', runs.fin20k);
+  report('finalisation seule, 1 000 cartes', runs.fin1k);
+  report('finalisation seule, 5 000 cartes', runs.fin5k);
+  report('finalisation seule, 20 000 cartes', runs.fin20k);
   report('GET /api/cards, 1 000 cartes', runs.cards1k);
   report('GET /api/cards, 20 000 cartes (minimales)', runs.cards20k);
   report('GET /api/cards?part=…, une page de 1 000', runs.cardsPage);
@@ -2540,8 +1817,6 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
   report('GET /api/cards?since=…, 1 000 changées sur 1 000', runs.since1k);
   report('GET /api/cards?since=…, 1 000 changées sur 20 000', runs.since20k);
   report('GET /api/cards?since=…, plus de 1 000 changées sur 20 000 (delta:false)', runs.sinceNo);
-  report('synchro rapide (import mode delta), 500 nouveautés sur 1 000 cartes', runs.delta);
-  report('refresh page 0, synchro rapide ratée (stats + 9 pages par date + 1 page)', runs.quickFail);
   // Décodage par le Worker de la réponse de D1 (absent du rejeu) : ordre de grandeur, en décodant une charge JSON de
   // même taille (les morceaux de la réponse, échappés dans des chaînes).
   const sizes = [runs.cards1k[0].size, runs.cards20k[0].size, runs.cardsPage[0].size];
@@ -2555,68 +1830,68 @@ await test('mesures de CPU (limite des Workers gratuits : 10 ms)', async () => {
   // Aucun chemin de finalisation ne doit faire de JavaScript proportionnel au nombre de cartes.
   const js = (rs) => mean(rs.map((r) => r.js));
   assert.ok(js(runs.fin20k) < js(runs.fin1k) + 2, 'finalisation proportionnelle au nombre de cartes ?');
-  // Seuil absolu (10 ms) : seulement signalé, les temps varient du simple au double selon la charge de la machine.
-  for (const [label, rs] of [['morceau', runs.part], ['refresh', runs.refresh], ['targets/save', runs.target], ['page de cartes', runs.cardsPage],
-    ['lecture incrémentale', runs.since20k], ['synchro rapide', runs.delta], ['synchro rapide ratée', runs.quickFail]]) {
-    if (js(rs) >= 10) console.log(`    ATTENTION : ${label} à ${ms(js(rs))} de JS sur cette machine (limite des Workers gratuits : 10 ms)`);
+  // Seuils absolus : seulement signalés, les temps varient du simple au double selon la charge de la machine. Une
+  // lecture planifiée a 30 s de CPU ; un appel de la page, 30 s aussi (abonnement payant), 10 ms visés quand même hors refresh.
+  if (refreshJs >= 1000) console.log(`    ATTENTION : refresh de 3 000 exemplaires à ${ms(refreshJs)} de JS sur cette machine`);
+  for (const [label, rs] of [['targets/save', runs.target], ['page de cartes', runs.cardsPage], ['lecture incrémentale', runs.since20k]]) {
+    if (js(rs) >= 10) console.log(`    ATTENTION : ${label} à ${ms(js(rs))} de JS sur cette machine (10 ms visés)`);
   }
 });
 
-// --- Journal des synchros et synchros en même temps -------------------------------------------------------------
+// --- Journal des synchros et lectures en même temps ------------------------------------------------------------
 
-await test('journal des synchros : une ligne par synchro du favori (complète, rapide, incomplète, échec), regroupée, bornée, résumée dans /api/me', async () => {
+await test('journal des synchros : une ligne par lecture (complète, incomplète, échec), relecture sans nouveauté regroupée, bornée, résumée dans /api/me', async () => {
   const uma = await signup('Uma');
-  const imp = (await call('POST', 'import-key', { key: uma.key })).json.import_key;
   const log = async () => (await call('GET', 'sync-log', { key: uma.key })).json.entries;
   assert.deepEqual(await log(), []);
   assert.equal((await call('GET', 'me', { key: uma.key })).json.last_sync, null);
-  const st = (await call('POST', 'import', { key: imp, body: { mode: 'state' } })).json;
+  after(() => { supa.fail = null; supa.limit = null; });
   const cards = synth(30);
-  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'j1', part: 0, last: true, cards, stats: statsOf(cards), rows: 30, copies: 30,
-    last_at: '2026-10-15T09:00:00.000Z', started: st.now, reason: 'state', via: 'clic', v: 2 } });
-  assert.equal(r.json.complete, true);
-  let [e] = await log();
-  assert.deepEqual([e.kind, e.result, e.data.via, e.data.v, e.data.count, e.data.fresh, e.data.removed, e.data.complete], ['full', 'ok', 'clic', 2, 30, 30, 0, true]);
-  assert.match(e.message, /^Lecture complète \(pas de synchro rapide possible : .*\) : 30 cartes, 30 nouvelles, aucune retirée\.$/);
-  assert.ok(Number.isInteger(e.data.ms) && e.data.ms >= 0, JSON.stringify(e.data));
-  // Synchro rapide sans nouveauté, deux fois de suite (mode relié) : une seule ligne, répétée.
-  const quick = (body = {}) => call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: statsOf(cards), via: 'relie', started: new Date().toISOString(), ...body } });
-  assert.equal((await quick()).json.quick, true);
-  assert.equal((await quick()).json.quick, true);
+  await seedCards(uma.key, cards);
   let list = await log();
-  assert.equal(list.length, 2);
-  assert.deepEqual([list[0].kind, list[0].result, list[0].message, list[0].data.via, list[0].data.repeat], ['quick', 'ok', 'Synchro rapide : rien de nouveau (30 cartes).', 'relie', 2]);
+  assert.deepEqual(list.map((x) => x.kind), ['full', 'session'], 'liaison puis lecture');
+  let [e] = list;
+  assert.deepEqual([e.kind, e.result, e.data.via, e.data.count, e.data.fresh, e.data.removed, e.data.complete, e.data.read, e.data.exact],
+    ['full', 'ok', 'clic', 30, 30, 0, true, 30, 30]);
+  assert.equal(e.message, 'Lecture complète : 30 cartes, 30 nouvelles, aucune retirée.');
+  assert.ok(Number.isInteger(e.data.ms) && e.data.ms >= 0, JSON.stringify(e.data));
+  // Relue sans nouveauté, deux fois de suite : une seule ligne, répétée.
+  await refreshNow(uma.key);
+  await refreshNow(uma.key);
+  list = await log();
+  assert.equal(list.length, 3);
+  assert.deepEqual([list[0].result, list[0].message, list[0].data.via, list[0].data.repeat], ['ok', 'Lecture complète : 30 cartes, aucune nouvelle, aucune retirée.', 'clic', 2]);
   assert.ok(list[0].data.first <= list[0].at);
-  // Une nouveauté : ligne à part.
-  const extra = { ...carte(owned[45], 'en-plus'), count: 1, obtained_at: '2026-10-16T09:00:00.000Z' };
-  r = await quick({ cards: [extra], rows: 1, copies: 1, stats: { total: 31, totalUnique: 31 } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  [e] = await log();
-  assert.equal(e.message, 'Synchro rapide : 1 exemplaire obtenu, 1 nouvelle carte (31 cartes).');
-  // Lecture incomplète : une ligne « warn » qui dit ce qui manque et que rien n'a été retiré.
-  r = await call('POST', 'import', { key: imp, body: { cards: cards.slice(0, 20), stats: { total: 31, totalUnique: 31 }, via: 'clic' } });
-  assert.deepEqual([r.json.complete, r.json.removed, r.json.kept], [false, 0, 11]);
+  // Lecture incomplète (le jeu compte 31 exemplaires, 20 lus) : une ligne « warn » qui dit ce qui manque et que rien n'a
+  // été retiré.
+  const p = supa.player(await setGameCards(uma.key, cards.slice(0, 20)));
+  p.phantom = 11;
+  let r = await refreshNow(uma.key);
+  p.phantom = 0;
+  assert.deepEqual([r.json.complete, r.json.removed, r.json.kept], [false, 0, 10]);
   [e] = await log();
   assert.equal(e.result, 'warn');
-  assert.equal(e.message, 'Lecture incomplète : 20 cartes lues, le jeu en compte 31 : aucune nouvelle carte, aucune carte retirée (11 cartes non vues, gardées). Relance la mise à jour dans un moment.');
-  // Un échec (morceaux manquants) : ligne « error » avec le message rendu au favori.
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'j2', part: 1, last: true, cards: synth(2), via: 'clic' } });
-  assert.equal(r.status, 409);
+  assert.equal(e.message, 'Lecture incomplète : 20 exemplaires lus, le jeu en compte 31 : aucune nouvelle carte, aucune carte retirée (10 cartes non vues, gardées). Rafraîchis dans un moment.');
+  // Un échec : ligne « error » avec le message rendu.
+  supa.fail = (url) => (url.includes('/rest/') ? { status: 400, body: { message: 'x' } } : null);
+  r = await refreshNow(uma.key);
+  supa.fail = null;
+  assert.equal(r.status, 502);
   [e] = await log();
-  assert.deepEqual([e.kind, e.result, e.message, e.data.status, e.data.via], ['full', 'error', r.json.error, 409, 'clic']);
+  assert.deepEqual([e.kind, e.result, e.message, e.data.status, e.data.via], ['full', 'error', r.json.error, 502, 'clic']);
   const me = (await call('GET', 'me', { key: uma.key })).json;
   assert.deepEqual(me.last_sync, { at: e.at, kind: 'full', via: 'clic', result: 'error', message: e.message });
-  // Lu avec la clé principale seulement (la clé du favori ne lit rien).
-  assert.equal((await call('GET', 'sync-log', { key: imp })).status, 401);
   // Borné : les 50 plus récentes, 30 jours au plus (élagage à chaque écriture).
-  const ins = env.DB.sqlite.prepare("INSERT INTO sync_log (user_id, at, kind, result, message, data) VALUES (?, ?, 'quick', 'ok', ?, '{}')");
+  const ins = env.DB.sqlite.prepare("INSERT INTO sync_log (user_id, at, kind, result, message, data) VALUES (?, ?, 'full', 'ok', ?, '{}')");
   for (let i = 0; i < 60; i++) ins.run(uma.user.id, new Date(Date.now() - (60 - i) * 1000).toISOString(), `ligne ${i}`);
   ins.run(uma.user.id, '2026-01-01T00:00:00.000Z', 'très ancienne');
-  assert.equal((await call('POST', 'sync-log', { key: imp, body: { message: 'Une ligne de plus.' } })).status, 200);
+  supa.limit = 429;
+  r = await refreshNow(uma.key);
+  supa.limit = null;
   // Les 50 plus récentes sont gardées, sauf celle de plus de 30 jours : 49.
   list = await log();
   assert.equal(list.length, 49);
-  assert.deepEqual([list[0].message, list.at(-1).message], ['Une ligne de plus.', 'ligne 12']);
+  assert.deepEqual([list[0].message, list.at(-1).message], [r.json.error, 'ligne 12']);
   assert.ok(!list.some((x) => x.message === 'très ancienne'));
   assert.equal(rows('SELECT COUNT(*) AS n FROM sync_log WHERE user_id = ?', uma.user.id)[0].n, 49);
   // Effacé avec le classeur.
@@ -2624,257 +1899,117 @@ await test('journal des synchros : une ligne par synchro du favori (complète, r
   assert.equal(rows('SELECT COUNT(*) AS n FROM sync_log WHERE user_id = ?', uma.user.id)[0].n, 0);
 });
 
-await test('journal des synchros : échecs signalés par le favori (POST /api/sync-log : clé d\'import, CORS du jeu, taille, débit, secrets masqués)', async () => {
-  const vera = await signup('Vera');
-  const imp = (await call('POST', 'import-key', { key: vera.key })).json.import_key;
-  const report = (body, opts = {}) => call('POST', 'sync-log', { key: imp, body, ...opts });
-  const last = async () => (await call('GET', 'sync-log', { key: vera.key })).json.entries[0];
-  let r = await report({ kind: 'full', via: 'relie', code: 'session', message: 'Ta session WikiMasters a expiré dans cette page.', reason: 'counts', ms: 1200, read: 150, total: 3700, v: 2 },
-    { headers: { origin: 'https://www.wiki-masters.com' } });
-  assert.deepEqual([r.status, r.json], [200, { ok: true }]);
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  let e = await last();
-  assert.deepEqual([e.kind, e.result, e.message], ['full', 'error', 'Ta session WikiMasters a expiré dans cette page.']);
-  assert.deepEqual(e.data, { client: true, via: 'relie', code: 'session', reason: 'counts', ms: 1200, read: 150, total: 3700, v: 2 });
-  assert.equal((await call('GET', 'me', { key: vera.key })).json.last_sync.result, 'error');
-  // Préflight CORS ; autre origine : pas d'en-tête CORS.
-  r = await call('OPTIONS', 'sync-log', { headers: { origin: 'https://wiki-masters.com' } });
-  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [204, 'https://wiki-masters.com']);
-  r = await report({ message: 'x' }, { headers: { origin: 'https://evil.example' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  // Validation : message absent, kind inconnu, nombres invalides → 400 ; corps de plus de 2 Ko → 413.
-  for (const body of [{}, { message: '  ' }, { message: 'x', kind: 'autre' }, { message: 'x', ms: -1 }, { message: 'x', read: 1.5 }]) {
-    assert.equal((await report(body)).status, 400, JSON.stringify(body));
-  }
-  r = await report({ message: 'x'.repeat(3000) });
-  assert.equal(r.status, 413);
-  // Code et chemin inconnus : « other » et « clic » ; rien qui ressemble à un secret ne reste dans le message.
-  r = await report({ message: `Jeton eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJl, clé ${'A'.repeat(43)}, lien https://x/#cle=${'b'.repeat(43)} fin`, code: 'zzz', via: 'cookie' });
-  assert.equal(r.status, 200);
-  e = await last();
-  assert.ok(!/eyJ|AAAAAAAA|bbbbbbbb/.test(e.message), e.message);
-  assert.match(e.message, /^Jeton …, clé …, lien https:\/\/x\/… fin$/);
-  assert.deepEqual([e.data.code, e.data.via], ['other', 'clic']);
-  // Clé principale acceptée aussi ; sans clé, 401.
-  assert.equal((await call('POST', 'sync-log', { key: vera.key, body: { message: 'depuis la page' } })).status, 200);
-  assert.equal((await call('POST', 'sync-log', { body: { message: 'x' } })).status, 401);
-  // Débit : 30 signalements par heure (répétitions d'une ligne regroupée comprises), puis 429.
-  let ok = 4; // déjà quatre signalements cette heure-ci
-  for (let i = 0; i < 40; i++) {
-    r = await report({ message: `échec ${i % 2}` });
-    if (r.status !== 200) break;
-    ok++;
-  }
-  assert.deepEqual([ok, r.status], [30, 429]);
-  assert.match(r.json.error, /Trop de signalements/);
-  assert.ok((await call('GET', 'sync-log', { key: vera.key })).json.entries.length <= 30);
-  await call('DELETE', 'me', { key: vera.key });
-});
-
-await test('synchros en même temps : une lecture commencée avant celle déjà appliquée ne passe jamais par-dessus (superseded), contrôlé dans la transaction', async () => {
+await test('lectures en même temps : une lecture commencée avant celle déjà appliquée ne passe jamais par-dessus (superseded), contrôlé dans la transaction', async () => {
   const wes = await signup('Wes');
-  const imp = (await call('POST', 'import-key', { key: wes.key })).json.import_key;
-  const ago = (s) => new Date(Date.now() - s * 1000).toISOString();
   const ids = async () => new Set((await call('GET', 'cards', { key: wes.key })).json.cards.map((c) => c.id));
   const A = synth(20);
+  await seedCards(wes.key, A);
   const B = [...synth(19, 1), ...synth(1, 100)]; // carte-00000 partie, carte-00100 arrivée
-  // B, commencée après A mais finie avant : appliquée.
-  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'B', part: 0, last: true, cards: B, stats: statsOf(B), started: ago(5) } });
-  assert.equal(r.json.complete, true);
-  // A, commencée avant B, finit après : rien d'écrit (sinon carte-00100 disparaîtrait et carte-00000 reviendrait).
-  const writes = countCardWrites(true);
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'A', part: 0, last: true, cards: A, stats: statsOf(A), started: ago(10), via: 'relie' } });
-  assert.deepEqual([r.status, r.json.superseded, r.json.count, writes()], [200, true, 20, 0]);
-  countCardWrites(false);
-  let now = await ids();
-  assert.ok(now.has('carte-00100') && !now.has('carte-00000'));
-  let [e] = (await call('GET', 'sync-log', { key: wes.key })).json.entries;
-  assert.deepEqual([e.kind, e.result, e.data.superseded, e.data.via], ['full', 'ok', true, 'relie']);
-  assert.match(e.message, /^Lecture remplacée : une synchro plus récente/);
-  // Synchro rapide partie avant B : pareil.
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: statsOf(B), started: ago(8) } });
-  assert.deepEqual([r.json.quick, r.json.superseded], [true, true]);
-  // Ancien favori (sans « started ») : pas de contrôle, appliqué comme avant.
-  r = await call('POST', 'import', { key: imp, body: { cards: A, stats: statsOf(A) } });
-  assert.deepEqual([r.json.complete, r.json.superseded], [true, undefined]);
-  assert.ok((await ids()).has('carte-00000'));
-  // Contrôle dans la transaction : une lecture plus récente appliquée entre les comptes et l'écriture → rien d'écrit.
-  const sneaky = { ...env, DB: { prepare: (sql) => env.DB.prepare(sql), batch: async (sts) => {
+  await setGameCards(wes.key, B);
+  // Une lecture plus récente est appliquée entre les comptes et l'écriture (lecture automatique, autre appareil) : rien
+  // d'écrit (sinon carte-00000 disparaîtrait et carte-00100 arriverait par-dessus une lecture plus récente).
+  const sneaky = { ...env, DB: { sqlite: env.DB.sqlite, prepare: (sql) => env.DB.prepare(sql), batch: async (sts) => {
     if (sts.some((x) => x.sql.includes('INSERT INTO cards ('))) {
-      env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.read_at', ?) WHERE id = ?").run(ago(1), wes.user.id);
+      env.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.read_at', ?) WHERE id = ?").run(new Date(Date.now() + 1000).toISOString(), wes.user.id);
     }
     return env.DB.batch(sts);
   } } };
-  r = await call('POST', 'import', { e: sneaky, key: imp, body: { cards: B, stats: statsOf(B), started: ago(3) } });
-  assert.equal(r.json.superseded, true, JSON.stringify(r.json));
-  now = await ids();
+  const writes = countCardWrites(true);
+  const r = await refreshNow(wes.key, sneaky);
+  assert.deepEqual([r.status, r.json.superseded, r.json.count, writes()], [200, true, 20, 0], JSON.stringify(r.json));
+  countCardWrites(false);
+  const now = await ids();
   assert.ok(now.has('carte-00000') && !now.has('carte-00100'), 'aucune carte écrite ni retirée');
+  const [e] = (await call('GET', 'sync-log', { key: wes.key })).json.entries;
+  assert.deepEqual([e.kind, e.result, e.data.superseded, e.data.via], ['full', 'ok', true, 'clic']);
+  assert.match(e.message, /^Lecture remplacée : une lecture plus récente/);
+  assert.deepEqual([rows('SELECT sync_lock FROM users WHERE id = ?', wes.user.id)[0].sync_lock, rows('SELECT COUNT(*) AS n FROM refresh_staging WHERE user_id = ?', wes.user.id)[0].n],
+    [null, 0], 'bail rendu et attente vidée dans la même transaction');
   await call('DELETE', 'me', { key: wes.key });
 });
 
-await test('catégorie du jeu (et autres champs de la carte) : relue par la synchro rapide et par une lecture non vérifiée, sans toucher aux exemplaires ; catégorie trop longue coupée, la carte gardée', async () => {
+await test('catégorie du jeu (et autres champs de la carte) : relue par une lecture non vérifiée, sans toucher aux exemplaires ; catégorie trop longue coupée, la carte gardée', async () => {
   const gaby = await signup('Gaby');
-  const imp = (await call('POST', 'import-key', { key: gaby.key })).json.import_key;
   const mine = async () => new Map((await call('GET', 'cards', { key: gaby.key })).json.cards.map((c) => [c.id, c]));
   const rev = async () => (await call('GET', 'me', { key: gaby.key })).json.cards_rev;
-  const rc = (cards) => cards.reduce((o, c) => ({ ...o, [c.rarity]: (o[c.rarity] || 0) + c.count }), {});
   const five = synth(5).map((c, i) => ({ ...c, rarity: 'R', count: i === 1 ? 3 : 1, category: `catégorie ${i}` }));
-  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'g1', part: 0, last: true, cards: five, stats: { ...statsOf(five), rarityCounts: rc(five) },
-    rows: 7, copies: 7, last_at: '2026-10-15T09:00:00.000Z' } });
+  let r = await seedCards(gaby.key, five);
   assert.deepEqual([r.json.count, r.json.complete], [5, true]);
-  // Synchro rapide : un exemplaire de plus de carte-00000, dont le jeu a changé la catégorie, l'image et les vues.
   const before = (await mine()).get('carte-00000');
-  const copy = { ...five[0], count: 1, rarity: 'R', category: 'maladie infectieuse', image: 'https://upload.wikimedia.org/neuve.jpg', pageviews: 4321,
-    obtained_at: '2026-10-16T09:00:00.000Z' };
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [copy], rows: 1, copies: 1, last_at: copy.obtained_at,
-    stats: { total: 8, totalUnique: 5, rarityCounts: { R: 8 } } } });
-  assert.deepEqual([r.json.quick, r.json.count], [true, 5], JSON.stringify(r.json));
-  let now = (await mine()).get('carte-00000');
-  assert.deepEqual([now.category, now.image, now.pageviews, now.count, now.obtained_at, now.rarity, now.title],
-    ['maladie infectieuse', copy.image, 4321, before.count + 1, before.obtained_at, 'R', before.title], 'champs de la carte repris, exemplaires additionnés');
-  // Lecture non vérifiée (le jeu compte une carte de plus) : carte-00001 n'est lue qu'en partie (1 exemplaire sur 3, rareté
-  // plus basse) et sa catégorie a changé ; carte-00002 a une catégorie de 600 caractères (coupée à 500, la carte gardée) ;
-  // les autres sont inchangées (même révision).
   const r0 = await rev();
-  const partial = five.map((c, i) => (i === 0 ? { ...c, category: 'maladie infectieuse', image: copy.image, pageviews: 4321 }
+  // Lecture non vérifiée (le jeu compte deux exemplaires de plus) : carte-00000 a changé de catégorie, d'image et de vues ;
+  // carte-00001 n'est lue qu'en partie (1 exemplaire sur 3, rareté plus basse) et sa catégorie a changé ; carte-00002 a une
+  // catégorie de 600 caractères (coupée à 500, la carte gardée) ; les autres sont inchangées (même révision).
+  const image = 'https://upload.wikimedia.org/neuve.jpg';
+  const partial = five.map((c, i) => (i === 0 ? { ...c, category: 'maladie infectieuse', image, pageviews: 4321 }
     : i === 1 ? { ...c, count: 1, rarity: 'C', category: 'maladie' } : i === 2 ? { ...c, category: 'x'.repeat(600) } : c));
-  // (En entrées brutes du jeu, comme le rafraîchissement par cookie.)
-  const asEntry = (c) => ({ id: 'e-' + c.id, card_id: c.id, count: c.count, is_shiny: c.shiny, starred: c.starred, obtained_at: c.obtained_at,
-    card: { id: c.id, wikipedia_title: c.title, rarity: c.rarity, atk: c.atk, def: c.def, q_score: c.quality, pageviews: c.pageviews, category: c.category,
-      image_url: c.image, hide_image: false, wikipedia_url: c.url } });
-  r = await call('POST', 'import', { key: imp, body: { collection: partial.map(asEntry), stats: { total: 9, totalUnique: 6 }, via: 'clic' } });
+  const p = supa.player(await setGameCards(gaby.key, partial));
+  p.phantom = 2;
+  r = await refreshNow(gaby.key);
   assert.deepEqual([r.json.count, r.json.complete, r.json.removed, r.json.kept, r.json.skipped], [5, false, 0, 0, 0], JSON.stringify(r.json));
   const all = await mine();
+  const zero = all.get('carte-00000');
+  assert.deepEqual([zero.category, zero.image, zero.pageviews, zero.count, zero.obtained_at, zero.rarity, zero.title],
+    ['maladie infectieuse', image, 4321, before.count, before.obtained_at, 'R', before.title], 'champs de la carte repris, exemplaires gardés');
   const one = all.get('carte-00001');
   assert.deepEqual([one.category, one.count, one.rarity], ['maladie', 3, 'R'], 'catégorie reprise ; exemplaires et rareté gardés');
   assert.equal(all.get('carte-00002').category, 'x'.repeat(500));
-  assert.equal(all.get('carte-00000').count, before.count + 1, 'exemplaires de la synchro rapide gardés');
   const changed = (await call('GET', `cards?since=${r0}`, { key: gaby.key })).json.cards.map((c) => c.id).sort();
-  assert.deepEqual(changed, ['carte-00001', 'carte-00002'], 'seules les cartes dont un champ a changé prennent une nouvelle révision');
+  assert.deepEqual(changed, ['carte-00000', 'carte-00001', 'carte-00002'], 'seules les cartes dont un champ a changé prennent une nouvelle révision');
   const [e] = (await call('GET', 'sync-log', { key: gaby.key })).json.entries;
-  assert.deepEqual([e.result, e.data.updated], ['warn', 2]);
-  assert.match(e.message, /^Lecture incomplète : 5 cartes lues, le jeu en compte 6 : aucune nouvelle carte, 2 cartes déjà là mises à jour \(catégorie du jeu, image, vues…\), aucune carte retirée\./);
-  // Favori (CarteImport) : même règle ; relue telle quelle, rien ne change (pas de nouvelle révision).
+  assert.deepEqual([e.result, e.data.updated], ['warn', 3]);
+  assert.match(e.message, /^Lecture incomplète : 5 exemplaires lus, le jeu en compte 7 : aucune nouvelle carte, 3 cartes déjà là mises à jour \(catégorie du jeu, image, vues…\), aucune carte retirée\./);
+  // Relue telle quelle : rien ne change (pas de nouvelle révision).
   const r1 = await rev();
-  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[3], category: 'y'.repeat(501) }], stats: { total: 9, totalUnique: 6 } } });
-  assert.deepEqual([r.json.skipped, (await mine()).get('carte-00003').category], [0, 'y'.repeat(500)]);
-  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[3], category: 'y'.repeat(501) }], stats: { total: 9, totalUnique: 6 } } });
-  assert.equal(await rev(), r1 + 1, 'une relecture identique ne change rien');
+  await refreshNow(gaby.key);
+  p.phantom = 0;
+  assert.equal(await rev(), r1, 'une relecture identique ne change rien');
   // Coupe au milieu d'une paire de substitution (émoji au 500e caractère) : la moitié restante est retirée.
-  r = await call('POST', 'import', { key: imp, body: { cards: [{ ...five[4], category: 'z'.repeat(499) + '😀' }], stats: { total: 9, totalUnique: 6 } } });
+  await seedCards(gaby.key, five.map((c, i) => (i === 4 ? { ...c, category: 'z'.repeat(499) + '😀' } : c)));
   assert.equal((await mine()).get('carte-00004').category, 'z'.repeat(499));
   await call('DELETE', 'me', { key: gaby.key });
 });
 
-await test('tags du jeu (gtags) : lus par le favori 3 et les entrées brutes, gardés avec leur couleur ; réunis par la synchro rapide et une lecture non vérifiée, remplacés par une lecture vérifiée qui les a lus, gardés sinon ; tagOptions changés → relecture complète ; forme inconnue au journal', async () => {
+await test('tags du jeu (gtags) : lus avec leur couleur, nettoyés, 30 au plus ; réunis par une lecture non vérifiée, remplacés par une lecture vérifiée ; jamais mêlés aux étiquettes du classeur', async () => {
   const hugo = await signup('Hugo');
-  const imp = (await call('POST', 'import-key', { key: hugo.key })).json.import_key;
   const mine = async () => new Map((await call('GET', 'cards', { key: hugo.key })).json.cards.map((c) => [c.id, c]));
-  const state = () => JSON.parse(rows('SELECT sync_state FROM users WHERE id = ?', hugo.user.id)[0].sync_state);
-  const opts = [{ id: 'u1', name: 'Maladie', color: '#ef4444' }, { id: 'u2', name: 'Fléau', color: '#94a3b8' }];
+  const uid = uidOf(hugo.key);
   const four = synth(4).map((c) => ({ ...c, rarity: 'C', count: 1 }));
-  const many = Array.from({ length: 35 }, (_, i) => `Tag ${String(i).padStart(2, '0')} ${'x'.repeat(i === 0 ? 70 : 0)}`);
-  const cards = [{ ...four[0], gtags: ['Maladie', '  Fléau  ', 'Maladie', 12, null], gtagc: { Maladie: '#EF4444', 'Fléau': 'rouge', Autre: '#000' } },
-    { ...four[1], gtags: [] }, { ...four[2] }, { ...four[3], gtags: many }];
-  const game = { total: 4, totalUnique: 4, rarityCounts: { C: 4 }, tagOptions: opts };
-  let r = await call('POST', 'import', { key: imp, body: { upload_id: 'h1', part: 0, last: true, cards, stats: game, rows: 4, copies: 4, last_at: '2026-10-15T09:00:00.000Z', v: 3 } });
+  const many = Array.from({ length: 35 }, (_, i) => ({ id: `m${i}`, name: `Tag ${String(i).padStart(2, '0')} ${'x'.repeat(i === 0 ? 70 : 0)}`, color: null }));
+  const tagged = (c, tags, eid) => rowOf(c, { uid, tags, eid });
+  let r = await seedCards(hugo.key, [
+    tagged(four[0], [{ id: 'u1', name: 'Maladie', color: '#EF4444' }, { id: 'u2', name: '  Fléau  ', color: 'rouge' }, { id: 'u3', name: 'Maladie', color: null }, { id: 'u4', color: '#000' }]),
+    tagged(four[1], []), tagged(four[2], []), tagged(four[3], many),
+  ]);
   assert.deepEqual([r.json.count, r.json.complete], [4, true], JSON.stringify(r.json));
   let all = await mine();
-  // Nettoyés (espaces, doublons, autre chose que du texte ou un nombre), triés ; couleur valide seulement, en minuscules ;
-  // aucun : pas de clé.
-  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc], [['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }]);
+  // Nettoyés (espaces, doublons, objet sans nom), triés ; couleur valide seulement, en minuscules ; aucun : pas de clé.
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc], [['Fléau', 'Maladie'], { Maladie: '#ef4444' }]);
   assert.ok(!('gtags' in all.get('carte-00001')) && !('gtags' in all.get('carte-00002')) && !('gtagc' in all.get('carte-00001')));
   assert.equal(all.get('carte-00003').gtags.length, 30);
   assert.ok(all.get('carte-00003').gtags.every((t) => t.length <= 60), 'tags du jeu de 60 caractères au plus');
-  assert.equal(state().tsig, tagSig(opts), 'signature des tags du jeu gardée');
   assert.ok(!JSON.stringify(rows('SELECT * FROM tags')).includes('Maladie'), 'tags du jeu mêlés aux tags du classeur');
-  // Synchro rapide : un exemplaire de carte-00001 avec un tag, un de carte-00000 sans : réunis (jamais retirés).
-  const copyOf = (c, gtags, at) => ({ ...c, count: 1, gtags, obtained_at: at });
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [copyOf(four[1], ['Virus'], '2026-10-16T09:00:00.000Z'), copyOf(four[0], [], '2026-10-16T09:00:00.000Z')],
-    rows: 2, copies: 2, last_at: '2026-10-16T09:00:00.000Z', stats: { ...game, total: 6, rarityCounts: { C: 6 } }, v: 3 } });
-  assert.deepEqual([r.json.quick, r.json.count], [true, 4], JSON.stringify(r.json));
-  all = await mine();
-  assert.deepEqual([all.get('carte-00001').gtags, all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00000').count],
-    [['Virus'], ['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }, 2]);
-  // tagOptions dans un autre ordre : rien ne change ; un tag créé dans le jeu : relecture complète demandée, rien d'écrit.
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [...opts].reverse() }, v: 3 } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [...opts, { id: 'u3', name: 'Virus' }] }, v: 3 } });
-  assert.deepEqual(r.json, { needs_full: true, reason: 'tags' });
-  // Favori d'avant les tags du jeu (version 2) : pas de contrôle ; sa lecture complète vérifiée ne les efface pas.
-  r = await call('POST', 'import', { key: imp, body: { mode: 'delta', cards: [], rows: 0, copies: 0, stats: { ...game, total: 6, rarityCounts: { C: 6 }, tagOptions: [] }, v: 2 } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  const plain = four.map((c, i) => ({ ...c, count: i < 2 ? 2 : 1 }));
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h2', part: 0, last: true, cards: plain, stats: { total: 6, totalUnique: 4 }, v: 2 } });
-  assert.equal(r.json.complete, true, JSON.stringify(r.json));
-  all = await mine();
-  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00001').gtags], [['12', 'Fléau', 'Maladie'], { Maladie: '#ef4444' }, ['Virus']]);
-  assert.equal(state().tsig, tagSig(opts), 'signature gardée par une lecture qui ne lit pas les tags');
-  // Lecture vérifiée du favori 3 : ses tags remplacent ceux du classeur (Fléau et 12 retirés dans le jeu ; carte-00001 n'en
-  // a plus) ; nouvelle signature.
-  const opts2 = [opts[0]];
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h3', part: 0, last: true, cards: plain.map((c, i) => (i === 0 ? { ...c, gtags: ['Maladie'], gtagc: { Maladie: '#ef4444' } } : { ...c, gtags: [] })),
-    stats: { total: 6, totalUnique: 4, tagOptions: opts2 }, v: 3 } });
-  assert.equal(r.json.complete, true);
-  all = await mine();
-  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00001').gtags, all.get('carte-00003').gtags], [['Maladie'], undefined, undefined]);
-  assert.equal(state().tsig, tagSig(opts2));
-  // Lecture non vérifiée (le jeu compte une carte de plus) : tags réunis, exemplaires gardés ; forme inconnue signalée par
-  // le favori (types et clés seulement), notée au journal ; une forme pleine de caractères inattendus : « autre ».
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h4', part: 0, last: true, cards: plain.map((c, i) => (i === 0 ? { ...c, count: 1, gtags: ['Peste'] } : { ...c, gtags: [] })),
-    stats: { total: 7, totalUnique: 5, tagOptions: opts2 }, v: 3, gtags_odd: '{id,color}' } });
+  // Lecture non vérifiée (un exemplaire compté en plus) : un exemplaire de carte-00001 avec un tag, carte-00000 sans : réunis
+  // (jamais retirés).
+  const p = supa.player(await setGameCards(hugo.key, [tagged(four[0], []), tagged(four[1], ['Virus']), tagged(four[2], []), tagged(four[3], [])]));
+  p.phantom = 1;
+  r = await refreshNow(hugo.key);
+  p.phantom = 0;
   assert.deepEqual([r.json.complete, r.json.removed], [false, 0]);
   all = await mine();
-  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00000').count], [['Maladie', 'Peste'], { Maladie: '#ef4444' }, 2]);
+  assert.deepEqual([all.get('carte-00001').gtags, all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00003').gtags.length],
+    [['Virus'], ['Fléau', 'Maladie'], { Maladie: '#ef4444' }, 30]);
   let [e] = (await call('GET', 'sync-log', { key: hugo.key })).json.entries;
-  assert.deepEqual([e.result, e.data.updated, e.data.gtags_odd], ['warn', 1, '{id,color}']);
-  assert.match(e.message, /1 carte déjà là mise à jour .* Tags du jeu dans un format inconnu \(\{id,color\}\) : ils n'ont pas été lus\.$/);
-  r = await call('POST', 'import', { key: imp, body: { upload_id: 'h5', part: 0, last: true, cards: plain, stats: { total: 7, totalUnique: 5 }, v: 2, gtags_odd: '<b>oups</b>' } });
-  [e] = (await call('GET', 'sync-log', { key: hugo.key })).json.entries;
-  assert.equal(e.data.gtags_odd, 'autre', JSON.stringify(e));
-  // Entrées brutes du jeu (rafraîchissement, ancien favori) : entry.tags = [{id, name, color}] lus, ou un identifiant
-  // traduit par tagOptions ; un objet sans nom ni identifiant connu est ignoré.
-  const ent = (c, tags) => ({ id: 'e-' + c.id, card_id: c.id, count: 1, obtained_at: c.obtained_at, card: { id: c.id, wikipedia_title: c.title, rarity: 'C' }, tags });
-  r = await call('POST', 'import', { key: imp, body: { collection: [ent(four[0], [{ id: 'u1', name: 'Maladie', color: '#EF4444' }, { id: 'u9' }, { id: 'u7', color: '#000' }]), ent(four[1], ['Virus', 7])],
-    stats: { tagOptions: [{ id: 'u9', name: 'Neuf' }] } } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([e.result, e.data.updated], ['warn', 1]);
+  // Lecture vérifiée : ses tags remplacent ceux du classeur (Fléau retiré dans le jeu ; un second exemplaire de carte-00000
+  // porte Peste ; les autres n'en ont plus).
+  r = await seedCards(hugo.key, [tagged(four[0], [{ id: 'u1', name: 'Maladie', color: '#ef4444' }]), tagged(four[0], ['Peste'], 'ex-bis'), tagged(four[1], []),
+    tagged(four[2], []), tagged(four[3], [])]);
+  assert.equal(r.json.complete, true);
   all = await mine();
-  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc], [['Maladie', 'Neuf', 'Peste'], { Maladie: '#ef4444' }]);
-  assert.deepEqual(all.get('carte-00001').gtags, ['7', 'Virus']);
+  assert.deepEqual([all.get('carte-00000').gtags, all.get('carte-00000').gtagc, all.get('carte-00000').count, all.get('carte-00001').gtags, all.get('carte-00003').gtags],
+    [['Maladie', 'Peste'], { Maladie: '#ef4444' }, 2, undefined, undefined]);
   await call('DELETE', 'me', { key: hugo.key });
-});
-
-await test('refresh : deux lectures en même temps (deux onglets) → la plus ancienne s\'arrête (jeton run) ; compteurs changés pendant la lecture → rien de retiré', async () => {
-  const e2 = makeEnv({ REFRESH_PAUSE_MS: '0' });
-  const xia = await signup('Xia', e2);
-  await call('POST', 'session', { key: xia.key, body: { cookie: 'sid=x' }, e: e2 });
-  const entries = Array.from({ length: 15 * 50 }, (_, i) => tiny(i));
-  mockGame(entries);
-  const a = await call('POST', 'refresh', { key: xia.key, body: { page: 0 }, e: e2 });
-  const b = await call('POST', 'refresh', { key: xia.key, body: { page: 0 }, e: e2 });
-  assert.notEqual(a.json.run, b.json.run);
-  let r = await call('POST', 'refresh', { key: xia.key, body: { page: a.json.next_page, run: a.json.run }, e: e2 });
-  assert.equal(r.status, 409);
-  assert.match(r.json.error, /Une autre mise à jour a commencé entre-temps/);
-  r = await call('POST', 'refresh', { key: xia.key, body: { page: b.json.next_page, run: b.json.run }, e: e2 });
-  assert.deepEqual([r.json.done, r.json.count, r.json.complete], [true, 750, true]);
-  let list = (await call('GET', 'sync-log', { key: xia.key, e: e2 })).json.entries;
-  assert.deepEqual(list.slice(0, 2).map((x) => [x.kind, x.result, x.data.via]), [['full', 'ok', 'cookie'], ['full', 'error', 'cookie']]);
-  assert.equal((await call('POST', 'refresh', { key: xia.key, body: { page: 10, run: 'pas valide !' }, e: e2 })).status, 400);
-  // Une carte défaussée pendant la lecture : compteurs relus à la fin différents, rien n'est retiré.
-  mockGame(entries.slice(0, 700));
-  const inner = globalThis.fetch;
-  let statsCalls = 0;
-  globalThis.fetch = async (url, init) => (String(url).includes('/stats') && ++statsCalls === 2
-    ? new Response(JSON.stringify({ total: 699, totalUnique: 699, rarityCounts: {} }), { status: 200, headers: { 'content-type': 'application/json' } })
-    : inner(url, init));
-  r = await call('POST', 'refresh', { key: xia.key, body: { page: 0, full: true }, e: e2 });
-  while (r.json.done === false) r = await call('POST', 'refresh', { key: xia.key, body: { page: r.json.next_page, run: r.json.run }, e: e2 });
-  assert.deepEqual([r.json.count, r.json.complete, r.json.moved, r.json.removed, r.json.kept], [750, false, true, 0, 50]);
-  [list] = [(await call('GET', 'sync-log', { key: xia.key, e: e2 })).json.entries];
-  assert.equal(list[0].result, 'warn');
-  assert.match(list[0].message, /^Ta collection a bougé pendant la lecture .* aucune carte retirée \(50 cartes non vues, gardées\)/);
-  globalThis.fetch = realFetch;
 });
 
 // --- Partage entre membres ---------------------------------------------------------------------------------------
@@ -2889,15 +2024,13 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   const pageOf = (u, id, part) => call('GET', `members/${id}/cards${part === undefined ? '' : `?part=${encodeURIComponent(part)}`}`, { key: u.key });
   const pubOf = (u) => rows('SELECT public_id FROM users WHERE id = ?', u.user.id)[0].public_id;
 
-  // Ben : des cartes, des étiquettes, une collection à compléter, des préférences, une session du jeu, une clé d'import.
+  // Ben : des cartes (et une session du jeu reliée), des étiquettes, une collection à compléter, des préférences.
   const benCards = synth(12, 200);
-  await upload(ben.key, benCards);
+  await seedCards(ben.key, benCards);
   const dupe = benCards[3];
   await call('POST', 'tags/set', { key: ben.key, body: { card_id: dupe.id, tags: ['Étiquette-secrète'] } });
   await call('POST', 'targets/save', { key: ben.key, body: { name: 'Collection-secrète', items: [{ title: 'Article-secret', status: 'ok' }] } });
   await call('PATCH', 'me', { key: ben.key, body: { prefs: { note: 'préférence-secrète' } } });
-  await call('POST', 'session', { key: ben.key, body: { cookie: 'sb-auth=cookie-secret' } });
-  const benImport = (await call('POST', 'import-key', { key: ben.key })).json.import_key;
 
   // Activé par défaut à la création (2026-10-16), cartes et collections ; ce test part de comptes qui l'ont coupé.
   for (const u of [ana, ben, cleo]) {
@@ -2943,10 +2076,6 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.id, m.name, m.count]), [[anaPub, 'Ana', 0]]);
   assert.equal((await members(cleo)).status, 403);
   assert.equal((await pageOf(cleo, benPub)).status, 403);
-  // La clé d'import (favori) ne lit ni n'active rien.
-  assert.equal((await call('GET', 'members', { key: benImport })).status, 401);
-  assert.equal((await call('PATCH', 'me', { key: benImport, body: { shared: false } })).status, 401);
-  assert.equal((await call('GET', `members/${anaPub}/cards`, { key: benImport })).status, 401);
 
   // Les cartes de Ben vues par Ana : liste blanche de champs, sans étiquettes ; même ordre que GET /api/cards.
   r = await pageOf(ana, benPub, '0');
@@ -2963,8 +2092,8 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   {
     const sale = { p: 120, n: 4, w: null, l: 118, d: '2026-10-15T10:00:00.000Z' };
     const v0 = { [own[0].rarity]: sale, [own[0].rarity + '*']: { ...sale, p: 900, n: 1 } };
-    const sent = await call('POST', 'market/prices', { key: benImport, body: { prices: [{ id: own[0].id, v: v0 }, { id: own[1].id, v: {} }] } });
-    assert.equal(sent.status, 200, JSON.stringify(sent.json));
+    putPrice(env, own[0].id, v0);
+    putPrice(env, own[1].id, {});
     const priced = await pageOf(ana, benPub, '0');
     assert.deepEqual(priced.json.cards[0], { ...r.json.cards[0], v: v0 });
     assert.deepEqual(priced.json.cards.slice(1), r.json.cards.slice(1), 'sans cote (ou sans vente) : pas de « v »');
@@ -2974,11 +2103,12 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   // Rien de personnel dans les réponses : ni étiquettes, ni collections, ni préférences, ni clés, ni session, ni id interne.
   const text = JSON.stringify([r.json, (await members(ana)).json, (await members(ben)).json]);
   const [benRow] = rows('SELECT * FROM users WHERE id = ?', ben.user.id);
-  for (const secret of ['Étiquette-secrète', 'Collection-secrète', 'Article-secret', 'préférence-secrète', 'cookie-secret', ben.key, benImport,
-    benRow.key_hash, benRow.import_key_hash, benRow.cookie_enc, ben.user.id, ana.user.id, '"tags"', '"starred"', '"obtained_at"', '"atk"', '"quality"', 'sync_state']) {
+  const benGame = supa.player(benRow.game_uid);
+  for (const secret of ['Étiquette-secrète', 'Collection-secrète', 'Article-secret', 'préférence-secrète', ben.key, benRow.key_hash,
+    benRow.game_session_enc, benRow.game_uid, benGame.access, benGame.refresh, ben.user.id, ana.user.id, '"tags"', '"starred"', '"obtained_at"', '"atk"', '"quality"', 'sync_state']) {
     assert.ok(!text.includes(secret), `fuite : ${secret}`);
   }
-  assert.ok(benRow.cookie_enc && benRow.import_key_hash, 'la session et la clé d\'import existent bien');
+  assert.ok(benRow.game_session_enc && benRow.game_uid, 'la session du jeu existe bien');
 
   // 404 : identifiant inconnu, mal formé, ou d'un membre qui ne partage pas ; route inconnue sous members/.
   const cleoPub = 'x'.repeat(12);
@@ -3008,7 +2138,7 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
 
   // Pages de 1 000 par clé : 2 500 cartes → 1 000, 1 000, 500 ; curseur opaque rendu tel quel.
   const dan = await signup('Dan');
-  await upload(dan.key, mini(2500));
+  await seedCards(dan.key, mini(2500));
   await share(dan, true);
   const danPub = pubOf(dan);
   const got = [];
@@ -3036,11 +2166,9 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.ok(plan.some((l) => /^SEARCH p USING (INDEX sqlite_autoindex_prices_1|PRIMARY KEY) \(card_id=\?\)/.test(l)), plan.join('\n'));
   assert.ok(!plan.some((l) => /^SCAN (c|cards|tags|p|prices)\b/.test(l)) && !/\btags\b/.test(sql), plan.join('\n'));
   // Coût : JavaScript d'une page de 1 000 cartes (rejouée), toutes cotées, et de la liste des membres.
-  const danImport = (await call('POST', 'import-key', { key: dan.key })).json.import_key;
   const danSale = { p: 50, n: 3, w: 40, l: 49, d: '2026-10-15T10:00:00.000Z' };
   for (let k = 0; k < 2; k++) {
-    const prices = mini(2500).slice(k * 500, (k + 1) * 500).map((c) => ({ id: c.id, v: { C: danSale, R: { ...danSale, p: 300 }, 'C*': { ...danSale, n: 1 } } }));
-    assert.equal((await call('POST', 'market/prices', { key: danImport, body: { prices } })).status, 200);
+    for (const c of mini(2500).slice(k * 500, (k + 1) * 500)) putPrice(env, c.id, { C: danSale, R: { ...danSale, p: 300 }, 'C*': { ...danSale, n: 1 } });
   }
   assert.equal((await pageOf(ana, danPub, '0')).json.cards.filter((c) => c.v).length, 1000);
   const p = await profile('GET', `members/${danPub}/cards?part=0`, { key: ana.key });
@@ -3069,8 +2197,8 @@ await test('partage entre membres : collections à compléter (réglage à part,
   const save = (u, body) => call('POST', 'targets/save', { key: u.key, body });
 
   // Ben : des cartes, des étiquettes, deux collections (une à lui, une ajoutée du catalogue), des préférences, une session.
-  await upload(ben.key, synth(6, 300));
-  await upload(ana.key, synth(2, 900)); // Ana : deux cartes (un classeur vide n'est pas listé)
+  await seedCards(ben.key, synth(6, 300));
+  await seedCards(ana.key, synth(2, 900)); // Ana : deux cartes (un classeur vide n'est pas listé)
   await call('POST', 'tags/set', { key: ben.key, body: { card_id: synth(1, 300)[0].id, tags: ['Étiquette-secrète'] } });
   const planets = (await save(ben, { name: 'Planètes', source: 'wp:Catégorie-secrète', items: [
     { title: 'Mars (planète)', description: 'description-secrète', image: 'https://upload.wikimedia.org/image-secrete.jpg', status: 'ok', qid: 'Q111' },
@@ -3080,8 +2208,6 @@ await test('partage entre membres : collections à compléter (réglage à part,
   ] })).json.target;
   const cat = (await save(ben, { name: 'Dieux grecs', source: 'catalog:dieux-grecs', items: [{ title: 'Zeus', qid: 'Q34201', status: 'ok', sep: true }, { title: 'Héra', status: 'ok' }] })).json.target;
   await patch(ben, { prefs: { note: 'préférence-secrète' } });
-  await call('POST', 'session', { key: ben.key, body: { cookie: 'sb-auth=cookie-secret' } });
-  const benImport = (await call('POST', 'import-key', { key: ben.key })).json.import_key;
 
   // Partage activé par défaut depuis 2026-10-16 (cartes et collections) : ce test part de comptes qui l'ont coupé.
   assert.equal((await me(ben)).shared_targets, true);
@@ -3103,12 +2229,10 @@ await test('partage entre membres : collections à compléter (réglage à part,
   r = await targetsOf(ana, benPub);
   assert.equal(r.status, 404);
   assert.match(r.json.error, /collections à compléter/);
-  // Cléo ne montre pas ses cartes : 403, même pour les collections (réciprocité) ; clé d'import : 401.
+  // Cléo ne montre pas ses cartes : 403, même pour les collections (réciprocité).
   r = await targetsOf(cleo, benPub);
   assert.equal(r.status, 403);
   assert.match(r.json.error, /montre d'abord les tiennes/);
-  assert.equal((await call('GET', `members/${benPub}/targets`, { key: benImport })).status, 401);
-  assert.equal((await call('PATCH', 'me', { key: benImport, body: { shared_targets: true } })).status, 401);
 
   // Ben montre aussi ses collections : GET /api/members donne leur nombre et leur dernier changement.
   r = await patch(ben, { shared_targets: true });
@@ -3137,7 +2261,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   const text = JSON.stringify([r.json, (await members(ana)).json, (await members(ben)).json]);
   const [benRow] = rows('SELECT * FROM users WHERE id = ?', ben.user.id);
   for (const secret of ['description-secrète', 'image-secrete', 'Catégorie-secrète', 'catalog:', 'Mercure (homonymie)', 'Article-introuvable', 'Étiquette-secrète',
-    'préférence-secrète', 'cookie-secret', ben.key, benImport, benRow.key_hash, benRow.import_key_hash, benRow.cookie_enc, ben.user.id, ana.user.id,
+    'préférence-secrète', ben.key, benRow.key_hash, benRow.game_session_enc, benRow.game_uid, ben.user.id, ana.user.id,
     '"source"', '"description"', '"image"', '"status"', '"created_at"', '"tags"', 'wp:', 'sync_state']) {
     assert.ok(!text.includes(secret), `fuite : ${secret}`);
   }
@@ -3243,7 +2367,7 @@ await test('partage entre membres : base existante (colonnes ajoutées, index un
   const again = { ...old, DB: createD1(file) };
   r = await call('GET', 'me', { key: 'cle-ancienne', e: again });
   assert.deepEqual([r.status, r.json.shared, r.json.shared_targets], [200, false, false]);
-  assert.equal(again.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM migrations').get().n, 1);
+  assert.equal(again.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM migrations').get().n, 2, 'chaque migration une seule fois');
   old.DB.close();
   again.DB.close();
   await rm(file, { force: true });
@@ -3382,16 +2506,15 @@ await test("chat : suppression par l'auteur seulement (403 sur celui d'un autre,
   e.DB.close();
 });
 
-await test("chat : clé principale seulement (la clé d'import du favori n'y a pas accès), même origine", async () => {
+await test('chat : clé principale seulement, même origine', async () => {
   const { e, say, read, del } = chatEnv();
   const ana = await signup('Ana', e);
   const m = (await say(ana.key, 'Privé')).json.message;
-  const imp = (await call('POST', 'import-key', { key: ana.key, e })).json.import_key;
-  for (const r of [await read(imp), await say(imp, 'Depuis le favori'), await del(imp, m.id), await read(undefined), await say(undefined, 'x')]) {
+  for (const r of [await read('cle-inconnue'), await say('cle-inconnue', 'Pirate'), await del('cle-inconnue', m.id), await read(undefined), await say(undefined, 'x')]) {
     assert.equal(r.status, 401, JSON.stringify(r.json));
     assert.ok(!JSON.stringify(r.json).includes('Privé'));
   }
-  assert.equal((await read(ana.key)).json.messages.length, 1, 'rien envoyé ni supprimé avec la clé du favori');
+  assert.equal((await read(ana.key)).json.messages.length, 1, 'rien envoyé ni supprimé sans la clé');
   const r = await call('GET', 'chat', { key: ana.key, e, headers: { origin: 'https://www.wiki-masters.com' } });
   assert.equal(r.headers.get('access-control-allow-origin'), null, 'pas de CORS pour le jeu');
   e.DB.close();
@@ -3641,334 +2764,81 @@ await test('chat : coût (index chat_by_rev pour ?after, MAX en une ligne, limit
   e.DB.close();
 });
 
-// --- Marché : cotes (cache commun), plan du favori, valeur jour par jour, lecture du marché -----------------------
+// --- Marché : cotes (cache commun), valeur jour par jour ------------------------------------------------------------
 
-// Compte neuf dans une base à part (e), avec sa clé d'import.
-async function marketAccount(e, name) {
-  const u = (await call('POST', 'account', { body: { code: 'invitation', name }, e })).json;
-  u.importKey = (await call('POST', 'import-key', { key: u.key, e })).json.import_key;
-  return u;
-}
-const gameOrigin = { origin: 'https://www.wiki-masters.com' };
-const cote = (p, n, extra = {}) => ({ p, n, w: null, l: p, d: '2026-10-15T10:00:00.000Z', ...extra });
-const mcard = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, count, ...extra });
 const todayUtc = () => new Date().toISOString().slice(0, 10);
 
-await test('marché : exemplaires par rareté et brillance (variants) gardés à l\'import, additionnés en synchro rapide', async () => {
+await test('marché : exemplaires par rareté et brillance (variants) lus dans le jeu (snapshot_rarity, brillance), rareté la plus haute', async () => {
   const e = makeEnv();
   const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
-  const u = await marketAccount(e, 'Vic');
+  const u = await signup('Vic', e);
+  const uid = uidOf(u.key);
   const data = (id) => JSON.parse(q('SELECT data FROM cards WHERE user_id = ? AND card_id = ?', u.user.id, id)[0].data);
-  // CarteImport du favori : variants rangé (clés dans l'ordre binaire) ; somme fausse ou rareté inconnue : oublié, la carte reste.
-  let r = await call('POST', 'import', { key: u.importKey, e, body: { cards: [
-    mcard('a', 'Alpha', 'R', 3, { variants: { R: 2, 'C*': 1 } }),
-    mcard('b', 'Bêta', 'C', 2, { variants: { C: 1 } }),
-    mcard('c', 'Gamma', 'C', 1, { variants: { X: 1 } }),
-    mcard('d', 'Delta', 'L', 1),
-  ], stats: { total: 7, totalUnique: 4 }, rows: 7, copies: 7, last_at: '2026-10-15T09:00:00.000Z' } });
-  assert.equal(r.json.count, 4);
-  assert.deepEqual(data('a').variants, { 'C*': 1, R: 2 });
-  assert.deepEqual(Object.keys(data('a')).slice(-1), ['variants'], 'variants en dernier');
-  for (const id of ['b', 'c', 'd']) assert.equal('variants' in data(id), false, id);
-  // Synchro rapide : additionnés quand les deux côtés les ont ; sinon la carte n'en a plus (jamais « variants: null »).
-  r = await call('POST', 'import', { key: u.importKey, e, body: { mode: 'delta', rows: 3, copies: 3, stats: { total: 10, totalUnique: 5 }, last_at: '2026-10-16T09:00:00.000Z', cards: [
-    mcard('a', 'Alpha', 'R', 1, { variants: { 'R*': 1 } }), mcard('d', 'Delta', 'L', 1, { variants: { L: 1 } }), mcard('e', 'Epsilon', 'SR', 1, { variants: { SR: 1 } }),
-  ] } });
-  assert.equal(r.json.quick, true, JSON.stringify(r.json));
-  assert.deepEqual(data('a').variants, { 'C*': 1, R: 2, 'R*': 1 });
-  assert.equal(data('a').count, 4);
-  assert.equal('variants' in data('d'), false, 'une carte sans détail ne le reçoit pas à moitié');
-  assert.equal(data('d').count, 2);
-  assert.deepEqual(data('e').variants, { SR: 1 });
-  // Entrées brutes (rafraîchissement par cookie, ancien favori) : la rareté de l'exemplaire est son snapshot_rarity.
-  const rawE = (id, n, extra, card = {}) => ({ id, card_id: 'z', count: n, is_shiny: false, obtained_at: '2026-10-01T00:00:00.000Z', ...extra,
-    card: { id: 'z', wikipedia_title: 'Zêta', rarity: 'UR', ...card } });
-  r = await call('POST', 'import', { key: u.key, e, body: { collection: [rawE('z1', 2, { snapshot_rarity: 'R' }), rawE('z2', 1, { is_shiny: true }), rawE('z3', 1, { snapshot_rarity: 'X' })], stats: { total: 4, totalUnique: 1 } } });
-  assert.equal(r.json.count, 1);
+  // La rareté d'un exemplaire est son snapshot_rarity (celle des ventes du marché) ; inconnu : celle de la carte.
+  const z = { id: 'z', title: 'Zêta', rarity: 'UR', count: 1 };
+  const r = await seedCards(u.key, [
+    rowOf({ ...z, count: 2 }, { uid, eid: 'z1', snapshot_rarity: 'R' }),
+    rowOf({ ...z, shiny: true }, { uid, eid: 'z2' }),
+    rowOf(z, { uid, eid: 'z3', snapshot_rarity: 'X' }),
+    rowOf({ id: 'a', title: 'Alpha', rarity: 'C', count: 1 }, { uid, eid: 'a1', snapshot_rarity: 'SR' }),
+  ], { e });
+  assert.deepEqual([r.json.count, r.json.complete, r.json.skipped], [2, true, 0]);
   assert.deepEqual(data('z').variants, { R: 2, UR: 1, 'UR*': 1 });
-  assert.equal(data('z').rarity, 'UR');
+  assert.deepEqual(Object.keys(data('z')).slice(-1), ['variants'], 'variants en dernier');
+  assert.deepEqual([data('z').rarity, data('z').count, data('z').shiny], ['UR', 4, true]);
+  assert.deepEqual([data('a').rarity, data('a').variants], ['SR', { SR: 1 }]);
   e.DB.close();
 });
 
-await test('marché : cotes validées, sans user_id, clé d\'import (CORS du jeu), quotas du jour par classeur et pour le site', async () => {
+await test('marché : valeur du classeur (cotes fiables × exemplaires, un point par jour), après les cotes et les lectures', async () => {
   const e = makeEnv();
   const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
-  const u = await marketAccount(e, 'Mia');
-  const post = (body, key = u.importKey, headers = gameOrigin) => call('POST', 'market/prices', { key, e, body, headers });
-  // Membres seulement : sans clé ou clé inconnue, 401 ; la clé d'import n'ouvre ni la valeur ni les cotes du classeur.
-  for (const [m, p, key] of [['POST', 'market/prices', null], ['POST', 'market/prices', 'x'.repeat(43)], ['POST', 'market/plan', null], ['POST', 'market/live', null],
-    ['GET', 'market', null], ['GET', 'market', u.importKey], ['GET', 'market/prices', u.importKey], ['GET', 'market/prices', null]]) {
-    assert.equal((await call(m, p, { key, e, body: m === 'POST' ? { prices: [] } : undefined })).status, 401, `${m} ${p} ${key ? 'clé' : 'sans clé'}`);
-  }
-  // Formes refusées en entier (400, rien d'écrit).
-  const ok = { id: 'carte-1', v: { R: cote(120, 5), 'R*': cote(800, 1) } };
-  for (const [why, prices] of [
-    ['rareté inconnue', [{ id: 'carte-1', v: { X: cote(1, 3) } }]],
-    ['montant négatif', [{ id: 'carte-1', v: { R: cote(-1, 3) } }]],
-    ['montant démesuré', [{ id: 'carte-1', v: { R: cote(2e9, 3) } }]],
-    ['aucune vente', [{ id: 'carte-1', v: { R: cote(5, 0) } }]],
-    ['ventes non entières', [{ id: 'carte-1', v: { R: cote(5, 2.5) } }]],
-    ['date', [{ id: 'carte-1', v: { R: cote(5, 3, { d: 'hier' }) } }]],
-    ['date à venir', [{ id: 'carte-1', v: { R: cote(5, 3, { d: '2099-01-01T00:00:00.000Z' }) } }]],
-    ['identifiant', [{ id: 'a b', v: {} }]],
-    ['deux fois', [ok, ok]],
-    ['trop', Array.from({ length: 501 }, (_, i) => ({ id: `m${i}`, v: {} }))],
-    ['trop de raretés', [{ id: 'carte-1', v: Object.fromEntries(['C', 'PC', 'R', 'SR', 'UR', 'L'].flatMap((x) => [[x, cote(1, 3)], [x + '*', cote(1, 3)], [x + '**', cote(1, 3)]])) }]],
-  ]) {
-    const r = await post({ prices });
-    assert.equal(r.status, 400, why);
-    assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com', `CORS sur l'erreur (${why})`);
-  }
-  assert.equal(q('SELECT COUNT(*) AS n FROM prices')[0].n, 0);
-  let r = await post({ prices: [ok, { id: 'carte-2', v: {} }] });
-  assert.deepEqual([r.status, r.json.written], [200, 2], JSON.stringify(r.json));
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  r = await call('OPTIONS', 'market/prices', { e, headers: { ...gameOrigin, 'access-control-request-method': 'POST' } });
-  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [204, 'https://www.wiki-masters.com']);
-  r = await call('OPTIONS', 'market/plan', { e, headers: { origin: 'https://evil.example' } });
-  assert.equal(r.headers.get('access-control-allow-origin'), null);
-  // Une cote n'est liée à aucun classeur : pas de user_id, rien de l'utilisateur dans la table.
-  assert.deepEqual(Object.keys(q('SELECT * FROM prices')[0]), ['card_id', 'data', 'read_at']);
-  assert.ok(!JSON.stringify(q('SELECT * FROM prices')).includes(u.user.id));
-  assert.deepEqual(JSON.parse(q("SELECT data FROM prices WHERE card_id = 'carte-1'")[0].data), { R: cote(120, 5), 'R*': cote(800, 1) });
-  // Quota du classeur : 15 000 cotes par jour (abonnement payant ; 2 déjà) ; au-delà 429, rien d'écrit pour cet envoi.
-  // Les 12 000 premières sont comptées sans être envoyées (même effet sur le quota).
-  assert.deepEqual([QUOTA_USER, QUOTA_ALL], [15000, 150000]);
-  for (let k = 0; k < 5; k++) {
-    r = await post({ prices: Array.from({ length: 500 }, (_, i) => ({ id: `q${k}-${i}`, v: {} })) });
-    assert.equal(r.status, 200, JSON.stringify(r.json));
-  }
-  assert.equal(r.json.quota, QUOTA_USER - 2502);
-  e.DB.sqlite.prepare('UPDATE market SET quota_n = quota_n + ? WHERE user_id = ?').run(QUOTA_USER - 3000, u.user.id);
-  r = await post({ prices: Array.from({ length: 499 }, (_, i) => ({ id: `q9-${i}`, v: {} })) });
-  assert.equal(r.status, 429);
-  assert.match(r.json.error, /Quota du jour des cotes atteint/);
-  assert.equal(q("SELECT COUNT(*) AS n FROM prices WHERE card_id LIKE 'q9-%'")[0].n, 0);
-  assert.equal((await post({ prices: Array.from({ length: 498 }, (_, i) => ({ id: `q9-${i}`, v: {} })) })).status, 200);
-  assert.equal((await post({ prices: [{ id: 'encore', v: {} }] })).status, 429);
-  // Le lendemain, le compte repart de zéro.
-  e.DB.sqlite.prepare("UPDATE market SET quota_day = '2000-01-01'").run();
-  assert.equal((await post({ prices: [{ id: 'lendemain', v: {} }] })).status, 200);
-  // Quota du site (tous les classeurs) : un autre classeur est refusé aussi quand il est atteint.
-  const v = await marketAccount(e, 'Noé');
-  e.DB.sqlite.prepare("UPDATE market SET quota_n = ?, quota_day = ? WHERE user_id = '*'").run(QUOTA_ALL - 1, todayUtc());
-  assert.equal((await post({ prices: [{ id: 'n1', v: {} }, { id: 'n2', v: {} }] }, v.importKey)).status, 429);
-  assert.equal((await post({ prices: [{ id: 'n1', v: {} }] }, v.importKey)).status, 200);
-  // La clé principale marche aussi (comme pour /api/import).
-  e.DB.sqlite.prepare('UPDATE market SET quota_n = 0').run();
-  assert.equal((await post({ prices: [{ id: 'n3', v: {} }] }, v.key, {})).status, 200);
-  e.DB.close();
-});
-
-await test('marché : plan du favori (cotes les plus anciennes d\'abord, cartes voulues d\'après les collections)', async () => {
-  const e = makeEnv();
-  const u = await marketAccount(e, 'Paz');
-  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('own-a', 'Alpha', 'C', 1), mcard('own-b', 'Bêta', 'C', 1), mcard('own-c', 'Gamma', 'C', 1), mcard('own-d', 'Delta', 'C', 1)] } });
-  const item = (title, status = 'ok') => ({ title, description: null, image: null, status });
-  await call('POST', 'targets/save', { key: u.key, e, body: { name: 'Ancienne', items: [item('Alpha'), item('Omega'), item('Introuvable', 'missing')] } });
-  await call('POST', 'targets/save', { key: u.key, e, body: { name: 'Récente', items: [item('Psi'), item('Bêta'), item('Omega'), item('Chi')] } });
-  e.DB.sqlite.prepare("UPDATE targets SET updated_at = '2026-01-01T00:00:00.000Z' WHERE name = 'Ancienne'").run();
-  // Cotes : own-a fraîche (pas relue), own-b de plus de 12 h, own-c lue il y a très longtemps, own-d jamais.
-  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: ['own-a', 'own-b', 'own-c'].map((id) => ({ id, v: {} })) } });
-  e.DB.sqlite.prepare("UPDATE prices SET read_at = '2026-10-15T00:00:00.000Z' WHERE card_id = 'own-b'").run();
-  e.DB.sqlite.prepare("UPDATE prices SET read_at = '2026-09-01T00:00:00.000Z' WHERE card_id = 'own-c'").run();
-  let r = await call('POST', 'market/plan', { key: u.importKey, e, body: {}, headers: gameOrigin });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.equal(r.headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  assert.deepEqual(r.json, { cards: ['own-d', 'own-c', 'own-b'], stale: 3, fresh: 1, wanted: ['Psi', 'Omega', 'Chi'], ids: {}, quota: QUOTA_USER - 3 });
-  // Titres résolus par le favori (live) : les voulus connus entrent au plan (après les possédées à égalité).
-  r = await call('POST', 'market/live', { key: u.importKey, e, headers: gameOrigin, body: { ids: { Psi: 'w-psi', Chi: '', Ailleurs: 'w-x' } } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  r = await call('POST', 'market/plan', { key: u.importKey, e, body: {} });
-  assert.deepEqual([r.json.cards, r.json.ids], [['own-d', 'w-psi', 'w-x', 'own-c', 'own-b'], { Psi: 'w-psi', Chi: '' }]);
-  // La clé d'import ne lit que ce plan : rien d'autre du classeur (ni noms des collections, ni titres des cartes possédées).
-  assert.ok(!JSON.stringify(r.json).includes('Ancienne') && !JSON.stringify(r.json).includes('Alpha'));
-  e.DB.close();
-});
-
-await test('marché : valeur du classeur (cotes fiables × exemplaires, un point par jour), après les cotes et les imports', async () => {
-  const e = makeEnv();
-  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
-  const u = await marketAccount(e, 'Rui');
+  const u = await signup('Rui', e);
+  const uid = uidOf(u.key);
   const market = async () => (await call('GET', 'market', { key: u.key, e })).json;
+  const alpha = { id: 'a', title: 'Alpha', rarity: 'R' };
+  const gamma = { id: 'c', title: 'Gamma', rarity: 'L', count: 1 };
   // Sans cote : valeur 0, aucun point écrit.
-  await call('POST', 'import', { key: u.key, e, body: { cards: [
-    mcard('a', 'Alpha', 'R', 3, { variants: { R: 2, 'R*': 1 } }),
-    mcard('b', 'Bêta', 'C', 2, { shiny: true }), // sans détail : approchée (1 brillante, le reste dans sa rareté)
-    mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } }), // pas encore cotée
-  ] } });
+  await seedCards(u.key, [
+    rowOf({ ...alpha, count: 2 }, { uid, eid: 'a1' }), rowOf({ ...alpha, count: 1, shiny: true }, { uid, eid: 'a2' }),
+    rowOf({ id: 'b', title: 'Bêta', rarity: 'C', count: 1 }, { uid, eid: 'b1' }), rowOf({ id: 'b', title: 'Bêta', rarity: 'C', count: 1, shiny: true }, { uid, eid: 'b2' }),
+    rowOf(gamma, { uid, eid: 'c1' }), // pas encore cotée
+  ], { e });
   let m = await market();
-  assert.deepEqual([m.value, m.history, m.live], [{ value: 0, priced: 0, cards: 3, approx: 1 }, [], null]);
+  assert.deepEqual([m.value, m.history, m.live], [{ value: 0, priced: 0, cards: 3, approx: 0 }, [], null]);
   assert.equal(q('SELECT COUNT(*) AS n FROM value_history')[0].n, 0);
-  // Cotes : R* n'a que 2 ventes (pas fiable, hors valeur).
-  const r = await call('POST', 'market/prices', { key: u.importKey, e, body: { last: true, prices: [
-    { id: 'a', v: { R: cote(100, 5), 'R*': cote(500, 2) } }, { id: 'b', v: { C: cote(10, 3), 'C*': cote(50, 4) } },
-  ] } });
-  assert.equal(r.status, 200);
+  // Cotes (R* n'a que 2 ventes : pas fiable, hors valeur) : GET /api/market recalcule et écrit le point du jour.
+  putPrice(e, 'a', { R: cote(100, 5), 'R*': cote(500, 2) });
+  putPrice(e, 'b', { C: cote(10, 3), 'C*': cote(50, 4) });
   const points = () => q('SELECT date, value, priced, cards, at FROM value_history WHERE user_id = ?', u.user.id);
   const todayPoint = () => points().find((p) => p.date === todayUtc());
-  assert.deepEqual(points().map(({ at, ...p }) => p), [{ date: todayUtc(), value: 2 * 100 + 10 + 50, priced: 2, cards: 3 }]);
   m = await market();
-  assert.deepEqual(m.value, { value: 260, priced: 2, cards: 3, approx: 1 });
-  assert.equal(m.history.length, 1);
+  assert.deepEqual(m.value, { value: 2 * 100 + 10 + 50, priced: 2, cards: 3, approx: 0 });
+  assert.deepEqual(points().map(({ at, ...p }) => p), [{ date: todayUtc(), value: 260, priced: 2, cards: 3 }]);
   // Le dernier calcul du jour remplace le précédent (un point par jour) ; un jour passé reste.
   e.DB.sqlite.prepare("INSERT INTO value_history (user_id, date, value, priced, cards, at) VALUES (?, '2026-10-10', 111, 1, 3, '2026-10-10T20:00:00.000Z')").run(u.user.id);
-  await call('POST', 'market/prices', { key: u.importKey, e, body: { last: true, prices: [{ id: 'c', v: { L: cote(1000, 3) } }] } });
+  putPrice(e, 'c', { L: cote(1000, 3) });
   m = await market();
   assert.deepEqual(m.history.map((p) => [p.date, p.value]), [['2026-10-10', 111], [todayUtc(), 1260]]);
   assert.equal(points().length, 2);
-  // Cotes relues par un autre membre : GET /api/market recalcule et met le point du jour à jour.
-  const v = await marketAccount(e, 'Sol');
-  await call('POST', 'market/prices', { key: v.importKey, e, body: { prices: [{ id: 'a', v: { R: cote(200, 5) } }] } });
-  m = await market();
-  assert.equal(m.value.value, 2 * 200 + 60 + 1000);
-  assert.equal(todayPoint().value, 1460);
-  // Après un import : recalculée au plus une fois par heure.
+  // Après une lecture : recalculée au plus une fois par heure.
   const at0 = todayPoint().at;
-  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('a', 'Alpha', 'R', 4, { variants: { R: 4 } }), mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } })], stats: { total: 5, totalUnique: 2 } } });
+  await seedCards(u.key, [rowOf({ ...alpha, count: 4 }, { uid, eid: 'a1' }), rowOf(gamma, { uid, eid: 'c1' })], { e });
   assert.equal(todayPoint().at, at0, "moins d'une heure : pas recalculée");
   e.DB.sqlite.prepare("UPDATE value_history SET at = '2026-01-01T00:00:00.000Z' WHERE date <> '2026-10-10'").run();
-  await call('POST', 'import', { key: u.key, e, body: { cards: [mcard('a', 'Alpha', 'R', 5, { variants: { R: 5 } }), mcard('c', 'Gamma', 'L', 1, { variants: { L: 1 } })], stats: { total: 6, totalUnique: 2 } } });
-  assert.deepEqual([todayPoint().value, todayPoint().cards], [5 * 200 + 1000, 2]);
-  e.DB.close();
-});
-
-await test('marché : lecture du marché du favori (validée, montrée par GET /api/market, 256 Ko au plus, oubliée au bout de 7 jours)', async () => {
-  const e = makeEnv();
-  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
-  const u = await marketAccount(e, 'Tom');
-  const base = { a: 'enchere-1', id: 'carte-9', t: 'Neuf', r: 'SR', s: false, img: 'https://upload.wikimedia.org/x.jpg', end: '2026-10-16T12:00:00.000Z', cote: 300, n: 7 };
-  const live = {
-    deals: [{ ...base, ask: 200, bid: true, lead: false, more: 2 }],
-    bids: [{ ...base, a: 'enchere-2', mine: 150, cur: 180, lead: false, st: 'run' }],
-    sales: [{ ...base, a: 'enchere-3', img: null, cote: null, n: null, base: 100, cur: null, bid: false, st: 'unsold' }],
-  };
-  let r = await call('POST', 'market/live', { key: u.importKey, e, headers: gameOrigin, body: live });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  let m = (await call('GET', 'market', { key: u.key, e })).json;
-  assert.deepEqual(m.live, live);
-  assert.ok(m.live_at);
-  // Favori d'avant le 2026-10-17 : ses bonnes affaires n'ont pas « more » (0 par défaut), elles passent quand même.
-  const { more, ...older } = live.deals[0];
-  assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body: { ...live, deals: [older] } })).status, 200);
-  assert.equal((await call('GET', 'market', { key: u.key, e })).json.live.deals[0].more, 0);
-  for (const [why, body] of [
-    ['état inconnu', { bids: [{ ...live.bids[0], st: 'gagné' }] }],
-    ['image non https', { deals: [{ ...live.deals[0], img: 'javascript:alert(1)' }] }],
-    ['montant', { deals: [{ ...live.deals[0], ask: -5 }] }],
-    ['autres enchères', { deals: [{ ...live.deals[0], more: -1 }] }],
-    ['trop', { deals: Array.from({ length: 51 }, () => live.deals[0]) }],
-    ['ids', { ids: { Titre: 'a b' } }],
-  ]) {
-    assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body })).status, 400, why);
-  }
-  // Un joueur très actif (100 mises, 100 ventes, 50 bonnes affaires, images et titres longs) passe sous 256 Ko ; au-delà, 413.
-  const img = 'https://upload.wikimedia.org/wikipedia/commons/thumb/' + 'a'.repeat(260) + '.jpg';
-  const many = (n, x, p) => Array.from({ length: n }, (_, i) => ({ ...x, a: `${p}-${String(i).padStart(4, '0')}-7c9e6679-7425-40de-944b`, id: `c-${i}-5a2b0c1d-0000-4000-8000-000000000000`, t: 'Titre assez long numéro ' + i, img }));
-  const big = { deals: many(50, live.deals[0], 'd'), bids: many(100, live.bids[0], 'b'), sales: many(100, live.sales[0], 's') };
-  assert.ok(JSON.stringify(big).length > 100 * 1024, 'lecture de plus de 100 Ko attendue');
-  r = await call('POST', 'market/live', { key: u.importKey, e, body: big });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  const long = img.slice(0, -4) + 'b'.repeat(1990 - img.length) + '.jpg';
-  const huge = { deals: big.deals, bids: big.bids.map((x) => ({ ...x, img: long })), sales: big.sales };
-  assert.ok(JSON.stringify(huge).length > 256 * 1024 && JSON.stringify(huge).length < 320 * 1024, 'entre 256 et 320 Ko attendu : ' + JSON.stringify(huge).length);
-  assert.equal((await call('POST', 'market/live', { key: u.importKey, e, body: huge })).status, 413);
-  await call('POST', 'market/live', { key: u.importKey, e, body: live });
-  // Rien de l'identité du joueur dans le jeu : les champs inconnus sont oubliés.
-  await call('POST', 'market/live', { key: u.importKey, e, body: { bids: [{ ...live.bids[0], bidder_id: GAME_USER }] } });
-  assert.ok(!q('SELECT live FROM market')[0].live.includes(GAME_USER));
-  // 6 jours : encore montrée (la page dit son âge).
-  e.DB.sqlite.prepare('UPDATE market SET live_at = ? WHERE user_id = ?').run(new Date(Date.now() - 6 * 86400_000).toISOString(), u.user.id);
-  assert.ok((await call('GET', 'market', { key: u.key, e })).json.live, 'lecture de 6 jours encore montrée');
-  // Plus de 7 jours : plus montrée, et effacée au passage d'un autre favori.
-  e.DB.sqlite.prepare("UPDATE market SET live_at = '2026-01-01T00:00:00.000Z' WHERE user_id = ?").run(u.user.id);
-  m = (await call('GET', 'market', { key: u.key, e })).json;
-  assert.deepEqual([m.live, m.live_at], [null, null]);
-  const v = await marketAccount(e, 'Ugo');
-  await call('POST', 'market/live', { key: v.importKey, e, body: {} });
-  assert.deepEqual(q('SELECT live, live_at FROM market WHERE user_id = ?', u.user.id), [{ live: null, live_at: null }]);
-  // Supprimer son classeur efface sa lecture du marché et sa valeur ; les cotes (communes) restent.
-  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [{ id: 'carte-9', v: { SR: cote(300, 7) } }] } });
-  e.DB.sqlite.prepare("INSERT INTO value_history (user_id, date, value, priced, cards, at) VALUES (?, '2026-10-10', 1, 1, 1, 'x')").run(u.user.id);
-  await call('DELETE', 'me', { key: u.key, e });
-  for (const t of ['market', 'value_history']) assert.equal(q(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`, u.user.id)[0].n, 0, t);
-  assert.equal(q("SELECT COUNT(*) AS n FROM prices WHERE card_id = 'carte-9'")[0].n, 1);
-  e.DB.close();
-});
-
-await test('marché : dernier essai du favori (plan, fin, échec et sa raison), lectures automatiques espacées de 5 min, market_at de GET /api/me', async () => {
-  const e = makeEnv();
-  const q = (sql, ...p) => e.DB.sqlite.prepare(sql).all(...p).map((r) => ({ ...r }));
-  const u = await marketAccount(e, 'Wes');
-  const market = async () => (await call('GET', 'market', { key: u.key, e })).json;
-  const me = async () => (await call('GET', 'me', { key: u.key, e })).json;
-  const setStart = (ms) => e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE user_id = ?").run(new Date(ms).toISOString(), u.user.id);
-  // Jamais d'essai : attempt null, market_at null.
-  assert.deepEqual([(await market()).attempt, (await me()).market_at], [null, null]);
-  // Un plan note le début de l'essai (version du favori, lecture automatique ou non), pas sa fin.
-  let r = await call('POST', 'market/plan', { key: u.importKey, e, headers: gameOrigin, body: { v: '2026-10-17', auto: false } });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  let a = (await market()).attempt;
-  assert.deepEqual([a.v, a.auto, a.end, a.ok], ['2026-10-17', false, undefined, undefined]);
-  assert.equal((await me()).market_at, null, "un essai commencé n'est pas une lecture reçue");
-  // Fin (cotes envoyées avec last: true) : ok, et market_at = sa fin.
-  r = await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [], last: true } });
-  assert.equal(r.status, 200);
-  a = (await market()).attempt;
-  assert.equal(a.ok, true);
-  assert.equal((await me()).market_at, a.end);
-  // Lecture automatique moins de 5 min après le début de la précédente (autre navigateur, autre appareil) : refusée,
-  // sans rien lire ni écrire ; une lecture au clic, elle, passe toujours.
-  r = await call('POST', 'market/plan', { key: u.importKey, e, headers: gameOrigin, body: { v: '2026-10-17', auto: true } });
-  assert.deepEqual(Object.keys(r.json).sort(), ['skip', 'until']);
-  assert.equal(Date.parse(r.json.until), Date.parse(a.start) + AUTO_GAP);
-  assert.deepEqual((await market()).attempt, a, 'essai refusé : rien de noté');
-  setStart(Date.now() - AUTO_GAP - 1000);
-  r = await call('POST', 'market/plan', { key: u.importKey, e, body: { v: '2026-10-17', auto: true } });
-  assert.ok(Array.isArray(r.json.cards) && !r.json.skip, JSON.stringify(r.json));
-  assert.equal((await market()).attempt.auto, true);
-  r = await call('POST', 'market/plan', { key: u.importKey, e, body: {} });
-  assert.ok(Array.isArray(r.json.cards), 'lecture au clic refusée');
-  assert.deepEqual([(await market()).attempt.v, (await market()).attempt.auto], [null, false], 'favori sans version (avant le 2026-10-17)');
-  // Échec annoncé : ok false, la raison (nettoyée, 300 caractères au plus, jeton masqué), et market_at = sa fin.
-  r = await call('POST', 'market/fail', { key: u.importKey, e, headers: gameOrigin, body: { why: '  Ta session du jeu a expiré   dans cette page. ', v: '2026-10-17', auto: true } });
-  assert.deepEqual([r.status, r.headers.get('access-control-allow-origin')], [200, 'https://www.wiki-masters.com']);
-  a = (await market()).attempt;
-  assert.deepEqual([a.ok, a.why, a.v, a.auto], [false, 'Ta session du jeu a expiré dans cette page.', '2026-10-17', true]);
-  assert.equal((await me()).market_at, a.end, "market_at = fin de l'essai raté");
-  await call('POST', 'market/fail', { key: u.importKey, e, body: { why: 'Erreur avec eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc dedans' } });
-  assert.equal((await market()).attempt.why, 'Erreur avec [jeton masqué] dedans');
-  for (const body of [{}, { why: '' }, { why: 12 }, { why: 'x'.repeat(301) }]) {
-    assert.equal((await call('POST', 'market/fail', { key: u.importKey, e, body })).status, 400, JSON.stringify(body).slice(0, 40));
-  }
-  assert.equal((await call('POST', 'market/fail', { e, body: { why: 'x' } })).status, 401);
-  assert.equal((await call('OPTIONS', 'market/fail', { e, headers: gameOrigin })).headers.get('access-control-allow-origin'), 'https://www.wiki-masters.com');
-  // Un succès après l'échec : la raison disparaît.
-  await call('POST', 'market/plan', { key: u.importKey, e, body: { v: '2026-10-17' } });
-  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [], last: true } });
-  a = (await market()).attempt;
-  assert.deepEqual([a.ok, 'why' in a], [true, false]);
-  // Une lecture du marché reçue fait aussi avancer market_at (la page relit l'onglet).
-  await new Promise((res) => setTimeout(res, 5));
-  await call('POST', 'market/live', { key: u.importKey, e, body: {} });
-  assert.equal((await me()).market_at, (await market()).live_at);
-  // Rien du jeu dans l'essai.
-  assert.deepEqual(Object.keys(JSON.parse(q('SELECT attempt FROM market WHERE user_id = ?', u.user.id)[0].attempt)).sort(), ['auto', 'end', 'ok', 'start', 'v']);
+  await seedCards(u.key, [rowOf({ ...alpha, count: 5 }, { uid, eid: 'a1' }), rowOf(gamma, { uid, eid: 'c1' })], { e });
+  assert.deepEqual([todayPoint().value, todayPoint().cards], [5 * 100 + 1000, 2]);
   e.DB.close();
 });
 
 await test('marché : GET /api/market/prices (cotes de mes cartes et des cartes voulues, par pages) et mesures de CPU', async () => {
   const e = makeEnv();
-  const u = await marketAccount(e, 'Val');
+  const u = await signup('Val', e);
   const cards = mini(1500);
-  for (let p = 0; p * 500 < cards.length; p++) {
-    await call('POST', 'import', { key: u.key, e, body: { upload_id: 'v', part: p, last: (p + 1) * 500 >= cards.length, cards: cards.slice(p * 500, (p + 1) * 500) } });
-  }
-  const entries = (list) => list.map((c, i) => ({ id: c.id, v: i % 3 ? { C: cote(10 + i, 5, { w: 9 }), 'C*': cote(99, 1) } : {} }));
-  const runs = [];
-  for (let p = 0; p < 3; p++) runs.push(await profile('POST', 'market/prices', { key: u.importKey, e, body: { prices: entries(cards.slice(p * 500, (p + 1) * 500)), last: p === 2 } }));
-  await call('POST', 'market/live', { key: u.importKey, e, body: { ids: { 'Voulue 1': 'voulue-1', 'Voulue 2': 'voulue-2' } } });
-  await call('POST', 'market/prices', { key: u.importKey, e, body: { prices: [{ id: 'voulue-1', v: { R: cote(70, 4) } }] } });
+  await seedCards(u.key, cards, { e });
+  cards.forEach((c, i) => { if (i % 3) putPrice(e, c.id, { C: cote(10 + i, 5, { w: 9 }), 'C*': cote(99, 1) }); else putPrice(e, c.id, {}); });
+  e.DB.sqlite.prepare('INSERT INTO market (user_id, ids) VALUES (?, ?)').run(u.user.id, JSON.stringify({ 'Voulue 1': 'voulue-1', 'Voulue 2': 'voulue-2' }));
+  putPrice(e, 'voulue-1', { R: cote(70, 4) });
   const all = [];
   const pages = [];
   let part = '0';
@@ -3984,23 +2854,20 @@ await test('marché : GET /api/market/prices (cotes de mes cartes et des cartes 
   const w = all.find((x) => x.id === 'voulue-1');
   assert.deepEqual(w, { id: 'voulue-1', v: { R: cote(70, 4) }, at: w.at, t: 'Voulue 1' });
   assert.deepEqual(all.find((x) => x.id === cards[1].id).v, { C: cote(11, 5, { w: 9 }), 'C*': cote(99, 1) });
-  const plan = await profile('POST', 'market/plan', { key: u.importKey, e, body: {} });
   const value = await profile('GET', 'market', { key: u.key, e });
   assert.equal(value.json.value.cards, 1500);
-  const js = (list) => mean(list.map((x) => x.js));
-  console.log(`    marché : 500 cotes JS ${ms(js(runs))} | page de 1 000 cotes JS ${ms(pages[0].js)} | plan JS ${ms(plan.js)} | valeur JS ${ms(value.js)} (SQLite ${ms(value.sql)})`);
-  assert.ok(js(runs) < 10 && pages[0].js < 10 && plan.js < 10 && value.js < 10, 'trop de JavaScript');
+  console.log(`    marché : page de 1 000 cotes JS ${ms(pages[0].js)} | valeur JS ${ms(value.js)} (SQLite ${ms(value.sql)})`);
+  assert.ok(pages[0].js < 10 && value.js < 10, 'trop de JavaScript');
   e.DB.close();
 });
 
 await test('DELETE /api/me efface tout', async () => {
-  await call('POST', 'session', { key: alice.key, body: { cookie: 'sid=1' } });
-  await call('POST', 'import', { key: alice.key, body: { upload_id: 'en-cours', part: 0, last: false, cards: synth(3) } });
   await call('POST', 'targets/save', { key: alice.key, body: { name: 'À effacer', items: [] } });
+  env.DB.sqlite.prepare("INSERT INTO refresh_staging (user_id, page, entries, created_at) VALUES (?, 0, '[]', ?)").run(alice.user.id, new Date().toISOString());
   assert.ok(rows('SELECT COUNT(*) AS n FROM cards_gone WHERE user_id = ?', alice.user.id)[0].n > 0, 'des cartes retirées à effacer');
   const r = await call('DELETE', 'me', { key: alice.key });
   assert.deepEqual(r.json, { ok: true });
-  for (const t of ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'import_staging']) {
+  for (const t of ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'sync_log', 'market', 'value_history']) {
     assert.equal(rows(`SELECT COUNT(*) AS n FROM ${t} WHERE user_id = ?`, alice.user.id)[0].n, 0, t);
   }
   assert.equal(rows('SELECT COUNT(*) AS n FROM users WHERE id = ?', alice.user.id)[0].n, 0);
@@ -4008,6 +2875,6 @@ await test('DELETE /api/me efface tout', async () => {
   assert.equal((await call('GET', 'me', { key: bob.key })).status, 200, 'les autres comptes restent');
 });
 
-globalThis.fetch = realFetch;
+supa.restore();
 console.log(`${results.length} tests`);
 console.log('API OK');

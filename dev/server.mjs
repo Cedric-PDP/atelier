@@ -22,7 +22,7 @@ const env = {
   SIGNUP_CODE: process.env.SIGNUP_CODE ?? 'dev',
 };
 if (process.env.REFRESH_PAUSE_MS !== undefined) env.REFRESH_PAUSE_MS = process.env.REFRESH_PAUSE_MS;
-// Fichiers de public/ pour le Worker (liaison ASSETS de Cloudflare) : GET /api/favori.js y lit le code du favori.
+// Fichiers de public/ pour le Worker (liaison ASSETS de Cloudflare).
 env.ASSETS = {
   async fetch(req) {
     const file = path.join(PUBLIC, decodeURIComponent(new URL(req.url).pathname));

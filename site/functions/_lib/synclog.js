@@ -1,39 +1,31 @@
-// Journal des synchros (table sync_log) : une ligne par synchro du classeur, réussie ou non, pour comprendre après coup
-// ce qui s'est passé. Écrit par le serveur (import du favori, synchro rapide, rafraîchissement par cookie) et, pour ses
-// propres échecs avant tout envoi (session du jeu expirée, erreur ou limite de lectures du jeu, réponse inattendue…),
-// par le favori (POST /api/sync-log, clé d'import). Lu par la page (GET /api/sync-log, onglet « Mettre à jour »).
+// Journal des synchros (table sync_log) : une ligne par lecture de la collection, réussie ou non, et par événement de la
+// session du jeu (reliée, révoquée), pour comprendre après coup ce qui s'est passé. Écrit par le serveur seul ; lu par la
+// page (GET /api/sync-log). Une vérification légère sans changement n'écrit rien.
 // Borné : les LOG_KEEP plus récentes par classeur, LOG_DAYS jours au plus ; une ligne identique à la précédente (même
-// type, même résultat, même message, même chemin : « rien de nouveau » toutes les minutes en mode relié, même échec
-// répété) met seulement celle-ci à jour (heure, data.repeat, data.first). users.last_sync garde le résumé de la
-// dernière, que GET /api/me renvoie sans requête de plus.
+// type, même résultat, même message, même chemin : relecture sans nouveauté, même échec répété) met seulement celle-ci à
+// jour (heure, data.repeat, data.first). users.last_sync garde le résumé de la dernière, que GET /api/me renvoie sans
+// requête de plus.
 
 import { HttpError } from './http.js';
 import { cleanText, nowIso, randomToken } from './util.js';
 
 export const LOG_KEEP = 50;
 const LOG_DAYS = 30;
-const KINDS = new Set(['full', 'quick']);
-// Chemin de la synchro : favori cliqué, favori relié (synchro automatique après une action), script Tampermonkey,
-// rafraîchissement par cookie (lancé par la page).
-export const VIAS = new Set(['clic', 'relie', 'script', 'cookie']);
-// Ce que le favori peut signaler de ses propres échecs (POST /api/sync-log).
-const CLIENT_CODES = new Set(['session', 'limit', 'antibot', 'game', 'network', 'timeout', 'format', 'site', 'other']);
-const CLIENT_PER_HOUR = 30;
-
-const nat = (v) => Number.isInteger(v) && v >= 0 && v <= 1_000_000_000;
+// Lecture complète de la collection, ou événement de la session du jeu ; « quick » (ancienne synchro rapide) ne reste que
+// dans les lignes d'avant le 2026-10-22.
+export const KINDS = new Set(['full', 'session']);
+// Chemin : « Rafraîchir » ou liaison depuis la page, lecture automatique, favori « Relier ».
+export const VIAS = new Set(['clic', 'cron', 'relier']);
 
 // Texte d'un message : nettoyé, `max` caractères au plus. Ce qui ressemble à un secret (jeton JWT, lien personnel
-// « #cle=… », longue suite base64 : clé, cookie) est masqué. Le favori n'envoie que ses propres messages, jamais de jeton
-// ni de cookie du jeu ; ce masque n'est qu'une précaution de plus.
+// « #cle=… », longue suite base64 : clé, cookie) est masqué, par précaution.
 const SECRETISH = /eyJ[\w-]{6,}(?:\.[\w-]*)*|#?cle=\S*|[A-Za-z0-9_\-+/=]{32,}/g;
 export function cleanMessage(value, max = 300) {
   return cleanText(String(value ?? '')).replace(SECRETISH, '…').slice(0, max);
 }
 
-// Chemin de la synchro envoyé par le favori (« via »), sinon null.
-export const viaOf = (v) => (typeof v === 'string' && VIAS.has(v) && v !== 'cookie' ? v : null);
-// Version du favori (« v »), sinon null : les favoris d'avant le 17 octobre 2026 n'en envoient pas.
-export const versionOf = (v) => (Number.isInteger(v) && v > 0 && v < 1000 ? v : null);
+// Chemin connu, sinon null.
+export const viaOf = (v) => (typeof v === 'string' && VIAS.has(v) ? v : null);
 
 // Requêtes qui ajoutent une ligne au journal de userId (à passer dans un lot) : {kind, result, message, data}.
 // data : objet JSON (via, nombres, durée, raison…), les champs null ou undefined omis.
@@ -108,42 +100,4 @@ export async function listSyncLog(env, user) {
       return { at: r.at, kind: r.kind, result: r.result, message: r.message, data };
     }),
   };
-}
-
-// POST /api/sync-log (clé principale ou clé d'import, CORS du jeu ; 2 Ko au plus) {kind, via, code, message, reason?,
-// ms?, read?, total?, v?} : un échec vu par le favori lui-même, avant ou pendant sa lecture du jeu (rien n'a été envoyé
-// au classeur). kind = phase où il a échoué (full | quick) ; code ∈ CLIENT_CODES (autre valeur : « other ») ; message =
-// ce que l'encart du favori a affiché (300 caractères au plus, secrets masqués). CLIENT_PER_HOUR par heure au plus.
-export async function reportSync(env, user, body) {
-  const db = env.DB;
-  if (typeof body.message !== 'string' || !body.message.trim()) throw new HttpError(400, 'Il manque le message (champ « message »).');
-  if (body.kind !== undefined && !KINDS.has(body.kind)) throw new HttpError(400, 'Le champ « kind » vaut « full » ou « quick ».');
-  for (const f of ['ms', 'read', 'total']) {
-    if (body[f] !== undefined && body[f] !== null && !nat(body[f])) throw new HttpError(400, `Le champ « ${f} » doit être un entier positif.`);
-  }
-  // Débit : les répétitions d'une ligne regroupée comptent aussi.
-  const row = await db.prepare(
-    `SELECT COALESCE(SUM(COALESCE(json_extract(data, '$.repeat'), 1)), 0) AS n FROM sync_log
-     WHERE user_id = ?1 AND at >= ?2 AND json_extract(data, '$.client') = 1`,
-  ).bind(user.id, new Date(Date.now() - 3600_000).toISOString()).first();
-  if (row && row.n >= CLIENT_PER_HOUR) {
-    throw new HttpError(429, 'Trop de signalements du favori cette heure-ci : le journal des synchros les reprendra plus tard.');
-  }
-  const reason = typeof body.reason === 'string' && /^[a-z_]{1,20}$/.test(body.reason) ? body.reason : null;
-  await db.batch(logStatements(db, user.id, {
-    kind: body.kind || 'full',
-    result: 'error',
-    message: body.message,
-    data: {
-      client: true,
-      via: viaOf(body.via) || 'clic',
-      code: CLIENT_CODES.has(body.code) ? body.code : 'other',
-      reason,
-      ms: nat(body.ms) ? body.ms : null,
-      read: nat(body.read) ? body.read : null,
-      total: nat(body.total) ? body.total : null,
-      v: versionOf(body.v),
-    },
-  }));
-  return { ok: true };
 }

@@ -2,7 +2,7 @@
 
 export const MAX_BODY = 5 * 1024 * 1024; // 5 Mo
 
-// Erreur destinée au client : statut HTTP + message en français (+ champs en plus, comme needs_session).
+// Erreur destinée au client : statut HTTP + message en français (+ champs en plus, comme needs_link).
 export class HttpError extends Error {
   constructor(status, message, extra = {}) {
     super(message);

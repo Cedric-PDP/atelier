@@ -1,6 +1,8 @@
 // Schéma D1 et purge des tables d'attente.
 // Le schéma est aussi dans site/schema.sql (même contenu ; un test vérifie qu'ils ne divergent pas).
 
+// users : les colonnes de l'ancien cookie collé et de la clé d'import du favori (cookie_*, session_expired, import_key_*)
+// ne sont plus lues depuis le 2026-10-22, vidées par migration (MIGRATIONS).
 export const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -22,7 +24,18 @@ export const SCHEMA = [
     shared_targets INTEGER NOT NULL DEFAULT 0,
     last_sync TEXT,
     import_key_enc TEXT,
-    game_pseudo TEXT
+    game_pseudo TEXT,
+    game_session_enc TEXT,
+    game_uid TEXT,
+    game_session_v INTEGER NOT NULL DEFAULT 0,
+    game_session_at TEXT,
+    game_session_lost TEXT,
+    sync_lock TEXT,
+    sync_click_at TEXT,
+    auto_sync INTEGER NOT NULL DEFAULT 1,
+    sync_fails INTEGER NOT NULL DEFAULT 0,
+    link_hash TEXT,
+    link_until TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -62,15 +75,6 @@ export const SCHEMA = [
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, page)
   )`,
-  `CREATE TABLE IF NOT EXISTS import_staging (
-    user_id TEXT NOT NULL,
-    upload_id TEXT NOT NULL,
-    part INTEGER NOT NULL,
-    cards TEXT NOT NULL,
-    skipped INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL,
-    PRIMARY KEY (user_id, upload_id, part)
-  )`,
   `CREATE TABLE IF NOT EXISTS target_uploads (
     user_id TEXT NOT NULL,
     upload_id TEXT NOT NULL,
@@ -84,6 +88,13 @@ export const SCHEMA = [
     name TEXT PRIMARY KEY,
     run_id TEXT NOT NULL,
     applied_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS cron_state (
+    name TEXT PRIMARY KEY,
+    running_until TEXT,
+    skip_until TEXT,
+    last_at TEXT,
+    last_result TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY,
@@ -133,6 +144,8 @@ export const SCHEMA = [
   `CREATE UNIQUE INDEX IF NOT EXISTS chat_by_rev ON chat_messages (rev)`,
   `CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at)`,
   `CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid)`,
+  `CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash)`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.
@@ -148,20 +161,29 @@ const ADDED_COLUMNS = [
   ['users', 'last_sync', 'TEXT'],
   ['users', 'import_key_enc', 'TEXT'],
   ['users', 'game_pseudo', 'TEXT'],
+  ['users', 'game_session_enc', 'TEXT'],
+  ['users', 'game_uid', 'TEXT'],
+  ['users', 'game_session_v', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'game_session_at', 'TEXT'],
+  ['users', 'game_session_lost', 'TEXT'],
+  ['users', 'sync_lock', 'TEXT'],
+  ['users', 'sync_click_at', 'TEXT'],
+  ['users', 'auto_sync', 'INTEGER NOT NULL DEFAULT 1'],
+  ['users', 'sync_fails', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'link_hash', 'TEXT'],
+  ['users', 'link_until', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
-  ['import_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],
 ];
 
-// Les morceaux en attente depuis plus d'une heure (import, rafraîchissement ou collection en morceaux abandonnés) sont
-// effacés.
+// Les morceaux en attente depuis plus d'une heure (lecture de la collection ou collection à compléter en morceaux
+// abandonnées) sont effacés.
 export function purgeStaging(db) {
   const limit = new Date(Date.now() - 3600_000).toISOString();
   return [
-    db.prepare('DELETE FROM import_staging WHERE created_at < ?1').bind(limit),
     db.prepare('DELETE FROM refresh_staging WHERE created_at < ?1').bind(limit),
     db.prepare('DELETE FROM target_uploads WHERE created_at < ?1').bind(limit),
   ];
@@ -192,6 +214,10 @@ const MIGRATIONS = [
   ['partage-par-defaut-2026-10-16', `UPDATE users SET shared = 1, shared_targets = 1,
      public_id = COALESCE(public_id, lower(hex(randomblob(9))))
      WHERE (shared = 0 OR shared_targets = 0)`],
+  // 2026-10-22 : la collection est lue par le serveur avec une session du jeu reliée (game_session_enc) ; l'ancien cookie
+  // collé et la clé d'import du favori ne servent plus.
+  ['session-serveur-2026-10-22', `UPDATE users SET cookie_enc = NULL, cookie_updated_at = NULL, session_expired = 0, import_key_hash = NULL,
+     import_key_enc = NULL WHERE (cookie_enc IS NOT NULL OR import_key_hash IS NOT NULL OR import_key_enc IS NOT NULL)`],
 ];
 
 async function applyMigrations(db) {

@@ -1,11 +1,14 @@
-// Session WikiMasters : cookie collé ou tiré d'un HAR, chiffré en AES-GCM, fusion des Set-Cookie du jeu.
+// Session du jeu : cookie collé ou tiré d'un HAR (copiés depuis une fenêtre privée), chiffrement AES-GCM, liaison et
+// oubli (POST et DELETE /api/session). La session elle-même est lue, vérifiée et renouvelée par game.js.
 
 import { HttpError } from './http.js';
-import { base64ToBytes, bytesToBase64, nowIso } from './util.js';
+import { base64ToBytes, bytesToBase64 } from './util.js';
+import { authFromCookie, authFromHar, linkSession } from './game.js';
+import { sessionView } from './auth.js';
 
 export const GAME_HOST = 'www.wiki-masters.com';
-// Le jeu répond sous les deux noms : un HAR peut contenir l'un ou l'autre, un cookie peut viser l'un ou l'autre.
-export const GAME_HOSTS = new Set(['www.wiki-masters.com', 'wiki-masters.com']);
+// Le jeu répond sous les deux noms : un HAR peut contenir l'un ou l'autre.
+const GAME_HOSTS = new Set(['www.wiki-masters.com', 'wiki-masters.com']);
 
 const encoder = new TextEncoder();
 const MAX_COOKIE = 16_384;
@@ -88,7 +91,7 @@ const keys = new Map();
 async function cookieKey(env) {
   const secret = env.COOKIE_SECRET;
   if (typeof secret !== 'string' || !secret) {
-    throw new HttpError(500, "COOKIE_SECRET n'est pas configuré sur le serveur : impossible de garder un cookie.");
+    throw new HttpError(500, "COOKIE_SECRET n'est pas configuré sur le serveur : impossible de garder une session du jeu.");
   }
   let key = keys.get(secret);
   if (!key) {
@@ -107,12 +110,12 @@ async function cookieKey(env) {
   return key;
 }
 
-// Chiffre le cookie ; l'id du compte sert de donnée associée (un chiffré ne vaut que pour son compte).
-export async function encryptCookie(env, userId, cookie) {
+// Chiffre un texte ; la donnée associée (aad : « game-session:<id> ») lie le chiffré à son compte et à son usage.
+export async function encryptCookie(env, aad, text) {
   const key = await cookieKey(env);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(
-    await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: encoder.encode(userId) }, key, encoder.encode(cookie)),
+    await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: encoder.encode(aad) }, key, encoder.encode(text)),
   );
   const out = new Uint8Array(iv.length + ct.length);
   out.set(iv);
@@ -120,91 +123,41 @@ export async function encryptCookie(env, userId, cookie) {
   return bytesToBase64(out);
 }
 
-export async function decryptCookie(env, userId, stored) {
+export async function decryptCookie(env, aad, stored) {
   const key = await cookieKey(env);
   try {
     const bytes = base64ToBytes(stored);
     const plain = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: bytes.subarray(0, 12), additionalData: encoder.encode(userId) },
+      { name: 'AES-GCM', iv: bytes.subarray(0, 12), additionalData: encoder.encode(aad) },
       key,
       bytes.subarray(12),
     );
     return new TextDecoder().decode(plain);
   } catch {
-    throw new HttpError(
-      401,
-      "Ta session WikiMasters n'est plus lisible (secret du serveur changé) : colle un nouveau cookie.",
-      { needs_session: true },
-    );
+    throw new HttpError(401, "Donnée chiffrée illisible (secret du serveur changé).");
   }
 }
 
-// Tous les Set-Cookie d'une réponse (getSetCookie standard, getAll des Workers, ou en-tête recollé).
-export function setCookiesOf(headers) {
-  if (typeof headers.getSetCookie === 'function') return headers.getSetCookie();
-  if (typeof headers.getAll === 'function') return headers.getAll('set-cookie');
-  const joined = headers.get('set-cookie');
-  return joined ? joined.split(/,(?=\s*[^;,=\s]+=)/) : [];
-}
-
-// Fusionne des Set-Cookie (nom=valeur) dans un en-tête Cookie ; un cookie expiré (Max-Age ≤ 0, Expires passé)
-// est retiré.
-export function mergeSetCookies(cookie, setCookies) {
-  if (!setCookies.length) return cookie;
-  const jar = new Map();
-  for (const part of cookie.split(';')) {
-    const p = part.trim();
-    if (!p) continue;
-    const i = p.indexOf('=');
-    if (i < 0) jar.set(p, null);
-    else jar.set(p.slice(0, i).trim(), p.slice(i + 1).trim());
-  }
-  for (const line of setCookies) {
-    const [pair, ...attrs] = String(line).split(';');
-    const i = pair.indexOf('=');
-    if (i <= 0) continue;
-    const name = pair.slice(0, i).trim();
-    const value = pair.slice(i + 1).trim();
-    let expired = false;
-    let foreign = false;
-    for (const attr of attrs) {
-      const [k, ...rest] = attr.split('=');
-      const v = rest.join('=').trim();
-      const key = k.trim().toLowerCase();
-      if (key === 'max-age' && Number(v) <= 0) expired = true;
-      if (key === 'expires' && Date.parse(v) < Date.now()) expired = true;
-      // Comme un navigateur : un cookie posé pour un autre domaine que celui du jeu est ignoré.
-      if (key === 'domain' && !GAME_HOSTS.has(v.toLowerCase().replace(/^\./, ''))) foreign = true;
-    }
-    if (foreign) continue;
-    if (expired) jar.delete(name);
-    else jar.set(name, value);
-  }
-  return [...jar].map(([n, v]) => (v === null ? n : `${n}=${v}`)).join('; ');
-}
-
-// POST /api/session {cookie} | {har}
+// POST /api/session {cookie} | {har} : relie le compte du jeu dont la session est copiée depuis une fenêtre privée.
 export async function saveSession(env, user, body) {
-  let cookie;
-  if (body.cookie !== undefined && body.cookie !== null && body.cookie !== '') cookie = cleanCookie(body.cookie);
-  else if (body.har !== undefined && body.har !== null) cookie = cookieFromHar(body.har);
-  else throw new HttpError(400, 'Envoie le cookie (champ « cookie ») ou un export HAR (champ « har »).');
-
-  const enc = await encryptCookie(env, user.id, cookie);
-  await env.DB.prepare(
-    'UPDATE users SET cookie_enc = ?1, cookie_updated_at = ?2, session_expired = 0 WHERE id = ?3',
-  )
-    .bind(enc, nowIso(), user.id)
-    .run();
-  return { ok: true };
+  let auth;
+  if (body.cookie !== undefined && body.cookie !== null && body.cookie !== '') auth = authFromCookie(cleanCookie(body.cookie));
+  else if (body.har !== undefined && body.har !== null) auth = authFromHar(body.har);
+  else throw new HttpError(400, 'Envoie le cookie (champ « cookie ») ou un export HAR (champ « har »), copiés depuis une fenêtre privée.');
+  const { pseudo } = await linkSession(env, user, auth, 'clic');
+  const row = await env.DB.prepare(
+    'SELECT game_session_enc, game_session_lost, game_session_at, auto_sync, sync_fails, sync_state FROM users WHERE id = ?1',
+  ).bind(user.id).first();
+  return { ok: true, pseudo, session: sessionView(row) };
 }
 
-// DELETE /api/session
+// DELETE /api/session : le classeur oublie la session (sans déconnecter le jeu).
 export async function deleteSession(env, user) {
   const db = env.DB;
   await db.batch([
     db.prepare(
-      'UPDATE users SET cookie_enc = NULL, cookie_updated_at = NULL, session_expired = 0 WHERE id = ?1',
+      `UPDATE users SET game_session_enc = NULL, game_uid = NULL, game_session_at = NULL, game_session_lost = NULL,
+         game_session_v = game_session_v + 1, sync_fails = 0, sync_lock = NULL WHERE id = ?1`,
     ).bind(user.id),
     db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id),
   ]);

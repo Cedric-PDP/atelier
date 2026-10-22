@@ -213,38 +213,6 @@ function uploadOf(body) {
   return { id: u.id, part: u.part, last: u.last === true };
 }
 
-// POST /api/targets/from-game {name, query, items:[{title, rarity, card_id, category?, image?}]} : collection créée
-// par le favori depuis une recherche de la Collection globale du jeu. Accepte la clé d'import (celle du favori) : ne
-// fait que CRÉER une collection (jamais de remplacement ni de suppression), dans les mêmes quotas que saveTarget.
-export async function saveGameTarget(env, user, body) {
-  const query = typeof body.query === 'string' ? cleanText(body.query) : '';
-  if (!query || query.length > 100) throw new HttpError(400, 'La recherche (« query ») fait de 1 à 100 caractères.');
-  if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
-  if (!body.items.length) throw new HttpError(400, 'Aucune carte : la recherche ne donne rien à ranger.');
-  const seen = new Set();
-  const items = [];
-  body.items.forEach((item, i) => {
-    if (!item || typeof item !== 'object') throw new HttpError(400, `Carte n° ${i + 1} invalide.`);
-    const id = item.card_id;
-    if (typeof id !== 'string' || !id || id.length > 100) {
-      throw new HttpError(400, `Carte n° ${i + 1} : identifiant du jeu (card_id) manquant ou invalide.`);
-    }
-    if (!RARITIES.has(item.rarity)) {
-      throw new HttpError(400, `Carte n° ${i + 1} : rareté inconnue (C, PC, R, SR, UR ou L).`);
-    }
-    if (seen.has(id)) return; // la même carte lue deux fois (pages qui se chevauchent)
-    seen.add(id);
-    // La catégorie du jeu (description Wikidata) tient lieu de description ; titre et image vérifiés par storeTarget.
-    items.push({ title: item.title, description: typeof item.category === 'string' ? item.category : null,
-      image: item.image, status: 'ok', rarity: item.rarity });
-  });
-  // Grande recherche : sans les images si elles font dépasser 600 Ko (un seul envoi : la page retrouve les vignettes
-  // sur Wikipédia).
-  if (byteLength(JSON.stringify(items)) > MAX_PART_BYTES) for (const it of items) it.image = null;
-  const { row, count } = await storeTarget(env, user, { name: body.name, items, source: `wm:${query}` });
-  return { target: { id: row.id, name: row.name, source: row.source, count, created_at: row.created_at, updated_at: row.updated_at } };
-}
-
 // Range une collection (créée, ou remplacée si body.id existe déjà) après validation et contrôle des quotas ; un morceau
 // d'un envoi en plusieurs (upload sans last) est seulement mis de côté : {part}.
 async function storeTarget(env, user, body) {
