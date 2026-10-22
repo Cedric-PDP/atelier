@@ -4,7 +4,7 @@
 // - Suppression par l'auteur seulement : le texte est vidé aussitôt et la ligne reste comme marque (`deleted`) pour que
 //   les pages ouvertes retirent le message à leur relecture suivante. DELETE /api/me fait pareil pour tous ses messages
 //   (et oublie l'auteur : user_id = '').
-// - Clé principale seulement (le favori, qui ne porte que la clé d'import, n'y a pas accès : routeur).
+// - Clé principale seulement (le favori « Relier », qui ne porte qu'un jeton de liaison, n'y a pas accès : routeur).
 //
 // Coût D1 (gratuit : 5 M de lignes lues et 100 000 écrites par jour pour toute l'instance) :
 // - chaque message a une révision `rev` (unique, croissante) donnée à sa création, puis à sa suppression ; une page

@@ -1287,7 +1287,7 @@
     setTimeout(() => { if (S.notice && S.notice.id === id) S.notice = null; }, error ? 12000 : action ? 10000 : 6000);
   }
 
-  // ---------------------------------------------------------------- clés : la sienne, les classeurs connus, la clé d'import
+  // ---------------------------------------------------------------- clés : la sienne, les classeurs connus
   function setKey(k) {
     S.key = k;
     S.keyNotSaved = !store.set(LS.key, k);
@@ -1350,7 +1350,7 @@
     S.bootHint = STALE_KEY;
     S.boot = 'welcome';
   }
-  // « Oublier ce navigateur » : la clé, les classeurs connus, la clé d'import, les caches de Wikipédia et les cartes
+  // « Oublier ce navigateur » : la clé, les classeurs connus, les caches de Wikipédia et les cartes
   // gardées (toutes, ou seulement celles du compte `user` : classeur supprimé).
   function forgetKey(user) {
     for (const k of Object.values(LS)) store.del(k);
@@ -1419,7 +1419,7 @@
   // Relecture complète. Rend true si les cartes ont été remplacées (false : classeur changé entre-temps).
   async function loadCards() {
     // Lecture par morceaux (?part=0, puis next_part renvoyé tel quel jusqu'à null) : une grosse collection d'un coup
-    // dépasserait le temps de calcul d'un Worker gratuit. next_part peut être un nombre ou une chaîne opaque.
+    // dépasserait la limite de calcul d'une requête. next_part peut être un nombre ou une chaîne opaque.
     const gen = cardsGen;
     const edited = new Set();
     tagWatch.add(edited);
