@@ -19,14 +19,14 @@ rareté et cote des cartes, partage et échanges entre amis, chat commun. Outil 
 
 ## Positioning
 
-Un classeur à intercalaires pour un petit groupe d'amis, alimenté par un favori lancé dans la page du jeu, qui croise
-la collection avec les catégories et les pages de Wikipédia.
+Un classeur à intercalaires pour un petit groupe d'amis, alimenté par la lecture du jeu faite par le serveur avec un compte
+du jeu relié une fois, qui croise la collection avec les catégories et les pages de Wikipédia.
 
 ## Operating Context
 
-- Synchronisation par un favori (bookmarklet) lancé dans wiki-masters.com, aussi sur téléphone (« favori court »).
+- Synchronisation par le serveur : le membre relie son compte du jeu une fois (fenêtre privée, favori « Relier » ou cookie à coller), puis le classeur lit collection (toutes les 10 min) et marché (20 min) sur n'importe quel appareil, téléphone compris ; « Rafraîchir » au clic.
 - Accès par lien personnel (`#cle=…`), pas de mot de passe ; chaque vue a sa propre adresse (`#/…`).
-- Sections : Collections (albums), Mes cartes, Entre amis, Marché, Chat, Mettre à jour, Réglages, Nouveautés.
+- Sections : Collections (albums), Mes cartes, Entre amis, Marché, Chat, Synchro, Réglages, Nouveautés.
 
 ## Capabilities and Constraints
 

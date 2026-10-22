@@ -6,45 +6,46 @@ Wikipédia en français), pour l'utilisateur **et ses amis**. **Sans lien avec l
 
 Inspiré de wikimaster-one.vercel.app (« Le classeur ») : reliure avec intercalaires, cartes en pochettes, étiquettes
 personnelles avec suggestions, sélection multiple, collections à compléter avec cases vides. Réécrit avec notre code
-(licence de la référence inconnue). En plus : comptes par code d'invitation et lien personnel, favori de
-rafraîchissement (et de création de collections depuis la « Collection globale » du jeu), catégories de Wikipédia à
-suivre (recherche avec suggestions, propositions d'après tes cartes), rareté estimée des cartes manquantes, partage
-entre amis.
+(licence de la référence inconnue). En plus : comptes par code d'invitation et lien personnel, **synchro par le
+serveur** (tu relies ton compte du jeu une fois, depuis une fenêtre privée : le classeur lit ensuite ta collection
+toutes les 10 minutes, le marché toutes les 20, ou à ton clic, sur n'importe quel appareil), création de collections
+depuis les cartes du jeu (« Depuis le jeu »), catégories de Wikipédia (recherche avec suggestions, propositions
+d'après tes cartes), rareté estimée des cartes manquantes, cotes et marché, partage entre amis.
 
-Vocabulaire de l'interface : les **collections** sont les listes de l'utilisateur (créées par le favori depuis
-une recherche de la Collection globale du jeu, ou dans la fenêtre « Nouvelle collection » : par URL, mots-clés, liste
-d'articles ou propositions) ; les **catégories** sont
+Vocabulaire de l'interface : les **collections** sont les listes de l'utilisateur (créées dans la fenêtre
+« Nouvelle collection » : par URL, mots-clés, liste d'articles, propositions ou « Depuis le jeu », une recherche dans
+les cartes du jeu) ; les **catégories** sont
 les catégories de Wikipédia (« Catégorie:Violet ») qu'il suit. Les deux sont des « collections à compléter » du
 serveur (une catégorie suivie a la source `wp:<nom>`).
 
 - **Mise en ligne** (Worker Cloudflare + D1, une fois, ~10 min) : [SETUP.md](SETUP.md). Le même dossier `site/` se
-  déploie aussi en projet Pages.
+  déploie aussi en projet Pages (sans les lectures automatiques : seul le Worker a des déclencheurs planifiés).
 - **Contrat interface / serveur** (routes, formes, limites) : [site/SPEC.md](site/SPEC.md).
 
 ## Arborescence
 
 | Chemin | Contenu |
 |---|---|
-| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/bookmarklet.js` (source du favori), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `manifest.webmanifest`, `sw.js` et `assets/icon-*.png` / `apple-touch-icon.png` (app installée, voir plus bas), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
-| `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` |
-| `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
+| `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/relier.js` (le favori « Relier », servi par `/api/favori.js`), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `manifest.webmanifest`, `sw.js` et `assets/icon-*.png` / `apple-touch-icon.png` (app installée, voir plus bas), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
+| `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` (dont `game.js` : la base du jeu, sessions et renouvellement ; `refresh.js` et `import.js` : lecture de la collection ; `cron.js` : lectures automatiques ; `marketread.js` : lecture du marché ; `link.js` : liaison par favori « Relier ») |
+| `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; `scheduled()` lance les lectures automatiques (Cron Triggers `*/10 * * * *` et `5-59/20 * * * *`) ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
-| `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`), `d1.mjs`, `api.test.mjs`, `bookmarklet.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
+| `dev/` | `server.mjs` (serveur local : `site/public/` + `/api/*`, D1 simulée par `node:sqlite`, `--cron`, `FAUX_JEU=1`), `d1.mjs`, `supabase.mjs` (faux Supabase : Auth et PostgREST du jeu), `cron.mjs` (lance un déclencheur à la main), `api.test.mjs`, `worker.test.mjs`, `match.test.mjs`, `propose.test.mjs`, `ui/` (test de l'interface en faux DOM avec le vrai Vue) |
 | `data/`, `config/themes.json`, `scripts/`, `lib/`, `page/` | ancienne page claude.ai « Collections WikiMasters » (abandonnée, voir plus bas) |
 
 ## Développer et tester
 
 ```bash
-node dev/api.test.mjs                       # l'API, avec mesures de CPU ; doit finir par API OK
-node dev/bookmarklet.test.mjs               # le favori de bout en bout (synchro rapide, relecture complète) ; FAVORI OK
+node dev/api.test.mjs                       # l'API, la session du jeu, la lecture de la collection, les cron et le marché (faux Supabase), avec mesures de CPU ; doit finir par API OK
 node dev/worker.test.mjs                    # le point d'entrée Worker ; doit finir par WORKER OK
 node dev/match.test.mjs                     # rapprochement par identifiant Wikidata ; MATCH OK
 node dev/propose.test.mjs                   # propositions d'après les catégories ; PROPOSE OK
 (cd site && npx wrangler deploy --dry-run --outdir <dossier>)   # vérifie la configuration et l'assemblage, sans rien déployer
-node dev/server.mjs                         # http://localhost:8788 (code d'invitation : dev ; PORT, DB_PATH, SIGNUP_CODE, COOKIE_SECRET)
+node dev/server.mjs                         # http://localhost:8788 (code d'invitation : dev ; PORT, DB_PATH, SIGNUP_CODE, COOKIE_SECRET, REFRESH_PAUSE_MS, FAUX_JEU) ; --cron : les lectures automatiques tournent aussi ; FAUX_JEU=1 : la base du jeu est simulée
+node dev/cron.mjs collection                # lance une passe du cron (collection ou market) contre la base locale (DB_PATH, COOKIE_SECRET, SYNC_PAUSED) ; affiche son résultat
 node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js                 # interface sur API simulée -> UI OK
-node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js --server=http://localhost:8788   # sur le serveur local
+node dev/ui/smoke_ui.js site/public dev/ui/vendor/vue.runtime.global.prod.min.js --server=http://localhost:8788   # sur le serveur local lancé avec FAUX_JEU=1
 ```
 
 **Catalogue retiré (2026-10-16)** : les 59 collections proposées tirées de Wikidata (`site/public/catalog.json`, fait par
@@ -53,8 +54,10 @@ Wikipédia. Le fichier et son script sont supprimés (ils restent dans l'histori
 `config/themes.json` reste, lu par `scripts/build_reference.js` de l'ancienne page. Les collections déjà ajoutées depuis
 le catalogue (source `catalog:…`) restent des collections comme les autres.
 
-Avec `--server`, le test de l'interface colle un faux cookie : le serveur local fait alors **un** vrai appel en
-lecture à wiki-masters.com, qui répond 401.
+Avec `--server`, le test de l'interface a besoin du faux jeu : lancer le serveur local avec `FAUX_JEU=1 node dev/server.mjs`
+(routes de dev `/__jeu/joueur`, `/__jeu/collection`, `/__jeu/cartes`, sans clé, qui ne répondent que dans ce mode). Aucun
+appel ne part vers le vrai jeu : les tests n'ont jamais la base Supabase du jeu. **Première lecture réelle à faire à la main**
+avant d'annoncer : `node dev/cron.mjs collection` contre une copie de la vraie base avec un compte relié.
 
 Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Worker créé, voir SETUP.md).
 
@@ -62,16 +65,16 @@ Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Work
 
 - **Interface téléphone** (sous 760 px, `@media (max-width: 760px)` à la fin de `app.css`) : barre du haut (retour,
   titre de la vue, synchro), barre flottante en bas (Collections, Amis, Chat, Marché, Plus), feuille « Plus » (Mes
-  cartes, Mettre à jour, Réglages, Nouveautés, Installer l'app), filtres de « Mes cartes » et fenêtres en feuilles du
+  cartes, Synchro, Réglages, Nouveautés, Installer l'app), filtres de « Mes cartes » et fenêtres en feuilles du
   bas. Les éléments `.m-only` sont rendus partout mais cachés au-delà : **la version large ne doit pas changer**.
 - **App installée (PWA)** : `manifest.webmanifest` + `sw.js` (service worker à la racine, sa propre CSP dans
   `_headers`). Le service worker prend **toujours le réseau d'abord** et ne garde une copie que pour ouvrir l'app sans
-  réseau ; il ne touche jamais `/api/*` (ni `/api/favori.js`), ni les illustrations de Wikimedia. Sans réseau, l'app
+  réseau ; il ne touche jamais `/api/*` (ni `/api/favori.js`, le code du favori « Relier »), ni les illustrations de Wikimedia. Sans réseau, l'app
   montre « Pas de connexion au classeur » et « Réessayer » (jamais « Oublier cette clé ») et se rouvre seule au retour
   du réseau. Icônes tirées de `assets/icon.svg` (fond plein ; la « maskable » réduite à 78 % pour la zone sûre).
 - **Sur iPhone**, l'app installée ne partage pas le stockage de Safari : au premier lancement elle ne connaît pas la
   clé. « Installer l'app » (feuille « Plus ») fait copier le lien personnel, et l'accueil de l'app met « J'ai déjà un
-  lien » en premier. Le favori se lance toujours dans le navigateur, jamais dans l'app (rappelé dans « Mettre à jour »).
+  lien » en premier. Le favori « Relier » se lance toujours dans une fenêtre privée du navigateur, jamais dans l'app (rappelé dans « Synchro »).
 - **Changer le service worker** : changer `CACHE` (`classeur-v1` → `v2`) quand la stratégie change ; les anciens caches
   sont effacés à l'activation. **Tout annuler** (service worker cassé chez les membres) : remplacer `sw.js` par
   `self.addEventListener('install', () => self.skipWaiting()); self.addEventListener('activate', (e) => e.waitUntil(caches.keys().then((k) => Promise.all(k.map((x) => caches.delete(x)))).then(() => self.registration.unregister())));`
@@ -79,28 +82,42 @@ Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Work
 - Testé dans Chrome (écran de 390 px simulé : critères d'installation, cache, ouverture hors ligne) ; **pas encore sur
   un vrai iPhone ni un vrai Android**.
 
-## Limites de Cloudflare gratuit (à respecter dans le code)
+## Limites de Cloudflare (à respecter dans le code)
 
-- **10 ms de CPU par requête** : aucune requête ne traite plus de ~500 cartes en JavaScript. Import par morceaux de
-  500, finalisation en SQL dans D1 (le temps SQL ne compte pas), lecture de la collection par morceaux (`?part=N`),
-  rafraîchissement par cookie à 10 pages par appel. `dev/api.test.mjs` mesure le JavaScript de chaque chemin.
-  Collections à compléter : pas de nombre d'éléments maximal, 1,7 Mo chacune (une ligne de D1 fait 2 Mo au plus),
-  600 Ko par envoi ; au-delà, la page les envoie en morceaux, réassemblés en SQL (`targets.js`, `upload`).
-- **50 sous-requêtes par appel** (rafraîchissement), **D1** : 100 000 lignes écrites par jour (un premier import de
-  N cartes en écrit N).
+- Le classeur tourne sur l'**abonnement payant des Workers** (depuis le 2026-10-17) : les Cron Triggers des lectures automatiques en ont
+  besoin (30 s de CPU par invocation pour une expression de moins d'une heure, les attentes réseau ne comptant pas). La règle des
+  **10 ms de CPU par requête** des Workers gratuits est gardée, parce qu'elle ne coûte rien : aucune requête ne traite plus de ~500
+  cartes en JavaScript. La lecture de la collection range chaque page de 1 000 exemplaires en deux lignes de 500 (une ligne de D1
+  fait 2 Mo au plus) et la finalisation se fait en SQL dans D1 (le temps SQL ne compte pas). `dev/api.test.mjs` mesure le JavaScript
+  de chaque chemin. Collections à compléter : pas de nombre d'éléments maximal, 1,7 Mo chacune, 600 Ko par envoi ; au-delà, la page
+  les envoie en morceaux, réassemblés en SQL (`targets.js`, `upload`).
+- **Sous-requêtes et temps d'une invocation de cron** : une passe du marché fait jusqu'à ~30 requêtes par membre à une par seconde
+  (`CRON_BUDGET_MS`, 10 min, borne la passe) ; le code ne compte pas les sous-requêtes (limite de la plateforme : 1 000 par invocation
+  en payant) : **à surveiller** dans les journaux du Worker quand le nombre de membres augmente.
+- **D1** : 50 millions de lignes écrites par mois comprises dans l'abonnement ; les cotes (jusqu'à 15 000 par membre et par jour,
+  150 000 pour tout le site) en sont la plus grosse part.
+- **Projet Pages** : pas de Cron Triggers, donc pas de lectures automatiques (le clic marche).
 
 ## Règles du jeu et sécurité
 
 - Les règles de WikiMasters (« Règles de la communauté » §3, CGU §6) interdisent les outils qui jouent ou
-  **interagissent à la place du joueur**. Le classeur **lit** seulement la collection (mêmes requêtes que la page
-  Collection), toujours sur un geste de l'utilisateur, et n'écrit jamais dans le jeu. Les étiquettes et collections
-  vivent dans le classeur.
+  **interagissent à la place du joueur**. Le classeur **lit** seulement (la collection du membre, ses mises et ses ventes, les
+  cotes du marché) dans la base du jeu et n'écrit jamais dans le jeu ; il n'imite pas un navigateur. **Depuis le 2026-10-22, il lit
+  régulièrement et automatiquement, sans geste du joueur**, depuis des adresses Cloudflare : la collection toutes les 10 minutes
+  (relue en entier si elle a changé, et au moins toutes les 6 h), le marché toutes les 20 minutes (30 requêtes à une par seconde au
+  plus par passe), avec une session du jeu par membre. Ce que le jeu peut en voir, les garde-fous (limite du jeu → passe sautée,
+  trois échecs → pause, case « Synchro automatique », variable `SYNC_PAUSED`) et ce que ça change par rapport à la règle d'avant :
+  [site/SPEC.md](site/SPEC.md), « Règles du jeu ». Les étiquettes et collections vivent dans le classeur.
 - **Clé du classeur** : 32 octets aléatoires, seul son SHA-256 est stocké ; envoyée en `X-Classeur-Key`. Le lien
   personnel `#cle=…` la contient : qui l'a voit et modifie le classeur.
-- **Cookie WikiMasters** (rafraîchissement côté serveur) : chiffré AES-GCM (clé dérivée de `COOKIE_SECRET` par HKDF,
-  id du compte en donnée associée), jamais renvoyé au navigateur ; « Oublier ma session » l'efface. Le favori, lui,
-  ne transmet jamais la session : il lit la collection dans l'onglet du joueur et n'envoie que les cartes.
-- **HAR** : peut contenir la session. L'interface n'en envoie que l'URL et l'en-tête `Cookie` des requêtes vers
+- **Session du jeu** : une par membre, née dans une **fenêtre privée** (une session partagée avec le navigateur du joueur se
+  ferme des deux côtés, Supabase renouvelle ses jetons par rotation). Vérifiée auprès du jeu avant d'être gardée (à qui est-elle ?
+  un compte du jeu ne se lie qu'à un classeur), chiffrée AES-GCM (clé dérivée de `COOKIE_SECRET` par HKDF, id du compte en donnée
+  associée), jamais renvoyée au navigateur, renouvelée par le serveur sous verrou ; « Oublier la liaison » l'efface (sans
+  déconnecter le jeu). Se déconnecter du jeu, sur n'importe quel appareil, ferme aussi celle du classeur : il faut relier à nouveau.
+- **Liaison par favori « Relier »** : jeton à usage unique de 30 minutes (seul son SHA-256 est stocké), qui ne permet que de **déposer**
+  une session que le jeu doit reconnaître ; il n'ouvre jamais le classeur. Il passe dans `window.__classeurLien`, jamais dans l'adresse.
+- **HAR** (secours) : peut contenir la session. L'interface n'en envoie que l'URL et l'en-tête `Cookie` des requêtes vers
   wiki-masters.com. Jamais de HAR dans git (`*.har` ignoré).
 
 ## Ancienne page claude.ai (abandonnée)
