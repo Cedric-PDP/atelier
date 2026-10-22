@@ -73,13 +73,15 @@ export async function refresh(env, user) {
   }
 }
 
-// Lecture complète (via : clic | cron). Au clic, une par minute au plus (force : sans cette limite).
-export async function readCollection(env, user, { via, force = false } = {}) {
+// Lecture complète (via : clic | cron). Au clic, une par minute au plus (force : sans cette limite). `lease` : bail déjà pris
+// par l'appelant (la lecture le garde, puis le rend) au lieu d'en prendre un. Une lecture réussie au clic remet à zéro les
+// échecs d'affilée des lectures automatiques.
+export async function readCollection(env, user, { via, force = false, lease: given = null } = {}) {
   const db = env.DB;
   if (via === 'clic' && !force) await takeClick(db, user);
   const s = await sessionOf(env, user);
   s.via = via;
-  const lease = await acquireLease(db, user.id, LEASE_MS);
+  const lease = given ?? await acquireLease(db, user.id, LEASE_MS);
   if (!lease) {
     throw new HttpError(409, "Une lecture de ta collection est déjà en cours (automatique, ou depuis un autre appareil) : réessaie dans un instant.");
   }
@@ -115,7 +117,11 @@ export async function readCollection(env, user, { via, force = false } = {}) {
       key: 0,
       exact: { before, after: end.rows, lastBefore, lastAfter: end.last_at },
       started,
-      clear: [db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id), releaseLease(db, user.id, lease)],
+      clear: [
+        db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id),
+        ...(via === 'clic' ? [db.prepare('UPDATE users SET sync_fails = 0 WHERE id = ?1').bind(user.id)] : []),
+        releaseLease(db, user.id, lease),
+      ],
       skipped,
       log: { via },
     });

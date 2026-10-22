@@ -148,6 +148,14 @@ const server = http.createServer(async (req, res) => {
   console.log(`${req.method} ${url.pathname} → ${res.statusCode}`);
 });
 
+// --cron : les lectures automatiques tournent aussi en local (collection toutes les 10 minutes, marché toutes les 20).
+if (process.argv.includes('--cron')) {
+  const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(pathToFileURL(path.join(SITE, 'functions', '_lib', 'cron.js')).href);
+  const run = (cron) => runCron(env, cron).then((r) => console.log(`cron ${cron} → ${r ?? 'rien'}`), (e) => console.error(e));
+  setInterval(() => run(COLLECTION_CRON), 10 * 60_000);
+  setInterval(() => run(MARKET_CRON), 20 * 60_000);
+}
+
 server.listen(PORT, () => {
   console.log(`Classeur local : http://localhost:${PORT}/  (fichiers : ${PUBLIC})`);
   console.log(`  base       : ${process.env.DB_PATH || path.join(here, 'local.sqlite')}`);

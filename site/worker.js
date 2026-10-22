@@ -2,6 +2,7 @@
 // /api/* va au même routeur que les Pages Functions (functions/api/[[path]].js), le reste aux fichiers de public/
 // (servis par Cloudflare, avec public/_headers). En projet Pages, ce fichier est ignoré.
 import { onRequest } from './functions/api/[[path]].js';
+import { runCron } from './functions/_lib/cron.js';
 
 export default {
   async fetch(request, env, ctx) {
@@ -17,5 +18,10 @@ export default {
       });
     }
     return env.ASSETS.fetch(request);
+  },
+
+  // Déclencheurs planifiés (wrangler.jsonc, `triggers`) : lectures automatiques de la collection et du marché.
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(runCron(env, controller.cron));
   },
 };
