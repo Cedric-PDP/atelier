@@ -69,13 +69,19 @@ function mockApi() {
   const mk = (p) => (p + '_'.repeat(43)).slice(0, 43);
   const json = (status, body) => ({ status, body });
   function makeUser(name) {
-    const u = { id: 'u' + ++seq, key: mk('cle' + seq), importKey: null, name: name || null, cards: [], tags: new Map(), targets: [], fetched_at: null,
-      new_ids: [], cookie: false, expired: false, uploads: new Map(), calls, rev: 1, changed: new Map() };
+    // Compte du jeu relié : linked, lost, linkAt, autoSync, fails, fullAt ; game = sa collection dans le jeu (sinon ses
+    // cartes), phantom = exemplaires comptés par le jeu mais jamais lus ; clickAt = dernier « Rafraîchir » (un par minute).
+    const u = { id: 'u' + ++seq, key: mk('cle' + seq), name: name || null, cards: [], tags: new Map(), targets: [], fetched_at: null,
+      new_ids: [], linked: false, lost: null, linkAt: null, autoSync: true, fails: 0, fullAt: null, game: null, phantom: 0, clickAt: 0, linkToken: null,
+      calls, rev: 1, changed: new Map() };
     users.push(u);
     return u;
   }
   // Comme le serveur : la révision n'avance que si une carte change (un envoi identique ne change que fetched_at).
   const bump = (st, ids) => { if (!ids.length) return; st.rev++; for (const id of ids) st.changed.set(id, st.rev); };
+  // GET /api/me.session, et la liaison d'un compte du jeu (POST /api/session, favori « Relier »).
+  const sessionOf = (u) => ({ linked: u.linked, lost: u.lost, at: u.linkAt, auto_sync: u.autoSync, paused: u.fails >= 3, fails: u.fails, checked_at: null, full_at: u.fullAt });
+  const linkUser = (u) => Object.assign(u, { linked: true, lost: null, linkAt: new Date().toISOString(), fails: 0, linkToken: null });
   // Chat : un salon pour tous les comptes ; révision (rev) à la création puis à la suppression (marque vide gardée),
   // comme le serveur. `chatLimit` : le prochain envoi est refusé (429).
   const chat = { msgs: [], rev: 0, id: 0 };
@@ -212,6 +218,13 @@ function mockApi() {
     get st() { return users[0]; },
     users,
     makeUser,
+    // Collection posée dans le jeu, puis lue en entier par le serveur : c'est ainsi que le test sème les cartes d'un compte.
+    seed(key, list) {
+      const u = users.find((x) => x.key === key);
+      if (!u) throw new Error('seed : clé inconnue');
+      u.game = list;
+      return importCards(u, list, { totalUnique: list.length });
+    },
     handle(method, p, headers, body) {
       calls.push([method, p, body]);
       if (p === '/api/health') return json(200, { ok: true, db: true, cookie_secret: true, signup_open: true });
@@ -220,15 +233,23 @@ function mockApi() {
         const u = makeUser(body.name);
         return json(201, { key: u.key, user: { id: u.id, name: u.name } });
       }
+      // Dépôt de la session par le favori « Relier » : sans clé, avec le jeton à usage unique ; un cookie illisible ne le
+      // consomme pas.
+      if (p === '/api/link/session' && method === 'POST') {
+        const u = users.find((x) => x.linkToken && x.linkToken === (body || {}).token);
+        if (!/auth-token/.test(String((body || {}).cookie || ''))) return json(400, { error: 'Ce cookie ne contient pas de session du jeu lisible.' });
+        if (!u) return json(401, { error: 'Lien de liaison périmé ou déjà utilisé : refais « Relier mon compte » dans le classeur, puis reclique le favori dans ta fenêtre privée.' });
+        linkUser(u);
+        u.lastSession = { cookie: body.cookie, via: 'relier' };
+        return json(200, { ok: true, pseudo: null });
+      }
       const key = headers['X-Classeur-Key'];
-      let st = users.find((u) => u.key === key);
-      // Seul /api/import accepte aussi la clé d'import (celle du favori).
-      if (!st && p === '/api/import') st = users.find((u) => u.importKey && u.importKey === key);
+      const st = users.find((u) => u.key === key);
       if (!st) return json(401, { error: key ? 'Clé inconnue : ce classeur a peut-être été supprimé.' : 'Clé absente : ouvre ton lien personnel du classeur.' });
       const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
-          has_import_key: !!st.importKey, prefs: st.prefs || {}, session: { has_cookie: st.cookie, expired: st.expired, updated_at: st.cookie ? '2026-10-15T10:00:00Z' : null },
+          prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
           market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null });
       }
@@ -252,8 +273,13 @@ function mockApi() {
           if (body.shared_targets && !st.shared) return json(400, { error: "Pour montrer tes collections à compléter, montre d'abord tes cartes." });
           st.sharedTargets = body.shared_targets;
         }
+        if ('auto_sync' in body) {
+          if (typeof body.auto_sync !== 'boolean') return json(400, { error: '« auto_sync » vaut true ou false.' });
+          st.autoSync = body.auto_sync;
+        }
         if ('name' in body) st.name = body.name;
-        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null });
+        return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
+          auto_sync: st.autoSync });
       }
       // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
       // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
@@ -297,14 +323,6 @@ function mockApi() {
         return json(200, { ok: true });
       }
       if (p === '/api/chat' || p.startsWith('/api/chat?') || p.startsWith('/api/chat/')) return chatRoute(st, method, p, body || {});
-      if (p === '/api/import-key' && method === 'POST') { st.importKey = mk('import' + ++seq); st.importSealed = true; return json(200, { import_key: st.importKey }); }
-      // Clé du favori gardée par le classeur (importSealed : sa copie chiffrée ; false = favori d'avant cette copie).
-      if (p === '/api/import-key' && method === 'GET') return st.importKey && st.importSealed !== false ? json(200, { import_key: st.importKey }) : json(404, { error: 'Pas de copie de la clé du favori.' });
-      if (p === '/api/import-key/adopt' && method === 'POST') {
-        if (!st.importKey || (body || {}).import_key !== st.importKey) return json(409, { error: 'Favori périmé.' });
-        st.importSealed = true;
-        return json(200, { import_key: st.importKey });
-      }
       if (p === '/api/key/rotate' && method === 'POST') { st.key = mk('tourne' + ++seq); return json(200, { key: st.key }); }
       if (p === '/api/cards' || p.startsWith('/api/cards?')) {
         // Lecture par morceaux comme le vrai serveur, avec un curseur opaque (chaîne) : 400 cartes par morceau ici.
@@ -332,28 +350,33 @@ function mockApi() {
         calls.push('cards part ' + q);
         return json(200, { ...rev, fetched_at: st.fetched_at, cards: all.slice(n * size, (n + 1) * size), new_ids: st.new_ids, part: q, next_part: n < last ? 'curseur-' + (n + 1) : null });
       }
-      if (p === '/api/import' && body.mode === 'state') return json(200, { quick: false, last_at: null, full_at: null });
-      if (p === '/api/import') {
-        const u = st.uploads.get(body.upload_id) || { parts: [], stats: null };
-        st.uploads.set(body.upload_id, u);
-        u.parts[body.part] = body.cards;
-        if (body.stats) u.stats = body.stats;
-        st.lastImportKey = key;
-        if (!body.last) return json(200, { ok: true, received: u.parts.flat().length });
-        return json(200, importCards(st, u.parts.flat(), u.stats));
-      }
       // Journal des synchros : st.syncLog (lignes posées par le test), comme GET /api/sync-log.
       if (p === '/api/sync-log' && method === 'GET') return json(200, { entries: st.syncLog || [] });
-      if (p === '/api/session' && method === 'POST') { if (!body.cookie && !body.har) return json(400, { error: 'Cookie manquant.' }); st.cookie = true; st.expired = false; st.lastSession = body; return json(200, { ok: true }); }
-      if (p === '/api/session' && method === 'DELETE') { st.cookie = false; return json(200, { ok: true }); }
-      if (p === '/api/refresh') {
-        if (!st.cookie) return json(401, { error: "Aucune session WikiMasters : colle d'abord ton cookie.", needs_session: true });
-        // Jeton de lecture (run) rendu à la page 0, à renvoyer avec les suivantes (sinon 409, comme une lecture interrompue).
-        if (body.page === 0) st.run = 'lecture-' + ++seq;
-        else if (body.run !== st.run) return json(409, { error: 'Une autre mise à jour a commencé entre-temps (dans un autre onglet ?).' });
-        if (body.page < 20) return json(200, { done: false, next_page: body.page + 10, run: st.run, fetched: (body.page + 10) * 50, total: 1500 });
-        const list = st.cards.filter((c) => c.id !== 'new1').concat([{ id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false, obtained_at: '2026-10-15T09:00:00Z' }]);
-        return json(200, { done: true, ...importCards(st, list, { totalUnique: list.length + 1 }), skipped: 2 });
+      if (p === '/api/session' && method === 'POST') {
+        if (!body.cookie && !body.har) return json(400, { error: 'Envoie le cookie ou un export HAR, copiés depuis une fenêtre privée.' });
+        st.lastSession = body;
+        linkUser(st);
+        return json(200, { ok: true, pseudo: null, session: sessionOf(st) });
+      }
+      if (p === '/api/session' && method === 'DELETE') { Object.assign(st, { linked: false, lost: null, linkAt: null, fails: 0 }); return json(200, { ok: true }); }
+      if (p === '/api/link' && method === 'POST') {
+        st.linkToken = ('jeton' + ++seq + 'x'.repeat(30)).slice(0, 32);
+        return json(200, { token: st.linkToken, until: new Date(Date.now() + 30 * 60_000).toISOString() });
+      }
+      // « Rafraîchir » : toute la collection du jeu (st.game, sinon les cartes déjà là) lue en un appel, une fois par minute.
+      if (p === '/api/refresh' && method === 'POST') {
+        if (st.revokeNext) Object.assign(st, { revokeNext: false, linked: false, lost: 'révoquée' });
+        if (!st.linked) {
+          return json(401, { error: st.lost ? `Ta session du jeu n'est plus valable (${st.lost}) : relie ton compte.` : "Aucun compte du jeu relié : relie ton compte dans l'onglet « Synchro ».", needs_link: true });
+        }
+        const now = Date.now();
+        if (now - st.clickAt < 60_000) return json(429, { error: "Collection déjà rafraîchie il y a moins d'une minute : patiente un instant.", retry_after: Math.max(1, Math.ceil((st.clickAt + 60_000 - now) / 1000)) });
+        st.clickAt = now;
+        const list = (st.game || st.cards).map(({ tags, ...c }) => c);
+        const res = importCards(st, list, { totalUnique: list.length + st.phantom });
+        if (res.complete) st.fullAt = new Date().toISOString();
+        st.fails = 0;
+        return json(200, { ...res, fresh: res.new_ids.length, removed: 0, kept: 0, skipped: 2 });
       }
       if (p === '/api/tags/set') { st.tags.set(body.card_id, body.tags); bump(st, [body.card_id]); return json(200, { tags: body.tags }); }
       if (p === '/api/tags/bulk') {
@@ -972,11 +995,6 @@ async function main() {
       }
       // Le catalogue Wikidata a été retiré de l'interface (2026-10-16) : il ne doit plus jamais être demandé.
       if (/catalog\.json/.test(String(url))) { catalogFetches.push(url); throw new Error('catalogue demandé : ' + url); }
-      if (url === '/assets/bookmarklet.js') {
-        const file = path.join(PUB, url);
-        const text = fs.readFileSync(file, 'utf8');
-        return { ok: true, status: 200, headers: { get: () => null }, json: async () => JSON.parse(text), text: async () => text };
-      }
       if (url === '/nouveautes.json') {
         newsFile.fetches++;
         const body = newsFile.body ?? fs.readFileSync(path.join(PUB, 'nouveautes.json'), 'utf8');
@@ -1052,6 +1070,8 @@ async function main() {
   const makeOtherAccount = async (name) => {
     const r = await rawApi('POST', '/api/account', null, { code: SERVER ? (process.env.SIGNUP_CODE || 'dev') : 'dev', name });
     if (r.status !== 201) fail('second compte : ' + JSON.stringify(r.body));
+    // Le vrai serveur active le partage à la création ; l'API simulée non : coupé, pour partir du même état.
+    if (SERVER) await rawApi('PATCH', '/api/me', r.body.key, { shared: false });
     return r.body.key;
   };
   // Lectures des cartes (GET /api/cards…) faites par les pages depuis `mark` (position dans apiLog).
@@ -1064,17 +1084,27 @@ async function main() {
     return f ? Number(text(f.querySelector('b')).replace(/\D/g, '')) : null;
   };
   const waitFor = async (cond, ms = 3000) => { for (let t = 0; t < ms && !cond(); t += 25) await sleep(25); return cond(); };
-  // Envoi du favori simulé (CarteImport : les cartes sans leurs tags), par morceaux de 500.
-  // Avec les compteurs du jeu qui collent (total, totalUnique) : lecture vérifiée, le serveur peut retirer les cartes
-  // absentes (sans eux, depuis le 2026-10-17, il n'en retire aucune).
-  const sendImport = async (key, list) => {
-    const up = 'favori-' + Math.random().toString(36).slice(2);
+  // Collection d'un compte dans le jeu, lue par le serveur (cartes sous la forme de GET /api/cards, sans leurs tags du
+  // classeur) : lecture complète vérifiée, les cartes absentes sont retirées. Serveur local : son faux jeu (FAUX_JEU=1)
+  // relie le compte s'il ne l'est pas, puis lit.
+  const fakeGame = async (action, body) => {
+    const r = await fetch(SERVER + '/__jeu/' + action, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (r.status === 404 || r.status === 405) fail('serveur local sans faux jeu : lance-le avec FAUX_JEU=1 (node dev/server.mjs)');
+    const out = await r.json();
+    if (!r.ok) fail(`faux jeu (${action}) : ${out.error || r.status}`);
+    return out;
+  };
+  const seedCards = async (key, list) => {
     const rows = list.map(({ tags, ...c }) => c);
-    const stats = { total: rows.reduce((n, c) => n + (c.count || 1), 0), totalUnique: rows.length };
-    for (let i = 0, part = 0; i < rows.length || part === 0; i += 500, part++) {
-      const last = i + 500 >= rows.length;
-      await rawApi('POST', '/api/import', key, { upload_id: up, part, last, cards: rows.slice(i, i + 500), ...(last ? { stats } : {}), source: 'bookmarklet' });
-    }
+    if (SERVER) return fakeGame('collection', { key, cards: rows });
+    return api.seed(key, rows);
+  };
+  // Collection du compte dans le jeu (sans la lire) et cookie d'une fenêtre privée connectée à ce compte.
+  const setGame = async (key, list) => {
+    const rows = list.map(({ tags, ...c }) => c);
+    if (SERVER) return (await fakeGame('joueur', { key, cards: rows })).cookie;
+    api.users.find((u) => u.key === key).game = rows;
+    return 'theme=sombre; sb-cyrxjeppjqsxxjayfrur-auth-token=base64-faux; autre=1';
   };
   // Le classeur rouvert dans une autre page du même navigateur (localStorage, IndexedDB et API partagés). live() :
   // déclenche ses minuteries d'une minute ou plus (relecture périodique), longTimers : celles en place.
@@ -1112,92 +1142,82 @@ async function main() {
   needButton("C'est noté").click();
   await settle(60);
 
-  // 2. Classeur vide : bandeau, onglets, et l'onglet « Mettre à jour » ouvert sur le favori
+  // 2. Classeur vide : bandeau, onglets, et l'onglet « Synchro » ouvert sur la liaison du compte du jeu
   const h1 = () => text(doc.body.querySelector('h1'));
   const tabBtn = (id) => byId('tab-' + id);
   const goTab = async (id) => { tabBtn(id).click(); await settle(); };
+  // Bouton du contenu de l'onglet « Synchro » (le bandeau a aussi un « Relier mon compte »).
+  const syncButton = (t) => { const u = one('update'); const b = u && u.querySelectorAll('button').find((n) => text(n).trim() === t); if (!b) fail('bouton absent de « Synchro » : ' + t + '\n' + text(u).slice(0, 600)); return b; };
+  const relierLink = () => all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0] || null;
   check(h1() === 'Le classeur de Cédric' && has('Collections WikiMasters'), 'bandeau absent');
-  check(has('Ton classeur est vide'), 'le bandeau ne dit pas que le classeur est vide');
-  check(tabBtn('maj') && tabBtn('maj').getAttribute('aria-selected') === 'true', "un classeur vide doit s'ouvrir sur « Mettre à jour »");
-  check(has('Le favori, le chemin conseillé') && has('En secours'), "l'onglet Mettre à jour ne présente pas le favori d'abord");
-  // Le favori n'a pas encore de clé d'import : il faut la créer (POST /api/import-key).
-  check(!all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet')).length && has("clé d'import"), "le favori ne passe pas par une clé d'import");
-  needButton('Créer mon favori').click();
+  check(has('Ton classeur est vide') && has('relie ton compte du jeu dans « Synchro »'), 'le bandeau ne dit pas que le classeur est vide');
+  check(tabBtn('maj') && tabBtn('maj').getAttribute('aria-selected') === 'true' && text(tabBtn('maj')) === 'Synchro', "un classeur vide doit s'ouvrir sur « Synchro »");
+  check(has('Aucun compte du jeu relié') && has('Relier mon compte du jeu') && has('En secours : coller le cookie ou déposer un HAR') && has('Dernières synchros'),
+    "l'onglet « Synchro » ne présente pas l'état du compte, la liaison, le secours et le journal");
+  check(!relierLink() && !has('Rafraîchir maintenant') && !byId('set-auto-sync'), 'sans compte relié : ni favori, ni « Rafraîchir maintenant », ni « Synchro automatique »');
+  check(!has('Tampermonkey') && !has("clé d'import") && !has('favori court'), "restes de l'ancien favori de synchro");
+  // « Relier mon compte » : jeton à usage unique (POST /api/link), dans un favori court qui le pose dans
+  // window.__classeurLien et charge /api/favori.js ; jamais la clé du classeur.
+  syncButton('Relier mon compte').click();
   await settle(SERVER ? 300 : 60);
-  const bm = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
-  check(bm, 'bouton du favori absent');
-  const href = bm.getAttribute('href') || bm.href;
-  check(href && href.startsWith('javascript:'), 'favori sans adresse javascript:');
-  check(!/[\s#"<>]/.test(href.slice(11)), 'adresse du favori mal échappée');
-  const bmCode = decodeURI(href.slice(11));
-  const importKey = Object.values(JSON.parse(ls.get('classeur-import-key') || '{}'))[0];
-  check(importKey && importKey !== ls.get('classeur-key'), "clé d'import non gardée (classeur-import-key)");
-  check(bmCode.includes('"' + ORIGIN + '"') && bmCode.includes('"' + importKey + '"'), "clé d'import ou origine absente du favori");
-  check(!bmCode.includes(ls.get('classeur-key')), 'la clé principale ne doit jamais être dans le favori');
-  try { new vm.Script(bmCode); } catch (e) { fail('favori : code invalide une fois sur une ligne : ' + e.message); }
-  check(byId('bm-url') && byId('bm-url').value === href, 'texte du favori à copier absent');
-  // Favori court (téléphone) : quelques centaines de caractères, la clé d'import posée dans window.__classeurCourt,
-  // le code chargé depuis le classeur (GET /api/favori.js) ; jamais la clé principale.
-  {
-    const short = byId('bm-short') && byId('bm-short').value;
-    const sc = short ? decodeURI(short.slice(11)) : '';
-    check(short && short.startsWith('javascript:') && short.length < 700 && !/[\s#"<>]/.test(short.slice(11)), 'favori court absent ou trop long : ' + String(short).length);
-    check(sc.includes('window.__classeurCourt={k:"' + importKey + '"}') && sc.includes('"' + ORIGIN + '/api/favori.js"') && !sc.includes(ls.get('classeur-key')), 'favori court : clé ou adresse incorrecte : ' + sc);
-    try { new vm.Script(sc); } catch (e) { fail('favori court : code invalide : ' + e.message); }
-  }
-  // Script Tampermonkey (replié sous le favori) : en-tête du gestionnaire, puis le même code en mode « load », avec la
-  // clé d'import seulement.
-  {
-    const us = byId('us-code') && byId('us-code').value;
-    check(us && us.startsWith('// ==UserScript==\n') && us.includes('\n// @match        https://www.wiki-masters.com/*\n') && us.includes('\n// @grant        none\n'), 'script Tampermonkey absent ou sans en-tête : ' + String(us).slice(0, 80));
-    check(us.includes('"load"') && !us.includes('"__START__"') && us.includes('"' + importKey + '"') && !us.includes(ls.get('classeur-key')), 'script Tampermonkey : mode « load » ou clé incorrects');
-    check(us.split('\n').filter((l) => l && !l.startsWith('//')).join('') === bmCode.replace(/%23/g, '#').replace('"__START__"', '"load"'), 'script Tampermonkey : code différent du favori');
-    try { new vm.Script(us); } catch (e) { fail('script Tampermonkey : code invalide : ' + e.message); }
-  }
-  bm.dispatch('click');
+  const rl = relierLink();
+  check(rl && text(rl).includes('Relier au classeur'), 'favori « Relier » absent après « Relier mon compte »');
+  const href = rl.getAttribute('href') || rl.href;
+  check(href && href.startsWith('javascript:') && href.length < 400 && !/[\s#"<>]/.test(href.slice(11)), 'adresse du favori « Relier » mal formée : ' + href);
+  const relierCode = decodeURI(href.slice(11));
+  const linkToken = (relierCode.match(/window\.__classeurLien=\{t:"([A-Za-z0-9_-]{20,64})"\}/) || [])[1];
+  check(linkToken && (SERVER || linkToken === api.st.linkToken), 'jeton de liaison absent du favori : ' + relierCode);
+  check(relierCode.includes('"' + ORIGIN + '/api/favori.js"') && !relierCode.includes(ls.get('classeur-key')), 'favori « Relier » : adresse du code ou clé incorrecte : ' + relierCode);
+  try { new vm.Script(relierCode); } catch (e) { fail('favori « Relier » : code invalide : ' + e.message); }
+  check(byId('link-url') && byId('link-url').value === href, 'adresse du favori « Relier » à copier absente');
+  check(has('fenêtre privée') && has('sans te déconnecter') && has('Le favori vaut 30 minutes') && has('En attente de la liaison'), 'étapes de la liaison absentes');
+  rl.dispatch('click');
   await settle();
   check(has('Pas ici'), 'clic sur le favori dans le classeur non intercepté');
-  // Clé du favori : celle du classeur (GET /api/import-key), même si ce navigateur en garde une autre ; favori d'avant la
-  // copie chiffrée (404) : la clé gardée ici est adoptée si c'est la bonne, sinon elle est périmée et la page le dit au
-  // lieu de reproposer sans fin ce favori périmé (« Favori périmé » à chaque essai, 2026-10-18).
-  if (!SERVER) {
-    const lsKeys = () => JSON.parse(ls.get('classeur-import-key') || '{}');
-    const meId = Object.keys(lsKeys())[0];
-    const bmHref = () => { const a = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0]; return a ? decodeURI(a.getAttribute('href') || a.href) : ''; };
-    const reopen = async () => { tabBtn('cartes').click(); await settle(); tabBtn('maj').click(); await settle(80); };
-    const old = 'v'.repeat(43);
-    ls.set('classeur-import-key', JSON.stringify({ [meId]: old }));
-    await reopen();
-    check(bmHref().includes('"' + importKey + '"') && !bmHref().includes(old) && lsKeys()[meId] === importKey, 'favori : la clé du classeur doit remplacer celle gardée ici');
-    api.st.importSealed = false; // favori créé avant la copie chiffrée
-    ls.set('classeur-import-key', JSON.stringify({ [meId]: old }));
-    await reopen();
-    check(!bmHref() && has('Le favori gardé dans ce navigateur était périmé') && !!buttonByText('Créer un nouveau favori') && !lsKeys()[meId],
-      'favori périmé : message et « Créer un nouveau favori » attendus, sans le favori périmé, ' + JSON.stringify(lsKeys()));
-    ls.set('classeur-import-key', JSON.stringify({ [meId]: importKey }));
-    await reopen();
-    check(bmHref().includes('"' + importKey + '"') && api.st.importSealed === true && !has('était périmé'), 'favori d\'avant la copie, bonne clé gardée ici : adoptée');
-  }
 
-  // 3. Le favori sur wiki-masters.com : lecture simulée, regroupement, envoi par morceaux
-  const imports = await runBookmarklet(bmCode, ctx.fetch, importKey);
-  if (!SERVER) {
-    const ups = [...api.st.uploads.values()];
-    check(ups.length === 1, 'un seul envoi attendu');
-    check(api.st.lastImportKey === importKey, "l'import n'a pas utilisé la clé d'import");
-  }
-  console.log(`favori : ${imports.parts} morceaux, ${imports.cards} cartes, message « ${imports.message} »`);
-  // Retour sur l'onglet du classeur : il se met à jour tout seul. Plus de 1 000 changements depuis la révision lue à
+  // 3. Le favori dans une fenêtre privée connectée au jeu : il envoie le jeton et le cookie de la page
+  // (POST /api/link/session) ; le classeur, qui relit GET /api/me toutes les 4 s pendant que le jeton vaut, voit la
+  // liaison et lit la collection (POST /api/refresh) : 1 050 cartes. Plus de 1 000 changements depuis la révision lue à
   // l'ouverture : le serveur répond delta:false à ?since, et la page relit tout, par morceaux.
+  const gameCookie = await setGame(ls.get('classeur-key'), gameCards());
+  {
+    const away = await runRelier(href, ctx.fetch, gameCookie, 'exemple.fr');
+    check(/Ouvre ce favori sur wiki-masters\.com/.test(away.box) && !away.posts.length, 'favori « Relier » hors du jeu : ' + away.box);
+    const noSession = await runRelier(href, ctx.fetch, 'theme=sombre');
+    check(/Pas de session du jeu/.test(noSession.box) && !noSession.posts.length, 'favori « Relier » sans session : ' + noSession.box);
+  }
   let mark = apiLog.length;
-  for (const f of doc.listeners.visibilitychange || []) await f();
+  const relie = await runRelier(href, ctx.fetch, gameCookie);
+  check(/Compte du jeu relié/.test(relie.box) && relie.posts.length === 1 && relie.posts[0].token === linkToken && relie.posts[0].cookie === gameCookie, 'favori « Relier » : ' + relie.box);
+  check(/périmé ou déjà utilisé/.test((await runRelier(href, ctx.fetch, gameCookie)).box), 'favori « Relier » : le jeton doit ne servir qu\'une fois');
+  check(await waitFor(() => /1 050 cartes/.test(text(doc.body.querySelector('.refresh-line'))) && !has('Rafraîchissement…'), 10000),
+    "la liaison n'a pas lancé la lecture de la collection : " + text(doc.body.querySelector('.refresh-line')));
   await settle(80);
-  check(has('Collection mise à jour'), "le retour sur l'onglet ne recharge pas la collection");
+  check(apiLog.slice(mark).filter((x) => x === 'POST /api/refresh').length === 1, 'une lecture attendue après la liaison : ' + apiLog.slice(mark).filter((x) => x.includes('refresh')).join(', '));
+  check(has('Compte du jeu relié') && !relierLink() && has('Rafraîchir maintenant') && byId('set-auto-sync') && byId('set-auto-sync').checked, 'état « relié » absent après la liaison');
   {
     const got = cardCalls(mark);
     check(got.length >= 2 && /^GET \/api\/cards\?since=\d+$/.test(got[0]) && got[1] === 'GET /api/cards?part=0' && got.slice(1).every((x) => x.includes('?part=')),
       'delta:false : ?since puis relecture complète attendus : ' + got.join(', '));
+    check(SERVER || api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
   }
+  // Liaison faite : la page cesse de relire GET /api/me toutes les 4 s.
+  {
+    const from = apiLog.length;
+    await sleep(4500);
+    check(!apiLog.slice(from).includes('GET /api/me'), 'GET /api/me encore relu toutes les 4 s après la liaison');
+  }
+  // « Synchro automatique » : PATCH /api/me {auto_sync}.
+  const autoBox = byId('set-auto-sync');
+  autoBox.checked = false;
+  autoBox.dispatch('change');
+  await settle(SERVER ? 300 : 60);
+  check(!byId('set-auto-sync').checked && (SERVER || api.st.autoSync === false), '« Synchro automatique » non décochée');
+  byId('set-auto-sync').checked = true;
+  byId('set-auto-sync').dispatch('change');
+  await settle(SERVER ? 300 : 60);
+  check(byId('set-auto-sync').checked && (SERVER || (api.st.autoSync === true && api.st.calls.filter(([m, p, b]) => m === 'PATCH' && p === '/api/me' && 'auto_sync' in b).length === 2)),
+    '« Synchro automatique » : PATCH /api/me {auto_sync} attendu deux fois');
   check(has('cartes différentes') && colFigure() === '0 collection' && !has('commencées') && cls('track').length === 1, 'tuiles de chiffres ou barre de répartition absentes : ' + colFigure());
   await goTab('cartes');
   check(cls('cell').length === 120 && cls('card').length === 120, `120 cartes attendues, ${cls('cell').length} affichées`);
@@ -1394,7 +1414,7 @@ async function main() {
   check(has('Mes collections') && !byId('h-cats') && !byId('cat-q') && !has("Proposées d'après tes cartes"), 'onglet Collections : « Mes collections » seule attendue');
   check(!has('Mes catégories') && !byId('h-mycats') && !has('Suivre') && !has('suivie'), '« Mes catégories » et le vocabulaire du suivi doivent avoir disparu');
   check(!has('Collections proposées') && !has('Parcourir tout le catalogue') && !has('Pharaons') && !byId('prop-q'), 'le catalogue doit avoir disparu');
-  check(has("Aucune collection pour l'instant") && has('depuis le jeu avec ton favori'), 'texte de la liste vide absent');
+  check(has("Aucune collection pour l'instant") && has('depuis les cartes du jeu'), 'texte de la liste vide absent');
   {
     const addBtn = all((n) => n.tagName === 'BUTTON' && text(n).trim() === 'Nouvelle collection')[0];
     check(addBtn && addBtn.classList.contains('primary'), '« Nouvelle collection » : bouton principal attendu');
@@ -2148,55 +2168,35 @@ async function main() {
   // Bandeau : les 6 collections de « Mes collections », les 2 faites d'une catégorie de Wikipédia comprises.
   check(colFigure() === '6 collections' && cls('group')[0].querySelectorAll('.row').length === 6, 'tuile des collections : ' + colFigure());
 
-  // 12. Sans session, le bouton devient « Mettre à jour avec le favori » : fenêtre guidée qui attend l'envoi du favori
-  // et recharge la collection toute seule quand il arrive ; puis le cookie en secours, depuis « Mettre à jour ».
-  needButton('Mettre à jour avec le favori').click();
-  await settle();
-  check(has('Mettre à jour ta collection') && has('En attente de ton favori'), 'fenêtre « Mettre à jour avec le favori » absente');
-  check(all((n) => n.tagName === 'A' && text(n).includes('Ouvrir wiki-masters.com')).length === 1, 'lien « Ouvrir wiki-masters.com » absent');
-  mark = apiLog.length;
+  // 12. « Rafraîchir la collection » (compte relié) : le serveur relit toute la collection dans le jeu, en un appel
+  // (POST /api/refresh), puis la page ne lit que ce qui a changé (?since) ; une carte nouvelle dans le jeu, un exemplaire
+  // compté par le jeu mais pas lu (lecture non vérifiée : rien n'est retiré, et c'est dit). Une seconde fois dans la
+  // minute : refusé (429), avec l'attente.
   {
-    // Le favori envoie la collection avec une carte de plus (simulé, comme depuis wiki-masters.com).
     const key = ls.get('classeur-key');
     const cur = (await rawApi('GET', '/api/cards', key)).body.cards.map(({ tags, ...c }) => c);
-    const extra = { ...cur[0], id: 'carte-du-favori', title: 'Carte du favori', count: 1 };
-    const all2 = [...cur, extra];
-    const up = 'favori-' + Date.now();
-    for (let i = 0, part = 0; i < all2.length; i += 500, part++) {
-      await rawApi('POST', '/api/import', key, { upload_id: up, part, last: i + 500 >= all2.length, cards: all2.slice(i, i + 500), source: 'bookmarklet' });
-    }
+    const fresh = { id: 'new1', title: 'Nouvelle carte', rarity: 'SR', atk: 5, def: 6, quality: 1, pageviews: 3000, category: 'test', image: null, url: null, count: 1, shiny: true, starred: false,
+      obtained_at: '2026-10-15T09:00:00Z', variants: { 'SR*': 1 }, gtags: [], gtagc: null };
+    await setGame(key, [...cur, fresh]);
+    if (!SERVER) Object.assign(api.st, { phantom: 1, clickAt: 0 });
   }
-  for (let i = 0; i < 120 && !has('Collection mise à jour :'); i++) await sleep(100);
-  check(has('Collection mise à jour :') && has('1 nouvelle'), 'la fenêtre n\'a pas vu l\'envoi du favori');
-  // Seulement ce qui a changé depuis l'ouverture (la carte du favori, les tags posés ici) : ?since, aucune page part=.
-  check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]) && countIn(doc) === 1051,
-    'envoi vu par la fenêtre : un seul ?since attendu, ' + cardCalls(mark).join(', ') + ' ; ' + countIn(doc) + ' cartes');
-  needButton('Fermer').click();
-  await settle();
-  // Le cookie, en secours : « Mettre à jour » (favori d'abord), puis l'enregistrement et la boucle de rafraîchissement.
-  goTab('maj');
-  await settle();
-  check(byId('cookie-input') && tabBtn('maj').getAttribute('aria-selected') === 'true', 'sans session, Rafraîchir doit mener à « Mettre à jour »');
-  check(has('Le favori, le chemin conseillé') && has('Le jeu renouvelle ta session régulièrement : le rafraîchissement par cookie marche en général environ une heure après le collage, et peut te déconnecter du jeu dans ton navigateur. Le favori n\'a pas ce problème.'),
-    'la page ne présente pas le cookie comme un secours, avec son avertissement');
-  type(byId('cookie-input'), 'Cookie: sb-a=1; sb-b=2');
   mark = apiLog.length;
-  needButton('Enregistrer le cookie et rafraîchir').click();
-  for (let i = 0; i < 300 && !(text(doc.body.querySelector('.refresh-line')).match(/expir|répond|cartes ·|nouvelle|robot/) && !has('Rafraîchissement…')); i++) await sleep(100);
-  for (let i = 0; i < 300 && has('Rafraîchissement…'); i++) await sleep(100);
+  needButton('Rafraîchir la collection').click();
+  await settle();
+  for (let i = 0; i < 1200 && (has('Rafraîchissement…') || !text(doc.body.querySelector('.refresh-line')).match(/cartes ·|moins d'une minute|répond/)); i++) await sleep(50);
   await settle(100);
-  if (SERVER) console.log('rafraîchissement par cookie (faux cookie) : ' + text(doc.body.querySelector('.refresh-line')));
-  await settle(200);
+  if (SERVER) console.log('rafraîchissement : ' + text(doc.body.querySelector('.refresh-line')));
   if (!SERVER) {
-    check(api.st.lastSession && api.st.lastSession.cookie === 'sb-a=1; sb-b=2', 'cookie mal envoyé : ' + JSON.stringify(api.st.lastSession));
-    const pages = api.st.calls.filter(([, p]) => p === '/api/refresh').map(([, , b]) => b.page).join(',');
-    check(pages === '0,10,20', 'pages du rafraîchissement : ' + pages);
-    const runs = api.st.calls.filter(([, p]) => p === '/api/refresh').map(([, , b]) => b.run || '');
-    check(runs[0] === '' && runs[1] && runs[1] === runs[2], 'jeton de lecture (run) non renvoyé avec les pages suivantes : ' + runs.join(','));
-    check(has('1 nouvelle'), 'résumé du rafraîchissement absent');
-    check(has('2 ignorées'), 'entrées ignorées (skipped) du rafraîchissement non affichées');
-    check(api.st.calls.some((c) => c === 'cards part curseur-1'), 'le curseur opaque next_part n\'est pas renvoyé tel quel');
+    const sent = api.st.calls.filter(([m, p]) => m === 'POST' && p === '/api/refresh').slice(-1);
+    check(apiLog.slice(mark).filter((x) => x === 'POST /api/refresh').length === 1 && JSON.stringify(sent[0][2]) === '{}', 'rafraîchissement : un seul POST /api/refresh {} attendu, ' + apiLog.slice(mark).join(', '));
+    const line = text(doc.body.querySelector('.refresh-line'));
+    check(line.includes('1 051 cartes') && line.includes('1 nouvelle') && line.includes('2 ignorées'), 'résumé du rafraîchissement : ' + line);
+    check(line.includes("moins d'exemplaires lus que le jeu n'en compte : aucune carte retirée") && doc.body.querySelector('.refresh-line').querySelector('.status').classList.contains('warn'), 'lecture non vérifiée non dite : ' + line);
     check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]), 'après le rafraîchissement : un seul ?since attendu, ' + cardCalls(mark).join(', '));
+    needButton('Rafraîchir la collection').click();
+    await settle(100);
+    check(/Collection déjà rafraîchie il y a moins d'une minute : patiente un instant\. \(encore \d+ s\)/.test(text(doc.body.querySelector('.refresh-line'))), 'second clic dans la minute : ' + text(doc.body.querySelector('.refresh-line')));
+    api.st.phantom = 0;
     await goTab('cartes');
     check(has('Nouvelles du dernier rafraîchissement'), 'raccourci des nouvelles absent');
     all((n) => n.tagName === 'BUTTON' && n.classList.contains('chip') && text(n).includes('Nouvelles du dernier rafraîchissement'))[0].click();
@@ -2218,13 +2218,13 @@ async function main() {
     check(one('fiche') && one('bulk'), 'fiche ou sélection absente avant le retrait');
     const cur = (await rawApi('GET', '/api/cards', key)).body.cards;
     await rawApi('POST', '/api/tags/set', key, { card_id: 'c10', tags: [...cur.find((c) => c.id === 'c10').tags, 'Ailleurs'] });
-    await sendImport(key, cur.filter((c) => c.id !== 'c2' && c.id !== 'c1000'));
+    await seedCards(key, cur.filter((c) => c.id !== 'c2' && c.id !== 'c1000'));
     mark = apiLog.length;
     for (const f of doc.listeners.visibilitychange || []) await f();
     await settle(500);
     check(cardCalls(mark).length === 1 && /\?since=\d+$/.test(cardCalls(mark)[0]), 'retour sur l\'onglet : un seul ?since attendu, ' + cardCalls(mark).join(', '));
     check(!one('fiche') && !one('bulk'), 'la carte retirée reste ouverte ou sélectionnée');
-    check(has('Collection mise à jour : 1 050 cartes.') && countIn(doc) === 1050, 'cartes retirées : 1 050 cartes attendues, ' + countIn(doc));
+    check(has('Collection mise à jour : 1 049 cartes.') && countIn(doc) === 1049, 'cartes retirées : 1 049 cartes attendues, ' + countIn(doc));
     check(cls('cell').length === 0, 'la carte retirée reste affichée');
     type(q, 'ailleurs');
     await settle();
@@ -2264,56 +2264,93 @@ async function main() {
     await settle();
   }
 
-  // 12 quater. Journal des synchros : « Dernières synchros » dans « Mettre à jour » (résultat, chemin et type, heure,
-  // message, répétitions), ligne d'état sous le résumé quand la dernière a échoué, favori trop ancien signalé, et un
-  // nouvel échec du favori annoncé au retour sur l'onglet.
+  // 12 quater. Journal des synchros : « Dernières synchros » dans « Synchro » (résultat, chemin et type, heure, message,
+  // répétitions ; une ligne d'avant le 22 octobre 2026 garde son type), ligne d'état sous le résumé quand la dernière a
+  // échoué, et un nouvel échec d'une lecture automatique annoncé au retour sur l'onglet.
   if (!SERVER) {
     const at = (min) => new Date(Date.now() - min * 60_000).toISOString();
     api.st.syncLog = [
-      { at: at(1), kind: 'full', result: 'error', message: 'Connecte-toi à WikiMasters (ta session du jeu a expiré ou n\'est pas ouverte dans cette page), recharge la page, puis clique à nouveau ce favori.', data: { client: true, via: 'clic', code: 'session', v: 3 } },
-      { at: at(5), kind: 'quick', result: 'ok', message: 'Synchro rapide : rien de nouveau (1 050 cartes).', data: { via: 'relie', v: 3, repeat: 3, first: at(30) } },
-      { at: at(60), kind: 'full', result: 'warn', message: 'Lecture incomplète : 1 000 cartes lues, le jeu en compte 1 050 : aucune nouvelle carte, aucune carte retirée (50 cartes non vues, gardées). Relance la mise à jour dans un moment.', data: { via: 'cookie' } },
+      { at: at(1), kind: 'full', result: 'error', message: 'Le jeu a refusé la lecture (trop de requêtes) : la prochaine lecture automatique est sautée.', data: { via: 'cron' } },
+      { at: at(5), kind: 'full', result: 'ok', message: 'Lecture complète : 1 050 cartes, aucune nouvelle, aucune retirée.', data: { via: 'cron', repeat: 3, first: at(30) } },
+      { at: at(60), kind: 'session', result: 'ok', message: 'Compte du jeu relié (Joueur).', data: { via: 'relier' } },
+      { at: at(90), kind: 'quick', result: 'ok', message: 'Synchro rapide : rien de nouveau (1 050 cartes).', data: { via: 'relie', v: 3 } },
     ];
-    api.st.lastSync = { at: at(1), kind: 'full', via: 'clic', result: 'error', message: api.st.syncLog[0].message };
+    api.st.lastSync = { at: at(1), kind: 'full', via: 'cron', result: 'error', message: api.st.syncLog[0].message };
     for (const f of doc.listeners.visibilitychange || []) await f();
     await settle(200);
     await goTab('collections');
     const line = () => text(doc.body.querySelector('.refresh-line'));
-    check(/Dernière synchro en échec \(Favori · lecture complète, aujourd'hui à \d\d:\d\d\) : Connecte-toi à WikiMasters/.test(line()), 'échec de la dernière synchro absent du résumé : ' + line());
+    check(/Dernière synchro en échec \(Automatique · lecture complète, aujourd'hui à \d\d:\d\d\) : Le jeu a refusé la lecture/.test(line()), 'échec de la dernière synchro absent du résumé : ' + line());
     needButton('Dernières synchros').click();
     await settle(200);
-    check(tabBtn('maj').getAttribute('aria-selected') === 'true', '« Dernières synchros » doit ouvrir « Mettre à jour »');
-    check(api.st.calls.some(([m, p]) => m === 'GET' && p === '/api/sync-log'), 'journal non demandé à l\'ouverture de « Mettre à jour »');
+    check(tabBtn('maj').getAttribute('aria-selected') === 'true', '« Dernières synchros » doit ouvrir « Synchro »');
+    check(api.st.calls.some(([m, p]) => m === 'GET' && p === '/api/sync-log'), 'journal non demandé à l\'ouverture de « Synchro »');
     const rows = () => cls('synclog-row');
-    check(has('Dernières synchros') && rows().length === 3, 'journal : 3 lignes attendues, ' + rows().length);
-    check(rows()[0].classList.contains('is-error') && text(rows()[0]).includes('échec') && text(rows()[0]).includes('Favori · lecture complète') && text(rows()[0]).includes('Connecte-toi à WikiMasters'),
+    check(has('Dernières synchros') && rows().length === 4, 'journal : 4 lignes attendues, ' + rows().length);
+    check(rows()[0].classList.contains('is-error') && text(rows()[0]).includes('échec') && text(rows()[0]).includes('Automatique · lecture complète') && text(rows()[0]).includes('Le jeu a refusé la lecture'),
       'ligne en échec : ' + text(rows()[0]));
-    check(text(rows()[1]).includes('réussie') && text(rows()[1]).includes('Favori relié · synchro rapide') && /3 fois depuis aujourd'hui à \d\d:\d\d/.test(text(rows()[1])), 'ligne répétée : ' + text(rows()[1]));
-    check(rows()[2].classList.contains('is-warn') && text(rows()[2]).includes('incomplète') && text(rows()[2]).includes('Cookie · lecture complète'), 'ligne incomplète : ' + text(rows()[2]));
-    // La synchro réussie la plus récente vient d'un favori à jour (v 3) : pas d'avertissement ; d'un ancien (sans v) : oui.
-    check(!has("vient d'un favori d'avant le 18 octobre 2026"), 'favori à jour signalé comme ancien');
-    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'ok', message: 'Lecture complète : 1 050 cartes, aucune nouvelle, aucune retirée.', data: {} }, ...api.st.syncLog];
+    check(text(rows()[1]).includes('réussie') && text(rows()[1]).includes('Automatique · lecture complète') && /3 fois depuis aujourd'hui à \d\d:\d\d/.test(text(rows()[1])), 'ligne répétée : ' + text(rows()[1]));
+    check(text(rows()[2]).includes('Liaison · compte') && text(rows()[2]).includes('Compte du jeu relié (Joueur).'), 'ligne de liaison : ' + text(rows()[2]));
+    check(text(rows()[3]).includes('Synchro · synchro rapide'), "ligne d'avant le 22 octobre 2026 : " + text(rows()[3]));
+    check(!/favori/i.test(text(one('synclog'))), "le journal ne doit plus parler de l'ancien favori");
+    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'ok', message: 'Lecture complète : 1 050 cartes, aucune nouvelle, aucune retirée.', data: { via: 'clic' } }, ...api.st.syncLog];
     needButton('Actualiser').click();
     await settle(200);
-    check(rows().length === 4 && has("vient d'un favori d'avant le 18 octobre 2026"), 'favori ancien non signalé');
-    // Nouvel échec du favori pendant que la page est ouverte : annoncé au retour sur l'onglet, journal relu.
-    const msg = 'Le jeu limite les lectures automatiques : réessaie plus tard (dans une dizaine de minutes). Rien n\'a été changé dans ton classeur.';
-    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'error', message: msg, data: { client: true, via: 'relie', code: 'limit', v: 3 } }, ...api.st.syncLog];
-    api.st.lastSync = { at: api.st.syncLog[0].at, kind: 'full', via: 'relie', result: 'error', message: msg };
+    check(rows().length === 5 && text(rows()[0]).includes('Clic · lecture complète'), 'journal non relu par « Actualiser »');
+    // Nouvel échec d'une lecture automatique pendant que la page est ouverte : annoncé au retour sur l'onglet, journal relu.
+    const msg = 'Le jeu limite les lectures automatiques : la prochaine passe est sautée. Rien n\'a été changé dans ton classeur.';
+    api.st.syncLog = [{ at: at(0), kind: 'full', result: 'error', message: msg, data: { via: 'cron' } }, ...api.st.syncLog];
+    api.st.lastSync = { at: api.st.syncLog[0].at, kind: 'full', via: 'cron', result: 'error', message: msg };
     for (const f of doc.listeners.visibilitychange || []) await f();
     await settle(200);
-    check(has('La dernière synchro du favori a échoué : ' + msg), 'nouvel échec du favori non annoncé');
-    check(rows().length === 5 && text(rows()[0]).includes('Favori relié · lecture complète'), 'journal non relu après un nouvel échec');
+    check(has('La dernière synchro a échoué : ' + msg), 'nouvel échec automatique non annoncé');
+    check(rows().length === 6 && text(rows()[0]).includes('Automatique · lecture complète'), 'journal non relu après un nouvel échec');
+    // Lecture automatique en pause (3 échecs d'affilée) : dit, avec le remède.
+    api.st.fails = 3;
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(100);
+    check(has("Synchro automatique en pause après 3 échecs d'affilée : « Rafraîchir maintenant » la relance."), 'pause de la synchro automatique non dite');
+    api.st.fails = 0;
     api.st.syncLog = [];
     api.st.lastSync = null;
     for (const f of doc.listeners.visibilitychange || []) await f();
     await settle(100);
   }
 
+  // 12 quinquies. Session révoquée par le jeu pendant un « Rafraîchir » : 401 needs_link, qui ne fait pas oublier la clé du
+  // classeur ; « À relier » dans le bandeau et dans « Synchro », et le bouton du bandeau mène à la liaison.
+  if (!SERVER) {
+    await goTab('collections');
+    Object.assign(api.st, { revokeNext: true, clickAt: 0 });
+    needButton('Rafraîchir la collection').click();
+    for (let i = 0; i < 100 && !has('compte du jeu à relier'); i++) await sleep(30);
+    check(has("Ta session du jeu n'est plus valable (révoquée) : relie ton compte.") && h1() === 'Le classeur de Cédric' && ls.get('classeur-key'), 'session révoquée : message ou classeur perdu');
+    check(has('· compte du jeu à relier') && buttonByText('Relier mon compte'), 'session révoquée : bandeau non adapté');
+    needButton('Relier mon compte').click();
+    await settle(100);
+    check(tabBtn('maj').getAttribute('aria-selected') === 'true' && has('À relier : révoquée') && has('Relier mon compte du jeu') && !has('Rafraîchir maintenant'), 'session révoquée : « Synchro » non adapté');
+    Object.assign(api.st, { linked: true, lost: null });
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(100);
+  }
 
-  // 13. HAR : seuls l'adresse et le cookie des requêtes vers le jeu partent
+
+  // 13. En secours, depuis une fenêtre privée : le cookie collé (préfixe « Cookie: » retiré) relie le compte puis lit la
+  // collection ; « Oublier la liaison » ; puis un HAR, dont seuls l'adresse et le cookie des requêtes vers le jeu partent.
   if (!SERVER) {
     await goTab('maj');
+    check(has('Compte du jeu relié') && byId('cookie-input'), '« Synchro » : compte relié et secours attendus');
+    api.st.clickAt = 0;
+    type(byId('cookie-input'), 'Cookie: sb-a=1; sb-b=2');
+    mark = apiLog.length;
+    syncButton('Relier avec ce cookie').click();
+    for (let i = 0; i < 100 && !apiLog.slice(mark).includes('POST /api/refresh'); i++) await sleep(30);
+    await settle(100);
+    check(api.st.lastSession && api.st.lastSession.cookie === 'sb-a=1; sb-b=2' && apiLog.slice(mark).includes('POST /api/refresh'), 'cookie mal envoyé, ou lecture non lancée : ' + JSON.stringify(api.st.lastSession));
+    check(byId('cookie-input').value === '' && has('Compte du jeu relié'), 'cookie : champ non vidé ou compte non relié');
+    syncButton('Oublier la liaison').click();
+    await settle(100);
+    check(!api.st.linked && has('Aucun compte du jeu relié') && buttonByText('Relier mon compte') && !has('Oublier la liaison'), '« Oublier la liaison » sans effet');
     const fileInput = all((n) => n.tagName === 'INPUT' && n.getAttribute('type') === 'file')[0];
     const har = { log: { entries: [
       { request: { url: 'https://www.wiki-masters.com/api/my-collection?page=0', headers: [{ name: 'cookie', value: 'sb=har' }, { name: 'authorization', value: 'secret' }] }, response: { content: { text: 'PRIVÉ' } } },
@@ -2323,7 +2360,7 @@ async function main() {
     fileInput.dispatch('change');
     await settle(200);
     const sent = JSON.stringify(api.st.lastSession);
-    check(sent === '{"har":{"log":{"entries":[{"request":{"url":"https://www.wiki-masters.com/api/my-collection?page=0","headers":[{"name":"Cookie","value":"sb=har"}]}}]}}}', 'HAR envoyé : ' + sent);
+    check(sent === '{"har":{"log":{"entries":[{"request":{"url":"https://www.wiki-masters.com/api/my-collection?page=0","headers":[{"name":"Cookie","value":"sb=har"}]}}]}}}' && api.st.linked, 'HAR envoyé : ' + sent);
   }
   await settle(200);
 
@@ -2391,18 +2428,7 @@ async function main() {
   const st1 = await rawApi('GET', '/api/me', myKey);
   check(st1.status === 401, "l'ancienne clé marche encore (" + st1.status + ')');
 
-  // 17. Régénérer le favori : nouvelle clé d'import, nouveau favori
-  const oldImport = importKey;
-  needButton('Régénérer le favori').click();
-  await settle();
-  modalButton('Régénérer le favori').click();
-  await settle(SERVER ? 300 : 80);
-  const newImport = Object.values(JSON.parse(ls.get('classeur-import-key') || '{}'))[0];
-  const bm2 = all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0];
-  check(newImport && newImport !== oldImport && bm2 && decodeURI(bm2.getAttribute('href').slice(11)).includes('"' + newImport + '"'), 'favori non régénéré');
-  check(tabBtn('maj').getAttribute('aria-selected') === 'true', "après régénération, l'onglet du favori doit s'ouvrir");
-
-  // 18. Oublier ce navigateur : clé, classeurs connus, clé d'import, caches de Wikipédia
+  // 18. Oublier ce navigateur : clé, classeurs connus, caches de Wikipédia
   await sleep(1600);
   check(ls.get('classeur-pv') && ls.get('classeur-sugg'), 'caches attendus avant l\'oubli');
   await goTab('reglages');
@@ -2434,7 +2460,7 @@ async function main() {
     const rec = cachedCards().find((r) => r.user === me.user.id);
     check(rec && rec.rev === me.cards_rev && rec.cards.length === n0, 'cache non écrit après la relecture : ' + (rec ? rec.rev + ' / ' + me.cards_rev + ', ' + rec.cards.length + ' / ' + n0 : 'absent'));
     await rawApi('POST', '/api/tags/set', key, { card_id: 'c11', tags: ['Vu ailleurs'] });
-    await sendImport(key, cur.filter((c) => c.id !== 'c12'));
+    await seedCards(key, cur.filter((c) => c.id !== 'c12'));
     let open = null;
     const gate = new Promise((r) => { open = r; });
     mark = apiLog.length;
@@ -2489,7 +2515,7 @@ async function main() {
       const p5 = openPage();
       check(await waitFor(() => p5.count() === n0 - 1) && cardCalls(mark).every((x) => x.includes('?part=')) && cardCalls(mark).length === 3, 'ancien serveur : relecture complète attendue, ' + cardCalls(mark).join(', '));
       const cur2 = (await rawApi('GET', '/api/cards', key)).body.cards;
-      await sendImport(key, [...cur2, { ...cur2[0], id: 'ancien-serveur', title: 'Carte de l\'ancien serveur' }]);
+      await seedCards(key, [...cur2, { ...cur2[0], id: 'ancien-serveur', title: 'Carte de l\'ancien serveur' }]);
       mark = apiLog.length;
       await p5.visible();
       check(await waitFor(() => p5.count() === n0) && cardCalls(mark)[0] === 'GET /api/cards?part=0' && !cardCalls(mark).some((x) => x.includes('since')),
@@ -2500,28 +2526,22 @@ async function main() {
 
   // 25 à 27 : plusieurs classeurs dans ce navigateur (pages à part ; localStorage remis comme avant à la fin).
   {
-    const savedLs = ['classeur-key', 'classeur-known', 'classeur-import-key'].map((k) => [k, ls.get(k)]);
+    const savedLs = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
     const mkCards = (prefix, n) => Array.from({ length: n }, (_, i) => ({ id: prefix + i, title: prefix.toUpperCase() + ' carte ' + i, rarity: 'C', atk: 1, def: 1, quality: 1,
       pageviews: 10, category: 'x', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }));
     const tabOf = (d) => { const t = d.querySelectorAll('button').find((n) => (n.getAttribute('id') || '').startsWith('tab-') && n.getAttribute('aria-selected') === 'true'); return t ? t.getAttribute('id') : null; };
-    const bmIn = (d) => d.querySelectorAll('a').find((n) => n.classList.contains('bookmarklet')) || null;
-    const bmHas = (d, k) => { const b = bmIn(d); return !!b && decodeURI(b.getAttribute('href').slice(11)).includes('"' + k + '"') && !text(d.body).includes('Créer un nouveau favori'); };
     const modalBtnIn = (d, t) => { const m = d.querySelectorAll('.modal')[0]; return (m && m.querySelectorAll('button').filter((n) => text(n).trim() === t).pop()) || null; };
     const keyA = await makeOtherAccount('Alice');
     const keyB = await makeOtherAccount('Bob');
-    await sendImport(keyA, mkCards('a', 500));
-    await sendImport(keyB, mkCards('b', 30));
+    await seedCards(keyA, mkCards('a', 500));
+    await seedCards(keyB, mkCards('b', 30));
     await rawApi('POST', '/api/targets/save', keyA, { name: 'Rangement Alice', items: [{ title: 'Zeus', status: 'ok' }] });
-    const idA = (await rawApi('GET', '/api/me', keyA)).body.user.id;
-    const idB = (await rawApi('GET', '/api/me', keyB)).body.user.id;
-    const fav = { [idA]: (await rawApi('POST', '/api/import-key', keyA)).body.import_key, [idB]: (await rawApi('POST', '/api/import-key', keyB)).body.import_key };
 
     // 25. Changement de classeur pendant le chargement du premier : lien du classeur de Bob ouvert dans un navigateur qui
     // garde celui d'Alice, « Ouvrir » cliqué avant que les cartes d'Alice soient lues. La fin du premier chargement ne
-    // touche pas au classeur de Bob : ni l'onglet (« Mettre à jour », celui d'un classeur vide), ni le favori (clé d'import
-    // lue sans compte : « Créer un nouveau favori »), ni les collections (celles d'Alice, arrivées après coup).
+    // touche pas au classeur de Bob : ni l'onglet (« Synchro », celui d'un classeur vide), ni l'état de son compte du jeu,
+    // ni les collections (celles d'Alice, arrivées après coup).
     for (const when of ['cartes', 'santé', 'collections']) {
-      ls.set('classeur-import-key', JSON.stringify(fav));
       ls.set('classeur-key', keyA);
       ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alice' }]));
       // Réponses retenues : les cartes ; GET /api/health du second chargement (« santé ») ; les collections d'Alice.
@@ -2557,13 +2577,11 @@ async function main() {
       check(!text(p.doc.body).includes('Rangement Alice'), `changement pendant le chargement (${when}) : une collection d'Alice est arrivée dans le classeur de Bob`);
       p.doc.getElementById('tab-maj').click();
       await settle(100);
-      check(bmHas(p.doc, fav[idB]), `changement pendant le chargement (${when}) : le favori de Bob (clé gardée) doit être prêt`);
+      check(text(p.doc.body).includes(SERVER ? 'Compte du jeu relié' : 'Aucun compte du jeu relié'), `changement pendant le chargement (${when}) : état du compte du jeu de Bob attendu`);
     }
 
-    // 26. « Supprimer mon classeur » : seule la clé du favori du classeur supprimé est oubliée ; celles des autres
-    // classeurs de ce navigateur restent, comme eux (sinon leur favori, toujours installé, serait à recréer).
+    // 26. « Supprimer mon classeur » : seul le classeur supprimé est oublié ; les autres classeurs de ce navigateur restent.
     {
-      ls.set('classeur-import-key', JSON.stringify(fav));
       ls.set('classeur-key', keyB);
       ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alice' }, { key: keyB, name: 'Bob' }]));
       const p = openPage({ idb: 'absent' });
@@ -2574,67 +2592,19 @@ async function main() {
       await settle();
       modalBtnIn(p.doc, 'Supprimer mon classeur').click();
       check(await waitFor(() => !ls.has('classeur-key')) && text(p.doc.body).includes("J'ai déjà un lien"), 'suppression : classeur de Bob non supprimé');
-      check(ls.get('classeur-import-key') === JSON.stringify({ [idA]: fav[idA] }), 'suppression : clés de favori gardées ' + ls.get('classeur-import-key') + ", au lieu de celle d'Alice seule");
       check(ls.get('classeur-known') === JSON.stringify([{ key: keyA, name: 'Alice' }]), 'suppression : classeurs connus ' + ls.get('classeur-known'));
       ls.set('classeur-key', keyA);
       const p2 = openPage({ idb: 'absent' });
       check(await waitFor(() => p2.count() === 500), "suppression : classeur d'Alice non rouvert");
-      p2.doc.getElementById('tab-maj').click();
-      await settle(100);
-      check(bmHas(p2.doc, fav[idA]), "suppression : le favori d'Alice doit rester prêt");
-    }
-
-    // 27. Fenêtre « Mettre à jour avec le favori » : les autres classeurs connus ne sont relus (GET /api/me, qui compte
-    // les cartes du compte sur le serveur) qu'à son ouverture, puis toutes les 30 s pendant 3 min ; le classeur ouvert,
-    // toutes les 4 s. Un envoi arrivé dans l'un d'eux est quand même signalé. Horloge de la page accélérée (×100).
-    if (!SERVER) {
-      const SPEED = 100;
-      const keyD = await makeOtherAccount('Dora');
-      const keyE = await makeOtherAccount('Eva');
-      const keyF = await makeOtherAccount('Fred');
-      for (const [k, n] of [[keyD, 'd'], [keyE, 'e'], [keyF, 'f']]) await sendImport(k, mkCards(n, 3));
-      ls.set('classeur-key', keyD);
-      ls.set('classeur-known', JSON.stringify([keyD, keyE, keyF].map((key) => ({ key, name: '' }))));
-      const p = openPage({ idb: 'absent', speed: SPEED });
-      check(await waitFor(() => p.count() === 3), 'fenêtre du favori : classeur de Dora non ouvert');
-      const openSyncIn = () => p.doc.querySelectorAll('button').find((n) => text(n).includes('Mettre à jour avec le favori')).click();
-      // Heures (secondes de la page, depuis t0) des GET /api/me faits avec la clé k depuis la position `from` du journal.
-      const meAt = (k, from, t0) => apiKeyLog.slice(from).filter((x) => x.call === 'GET /api/me' && x.key === k).map((x) => (x.at - t0) * SPEED / 1000);
-      const fmtS = (s) => s.map((x) => Math.round(x) + ' s').join(', ');
-      let from = apiKeyLog.length;
-      let t0 = Date.now();
-      openSyncIn();
-      await sleep(240 * 1000 / SPEED); // 4 min de la page, sans envoi
-      for (const k of [keyE, keyF]) {
-        const s = meAt(k, from, t0);
-        check(s.length >= 4 && s.length <= 7 && s[0] < 5 && s.every((x, i) => !i || x - s[i - 1] >= 25) && s[s.length - 1] <= 190,
-          `fenêtre du favori : autre classeur relu ${s.length} fois en 4 min (${fmtS(s)}) ; attendu : à l'ouverture, puis toutes les 30 s pendant 3 min`);
-      }
-      const own = meAt(keyD, from, t0);
-      check(own.length >= 30, `fenêtre du favori : le classeur ouvert doit être relu toutes les 4 s (${own.length} fois en 4 min)`);
-      modalBtnIn(p.doc, 'Fermer').click();
-      await settle();
-      // Le favori a envoyé dans le classeur d'Eva : signalé à la première relecture (30 s).
-      from = apiKeyLog.length;
-      t0 = Date.now();
-      openSyncIn();
-      await sleep(50);
-      await sendImport(keyE, mkCards('e', 4));
-      check(await waitFor(() => text(p.doc.body).includes("Tes cartes sont arrivées dans le classeur de Eva, pas dans celui ouvert ici.")),
-        "fenêtre du favori : envoi dans le classeur d'Eva non signalé");
-      const s = meAt(keyE, from, t0);
-      check(s.length === 2 && s[1] >= 25 && s[1] <= 45, `fenêtre du favori : classeur d'Eva relu à ${fmtS(s)} (attendu : à l'ouverture, puis à 30 s)`);
-      modalBtnIn(p.doc, 'Fermer').click();
-      await settle();
     }
 
     // 27 bis. Onglet du classeur visible : GET /api/me toutes les 60 s (minuterie déclenchée à la main ici), et les
-    // cartes (?since) seulement si cards_rev a bougé — envoi du favori relié à la page du jeu —, avec « Mis à jour depuis
+    // cartes (?since) seulement si cards_rev a bougé — lecture automatique de la collection par le serveur —, avec « Mis à jour depuis
     // wiki-masters.com ». Onglet caché : minuterie arrêtée, rien n'est lu ; de nouveau visible : relu aussitôt, minuterie
     // relancée.
     {
       const keyG = await makeOtherAccount('Gil');
-      await sendImport(keyG, mkCards('g', 3));
+      await seedCards(keyG, mkCards('g', 3));
       ls.set('classeur-key', keyG);
       const p = openPage({ idb: 'absent' });
       check(await waitFor(() => p.count() === 3), 'relecture périodique : classeur de Gil non ouvert');
@@ -2645,7 +2615,7 @@ async function main() {
       await p.live();
       await settle(60);
       check(reads(from).join(', ') === 'GET /api/me', 'relecture périodique sans changement : seul GET /api/me attendu, ' + reads(from).join(', '));
-      await sendImport(keyG, mkCards('g', 5));
+      await seedCards(keyG, mkCards('g', 5));
       from = apiKeyLog.length;
       await p.live();
       check(await waitFor(() => p.count() === 5), `relecture périodique : nouvelles cartes absentes (${p.count()})`);
@@ -2656,7 +2626,7 @@ async function main() {
       await p.visible();
       check(p.longTimers.size === 0, 'onglet caché : la minuterie doit être arrêtée');
       from = apiKeyLog.length;
-      await sendImport(keyG, mkCards('g', 6));
+      await seedCards(keyG, mkCards('g', 6));
       await p.live();
       await settle(60);
       check(reads(from).length === 0, 'onglet caché : aucune lecture attendue, ' + reads(from).join(', '));
@@ -2678,16 +2648,19 @@ async function main() {
     const paulKey = await makeOtherAccount('Paul');
     const leaKey = await makeOtherAccount('Léa');
     const zoeKey = await makeOtherAccount('Zoé');
-    await sendImport(paulKey, [fc('p-mars', 'Mars (planète)', 'UR', 2), fc('p-jup', 'Jupiter (planète)', 'UR', 1), fc('p-a5', 'Article 5', 'C', 1),
+    await seedCards(paulKey, [fc('p-mars', 'Mars (planète)', 'UR', 2), fc('p-jup', 'Jupiter (planète)', 'UR', 1), fc('p-a5', 'Article 5', 'C', 1),
       fc('p-pluton', 'Pluton', 'R', 1, { shiny: true }), fc('p-a1', 'Article 1', 'PC', 3)]);
-    await sendImport(leaKey, [fc('l-jup', 'Jupiter (planète)', 'UR', 1), fc('l-sat', 'Saturne (planète)', 'SR', 3), fc('l-nep', 'Neptune', 'SR', 1), fc('l-a7', 'Article 7', 'C', 1)]);
-    await sendImport(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
+    await seedCards(leaKey, [fc('l-jup', 'Jupiter (planète)', 'UR', 1), fc('l-sat', 'Saturne (planète)', 'SR', 3), fc('l-nep', 'Neptune', 'SR', 1), fc('l-a7', 'Article 7', 'C', 1)]);
+    await seedCards(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
     for (const k of [paulKey, leaKey]) check((await rawApi('PATCH', '/api/me', k, { shared: true })).status === 200, 'partage des amis refusé');
     check((await rawApi('PATCH', '/api/me', paulKey, { pseudo: 'PaulDu13' })).status === 200, 'pseudo de Paul refusé');
     // Partage activé dès la création (2026-10-16, vrai serveur) : coupé ici pour Cédric et Zoé, comme au départ du scénario.
     for (const k of [myKey3, zoeKey]) check((await rawApi('PATCH', '/api/me', k, { shared: false })).status === 200, 'arrêt du partage refusé');
     // Sans partager soi-même : 403 (réciprocité), et l'onglet invite à partager sans rien lire des autres.
     check((await rawApi('GET', '/api/members', myKey3)).status === 403, 'sans partage, GET /api/members doit répondre 403');
+    // Partage coupé hors de la page : elle le voit au retour sur l'onglet (GET /api/me).
+    for (const f of doc.listeners.visibilitychange || []) await f();
+    await settle(100);
     mark = apiLog.length;
     await goTab('amis');
     check(tabBtn('amis') && text(tabBtn('amis')) === 'Entre amis', 'onglet « Entre amis » absent');
@@ -2865,7 +2838,7 @@ async function main() {
         check(!pair('Toi → Léa') && !cls('trade').some((n) => n.querySelector('.badge')), "plus d'estimation pour Léa, qui ne partage pas ses collections");
         // Ta carte : sa fiche ; une case vide chez toi : la fiche de la carte manquante. Une ligne pour un ami : deux boutons
         // côte à côte (ta carte, et chaque collection de l'ami, qui ouvre son album), jamais l'un dans l'autre.
-        check(a7.tagName === 'DIV' && a7.querySelector('.fitem__main') && a7.querySelectorAll('.fitem__col').map(text).join(' | ') === 'Les préférées de Paul | Exemples de Paul'
+        check(a7.tagName === 'DIV' && a7.querySelector('.fitem__main') && a7.querySelectorAll('.fitem__col').map(text).sort().join(' | ') === 'Exemples de Paul | Les préférées de Paul'
           && !a7.querySelector('.fitem__main').querySelector('button'), 'Article 7 : la carte et les collections de Paul, en boutons distincts : ' + text(a7));
         a7.querySelector('.fitem__main').click();
         await settle();
@@ -3153,7 +3126,7 @@ async function main() {
   // s'affiche sans « ≈ » (case vide, fiche de la carte manquante, « Il t'en manque ») ; l'estimation reste pour les autres.
   {
     const keyG = await makeOtherAccount('Gaston');
-    await sendImport(keyG, [{ id: 'g1', title: 'Vache normande', rarity: 'PC', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'race bovine', image: null, url: null,
+    await seedCards(keyG, [{ id: 'g1', title: 'Vache normande', rarity: 'PC', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'race bovine', image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }]);
     await rawApi('POST', '/api/targets/save', keyG, { name: 'Vaches', source: 'wm:vache', items: [
       { title: 'Vache', description: 'mammifère domestique', image: null, status: 'ok', rarity: 'R' },
@@ -3216,8 +3189,8 @@ async function main() {
     const it = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
     const CONT = [it('Continent', { sep: true }), it('Afrique', { qid: 'Q15', rarity: 'R', description: 'continent' }), it('Europe'), it('Sous-continent', { sep: true }),
       it('Amérique du Nord'), it('Supercontinent', { sep: true }), it('Pangée')];
-    await sendImport(keyN, ['Continent', 'Afrique', 'Europe', 'Supercontinent', 'Pangée', 'Zeus'].map((t, i) => mkc('n' + i, t)));
-    await sendImport(keyO, CONT.map((x, i) => mkc('o' + i, x.title)));
+    await seedCards(keyN, ['Continent', 'Afrique', 'Europe', 'Supercontinent', 'Pangée', 'Zeus'].map((t, i) => mkc('n' + i, t)));
+    await seedCards(keyO, CONT.map((x, i) => mkc('o' + i, x.title)));
     check((await rawApi('POST', '/api/targets/save', keyN, { name: 'Continents', items: CONT })).status === 200, 'intercalaires : collection refusée');
     await rawApi('POST', '/api/targets/save', keyN, { name: 'Olympe', items: [it('Zeus')] }); // complète (Ninon a Zeus)
     await rawApi('POST', '/api/targets/save', keyO, { name: "Continents d'Olga", items: CONT });
@@ -3345,7 +3318,11 @@ async function main() {
     sepBox().checked = true;
     sepBox().dispatch('change');
     check(await waitFor(() => sepBox() && !sepBox().disabled), 'fiche d\'une case vide : enregistrement sans fin');
-    check((await serverSeps()).seps === 'Continent, Sous-continent, Amérique du Nord', 'fiche d\'une case vide : intercalaire non enregistré, ' + (await serverSeps()).seps);
+    {
+      let seps = '';
+      for (let i = 0; i < 40 && (seps = (await serverSeps()).seps) !== 'Continent, Sous-continent, Amérique du Nord'; i++) await sleep(50);
+      check(seps === 'Continent, Sous-continent, Amérique du Nord', 'fiche d\'une case vide : intercalaire non enregistré, ' + seps);
+    }
     d.querySelectorAll('.fiche')[0].querySelector('.close').click();
     await settle(400);
     check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée', 'après la fiche (case vide) : ' + layout());
@@ -3403,7 +3380,7 @@ async function main() {
   {
     const keyI = await makeOtherAccount('Iris');
     const mk1 = (id, title) => ({ id, title, rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'couleur', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
-    await sendImport(keyI, Object.keys(CARD_CATS).map((t, i) => mk1('i' + i, t)));
+    await seedCards(keyI, Object.keys(CARD_CATS).map((t, i) => mk1('i' + i, t)));
     ls.set('classeur-key', keyI);
     ls.set('classeur-known', JSON.stringify([{ key: keyI, name: 'Iris' }]));
     const proposedIn = (d) => d.querySelectorAll('.row').filter((n) => n.classList.contains('wp')).map((n) => text(n.querySelector('.name')));
@@ -3507,8 +3484,8 @@ async function main() {
     // (wikiHold) ou de GET /api/me (hold) retenues.
     const keyJ = await makeOtherAccount('Jade');
     const keyK = await makeOtherAccount('Kim');
-    await sendImport(keyJ, ['Coquelicot', 'Fraise', 'Citron', 'Banane'].map((t, i) => mk1('j' + i, t)));
-    await sendImport(keyK, ['Pomme verte', 'Menthe'].map((t, i) => mk1('k' + i, t)));
+    await seedCards(keyJ, ['Coquelicot', 'Fraise', 'Citron', 'Banane'].map((t, i) => mk1('j' + i, t)));
+    await seedCards(keyK, ['Pomme verte', 'Menthe'].map((t, i) => mk1('k' + i, t)));
     const known = JSON.stringify([{ key: keyJ, name: 'Jade' }, { key: keyK, name: 'Kim' }]);
     const gates = [];
     const wikiSeen = [];
@@ -3630,7 +3607,7 @@ async function main() {
     // titres dont le qid n'est pas encore connu (résolus après chaque chargement des cartes).
     {
       const keyL = await makeOtherAccount('Léo');
-      await sendImport(keyL, [mk1('l0', 'Néon (gaz)')]);
+      await seedCards(keyL, [mk1('l0', 'Néon (gaz)')]);
       await rawApi('POST', '/api/targets/save', keyL, { name: 'Inconnus', items: it(['Inconnu 1', 'Inconnu 2']) });
       ls.set('classeur-key', keyL);
       ls.set('classeur-known', JSON.stringify([{ key: keyL, name: 'Léo' }]));
@@ -3807,7 +3784,7 @@ async function main() {
     const mkA = (id, title, rarity, category, gtags = [], gtagc = null) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category, image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', gtags, ...(gtagc ? { gtagc } : {}) });
     const red = { Maladie: '#ef4444' };
-    await sendImport(keyA, [mkA('a1', 'Grippe', 'R', 'maladie infectieuse', ['Maladie', 'Virus'], red), mkA('a2', 'Rougeole', 'PC', 'infection virale', ['Maladie', 'Virus'], red),
+    await seedCards(keyA, [mkA('a1', 'Grippe', 'R', 'maladie infectieuse', ['Maladie', 'Virus'], red), mkA('a2', 'Rougeole', 'PC', 'infection virale', ['Maladie', 'Virus'], red),
       mkA('a3', 'Varicelle', 'C', 'maladie', ['Maladie', 'Virus'], red), mkA('a4', 'Choléra', 'SR', 'Maladie', ['Maladie'], red), mkA('a5', 'Peste', 'UR', 'maladie', ['Fléau']),
       mkA('a6', 'Paludisme', 'R', 'maladie parasitaire', ['Maladies tropicales']), mkA('a7', 'Louis Pasteur', 'L', 'scientifique français'),
       mkA('a8', 'Rihanna', 'L', 'chanteuse barbadienne', ['Musique']), mkA('a9', 'Herpès', 'C', 'infection virale', ['Virus']), mkA('a10', 'Diphtérie', 'PC', 'maladie infectieuse')]);
@@ -3970,7 +3947,7 @@ async function main() {
     // Classeur dont aucune carte n'a de tag du jeu : la fenêtre le dit (et propose quand même les catégories du jeu).
     {
       const keyZ = await makeOtherAccount('Zélie');
-      await sendImport(keyZ, [mkA('z1', 'Grippe', 'R', 'maladie'), mkA('z2', 'Peste', 'UR', 'maladie')].map(({ gtags, ...c }) => c));
+      await seedCards(keyZ, [mkA('z1', 'Grippe', 'R', 'maladie'), mkA('z2', 'Peste', 'UR', 'maladie')].map(({ gtags, ...c }) => c));
       check((await rawApi('POST', '/api/targets/save', keyZ, { name: 'Maladies', items: [it0('Rougeole')] })).status === 200, 'collection de Zélie refusée');
       ls.set('classeur-key', keyZ);
       ls.set('classeur-known', JSON.stringify([{ key: keyZ, name: 'Zélie' }]));
@@ -3983,7 +3960,7 @@ async function main() {
       btnIn(pz.doc.body, ADD).click();
       await settle();
       const mz = text(pz.doc.querySelectorAll('.modal')[0]);
-      check(mz.includes("Ton favori n'a encore lu aucun tag du jeu : relance une mise à jour complète") && mz.includes('« maladie »') && mz.includes('Ajouter 2 cartes'),
+      check(mz.includes("Aucun tag du jeu lu pour l'instant : ils arrivent avec chaque lecture de ta collection") && mz.includes('« maladie »') && mz.includes('Ajouter 2 cartes'),
         'classeur sans tag du jeu : message absent : ' + mz.slice(0, 600));
       pz.doc.getElementById('tab-cartes').click();
       await settle();
@@ -3994,6 +3971,8 @@ async function main() {
 
     // 32. Cartes citées dans le chat.
     const keyB = await makeOtherAccount('Bérénice');
+    // Le vrai serveur ne liste que les membres qui ont des cartes ou des collections (l'API simulée, tous).
+    if (SERVER) await seedCards(keyB, [{ id: 'b1', title: 'Carte de Bérénice', rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 1, category: 'x', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }]);
     check((await rawApi('POST', '/api/chat', keyB, { text: 'Regarde [[grippe]] et [[Lèpre]] ! <b>gras</b> [[<img src=x onerror=alert(1)>]] [[Mot inconnu]]' })).status === 201, 'message de Bérénice refusé');
     d.getElementById('tab-chat').click();
     const lastMsg = () => { const l = d.querySelectorAll('.chat-msg'); return l[l.length - 1] || null; };
@@ -4161,8 +4140,8 @@ async function main() {
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', gtags });
     let deck = [mkU('u1', 'Grippe', 'maladie infectieuse', ['Maladie']), mkU('u2', 'Rougeole', 'infection virale', ['Maladie']), mkU('u3', 'Peste', 'maladie'),
       mkU('u4', 'Rihanna', 'chanteuse barbadienne', ['Musique'])];
-    await sendImport(keyU, deck);
-    const more = async (...list) => { deck = [...deck, ...list]; await sendImport(keyU, deck); };
+    await seedCards(keyU, deck);
+    const more = async (...list) => { deck = [...deck, ...list]; await seedCards(keyU, deck); };
     const itU = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
     check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Maladies', items: [itU('Grippe')] })).status === 200, "collection « Maladies » d'Ugo refusée");
     const colU = async (name) => ((await rawApi('GET', '/api/targets', keyU)).body.targets || []).find((x) => x.name === name);
@@ -4423,14 +4402,14 @@ async function main() {
     const um = api.users.find((u) => u.key === keyM);
     const mc = (id, title, rarity, count, extra = {}) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null, count, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z', ...extra });
     const ventes = Array.from({ length: 24 }, (_, i) => mc('v' + String(i + 1).padStart(2, '0'), 'Vente ' + String(i + 1).padStart(2, '0'), 'C', 1, { variants: { C: 1 } }));
-    await sendImport(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } }),
+    await seedCards(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } }),
       ...ventes, mc('m9', 'Sans cote M', 'C', 1, { variants: { C: 1 } }), mc('vf', 'Favorite F', 'C', 1, { starred: true, variants: { C: 1 } })]);
     const it = (title) => ({ title, description: null, image: null, status: 'ok' });
     await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1'), it('Marché 2'), it('Marché 3'), it('Voulue B')] });
     // Nino, un ami qui montre ses cartes et ses collections : Marché 1 (2 exemplaires dont 1 brillant), Voulue A, une carte
     // jamais cotée ; sa collection « Cotées ». Mona montre les siennes.
     const keyN = await makeOtherAccount('Nino');
-    await sendImport(keyN, [mc('m1', 'Marché 1', 'R', 2, { shiny: true }), mc('w1', 'Voulue A', 'SR', 1), mc('n3', 'Sans cote', 'C', 1)]);
+    await seedCards(keyN, [mc('m1', 'Marché 1', 'R', 2, { shiny: true }), mc('w1', 'Voulue A', 'SR', 1), mc('n3', 'Sans cote', 'C', 1)]);
     await rawApi('POST', '/api/targets/save', keyN, { name: 'Cotées', items: [it('Marché 1'), it('Voulue A'), it('Absente')] });
     for (const k of [keyN, keyM]) check((await rawApi('PATCH', '/api/me', k, { shared: true, shared_targets: true })).status === 200, 'partage refusé (marché)');
     const soon = new Date(Date.now() + 3600_000).toISOString();
@@ -4765,7 +4744,7 @@ async function main() {
     const keyF = await makeOtherAccount('Mila');
     const mkF = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'essai', image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
-    await sendImport(keyF, [mkF('f1', 'Zeus', 'L'), mkF('f2', 'Héra', 'R'), mkF('f3', 'Apollon', 'SR')]);
+    await seedCards(keyF, [mkF('f1', 'Zeus', 'L'), mkF('f2', 'Héra', 'R'), mkF('f3', 'Apollon', 'SR')]);
     const itF = (title, more) => ({ title, description: null, image: null, status: 'ok', ...more });
     const pad = (i) => String(i).padStart(4, '0');
     const saveF = async (t) => check((await rawSave(keyF, t)).status === 200, `collection « ${t.name} » refusée`);
@@ -4949,7 +4928,7 @@ async function main() {
     const mkR = (id, title, rarity) => ({ id, title, rarity: rarity || 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'continent', image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
     const itR = (title, extra) => ({ title, description: null, image: null, status: 'ok', ...extra });
-    await sendImport(keyR, [mkR('r1', 'Afrique', 'R'), mkR('r2', 'Europe'), mkR('r3', 'Continent')]);
+    await seedCards(keyR, [mkR('r1', 'Afrique', 'R'), mkR('r2', 'Europe'), mkR('r3', 'Continent')]);
     const CONT = [itR('Continent', { sep: true }), itR('Afrique', { qid: 'Q15', rarity: 'R', description: 'continent' }), itR('Europe'), itR('Asie'),
       itR('Sous-continent', { sep: true, image: 'https://upload.wikimedia.org/sc.jpg' }), itR('Amérique du Nord'), itR('Océanie')];
     const saveR = async (t) => check((await rawApi('POST', '/api/targets/save', keyR, t)).status === 200, `réorganiser : collection « ${t.name} » refusée`);
@@ -5446,8 +5425,8 @@ async function main() {
     const keyZ = await makeOtherAccount('Zed');
     const mkC = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'pirate', image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
-    await sendImport(keyT, [mkC('t1', 'Monkey D. Luffy', 'L'), mkC('t2', 'Roronoa Zoro', 'UR')]);
-    await sendImport(keyY, [mkC('y1', 'Nami', 'R')]);
+    await seedCards(keyT, [mkC('t1', 'Monkey D. Luffy', 'L'), mkC('t2', 'Roronoa Zoro', 'UR')]);
+    await seedCards(keyY, [mkC('y1', 'Nami', 'R')]);
     const it0 = (title) => ({ title, description: null, image: null, status: 'ok' });
     check((await rawApi('POST', '/api/targets/save', keyT, { name: 'Mugiwara', items: [it0('Monkey D. Luffy'), it0('Roronoa Zoro'), it0('Nami')] })).status === 200, 'collection « Mugiwara » refusée');
     const tid = (await rawApi('GET', '/api/targets', keyT)).body.targets.find((t) => t.name === 'Mugiwara').id;
@@ -5514,8 +5493,8 @@ async function main() {
     const keyW = await makeOtherAccount('Wil');
     const mkC = (id, title, rarity) => ({ id, title, rarity, atk: 1, def: 1, quality: 1, pageviews: 10, category: 'x', image: null, url: null,
       count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
-    await sendImport(keyU, [mkC('u1', 'Mercure', 'L'), mkC('u2', 'Vénus', 'R'), mkC('u3', 'Mars', 'C')]);
-    await sendImport(keyV, [mkC('v1', 'Terre', 'R')]);
+    await seedCards(keyU, [mkC('u1', 'Mercure', 'L'), mkC('u2', 'Vénus', 'R'), mkC('u3', 'Mars', 'C')]);
+    await seedCards(keyV, [mkC('v1', 'Terre', 'R')]);
     const it0 = (title) => ({ title, description: null, image: null, status: 'ok' });
     check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Planètes telluriques', items: [it0('Mercure'), it0('Vénus'), it0('Terre'), it0('Mars')] })).status === 200, 'collection d\'Uma refusée');
     check((await rawApi('POST', '/api/targets/save', keyU, { name: 'Intérieures', items: [it0('Mercure'), it0('Vénus')] })).status === 200, 'collection d\'Uma refusée');
@@ -5691,80 +5670,56 @@ function noVue() {
   if (!/Vue/.test(box.textContent)) fail('sans Vue, aucun message : ' + box.textContent);
 }
 
-// Exécute le favori dans une fausse page wiki-masters.com : 1 100 exemplaires (1 050 cartes), envoi par morceaux.
-async function runBookmarklet(code, classeurFetch, key) {
-  const { doc } = makeDom();
-  const posts = [];
-  const entries = [];
-  for (let i = 0; i < 1100; i++) {
-    const id = i < 1050 ? 'c' + i : 'c' + (i - 1050);
-    const special = id === 'c0' ? { title: 'Rihanna', rarity: 'L', cat: 'chanteuse barbadienne' } : null;
-    entries.push({ id: 'e' + i, card_id: id, user_id: 'SECRET', tags: [{ name: 'jeu' }], count: 1, is_shiny: i === 1060, starred: false, obtained_at: `2026-10-${String(10 + (i % 5)).padStart(2, '0')}T10:00:00Z`,
-      card: { id, atk: 100 + i, def: 50, lang: 'fr', rarity: special ? special.rarity : ['C', 'PC', 'R', 'SR', 'UR'][i % 5], q_score: 12.5, category: special ? special.cat : 'catégorie ' + (i % 7), image_url: i % 3 ? null : 'https://upload.wikimedia.org/x' + i + '.jpg', pageviews: i * 3, created_at: 'x', hide_image: i === 3, wikipedia_url: 'https://fr.wikipedia.org/wiki/A' + i, wikipedia_title: special ? special.title : (i < 1050 ? 'Article ' + i : 'Article ' + (i - 1050)) } });
+// La collection du joueur dans le jeu (forme des cartes de GET /api/cards) : 1 050 cartes, 1 100 exemplaires (les 50
+// premières en double, c10 avec un exemplaire brillant), tag du jeu « jeu » sur chacune.
+function gameCards() {
+  const out = [];
+  for (let i = 0; i < 1050; i++) {
+    const rarity = i === 0 ? 'L' : ['C', 'PC', 'R', 'SR', 'UR'][i % 5];
+    const count = i < 50 ? 2 : 1;
+    const shiny = i === 10;
+    out.push({ id: 'c' + i, title: i === 0 ? 'Rihanna' : 'Article ' + i, rarity, atk: 100 + i, def: 50, quality: 12.5, pageviews: i * 3,
+      category: i === 0 ? 'chanteuse barbadienne' : 'catégorie ' + (i % 7), image: i % 3 || i === 3 ? null : 'https://upload.wikimedia.org/x' + i + '.jpg',
+      url: 'https://fr.wikipedia.org/wiki/A' + i, count, shiny, starred: false, obtained_at: `2026-10-${String(10 + (i % 5)).padStart(2, '0')}T10:00:00Z`,
+      variants: shiny ? { [rarity]: 1, [rarity + '*']: 1 } : { [rarity]: count }, gtags: ['jeu'], gtagc: null });
   }
-  entries[2].card.wikipedia_title = '(11194) Mirna';
-  entries[5].card.wikipedia_title = 'Terre';
-  entries[6].card.wikipedia_title = 'Hydrogène (élément)';
-  // Exemplaires relus (même entry.id) : comptés une seule fois. Entrées inexploitables : ignorées et annoncées.
-  for (let i = 0; i < 5; i++) entries.push(JSON.parse(JSON.stringify(entries[i])));
-  entries.push({ id: 'x1', card_id: 'bad1', count: 1, card: { id: 'bad1', wikipedia_title: '', rarity: 'C' } });
-  entries.push({ id: 'x2', card_id: 'bad2', count: 1, card: { id: 'bad2', wikipedia_title: 'Truc', rarity: 'X' } });
-  entries.push({ id: 'x3', count: 1 });
-  const pageFetch = async (url, init = {}) => {
-    if (url === '/api/my-collection/stats?sort=rarity') return { ok: true, status: 200, json: async () => ({ total: 1100, totalUnique: 1050, rarityCounts: {}, tagOptions: [] }) };
-    const m = url.match(/^\/api\/my-collection\?sort=rarity&page=(\d+)&stats=0$/);
-    if (m) { const p = Number(m[1]); return { ok: true, status: 200, json: async () => ({ collection: JSON.parse(JSON.stringify(entries.slice(p * 50, p * 50 + 50))) }) }; }
-    if (url === ORIGIN + '/api/import') {
-      if (init.headers['X-Classeur-Key'] !== key) throw new Error('clé absente');
-      const body = JSON.parse(init.body);
-      // Demande d'état de la synchro (mode state) : pas un morceau d'import.
-      if (body.mode !== 'state') posts.push(body);
-      return classeurFetch('/api/import', init);
-    }
-    throw new Error('favori : adresse inattendue ' + url);
-  };
-  const realSet = setTimeout;
-  const ctx = { document: doc, location: { hostname: 'wiki-masters.com' }, fetch: pageFetch, setTimeout: (f) => realSet(f, 0), Promise, JSON, Math, Date, Number, String, Array, Error, console };
+  out[2].title = '(11194) Mirna';
+  out[5].title = 'Terre';
+  out[6].title = 'Hydrogène (élément)';
+  return out;
+}
+
+// Exécute le favori « Relier » dans une fausse page du jeu (fenêtre privée, cookie de session `cookie`) : son chargeur pose le
+// jeton et charge /api/favori.js (public/assets/relier.js, l'origine du classeur à la place de __SITE__), qui envoie le
+// jeton et le cookie au classeur (POST /api/link/session). Rend le texte de son encart et les corps envoyés.
+async function runRelier(href, classeurFetch, cookie, host = 'www.wiki-masters.com') {
+  const { doc } = makeDom();
+  Object.defineProperty(doc, 'cookie', { value: cookie, configurable: true });
+  const posts = [];
+  const ctx = { document: doc, location: { hostname: host }, setTimeout, Promise, JSON, Math, Date, Number, String, Array, Error, console };
   ctx.window = ctx;
+  ctx.fetch = async (url, init = {}) => {
+    if (url !== ORIGIN + '/api/link/session') throw new Error('favori « Relier » : adresse inattendue ' + url);
+    if (init.credentials !== 'omit') throw new Error('favori « Relier » : ne doit envoyer aucun cookie du classeur');
+    posts.push(JSON.parse(init.body));
+    return classeurFetch('/api/link/session', init);
+  };
+  const root = doc.documentElement;
+  const append = root.appendChild.bind(root);
+  let loaded = false;
+  root.appendChild = (el) => {
+    if (el.tagName !== 'SCRIPT') return append(el);
+    if (el.src !== ORIGIN + '/api/favori.js') throw new Error('favori « Relier » : script inattendu ' + el.src);
+    const code = fs.readFileSync(path.join(PUB, 'assets', 'relier.js'), 'utf8').replace(/__SITE__/g, ORIGIN);
+    setTimeout(() => { vm.runInContext(code, ctx, { filename: 'relier.js' }); loaded = true; }, 0);
+    return el;
+  };
   vm.createContext(ctx);
-  vm.runInContext(code, ctx);
-  for (let i = 0; i < 300 && !/envoyées|répondu|Connecte|n'a pas/.test(doc.getElementById('classeur-favori').textContent); i++) await new Promise((r) => realSet(r, 5));
-  const box = doc.getElementById('classeur-favori').textContent;
-  const flat = box.replace(/[  ]/g, ' ');
-  if (!/1 050 cartes envoyées au classeur/.test(flat)) fail('favori : message final inattendu : ' + box);
-  if (!/3 cartes ignorées/.test(flat)) fail('favori : entrées ignorées non annoncées : ' + box);
-  if (posts.length !== 3) fail('favori : 3 morceaux attendus, ' + posts.length);
-  const ids = new Set();
-  posts.forEach((b, i) => {
-    if (b.part !== i || b.last !== (i === 2) || b.source !== 'bookmarklet' || typeof b.upload_id !== 'string' || b.upload_id !== posts[0].upload_id) fail('favori : en-tête de morceau incorrect ' + JSON.stringify({ ...b, cards: b.cards.length }));
-    if (i === 0 ? !b.stats || b.stats.totalUnique !== 1050 : b.stats) fail('favori : stats au premier morceau seulement');
-    if (b.cards.length > 500) fail('favori : morceau trop gros');
-    for (const c of b.cards) {
-      ids.add(c.id);
-      const keys = Object.keys(c).sort().join(',');
-      if (keys !== 'atk,category,count,def,gtagc,gtags,id,image,obtained_at,pageviews,quality,rarity,shiny,starred,title,url,variants') fail('favori : champs de CarteImport ' + keys);
-      // Exemplaires par rareté et brillance (marché) : leur somme fait count.
-      if (Object.values(c.variants).reduce((x, y) => x + y, 0) !== c.count) fail('favori : variants ne compte pas tous les exemplaires de ' + c.id);
-    }
-  });
-  const all = posts.flatMap((b) => b.cards);
-  if (ids.size !== 1050 || all.length !== 1050) fail('favori : regroupement par carte incorrect');
-  if (JSON.stringify(posts).includes('SECRET')) fail('favori : user_id du jeu envoyé');
-  // Tags posés dans le jeu (entry.tags = [{name}]) : envoyés en noms (gtags), depuis le 18 octobre 2026.
-  if (!all.every((c) => JSON.stringify(c.gtags) === '["jeu"]')) fail('favori : tags du jeu non envoyés en gtags');
-  const c0 = all.find((c) => c.id === 'c0');
-  if (c0.count !== 2 || c0.obtained_at !== '2026-10-10T10:00:00Z' || c0.title !== 'Rihanna') fail('favori : exemplaires mal regroupés ' + JSON.stringify(c0));
-  if (!all.find((c) => c.id === 'c10').shiny) fail('favori : brillante perdue');
-  if (all.find((c) => c.id === 'c3').image !== null) fail('favori : hide_image ignoré');
-  if (all.find((c) => c.id === 'c0').image !== 'https://upload.wikimedia.org/x0.jpg') fail('favori : image perdue');
-  // Hors du jeu : le message demande d'ouvrir wiki-masters.com.
-  const other = makeDom();
-  const ctx2 = { document: other.doc, location: { hostname: 'exemple.fr' }, fetch: () => { throw new Error('ne doit rien lire'); }, setTimeout, Promise, JSON, Math, Date, Number, String, Array, Error, console };
-  ctx2.window = ctx2;
-  vm.createContext(ctx2);
-  vm.runInContext(code, ctx2);
-  if (!/Ouvre wiki-masters\.com/.test(other.doc.getElementById('classeur-favori').textContent)) fail('favori : message hors du jeu absent');
-  return { parts: posts.length, cards: all.length, message: box };
+  vm.runInContext(decodeURI(href.slice('javascript:'.length)), ctx, { filename: 'favori-relier.js' });
+  const box = () => root.textContent.replace(/[  ]/g, ' ').replace(/Fermer$/, '');
+  for (let i = 0; i < 400 && (!loaded || !box() || box().includes('Liaison en cours')); i++) await new Promise((r) => setTimeout(r, 10));
+  if (ctx.__classeurLien !== undefined) fail('favori « Relier » : jeton laissé dans la page');
+  return { box: box(), posts };
 }
 
 main().catch((e) => fail(e.stack || e.message));

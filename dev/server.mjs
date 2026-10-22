@@ -1,6 +1,6 @@
 // Serveur local : sert site/public/ et route /api/* vers les Pages Functions (site/functions/), avec D1 simulée
 // (dev/local.sqlite).
-//   node dev/server.mjs            (PORT, COOKIE_SECRET, SIGNUP_CODE, DB_PATH lus dans l'environnement)
+//   node dev/server.mjs            (PORT, COOKIE_SECRET, SIGNUP_CODE, DB_PATH, FAUX_JEU lus dans l'environnement)
 
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
@@ -135,10 +135,77 @@ async function serveApi(req, res, url) {
   res.end(Buffer.from(await response.arrayBuffer()));
 }
 
+// FAUX_JEU=1 : le jeu est simulé (dev/supabase.mjs) au lieu de la vraie base Supabase, avec deux routes de test, sans clé
+// (le test de l'interface, smoke_ui.js --server=…) :
+//   POST /__jeu/joueur {key, cards, username?} → {cookie} : la collection du joueur dans le jeu (cartes sous la forme de
+//     GET /api/cards, un exemplaire par entrée de `variants`), et le cookie d'une fenêtre privée connectée à son compte ;
+//   POST /__jeu/collection {key, cards} → la réponse de POST /api/refresh : la même collection, compte relié s'il ne l'est
+//     pas, puis lue par le serveur (sans la limite d'un clic par minute).
+const fauxJeu = /^(1|true|oui)$/i.test(process.env.FAUX_JEU || '') ? await fakeGame() : null;
+
+async function fakeGame() {
+  const { mockSupabase, rowOf } = await import('./supabase.mjs');
+  const { authenticate } = await import(pathToFileURL(path.join(SITE, 'functions', '_lib', 'auth.js')).href);
+  const { saveSession } = await import(pathToFileURL(path.join(SITE, 'functions', '_lib', 'session.js')).href);
+  const { readCollection } = await import(pathToFileURL(path.join(SITE, 'functions', '_lib', 'refresh.js')).href);
+  const { ensureSchema } = await import(pathToFileURL(path.join(SITE, 'functions', '_lib', 'db.js')).href);
+  const supa = mockSupabase();
+  const userOf = (key) => authenticate(new Request('http://local/', { headers: { 'x-classeur-key': String(key || '') } }), env);
+  const rowsOf = (cards, uid) => cards.flatMap((c) => {
+    const tagsOf = { tags: (c.gtags || []).map((n) => ({ id: `t-${n}`, name: n, color: (c.gtagc && c.gtagc[n]) || null })) };
+    const variants = c.variants && Object.keys(c.variants).length ? Object.entries(c.variants) : [[c.rarity + (c.shiny ? '*' : ''), c.count ?? 1]];
+    return variants.map(([v, n]) => {
+      const rarity = v.replace('*', '');
+      return rowOf({ ...c, count: n, shiny: v.endsWith('*') }, { uid, eid: `ex-${c.id}-${v}`, ...tagsOf, snapshot_rarity: rarity === c.rarity ? null : rarity });
+    });
+  });
+  async function player(body) {
+    await ensureSchema(env.DB);
+    const user = await userOf(body.key);
+    const uid = `joueur-${user.id}`;
+    const p = supa.player(uid);
+    p.username = body.username ?? p.username ?? null;
+    p.cards = rowsOf(Array.isArray(body.cards) ? body.cards : [], uid);
+    return { user, uid };
+  }
+  return {
+    async joueur(body) {
+      const { uid } = await player(body);
+      return { cookie: supa.sessionCookie({ uid }) };
+    },
+    async collection(body) {
+      let { user, uid } = await player(body);
+      if (user.game_uid !== uid || !user.game_session_enc || user.game_session_lost) {
+        await saveSession(env, user, { cookie: supa.sessionCookie({ uid }) });
+        user = await userOf(body.key);
+      }
+      return readCollection(env, user, { via: 'clic', force: true });
+    },
+  };
+}
+
+async function serveFakeGame(req, res, url) {
+  const action = url.pathname.slice('/__jeu/'.length);
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  let status = 200;
+  let out;
+  try {
+    if (req.method !== 'POST' || !['joueur', 'collection'].includes(action)) throw Object.assign(new Error('Route du faux jeu inconnue.'), { status: 404 });
+    out = await fauxJeu[action](JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'));
+  } catch (err) {
+    status = err.status || 500;
+    out = { error: err.message };
+  }
+  res.writeHead(status, { 'content-type': 'application/json; charset=utf-8' });
+  res.end(JSON.stringify(out));
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || `localhost:${PORT}`}`);
   try {
-    if (url.pathname === '/api' || url.pathname.startsWith('/api/')) await serveApi(req, res, url);
+    if (fauxJeu && url.pathname.startsWith('/__jeu/')) await serveFakeGame(req, res, url);
+    else if (url.pathname === '/api' || url.pathname.startsWith('/api/')) await serveApi(req, res, url);
     else await serveStatic(req, res, url.pathname);
   } catch (err) {
     console.error(err);
@@ -161,4 +228,5 @@ server.listen(PORT, () => {
   console.log(`  base       : ${process.env.DB_PATH || path.join(here, 'local.sqlite')}`);
   console.log(`  SIGNUP_CODE : ${env.SIGNUP_CODE === '' ? '(vide : inscriptions fermées)' : env.SIGNUP_CODE}`);
   console.log(`  COOKIE_SECRET : ${process.env.COOKIE_SECRET ? '(depuis l\'environnement)' : env.COOKIE_SECRET + ' (valeur de dev)'}`);
+  if (fauxJeu) console.log('  jeu        : simulé (FAUX_JEU), routes /__jeu/joueur et /__jeu/collection');
 });
