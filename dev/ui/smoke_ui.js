@@ -466,6 +466,21 @@ function mockApi() {
         const found = (self.gameCards || []).filter((c) => c.wikipedia_title.toLowerCase().includes(q)).sort((a, b) => (a.wikipedia_title < b.wikipedia_title ? -1 : 1));
         return json(200, { cards: found.slice(0, 200).map((c) => ({ card_id: String(c.id), title: c.wikipedia_title, rarity: c.rarity, category: c.category || null, image: c.hide_image ? null : c.image_url || null })), more: found.length > 200 });
       }
+      // Marché d'une carte, à l'ouverture de sa fiche : self.cardMarket[card_id] = {auctions, sales, v} ; détail d'une enchère
+      // (site du jeu) : self.auctionDetails[id], sinon « le jeu ne la connaît plus ».
+      if (p.startsWith('/api/market/card') && method === 'GET') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        const sp = new URL('http://x' + p).searchParams;
+        const id = sp.get('id') || ((self.gameCards || []).find((c) => c.wikipedia_title === sp.get('title')) || {}).id || null;
+        const m = id != null ? (self.cardMarket || {})[id] : null;
+        return json(200, { card_id: id != null ? String(id) : null, at: new Date().toISOString(), auctions: m ? m.auctions : [], more: false, sales: m ? m.sales : [], v: (m && m.v) || null });
+      }
+      if (p.startsWith('/api/market/auction') && method === 'GET') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        const id = new URL('http://x' + p).searchParams.get('id');
+        const dd = (self.auctionDetails || {})[id];
+        return json(200, dd || { a: id, gone: true });
+      }
       if (p.startsWith('/api/market/prices') && method === 'GET') {
         const part = new URL('http://x' + p).searchParams.get('part') || '0';
         const n = part === '0' ? 0 : Number(part.replace(/^cotes-/, ''));
@@ -1386,9 +1401,10 @@ async function main() {
   all((n) => n.tagName === 'BUTTON' && n.getAttribute('type') === 'submit' && text(n) === 'Ajouter')[0].click();
   await settle();
   check(text(fiche()).includes('Musique'), 'ajout de tag dans la fiche sans effet');
-  // « Copier le nom » : le titre de la carte dans le presse-papiers (plus de lien vers le marché du jeu).
+  // « Copier le nom » : le titre de la carte dans le presse-papiers ; un lien vers le marché du jeu seulement sur une enchère en
+  // cours (compte du jeu relié), pas ici.
   {
-    check(!fiche().querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'la fiche ne doit plus mener au marché');
+    check(!fiche().querySelectorAll('a').some((a) => /marketplace/.test(a.getAttribute('href') || '')), 'la fiche ne doit mener au marché que par une enchère en cours');
     const b = fiche().querySelectorAll('button').filter((x) => x.getAttribute('aria-label') === 'Copier le nom « Rihanna »')[0];
     check(b && b.classList.contains('copy-name') && b.parentNode.classList.contains('fiche__title'), 'icône « Copier le nom » absente à côté du titre de la fiche');
     const n = copied.length;
@@ -4782,9 +4798,50 @@ async function main() {
       sel.dispatch('change');
       await settle(40);
     }
+    // Bonnes affaires, mes enchères et mes ventes en cours : un lien vers l'enchère dans le jeu.
+    {
+      const hrefs = d.getElementById('panel-marche').querySelectorAll('a').filter((a) => a.classList.contains('game-link')).map((a) => a.getAttribute('href'));
+      check(hrefs.includes('https://www.wiki-masters.com/marketplace/a1') && hrefs.every((x) => /^https:\/\/www\.wiki-masters\.com\/marketplace\/[a-z0-9]+$/.test(x)), 'liens vers les enchères du jeu : ' + hrefs.join(', '));
+    }
+    // Fiche d'une carte qui manque : ses enchères en cours (lues à l'ouverture), de la moins chère à la plus chère, comparées à
+    // la cote de leur rareté, le détail des moins chères (site du jeu), un lien vers chacune ; la courbe de ses prix de vente.
+    const inH = (h) => new Date(Date.now() + h * 3600_000).toISOString();
+    const dayAgo = (n) => new Date(Date.now() - n * 86400_000).toISOString();
+    api.cardMarket = { w1: {
+      auctions: [{ a: 'e1', r: 'SR', s: false, ask: 120, bid: true, cur: 120, base: 50, end: inH(5), atk: 10, def: 20, lead: false, mine: false, n: null },
+        { a: 'e2', r: 'SR', s: false, ask: 60, bid: false, cur: null, base: 60, end: inH(0.5), atk: 11, def: 21, lead: false, mine: false, n: null },
+        { a: 'e3', r: 'SR', s: true, ask: 250, bid: true, cur: 250, base: 100, end: inH(30), atk: 12, def: 22, lead: true, mine: false, n: null }],
+      sales: [{ d: dayAgo(1), p: 110, k: 'SR' }, { d: dayAgo(2), p: 90, k: 'SR' }, { d: dayAgo(3), p: 100, k: 'SR' }, { d: dayAgo(4), p: 300, k: 'SR*' }],
+      v: { SR: { p: 100, n: 5, w: null, l: 110, d: dayAgo(1) }, 'SR*': { p: 260, n: 1, w: null, l: 300, d: dayAgo(4) } }, // celles de la liste des cotes
+    } };
+    api.auctionDetails = { e1: { a: 'e1', gone: false, status: 'active', bids: 4, bidders: 2, leader: 'Rival', seller: 'Marchande', leading: false, selling: false, my_bid: 90, cur: 130 },
+      e2: { a: 'e2', gone: false, status: 'active', bids: 0, bidders: 0, leader: null, seller: 'Marchande', leading: false, selling: false, my_bid: null, cur: null },
+      e3: { a: 'e3', gone: false, status: 'active', bids: 1, bidders: 1, leader: null, seller: 'Autre', leading: true, selling: false, my_bid: 250, cur: 250 } };
+    const mark = apiLog.length;
     d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
     await settle(60);
     check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100W5 ventes') && fiche().includes('Super rare, brillante~260W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
+    check(await waitFor(() => fiche().includes('mène : Rival')), 'détail des enchères absent : ' + fiche());
+    {
+      const f = d.querySelectorAll('.fiche')[0];
+      const rows = f.querySelectorAll('li').filter((n) => n.classList.contains('auction'));
+      const rt = rows.map(text);
+      check(rows.length === 3 && rt[0].includes('60W') && rt[1].includes('130W') && rt[2].includes('250W'), 'enchères de la fiche, de la moins chère à la plus chère : ' + rt.join(' || '));
+      check(rt[0].includes('−40 % vs cote') && rt[0].includes('aucune mise, prix de départ') && rows[0].querySelector('.auction__clock').classList.contains('hot'), 'enchère sans mise : ' + rt[0]);
+      check(rt[1].includes('+30 % vs cote') && rt[1].includes('4 mises de 2 joueurs') && rt[1].includes('mène : Rival') && rt[1].includes('vendeur : Marchande') && rt[1].includes('dépassée · ta mise 90W') && rt[1].includes('ATK 10 · DEF 20'), 'enchère détaillée : ' + rt[1]);
+      check(rt[2].includes('tu mènes') && rt[2].includes('brillante') && rt[2].includes('cote ~260W') && !rt[2].includes('vs cote') && !rt[2].includes('dépassée') && rows[2].classList.contains('lead'), 'enchère que je mène : ' + rt[2]);
+      check(rows.every((n) => n.querySelectorAll('a').some((a) => a.classList.contains('game-link') && /^https:\/\/www\.wiki-masters\.com\/marketplace\/e[123]$/.test(a.getAttribute('href')) && a.getAttribute('target') === '_blank')), 'liens vers le jeu dans la fiche');
+      const calls = apiLog.slice(mark);
+      check(calls.filter((x) => x === 'GET /api/market/card?id=w1').length === 1 && calls.filter((x) => x.startsWith('GET /api/market/auction?id=')).length === 3, 'lectures de la fiche : ' + calls.join(', '));
+      // Courbe : la rareté vendue le plus souvent (Super rare, 3 ventes) ; la brillante n'a qu'une vente, pas de puce.
+      check(fiche().includes('Prix de vente') && fiche().includes('3 ventes depuis le') && f.querySelectorAll('svg').some((n) => /Prix de vente en Super rare/.test(n.getAttribute('aria-label') || '')), 'courbe des prix de vente : ' + fiche().slice(-600));
+      // Rouvrir la fiche tout de suite ne relit rien.
+      f.querySelectorAll('button.close')[0].click();
+      await settle(40);
+      d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
+      await settle(60);
+      check(apiLog.slice(mark).filter((x) => x.startsWith('GET /api/market/card') || x.startsWith('GET /api/market/auction')).length === 4, 'fiche rouverte : rien de relu');
+    }
     d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
     await settle(40);
     // Valeur du classeur d'un ami (cotes venues avec ses cartes, rareté de sa carte pour tous ses exemplaires) : Marché 1

@@ -5586,6 +5586,100 @@
       if (gen === cardsGen) M.refreshing = false;
     }
   }
+  // Marché d'une carte, lu par le serveur à l'ouverture de sa fiche (GET /api/market/card : ses enchères en cours et ses
+  // ventes conclues, dans la base du jeu), puis le détail de ses enchères les moins chères (GET /api/market/auction :
+  // mises, meneur, vendeur, ta mise, sur le site du jeu ; trois à la fois, CM_DETAILS au plus par fiche). Gardés en mémoire
+  // (CM_KEEP pour une carte, CM_DETAIL_KEEP pour une enchère) : rouvrir une fiche ne relit rien tout de suite.
+  const CM_KEEP = 60000;
+  const CM_DETAIL_KEEP = 2 * 60000;
+  const CM_DETAILS = 10;
+  const CM = reactive({ key: '', busy: false, error: '', data: null, at: 0, variant: '', hover: -1, all: false, now: Date.now(), details: {}, detailBusy: {}, detailError: '' });
+  const cmCache = new Map(); // clé de la fiche -> {data, at}
+  const cmDetailAt = new Map(); // id de l'enchère -> heure de lecture de son détail
+  let cmTimer = null;
+  // Clé du marché de la fiche ouverte : « id:<card_id> » (ta carte, celle d'un ami, une carte qui te manque dont le
+  // classeur connaît l'identifiant) ou « t:<titre> » (le serveur la cherche) ; '' sans fiche ou sans compte relié.
+  const ficheMarketKey = computed(() => {
+    if (S.boot !== 'app' || !(S.me && S.me.session && S.me.session.linked)) return '';
+    const c = openCard.value;
+    if (c) return 'id:' + c.id;
+    const it = S.openMissing;
+    if (!it || it.status !== 'ok') return '';
+    const fc = it.friend && it.friend.card;
+    if (fc && fc.id != null) return 'id:' + fc.id;
+    const mine = findCard(it);
+    if (mine) return 'id:' + mine.id;
+    const w = wantedPrices.value.get(normTitle(it.title));
+    return w ? 'id:' + w.id : 't:' + normTitle(it.title);
+  });
+  async function loadCardMarket(key, force) {
+    if (!key) return;
+    const hit = cmCache.get(key);
+    if (!force && hit && Date.now() - hit.at < CM_KEEP) {
+      Object.assign(CM, { data: hit.data, at: hit.at, error: '', busy: false });
+      loadAuctionDetails(key);
+      return;
+    }
+    CM.busy = true;
+    CM.error = '';
+    try {
+      const q = key.startsWith('id:') ? 'id=' + encodeURIComponent(key.slice(3)) : 'title=' + encodeURIComponent(key.slice(2));
+      const r = await api('GET', '/api/market/card?' + q);
+      if (CM.key !== key) return;
+      const data = markRaw({ ...r, auctions: Array.isArray(r.auctions) ? r.auctions : [], sales: Array.isArray(r.sales) ? r.sales : [] });
+      const at = Date.now();
+      cmCache.set(key, { data, at });
+      Object.assign(CM, { data, at });
+      // La cote recalculée de ces ventes (rangée aussi par le serveur) : la fiche et les listes la montrent tout de suite.
+      if (data.card_id && data.v && typeof data.v === 'object') {
+        const x = markRaw({ id: String(data.card_id), v: data.v, at: data.at || new Date().toISOString() });
+        prices.value = new Map(prices.value).set(x.id, x);
+        const it = S.openMissing;
+        if (it && !it.friend && key === ficheMarketKey.value) wantedPrices.value = new Map(wantedPrices.value).set(normTitle(it.title), x);
+      }
+      loadAuctionDetails(key);
+    } catch (e) {
+      if (CM.key === key) CM.error = e.message + (e.status === 429 && e.data && e.data.retry_after ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
+      if (e.data && e.data.needs_link) loadMe().catch(() => {});
+    } finally {
+      if (CM.key === key) CM.busy = false;
+    }
+  }
+  // Détails des enchères les moins chères de la fiche (celles qui ne sont pas déjà lues depuis moins de CM_DETAIL_KEEP).
+  // Le jeu limite : on s'arrête là, le message le dit.
+  async function loadAuctionDetails(key) {
+    const list = CM.data && CM.key === key ? auctionsByPrice(CM.data.auctions).slice(0, CM_DETAILS) : [];
+    const queue = list.filter((a) => !(Date.now() - (cmDetailAt.get(a.a) || 0) < CM_DETAIL_KEEP) && !CM.detailBusy[a.a]);
+    let stop = false;
+    const worker = async () => {
+      for (let a; !stop && CM.key === key && (a = queue.shift());) {
+        CM.detailBusy = { ...CM.detailBusy, [a.a]: true };
+        try {
+          const d = await api('GET', '/api/market/auction?id=' + encodeURIComponent(a.a));
+          cmDetailAt.set(a.a, Date.now());
+          CM.details = { ...CM.details, [a.a]: markRaw(d) };
+        } catch (e) {
+          if (e.status === 429 || e.status === 401) { stop = true; CM.detailError = e.message; }
+        } finally {
+          const { [a.a]: _, ...rest } = CM.detailBusy;
+          CM.detailBusy = rest;
+        }
+      }
+    };
+    CM.detailError = '';
+    await Promise.all([worker(), worker(), worker()]);
+  }
+  const askOf = (a) => Number(a.ask) || 0;
+  const auctionsByPrice = (list) => list.slice().sort((a, b) => askOf(a) - askOf(b) || Date.parse(a.end) - Date.parse(b.end));
+  watch(ficheMarketKey, (key) => {
+    Object.assign(CM, { key, data: null, error: '', busy: false, variant: '', hover: -1, all: false, detailError: '' });
+    clearInterval(cmTimer);
+    cmTimer = null;
+    if (!key) return;
+    CM.now = Date.now();
+    cmTimer = setInterval(() => { CM.now = Date.now(); }, 30000); // temps restant des enchères
+    loadCardMarket(key, false);
+  });
   // Exemplaires d'une carte par rareté d'exemplaire et brillance (« R* ») : son détail (variants) si le serveur l'a
   // lu, sinon approché comme le fait le serveur (tous dans sa plus haute rareté, un seul brillant si elle l'est).
   function variantsOf(c) {
@@ -9034,7 +9128,7 @@
         h('span', { class: 'lot__line' }, [priceTag(x.ask), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', vsCote(x.ask, x)]),
         h('span', { class: 'lot__meta small' }, [soon ? h('span', { class: 'flag' }, 'finit bientôt') : null, x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : null, leftText(x.end),
           cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '',
-          x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '']),
+          x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '', gameLink(x.a)]),
       ]);
     })), marketMoreButton('acheter', list.length), note];
   }
@@ -9085,7 +9179,7 @@
       bids.length ? h('ul', { class: 'lots' }, bids.slice(0, marketShown('mises')).map((x) => h('li', { key: x.a, class: 'lot' }, [
         lotTitle(x),
         h('span', { class: 'lot__line' }, ['ta mise ', priceTag(x.mine, { tag: 'span' }), x.cur != null ? [` · ${x.st === 'run' ? 'enchère actuelle' : 'prix final'} `, priceTag(x.cur, { tag: 'span' })] : '', vsCote(x.cur != null ? x.cur : x.mine, x)]),
-        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.lead }] }, x.lead ? 'tu mènes' : 'dépassée'), leftText(x.end)]
+        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.lead }] }, x.lead ? 'tu mènes' : 'dépassée'), leftText(x.end), gameLink(x.a)]
           : [h('span', { class: ['flag', { ok: x.st === 'won' }] }, BID_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
       ]))) : h('p', { class: 'small muted' }, 'Aucune mise ces 14 derniers jours.'),
       marketMoreButton('mises', bids.length),
@@ -9093,7 +9187,7 @@
       sales.length ? h('ul', { class: 'lots' }, sales.slice(0, marketShown('ventes')).map((x) => h('li', { key: x.a, class: 'lot' }, [
         lotTitle(x),
         h('span', { class: 'lot__line' }, ['départ ', priceTag(x.base, { tag: 'span' }), x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '', vsCote(x.cur != null ? x.cur : x.base, x)]),
-        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end)]
+        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end), gameLink(x.a)]
           : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
       ]))) : h('p', { class: 'small muted' }, 'Aucune vente ces 14 derniers jours.'),
       marketMoreButton('ventes', sales.length),
@@ -9190,6 +9284,164 @@
       })) : h('p', { class: 'small muted' }, 'Aucune vente ces 90 derniers jours.'),
     ]);
   }
+
+  // Lien vers une enchère dans le jeu : c'est toi qui mises ou achètes, là-bas.
+  const gameAuctionUrl = (id) => 'https://www.wiki-masters.com/marketplace/' + encodeURIComponent(id);
+  const gameLink = (id, label) => h('a', { class: 'game-link', href: gameAuctionUrl(id), target: '_blank', rel: 'noopener noreferrer', title: "Ouvrir l'enchère dans WikiMasters" },
+    [label || 'Ouvrir dans le jeu', ' ↗']);
+  // Section « Marché dans le jeu » d'une fiche : enchères en cours sur la carte (de la moins chère à la plus chère), puis
+  // la courbe de ses prix de vente. mine : ta carte (pour choisir la rareté de la courbe), s'il y en a une.
+  function viewCardMarket(mine) {
+    void CM.now;
+    if (S.boot !== 'app') return null;
+    const sess = (S.me && S.me.session) || {};
+    if (!sess.linked) {
+      return h('div', { class: 'cmk' }, [h('h3', null, 'Enchères en cours'),
+        h('p', { class: 'small muted' }, ["Relie ton compte du jeu pour voir les enchères en cours sur cette carte et ses ventes : ",
+          h('button', { class: 'linkish', type: 'button', onClick: () => { closeCard(); openSyncTab(); } }, 'onglet « Synchro »'), '.'])]);
+    }
+    const d = CM.data;
+    const head = h('h3', { class: 'cmk__head' }, ['Enchères en cours ',
+      d && d.auctions.length ? h('span', { class: 'hint-inline' }, `${fmt(d.auctions.length)}${d.more ? ' et plus' : ''}, de la moins chère à la plus chère · lues ${agoText(new Date(CM.at).toISOString())}`) : null,
+      h('button', { class: 'linkish cmk__reload', type: 'button', disabled: CM.busy, onClick: () => loadCardMarket(CM.key, true) }, CM.busy ? 'Lecture…' : 'Relire')]);
+    if (!d) {
+      return h('div', { class: 'cmk' }, [head, CM.error ? errLine(CM.error) : h('p', { class: 'small muted', role: 'status' }, 'Lecture du marché du jeu…')]);
+    }
+    if (!d.card_id) return h('div', { class: 'cmk' }, [head, h('p', { class: 'small muted' }, "Aucune carte du jeu ne porte ce titre (pas encore tirée, ou un autre titre dans le jeu).")]);
+    const list = auctionsByPrice(d.auctions);
+    const shown = CM.all ? list : list.slice(0, CM_DETAILS);
+    return h('div', { class: 'cmk' }, [
+      head,
+      CM.error ? errLine(CM.error) : null,
+      list.length ? h('ul', { class: 'lots cmk__list' }, shown.map((a) => viewAuction(a, d))) : h('p', { class: 'small muted' }, 'Personne ne vend cette carte en ce moment.'),
+      list.length > shown.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn small', type: 'button', onClick: () => { CM.all = true; } },
+        `Afficher les ${fmt(list.length)} enchères`)]) : null,
+      CM.detailError ? h('p', { class: 'small warn', role: 'status' }, CM.detailError) : null,
+      list.length ? h('p', { class: 'small muted' }, `Mises, meneur et vendeur : lus sur le site du jeu pour les ${fmt(Math.min(CM_DETAILS, list.length))} moins chères (il limite les lectures automatiques).`) : null,
+      viewSalesChart(d, mine),
+    ]);
+  }
+  // Une enchère en cours de la fiche : rareté et brillance de l'exemplaire, prix à battre comparé à la cote de cette
+  // rareté, temps restant, ATK / DEF, puis le détail lu sur le site du jeu (mises, meneur, vendeur, ta mise).
+  function viewAuction(a, d) {
+    const k = a.r + (a.s ? '*' : '');
+    const q = (d.v && d.v[k]) || ((prices.value.get(String(d.card_id)) || {}).v || {})[k] || null;
+    const det = CM.details[a.a] || null;
+    const shown = det && det.cur != null && det.cur > a.ask ? det.cur : a.ask; // le site du jeu peut avoir vu une mise de plus
+    const gap = reliable(q) && q.p > 0 ? Math.round(((shown - q.p) / q.p) * 100) : null;
+    const left = Date.parse(a.end) - CM.now;
+    const lead = det && !det.gone ? det.leading : a.lead;
+    const own = a.mine || (det && det.selling);
+    const mineBid = (det && det.my_bid) || ((M.live && Array.isArray(M.live.bids) ? M.live.bids.find((x) => x && x.a === a.a) : null) || {}).mine || null;
+    const facts = [];
+    if (own) facts.push(h('span', { class: 'flag ok', key: 'own' }, 'ta vente'));
+    if (lead) facts.push(h('span', { class: 'flag ok', key: 'lead' }, 'tu mènes'));
+    else if (mineBid) facts.push(h('span', { class: 'flag', key: 'out' }, ['dépassée · ta mise ', priceTag(mineBid, { tag: 'span' })]));
+    if (det && det.gone) facts.push(h('span', { key: 'gone' }, "le jeu ne la connaît plus (finie ou retirée)"));
+    else if (det) {
+      if (det.bids) facts.push(h('span', { key: 'n' }, `${fmt(det.bids)} ${plural(det.bids, 'mise', 'mises')}${det.bidders > 1 ? ` de ${fmt(det.bidders)} joueurs` : ''}`));
+      if (!lead && det.leader) facts.push(h('span', { key: 'l' }, `mène : ${det.leader}`));
+      if (!own && det.seller) facts.push(h('span', { key: 's' }, `vendeur : ${det.seller}`));
+    } else if (a.n != null && a.n > 0) facts.push(h('span', { key: 'n' }, `${fmt(a.n)} ${plural(a.n, 'mise', 'mises')}`));
+    else if (CM.detailBusy[a.a]) facts.push(h('span', { key: 'busy', class: 'faint' }, 'détail…'));
+    return h('li', { key: a.a, class: ['lot', 'auction', { lead, own }] }, [
+      h('span', { class: 'auction__top' }, [
+        h('span', { class: 'auction__price' }, [priceTag(shown),
+          gap != null ? h('span', { class: ['auction__gap', gap <= -10 ? 'good' : gap >= 10 ? 'bad' : ''], title: `Cote ${variantName(k)} : ${wfmt(q.p)}` },
+            `${gap > 0 ? '+' : gap < 0 ? '−' : ''}${fmt(Math.abs(gap))} % vs cote`)
+            : q ? h('span', { class: 'auction__gap', title: 'Moins de 3 ventes : cote peu fiable' }, ['cote ', priceTag(q.p, { tag: 'span', approx: true })])
+              : h('span', { class: 'auction__gap' }, 'pas de cote')]),
+        pill(a.r), a.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
+        h('span', { class: ['auction__clock', { hot: left < 3600000 }], title: 'Fin le ' + dateShort(a.end) }, [icon('clock', 'sm'), leftText(a.end).replace(/^encore /, '')]),
+      ]),
+      h('span', { class: 'lot__line small muted' }, [a.bid || (det && det.bids) ? 'enchère en cours' : `aucune mise, prix de départ`,
+        a.atk != null || a.def != null ? ` · ATK ${a.atk != null ? fmt(a.atk) : '?'} · DEF ${a.def != null ? fmt(a.def) : '?'}` : '']),
+      facts.length ? h('span', { class: 'lot__meta small' }, facts) : null,
+      h('span', { class: 'auction__go' }, [gameLink(a.a)]),
+    ]);
+  }
+  // Prix de vente de la carte dans une rareté d'exemplaire (et brillance) : à chaque vente, la médiane des 30 dernières
+  // (comme la cote) ; les ventes en points. Une puce par rareté vendue au moins deux fois.
+  function viewSalesChart(d, mine) {
+    const by = new Map();
+    for (let i = d.sales.length - 1; i >= 0; i--) {
+      const x = d.sales[i];
+      if (!x || !VARIANT_RE.test(x.k) || !Number.isFinite(Date.parse(x.d))) continue;
+      if (!by.has(x.k)) by.set(x.k, []);
+      by.get(x.k).push(x);
+    }
+    const keys = [...by.keys()].filter((k) => by.get(k).length >= 2).sort(variantOrder);
+    if (!keys.length) {
+      return h('div', { class: 'cmk__sales' }, [h('h3', null, 'Prix de vente'),
+        h('p', { class: 'small muted' }, d.sales.length ? `${fmt(d.sales.length)} ${plural(d.sales.length, 'vente', 'ventes')} seulement : pas de courbe.` : 'Jamais vendue dans le jeu.')]);
+    }
+    const prefer = mine ? variantsOf(mine).list.map(([k]) => k) : [];
+    const most = (ks) => ks.reduce((b, k) => (by.get(k).length > by.get(b).length ? k : b), ks[0]);
+    const auto = prefer.filter((k) => keys.includes(k)).length ? most(prefer.filter((k) => keys.includes(k))) : most(keys);
+    const key = keys.includes(CM.variant) ? CM.variant : auto;
+    const sales = by.get(key);
+    const pts = sales.map((x, i) => ({ t: Date.parse(x.d), p: x.p, v: median(sales.slice(Math.max(0, i - 29), i + 1).map((y) => y.p)), d: x.d }));
+    const W = 640;
+    const H = 180;
+    const L = 56;
+    const R = 14;
+    const T = 12;
+    const B = 28;
+    const all = pts.flatMap((p) => [p.p, p.v]);
+    let lo = Math.min(...all);
+    let hi = Math.max(...all);
+    if (lo === hi) { lo = Math.max(0, lo - 1); hi += 1; }
+    const t0 = pts[0].t;
+    const span = Math.max(1, pts[pts.length - 1].t - t0);
+    const x = (t) => L + ((t - t0) / span) * (W - L - R);
+    const y = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+    const line = pts.map((p) => `${x(p.t).toFixed(1)},${y(p.v).toFixed(1)}`).join(' ');
+    const hov = CM.hover >= 0 && CM.hover < pts.length ? CM.hover : -1;
+    const sel = hov >= 0 ? pts[hov] : pts[pts.length - 1];
+    const onMove = (e) => {
+      const box = e.currentTarget && typeof e.currentTarget.getBoundingClientRect === 'function' ? e.currentTarget.getBoundingClientRect() : null;
+      if (!box || !box.width) return;
+      const px = ((e.clientX - box.left) / box.width) * W;
+      let best = 0;
+      pts.forEach((p, i) => { if (Math.abs(x(p.t) - px) < Math.abs(x(pts[best].t) - px)) best = i; });
+      CM.hover = best;
+    };
+    const recent = sales.slice(-8).reverse();
+    return h('div', { class: 'cmk__sales' }, [
+      h('h3', null, ['Prix de vente ', h('span', { class: 'hint-inline' }, `médiane des 30 dernières ventes · ${fmt(sales.length)} ${plural(sales.length, 'vente', 'ventes')} depuis le ${dateDay(sales[0].d)}`)]),
+      keys.length > 1 ? h('div', { class: 'cmk__keys', role: 'group', 'aria-label': "Rareté de l'exemplaire" }, keys.map((k) => h('button', {
+        key: k, type: 'button', class: ['chip-btn', { on: k === key }], 'aria-pressed': String(k === key), onClick: () => { CM.variant = k; CM.hover = -1; },
+      }, `${variantName(k)} · ${fmt(by.get(k).length)}`))) : h('p', { class: 'small muted' }, variantName(key)),
+      h('figure', { class: 'chart' }, [
+        h('figcaption', { class: 'chart__read', 'aria-live': 'polite' }, ['médiane ', priceTag(sel.v), ' · vente ', priceTag(sel.p, { tag: 'span' }), ` le ${dateDay(sel.d)}`]),
+        h('svg', { class: 'chart__svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Prix de vente en ${variantName(key)} : médiane ${wfmt(pts[0].v)} le ${dateDay(pts[0].d)}, ${wfmt(pts[pts.length - 1].v)} le ${dateDay(pts[pts.length - 1].d)}.`,
+          onPointermove: onMove, onPointerleave: () => { CM.hover = -1; } }, [
+          ...[lo, (lo + hi) / 2, hi].flatMap((v, i) => [
+            h('line', { key: 'g' + i, class: 'chart__grid', x1: L, x2: W - R, y1: y(v).toFixed(1), y2: y(v).toFixed(1) }),
+            h('text', { key: 't' + i, class: 'chart__tick', x: L - 8, y: (y(v) + 4).toFixed(1), 'text-anchor': 'end' }, compact(Math.round(v))),
+          ]),
+          ...pts.map((p, i) => h('circle', { key: 's' + i, class: 'chart__sale', cx: x(p.t).toFixed(1), cy: y(p.p).toFixed(1), r: 2.5 })),
+          h('polyline', { class: 'chart__line', points: line }),
+          hov >= 0 ? h('line', { class: 'chart__cross', x1: x(sel.t).toFixed(1), x2: x(sel.t).toFixed(1), y1: T, y2: H - B }) : null,
+          h('circle', { class: 'chart__dot on', cx: x(sel.t).toFixed(1), cy: y(sel.v).toFixed(1), r: 5 }),
+          h('text', { class: 'chart__tick', x: L, y: H - 8 }, dateDay(pts[0].d)),
+          h('text', { class: 'chart__tick', x: W - R, y: H - 8, 'text-anchor': 'end' }, dateDay(pts[pts.length - 1].d)),
+        ]),
+        h('details', { class: 'chart__table' }, [
+          h('summary', null, 'Dernières ventes'),
+          h('table', null, [
+            h('thead', null, [h('tr', null, [h('th', null, 'Jour'), h('th', null, 'Prix')])]),
+            h('tbody', null, recent.map((s, i) => h('tr', { key: i }, [h('td', null, dateShort(s.d)), h('td', { class: 'num' }, [priceTag(s.p, { tag: 'span' })])]))),
+          ]),
+        ]),
+      ]),
+    ]);
+  }
+  const median = (xs) => {
+    const a = xs.slice().sort((p, q) => p - q);
+    const m = a.length >> 1;
+    return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+  };
 
   // ================================================================ rendu : contenu, bande de sélection
   function viewMain() {
@@ -9305,6 +9557,7 @@
           c.starred ? fact('Favorite', 'oui, dans le jeu') : null,
         ]),
         viewCote(c),
+        viewCardMarket(c),
         // Tags posés dans le jeu (lecture seule ici : ils se changent dans wiki-masters.com), avec leur couleur.
         c.gtags.length ? h('div', null, [
           h('h3', null, 'Tags du jeu'),
@@ -9383,6 +9636,7 @@
         ok ? h('p', { class: 'small muted' }, real ? 'Rareté relevée dans la Collection globale du jeu, quand la collection a été créée.'
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu).") : null,
         ok ? viewMissingCote(item) : null,
+        ok ? viewCardMarket(null) : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         h('div', { class: 'actions' }, [
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
@@ -9448,6 +9702,7 @@
           : "Rareté estimée d'après les vues de l'article sur 30 jours (seuils observés dans le jeu)."),
         // Cote : celle de sa carte (venue avec ses cartes), sinon de tes exemplaires, sinon celle connue d'une carte qui te manque.
         fc && fc.v ? viewCoteKeys({ v: fc.v }) : mine ? viewCote(mine) : viewMissingCote(item),
+        viewCardMarket(mine),
         theirs.length ? h('div', null, [h('h3', null, `Dans les collections de ${fx.name}`), theirList]) : null,
         myCols.length ? h('div', null, [h('h3', null, 'Dans tes collections'), myList(myCols)]) : null,
         h('div', { class: 'actions' }, [

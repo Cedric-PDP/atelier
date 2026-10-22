@@ -102,8 +102,9 @@ async function copiesOf(env, user, s, uid, ids) {
   return out;
 }
 
-// Une requête à une route du jeu (www.wiki-masters.com), avec le cookie de session refait. Une seule tentative.
-async function gameFetch(env, user, s, path, init = {}) {
+// Une requête à une route du jeu (www.wiki-masters.com), avec le cookie de session refait. Une seule tentative. Aussi pour
+// le détail d'une enchère (cardmarket.js).
+export async function gameFetch(env, user, s, path, init = {}) {
   const headers = {
     cookie: sessionCookie(s.auth, s.uid),
     accept: 'application/json',

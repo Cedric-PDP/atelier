@@ -5,8 +5,10 @@
 // PostgREST : GET /rest/v1/<table> (user_cards, profiles, cards, auctions, auction_bids), filtres eq. gte. gt. in. ilike.,
 // order, limit (1 000 au plus), offset, Prefer: count=exact (en-tête content-range) ; RLS simulée. Le `select` est
 // ignoré : les lignes sont rangées déjà embarquées (card, tags: [{tag}]). Toute écriture est refusée.
-// Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=… et
-// POST /api/trades (la seule écriture : une proposition d'échange, relevée dans le HAR du 2026-10-22). RLS de user_cards :
+// Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=…,
+// GET /api/marketplace/<id de l'enchère> (l'enchère, son vendeur et son meneur, et ses mises : champ `bids` de l'enchère
+// rangée, [{bidder_id, amount}] ; forme relevée par le projet de référence, pas vérifiée ici ; `siteLimit` : 429 |
+// 'automation_limit') et POST /api/trades (la seule écriture : une proposition d'échange, relevée dans le HAR du 2026-10-22). RLS de user_cards :
 // ses propres exemplaires seulement, sauf `readOthers` (ceux de tout le monde, comme si le jeu les laissait lire).
 
 import assert from 'node:assert/strict';
@@ -87,6 +89,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     readOthers: false, // RLS de user_cards : true = les exemplaires de tout le monde se lisent
     trades: [], // échanges créés par POST /api/trades
     tradeReply: null, // (body) → {status, body, setCookie?} pour forcer la réponse de POST /api/trades
+    siteLimit: null, // 429 | 'automation_limit' : routes du marché du site limitées
     reset() {
       this.players.clear();
       this.cards = [];
@@ -98,6 +101,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.readOthers = false;
       this.trades = [];
       this.tradeReply = null;
+      this.siteLimit = null;
     },
     restore() {
       globalThis.fetch = previous;
@@ -247,6 +251,17 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       const q = (u.searchParams.get('q') || '').toLowerCase();
       const rows = p.cards.filter((r) => !q || String(r.card && r.card.wikipedia_title).toLowerCase().includes(q)).slice(0, 50);
       return reply({ collection: rows, total: rows.length, rarityCounts: {}, tagOptions: [], profileId: p.uid, pendingTradeCardIds: [] });
+    }
+    if (method === 'GET' && (m = /^\/api\/marketplace\/([^/]+)$/.exec(u.pathname))) {
+      if (supa.siteLimit === 429) return reply({ error: 'Too Many Requests' }, 429);
+      if (supa.siteLimit === 'automation_limit') return reply({ code: 'automation_limit', error: 'automation limit' }, 403);
+      const id = decodeURIComponent(m[1]);
+      const a = [...supa.players.values()].flatMap((p) => p.auctions).find((x) => x.id === id);
+      if (!a) return reply({ error: 'Enchère introuvable' }, 404);
+      const name = (uid) => (supa.players.get(uid) || {}).username || null;
+      const { bids = [], card, ...auction } = a;
+      return reply({ auction: { ...auction, seller: { username: name(a.seller_id) }, current_bidder: a.current_bidder_id ? { username: name(a.current_bidder_id) } : null },
+        bids: bids.map((b) => ({ ...b, auction_id: id })) });
     }
     if (method === 'POST' && u.pathname === '/api/trades') {
       assert.equal(h.get('origin'), GAME, 'Origin du jeu');

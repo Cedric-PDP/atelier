@@ -198,6 +198,18 @@ CREATE TABLE IF NOT EXISTS market (
     attempt TEXT
 );
 
+-- Lectures du marché d'une carte à l'ouverture de sa fiche (functions/_lib/cardmarket.js), par membre : kind = card (base du
+-- jeu) | site (détail d'une enchère sur le site du jeu) ; win = minute en cours (ISO, 16 caractères), n = lectures dans
+-- cette minute ; blocked_until = pause après une limite du jeu (site seulement). Rien du jeu.
+CREATE TABLE IF NOT EXISTS game_reads (
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    win TEXT NOT NULL,
+    n INTEGER NOT NULL DEFAULT 0,
+    blocked_until TEXT,
+    PRIMARY KEY (user_id, kind)
+);
+
 -- Journal des synchros (functions/_lib/synclog.js) : une ligne par lecture de la collection, réussie ou non, et par
 -- événement de la session du jeu, écrite par le serveur (une vérification légère sans changement n'en écrit pas).
 -- kind = full (lecture complète) | session (session du jeu reliée, révoquée…) ; quick (ancienne synchro rapide) dans les

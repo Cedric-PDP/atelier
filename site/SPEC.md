@@ -163,6 +163,8 @@ plus faite.
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
 | `GET /api/chat/last` | (sans clé) | `{last_at}` : heure du dernier message d'un membre (`null` sans message), suppressions sautées ; ni texte, ni auteur, ni numéro. Sert au skill « publier » (voir « Nouveautés ») |
 | `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai de lecture (`v` : `'serveur'` ; `null` : jamais) |
+| `GET /api/market/card?id=<card_id>` ou `?title=<titre>` | (clé principale ; 2026-10-22) | `{card_id, at, auctions:[{a, r, s, ask, bid, cur, base, end, atk, def, lead, mine, n}], more, sales:[{d, p, k}], v}` : le **marché d'une carte**, lu à l'ouverture de sa fiche dans la base du jeu (voir « Le marché », « Marché d'une carte ») ; `card_id: null` : aucune carte du jeu n'a ce titre. `400` paramètres mal formés ; `401 {needs_link:true}` aucun compte relié ; `429 {retry_after}` plus de 12 fiches lues dans la minute ; `429 {limited:true}` / `502` comme une passe |
+| `GET /api/market/auction?id=<id de l'enchère>` | (clé principale ; 2026-10-22) | `{a, gone, status, bids, bidders, leader, seller, leading, selling, my_bid, cur}` : le **détail d'une enchère**, lu sur le site du jeu (`/api/marketplace/<id>`) ; `{a, gone:true}` : le jeu ne la connaît plus. `429 {retry_after}` plus de 20 détails dans la minute ; `429 {limited:true, retry_after}` le jeu limite : détails en pause 10 min pour ce membre ; `409` session à renouveler pendant qu'une lecture tient le bail ; `401`, `502` |
 | `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
 | `POST /api/market/refresh` | `{}` | `{ok:true, read, left, deals, running}` : « Mettre à jour les cotes », une **passe de lecture du marché** par le serveur avec la session reliée (voir « Le marché ») : `read` = cotes lues, `left` = cotes du plan restant à lire, `deals` = bonnes affaires, `running` = tes mises en cours. `401 {error, needs_link:true}` aucun compte relié ou session « à relier » ; `409` une passe, ou une lecture de la collection, est déjà en cours ; `429 {error, retry_after}` (**secondes**, 60 au plus) la dernière passe de ce classeur a commencé il y a moins de 60 s, **même finie**, d'où qu'elle vienne ; `429 {error, quota:0}` quota du jour des cotes atteint (rien n'est lu) ; `429 {error, limited:true}` le jeu limite les lectures ; `502`. Un échec en cours de passe garde les cotes déjà lues et note sa raison dans `attempt.why` |
 | `GET /api/game/cards?q=` | (clé principale) `q` : 1 à 100 caractères (sinon `400`) | `{cards:[{card_id, title, rarity, category, image}], more}` : les cartes du jeu dont le **titre contient** `q` (une requête `cards?wikipedia_title=ilike.*q*` avec la session reliée), dans l'ordre des titres, 200 au plus (`more:true` : il y en a d'autres) ; la version française d'un même titre l'emporte, une rareté inconnue est écartée, `image` = `null` si la carte la cache. `401 {error, needs_link:true}`, `429 {limited:true}`, `502`. Sert « Depuis le jeu » (voir « Onglet « Collections » »). **Non vérifié sur la vraie base** : le filtre `ilike` sur `wikipedia_title`, et ce que la sécurité par rangée du jeu laisse voir à un joueur (la recherche pourrait rendre moins que la « Collection globale » du jeu) |
@@ -1697,6 +1699,40 @@ hideCol}}`, accès protégés). Chaque liste montre **20 cartes**, puis « Affic
   retour sur la page (une fois par minute au plus, 20 s pour l'onglet ; et à la demande d'un tri par prix), et quand `market_at` avance. Rien n'est lu dans le
   jeu depuis cette page (CSP, et pas de session côté navigateur) : c'est le serveur qui lit.
 
+**Marché d'une carte** (2026-10-22, demande de l'utilisateur : « suivre les enchères de plus près », comme le projet de référence de l'ami) : à
+l'ouverture d'une fiche (ta carte, une carte qui te manque dont l'article est vérifié, la carte d'un ami), **au clic seulement**, la page lit son marché
+par le serveur. Code : `functions/_lib/cardmarket.js`, `viewCardMarket` de `app.js`.
+- `GET /api/market/card` : deux requêtes à la base du jeu, trois avec un titre (`cards?…wikipedia_title=eq.<titre>`, la version française d'abord) :
+  `auctions?select=*&status=eq.active&end_at=gt.<maintenant>&card_id=eq.<id>&order=end_at&limit=101` (enchères en cours, 100 rendues, `more` au-delà ;
+  `select=*` : un nombre de mises rangé dans l'enchère, s'il existe, est pris : `n`, colonnes `bid_count`, `bids_count`, `nb_bids` ou `num_bids` — on ne
+  connaît pas le schéma) et `auctions?select=snapshot_rarity,final_price,settled_at,is_shiny&status=eq.settled_sold&card_id=eq.<id>&order=settled_at.desc,id&limit=1000`
+  (les 1 000 ventes les plus récentes). Une enchère : `a` son id, `r`/`s` rareté et brillance de l'exemplaire, `ask` le prix à battre (enchère actuelle,
+  sinon prix de départ), `bid` quelqu'un a misé, `cur`, `base`, `end`, `atk`/`def` de l'exemplaire, `lead` tu mènes, `mine` ta vente ; **jamais** l'identifiant
+  du vendeur ni de l'enchérisseur. `v` : cotes recalculées de ces ventes (90 jours, comme une passe), rangées dans le cache commun (une cote du quota du
+  jour ; quota atteint : montrée quand même), `null` si les 1 000 ventes ne couvrent pas les 90 jours.
+- `GET /api/market/auction` : la seule source du nombre de mises, du meneur et du vendeur (la table `auction_bids` ne montre que tes mises) est la
+  **route du site du jeu** `https://www.wiki-masters.com/api/marketplace/<id>`, avec le cookie de session refait (comme « Proposer un échange » ;
+  jamais avec un jeton qui expire dans moins de 5 min : renouvelé avant, sous bail, `409` si une lecture le tient). Forme lue (relevée par le projet de
+  référence, **pas vérifiée par ce Worker**) : `{auction: {status, current_bid, current_bidder_id, seller_id, current_bidder: {username}, seller:
+  {username}}, bids: [{bidder_id, amount}]}`. Rendu : `bids` mises, `bidders` enchérisseurs différents, `leader` / `seller` leurs pseudos (montrés, **jamais
+  gardés**), `leading`, `selling`, `my_bid` ta plus haute mise, `cur` l'enchère actuelle vue par le site ; `404` du site → `{gone:true}`.
+- **Garde-fous** (table `game_reads`, une ligne par membre et par sorte, remise à zéro à chaque minute) : 12 fiches et 20 détails par minute et par
+  membre (`429 {retry_after}`) ; le site du jeu limite (`429` ou `automation_limit`) : **pause de 10 minutes des détails pour ce membre**, sans plus rien
+  envoyer au site (`429 {limited:true}`), les fiches restent lisibles. La page ne demande le détail que des **10 enchères les moins chères** d'une fiche,
+  **trois à la fois**, et garde chaque détail 2 minutes, chaque fiche 1 minute (rouvrir une fiche ne relit rien) ; un refus `429` arrête les détails de
+  la fiche, avec son message. `DELETE /api/me` efface ses lignes.
+- **Interface** (fiche, sous la cote) : « Enchères en cours » (« 3, de la moins chère à la plus chère · lues il y a 2 min », « Relire ») ; une ligne par
+  enchère, la moins chère d'abord : prix à battre (le plus haut de la base et du site), écart à la cote **fiable** de la rareté de l'exemplaire (« −40 % vs
+  cote », vert à −10 % ou moins, rouge à +10 % ou plus ; cote peu fiable : « cote ~260W », sans écart ; aucune : « pas de cote »), rareté, « brillante »,
+  temps restant (en orange sous 1 h, relu toutes les 30 s), « aucune mise, prix de départ » ou « enchère en cours », ATK et DEF, puis « 4 mises de 2
+  joueurs », « mène : <pseudo> », « vendeur : <pseudo> », « tu mènes », « dépassée · ta mise 90W » (ta mise : le site, sinon la dernière lecture du
+  marché), « ta vente » ; bord vert si tu mènes, doré pour ta vente ; lien **« Ouvrir dans le jeu ↗ »** (`https://www.wiki-masters.com/marketplace/<id>`,
+  nouvel onglet). 10 enchères, puis « Afficher les N enchères ». Puis « Prix de vente » : une puce par rareté d'exemplaire (et brillance) vendue au
+  moins deux fois (« Super rare · 12 »), celle de ton exemplaire par défaut, sinon la plus vendue ; courbe de la médiane des 30 dernières ventes à
+  chaque vente, ventes en points, survol : médiane, vente et jour ; « Dernières ventes » (les 8 plus récentes). Sans compte relié : « Relie ton compte du
+  jeu… » et un lien vers l'onglet « Synchro ».
+- **Onglet « Marché »** : chaque bonne affaire, chaque mise et chaque vente **en cours** de « Mes enchères » a aussi son lien « Ouvrir dans le jeu ↗ ».
+
 **Limites** : formats de la base du jeu relevés dans la description de l'ami et dans le favori d'avant le 2026-10-22, **pas vérifiés par ce Worker** (noms des tables et des
 colonnes, statuts `active`/`settled_sold`/`cancelled`/`settled_*`, liens `auction:auctions(…)` et `card:cards(…)`) ; `automation_limit` vu sur les routes
 `/api/marketplace/…` du jeu, **on ne sait pas si Supabase lui-même le renvoie** (le garde-fou traite `429` et `automation_limit` pareil). La première
@@ -1726,6 +1762,9 @@ assumé de l'utilisateur, décrit ici tel qu'il est.
 - **Renouvellement** de la session : à chaque passage, un jeton qui expire dans moins de 2 minutes est renouvelé (`auth/v1/token`).
 - Au clic du membre (« Rafraîchir », « Mettre à jour les cotes », « Depuis le jeu »), les mêmes lectures partent aussitôt (une par minute au plus
   pour les deux premières).
+- **À l'ouverture d'une fiche** (2026-10-22) : ses enchères en cours et ses ventes dans la base (2 ou 3 requêtes, 12 fiches par minute au plus), puis le
+  détail des 10 enchères les moins chères sur la **route du marché du site du jeu** (`/api/marketplace/<id>`, cookie de session refait, 20 par minute au
+  plus) : voir « Le marché », « Marché d'une carte ».
 - **Une seule écriture, au clic** : « Proposer l'échange dans le jeu » (voir « Partage entre membres », « Proposer un échange ») crée une
   proposition en attente au nom du membre, par la route du site du jeu (`POST /api/trades`) avec son cookie de session refait par le serveur. C'est
   exactement ce que ferait le joueur dans l'écran d'échange du jeu, mais **depuis le serveur, à sa place** : c'est ce que ces règles visent (« interagir
@@ -1741,7 +1780,9 @@ la clé publique et la session du joueur, **y compris quand le joueur ne joue pa
 règles : la session d'un membre peut être fermée, ou son compte sanctionné. Le marché est le plus exposé : lire la base au lieu des pages du
 site, c'est contourner la limite de 30 requêtes par minute de la route des ventes (`/api/marketplace/cards/<id>/sales`), qui est une mesure anti-
 automatisation ; on reste très en dessous de ce qu'un client direct pourrait faire (30 requêtes par passe, chacune pour 100 cartes), mais c'est une lecture
-régulière et automatique, ce que ces règles visent le plus directement.
+régulière et automatique, ce que ces règles visent le plus directement. Le détail des enchères d'une fiche (2026-10-22, choix de l'utilisateur) passe,
+lui, **par cette route du site** (`/api/marketplace/<id>`), depuis des adresses Cloudflare, jusqu'à 10 lectures par fiche ouverte : c'est elle qui
+renvoie `automation_limit` ; le classeur se met alors en pause 10 minutes pour ce membre.
 
 **Ce que ça change par rapport à la règle d'avant.** Avant le 2026-10-22, toute lecture du jeu suivait un geste du joueur (le clic sur l'ancien favori de
 synchro, « Synchroniser », une action vue dans le jeu), avec une seule exception depuis le 2026-10-17 : les cotes automatiques de l'ancien favori, tant
@@ -1759,10 +1800,12 @@ cette date, plus de favori de synchro, de clé d'import ni de script Tampermonke
 - Un seul bail par membre : jamais deux lectures en même temps avec la même session ; une lecture non vérifiée n'efface jamais de cartes.
 - Ne sont lus que : la propre collection du membre et son profil (pseudo), ses mises et ses ventes, les cartes qui manquent à ses collections, les
   ventes conclues et les enchères en cours sur les cartes qui le concernent (données publiques du marché : le classeur ne garde ni vendeur ni
-  enchérisseur) ; jamais le profil ni la collection d'un autre joueur.
+  enchérisseur ; le pseudo du vendeur et du meneur d'une enchère, que montre la page du jeu, est montré dans la fiche sans être gardé) ; jamais le
+  profil ni la collection d'un autre joueur.
 
-**Ce qui n'a pas changé.** Les étiquettes et les collections vivent dans le classeur. Pas de lien vers le marché du jeu ni de champ rempli à la
-place du joueur : « Copier le nom » (fiche d'une carte, fiche et icône d'une case vide) met le titre dans le presse-papiers, et c'est le joueur qui
-le colle dans la recherche du jeu. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues, collections,
+**Ce qui n'a pas changé.** Les étiquettes et les collections vivent dans le classeur. Aucun champ rempli à la place du joueur : « Copier le nom »
+(fiche d'une carte, fiche et icône d'une case vide) met le titre dans le presse-papiers, et c'est le joueur qui le colle dans la recherche du jeu.
+Depuis le 2026-10-22 (choix de l'utilisateur), une enchère en cours (fiche, onglet « Marché ») a un **lien** « Ouvrir dans le jeu ↗ » vers sa page du
+jeu : un simple lien, que le joueur suit ; il mise ou achète là-bas. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues, collections,
 « Copier le nom » si l'article est vérifié, Wikipédia). Le classeur ne fait que **montrer** : enchères, achats et ventes se font dans le jeu, par le
 joueur.

@@ -127,6 +127,14 @@ export const SCHEMA = [
     quota_n INTEGER NOT NULL DEFAULT 0,
     attempt TEXT
   )`,
+  `CREATE TABLE IF NOT EXISTS game_reads (
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    win TEXT NOT NULL,
+    n INTEGER NOT NULL DEFAULT 0,
+    blocked_until TEXT,
+    PRIMARY KEY (user_id, kind)
+  )`,
   `CREATE TABLE IF NOT EXISTS sync_log (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,

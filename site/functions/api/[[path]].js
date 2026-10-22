@@ -18,6 +18,7 @@ import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
 import { createLink, linkWithToken } from '../_lib/link.js';
 import { createTrade } from '../_lib/trades.js';
+import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -55,6 +56,8 @@ const ROUTES = {
   market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
   'market/prices': { GET: [listPrices, 'main'] }, // cotes de mes cartes et des cartes voulues
   'market/refresh': { POST: [refreshMarket, 'main'] }, // « Mettre à jour les cotes » : une passe de marché
+  'market/card': { GET: [cardMarket, 'main'] }, // enchères en cours et ventes d'une carte (fiche)
+  'market/auction': { GET: [auctionDetail, 'main'] }, // mises, meneur et vendeur d'une enchère (site du jeu)
   'game/cards': { GET: [searchCards, 'main'] }, // cartes du jeu par titre (« Depuis le jeu »)
   'sync-log': { GET: [listSyncLog, 'main'] }, // journal des synchros
   'trades/create': { POST: [createTrade, 'main'] }, // proposer un échange à un ami, dans le jeu (seule écriture dans le jeu)
