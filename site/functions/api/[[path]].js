@@ -14,6 +14,7 @@ import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices } from '../_lib/market.js';
 import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
+import { syncPaused } from '../_lib/cron.js';
 
 // Seuls les points d'accès appelés depuis une page du jeu (sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -57,14 +58,29 @@ const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^
 const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
-function health(env) {
+async function health(env) {
   const db = !!env.DB;
-  return {
+  const out = {
     ok: db,
     db,
     cookie_secret: typeof env.COOKIE_SECRET === 'string' && env.COOKIE_SECRET !== '',
     signup_open: typeof env.SIGNUP_CODE === 'string' && env.SIGNUP_CODE.trim() !== '',
+    sync_paused: syncPaused(env),
   };
+  if (db) out.cron = await cronState(env.DB);
+  return out;
+}
+
+// Dernière passe de chaque déclencheur (cron_state) ; null si la table n'existe pas encore (la santé répond avant ensureSchema).
+async function cronState(db) {
+  try {
+    const { results } = await db.prepare('SELECT name, last_at, last_result FROM cron_state').all();
+    const out = { collection: { last_at: null, last_result: null }, market: { last_at: null, last_result: null } };
+    for (const r of results) if (Object.hasOwn(out, r.name)) out[r.name] = { last_at: r.last_at, last_result: r.last_result };
+    return out;
+  } catch {
+    return null;
+  }
 }
 
 async function handle(request, env, path) {

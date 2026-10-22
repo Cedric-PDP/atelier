@@ -18,7 +18,7 @@ const ctx = { waitUntil: () => {} };
 
 let r = await worker.fetch(new Request('https://classeur.example/api/health'), env, ctx);
 assert.equal(r.status, 200);
-assert.deepEqual(await r.json(), { ok: true, db: true, cookie_secret: true, signup_open: true });
+assert.deepEqual(await r.json(), { ok: true, db: true, cookie_secret: true, signup_open: true, sync_paused: false, cron: null });
 
 r = await worker.fetch(new Request('https://classeur.example/api/account', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code: 'code', name: 'Test' }) }), env, ctx);
 assert.equal(r.status, 201);
@@ -31,6 +31,16 @@ assert.equal(await r.text(), 'fichier statique');
 r = await worker.fetch(new Request('https://classeur.example/assets/app.js'), env, ctx);
 assert.equal(await r.text(), 'fichier statique');
 assert.deepEqual(assets, ['/', '/assets/app.js']);
+
+// Déclencheur planifié : sans membre, la passe laisse tout de même son résultat dans cron_state.
+const pending = [];
+await worker.scheduled({ cron: '*/10 * * * *', scheduledTime: Date.now() }, env, { waitUntil: (p) => pending.push(p) });
+await Promise.all(pending);
+r = await worker.fetch(new Request('https://classeur.example/api/health'), env, ctx);
+const { cron } = await r.json();
+assert.ok(cron.collection.last_at);
+assert.equal(cron.collection.last_result, '0 membre vérifié, 0 relu, 0 échec');
+assert.deepEqual(cron.market, { last_at: null, last_result: null });
 
 r = await worker.fetch(new Request('https://classeur.example/api/inconnu'), env, ctx);
 assert.equal(r.status, 404);

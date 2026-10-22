@@ -18,6 +18,7 @@ const { decryptCookie } = await import(lib('_lib/session.js'));
 const { openSession, renewSession, sealSession, sessionOf } = await import(lib('_lib/game.js'));
 const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
+const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js'));
 
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
@@ -250,7 +251,7 @@ await test('health et 503 sans base', async () => {
   const noDb = { COOKIE_SECRET: SECRET, SIGNUP_CODE: 'invitation' };
   let r = await call('GET', 'health', { e: noDb });
   assert.equal(r.status, 200);
-  assert.deepEqual(r.json, { ok: false, db: false, cookie_secret: true, signup_open: true });
+  assert.deepEqual(r.json, { ok: false, db: false, cookie_secret: true, signup_open: true, sync_paused: false });
   assert.ok(!JSON.stringify(r.json).includes(SECRET));
   for (const [m, p] of [['GET', 'me'], ['POST', 'account'], ['POST', 'refresh'], ['GET', 'nimporte']]) {
     r = await call(m, p, { e: noDb, body: m === 'POST' ? {} : undefined });
@@ -258,9 +259,9 @@ await test('health et 503 sans base', async () => {
     assert.equal(r.json.error, "Le classeur n'est pas encore configuré : la base D1 n'est pas liée (variable DB).");
   }
   r = await call('GET', 'health');
-  assert.deepEqual(r.json, { ok: true, db: true, cookie_secret: true, signup_open: true });
+  assert.deepEqual(r.json, { ok: true, db: true, cookie_secret: true, signup_open: true, sync_paused: false, cron: null });
   r = await call('GET', 'health', { e: { DB: env.DB, SIGNUP_CODE: '  ' } });
-  assert.deepEqual(r.json, { ok: true, db: true, cookie_secret: false, signup_open: false });
+  assert.deepEqual(r.json, { ok: true, db: true, cookie_secret: false, signup_open: false, sync_paused: false, cron: null });
   assert.equal(r.headers.get('cache-control'), 'no-store');
   // Les noms hérités d'Object ne sont ni des chemins ni des méthodes.
   for (const p of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
@@ -2761,6 +2762,155 @@ await test('chat : coût (index chat_by_rev pour ?after, MAX en une ligne, limit
   assert.equal(first.json.messages.length, 100);
   console.log(`    chat : relecture ?after JS ${ms(poll.js)} | 100 messages JS ${ms(first.js)} (${Math.round(first.size / 1024)} Ko) | envoi JS ${ms(post.js)} | GET /api/me JS ${ms(me.js)}`);
   assert.ok(poll.js < 10 && first.js < 10 && post.js < 10 && me.js < 10, 'trop de JavaScript');
+  e.DB.close();
+});
+
+// --- Lectures automatiques (cron) --------------------------------------------------------------------------------
+
+// Membre relié dont la collection vient d'être lue (lecture vérifiée), prêt pour une passe de cron.
+async function cronMember(name, e, cards = mini(3)) {
+  const u = await signup(name, e);
+  const uid = await setGameCards(u.key, cards, { e });
+  assert.equal((await refreshNow(u.key, e)).status, 200);
+  return { u, uid, cards, id: u.user.id, log: async () => (await call('GET', 'sync-log', { key: u.key, e })).json.entries };
+}
+const stateOf = (id, e) => JSON.parse(userRow(id, e).sync_state);
+
+await test('cron collection : vérification sans changement → une requête, checked_at posé, rien au journal ; changement ou 6 h → relecture via cron', async () => {
+  const e = makeEnv();
+  const m = await cronMember('Cron1', e);
+  e.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.checked_at', '2020-01-01T00:00:00.000Z') WHERE id = ?").run(m.id);
+  const lines = (await m.log()).length;
+  const n0 = supa.rest().length;
+  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec');
+  const calls = supa.rest().slice(n0);
+  assert.equal(calls.length, 1);
+  assert.match(calls[0].url, /limit=1(&|$)/);
+  assert.ok(stateOf(m.id, e).checked_at > '2021', 'checked_at posé');
+  assert.equal((await m.log()).length, lines, 'une vérification sans changement ne laisse rien au journal');
+  assert.equal(userRow(m.id, e).sync_lock, null);
+  // Un exemplaire de plus dans le jeu : relecture complète, notée via cron.
+  supa.player(m.uid).cards.push(rowOf(mini(1, 50)[0], { uid: m.uid }));
+  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 1 relu, 0 échec');
+  let [line] = await m.log();
+  assert.deepEqual([line.kind, line.result, line.data.via, line.data.fresh], ['full', 'ok', 'cron', 1]);
+  assert.equal(userRow(m.id, e).sync_lock, null);
+  // Dernière lecture vérifiée vieille de 7 h : relue même sans changement.
+  e.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.full_at', ?) WHERE id = ?").run(new Date(Date.now() - 7 * 3600_000).toISOString(), m.id);
+  const n1 = supa.rest().length;
+  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 1 relu, 0 échec');
+  assert.ok(supa.rest().length - n1 > 1);
+  [line] = await m.log();
+  assert.equal(line.data.via, 'cron');
+  assert.ok(Date.now() - Date.parse(stateOf(m.id, e).full_at) < 60_000);
+  e.DB.close();
+});
+
+await test('cron collection : synchro automatique coupée, membre en pause, SYNC_PAUSED, session à relier → aucun appel au jeu', async () => {
+  const e = makeEnv();
+  const a = await cronMember('Cron2a', e);
+  const b = await cronMember('Cron2b', e);
+  const c = await cronMember('Cron2c', e);
+  e.DB.sqlite.prepare('UPDATE users SET auto_sync = 0 WHERE id = ?').run(a.id);
+  e.DB.sqlite.prepare('UPDATE users SET sync_fails = 3 WHERE id = ?').run(b.id);
+  e.DB.sqlite.prepare("UPDATE users SET game_session_lost = 'révoquée' WHERE id = ?").run(c.id);
+  const n0 = supa.calls.length;
+  assert.equal(await runCron(e, COLLECTION_CRON), '0 membre vérifié, 0 relu, 0 échec');
+  assert.equal(supa.calls.length, n0);
+  await cronMember('Cron2d', e);
+  const paused = makeEnv({ SYNC_PAUSED: '1' });
+  paused.DB = e.DB;
+  const n1 = supa.calls.length;
+  assert.equal(await runCron(paused, COLLECTION_CRON), null);
+  assert.equal(supa.calls.length, n1);
+  assert.equal(e.DB.sqlite.prepare("SELECT COUNT(*) AS n FROM cron_state WHERE last_at IS NOT NULL").get().n, 1, 'la passe suspendue ne note rien');
+  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec');
+  assert.equal(await runCron(e, MARKET_CRON), null, 'le marché n’a pas encore de gestionnaire');
+  e.DB.close();
+});
+
+await test('cron collection : limite du jeu (429) → passe arrêtée, journal, passe suivante sautée, celle d\'après passe', async () => {
+  const e = makeEnv();
+  const a = await cronMember('Cron3a', e);
+  const b = await cronMember('Cron3b', e);
+  supa.limit = 429;
+  after(() => { supa.limit = null; });
+  const n0 = supa.rest().length;
+  assert.match(await runCron(e, COLLECTION_CRON), /^limite du jeu/);
+  assert.equal(supa.rest().length - n0, 1, 'arrêtée au premier membre');
+  const logged = [];
+  for (const m of [a, b]) logged.push(...(await m.log()).filter((l) => l.result === 'error'));
+  assert.equal(logged.length, 1);
+  assert.deepEqual([logged[0].data.via, logged[0].data.status], ['cron', 429]);
+  assert.equal([a, b].filter((m) => userRow(m.id, e).sync_fails > 0).length, 0, 'une limite n\'est pas un échec du membre');
+  const skip = e.DB.sqlite.prepare("SELECT skip_until, running_until FROM cron_state WHERE name = 'collection'").get();
+  assert.ok(Date.parse(skip.skip_until) > Date.now() + 14 * 60_000);
+  assert.equal(skip.running_until, null);
+  supa.limit = null;
+  const n1 = supa.calls.length;
+  assert.equal(await runCron(e, COLLECTION_CRON), null, 'passe suivante sautée');
+  assert.equal(supa.calls.length, n1);
+  assert.equal(await runCron(e, COLLECTION_CRON, { now: Date.now() + 16 * 60_000 }), '2 membres vérifiés, 0 relu, 0 échec');
+  e.DB.close();
+});
+
+await test('cron collection : trois échecs → pause avec son message ; un « Rafraîchir » réussi la lève', async () => {
+  const e = makeEnv();
+  const m = await cronMember('Cron4', e);
+  supa.fail = (url) => (url.includes('/rest/') ? { status: 502 } : null);
+  after(() => { supa.fail = null; });
+  for (let k = 1; k <= 3; k++) {
+    assert.equal(await runCron(e, COLLECTION_CRON), `0 membre vérifié, 0 relu, 1 échec`);
+    assert.equal(userRow(m.id, e).sync_fails, k);
+  }
+  const [last, before] = await m.log();
+  assert.deepEqual([last.result, last.data.via, last.data.status], ['error', 'cron', 502]);
+  assert.match(last.message, /Lectures automatiques en pause après 3 échecs : « Rafraîchir »/);
+  assert.doesNotMatch(before.message, /en pause/);
+  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.session.paused, true);
+  const n0 = supa.calls.length;
+  assert.equal(await runCron(e, COLLECTION_CRON), '0 membre vérifié, 0 relu, 0 échec');
+  assert.equal(supa.calls.length, n0, 'membre en pause : sauté');
+  supa.fail = null;
+  const r = await refreshNow(m.u.key, e);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(userRow(m.id, e).sync_fails, 0);
+  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.session.paused, false);
+  e.DB.close();
+});
+
+await test('cron collection : deux passes en même temps → une seule travaille (bail de cron)', async () => {
+  const e = makeEnv();
+  await cronMember('Cron5', e);
+  const n0 = supa.rest().length;
+  const out = await Promise.all([runCron(e, COLLECTION_CRON), runCron(e, COLLECTION_CRON)]);
+  assert.deepEqual(out.filter((x) => x !== null), ['1 membre vérifié, 0 relu, 0 échec']);
+  assert.equal(supa.rest().length - n0, 1);
+  const row = e.DB.sqlite.prepare("SELECT running_until, last_at, last_result FROM cron_state WHERE name = 'collection'").get();
+  assert.deepEqual([row.running_until, !!row.last_at, row.last_result], [null, true, out.find((x) => x !== null)]);
+  e.DB.close();
+});
+
+await test('cron collection : membre dont un clic lit déjà la collection → sauté sans échec ; réglage auto_sync et GET /api/health', async () => {
+  const e = makeEnv();
+  const m = await cronMember('Cron6', e);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(new Date(Date.now() + 60_000).toISOString(), m.id);
+  const n0 = supa.calls.length;
+  assert.equal(await runCron(e, COLLECTION_CRON), '0 membre vérifié, 0 relu, 0 échec');
+  assert.deepEqual([supa.calls.length, userRow(m.id, e).sync_fails], [n0, 0]);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = NULL WHERE id = ?').run(m.id);
+  let r = await call('PATCH', 'me', { key: m.u.key, e, body: { auto_sync: false } });
+  assert.equal(r.status, 200);
+  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.session.auto_sync, false);
+  assert.equal(await runCron(e, COLLECTION_CRON), '0 membre vérifié, 0 relu, 0 échec');
+  r = await call('PATCH', 'me', { key: m.u.key, e, body: { auto_sync: 'oui' } });
+  assert.equal(r.status, 400);
+  const h = (await call('GET', 'health', { e })).json;
+  assert.equal(h.sync_paused, false);
+  assert.equal(h.cron.collection.last_result, '0 membre vérifié, 0 relu, 0 échec');
+  assert.ok(h.cron.collection.last_at);
+  assert.deepEqual(h.cron.market, { last_at: null, last_result: null });
+  assert.equal((await call('GET', 'health', { e: { ...e, SYNC_PAUSED: 'oui' } })).json.sync_paused, true);
   e.DB.close();
 });
 

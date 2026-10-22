@@ -7,7 +7,7 @@ import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from
 import { patchSharing } from './members.js';
 import { eraseChatOf } from './chat.js';
 
-const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
+export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
   + 'shared_targets, last_sync, game_pseudo, game_session_enc, game_uid, game_session_v, game_session_at, game_session_lost, sync_lock, '
   + 'sync_click_at, auto_sync, sync_fails, link_hash, link_until';
 const DEFAULT_MAX_USERS = 50;
