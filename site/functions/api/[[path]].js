@@ -3,42 +3,35 @@
 
 import { HttpError, MAX_BODY, errorResponse, json, readJson } from '../_lib/http.js';
 import { ensureSchema } from '../_lib/db.js';
-import { adoptImportKey, authenticate, createAccount, deleteMe, getImportKey, getMe, newImportKey, patchMe, rotateKey } from '../_lib/auth.js';
+import { authenticate, createAccount, deleteMe, getMe, patchMe, rotateKey } from '../_lib/auth.js';
 import { listCards } from '../_lib/cards.js';
-import { importRoute } from '../_lib/import.js';
 import { deleteSession, saveSession } from '../_lib/session.js';
 import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
-import { deleteTarget, listTargets, saveGameTarget, saveTarget } from '../_lib/targets.js';
+import { deleteTarget, listTargets, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
-import { getMarket, listPrices, marketPlan, postFail, postLive, postPrices } from '../_lib/market.js';
-import { listSyncLog, reportSync } from '../_lib/synclog.js';
+import { getMarket, listPrices } from '../_lib/market.js';
+import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
 
-// Seuls les points d'accès du favori (lancé depuis le jeu, sous ses deux noms) acceptent ces origines.
+// Seuls les points d'accès appelés depuis une page du jeu (sous ses deux noms) acceptent ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
-// Marché : le favori lit son plan, envoie les cotes et sa lecture du marché, ou dit pourquoi elle a échoué (market.js) ;
-// journal des synchros : il y signale ses propres échecs (synclog.js).
-const CORS_PATHS = new Set(['import', 'targets/from-game', 'market/plan', 'market/prices', 'market/live', 'market/fail', 'sync-log']);
+const CORS_PATHS = new Set([]);
 const CORS_HEADERS = {
   'access-control-allow-methods': 'POST, OPTIONS',
   'access-control-allow-headers': 'content-type, x-classeur-key',
   'access-control-max-age': '86400',
 };
 
-// chemin → méthode → [gestionnaire, clé exigée]. Clé : false (aucune), 'main' (clé principale seulement) ou
-// 'import' (clé principale ou clé d'import du favori).
+// chemin → méthode → [gestionnaire, clé exigée]. Clé : false (aucune) ou 'main' (clé principale).
 const ROUTES = {
   health: { GET: [health, false] },
   account: { POST: [(env, _user, body) => createAccount(env, body), false] },
   me: { GET: [getMe, 'main'], PATCH: [patchMe, 'main'], DELETE: [deleteMe, 'main'] },
-  'import-key': { GET: [getImportKey, 'main'], POST: [newImportKey, 'main'] },
-  'import-key/adopt': { POST: [adoptImportKey, 'main'] },
-  'favori.js': { GET: [favoriScript, false] }, // code du favori pour le favori court (téléphone), sans clé
+  'favori.js': { GET: [favoriScript, false] },
   'key/rotate': { POST: [rotateKey, 'main'] },
   cards: { GET: [listCards, 'main'] },
-  import: { POST: [importRoute, 'import'] },
   session: { POST: [saveSession, 'main'], DELETE: [deleteSession, 'main'] },
   refresh: { POST: [refresh, 'main'] },
   'tags/set': { POST: [setTags, 'main'] },
@@ -47,25 +40,21 @@ const ROUTES = {
   targets: { GET: [listTargets, 'main'] },
   'targets/save': { POST: [saveTarget, 'main'] },
   'targets/delete': { POST: [deleteTarget, 'main'] },
-  'targets/from-game': { POST: [saveGameTarget, 'import'] }, // favori : crée une collection depuis une recherche du jeu
   members: { GET: [listMembers, 'main'] },
   'members/*/cards': { GET: [memberCards, 'main'] }, // members/<identifiant public>/cards
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
-  chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs ; jamais la clé d'import
+  chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs
   'chat/*': { DELETE: [deleteChat, 'main'] }, // chat/<numéro du message> : par son auteur
   'chat/last': { GET: [lastChat, false] }, // heure du dernier message, sans clé (outil de publication des nouveautés)
   market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
-  'market/prices': { GET: [listPrices, 'main'], POST: [postPrices, 'import'] }, // cotes : lues par la page, envoyées par le favori
-  'market/plan': { POST: [marketPlan, 'import'] }, // favori : cartes à coter, titres des cartes voulues
-  'market/live': { POST: [postLive, 'import'] }, // favori : bonnes affaires, enchères et ventes du joueur
-  'market/fail': { POST: [postFail, 'import'] }, // favori : pourquoi sa lecture du marché a échoué (montré par la page)
-  'sync-log': { GET: [listSyncLog, 'main'], POST: [reportSync, 'import'] }, // journal des synchros : lu par la page, échecs signalés par le favori
+  'market/prices': { GET: [listPrices, 'main'] }, // cotes de mes cartes et des cartes voulues
+  'sync-log': { GET: [listSyncLog, 'main'] }, // journal des synchros
 };
 // Chemins avec un paramètre → leur entrée dans ROUTES.
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'market/plan': 1024, 'market/prices': 512 * 1024, 'market/live': 320 * 1024, 'market/fail': 2048, 'sync-log': 2048 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 function health(env) {
@@ -96,7 +85,7 @@ async function handle(request, env, path) {
   // GET /api/me lit aussi, dans la même requête, le numéro du dernier message du chat (badge des non-lus) et l'heure de
   // la dernière lecture du marché (la page relit alors l'onglet « Marché »).
   const isMe = key === 'me' && request.method === 'GET';
-  const user = keyKind ? await authenticate(request, env, { importKey: keyKind === 'import', chat: isMe, market: isMe }) : null;
+  const user = keyKind ? await authenticate(request, env, { chat: isMe, market: isMe }) : null;
   const body = request.method === 'POST' || request.method === 'PATCH'
     ? await readJson(request, Object.hasOwn(BODY_LIMITS, path) ? BODY_LIMITS[path] : MAX_BODY)
     : {};

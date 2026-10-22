@@ -4,19 +4,27 @@
 -- ajoutée échouerait : laisser l'API la mettre à jour) :
 --   npx wrangler d1 execute <base> --remote --file site/schema.sql
 
--- Un compte par personne. Les clés ne sont gardées que par leur SHA-256 (hex) : la clé principale (key_hash) et la
--- clé d'import du favori (import_key_hash, qui ne sert qu'à POST /api/import). new_ids = tableau JSON des cartes
--- apparues au dernier import. cookie_enc = cookie WikiMasters chiffré (AES-GCM, base64 de IV + texte chiffré).
--- prefs = préférences de l'interface (objet JSON de 4 Ko au plus, contenu libre). sync_state = dernière synchro
--- (JSON : compteurs du jeu, date du plus récent exemplaire lu, date de la dernière lecture complète), pour ne lire
--- ensuite que les nouveautés. cards_rev = révision de la liste des cartes (+1 par opération qui la change : import,
--- synchro rapide, étiquettes) ; cards_gone_floor = plus basse révision à partir de laquelle les cartes retirées
--- (cards_gone) sont toutes connues (relevée quand les plus anciennes sont élaguées). shared = 1 si le membre montre
+-- Un compte par personne. La clé principale n'est gardée que par son SHA-256 (hex, key_hash). new_ids = tableau JSON
+-- des cartes apparues à la dernière lecture qui en a apporté. prefs = préférences de l'interface (objet JSON de 4 Ko au
+-- plus, contenu libre). sync_state = dernière lecture de la collection (JSON : compte exact du jeu, date du plus récent
+-- exemplaire, dernières lectures vérifiée et légère ; import.js). cards_rev = révision de la liste des cartes (+1 par
+-- opération qui la change : lecture, étiquettes) ; cards_gone_floor = plus basse révision à partir de laquelle les cartes
+-- retirées (cards_gone) sont toutes connues (relevée quand les plus anciennes sont élaguées). shared = 1 si le membre montre
 -- ses cartes aux autres membres (partage choisi, réciproque) ; public_id = son identifiant pour les autres membres
 -- (aléatoire, tiré à chaque activation du partage, NULL quand il ne partage pas), jamais l'id interne.
 -- shared_targets = 1 s'il montre aussi ses collections à compléter (réglage à part, seulement avec shared = 1 ; remis
 -- à 0 quand il cesse de montrer ses cartes). last_sync = résumé de la dernière ligne du journal des synchros (sync_log,
 -- JSON {at, kind, via, result, message}), lu par GET /api/me sans requête de plus.
+-- Session du jeu reliée (functions/_lib/game.js) : game_session_enc = JSON {access_token, refresh_token, expires_at, uid}
+-- chiffré (AES-GCM de COOKIE_SECRET, donnée associée « game-session:<id> ») ; game_uid = id du joueur dans le jeu (un
+-- compte du jeu, un classeur) ; game_session_v = version de la session (+1 à chaque liaison, renouvellement ou oubli :
+-- comparer-échanger) ; game_session_at = liaison ou dernier renouvellement ; game_session_lost = pourquoi la session ne
+-- sert plus (« révoquée », « illisible »), NULL sinon. sync_lock = bail d'une lecture en cours (collection ou marché),
+-- heure ISO de fin ; sync_click_at = dernier « Rafraîchir » (un par minute) ; auto_sync = lectures automatiques permises ;
+-- sync_fails = échecs d'affilée des lectures automatiques ; link_hash / link_until = SHA-256 et fin du jeton de liaison en
+-- cours (favori « Relier »).
+-- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
+-- collé), import_key_hash, import_key_enc (clé d'import de l'ancien favori).
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
     name TEXT,
@@ -36,10 +44,21 @@ CREATE TABLE IF NOT EXISTS users (
     public_id TEXT,
     shared_targets INTEGER NOT NULL DEFAULT 0,
     last_sync TEXT,
-    -- clé d'import (celle du favori) chiffrée (AES-GCM de COOKIE_SECRET) : chaque appareil du titulaire retrouve la même
     import_key_enc TEXT,
-    -- pseudo dans le jeu, donné par le joueur (Réglages) : montré aux membres avec qui il partage, pour se trouver dans le jeu
-    game_pseudo TEXT
+    -- pseudo dans le jeu, donné par le joueur (Réglages) ou lu dans le jeu à la liaison s'il est vide : montré aux membres
+    -- avec qui il partage, pour se trouver dans le jeu
+    game_pseudo TEXT,
+    game_session_enc TEXT,
+    game_uid TEXT,
+    game_session_v INTEGER NOT NULL DEFAULT 0,
+    game_session_at TEXT,
+    game_session_lost TEXT,
+    sync_lock TEXT,
+    sync_click_at TEXT,
+    auto_sync INTEGER NOT NULL DEFAULT 1,
+    sync_fails INTEGER NOT NULL DEFAULT 0,
+    link_hash TEXT,
+    link_until TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -52,7 +71,7 @@ CREATE TABLE IF NOT EXISTS cards (
     PRIMARY KEY (user_id, card_id)
 );
 
--- Cartes retirées de la collection par un import, avec la révision du retrait (lecture incrémentale de
+-- Cartes retirées de la collection par une lecture, avec la révision du retrait (lecture incrémentale de
 -- GET /api/cards?since=…). Effacée quand la carte revient ; les plus anciennes sont élaguées (1 000 gardées au plus).
 CREATE TABLE IF NOT EXISTS cards_gone (
     user_id TEXT NOT NULL,
@@ -85,8 +104,9 @@ CREATE TABLE IF NOT EXISTS targets (
     PRIMARY KEY (user_id, id)
 );
 
--- Pages lues par /api/refresh en attendant la dernière : entries = cartes partielles en JSON (une par exemplaire),
--- skipped = entrées invalides ignorées, page -1 = statistiques du jeu. Effacées au bout d'une heure.
+-- Pages lues dans la base du jeu par une lecture de la collection, en attendant la dernière (refresh.js) : une page de
+-- 1 000 exemplaires = deux lignes de 500 (page 2k et 2k+1 : une ligne D1 fait 2 Mo au plus) ; entries = cartes
+-- partielles en JSON (une par exemplaire), skipped = entrées invalides ignorées. Effacées au bout d'une heure.
 CREATE TABLE IF NOT EXISTS refresh_staging (
     user_id TEXT NOT NULL,
     page INTEGER NOT NULL,
@@ -94,19 +114,6 @@ CREATE TABLE IF NOT EXISTS refresh_staging (
     skipped INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
     PRIMARY KEY (user_id, page)
-);
-
--- Morceaux d'un import (POST /api/import, 500 cartes par morceau) en attendant le dernier : trois envois en cours au
--- plus par utilisateur (deux onglets, favori relié et clic), 40 morceaux et 8 Mo au plus chacun, part -1 = en-tête
--- (statistiques du jeu, exemplaires lus, début de la lecture…). Effacés au bout d'une heure.
-CREATE TABLE IF NOT EXISTS import_staging (
-    user_id TEXT NOT NULL,
-    upload_id TEXT NOT NULL,
-    part INTEGER NOT NULL,
-    cards TEXT NOT NULL,
-    skipped INTEGER NOT NULL DEFAULT 0,
-    created_at TEXT NOT NULL,
-    PRIMARY KEY (user_id, upload_id, part)
 );
 
 -- Morceaux d'une collection à compléter de plus de 600 Ko (POST /api/targets/save avec upload) en attendant le dernier :
@@ -127,6 +134,17 @@ CREATE TABLE IF NOT EXISTS migrations (
     name TEXT PRIMARY KEY,
     run_id TEXT NOT NULL,
     applied_at TEXT NOT NULL
+);
+
+-- Lectures automatiques (cron) : une ligne par cron (collection, market). running_until = bail de la passe en cours ;
+-- skip_until = passes sautées jusque-là (après une limite du jeu) ; last_at / last_result = dernière passe, montrée par
+-- GET /api/health.
+CREATE TABLE IF NOT EXISTS cron_state (
+    name TEXT PRIMARY KEY,
+    running_until TEXT,
+    skip_until TEXT,
+    last_at TEXT,
+    last_result TEXT
 );
 
 -- Chat : un seul salon pour tous les classeurs du site (functions/_lib/chat.js). id = numéro du message (croissant,
@@ -180,12 +198,12 @@ CREATE TABLE IF NOT EXISTS market (
     attempt TEXT
 );
 
--- Journal des synchros (functions/_lib/synclog.js) : une ligne par synchro, réussie ou non, écrite par le serveur (import
--- du favori, synchro rapide, rafraîchissement par cookie) ou signalée par le favori (ses échecs avant tout envoi : session
--- du jeu expirée, erreur ou limite du jeu…). kind = full (lecture complète) | quick (synchro rapide) ; result = ok |
--- warn (lecture incomplète : rien retiré) | error ; message = texte lisible ; data = JSON (via : clic | relie | script |
--- cookie, nombres, durée, raison…). Une ligne identique à la précédente la met seulement à jour (data.repeat). Les 50
--- plus récentes par classeur, 30 jours au plus.
+-- Journal des synchros (functions/_lib/synclog.js) : une ligne par lecture de la collection, réussie ou non, et par
+-- événement de la session du jeu, écrite par le serveur (une vérification légère sans changement n'en écrit pas).
+-- kind = full (lecture complète) | session (session du jeu reliée, révoquée…) ; quick (ancienne synchro rapide) dans les
+-- lignes d'avant le 2026-10-22 ; result = ok | warn (lecture non vérifiée : rien retiré) | error ; message = texte
+-- lisible ; data = JSON (via : clic | cron | relier, nombres, durée…). Une ligne identique à la précédente la met
+-- seulement à jour (data.repeat). Les 50 plus récentes par classeur, 30 jours au plus.
 CREATE TABLE IF NOT EXISTS sync_log (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -213,3 +231,8 @@ CREATE INDEX IF NOT EXISTS chat_by_user ON chat_messages (user_id, created_at);
 
 -- Journal des synchros : lecture des plus récentes et élagage, par classeur.
 CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id);
+
+-- Session du jeu : un compte du jeu ne se relie qu'à un classeur ; jeton de liaison retrouvé par son SHA-256.
+CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid);
+
+CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash);
