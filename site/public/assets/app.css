@@ -927,7 +927,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .market .show-more { margin-top: 4px; }
 .market__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
 .market__big b { font: 600 2rem/1.1 var(--f-head); font-variant-numeric: tabular-nums; }
-/* Où en est la lecture du marché par le favori (âge, dernier essai raté, favori à remplacer). */
+/* Où en est la lecture du marché par le classeur (âge, dernier essai raté). */
 .market__read { display: grid; gap: 4px; border-top: 1px solid var(--border); padding-top: 10px; }
 .market__read p { margin: 0; }
 .chart { margin: 0; display: grid; gap: 6px; }

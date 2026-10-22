@@ -10,7 +10,7 @@ const MAX_TARGETS = 50;
 // Éléments d'une collection, en JSON : une ligne de D1 fait 2 000 000 d'octets au plus, `auto` (200 Ko) compris.
 const MAX_ITEMS_BYTES = 1_700_000;
 // Éléments d'un envoi, en JSON (une collection plus lourde arrive en morceaux, `upload`) : 3 000 éléments réalistes
-// (~300 Ko) coûtent ~2 ms de JS (dev/api.test.mjs), un envoi reste loin des 10 ms d'un Worker gratuit.
+// (~300 Ko) coûtent ~2 ms de JS (dev/api.test.mjs), un envoi reste loin des 10 ms de JavaScript visés hors lecture.
 const MAX_PART_BYTES = 600 * 1024;
 const MAX_UPLOADS = 3; // collections envoyées en morceaux en même temps, par compte (au-delà : les plus anciennes partent)
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
@@ -26,7 +26,7 @@ const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
 // plus anciens d'abord. C'est la page qui applique les règles (elle seule rapproche titres et qids) ; le serveur range.
 const AUTO_KINDS = new Set(['gtag', 'cat', 'tag']);
 const MAX_RULES = 20;
-const MAX_RULE_LENGTH = 500; // une catégorie du jeu fait 500 caractères au plus (favori)
+const MAX_RULE_LENGTH = 500; // une catégorie du jeu fait 500 caractères au plus (texte du jeu)
 const MAX_SKIP = 2000; // titres exclus gardés (au-delà, par auto_skip.add : les plus anciens sont oubliés)
 const MAX_AUTO_BYTES = 200 * 1024; // auto en JSON (au-delà : les plus anciens titres exclus sont oubliés)
 const MAX_UPDATED_AT = 40;

@@ -171,7 +171,7 @@ export function sortTags(list) {
 }
 
 // ---------------------------------------------------------------- révisions (lecture incrémentale)
-// users.cards_rev = révision de la liste des cartes. Une opération qui la change (import, synchro rapide, étiquettes)
+// users.cards_rev = révision de la liste des cartes. Une opération qui la change (lecture de la collection, étiquettes)
 // écrit ses cartes (cards.rev) et ses retraits (cards_gone.rev) avec la révision suivante, NEXT_REV, puis commitRev
 // avance d'un cran, seulement si quelque chose porte cette révision : une opération qui ne change rien ne la fait pas
 // avancer. Toujours dans le même lot (transaction D1), ?1 = user_id dans toutes ces requêtes.

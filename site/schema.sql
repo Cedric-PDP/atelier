@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     rev INTEGER NOT NULL
 );
 
--- Marché (functions/_lib/market.js, lu et écrit par le favori dans la page du jeu, jamais par ce serveur dans le jeu).
+-- Marché (functions/_lib/market.js ; lu par marketread.js avec la session du jeu du membre, sans rien écrire dans le jeu).
 -- Cotes des cartes, communes à tous les classeurs (des données du marché du jeu, liées à aucun joueur : pas de user_id) :
 -- data = {"<rareté>[*]": {p, n, w, l, d}} (« * » : brillante ; p = médiane des 30 ventes les plus récentes, n = ventes
 -- lues, w = médiane d'il y a 7 jours ou null, l et d = dernière vente) ; read_at = date de la lecture.
@@ -184,9 +184,9 @@ CREATE TABLE IF NOT EXISTS value_history (
 );
 
 -- État du marché d'un classeur : ids = titres des cartes qui manquent à ses collections -> card_id du jeu ("" : aucune
--- carte), relevés par son favori ; live = sa dernière lecture du marché (bonnes affaires, ses enchères et ventes),
+-- carte), relevés à chaque lecture du marché ; live = sa dernière lecture du marché (bonnes affaires, ses enchères et ventes),
 -- effacée au bout de 7 jours ; quota_day / quota_n = cotes envoyées ce jour-là. user_id = '*' : quota de tout le site.
--- attempt = dernier essai de lecture du favori, texte JSON {start, v, auto, end, ok, why} (heures, version du favori,
+-- attempt = dernier essai de lecture du marché, texte JSON {start, v, auto, end, ok, why} (heures, version du lecteur,
 -- message d'échec montré au joueur ; rien du jeu).
 CREATE TABLE IF NOT EXISTS market (
     user_id TEXT PRIMARY KEY,

@@ -3,7 +3,7 @@
 // Le serveur lit la base du jeu (Supabase) avec la session dédiée de chaque membre (marketread.js : à son clic, et par
 // les lectures automatiques) ; ici, on vérifie ce qui a été calculé, on range et on montre, et on garde le dernier essai
 // (réussi ou non, avec la raison) pour que la page dise quoi faire.
-// Limite de calcul (10 ms de JavaScript par requête) : les jointures et les sommes se font dans D1.
+// Calcul : les jointures et les sommes se font dans D1, pas en JavaScript (10 ms visés par requête hors lecture).
 
 import { HttpError, raw } from './http.js';
 import { RARITIES, decodeCursor, encodeCursor, isDate } from './cards.js';
@@ -41,7 +41,7 @@ const bad = (msg) => new HttpError(400, msg);
 
 // ---------------------------------------------------------------- valeur du classeur
 // Valeur = Σ cote fiable (3 ventes au moins) × exemplaires, par rareté d'exemplaire et brillance. Carte sans détail de
-// ses exemplaires (`variants`, importée avant lui ou synchro rapide d'une carte qui n'en avait pas) : approchée, tous
+// ses exemplaires (`variants`, importée avant lui, sans détail de ses exemplaires) : approchée, tous
 // ses exemplaires dans sa plus haute rareté, un seul brillant si elle l'est (`approx` les compte).
 const VALUE = `WITH c AS (SELECT card_id, data FROM cards WHERE user_id = ?1),
   v AS (
@@ -86,7 +86,7 @@ async function saveValue(db, userId, v, prev, touch) {
 
 const TODAY_POINT = 'SELECT value, priced, cards, at FROM value_history WHERE user_id = ?1 AND date = ?2';
 
-// Après un import ou une synchro rapide (import.js) : la valeur du jour, au plus une fois par heure, et seulement si
+// Après une lecture complète de la collection (import.js) : la valeur du jour, au plus une fois par heure, et seulement si
 // des cotes existent. Une erreur ici ne fait jamais échouer l'import (il est déjà écrit).
 export async function valueAfterCards(db, userId) {
   try {
