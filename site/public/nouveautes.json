@@ -1,5 +1,8 @@
 {
   "versions": [
+    {"id": "2026-10-23", "date": "2026-10-23", "sections": [{"icon": "🏷️", "title": "Marché", "items": [
+      {"text": "« Mettre en vente dans le jeu » depuis la fiche d'une de tes cartes ou depuis « Bonnes affaires à vendre ». La fenêtre montre tout le marché de la carte : cote, dernières ventes, enchères en cours, courbe des prix. Tu choisis l'exemplaire, le prix de départ et la durée.", "to": "#/marche", "link": "Marché"},
+      {"text": "« Annuler la vente » tant que personne n'a misé, depuis la fenêtre, « Mes enchères » ou la fiche."}]}]},
     {"id": "2026-10-22", "date": "2026-10-22", "sections": [{"icon": "🤝", "title": "Échanges", "items": [{"text": "« Proposer un échange » dans « Échanges possibles » : coche ce que tu donnes et ce que tu reçois, et le classeur crée la proposition dans le jeu. Ton ami l'accepte dans le jeu.", "to": "#/amis/echanges", "link": "Échanges possibles"}]},
       {"icon": "🏷️", "title": "Marché", "items": [
         {"text": "La fiche d'une carte montre ses enchères en cours, de la moins chère à la plus chère. Pour chacune : le prix comparé à la cote, le temps restant, le nombre de mises, qui mène et qui vend.", "to": "#/cartes", "link": "Mes cartes"},
