@@ -1,8 +1,12 @@
 /* Kokoro Farmer : la page cachée du classeur, ouverte par le code Konami (↑ ↑ ↓ ↓ ← → ← → B A)
    ou, sur téléphone, par SOS en morse tapé sur le titre de la barre du haut (guettés par app.js).
-   Un faux booster de 8 cartes, seulement des UR et des L, tirées des cartes que le classeur connaît (les tiennes, puis les
-   éléments de tes collections). Pour rire : rien n'est enregistré, rien ne va dans une collection, rien ne part au serveur.
-   Il définit `window.KokoroFarmer = {open(pool)}`, pool = [{title, image, rarity, category, atk, def}].
+   Un faux booster de 8 cartes, seulement des UR et des L : de vrais articles de Wikipédia très lus, comme si on les
+   tirait dans le jeu. Candidats : le top 1 000 mensuel des articles les plus vus de Wikipédia en français (API des vues de
+   Wikimedia) de deux mois pris au hasard dans les deux ans et demi passés ; rareté estimée comme dans le classeur, d'après
+   les vues des 30 derniers jours (5 000 et plus : UR, 20 000 et plus : L) ; les autres sont écartés. Candidats gardés trois
+   jours dans ce navigateur. Pour rire : rien n'est enregistré dans le classeur, rien ne va dans une collection, rien ne
+   part au serveur du classeur (seulement des lectures de Wikipédia et de Wikimedia).
+   Il définit `window.KokoroFarmer = {open()}`.
    CSP du site : aucun style en ligne écrit dans le HTML, seulement des classes et des variables posées par le CSSOM. */
 (function () {
   'use strict';
@@ -11,9 +15,10 @@
   const RNAME = { UR: 'Ultra rare', L: 'Légendaire' };
   const SVGNS = 'http://www.w3.org/2000/svg';
   const HEART = 'M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.9 4.5 6.6 4.5c2.2 0 3.6 1.2 5.4 3.2 1.8-2 3.2-3.2 5.4-3.2 3.7 0 5.7 3.9 4.2 7.3C19.5 16.4 12 21 12 21z';
-  // Sans aucune carte connue (classeur vide) : un booster quand même.
-  const FALLBACK = ['Kokoro', 'Tamagotchi', 'Mont Fuji', 'Licorne', 'Arc-en-ciel', 'Aurore polaire', 'Sakura', 'Dragon',
-    'Nébuleuse du Crabe', 'Origami', 'Phénix', 'Supernova', 'Kitsune', 'Cerisier du Japon'];
+  // Wikipédia injoignable : des articles parmi les plus lus de tous les temps, sans illustration ni vues.
+  const OFFLINE = ['Paris', 'Napoléon Ier', 'Tour Eiffel', 'Victor Hugo', 'Albert Einstein', 'Léonard de Vinci', 'La Joconde',
+    'Seconde Guerre mondiale', 'Lune', 'Soleil', 'Louis XIV', 'Charles de Gaulle', 'Jeanne d\'Arc', 'Molière', 'Mozart',
+    'Pablo Picasso', 'Égypte antique', 'Révolution française', 'Michael Jackson', 'Système solaire'];
   const PALETTE = ['#ff3fa4', '#ffd84a', '#22e4ff', '#8b5cff', '#b6ff3b', '#ff7a3d', '#ffffff'];
   const GOLD = ['#ffe680', '#ffcf4a', '#ff9f1c', '#fff7d1', '#ffffff'];
   const CYAN = ['#22e4ff', '#c49bff', '#ffffff', '#7af0ff', '#ff7ac8'];
@@ -51,44 +56,123 @@
     return s;
   }
 
+  // ---------------------------------------------------------------- les candidats (Wikipédia)
+  const API = 'https://fr.wikipedia.org/w/api.php?';
+  const TOP = 'https://wikimedia.org/api/rest_v1/metrics/pageviews/top/fr.wikipedia/all-access/';
+  const NS = /^(spécial|special|wikipédia|fichier|catégorie|portail|modèle|aide|utilisateur|projet|média|discussion)[ _]?:/i;
+  const CACHE = 'kokoro-farmer-v1';
+  const CACHE_MS = 3 * 864e5;
+  const UR_MIN = 5000, L_MIN = 20000; // PV_STEPS du classeur (app.js)
+  const BLOCK = /porn|sexe|sexuel|x{3}|onlyfans|érotique|nudité/i;
+  // Wikipédia limite les rafales (429) : peu de requêtes à la fois, et de nouvelles tentatives après une pause.
+  async function getJson(url, retry = 2) {
+    const r = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' });
+    if (r.status === 429 && retry > 0) { await new Promise((ok) => setTimeout(ok, 1200 * (3 - retry))); return getJson(url, retry - 1); }
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }
+  async function settleBy(n, items, fn) {
+    const out = new Array(items.length);
+    let next = 0;
+    const worker = async () => { while (next < items.length) { const i = next++; try { out[i] = { status: 'fulfilled', value: await fn(items[i]) }; } catch (e) { out[i] = { status: 'rejected', reason: e }; } } };
+    await Promise.all(Array.from({ length: n }, worker));
+    return out;
+  }
+  let source = null; // promesse de {L:[…], UR:[…], offline}, gardée tant que la page du classeur reste ouverte
+  const drawn = new Set(); // titres déjà tirés : pas deux fois la même carte avant d'avoir tout vu
+
+  function cached() {
+    try {
+      const v = JSON.parse(localStorage.getItem(CACHE) || 'null');
+      if (v && Date.now() - v.at < CACHE_MS && Array.isArray(v.L) && Array.isArray(v.UR) && v.L.length + v.UR.length >= N) return v;
+    } catch (e) { /* stockage refusé : on relit Wikipédia */ }
+    return null;
+  }
+  function loadSource() {
+    if (source) return source;
+    const hit = cached();
+    if (hit) return (source = Promise.resolve(hit));
+    source = (async () => {
+      const now = new Date();
+      const months = new Set();
+      while (months.size < 2) months.add(2 + Math.floor(Math.random() * 28));
+      const tops = await settleBy(2, [...months], (m) => {
+        const t = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - m, 1));
+        return getJson(TOP + t.getUTCFullYear() + '/' + String(t.getUTCMonth() + 1).padStart(2, '0') + '/all-days');
+      });
+      const titles = new Set();
+      for (const f of tops) {
+        if (f.status !== 'fulfilled') continue;
+        for (const a of (f.value && f.value.items && f.value.items[0] && f.value.items[0].articles) || []) {
+          const t = String(a.article || '').replace(/_/g, ' ').trim();
+          if (t && !NS.test(t) && !BLOCK.test(t)) titles.add(t);
+        }
+      }
+      // 150 au hasard parmi eux, dont on relit les vues actuelles (3 requêtes, l'une après l'autre).
+      const list = [...titles];
+      for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
+      const chunks = [];
+      for (let i = 0; i < Math.min(list.length, 150); i += 50) chunks.push(list.slice(i, Math.min(i + 50, 150)));
+      const pages = await settleBy(1, chunks, (ch) => getJson(API + new URLSearchParams({
+        action: 'query', format: 'json', formatversion: '2', origin: '*', redirects: '1', prop: 'pageviews|pageimages|description',
+        pvipdays: '30', piprop: 'thumbnail', pithumbsize: '500', pilimit: '50', titles: ch.join('|'),
+      })));
+      const out = { L: [], UR: [], at: Date.now() };
+      const seen = new Set();
+      for (const r of pages) {
+        if (r.status !== 'fulfilled') continue;
+        for (const p of (r.value && r.value.query && r.value.query.pages) || []) {
+          if (p.missing || p.ns !== 0 || seen.has(p.title) || BLOCK.test(p.title + ' ' + (p.description || ''))) continue;
+          if (/homonymie/i.test(p.description || '')) continue;
+          seen.add(p.title);
+          const views = Object.values(p.pageviews || {}).reduce((a, v) => a + (v || 0), 0);
+          const r2 = views >= L_MIN ? 'L' : views >= UR_MIN ? 'UR' : null;
+          if (r2) out[r2].push({ title: p.title, image: (p.thumbnail && p.thumbnail.source) || null, category: p.description || '', views, r: r2 });
+        }
+      }
+      if (out.L.length + out.UR.length < N) throw new Error('trop peu de candidats');
+      try { localStorage.setItem(CACHE, JSON.stringify(out)); } catch (e) { /* pas de cache : on relira Wikipédia la prochaine fois */ }
+      return out;
+    })().catch(() => {
+      source = null; // on réessaiera au prochain booster
+      return { L: OFFLINE.map((title) => ({ title, image: null, category: 'Hors ligne : Wikipédia injoignable', views: null, r: 'L' })), UR: [] };
+    });
+    return source;
+  }
+
   // ---------------------------------------------------------------- tirage
-  function draw(pool) {
-    const seen = new Set();
-    const list = [];
-    for (const c of pool || []) {
-      const title = String((c && c.title) || '').trim();
-      if (!title || seen.has(title)) continue;
-      seen.add(title);
-      list.push({ title, image: c.image || null, rarity: c.rarity, category: c.category || '', atk: c.atk, def: c.def });
-    }
-    for (const t of FALLBACK) if (list.length < N * 2 && !seen.has(t)) list.push({ title: t, image: null, rarity: null, category: 'Kokoro Farmer' });
-    // Tirage pondéré sans remise : les vraies UR et L d'abord, et les cartes illustrées.
-    const weight = (c) => (c.rarity === 'L' ? 7 : c.rarity === 'UR' ? 5 : 1) * (c.image ? 3 : 1);
-    const bag = list.slice();
-    const out = [];
-    while (out.length < N && bag.length) {
-      let total = 0;
-      for (const c of bag) total += weight(c);
-      let x = Math.random() * total;
+  function draw(src) {
+    const take = (r) => {
+      let bag = src[r].filter((c) => !drawn.has(c.title));
+      if (!bag.length) { for (const c of src[r]) drawn.delete(c.title); bag = src[r].slice(); }
+      // Les articles illustrés sortent plus souvent : ce sont des cartes pleine illustration.
+      const weight = (c) => (c.image ? 4 : 1);
+      let x = Math.random() * bag.reduce((a, c) => a + weight(c), 0);
       let i = 0;
       while (i < bag.length - 1 && (x -= weight(bag[i])) > 0) i++;
-      out.push(bag.splice(i, 1)[0]);
+      drawn.add(bag[i].title);
+      return bag[i];
+    };
+    const has = (r) => src[r].length > 0;
+    let rs = Array.from({ length: N }, () => (Math.random() < 0.3 ? 'L' : 'UR'));
+    if (!rs.includes('L')) rs[Math.floor(Math.random() * N)] = 'L'; // toujours au moins une Légendaire
+    rs = rs.map((r) => (has(r) ? r : r === 'L' ? 'UR' : 'L'));
+    const cards = [];
+    for (const r of rs) {
+      const c = take(r);
+      if (cards.some((x) => x.title === c.title)) { const d = take(r); if (!cards.some((x) => x.title === d.title)) { cards.push(d); continue; } }
+      cards.push(c);
     }
-    const cards = out.map((c, i) => {
-      const r = c.rarity === 'L' || (c.rarity === 'UR' ? Math.random() < 0.15 : Math.random() < 0.22) ? 'L' : 'UR';
+    return cards.map((c, i) => {
       const h = hash(c.title);
-      const base = r === 'L' ? 3200 : 1600;
+      const pow = c.views ? Math.log10(c.views) : 4.6;
       return {
-        ...c, r, no: i + 1,
-        atk: Number.isFinite(c.atk) && c.atk > 0 ? c.atk : base + (h % 1800),
-        def: Number.isFinite(c.def) && c.def > 0 ? c.def : base - 400 + ((h >>> 11) % 1600),
-        hue: r === 'L' ? 15 + (h % 45) : h % 360, // L : tons dorés pour l'illustration de secours
+        ...c, no: i + 1,
+        atk: Math.round((pow * 900 + (h % 700)) / 10) * 10,
+        def: Math.round((pow * 750 + ((h >>> 11) % 700)) / 10) * 10,
+        hue: c.r === 'L' ? 15 + (h % 45) : h % 360, // L : tons dorés pour l'illustration de secours
       };
     });
-    if (!cards.some((c) => c.r === 'L')) { const c = pick(cards); c.r = 'L'; c.hue = 15 + (hash(c.title) % 45); } // toujours au moins une Légendaire
-    for (let i = cards.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [cards[i], cards[j]] = [cards[j], cards[i]]; }
-    cards.forEach((c, i) => { c.no = i + 1; });
-    return cards;
   }
 
   // ---------------------------------------------------------------- particules (canvas)
@@ -197,7 +281,7 @@
       art, el('div', 'kk-shade'), el('div', 'kk-holo'), el('div', 'kk-sheen'), el('div', 'kk-glare'), stars,
       el('div', 'kk-head', [el('p', 'kk-name', c.title), el('span', 'kk-gem', c.r)]),
       el('div', 'kk-foot', [
-        el('p', 'kk-cat', c.category || (c.r === 'L' ? 'Légende du Kokoro' : 'Ultra rare du Kokoro')),
+        el('p', 'kk-cat', c.category || 'Article de Wikipédia'),
         el('div', 'kk-stats', [
           el('span', 'atk', [icon('swords'), ' ', fmt(c.atk)]),
           el('span', 'def', [icon('shield'), ' ', fmt(c.def)]),
@@ -214,7 +298,7 @@
   // ---------------------------------------------------------------- la page
   let current = null;
 
-  function open(pool) {
+  function open() {
     if (current) return;
     const prevFocus = document.activeElement;
     const prevOverflow = document.documentElement.style.overflow;
@@ -289,6 +373,7 @@
     document.body.append(root);
     const sky = makeSky(canvas);
     requestAnimationFrame(() => root.classList.add('is-in'));
+    loadSource(); // les articles arrivent pendant qu'on regarde le booster
     root.focus({ preventScroll: true });
 
     // -- géométrie de la roue
@@ -314,7 +399,7 @@
       const c = cards[f];
       if (!c) return;
       nowTitle.textContent = c.title;
-      nowMeta.replaceChildren(el('b', 'r' + c.r, RNAME[c.r]), ` · ${f + 1} / ${N}`);
+      nowMeta.replaceChildren(el('b', 'r' + c.r, RNAME[c.r]), c.views ? ` · ${fmt(c.views)} vues en 30 jours` : '', ` · ${f + 1} / ${N}`);
       [...dots.children].forEach((d, i) => d.classList.toggle('is-on', i === f));
       if (stage === 'ready') live.textContent = `${c.title}, ${RNAME[c.r]}, carte ${f + 1} sur ${N}`;
     }
@@ -375,8 +460,10 @@
       live.textContent = 'Ouverture du booster…';
       const [cx, cy] = center(pack);
       pack.classList.add('is-charge');
-      for (let k = 0; k < 6; k++) later(() => sky.converge(cx, cy, 22), k * 110);
-      await wait(800);
+      // Le booster tremble tant que les articles ne sont pas arrivés (ils se chargent dès l'ouverture de la page).
+      const charge = setInterval(() => { if (alive) sky.converge(cx, cy, 22); }, 110);
+      const [src] = await Promise.all([loadSource(), wait(800)]);
+      clearInterval(charge);
       if (!alive) return;
       pack.classList.remove('is-charge');
       pack.classList.add('is-torn');
@@ -388,12 +475,12 @@
       quake();
       sky.burst(cx, cy, PALETTE, 140, 1.4);
       packWrap.classList.add('is-gone');
-      buildRing();
+      buildRing(src);
       await spin();
     }
 
-    function buildRing() {
-      cards = draw(pool);
+    function buildRing(src) {
+      cards = draw(src);
       boosters++;
       ring.replaceChildren();
       dots.replaceChildren();

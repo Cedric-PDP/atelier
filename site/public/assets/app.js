@@ -11143,7 +11143,7 @@
   const TagList = { name: 'TagList', setup: () => () => h('datalist', { id: 'taglist' }, tagList.value.map((t) => h('option', { key: t.name, value: t.name }))) };
   const Welcome = { name: 'Welcome', setup: () => viewWelcome };
 
-  // Kokoro Farmer (2026-10-23) : page cachée, un faux booster de cartes UR et L pour rire (assets/kokoro.js), ouverte
+  // Kokoro Farmer (2026-10-23) : page cachée, un faux booster d'articles de Wikipédia UR et L pour rire (assets/kokoro.js), ouverte
   // seulement par le code Konami tapé au clavier, hors d'un champ de saisie. Ses fichiers ne se chargent qu'à ce moment.
   const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
   let konamiKeys = [];
@@ -11160,19 +11160,13 @@
     }
     return kokoroLoading;
   }
-  // Les cartes du booster : les tiennes, puis les éléments de tes collections (rien n'est modifié).
-  function kokoroPool() {
-    const pool = cards.value.map((c) => ({ title: c.title, image: c.image, rarity: c.rarity, category: c.category, atk: c.atk, def: c.def }));
-    for (const t of targets.value) for (const it of t.items) if (!it.sep && it.title) pool.push({ title: it.title, image: it.image, rarity: it.rarity, category: it.description });
-    return pool;
-  }
   function watchKonami(e) {
     const tag = (e.target && e.target.tagName) || '';
     if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (e.target && e.target.isContentEditable)) { konamiKeys = []; return; }
     konamiKeys = [...konamiKeys, String(e.key || '').toLowerCase()].slice(-KONAMI.length);
     if (konamiKeys.join() !== KONAMI.join()) return;
     konamiKeys = [];
-    loadKokoro().then(() => window.KokoroFarmer.open(kokoroPool())).catch(() => {});
+    loadKokoro().then(() => window.KokoroFarmer.open()).catch(() => {});
   }
   // Sur téléphone (pas de clavier) : SOS en morse (··· ——— ···) tapé sur le titre de la barre du haut (logo et nom de la
   // vue, rien de cliquable) : appui court = point, appui d'au moins 300 ms = trait ; plus de 1,5 s entre deux appuis, ou un
@@ -11195,7 +11189,7 @@
     if (morse !== SOS) return;
     morse = '';
     if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 60]);
-    loadKokoro().then(() => window.KokoroFarmer.open(kokoroPool())).catch(() => {});
+    loadKokoro().then(() => window.KokoroFarmer.open()).catch(() => {});
   }
 
   function onKey(e) {
