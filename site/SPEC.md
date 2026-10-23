@@ -1660,7 +1660,7 @@ fausse venant du jeu lui-même durerait jusqu'à ce qu'un membre la relise (plus
 (« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la valeur dès deux jours (SVG dans la page, survol : le jour le plus
 proche ; « Voir les valeurs » : le tableau), le bouton **« Mettre à jour les cotes »** (message « Cotes lues : 312 cartes (il en reste 736) · 4
 bonnes affaires · 2 enchères en cours ») et **où en est la lecture du marché** (voir ci-dessous) ; puis, **côte à côte** (l'une sous l'autre
-sous 760 px), « Bonnes affaires à acheter » et « Bonnes affaires à vendre » ; puis « Mes enchères » (tes mises, tes ventes) et « À savoir »
+sous 760 px), après « Mes ventes en cours » (2026-10-23, ci-dessous), « Bonnes affaires à acheter » et « Bonnes affaires à vendre » ; puis « Mes enchères » (tes mises, tes ventes) et « À savoir »
 (avertissement des règles du jeu : le classeur lit le marché dans la base du jeu, ce qui est plus risqué que sa synchro de la collection ; si
 le jeu limite les lectures, la passe s'arrête et la suivante est sautée). Ces sections, et « Valeur de ton classeur » (repliée, son titre garde
 la valeur), sont **repliables** (accordéon : `aria-expanded`, contenu rendu seulement ouvert) : toutes ouvertes par défaut, **sauf « Mes
@@ -1698,8 +1698,8 @@ hideCol}}`, accès protégés). Chaque liste montre **20 cartes**, puis « Affic
     « Ouvrir dans le jeu ↗ » et **« Annuler la vente »** ; l'enchère rejoint aussitôt la liste de la fiche (« ta vente ») et « Mes enchères »
     (le serveur l'ajoute à la dernière lecture du marché, sans changer son heure), et la carte quitte « Bonnes affaires à vendre ». Vérification
     anti-robot demandée par le jeu : le message et « Ouvrir ma collection dans le jeu ↗ ». Toute erreur reste dans la fenêtre.
-  - **Annuler une vente** : depuis la fenêtre après la vente, depuis « Mes enchères » (« Annuler la vente » sur une vente en cours sans enchère
-    reçue) et depuis la liste des enchères d'une fiche (« Annuler ma vente » sur la tienne, sans mise) ; hors de la fenêtre, une confirmation
+  - **Annuler une vente** : depuis la fenêtre après la vente, depuis « Mes ventes en cours » et « Mes enchères » (« Annuler la vente » sur une vente
+    en cours sans enchère reçue) et depuis la liste des enchères d'une fiche (« Annuler ma vente » sur la tienne, sans mise) ; hors de la fenêtre, une confirmation
     d'abord. Le jeu n'annule plus une vente dès qu'une mise existe : le serveur relit l'enchère juste avant et refuse (`409 {has_bid:true}`, « Quelqu'un
     a déjà misé sur cette vente : le jeu ne permet plus de l'annuler. »). Pas de baisse du prix de départ depuis le classeur (le jeu la permet une
     fois, après la moitié du temps sans mise) : elle se fait dans le jeu.
@@ -1714,6 +1714,13 @@ hideCol}}`, accès protégés). Chaque liste montre **20 cartes**, puis « Affic
     `Referer` du jeu, **une seule tentative**, `Set-Cookie` gardé, refus du jeu repris (300 caractères), comme « Proposer un échange ».
     `human_verification_required` (le jeu ouvre alors un captcha) → `409 {verify:true}`. **Non vérifié sur le jeu** : la vente avec ce cookie refait
     depuis une adresse Cloudflare (la proposition d'échange marche ainsi), et quand le jeu demande la vérification anti-robot.
+- **« Mes ventes en cours »** (2026-10-23 ; section pleine largeur sous la valeur, **ouverte par défaut**, `open.ventes`) : tes ventes pas encore
+  finies (`live.sales` en `run` dont la fin n'est pas passée, y compris celles faites depuis le classeur, ajoutées par le serveur), la fin la plus
+  proche d'abord, 20 puis « Afficher 20 de plus ». Une ligne : rareté, titre (sa fiche), « brillante », départ, enchère actuelle et écart à la cote,
+  « sans enchère » ou « 2 mises » et « mène : <pseudo> », temps restant, « Ouvrir dans le jeu ↗ », et **« Annuler la vente »** (confirmation, voir
+  « Vendre ») tant qu'il n'y a aucune mise, sinon « plus annulable ». Section ouverte dans l'onglet affiché : les mises des 10 premières sont
+  **relues sur le site du jeu** (`GET /api/market/auction`, deux à la fois, gardées 2 min ; la lecture du marché peut dater de 20 min) ;
+  « Relire les mises » les relit ; une vente que le jeu ne montre plus en cours : « terminée ou retirée ». Une vente annulée quitte la section.
 - **Lecture du marché** (en haut, sous la valeur) : « Lecture du marché par le classeur : il y a 12 min (17 octobre, 10:02). » ; au-delà de 2 h,
   en orange, « Elle date de plus de 2 h : des enchères ont pu finir ou monter. Clique « Mettre à jour les cotes » (le classeur la refait toutes les
   20 minutes quand la synchro automatique est active). » ; jamais d'essai : « Le classeur n'a pas encore lu le marché : relie ton compte (onglet

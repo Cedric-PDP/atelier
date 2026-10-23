@@ -5902,7 +5902,7 @@
   // de ton classeur » comprise depuis le 2026-10-18) et seuil
   // des « Bonnes affaires à vendre » (100W par défaut), gardés par classeur dans ce navigateur (localStorage, accès protégés
   // : sans lui, les valeurs par défaut). Chaque liste montre 20 cartes, puis « Afficher 20 de plus ».
-  const MARKET_OPEN = Object.freeze({ valeur: true, acheter: true, vendre: true, encheres: false });
+  const MARKET_OPEN = Object.freeze({ valeur: true, ventes: true, acheter: true, vendre: true, encheres: false });
   const MARKET_MIN = 100;
   const MARKET_STEP = 20;
   // col : collection choisie dans « à acheter » ; hideCol : « à vendre » sans les cartes de tes collections (cochée par défaut).
@@ -6083,6 +6083,43 @@
       back: S.modal === 'sell' ? 'sell' : null,
     });
   }
+  // « Mes ventes en cours » (onglet « Marché ») : tes ventes pas encore finies d'après la dernière lecture du marché (ou
+  // ajoutées par une vente du classeur depuis), la fin la plus proche d'abord. Section ouverte et onglet affiché : leurs
+  // mises sont relues sur le site du jeu (GET /api/market/auction, gardées CM_DETAIL_KEEP, SALES_DETAILS au plus) : la
+  // lecture du marché peut dater de 20 min, et une vente ne s'annule que sans mise.
+  const SALES_DETAILS = 10;
+  const SD = reactive({ details: {}, busy: {}, error: '' });
+  const sdAt = new Map(); // id de l'enchère -> heure de lecture de son détail
+  const runningSales = computed(() => {
+    void CM.now;
+    const sales = M.live && Array.isArray(M.live.sales) ? M.live.sales : [];
+    return sales.filter((x) => x && x.st === 'run' && Date.parse(x.end) > Date.now()).sort((a, b) => Date.parse(a.end) - Date.parse(b.end));
+  });
+  async function loadSaleDetails(force) {
+    const queue = runningSales.value.slice(0, SALES_DETAILS).filter((x) => !SD.busy[x.a] && (force || !(Date.now() - (sdAt.get(x.a) || 0) < CM_DETAIL_KEEP)));
+    if (!queue.length) return;
+    SD.error = '';
+    let stop = false;
+    const worker = async () => {
+      for (let x; !stop && (x = queue.shift());) {
+        SD.busy = { ...SD.busy, [x.a]: true };
+        try {
+          const d = await api('GET', '/api/market/auction?id=' + encodeURIComponent(x.a));
+          sdAt.set(x.a, Date.now());
+          SD.details = { ...SD.details, [x.a]: markRaw(d) };
+        } catch (e) {
+          if (e.status === 429 || e.status === 401) { stop = true; SD.error = e.message; }
+        } finally {
+          const { [x.a]: _, ...rest } = SD.busy;
+          SD.busy = rest;
+        }
+      }
+    };
+    await Promise.all([worker(), worker()]);
+  }
+  watch(() => (S.boot === 'app' && S.tab === 'marche' && MP.open.ventes && sellLinked() ? runningSales.value.map((x) => x.a).join() : ''), (ids) => {
+    if (ids) loadSaleDetails(false);
+  }, { immediate: true });
 
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
@@ -9329,6 +9366,37 @@
       M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture (ou clique « Mettre à jour les cotes »).`) : null,
     ];
   }
+  // « Mes ventes en cours » : une ligne par vente (rareté, titre : sa fiche), départ, enchère actuelle et cote, mises et
+  // meneur lus sur le site du jeu, temps restant, « Ouvrir dans le jeu ↗ », et « Annuler la vente » tant qu'il n'y a
+  // aucune mise.
+  function viewOnSale(live) {
+    if (!live) return [h('p', { class: 'muted' }, 'Tes ventes en cours apparaissent ici à la prochaine lecture du marché par le classeur.')];
+    const list = runningSales.value;
+    return [
+      h('div', { class: 'market__head' }, [
+        h('p', { class: 'small muted' }, `D'après la lecture du marché ${agoText(M.liveAt)}, et les ventes faites depuis le classeur ; mises relues sur le site du jeu. Une vente s'annule tant que personne n'a misé.`),
+        list.length ? h('button', { class: 'linkish', type: 'button', disabled: Object.keys(SD.busy).length > 0, onClick: () => loadSaleDetails(true) }, Object.keys(SD.busy).length ? 'Lecture…' : 'Relire les mises') : null]),
+      list.length ? h('ul', { class: 'lots' }, list.slice(0, marketShown('encours')).map((x) => {
+        const d = SD.details[x.a] || null;
+        const gone = !!(d && (d.gone || (d.status && d.status !== 'active')));
+        const bids = d && !d.gone ? d.bids : null;
+        const bid = gone ? false : d && !d.gone ? !!(d.bids || d.cur != null) : x.bid;
+        const cur = d && !d.gone && d.cur != null ? d.cur : x.cur;
+        return h('li', { key: x.a, class: 'lot' }, [
+          lotTitle(x),
+          h('span', { class: 'lot__line' }, ['départ ', priceTag(x.base, { tag: 'span' }), cur != null ? [' · enchère ', priceTag(cur, { tag: 'span' })] : '', vsCote(cur != null ? cur : x.base, x)]),
+          h('span', { class: 'lot__meta small' }, gone ? [h('span', { class: 'flag' }, 'terminée ou retirée'), ' le jeu ne la montre plus en cours']
+            : [h('span', { class: ['flag', { ok: bid }] }, bid ? (bids ? `${fmt(bids)} ${plural(bids, 'mise', 'mises')}` : 'enchère reçue') : 'sans enchère'),
+              bid && d && d.leader ? `mène : ${d.leader}` : null, leftText(x.end), gameLink(x.a),
+              bid ? h('span', { class: 'faint' }, 'plus annulable')
+                : h('button', { class: 'linkish', type: 'button', 'aria-label': `Annuler la vente de « ${x.t} »`, onClick: () => askCancelSale(x.a, x.t) }, 'Annuler la vente'),
+              SD.busy[x.a] ? h('span', { class: 'faint' }, 'mises…') : null]),
+        ]);
+      })) : h('p', { class: 'small muted' }, 'Aucune vente en cours. Mets une carte en vente depuis sa fiche, ou depuis « Bonnes affaires à vendre ».'),
+      marketMoreButton('encours', list.length),
+      SD.error ? h('p', { class: 'small warn', role: 'status' }, SD.error) : null,
+    ];
+  }
   const BID_STATE = { won: 'gagnée', lost: 'perdue', off: 'terminée' };
   const SALE_STATE = { sold: 'vendue', unsold: 'invendue', off: 'annulée ou terminée' };
   function viewMine(live) {
@@ -9375,8 +9443,8 @@
     const nSales = live && Array.isArray(live.sales) ? live.sales.length : 0;
     const nSell = M.loaded ? sellOffers.value.list.filter((x) => x.price >= MP.min).length : 0;
     // En haut, la valeur et où en est la lecture du marché (repliable comme les autres sections : repliée, le titre garde
-    // la valeur) ; puis côte à côte « à acheter » et « à vendre » (l'une sous l'autre sur un écran étroit) ; « Mes
-    // enchères » (fermée par défaut) ; « À savoir ».
+    // la valeur) ; « Mes ventes en cours » ; puis côte à côte « à acheter » et « à vendre » (l'une sous l'autre sur un
+    // écran étroit) ; « Mes enchères » (fermée par défaut) ; « À savoir ».
     return h('div', { class: 'market' }, [
       marketSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
         h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
@@ -9392,6 +9460,7 @@
         M.loaded && M.error ? errLine(M.error) : null,
         M.loaded ? h('div', { class: 'market__read' }, viewMarketRead()) : null,
       ], 'market__value'),
+      marketSection('ventes', 'Mes ventes en cours', M.loaded && runningSales.value.length ? fmt(runningSales.value.length) : '', () => viewOnSale(live), 'market__wide'),
       marketSection('acheter', 'Bonnes affaires à acheter', nDeals ? fmt(nDeals) : '', () => [
         h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte : au plus 80 % de la cote, ou « finit bientôt » (sans enchère, moins de 2 h, départ sous la cote).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
         viewDeals(live)]),

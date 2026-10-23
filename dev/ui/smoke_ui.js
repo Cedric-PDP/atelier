@@ -487,6 +487,9 @@ function mockApi() {
         if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
         const id = new URL('http://x' + p).searchParams.get('id');
         const dd = (self.auctionDetails || {})[id];
+        // Une de tes ventes en cours (lecture du marché) : son détail d'après la lecture, sauf s'il est posé à part.
+        const mine = !dd && st.market && st.market.live ? st.market.live.sales.find((x) => x.a === id && x.st === 'run') : null;
+        if (mine) return json(200, { a: id, gone: false, status: 'active', bids: mine.bid ? 1 : 0, bidders: mine.bid ? 1 : 0, leader: mine.bid ? 'Acheteur' : null, seller: st.name, leading: false, selling: true, my_bid: null, cur: mine.bid ? mine.cur : null });
         return json(200, dd || { a: id, gone: true });
       }
       // Mettre en vente (SPEC.md, « Vendre ») : exemplaires d'après les cartes du membre (variants), enchères actives d'après
@@ -4714,7 +4717,7 @@ async function main() {
     const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
     const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
     const accBtn = (id) => section(id).querySelector('.acc__btn');
-    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'valeur,acheter,vendre,encheres*',
+    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'valeur,ventes*,acheter,vendre,encheres*',
       'sections du Marché : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
     // « Valeur de ton classeur » : repliable comme les autres, ouverte par défaut ; repliée, son titre garde la valeur.
     check(accBtn('valeur').getAttribute('aria-expanded') === 'true' && d.querySelectorAll('.market__big').length === 1, '« Valeur de ton classeur » doit être ouverte par défaut');
@@ -4840,7 +4843,7 @@ async function main() {
       type(d.getElementById('sell-min'), '450');
       await settle(40);
       // « Mes enchères » : une vente en cours sans mise s'annule (confirmation) ; le jeu refuse si quelqu'un a misé.
-      const salesLi = () => d.getElementById('panel-marche').querySelectorAll('li').filter((n) => text(n).includes('Favorite F') && text(n).includes('sans enchère'));
+      const salesLi = () => section('encheres').querySelectorAll('li').filter((n) => text(n).includes('Favorite F') && text(n).includes('sans enchère'));
       check(salesLi().length === 1 && salesLi()[0].querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'annulation dans « Mes enchères » absente');
       api.cancelFail = { status: 409, error: "Quelqu'un a déjà misé sur cette vente : le jeu ne permet plus de l'annuler.", extra: { has_bid: true } };
       salesLi()[0].querySelectorAll('button').find((b) => text(b) === 'Annuler la vente').click();
@@ -4851,6 +4854,40 @@ async function main() {
       check(mdText().includes("Quelqu'un a déjà misé sur cette vente"), 'refus du jeu absent : ' + mdText());
       inMd('Annuler').click();
       await settle(40);
+    }
+    // « Mes ventes en cours » (ouverte par défaut, en haut) : Favorite F, mises relues sur le site du jeu, annulable ; une
+    // vente faite depuis la fenêtre y arrive, avec une mise elle n'est plus annulable, et une annulation l'en retire.
+    {
+      const enc = () => section('ventes');
+      const rowsOf = () => enc().querySelectorAll('li');
+      check(accBtn('ventes').getAttribute('aria-expanded') === 'true' && text(accBtn('ventes')).startsWith('Mes ventes en cours'), '« Mes ventes en cours » fermée ou absente');
+      check(await waitFor(() => apiLog.includes('GET /api/market/auction?id=s2')), 'mises de Favorite F pas relues : ' + apiLog.slice(-8).join(', '));
+      await settle(40);
+      check(rowsOf().length === 1 && text(rowsOf()[0]).includes('Favorite F') && text(rowsOf()[0]).includes('départ 250W') && text(rowsOf()[0]).includes('sans enchère')
+        && rowsOf()[0].querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'ventes en cours : ' + text(enc()));
+      // Une vente depuis la fenêtre (Vente 22, 3 h), puis une mise reçue : plus annulable.
+      section('vendre').querySelectorAll('li').find((n) => text(n).includes('Vente 22')).querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
+      await settle(80);
+      const md = () => d.querySelectorAll('.modal')[0] || null;
+      md().querySelectorAll('button').find((b) => text(b).trim() === 'Mettre en vente dans le jeu').click();
+      await settle(80);
+      md().querySelectorAll('button').find((b) => text(b).trim() === 'Fermer').click();
+      await settle(80);
+      check(await waitFor(() => rowsOf().length === 2) && rowsOf().some((n) => text(n).includes('Vente 22') && n.querySelectorAll('button').some((b) => text(b) === 'Annuler la vente')),
+        'vente faite depuis la fenêtre absente des ventes en cours : ' + text(enc()));
+      const v22 = um.market.live.sales.find((x) => x.t === 'Vente 22');
+      Object.assign(v22, { bid: true, cur: 600 });
+      enc().querySelectorAll('button').find((b) => text(b) === 'Relire les mises').click();
+      await settle(80);
+      const row22 = rowsOf().find((n) => text(n).includes('Vente 22'));
+      check(text(row22).includes('enchère 600W') && text(row22).includes('1 mise') && text(row22).includes('mène : Acheteur') && text(row22).includes('plus annulable')
+        && !row22.querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'vente avec une mise : ' + text(row22));
+      // Annuler Favorite F : confirmation, puis elle quitte la section.
+      rowsOf().find((n) => text(n).includes('Favorite F')).querySelectorAll('button').find((b) => text(b) === 'Annuler la vente').click();
+      await settle(40);
+      md().querySelectorAll('button').find((b) => text(b).trim() === 'Annuler la vente').click();
+      await settle(120);
+      check(api.cancelled.includes('s2') && await waitFor(() => rowsOf().length === 1 && !text(enc()).includes('Favorite F')), 'annulation depuis les ventes en cours : ' + text(enc()));
     }
     // Fiche d'une carte possédée (depuis « Mes cartes ») : cote de chaque exemplaire.
     d.getElementById('tab-cartes').click();
@@ -4914,7 +4951,7 @@ async function main() {
     // Bonnes affaires, mes enchères et mes ventes en cours : un lien vers l'enchère dans le jeu.
     {
       const hrefs = d.getElementById('panel-marche').querySelectorAll('a').filter((a) => a.classList.contains('game-link')).map((a) => a.getAttribute('href'));
-      check(hrefs.includes('https://www.wiki-masters.com/marketplace/a1') && hrefs.every((x) => /^https:\/\/www\.wiki-masters\.com\/marketplace\/[a-z0-9]+$/.test(x)), 'liens vers les enchères du jeu : ' + hrefs.join(', '));
+      check(hrefs.includes('https://www.wiki-masters.com/marketplace/a1') && hrefs.every((x) => /^https:\/\/www\.wiki-masters\.com\/marketplace\/[a-z0-9-]+$/.test(x)), 'liens vers les enchères du jeu : ' + hrefs.join(', '));
     }
     // Fiche d'une carte qui manque : ses enchères en cours (lues à l'ouverture), de la moins chère à la plus chère, comparées à
     // la cote de leur rareté, le détail des moins chères (site du jeu), un lien vers chacune ; la courbe de ses prix de vente.
