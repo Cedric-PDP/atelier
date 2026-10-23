@@ -2769,6 +2769,50 @@ await test('chat : membres cités (lien vers son classeur rangé sous une forme 
   e.DB.close();
 });
 
+await test('chat : réponses (reply_to vérifié, extrait du message cité pour chaque lecteur, gone après suppression)', async () => {
+  const { e, q, say, read, del } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const answer = (key, text, reply_to) => call('POST', 'chat', { key, e, body: { text, reply_to } });
+  const site = 'http://localhost:8788/';
+  const pid = q('SELECT public_id AS p FROM users WHERE id = ?', ben.user.id)[0].p;
+  const a1 = (await say(ana.key, `Qui a   [[Mercure (planète)]] ?\nDemande à ${site}#/ami/${pid}`)).json.message;
+  // Réponse : l'extrait du message cité (citations en clair, crochets des cartes retirés, espaces réduits).
+  let r = await answer(ben.key, 'Moi !', a1.id);
+  assert.equal(r.status, 201, JSON.stringify(r.json));
+  const b1 = r.json.message;
+  assert.deepEqual(b1.reply, { id: a1.id, author: 'Ana', mine: false, text: 'Qui a Mercure (planète) ? Demande à Ben' });
+  // Pour Ana, le message cité est le sien (`mine`), et l'auteur reste celui de la réponse.
+  r = await read(ana.key);
+  assert.deepEqual(r.json.messages.map((m) => [m.id, m.reply || null]), [[a1.id, null], [b1.id, { ...b1.reply, mine: true }]]);
+  assert.ok(!JSON.stringify(r.json).includes(ana.user.id), "jamais l'id interne de l'auteur");
+  // Extrait coupé au mot près à 140 caractères.
+  const long = (await say(ana.key, 'mot '.repeat(60) + 'fin')).json.message;
+  const cut = (await answer(ben.key, 'ok', long.id)).json.message.reply.text;
+  assert.ok(cut.endsWith('mot…') && Array.from(cut).length <= 141, cut);
+  // Numéro invalide : 400 ; message inexistant ou supprimé : 404, rien d'écrit.
+  const before = q('SELECT COUNT(*) AS n FROM chat_messages')[0].n;
+  for (const bad of ['3', 0, -1, 1.5]) assert.equal((await answer(ben.key, 'x', bad)).status, 400, String(bad));
+  assert.equal((await answer(ben.key, 'x', 99999)).status, 404);
+  await del(ana.key, long.id);
+  r = await answer(ben.key, 'x', long.id);
+  assert.deepEqual([r.status, r.json.error], [404, "Le message auquel tu réponds n'existe plus (supprimé par son auteur ?)."]);
+  assert.equal(q('SELECT COUNT(*) AS n FROM chat_messages')[0].n, before);
+  // Supprimé après coup : la réponse reste, le message cité devient `gone` (lecture complète et ?after).
+  const rev = (await read(ana.key)).json.rev;
+  await del(ana.key, a1.id);
+  r = await read(ben.key);
+  assert.deepEqual(r.json.messages.find((m) => m.id === b1.id).reply, { id: a1.id, gone: true });
+  const b2 = (await answer(ben.key, 'encore', b1.id)).json.message;
+  r = await read(ana.key, `?after=${rev}`);
+  assert.deepEqual([r.json.deleted, r.json.messages.map((m) => [m.id, m.reply])], [[a1.id], [[b2.id, { id: b1.id, author: 'Ben', mine: false, text: 'Moi !' }]]]);
+  // Sans réponse : pas de champ `reply` (une page d'avant n'y voit rien de plus).
+  assert.ok(!('reply' in (await say(ana.key, 'seul')).json.message));
+  // Lecture : une requête de plus, seulement s'il y a des réponses, par la clé primaire.
+  const plan = e.DB.sqlite.prepare(`EXPLAIN QUERY PLAN SELECT m.id FROM json_each('[1]') AS r JOIN chat_messages AS m ON m.id = r.value AND m.deleted = 0`).all().map((x) => x.detail);
+  assert.ok(plan.some((l) => /^SEARCH m USING INTEGER PRIMARY KEY \(rowid=\?\)$/.test(l)), plan.join('\n'));
+});
+
 await test('chat : purge (les 2 000 plus récents gardés, à chaque envoi), numéros jamais réutilisés', async () => {
   const { e, q, say, read, bulk } = chatEnv();
   const ana = await signup('Ana', e);

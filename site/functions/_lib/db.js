@@ -105,7 +105,8 @@ export const SCHEMA = [
     text TEXT NOT NULL,
     created_at TEXT NOT NULL,
     deleted INTEGER NOT NULL DEFAULT 0,
-    rev INTEGER NOT NULL
+    rev INTEGER NOT NULL,
+    reply_to INTEGER
   )`,
   `CREATE TABLE IF NOT EXISTS prices (
     card_id TEXT PRIMARY KEY,
@@ -191,6 +192,7 @@ const ADDED_COLUMNS = [
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],
+  ['chat_messages', 'reply_to', 'INTEGER'],
 ];
 
 // Les morceaux en attente depuis plus d'une heure (lecture de la collection ou collection à compléter en morceaux

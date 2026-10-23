@@ -102,6 +102,12 @@ function mockApi() {
   });
   const chatOut = (st, m) => {
     const out = { id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at };
+    if (m.replyTo) {
+      // Message cité : auteur et extrait (citations en clair, cartes sans crochets, espaces réduits), comme chat.js.
+      const q = chat.msgs.find((x) => x.id === m.replyTo && !x.deleted);
+      const o = q && chatOut(st, { ...q, replyTo: null });
+      out.reply = o ? { id: q.id, author: o.author, mine: o.mine, text: o.text.replace(/\[\[([^[\]\n]{1,300})\]\]/g, '$1').replace(/\s+/g, ' ').trim() } : { id: m.replyTo, gone: true };
+    }
     if (!m.text.includes('\uE000')) return out;
     // Nom de la collection en clair dans le texte, sa place (at, len) dans refs.
     const refs = [];
@@ -154,7 +160,10 @@ function mockApi() {
       if (text.length > 500) return json(400, { error: 'Message trop long : 500 caractères au plus.' });
       if (!st.name) return json(400, { error: "Donne d'abord un prénom à ton classeur (Réglages, « Ton prénom ») : c'est lui que les autres membres verront." });
       if (self.chatLimit) return json(429, { error: 'Doucement : 10 messages par minute au plus. Réessaie dans 42 s.', retry_after: 42 });
-      const m = { id: ++chat.id, user: st.id, text: chatStore(st, text), at: new Date().toISOString(), deleted: false, rev: ++chat.rev };
+      const replyTo = body.reply_to ?? null;
+      if (replyTo !== null && !(Number.isSafeInteger(replyTo) && replyTo > 0)) return json(400, { error: "reply_to doit être le numéro d'un message." });
+      if (replyTo !== null && !chat.msgs.some((x) => x.id === replyTo && !x.deleted)) return json(404, { error: "Le message auquel tu réponds n'existe plus (supprimé par son auteur ?)." });
+      const m = { id: ++chat.id, user: st.id, text: chatStore(st, text), at: new Date().toISOString(), deleted: false, rev: ++chat.rev, replyTo };
       chat.msgs.push(m);
       return json(201, { message: chatOut(st, m) });
     }
@@ -3958,6 +3967,37 @@ async function main() {
     check(await waitFor(() => badge() === '1 message non lu'), 'badge après un nouveau message de Noa : « ' + badge() + ' »');
     tab('chat').click();
     check(await waitFor(() => badge() === '' && hasIn('Tu es là ?') && hasIn('Depuis mon téléphone')), "messages à l'ouverture, ou badge resté");
+    // Répondre : bandeau au-dessus du champ, Échap l'annule ; l'envoi porte reply_to, la bulle montre le message cité.
+    const byText = (t) => msgs().find((m) => text(m.querySelector('.chat-msg__text')) === t);
+    const asked = byText('Tu es là ?');
+    check(asked && asked.querySelector('.chat-msg__reply') && !asked.querySelector('.chat-quote'), 'bouton « Répondre » absent, ou citation sur un message sans réponse');
+    asked.querySelector('.chat-msg__reply').click();
+    await settle();
+    const bar = () => d.querySelector('.chat-replying');
+    check(bar() && text(bar()).includes('Réponse à Noa') && text(bar()).includes('Tu es là ?') && field().getAttribute('placeholder') === 'Ta réponse…', 'bandeau de réponse : ' + text(bar()));
+    field().dispatch('keydown', { key: 'Escape' });
+    await settle();
+    check(!bar(), 'Échap doit annuler la réponse');
+    asked.querySelector('.chat-msg__reply').click();
+    await settle();
+    type(field(), 'Oui, je suis là');
+    from = apiLog.length;
+    field().dispatch('keydown', { key: 'Enter' });
+    check(await waitFor(() => byText('Oui, je suis là')), 'réponse non affichée');
+    const answered = byText('Oui, je suis là');
+    const quote = answered.querySelector('.chat-quote');
+    check(quote && text(quote.querySelector('.chat-quote__who')) === 'Noa' && text(quote.querySelector('.chat-quote__text')) === 'Tu es là ?' && !bar() && field().value === '',
+      'citation de la réponse : ' + text(answered) + ' / bandeau ' + text(bar()));
+    const seenAnswer = (await rawApi('GET', '/api/chat', keyN)).body.messages.find((m) => m.text === 'Oui, je suis là');
+    check(seenAnswer && seenAnswer.reply && seenAnswer.reply.id === Number(asked.getAttribute('id').slice(7)) && seenAnswer.reply.mine === true, 'reply_to non envoyé : ' + JSON.stringify(seenAnswer));
+    // Noa répond à mon message : mis en avant, « te répond » ; puis elle supprime le sien : « message supprimé ».
+    await rawApi('POST', '/api/chat', keyN, { text: 'Super', reply_to: seenAnswer.id });
+    await pc.visible();
+    check(await waitFor(() => byText('Super') && byText('Super').classList.contains('ping') && text(byText('Super')).includes('te répond')), 'réponse à mon message non mise en avant');
+    check(text(byText('Super').querySelector('.chat-quote')).includes('Maëlle (toi)'), 'citation de mon message : ' + text(byText('Super').querySelector('.chat-quote')));
+    await rawApi('DELETE', '/api/chat/' + seenAnswer.reply.id, keyN);
+    await pc.visible();
+    check(await waitFor(() => !hasIn('Tu es là ?') && text(byText('Oui, je suis là').querySelector('.chat-quote')) === 'En réponse à un message supprimé'), 'citation d\'un message supprimé');
     if (!SERVER) {
       // 429 : message lisible, brouillon gardé.
       api.chatLimit = true;
@@ -3967,7 +4007,7 @@ async function main() {
       check(field().value === 'Encore un', 'brouillon perdu après un refus');
       api.chatLimit = false;
       type(field(), '');
-      // 130 messages de plus : une page rouverte affiche « 99+ » non lus, lit les 100 plus récents, puis les autres à la
+      // 130 messages de plus (133 en tout, avec les 3 de Noa et moi) : une page rouverte affiche « 99+ » non lus, lit les 100 plus récents, puis les autres à la
       // demande ; chat ouvert, la relecture minutée (horloge accélérée) apporte un nouveau message sans autre geste.
       for (let i = 0; i < 130; i++) await rawApi('POST', '/api/chat', keyN, { text: 'Message ' + i });
       tab('collections').click(); // la première page quitte le chat : sa minuterie s'arrête
@@ -3980,7 +4020,7 @@ async function main() {
       const olderBtn = () => p2.doc.querySelectorAll('button').find((b) => text(b).trim() === 'Charger les messages plus anciens');
       check(olderBtn(), '« Charger les messages plus anciens » absent');
       olderBtn().click();
-      check(await waitFor(() => m2().length === 132), 'messages plus anciens non chargés : ' + m2().length);
+      check(await waitFor(() => m2().length === 133), 'messages plus anciens non chargés : ' + m2().length);
       check(text(m2()[0].querySelector('.chat-msg__text')) === 'Depuis mon téléphone' && !olderBtn(), 'ordre des messages, ou bouton des plus anciens resté');
       from = apiLog.length;
       await rawApi('POST', '/api/chat', keyN, { text: 'En direct' });
@@ -4342,7 +4382,7 @@ async function main() {
     await pa.visible();
     const tabC = () => d.getElementById('tab-chat');
     check(await waitFor(() => tabC().querySelector('.tab-badge.ping') && text(tabC().querySelector('.tab-badge.ping')) === '@1'
-      && text(tabC().querySelector('.tab-badge')).includes('2 messages non lus, dont 1 te mentionne')), 'badge des mentions : « ' + text(tabC()) + ' »');
+      && text(tabC().querySelector('.tab-badge')).includes("2 messages non lus, dont 1 s'adresse à toi")), 'badge des mentions : « ' + text(tabC()) + ' »');
     tabC().click();
     await settle(80);
     const all = () => d.querySelectorAll('.chat-msg');

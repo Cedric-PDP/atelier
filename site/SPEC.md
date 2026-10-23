@@ -159,7 +159,7 @@ plus faite.
 | `GET /api/members/<id>/cards?part=X` | (`part` comme pour `GET /api/cards`, absent = `0` ; `403` si l'appelant ne partage pas, `404` si ce membre n'existe pas ou ne partage pas, ou plus) | `{member:{id, name, fetched_at}, cards:[{id, title, rarity, count, shiny, image, url, v?}], part, next_part}` : pages de 1 000 cartes, sans étiquettes ; `v` = la cote de la carte telle que rangée dans le cache commun `prices` (`{"<rareté>[*]": {p, n, w, l, d}}`, voir « Le marché »), seulement quand elle en a une (pas pour `{}`, carte lue sans vente) |
 | `GET /api/members/<id>/targets?part=X` | (`part` : `0` ou absent, puis le curseur `next_part` ; `403` si l'appelant ne montre pas ses cartes, `404` si ce membre ne montre pas, ou plus, ses cartes **ou** ses collections) | `{member:{id, name}, targets:[{id, name, kind, items:[{title, qid?, sep?}]}], part, next_part}` : ses collections à compléter (toutes, celles faites d'une catégorie de Wikipédia comprises), réduites au nom, à leur nature (`kind` : `category` pour une collection créée depuis une catégorie de Wikipédia, source `wp:…`, sinon `collection`) et, pour chaque élément vérifié (`status` `ok`), au titre, au qid et à `sep: true` pour un intercalaire ; pages d'au plus 512 Ko d'éléments rangés (plus la collection qui franchit ce seuil) |
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
-| `POST /api/chat` | `{text}` (clé principale ; corps de 8 Ko au plus) | `201 {message:Message}` (liens de collection déjà cités) ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), ou classeur sans prénom ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
+| `POST /api/chat` | `{text, reply_to?}` (clé principale ; corps de 8 Ko au plus ; `reply_to` (2026-10-23) : numéro du message auquel il répond) | `201 {message:Message}` (liens de collection déjà cités) ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), classeur sans prénom, ou `reply_to` qui n'est pas un entier > 0 ; `404` le message auquel il répond n'existe plus (supprimé, purgé) ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
 | `GET /api/chat/last` | (sans clé) | `{last_at}` : heure du dernier message d'un membre (`null` sans message), suppressions sautées ; ni texte, ni auteur, ni numéro. Sert au skill « publier » (voir « Nouveautés ») |
 | `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai de lecture (`v` : `'serveur'` ; `null` : jamais) |
@@ -174,11 +174,12 @@ plus faite.
 | `POST /api/market/cancel` | (clé principale ; 2026-10-23) `{a}` : l'id de l'enchère ; 2 Ko | `{a, status:"cancelled"}` : ta vente **retirée du marché du jeu**, marquée terminée (`off`) dans « Tes ventes ». Seulement **tant que personne n'a misé** : `409 {has_bid:true}` sinon ; `409 {gone:true}` vente inconnue du jeu ou terminée ; `403` la vente d'un autre ; `400`, `401`, `429`, `502` comme ci-dessus |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
-**Message** (chat) : `{id, author, mine, text, created_at, refs?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
+**Message** (chat) : `{id, author, mine, text, created_at, refs?, members?, reply?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
 du compte. `refs` (seulement s'il cite des collections) : le nom de chacune est en clair dans `text`, à la place
 `{at, len}` (unités UTF-16) ; `{at, len, name, owner, mine, pid, id}` ou `{at, len, gone:true}`, voir « Chat »,
-collections citées.
+collections citées. `reply` (seulement s'il répond à un message) : `{id, author, mine, text}` (`text` = extrait) ou
+`{id, gone:true}`, voir « Chat », réponses.
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, auto, created_at,
 updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` ou `null`, voir `targets/save` et « Ajout
@@ -812,6 +813,17 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   montre ses cartes et que le lecteur montre les siennes (comme `GET /api/members`), jamais pour soi ; ou
   `{at, len, gone:true}`. Les chiffres de l'aperçu ne viennent pas du serveur : la page les tire de ce qu'elle a déjà lu
   (voir « Interface »).
+  **Réponses** (demande de l'utilisateur du 2026-10-23 : « pouvoir répondre à un message ») : `POST /api/chat` accepte
+  `reply_to`, le numéro du message auquel il répond (colonne `chat_messages.reply_to`) ; le serveur vérifie qu'il existe
+  et n'est pas supprimé (`404` sinon : une ligne lue, clé primaire), rien de plus (on peut répondre à son propre message,
+  ou à une réponse : pas de fil imbriqué, chaque réponse ne cite que son message). À chaque lecture, une requête de plus,
+  seulement si les messages lus répondent à d'autres (clé primaire de `chat_messages`, puis l'auteur, 2 lignes par message
+  cité ; ses collections et membres cités partent dans la requête de citations des messages lus), rend `reply` :
+  `{id, author, mine, text}` = numéro, **prénom actuel** de son auteur, c'est le tien, et un **extrait** de son texte
+  (citations rendues en clair, cartes citées sans leurs crochets, espaces et retours à la ligne réduits à un espace,
+  140 caractères au plus, coupé au mot près, avec « … ») ; `{id, gone:true}` s'il a été supprimé ou purgé depuis
+  (`DELETE /api/me` compris). Sans réponse, pas de champ `reply` : une page d'avant cette fonction montre la réponse comme un
+  message ordinaire.
   Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
@@ -854,6 +866,17 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   - fil (`role="log"`) puis champ de saisie ; à l'ouverture, la page défile pour que le bas du chat soit visible. Bulles :
     les tiennes à droite, en émeraude, avec « (toi) » et « Supprimer » ; nom, heure (« 14:32 », « hier, 14:32 », « 15 oct.,
     14:32 ») et date complète en info-bulle ;
+  - **Répondre** (2026-10-23) : bouton à côté de l'heure de chaque bulle (icône seule sur téléphone), les tiennes comprises ;
+    il ouvre au-dessus du champ un bandeau « Réponse à Noa » avec l'extrait du message et × pour l'annuler (ou **Échap**
+    dans le champ, quand aucune suggestion n'est ouverte), et met le curseur dans le champ (placeholder « Ta réponse… ») ;
+    le brouillon est gardé. L'envoi porte `reply_to` ; réussi, le bandeau disparaît. Dans le fil, une réponse montre
+    au-dessus de son texte le message cité (prénom, « (toi) » pour les tiens, extrait sur deux lignes) : un clic le fait
+    défiler au milieu du fil et clignoter un instant (contour fixe si les animations sont réduites), ou, plus ancien que
+    ceux affichés, le dit (« Charger les messages plus anciens ») ; supprimé : « En réponse à un message supprimé », sans
+    lien. Une suppression vue par la relecture `?after=` (ou la tienne) change aussitôt les citations du message en
+    « supprimé » ; si ton brouillon y répondait, le bandeau part avec un avertissement sous le champ. Une réponse **des
+    autres** à un de tes messages est mise en avant comme une mention (« te répond ») et compte dans le second badge, dont
+    le texte pour lecteurs d'écran devient « dont 2 s'adressent à toi » ;
   - **Entrée** envoie, **Maj+Entrée** va à la ligne (pas pendant une saisie IME) ; le brouillon reste si l'envoi échoue
     (message du serveur affiché, `429` compris) ; il est vidé à l'envoi réussi, sauf s'il a été modifié entre-temps ;
   - **cartes citées** : chaque `[[Titre]]` d'un message devient une pastille (un `<button>`, titre en texte : jamais de
@@ -935,9 +958,9 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   - ailleurs, **badge des non-lus** sur l'onglet (« 3 », « 99+ » au-delà ; texte « 3 messages non lus » pour les lecteurs
     d'écran) : `last_chat_id` de `GET /api/me` (déjà relu toutes les 60 s) ; la page ne lit le chat que s'il a changé
     (chat déjà chargé) ou s'il dépasse le dernier lu. Non lus = messages des **autres** au-delà du dernier lu, parmi ceux
-    que la page a lus ; tes propres messages (d'un autre appareil) ne comptent pas. Parmi eux, ceux qui te mentionnent :
-    un second badge, en couleur d'alerte, « @2 » à côté du nombre (le texte pour lecteurs d'écran devient « 5 messages
-    non lus, dont 2 te mentionnent ») ; rien hors de la page (ni notification du navigateur, ni courriel) ;
+    que la page a lus ; tes propres messages (d'un autre appareil) ne comptent pas. Parmi eux, ceux qui te mentionnent ou
+    répondent à un de tes messages : un second badge, en couleur d'alerte, « @2 » à côté du nombre (le texte pour lecteurs
+    d'écran devient « 5 messages non lus, dont 2 s'adressent à toi ») ; rien hors de la page (ni notification du navigateur, ni courriel) ;
   - dernier message lu : `localStorage` `classeur-chat-lu` = `{<id du compte>: numéro}` (accès protégés ; refusé : en
     mémoire seulement ; oublié par « Oublier ce navigateur ») ; il avance quand le chat est sous les yeux ou quand rien de
     nouveau ne vient des autres ; base recréée (`last_chat_id` plus petit) : ramené à `last_chat_id` ;

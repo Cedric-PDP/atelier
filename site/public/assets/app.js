@@ -314,9 +314,10 @@
     // du @ ou du #), end (curseur), tq (texte tapé après), q (ce qui est cherché : tq sans « c: »), active (suggestion
     // surlignée)} ; acOff = {start, tq} : le @ ou # dont la liste a été fermée par
     // Échap, et ce qui était tapé (elle reste fermée tant qu'on continue ce mot) ;
-    // acWp = articles de Wikipédia qui commencent par le texte tapé après « # » ({q (replié), titles, loading}).
+    // acWp = articles de Wikipédia qui commencent par le texte tapé après « # » ({q (replié), titles, loading}) ;
+    // reply = message auquel le brouillon répond ({id, author, text}, « Répondre » sur une bulle) ou null.
     chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
-      acWp: { q: '', titles: [], loading: false } },
+      acWp: { q: '', titles: [], loading: false }, reply: null },
     // « Nouveautés » (/nouveautes.json) : status idle | loading | ready | error ; seen = dernière version vue dans ce
     // navigateur (localStorage) ; fresh = versions pas encore vues à l'ouverture de la page (« Nouveau » le temps de la visite).
     news: { status: 'idle', seen: store.get(LS.newsSeen), fresh: [] },
@@ -8134,11 +8135,11 @@
     for (const m of chatMsgs.value) if (m.id > read && !m.mine) n++;
     return n;
   });
-  // Non lus qui te mentionnent (parmi les non lus).
+  // Non lus qui te mentionnent ou répondent à un de tes messages (parmi les non lus).
   const chatUnreadPings = computed(() => {
     const read = S.chat.read;
     let n = 0;
-    for (const m of chatMsgs.value) if (m.id > read && !m.mine && chatInfo(m).me) n++;
+    for (const m of chatMsgs.value) if (m.id > read && !m.mine && (chatInfo(m).me || m.toMe)) n++;
     return n;
   });
   function markChatRead() {
@@ -8277,8 +8278,31 @@
     const text = String(m.text || '');
     const refs = (Array.isArray(m.refs) ? m.refs : []).map(prepChatRef).filter(Boolean);
     const members = (Array.isArray(m.members) ? m.members : []).map(prepChatMember).filter(Boolean);
-    return markRaw({ id, mine: m.mine === true, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''),
-      parts: chatParts(text, refs, members), refs, members });
+    const mine = m.mine === true;
+    const reply = prepChatReply(m.reply);
+    return markRaw({ id, mine, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''),
+      parts: chatParts(text, refs, members), refs, members, reply, toMe: !mine && !!reply && reply.mine });
+  }
+  // Message auquel il répond, tel que le serveur le rend : {id, author, mine, text} (extrait) ou {id, gone: true}
+  // (supprimé ou purgé depuis) ; null sans réponse.
+  function prepChatReply(r) {
+    const id = Number(r && r.id);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    if (r.gone || typeof r.text !== 'string') return { id, gone: true };
+    return { id, author: typeof r.author === 'string' && r.author ? r.author : null, mine: r.mine === true, text: r.text };
+  }
+  // Messages supprimés (par la relecture ou par toi) : retirés du fil ; les réponses qui les citent gardent seulement
+  // « message supprimé », et un brouillon qui y répondait n'y répond plus.
+  function dropChatMsgs(ids) {
+    const gone = new Set(ids);
+    if (!gone.size) return false;
+    const before = chatMsgs.value;
+    const list = before.filter((m) => !gone.has(m.id)).map((m) => (m.reply && !m.reply.gone && gone.has(m.reply.id) ? markRaw({ ...m, reply: { id: m.reply.id, gone: true } }) : m));
+    const c = S.chat;
+    if (c.reply && gone.has(c.reply.id)) { c.reply = null; c.sendError = 'Le message auquel tu répondais vient d\'être supprimé.'; }
+    if (list.length === before.length && list.every((m, i) => m === before[i])) return false;
+    chatMsgs.value = list;
+    return true;
   }
   // Membre cité tel que le serveur le rend : {at, len, name, mine, pid, pseudo} (pid : de quoi ouvrir son classeur,
   // pseudo : son pseudo dans le jeu, si tu montres tes cartes et lui les siennes), ou {at, len, gone: true} (classeur
@@ -8636,10 +8660,10 @@
     if (gen !== chatGen) return;
     // Révision inconnue (base recréée) ou plus de 100 changements : on relit les plus récents.
     if (r.reset || r.more || !Number.isInteger(r.rev)) { chatRev = null; await loadChat(gen); return; }
+    dropChatMsgs((Array.isArray(r.deleted) ? r.deleted : []).map(Number));
     const map = new Map(chatMsgs.value.map((m) => [m.id, m]));
     let added = 0;
     let changed = false;
-    for (const id of Array.isArray(r.deleted) ? r.deleted : []) if (map.delete(Number(id))) changed = true;
     for (const raw of Array.isArray(r.messages) ? r.messages : []) {
       const m = prepChatMsg(raw);
       if (!m) continue;
@@ -8748,7 +8772,7 @@
     chatLastId = 0;
     chatAtBottom = true;
     Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
-      acWp: { q: '', titles: [], loading: false } });
+      acWp: { q: '', titles: [], loading: false }, reply: null });
     stopChatWp();
   }
   async function sendChat(fromKey) {
@@ -8761,13 +8785,15 @@
       return;
     }
     const gen = chatGen;
+    const reply = c.reply;
     c.sending = true;
     c.sendError = '';
     chatTouch();
     try {
-      const r = await api('POST', '/api/chat', { text });
+      const r = await api('POST', '/api/chat', reply ? { text, reply_to: reply.id } : { text });
       if (gen !== chatGen) return;
       if (c.draft.replace(/\r\n?/g, '\n').trim() === text) { c.draft = ''; c.ac = null; } // tapé de nouveau pendant l'envoi : gardé
+      if (c.reply === reply) c.reply = null;
       const m = prepChatMsg(r.message);
       if (m && !chatMsgs.value.some((x) => x.id === m.id)) chatMsgs.value = [...chatMsgs.value, m].sort(byChatId);
       afterChat(true, false);
@@ -8798,9 +8824,28 @@
         return;
       }
     }
+    if (e.key === 'Escape' && S.chat.reply && !e.isComposing) { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); S.chat.reply = null; return; }
     if (e.key !== 'Enter' || e.shiftKey || e.isComposing || e.keyCode === 229) return;
     e.preventDefault();
     sendChat(true);
+  }
+  // « Répondre » sur une bulle : le brouillon y répondra (bandeau au-dessus du champ), curseur dans le champ.
+  function replyToChat(m) {
+    const short = m.text.replace(/\[\[([^[\]\n]{1,300})\]\]/g, '$1').replace(/\s+/g, ' ').trim();
+    const who = (m.mine && S.me && S.me.user && S.me.user.name) || m.author || 'Sans prénom';
+    Object.assign(S.chat, { reply: { id: m.id, author: who, mine: m.mine, text: short.length > 140 ? short.slice(0, 140).trimEnd() + '…' : short }, sendError: '' });
+    chatTouch();
+    nextTick(() => { const t = document.getElementById('chat-input'); if (t) { t.focus(); const n = t.value.length; if (t.setSelectionRange) t.setSelectionRange(n, n); } });
+  }
+  // Clic sur la citation d'une réponse : le message cité, s'il est chargé, défile au milieu du fil et clignote un instant.
+  function showChatMsg(id) {
+    const el = document.getElementById('chat-m-' + id);
+    if (!el) { notify('Ce message est plus ancien que ceux affichés : « Charger les messages plus anciens » en haut du fil.'); return; }
+    if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    el.classList.remove('flash');
+    void el.offsetWidth; // relance l'animation
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 1600);
   }
   function askDeleteChat(m) {
     const short = m.text.replace(/\s+/g, ' ');
@@ -8813,7 +8858,7 @@
         const gen = chatGen;
         try { await api('DELETE', '/api/chat/' + m.id); } catch (e) { if (e.status !== 404) throw e; } // 404 : déjà parti
         if (gen !== chatGen) return;
-        chatMsgs.value = chatMsgs.value.filter((x) => x.id !== m.id);
+        dropChatMsgs([m.id]);
         refreshChat();
       },
     });
@@ -8931,7 +8976,7 @@
     const n = S.tab === 'chat' ? 0 : chatUnread.value;
     if (!n) return label;
     const p = chatUnreadPings.value;
-    const said = ' ' + plural(n, 'message non lu', 'messages non lus') + (p ? `, dont ${p} ${plural(p, 'te mentionne', 'te mentionnent')}` : '');
+    const said = ' ' + plural(n, 'message non lu', 'messages non lus') + (p ? `, dont ${p} ${plural(p, "s'adresse à toi", "s'adressent à toi")}` : '');
     return [label, h('span', { class: 'tab-badge' }, [n > 99 ? '99+' : String(n), sr(said)]),
       p ? h('span', { class: 'tab-badge ping', 'aria-hidden': 'true' }, '@' + (p > 99 ? '99+' : String(p))) : null];
   }
@@ -8942,17 +8987,20 @@
     // Son pseudo dans le jeu, discret, avec un lien vers son profil (pas sur les tiens : les autres ne le voient que si
     // tu leur montres tes cartes).
     const pseudo = m.mine ? null : pseudoOf(m.author);
-    return h('div', { key: m.id, class: ['chat-msg', { mine: m.mine, ping: info.me }] }, [
+    return h('div', { key: m.id, id: 'chat-m-' + m.id, class: ['chat-msg', { mine: m.mine, ping: info.me || m.toMe }] }, [
       h('div', { class: 'chat-msg__head' }, [
         h('span', { class: 'chat-msg__who' }, who),
         m.mine ? h('span', { class: 'chat-msg__me' }, '(toi)') : null,
         pseudo ? h('a', { class: 'chat-msg__pseudo', href: gameProfileUrl(pseudo), target: '_blank', rel: 'noopener noreferrer',
           title: `Pseudo dans le jeu : ${pseudo} (son profil dans le jeu)` }, pseudo) : null,
-        info.me ? h('span', { class: 'chat-msg__ping' }, 'te mentionne') : null,
+        info.me ? h('span', { class: 'chat-msg__ping' }, 'te mentionne') : m.toMe ? h('span', { class: 'chat-msg__ping' }, 'te répond') : null,
         h('time', { class: 'chat-msg__time', datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
-        m.mine ? h('button', { class: 'chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
-          [icon('trash', 'sm'), h('span', { class: 'chat-msg__del-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
+        h('button', { class: 'chat-msg__act chat-msg__reply', type: 'button', title: 'Répondre à ce message', 'aria-label': `Répondre au message de ${who}`, onClick: () => replyToChat(m) },
+          [icon('reply', 'sm'), h('span', { class: 'chat-msg__act-label', 'aria-hidden': 'true' }, 'Répondre')]),
+        m.mine ? h('button', { class: 'chat-msg__act chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
+          [icon('trash', 'sm'), h('span', { class: 'chat-msg__act-label', 'aria-hidden': 'true' }, 'Supprimer')]) : null,
       ]),
+      m.reply ? viewChatQuote(m.reply) : null,
       h('p', { class: 'chat-msg__text' }, info.parts.map((p) => (p.card ? viewChatCard(p.card)
         : p.at ? h('span', { class: ['chat-at', { me: p.me }], title: p.me ? null : pseudoTip({ pseudo: pseudoOf(p.text.slice(1)) }) }, p.text)
         : p.col ? viewChatColLink(p)
@@ -8960,6 +9008,16 @@
         : p.url ? (p.local ? h('a', { href: p.url }, p.text) : h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text)) : p.text))),
       viewChatColEmbed(m.refs.find((r) => !r.gone)),
       viewChatMemberEmbed(m.members.find((r) => !r.gone)),
+    ]);
+  }
+  // Message auquel il répond, au-dessus du texte : son auteur et un extrait ; un clic y mène (s'il est chargé). Supprimé
+  // ou purgé : « message supprimé », sans lien.
+  function viewChatQuote(q) {
+    if (q.gone) return h('div', { class: 'chat-quote gone' }, 'En réponse à un message supprimé');
+    const who = (q.mine && S.me && S.me.user && S.me.user.name) || q.author || 'Sans prénom';
+    return h('button', { class: ['chat-quote', { mine: q.mine }], type: 'button', title: 'Voir le message cité', onClick: () => showChatMsg(q.id) }, [
+      h('span', { class: 'chat-quote__who' }, q.mine ? `${who} (toi)` : who),
+      h('span', { class: 'chat-quote__text' }, q.text),
     ]);
   }
   // Membre cité, dans le texte : son prénom en lien vers son classeur (« Mes cartes » pour toi), avec son pseudo dans le
@@ -9102,9 +9160,18 @@
         : it.hint ? h('span', { class: 'prop-list__hint', title: it.col || it.self ? null : 'Pseudo dans le jeu' }, it.hint) : null,
     ]);
     return h('form', { class: 'chat-form', onSubmit: (e) => { e.preventDefault(); sendChat(false); } }, [
+      c.reply ? h('div', { class: 'chat-replying', id: 'chat-replying' }, [
+        icon('reply', 'sm'),
+        h('span', { class: 'chat-replying__info' }, [
+          h('span', { class: 'chat-replying__who' }, `Réponse à ${c.reply.author}${c.reply.mine ? ' (toi)' : ''}`),
+          h('span', { class: 'chat-replying__text' }, c.reply.text),
+        ]),
+        h('button', { class: 'chat-replying__x', type: 'button', title: 'Ne plus répondre à ce message (Échap)', 'aria-label': 'Annuler la réponse',
+          onClick: () => { c.reply = null; nextTick(() => { const t = document.getElementById('chat-input'); if (t) t.focus(); }); } }, '×'),
+      ]) : null,
       h('label', { class: 'sr', for: 'chat-input' }, 'Ton message'),
       h('div', { class: 'chat-field' }, [
-        h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: 'Écris un message…', 'aria-describedby': 'chat-hint chat-tip',
+        h('textarea', { id: 'chat-input', class: 'chat-input', rows: 2, maxlength: CHAT_MAX, value: c.draft, placeholder: c.reply ? 'Ta réponse…' : 'Écris un message…', 'aria-describedby': c.reply ? 'chat-replying chat-hint chat-tip' : 'chat-hint chat-tip',
           role: 'combobox', 'aria-multiline': 'true', 'aria-expanded': String(open), 'aria-controls': 'chat-ac', 'aria-autocomplete': 'list',
           'aria-activedescendant': open ? 'chat-ac-' + act : null,
           onInput: (e) => { c.draft = e.target.value; if (c.sendError) c.sendError = ''; chatTouch(); updateChatAc(e.target); }, onKeydown: onChatKey,

@@ -604,8 +604,30 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 /* Prénom d'un membre qui a donné son pseudo dans le jeu : pseudo en info-bulle, souligné en pointillés. */
 .has-pseudo, .holder[title], .chat-at[title] { text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; cursor: help; }
 .chat-msg__time { color: var(--faint); font-variant-numeric: tabular-nums; }
-.chat-msg__del { margin-left: auto; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 6px; background: none; padding: 1px 4px; color: var(--faint); font-size: 11.5px; }
+.chat-msg__act { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 6px; background: none; padding: 1px 4px; color: var(--faint); font-size: 11.5px; }
+.chat-msg__reply { margin-left: auto; }
+.chat-msg__reply + .chat-msg__del { margin-left: -6px; }
+.chat-msg__reply:hover, .chat-msg__reply:focus-visible { color: var(--link); }
 .chat-msg__del:hover, .chat-msg__del:focus-visible { color: var(--danger); }
+/* Réponse (2026-10-23) : le message cité au-dessus du texte (auteur, extrait sur deux lignes), un clic y mène ; le
+   message cité clignote un instant. */
+.chat-quote { display: grid; gap: 1px; width: 100%; margin: 4px 0 2px; padding: 3px 9px 4px; border: 0; border-left: 3px solid color-mix(in srgb, var(--link) 55%, var(--border)); border-radius: 4px 8px 8px 4px; background: color-mix(in srgb, var(--fg) 5%, transparent); color: var(--muted); font-size: 12.5px; line-height: 1.4; text-align: left; cursor: pointer; }
+.chat-quote.mine { border-left-color: var(--accent); }
+.chat-quote:hover, .chat-quote:focus-visible { background: color-mix(in srgb, var(--fg) 9%, transparent); }
+.chat-quote.gone { cursor: default; font-style: italic; color: var(--faint); }
+.chat-quote__who { font-weight: 700; color: var(--fg); overflow-wrap: anywhere; }
+.chat-quote__text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.chat-msg.flash { animation: chat-flash 1.5s ease-out; }
+@keyframes chat-flash { 0%, 30% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--link) 55%, transparent); } 100% { box-shadow: 0 0 0 3px transparent; } }
+@media (prefers-reduced-motion: reduce) { .chat-msg.flash { animation: none; outline: 3px solid color-mix(in srgb, var(--link) 55%, transparent); } }
+/* Brouillon qui répond à un message : bandeau au-dessus du champ, × (ou Échap) pour annuler. */
+.chat-replying { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 6px 6px 10px; border-left: 3px solid var(--link); border-radius: 4px 10px 10px 4px; background: var(--surface-2); font-size: 12.5px; }
+.chat-replying > .ic { flex: none; color: var(--link); }
+.chat-replying__info { display: grid; min-width: 0; flex: 1 1 auto; }
+.chat-replying__who { font-weight: 700; }
+.chat-replying__text { color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-replying__x { flex: none; width: 30px; height: 30px; border: 0; border-radius: 99px; background: none; color: var(--muted); font-size: 20px; line-height: 1; }
+.chat-replying__x:hover, .chat-replying__x:focus-visible { background: var(--surface); color: var(--fg); }
 .chat-msg__text { margin-top: 2px; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
 .chat-msg__text a { text-decoration: underline; text-underline-offset: 2px; }
 /* Carte citée ([[Titre]]) : pastille qui ouvre sa fiche ; ta carte avec sa rareté, sinon bord en pointillés. */
@@ -663,7 +685,7 @@ textarea.chat-input { min-height: 68px; max-height: 40vh; font: 14px/1.5 var(--f
 @media (max-width: 560px) {
   .chat-scroll { height: 56vh; padding: 10px; }
   .chat-msg { max-width: 90%; }
-  .chat-msg__del-label, .chat-hint { display: none; }
+  .chat-msg__act-label, .chat-hint { display: none; }
   .chat-form__foot { justify-content: flex-end; }
   textarea.chat-input { font-size: 16px; } /* 16 px : pas de zoom à la saisie sur iPhone */
 }

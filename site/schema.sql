@@ -156,14 +156,16 @@ CREATE TABLE IF NOT EXISTS cron_state (
 -- jamais réutilisé) ; user_id = auteur ('' quand son classeur a été supprimé) ; text = texte brut, 500 caractères au
 -- plus (vidé à la suppression) ; deleted = 1 : message supprimé, gardé vide comme marque pour que les pages ouvertes le
 -- retirent ; rev = révision (unique, croissante), donnée à la création puis à la suppression, lue par
--- GET /api/chat?after=<rev> (index chat_by_rev). Les 2 000 plus récents seulement (purge à chaque envoi).
+-- GET /api/chat?after=<rev> (index chat_by_rev) ; reply_to = numéro du message auquel il répond (NULL sinon ; il peut
+-- avoir été supprimé ou purgé depuis). Les 2 000 plus récents seulement (purge à chaque envoi).
 CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
     text TEXT NOT NULL,
     created_at TEXT NOT NULL,
     deleted INTEGER NOT NULL DEFAULT 0,
-    rev INTEGER NOT NULL
+    rev INTEGER NOT NULL,
+    reply_to INTEGER
 );
 
 -- Marché (functions/_lib/market.js ; lu par marketread.js avec la session du jeu du membre, sans rien écrire dans le jeu).

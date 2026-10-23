@@ -22,6 +22,9 @@
 // - Membres cités (2026-10-20) : de même, un lien vers le classeur d'un membre qui montre ses cartes (#/ami/<id public>)
 //   est rangé sous la forme `\uE000u:<id du compte>\uE001`, rendu par son prénom actuel dans le texte et, à part (`members`,
 //   qu'une page d'avant ignore), de quoi l'ouvrir et son pseudo dans le jeu pour un lecteur qui montre ses cartes.
+// - Réponses (2026-10-23) : un message peut répondre à un autre (`reply_to`, son numéro, vérifié à l'envoi) ; à la
+//   lecture, `reply` = l'auteur actuel et un extrait du message cité (citations rendues en clair, 140 caractères au plus),
+//   ou `gone` s'il a été supprimé ou purgé depuis. Une requête de plus, seulement si les messages lus répondent à d'autres.
 
 import { HttpError, json } from './http.js';
 
@@ -65,7 +68,7 @@ export function cleanMessage(value) {
   return text;
 }
 
-const COLUMNS = 'm.id, m.rev, m.deleted, m.text, m.created_at, (m.user_id = ?1) AS mine, u.name AS author';
+const COLUMNS = 'm.id, m.rev, m.deleted, m.text, m.created_at, m.reply_to, (m.user_id = ?1) AS mine, u.name AS author';
 const FROM = 'chat_messages AS m LEFT JOIN users AS u ON u.id = m.user_id';
 // Les plus récents (sans `before`) ou ceux d'avant un message (`before`), du plus récent au plus ancien ; marques de
 // suppression sautées. Une ligne de plus que la page dit s'il en reste de plus anciens.
@@ -79,8 +82,8 @@ const TOP = 'SELECT (SELECT MAX(rev) FROM chat_messages) AS rev, (SELECT MAX(id)
 // Envoi : le message n'est écrit que si les trois limites le permettent (contrôle et écriture dans la même requête :
 // deux envois simultanés ne passent pas tous deux au-delà). Limite du salon : le 1 000e message le plus récent
 // (par numéro) a-t-il moins de 24 h ? Une ligne lue, par la clé primaire.
-const INSERT = `INSERT INTO chat_messages (user_id, text, created_at, deleted, rev)
-  SELECT ?1, ?2, ?3, 0, COALESCE((SELECT MAX(rev) FROM chat_messages), 0) + 1
+const INSERT = `INSERT INTO chat_messages (user_id, text, created_at, deleted, rev, reply_to)
+  SELECT ?1, ?2, ?3, 0, COALESCE((SELECT MAX(rev) FROM chat_messages), 0) + 1, ?9
   WHERE (SELECT COUNT(*) FROM (SELECT 1 FROM chat_messages WHERE user_id = ?1 AND created_at > ?4 LIMIT ?5)) < ?5
     AND (SELECT COUNT(*) FROM (SELECT 1 FROM chat_messages WHERE user_id = ?1 AND created_at > ?6 LIMIT ?7)) < ?7
     AND COALESCE((SELECT created_at FROM chat_messages WHERE id <= (SELECT MAX(id) FROM chat_messages) - ?8 ORDER BY id DESC LIMIT 1), '') <= ?6
@@ -115,11 +118,13 @@ export function eraseChatOf(db, userId) {
 // - `members`, ses membres : {at, len, name, mine, pid, pseudo} (pid : de quoi ouvrir son classeur, pseudo : son pseudo
 //   dans le jeu, null si le lecteur ne le peut pas) ou {at, len, gone: true} (classeur supprimé). À part de `refs` : une
 //   page d'avant cette fonction n'en montre que le prénom, en texte.
+// - `reply`, s'il répond à un message : {id, author, mine, text} (text = extrait, voir quote) ou {id, gone: true}.
 const GONE_TEXT = 'collection non partagée';
 const GONE_USER = 'classeur supprimé';
 const NO_NAME = 'membre sans prénom';
-function message(r, cited) {
+function message(r, cited, quoted) {
   const out = { id: r.id, author: r.author ?? null, mine: !!r.mine, text: r.text, created_at: r.created_at };
+  if (r.reply_to) out.reply = (quoted && quoted.get(r.reply_to)) || { id: r.reply_to, gone: true };
   if (!r.text.includes('\uE000')) return out;
   const refs = [];
   const members = [];
@@ -144,6 +149,31 @@ function message(r, cited) {
   if (refs.length) out.refs = refs;
   if (members.length) out.members = members;
   return out;
+}
+
+// Messages auxquels répondent ceux qui sont lus : une requête (clé primaire), seulement s'il y en a ; un message supprimé
+// ou purgé n'en rend pas (il devient `gone`).
+export const CHAT_QUOTE_CHARS = 140;
+const QUOTED = `SELECT m.id, m.text, (m.user_id = ?1) AS mine, u.name AS author
+  FROM json_each(?2) AS r JOIN chat_messages AS m ON m.id = r.value AND m.deleted = 0 LEFT JOIN users AS u ON u.id = m.user_id`;
+// Extrait d'un message cité : citations rendues en clair (comme le message lui-même), cartes citées sans leurs crochets,
+// espaces réduits, coupé au mot près à 140 caractères (sans couper un emoji en deux).
+function quote(q, cited) {
+  const text = message(q, cited).text.replace(/\[\[([^[\]\n]{1,300})\]\]/g, '$1').replace(/\s+/g, ' ').trim();
+  const chars = Array.from(text);
+  if (chars.length <= CHAT_QUOTE_CHARS) return text;
+  const cut = chars.slice(0, CHAT_QUOTE_CHARS).join('');
+  const space = cut.lastIndexOf(' ');
+  return (space > CHAT_QUOTE_CHARS / 2 ? cut.slice(0, space) : cut).trimEnd() + '…';
+}
+// Messages tels que la page les reçoit (même ordre que `rows`) : messages cités, puis collections et membres cités (ceux
+// des extraits compris).
+async function render(db, user, rows) {
+  const ids = [...new Set(rows.map((r) => r.reply_to).filter(Boolean))];
+  const quotedRows = ids.length ? (await db.prepare(QUOTED).bind(user.id, JSON.stringify(ids)).all()).results : [];
+  const cited = await citeRefs(db, user, rows.concat(quotedRows));
+  const quoted = new Map(quotedRows.map((q) => [q.id, { id: q.id, author: q.author ?? null, mine: !!q.mine, text: quote(q, cited) }]));
+  return rows.map((r) => message(r, cited, quoted));
 }
 
 // Collections citées par des messages, vues par `user` : une requête (clés primaires de users et de targets), seulement
@@ -250,9 +280,8 @@ export async function listChat(env, user, _body, request) {
   const db = env.DB;
   if (before !== null) {
     const { results } = await db.prepare(BEFORE).bind(user.id, CHAT_PAGE + 1, before).all();
-    const rows = results.slice(0, CHAT_PAGE);
-    const cited = await citeRefs(db, user, rows);
-    return { messages: rows.reverse().map((r) => message(r, cited)), older: results.length > CHAT_PAGE };
+    const rows = results.slice(0, CHAT_PAGE).reverse();
+    return { messages: await render(db, user, rows), older: results.length > CHAT_PAGE };
   }
   // Curseur et messages dans la même transaction : un changement fait entre les deux revient à la lecture suivante.
   const [top, page] = await db.batch([
@@ -265,13 +294,12 @@ export async function listChat(env, user, _body, request) {
   const rows = page.results;
   if (after !== null && after > rev) return { reset: true, rev, last_id: lastId };
   const kept = rows.slice(0, CHAT_PAGE);
-  const cited = await citeRefs(db, user, kept);
   if (after === null) {
-    return { messages: kept.reverse().map((r) => message(r, cited)), rev, last_id: lastId, older: rows.length > CHAT_PAGE };
+    return { messages: await render(db, user, kept.reverse()), rev, last_id: lastId, older: rows.length > CHAT_PAGE };
   }
   const more = rows.length > CHAT_PAGE;
   return {
-    messages: kept.filter((r) => !r.deleted).map((r) => message(r, cited)),
+    messages: await render(db, user, kept.filter((r) => !r.deleted)),
     deleted: kept.filter((r) => r.deleted).map((r) => r.id),
     rev: more ? kept[kept.length - 1].rev : rev,
     last_id: lastId,
@@ -279,26 +307,33 @@ export async function listChat(env, user, _body, request) {
   };
 }
 
-// POST /api/chat {text} → 201 {message} (ses liens de collection déjà cités, voir storeRefs) ; 400 (texte, lien personnel, classeur sans prénom), 429 (limites).
+// POST /api/chat {text, reply_to?} → 201 {message} (ses liens de collection déjà cités, voir storeRefs) ; 400 (texte, lien
+// personnel, classeur sans prénom, reply_to), 404 (le message auquel il répond n'existe plus), 429 (limites).
 export async function postChat(env, user, body, request) {
   const typed = cleanMessage(body.text);
   if (!user.name) {
     throw new HttpError(400, "Donne d'abord un prénom à ton classeur (Réglages, « Ton prénom ») : c'est lui que les autres membres verront.");
   }
+  const replyTo = body.reply_to ?? null;
+  if (replyTo !== null && !(Number.isSafeInteger(replyTo) && replyTo > 0)) throw new HttpError(400, "reply_to doit être le numéro d'un message.");
+  const db = env.DB;
+  // Le message cité doit exister (une ligne, clé primaire) ; supprimé entre cette lecture et l'envoi, il devient `gone`.
+  if (replyTo !== null && !(await db.prepare('SELECT 1 FROM chat_messages WHERE id = ?1 AND deleted = 0').bind(replyTo).first())) {
+    throw new HttpError(404, "Le message auquel tu réponds n'existe plus (supprimé par son auteur ?).");
+  }
   const now = Date.now();
   const at = new Date(now).toISOString();
   const minute = new Date(now - 60_000).toISOString();
   const day = new Date(now - 86_400_000).toISOString();
-  const db = env.DB;
   const text = await storeRefs(db, user, typed, new URL(request.url).host.toLowerCase());
   const [ins] = await db.batch([
-    db.prepare(INSERT).bind(user.id, text, at, minute, CHAT_PER_MINUTE, day, CHAT_PER_DAY, CHAT_ROOM_PER_DAY - 1),
+    db.prepare(INSERT).bind(user.id, text, at, minute, CHAT_PER_MINUTE, day, CHAT_PER_DAY, CHAT_ROOM_PER_DAY - 1, replyTo),
     db.prepare(PURGE).bind(CHAT_KEEP),
   ]);
   const row = ins.results[0];
   if (!row) throw await limitError(db, user, now, minute, day);
-  const sent = { id: row.id, author: user.name, mine: true, text, created_at: row.created_at };
-  return json({ message: message(sent, await citeRefs(db, user, [sent])) }, 201);
+  const sent = { id: row.id, author: user.name, mine: true, text, created_at: row.created_at, reply_to: replyTo };
+  return json({ message: (await render(db, user, [sent]))[0] }, 201);
 }
 
 async function limitError(db, user, now, minute, day) {
