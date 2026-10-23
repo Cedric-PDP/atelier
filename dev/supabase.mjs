@@ -8,7 +8,10 @@
 // Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=…,
 // GET /api/marketplace/<id de l'enchère> (l'enchère, son vendeur et son meneur, et ses mises : champ `bids` de l'enchère
 // rangée, [{bidder_id, amount}] ; forme relevée par le projet de référence, pas vérifiée ici ; `siteLimit` : 429 |
-// 'automation_limit') et POST /api/trades (la seule écriture : une proposition d'échange, relevée dans le HAR du 2026-10-22). RLS de user_cards :
+// 'automation_limit') ; écritures : POST /api/trades (une proposition d'échange, relevée dans le HAR du 2026-10-22), et
+// GET /api/marketplace/mine, POST /api/marketplace (mise en vente d'un exemplaire), DELETE /api/marketplace/<id>
+// (annulation, refusée après une mise) relevées dans le HAR du 2026-10-23 ; `sellReply` force la réponse d'une mise en
+// vente, `maxAuctions` le plafond d'enchères actives, `siteLimit` limite aussi ces routes. RLS de user_cards :
 // ses propres exemplaires seulement, sauf `readOthers` (ceux de tout le monde, comme si le jeu les laissait lire).
 
 import assert from 'node:assert/strict';
@@ -90,6 +93,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     trades: [], // échanges créés par POST /api/trades
     tradeReply: null, // (body) → {status, body, setCookie?} pour forcer la réponse de POST /api/trades
     siteLimit: null, // 429 | 'automation_limit' : routes du marché du site limitées
+    sellReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/marketplace
+    maxAuctions: 5, // enchères actives par vendeur (maxConcurrentAuctions)
     reset() {
       this.players.clear();
       this.cards = [];
@@ -102,6 +107,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.trades = [];
       this.tradeReply = null;
       this.siteLimit = null;
+      this.sellReply = null;
+      this.maxAuctions = 5;
     },
     restore() {
       globalThis.fetch = previous;
@@ -252,9 +259,40 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       const rows = p.cards.filter((r) => !q || String(r.card && r.card.wikipedia_title).toLowerCase().includes(q)).slice(0, 50);
       return reply({ collection: rows, total: rows.length, rarityCounts: {}, tagOptions: [], profileId: p.uid, pendingTradeCardIds: [] });
     }
+    const market = u.pathname === '/api/marketplace' || u.pathname.startsWith('/api/marketplace/');
+    if (market && supa.siteLimit === 429) return reply({ error: 'Too Many Requests' }, 429);
+    if (market && supa.siteLimit === 'automation_limit') return reply({ code: 'automation_limit', error: 'automation limit' }, 403);
+    const running = (p) => p.auctions.filter((a) => a.seller_id === p.uid && a.status === 'active' && Date.parse(a.end_at) > now());
+    if (method === 'GET' && u.pathname === '/api/marketplace/mine') return reply({ sellingCount: running(me).length, maxConcurrentAuctions: supa.maxAuctions });
+    if (method === 'POST' && u.pathname === '/api/marketplace') {
+      assert.equal(h.get('origin'), GAME, 'Origin du jeu');
+      const body = JSON.parse(init.body || '{}');
+      if (supa.sellReply) {
+        const f = supa.sellReply(body);
+        if (f.network) throw new TypeError('fetch failed');
+        return reply(f.body ?? {}, f.status);
+      }
+      const row = me.cards.find((r) => r.id === body.card_id);
+      if (!row) return reply({ error: 'Carte introuvable' }, 404);
+      if (!Number.isInteger(body.base_amount) || body.base_amount < 1) return reply({ error: 'Mise de départ invalide' }, 400);
+      if (running(me).length >= supa.maxAuctions) return reply({ error: `Maximum ${supa.maxAuctions} enchères actives` }, 400);
+      const created = new Date(now());
+      const a = { id: `vente-${me.auctions.length + 1}`, seller_id: me.uid, card_id: row.card_id, user_card_id: row.id, base_amount: body.base_amount,
+        duration_minutes: body.duration_minutes, current_bid: null, current_bidder_id: null, status: 'active', created_at: created.toISOString(),
+        end_at: new Date(created.getTime() + body.duration_minutes * 60_000).toISOString(), snapshot_rarity: row.snapshot_rarity || row.card.rarity,
+        is_shiny: !!row.is_shiny, bids: [] };
+      me.auctions.push(a);
+      return reply({ auction_id: a.id }, 201);
+    }
+    if (method === 'DELETE' && (m = /^\/api\/marketplace\/([^/]+)$/.exec(u.pathname))) {
+      assert.equal(h.get('origin'), GAME, 'Origin du jeu');
+      const a = me.auctions.find((x) => x.id === decodeURIComponent(m[1]));
+      if (!a) return reply({ error: 'Enchère introuvable' }, 404);
+      if (a.current_bidder_id || (a.bids || []).length) return reply({ error: "Impossible d'annuler : une enchère a déjà été placée" }, 400);
+      a.status = 'cancelled';
+      return reply({ status: 'cancelled' });
+    }
     if (method === 'GET' && (m = /^\/api\/marketplace\/([^/]+)$/.exec(u.pathname))) {
-      if (supa.siteLimit === 429) return reply({ error: 'Too Many Requests' }, 429);
-      if (supa.siteLimit === 'automation_limit') return reply({ code: 'automation_limit', error: 'automation limit' }, 403);
       const id = decodeURIComponent(m[1]);
       const a = [...supa.players.values()].flatMap((p) => p.auctions).find((x) => x.id === id);
       if (!a) return reply({ error: 'Enchère introuvable' }, 404);

@@ -169,6 +169,9 @@ plus faite.
 | `POST /api/market/refresh` | `{}` | `{ok:true, read, left, deals, running}` : « Mettre à jour les cotes », une **passe de lecture du marché** par le serveur avec la session reliée (voir « Le marché ») : `read` = cotes lues, `left` = cotes du plan restant à lire, `deals` = bonnes affaires, `running` = tes mises en cours. `401 {error, needs_link:true}` aucun compte relié ou session « à relier » ; `409` une passe, ou une lecture de la collection, est déjà en cours ; `429 {error, retry_after}` (**secondes**, 60 au plus) la dernière passe de ce classeur a commencé il y a moins de 60 s, **même finie**, d'où qu'elle vienne ; `429 {error, quota:0}` quota du jour des cotes atteint (rien n'est lu) ; `429 {error, limited:true}` le jeu limite les lectures ; `502`. Un échec en cours de passe garde les cotes déjà lues et note sa raison dans `attempt.why` |
 | `GET /api/game/cards?q=` | (clé principale) `q` : 1 à 100 caractères (sinon `400`) | `{cards:[{card_id, title, rarity, category, image}], more}` : les cartes du jeu dont le **titre contient** `q` (une requête `cards?wikipedia_title=ilike.*q*` avec la session reliée), dans l'ordre des titres, 200 au plus (`more:true` : il y en a d'autres) ; la version française d'un même titre l'emporte, une rareté inconnue est écartée, `image` = `null` si la carte la cache. `401 {error, needs_link:true}`, `429 {limited:true}`, `502`. Sert « Depuis le jeu » (voir « Onglet « Collections » »). **Non vérifié sur la vraie base** : le filtre `ilike` sur `wikipedia_title`, et ce que la sécurité par rangée du jeu laisse voir à un joueur (la recherche pourrait rendre moins que la « Collection globale » du jeu) |
 | `POST /api/trades/create` | (clé principale) `{member, give?, get?}` : `member` = identifiant public de l'ami, `give` / `get` = ids de cartes du jeu (tes cartes, les siennes), au moins une, 40 au plus ; 8 Ko | `{trade:{id, status}, given:[{id, title}], received:[{id, title}], url}` : la proposition d'échange **créée dans le jeu** (en attente : l'ami l'accepte dans le jeu), voir « Proposer un échange ». `403` sans partage ; `404` ami inconnu ou qui ne partage pas ; `401 needs_link` sans compte relié ; `409` carte absente du jeu (titres nommés), ami introuvable dans le jeu, bail pris, ou refus du jeu (son message repris) ; `502` panne ou réponse inattendue du jeu (« regarde dans le jeu s'il a été créé ») ; `429` limite du jeu |
+| `GET /api/market/sell?id=<card_id>` | (clé principale ; 2026-10-23) | `{card_id, copies:[{k, n, fav}], selling, max}` : **tes exemplaires** de la carte dans le jeu par rareté d'exemplaire et brillance (`k` : « R », « R* » ; `n` exemplaires, `fav` dont favoris), lus dans sa base, et **tes enchères actives** sur leur plafond (`selling` / `max`, lus sur le site du jeu, `GET /api/marketplace/mine` ; `null` s'il ne les donne pas). Voir « Le marché », « Vendre ». `400` ; `401 {needs_link:true}` ; `429 {retry_after}` / `429 {limited:true}` comme le détail d'une enchère ; `409`, `502` |
+| `POST /api/market/sell` | (clé principale ; 2026-10-23) `{id, k, base, minutes}` : `id` = la carte, `k` = rareté d'exemplaire à vendre, `base` = mise de départ (entier, 1 à 10 000 000 W), `minutes` = 10, 30, 60, 180, 360 ou 720 ; 2 Ko | `{auction:{a, k, base, minutes, end}, url}` : l'enchère **créée dans le jeu** (`end` : fin estimée), ajoutée aussitôt à « Tes ventes » de la dernière lecture du marché. `400` corps mal formé ; `401 needs_link` ; `409` plus d'exemplaire de cette rareté dans le jeu, refus du jeu (son message repris : plafond d'enchères actives…) ou `409 {verify:true}` le jeu demande une vérification anti-robot (la vente se fait alors dans le jeu) ; `429 {limited:true}` le jeu limite (pause de 10 min) ou `429 {retry_after}` plafond par minute ; `502` panne ou réponse inattendue (« regarde dans le jeu si elle a été créée ») |
+| `POST /api/market/cancel` | (clé principale ; 2026-10-23) `{a}` : l'id de l'enchère ; 2 Ko | `{a, status:"cancelled"}` : ta vente **retirée du marché du jeu**, marquée terminée (`off`) dans « Tes ventes ». Seulement **tant que personne n'a misé** : `409 {has_bid:true}` sinon ; `409 {gone:true}` vente inconnue du jeu ou terminée ; `403` la vente d'un autre ; `400`, `401`, `429`, `502` comme ci-dessus |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
 **Message** (chat) : `{id, author, mine, text, created_at, refs?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
@@ -246,8 +249,10 @@ au plus).
 
 Depuis le 2026-10-22, le classeur lit la collection et le marché **directement dans la base du jeu** (Supabase, projet
 `cyrxjeppjqsxxjayfrur` : Auth et PostgREST), avec **une session du jeu par membre gardée par le serveur** (`game.js`,
-`session.js`, `link.js`). Une seule écriture dans le jeu : la **proposition d'un échange** à un ami (`POST /api/trades/create`,
-`trades.js`, voir « Proposer un échange ») ; rien d'autre.
+`session.js`, `link.js`). Deux écritures dans le jeu, toujours au clic du membre : la **proposition d'un échange** à un ami
+(`POST /api/trades/create`, `trades.js`, voir « Proposer un échange »), et depuis le 2026-10-23 la **mise en vente** d'une de ses
+cartes et l'**annulation** d'une de ses ventes sans mise (`POST /api/market/sell`, `POST /api/market/cancel`, `sell.js`, voir « Le
+marché », « Vendre ») ; rien d'autre.
 
 **Pourquoi une session dédiée, née en fenêtre privée.** Le jeu n'a qu'une connexion par e-mail et mot de passe, derrière un
 captcha (relevé du 2026-10-22 : `GET /auth/v1/settings` ne donne que `external.email: true` ; `POST
@@ -1673,6 +1678,42 @@ hideCol}}`, accès protégés). Chaque liste montre **20 cartes**, puis « Affic
   n'est retiré, voir « Lecture de la collection »). « Bonnes affaires à vendre » écarte donc, d'après la dernière lecture du marché
   (`live.sales`), un exemplaire (même rareté et brillance si possible) par vente **en cours** (`run`) ou **conclue** (`sold`) ; une carte dont il
   ne reste aucun exemplaire n'est pas proposée, et une ligne le dit. Invendue ou annulée : la carte est revenue au joueur, elle reste proposée.
+- **Vendre** (2026-10-23, `sell.js`, routes relevées dans un HAR du jeu du 2026-10-23 et dans le code de sa page) : « Mettre en vente dans le jeu »
+  dans la fiche d'une de tes cartes, et « Mettre en vente » sur chaque ligne de « Bonnes affaires à vendre » (avec la rareté de la ligne). La
+  fenêtre « Mettre en vente « … » » (large ; le formulaire à gauche, le marché à droite, l'un sous l'autre sous 760 px) :
+  - **Exemplaire** : une puce par rareté d'exemplaire et brillance de tes exemplaires **dans le jeu** (`GET /api/market/sell`, lu à l'ouverture ;
+    avant, ceux du classeur), « ×2 », « favori » ; par défaut, la rareté de la ligne, sinon celle qui a la plus haute cote fiable.
+  - **Ce que le classeur sait du marché de la carte**, pour cette rareté : cote (« ~ » sous 3 ventes) et nombre de ventes, dernière vente, écart sur
+    7 jours, enchères en cours (combien, la moins chère, avec ou sans mise ; tes ventes à part), ventes conclues, tes enchères actives sur leur
+    plafond ; « Tes ventes de cette carte » (14 derniers jours, dernière lecture du marché) ; puis tout le « Marché dans le jeu » de la fiche
+    (enchères en cours avec leur détail, courbe des prix de vente, qui suit la rareté choisie). Ce marché est lu comme à l'ouverture d'une fiche
+    (`GET /api/market/card`, gardé 60 s : déjà lu si la fiche est ouverte dessous).
+  - **Mise de départ** (W, entier, 1 au moins), proposée à la cote de la rareté (elle suit la rareté tant qu'on ne l'a pas changée) ; puces
+    « la cote · 505W », « sous la moins chère en vente · 59W », « la dernière vente · 504W ». **Durée** : 10 min, 30 min, 1 h (par défaut, comme
+    le jeu), 3 h, 6 h, 12 h.
+  - **Avertissements** : plafond d'enchères actives atteint (envoi désactivé), plus d'exemplaire dans le jeu (désactivé), départ à moins de 70 % ou
+    plus de 150 % de la cote fiable, enchères de cette rareté déjà moins chères, ton seul exemplaire alors qu'il sert à tes collections, exemplaire
+    favori dans le jeu. Résumé « Commune · départ 300W · 3 h ».
+  - « Mettre en vente dans le jeu » → `POST /api/market/sell`. Réussite : « « … » est en vente dans le jeu. Commune, départ 300W, fin vers … », lien
+    « Ouvrir dans le jeu ↗ » et **« Annuler la vente »** ; l'enchère rejoint aussitôt la liste de la fiche (« ta vente ») et « Mes enchères »
+    (le serveur l'ajoute à la dernière lecture du marché, sans changer son heure), et la carte quitte « Bonnes affaires à vendre ». Vérification
+    anti-robot demandée par le jeu : le message et « Ouvrir ma collection dans le jeu ↗ ». Toute erreur reste dans la fenêtre.
+  - **Annuler une vente** : depuis la fenêtre après la vente, depuis « Mes enchères » (« Annuler la vente » sur une vente en cours sans enchère
+    reçue) et depuis la liste des enchères d'une fiche (« Annuler ma vente » sur la tienne, sans mise) ; hors de la fenêtre, une confirmation
+    d'abord. Le jeu n'annule plus une vente dès qu'une mise existe : le serveur relit l'enchère juste avant et refuse (`409 {has_bid:true}`, « Quelqu'un
+    a déjà misé sur cette vente : le jeu ne permet plus de l'annuler. »). Pas de baisse du prix de départ depuis le classeur (le jeu la permet une
+    fois, après la moitié du temps sans mise) : elle se fait dans le jeu.
+  - **Côté serveur.** Session de la route du site (comme le détail d'une enchère : renouvelée avant sous bail si elle expire dans moins de 5 min),
+    chaque appel au site compté dans le plafond de **20 par minute** des routes du marché, et la **pause de 10 min** posée quand le jeu limite
+    (`429`/`automation_limit`) s'applique aussi. Exemplaires : `user_cards?select=id,card_id,count,starred,is_shiny,obtained_at,snapshot_rarity,card:cards(rarity)`
+    (rareté d'exemplaire : `snapshot_rarity`, sinon celle de la carte) ; exemplaire vendu : ni favori ni brillant si possible, puis le plus gros paquet,
+    puis le plus récent (comme un échange). Vente : `POST https://www.wiki-masters.com/api/marketplace` `{card_id: <id de l'exemplaire>, base_amount,
+    duration_minutes}` → `201 {auction_id}` (le champ `card_id` du jeu est l'id de l'**exemplaire**, `user_cards.id`) ; plafond :
+    `GET /api/marketplace/mine` → `{sellingCount, maxConcurrentAuctions}` (5, 10 en Pro) ; annulation : `GET /api/marketplace/<id>` (vendeur,
+    `status`, `current_bidder_id`, `bids`) puis `DELETE /api/marketplace/<id>` → `{status:"cancelled"}`. Cookie de session refait, `Origin` et
+    `Referer` du jeu, **une seule tentative**, `Set-Cookie` gardé, refus du jeu repris (300 caractères), comme « Proposer un échange ».
+    `human_verification_required` (le jeu ouvre alors un captcha) → `409 {verify:true}`. **Non vérifié sur le jeu** : la vente avec ce cookie refait
+    depuis une adresse Cloudflare (la proposition d'échange marche ainsi), et quand le jeu demande la vérification anti-robot.
 - **Lecture du marché** (en haut, sous la valeur) : « Lecture du marché par le classeur : il y a 12 min (17 octobre, 10:02). » ; au-delà de 2 h,
   en orange, « Elle date de plus de 2 h : des enchères ont pu finir ou monter. Clique « Mettre à jour les cotes » (le classeur la refait toutes les
   20 minutes quand la synchro automatique est active). » ; jamais d'essai : « Le classeur n'a pas encore lu le marché : relie ton compte (onglet
@@ -1749,8 +1790,9 @@ le serveur lit. La page garde les messages d'échec, l'âge de la lecture et le 
 ## Règles du jeu
 
 Les règles de WikiMasters (« Règles de la communauté » §3, CGU §6) interdisent les outils qui jouent ou **interagissent à la place du
-joueur**. Le classeur ne joue pas, ne clique rien et ne pose jamais d'étiquette dans le jeu ; il n'y écrit qu'une chose, depuis le 2026-10-22 : la
-**proposition d'un échange**, au clic du membre (ci-dessous). **Mais, depuis le
+joueur**. Le classeur ne joue pas, ne clique rien et ne pose jamais d'étiquette dans le jeu ; il n'y écrit, au clic du membre, que la
+**proposition d'un échange** (depuis le 2026-10-22) et la **mise en vente** d'une carte ou l'**annulation** d'une vente sans mise (depuis le
+2026-10-23) (ci-dessous). **Mais, depuis le
 2026-10-22, il lit la base du jeu régulièrement et automatiquement, sans geste du joueur**, ce qu'il ne faisait pas avant : c'est un choix
 assumé de l'utilisateur, décrit ici tel qu'il est.
 
@@ -1772,6 +1814,11 @@ assumé de l'utilisateur, décrit ici tel qu'il est.
   proposition en attente au nom du membre, par la route du site du jeu (`POST /api/trades`) avec son cookie de session refait par le serveur. C'est
   exactement ce que ferait le joueur dans l'écran d'échange du jeu, mais **depuis le serveur, à sa place** : c'est ce que ces règles visent (« interagir
   à la place du joueur ») ; choix assumé de l'utilisateur (2026-10-22). Jamais sans clic, jamais d'acceptation, de refus ni d'annulation.
+- **Vendre, au clic** (2026-10-23, choix assumé de l'utilisateur) : « Mettre en vente dans le jeu » met un exemplaire aux enchères au nom du membre
+  (`POST /api/marketplace` du site du jeu), et « Annuler la vente » retire une de ses ventes tant que personne n'a misé (`DELETE
+  /api/marketplace/<id>`, après une relecture de l'enchère). Même chemin que l'échange (cookie refait, depuis le serveur, une seule tentative),
+  donc la même exposition à ces règles ; ces routes du marché du site sont celles qui renvoient `automation_limit`, et le jeu peut aussi demander
+  une vérification anti-robot (la vente se fait alors dans le jeu). Jamais sans clic, jamais de mise, d'achat ni de baisse de prix.
 - **Aucune imitation de navigateur** : pour les lectures, les en-têtes sont `apikey` (clé publique du jeu), `Authorization: Bearer` (la session du
   membre) et `Accept` ; le `User-Agent` est celui de la plateforme, pas celui d'un navigateur.
 - Pour 50 membres reliés, c'est au plus de l'ordre de 4 500 requêtes par heure vers le jeu pour le marché, plus une vérification par membre toutes
@@ -1810,5 +1857,5 @@ cette date, plus de favori de synchro, de clé d'import ni de script Tampermonke
 (fiche d'une carte, fiche et icône d'une case vide) met le titre dans le presse-papiers, et c'est le joueur qui le colle dans la recherche du jeu.
 Depuis le 2026-10-22 (choix de l'utilisateur), une enchère en cours (fiche, onglet « Marché ») a un **lien** « Ouvrir dans le jeu ↗ » vers sa page du
 jeu : un simple lien, que le joueur suit ; il mise ou achète là-bas. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues, collections,
-« Copier le nom » si l'article est vérifié, Wikipédia). Le classeur ne fait que **montrer** : enchères, achats et ventes se font dans le jeu, par le
-joueur.
+« Copier le nom » si l'article est vérifié, Wikipédia). Mises et achats se font dans le jeu, par le joueur ; seules la mise en vente et son
+annulation partent du classeur, au clic (ci-dessus).

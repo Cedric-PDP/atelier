@@ -1,6 +1,6 @@
 // Création d'un échange dans le jeu (POST /api/trades/create), avec la session du joueur gardée par le serveur (game.js).
-// Seule écriture du classeur dans le jeu : une **proposition** d'échange, en attente tant que l'ami ne l'a pas acceptée
-// dans le jeu ; rien d'autre (ni acceptation, ni annulation, ni wikibidous).
+// Une **proposition** d'échange, en attente tant que l'ami ne l'a pas acceptée dans le jeu ; rien d'autre (ni acceptation,
+// ni annulation, ni wikibidous). L'autre écriture du classeur dans le jeu : la mise en vente d'une carte (sell.js).
 // Les cartes sont désignées par leur id de carte (card_id) ; le jeu veut aussi l'id d'un exemplaire (user_card_id) de
 // chaque carte, lu juste avant dans sa base. La route du jeu (Next.js, www.wiki-masters.com/api/trades) n'accepte que le
 // cookie de session de ses pages : il est refait à partir de la session gardée, jamais donné au navigateur.

@@ -27,7 +27,7 @@ serveur (une catégorie suivie a la source `wp:<nom>`).
 | Chemin | Contenu |
 |---|---|
 | `site/public/` | **seul dossier publié** : `index.html`, `assets/app.js` (Vue 3 runtime depuis cdnjs, fonctions `h()`, pas de build), `assets/match.js` (rapprochement carte ↔ article par identifiant Wikidata), `assets/propose.js` (propositions : catégories Wikipédia des cartes à ≥ 5 %), `assets/app.css`, `assets/relier.js` (le favori « Relier », servi par `/api/favori.js`), `nouveautes.json` (page « Nouveautés » et messages système du chat, écrit à la main : SPEC.md, « Nouveautés »), `manifest.webmanifest`, `sw.js` et `assets/icon-*.png` / `apple-touch-icon.png` (app installée, voir plus bas), `_headers` (CSP stricte, sans `unsafe-eval` ni `unsafe-inline`) |
-| `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` (dont `game.js` : la base du jeu, sessions et renouvellement ; `refresh.js` et `import.js` : lecture de la collection ; `cron.js` : lectures automatiques ; `marketread.js` : lecture du marché ; `cardmarket.js` : marché d'une carte à l'ouverture de sa fiche (enchères en cours, ventes, détail d'une enchère sur le site du jeu) ; `link.js` : liaison par favori « Relier » ; `trades.js` : proposition d'un échange dans le jeu) |
+| `site/functions/` | l'API : `api/[[path]].js` (routeur, au format Pages Functions), `_lib/*` (dont `game.js` : la base du jeu, sessions et renouvellement ; `refresh.js` et `import.js` : lecture de la collection ; `cron.js` : lectures automatiques ; `marketread.js` : lecture du marché ; `cardmarket.js` : marché d'une carte à l'ouverture de sa fiche (enchères en cours, ventes, détail d'une enchère sur le site du jeu) ; `link.js` : liaison par favori « Relier » ; `trades.js` : proposition d'un échange dans le jeu ; `sell.js` : mise en vente d'une carte dans le jeu et annulation d'une vente) |
 | `site/worker.js`, `site/wrangler.jsonc`, `wrangler.jsonc` | déploiement en Worker : `/api/*` vers le routeur, le reste aux fichiers de `public/` ; `scheduled()` lance les lectures automatiques (Cron Triggers `*/10 * * * *` et `5-59/20 * * * *`) ; base D1 `DB` déclarée par son identifiant. Deux configurations identiques (à part les chemins), pour que le Worker marche que son dossier racine soit `site` ou la racine de la branche : **les garder en phase** |
 | `site/schema.sql` | schéma D1 (aussi appliqué automatiquement au premier appel) |
 | `site/SPEC.md` | le contrat |
@@ -103,8 +103,9 @@ Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Work
 - Les règles de WikiMasters (« Règles de la communauté » §3, CGU §6) interdisent les outils qui jouent ou
   **interagissent à la place du joueur**. Le classeur **lit** seulement (la collection du membre, ses mises et ses ventes, les
   cotes du marché) dans la base du jeu, et, à l'ouverture d'une fiche, le détail de ses enchères sur la route du marché du site du jeu
-  (`/api/marketplace/<id>`, limitée par le jeu : plafond par minute, pause de 10 min s'il limite) ; il n'y écrit qu'une chose, au clic du membre : la **proposition d'un échange** à un ami
-  (« Proposer un échange », 2026-10-22, ce que visent ces règles : choix assumé) ; il n'imite pas un navigateur. **Depuis le 2026-10-22, il lit
+  (`/api/marketplace/<id>`, limitée par le jeu : plafond par minute, pause de 10 min s'il limite) ; il n'y écrit, au clic du membre, que la **proposition d'un échange** à un ami
+  (« Proposer un échange », 2026-10-22) et la **mise en vente** d'une de ses cartes ou l'**annulation** d'une de ses ventes tant que personne n'a misé
+  (« Mettre en vente », 2026-10-23, routes `/api/marketplace` du site du jeu) : ce que visent ces règles, choix assumé ; il n'imite pas un navigateur. **Depuis le 2026-10-22, il lit
   régulièrement et automatiquement, sans geste du joueur**, depuis des adresses Cloudflare : la collection toutes les 10 minutes
   (relue en entier si elle a changé, et au moins toutes les 6 h), le marché toutes les 20 minutes (30 requêtes à une par seconde au
   plus par passe), avec une session du jeu par membre. Ce que le jeu peut en voir, les garde-fous (limite du jeu → passe sautée,

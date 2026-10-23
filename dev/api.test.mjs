@@ -3705,6 +3705,140 @@ await test("marché d'une carte (fiche) : enchères en cours, ventes, cote rang�
   e.DB.close();
 });
 
+await test('vente : GET /api/market/sell (exemplaires, enchères actives), POST /api/market/sell (exemplaire choisi, refus, vérification, limite), POST /api/market/cancel (seulement sans mise)', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const m = await marketMember('Gaby', e);
+  const { uid } = m;
+  const me = supa.player(uid);
+  // c1 : un exemplaire favori, un brillant, un ordinaire (snapshot_rarity R : rareté d'exemplaire différente de la carte).
+  me.cards.find((x) => x.id === 'e1').starred = true;
+  me.cards.push({ ...rowOf({ id: 'c1', title: 'Carte 1', rarity: 'C', count: 2 }, { uid, eid: 'e1-brillant' }), is_shiny: true });
+  me.cards.push(rowOf({ id: 'c1', title: 'Carte 1', rarity: 'C', count: 1 }, { uid, eid: 'e1-simple' }));
+  me.cards.push(rowOf({ id: 'c1', title: 'Carte 1', rarity: 'C', count: 1 }, { uid, eid: 'e1-rare', snapshot_rarity: 'R' }));
+  putPrice(e, 'c1', { C: { p: 40, n: 5, w: null, l: 42, d: isoAgo(H) } });
+  // Une lecture du marché gardée : « Tes ventes » est mise à jour sans attendre la suivante.
+  const liveAt = isoAgo(5 * 60_000);
+  e.DB.sqlite.prepare('INSERT OR REPLACE INTO market (user_id, live, live_at) VALUES (?, ?, ?)').run(m.id, JSON.stringify({ deals: [], bids: [], sales: [] }), liveAt);
+  const live = () => JSON.parse(e.DB.sqlite.prepare('SELECT live FROM market WHERE user_id = ?').get(m.id).live);
+  const site = () => supa.calls.filter((c) => c.url.startsWith('https://www.wiki-masters.com/')).map((c) => c.method + ' ' + c.path);
+  const info = (id) => call('GET', 'market/sell?id=' + id, { key: m.u.key, e });
+  const sell = (body) => call('POST', 'market/sell', { key: m.u.key, e, body });
+  const cancel = (a) => call('POST', 'market/cancel', { key: m.u.key, e, body: { a } });
+
+  // Exemplaires par rareté d'exemplaire et brillance, favoris comptés ; enchères actives lues sur le site du jeu.
+  supa.calls = [];
+  let r = await info('c1');
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { card_id: 'c1', copies: [{ k: 'R', n: 1, fav: 0 }, { k: 'C', n: 2, fav: 1 }, { k: 'C*', n: 2, fav: 0 }], selling: 0, max: 5 });
+  assert.deepEqual(site(), ['GET /api/marketplace/mine']);
+  assert.equal((await info('a b')).status, 400);
+
+  // Corps mal formés : rien ne part au jeu.
+  supa.calls = [];
+  for (const bad of [{}, { id: 'c1', k: 'X', base: 10, minutes: 60 }, { id: 'c1', k: 'C', base: 0, minutes: 60 }, { id: 'c1', k: 'C', base: 1.5, minutes: 60 },
+    { id: 'c1', k: 'C', base: '10', minutes: 60 }, { id: 'c1', k: 'C', base: 10, minutes: 45 }, { id: 'a b', k: 'C', base: 10, minutes: 60 }]) {
+    assert.equal((await sell(bad)).status, 400, JSON.stringify(bad));
+  }
+  assert.deepEqual(site(), []);
+
+  // Mise en vente : l'exemplaire ordinaire (ni favori ni brillant), id de l'exemplaire envoyé au jeu, cookie refait.
+  supa.calls = [];
+  r = await sell({ id: 'c1', k: 'C', base: 35, minutes: 60 });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.auction.a, r.json.auction.k, r.json.auction.base, r.json.auction.minutes, r.json.url],
+    ['vente-1', 'C', 35, 60, 'https://www.wiki-masters.com/marketplace/vente-1']);
+  assert.deepEqual(site(), ['POST /api/marketplace']);
+  const post = supa.calls.find((c) => c.method === 'POST' && c.path === '/api/marketplace');
+  assert.deepEqual(JSON.parse(post.body), { card_id: 'e1-simple', base_amount: 35, duration_minutes: 60 });
+  assert.ok(post.headers.cookie.startsWith('sb-cyrxjeppjqsxxjayfrur-auth-token=base64-'));
+  for (const tok of [me.access, me.refresh]) assert.ok(!JSON.stringify(r.json).includes(tok), 'jeton absent de la réponse');
+  let sales = live().sales;
+  assert.deepEqual(sales.map((x) => [x.a, x.id, x.t, x.r, x.s, x.base, x.cur, x.bid, x.st, x.cote, x.n]), [['vente-1', 'c1', 'Carte 1', 'C', false, 35, null, false, 'run', 40, 5]]);
+  assert.equal(e.DB.sqlite.prepare('SELECT live_at FROM market WHERE user_id = ?').get(m.id).live_at, liveAt, "l'heure reste celle de la lecture");
+  // Brillante, rareté d'exemplaire R.
+  r = await sell({ id: 'c1', k: 'C*', base: 200, minutes: 720 });
+  assert.equal(JSON.parse(supa.calls.at(-1).body).card_id, 'e1-brillant');
+  r = await sell({ id: 'c1', k: 'R', base: 90, minutes: 10 });
+  assert.equal(JSON.parse(supa.calls.at(-1).body).card_id, 'e1-rare');
+  assert.deepEqual(live().sales.map((x) => x.a), ['vente-3', 'vente-2', 'vente-1'], 'les plus récentes en tête');
+  assert.equal((await info('c1')).json.selling, 3);
+  // Rareté d'exemplaire absente du jeu : 409, rien envoyé.
+  supa.calls = [];
+  r = await sell({ id: 'c1', k: 'SR', base: 10, minutes: 60 });
+  assert.deepEqual([r.status, site()], [409, []]);
+
+  // Refus du jeu (plafond d'enchères actives) : son message ; vérification anti-robot : verify ; panne : à vérifier dans le jeu.
+  supa.maxAuctions = 3;
+  r = await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /Maximum 3 enchères actives/);
+  supa.maxAuctions = 5;
+  supa.sellReply = () => ({ status: 403, body: { code: 'human_verification_required', error: 'Vérification requise' } });
+  r = await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 });
+  assert.deepEqual([r.status, r.json.verify], [409, true]);
+  supa.sellReply = () => ({ network: true });
+  r = await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 });
+  assert.equal(r.status, 502);
+  assert.match(r.json.error, /regarde dans le jeu/);
+  supa.sellReply = () => ({ status: 201, body: {} });
+  assert.equal((await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 })).status, 502, 'sans enchère renvoyée');
+  supa.sellReply = null;
+
+  // Annulation : relue d'abord sur le site du jeu, puis DELETE ; « Tes ventes » la marque terminée.
+  supa.calls = [];
+  r = await cancel('vente-1');
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { a: 'vente-1', status: 'cancelled' });
+  assert.deepEqual(site(), ['GET /api/marketplace/vente-1', 'DELETE /api/marketplace/vente-1']);
+  assert.equal(me.auctions.find((x) => x.id === 'vente-1').status, 'cancelled');
+  sales = live().sales;
+  assert.deepEqual(sales.map((x) => [x.a, x.st]), [['vente-3', 'run'], ['vente-2', 'run'], ['vente-1', 'off']]);
+  // Déjà annulée, inconnue, mal formée.
+  supa.calls = [];
+  r = await cancel('vente-1');
+  assert.deepEqual([r.status, r.json.gone, site()], [409, true, ['GET /api/marketplace/vente-1']]);
+  assert.deepEqual([(await cancel('nulle-part')).status, (await cancel('a b')).status], [409, 400]);
+  // Quelqu'un a misé : refusée, sans DELETE.
+  const v2 = me.auctions.find((x) => x.id === 'vente-2');
+  Object.assign(v2, { current_bid: 210, current_bidder_id: 'meneur', bids: [{ bidder_id: 'meneur', amount: 210 }] });
+  supa.calls = [];
+  r = await cancel('vente-2');
+  assert.deepEqual([r.status, r.json.has_bid, site()], [409, true, ['GET /api/marketplace/vente-2']]);
+  assert.equal(v2.status, 'active');
+  // La vente d'un autre : 403.
+  addAuctions({ id: 'autre', card_id: 'c0', status: 'active', seller_id: 'vendeur', base_amount: 10, current_bid: null, current_bidder_id: null, end_at: new Date(Date.now() + H).toISOString(), snapshot_rarity: 'C', is_shiny: false });
+  assert.equal((await cancel('autre')).status, 403);
+
+  // Le jeu limite : pause de 10 min des routes du marché, plus rien ne part (vente, annulation, détail).
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+  supa.siteLimit = 'automation_limit';
+  r = await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 });
+  assert.deepEqual([r.status, r.json.limited], [429, true]);
+  supa.siteLimit = null;
+  supa.calls = [];
+  for (const res of [await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 }), await cancel('vente-3'), await info('c0')]) assert.deepEqual([res.status, res.json.limited], [429, true]);
+  assert.deepEqual(site(), []);
+  // Plafond par minute partagé avec les détails d'enchère (20).
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+  for (let i = 0; i < 20; i++) assert.equal((await info('c0')).status, 200, 'lecture ' + (i + 1));
+  assert.equal((await sell({ id: 'c0', k: 'C', base: 10, minutes: 60 })).status, 429);
+
+  // Sans lecture du marché gardée : la vente passe quand même, rien à mettre à jour.
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+  e.DB.sqlite.prepare('DELETE FROM market WHERE user_id = ?').run(m.id);
+  assert.equal((await sell({ id: 'c0', k: 'C', base: 10, minutes: 30 })).status, 200);
+
+  // Sans compte relié : 401 needs_link, rien ne part.
+  const n = await signup('Noa', e);
+  supa.calls = [];
+  r = await call('POST', 'market/sell', { key: n.key, e, body: { id: 'c0', k: 'C', base: 10, minutes: 60 } });
+  assert.deepEqual([r.status, r.json.needs_link, site()], [401, true, []]);
+  clearMarketGame();
+  supa.reset();
+  e.DB.close();
+});
+
 await test('DELETE /api/me efface tout', async () => {
   await call('POST', 'targets/save', { key: alice.key, body: { name: 'À effacer', items: [] } });
   env.DB.sqlite.prepare("INSERT INTO refresh_staging (user_id, page, entries, created_at) VALUES (?, 0, '[]', ?)").run(alice.user.id, new Date().toISOString());

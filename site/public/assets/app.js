@@ -278,6 +278,9 @@
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
     merge: null,
     tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), busy, error, done}
+    // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
+    // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
+    sell: null,
     // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
     reorder: null,
     settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
@@ -3514,6 +3517,7 @@
     if (m === 'tagadd') S.tagAdd = null;
     if (m === 'merge') S.merge = null;
     if (m === 'trade') S.tradeNew = null;
+    if (m === 'sell') S.sell = null;
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -5601,7 +5605,7 @@
       if (gen === cardsGen) M.refreshing = false;
     }
   }
-  // Marché d'une carte, lu par le serveur à l'ouverture de sa fiche (GET /api/market/card : ses enchères en cours et ses
+  // Marché d'une carte, lu par le serveur à l'ouverture de sa fiche ou de « Mettre en vente » (GET /api/market/card : ses enchères en cours et ses
   // ventes conclues, dans la base du jeu), puis le détail de ses enchères les moins chères (GET /api/market/auction :
   // mises, meneur, vendeur, ta mise, sur le site du jeu ; trois à la fois, CM_DETAILS au plus par fiche). Gardés en mémoire
   // (CM_KEEP pour une carte, CM_DETAIL_KEEP pour une enchère) : rouvrir une fiche ne relit rien tout de suite.
@@ -5616,6 +5620,7 @@
   // classeur connaît l'identifiant) ou « t:<titre> » (le serveur la cherche) ; '' sans fiche ou sans compte relié.
   const ficheMarketKey = computed(() => {
     if (S.boot !== 'app' || !(S.me && S.me.session && S.me.session.linked)) return '';
+    if (S.modal === 'sell' && S.sell) return 'id:' + S.sell.c.id; // la fenêtre « Mettre en vente », par-dessus la fiche ou non
     const c = openCard.value;
     if (c) return 'id:' + c.id;
     const it = S.openMissing;
@@ -5947,6 +5952,137 @@
     if (m < 2880) return `encore ${Math.floor(m / 60)} h ${String(m % 60).padStart(2, '0')}`;
     return `encore ${Math.round(m / 1440)} jours`;
   };
+
+  // ================================================================ vente d'une carte dans le jeu (SPEC.md, « Vendre »)
+  // « Mettre en vente » (fiche d'une de tes cartes, « Bonnes affaires à vendre ») : le serveur met en vente un exemplaire
+  // dans le jeu avec ta session reliée (POST /api/market/sell) ; la fenêtre montre tout ce que le classeur sait du marché
+  // de la carte (cotes, enchères en cours, ventes, tes ventes) et propose des prix. Une vente s'annule tant que personne
+  // n'a misé (POST /api/market/cancel) : depuis la fenêtre, « Mes enchères » ou les enchères de la fiche.
+  const SELL_DURATIONS = [[10, '10 min'], [30, '30 min'], [60, '1 h'], [180, '3 h'], [360, '6 h'], [720, '12 h']];
+  const SELL_MINUTES = 60; // la durée par défaut du jeu
+  const sellLinked = () => { const sess = (S.me && S.me.session) || {}; return !!sess.linked && !sess.lost; };
+  // Prix de départ proposé pour une rareté d'exemplaire : la cote fiable, sinon la cote peu fiable ; '' sans cote.
+  function sellDefaultBase(c, k) {
+    const p = prices.value.get(String(c.id));
+    const q = p && p.v ? p.v[k] : null;
+    return q && Number.isFinite(Number(q.p)) && Number(q.p) >= 1 ? String(Math.round(Number(q.p))) : '';
+  }
+  // k : la rareté d'exemplaire à vendre (« Bonnes affaires à vendre » : celle de la ligne) ; sinon celle de tes exemplaires
+  // qui a la plus haute cote fiable, puis la plus haute rareté.
+  function openSell(c, k) {
+    const list = variantsOf(c).list.map(([x]) => x);
+    const v = (prices.value.get(String(c.id)) || {}).v || {};
+    const score = (x) => (reliable(v[x]) ? Number(v[x].p) : -1);
+    const best = k && list.includes(k) ? k : list.slice().sort((a, b) => score(b) - score(a) || variantOrder(b, a))[0] || c.rarity || 'C';
+    S.sell = { c: markRaw(c), k: best, base: sellDefaultBase(c, best), minutes: SELL_MINUTES, info: null, infoBusy: false, infoError: '',
+      busy: false, error: '', verify: false, done: null, cancelBusy: false, cancelError: '', cancelled: false };
+    S.modal = 'sell';
+    if (sellLinked()) loadSellInfo(S.sell);
+  }
+  // Tes exemplaires de la carte dans le jeu et tes enchères actives (GET /api/market/sell) : la rareté choisie est gardée
+  // si le jeu l'a, sinon la première qu'il a.
+  async function loadSellInfo(sl) {
+    sl.infoBusy = true;
+    sl.infoError = '';
+    try {
+      const r = await api('GET', '/api/market/sell?id=' + encodeURIComponent(sl.c.id));
+      if (S.sell !== sl) return;
+      sl.info = markRaw({ copies: Array.isArray(r.copies) ? r.copies : [], selling: r.selling ?? null, max: r.max ?? null });
+      const ks = sl.info.copies.map((x) => x.k);
+      if (ks.length && !ks.includes(sl.k)) setSellVariant(sl, ks[0]);
+    } catch (e) {
+      if (S.sell === sl) sl.infoError = e.message + (e.status === 429 && e.data && e.data.retry_after ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
+      if (e.data && e.data.needs_link) loadMe().catch(() => {});
+    } finally {
+      if (S.sell === sl) sl.infoBusy = false;
+    }
+  }
+  function setSellVariant(sl, k) {
+    const auto = sl.base === '' || sl.base === sellDefaultBase(sl.c, sl.k);
+    sl.k = k;
+    if (auto) sl.base = sellDefaultBase(sl.c, k); // prix encore celui proposé : suit la rareté
+    sl.error = '';
+    CM.variant = k; // la courbe des prix de vente montre cette rareté, si elle a assez de ventes
+    CM.hover = -1;
+  }
+  const sellBaseOf = (sl) => { const n = Number(String(sl.base).replace(/\s/g, '')); return Number.isInteger(n) && n >= 1 && n <= 1e7 ? n : null; };
+  // Ce que le classeur sait du marché de la carte pour une rareté d'exemplaire : cote, enchères en cours de cette rareté
+  // (la moins chère, avec ou sans mise), dernières ventes ; et tes ventes de la carte (14 jours, dernière lecture du marché).
+  function sellMarket(sl) {
+    const p = prices.value.get(String(sl.c.id));
+    const d = CM.data && CM.data.card_id === String(sl.c.id) ? CM.data : null;
+    const q = (d && d.v && d.v[sl.k]) || (p && p.v ? p.v[sl.k] : null) || null;
+    const running = d ? d.auctions.filter((a) => a.r + (a.s ? '*' : '') === sl.k && !a.mine) : [];
+    const cheapest = running.length ? auctionsByPrice(running)[0] : null;
+    const sales = d ? d.sales.filter((x) => x.k === sl.k) : [];
+    const mine = M.live && Array.isArray(M.live.sales) ? M.live.sales.filter((x) => x && x.id === String(sl.c.id)) : [];
+    return { q, d, running, cheapest, sales, mine };
+  }
+  async function sendSell(sl) {
+    if (sl.busy) return;
+    const base = sellBaseOf(sl);
+    if (base === null) { sl.error = 'Mise de départ : un nombre entier de W, 1 au moins.'; return; }
+    sl.busy = true;
+    sl.error = '';
+    sl.verify = false;
+    try {
+      const r = await api('POST', '/api/market/sell', { id: sl.c.id, k: sl.k, base, minutes: sl.minutes });
+      const a = r.auction || {};
+      sl.done = markRaw({ a: a.a, k: a.k || sl.k, base: a.base || base, minutes: a.minutes || sl.minutes, end: a.end || null, url: r.url || gameAuctionUrl(a.a) });
+      // La fiche et la fenêtre la montrent tout de suite parmi les enchères en cours ; « Mes enchères » et « à vendre » la
+      // prennent dans la lecture du marché, que le serveur vient de mettre à jour.
+      if (CM.data && CM.data.card_id === String(sl.c.id) && a.a) {
+        const k = sl.done.k;
+        const own = { a: a.a, r: k.replace('*', ''), s: k.endsWith('*'), ask: sl.done.base, bid: false, cur: null, base: sl.done.base, end: sl.done.end, atk: null, def: null, lead: false, mine: true, n: null };
+        const data = markRaw({ ...CM.data, auctions: [...CM.data.auctions.filter((x) => x.a !== a.a), own] });
+        cmCache.set(CM.key, { data, at: CM.at });
+        CM.data = data;
+      }
+      loadMarket(true);
+    } catch (e) {
+      sl.error = e.message + (e.status === 429 && e.data && e.data.retry_after && !e.data.limited ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
+      sl.verify = !!(e.data && e.data.verify);
+      if (e.data && e.data.needs_link) loadMe().catch(() => {});
+    } finally {
+      sl.busy = false;
+    }
+  }
+  // Annule une de tes ventes (le serveur vérifie d'abord sur le site du jeu que personne n'a misé). → true si annulée.
+  async function cancelSaleApi(a) {
+    await api('POST', '/api/market/cancel', { a });
+    if (CM.data && CM.data.auctions.some((x) => x.a === a)) {
+      const data = markRaw({ ...CM.data, auctions: CM.data.auctions.filter((x) => x.a !== a) });
+      cmCache.set(CM.key, { data, at: CM.at });
+      CM.data = data;
+    }
+    loadMarket(true);
+    return true;
+  }
+  async function cancelFromSell(sl) {
+    if (sl.cancelBusy || !sl.done) return;
+    sl.cancelBusy = true;
+    sl.cancelError = '';
+    try {
+      await cancelSaleApi(sl.done.a);
+      sl.cancelled = true;
+    } catch (e) {
+      sl.cancelError = e.message;
+    } finally {
+      sl.cancelBusy = false;
+    }
+  }
+  // « Annuler la vente » d'une liste (« Mes enchères », enchères de la fiche) : confirmation d'abord.
+  function askCancelSale(a, title) {
+    openConfirm({
+      title: 'Annuler la vente',
+      text: `Retirer${title ? ` « ${title} »` : ' cette carte'} du marché du jeu ? La carte revient dans ta collection. Le jeu refuse si quelqu'un a déjà misé.`,
+      ok: 'Annuler la vente',
+      danger: true,
+      run: () => cancelSaleApi(a),
+      after: () => notify('Vente annulée : la carte revient dans ta collection du jeu.'),
+      back: S.modal === 'sell' ? 'sell' : null,
+    });
+  }
 
   // ================================================================ rendu : petits morceaux
   const icon = (name, cls) => h('svg', { class: ['ic', cls || ''], 'aria-hidden': 'true', focusable: 'false' }, [h('use', { href: '#i-' + name })]);
@@ -9185,6 +9321,7 @@
               copyNameButton(c.title)]),
             h('span', { class: 'lot__line' }, [priceTag(x.price), ` · ${fmt(x.q.n)} ${plural(x.q.n, 'vente', 'ventes')}`,
               x.q.l != null ? [' · dernière ', priceTag(x.q.l, { tag: 'span' }), x.q.d ? ` le ${dateDay(x.q.d)}` : ''] : null]),
+            h('span', { class: 'lot__meta small' }, [h('button', { class: 'linkish', type: 'button', 'aria-label': `Mettre en vente « ${c.title} »`, onClick: () => openSell(c, x.k) }, 'Mettre en vente')]),
           ]);
         })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
       M.loaded ? marketMoreButton('vendre', kept.length) : null,
@@ -9211,7 +9348,8 @@
       sales.length ? h('ul', { class: 'lots' }, sales.slice(0, marketShown('ventes')).map((x) => h('li', { key: x.a, class: 'lot' }, [
         lotTitle(x),
         h('span', { class: 'lot__line' }, ['départ ', priceTag(x.base, { tag: 'span' }), x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '', vsCote(x.cur != null ? x.cur : x.base, x)]),
-        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end), gameLink(x.a)]
+        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end), gameLink(x.a),
+          x.bid ? null : h('button', { class: 'linkish', type: 'button', 'aria-label': `Annuler la vente de « ${x.t} »`, onClick: () => askCancelSale(x.a, x.t) }, 'Annuler la vente')]
           : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
       ]))) : h('p', { class: 'small muted' }, 'Aucune vente ces 14 derniers jours.'),
       marketMoreButton('ventes', sales.length),
@@ -9359,6 +9497,9 @@
     const mineBid = (det && det.my_bid) || ((M.live && Array.isArray(M.live.bids) ? M.live.bids.find((x) => x && x.a === a.a) : null) || {}).mine || null;
     const facts = [];
     if (own) facts.push(h('span', { class: 'flag ok', key: 'own' }, 'ta vente'));
+    if (own && !a.bid && !(det && (det.bids || det.gone))) {
+      facts.push(h('button', { class: 'linkish', type: 'button', key: 'cancel', onClick: () => askCancelSale(a.a) }, 'Annuler ma vente'));
+    }
     if (lead) facts.push(h('span', { class: 'flag ok', key: 'lead' }, 'tu mènes'));
     else if (mineBid) facts.push(h('span', { class: 'flag', key: 'out' }, ['dépassée · ta mise ', priceTag(mineBid, { tag: 'span' })]));
     if (det && det.gone) facts.push(h('span', { key: 'gone' }, "le jeu ne la connaît plus (finie ou retirée)"));
@@ -9581,6 +9722,7 @@
           c.starred ? fact('Favorite', 'oui, dans le jeu') : null,
         ]),
         viewCote(c),
+        h('div', { class: 'actions sell-cta' }, [h('button', { class: 'btn small', type: 'button', onClick: () => openSell(c) }, [icon('coins', 'sm'), 'Mettre en vente dans le jeu'])]),
         viewCardMarket(c),
         // Tags posés dans le jeu (lecture seule ici : ils se changent dans wiki-masters.com), avec leur couleur.
         c.gtags.length ? h('div', null, [
@@ -10327,6 +10469,125 @@
       ]),
     ]);
   }
+  // « Mettre en vente » : l'exemplaire (rareté, brillance), ce que le classeur sait du marché de la carte (cote, enchères en
+  // cours, prix de vente, tes ventes), la mise de départ avec des prix proposés, la durée ; puis la vente créée, annulable
+  // tant que personne n'a misé.
+  function modalSell() {
+    const sl = S.sell;
+    if (!sl) return null;
+    const c = sl.c;
+    const title = `Mettre en vente « ${c.title} »`;
+    const linked = sellLinked();
+    if (sl.done) {
+      const d = sl.done;
+      return h(Modal, { key: 'sell', title, wide: true, onClose: closeModal }, () => [
+        sl.cancelled
+          ? h('p', { class: 'trade-done', role: 'status' }, [h('b', null, 'Vente annulée.'), ` « ${c.title} » revient dans ta collection du jeu.`])
+          : h('p', { class: 'trade-done', role: 'status' }, [h('b', null, `« ${c.title} » est en vente dans le jeu.`),
+            ` ${variantName(d.k)}, départ `, priceTag(d.base, { tag: 'span' }), d.end ? `, fin vers ${dateShort(d.end)}.` : '.']),
+        sl.cancelled ? null : h('p', { class: 'note' }, "L'exemplaire est réservé pendant l'enchère. Tu peux l'annuler tant que personne n'a misé ; ensuite, elle va jusqu'au bout."),
+        errLine(sl.cancelError),
+        foot([
+          h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir dans le jeu ↗'),
+          sl.cancelled ? null : h('button', { class: 'btn danger', type: 'button', disabled: sl.cancelBusy, onClick: () => cancelFromSell(sl) }, sl.cancelBusy ? 'Annulation…' : 'Annuler la vente'),
+          closeBtn(),
+        ]),
+      ]);
+    }
+    const info = sl.info;
+    const copies = info ? info.copies : variantsOf(c).list.map(([k, n]) => ({ k, n, fav: 0 }));
+    const total = copies.reduce((t, x) => t + (Number(x.n) || 0), 0);
+    const chosen = copies.find((x) => x.k === sl.k) || null;
+    const mk = sellMarket(sl);
+    const q = mk.q;
+    const base = sellBaseOf(sl);
+    const full = !!(info && info.max != null && info.selling != null && info.selling >= info.max);
+    const none = !!(info && !copies.length);
+    const cols = membershipsOf(c);
+    const duration = (SELL_DURATIONS.find(([m]) => m === sl.minutes) || [0, ''])[1];
+
+    // Prix proposés : la cote, juste sous l'enchère de cette rareté la moins chère, la dernière vente.
+    const suggest = [];
+    if (q && Number(q.p) >= 1) suggest.push([Math.round(Number(q.p)), reliable(q) ? 'la cote' : 'la cote (peu fiable)']);
+    if (mk.cheapest && mk.cheapest.ask > 1) suggest.push([mk.cheapest.ask - 1, 'sous la moins chère en vente']);
+    if (q && Number(q.l) >= 1) suggest.push([Math.round(Number(q.l)), 'la dernière vente']);
+    const seen = new Set();
+    const chips = suggest.filter(([n]) => !seen.has(n) && seen.add(n));
+
+    const warns = [];
+    if (full) warns.push(`Tu as déjà ${fmt(info.selling)} enchères actives sur ${fmt(info.max)} : annules-en une, ou attends qu'une se termine.`);
+    if (none) warns.push("Le jeu ne te connaît plus d'exemplaire de cette carte : rafraîchis ton classeur.");
+    if (base !== null && reliable(q) && q.p > 0) {
+      const gap = Math.round(Math.abs(base - q.p) / q.p * 100);
+      if (base < 0.7 * q.p) warns.push(`Départ ${fmt(gap)} % sous la cote (${wfmt(q.p)}) : si personne ne surenchérit, elle partira à ce prix.`);
+      else if (base > 1.5 * q.p) warns.push(`Départ ${fmt(gap)} % au-dessus de la cote (${wfmt(q.p)}) : elle risque de ne pas trouver preneur.`);
+    }
+    if (base !== null && mk.cheapest && base > mk.cheapest.ask) {
+      const under = mk.running.filter((a) => a.ask < base).length;
+      warns.push(`${fmt(under)} ${plural(under, 'enchère', 'enchères')} de cette rareté ${plural(under, 'part', 'partent')} déjà moins cher (dès ${wfmt(mk.cheapest.ask)}).`);
+    }
+    if (cols.length && total <= 1) warns.push(`C'est ton seul exemplaire, et il sert à ${cols.slice(0, 3).map((col) => `« ${col.name} »`).join(', ')}${cols.length > 3 ? '…' : ''} : il quittera ${plural(cols.length, 'cette collection', 'ces collections')} s'il se vend.`);
+    if (chosen && chosen.fav && chosen.fav >= chosen.n) warns.push(`${chosen.n > 1 ? 'Tes exemplaires' : 'Ton exemplaire'} de cette rareté ${chosen.n > 1 ? 'sont favoris' : 'est favori'} dans le jeu.`);
+
+    const facts = [];
+    if (q) {
+      facts.push(fact(`Cote · ${variantName(sl.k)}`, [priceTag(q.p, { approx: !reliable(q), title: reliable(q) ? null : 'Moins de 3 ventes : cote peu fiable' }), h('span', { class: 'muted' }, ` · ${fmt(q.n)} ${plural(q.n, 'vente', 'ventes')}`)]));
+      if (q.l != null) facts.push(fact('Dernière vente', [priceTag(q.l, { tag: 'span' }), q.d ? ` le ${dateDay(q.d)}` : '']));
+      if (q.w != null && q.w > 0) facts.push(fact('Sur 7 jours', `${pctOf(q.p, q.w)} (avant : ${wfmt(q.w)})`));
+    } else facts.push(fact(`Cote · ${variantName(sl.k)}`, 'pas de vente lue'));
+    if (mk.d) {
+      facts.push(fact('En vente maintenant', mk.running.length ? [`${fmt(mk.running.length)} · dès `, priceTag(mk.cheapest.ask, { tag: 'span' }), mk.cheapest.bid ? ' (avec mise)' : ''] : 'aucune dans cette rareté'));
+      facts.push(fact('Ventes conclues', mk.sales.length ? `${fmt(mk.sales.length)} dans cette rareté` : 'aucune dans cette rareté'));
+    }
+    if (info && info.max != null && info.selling != null) facts.push(fact('Tes enchères actives', `${fmt(info.selling)} / ${fmt(info.max)}`));
+
+    const mineSales = mk.mine.slice(0, 5);
+    const left = [
+      h('fieldset', { class: 'sell-field' }, [
+        h('legend', null, ['Exemplaire', sl.infoBusy ? h('span', { class: 'n' }, ' · lecture dans le jeu…') : null]),
+        h('div', { class: 'cmk__keys', role: 'group', 'aria-label': "Rareté de l'exemplaire" }, copies.map((x) => h('button', {
+          key: x.k, type: 'button', class: ['chip-btn', { on: x.k === sl.k }], 'aria-pressed': String(x.k === sl.k), disabled: sl.busy, onClick: () => setSellVariant(sl, x.k),
+        }, `${variantName(x.k)}${x.n > 1 ? ' · ×' + fmt(x.n) : ''}${x.fav ? ' · favori' : ''}`))),
+        sl.infoError ? h('p', { class: 'small warn', role: 'status' }, sl.infoError) : null,
+      ]),
+      h('div', { class: 'facts sell-facts' }, facts),
+      h('label', { class: 'sell-field', for: 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
+        h('span', { class: 'sell-input' }, [h('input', { id: 'sell-base', class: 'field', type: 'number', min: '1', step: '1', inputmode: 'numeric', value: sl.base, disabled: sl.busy,
+          onInput: (e) => { sl.base = e.target.value; sl.error = ''; } }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
+      chips.length ? h('div', { class: 'cmk__keys', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
+        key: label, type: 'button', class: ['chip-btn', { on: base === n }], disabled: sl.busy, onClick: () => { sl.base = String(n); sl.error = ''; },
+      }, `${label} · ${wfmt(n)}`))) : null,
+      h('div', { class: 'sell-field' }, [h('span', { class: 'sell-label', id: 'sell-dur' }, 'Durée'),
+        h('div', { class: 'cmk__keys', role: 'group', 'aria-labelledby': 'sell-dur' }, SELL_DURATIONS.map(([m, label]) => h('button', {
+          key: m, type: 'button', class: ['chip-btn', { on: sl.minutes === m }], 'aria-pressed': String(sl.minutes === m), disabled: sl.busy, onClick: () => { sl.minutes = m; },
+        }, label)))]),
+      warns.length ? h('ul', { class: 'sell-warns', role: 'status' }, warns.map((w, i) => h('li', { key: i, class: 'warn' }, w))) : null,
+      h('p', { class: 'merge-sum', role: 'status' }, base !== null ? [`${variantName(sl.k)} · départ `, priceTag(base, { tag: 'span' }), ` · ${duration}`] : 'Indique une mise de départ (en W, 1 au moins).'),
+    ];
+    const right = linked ? [
+      mineSales.length ? h('div', { class: 'sell-mine' }, [h('h3', null, ['Tes ventes de cette carte ', h('span', { class: 'hint-inline' }, '14 derniers jours')]),
+        h('ul', { class: 'lots' }, mineSales.map((x) => h('li', { key: x.a, class: 'lot' }, [
+          h('span', { class: 'lot__line' }, [variantName(x.r + (x.s ? '*' : '')), ' · départ ', priceTag(x.base, { tag: 'span' }),
+            x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '']),
+          h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end)]
+            : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
+        ])))]) : null,
+      viewCardMarket(c),
+    ] : [];
+    return h(Modal, { key: 'sell', title, wide: true, cls: 'sell', onClose: closeModal }, () => [
+      h('p', null, "Le classeur met un exemplaire aux enchères dans le jeu, à ton nom, avec ta session reliée. Il est réservé pendant l'enchère ; tu peux l'annuler tant que personne n'a misé."),
+      linked ? null : h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : le classeur met en vente avec ta session. ",
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); closeCard(); openSyncTab(); } }, 'Relier mon compte')]),
+      h('div', { class: 'sell-cols' }, [h('div', { class: 'sell-main' }, left), right.length ? h('div', { class: 'sell-market' }, right) : null]),
+      errLine(sl.error),
+      sl.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir ma collection dans le jeu ↗')]) : null,
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: sl.busy || !linked || base === null || full || none, onClick: () => sendSell(sl) },
+          sl.busy ? 'Mise en vente…' : 'Mettre en vente dans le jeu'),
+      ]),
+    ]);
+  }
   // Lien d'un autre classeur ouvert alors qu'une clé est déjà gardée : on demande.
   function modalSwitch() {
     const ask = S.switchAsk;
@@ -10353,7 +10614,7 @@
     ]);
   }
 
-  const MODALS = { trade: modalTrade, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { trade: modalTrade, sell: modalSell, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

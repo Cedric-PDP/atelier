@@ -216,6 +216,10 @@ function mockApi() {
   const self = {
     noRev: false,
     calls,
+    sold: [], // ventes créées (POST /api/market/sell)
+    cancelled: [], // ventes annulées (POST /api/market/cancel)
+    sellFail: null,
+    cancelFail: null,
     conflicts: [], // enregistrements conditionnels refusés (409) : ids des collections
     get st() { return users[0]; },
     users,
@@ -484,6 +488,37 @@ function mockApi() {
         const id = new URL('http://x' + p).searchParams.get('id');
         const dd = (self.auctionDetails || {})[id];
         return json(200, dd || { a: id, gone: true });
+      }
+      // Mettre en vente (SPEC.md, « Vendre ») : exemplaires d'après les cartes du membre (variants), enchères actives d'après
+      // sa lecture du marché ; la vente rejoint « Tes ventes » comme le fait le serveur. self.sold = ventes créées ;
+      // self.sellFail / self.cancelFail = {status, error, extra} : la prochaine est refusée.
+      if (p.startsWith('/api/market/sell') && method === 'GET') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        const id = new URL('http://x' + p).searchParams.get('id');
+        const c = st.cards.find((x) => x.id === id);
+        const copies = c ? Object.entries(c.variants || { [c.rarity + (c.shiny ? '*' : '')]: c.count || 1 }).map(([k, n]) => ({ k, n, fav: c.starred ? n : 0 })) : [];
+        const live = st.market && st.market.live;
+        return json(200, { card_id: id, copies, selling: live ? live.sales.filter((x) => x.st === 'run').length : 0, max: 5 });
+      }
+      if (p === '/api/market/sell' && method === 'POST') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        if (self.sellFail) { const r = self.sellFail; self.sellFail = null; return json(r.status, { error: r.error, ...(r.extra || {}) }); }
+        const c = st.cards.find((x) => x.id === body.id);
+        if (!c || !Number.isInteger(body.base) || body.base < 1) return json(400, { error: 'Vente invalide.' });
+        const a = 'vente-' + (self.sold.length + 1);
+        const end = new Date(Date.now() + body.minutes * 60_000).toISOString();
+        self.sold.push({ a, ...body });
+        const live = st.market && st.market.live;
+        if (live) live.sales.unshift({ a, id: c.id, t: c.title, r: body.k.replace('*', ''), s: body.k.endsWith('*'), img: null, end, cote: null, n: null, base: body.base, cur: null, bid: false, st: 'run' });
+        return json(200, { auction: { a, k: body.k, base: body.base, minutes: body.minutes, end }, url: 'https://www.wiki-masters.com/marketplace/' + a });
+      }
+      if (p === '/api/market/cancel' && method === 'POST') {
+        if (self.cancelFail) { const r = self.cancelFail; self.cancelFail = null; return json(r.status, { error: r.error, ...(r.extra || {}) }); }
+        const live = st.market && st.market.live;
+        const x = live && live.sales.find((y) => y.a === body.a);
+        if (x) x.st = 'off';
+        self.cancelled.push(body.a);
+        return json(200, { a: body.a, status: 'cancelled' });
       }
       if (p.startsWith('/api/market/prices') && method === 'GET') {
         const part = new URL('http://x' + p).searchParams.get('part') || '0';
@@ -4756,6 +4791,67 @@ async function main() {
     // Aucun « 12 W » (espace avant le W) ; les montants de l'onglet en vert (classe w), hors écarts (hausse, baisse).
     check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
     check(d.getElementById('panel-marche').querySelectorAll('.w').length >= 12 && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W', "montants de l'onglet Marché : classe w attendue");
+    // « Mettre en vente » depuis « Bonnes affaires à vendre » (seuil 450W : Vente 24, 23, 22) : la fenêtre lit les
+    // exemplaires dans le jeu et le marché de la carte, propose la cote, prévient d'un départ bien sous la cote ; la vente
+    // part au serveur (rareté, prix, durée), puis s'annule depuis la fenêtre.
+    {
+      const md = () => d.querySelectorAll('.modal')[0] || null;
+      const mdText = () => (md() ? text(md()) : '');
+      const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
+      const sell = () => section('vendre');
+      const row24 = sell().querySelectorAll('li').find((n) => text(n).includes('Vente 24'));
+      const from = apiLog.length;
+      row24.querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
+      await settle(60);
+      check(md() && md().classList.contains('sell') && mdText().includes('Mettre en vente « Vente 24 »'), 'fenêtre de vente absente : ' + mdText().slice(0, 200));
+      // Exemplaires lus dans le jeu ; le marché de la carte, lu à l'ouverture de sa fiche juste avant, vient du cache.
+      check(await waitFor(() => apiLog.slice(from).includes('GET /api/market/sell?id=v24')) && !apiLog.slice(from).includes('GET /api/market/card?id=v24'), 'lectures de la fenêtre : ' + apiLog.slice(from).join(', '));
+      await settle(40);
+      check(String(d.getElementById('sell-base').value) === '505' && inMd('la cote · 505W') && inMd('la dernière vente · 504W'), 'prix proposés : ' + mdText());
+      check(mdText().includes('Cote · Commune505W · 5 ventes') && mdText().includes('Tes enchères actives1 / 5') && mdText().includes('Commune · départ 505W · 1 h'), 'marché dans la fenêtre : ' + mdText());
+      check(mdText().includes('Enchères en cours') && mdText().includes('Personne ne vend cette carte en ce moment.'), 'enchères de la carte dans la fenêtre : ' + mdText());
+      type(d.getElementById('sell-base'), '300');
+      await settle(30);
+      check(mdText().includes('Départ 41 % sous la cote (505W)'), 'avertissement sous la cote : ' + mdText());
+      inMd('3 h').click();
+      await settle(30);
+      inMd('Mettre en vente dans le jeu').click();
+      await settle(80);
+      check(api.sold.length === 1 && api.sold[0].id === 'v24' && api.sold[0].k === 'C' && api.sold[0].base === 300 && api.sold[0].minutes === 180, 'vente envoyée : ' + JSON.stringify(api.sold));
+      check(mdText().includes('« Vente 24 » est en vente dans le jeu.') && mdText().includes('Commune, départ 300W') && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/vente-1'),
+        'vente faite : ' + mdText());
+      inMd('Annuler la vente').click();
+      await settle(80);
+      check(api.cancelled.join() === 'vente-1' && mdText().includes('Vente annulée.') && !inMd('Annuler la vente'), 'annulation depuis la fenêtre : ' + mdText());
+      inMd('Fermer').click();
+      await settle(40);
+      check(!md(), 'fenêtre de vente pas refermée');
+      // Refus du jeu (vérification anti-robot) : le message et un lien vers le jeu.
+      type(d.getElementById('sell-min'), '100');
+      await settle(40);
+      sell().querySelectorAll('li').find((n) => text(n).includes('Vente 23')).querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
+      await settle(80);
+      api.sellFail = { status: 409, error: 'Le jeu demande de vérifier que tu es bien humain.', extra: { verify: true } };
+      inMd('Mettre en vente dans le jeu').click();
+      await settle(80);
+      check(mdText().includes('Le jeu demande de vérifier que tu es bien humain.') && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/collection'), 'vérification demandée : ' + mdText());
+      inMd('Annuler').click();
+      await settle(40);
+      type(d.getElementById('sell-min'), '450');
+      await settle(40);
+      // « Mes enchères » : une vente en cours sans mise s'annule (confirmation) ; le jeu refuse si quelqu'un a misé.
+      const salesLi = () => d.getElementById('panel-marche').querySelectorAll('li').filter((n) => text(n).includes('Favorite F') && text(n).includes('sans enchère'));
+      check(salesLi().length === 1 && salesLi()[0].querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'annulation dans « Mes enchères » absente');
+      api.cancelFail = { status: 409, error: "Quelqu'un a déjà misé sur cette vente : le jeu ne permet plus de l'annuler.", extra: { has_bid: true } };
+      salesLi()[0].querySelectorAll('button').find((b) => text(b) === 'Annuler la vente').click();
+      await settle(40);
+      check(mdText().includes('Retirer « Favorite F » du marché du jeu ?'), 'confirmation absente : ' + mdText());
+      inMd('Annuler la vente').click();
+      await settle(80);
+      check(mdText().includes("Quelqu'un a déjà misé sur cette vente"), 'refus du jeu absent : ' + mdText());
+      inMd('Annuler').click();
+      await settle(40);
+    }
     // Fiche d'une carte possédée (depuis « Mes cartes ») : cote de chaque exemplaire.
     d.getElementById('tab-cartes').click();
     await settle(60);

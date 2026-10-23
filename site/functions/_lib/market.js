@@ -369,6 +369,25 @@ export async function writeLive(db, user, body) {
   return { ok: true, known: Object.keys(kept).length };
 }
 
+// « Tes ventes » de la dernière lecture du marché, changées sans attendre la suivante (mise en vente ou annulation depuis
+// le classeur, sell.js) : edit(sales) rend la nouvelle liste, contrôlée comme une lecture (cleanLive). Rien sans lecture
+// gardée ; jamais par-dessus une lecture arrivée entre-temps (live_at comparé), dont l'heure reste celle de la lecture.
+export async function patchLiveSales(db, user, edit) {
+  const row = await db.prepare('SELECT live, live_at FROM market WHERE user_id = ?1').bind(user.id).first();
+  if (!row || !row.live || !(row.live_at >= new Date(Date.now() - LIVE_MS).toISOString())) return false;
+  let lv;
+  try {
+    lv = JSON.parse(row.live);
+  } catch {
+    return false;
+  }
+  lv.sales = edit(Array.isArray(lv.sales) ? lv.sales : []).slice(0, KINDS.sales.max);
+  const live = JSON.stringify(cleanLive(lv));
+  if (byteLength(live) > LIVE_BYTES) return false;
+  const done = await db.prepare('UPDATE market SET live = ?2 WHERE user_id = ?1 AND live_at = ?3').bind(user.id, live, row.live_at).run();
+  return !!(done.meta && done.meta.changes);
+}
+
 // ---------------------------------------------------------------- la page (clé principale)
 // GET /api/market : valeur du classeur (calculée maintenant, et le point du jour mis à jour s'il a changé : les cotes ont
 // pu bouger depuis, relues par un autre membre), son historique (un point par jour), la dernière lecture du marché (de

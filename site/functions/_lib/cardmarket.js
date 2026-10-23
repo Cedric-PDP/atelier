@@ -21,8 +21,8 @@ const RANKS = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
 const DAY = 86400_000;
 const SALES_MAX = 1000; // ventes conclues rendues (les plus récentes), pour la courbe des prix
 const AUCTIONS_MAX = 100;
-// Lectures par minute et par membre : fiches (base du jeu, 2 ou 3 requêtes chacune) et détails d'enchère (site du jeu,
-// limité à environ 30 par minute pour ses routes du marché).
+// Lectures par minute et par membre : fiches (base du jeu, 2 ou 3 requêtes chacune) et appels aux routes du marché du
+// site du jeu (limité à environ 30 par minute) : détails d'enchère, et mises en vente et annulations (sell.js).
 export const PER_MINUTE = { card: 12, site: 20 };
 export const LIMITED_MS = 10 * 60_000; // pause des détails d'enchère pour un membre que le jeu a limité
 // Le site du jeu renouvelle lui-même une session qui expire bientôt (Set-Cookie) : il n'est appelé qu'avec un jeton valable
@@ -43,7 +43,7 @@ const bidCount = (a) => {
 };
 
 // Une lecture de plus pour ce membre (kind : card | site), dans sa minute. 429 au-delà du plafond, ou pendant une pause.
-async function spend(db, userId, kind) {
+export async function spend(db, userId, kind) {
   const now = Date.now();
   const win = new Date(now).toISOString().slice(0, 16);
   const row = await db.prepare(`INSERT INTO game_reads (user_id, kind, win, n) VALUES (?1, ?2, ?3, 1)
@@ -60,7 +60,7 @@ async function spend(db, userId, kind) {
   }
 }
 
-const block = (db, userId) => db.prepare('UPDATE game_reads SET blocked_until = ?3 WHERE user_id = ?1 AND kind = ?2')
+export const block = (db, userId) => db.prepare('UPDATE game_reads SET blocked_until = ?3 WHERE user_id = ?1 AND kind = ?2')
   .bind(userId, 'site', new Date(Date.now() + LIMITED_MS).toISOString()).run();
 
 // Carte du jeu d'après son titre (la version française d'abord) ; null si aucune carte n'a ce titre.
@@ -142,16 +142,13 @@ export async function cardMarket(env, user, _body, request) {
   return { card_id: id, at, auctions, more: running.length > AUCTIONS_MAX, sales, v };
 }
 
-// GET /api/market/auction?id=<id de l'enchère> → {a, gone, status, bids, bidders, leader, seller, leading, selling, my_bid,
-// cur} : lu sur la route du site du jeu. gone : le jeu ne connaît plus cette enchère. Pseudos du meneur et du vendeur
-// montrés, jamais gardés.
-export async function auctionDetail(env, user, _body, request) {
-  const id = new URL(request.url).searchParams.get('id') || '';
-  if (!AUCTION_ID.test(id)) throw new HttpError(400, 'Enchère : identifiant mal formé (« id »).');
+// Session pour une route du site du jeu, comptée dans les appels de la minute (kind) : renouvelée avant sous bail si son
+// jeton expire dans moins de SITE_MARGIN_MS (le site le ferait sinon lui-même). 409 si une lecture tient le bail.
+export async function siteSession(env, user, kind) {
   const db = env.DB;
   let s = await sessionOf(env, user);
   s.via = 'clic';
-  await spend(db, user.id, 'site');
+  await spend(db, user.id, kind);
   if ((Number(s.auth.expires_at) || 0) * 1000 - Date.now() < SITE_MARGIN_MS) {
     const lease = await acquireLease(db, user.id, 60_000);
     if (!lease) throw new HttpError(409, 'Une lecture de ton compte du jeu est en cours et ta session doit être renouvelée : réessaie dans un instant.');
@@ -164,6 +161,17 @@ export async function auctionDetail(env, user, _body, request) {
       await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
     }
   }
+  return s;
+}
+
+// GET /api/market/auction?id=<id de l'enchère> → {a, gone, status, bids, bidders, leader, seller, leading, selling, my_bid,
+// cur} : lu sur la route du site du jeu. gone : le jeu ne connaît plus cette enchère. Pseudos du meneur et du vendeur
+// montrés, jamais gardés.
+export async function auctionDetail(env, user, _body, request) {
+  const id = new URL(request.url).searchParams.get('id') || '';
+  if (!AUCTION_ID.test(id)) throw new HttpError(400, 'Enchère : identifiant mal formé (« id »).');
+  const db = env.DB;
+  const s = await siteSession(env, user, 'site');
   let res;
   try {
     res = await gameFetch(env, user, s, `/api/marketplace/${encodeURIComponent(id)}`, { headers: { referer: 'https://www.wiki-masters.com/marketplace/' + id } });
