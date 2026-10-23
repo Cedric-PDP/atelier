@@ -96,13 +96,13 @@
     const parts = [];
     let w = 0, hgt = 0, dpr = 1, raf = 0, on = true;
     function size() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       w = canvas.clientWidth; hgt = canvas.clientHeight;
       canvas.width = Math.round(w * dpr); canvas.height = Math.round(hgt * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     size();
-    const ambient = reduced() ? 18 : 70;
+    const ambient = reduced() ? 14 : 45;
     for (let i = 0; i < ambient; i++) parts.push(bokeh(true));
     function bokeh(anywhere) {
       return { k: 'b', x: rand(0, w), y: anywhere ? rand(0, hgt) : hgt + 20, vx: rand(-0.15, 0.15), vy: rand(-0.6, -0.15), s: rand(1, 4.5), c: pick(PALETTE), a: rand(0.25, 0.8), tw: rand(0, 6.28) };
@@ -204,7 +204,8 @@
         ]),
       ]),
     );
-    const back = el('div', 'kk-face kk-back', [heart(), el('b', null, 'Kokoro')]);
+    front.append(el('i', 'kk-dim'));
+    const back = el('div', 'kk-face kk-back', [heart(), el('b', null, 'Kokoro'), el('i', 'kk-dim')]);
     const card = el('div', 'kk-card', [back, front]);
     return card;
   }
@@ -373,23 +374,21 @@
       live.textContent = 'Ouverture du booster…';
       const [cx, cy] = center(pack);
       pack.classList.add('is-charge');
-      for (let k = 0; k < 6; k++) later(() => sky.converge(cx, cy, 26), k * 110);
+      for (let k = 0; k < 6; k++) later(() => sky.converge(cx, cy, 22), k * 110);
       await wait(800);
       if (!alive) return;
       pack.classList.remove('is-charge');
       pack.classList.add('is-torn');
-      sky.burst(cx, cy - pack.offsetHeight * 0.42, PALETTE, 60, 0.8);
+      sky.burst(cx, cy - pack.offsetHeight * 0.42, PALETTE, 50, 0.8);
       await wait(650);
       if (!alive) return;
       flash.classList.remove('is-on'); void flash.offsetWidth; flash.classList.add('is-on');
       wave(false);
       quake();
-      sky.burst(cx, cy, PALETTE, 180, 1.4);
+      sky.burst(cx, cy, PALETTE, 140, 1.4);
       packWrap.classList.add('is-gone');
       buildRing();
-      await wait(1900);
-      if (!alive) return;
-      await reveal();
+      await spin();
     }
 
     function buildRing() {
@@ -401,63 +400,68 @@
         const lift = el('div', 'kk-lift', [cardEl(c, N)]);
         const slot = el('div', 'kk-slot is-arrive', [lift]);
         slot.style.setProperty('--i', String(i));
-        slot.style.setProperty('--d', (0.15 + i * 0.07).toFixed(2) + 's');
+        slot.style.setProperty('--d', (i * 0.06).toFixed(2) + 's');
         lift.addEventListener('click', () => {
-          if (swiped || stage === 'reveal') return;
-          if (stage !== 'ready') return;
+          if (swiped || stage !== 'ready') return;
           if (i === front()) { zoom = !zoom; resetTilt(); paint(); } else goTo(i);
         });
         lift.addEventListener('pointermove', (e) => { if (stage === 'ready' && i === front() && e.pointerType !== 'touch') tilt(e, lift); });
         lift.addEventListener('pointerleave', () => { if (i === front()) resetTilt(); });
         ring.append(slot);
-        const d = el('i', 'r' + c.r);
-        dots.append(d);
+        dots.append(el('i', 'r' + c.r));
         return slot;
       });
       pos = 0;
       zoom = false;
-      // La roue arrive en tournant (un tour et demi), puis se pose sur la première carte.
-      ring.classList.remove('is-intro');
-      ring.style.setProperty('--kk-spin', '540deg');
-      void ring.offsetWidth;
+      snap(0);
       root.classList.add('is-ring');
-      ring.classList.add('is-intro');
-      paint();
-      later(() => { ring.classList.remove('is-intro'); slots.forEach((s) => s.classList.remove('is-arrive')); }, 2700);
+      later(() => slots.forEach((s) => s.classList.remove('is-arrive')), 1700);
+    }
+    // Pose la roue sur un angle sans transition.
+    function snap(p) {
+      ring.classList.add('is-snap');
+      ring.style.setProperty('--kk-spin', (-p * 360 / N) + 'deg');
+      void ring.offsetWidth;
+      ring.classList.remove('is-snap');
     }
 
-    async function flip(i) {
-      const s = slots[i];
+    function flip(i) {
+      const card = slots[i] && slots[i].querySelector('.kk-card');
+      if (!card || card.classList.contains('is-up')) return;
       const c = cards[i];
-      const card = s.querySelector('.kk-card');
       card.classList.add('is-up', 'is-pop');
       later(() => card.classList.remove('is-pop'), 1000);
       if (c.r === 'L') legends++;
       if (skip) return;
-      const [x, y] = center(s.querySelector('.kk-lift'));
+      const [x, y] = center(ring);
       if (c.r === 'L') {
         wave(true);
-        quake();
-        sky.burst(x, y, GOLD, 160, 1.3);
-        later(() => sky.burst(x, y, GOLD, 80, 0.8), 260);
+        sky.burst(x, y, GOLD, 110, 1.3);
       } else {
-        sky.burst(x, y, CYAN, 60, 0.9);
+        sky.burst(x, y, CYAN, 35, 0.9);
       }
     }
 
-    async function reveal() {
+    // La roue sort et tourne vite pendant deux tours en retournant les cartes, ralentit, puis se pose sur la première.
+    const SPIN_MS = 4400;
+    let endSpin = null;
+    function skipReveal() { skip = true; if (endSpin) endSpin(); }
+    async function spin() {
       stage = 'reveal';
-      live.textContent = 'Les cartes se révèlent. Appuie sur une touche pour tout montrer.';
-      ring.classList.remove('is-intro');
-      for (let i = 0; i < N && alive; i++) {
-        if (!skip) { pos = i; paint(); await wait(i === 0 ? 150 : 520); }
-        if (!alive) return;
-        await flip(i);
-        if (!skip) await wait(cards[i].r === 'L' ? 950 : 420);
-      }
+      live.textContent = 'La roue tourne… Appuie sur une touche pour l’arrêter.';
+      root.classList.add('is-spinning');
+      void ring.offsetWidth;
+      pos = 2 * N;
+      ring.classList.add('is-spin');
+      ring.style.setProperty('--kk-spin', (-pos * 360 / N) + 'deg');
+      slots.forEach((s, i) => later(() => flip(i), 650 + i * 160));
+      await new Promise((r) => { endSpin = r; later(r, reduced() ? 300 : SPIN_MS); });
+      endSpin = null;
       if (!alive) return;
-      if (!skip) await wait(300);
-      pos = N; // un tour complet : retour sur la première carte
+      if (skip) snap(pos);
+      ring.classList.remove('is-spin');
+      slots.forEach((s, i) => flip(i));
+      root.classList.remove('is-spinning');
       stage = 'ready';
       paint();
       tally.replaceChildren(`Booster n° ${boosters} · `, el('b', null, `${legends} L`), ` en tout`);
@@ -525,7 +529,7 @@
         f[j].focus();
         return;
       }
-      if (stage === 'reveal') { skip = true; e.preventDefault(); return; }
+      if (stage === 'reveal') { skipReveal(); e.preventDefault(); return; }
       if (stage === 'pack' && (k === 'Enter' || k === ' ') && document.activeElement !== closeBtn) { e.preventDefault(); openPack(); return; }
       if (stage !== 'ready') return;
       if (k === 'ArrowRight' || k === 'ArrowDown') { e.preventDefault(); go(1); }
@@ -535,7 +539,7 @@
     let acc = 0, lastWheel = 0;
     root.addEventListener('wheel', (e) => {
       e.preventDefault();
-      if (stage === 'reveal') { skip = true; return; }
+      if (stage === 'reveal') { skipReveal(); return; }
       if (stage !== 'ready') return;
       const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
       acc += e.deltaMode === 1 ? d * 30 : d;
@@ -543,7 +547,7 @@
       if (Math.abs(acc) > 50 && now - lastWheel > 170) { go(acc > 0 ? 1 : -1); acc = 0; lastWheel = now; }
     }, { passive: false });
     let sx = null, sy = 0, swiped = false;
-    root.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; swiped = false; if (stage === 'reveal') skip = true; });
+    root.addEventListener('pointerdown', (e) => { sx = e.clientX; sy = e.clientY; swiped = false; if (stage === 'reveal') skipReveal(); });
     root.addEventListener('pointerup', (e) => {
       if (sx == null) return;
       const dx = e.clientX - sx, dy = e.clientY - sy;
