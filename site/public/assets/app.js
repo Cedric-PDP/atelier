@@ -10957,7 +10957,40 @@
   const TagList = { name: 'TagList', setup: () => () => h('datalist', { id: 'taglist' }, tagList.value.map((t) => h('option', { key: t.name, value: t.name }))) };
   const Welcome = { name: 'Welcome', setup: () => viewWelcome };
 
+  // Kokoro Farmer (2026-10-23) : page cachée, un faux booster de cartes UR et L pour rire (assets/kokoro.js), ouverte
+  // seulement par le code Konami tapé au clavier, hors d'un champ de saisie. Ses fichiers ne se chargent qu'à ce moment.
+  const KONAMI = ['arrowup', 'arrowup', 'arrowdown', 'arrowdown', 'arrowleft', 'arrowright', 'arrowleft', 'arrowright', 'b', 'a'];
+  let konamiKeys = [];
+  let kokoroLoading = null;
+  function loadKokoro() {
+    if (window.KokoroFarmer) return Promise.resolve();
+    if (!kokoroLoading) {
+      const add = (tag, attrs) => new Promise((ok, ko) => {
+        const n = Object.assign(document.createElement(tag), attrs, { onload: ok, onerror: ko });
+        document.head.append(n);
+      });
+      kokoroLoading = Promise.all([add('link', { rel: 'stylesheet', href: '/assets/kokoro.css' }), add('script', { src: '/assets/kokoro.js' })])
+        .catch((err) => { kokoroLoading = null; throw err; });
+    }
+    return kokoroLoading;
+  }
+  // Les cartes du booster : les tiennes, puis les éléments de tes collections (rien n'est modifié).
+  function kokoroPool() {
+    const pool = cards.value.map((c) => ({ title: c.title, image: c.image, rarity: c.rarity, category: c.category, atk: c.atk, def: c.def }));
+    for (const t of targets.value) for (const it of t.items) if (!it.sep && it.title) pool.push({ title: it.title, image: it.image, rarity: it.rarity, category: it.description });
+    return pool;
+  }
+  function watchKonami(e) {
+    const tag = (e.target && e.target.tagName) || '';
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || (e.target && e.target.isContentEditable)) { konamiKeys = []; return; }
+    konamiKeys = [...konamiKeys, String(e.key || '').toLowerCase()].slice(-KONAMI.length);
+    if (konamiKeys.join() !== KONAMI.join()) return;
+    konamiKeys = [];
+    loadKokoro().then(() => window.KokoroFarmer.open(kokoroPool())).catch(() => {});
+  }
+
   function onKey(e) {
+    watchKonami(e);
     if (S.boot !== 'app') return;
     if (e.key === 'Escape') {
       if (S.modal) { e.preventDefault(); closeModal(); return; }
