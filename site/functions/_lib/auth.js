@@ -9,7 +9,7 @@ import { eraseChatOf } from './chat.js';
 
 export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
   + 'shared_targets, last_sync, game_pseudo, game_session_enc, game_uid, game_session_v, game_session_at, game_session_lost, sync_lock, '
-  + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until';
+  + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until, wikibidous, wikibidous_at';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -153,6 +153,8 @@ export async function getMe(env, user) {
     // Dernière ligne du journal des synchros ({at, kind, via, result, message}, synclog.js), ou null.
     last_sync: user.last_sync ? raw(user.last_sync) : null,
     fast_sync: !!user.fast_sync, // réglage « Synchro rapide du marché » (essai, marketread.js)
+    // Solde de wikibidous lu dans le jeu à la dernière synchro (game.js, readBalance) : {n, at}, ou null s'il n'a jamais été lu.
+    wikibidous: user.wikibidous === null || user.wikibidous === undefined ? null : { n: user.wikibidous, at: user.wikibidous_at || null },
     session: sessionView(user),
   };
 }

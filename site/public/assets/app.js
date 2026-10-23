@@ -277,7 +277,7 @@
     // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
     merge: null,
-    tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), busy, error, done}
+    tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
     sell: null,
@@ -327,7 +327,7 @@
   const newIds = shallowRef([]);
   // Membres qui montrent leurs cartes (« Entre amis ») : [{id (public), name, count, fetched_at, cards | null, tshare
   // (montre aussi ses collections), tmark (leur nombre et dernier changement), targets ([{id, name, items:[{title, qid?}]}]
-  // | null)}], figés. En mémoire seulement, jamais dans IndexedDB (cardCache ne garde que ton classeur). friendsGen change à chaque
+  // | null), wb (solde de wikibidous lu à sa dernière synchro, {n, at} | null)}], figés. En mémoire seulement, jamais dans IndexedDB (cardCache ne garde que ton classeur). friendsGen change à chaque
   // remise à zéro (classeur changé, partage coupé) : une lecture partie avant est écartée.
   const friendList = shallowRef([]);
   // Prénoms des membres qui montrent leurs cartes, pour les mentions du chat (« @ ») quand « Entre amis » n'a pas encore
@@ -5257,6 +5257,8 @@
     }
     return out;
   }
+  // Solde de wikibidous lu à la dernière synchro ({n, at} de /api/me et /api/members), ou null.
+  const wbOf = (x) => (x && Number.isFinite(Number(x.n)) ? { n: Number(x.n), at: typeof x.at === 'string' ? x.at : null } : null);
   // Liste des membres (GET /api/members), puis les cartes de ceux qui ont changé, puis les collections de ceux qui les
   // montrent et dont le nombre ou le dernier changement a bougé. force : relire la liste même récente.
   function loadFriends(force) {
@@ -5281,7 +5283,7 @@
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
           return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
-            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null });
+            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous) });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
         if (fr.open && !list.some((f) => f.id === fr.open)) { fr.open = null; routeSync(); } // a cessé de partager, ou adresse morte
@@ -5437,7 +5439,7 @@
   function openTradeNew(f) {
     const { give, get } = tradeRowsWith(f);
     const pick = (rows) => rows.filter((r) => r.dup).map((r) => r.card.id);
-    S.tradeNew = { f, give: pick(give), get: pick(get), busy: false, error: '', done: null };
+    S.tradeNew = { f, give: pick(give), get: pick(get), giveWb: '', getWb: '', busy: false, error: '', done: null };
     S.modal = 'trade';
   }
   function toggleTradeCard(tn, side, id) {
@@ -5445,13 +5447,22 @@
     tn[side] = list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
     tn.error = '';
   }
+  // Wikibidous tapés d'un côté de l'échange : entier de 0 ou plus (vide : 0), sinon null (montant invalide).
+  const TRADE_WB_MAX = 100000000; // comme le serveur
+  function tradeWb(text) {
+    const t = String(text ?? '').trim();
+    if (!t) return 0;
+    const n = /^\d+$/.test(t) ? Number(t) : NaN;
+    return Number.isSafeInteger(n) && n <= TRADE_WB_MAX ? n : null;
+  }
   async function sendTrade(tn) {
     if (tn.busy) return;
     tn.busy = true;
     tn.error = '';
     try {
-      const r = await api('POST', '/api/trades/create', { member: tn.f.id, give: tn.give, get: tn.get });
-      tn.done = { given: r.given || [], received: r.received || [], url: r.url || 'https://www.wiki-masters.com/trades' };
+      const r = await api('POST', '/api/trades/create', { member: tn.f.id, give: tn.give, get: tn.get, give_wb: tradeWb(tn.giveWb) || 0, get_wb: tradeWb(tn.getWb) || 0 });
+      tn.done = { given: r.given || [], received: r.received || [], givenWb: Number(r.given_wb) || 0, receivedWb: Number(r.received_wb) || 0,
+        url: r.url || 'https://www.wiki-masters.com/trades' };
     } catch (e) {
       tn.error = e.message;
     } finally {
@@ -10489,10 +10500,11 @@
     const cards = (n) => `${fmt(n)} ${plural(n, 'carte', 'cartes')}`;
     if (tn.done) {
       const d = tn.done;
-      const list = (xs) => namesText(xs.map((c) => c.title), true);
+      const list = (xs, wb) => namesText([...xs.map((c) => c.title), ...(wb ? [wfmt(wb)] : [])], true);
       return h(Modal, { key: 'trade', title, onClose: closeModal }, () => [
         h('p', { class: 'trade-done', role: 'status' }, [h('b', null, `Échange proposé à ${name} dans le jeu.`),
-          d.given.length ? ` Tu donnes ${list(d.given)}.` : ' Tu ne donnes rien.', d.received.length ? ` Tu reçois ${list(d.received)}.` : ' Tu ne reçois rien.']),
+          d.given.length || d.givenWb ? ` Tu donnes ${list(d.given, d.givenWb)}.` : ' Tu ne donnes rien.',
+          d.received.length || d.receivedWb ? ` Tu reçois ${list(d.received, d.receivedWb)}.` : ' Tu ne reçois rien.']),
         h('p', { class: 'note' }, `Rien ne bouge tant que ${name} ne l'a pas acceptée dans le jeu (Échanges). Tu peux l'y annuler.`),
         foot([h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener' }, 'Ouvrir les échanges du jeu'), closeBtn()]),
       ]);
@@ -10501,6 +10513,25 @@
     const linked = !!sess.linked && !sess.lost;
     const { give, get } = tradeRowsWith(tn.f);
     const n = tn.give.length + tn.get.length;
+    const giveWb = tradeWb(tn.giveWb);
+    const getWb = tradeWb(tn.getWb);
+    const badWb = giveWb === null || getWb === null;
+    const anyWb = !badWb && (giveWb > 0 || getWb > 0);
+    // Wikibidous d'un côté : le montant, et le solde de celui qui paie lu à sa dernière synchro (le jeu vérifie le vrai).
+    const wbField = (key, label, bal, who) => {
+      const v = tradeWb(tn[key]);
+      const over = bal && v !== null && v > bal.n;
+      const id = 'trade-' + key;
+      return h('div', { class: 'trade-wb' }, [
+        h('label', { class: 'trade-wb__row', for: id }, [h('span', null, label),
+          h('span', { class: 'sell-input' }, [h('input', { id, class: 'field', type: 'number', min: '0', step: '1', inputmode: 'numeric', placeholder: '0',
+            value: tn[key], disabled: tn.busy, 'aria-describedby': id + '-bal', onInput: (e) => { tn[key] = e.target.value; tn.error = ''; } }),
+          h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
+        h('p', { id: id + '-bal', class: ['small', over ? 'warn' : 'muted'] }, bal
+          ? [`${who} : `, priceTag(bal.n, { tag: 'span' }), bal.at ? ` (lu ${agoText(bal.at)})` : '', over ? ' : pas assez, le jeu refusera sans doute.' : '']
+          : `${who} : pas encore lu (il sera lu à la prochaine synchro).`),
+      ]);
+    };
     const row = (side, r) => {
       const on = tn[side].includes(r.card.id);
       return h('li', { key: r.card.id, class: { on } }, [
@@ -10511,7 +10542,7 @@
         h('span', { class: 'why' }, '→ ' + colsText(r.cols, ', ')),
       ]);
     };
-    const side = (key, legend, rows, empty) => h('fieldset', { class: 'trade-pick' }, [
+    const side = (key, legend, rows, empty, wb) => h('fieldset', { class: 'trade-pick' }, [
       h('legend', null, [legend, h('span', { class: 'n' }, ` · ${fmt(tn[key].length)} / ${fmt(rows.length)}`)]),
       rows.length ? h('ul', { class: 'trade-pick__list' }, rows.map((r) => row(key, r))) : h('p', { class: 'note' }, empty),
       rows.length > 1 ? h('p', { class: 'trade-pick__all' }, [
@@ -10519,21 +10550,27 @@
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = []; } }, 'Rien'),
         ' · ',
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => r.dup).map((r) => r.card.id); } }, 'Les doubles')]) : null,
+      wb,
     ]);
     return h(Modal, { key: 'trade', title, wide: true, onClose: closeModal }, () => [
-      h('p', null, `Coche les cartes de l'échange, parmi celles que vous avez l'un pour l'autre (les doubles sont cochés d'avance). Le classeur crée la proposition dans le jeu, à ton nom ; ${name} l'accepte ou la refuse dans le jeu.`),
+      h('p', null, `Coche les cartes de l'échange, parmi celles que vous avez l'un pour l'autre (les doubles sont cochés d'avance), et ajoute des wikibidous d'un côté ou de l'autre si tu veux. Le classeur crée la proposition dans le jeu, à ton nom ; ${name} l'accepte ou la refuse dans le jeu.`),
       linked ? null : h('p', { class: 'warn', role: 'alert' }, ['Relie d\'abord ton compte du jeu : le classeur crée l\'échange avec ta session. ',
         h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, 'Relier mon compte')]),
       h('div', { class: 'trade-sides' }, [
-        side('give', 'Tu donnes', give, tn.f.tshare ? `Aucune de tes cartes ne complète les collections de ${name}.` : `${name} ne partage pas ses collections : impossible de savoir ce qui lui manque.`),
-        side('get', 'Tu reçois', get, `Aucune carte de ${name} ne complète tes collections.`),
+        side('give', 'Tu donnes', give, tn.f.tshare ? `Aucune de tes cartes ne complète les collections de ${name}.` : `${name} ne partage pas ses collections : impossible de savoir ce qui lui manque.`,
+          wbField('giveWb', 'Et des wikibidous', wbOf(S.me && S.me.wikibidous), 'Ton solde')),
+        side('get', 'Tu reçois', get, `Aucune carte de ${name} ne complète tes collections.`,
+          wbField('getWb', 'Et des wikibidous', tn.f.wb, `Solde de ${name}`)),
       ]),
-      h('p', { class: 'merge-sum', role: 'status' }, n ? `Tu donnes ${cards(tn.give.length)}, tu reçois ${cards(tn.get.length)}.` : 'Aucune carte cochée.'),
+      h('p', { class: 'merge-sum', role: 'status' }, n || anyWb
+        ? [`Tu donnes ${cards(tn.give.length)}`, giveWb ? [' et ', priceTag(giveWb, { tag: 'span' })] : '', `, tu reçois ${cards(tn.get.length)}`, getWb ? [' et ', priceTag(getWb, { tag: 'span' })] : '', '.']
+        : 'Aucune carte cochée, aucun wikibidou.'),
       n > TRADE_MAX ? h('p', { class: 'warn', role: 'alert' }, `${fmt(TRADE_MAX)} cartes au plus par échange.`) : null,
+      badWb ? h('p', { class: 'warn', role: 'alert' }, 'Les wikibidous sont un nombre entier, 0 ou plus.') : null,
       errLine(tn.error),
       foot([
         closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !n || n > TRADE_MAX, onClick: () => sendTrade(tn) },
+        h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !(n || anyWb) || n > TRADE_MAX || badWb, onClick: () => sendTrade(tn) },
           tn.busy ? 'Création dans le jeu…' : 'Proposer l\'échange dans le jeu'),
       ]),
     ]);

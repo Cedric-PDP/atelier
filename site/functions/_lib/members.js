@@ -2,7 +2,8 @@
 // défaut) voit celles des autres membres qui les montrent aussi : c'est réciproque. Ce qui est montré : le prénom, le
 // nombre de cartes, la date de la dernière synchro, et pour chaque carte son id, son titre, sa rareté, le nombre
 // d'exemplaires, si elle est brillante, son illustration et son adresse Wikipédia, et sa cote (cache commun des ventes du
-// jeu, de quoi calculer la valeur de son classeur dans la page). Jamais les étiquettes, les
+// jeu, de quoi calculer la valeur de son classeur dans la page) ; son solde de wikibidous lu à la dernière synchro (de quoi
+// en demander dans un échange). Jamais les étiquettes, les
 // préférences, les clés, le cookie du jeu ni l'id interne du compte (ni les collections à compléter, sauf second réglage
 // ci-dessous) : un membre est désigné par son identifiant public (users.public_id, tiré à chaque activation du partage,
 // effacé à sa désactivation).
@@ -64,7 +65,7 @@ function requireSharing(user) {
 // Pour ceux qui montrent aussi leurs collections : leur nombre et la date du dernier changement (50 au plus, même clé
 // primaire), de quoi ne les relire que si elles ont changé. Classeurs vides (ni carte ni collection) écartés : rien à
 // y voir (2026-10-17, classeurs créés en double puis abandonnés).
-const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, u.fetched_at,
+const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, u.fetched_at, u.wikibidous AS wb, u.wikibidous_at AS wb_at,
     (SELECT COUNT(*) FROM cards AS c WHERE c.user_id = u.id) AS count,
     u.shared_targets AS st,
     CASE WHEN u.shared_targets = 1 THEN (SELECT COUNT(*) FROM targets AS t WHERE t.user_id = u.id) END AS t_count,
@@ -73,7 +74,8 @@ const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, u.fe
     AND (EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = u.id) OR EXISTS (SELECT 1 FROM targets AS t WHERE t.user_id = u.id))
   ORDER BY u.created_at, u.public_id`;
 
-// GET /api/members : targets = null si le membre ne montre pas ses collections, sinon {count, updated_at}.
+// GET /api/members : targets = null si le membre ne montre pas ses collections, sinon {count, updated_at} ; wikibidous =
+// {n, at} (solde lu dans le jeu à sa dernière synchro), ou null s'il n'a jamais été lu.
 export async function listMembers(env, user) {
   requireSharing(user);
   const { results } = await env.DB.prepare(MEMBERS).bind(user.id).all();
@@ -85,6 +87,7 @@ export async function listMembers(env, user) {
       count: r.count,
       fetched_at: r.fetched_at,
       targets: r.st ? { count: r.t_count || 0, updated_at: r.t_at || null } : null,
+      wikibidous: r.wb === null || r.wb === undefined ? null : { n: r.wb, at: r.wb_at || null },
     })),
   };
 }

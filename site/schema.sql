@@ -23,7 +23,8 @@
 -- heure ISO de fin ; sync_click_at = dernier « Rafraîchir » (un par minute) ; auto_sync = lectures automatiques permises ;
 -- fast_sync = marché lu plus vite (essai choisi par le membre, coupé par défaut) ;
 -- sync_fails = échecs d'affilée des lectures automatiques ; link_hash / link_until = SHA-256 et fin du jeton de liaison en
--- cours (favori « Relier »).
+-- cours (favori « Relier ») ; wikibidous / wikibidous_at = solde de wikibidous du joueur lu dans le jeu à la dernière
+-- synchro, et quand (NULL tant qu'il n'a pas été lu), montré aux membres avec qui il partage ses cartes.
 -- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
 -- collé), import_key_hash, import_key_enc (clé d'import de l'ancien favori).
 CREATE TABLE IF NOT EXISTS users (
@@ -60,7 +61,9 @@ CREATE TABLE IF NOT EXISTS users (
     fast_sync INTEGER NOT NULL DEFAULT 0,
     sync_fails INTEGER NOT NULL DEFAULT 0,
     link_hash TEXT,
-    link_until TEXT
+    link_until TEXT,
+    wikibidous INTEGER,
+    wikibidous_at TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son

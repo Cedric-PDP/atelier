@@ -2156,7 +2156,10 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   const benPub = pubOf(ben);
   r = await members(ana);
   assert.equal(r.status, 200);
-  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 12, fetched_at: (await me(ben)).fetched_at, targets: null }]);
+  const benMe = await me(ben);
+  assert.deepEqual(benMe.wikibidous && benMe.wikibidous.n, 0, 'solde lu à la synchro, rendu par /api/me');
+  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 12, fetched_at: benMe.fetched_at, targets: null,
+    wikibidous: benMe.wikibidous }]);
   // Classeur vide (ni carte ni collection) : absent de la liste ; Ana y apparaît avec sa première collection.
   assert.deepEqual((await members(ben)).json.members, [], 'un classeur vide ne doit pas être listé');
   await call('POST', 'targets/save', { key: ana.key, body: { name: 'Première', items: [{ title: 'Article premier', status: 'ok' }] } });
@@ -2327,7 +2330,9 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.equal((await me(ben)).shared_targets, true);
   assert.equal(pubOf(ben), benPub, 'l\'identifiant public ne change pas');
   const lastChange = [planets.updated_at, cat.updated_at].sort().pop();
-  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 6, fetched_at: (await me(ben)).fetched_at, targets: { count: 2, updated_at: lastChange } }]);
+  const benMe = await me(ben);
+  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
+    wikibidous: benMe.wikibidous }]);
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
 
@@ -3461,6 +3466,33 @@ await test('GET /api/game/cards?q= : recherche ilike (q échappé), version fran
   e.DB.close();
 });
 
+await test('wikibidous : solde lu à chaque synchro (clic, lecture complète et vérification du cron), gardé si le jeu ne le rend pas', async () => {
+  const e = makeEnv();
+  supa.reset();
+  const u = await signup('Wiki', e);
+  await seedCards(u.key, synth(3, 970), { e });
+  const uid = uidOf(u.key);
+  const me = async () => (await call('GET', 'me', { key: u.key, e })).json;
+  let m = await me();
+  assert.equal(m.wikibidous.n, 0);
+  assert.deepEqual(supa.rpcs().map((c) => [c.method, c.path, c.body]).at(-1), ['POST', '/rest/v1/rpc/get_my_profile', '{}']);
+  // Le solde bouge sans la collection : la vérification du cron le relit, sans relire la collection.
+  supa.player(uid).wikibidous = 1234;
+  e.DB.sqlite.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.full_at', ?) WHERE id = ?").run(new Date().toISOString(), u.user.id);
+  const fetched = (await me()).fetched_at;
+  await runCron(e, COLLECTION_CRON);
+  m = await me();
+  assert.deepEqual([m.wikibidous.n, m.fetched_at], [1234, fetched], 'solde relu, collection pas relue');
+  // Le jeu ne rend pas de solde lisible : la lecture réussit, l'ancien solde reste.
+  const fail = supa.fail;
+  supa.fail = (url) => (url.includes('/rpc/get_my_profile') ? { status: 404, body: { message: 'not found' } } : null);
+  supa.player(uid).cards.push(rowOf(synth(1, 990)[0], { uid }));
+  const r = await refreshNow(u.key, e);
+  supa.fail = fail;
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal((await me()).wikibidous.n, 1234);
+});
+
 await test('échange : POST /api/trades/create propose un échange dans le jeu (exemplaires lus, cookie refait, repli par le profil, refus)', async () => {
   const e = makeEnv();
   supa.reset();
@@ -3522,6 +3554,25 @@ await test('échange : POST /api/trades/create propose un échange dans le jeu (
   r = await create({ member: pub(ben), get: [benCards[0].id] });
   assert.equal(r.status, 200);
   assert.deepEqual(site().map((c) => c.path), ['/api/trades', '/api/trades'], 'cartes de Ben lues dans la base');
+
+  // Wikibidous d'un côté ou de l'autre (initiator_wikibidous = ceux d'Ana, recipient_wikibidous = ceux de Ben), seuls ou
+  // avec des cartes ; mal formés : 400 sans rien envoyer ; plus que le solde : refus du jeu repris.
+  supa.player(anaUid).wikibidous = 100;
+  supa.player(benUid).wikibidous = 30;
+  for (const bad of [{ give_wb: -1 }, { give_wb: 1.5 }, { get_wb: '10' }, { get_wb: 100_000_001 }, { give_wb: 0, get_wb: 0 }]) {
+    const k = supa.trades.length;
+    assert.equal((await create({ member: pub(ben), ...bad })).status, 400, JSON.stringify(bad));
+    assert.equal(supa.trades.length, k);
+  }
+  r = await create({ member: pub(ben), give: [anaCards[0].id], get_wb: 25 });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.given_wb, r.json.received_wb], [0, 25]);
+  assert.deepEqual([supa.trades.at(-1).initiator_wikibidous, supa.trades.at(-1).recipient_wikibidous], [0, 25]);
+  r = await create({ member: pub(ben), give_wb: 40 });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([supa.trades.at(-1).items, supa.trades.at(-1).initiator_wikibidous, supa.trades.at(-1).recipient_wikibidous], [[], 40, 0]);
+  r = await create({ member: pub(ben), get: [benCards[0].id], give_wb: 101 });
+  assert.deepEqual([r.status, r.json.error], [409, "Le jeu a refusé l'échange : « Solde de wikibidous insuffisant »."]);
 
   // Une carte qui n'est plus dans le jeu : rien n'est envoyé.
   const n = supa.trades.length;

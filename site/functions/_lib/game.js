@@ -3,7 +3,8 @@
 // Supabase renouvelle par rotation et ferme toute la session quand un jeton de renouvellement resservirait ailleurs).
 // Gardée chiffrée (users.game_session_enc), renouvelée par le serveur avant expiration, sous verrou : la version
 // (game_session_v) est comparée et incrémentée dans la même requête, qui perd reprend la session la plus récente ; le bail
-// (sync_lock) empêche deux lectures en même temps avec la même session. Lecture seule, sauf une
+// (sync_lock) empêche deux lectures en même temps avec la même session. Lecture seule (rpc/get_my_profile, une fonction de
+// lecture, compris), sauf une
 // proposition d'échange à un ami (trades.js, seule écriture dans le jeu) ; aucun en-tête n'imite un navigateur.
 
 import { HttpError } from './http.js';
@@ -203,6 +204,43 @@ export async function supaGet(env, user, s, path, { count = false, gap = 0, retr
     n = m ? Number(m[1]) : null;
   }
   return { rows: data, count: n };
+}
+
+// POST rest/v1/rpc/<fn> (body) avec la session du joueur → la réponse (objet ou liste), comme supaGet.
+export async function supaRpc(env, user, s, fn, body = {}, { gap = 0, retry = true } = {}) {
+  if (gap) await pause(env, gap);
+  const headers = { apikey: ANON, authorization: `Bearer ${s.auth.access_token}`, accept: 'application/json', 'content-type': 'application/json' };
+  const res = await send(env, `${SUPABASE}/rest/v1/rpc/${fn}`, { method: 'POST', headers, body: JSON.stringify(body) }, 2);
+  if (!res) throw new HttpError(502, DOWN);
+  const data = await readJson(res);
+  if (res.status === 429 || (data && !Array.isArray(data) && data.code === 'automation_limit')) throw new HttpError(429, LIMITED, { limited: true });
+  if (res.status === 401) {
+    if (!retry) throw new HttpError(502, 'La base du jeu refuse ta session même renouvelée : le jeu a peut-être changé.');
+    await renewSession(env, user, s);
+    return supaRpc(env, user, s, fn, body, { retry: false });
+  }
+  if (!res.ok) throw new HttpError(502, `La base du jeu a refusé une lecture (${res.status}) : le jeu a peut-être changé.`);
+  return data;
+}
+
+// Solde de wikibidous du joueur (wikibidous_balance de son profil, rpc/get_my_profile comme la page du jeu, relevé dans
+// les HAR du 2026-10-15 et du 2026-10-23) → nombre entier, ou null si le jeu n'en rend pas de lisible. Une limite du jeu
+// (429) remonte ; toute autre erreur rend null : le solde ne fait jamais échouer une lecture de la collection.
+export async function readBalance(env, user, s, { gap = 0 } = {}) {
+  try {
+    const data = await supaRpc(env, user, s, 'get_my_profile', {}, { gap });
+    const p = Array.isArray(data) ? data[0] : data;
+    const n = p && typeof p === 'object' ? Number(p.wikibidous_balance) : NaN;
+    return Number.isSafeInteger(n) && n >= 0 ? n : null;
+  } catch (err) {
+    if (err && err.extra && err.extra.limited) throw err;
+    return null;
+  }
+}
+
+// Solde lu → requête qui le range (users.wikibidous, wikibidous_at), ou null s'il n'a pas pu être lu.
+export function balanceStatement(db, userId, n) {
+  return n === null ? null : db.prepare('UPDATE users SET wikibidous = ?2, wikibidous_at = ?3 WHERE id = ?1').bind(userId, n, nowIso());
 }
 
 // Liste PostgREST « in.(…) » de textes entre guillemets (titres avec virgules ou parenthèses compris).

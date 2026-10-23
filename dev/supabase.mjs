@@ -4,7 +4,8 @@
 // 10 s, et rend alors la même session ; au-delà, il ferme toute la session, comme Supabase) ; GET /auth/v1/user.
 // PostgREST : GET /rest/v1/<table> (user_cards, profiles, cards, auctions, auction_bids), filtres eq. gte. gt. in. ilike.,
 // order, limit (1 000 au plus), offset, Prefer: count=exact (en-tête content-range) ; RLS simulée. Le `select` est
-// ignoré : les lignes sont rangées déjà embarquées (card, tags: [{tag}]). Toute écriture est refusée.
+// ignoré : les lignes sont rangées déjà embarquées (card, tags: [{tag}]). POST /rest/v1/rpc/get_my_profile : le profil du
+// joueur, solde de wikibidous compris (addPlayer {wikibidous}). Toute écriture est refusée.
 // Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=…,
 // GET /api/marketplace/<id de l'enchère> (l'enchère, son vendeur et son meneur, et ses mises : champ `bids` de l'enchère
 // rangée, [{bidder_id, amount}] ; forme relevée par le projet de référence, pas vérifiée ici ; `siteLimit` : 429 |
@@ -119,8 +120,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       p.refresh = `renouv-${p.uid}-${minted}`;
       p.expires_at = Math.floor(now() / 1000) + expiresIn;
     },
-    addPlayer(uid, { username = null, expiresIn = 3600, cards = [] } = {}) {
-      const p = { uid, username, cards, auctions: [], bids: [], prev: null, phantom: 0 };
+    addPlayer(uid, { username = null, expiresIn = 3600, cards = [], wikibidous = 0 } = {}) {
+      const p = { uid, username, cards, wikibidous, auctions: [], bids: [], prev: null, phantom: 0 };
       this.mint(p, expiresIn);
       this.players.set(uid, p);
       return p;
@@ -141,7 +142,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       for (let i = 0; i * chunk < value.length; i++) parts.push(`${AUTH_COOKIE}.${i}=${value.slice(i * chunk, (i + 1) * chunk)}`);
       return ['theme=sombre', ...parts].join('; ');
     },
-    rest: () => supa.calls.filter((c) => c.path.startsWith('/rest/')),
+    rest: () => supa.calls.filter((c) => c.path.startsWith('/rest/') && !c.path.startsWith('/rest/v1/rpc/')), // lectures de tables
+    rpcs: () => supa.calls.filter((c) => c.path.startsWith('/rest/v1/rpc/')), // fonctions (solde de wikibidous)
     tokens: () => supa.calls.filter((c) => c.path === '/auth/v1/token'),
   };
 
@@ -183,6 +185,12 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
         }
       }
       return reply({ error: 'invalid_grant', error_description: 'Invalid Refresh Token: Refresh Token Not Found' }, 400);
+    }
+    if (method === 'POST' && u.pathname === '/rest/v1/rpc/get_my_profile') {
+      if (supa.limit === 429) return reply({ message: 'Too Many Requests' }, 429);
+      const p = byAccess(h);
+      if (!p) return reply({ code: 'PGRST301', message: 'JWT expired' }, 401);
+      return reply({ id: p.uid, username: p.username, is_pro: false, packs_remaining: 0, wikibidous_balance: p.wikibidous });
     }
     if (method !== 'GET') throw new Error('écriture dans la base du jeu : ' + method + ' ' + url);
     if (u.pathname === '/auth/v1/user') {
@@ -314,6 +322,9 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       for (const it of body.items || []) {
         const owner = it.offered_by === me.uid ? me : it.offered_by === to.uid ? to : null;
         if (!owner || !owner.cards.some((r) => r.id === it.user_card_id && r.card_id === it.card_id)) return reply({ error: 'Carte invalide' }, 400);
+      }
+      if ((body.initiator_wikibidous || 0) > me.wikibidous || (body.recipient_wikibidous || 0) > to.wikibidous) {
+        return reply({ error: 'Solde de wikibidous insuffisant' }, 400);
       }
       const trade = { id: `echange-${supa.trades.length + 1}`, initiator_id: me.uid, recipient_id: to.uid, status: 'pending', items: body.items,
         initiator_wikibidous: body.initiator_wikibidous, recipient_wikibidous: body.recipient_wikibidous };

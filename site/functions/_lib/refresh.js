@@ -1,14 +1,15 @@
 // Lecture de la collection dans la base du jeu (PostgREST), avec la session du joueur gardée par le serveur (game.js) :
 // au clic (POST /api/refresh, une fois par minute au plus) ou par les lectures automatiques (readCollection). Une page de
 // 1 000 exemplaires par requête, carte et tags du jeu compris, et le compte exact des exemplaires lu avant et après
-// (contrôle de la lecture, finalizeImport). Un bail par compte (sync_lock) : jamais deux lectures en même temps avec la
-// même session. Chaque fin de lecture, réussie ou non, laisse une ligne au journal des synchros (synclog.js).
+// (contrôle de la lecture, finalizeImport), puis le solde de wikibidous du joueur (readBalance). Un bail par compte
+// (sync_lock) : jamais deux lectures en même temps avec la même session. Chaque fin de lecture, réussie ou non, laisse une
+// ligne au journal des synchros (synclog.js).
 
 import { purgeStaging } from './db.js';
 import { HttpError } from './http.js';
 import { RARITIES, badCard, entryToCard } from './cards.js';
 import { REFRESH_SOURCE, finalizeImport } from './import.js';
-import { acquireLease, freshAuth, releaseLease, sessionOf, supaGet } from './game.js';
+import { acquireLease, balanceStatement, freshAuth, readBalance, releaseLease, sessionOf, supaGet } from './game.js';
 import { errorEntry, logStatements, writeLog } from './synclog.js';
 import { nowIso } from './util.js';
 
@@ -112,6 +113,7 @@ export async function readCollection(env, user, { via, force = false, lease: giv
       if (p + 1 >= MAX_PAGES) throw new HttpError(400, 'Collection trop grande : 50 000 exemplaires au plus.');
     }
     const end = await checkCollection(env, user, s);
+    const balance = balanceStatement(db, user.id, await readBalance(env, user, s, { gap: PAGE_GAP_MS }));
     const result = await finalizeImport(db, user, {
       source: REFRESH_SOURCE,
       key: 0,
@@ -120,6 +122,7 @@ export async function readCollection(env, user, { via, force = false, lease: giv
       clear: [
         db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id),
         ...(via === 'clic' ? [db.prepare('UPDATE users SET sync_fails = 0 WHERE id = ?1').bind(user.id)] : []),
+        ...(balance ? [balance] : []),
         releaseLease(db, user.id, lease),
       ],
       skipped,

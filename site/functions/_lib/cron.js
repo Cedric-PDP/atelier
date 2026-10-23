@@ -1,12 +1,12 @@
 // Lectures sans geste du joueur, lancées par les déclencheurs planifiés de Cloudflare (wrangler.jsonc, `triggers`) :
-// la collection de chaque membre relié (vérifiée toutes les 10 minutes, relue en entier si elle a bougé et au moins toutes
-// les 6 heures), le marché de chaque membre relié (cotes, enchères et ventes : une passe toutes les 20 minutes au plus). Une passe par déclencheur, un bail par passe (cron_state) pour que deux
+// la collection de chaque membre relié (vérifiée toutes les 10 minutes avec son solde de wikibidous, relue en entier si elle
+// a bougé et au moins toutes les 6 heures), le marché de chaque membre relié (cotes, enchères et ventes : une passe toutes les 20 minutes au plus). Une passe par déclencheur, un bail par passe (cron_state) pour que deux
 // invocations ne se chevauchent pas. Garde-fous : SYNC_PAUSED suspend tout, un membre sans « Synchro automatique » ou en
 // pause (FAILS_MAX échecs d'affilée) est sauté, une limite du jeu (429, automation_limit) arrête la passe et saute la suivante.
 
 import { ensureSchema } from './db.js';
 import { USER_COLUMNS } from './auth.js';
-import { acquireLease, freshAuth, releaseLease, sessionOf } from './game.js';
+import { acquireLease, balanceStatement, freshAuth, readBalance, releaseLease, sessionOf } from './game.js';
 import { syncState } from './import.js';
 import { FAILS_MAX, LEASE_MS, checkCollection, readCollection } from './refresh.js';
 import { errorEntry, writeLog } from './synclog.js';
@@ -110,8 +110,13 @@ async function collectionPass(env, { now }) {
         await readCollection(env, user, { via: 'cron', lease });
         counts.read++;
       } else {
-        await db.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.checked_at', ?2) WHERE id = ?1 AND json_valid(sync_state)")
-          .bind(member.id, new Date().toISOString()).run();
+        // Le solde de wikibidous bouge sans la collection (ventes, achats, échanges) : relu à chaque vérification.
+        const balance = balanceStatement(db, member.id, await readBalance(env, member, s, { gap: 250 }));
+        await db.batch([
+          db.prepare("UPDATE users SET sync_state = json_set(sync_state, '$.checked_at', ?2) WHERE id = ?1 AND json_valid(sync_state)")
+            .bind(member.id, new Date().toISOString()),
+          ...(balance ? [balance] : []),
+        ]);
       }
       counts.checked++;
       await noteSuccess(db, member.id);

@@ -36,7 +36,9 @@ export const SCHEMA = [
     fast_sync INTEGER NOT NULL DEFAULT 0,
     sync_fails INTEGER NOT NULL DEFAULT 0,
     link_hash TEXT,
-    link_until TEXT
+    link_until TEXT,
+    wikibidous INTEGER,
+    wikibidous_at TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -182,6 +184,8 @@ const ADDED_COLUMNS = [
   ['users', 'sync_fails', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'link_hash', 'TEXT'],
   ['users', 'link_until', 'TEXT'],
+  ['users', 'wikibidous', 'INTEGER'],
+  ['users', 'wikibidous_at', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],

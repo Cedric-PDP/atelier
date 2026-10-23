@@ -262,7 +262,8 @@ function mockApi() {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
-          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync });
+          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync,
+          wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at } });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -303,8 +304,9 @@ function mockApi() {
         if (!f) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses cartes.' });
         if (tradeFail) { const r = tradeFail; tradeFail = null; return json(r.status, { error: r.error }); }
         const titles = (u, ids) => (ids || []).map((id) => ({ id, title: (u.cards.find((c) => c.id === id) || {}).title || id }));
-        trades.push({ from: st.name, to: f.name, give: body.give || [], get: body.get || [] });
-        return json(200, { trade: { id: 'echange-' + trades.length, status: 'pending' }, given: titles(st, body.give), received: titles(f, body.get), url: 'https://www.wiki-masters.com/trades' });
+        trades.push({ from: st.name, to: f.name, give: body.give || [], get: body.get || [], give_wb: body.give_wb, get_wb: body.get_wb });
+        return json(200, { trade: { id: 'echange-' + trades.length, status: 'pending' }, given: titles(st, body.give), received: titles(f, body.get),
+          given_wb: body.give_wb || 0, received_wb: body.get_wb || 0, url: 'https://www.wiki-masters.com/trades' });
       }
       // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
       // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
@@ -313,7 +315,8 @@ function mockApi() {
         if (!st.shared) return json(403, { error: "Pour voir les cartes des autres membres, montre d'abord les tiennes : Réglages, « Partage entre membres »." });
         if (p === '/api/members') {
           return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, count: u.cards.length, fetched_at: u.fetched_at,
-            targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null })) });
+            targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null,
+            wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at } })) });
         }
         // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre, au qid et au
         // drapeau d'intercalaire (sep: true) des éléments vérifiés.
@@ -2766,6 +2769,8 @@ async function main() {
     await seedCards(zoeKey, [fc('z-mars', 'Mars (planète)', 'UR', 5)]);
     for (const k of [paulKey, leaKey]) check((await rawApi('PATCH', '/api/me', k, { shared: true })).status === 200, 'partage des amis refusé');
     check((await rawApi('PATCH', '/api/me', paulKey, { pseudo: 'PaulDu13' })).status === 200, 'pseudo de Paul refusé');
+    // Soldes de wikibidous lus à la synchro (« Proposer un échange ») : le tien et celui de Paul ; Léa n'en a pas encore.
+    if (!SERVER) for (const [k, n] of [[myKey3, 120], [paulKey, 40]]) api.users.find((u) => u.key === k).wb = n;
     // Partage activé dès la création (2026-10-16, vrai serveur) : coupé ici pour Cédric et Zoé, comme au départ du scénario.
     for (const k of [myKey3, zoeKey]) check((await rawApi('PATCH', '/api/me', k, { shared: false })).status === 200, 'arrêt du partage refusé');
     // Sans partager soi-même : 403 (réciprocité), et l'onglet invite à partager sans rien lire des autres.
@@ -2989,11 +2994,23 @@ async function main() {
         side(0).querySelectorAll('button').find((b) => text(b) === 'Rien').click();
         side(1).querySelectorAll('button').find((b) => text(b) === 'Rien').click();
         await settle();
-        check(text(md()).includes('Aucune carte cochée.') && send().disabled, 'rien de coché : envoi désactivé attendu');
+        check(text(md()).includes('Aucune carte cochée, aucun wikibidou.') && send().disabled, 'rien de coché : envoi désactivé attendu');
+        // Wikibidous : soldes lus à la synchro (le tien, celui de Paul), montant invalide refusé, des wikibidous seuls suffisent.
+        check(text(side(0)).includes('Ton solde : 120W') && text(side(1)).includes('Solde de Paul : 40W'), 'soldes de wikibidous : ' + text(side(0)).slice(-120) + ' / ' + text(side(1)).slice(-120));
+        type(byId('trade-getWb'), '1.5');
+        await settle();
+        check(send().disabled && text(md()).includes('nombre entier'), 'montant invalide : envoi désactivé attendu');
+        type(byId('trade-getWb'), '50');
+        await settle();
+        check(!send().disabled && text(md()).includes('Tu donnes 0 carte, tu reçois 0 carte et 50W.') && text(side(1)).includes('pas assez'),
+          'wikibidous seuls : ' + text(md()).slice(-300));
+        type(byId('trade-getWb'), '');
+        type(byId('trade-giveWb'), '5');
+        await settle();
         side(1).querySelectorAll('button').find((b) => text(b) === 'Les doubles').click();
         side(0).querySelectorAll('li')[0].querySelector('input').dispatch('change');
         await settle();
-        check(text(md()).includes('Tu donnes 1 carte, tu reçois 1 carte.'), 'résumé (Article 7 contre Mars) : ' + text(md()).slice(-300));
+        check(text(md()).includes('Tu donnes 1 carte et 5W, tu reçois 1 carte.'), 'résumé (Article 7 et 5W contre Mars) : ' + text(md()).slice(-300));
         // Refus du jeu : message dans la fenêtre, rien de créé ; puis l'envoi réussi.
         api.failTrade({ status: 409, error: "Le jeu a refusé l'échange : « Carte déjà engagée »." });
         send().click();
@@ -3002,8 +3019,8 @@ async function main() {
         send().click();
         await settle(80);
         const tr = api.trades[0];
-        check(api.trades.length === 1 && tr.to === 'Paul' && tr.give.length === 1 && tr.get.join() === 'p-mars', 'échange envoyé : ' + JSON.stringify(api.trades));
-        check(md() && text(md()).includes('Échange proposé à Paul dans le jeu.') && text(md()).includes('Tu reçois « Mars (planète) »')
+        check(api.trades.length === 1 && tr.to === 'Paul' && tr.give.length === 1 && tr.get.join() === 'p-mars' && tr.give_wb === 5 && tr.get_wb === 0, 'échange envoyé : ' + JSON.stringify(api.trades));
+        check(md() && text(md()).includes('Échange proposé à Paul dans le jeu.') && text(md()).includes('Tu reçois « Mars (planète) »') && text(md()).includes('5W')
           && md().querySelectorAll('a').some((x) => x.getAttribute('href') === 'https://www.wiki-masters.com/trades'), 'fin de l\'échange : ' + text(md()));
         md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
         await settle();

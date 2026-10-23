@@ -1,6 +1,6 @@
 // Création d'un échange dans le jeu (POST /api/trades/create), avec la session du joueur gardée par le serveur (game.js).
-// Une **proposition** d'échange, en attente tant que l'ami ne l'a pas acceptée dans le jeu ; rien d'autre (ni acceptation,
-// ni annulation, ni wikibidous). L'autre écriture du classeur dans le jeu : la mise en vente d'une carte (sell.js).
+// Une **proposition** d'échange (cartes et wikibidous, d'un côté ou de l'autre), en attente tant que l'ami ne l'a pas
+// acceptée dans le jeu ; rien d'autre (ni acceptation, ni annulation). L'autre écriture du classeur dans le jeu : la mise en vente d'une carte (sell.js).
 // Les cartes sont désignées par leur id de carte (card_id) ; le jeu veut aussi l'id d'un exemplaire (user_card_id) de
 // chaque carte, lu juste avant dans sa base. La route du jeu (Next.js, www.wiki-masters.com/api/trades) n'accepte que le
 // cookie de session de ses pages : il est refait à partir de la session gardée, jamais donné au navigateur.
@@ -11,6 +11,7 @@ import { bytesToBase64, nowIso } from './util.js';
 
 export const GAME_ORIGIN = 'https://www.wiki-masters.com';
 export const MAX_ITEMS = 40; // cartes d'un échange, des deux côtés
+export const MAX_WIKIBIDOUS = 100_000_000; // wikibidous d'un côté d'un échange (garde-fou : c'est le jeu qui vérifie le solde)
 const LEASE_MS = 2 * 60_000;
 // Marge avant l'expiration du jeton d'accès : bien au-delà de celle du jeu (supabase-js renouvelle à 90 s de la fin), pour
 // qu'il ne renouvelle jamais la session pendant l'appel (un jeton de renouvellement ne sert qu'une fois).
@@ -32,6 +33,15 @@ function cardIds(value, what) {
     throw new HttpError(400, `Les cartes ${what} (liste d'identifiants de cartes du jeu) sont mal formées.`);
   }
   return [...new Set(value)];
+}
+
+// Wikibidous d'un côté de l'échange : entier de 0 à MAX_WIKIBIDOUS (absent : 0).
+function wikibidous(value, what) {
+  if (value === undefined || value === null) return 0;
+  if (!Number.isSafeInteger(value) || value < 0 || value > MAX_WIKIBIDOUS) {
+    throw new HttpError(400, `Les wikibidous ${what} sont un nombre entier de 0 à ${MAX_WIKIBIDOUS.toLocaleString('fr-FR')}.`);
+  }
+  return value;
 }
 
 // Exemplaire à donner parmi ceux d'une carte : ni étoilé ni brillant si possible, puis le plus gros paquet (count),
@@ -140,8 +150,11 @@ async function copiesFromProfile(env, user, s, pseudo, wanted) {
   return { copies: out, profileId };
 }
 
-// POST /api/trades/create {member, give:[card_id], get:[card_id]} → {trade:{id, status}, given, received, url}.
-// member = identifiant public de l'ami ; give = tes cartes, get = les siennes. Au moins une carte, MAX_ITEMS au plus.
+// POST /api/trades/create {member, give:[card_id], get:[card_id], give_wb?, get_wb?} → {trade:{id, status}, given, received,
+// given_wb, received_wb, url}. member = identifiant public de l'ami ; give = tes cartes, get = les siennes ; give_wb = les
+// wikibidous que tu donnes, get_wb ceux que tu demandes (initiator_wikibidous et recipient_wikibidous du jeu). Au moins une
+// carte ou des wikibidous, MAX_ITEMS cartes au plus. Les soldes ne sont pas vérifiés ici (celui lu à la synchro peut être
+// vieux) : le jeu refuse un échange qu'un des deux ne peut pas payer.
 export async function createTrade(env, user, body) {
   const db = env.DB;
   if (!user.shared || !user.public_id) {
@@ -151,7 +164,9 @@ export async function createTrade(env, user, body) {
   if (!PUBLIC_ID.test(member)) throw new HttpError(400, 'Ami inconnu (member).');
   const give = cardIds(body.give, 'données');
   const get = cardIds(body.get, 'reçues');
-  if (!give.length && !get.length) throw new HttpError(400, "Choisis au moins une carte à donner ou à recevoir.");
+  const giveWb = wikibidous(body.give_wb, 'donnés');
+  const getWb = wikibidous(body.get_wb, 'demandés');
+  if (!give.length && !get.length && !giveWb && !getWb) throw new HttpError(400, 'Choisis au moins une carte ou des wikibidous à donner ou à recevoir.');
   if (give.length + get.length > MAX_ITEMS) throw new HttpError(400, `${MAX_ITEMS} cartes au plus par échange.`);
 
   const friend = await db.prepare(FRIEND).bind(member, user.id).first();
@@ -227,7 +242,7 @@ export async function createTrade(env, user, body) {
       res = await gameFetch(env, user, s, '/api/trades', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ recipient_id: recipient, items, initiator_wikibidous: 0, recipient_wikibidous: 0 }),
+        body: JSON.stringify({ recipient_id: recipient, items, initiator_wikibidous: giveWb, recipient_wikibidous: getWb }),
       });
     } catch {
       throw new HttpError(502, UNSURE);
@@ -250,6 +265,8 @@ export async function createTrade(env, user, body) {
       trade: { id: trade.id, status: trade.status || 'pending' },
       given: give.map((id) => ({ id, title: title(myTitles, id) })),
       received: get.map((id) => ({ id, title: title(hisTitles, id) })),
+      given_wb: giveWb,
+      received_wb: getWb,
       url: GAME_ORIGIN + '/trades',
     };
   } finally {

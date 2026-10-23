@@ -104,10 +104,10 @@ Pousser sur `wikimasters` suffit : Cloudflare republie le site (une fois le Work
   **interagissent à la place du joueur**. Le classeur **lit** seulement (la collection du membre, ses mises et ses ventes, les
   cotes du marché) dans la base du jeu, et, à l'ouverture d'une fiche, le détail de ses enchères sur la route du marché du site du jeu
   (`/api/marketplace/<id>`, limitée par le jeu : plafond par minute, pause de 10 min s'il limite) ; il n'y écrit, au clic du membre, que la **proposition d'un échange** à un ami
-  (« Proposer un échange », 2026-10-22) et la **mise en vente** d'une de ses cartes ou l'**annulation** d'une de ses ventes tant que personne n'a misé
+  (« Proposer un échange », 2026-10-22 ; cartes et wikibidous d'un côté ou de l'autre depuis le 2026-10-23) et la **mise en vente** d'une de ses cartes ou l'**annulation** d'une de ses ventes tant que personne n'a misé
   (« Mettre en vente », 2026-10-23, routes `/api/marketplace` du site du jeu) : ce que visent ces règles, choix assumé ; il n'imite pas un navigateur. **Depuis le 2026-10-22, il lit
-  régulièrement et automatiquement, sans geste du joueur**, depuis des adresses Cloudflare : la collection toutes les 10 minutes
-  (relue en entier si elle a changé, et au moins toutes les 6 h), le marché toutes les 20 minutes (30 requêtes à une par seconde au
+  régulièrement et automatiquement, sans geste du joueur**, depuis des adresses Cloudflare : la collection et le solde de wikibidous
+  toutes les 10 minutes (collection relue en entier si elle a changé, et au moins toutes les 6 h), le marché toutes les 20 minutes (30 requêtes à une par seconde au
   plus par passe), avec une session du jeu par membre. Ce que le jeu peut en voir, les garde-fous (limite du jeu → passe sautée,
   trois échecs → pause, case « Synchro automatique », variable `SYNC_PAUSED`) et ce que ça change par rapport à la règle d'avant :
   [site/SPEC.md](site/SPEC.md), « Règles du jeu ». Les étiquettes et collections vivent dans le classeur.
