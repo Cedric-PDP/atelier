@@ -5529,7 +5529,7 @@
 
   // ================================================================ marché : cotes, valeur, bonnes affaires (SPEC.md, « Le marché »)
   // Les cotes et le marché sont lus par le serveur dans la base du jeu, avec la session reliée (toutes les 20 min, et à
-  // « Mettre à jour les cotes » : POST /api/market/refresh) ; ici, on montre ce que le serveur a rangé : la valeur du
+  // « Actualiser le marché » : POST /api/market/refresh) ; ici, on montre ce que le serveur a rangé : la valeur du
   // classeur et son historique (GET /api/market), la dernière lecture du marché (bonnes affaires, tes enchères et tes
   // ventes, 7 jours au plus, avec son âge), le dernier essai (attempt : réussi, ou raté et pourquoi), et les cotes de
   // tes cartes et des cartes qui te manquent (GET /api/market/prices, communes à tous les classeurs). Relu à l'ouverture,
@@ -5588,7 +5588,7 @@
     })();
     return marketJob;
   }
-  // « Mettre à jour les cotes » : le serveur fait une passe de lecture du marché avec la session reliée (une par minute au
+  // « Actualiser le marché » : le serveur fait une passe légère de lecture du marché avec la session reliée (une par minute au
   // plus), puis l'onglet est relu.
   async function refreshMarket() {
     if (M.refreshing) return;
@@ -5603,7 +5603,9 @@
       const left = Number(r.left) || 0;
       const deals = Number(r.deals) || 0;
       const running = Number(r.running) || 0;
-      M.msg = `Cotes lues : ${fmt(read)} ${plural(read, 'carte', 'cartes')}${left ? ` (il en reste ${fmt(left)})` : ''} · ${fmt(deals)} ${plural(deals, 'bonne affaire', 'bonnes affaires')} · ${fmt(running)} ${plural(running, 'enchère en cours', 'enchères en cours')}`;
+      M.msg = r.light
+        ? `Marché relu : ${fmt(deals)} ${plural(deals, 'bonne affaire', 'bonnes affaires')} · ${fmt(running)} ${plural(running, 'enchère en cours', 'enchères en cours')} · ${fmt(read)} ${plural(read, 'cote relue', 'cotes relues')}${left ? ` (${fmt(left)} autres à relire : le classeur s'en charge toutes les 20 minutes)` : ''}`
+        : `Cotes lues : ${fmt(read)} ${plural(read, 'carte', 'cartes')}${left ? ` (il en reste ${fmt(left)})` : ''} · ${fmt(deals)} ${plural(deals, 'bonne affaire', 'bonnes affaires')} · ${fmt(running)} ${plural(running, 'enchère en cours', 'enchères en cours')}`;
       if (r.ok === false) { M.msgErr = true; M.msg = r.why || M.msg; }
       await loadMarket(true);
     } catch (e) {
@@ -9254,8 +9256,8 @@
   }
 
   // ================================================================ rendu : onglet Marché, cotes des fiches
-  const MARKET_RULES = "Les cotes et la lecture du marché sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro ») : une passe par membre toutes les 20 minutes tant que la synchro automatique est active, et à ton clic sur « Mettre à jour les cotes » (une par minute au plus). Chaque passe fait au plus 30 requêtes, une par seconde, sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : si le jeu limite les lectures, la passe s'arrête et la suivante est sautée. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
-  const MARKET_HOW = "Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») puis clique « Mettre à jour les cotes » ; ensuite, le classeur les relit tout seul toutes les 20 minutes.";
+  const MARKET_RULES = "Les cotes et la lecture du marché sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro ») : une passe par membre toutes les 20 minutes tant que la synchro automatique est active, qui relit aussi les cotes de tes cartes, les plus anciennes d'abord ; et à ton clic sur « Actualiser le marché » (une fois par minute au plus), une passe plus courte : tes enchères, tes ventes, les bonnes affaires et leurs cotes. Chaque passe fait au plus 30 requêtes, une par seconde, sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : si le jeu limite les lectures, la passe s'arrête et la suivante est sautée. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
+  const MARKET_HOW = "Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») : le classeur les lit tout seul toutes les 20 minutes (« Actualiser le marché » ne relit que tes enchères, tes ventes et les bonnes affaires).";
   const MARKET_OLD = 2 * 3600000; // lecture du marché « ancienne » au-delà de 2 h (les enchères bougent vite)
   // « il y a 5 min », « il y a 2 h », « il y a 3 jours ».
   const agoText = (iso) => {
@@ -9274,16 +9276,16 @@
     const old = !!M.liveAt && Date.now() - Date.parse(M.liveAt) > MARKET_OLD;
     if (M.liveAt) {
       out.push(h('p', { class: ['small', old ? 'warn' : 'muted'], key: 'age' }, [`Lecture du marché par le classeur : ${agoText(M.liveAt)} (${dateShort(M.liveAt)}).`,
-        old ? " Elle date de plus de 2 h : des enchères ont pu finir ou monter. Clique « Mettre à jour les cotes » (le classeur la refait toutes les 20 minutes quand la synchro automatique est active)." : '']));
+        old ? " Elle date de plus de 2 h : des enchères ont pu finir ou monter. Clique « Actualiser le marché » (le classeur la refait toutes les 20 minutes quand la synchro automatique est active)." : '']));
     } else if (a && a.ok === true) {
-      out.push(h('p', { class: 'small muted', key: 'age' }, `Cotes lues par le classeur ${agoText(a.end || a.start)} ; sa lecture du marché (bonnes affaires, tes enchères) n'est pas arrivée : clique « Mettre à jour les cotes ».`));
+      out.push(h('p', { class: 'small muted', key: 'age' }, `Cotes lues par le classeur ${agoText(a.end || a.start)} ; sa lecture du marché (bonnes affaires, tes enchères) n'est pas arrivée : clique « Actualiser le marché ».`));
     } else if (!a) {
-      out.push(h('p', { class: 'small warn', key: 'age' }, "Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Mettre à jour les cotes »."));
+      out.push(h('p', { class: 'small warn', key: 'age' }, "Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Actualiser le marché »."));
     }
     if (a && a.ok === false && a.why) {
       out.push(h('p', { class: 'status err', role: 'status', key: 'fail' }, `Dernier essai, ${agoText(a.end || a.start)}${a.auto ? ' (automatique)' : ''} : ${a.why}`));
     } else if (a && !a.end && Date.now() - Date.parse(a.start) > 10 * 60000) {
-      out.push(h('p', { class: 'small warn', key: 'fail' }, `Une lecture commencée ${agoText(a.start)} n'a pas abouti : réessaie « Mettre à jour les cotes ».`));
+      out.push(h('p', { class: 'small warn', key: 'fail' }, `Une lecture commencée ${agoText(a.start)} n'a pas abouti : réessaie « Actualiser le marché ».`));
     }
     return out;
   }
@@ -9380,7 +9382,7 @@
   // Liste déroulante « Toutes les collections / <collection> (N) » : les collections que remplissent les bonnes
   // affaires lues, de celle qui en a le plus à celle qui en a le moins ; le choix est gardé (MP.col).
   function viewDeals(live) {
-    if (!live) return h('p', { class: 'muted' }, "Pas de lecture du marché : clique « Mettre à jour les cotes » en haut de l'onglet (le classeur la refait ensuite toutes les 20 minutes).");
+    if (!live) return h('p', { class: 'muted' }, "Pas de lecture du marché : clique « Actualiser le marché » en haut de l'onglet (le classeur la refait ensuite toutes les 20 minutes).");
     const { list: deals, ended, owned } = dealsOf(live);
     const hidden = [ended ? `${fmt(ended)} ${plural(ended, 'enchère finie', 'enchères finies')} depuis la lecture` : '', owned ? `${fmt(owned)} ${plural(owned, 'carte que tu as maintenant', 'cartes que tu as maintenant')}` : ''].filter(Boolean);
     const note = hidden.length ? h('p', { class: 'small muted' }, `Plus montrées : ${hidden.join(', ')}.`) : null;
@@ -9441,7 +9443,7 @@
         })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
       M.loaded ? marketMoreButton('vendre', kept.length) : null,
       M.loaded && onSale ? h('p', { class: 'small muted' }, `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.`) : null,
-      M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture (ou clique « Mettre à jour les cotes »).`) : null,
+      M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes).`) : null,
     ];
   }
   // « Mes ventes en cours » : une ligne par vente (rareté, titre : sa fiche), départ, enchère actuelle et cote, mises et
@@ -9527,7 +9529,7 @@
       marketSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
         h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
           h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing, onClick: refreshMarket },
-            [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Mettre à jour les cotes'])]),
+            [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Actualiser le marché'])]),
         M.msg ? h('p', { class: M.msgErr ? 'status err' : 'small muted', role: 'status' }, M.msg) : null,
         !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
         M.loaded && v ? h('p', { class: 'market__big' }, [priceTag(v.value), h('span', { class: 'muted' }, ` · ${fmt(v.priced)} ${plural(v.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(v.cards)}`)]) : null,
@@ -9553,7 +9555,7 @@
   function viewCote(c) {
     if (!M.loaded) return null;
     const p = prices.value.get(String(c.id));
-    if (!p) return h('div', { class: 'cote' }, [h('h3', null, 'Cote'), h('p', { class: 'small muted' }, M.value && M.value.priced ? "Pas encore lue : le classeur la lira à une prochaine lecture (les plus anciennes d'abord), ou clique « Mettre à jour les cotes »." : MARKET_HOW)]);
+    if (!p) return h('div', { class: 'cote' }, [h('h3', null, 'Cote'), h('p', { class: 'small muted' }, M.value && M.value.priced ? "Pas encore lue : le classeur la lira à une prochaine lecture automatique (les plus anciennes d'abord, toutes les 20 minutes)." : MARKET_HOW)]);
     const { list, approx } = variantsOf(c);
     let total = 0;
     let all = true;

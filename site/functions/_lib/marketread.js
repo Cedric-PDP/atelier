@@ -3,6 +3,8 @@
 // automatiques (cron.js). Une passe : plan du classeur (cartes à coter, cartes qui manquent aux collections), enchères et
 // ventes du joueur, titres -> cartes du jeu, enchères en cours sur les cartes voulues et leurs cotes ; la lecture du
 // marché est alors rangée ; puis les cotes des cartes du plan (les plus anciennes d'abord) tant que le plafond le permet.
+// Au clic, la passe est légère (2026-10-23) : elle s'arrête une fois la lecture du marché rangée, et laisse les cotes du
+// plan aux lectures automatiques (5 à 12 requêtes au lieu de 30).
 // Une requête par seconde au plus, SUPA_MAX par passe (la suivante reprend aux cotes les plus anciennes ; plus vite pour les
 // membres qui ont coché « Synchro rapide du marché », voir FAST_*) ; les cotes lues
 // sont gardées même si une erreur arrête tout, et l'échec noté avec sa raison (market.attempt). Cotes : médiane des 30
@@ -97,9 +99,10 @@ function fit(lv) {
   while (big() && lv.bids.length + lv.sales.length) (lv.bids.length >= lv.sales.length ? lv.bids : lv.sales).pop();
 }
 
-// Une passe (via : clic | cron ; auto : lecture automatique, sautée si une autre a commencé il y a moins de 5 min).
-// → {ok: true, read, left, deals, running}, ou {skip: true, until}. Échec : noté (writeFail), puis relancé.
-export async function marketPass(env, user, { via, auto = false } = {}) {
+// Une passe (via : clic | cron ; auto : lecture automatique, sautée si une passe complète a commencé il y a moins de
+// 5 min ; light : sans les cotes du plan). → {ok: true, read, left, deals, running, light?}, ou {skip: true, until}.
+// Échec : noté (writeFail), puis relancé.
+export async function marketPass(env, user, { via, auto = false, light = false } = {}) {
   const db = env.DB;
   const lease = await acquireLease(db, user.id, LEASE_MS);
   if (!lease) {
@@ -114,20 +117,20 @@ export async function marketPass(env, user, { via, auto = false } = {}) {
       throw err;
     }
     s.via = via;
-    const plan = await planFor(db, user, { auto, cards: user.fast_sync ? FAST_PLAN : PLAN_CARDS });
+    const plan = await planFor(db, user, { auto, light, cards: user.fast_sync ? FAST_PLAN : PLAN_CARDS });
     if (plan.skip) return { skip: true, until: plan.until };
     if (!(plan.quota > 0)) {
       const why = "Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu.";
       await writeFail(db, user, { why, auto });
       throw new HttpError(429, why, { quota: 0 });
     }
-    return await read(env, user, s, plan, auto);
+    return await read(env, user, s, plan, auto, light);
   } finally {
     await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
   }
 }
 
-async function read(env, user, s, plan, auto) {
+async function read(env, user, s, plan, auto, light) {
   const db = env.DB;
   const uid = s.uid || user.game_uid || '';
   const fast = !!user.fast_sync;
@@ -276,7 +279,7 @@ async function read(env, user, s, plan, auto) {
     fit(lv);
     await writeLive(db, user, lv);
     told = true;
-    await take(cards.filter((id) => !fresh[id]));
+    if (!light) await take(cards.filter((id) => !fresh[id]));
   } catch (err) {
     fail = err;
   }
@@ -302,10 +305,12 @@ async function read(env, user, s, plan, auto) {
     left: Math.max(0, (Number(plan.stale) || 0) - sent.filter((x) => planned.has(x.id)).length),
     deals: lv.deals.length,
     running: lv.bids.filter((x) => x.st === 'run').length,
+    ...(light ? { light: true } : {}),
   };
 }
 
-// POST /api/market/refresh {} : « Mettre à jour les cotes ». Refusé (429) moins d'une minute après le début de la
+// POST /api/market/refresh {} : « Actualiser le marché », une passe légère (tes enchères, tes ventes, les bonnes affaires et
+// leurs cotes ; les cotes du plan restent aux lectures automatiques). Refusé (429) moins d'une minute après le début de la
 // précédente passe, d'où qu'elle vienne.
 export async function refreshMarket(env, user) {
   const prev = await lastAttempt(env.DB, user.id);
@@ -313,9 +318,9 @@ export async function refreshMarket(env, user) {
   const now = Date.now();
   if (since > now - CLICK_GAP_MS && since <= now + 60_000) {
     const wait = Math.max(1, Math.ceil((since + CLICK_GAP_MS - now) / 1000));
-    throw new HttpError(429, "Cotes déjà lues il y a moins d'une minute : patiente un instant.", { retry_after: Math.min(wait, 60) });
+    throw new HttpError(429, "Marché déjà relu il y a moins d’une minute : patiente un instant.", { retry_after: Math.min(wait, 60) });
   }
-  return marketPass(env, user, { via: 'clic', auto: false });
+  return marketPass(env, user, { via: 'clic', auto: false, light: true });
 }
 
 // Motif ilike de PostgREST pour « contient q » : les jokers de LIKE (%, _) et l'échappement (\) de q pris à la lettre,

@@ -19,6 +19,7 @@ const { openSession, renewSession, sealSession, sessionOf } = await import(lib('
 const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
 const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js'));
+const { marketPass } = await import(lib('_lib/marketread.js'));
 
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
@@ -3171,7 +3172,16 @@ async function marketMember(name, e, cards = (uid) => ownCards(uid, 3)) {
     e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE user_id = ? AND json_valid(attempt)").run(isoAgo(10 * 60_000), u.user.id);
     return call('POST', 'market/refresh', { key: u.key, e, body: {} });
   };
-  return { u, uid, id: u.user.id, market, press };
+  // Passe complète (celle des lectures automatiques, avec les cotes du plan), sans passer par le cron ; rendue comme une
+  // réponse de l'API.
+  const full = async () => {
+    try {
+      return { status: 200, json: await marketPass(e, userRow(u.user.id, e), { via: 'clic' }) };
+    } catch (err) {
+      return { status: err.status || 500, json: { error: err.message, ...(err.extra || {}) } };
+    }
+  };
+  return { u, uid, id: u.user.id, market, press, full };
 }
 const priceOf = (e, id) => {
   const row = e.DB.sqlite.prepare('SELECT data FROM prices WHERE card_id = ?').get(id);
@@ -3222,7 +3232,7 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
   for (let i = 5; i < 10; i++) addAuctions(sale(`c${i}`, 'C', 40, i * H), sale(`c${i}`, 'C', 50, i * H), sale(`c${i}`, 'C', 60, i * H));
   const t0 = Date.now();
   const n0 = supa.rest().length;
-  const r = await m.press();
+  const r = await m.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.deepEqual(r.json, { ok: true, read: 63, left: 0, deals: 2, running: 1 });
   // Rythme et plafond : 30 requêtes au plus, une pause d'une seconde (ici REFRESH_PAUSE_MS) avant chacune sauf la première.
@@ -3261,7 +3271,7 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
   // Passe suivante : titres déjà résolus pas recherchés, cotes fraîches (moins de 12 h) pas relues ; les cartes des
   // enchères, elles, le sont toujours.
   const n1 = supa.rest().length;
-  const again = await m.press();
+  const again = await m.full();
   assert.deepEqual([again.status, again.json.left], [200, 0]);
   const p1 = restPaths(n1);
   assert.ok(!p1.some((p) => p.startsWith('cards?')), 'titres déjà résolus redemandés');
@@ -3282,14 +3292,14 @@ await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au 
     e.DB.sqlite.prepare('UPDATE prices SET read_at = ? WHERE card_id = ?').run(at, id);
   }
   let n0 = supa.rest().length;
-  let r = await p.press();
+  let r = await p.full();
   assert.deepEqual([r.status, r.json.read, r.json.left], [200, 3, 0], JSON.stringify(r.json));
   assert.ok(restPaths(n0).some((x) => x.includes('card_id=in.("own-d","own-c","own-b")')), restPaths(n0).join('\n'));
   // 2 950 cartes : 2 requêtes (enchères, ventes) + 28 de cotes ; la première carte a 1 200 ventes (deux pages).
   const m = await marketMember('Pio', e, (uid) => Array.from({ length: 2950 }, (_, i) => rowOf({ id: `p${String(i).padStart(4, '0')}`, title: `P ${i}`, rarity: 'C', count: 1 }, { uid })));
   for (let i = 0; i < 1200; i++) addAuctions(sale('p0000', 'C', 10 + (i % 7), (i + 1) * 60_000));
   n0 = supa.rest().length;
-  r = await m.press();
+  r = await m.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal(supa.rest().length - n0, 30, 'plafond de 30 requêtes');
   assert.deepEqual([r.json.read, r.json.left], [2700, 250]);
@@ -3299,7 +3309,7 @@ await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au 
   const asked = (list) => list.filter((x) => x.includes('settled_sold')).flatMap((x) => x.match(/card_id=in\.\(([^)]*)\)/)[1].split(',').map((s) => s.replace(/"/g, '')));
   const before = new Set(asked(paths));
   n0 = supa.rest().length;
-  r = await m.press();
+  r = await m.full();
   assert.deepEqual([r.status, r.json.read, r.json.left], [200, 250, 0]);
   const now = asked(restPaths(n0));
   assert.equal(new Set(now).size, 250);
@@ -3329,11 +3339,11 @@ await test('marché : « Synchro rapide du marché » (fast_sync), 60 requêtes 
   assert.deepEqual([r.status, r.json.fast_sync, r.json.auto_sync], [200, true, true]);
   assert.equal((await call('GET', 'me', { key: fast.u.key, e })).json.fast_sync, true);
   let n0 = supa.rest().length;
-  r = await fast.press();
+  r = await fast.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal(supa.rest().length - n0, 60, 'plafond de 60 requêtes avec la case cochée');
   n0 = supa.rest().length;
-  r = await slow.press();
+  r = await slow.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
   assert.equal(supa.rest().length - n0, 30, 'les autres gardent 30 requêtes');
   clearMarketGame();
@@ -3348,12 +3358,53 @@ await test('marché : lot partiel au plafond (seules les cartes lues en entier g
   const m = await marketMember('Lou', e, (uid) => Array.from({ length: 100 }, (_, i) => rowOf({ id: `k${String(i).padStart(3, '0')}`, title: `K ${i}`, rarity: 'C', count: 1 }, { uid })));
   for (let i = 0; i < 27_500; i++) addAuctions(sale('k000', 'C', 10, (i + 1) * 1000));
   for (let i = 0; i < 600; i++) addAuctions(sale('k001', 'C', 20, (i + 1) * 1000));
-  const r = await m.press();
+  const r = await m.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
   // 28 pages lues : k000 entière (27 500), puis 500 de k001 : k001 coupée (dernière vue) n'est pas gardée, ni les autres.
   assert.deepEqual([r.json.read, r.json.left], [1, 99]);
   assert.equal(priceOf(e, 'k000').C.n, 27_500);
   assert.equal(priceOf(e, 'k001'), undefined);
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('marché : « Actualiser le marché » au clic = passe légère (sans les cotes du plan), qui ne repousse pas la passe complète du cron', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const m = await marketMember('Lea', e, (uid) => Array.from({ length: 500 }, (_, i) => rowOf({ id: `l${String(i).padStart(3, '0')}`, title: `L ${i}`, rarity: 'C', count: 1 }, { uid })));
+  const soon = new Date(Date.now() + H).toISOString();
+  addAuctions({ id: 'ls1', card_id: 'l001', status: 'active', snapshot_rarity: 'C', is_shiny: false, seller_id: m.uid, base_amount: 30, current_bid: null, current_bidder_id: null, end_at: soon },
+    sale('l001', 'C', 40, H), sale('l001', 'C', 50, H), sale('l001', 'C', 60, H));
+  // Avant tout clic : une passe complète (cron), notée sans light.
+  assert.equal(await runCron(e, MARKET_CRON), '1 membre lu, 0 échec');
+  assert.equal((await m.market()).attempt.light, undefined);
+  // Clic (press recule de 10 min le début de la passe du cron, pour passer la limite d'un clic par minute) : mes enchères, mes ventes, puis les cotes de la carte en vente ; aucune cote du plan.
+  const n0 = supa.rest().length;
+  const r = await m.press();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { ok: true, read: 1, left: 0, deals: 0, running: 0, light: true });
+  const paths = restPaths(n0);
+  assert.equal(paths.length, 3, paths.join('\n'));
+  assert.ok(paths[2].includes('card_id=in.("l001")'), paths[2]);
+  assert.equal(priceOf(e, 'l001').C.p, 50);
+  const mk = await m.market();
+  assert.deepEqual([mk.attempt.ok, mk.attempt.light, mk.attempt.auto], [true, true, false]);
+  assert.ok(Date.parse(mk.attempt.full) < Date.parse(mk.attempt.start) - 9 * 60_000, 'full : début de la passe du cron, gardé : ' + JSON.stringify(mk.attempt));
+  assert.deepEqual(mk.live.sales.map((x) => [x.a, x.st]), [['ls1', 'run']]);
+  // Le cron regarde la dernière passe complète : récente, il saute ; 25 min plus tard, il relit, même juste après un clic.
+  assert.equal(await runCron(e, MARKET_CRON), '0 membre lu, 0 échec');
+  e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.full', ?) WHERE user_id = ?").run(isoAgo(25 * 60_000), m.id);
+  assert.equal((await m.press()).status, 200);
+  assert.equal(await runCron(e, MARKET_CRON), '1 membre lu, 0 échec');
+  const after = (await m.market()).attempt;
+  assert.deepEqual([after.light, after.auto, 'full' in after], [undefined, true, false]);
+  // Échec d'une passe légère : light et full gardés.
+  supa.fail = (url) => (url.includes('/rest/') ? { status: 502 } : null);
+  assert.equal((await m.press()).status, 502);
+  supa.fail = null;
+  const failed = (await m.market()).attempt;
+  assert.deepEqual([failed.ok, failed.light], [false, true]);
+  assert.ok(Date.parse(failed.full) < Date.parse(failed.start) - 9 * 60_000, 'full gardé : ' + JSON.stringify(failed));
   clearMarketGame();
   e.DB.close();
 });
@@ -3369,7 +3420,7 @@ await test('marché : limite du jeu (429, automation_limit) au milieu → cotes 
     // déjà rangée.
     const base = supa.calls.length;
     supa.fail = (url, n) => (n === base + 5 ? { status, body } : null);
-    const r = await m.press();
+    const r = await m.full();
     supa.fail = null;
     assert.deepEqual([r.status, r.json.limited], [429, true], JSON.stringify(r.json));
     assert.equal(r.json.error, 'Le jeu limite les lectures automatiques : réessaie plus tard. 200 cotes lues avant l\'arrêt ont été gardées, avec les bonnes affaires et tes enchères.');
@@ -3422,10 +3473,10 @@ await test('cron marché : membres éligibles, lus il y a moins de 20 min sauté
   const b = await marketMember('Mkb', e);
   const c = await marketMember('Mkc', e);
   e.DB.sqlite.prepare('UPDATE users SET auto_sync = 0 WHERE id = ?').run(c.id);
-  // b : lu au clic il y a 10 min → sauté.
+  // b : relu au clic (passe légère) : pas sauté, le cron fait sa passe complète.
   assert.equal((await b.press()).status, 200);
   let n0 = supa.rest().length;
-  assert.equal(await runCron(e, MARKET_CRON), '1 membre lu, 0 échec');
+  assert.equal(await runCron(e, MARKET_CRON), '2 membres lus, 0 échec');
   assert.ok(supa.rest().length > n0);
   let at = (await a.market()).attempt;
   assert.deepEqual([at.ok, at.auto, at.v], [true, true, 'serveur']);

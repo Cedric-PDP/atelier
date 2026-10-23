@@ -171,22 +171,32 @@ export async function lastAttempt(db, userId) {
   return parseAttempt(row && row.attempt);
 }
 
+// Début de la dernière passe complète (2026-10-23) : une passe légère (au clic, light : true) garde dans full celui de la
+// passe complète d'avant (null s'il n'y en a pas eu) ; c'est lui que regardent les lectures automatiques, pour qu'un clic
+// ne repousse jamais la relecture des cotes du plan.
+export const fullStart = (a) => (a ? (a.light ? a.full ?? null : a.start) : null);
+export const FULL_START_SQL = (col) => `CASE WHEN json_valid(${col}) THEN CASE WHEN json_extract(${col}, '$.light')
+  THEN json_extract(${col}, '$.full') ELSE json_extract(${col}, '$.start') END END`;
+
 // Ce qu'une passe doit lire : {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}, quota}.
-// auto : lecture automatique, refusée ({skip: true, until}, rien d'autre de lu ni d'écrit) si une lecture de ce classeur
-// a commencé il y a moins de 5 min. Sinon l'essai est noté (start, v, auto) : la page voit qu'une lecture a commencé,
-// puis comment elle a fini. cards : nombre de cartes à coter rendues au plus.
-export async function planFor(db, user, { auto = false, cards = PLAN_CARDS } = {}) {
+// auto : lecture automatique, refusée ({skip: true, until}, rien d'autre de lu ni d'écrit) si une passe complète de ce
+// classeur a commencé il y a moins de 5 min. Sinon l'essai est noté (start, v, auto ; light et full pour une passe
+// légère) : la page voit qu'une lecture a commencé, puis comment elle a fini. cards : nombre de cartes à coter rendues
+// au plus (0 pour une passe légère : seulement stale et fresh).
+export async function planFor(db, user, { auto = false, light = false, cards = PLAN_CARDS } = {}) {
   const row = await db.prepare('SELECT ids, attempt FROM market WHERE user_id = ?1').bind(user.id).first();
-  const since = Date.parse((parseAttempt(row && row.attempt) || {}).start);
+  const prev = parseAttempt(row && row.attempt);
+  const since = Date.parse(fullStart(prev) || '');
   if (auto && since > Date.now() - AUTO_GAP && since <= Date.now() + 60_000) {
     return { skip: true, until: new Date(since + AUTO_GAP).toISOString() };
   }
   const cutoff = new Date(Date.now() - FRESH_MS).toISOString();
+  const attempt = light ? { start: nowIso(), v: READER, auto: false, light: true, full: fullStart(prev) } : { start: nowIso(), v: READER, auto: !!auto };
   const [plan, wanted, quota] = await db.batch([
-    db.prepare(PLAN).bind(user.id, cutoff, cards),
+    db.prepare(PLAN).bind(user.id, cutoff, light ? 0 : cards),
     db.prepare(WANTED).bind(user.id),
     db.prepare(QUOTA).bind(user.id),
-    db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify({ start: nowIso(), v: READER, auto: !!auto })),
+    db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify(attempt)),
   ]);
   const head = plan.results.find((r) => r.h === 0) || { stale: 0, fresh: 0 };
   const titles = wanted.results.map((r) => r.t);
@@ -213,6 +223,7 @@ export async function writeFail(db, user, { why, auto = false }) {
     start: prev ? prev.start : now,
     v: prev ? cleanVersion(prev.v) ?? READER : READER,
     auto: !!auto,
+    ...(prev && prev.light ? { light: true, full: prev.full ?? null } : {}),
     end: now,
     ok: false,
     why: text,

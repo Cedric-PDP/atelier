@@ -10,6 +10,7 @@ import { acquireLease, balanceStatement, freshAuth, readBalance, releaseLease, s
 import { syncState } from './import.js';
 import { FAILS_MAX, LEASE_MS, checkCollection, readCollection } from './refresh.js';
 import { errorEntry, writeLog } from './synclog.js';
+import { FULL_START_SQL } from './market.js';
 import { marketPass } from './marketread.js';
 
 export { FAILS_MAX, LEASE_MS };
@@ -144,10 +145,10 @@ async function collectionPass(env, { now }) {
   return limited ? `limite du jeu (${text})` : text;
 }
 
-// Début de la dernière passe de marché de chaque compte (market.attempt.start), les plus anciennes d'abord : une passe
-// dure environ 30 s par membre (30 requêtes à une par seconde), tous ne tiennent pas dans un tick ; l'ordre fait tourner.
-const byLastMarket = `(SELECT CASE WHEN json_valid(m.attempt) THEN json_extract(m.attempt, '$.start') END FROM market AS m
-  WHERE m.user_id = users.id), id`;
+// Début de la dernière passe complète de marché de chaque compte (FULL_START_SQL : une passe légère, au clic, ne compte
+// pas), les plus anciennes d'abord : une passe dure environ 30 s par membre (30 requêtes à une par seconde), tous ne
+// tiennent pas dans un tick ; l'ordre fait tourner.
+const byLastMarket = `(SELECT ${FULL_START_SQL('m.attempt')} FROM market AS m WHERE m.user_id = users.id), id`;
 
 async function marketCronPass(env, { now }) {
   const db = env.DB;
@@ -155,13 +156,13 @@ async function marketCronPass(env, { now }) {
   const counts = { read: 0, failed: 0 };
   let limited = false;
   const { results } = await db.prepare(
-    "SELECT user_id, CASE WHEN json_valid(attempt) THEN json_extract(attempt, '$.start') END AS start FROM market WHERE attempt IS NOT NULL",
+    `SELECT user_id, ${FULL_START_SQL('attempt')} AS start FROM market WHERE attempt IS NOT NULL`,
   ).all();
   const lastStart = new Map(results.map((r) => [r.user_id, Date.parse(r.start || '')]));
   for (const member of await eligibleMembers(db, byLastMarket)) {
     if (Date.now() - start >= CRON_BUDGET_MS) break;
     const since = lastStart.get(member.id);
-    if (since > now - MARKET_EVERY_MS && since <= now + 60_000) continue; // lu il y a moins de 20 min (clic compris)
+    if (since > now - MARKET_EVERY_MS && since <= now + 60_000) continue; // passe complète il y a moins de 20 min (un clic, léger, ne compte pas)
     try {
       const r = await marketPass(env, member, { via: 'cron', auto: true });
       if (r.skip) continue;

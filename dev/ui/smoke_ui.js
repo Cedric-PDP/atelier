@@ -468,15 +468,15 @@ function mockApi() {
         const m = st.market || {};
         return json(200, { value: m.value || { value: 0, priced: 0, cards: st.cards.length, approx: 0 }, history: m.history || [], live: m.live || null, live_at: m.live_at || null, attempt: m.attempt || null });
       }
-      // « Mettre à jour les cotes » : une passe du serveur (une par minute), qui pose la lecture du marché de ce membre.
+      // « Actualiser le marché » : une passe légère du serveur (une par minute), qui pose la lecture du marché de ce membre.
       if (p === '/api/market/refresh' && method === 'POST') {
         if (!st.linked) return json(401, { error: 'Relie ton compte du jeu pour lire le marché.', needs_link: true });
         const wait = 60_000 - (Date.now() - (st.marketClickAt || 0));
-        if (wait > 0) return json(429, { error: "Cotes déjà lues il y a moins d'une minute : patiente un instant.", retry_after: Math.ceil(wait / 1000) });
+        if (wait > 0) return json(429, { error: "Marché déjà relu il y a moins d’une minute : patiente un instant.", retry_after: Math.ceil(wait / 1000) });
         st.marketClickAt = Date.now();
         const now = new Date().toISOString();
-        st.market = { ...(st.market || {}), live: { deals: [], bids: [], sales: [] }, live_at: now, market_at: now, attempt: { start: now, end: now, ok: true, v: 'serveur' } };
-        return json(200, { ok: true, read: 12, left: 30, deals: 3, running: 2 });
+        st.market = { ...(st.market || {}), live: { deals: [], bids: [], sales: [] }, live_at: now, market_at: now, attempt: { start: now, end: now, ok: true, v: 'serveur', light: true, full: null } };
+        return json(200, { ok: true, read: 12, left: 30, deals: 3, running: 2, light: true });
       }
       // « Depuis le jeu » : les cartes du jeu dont le titre contient q (self.gameCards, lignes de la table `cards`).
       if (p.startsWith('/api/game/cards') && method === 'GET') {
@@ -5102,7 +5102,7 @@ async function main() {
     d.getElementById('tab-marche').click();
     await settle(40);
     // Nouvelle lecture du serveur (market_at de GET /api/me, relu chaque minute) : l'onglet est relu, une fois. Ici un essai
-    // raté : la raison est dite ; puis une lecture de 3 h : elle est dite ancienne ; puis « Mettre à jour les cotes » (une
+    // raté : la raison est dite ; puis une lecture de 3 h : elle est dite ancienne ; puis « Actualiser le marché » (une
     // passe du serveur, une par minute) ; puis jamais de lecture ni d'essai : quoi faire.
     {
       const reads = () => apiLog.filter((x) => x === 'GET /api/market').length;
@@ -5126,24 +5126,24 @@ async function main() {
       await settle(80);
       check(panel().includes('Lecture du marché par le classeur : il y a 3 h') && panel().includes('Elle date de plus de 2 h') && !panel().includes('Dernier essai'),
         'lecture ancienne : ' + panel().slice(0, 1200));
-      // « Mettre à jour les cotes » : POST /api/market/refresh, puis le marché est relu ; un second clic tout de suite est refusé
+      // « Actualiser le marché » : POST /api/market/refresh (passe légère), puis le marché est relu ; un second clic tout de suite est refusé
       // (429) et dit combien attendre ; un compte délié côté serveur (401 needs_link) est dit.
-      check(!btn('Relire') && btn('Mettre à jour les cotes'), '« Mettre à jour les cotes » attendu à la place de « Relire »');
+      check(!btn('Relire') && !btn('Mettre à jour les cotes') && btn('Actualiser le marché'), '« Actualiser le marché » attendu à la place de « Relire » et « Mettre à jour les cotes »');
       const mark2 = apiLog.length;
-      btn('Mettre à jour les cotes').click();
+      btn('Actualiser le marché').click();
       await settle(120);
       const sent = apiLog.slice(mark2);
       check(sent[0] === 'POST /api/market/refresh' && sent[1] === 'GET /api/market' && sent.filter((x) => x === 'POST /api/market/refresh').length === 1, 'mise à jour des cotes : appels ' + sent.join(', '));
-      check(panel().includes('Cotes lues : 12 cartes (il en reste 30) · 3 bonnes affaires · 2 enchères en cours') && panel().includes("Lecture du marché par le classeur : à l'instant"),
+      check(panel().includes("Marché relu : 3 bonnes affaires · 2 enchères en cours · 12 cotes relues (30 autres à relire : le classeur s'en charge toutes les 20 minutes)") && panel().includes("Lecture du marché par le classeur : à l'instant"),
         'résultat de la mise à jour des cotes : ' + panel().slice(0, 600));
-      btn('Mettre à jour les cotes').click();
+      btn('Actualiser le marché').click();
       await settle(80);
-      check(/Cotes déjà lues il y a moins d'une minute : patiente un instant\. \(encore \d+ s\)/.test(panel()), 'second clic : attente non dite : ' + panel().slice(0, 600));
+      check(/Marché déjà relu il y a moins d’une minute : patiente un instant\. \(encore \d+ s\)/.test(panel()), 'second clic : attente non dite : ' + panel().slice(0, 600));
       um.linked = false;
       um.marketClickAt = 0;
-      btn('Mettre à jour les cotes').click();
+      btn('Actualiser le marché').click();
       await settle(80);
-      check(panel().includes('Relie ton compte du jeu pour lire le marché.') && !panel().includes('Cotes lues'), 'compte délié côté serveur : message attendu : ' + panel().slice(0, 600));
+      check(panel().includes('Relie ton compte du jeu pour lire le marché.') && !panel().includes('Marché relu'), 'compte délié côté serveur : message attendu : ' + panel().slice(0, 600));
       um.linked = true;
       d.getElementById('tab-marche').click();
       await settle(40);
@@ -5155,8 +5155,8 @@ async function main() {
       await pm.live();
       await settle(80);
     }
-    check(panel().includes('Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») puis clique « Mettre à jour les cotes »') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
-    check(panel().includes("Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Mettre à jour les cotes »."), 'jamais de lecture : quoi faire non dit');
+    check(panel().includes('Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») : le classeur les lit tout seul toutes les 20 minutes') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    check(panel().includes("Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Actualiser le marché »."), 'jamais de lecture : quoi faire non dit');
     {
       const pm2 = openPage({ idb: 'absent' });
       check(await waitFor(() => pm2.count() === 29), 'classeur de Mona non rouvert');
