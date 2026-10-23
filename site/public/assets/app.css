@@ -1072,6 +1072,9 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   .mbar__dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 99px; background: var(--warn); box-shadow: 0 0 0 2px var(--surface); }
   .mbar__act.err .mbar__dot { background: var(--danger); }
   .mbar__title { min-width: 0; display: grid; line-height: 1.2; }
+  /* Zone du code SOS de Kokoro Farmer (app.js) : un appui long n'y sélectionne rien et n'ouvre aucun menu. */
+  .mbar__mark, .mbar__title { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  .mbar__mark img { -webkit-user-drag: none; pointer-events: none; }
   .mbar__name { font: 600 17px/1.25 var(--f-head); letter-spacing: -0.01em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mbar__kicker { font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .mbar__status { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 2px 10px; padding: 0 8px 9px; font-size: 12.5px; color: var(--muted); }

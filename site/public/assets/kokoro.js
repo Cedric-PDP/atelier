@@ -1,4 +1,5 @@
-/* Kokoro Farmer : la page cachée du classeur, ouverte par le code Konami (↑ ↑ ↓ ↓ ← → ← → B A, guetté par app.js).
+/* Kokoro Farmer : la page cachée du classeur, ouverte par le code Konami (↑ ↑ ↓ ↓ ← → ← → B A)
+   ou, sur téléphone, par SOS en morse tapé sur le titre de la barre du haut (guettés par app.js).
    Un faux booster de 8 cartes, seulement des UR et des L, tirées des cartes que le classeur connaît (les tiennes, puis les
    éléments de tes collections). Pour rire : rien n'est enregistré, rien ne va dans une collection, rien ne part au serveur.
    Il définit `window.KokoroFarmer = {open(pool)}`, pool = [{title, image, rarity, category, atk, def}].

@@ -11094,6 +11094,29 @@
     konamiKeys = [];
     loadKokoro().then(() => window.KokoroFarmer.open(kokoroPool())).catch(() => {});
   }
+  // Sur téléphone (pas de clavier) : SOS en morse (··· ——— ···) tapé sur le titre de la barre du haut (logo et nom de la
+  // vue, rien de cliquable) : appui court = point, appui d'au moins 300 ms = trait ; plus de 1,5 s entre deux appuis, ou un
+  // appui de plus de 1,5 s, et on recommence.
+  const SOS = '...---...';
+  let morse = '', morseDown = 0, morseUp = 0;
+  const morseZone = (t) => !!(t && t.closest && t.closest('.mbar__mark, .mbar__title'));
+  function morseDownAt(e) {
+    if (!morseZone(e.target)) { morse = ''; return; }
+    morseDown = performance.now();
+    if (morseDown - morseUp > 1500) morse = '';
+  }
+  function morseUpAt(e) {
+    if (!morseDown) return;
+    const now = performance.now(), held = now - morseDown;
+    morseDown = 0;
+    if (!morseZone(e.target) || held > 1500) { morse = ''; return; }
+    morseUp = now;
+    morse = (morse + (held < 300 ? '.' : '-')).slice(-SOS.length);
+    if (morse !== SOS) return;
+    morse = '';
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 60]);
+    loadKokoro().then(() => window.KokoroFarmer.open(kokoroPool())).catch(() => {});
+  }
 
   function onKey(e) {
     watchKonami(e);
@@ -11351,6 +11374,10 @@
     setup() {
       onMounted(() => {
         window.addEventListener('keydown', onKey);
+        window.addEventListener('pointerdown', morseDownAt);
+        window.addEventListener('pointerup', morseUpAt);
+        window.addEventListener('pointercancel', () => { morseDown = 0; morse = ''; });
+        window.addEventListener('contextmenu', (e) => { if (morseZone(e.target)) e.preventDefault(); }); // appui long sur Android
         window.addEventListener('hashchange', () => { const k = takeHashKey(); if (k != null) boot(k); else onRouteChange(); });
         window.addEventListener('popstate', onRouteChange);
         document.addEventListener('visibilitychange', onVisible);
