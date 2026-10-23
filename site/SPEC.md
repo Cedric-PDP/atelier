@@ -709,9 +709,10 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   tiennes), cases à cocher, **doubles cochés d'avance**, « Tout cocher · Rien · Les doubles » par colonne, le résumé
   « Tu donnes 2 cartes, tu reçois 1 carte. », 40 cartes au plus. Sous chaque colonne (2026-10-23) : « Et des wikibidous »,
   un montant (entier, vide = 0) et le solde de celui qui paie lu à sa dernière synchro (« Ton solde : 120W (lu il y a 5 min) »,
-  « Solde de Paul : 40W », ou « pas encore lu ») ; un montant au-dessus du solde connu est signalé (« pas assez, le jeu
-  refusera sans doute ») sans bloquer l'envoi (le solde lu peut être vieux : c'est le jeu qui vérifie) ; un montant invalide
-  le bloque. Des wikibidous seuls, sans carte, suffisent ; le résumé les ajoute (« Tu donnes 1 carte et 5W, tu reçois 1 carte. »). Sans compte du jeu relié : avertissement, envoi
+  « Solde de Paul : 40W », ou « pas encore lu ») ; le montant est **plafonné à ce solde** (2026-10-23, demande de
+  l'utilisateur : bloquer plutôt qu'avertir) : le champ a ce `max`, un montant tapé au-dessus est ramené au solde, un solde
+  à 0 désactive le champ, et un solde relu plus bas qu'un montant déjà tapé bloque l'envoi (« pas assez, baisse le
+  montant »). Solde pas encore lu : pas de plafond, le jeu vérifie. Un montant invalide bloque aussi l'envoi. Des wikibidous seuls, sans carte, suffisent ; le résumé les ajoute (« Tu donnes 1 carte et 5W, tu reçois 1 carte. »). Sans compte du jeu relié : avertissement, envoi
   désactivé et « Relier mon compte ». « Proposer l'échange dans le jeu » appelle `POST /api/trades/create` ; une erreur
   reste dans la fenêtre ; une réussite dit ce qui part et ce qui arrive, et donne le lien vers les échanges du jeu. Le
   serveur, avec la session reliée du membre, sous son bail (2 min) s'il est libre. Une lecture automatique peut tenir ce

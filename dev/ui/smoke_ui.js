@@ -3002,8 +3002,11 @@ async function main() {
         check(send().disabled && text(md()).includes('nombre entier'), 'montant invalide : envoi désactivé attendu');
         type(byId('trade-getWb'), '50');
         await settle();
-        check(!send().disabled && text(md()).includes('Tu donnes 0 carte, tu reçois 0 carte et 50W.') && text(side(1)).includes('pas assez'),
-          'wikibidous seuls : ' + text(md()).slice(-300));
+        check(!send().disabled && text(md()).includes('Tu donnes 0 carte, tu reçois 0 carte et 40W.') && byId('trade-getWb').value === '40'
+          && byId('trade-getWb').getAttribute('max') === '40', 'wikibidous seuls, plafonnés au solde de Paul (40W) : ' + text(md()).slice(-300));
+        type(byId('trade-giveWb'), '500');
+        await settle();
+        check(byId('trade-giveWb').value === '120' && text(md()).includes('et 120W'), 'plafond de ton solde (120W) : ' + text(md()).slice(-300));
         type(byId('trade-getWb'), '');
         type(byId('trade-giveWb'), '5');
         await settle();

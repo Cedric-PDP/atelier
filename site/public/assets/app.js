@@ -10515,20 +10515,31 @@
     const n = tn.give.length + tn.get.length;
     const giveWb = tradeWb(tn.giveWb);
     const getWb = tradeWb(tn.getWb);
+    const myBal = wbOf(S.me && S.me.wikibidous);
+    const hisBal = tn.f.wb;
     const badWb = giveWb === null || getWb === null;
+    // Jamais plus que le solde lu à la dernière synchro (le champ s'y arrête ; un solde relu plus bas bloque l'envoi). Solde
+    // pas encore lu : pas de plafond, le jeu vérifie.
+    const overWb = !badWb && ((myBal && giveWb > myBal.n) || (hisBal && getWb > hisBal.n));
     const anyWb = !badWb && (giveWb > 0 || getWb > 0);
-    // Wikibidous d'un côté : le montant, et le solde de celui qui paie lu à sa dernière synchro (le jeu vérifie le vrai).
+    // Wikibidous d'un côté : le montant, plafonné au solde de celui qui paie lu à sa dernière synchro.
     const wbField = (key, label, bal, who) => {
       const v = tradeWb(tn[key]);
       const over = bal && v !== null && v > bal.n;
       const id = 'trade-' + key;
+      const onInput = (e) => {
+        const n = tradeWb(e.target.value);
+        if (bal && n !== null && n > bal.n) e.target.value = String(bal.n);
+        tn[key] = e.target.value;
+        tn.error = '';
+      };
       return h('div', { class: 'trade-wb' }, [
         h('label', { class: 'trade-wb__row', for: id }, [h('span', null, label),
-          h('span', { class: 'sell-input' }, [h('input', { id, class: 'field', type: 'number', min: '0', step: '1', inputmode: 'numeric', placeholder: '0',
-            value: tn[key], disabled: tn.busy, 'aria-describedby': id + '-bal', onInput: (e) => { tn[key] = e.target.value; tn.error = ''; } }),
+          h('span', { class: 'sell-input' }, [h('input', { id, class: 'field', type: 'number', min: '0', max: bal ? String(bal.n) : null, step: '1', inputmode: 'numeric', placeholder: '0',
+            value: tn[key], disabled: tn.busy || (bal && bal.n === 0), 'aria-describedby': id + '-bal', onInput }),
           h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
         h('p', { id: id + '-bal', class: ['small', over ? 'warn' : 'muted'] }, bal
-          ? [`${who} : `, priceTag(bal.n, { tag: 'span' }), bal.at ? ` (lu ${agoText(bal.at)})` : '', over ? ' : pas assez, le jeu refusera sans doute.' : '']
+          ? [`${who} : `, priceTag(bal.n, { tag: 'span' }), bal.at ? ` (lu ${agoText(bal.at)})` : '', bal.n === 0 ? ' : rien à proposer.' : over ? ' : pas assez, baisse le montant.' : ' au plus.']
           : `${who} : pas encore lu (il sera lu à la prochaine synchro).`),
       ]);
     };
@@ -10558,9 +10569,9 @@
         h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, 'Relier mon compte')]),
       h('div', { class: 'trade-sides' }, [
         side('give', 'Tu donnes', give, tn.f.tshare ? `Aucune de tes cartes ne complète les collections de ${name}.` : `${name} ne partage pas ses collections : impossible de savoir ce qui lui manque.`,
-          wbField('giveWb', 'Et des wikibidous', wbOf(S.me && S.me.wikibidous), 'Ton solde')),
+          wbField('giveWb', 'Et des wikibidous', myBal, 'Ton solde')),
         side('get', 'Tu reçois', get, `Aucune carte de ${name} ne complète tes collections.`,
-          wbField('getWb', 'Et des wikibidous', tn.f.wb, `Solde de ${name}`)),
+          wbField('getWb', 'Et des wikibidous', hisBal, `Solde de ${name}`)),
       ]),
       h('p', { class: 'merge-sum', role: 'status' }, n || anyWb
         ? [`Tu donnes ${cards(tn.give.length)}`, giveWb ? [' et ', priceTag(giveWb, { tag: 'span' })] : '', `, tu reçois ${cards(tn.get.length)}`, getWb ? [' et ', priceTag(getWb, { tag: 'span' })] : '', '.']
@@ -10570,7 +10581,7 @@
       errLine(tn.error),
       foot([
         closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !(n || anyWb) || n > TRADE_MAX || badWb, onClick: () => sendTrade(tn) },
+        h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !(n || anyWb) || n > TRADE_MAX || badWb || overWb, onClick: () => sendTrade(tn) },
           tn.busy ? 'Création dans le jeu…' : 'Proposer l\'échange dans le jeu'),
       ]),
     ]);
