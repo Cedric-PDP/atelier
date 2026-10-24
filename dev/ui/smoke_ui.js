@@ -318,8 +318,21 @@ function mockApi() {
       }
       // Amis dans le jeu : statut de chaque membre qui partage ; une demande d'ami passe le membre à « sent ».
       if ((p === '/api/friends' || p.startsWith('/api/friends?')) && method === 'GET') {
-        const members = Object.fromEntries(users.filter((u) => u !== st && u.shared && u.pub).map((u) => [u.pub, st.linked ? gameFriends[u.name] || 'friends' : 'unknown']));
-        return json(200, { linked: !!st.linked, at: st.linked ? new Date().toISOString() : null, members, can_request: canRequest, auto_friend: !!st.autoFriend });
+        const list = users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, st: st.linked ? gameFriends[u.name] || 'friends' : 'unknown' }));
+        const members = Object.fromEntries(list.map((m) => [m.id, m.st]));
+        return json(200, { linked: !!st.linked, at: st.linked ? new Date().toISOString() : null, members, list, can_request: canRequest, auto_friend: !!st.autoFriend });
+      }
+      if (p === '/api/friends/request-all' && method === 'POST') {
+        const results = ((body || {}).members || []).map((id) => {
+          const f = users.find((u) => u !== st && u.shared && u.pub && u.pub === id);
+          if (!f) return { id, error: 'Ce membre ne montre pas (ou plus) ses cartes.' };
+          const now = gameFriends[f.name] || 'friends';
+          if (now !== 'none') return { id, status: now };
+          friendRequests.push(f.name);
+          gameFriends[f.name] = 'sent';
+          return { id, status: 'sent' };
+        });
+        return json(200, { results });
       }
       if (p === '/api/friends/request' && method === 'POST') {
         const f = users.find((u) => u !== st && u.shared && u.pub && u.pub === (body || {}).member);
@@ -3093,6 +3106,26 @@ async function main() {
         md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
         await settle();
         check(!md(), 'fenêtre fermée attendue');
+        // Réglages, « Amis dans le jeu » : cocher la case ouvre « Ajouter les membres pas encore amis » (Paul, pas encore ami :
+        // coché d'avance ; Léa, déjà amie), qui envoie les demandes d'un coup ; puis retour à « Échanges possibles ».
+        api.gameFriends['Paul'] = 'none';
+        api.canRequest(true);
+        await goTab('reglages');
+        check(byId('set-auto-friend') && !byId('set-auto-friend').checked, "case « Envoyer une demande d'ami aux membres du classeur » absente ou cochée");
+        byId('set-auto-friend').checked = true;
+        byId('set-auto-friend').dispatch('change');
+        await settle(80);
+        check(md() && text(md()).includes('Ajouter les membres pas encore amis') && text(md()).includes("C'est coché") && text(md()).includes('Déjà tes amis : Léa')
+          && mdBtn("Envoyer 1 demande d'ami"), 'fenêtre « Ajouter les membres pas encore amis » : ' + (md() ? text(md()) : ''));
+        mdBtn("Envoyer 1 demande d'ami").click();
+        await settle(80);
+        check(api.friendRequests.join() === 'Léa,Paul' && text(md()).includes('En attente : Paul (demande envoyée)') && byId('set-auto-friend').checked, 'demandes groupées : ' + text(md()));
+        md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
+        await settle();
+        delete api.gameFriends['Paul'];
+        api.canRequest(false);
+        await goTab('amis');
+        check(pairs().length > 0, "retour à « Échanges possibles » attendu");
       }
       exactButton('Tout le monde').click();
       await settle();

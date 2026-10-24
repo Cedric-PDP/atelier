@@ -16,6 +16,7 @@ import { nowIso } from './util.js';
 
 export const FRIENDS_TTL_MS = 60_000;
 export const AUTO_PER_PASS = 5; // demandes automatiques par membre et par passe du cron
+export const BULK_MAX = 20; // demandes d'un « Ajouter les membres pas encore amis »
 export const RETRY_ERROR_MS = 24 * 3600_000; // une demande en échec est retentée après un jour
 const AUTO_GAP_MS = 1000;
 const PUBLIC_ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -33,6 +34,7 @@ export const FRIEND_ROUTE = {
 // Membres qui partagent leurs cartes (désignés par leur identifiant public), avec ce qui les désigne dans le jeu.
 const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_uid, u.game_pseudo FROM users AS u
   WHERE u.shared = 1 AND u.public_id IS NOT NULL AND u.id <> ?1`;
+const MEMBERS_ORDER = ' ORDER BY u.created_at, u.public_id';
 
 const fold = (s) => String(s || '').toLowerCase();
 
@@ -130,13 +132,14 @@ const noteRequest = (db, userId, uid, via, result) => db.prepare(
 const linkedOf = (user) => !!user.game_session_enc && !user.game_session_lost;
 
 // GET /api/friends[?fresh=1] → {linked, at, members: {<identifiant public>: friends|sent|received|none|unknown},
-// can_request, auto_friend, error?}. Liste relue sur le site du jeu si elle a plus de FRIENDS_TTL_MS (fresh : toujours) ;
+// list: [{id, name, pseudo, st}] (les mêmes, avec leur prénom et leur pseudo, dans l'ordre d'arrivée), can_request,
+// auto_friend, error?}. Liste relue sur le site du jeu si elle a plus de FRIENDS_TTL_MS (fresh : toujours) ;
 // une lecture impossible garde l'ancienne (error dit pourquoi), ou rend unknown pour tous.
 export async function listFriends(env, user, _body, request) {
   const db = env.DB;
   const fresh = new URL(request.url).searchParams.get('fresh') === '1';
-  const { results } = await db.prepare(MEMBERS).bind(user.id).all();
-  const out = { linked: linkedOf(user), at: null, members: {}, can_request: FRIEND_ROUTE.known, auto_friend: !!user.auto_friend };
+  const { results } = await db.prepare(MEMBERS + MEMBERS_ORDER).bind(user.id).all();
+  const out = { linked: linkedOf(user), at: null, members: {}, list: [], can_request: FRIEND_ROUTE.known, auto_friend: !!user.auto_friend };
   let kept = storedFriends(user);
   if (out.linked && (fresh || !kept || Date.now() - Date.parse(kept.at) >= FRIENDS_TTL_MS)) {
     try {
@@ -149,7 +152,11 @@ export async function listFriends(env, user, _body, request) {
     }
   }
   if (kept && out.linked) out.at = kept.at;
-  for (const m of results) out.members[m.id] = kept && out.linked ? statusWith(kept.list, m.game_uid, m.game_pseudo) : 'unknown';
+  for (const m of results) {
+    const st = kept && out.linked ? statusWith(kept.list, m.game_uid, m.game_pseudo) : 'unknown';
+    out.members[m.id] = st;
+    out.list.push({ id: m.id, name: m.name || null, pseudo: m.game_pseudo || null, st });
+  }
   return out;
 }
 
@@ -191,6 +198,57 @@ export async function requestFriend(env, user, body) {
     if (err && err.extra && err.extra.limited) await block(db, user.id).catch(() => {});
     throw err;
   }
+}
+
+// POST /api/friends/request-all {members: [identifiants publics]} (1 à BULK_MAX) → {results: [{id, status} | {id, error}],
+// limited?} : « Ajouter les membres pas encore amis » (Réglages). Une seule lecture de la liste d'amis, puis une demande
+// à chacun de ceux qui ne sont ni amis ni en attente, 1 s entre deux ; une limite du jeu arrête tout (les suivants
+// gardent error). status comme POST /api/friends/request.
+export async function requestFriends(env, user, body) {
+  const db = env.DB;
+  const ids = Array.isArray(body.members) ? [...new Set(body.members)] : null;
+  if (!ids || !ids.length || ids.length > BULK_MAX || ids.some((x) => typeof x !== 'string' || !PUBLIC_ID.test(x))) {
+    throw new HttpError(400, `Membres : une liste de 1 à ${BULK_MAX} identifiants publics (members).`);
+  }
+  if (!linkedOf(user)) throw new HttpError(401, 'Relie d\'abord ton compte du jeu (onglet « Synchro ») : les demandes partent avec ta session.', { needs_link: true });
+  if (!FRIEND_ROUTE.known) throw new HttpError(503, "Le classeur n'envoie pas de demande d'ami pour l'instant : envoie-les dans le jeu (page Amis).");
+  const { results: rows } = await db.prepare(`${MEMBERS} AND u.public_id IN (${ids.map((_, i) => `?${i + 2}`).join(',')})`).bind(user.id, ...ids).all();
+  const byId = new Map(rows.map((m) => [m.id, m]));
+  const s = await siteSession(env, user, 'site');
+  if (!s.uid) throw new HttpError(401, 'Relie à nouveau ton compte du jeu (onglet « Synchro ») : il manque ton identifiant de joueur.', { needs_link: true });
+  const results = [];
+  let limited = false;
+  let sent = 0;
+  try {
+    const kept = await readFriends(env, user, s);
+    for (const id of ids) {
+      const m = byId.get(id);
+      if (!m) { results.push({ id, error: 'Ce membre ne montre pas (ou plus) ses cartes.' }); continue; }
+      const name = m.name || 'ce membre';
+      if (limited) { results.push({ id, error: 'Pas envoyée : le jeu limite les actions automatiques.' }); continue; }
+      const now = statusWith(kept.list, m.game_uid, m.game_pseudo);
+      if (now !== 'none' && now !== 'unknown') { results.push({ id, status: now }); continue; }
+      try {
+        const uid = await uidOf(env, user, s, m);
+        if (!uid) throw new HttpError(409, `${name} n'a ni relié son compte du jeu ni donné son pseudo du jeu.`);
+        if (uid === s.uid) throw new HttpError(409, 'Ce membre est relié au même compte du jeu que toi.');
+        if (kept.list.some((x) => x.uid === uid)) { results.push({ id, status: statusWith(kept.list, uid, null) }); continue; }
+        if (sent) await new Promise((r) => setTimeout(r, env.REFRESH_PAUSE_MS !== undefined ? Number(env.REFRESH_PAUSE_MS) : AUTO_GAP_MS));
+        await sendRequest(env, user, s, uid);
+        await noteRequest(db, user.id, uid, 'clic', 'sent');
+        sent++;
+        results.push({ id, status: 'sent' });
+      } catch (err) {
+        if (err && err.extra && err.extra.limited) { limited = true; await block(db, user.id).catch(() => {}); }
+        results.push({ id, error: err && err.message ? String(err.message) : 'Échec de la demande.' });
+      }
+    }
+  } catch (err) {
+    if (err && err.extra && err.extra.limited) await block(db, user.id).catch(() => {});
+    throw err;
+  }
+  if (sent) await readFriends(env, user, s).catch(() => {}); // les demandes apparaissent dans la liste gardée
+  return limited ? { results, limited: true } : { results };
 }
 
 // Autres membres reliés au jeu à qui `user` n'a encore rien demandé (ou dont la demande a échoué il y a plus d'un jour).

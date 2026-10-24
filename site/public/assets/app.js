@@ -279,6 +279,7 @@
     merge: null,
     tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done, fr (amitié dans le jeu)}
     autoFriend: { busy: false, error: '' }, // case « Demandes d'ami automatiques » de Réglages (PATCH /api/me {auto_friend})
+    friendsAdd: null, // « Ajouter les membres pas encore amis » : {st (loading | ready | error), list [{id, name, pseudo, st, result?, error?}], pick (ids cochés), busy, error, fromCheck}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
     sell: null,
@@ -1962,11 +1963,59 @@
     Object.assign(S.autoFriend, { busy: true, error: '' });
     try {
       const r = await api('PATCH', '/api/me', { auto_friend: on });
-      if (S.me) S.me.auto_friend = typeof r.auto_friend === 'boolean' ? r.auto_friend : on;
+      const now = typeof r.auto_friend === 'boolean' ? r.auto_friend : on;
+      if (S.me) S.me.auto_friend = now;
+      if (now) openFriendsAdd(true); // et les membres déjà là : proposés tout de suite, plutôt qu'au fil des lectures automatiques
     } catch (e) {
       S.autoFriend.error = e.message;
     } finally {
       S.autoFriend.busy = false;
+    }
+  }
+  // « Ajouter les membres pas encore amis » : ta liste d'amis du jeu relue (GET /api/friends?fresh=1), les membres qui ne
+  // sont ni tes amis ni en attente cochés d'avance, puis les demandes envoyées d'un coup (POST /api/friends/request-all,
+  // par paquets de FRIENDS_BULK). fromCheck : ouverte en cochant la case des demandes automatiques.
+  const FRIENDS_BULK = 20; // comme le serveur (BULK_MAX)
+  async function openFriendsAdd(fromCheck) {
+    S.friendsAdd = { st: 'loading', list: [], pick: [], busy: false, error: '', fromCheck: !!fromCheck, canRequest: true };
+    S.modal = 'friendsadd';
+    const fa = S.friendsAdd; // la version réactive : la fenêtre suit ses changements
+    const sess = (S.me && S.me.session) || {};
+    if (!sess.linked || sess.lost) { fa.st = 'ready'; return; }
+    try {
+      const r = await api('GET', '/api/friends?fresh=1');
+      fa.list = (r.list || []).map((m) => ({ ...m, result: null, error: '' }));
+      fa.canRequest = !!r.can_request;
+      fa.error = r.error || '';
+      fa.pick = fa.list.filter((m) => m.st === 'none').map((m) => m.id);
+      fa.st = 'ready';
+    } catch (e) {
+      fa.st = 'error';
+      fa.error = e.message;
+    }
+  }
+  async function sendFriendsAdd(fa) {
+    if (fa.busy || !fa.pick.length) return;
+    fa.busy = true;
+    fa.error = '';
+    try {
+      const ids = fa.pick.slice();
+      for (let i = 0; i < ids.length; i += FRIENDS_BULK) {
+        const r = await api('POST', '/api/friends/request-all', { members: ids.slice(i, i + FRIENDS_BULK) });
+        for (const x of r.results || []) {
+          const m = fa.list.find((y) => y.id === x.id);
+          if (!m) continue;
+          if (x.status) { m.st = x.status; m.result = x.status; m.error = ''; } else m.error = x.error || 'Échec.';
+        }
+        if (r.limited) { fa.error = 'Le jeu limite les actions automatiques : envoie les autres demandes dans le jeu, ou réessaie plus tard.'; break; }
+      }
+      fa.pick = fa.pick.filter((id) => { const m = fa.list.find((y) => y.id === id); return m && m.st === 'none'; });
+      const n = fa.list.filter((m) => m.result === 'sent').length;
+      if (n) notify(`${fmt(n)} ${plural(n, "demande d'ami envoyée", "demandes d'ami envoyées")} dans le jeu.`);
+    } catch (e) {
+      fa.error = e.message;
+    } finally {
+      fa.busy = false;
     }
   }
 
@@ -3534,6 +3583,7 @@
     if (m === 'tagadd') S.tagAdd = null;
     if (m === 'merge') S.merge = null;
     if (m === 'trade') S.tradeNew = null;
+    if (m === 'friendsadd') S.friendsAdd = null;
     if (m === 'sell') S.sell = null;
   }
   function openConfirm(o) {
@@ -7581,6 +7631,7 @@
             onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.auto_friend); setAutoFriend(want); } }),
           "Envoyer une demande d'ami aux membres du classeur",
         ]),
+        (S.me && S.me.session && S.me.session.linked && !S.me.session.lost) ? h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: () => openFriendsAdd(false) }, 'Ajouter les membres pas encore amis…')]) : null,
         h('p', { class: 'small muted' }, "Le jeu n'accepte les échanges qu'entre amis. Coché, le classeur envoie seul, depuis ton compte du jeu relié, une demande d'ami à chaque membre qui relie le sien (et à ceux déjà là), une seule fois par membre, pendant les lectures automatiques. Il n'accepte jamais une demande à ta place : ça se fait dans le jeu. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
         errLine(S.autoFriend.error),
       ]),
@@ -10620,6 +10671,63 @@
   }
   // « Proposer un échange » : deux listes à cocher (ce que tu donnes, ce que tu reçois), puis la proposition est créée dans
   // le jeu par le serveur, avec ta session reliée (POST /api/trades/create).
+  // « Ajouter les membres pas encore amis » : qui n'est pas encore ton ami dans le jeu (coché d'avance), qui attend, et
+  // combien sont déjà tes amis ; les demandes partent d'un coup.
+  function modalFriendsAdd() {
+    const fa = S.friendsAdd;
+    if (!fa) return null;
+    const title = 'Ajouter les membres pas encore amis';
+    const intro = fa.fromCheck
+      ? h('p', null, "C'est coché : chaque membre qui reliera son compte du jeu recevra une demande d'ami de ta part. Et ceux qui sont déjà là ?")
+      : null;
+    const sess = (S.me && S.me.session) || {};
+    if (!sess.linked || sess.lost) {
+      return h(Modal, { key: 'friendsadd', title, onClose: closeModal }, () => [intro,
+        h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : les demandes partent avec ta session. ",
+          h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, 'Relier mon compte')]),
+        foot([closeBtn()])]);
+    }
+    if (fa.st !== 'ready') {
+      return h(Modal, { key: 'friendsadd', title, onClose: closeModal }, () => [intro,
+        fa.st === 'loading' ? h('p', { class: 'muted', role: 'status' }, "Lecture de ta liste d'amis du jeu…") : errLine(fa.error),
+        foot([closeBtn()])]);
+    }
+    const label = (m) => m.name || 'Sans prénom';
+    const toAdd = fa.list.filter((m) => m.st === 'none' || m.st === 'unknown' || m.error);
+    const waiting = fa.list.filter((m) => (m.st === 'sent' || m.st === 'received') && !m.error);
+    const friends = fa.list.filter((m) => m.st === 'friends');
+    const row = (m) => {
+      const can = m.st === 'none' && fa.canRequest;
+      const on = fa.pick.includes(m.id);
+      return h('li', { key: m.id, class: { on } }, [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', checked: on, disabled: fa.busy || !can,
+            onChange: () => { fa.pick = on ? fa.pick.filter((x) => x !== m.id) : [...fa.pick, m.id]; } }),
+          h('span', { class: 'trade-pick__title' }, label(m)), m.pseudo ? h('span', { class: 'muted' }, ` (${m.pseudo})`) : null]),
+        m.error ? h('span', { class: 'why warn' }, m.error)
+          : m.st === 'unknown' ? h('span', { class: 'why' }, "ni compte du jeu relié ni pseudo : impossible de savoir à qui l'envoyer") : null,
+      ]);
+    };
+    const waitText = (m) => (m.st === 'sent' ? (m.result === 'sent' ? 'demande envoyée' : 'ta demande attend') : "t'a envoyé une demande : accepte-la dans le jeu");
+    const n = fa.pick.length;
+    return h(Modal, { key: 'friendsadd', title, onClose: closeModal }, () => [intro,
+      toAdd.length
+        ? h('fieldset', { class: 'trade-pick' }, [
+          h('legend', null, ['Pas encore tes amis dans le jeu', h('span', { class: 'n' }, ` · ${fmt(toAdd.length)}`)]),
+          h('ul', { class: 'trade-pick__list' }, toAdd.map(row))])
+        : h('p', null, 'Tous les membres sont déjà tes amis dans le jeu, ou une demande attend.'),
+      waiting.length ? h('p', { class: 'small' }, ['En attente : ', waiting.map((m) => `${label(m)} (${waitText(m)})`).join(', '), '.']) : null,
+      friends.length ? h('p', { class: 'small muted' }, `Déjà tes amis : ${namesText(friends.map(label), false)}.`) : null,
+      fa.canRequest ? null : h('p', { class: 'warn' }, "Le classeur n'envoie pas de demande d'ami pour l'instant : envoie-les dans le jeu (page Amis)."),
+      errLine(fa.error),
+      foot([
+        h('a', { class: 'btn ghost', href: 'https://www.wiki-masters.com/friends', target: '_blank', rel: 'noopener noreferrer' }, 'Mes amis dans le jeu ↗'),
+        closeBtn(),
+        toAdd.length && fa.canRequest ? h('button', { class: 'btn primary', type: 'button', disabled: fa.busy || !n, onClick: () => sendFriendsAdd(fa) },
+          fa.busy ? 'Envoi dans le jeu…' : n ? `Envoyer ${fmt(n)} ${plural(n, "demande d'ami", "demandes d'ami")}` : "Aucune demande cochée") : null,
+      ]),
+    ]);
+  }
   function modalTrade() {
     const tn = S.tradeNew;
     if (!tn) return null;
@@ -10892,7 +11000,7 @@
     ]);
   }
 
-  const MODALS = { trade: modalTrade, sell: modalSell, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

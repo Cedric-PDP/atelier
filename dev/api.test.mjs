@@ -3840,6 +3840,34 @@ await test('amis du jeu : GET /api/friends (statut par membre, liste gardée, re
   r = await ask(dave, { member: pub(ben) });
   assert.deepEqual([r.status, r.json.limited], [429, true]);
   supa.friendReply = null;
+  // Plusieurs demandes d'un coup (POST /api/friends/request-all) : une lecture de la liste, une demande par membre ni ami
+  // ni en attente ; la liste de GET /api/friends donne prénoms et pseudos.
+  const eve = await signup('Eve', e);
+  const eveUid = await setGameCards(eve.key, mini(1, 40), { e });
+  const fay = await signup('Fay', e);
+  const fayUid = await setGameCards(fay.key, mini(1, 41), { e });
+  const bulk = (u, members) => call('POST', 'friends/request-all', { key: u.key, e, body: { members } });
+  for (const bad of [{}, [], ['x y'], Array.from({ length: 21 }, (_, i) => 'm' + i)]) {
+    assert.equal((await call('POST', 'friends/request-all', { key: ana.key, e, body: Array.isArray(bad) ? { members: bad } : bad })).status, 400, JSON.stringify(bad));
+  }
+  assert.equal((await bulk(dan, [pub(eve)])).status, 401);
+  r = await friends(ana, '?fresh=1');
+  assert.deepEqual(r.json.list.map((m) => [m.name, m.st]).sort((x, y) => x[0].localeCompare(y[0])), [['Ben', 'friends'], ['Cleo', 'received'], ['Dan', 'unknown'], ['Dave', 'sent'], ['Eve', 'none'], ['Fay', 'none']]);
+  assert.equal(r.json.list.find((m) => m.name === 'Cleo').pseudo, 'cleojeu');
+  supa.calls = [];
+  r = await bulk(ana, [pub(eve), pub(ben), pub(dan), pub(fay), 'inconnu']);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.results.map((x) => [x.id, x.status || 'error']), [[pub(eve), 'sent'], [pub(ben), 'friends'], [pub(dan), 'error'], [pub(fay), 'sent'], ['inconnu', 'error']]);
+  assert.deepEqual(site(), ['GET /api/friends', 'POST /api/friends', 'POST /api/friends', 'GET /api/friends']);
+  assert.deepEqual(supa.friendships.slice(-2).map((f) => [f.requester_id, f.addressee_id]), [[anaUid, eveUid], [anaUid, fayUid]]);
+  r = await bulk(ana, [pub(eve)]);
+  assert.deepEqual(r.json.results, [{ id: pub(eve), status: 'sent' }], 'pas deux fois');
+  // Le jeu limite : arrêt, les suivants pas envoyés.
+  supa.friendReply = () => ({ status: 403, body: { code: 'automation_limit' } });
+  r = await bulk(eve, [pub(ben), pub(fay)]);
+  assert.deepEqual([r.status, r.json.limited, r.json.results.every((x) => x.error)], [200, true, true]);
+  supa.friendReply = null;
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
   // Le réglage « Demandes d'ami automatiques » : PATCH /api/me, rendu par GET /api/me.
   r = await call('PATCH', 'me', { key: ana.key, e, body: { auto_friend: 'oui' } });
   assert.equal(r.status, 400);

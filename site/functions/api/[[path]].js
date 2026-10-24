@@ -18,7 +18,7 @@ import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
 import { createLink, linkWithToken } from '../_lib/link.js';
 import { createTrade } from '../_lib/trades.js';
-import { listFriends, requestFriend } from '../_lib/friends.js';
+import { listFriends, requestFriend, requestFriends } from '../_lib/friends.js';
 import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
 
@@ -65,6 +65,7 @@ const ROUTES = {
   'trades/create': { POST: [createTrade, 'main'] }, // proposer un échange à un ami, dans le jeu
   friends: { GET: [listFriends, 'main'] }, // qui est ton ami dans le jeu, parmi les membres qui partagent
   'friends/request': { POST: [requestFriend, 'main'] }, // envoyer une demande d'ami dans le jeu à un membre
+  'friends/request-all': { POST: [requestFriends, 'main'] }, // plusieurs demandes d'ami d'un coup (Réglages)
   'market/sell': { GET: [sellInfo, 'main'], POST: [sellCard, 'main'] }, // mettre une carte en vente dans le jeu (et ses exemplaires)
   'market/cancel': { POST: [cancelSale, 'main'] }, // annuler une de tes ventes, tant que personne n'a misé
 };
@@ -72,7 +73,7 @@ const ROUTES = {
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {
