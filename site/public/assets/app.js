@@ -1151,9 +1151,27 @@
     let list = trades.value.pairs;
     if (t === 'me') list = list.filter((p) => p.x.me || p.z.me);
     else if (t !== 'all' && friendList.value.some((f) => f.id === t)) list = list.filter((p) => p.x.id === t || p.z.id === t);
-    if (!S.friends.tradeDup) return list;
-    return list.map((p) => ({ ...p, rows: p.rows.filter((r) => r.dup) })).filter((p) => p.rows.length);
+    if (S.friends.tradeDup) list = list.map((p) => ({ ...p, rows: p.rows.filter((r) => r.dup) })).filter((p) => p.rows.length);
+    return tradeDuos(list);
   });
+  // Un bloc par paire de membres (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs, on
+  // ne s'y retrouvait pas) : les deux sens ensemble, toi d'abord (puis de A à Z entre deux amis), ce que tu donnes avant ce
+  // que tu reçois. Ordre des blocs : le plus de doubles, puis le plus de cases ; à égalité, par prénoms (toi d'abord).
+  function tradeDuos(pairs) {
+    const who = (p) => (p.me ? '' : friendName(p.f));
+    const duos = new Map();
+    for (const p of pairs) {
+      const [a, b] = COLLATOR.compare(who(p.x), who(p.z)) <= 0 ? [p.x, p.z] : [p.z, p.x];
+      const key = a.id + '<>' + b.id;
+      let d = duos.get(key);
+      if (!d) duos.set(key, (d = { key, a, b, sides: [], dup: 0, n: 0 }));
+      if (p.x === a) d.sides.unshift(p); else d.sides.push(p);
+      d.dup += p.dup;
+      d.n += p.rows.length;
+    }
+    return [...duos.values()].sort((u, v) => v.dup - u.dup || v.n - u.n
+      || COLLATOR.compare(who(u.a), who(v.a)) || COLLATOR.compare(who(u.b), who(v.b)));
+  }
   // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent les collections qu'ils montrent, tes doubles
   // d'abord (rien pour ceux qui ne les montrent pas).
   const friendWants = computed(() => trades.value.pairs.filter((p) => p.x.me).map((p) => ({ f: p.z.f, rows: p.rows, dup: p.dup })));
@@ -8263,18 +8281,25 @@
     }
     return h('div', { class: 'fitem fitem--static', role: 'group', 'aria-label': label }, [...body, cols]);
   }
-  function viewTradePair(p) {
+  // Un sens d'une paire : « Toi → Paul », son résumé, ses lignes.
+  function viewTradeSide(p) {
     const key = 'trade:' + p.key;
     const rows = S.friends.more[key] ? p.rows : p.rows.slice(0, FRIEND_ROWS);
-    return h('article', { class: ['fcol', 'trade'], key: p.key }, [
-      h('div', { class: 'fcol__head' }, [
-        h('span', { class: 'fcol__name' }, [personWho(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(p.z)]),
-        h('span', { class: 'fcol__sum' }, tradeSum(p)),
-        p.x.me !== p.z.me ? h('button', { class: 'btn small trade__new', type: 'button', onClick: () => openTradeNew(p.x.me ? p.z.f : p.x.f) },
-          `Proposer un échange à ${friendName(p.x.me ? p.z.f : p.x.f)}`) : null,
-      ]),
+    return h('section', { class: 'trade__side', key: p.key }, [
+      h('h3', { class: 'trade__dir' }, [personWho(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(p.z)]),
+      h('p', { class: 'fcol__sum' }, tradeSum(p)),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
       moreToggle(key, p.rows.length),
+    ]);
+  }
+  function viewTradeDuo(d) {
+    const f = d.a.me ? d.b.f : null;
+    return h('article', { class: ['fcol', 'trade'], key: d.key }, [
+      h('div', { class: 'fcol__head' }, [
+        h('span', { class: 'fcol__name' }, [personWho(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personWho(d.b)]),
+        f ? h('button', { class: 'btn small trade__new', type: 'button', onClick: () => openTradeNew(f) }, `Proposer un échange à ${friendName(f)}`) : null,
+      ]),
+      ...d.sides.map(viewTradeSide),
     ]);
   }
   // Ce que disent les échanges : les membres qui ne partagent pas leurs collections (on ne sait pas ce qui leur
@@ -8301,12 +8326,12 @@
     const all = trades.value.pairs;
     const member = friendList.value.find((f) => f.id === fr.trade) || null;
     const loading = fr.busy || friendList.value.some((f) => !f.cards || (f.tshare && !f.targets));
-    const n = list.reduce((a, p) => a + p.rows.length, 0);
+    const n = list.reduce((a, d) => a + d.n, 0);
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeTrades }, '← Entre amis'),
         h('div', { class: 'album-title' }, [h('h2', null, 'Échanges possibles'),
-          h('span', { class: 'num' }, `${fmt(n)} ${plural(n, 'carte', 'cartes')} à donner · ${fmt(list.length)} ${plural(list.length, 'groupe', 'groupes')} « qui → à qui »`)]),
+          h('span', { class: 'num' }, `${fmt(n)} ${plural(n, 'carte', 'cartes')} à donner · ${fmt(list.length)} ${plural(list.length, 'paire', 'paires')} de membres`)]),
         h('p', { class: 'hint' }, "Telle carte de l'un pourrait compléter telle collection de l'autre. Les doubles d'abord : ce sont les plus faciles à donner. " + TRADE_NOTE),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Échanges à montrer' }, [
@@ -8322,7 +8347,7 @@
         ]),
       ]),
       ...tradeNotes(),
-      list.length ? h('div', { class: 'fcols' }, list.map(viewTradePair))
+      list.length ? h('div', { class: 'fcols' }, list.map(viewTradeDuo))
         : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
           : all.length ? (fr.tradeDup ? 'Aucune carte en double à donner avec ce filtre : décoche « Seulement les cartes en double », ou essaie « Tout le monde ».'
             : 'Aucun échange possible avec ce filtre : essaie « Tout le monde ».')

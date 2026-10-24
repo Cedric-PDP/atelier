@@ -705,7 +705,10 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   quand même pour les autres). Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
   collections de Z qu'elle complète (un même article dans deux
   collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
-  en double » ; ordre : les couples qui ont le plus de doubles, puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
+  en double » ; **un bloc par paire de membres** (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs
+  séparés, on ne s'y retrouvait pas) : « Toi ⇄ Paul », avec ses deux sens l'un sous l'autre (ce que tu donnes, puis ce que
+  tu reçois ; entre deux amis, de A à Z : « Léa ⇄ Paul », « Léa → Paul » puis « Paul → Léa ») ; ordre des blocs : ceux qui ont le plus de doubles (les deux sens
+  comptés), puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
   plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Tout le
   monde » (par défaut : peu d'échanges pour l'instant, demande de l'utilisateur du 2026-10-16), « Ce qui me concerne » (tu
   donnes ou tu reçois), ou un membre (il donne ou il reçoit). Une ligne de
@@ -714,7 +717,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   dans le navigateur (`trades`, propriété calculée : refait quand les cartes, les collections ou les qids changent ;
   ~120 ms pour 6 personnes de 5 000 cartes et 30 000 éléments de collection), filtre à part.
 - **Proposer un échange** (2026-10-22) : un bouton « Proposer un échange à Paul » sur chaque bloc entre toi et un ami
-  (« Toi → Paul » et « Paul → Toi »). La fenêtre reprend ces deux couples, **toutes** les cartes (pas seulement les
+  (« Toi ⇄ Paul », un seul bouton depuis le 2026-10-24). La fenêtre reprend ces deux couples, **toutes** les cartes (pas seulement les
   doubles) : « Tu donnes » (tes cartes qui complètent ses collections) et « Tu reçois » (les siennes qui complètent les
   tiennes), cases à cocher, **doubles cochés d'avance**, « Tout cocher · Rien · Les doubles » par colonne, le résumé
   « Tu donnes 2 cartes, tu reçois 1 carte. », 40 cartes au plus. Sous chaque colonne (2026-10-23) : « Et des wikibidous »,

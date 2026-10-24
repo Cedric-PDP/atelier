@@ -921,6 +921,12 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .trade-note .linkish { font-size: 13px; }
 .album-head + .trade-note, .trade-note + .fcols, .trade-note + .empty-box { margin-bottom: 12px; }
 .trade__arrow { color: var(--accent); font-weight: 700; }
+/* Une paire de membres, les deux sens dans le même bloc : chaque sens sous son titre « X → Z », le second séparé d'un filet. */
+.trade__side { display: grid; gap: 6px; min-width: 0; }
+.trade__side + .trade__side { border-top: 1px solid var(--border); padding-top: 10px; }
+.trade__side > .linkish { justify-self: start; }
+.trade__dir { margin: 0; font: 600 13.5px/1.25 var(--f-body); color: var(--fg); overflow-wrap: anywhere; }
+.trade__side .fcol__sum { margin: 0; }
 /* « Proposer un échange » : bouton du bloc toi ↔ ami, fenêtre à deux listes (tu donnes, tu reçois). */
 .fcol__head .trade__new { margin-left: auto; }
 .trade-sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }

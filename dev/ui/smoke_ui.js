@@ -3014,8 +3014,12 @@ async function main() {
       // La page : « Tout le monde » par défaut (demande de l'utilisateur, 2026-10-16), puis « Ce qui me concerne ».
       needButton('Voir les échanges possibles').click();
       await settle();
-      const pairs = () => cls('trade').map((n) => text(n.querySelector('.fcol__name')).replace(' pour ', ''));
-      const pair = (name) => cls('trade').find((n) => text(n.querySelector('.fcol__name')).replace(' pour ', '') === name) || null;
+      // Un bloc par paire de membres (« Toi ⇄ Paul »), les deux sens dedans (« Toi → Paul », puis « Paul → Toi »).
+      const dirOf = (n) => text(n.querySelector('.trade__dir')).replace(' pour ', '');
+      const pairs = () => cls('trade__side').map(dirOf);
+      const pair = (name) => cls('trade__side').find((n) => dirOf(n) === name) || null;
+      const duos = () => cls('trade').map((n) => text(n.querySelector('.fcol__name')).replace(' et ', ''));
+      const duoOf = (name) => cls('trade').find((n) => n.querySelectorAll('.trade__dir').some((x) => text(x).replace(' pour ', '') === name)) || null;
       const pressed = () => one('seg') ? one('seg').querySelectorAll('button').filter((b) => b.getAttribute('aria-pressed') === 'true').map(text).join() : '';
       check(has('Échanges possibles') && pressed() === 'Tout le monde', 'page des échanges : filtre par défaut ' + pressed());
       // « Seulement les cartes en double », cochée par défaut : chaque ligne montrée est un double (×n) de celui qui donne.
@@ -3028,10 +3032,11 @@ async function main() {
       }
       byId('trade-dup').dispatch('change');
       await settle();
-      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi', 'couples (tout le monde, tous les exemplaires) : ' + pairs().join(' | '));
+      check(pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi | Léa → Paul', 'couples (tout le monde, tous les exemplaires) : ' + pairs().join(' | '));
+      check(duos().join(' | ') === 'Toi ⇄ Paul | Toi ⇄ Léa | Léa ⇄ Paul', 'un bloc par paire : ' + duos().join(' | '));
       exactButton('Ce qui me concerne').click();
       await settle();
-      check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Paul → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
+      check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
       {
         const p = pair('Toi → Paul');
         check(titlesIn(p).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60', 'Toi → Paul : ' + titlesIn(p).join(' | '));
@@ -3065,8 +3070,8 @@ async function main() {
       // les cartes, doubles cochés d'avance), puis l'échange part au serveur (POST /api/trades/create).
       if (!SERVER) {
         const btnIn = (pr, t) => (pr ? pr.querySelectorAll('button').find((b) => text(b) === t) : null) || null;
-        check(btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul') && btnIn(pair('Paul → Toi'), 'Proposer un échange à Paul') && btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa'),
-          '« Proposer un échange » absent des blocs toi ↔ ami');
+        check(btnIn(duoOf('Toi → Paul'), 'Proposer un échange à Paul') && duoOf('Toi → Paul') === duoOf('Paul → Toi') && btnIn(duoOf('Léa → Toi'), 'Proposer un échange à Léa')
+          && cls('trade__new').length === 2, '« Proposer un échange » : un bouton par bloc toi ⇄ ami attendu : ' + cls('trade__new').map(text).join(' | '));
         const md = () => one('modal');
         const side = (i) => (md() ? md().querySelectorAll('.trade-pick')[i] : null);
         const titlesOf = (i, on) => side(i).querySelectorAll('li').filter((li) => !on || li.querySelector('input').checked).map((li) => text(li.querySelector('.trade-pick__title')));
@@ -3075,14 +3080,14 @@ async function main() {
         // Pas amis dans le jeu : la fenêtre le dit à la place des cartes. Sans route d'envoi connue : marche à suivre et liens
         // vers le jeu ; avec : « Envoyer une demande d'ami », puis « demande partie » ; demande reçue : l'accepter dans le jeu.
         api.gameFriends['Léa'] = 'none';
-        btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa').click();
+        btnIn(duoOf('Léa → Toi'), 'Proposer un échange à Léa').click();
         await settle(80);
         check(md() && text(md()).includes("Léa n'est pas ton ami dans le jeu.") && !side(0) && !mdBtn("Envoyer une demande d'ami à Léa")
           && md().querySelectorAll('a').some((x) => x.getAttribute('href') === 'https://www.wiki-masters.com/friends'), 'pas amis, sans route d\'envoi : ' + (md() ? text(md()) : ''));
         md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
         await settle();
         api.canRequest(true);
-        btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa').click();
+        btnIn(duoOf('Léa → Toi'), 'Proposer un échange à Léa').click();
         await settle(80);
         check(mdBtn("Envoyer une demande d'ami à Léa"), "bouton « Envoyer une demande d'ami à Léa » absent : " + (md() ? text(md()) : ''));
         mdBtn("Envoyer une demande d'ami à Léa").click();
@@ -3095,14 +3100,14 @@ async function main() {
         md().querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
         await settle();
         api.gameFriends['Paul'] = 'received';
-        btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul').click();
+        btnIn(duoOf('Toi → Paul'), 'Proposer un échange à Paul').click();
         await settle(80);
         check(md() && text(md()).includes("Paul t'a envoyé une demande d'ami") && !side(0), 'demande reçue de Paul : ' + (md() ? text(md()) : ''));
         md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
         await settle();
         delete api.gameFriends['Paul'];
         api.canRequest(false);
-        btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul').click();
+        btnIn(duoOf('Toi → Paul'), 'Proposer un échange à Paul').click();
         await settle();
         check(md() && text(md()).includes('Proposer un échange à Paul'), 'fenêtre « Proposer un échange » absente');
         check(titlesOf(0).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && titlesOf(1).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5',
@@ -3188,7 +3193,7 @@ async function main() {
       }
       exactButton('Tout le monde').click();
       await settle();
-      check(pairs().join(' | ') === 'Toi → Paul | Léa → Toi | Léa → Paul | Paul → Toi', 'couples (tout le monde) : ' + pairs().join(' | '));
+      check(pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi | Léa → Paul', 'couples (tout le monde) : ' + pairs().join(' | '));
       {
         const p = pair('Léa → Paul');
         check(titlesIn(p).join(' | ') === 'Saturne (planète) | Article 7 | Neptune' && text(p).includes('Léa peut compléter 3 cases chez Paul, dont 1 en double'), 'Léa → Paul : ' + text(p));
@@ -3198,7 +3203,7 @@ async function main() {
       sel.value = paulPub;
       sel.dispatch('change');
       await settle();
-      check(pairs().join(' | ') === 'Toi → Paul | Léa → Paul | Paul → Toi' && pressed() === '', 'couples (Paul) : ' + pairs().join(' | ') + ' / ' + pressed());
+      check(pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Paul' && pressed() === '', 'couples (Paul) : ' + pairs().join(' | ') + ' / ' + pressed());
       // « Un membre… » : retour au filtre par défaut, « Tout le monde ».
       sel.value = '';
       sel.dispatch('change');
