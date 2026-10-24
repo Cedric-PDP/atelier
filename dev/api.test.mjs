@@ -20,6 +20,7 @@ const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
 const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js'));
 const { marketPass } = await import(lib('_lib/marketread.js'));
+const { FRIEND_ROUTE } = await import(lib('_lib/friends.js'));
 
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
@@ -3746,6 +3747,153 @@ await test('échange : POST /api/trades/create propose un échange dans le jeu (
   await call('PATCH', 'me', { key: ana.key, e, body: { shared: false } });
   assert.equal((await create({ member: pub(ben), give: [anaCards[0].id] })).status, 403);
   supa.reset();
+  e.DB.close();
+});
+
+await test('amis du jeu : GET /api/friends (statut par membre, liste gardée, relue après une minute ou avec fresh=1), POST /api/friends/request', async () => {
+  const e = makeEnv();
+  supa.reset();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const cleo = await signup('Cleo', e);
+  const dan = await signup('Dan', e);
+  const anaUid = await setGameCards(ana.key, mini(2), { e });
+  const benUid = await setGameCards(ben.key, mini(2, 10), { e });
+  const cleoUid = 'uid-cleo-du-jeu';
+  supa.player(cleoUid).username = 'CleoJeu'; // Cléo n'a pas relié son compte, mais a donné son pseudo
+  assert.equal((await call('PATCH', 'me', { key: cleo.key, e, body: { pseudo: 'cleojeu' } })).status, 200);
+  const pub = (u) => e.DB.sqlite.prepare('SELECT public_id FROM users WHERE id = ?').get(u.user.id).public_id;
+  const friends = (u = ana, q = '') => call('GET', 'friends' + q, { key: u.key, e });
+  const ask = (u, body) => call('POST', 'friends/request', { key: u.key, e, body });
+  const site = () => supa.calls.filter((c) => c.url.startsWith('https://www.wiki-masters.com/')).map((c) => c.method + ' ' + c.path);
+
+  supa.befriend(benUid, anaUid);
+  supa.calls = [];
+  let r = await friends();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.members, { [pub(ben)]: 'friends', [pub(cleo)]: 'none', [pub(dan)]: 'unknown' });
+  assert.deepEqual([r.json.linked, r.json.can_request, r.json.auto_friend, !!r.json.at], [true, true, false, true]);
+  assert.deepEqual(site(), ['GET /api/friends']);
+  assert.ok(supa.calls[0].headers.cookie.startsWith('sb-cyrxjeppjqsxxjayfrur-auth-token=base64-'), 'cookie de session refait');
+  // Gardée une minute : pas de nouvel appel ; fresh=1 la relit. Demande reçue de Cléo (par son pseudo, sans casse).
+  supa.befriend(cleoUid, anaUid, 'pending');
+  r = await friends();
+  assert.equal(r.json.members[pub(cleo)], 'none');
+  assert.equal(site().length, 1);
+  r = await friends(ana, '?fresh=1');
+  assert.equal(r.json.members[pub(cleo)], 'received');
+  assert.equal(site().length, 2);
+  e.DB.sqlite.prepare("UPDATE users SET game_friends = json_set(game_friends, '$.at', '2020-01-01T00:00:00.000Z') WHERE id = ?").run(ana.user.id);
+  await friends();
+  assert.equal(site().length, 3, 'relue après une minute');
+  // Ben voit Ana en ami (la même amitié, vue de l'autre côté) ; Dan, sans compte relié : tout inconnu, aucun appel.
+  r = await friends(ben);
+  assert.equal(r.json.members[pub(ana)], 'friends');
+  supa.calls = [];
+  r = await friends(dan);
+  assert.deepEqual([r.json.linked, Object.values(r.json.members).every((x) => x === 'unknown'), site().length], [false, true, 0]);
+  // Le jeu limite : l'ancienne liste reste, avec l'erreur.
+  supa.siteLimit = 'friends';
+  r = await friends(ana, '?fresh=1');
+  assert.deepEqual([r.status, r.json.members[pub(ben)], /limite/.test(r.json.error)], [200, 'friends', true]);
+  supa.siteLimit = null;
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+
+  // Demande d'ami : corps mal formé, membre inconnu, sans compte relié.
+  assert.equal((await ask(ana, {})).status, 400);
+  assert.equal((await ask(ana, { member: 'inconnu' })).status, 404);
+  assert.equal((await ask(dan, { member: pub(ana) })).status, 401);
+  // Déjà amis, ou demande reçue : rien ne part, même sans route d'envoi (interrupteur FRIEND_ROUTE.known coupé).
+  FRIEND_ROUTE.known = false;
+  cleanups.push(() => { FRIEND_ROUTE.known = true; });
+  supa.calls = [];
+  assert.deepEqual((await ask(ana, { member: pub(ben) })).json, { status: 'friends' });
+  assert.deepEqual((await ask(ana, { member: pub(cleo) })).json, { status: 'received' });
+  assert.deepEqual(site(), ['GET /api/friends', 'GET /api/friends']);
+  // Interrupteur coupé : 503, rien n'est envoyé.
+  const dave = await signup('Dave', e);
+  const daveUid = await setGameCards(dave.key, mini(1, 30), { e });
+  r = await ask(ana, { member: pub(dave) });
+  assert.deepEqual([r.status, /dans le jeu/.test(r.json.error)], [503, true]);
+  assert.equal(supa.friendships.length, 2);
+
+  FRIEND_ROUTE.known = true;
+  supa.calls = [];
+  r = await ask(ana, { member: pub(dave) });
+  assert.deepEqual([r.status, r.json], [200, { status: 'sent' }], JSON.stringify(r.json));
+  assert.deepEqual(supa.friendships.at(-1), { id: 'amitie-3', requester_id: anaUid, addressee_id: daveUid, status: 'pending' });
+  assert.deepEqual(site(), ['GET /api/friends', 'POST /api/friends', 'GET /api/friends']);
+  assert.deepEqual(JSON.parse(supa.calls[1].body), { addressee_id: daveUid });
+  assert.deepEqual(e.DB.sqlite.prepare('SELECT target_uid, via, result FROM friend_requests WHERE user_id = ?').all(ana.user.id).map((x) => ({ ...x })),
+    [{ target_uid: daveUid, via: 'clic', result: 'sent' }]);
+  assert.equal((await friends()).json.members[pub(dave)], 'sent');
+  assert.deepEqual((await ask(ana, { member: pub(dave) })).json, { status: 'sent' }, 'pas deux fois');
+  assert.equal(supa.friendships.length, 3);
+  // Refus du jeu (message repris), panne, limite.
+  supa.friendReply = () => ({ status: 400, body: { error: 'Ce joueur refuse les demandes' } });
+  r = await ask(dave, { member: pub(ben) });
+  assert.deepEqual([r.status, r.json.error], [409, "Le jeu a refusé la demande d'ami : « Ce joueur refuse les demandes »."]);
+  supa.friendReply = () => ({ network: true });
+  r = await ask(dave, { member: pub(ben) });
+  assert.deepEqual([r.status, /regarde dans le jeu/.test(r.json.error)], [502, true]);
+  supa.friendReply = () => ({ status: 403, body: { code: 'automation_limit' } });
+  r = await ask(dave, { member: pub(ben) });
+  assert.deepEqual([r.status, r.json.limited], [429, true]);
+  supa.friendReply = null;
+  // Le réglage « Demandes d'ami automatiques » : PATCH /api/me, rendu par GET /api/me.
+  r = await call('PATCH', 'me', { key: ana.key, e, body: { auto_friend: 'oui' } });
+  assert.equal(r.status, 400);
+  r = await call('PATCH', 'me', { key: ana.key, e, body: { auto_friend: true } });
+  assert.deepEqual([r.status, r.json.auto_friend], [200, true]);
+  assert.equal((await call('GET', 'me', { key: ana.key, e })).json.auto_friend, true);
+  e.DB.close();
+});
+
+await test("amis du jeu : demandes automatiques pendant le cron (case cochée, une fois par membre visé, aucun appel sans nouveau membre)", async () => {
+  const e = makeEnv();
+  supa.reset();
+  const a = await cronMember('Auto1', e);
+  const b = await cronMember('Auto2', e, mini(3, 20));
+  const site = () => supa.calls.filter((c) => c.url.startsWith('https://www.wiki-masters.com/')).map((c) => c.method + ' ' + c.path);
+  // Case coupée : rien.
+  supa.calls = [];
+  assert.equal(await runCron(e, COLLECTION_CRON), '2 membres vérifiés, 0 relu, 0 échec');
+  assert.deepEqual(site(), []);
+  // Case cochée chez Auto1 : une demande à Auto2.
+  assert.equal((await call('PATCH', 'me', { key: a.u.key, e, body: { auto_friend: true } })).status, 200);
+  assert.equal(await runCron(e, COLLECTION_CRON), "2 membres vérifiés, 0 relu, 0 échec, 1 demande d'ami envoyée");
+  assert.deepEqual(site(), ['GET /api/friends', 'POST /api/friends']);
+  assert.deepEqual(supa.friendships.map((f) => [f.requester_id, f.addressee_id, f.status]), [[a.uid, b.uid, 'pending']]);
+  assert.equal(userRow(a.id, e).sync_lock, null, 'bail rendu');
+  // Passe suivante : personne de nouveau, aucun appel au jeu.
+  supa.calls = [];
+  assert.equal(await runCron(e, COLLECTION_CRON), '2 membres vérifiés, 0 relu, 0 échec');
+  assert.deepEqual(site(), []);
+  // Un nouveau membre relie son compte : demandé à la passe suivante ; un déjà ami est seulement noté.
+  const c = await cronMember('Auto3', e, mini(2, 40));
+  const d = await cronMember('Auto4', e, mini(2, 50));
+  supa.befriend(d.uid, a.uid);
+  supa.calls = [];
+  assert.equal(await runCron(e, COLLECTION_CRON), "4 membres vérifiés, 0 relu, 0 échec, 1 demande d'ami envoyée");
+  assert.deepEqual(site(), ['GET /api/friends', 'POST /api/friends']);
+  assert.deepEqual(e.DB.sqlite.prepare('SELECT target_uid, via, result FROM friend_requests WHERE user_id = ? ORDER BY target_uid').all(a.id).map((x) => [x.target_uid, x.via, x.result]),
+    [[b.uid, c.uid, d.uid].sort().map((u) => [u, 'auto', u === d.uid ? 'friends' : 'sent'])].flat());
+  // Un refus est noté en échec, retenté après un jour ; une limite du jeu arrête la passe et saute la suivante.
+  const f = await cronMember('Auto5', e, mini(2, 60));
+  supa.friendReply = () => ({ status: 400, body: { error: 'non' } });
+  assert.equal(await runCron(e, COLLECTION_CRON), '5 membres vérifiés, 0 relu, 0 échec');
+  assert.equal(e.DB.sqlite.prepare('SELECT result FROM friend_requests WHERE user_id = ? AND target_uid = ?').get(a.id, f.uid).result, 'error');
+  supa.calls = [];
+  assert.equal(await runCron(e, COLLECTION_CRON), '5 membres vérifiés, 0 relu, 0 échec');
+  assert.deepEqual(site(), [], 'pas retentée avant un jour');
+  e.DB.sqlite.prepare("UPDATE friend_requests SET at = '2020-01-01T00:00:00.000Z' WHERE result = 'error'").run();
+  supa.friendReply = () => ({ status: 403, body: { code: 'automation_limit' } });
+  assert.match(await runCron(e, COLLECTION_CRON), /^limite du jeu/);
+  assert.equal(await runCron(e, COLLECTION_CRON), null, 'passe suivante sautée');
+  supa.friendReply = null;
+  // Effacer son classeur efface ses demandes notées.
+  assert.equal((await call('DELETE', 'me', { key: a.u.key, e })).status, 200);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM friend_requests WHERE user_id = ?').get(a.id).n, 0);
   e.DB.close();
 });
 

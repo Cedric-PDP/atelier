@@ -9,7 +9,7 @@ import { eraseChatOf } from './chat.js';
 
 export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
   + 'shared_targets, last_sync, game_pseudo, game_session_enc, game_uid, game_session_v, game_session_at, game_session_lost, sync_lock, '
-  + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until, wikibidous, wikibidous_at';
+  + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until, wikibidous, wikibidous_at, auto_friend, game_friends';
 const DEFAULT_MAX_USERS = 50;
 const MAX_PREFS_BYTES = 4 * 1024;
 
@@ -153,15 +153,17 @@ export async function getMe(env, user) {
     // Dernière ligne du journal des synchros ({at, kind, via, result, message}, synclog.js), ou null.
     last_sync: user.last_sync ? raw(user.last_sync) : null,
     fast_sync: !!user.fast_sync, // réglage « Synchro rapide du marché » (essai, marketread.js)
+    auto_friend: !!user.auto_friend, // réglage « Demandes d'ami automatiques » (friends.js)
     // Solde de wikibidous lu dans le jeu à la dernière synchro (game.js, readBalance) : {n, at}, ou null s'il n'a jamais été lu.
     wikibidous: user.wikibidous === null || user.wikibidous === undefined ? null : { n: user.wikibidous, at: user.wikibidous_at || null },
     session: sessionView(user),
   };
 }
 
-// PATCH /api/me {name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?, fast_sync?} : `auto_sync` (booléen) permet ou
+// PATCH /api/me {name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?, fast_sync?, auto_friend?} : `auto_sync` (booléen) permet ou
 // coupe les lectures automatiques de la collection et du marché ; `fast_sync` (booléen, coupé par défaut) lit le marché plus
-// vite (marketread.js) ; `shared` (booléen) active ou coupe le partage entre membres,
+// vite (marketread.js) ; `auto_friend` (booléen, coupé par défaut) envoie seul une demande d'ami du jeu aux autres membres
+// reliés (friends.js) ; `shared` (booléen) active ou coupe le partage entre membres,
 // `shared_targets` (booléen, seulement avec `shared`) celui des collections à compléter (members.js) ; `prefs` (objet JSON de 4 Ko au plus) remplace les préférences entières ; son
 // contenu n'est pas vérifié (l'interface y range ce qu'elle veut).
 export async function patchMe(env, user, body) {
@@ -173,8 +175,10 @@ export async function patchMe(env, user, body) {
   if (hasAuto && typeof body.auto_sync !== 'boolean') throw new HttpError(400, '« auto_sync » vaut true ou false.');
   const hasFast = Object.hasOwn(body, 'fast_sync');
   if (hasFast && typeof body.fast_sync !== 'boolean') throw new HttpError(400, '« fast_sync » vaut true ou false.');
+  const hasFriend = Object.hasOwn(body, 'auto_friend');
+  if (hasFriend && typeof body.auto_friend !== 'boolean') throw new HttpError(400, '« auto_friend » vaut true ou false.');
   const hasPseudo = Object.hasOwn(body, 'pseudo');
-  if (!hasName && !hasPrefs && !hasShared && !hasAuto && !hasFast && !hasPseudo) throw new HttpError(400, 'Rien à modifier : indique un nom, un pseudo, des préférences, le partage ou la synchro.');
+  if (!hasName && !hasPrefs && !hasShared && !hasAuto && !hasFast && !hasFriend && !hasPseudo) throw new HttpError(400, 'Rien à modifier : indique un nom, un pseudo, des préférences, le partage ou la synchro.');
   const name = hasName ? cleanName(body.name) : user.name;
   const pseudo = hasPseudo ? cleanPseudo(body.pseudo) : user.game_pseudo || null;
   let prefs = user.prefs || '{}';
@@ -190,11 +194,12 @@ export async function patchMe(env, user, body) {
   const { shared, publicId, sharedTargets } = sharing;
   const autoSync = hasAuto ? (body.auto_sync ? 1 : 0) : user.auto_sync ? 1 : 0;
   const fastSync = hasFast ? (body.fast_sync ? 1 : 0) : user.fast_sync ? 1 : 0;
-  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5, game_pseudo = ?6, auto_sync = ?7, fast_sync = ?8 WHERE id = ?9')
-    .bind(name, prefs, shared, publicId, sharedTargets, pseudo, autoSync, fastSync, user.id)
+  const autoFriend = hasFriend ? (body.auto_friend ? 1 : 0) : user.auto_friend ? 1 : 0;
+  await env.DB.prepare('UPDATE users SET name = ?1, prefs = ?2, shared = ?3, public_id = ?4, shared_targets = ?5, game_pseudo = ?6, auto_sync = ?7, fast_sync = ?8, auto_friend = ?9 WHERE id = ?10')
+    .bind(name, prefs, shared, publicId, sharedTargets, pseudo, autoSync, fastSync, autoFriend, user.id)
     .run();
   return { user: publicUser({ ...user, name, game_pseudo: pseudo }), prefs: raw(prefs), shared: !!shared, shared_targets: !!sharedTargets,
-    public_id: shared ? publicId : null, auto_sync: !!autoSync, fast_sync: !!fastSync };
+    public_id: shared ? publicId : null, auto_sync: !!autoSync, fast_sync: !!fastSync, auto_friend: !!autoFriend };
 }
 
 // POST /api/key/rotate : nouvelle clé principale (l'ancienne cesse de marcher).
@@ -210,8 +215,8 @@ export async function deleteMe(env, user) {
   const db = env.DB;
   await db.batch(
     // Marché : sa lecture du marché et ses quotas (market), l'historique de sa valeur, ses compteurs de lectures des fiches
-    // (game_reads) ; les cotes (prices), communes et liées à aucun classeur, restent.
-    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'market', 'value_history', 'sync_log', 'game_reads'].map((t) =>
+    // (game_reads) ; les cotes (prices), communes et liées à aucun classeur, restent. Ses demandes d'ami du jeu notées (friend_requests).
+    ['cards', 'cards_gone', 'tags', 'targets', 'refresh_staging', 'market', 'value_history', 'sync_log', 'game_reads', 'friend_requests'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
     ).concat(eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );

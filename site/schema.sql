@@ -24,7 +24,9 @@
 -- fast_sync = marché lu plus vite (essai choisi par le membre, coupé par défaut) ;
 -- sync_fails = échecs d'affilée des lectures automatiques ; link_hash / link_until = SHA-256 et fin du jeton de liaison en
 -- cours (favori « Relier ») ; wikibidous / wikibidous_at = solde de wikibidous du joueur lu dans le jeu à la dernière
--- synchro, et quand (NULL tant qu'il n'a pas été lu), montré aux membres avec qui il partage ses cartes.
+-- synchro, et quand (NULL tant qu'il n'a pas été lu), montré aux membres avec qui il partage ses cartes ; auto_friend =
+-- demandes d'ami du jeu envoyées seules aux autres membres reliés (case choisie, coupée par défaut) ; game_friends = sa
+-- liste d'amis du jeu lue à la dernière vérification (JSON {at, list:[{uid, name, st, out}]}, friends.js).
 -- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
 -- collé), import_key_hash, import_key_enc (clé d'import de l'ancien favori).
 CREATE TABLE IF NOT EXISTS users (
@@ -63,7 +65,9 @@ CREATE TABLE IF NOT EXISTS users (
     link_hash TEXT,
     link_until TEXT,
     wikibidous INTEGER,
-    wikibidous_at TEXT
+    wikibidous_at TEXT,
+    auto_friend INTEGER NOT NULL DEFAULT 0,
+    game_friends TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -215,6 +219,19 @@ CREATE TABLE IF NOT EXISTS game_reads (
     n INTEGER NOT NULL DEFAULT 0,
     blocked_until TEXT,
     PRIMARY KEY (user_id, kind)
+);
+
+-- Demandes d'ami du jeu envoyées par le classeur (functions/_lib/friends.js), une par membre et par compte du jeu visé :
+-- via = auto (lectures automatiques, case « Demandes d'ami automatiques ») | clic ; result = sent (demande envoyée) |
+-- friends | pending (déjà amis, ou une demande déjà en cours, vu dans la liste d'amis du jeu) | error (réessayée après un
+-- jour). Sert à ne jamais envoyer deux fois la même demande.
+CREATE TABLE IF NOT EXISTS friend_requests (
+    user_id TEXT NOT NULL,
+    target_uid TEXT NOT NULL,
+    at TEXT NOT NULL,
+    via TEXT NOT NULL,
+    result TEXT NOT NULL,
+    PRIMARY KEY (user_id, target_uid)
 );
 
 -- Journal des synchros (functions/_lib/synclog.js) : une ligne par lecture de la collection, réussie ou non, et par

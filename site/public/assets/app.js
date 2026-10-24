@@ -277,7 +277,8 @@
     // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
     merge: null,
-    tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done}
+    tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done, fr (amitié dans le jeu)}
+    autoFriend: { busy: false, error: '' }, // case « Demandes d'ami automatiques » de Réglages (PATCH /api/me {auto_friend})
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
     sell: null,
@@ -1951,6 +1952,21 @@
       S.auto.error = e.message;
     } finally {
       S.auto.busy = false;
+    }
+  }
+
+  // « Demandes d'ami automatiques » (PATCH /api/me {auto_friend}, coupée par défaut) : le serveur envoie seul une demande
+  // d'ami du jeu aux autres membres reliés (friends.js, pendant les lectures automatiques).
+  async function setAutoFriend(on) {
+    if (S.autoFriend.busy) return;
+    Object.assign(S.autoFriend, { busy: true, error: '' });
+    try {
+      const r = await api('PATCH', '/api/me', { auto_friend: on });
+      if (S.me) S.me.auto_friend = typeof r.auto_friend === 'boolean' ? r.auto_friend : on;
+    } catch (e) {
+      S.autoFriend.error = e.message;
+    } finally {
+      S.autoFriend.busy = false;
     }
   }
 
@@ -5440,8 +5456,42 @@
   function openTradeNew(f) {
     const { give, get } = tradeRowsWith(f);
     const pick = (rows) => rows.filter((r) => r.dup).map((r) => r.card.id);
-    S.tradeNew = { f, give: pick(give), get: pick(get), giveWb: '', getWb: '', busy: false, error: '', done: null };
+    S.tradeNew = { f, give: pick(give), get: pick(get), giveWb: '', getWb: '', busy: false, error: '', done: null,
+      fr: { st: 'loading', canRequest: false, busy: false, error: '' } };
     S.modal = 'trade';
+    loadTradeFriend(S.tradeNew);
+  }
+  // Le jeu n'accepte un échange qu'entre amis : à l'ouverture de la fenêtre, l'amitié avec l'ami dans le jeu (GET
+  // /api/friends?fresh=1). st : friends | sent | received | none | unknown (illisible, ou rien pour le désigner : la
+  // fenêtre reste comme avant, le jeu tranche).
+  async function loadTradeFriend(tn) {
+    const fr = tn.fr;
+    const sess = (S.me && S.me.session) || {};
+    if (!sess.linked || sess.lost) { fr.st = 'unknown'; return; }
+    try {
+      const r = await api('GET', '/api/friends?fresh=1');
+      fr.st = (r.members && r.members[tn.f.id]) || 'unknown';
+      fr.canRequest = !!r.can_request;
+      fr.readError = r.error || '';
+    } catch (e) {
+      fr.st = 'unknown';
+    }
+  }
+  // « Envoyer une demande d'ami » (POST /api/friends/request) : la demande part dans le jeu, à ton nom.
+  async function sendFriendRequest(tn) {
+    const fr = tn.fr;
+    if (fr.busy) return;
+    fr.busy = true;
+    fr.error = '';
+    try {
+      const r = await api('POST', '/api/friends/request', { member: tn.f.id });
+      fr.st = r.status || 'sent';
+      if (fr.st === 'sent') notify(`Demande d'ami envoyée à ${friendName(tn.f)} dans le jeu.`);
+    } catch (e) {
+      fr.error = e.message;
+    } finally {
+      fr.busy = false;
+    }
   }
   function toggleTradeCard(tn, side, id) {
     const list = tn[side];
@@ -7524,6 +7574,15 @@
         h('p', { class: 'small muted' }, SHARE_WHAT),
         sharing() ? h('p', { class: 'small muted' }, SHARE_TARGETS_WHAT) : null,
         errLine(S.friends.shareError),
+      ]),
+      section('Amis dans le jeu', [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-auto-friend', checked: !!(S.me && S.me.auto_friend), disabled: S.autoFriend.busy,
+            onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.auto_friend); setAutoFriend(want); } }),
+          "Envoyer une demande d'ami aux membres du classeur",
+        ]),
+        h('p', { class: 'small muted' }, "Le jeu n'accepte les échanges qu'entre amis. Coché, le classeur envoie seul, depuis ton compte du jeu relié, une demande d'ami à chaque membre qui relie le sien (et à ceux déjà là), une seule fois par membre, pendant les lectures automatiques. Il n'accepte jamais une demande à ta place : ça se fait dans le jeu. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
+        errLine(S.autoFriend.error),
       ]),
       section('Synchro rapide du marché', [
         h('label', { class: 'check' }, [
@@ -10576,6 +10635,39 @@
           d.received.length || d.receivedWb ? ` Tu reçois ${list(d.received, d.receivedWb)}.` : ' Tu ne reçois rien.']),
         h('p', { class: 'note' }, `Rien ne bouge tant que ${name} ne l'a pas acceptée dans le jeu (Échanges). Tu peux l'y annuler.`),
         foot([h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener' }, 'Ouvrir les échanges du jeu'), closeBtn()]),
+      ]);
+    }
+    // Pas amis dans le jeu : il refuserait l'échange. La fenêtre le dit à la place des cartes, avec de quoi devenir amis.
+    const fr = tn.fr || { st: 'unknown' };
+    if (fr.st === 'loading') {
+      return h(Modal, { key: 'trade', title, onClose: closeModal }, () => [
+        h('p', { class: 'muted', role: 'status' }, `Vérification de ton amitié avec ${name} dans le jeu…`),
+        foot([closeBtn('Annuler')]),
+      ]);
+    }
+    if (fr.st === 'none' || fr.st === 'sent' || fr.st === 'received') {
+      const friendsUrl = 'https://www.wiki-masters.com/friends';
+      const recheck = h('button', { class: 'btn ghost', type: 'button', disabled: fr.busy, onClick: () => { fr.st = 'loading'; loadTradeFriend(tn); } }, 'Vérifier à nouveau');
+      const say = {
+        none: fr.canRequest
+          ? `Envoie-lui une demande d'ami : le classeur la crée dans le jeu, à ton nom. L'échange sera possible dès que ${name} l'aura acceptée.`
+          : `Envoie-lui une demande d'ami dans le jeu (page Amis${tn.f.pseudo ? `, ou depuis son profil : ${tn.f.pseudo}` : ''}). L'échange sera possible dès que ${name} l'aura acceptée.`,
+        sent: `Ta demande d'ami est partie : l'échange sera possible dès que ${name} l'aura acceptée dans le jeu.`,
+        received: `${name} t'a envoyé une demande d'ami : accepte-la dans le jeu (page Amis), puis reviens proposer l'échange.`,
+      }[fr.st];
+      return h(Modal, { key: 'trade', title, onClose: closeModal }, () => [
+        h('p', { class: 'warn', role: 'status' }, [h('b', null, `${name} n'est pas ton ami dans le jeu.`), " Le jeu n'accepte les échanges qu'entre amis."]),
+        h('p', null, say),
+        errLine(fr.error),
+        foot([
+          fr.st === 'none' && !fr.canRequest && tn.f.pseudo
+            ? h('a', { class: 'btn ghost', href: gameProfileUrl(tn.f.pseudo), target: '_blank', rel: 'noopener noreferrer' }, 'Son profil dans le jeu ↗') : null,
+          fr.st !== 'none' || !fr.canRequest ? h('a', { class: 'btn ghost', href: friendsUrl, target: '_blank', rel: 'noopener noreferrer' }, 'Mes amis dans le jeu ↗') : null,
+          fr.st === 'none' ? null : recheck,
+          closeBtn(),
+          fr.st === 'none' && fr.canRequest
+            ? h('button', { class: 'btn primary', type: 'button', disabled: fr.busy, onClick: () => sendFriendRequest(tn) }, fr.busy ? 'Envoi dans le jeu…' : `Envoyer une demande d'ami à ${name}`) : null,
+        ]),
       ]);
     }
     const sess = (S.me && S.me.session) || {};

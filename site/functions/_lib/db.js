@@ -38,7 +38,9 @@ export const SCHEMA = [
     link_hash TEXT,
     link_until TEXT,
     wikibidous INTEGER,
-    wikibidous_at TEXT
+    wikibidous_at TEXT,
+    auto_friend INTEGER NOT NULL DEFAULT 0,
+    game_friends TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -139,6 +141,14 @@ export const SCHEMA = [
     blocked_until TEXT,
     PRIMARY KEY (user_id, kind)
   )`,
+  `CREATE TABLE IF NOT EXISTS friend_requests (
+    user_id TEXT NOT NULL,
+    target_uid TEXT NOT NULL,
+    at TEXT NOT NULL,
+    via TEXT NOT NULL,
+    result TEXT NOT NULL,
+    PRIMARY KEY (user_id, target_uid)
+  )`,
   `CREATE TABLE IF NOT EXISTS sync_log (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -187,6 +197,8 @@ const ADDED_COLUMNS = [
   ['users', 'link_until', 'TEXT'],
   ['users', 'wikibidous', 'INTEGER'],
   ['users', 'wikibidous_at', 'TEXT'],
+  ['users', 'auto_friend', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'game_friends', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],

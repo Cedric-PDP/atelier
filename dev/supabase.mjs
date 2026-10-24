@@ -14,6 +14,9 @@
 // (annulation, refusée après une mise) relevées dans le HAR du 2026-10-23 ; `sellReply` force la réponse d'une mise en
 // vente, `maxAuctions` le plafond d'enchères actives, `siteLimit` limite aussi ces routes. RLS de user_cards :
 // ses propres exemplaires seulement, sauf `readOthers` (ceux de tout le monde, comme si le jeu les laissait lire).
+// Amis : GET /api/friends ({friendships:[…]}, forme relevée dans le HAR du 2026-10-22, d'après `friendships`) et POST
+// /api/friends {addressee_id} → 201 {friendship} (envoi d'une demande, relevé dans le HAR du 2026-10-24) ;
+// `friendReply` force sa réponse, `siteLimit = 'friends'` limite ces deux routes.
 
 import assert from 'node:assert/strict';
 
@@ -96,6 +99,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     siteLimit: null, // 429 | 'automation_limit' : routes du marché du site limitées
     sellReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/marketplace
     maxAuctions: 5, // enchères actives par vendeur (maxConcurrentAuctions)
+    friendships: [], // {id, requester_id, addressee_id, status} : GET /api/friends, POST /api/friends
+    friendReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/friends
     reset() {
       this.players.clear();
       this.cards = [];
@@ -110,6 +115,11 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.siteLimit = null;
       this.sellReply = null;
       this.maxAuctions = 5;
+      this.friendships = [];
+      this.friendReply = null;
+    },
+    befriend(a, b, status = 'accepted') {
+      this.friendships.push({ id: `amitie-${this.friendships.length + 1}`, requester_id: a, addressee_id: b, status });
     },
     restore() {
       globalThis.fetch = previous;
@@ -308,6 +318,28 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       const { bids = [], card, ...auction } = a;
       return reply({ auction: { ...auction, seller: { username: name(a.seller_id) }, current_bidder: a.current_bidder_id ? { username: name(a.current_bidder_id) } : null },
         bids: bids.map((b) => ({ ...b, auction_id: id })) });
+    }
+    if (u.pathname === '/api/friends' && supa.siteLimit === 'friends') return reply({ code: 'automation_limit', error: 'automation limit' }, 403);
+    if (method === 'GET' && u.pathname === '/api/friends') {
+      const who = (uid) => ({ id: uid, username: (supa.players.get(uid) || {}).username || null, avatar_url: null });
+      return reply({ friendships: supa.friendships.filter((f) => f.requester_id === me.uid || f.addressee_id === me.uid)
+        .map((f) => ({ ...f, requester: who(f.requester_id), addressee: who(f.addressee_id), created_at: '2026-10-24T00:00:00Z' })) });
+    }
+    if (method === 'POST' && u.pathname === '/api/friends') {
+      assert.equal(h.get('origin'), GAME, 'Origin du jeu');
+      const body = JSON.parse(init.body || '{}');
+      if (supa.friendReply) {
+        const f = supa.friendReply(body);
+        if (f.network) throw new TypeError('fetch failed');
+        return reply(f.body ?? {}, f.status);
+      }
+      const to = supa.players.get(body.addressee_id);
+      if (!to || to === me) return reply({ error: 'Joueur introuvable' }, 404);
+      if (supa.friendships.some((f) => [f.requester_id, f.addressee_id].sort().join() === [me.uid, to.uid].sort().join() && f.status !== 'declined')) {
+        return reply({ error: 'Demande déjà existante' }, 409);
+      }
+      supa.befriend(me.uid, to.uid, 'pending');
+      return reply({ friendship: supa.friendships.at(-1) }, 201);
     }
     if (method === 'POST' && u.pathname === '/api/trades') {
       assert.equal(h.get('origin'), GAME, 'Origin du jeu');

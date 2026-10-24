@@ -12,6 +12,7 @@ import { FAILS_MAX, LEASE_MS, checkCollection, readCollection } from './refresh.
 import { errorEntry, writeLog } from './synclog.js';
 import { FULL_START_SQL } from './market.js';
 import { marketPass } from './marketread.js';
+import { autoFriends } from './friends.js';
 
 export { FAILS_MAX, LEASE_MS };
 export const COLLECTION_CRON = '*/10 * * * *';
@@ -94,7 +95,7 @@ function needsRead(state, seen, now) {
 async function collectionPass(env, { now }) {
   const db = env.DB;
   const start = Date.now();
-  const counts = { checked: 0, read: 0, failed: 0 };
+  const counts = { checked: 0, read: 0, failed: 0, friends: 0 };
   let limited = false;
   for (const member of await eligibleMembers(db, byLastCheck)) {
     if (Date.now() - start >= CRON_BUDGET_MS) break;
@@ -121,6 +122,24 @@ async function collectionPass(env, { now }) {
       }
       counts.checked++;
       await noteSuccess(db, member.id);
+      if (member.auto_friend) {
+        // Demandes d'ami automatiques (friends.js), sous le même bail ; session relue (la lecture a pu la renouveler). Un
+        // échec n'est pas celui de la lecture : seule une limite du jeu arrête la passe.
+        try {
+          const row = await db.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?1`).bind(member.id).first();
+          const fs = await sessionOf(env, row);
+          fs.via = 'cron';
+          const r = await autoFriends(env, row, fs);
+          counts.friends += r.sent;
+        } catch (err) {
+          if (err && err.extra && err.extra.limited) {
+            await skipNext(db, 'collection', SKIP_AFTER_LIMIT_MS.collection, now);
+            limited = true;
+            break;
+          }
+          console.error(err);
+        }
+      }
     } catch (err) {
       if (err && err.extra && err.extra.needs_link) continue; // déjà noté au journal par game.js ; le membre n'est plus éligible
       counts.failed++;
@@ -141,7 +160,8 @@ async function collectionPass(env, { now }) {
     }
   }
   const text = `${counts.checked} ${plural(counts.checked, 'membre vérifié', 'membres vérifiés')}, ${counts.read} ${plural(counts.read, 'relu', 'relus')}, `
-    + `${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`;
+    + `${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`
+    + (counts.friends ? `, ${counts.friends} ${plural(counts.friends, "demande d'ami envoyée", "demandes d'ami envoyées")}` : '');
   return limited ? `limite du jeu (${text})` : text;
 }
 

@@ -67,6 +67,9 @@ function mockApi() {
   const calls = [];
   const trades = []; // échanges proposés (POST /api/trades/create)
   let tradeFail = null; // {status, error} : le prochain échange est refusé
+  const gameFriends = {}; // amitié dans le jeu avec chaque membre, par prénom (GET /api/friends) ; absent : amis
+  const friendRequests = []; // demandes d'ami envoyées (POST /api/friends/request)
+  let canRequest = false; // la route d'envoi d'une demande d'ami est-elle connue du serveur (can_request) ?
   let seq = 0;
   const mk = (p) => (p + '_'.repeat(43)).slice(0, 43);
   const json = (status, body) => ({ status, body });
@@ -244,6 +247,9 @@ function mockApi() {
     link(key) { linkUser(users.find((x) => x.key === key)); },
     trades,
     failTrade(r) { tradeFail = r; },
+    gameFriends,
+    friendRequests,
+    canRequest(v) { canRequest = v; },
     isLinked(key) { return !!(users.find((x) => x.key === key) || {}).linked; },
     handle(method, p, headers, body) {
       calls.push([method, p, body]);
@@ -271,7 +277,7 @@ function mockApi() {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
-          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync,
+          market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend,
           wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at } });
       }
       if (p === '/api/me' && method === 'PATCH') {
@@ -302,9 +308,28 @@ function mockApi() {
           if (typeof body.fast_sync !== 'boolean') return json(400, { error: '« fast_sync » vaut true ou false.' });
           st.fastSync = body.fast_sync;
         }
+        if ('auto_friend' in body) {
+          if (typeof body.auto_friend !== 'boolean') return json(400, { error: '« auto_friend » vaut true ou false.' });
+          st.autoFriend = body.auto_friend;
+        }
         if ('name' in body) st.name = body.name;
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
-          auto_sync: st.autoSync, fast_sync: !!st.fastSync });
+          auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend });
+      }
+      // Amis dans le jeu : statut de chaque membre qui partage ; une demande d'ami passe le membre à « sent ».
+      if ((p === '/api/friends' || p.startsWith('/api/friends?')) && method === 'GET') {
+        const members = Object.fromEntries(users.filter((u) => u !== st && u.shared && u.pub).map((u) => [u.pub, st.linked ? gameFriends[u.name] || 'friends' : 'unknown']));
+        return json(200, { linked: !!st.linked, at: st.linked ? new Date().toISOString() : null, members, can_request: canRequest, auto_friend: !!st.autoFriend });
+      }
+      if (p === '/api/friends/request' && method === 'POST') {
+        const f = users.find((u) => u !== st && u.shared && u.pub && u.pub === (body || {}).member);
+        if (!f) return json(404, { error: 'Ce membre ne montre pas (ou plus) ses cartes.' });
+        const now = gameFriends[f.name] || 'friends';
+        if (now !== 'none') return json(200, { status: now });
+        if (!canRequest) return json(503, { error: "Le classeur ne sait pas encore envoyer une demande d'ami : envoie-la dans le jeu (page Amis)." });
+        friendRequests.push(f.name);
+        gameFriends[f.name] = 'sent';
+        return json(200, { status: 'sent' });
       }
       // « Proposer un échange » : créé dans le jeu par le serveur (ici, gardé dans api.trades) ; titres des cartes de chacun.
       if (p === '/api/trades/create' && method === 'POST') {
@@ -2987,6 +3012,37 @@ async function main() {
         const side = (i) => (md() ? md().querySelectorAll('.trade-pick')[i] : null);
         const titlesOf = (i, on) => side(i).querySelectorAll('li').filter((li) => !on || li.querySelector('input').checked).map((li) => text(li.querySelector('.trade-pick__title')));
         const send = () => md().querySelectorAll('button').find((b) => text(b) === "Proposer l'échange dans le jeu");
+        const mdBtn = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b) === t) : null) || null;
+        // Pas amis dans le jeu : la fenêtre le dit à la place des cartes. Sans route d'envoi connue : marche à suivre et liens
+        // vers le jeu ; avec : « Envoyer une demande d'ami », puis « demande partie » ; demande reçue : l'accepter dans le jeu.
+        api.gameFriends['Léa'] = 'none';
+        btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa').click();
+        await settle(80);
+        check(md() && text(md()).includes("Léa n'est pas ton ami dans le jeu.") && !side(0) && !mdBtn("Envoyer une demande d'ami à Léa")
+          && md().querySelectorAll('a').some((x) => x.getAttribute('href') === 'https://www.wiki-masters.com/friends'), 'pas amis, sans route d\'envoi : ' + (md() ? text(md()) : ''));
+        md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
+        await settle();
+        api.canRequest(true);
+        btnIn(pair('Léa → Toi'), 'Proposer un échange à Léa').click();
+        await settle(80);
+        check(mdBtn("Envoyer une demande d'ami à Léa"), "bouton « Envoyer une demande d'ami à Léa » absent : " + (md() ? text(md()) : ''));
+        mdBtn("Envoyer une demande d'ami à Léa").click();
+        await settle(80);
+        check(api.friendRequests.join() === 'Léa' && text(md()).includes("Ta demande d'ami est partie") && mdBtn('Vérifier à nouveau') && !side(0), 'demande d\'ami envoyée : ' + text(md()));
+        api.gameFriends['Léa'] = 'friends';
+        mdBtn('Vérifier à nouveau').click();
+        await settle(80);
+        check(side(0) && text(md()).includes('Proposer un échange à Léa'), 'amis dans le jeu : formulaire d\'échange attendu après « Vérifier à nouveau »');
+        md().querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+        await settle();
+        api.gameFriends['Paul'] = 'received';
+        btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul').click();
+        await settle(80);
+        check(md() && text(md()).includes("Paul t'a envoyé une demande d'ami") && !side(0), 'demande reçue de Paul : ' + (md() ? text(md()) : ''));
+        md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
+        await settle();
+        delete api.gameFriends['Paul'];
+        api.canRequest(false);
         btnIn(pair('Toi → Paul'), 'Proposer un échange à Paul').click();
         await settle();
         check(md() && text(md()).includes('Proposer un échange à Paul'), 'fenêtre « Proposer un échange » absente');
