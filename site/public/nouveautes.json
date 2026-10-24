@@ -3,7 +3,12 @@
     {"id": "2026-10-24", "date": "2026-10-24", "sections": [{"icon": "🤝", "title": "Amis dans le jeu", "items": [
       {"text": "Le jeu n'accepte un échange qu'entre amis. Si tu n'es pas encore ami avec quelqu'un, « Proposer un échange » te le dit et envoie la demande d'ami en un clic.", "to": "#/amis/echanges", "link": "Échanges possibles"},
       {"text": "Nouvelle case dans les Réglages : le classeur envoie une demande d'ami dans le jeu à chaque membre qui relie son compte. Elle est décochée par défaut.", "to": "#/reglages", "link": "Réglages"},
-      {"text": "Tu coches la case ? Le classeur te propose aussitôt d'envoyer une demande d'ami à tous les membres qui ne sont pas encore tes amis, d'un seul clic. Le bouton « Ajouter les membres pas encore amis… » des Réglages fait la même chose à tout moment.", "to": "#/reglages", "link": "Réglages"}]}]},
+      {"text": "Tu coches la case ? Le classeur te propose aussitôt d'envoyer une demande d'ami à tous les membres qui ne sont pas encore tes amis, d'un seul clic. Le bouton « Ajouter les membres pas encore amis… » des Réglages fait la même chose à tout moment.", "to": "#/reglages", "link": "Réglages"}]},
+      {"icon": "🗂️", "title": "Collections", "items": [{"text": "« Réorganiser » (en tête de « Mes collections ») : range tes collections dans l'ordre que tu veux, en les glissant ou avec les flèches, puis « Enregistrer l'ordre ».", "to": "#/collections", "link": "Collections"}]},
+      {"icon": "⭐", "title": "Liste de souhaits du jeu", "items": [{"text": "Nouvelle case dans les Réglages : le classeur met dans ta liste de souhaits du jeu les cartes qui manquent à tes collections, et retire celles que tu as obtenues. Elle est décochée par défaut.", "to": "#/reglages", "link": "Réglages"}]},
+      {"icon": "🪙", "title": "Marché", "items": [
+        {"text": "« Bonnes affaires à acheter » a des filtres : pourcentage de la cote, prix, économie, rareté, brillante, mise, fin de l'enchère, et un tri (remise, économie, prix).", "to": "#/marche", "link": "Marché"},
+        {"text": "Enregistre tes filtres sous un nom pour les retrouver d'un clic, sur tous tes appareils.", "to": "#/marche", "link": "Marché"}]}]},
     {"id": "2026-10-23", "date": "2026-10-23", "sections": [{"icon": "🏷️", "title": "Marché", "items": [
       {"text": "« Mettre en vente dans le jeu » depuis la fiche d'une de tes cartes ou depuis « Bonnes affaires à vendre ». La fenêtre montre tout le marché de la carte : cote, dernières ventes, enchères en cours, courbe des prix. Tu choisis l'exemplaire, le prix de départ et la durée.", "to": "#/marche", "link": "Marché"},
       {"text": "« Mes ventes en cours », en haut de l'onglet Marché : tes ventes pas encore finies, avec leurs mises. Annule-en une tant que personne n'a misé, aussi depuis la fenêtre de vente, « Mes enchères » ou la fiche.", "to": "#/marche", "link": "Mes ventes en cours"},
@@ -108,6 +113,7 @@
     { "id": "2026-10-19", "at": "2026-10-19T23:30:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-19" },
     { "id": "2026-10-20", "at": "2026-10-20T07:24:03Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-20" },
     { "id": "2026-10-22", "at": "2026-10-22T21:20:50Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-22" },
-    { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" }
+    { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" },
+    { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" }
   ]
 }
