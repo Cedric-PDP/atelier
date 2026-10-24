@@ -2854,6 +2854,127 @@ await test('chat : réponses (reply_to vérifié, extrait du message cité pour 
   assert.ok(plan.some((l) => /^SEARCH m USING INTEGER PRIMARY KEY \(rowid=\?\)$/.test(l)), plan.join('\n'));
 });
 
+await test('chat : réactions (mettre, retirer, sans double compte, prénoms des autres, révision nouvelle pour ?after, 400, 404, 429)', async () => {
+  const { e, q, say, read, del } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const cleo = await signup('Cléo', e);
+  const react = (key, id, emoji, on = true) => call('POST', `chat/${id}/react`, { key, e, body: { emoji, on } });
+  const a1 = (await say(ana.key, 'Regardez ma nouvelle carte !')).json.message;
+  const a2 = (await say(ana.key, 'Et celle-ci')).json.message;
+  assert.ok(!('reactions' in a1), 'sans réaction : pas de champ');
+  const { rev } = (await read(ben.key)).json;
+  let r = await react(ben.key, a1.id, '🎉');
+  assert.deepEqual([r.status, r.json], [200, { id: a1.id, reactions: [{ emoji: '🎉', n: 1, mine: true, who: [] }] }]);
+  // Déjà mise : rien ne change (un double clic ne la retire pas), pas de nouvelle révision.
+  const rev1 = q('SELECT rev FROM chat_messages WHERE id = ?', a1.id)[0].rev;
+  r = await react(ben.key, a1.id, '🎉');
+  assert.equal(r.json.reactions[0].n, 1);
+  assert.equal(q('SELECT rev FROM chat_messages WHERE id = ?', a1.id)[0].rev, rev1);
+  await react(cleo.key, a1.id, '🎉');
+  await react(cleo.key, a1.id, '❤️');
+  await react(ana.key, a1.id, '❤️');
+  assert.deepEqual(q('SELECT reacts FROM chat_messages WHERE id = ?', a1.id), [{ reacts: 4 }]);
+  // Heures distinctes (des appels dans la même milliseconde se départagent par l'id du compte, tiré au hasard).
+  [[ben, '🎉'], [cleo, '🎉'], [cleo, '❤️'], [ana, '❤️']].forEach(([who, emoji], i) =>
+    e.DB.sqlite.prepare('UPDATE chat_reactions SET created_at = ? WHERE user_id = ? AND emoji = ?').run(`2026-10-24T10:00:0${i}.000Z`, who.user.id, emoji));
+  // Chaque lecteur : `mine` pour la sienne, prénoms actuels des autres ; ordre : le premier emoji mis d'abord.
+  r = await read(ana.key);
+  assert.deepEqual(r.json.messages.map((m) => m.reactions || null), [
+    [{ emoji: '🎉', n: 2, mine: false, who: ['Ben', 'Cléo'] }, { emoji: '❤️', n: 2, mine: true, who: ['Cléo'] }], null]);
+  assert.ok(!JSON.stringify(r.json).includes(ben.user.id), "jamais l'id interne de qui réagit");
+  // Une page ouverte les reçoit par ?after (le message revient, une seule fois), sans rien de nouveau dans last_id.
+  r = await read(ben.key, `?after=${rev}`);
+  assert.deepEqual([r.json.messages.map((m) => m.id), r.json.deleted, r.json.last_id], [[a1.id], [], a2.id]);
+  assert.deepEqual(r.json.messages[0].reactions[1], { emoji: '❤️', n: 2, mine: false, who: ['Cléo', 'Ana'] });
+  // Retirer ; déjà retirée : rien ne change.
+  r = await react(cleo.key, a1.id, '🎉', false);
+  assert.deepEqual(r.json.reactions.map((x) => [x.emoji, x.n, x.mine]), [['🎉', 1, false], ['❤️', 2, true]]);
+  assert.equal((await react(cleo.key, a1.id, '🎉', false)).status, 200);
+  assert.deepEqual(q('SELECT reacts FROM chat_messages WHERE id = ?', a1.id), [{ reacts: 3 }]);
+  // 400 : emoji hors de la liste, `on` manquant, classeur sans prénom ; 404 : message inexistant ou supprimé.
+  for (const body of [{ emoji: '💩', on: true }, { emoji: '👍' }, { emoji: '👍', on: 'oui' }, { emoji: ['👍'], on: true }]) {
+    assert.equal((await call('POST', `chat/${a1.id}/react`, { key: ben.key, e, body })).status, 400, JSON.stringify(body));
+  }
+  e.DB.sqlite.prepare('UPDATE users SET name = NULL WHERE id = ?').run(cleo.user.id);
+  assert.equal((await react(cleo.key, a1.id, '👍')).status, 400);
+  assert.equal((await react(ben.key, 99999, '👍')).status, 404);
+  assert.equal((await call('POST', `chat/${a1.id}/react`, { key: 'inconnue-'.repeat(4), e, body: { emoji: '👍', on: true } })).status, 401);
+  // Message supprimé : 404, et ses réactions partent avec lui.
+  await react(ben.key, a2.id, '👀');
+  await del(ana.key, a2.id);
+  assert.equal((await react(ben.key, a2.id, '👀')).status, 404);
+  assert.deepEqual(q('SELECT COUNT(*) AS n FROM chat_reactions WHERE message_id = ?', a2.id), [{ n: 0 }]);
+  // Limites : 30 par minute (mises ou retirées), puis 500 par 24 h ; 429 lisible, rien d'écrit.
+  e.DB.sqlite.prepare('UPDATE users SET react_min = 30, react_min_at = ? WHERE id = ?').run(new Date(Date.now() - 20_000).toISOString(), ben.user.id);
+  r = await react(ben.key, a1.id, '🔥');
+  assert.deepEqual([r.status, r.json.retry_after > 30 && r.json.retry_after <= 40], [429, true], JSON.stringify(r.json));
+  assert.match(r.json.error, /30 réactions par minute/);
+  e.DB.sqlite.prepare('UPDATE users SET react_min_at = ?, react_day = 500, react_day_at = ? WHERE id = ?').run(hoursAgo(0.1), hoursAgo(20), ben.user.id);
+  r = await react(ben.key, a1.id, '🔥');
+  assert.deepEqual([r.status, Math.round(r.json.retry_after / 3600)], [429, 4]);
+  assert.equal(q("SELECT COUNT(*) AS n FROM chat_reactions WHERE emoji = '🔥'")[0].n, 0);
+  // Fenêtres passées : de nouveau permis, compteurs repartis à 1.
+  e.DB.sqlite.prepare('UPDATE users SET react_day_at = ? WHERE id = ?').run(hoursAgo(25), ben.user.id);
+  assert.equal((await react(ben.key, a1.id, '🔥')).status, 200);
+  assert.deepEqual(q('SELECT react_min, react_day FROM users WHERE id = ?', ben.user.id), [{ react_min: 1, react_day: 1 }]);
+  e.DB.close();
+});
+
+await test('chat : réactions effacées avec leur message (purge) et avec le classeur de leur auteur (pages ouvertes mises à jour)', async () => {
+  const { e, q, say, read, bulk } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const react = (key, id, emoji) => call('POST', `chat/${id}/react`, { key, e, body: { emoji, on: true } });
+  const a1 = (await say(ana.key, 'Salut')).json.message;
+  const b1 = (await say(ben.key, 'Coucou')).json.message;
+  await react(ben.key, a1.id, '👍');
+  await react(ana.key, a1.id, '😂');
+  await react(ana.key, b1.id, '❤️');
+  const { rev } = (await read(ana.key)).json;
+  assert.deepEqual((await call('DELETE', 'me', { key: ben.key, e })).json, { ok: true });
+  // Ses réactions retirées (le message d'Ana revient par ?after avec ce qui reste), ses messages et leurs réactions partis.
+  const r = (await read(ana.key, `?after=${rev}`)).json;
+  assert.deepEqual([r.deleted, r.messages.map((m) => [m.id, m.reactions])], [[b1.id], [[a1.id, [{ emoji: '😂', n: 1, mine: true, who: [] }]]]]);
+  assert.deepEqual(q('SELECT message_id, emoji FROM chat_reactions'), [{ message_id: a1.id, emoji: '😂' }]);
+  assert.deepEqual(q('SELECT reacts FROM chat_messages WHERE id = ?', a1.id), [{ reacts: 1 }]);
+  assert.equal(new Set(q('SELECT rev FROM chat_messages').map((x) => x.rev)).size, 2, 'révisions uniques');
+  // Purge : les réactions des messages purgés partent dans le même lot.
+  bulk(2000, ana.user.id, hoursAgo(48));
+  await say(ana.key, 'dernier');
+  assert.deepEqual(q('SELECT COUNT(*) AS n FROM chat_reactions'), [{ n: 0 }]);
+  e.DB.close();
+});
+
+await test('chat : coût des réactions (lues seulement pour les messages qui en ont, par la clé primaire ; écriture bornée)', async () => {
+  const { e, say } = chatEnv();
+  const ana = await signup('Ana', e);
+  const ben = await signup('Ben', e);
+  const a1 = (await say(ana.key, 'un')).json.message;
+  await say(ana.key, 'deux');
+  const seen = [];
+  const spy = { ...e, DB: { prepare: (sql) => { seen.push(sql); return e.DB.prepare(sql); }, batch: (s) => e.DB.batch(s) } };
+  const planOf = (sql) => e.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${sql}`).all().map((x) => x.detail);
+  await call('GET', 'me', { key: ben.key, e: spy });
+  seen.length = 0;
+  await call('GET', 'chat', { key: ben.key, e: spy });
+  assert.ok(!seen.some((s) => /chat_reactions/.test(s)), 'aucune réaction : aucune requête de plus');
+  await call('POST', `chat/${a1.id}/react`, { key: ben.key, e: spy, body: { emoji: '👍', on: true } });
+  const writes = seen.filter((s) => /^(INSERT|UPDATE|DELETE)/.test(s.trim()));
+  for (const s of writes) {
+    const plan = planOf(s);
+    assert.ok(!plan.some((l) => /^SCAN (?!CONSTANT ROW$|\(subquery-\d+\)$|j$)/.test(l)), s + '\n' + plan.join('\n'));
+  }
+  seen.length = 0;
+  const r = await call('GET', 'chat', { key: ben.key, e: spy });
+  assert.equal(r.json.messages[0].reactions[0].n, 1);
+  const reads = seen.filter((s) => /chat_reactions/.test(s));
+  assert.equal(reads.length, 1);
+  const plan = planOf(reads[0]);
+  assert.ok(plan.some((l) => /^SEARCH r USING PRIMARY KEY \(message_id=\?\)$/.test(l)), plan.join('\n'));
+  e.DB.close();
+});
+
 await test('chat : purge (les 2 000 plus récents gardés, à chaque envoi), numéros jamais réutilisés', async () => {
   const { e, q, say, read, bulk } = chatEnv();
   const ana = await signup('Ana', e);

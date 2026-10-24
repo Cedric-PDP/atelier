@@ -43,7 +43,11 @@ export const SCHEMA = [
     game_friends TEXT,
     auto_wish INTEGER NOT NULL DEFAULT 0,
     wish_dirty INTEGER NOT NULL DEFAULT 0,
-    wish_state TEXT
+    wish_state TEXT,
+    react_min INTEGER NOT NULL DEFAULT 0,
+    react_min_at TEXT,
+    react_day INTEGER NOT NULL DEFAULT 0,
+    react_day_at TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -112,8 +116,16 @@ export const SCHEMA = [
     created_at TEXT NOT NULL,
     deleted INTEGER NOT NULL DEFAULT 0,
     rev INTEGER NOT NULL,
-    reply_to INTEGER
+    reply_to INTEGER,
+    reacts INTEGER NOT NULL DEFAULT 0
   )`,
+  `CREATE TABLE IF NOT EXISTS chat_reactions (
+    message_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (message_id, user_id, emoji)
+  ) WITHOUT ROWID`,
   `CREATE TABLE IF NOT EXISTS prices (
     card_id TEXT PRIMARY KEY,
     data TEXT NOT NULL,
@@ -211,6 +223,10 @@ const ADDED_COLUMNS = [
   ['users', 'auto_wish', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'wish_dirty', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'wish_state', 'TEXT'],
+  ['users', 'react_min', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'react_min_at', 'TEXT'],
+  ['users', 'react_day', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'react_day_at', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['targets', 'pos', 'INTEGER'],
@@ -218,6 +234,7 @@ const ADDED_COLUMNS = [
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],
   ['chat_messages', 'reply_to', 'INTEGER'],
+  ['chat_messages', 'reacts', 'INTEGER NOT NULL DEFAULT 0'],
 ];
 
 // Les morceaux en attente depuis plus d'une heure (lecture de la collection ou collection à compléter en morceaux

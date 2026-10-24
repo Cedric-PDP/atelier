@@ -89,7 +89,20 @@ function mockApi() {
   const linkUser = (u) => Object.assign(u, { linked: true, lost: null, linkAt: new Date().toISOString(), fails: 0, linkToken: null });
   // Chat : un salon pour tous les comptes ; révision (rev) à la création puis à la suppression (marque vide gardée),
   // comme le serveur. `chatLimit` : le prochain envoi est refusé (429).
-  const chat = { msgs: [], rev: 0, id: 0 };
+  const chat = { msgs: [], rev: 0, id: 0, reacts: [] };
+  // Réactions (2026-10-24), comme chat.js : [{emoji, n, mine, who}], dans l'ordre où chaque emoji a été mis.
+  const REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉', '🔥', '👀'];
+  const reactsOut = (st, id) => {
+    const out = [];
+    for (const r of chat.reacts.filter((x) => x.msg === id)) {
+      let e = out.find((x) => x.emoji === r.emoji);
+      if (!e) out.push(e = { emoji: r.emoji, n: 0, mine: false, who: [] });
+      e.n++;
+      if (r.user === st.id) e.mine = true;
+      else e.who.push((users.find((u) => u.id === r.user) || {}).name || 'membre sans prénom');
+    }
+    return out;
+  };
   // Collections citées, comme chat.js : un lien vers une collection (#/ami/<id public>/<id>, ou la sienne :
   // #/collections/<id>) rangé `\uE000c:<compte>/<id>\uE001` (sans contrôle de l'hôte ici), retraduit pour chaque lecteur.
   const COL_LINK = /\bhttps?:\/\/[^\s/#]+\/?#\/(?:ami\/([A-Za-z0-9_-]+)|collections)\/([A-Za-z0-9_-]+)(?:\?[\w=&%.~-]*[\w=&%~-])?(?![\w/-])/g;
@@ -105,6 +118,8 @@ function mockApi() {
   });
   const chatOut = (st, m) => {
     const out = { id: m.id, author: (users.find((u) => u.id === m.user) || {}).name || null, mine: m.user === st.id, text: m.text, created_at: m.at };
+    const reactions = reactsOut(st, m.id);
+    if (reactions.length) out.reactions = reactions;
     if (m.replyTo) {
       // Message cité : auteur et extrait (citations en clair, cartes sans crochets, espaces réduits), comme chat.js.
       const q = chat.msgs.find((x) => x.id === m.replyTo && !x.deleted);
@@ -147,8 +162,21 @@ function mockApi() {
     if (members.length) out.members = members;
     return out;
   };
-  const chatDrop = (m) => { if (!m.deleted) { m.deleted = true; m.text = ''; m.rev = ++chat.rev; } };
+  const chatDrop = (m) => { if (!m.deleted) { m.deleted = true; m.text = ''; m.rev = ++chat.rev; chat.reacts = chat.reacts.filter((r) => r.msg !== m.id); } };
   function chatRoute(st, method, p, body) {
+    const rm = p.match(/^\/api\/chat\/(\d+)\/react$/);
+    if (rm) {
+      if (method !== 'POST') return json(405, { error: 'Méthode non autorisée.' });
+      const m = chat.msgs.find((x) => x.id === Number(rm[1]) && !x.deleted);
+      if (!REACTIONS.includes(body.emoji) || typeof body.on !== 'boolean') return json(400, { error: 'Réaction inconnue.' });
+      if (!m) return json(404, { error: "Ce message n'existe plus (supprimé par son auteur ?)." });
+      if (self.reactLimit) return json(429, { error: 'Doucement : 30 réactions par minute au plus. Réessaie dans 12 s.', retry_after: 12 });
+      const i = chat.reacts.findIndex((r) => r.msg === m.id && r.user === st.id && r.emoji === body.emoji);
+      if (body.on && i < 0) chat.reacts.push({ msg: m.id, user: st.id, emoji: body.emoji });
+      if (!body.on && i >= 0) chat.reacts.splice(i, 1);
+      if (body.on === (i < 0)) m.rev = ++chat.rev;
+      return json(200, { id: m.id, reactions: reactsOut(st, m.id) });
+    }
     const dm = p.match(/^\/api\/chat\/(\d+)$/);
     if (dm) {
       if (method !== 'DELETE') return json(405, { error: 'Méthode non autorisée.' });
@@ -4116,6 +4144,35 @@ async function main() {
     await rawApi('DELETE', '/api/chat/' + seenAnswer.reply.id, keyN);
     await pc.visible();
     check(await waitFor(() => !hasIn('Tu es là ?') && text(byText('Oui, je suis là').querySelector('.chat-quote')) === 'En réponse à un message supprimé'), 'citation d\'un message supprimé');
+    // Réactions : « Réagir » ouvre le choix, Échap le ferme ; un emoji choisi devient une pastille (la mienne marquée) et
+    // part au serveur ; Noa réagit aussi : la relecture ?after met la pastille à jour (2, « Noa et toi »), sans « nouveau
+    // message » ; un clic sur la pastille retire la mienne.
+    const superMsg = () => byText('Super');
+    check(superMsg().querySelector('.chat-msg__react') && !superMsg().querySelector('.chat-reacts') && !superMsg().querySelector('.chat-pick'), 'bouton « Réagir » absent, ou réactions sans réaction');
+    superMsg().querySelector('.chat-msg__react').click();
+    await settle();
+    const pick = () => superMsg().querySelector('.chat-pick');
+    check(pick() && pick().querySelectorAll('button').length === 8 && superMsg().querySelector('.chat-msg__react').getAttribute('aria-expanded') === 'true', 'choix des réactions non ouvert');
+    pick().dispatch('keydown', { key: 'Escape' });
+    await settle();
+    check(!pick(), 'Échap doit fermer le choix des réactions');
+    superMsg().querySelector('.chat-msg__react').click();
+    await settle();
+    from = apiLog.length;
+    [...pick().querySelectorAll('button')].find((b) => text(b) === '🎉').click();
+    const chip = (e) => [...superMsg().querySelectorAll('.chat-react')].find((b) => text(b).startsWith(e));
+    check(await waitFor(() => chip('🎉') && text(chip('🎉')) === '🎉1' && chip('🎉').classList.contains('mine') && !pick()), 'pastille 🎉 : ' + text(superMsg().querySelector('.chat-reacts')));
+    check(await waitFor(() => apiLog.slice(from).some((x) => /^POST \/api\/chat\/\d+\/react$/.test(x))), 'réaction non envoyée : ' + apiLog.slice(from).join(', '));
+    const superId = Number(superMsg().getAttribute('id').slice(7));
+    await rawApi('POST', `/api/chat/${superId}/react`, keyN, { emoji: '🎉', on: true });
+    await rawApi('POST', `/api/chat/${superId}/react`, keyN, { emoji: '❤️', on: true });
+    await pc.visible();
+    check(await waitFor(() => chip('🎉') && text(chip('🎉')) === '🎉2' && chip('❤️') && !chip('❤️').classList.contains('mine')), 'réactions de Noa non reçues : ' + text(superMsg().querySelector('.chat-reacts')));
+    check(chip('🎉').getAttribute('title') === 'Noa et toi' && chip('❤️').getAttribute('aria-pressed') === 'false' && !d.querySelector('.chat-below'), 'info-bulle ou état des pastilles : ' + chip('🎉').getAttribute('title'));
+    chip('🎉').click();
+    check(await waitFor(() => chip('🎉') && text(chip('🎉')) === '🎉1' && !chip('🎉').classList.contains('mine')), 'ma réaction non retirée');
+    const seenByNoa = (await rawApi('GET', '/api/chat', keyN)).body.messages.find((m) => m.id === superId).reactions;
+    check(JSON.stringify(seenByNoa) === JSON.stringify([{ emoji: '🎉', n: 1, mine: true, who: [] }, { emoji: '❤️', n: 1, mine: true, who: [] }]), 'réactions côté serveur : ' + JSON.stringify(seenByNoa));
     if (!SERVER) {
       // 429 : message lisible, brouillon gardé.
       api.chatLimit = true;

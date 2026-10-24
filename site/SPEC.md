@@ -162,6 +162,7 @@ plus faite.
 | `GET /api/chat` | (clé principale ; `?after=<rev>` ou `?before=<id>` facultatifs, entiers ≥ 0, pas les deux, sinon `400`) | sans paramètre : `{messages:[Message], rev, last_id, older}` = les 100 plus récents, du plus ancien au plus récent (`rev` : curseur de la lecture suivante ; `last_id` : numéro du dernier message, supprimé ou non ; `older` : il y en a de plus anciens) ; `?before=<id>` : `{messages, older}` = les 100 d'avant ce message ; `?after=<rev>` : `{messages, deleted:[id…], rev, last_id, more}` = ce qui a changé depuis cette révision (nouveaux messages, numéros des messages supprimés ; `more:true` : plus de 100 changements, `rev` = celle du dernier rendu) ; `{reset:true, rev, last_id}` si la révision est inconnue (base recréée : tout relire). Voir « Chat » |
 | `POST /api/chat` | `{text, reply_to?}` (clé principale ; corps de 8 Ko au plus ; `reply_to` (2026-10-23) : numéro du message auquel il répond) | `201 {message:Message}` (liens de collection déjà cités) ; `400` texte vide, de plus de 500 caractères ou contenant un lien personnel (`#cle=…`), classeur sans prénom, ou `reply_to` qui n'est pas un entier > 0 ; `404` le message auquel il répond n'existe plus (supprimé, purgé) ; `429 {error, retry_after}` (secondes) au-delà de 10 messages par minute ou 300 par 24 h pour ce classeur, ou de 1 000 par 24 h pour tout le salon |
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
+| `POST /api/chat/<id>/react` | `{emoji, on}` (clé principale ; 2026-10-24 ; 1 Ko ; `emoji` parmi 👍 ❤️ 😂 😮 😢 🎉 🔥 👀, `on` : `true` mettre, `false` retirer) | `{id, reactions:[Reaction]}` : les réactions du message après le changement (`[]` sans) ; déjà mise ou déjà retirée : rien ne change. `400` emoji hors de la liste, `on` qui n'est pas un booléen, classeur sans prénom ; `404` message inexistant, supprimé ou purgé ; `429 {error, retry_after}` au-delà de 30 réactions mises ou retirées par minute ou 500 par 24 h pour ce classeur. Voir « Chat », réactions |
 | `GET /api/chat/last` | (sans clé) | `{last_at}` : heure du dernier message d'un membre (`null` sans message), suppressions sautées ; ni texte, ni auteur, ni numéro. Sert au skill « publier » (voir « Nouveautés ») |
 | `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai de lecture (`v` : `'serveur'` ; `null` : jamais) |
 | `GET /api/market/card?id=<card_id>` ou `?title=<titre>` | (clé principale ; 2026-10-22) | `{card_id, at, auctions:[{a, r, s, ask, bid, cur, base, end, atk, def, lead, mine, n}], more, sales:[{d, p, k}], v}` : le **marché d'une carte**, lu à l'ouverture de sa fiche dans la base du jeu (voir « Le marché », « Marché d'une carte ») ; `card_id: null` : aucune carte du jeu n'a ce titre. `400` paramètres mal formés ; `401 {needs_link:true}` aucun compte relié ; `429 {retry_after}` plus de 12 fiches lues dans la minute ; `429 {limited:true}` / `502` comme une passe |
@@ -179,12 +180,14 @@ plus faite.
 | `POST /api/market/cancel` | (clé principale ; 2026-10-23) `{a}` : l'id de l'enchère ; 2 Ko | `{a, status:"cancelled"}` : ta vente **retirée du marché du jeu**, marquée terminée (`off`) dans « Tes ventes ». Seulement **tant que personne n'a misé** : `409 {has_bid:true}` sinon ; `409 {gone:true}` vente inconnue du jeu ou terminée ; `403` la vente d'un autre ; `400`, `401`, `429`, `502` comme ci-dessus |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
-**Message** (chat) : `{id, author, mine, text, created_at, refs?, members?, reply?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
+**Message** (chat) : `{id, author, mine, text, created_at, refs?, members?, reply?, reactions?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
 **actuel** du classeur de l'auteur (`null` sans prénom), `mine` = c'est le tien, `text` = texte brut. Jamais l'id interne
 du compte. `refs` (seulement s'il cite des collections) : le nom de chacune est en clair dans `text`, à la place
 `{at, len}` (unités UTF-16) ; `{at, len, name, owner, mine, pid, id}` ou `{at, len, gone:true}`, voir « Chat »,
 collections citées. `reply` (seulement s'il répond à un message) : `{id, author, mine, text}` (`text` = extrait) ou
-`{id, gone:true}`, voir « Chat », réponses.
+`{id, gone:true}`, voir « Chat », réponses. `reactions` (seulement s'il en a) : `[Reaction]`, **Reaction** = `{emoji, n,
+mine, who}` (`n` membres l'ont mise, dont toi si `mine` ; `who` = prénoms actuels des **autres**), chaque emoji dans
+l'ordre où il a été mis la première fois, voir « Chat », réactions.
 
 **Collection à compléter** : `{id, name, items:[{title, description, image, status, qid?, rarity?, sep?}], source, auto, created_at,
 updated_at}` (`auto` : l'ajout automatique, `{rules:[{k, v}], skip:[titre…]}` ou `null`, voir `targets/save` et « Ajout
@@ -877,7 +880,7 @@ collections »** (Réglages, section « Liste de souhaits du jeu », `users.auto
 
 Un seul salon pour **tous les classeurs du site** (onglet « Chat », demande de l'utilisateur du 2026-10-16 : « où tout le
 monde peut parler »), lisible par tous les membres, qu'ils partagent leurs cartes ou non ; l'onglet le dit (« Visible par
-tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `chat_messages`.
+tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, tables `chat_messages` et `chat_reactions`.
 
 - **Messages** : texte brut, 500 caractères au plus (unités UTF-16, comme le `maxlength` du champ), retours à la ligne
   gardés ; le serveur unifie les fins de ligne, change les tabulations en espaces, retire les caractères de contrôle et
@@ -933,6 +936,21 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   140 caractères au plus, coupé au mot près, avec « … ») ; `{id, gone:true}` s'il a été supprimé ou purgé depuis
   (`DELETE /api/me` compris). Sans réponse, pas de champ `reply` : une page d'avant cette fonction montre la réponse comme un
   message ordinaire.
+  **Réactions** (demande de l'utilisateur du 2026-10-24 : « les réactions sur les messages dans le chat ») : chaque membre
+  met ou retire sur n'importe quel message (le sien compris) un ou plusieurs emojis d'une liste fixe, 👍 ❤️ 😂 😮 😢 🎉 🔥
+  👀 (`CHAT_REACTIONS` de `chat.js`, même liste dans la page) : `POST /api/chat/<id>/react {emoji, on}`, explicite
+  (`on`) plutôt qu'une bascule, pour qu'un double clic ou deux onglets ne la retirent pas. Table `chat_reactions` (une
+  ligne par message, membre et emoji, sans `rowid`) ; `chat_messages.reacts` tient leur nombre. Comme écrire, il faut un
+  prénom (c'est lui que les autres voient). Chaque changement donne au message une **nouvelle révision** : la relecture
+  `?after=` le rend de nouveau, et la page le remplace dans le fil (un message plus ancien que ceux affichés n'y est pas
+  ajouté ; une page d'avant cette fonction l'ajoute à sa place, sans les réactions, jusqu'à son rechargement).
+  `last_chat_id` ne bouge pas : une réaction ne fait pas de non-lu. À la lecture, `reactions` (voir **Message**) : qui
+  a mis chaque emoji est lisible par tout le salon (prénom actuel, comme l'auteur d'un message), jamais l'id interne. Un
+  message supprimé (par son auteur, la purge, `DELETE /api/me`) perd ses réactions ; `DELETE /api/me` retire aussi
+  celles du compte, et les messages qui en avaient reçoivent une nouvelle révision (ils changent aussi dans les pages
+  ouvertes). Limites (`429 {error, retry_after}`) : 30 réactions mises ou retirées par minute et 500 par 24 h par
+  classeur, dans des fenêtres fixes tenues dans sa ligne de `users` (`react_min`, `react_min_at`, `react_day`,
+  `react_day_at` : une écriture, pas de journal), contrôlées et comptées dans la même requête.
   Un message qui contient un lien
   personnel (`#cle=…`) est refusé (`400`, et par la page avant l'envoi). Écrire demande un prénom (`400` sinon : c'est lui
   que les autres voient ; la page propose « Choisir mon prénom »). L'auteur affiché est le **nom actuel** du classeur, lu
@@ -970,6 +988,11 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   - ordre de grandeur : 6 personnes, chat ouvert 1 h par jour chacune → 1 800 relectures ≈ 5 400 lignes lues ; 200
     messages par jour ≈ 1 200 lignes écrites (≈ 1 % du quota) ; au pire (limite du salon) 1 000 messages ≈ 6 000 lignes
     écrites (6 %). Requêtes : 300 par heure de chat ouvert et par personne (Workers gratuit : 100 000 par jour) ;
+  - réactions : à la lecture, une requête de plus, seulement si un message lu en a (`reacts` > 0) : par la clé primaire
+    de `chat_reactions`, une ligne par réaction et son auteur (clé primaire de `users`) ; aucune pour une relecture sans
+    changement. Mettre ou retirer : le message (1 ligne), la limite (1 ligne de `users`, écrite), la réaction (1 ligne
+    écrite) et la nouvelle révision du message (la ligne et l'index `chat_by_rev`) ≈ 5 lignes écrites ; rien de plus si
+    elle était déjà mise ou retirée. Au pire (500 par jour pour un classeur) ≈ 2 500 lignes écrites (2,5 % du quota) ;
   - JavaScript : moins de 1 ms par requête (100 messages de 500 caractères : 0,2 ms, `dev/api.test.mjs`).
 - **Interface** (onglet « Chat ») :
   - fil (`role="log"`) puis champ de saisie ; à l'ouverture, la page défile pour que le bas du chat soit visible. Bulles :
@@ -986,6 +1009,14 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
     « supprimé » ; si ton brouillon y répondait, le bandeau part avec un avertissement sous le champ. Une réponse **des
     autres** à un de tes messages est mise en avant comme une mention (« te répond ») et compte dans le second badge, dont
     le texte pour lecteurs d'écran devient « dont 2 s'adressent à toi » ;
+  - **Réagir** (2026-10-24) : bouton (icône de sourire, « Réagir » sauf sur téléphone) avant « Répondre » sur chaque
+    bulle ; il ouvre sous l'en-tête le choix des 8 emojis (`role="group"`, le premier prêt au clavier, flèches gauche et
+    droite, **Échap** ou un clic ailleurs le ferment ; ceux que tu as déjà mis sont marqués et les choisir les retire).
+    Sous la bulle, une **pastille** par emoji (emoji et nombre ; la tienne surlignée, `aria-pressed`), qui l'a mise en
+    info-bulle (« Ben, Cléo et toi ») et pour les lecteurs d'écran ; un clic met ou retire la tienne. La page change la
+    pastille tout de suite, puis prend ce que rend le serveur (les réactions des autres arrivées entre-temps comprises) ;
+    refusée (`429`…) : remise comme avant, avec le message du serveur ; message disparu (`404`) : retiré du fil. Les
+    réactions des autres arrivent par la relecture `?after=` (12 s) : pas de « Nouveaux messages ↓ » ni de non-lu ;
   - **Entrée** envoie, **Maj+Entrée** va à la ligne (pas pendant une saisie IME) ; le brouillon reste si l'envoi échoue
     (message du serveur affiché, `429` compris) ; il est vidé à l'envoi réussi, sauf s'il a été modifié entre-temps ;
   - **cartes citées** : chaque `[[Titre]]` d'un message devient une pastille (un `<button>`, titre en texte : jamais de
@@ -1086,13 +1117,15 @@ tous les membres du classeur »). Code : `site/functions/_lib/chat.js`, table `c
   SELECT m.id, u.name, m.created_at, m.text FROM chat_messages AS m LEFT JOIN users AS u ON u.id = m.user_id
     WHERE m.deleted = 0 ORDER BY m.id DESC LIMIT 50;
   -- supprimer le message 42 (il disparaît aussi des pages ouvertes)
-  UPDATE chat_messages SET text = '', deleted = 1, rev = (SELECT MAX(rev) FROM chat_messages) + 1
+  UPDATE chat_messages SET text = '', deleted = 1, reacts = 0, rev = (SELECT MAX(rev) FROM chat_messages) + 1
     WHERE id = 42 AND deleted = 0;
+  DELETE FROM chat_reactions WHERE message_id = 42;
   -- supprimer tous les messages d'un classeur, par son prénom
   UPDATE chat_messages SET text = '', deleted = 1, rev = (SELECT MAX(rev) FROM chat_messages) + id
     WHERE deleted = 0 AND user_id IN (SELECT id FROM users WHERE name = 'Paul');
   -- vider tout le salon (les pages ouvertes repartent de zéro)
   DELETE FROM chat_messages;
+  DELETE FROM chat_reactions;
   ```
 
   Pas de `DELETE` d'un seul message : une page ouverte ne le verrait pas partir (seule une nouvelle révision le lui dit).

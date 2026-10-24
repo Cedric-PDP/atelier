@@ -628,9 +628,21 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .has-pseudo, .holder[title], .chat-at[title] { text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 3px; cursor: help; }
 .chat-msg__time { color: var(--faint); font-variant-numeric: tabular-nums; }
 .chat-msg__act { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 6px; background: none; padding: 1px 4px; color: var(--faint); font-size: 11.5px; }
-.chat-msg__reply { margin-left: auto; }
+.chat-msg__react { margin-left: auto; }
+.chat-msg__react + .chat-msg__reply { margin-left: -6px; }
+.chat-msg__react:hover, .chat-msg__react:focus-visible, .chat-msg__react[aria-expanded="true"] { color: var(--link); }
 .chat-msg__reply + .chat-msg__del { margin-left: -6px; }
 .chat-msg__reply:hover, .chat-msg__reply:focus-visible { color: var(--link); }
+/* Réactions (2026-10-24) : pastilles sous la bulle (emoji et nombre, la tienne marquée), et le choix « Réagir ». */
+.chat-reacts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.chat-react { display: inline-flex; align-items: center; gap: 4px; min-height: 26px; padding: 1px 8px; border: 1px solid var(--border); border-radius: 99px; background: var(--surface); color: var(--muted); font: 600 12px/1.4 var(--f-body); font-variant-numeric: tabular-nums; cursor: pointer; }
+.chat-react__e { font-size: 14px; line-height: 1; }
+.chat-react:hover, .chat-react:focus-visible { border-color: color-mix(in srgb, var(--link) 55%, var(--border)); color: var(--fg); }
+.chat-react.mine { border-color: color-mix(in srgb, var(--link) 60%, var(--border)); background: color-mix(in srgb, var(--link) 14%, var(--surface)); color: var(--fg); }
+.chat-pick { display: flex; flex-wrap: wrap; gap: 2px; width: max-content; max-width: 100%; margin-top: 6px; padding: 3px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); box-shadow: 0 8px 20px -12px var(--shadow); }
+.chat-pick__e { width: 34px; height: 34px; border: 0; border-radius: 9px; background: none; font-size: 19px; line-height: 1; cursor: pointer; }
+.chat-pick__e:hover, .chat-pick__e:focus-visible { background: var(--surface-2); }
+.chat-pick__e.mine { background: color-mix(in srgb, var(--link) 16%, var(--surface)); }
 .chat-msg__del:hover, .chat-msg__del:focus-visible { color: var(--danger); }
 /* Réponse (2026-10-23) : le message cité au-dessus du texte (auteur, extrait sur deux lignes), un clic y mène ; le
    message cité clignote un instant. */

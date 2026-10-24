@@ -73,7 +73,13 @@ CREATE TABLE IF NOT EXISTS users (
     game_friends TEXT,
     auto_wish INTEGER NOT NULL DEFAULT 0,
     wish_dirty INTEGER NOT NULL DEFAULT 0,
-    wish_state TEXT
+    wish_state TEXT,
+    -- limites des réactions du chat (functions/_lib/chat.js) : nombre dans la fenêtre d'une minute et de 24 h en cours, et
+    -- début de chacune
+    react_min INTEGER NOT NULL DEFAULT 0,
+    react_min_at TEXT,
+    react_day INTEGER NOT NULL DEFAULT 0,
+    react_day_at TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -168,8 +174,9 @@ CREATE TABLE IF NOT EXISTS cron_state (
 -- jamais réutilisé) ; user_id = auteur ('' quand son classeur a été supprimé) ; text = texte brut, 500 caractères au
 -- plus (vidé à la suppression) ; deleted = 1 : message supprimé, gardé vide comme marque pour que les pages ouvertes le
 -- retirent ; rev = révision (unique, croissante), donnée à la création puis à la suppression, lue par
--- GET /api/chat?after=<rev> (index chat_by_rev) ; reply_to = numéro du message auquel il répond (NULL sinon ; il peut
--- avoir été supprimé ou purgé depuis). Les 2 000 plus récents seulement (purge à chaque envoi).
+-- GET /api/chat?after=<rev> (index chat_by_rev), et aussi à chaque réaction mise ou retirée ; reply_to = numéro du
+-- message auquel il répond (NULL sinon ; il peut avoir été supprimé ou purgé depuis) ; reacts = nombre de ses réactions
+-- (chat_reactions ne sont lues que pour les messages qui en ont). Les 2 000 plus récents seulement (purge à chaque envoi).
 CREATE TABLE IF NOT EXISTS chat_messages (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -177,8 +184,19 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     created_at TEXT NOT NULL,
     deleted INTEGER NOT NULL DEFAULT 0,
     rev INTEGER NOT NULL,
-    reply_to INTEGER
+    reply_to INTEGER,
+    reacts INTEGER NOT NULL DEFAULT 0
 );
+
+-- Réactions du chat : une ligne par message, membre et emoji (parmi CHAT_REACTIONS de chat.js). Effacées avec leur
+-- message (suppression, purge) et avec le classeur de leur auteur.
+CREATE TABLE IF NOT EXISTS chat_reactions (
+    message_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    emoji TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (message_id, user_id, emoji)
+) WITHOUT ROWID;
 
 -- Marché (functions/_lib/market.js ; lu par marketread.js avec la session du jeu du membre, sans rien écrire dans le jeu).
 -- Cotes des cartes, communes à tous les classeurs (des données du marché du jeu, liées à aucun joueur : pas de user_id) :

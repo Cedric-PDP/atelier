@@ -322,9 +322,10 @@
     // surlignée)} ; acOff = {start, tq} : le @ ou # dont la liste a été fermée par
     // Échap, et ce qui était tapé (elle reste fermée tant qu'on continue ce mot) ;
     // acWp = articles de Wikipédia qui commencent par le texte tapé après « # » ({q (replié), titles, loading}) ;
-    // reply = message auquel le brouillon répond ({id, author, text}, « Répondre » sur une bulle) ou null.
+    // reply = message auquel le brouillon répond ({id, author, text}, « Répondre » sur une bulle) ou null ; picker =
+    // numéro du message dont le choix des réactions est ouvert (« Réagir »), ou null.
     chat: { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
-      acWp: { q: '', titles: [], loading: false }, reply: null },
+      acWp: { q: '', titles: [], loading: false }, reply: null, picker: null },
     // « Nouveautés » (/nouveautes.json) : status idle | loading | ready | error ; seen = dernière version vue dans ce
     // navigateur (localStorage) ; fresh = versions pas encore vues à l'ouverture de la page (« Nouveau » le temps de la visite).
     news: { status: 'idle', seen: store.get(LS.newsSeen), fresh: [] },
@@ -8654,8 +8655,12 @@
   // (classeur-chat-lu = {<id du compte>: numéro}, accès protégés ; refusé : en mémoire seulement). Jamais de HTML : le
   // texte passe tel quel à Vue (échappé), seuls les liens http(s) deviennent des <a> (rel=noopener), les cartes citées
   // ([[Titre]]) des boutons qui ouvrent leur fiche (titre en texte) et les mentions (@Prénom) des pastilles ; un message
-  // qui te mentionne est mis en avant et compté à part dans le badge.
+  // qui te mentionne est mis en avant et compté à part dans le badge. Réactions (2026-10-24) : un emoji parmi
+  // CHAT_REACTIONS sous chaque bulle, mis ou retiré d'un clic ; un changement donne au message une nouvelle révision, la
+  // relecture ?after le rend de nouveau (remplacé dans le fil).
   const CHAT_MAX = 500;
+  // Même liste que le serveur (CHAT_REACTIONS de chat.js), dans l'ordre du choix « Réagir ».
+  const CHAT_REACTIONS = ['👍', '❤️', '😂', '😮', '😢', '🎉', '🔥', '👀'];
   const CHAT_EVERY = 12 * 1000;
   const CHAT_IDLE_EVERY = 30 * 1000;
   const CHAT_IDLE_AFTER = 5 * 60 * 1000;
@@ -8849,7 +8854,18 @@
     const mine = m.mine === true;
     const reply = prepChatReply(m.reply);
     return markRaw({ id, mine, author: typeof m.author === 'string' && m.author ? m.author : null, text, at: String(m.created_at || ''),
-      parts: chatParts(text, refs, members), refs, members, reply, toMe: !mine && !!reply && reply.mine });
+      parts: chatParts(text, refs, members), refs, members, reply, toMe: !mine && !!reply && reply.mine, reactions: prepChatReactions(m.reactions) });
+  }
+  // Réactions telles que le serveur les rend : [{emoji, n, mine, who}] (who : prénoms des autres membres qui l'ont mise) ;
+  // un emoji inconnu de cette page est écarté.
+  function prepChatReactions(list) {
+    const out = [];
+    for (const r of Array.isArray(list) ? list : []) {
+      if (!r || !CHAT_REACTIONS.includes(r.emoji) || !Number.isInteger(r.n) || r.n <= 0 || out.some((x) => x.emoji === r.emoji)) continue;
+      const who = (Array.isArray(r.who) ? r.who : []).filter((x) => typeof x === 'string' && x).slice(0, 60);
+      out.push(Object.freeze({ emoji: r.emoji, n: r.n, mine: r.mine === true, who }));
+    }
+    return out;
   }
   // Message auquel il répond, tel que le serveur le rend : {id, author, mine, text} (extrait) ou {id, gone: true}
   // (supprimé ou purgé depuis) ; null sans réponse.
@@ -9230,11 +9246,13 @@
     if (r.reset || r.more || !Number.isInteger(r.rev)) { chatRev = null; await loadChat(gen); return; }
     dropChatMsgs((Array.isArray(r.deleted) ? r.deleted : []).map(Number));
     const map = new Map(chatMsgs.value.map((m) => [m.id, m]));
+    // Un message plus ancien que ceux affichés revient quand ses réactions changent : pas ajouté au fil.
+    const oldest = chatMsgs.value.length ? chatMsgs.value[0].id : 0;
     let added = 0;
     let changed = false;
     for (const raw of Array.isArray(r.messages) ? r.messages : []) {
       const m = prepChatMsg(raw);
-      if (!m) continue;
+      if (!m || (!map.has(m.id) && m.id < oldest)) continue;
       if (!map.has(m.id)) added++;
       map.set(m.id, m);
       changed = true;
@@ -9340,7 +9358,7 @@
     chatLastId = 0;
     chatAtBottom = true;
     Object.assign(S.chat, { user: null, status: 'idle', error: '', draft: '', sending: false, sendError: '', older: false, olderBusy: false, read: 0, newBelow: false, ac: null, acOff: null,
-      acWp: { q: '', titles: [], loading: false }, reply: null });
+      acWp: { q: '', titles: [], loading: false }, reply: null, picker: null });
     stopChatWp();
   }
   async function sendChat(fromKey) {
@@ -9430,6 +9448,68 @@
         refreshChat();
       },
     });
+  }
+
+  // Réactions : la tienne mise ou retirée tout de suite dans le fil, puis remplacée par ce que rend le serveur (les
+  // réactions des autres arrivées entre-temps comprises) ; refusée : remise comme avant, avec le message du serveur.
+  function setChatReactions(id, reactions) {
+    chatMsgs.value = chatMsgs.value.map((m) => (m.id === id ? markRaw({ ...m, reactions }) : m));
+  }
+  async function toggleReaction(m, emoji) {
+    const cur = chatMsgs.value.find((x) => x.id === m.id);
+    if (!cur) return;
+    const was = cur.reactions;
+    const r0 = was.find((x) => x.emoji === emoji);
+    const on = !(r0 && r0.mine);
+    const next = r0 ? was.map((x) => (x === r0 ? Object.freeze({ ...x, mine: on, n: x.n + (on ? 1 : -1) }) : x)).filter((x) => x.n > 0)
+      : was.concat(Object.freeze({ emoji, n: 1, mine: true, who: [] }));
+    S.chat.picker = null;
+    setChatReactions(m.id, next);
+    chatTouch();
+    const gen = chatGen;
+    try {
+      const r = await api('POST', `/api/chat/${m.id}/react`, { emoji, on });
+      if (gen === chatGen) setChatReactions(m.id, prepChatReactions(r.reactions));
+    } catch (e) {
+      if (gen !== chatGen) return;
+      if (e.status === 404) { dropChatMsgs([m.id]); notify("Ce message n'existe plus.", true); return; }
+      const now = chatMsgs.value.find((x) => x.id === m.id);
+      if (now && now.reactions === next) setChatReactions(m.id, was);
+      notify(e.message, true);
+    }
+  }
+  // « Réagir » : ouvre (ou ferme) le choix des réactions sous l'en-tête de la bulle, le premier emoji prêt au clavier ;
+  // Échap, un clic ailleurs ou un choix le ferment.
+  function toggleChatPicker(m) {
+    const c = S.chat;
+    c.picker = c.picker === m.id ? null : m.id;
+    chatTouch();
+    if (c.picker !== null) nextTick(() => { const b = chatMsgPart(m.id, '.chat-pick__e'); if (b) b.focus(); });
+  }
+  function closeChatPicker(focusBack) {
+    const id = S.chat.picker;
+    if (id === null) return;
+    S.chat.picker = null;
+    if (focusBack) nextTick(() => { const b = chatMsgPart(id, '.chat-msg__react'); if (b) b.focus(); });
+  }
+  const chatMsgPart = (id, sel) => { const el = document.getElementById('chat-m-' + id); return el ? el.querySelector(sel) : null; };
+  // Un geste hors du choix et de son bouton « Réagir » le ferme (le bouton, lui, le ferme à son clic).
+  function onChatPickerAway(e) {
+    if (S.chat.picker === null) return;
+    for (let n = e.target; n; n = n.parentNode) {
+      if (n.classList && (n.classList.contains('chat-pick') || n.classList.contains('chat-msg__react'))) return;
+    }
+    closeChatPicker(false);
+  }
+  watch(() => S.chat.picker !== null, (open) => {
+    if (open) document.addEventListener('pointerdown', onChatPickerAway, true);
+    else document.removeEventListener('pointerdown', onChatPickerAway, true);
+  });
+  watch(() => S.tab, () => { S.chat.picker = null; });
+  // Qui a mis une réaction : « Ben, Cléo et toi ».
+  function reactWho(r) {
+    const names = r.mine ? r.who.concat('toi') : r.who;
+    return names.length < 2 ? names.join('') : names.slice(0, -1).join(', ') + ' et ' + names[names.length - 1];
   }
 
   // ================================================================ nouveautés : journal des versions, annonces du chat
@@ -9563,6 +9643,9 @@
           title: `Pseudo dans le jeu : ${pseudo} (son profil dans le jeu)` }, pseudo) : null,
         info.me ? h('span', { class: 'chat-msg__ping' }, 'te mentionne') : m.toMe ? h('span', { class: 'chat-msg__ping' }, 'te répond') : null,
         h('time', { class: 'chat-msg__time', datetime: m.at, title: dateLong(m.at) }, chatWhen(m.at)),
+        h('button', { class: 'chat-msg__act chat-msg__react', type: 'button', title: 'Réagir à ce message', 'aria-label': `Réagir au message de ${who}`,
+          'aria-expanded': S.chat.picker === m.id ? 'true' : 'false', onClick: () => toggleChatPicker(m) },
+          [icon('smile', 'sm'), h('span', { class: 'chat-msg__act-label', 'aria-hidden': 'true' }, 'Réagir')]),
         h('button', { class: 'chat-msg__act chat-msg__reply', type: 'button', title: 'Répondre à ce message', 'aria-label': `Répondre au message de ${who}`, onClick: () => replyToChat(m) },
           [icon('reply', 'sm'), h('span', { class: 'chat-msg__act-label', 'aria-hidden': 'true' }, 'Répondre')]),
         m.mine ? h('button', { class: 'chat-msg__act chat-msg__del', type: 'button', title: 'Supprimer ce message', 'aria-label': 'Supprimer ce message', onClick: () => askDeleteChat(m) },
@@ -9576,7 +9659,35 @@
         : p.url ? (p.local ? h('a', { href: p.url }, p.text) : h('a', { href: p.url, target: '_blank', rel: 'noopener noreferrer nofollow ugc' }, p.text)) : p.text))),
       viewChatColEmbed(m.refs.find((r) => !r.gone)),
       viewChatMemberEmbed(m.members.find((r) => !r.gone)),
+      S.chat.picker === m.id ? viewChatPicker(m) : null,
+      m.reactions.length ? viewChatReactions(m) : null,
     ]);
+  }
+  // Réactions sous la bulle : une pastille par emoji (son nombre ; la tienne marquée), un clic met ou retire la tienne ;
+  // qui l'a mise en info-bulle et pour les lecteurs d'écran.
+  function viewChatReactions(m) {
+    return h('div', { class: 'chat-reacts' }, m.reactions.map((r) => h('button', {
+      key: r.emoji, class: ['chat-react', { mine: r.mine }], type: 'button', 'aria-pressed': r.mine ? 'true' : 'false', title: reactWho(r),
+      'aria-label': `${r.emoji} ${r.n} : ${reactWho(r)}. ${r.mine ? 'Retirer ta réaction' : 'Réagir aussi'}`, onClick: () => toggleReaction(m, r.emoji),
+    }, [h('span', { class: 'chat-react__e', 'aria-hidden': 'true' }, r.emoji), h('span', { class: 'chat-react__n', 'aria-hidden': 'true' }, String(r.n))])));
+  }
+  // Choix des réactions (« Réagir ») : les emojis de CHAT_REACTIONS, ceux que tu as déjà mis marqués (les choisir les
+  // retire) ; flèches gauche et droite d'un emoji à l'autre, Échap ferme.
+  function viewChatPicker(m) {
+    const mine = new Set(m.reactions.filter((r) => r.mine).map((r) => r.emoji));
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.preventDefault(); if (e.stopPropagation) e.stopPropagation(); closeChatPicker(true); return; }
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const list = [...e.currentTarget.querySelectorAll('button')];
+      const i = list.indexOf(document.activeElement);
+      if (i < 0) return;
+      e.preventDefault();
+      list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length].focus();
+    };
+    return h('div', { class: 'chat-pick', role: 'group', 'aria-label': 'Choisir une réaction', onKeydown: onKey }, CHAT_REACTIONS.map((emoji) => h('button', {
+      key: emoji, class: ['chat-pick__e', { mine: mine.has(emoji) }], type: 'button', 'aria-pressed': mine.has(emoji) ? 'true' : 'false',
+      title: mine.has(emoji) ? 'Retirer ta réaction' : null, onClick: () => toggleReaction(m, emoji),
+    }, emoji)));
   }
   // Message auquel il répond, au-dessus du texte : son auteur et un extrait ; un clic y mène (s'il est chargé). Supprimé
   // ou purgé : « message supprimé », sans lien.

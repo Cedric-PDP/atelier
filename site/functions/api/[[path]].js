@@ -10,7 +10,7 @@ import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
 import { deleteTarget, listTargets, orderTargets, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
-import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
+import { deleteChat, lastChat, listChat, postChat, reactChat } from '../_lib/chat.js';
 import { getMarket, listPrices } from '../_lib/market.js';
 import { refreshMarket, searchCards } from '../_lib/marketread.js';
 import { listSyncLog } from '../_lib/synclog.js';
@@ -56,6 +56,7 @@ const ROUTES = {
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
   chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs
   'chat/*': { DELETE: [deleteChat, 'main'] }, // chat/<numéro du message> : par son auteur
+  'chat/*/react': { POST: [reactChat, 'main'] }, // chat/<numéro du message>/react : mettre ou retirer une réaction
   'chat/last': { GET: [lastChat, false] }, // heure du dernier message, sans clé (outil de publication des nouveautés)
   market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
   'market/prices': { GET: [listPrices, 'main'] }, // cotes de mes cartes et des cartes voulues
@@ -85,10 +86,10 @@ async function wishAfter(env, user, key, method, result) {
   return key === 'refresh' || (key === 'me' && method === 'PATCH' && !!(result && result.auto_wish));
 }
 // Chemins avec un paramètre → leur entrée dans ROUTES.
-const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
+const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*'], [/^chat\/\d{1,15}\/react$/, 'chat/*/react']];
 
-// Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024, 'wishlist/sync': 1024 };
+// Corps plus petits que la limite générale (5 Mo), par entrée de ROUTES.
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'chat/*/react': 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024, 'wishlist/sync': 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {
@@ -136,7 +137,7 @@ async function handle(request, env, path, waitUntil) {
   const isMe = key === 'me' && request.method === 'GET';
   const user = keyKind ? await authenticate(request, env, { chat: isMe, market: isMe }) : null;
   const body = request.method === 'POST' || request.method === 'PATCH'
-    ? await readJson(request, Object.hasOwn(BODY_LIMITS, path) ? BODY_LIMITS[path] : MAX_BODY)
+    ? await readJson(request, Object.hasOwn(BODY_LIMITS, key) ? BODY_LIMITS[key] : MAX_BODY)
     : {};
   const result = await handler(env, user, body, request);
   if (waitUntil && await wishAfter(env, user, key, request.method, result)) waitUntil(wishSoon(env, user.id));
