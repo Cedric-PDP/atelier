@@ -100,7 +100,8 @@ CREATE TABLE IF NOT EXISTS tags (
 -- Collections à compléter : items = tableau JSON de {title, description, image, status}. auto = ajout automatique
 -- (« Refaire à chaque synchro » de la fenêtre « Ajouter par tags du jeu ») : JSON {rules:[{k:'gtag'|'cat'|'tag', v}],
 -- skip:[titres exclus]} validé par targets.js (20 règles, 2 000 titres exclus au plus), NULL sans règle ; jamais montré
--- aux autres membres.
+-- aux autres membres. pos = place dans « Mes collections » choisie par « Réorganiser » (POST /api/targets/order), NULL
+-- avant (et pour une collection créée depuis) : après les autres, de la plus ancienne à la plus récente.
 CREATE TABLE IF NOT EXISTS targets (
     user_id TEXT NOT NULL,
     id TEXT NOT NULL,
@@ -110,6 +111,7 @@ CREATE TABLE IF NOT EXISTS targets (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     auto TEXT,
+    pos INTEGER,
     PRIMARY KEY (user_id, id)
 );
 

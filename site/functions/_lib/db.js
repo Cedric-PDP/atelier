@@ -70,6 +70,7 @@ export const SCHEMA = [
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     auto TEXT,
+    pos INTEGER,
     PRIMARY KEY (user_id, id)
   )`,
   `CREATE TABLE IF NOT EXISTS refresh_staging (
@@ -201,6 +202,7 @@ const ADDED_COLUMNS = [
   ['users', 'game_friends', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
+  ['targets', 'pos', 'INTEGER'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],

@@ -8,7 +8,7 @@ import { listCards } from '../_lib/cards.js';
 import { deleteSession, saveSession } from '../_lib/session.js';
 import { refresh } from '../_lib/refresh.js';
 import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
-import { deleteTarget, listTargets, saveTarget } from '../_lib/targets.js';
+import { deleteTarget, listTargets, orderTargets, saveTarget } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, lastChat, listChat, postChat } from '../_lib/chat.js';
 import { getMarket, listPrices } from '../_lib/market.js';
@@ -49,6 +49,7 @@ const ROUTES = {
   targets: { GET: [listTargets, 'main'] },
   'targets/save': { POST: [saveTarget, 'main'] },
   'targets/delete': { POST: [deleteTarget, 'main'] },
+  'targets/order': { POST: [orderTargets, 'main'] },
   members: { GET: [listMembers, 'main'] },
   'members/*/cards': { GET: [memberCards, 'main'] }, // members/<identifiant public>/cards
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre

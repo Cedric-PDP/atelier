@@ -398,6 +398,29 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .reorder-bar__pos .field { width: 5.2em; padding: 5px 8px; font-size: 13px; }
 .reorder-bar .btn[aria-disabled="true"] { opacity: 0.5; }
 .reorder-bar__state { flex: 1 1 auto; color: var(--muted); }
+/* « Réorganiser » de « Mes collections » : une ligne compacte par collection, repère d'insertion horizontal. */
+.co-wrap { position: relative; }
+.co-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-width: 760px; }
+.co-row { display: grid; grid-template-columns: 30px 2.2em 74px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; cursor: grab; }
+.co-row.lifted { opacity: 0.35; }
+.co-grip { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; color: var(--muted); touch-action: none; cursor: grab; }
+.co-grip .ic { width: 18px; height: 18px; }
+.co-no { color: var(--muted); font-size: 12px; text-align: right; }
+.co-info { display: grid; gap: 2px; min-width: 0; }
+.co-info .name { font: 600 14.5px/1.25 var(--f-head); overflow-wrap: anywhere; }
+.co-moves { display: flex; gap: 4px; }
+.co-move { min-height: 30px; min-width: 32px; padding: 0 8px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-2); color: var(--fg); font: 600 13px/1 var(--f-body); cursor: pointer; }
+.co-move:hover { border-color: var(--accent); }
+.co-move[aria-disabled="true"] { opacity: 0.35; cursor: default; }
+.co-move[aria-disabled="true"]:hover { border-color: var(--border); }
+.co-mark { position: absolute; left: 0; top: 0; z-index: 5; width: min(760px, 100%); height: 4px; margin-top: -2px; transform: translateY(var(--my, 0px)); border-radius: 2px; background: var(--accent); box-shadow: 0 0 12px var(--accent); pointer-events: none; opacity: 0; }
+.co-mark.on { opacity: 1; }
+@media (pointer: coarse) { .co-grip { width: 36px; height: 36px; } .co-move { min-height: 36px; min-width: 38px; } }
+@media (max-width: 560px) {
+  .co-row { grid-template-columns: 30px minmax(0, 1fr); row-gap: 6px; }
+  .co-row .co-no, .co-row .fan { display: none; }
+  .co-moves { grid-column: 1 / -1; justify-content: flex-end; }
+}
 .reorder-bar__state.dirty { color: var(--warn); font-weight: 600; }
 .reorder-bar__state .short { display: none; }
 @media (max-width: 520px) {

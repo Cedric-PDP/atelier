@@ -499,6 +499,13 @@ function mockApi() {
         st.targetsRev = (st.targetsRev || 0) + 1; // dernier changement, vu par les autres membres (GET /api/members)
         return json(200, { target: chunked ? { ...t, items: null } : t });
       }
+      // « Réorganiser » de « Mes collections » (targets.js, orderTargets) : celles de la liste dans son ordre, les autres après.
+      if (p === '/api/targets/order') {
+        if (!Array.isArray(body.ids) || new Set(body.ids).size !== body.ids.length) return json(400, { error: "Indique l'ordre des collections (ids : leurs identifiants)." });
+        const at = (t) => { const i = body.ids.indexOf(t.id); return i < 0 ? body.ids.length : i; };
+        st.targets = st.targets.map((t, i) => [t, at(t), i]).sort((x, y) => x[1] - y[1] || x[2] - y[2]).map(([t]) => t);
+        return json(200, { ok: true });
+      }
       if (p === '/api/targets/delete') { st.targets = st.targets.filter((x) => x.id !== body.id); st.targetsRev = (st.targetsRev || 0) + 1; return json(200, { ok: true }); }
       // Marché (SPEC.md, « Le marché ») : st.market = {value, history, live, live_at, prices} posé par le test ; cotes par
       // pages de 2 (curseur opaque), comme GET /api/market/prices.
@@ -5433,6 +5440,128 @@ async function main() {
       'fusion sans les images : ' + la.items.length + ' éléments, ' + la.items.filter((i) => i.image).length + ' images ; « Images B » ' + (ib ? 'gardée' : 'absente'));
     check(await waitFor(() => txt().includes('« Images B » fusionnée dans « Longues A » : 900 éléments ajoutés.')), 'confirmation de la fusion sans suppression');
     console.log(`fusion : ${all.length} collections de Mila après trois fusions ; « Longues A » : ${la.items.length} éléments, ${Math.round(JSON.stringify(la.items).length / 1024)} Ko`);
+  }
+
+  // « Réorganiser » de « Mes collections » (demande du 2026-10-24) : Rose range ses collections. Pas de bouton sous 2
+  // collections ; « ↓ » / « En tête » (focus gardé, annonce) ; glisser à la souris (repère, lâché au-dessus de la moitié
+  // d'une ligne), au doigt hors de la poignée : rien ; « Annuler » (aucune requête, « Reprendre ») ; « Enregistrer
+  // l'ordre » (une requête POST /api/targets/order) puis « Annuler » du message (l'ordre d'avant renvoyé).
+  {
+    const keyO = await makeOtherAccount('Rose');
+    const it = (title) => ({ title, description: null, image: null, status: 'ok' });
+    const saveO = async (name) => check((await rawApi('POST', '/api/targets/save', keyO, { name, items: [it(name + ' 1'), it(name + ' 2')] })).status === 200, `ordre : « ${name} » refusée`);
+    await seedCards(keyO, [{ id: 'o1', title: 'Alpha 1', rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'x', image: null, url: null,
+      count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' }]);
+    await saveO('Alpha');
+    ls.set('classeur-key', keyO);
+    ls.set('classeur-known', JSON.stringify([{ key: keyO, name: 'Rose' }]));
+    let pr = openPage({ idb: 'absent' });
+    let d = pr.doc;
+    check(await waitFor(() => pr.count() === 1), 'ordre : classeur de Rose non ouvert');
+    d.getElementById('tab-collections').click();
+    await settle();
+    check(d.querySelectorAll('.row').length === 1, 'ordre : une collection attendue');
+    check(!d.getElementById('colorder-btn'), 'ordre : pas de « Réorganiser » avec une seule collection');
+    await saveO('Bravo');
+    await saveO('Charlie');
+    await saveO('Delta');
+    pr = openPage({ idb: 'absent' });
+    d = pr.doc;
+    check(await waitFor(() => pr.count() === 1), 'ordre : classeur de Rose non rouvert');
+    d.getElementById('tab-collections').click();
+    await settle();
+    check(await waitFor(() => d.querySelectorAll('.row').length === 4), 'ordre : 4 collections attendues');
+    const rowNames = () => d.querySelectorAll('.row').map((n) => text(n.querySelector('.name'))).join(' ');
+    const coNames = () => d.querySelectorAll('li.co-row').map((n) => text(n.querySelector('.name'))).join(' ');
+    const coRow = (name) => d.querySelectorAll('li.co-row').find((n) => text(n.querySelector('.name')) === name);
+    const act = (name, a) => coRow(name).querySelectorAll('button').find((b) => b.getAttribute('data-act') === a);
+    const said = () => { const p = d.querySelectorAll('.colorder')[0].querySelectorAll('p').find((x) => x.getAttribute('role') === 'status'); return p ? text(p) : ''; };
+    const btnIn = (root, t) => root.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
+    const toastBtn = (t) => { const n = d.querySelectorAll('.toast')[0]; return n ? n.querySelectorAll('button').find((b) => text(b) === t) || null : null; };
+    const orders = (mark) => apiLog.slice(mark).filter((x) => x === 'POST /api/targets/order').length;
+    const serverNames = async () => (await rawApi('GET', '/api/targets', keyO)).body.targets.map((t) => t.name).join(' ');
+    check(rowNames() === 'Alpha Bravo Charlie Delta', 'ordre de départ : ' + rowNames());
+    d.getElementById('colorder-btn').click();
+    await settle();
+    check(coNames() === 'Alpha Bravo Charlie Delta' && !d.querySelectorAll('.row').length && act('Alpha', 'up').getAttribute('aria-disabled') === 'true'
+      && btnIn(d.body, 'Enregistrer l\'ordre').disabled, 'mode réorganisation : ' + coNames());
+    act('Alpha', 'down').click();
+    await settle();
+    check(coNames() === 'Bravo Alpha Charlie Delta' && said() === '« Alpha » : position 2 sur 4.' && d.activeElement === act('Alpha', 'down'), '« ↓ » : ' + coNames() + ' / ' + said());
+    act('Delta', 'first').click();
+    await settle();
+    check(coNames() === 'Delta Bravo Alpha Charlie' && !btnIn(d.body, 'Enregistrer l\'ordre').disabled, '« En tête » : ' + coNames());
+    act('Delta', 'up').click();
+    await settle();
+    check(said() === '« Delta » est déjà en tête.' && coNames() === 'Delta Bravo Alpha Charlie', 'déjà en tête : ' + said());
+    // Glisser : lignes simulées de 60 px de haut, 10 px d'écart.
+    const fire = (type, ev) => { for (const f of [...(pr.win.listeners[type] || [])]) f({ preventDefault() {}, stopPropagation() {}, cancelable: true, ...ev }); };
+    const geom = () => {
+      const list = d.querySelectorAll('.co-list')[0];
+      list.parentNode.getBoundingClientRect = () => ({ left: 0, top: 0, width: 700, height: 400, right: 700, bottom: 400 });
+      list.querySelectorAll('li.co-row').forEach((li, i) => { const b = { left: 0, top: i * 70, width: 700, height: 60, right: 700, bottom: i * 70 + 60 }; li.getBoundingClientRect = () => b; });
+      return list;
+    };
+    {
+      geom();
+      // Charlie (4e, y 210–270) lâchée dans le haut de Bravo (2e, y 70–130) : avant Bravo.
+      coRow('Charlie').querySelector('.name').dispatch('pointerdown', { pointerType: 'mouse', button: 0, pointerId: 11, clientX: 300, clientY: 240 });
+      // Encore au-dessous de la moitié d'Alpha (3e, y 140–200) : elle ne bougerait pas, pas de repère.
+      fire('pointermove', { pointerId: 11, clientX: 300, clientY: 200 });
+      await settle();
+      const mark = d.querySelectorAll('.co-mark')[0];
+      check(coRow('Charlie').classList.contains('lifted') && !mark.classList.contains('on'), 'glisser : ligne soulevée sans repère attendue, ' + mark.className);
+      fire('pointermove', { pointerId: 11, clientX: 300, clientY: 150 });
+      await settle();
+      check(mark.classList.contains('on') && mark.style['--my'] === '136px', 'glisser : repère avant Alpha attendu, ' + mark.style['--my']);
+      fire('pointermove', { pointerId: 11, clientX: 300, clientY: 80 });
+      await settle();
+      check(mark.style['--my'] === '66px', 'glisser : repère avant Bravo attendu, ' + mark.style['--my']);
+      fire('pointerup', { pointerId: 11, clientX: 300, clientY: 80 });
+      await settle();
+      check(coNames() === 'Delta Charlie Bravo Alpha' && !mark.classList.contains('on') && !coRow('Charlie').classList.contains('lifted') && said() === '« Charlie » : position 2 sur 4.',
+        'glisser à la souris : ' + coNames() + ' / ' + said());
+      // Au doigt hors de la poignée : rien ; par la poignée : Alpha en tête.
+      geom();
+      coRow('Alpha').querySelector('.name').dispatch('pointerdown', { pointerType: 'touch', button: 0, pointerId: 12, clientX: 300, clientY: 240 });
+      check(!(pr.win.listeners.pointermove || new Set()).size, 'au doigt hors de la poignée : aucun glisser attendu');
+      coRow('Alpha').querySelector('.co-grip').dispatch('pointerdown', { pointerType: 'touch', button: 0, pointerId: 13, clientX: 15, clientY: 240 });
+      fire('pointermove', { pointerId: 13, clientX: 15, clientY: 10 });
+      await settle();
+      fire('pointerup', { pointerId: 13, clientX: 15, clientY: 10 });
+      await settle();
+      check(coNames() === 'Alpha Delta Charlie Bravo', 'glisser par la poignée : ' + coNames());
+    }
+    // « Annuler » : aucune requête, « Reprendre » rend le brouillon.
+    let mark0 = apiLog.length;
+    btnIn(d.body, 'Annuler').click();
+    await settle();
+    check(rowNames() === 'Alpha Bravo Charlie Delta' && orders(mark0) === 0 && toastBtn('Reprendre') && d.activeElement === d.getElementById('colorder-btn'), '« Annuler » : ' + rowNames());
+    toastBtn('Reprendre').click();
+    await settle();
+    check(coNames() === 'Alpha Delta Charlie Bravo', '« Reprendre » : ' + coNames());
+    mark0 = apiLog.length;
+    btnIn(d.body, 'Enregistrer l\'ordre').click();
+    await settle(80);
+    check(rowNames() === 'Alpha Delta Charlie Bravo' && orders(mark0) === 1 && await serverNames() === 'Alpha Delta Charlie Bravo', '« Enregistrer l\'ordre » : ' + rowNames());
+    // Rechargée : le nouvel ordre vient du serveur.
+    pr = openPage({ idb: 'absent' });
+    d = pr.doc;
+    check(await waitFor(() => pr.count() === 1), 'ordre : classeur de Rose non rouvert');
+    d.getElementById('tab-collections').click();
+    await settle();
+    check(await waitFor(() => rowNames() === 'Alpha Delta Charlie Bravo'), 'ordre gardé au rechargement : ' + rowNames());
+    // « Annuler » du message (dans la première page, déjà fermée : on rejoue dans celle-ci).
+    d.getElementById('colorder-btn').click();
+    await settle();
+    act('Bravo', 'first').click();
+    await settle();
+    btnIn(d.body, 'Enregistrer l\'ordre').click();
+    await settle(80);
+    check(rowNames() === 'Bravo Alpha Delta Charlie' && toastBtn('Annuler'), 'second enregistrement : ' + rowNames());
+    toastBtn('Annuler').click();
+    await settle(80);
+    check(rowNames() === 'Alpha Delta Charlie Bravo' && await serverNames() === 'Alpha Delta Charlie Bravo', '« Annuler » du message : ' + rowNames());
   }
 
   // « Réorganiser » (album d'une de tes collections, demande du 2026-10-18) : Rémi range « Continents » à la main. Pas de

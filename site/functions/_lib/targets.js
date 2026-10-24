@@ -176,10 +176,11 @@ function nextAuto(body, stored) {
   return text;
 }
 
-// GET /api/targets
+// GET /api/targets : dans l'ordre de « Mes collections » (pos, voir orderTargets), puis celles sans place, de la plus
+// ancienne à la plus récente.
 export async function listTargets(env, user) {
   const { results } = await env.DB.prepare(
-    'SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY created_at, id',
+    'SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY pos IS NULL, pos, created_at, id',
   )
     .bind(user.id)
     .all();
@@ -370,6 +371,21 @@ async function conflict(db, user, id) {
     conflict: true,
     target: row ? raw(jsonText(toTarget(row))) : null,
   });
+}
+
+// POST /api/targets/order {ids} : « Réorganiser » de « Mes collections ». ids = les collections dans l'ordre voulu ; une
+// collection du compte qui n'y est pas (créée entre-temps ailleurs) perd sa place et vient après les autres. Ni les
+// éléments ni updated_at ne changent (l'ajout automatique et les enregistrements conditionnels ne sont pas dérangés).
+export async function orderTargets(env, user, body) {
+  const ids = body.ids;
+  if (!Array.isArray(ids) || ids.length > MAX_TARGETS * 4 || !ids.every((x) => typeof x === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(x))) {
+    throw new HttpError(400, "Indique l'ordre des collections (ids : leurs identifiants).");
+  }
+  if (new Set(ids).size !== ids.length) throw new HttpError(400, 'Une collection apparaît deux fois dans le nouvel ordre.');
+  await env.DB.prepare('UPDATE targets SET pos = (SELECT CAST(key AS INTEGER) FROM json_each(?2) WHERE value = targets.id) WHERE user_id = ?1')
+    .bind(user.id, JSON.stringify(ids))
+    .run();
+  return { ok: true };
 }
 
 // POST /api/targets/delete {id}

@@ -868,6 +868,42 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   assert.equal(r.json.targets[0].items.length, 5000);
 });
 
+await test("targets/order : l'ordre de « Mes collections », sans toucher aux éléments ni à updated_at", async () => {
+  const ana = await signup('Ana');
+  const ids = [];
+  for (const n of ['A', 'B', 'C']) {
+    const r = await call('POST', 'targets/save', { key: ana.key, body: { name: n, items: [{ title: n, status: 'ok' }] } });
+    ids.push(r.json.target.id);
+  }
+  const names = async () => (await call('GET', 'targets', { key: ana.key })).json.targets.map((t) => t.name).join('');
+  assert.equal(await names(), 'ABC');
+  const before = (await call('GET', 'targets', { key: ana.key })).json.targets.find((t) => t.name === 'A').updated_at;
+  let r = await call('POST', 'targets/order', { key: ana.key, body: { ids: [ids[2], ids[0], ids[1]] } });
+  assert.deepEqual(r.json, { ok: true });
+  assert.equal(await names(), 'CAB');
+  const a = (await call('GET', 'targets', { key: ana.key })).json.targets.find((t) => t.name === 'A');
+  assert.equal(a.updated_at, before);
+  assert.equal(a.items.length, 1);
+  // Une collection enregistrée garde sa place ; une nouvelle vient après celles qui en ont une.
+  await call('POST', 'targets/save', { key: ana.key, body: { id: ids[0], name: 'A', items: [] } });
+  await call('POST', 'targets/save', { key: ana.key, body: { name: 'D', items: [] } });
+  assert.equal(await names(), 'CABD');
+  // Absente de la liste (créée ailleurs entre-temps) : après les autres.
+  await call('POST', 'targets/order', { key: ana.key, body: { ids: [ids[1], ids[0]] } });
+  assert.equal(await names(), 'BACD');
+  // Les collections d'un autre compte ne bougent pas ; un id inconnu est ignoré.
+  const ben = await signup('Ben');
+  await call('POST', 'targets/save', { key: ben.key, body: { id: ids[2], name: 'X', items: [] } });
+  await call('POST', 'targets/save', { key: ben.key, body: { name: 'Y', items: [] } });
+  r = await call('POST', 'targets/order', { key: ben.key, body: { ids: ['inconnu', ids[0]] } });
+  assert.equal(r.status, 200);
+  assert.equal(await names(), 'BACD');
+  for (const body of [{}, { ids: 'x' }, { ids: [1] }, { ids: ['a b'] }, { ids: [ids[0], ids[0]] }, { ids: Array.from({ length: 201 }, (_, i) => 'x' + i) }]) {
+    r = await call('POST', 'targets/order', { key: ana.key, body });
+    assert.equal(r.status, 400, JSON.stringify(body).slice(0, 80));
+  }
+});
+
 await test('collections à compléter : une seule collection par catégorie de Wikipédia (source wp:)', async () => {
   const wes = await signup('Wes');
   const items = [{ title: 'Charolaise', status: 'ok' }];

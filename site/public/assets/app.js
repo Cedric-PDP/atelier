@@ -285,6 +285,8 @@
     sell: null,
     // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
     reorder: null,
+    // « Réorganiser » de « Mes collections » : brouillon de l'ordre des collections, voir startColOrder.
+    colOrder: null,
     settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
     copied: '',
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
@@ -1323,7 +1325,7 @@
     cardsRev = null;
     cardsGen++;
     cardsJob = Promise.resolve();
-    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, autoBusy: null,
+    Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, colOrder: null, autoBusy: null,
       q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     S.refresh.msg = '';
@@ -2666,6 +2668,227 @@
     } catch (e) {
       if (gen === cardsGen) notify(e.message, true);
     }
+  }
+  // ---------------------------------------------------------------- « Réorganiser » (« Mes collections »)
+  // Demande de l'utilisateur (2026-10-24) : « pouvoir réorganiser les collections ». « Réorganiser » (en tête de « Mes
+  // collections », à partir de 2 collections) passe la liste en mode réorganisation : une ligne compacte par collection,
+  // à glisser (à la souris toute la ligne, au doigt par sa poignée), « ↑ » / « ↓ », « En tête » / « À la fin ».
+  // Brouillon (S.colOrder) : {base (les ids dans l'ordre à l'entrée), order (l'ordre en cours), dirty, busy, error, drag
+  // (id glissé), said et saidN (annonce pour les lecteurs d'écran)}. Une collection créée ou supprimée pendant ce temps :
+  // l'ordre affiché (colOrderIds) retire les disparues et ajoute les nouvelles à la fin. « Enregistrer l'ordre » : une
+  // seule requête POST /api/targets/order {ids}, puis « Annuler » pendant 10 s (l'ordre d'avant renvoyé) ; « Annuler »
+  // du mode n'envoie rien. Le brouillon survit à un changement d'onglet ; recharger avec un ordre modifié le demande.
+  function colOrderIds(r) {
+    const have = new Set(targets.value.map((t) => t.id));
+    const out = r.order.filter((id) => have.has(id));
+    const seen = new Set(out);
+    for (const t of targets.value) if (!seen.has(t.id)) out.push(t.id);
+    return out;
+  }
+  const sameIds = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  function startColOrder() {
+    const ids = targets.value.map((t) => t.id);
+    S.colOrder = { base: ids, order: ids, dirty: false, busy: false, error: '', drag: null, said: '', saidN: 0 };
+    nextTick(() => { const el = document.getElementById('h-mine'); if (el) el.focus(); });
+  }
+  const colName = (id) => { const t = targets.value.find((x) => x.id === id); return t ? t.name : ''; };
+  // Déplace la collection `id` à la place `to` (0 = en tête), bornée ; false si elle n'a pas bougé.
+  function colMoveTo(id, to) {
+    const r = S.colOrder;
+    if (!r || r.busy) return false;
+    const list = colOrderIds(r);
+    const from = list.indexOf(id);
+    if (from < 0) return false;
+    const n = list.length;
+    const dest = Math.max(0, Math.min(n - 1, to));
+    const name = colName(id);
+    r.error = '';
+    if (dest === from) {
+      r.said = from === 0 && to <= 0 ? `« ${name} » est déjà en tête.` : `« ${name} » est déjà à la fin.`;
+      r.saidN++;
+      return false;
+    }
+    list.splice(from, 1);
+    list.splice(dest, 0, id);
+    r.order = list;
+    r.dirty = !sameIds(list, targets.value.map((t) => t.id));
+    r.said = `« ${name} » : position ${fmt(dest + 1)} sur ${fmt(n)}.`;
+    r.saidN++;
+    return true;
+  }
+  // « ↑ », « ↓ », « En tête », « À la fin » d'une ligne : le focus reste sur le même bouton de la collection déplacée.
+  function colMove(id, act) {
+    const r = S.colOrder;
+    if (!r) return;
+    const list = colOrderIds(r);
+    const at = list.indexOf(id);
+    colMoveTo(id, act === 'up' ? at - 1 : act === 'down' ? at + 1 : act === 'first' ? 0 : list.length - 1);
+    nextTick(() => {
+      const li = document.querySelector(`li.co-row[data-id="${id}"]`);
+      const b = li && li.querySelector(`button[data-act="${act}"]`);
+      if (b && document.activeElement !== b) b.focus();
+    });
+  }
+  function focusColOrderButton() {
+    nextTick(() => { const b = document.getElementById('colorder-btn'); if (b) b.focus(); });
+  }
+  function cancelColOrder() {
+    const r = S.colOrder;
+    if (!r || r.busy) return;
+    coDragEnd();
+    S.colOrder = null;
+    focusColOrderButton();
+    if (r.dirty) notify("Ordre des collections laissé tel quel : rien n'a été envoyé.", false, { label: 'Reprendre', run: () => { if (S.colOrder) return; S.colOrder = r; setTab('collections'); if (S.album) closeAlbum(); } });
+  }
+  // Range targets dans l'ordre `ids` (les autres après, dans leur ordre).
+  function applyColOrder(ids) {
+    const pos = new Map(ids.map((id, i) => [id, i]));
+    const n = ids.length;
+    targets.value = targets.value.map((t, i) => [t, pos.has(t.id) ? pos.get(t.id) : n + i]).sort((a, b) => a[1] - b[1]).map(([t]) => t);
+  }
+  async function saveColOrder() {
+    const r = S.colOrder;
+    if (!r || r.busy) return;
+    coDragEnd();
+    const before = targets.value.map((t) => t.id);
+    const ids = colOrderIds(r);
+    if (sameIds(ids, before)) { S.colOrder = null; focusColOrderButton(); notify('Ordre inchangé : rien à enregistrer.'); return; }
+    const gen = cardsGen;
+    r.busy = true;
+    r.error = '';
+    try {
+      await api('POST', '/api/targets/order', { ids });
+      if (gen !== cardsGen) return;
+      applyColOrder(ids);
+      if (S.colOrder === r) { S.colOrder = null; focusColOrderButton(); }
+      notify('Nouvel ordre des collections enregistré.', false, { label: 'Annuler', run: () => restoreColOrder(before) });
+    } catch (e) {
+      if (gen === cardsGen) r.error = e.message;
+    } finally {
+      r.busy = false;
+    }
+  }
+  async function restoreColOrder(before) {
+    const gen = cardsGen;
+    const have = new Set(targets.value.map((t) => t.id));
+    const ids = before.filter((id) => have.has(id));
+    for (const t of targets.value) if (!ids.includes(t.id)) ids.push(t.id);
+    try {
+      await api('POST', '/api/targets/order', { ids });
+      if (gen !== cardsGen) return;
+      applyColOrder(ids);
+      notify("Ordre d'avant des collections remis.");
+    } catch (e) {
+      if (gen === cardsGen) notify(e.message, true);
+    }
+  }
+  // Glisser une ligne (pointer events) : repère d'insertion entre deux lignes, lâché au-dessus ou au-dessous de la
+  // moitié d'une ligne ; Échap annule le geste ; la page défile seule près des bords de la fenêtre.
+  let coDrag = null;
+  function coPointerDown(e) {
+    const r = S.colOrder;
+    if (!r || r.busy || coDrag) return;
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    const list = e.currentTarget;
+    const li = upTo(e.target, list, (n) => n.classList && n.classList.contains('co-row'));
+    if (!li || upTo(e.target, li, (n) => n.tagName === 'BUTTON')) return;
+    const grip = !!upTo(e.target, li, (n) => n.classList && n.classList.contains('co-grip'));
+    if (e.pointerType !== 'mouse' && !grip) return;
+    coDrag = { id: li.getAttribute('data-id'), pid: e.pointerId, type: e.pointerType, y0: e.clientY, y: e.clientY, on: false, list, target: null, raf: 0 };
+    if (e.pointerType === 'mouse') e.preventDefault();
+    window.addEventListener('pointermove', coPointerMove);
+    window.addEventListener('pointerup', coPointerUp);
+    window.addEventListener('pointercancel', coPointerCancel);
+    window.addEventListener('keydown', coDragKey, true);
+  }
+  function coPointerMove(e) {
+    const d = coDrag;
+    if (!d || e.pointerId !== d.pid) return;
+    d.y = e.clientY;
+    if (!d.on) {
+      if (Math.abs(d.y - d.y0) < (d.type === 'mouse' ? 6 : 3)) return;
+      if (!S.colOrder) { coDragEnd(); return; }
+      d.on = true;
+      S.colOrder.drag = d.id;
+      try { if (d.list.setPointerCapture) d.list.setPointerCapture(d.pid); } catch (err) { /* pointeur déjà relâché */ }
+      document.documentElement.classList.add('ro-dragging');
+    }
+    if (e.cancelable !== false && typeof e.preventDefault === 'function') e.preventDefault();
+    if (!d.raf) d.raf = requestAnimationFrame(coStep);
+  }
+  function coStep() {
+    const d = coDrag;
+    if (!d) return;
+    d.raf = 0;
+    d.target = coTargetAt(d);
+    const wrap = d.list.parentNode;
+    const mark = wrap && wrap.querySelector('.co-mark');
+    if (mark) {
+      if (d.target == null) mark.classList.remove('on');
+      else {
+        const rows = [...d.list.querySelectorAll('li.co-row')];
+        const wr = wrap.getBoundingClientRect();
+        const ref = rows[Math.min(d.target.at, rows.length - 1)];
+        const rc = ref.getBoundingClientRect();
+        const y = d.target.at >= rows.length ? rc.bottom + 4 : rc.top - 4;
+        mark.style.setProperty('--my', Math.round(y - wr.top) + 'px');
+        mark.classList.add('on');
+      }
+    }
+    const vh = window.innerHeight || 0;
+    if (!vh || typeof window.scrollBy !== 'function') return;
+    const edge = 70;
+    const dy = d.y < edge ? -(edge - d.y) : d.y > vh - edge ? d.y - (vh - edge) : 0;
+    if (dy) { window.scrollBy(0, Math.max(-28, Math.min(28, Math.round(dy / 3)))); d.raf = requestAnimationFrame(coStep); }
+  }
+  // Place d'insertion sous le pointeur : `at` = indice de la ligne devant laquelle lâcher (le nombre de lignes : à la fin),
+  // `to` = place finale de la collection glissée ; null si elle ne bougerait pas.
+  function coTargetAt(d) {
+    const rows = [...d.list.querySelectorAll('li.co-row')];
+    if (!rows.length || typeof rows[0].getBoundingClientRect !== 'function') return null;
+    let at = rows.length;
+    for (let i = 0; i < rows.length; i++) {
+      const rc = rows[i].getBoundingClientRect();
+      if (d.y < rc.top + rc.height / 2) { at = i; break; }
+    }
+    const from = rows.findIndex((li) => li.getAttribute('data-id') === d.id);
+    const to = from >= 0 && from < at ? at - 1 : at;
+    return from < 0 || to === from ? null : { at, to };
+  }
+  function coPointerUp(e) {
+    const d = coDrag;
+    if (!d || e.pointerId !== d.pid) return;
+    if (!d.on) { coDragEnd(); return; }
+    d.y = e.clientY;
+    const t = coTargetAt(d);
+    coDragEnd();
+    if (t) colMoveTo(d.id, t.to);
+    else if (S.colOrder) { S.colOrder.said = `« ${colName(d.id)} » reste à sa place.`; S.colOrder.saidN++; }
+  }
+  function coPointerCancel(e) { if (coDrag && e.pointerId === coDrag.pid) coDragEnd(); }
+  function coDragKey(e) {
+    if (e.key !== 'Escape' || !coDrag) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const on = coDrag.on;
+    coDragEnd();
+    if (on && S.colOrder) { S.colOrder.said = 'Déplacement annulé.'; S.colOrder.saidN++; }
+  }
+  function coDragEnd() {
+    const d = coDrag;
+    coDrag = null;
+    window.removeEventListener('pointermove', coPointerMove);
+    window.removeEventListener('pointerup', coPointerUp);
+    window.removeEventListener('pointercancel', coPointerCancel);
+    window.removeEventListener('keydown', coDragKey, true);
+    if (!d) return;
+    if (d.raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(d.raf);
+    const wrap = d.list.parentNode;
+    const mark = wrap && wrap.querySelector('.co-mark');
+    if (mark) mark.classList.remove('on');
+    document.documentElement.classList.remove('ro-dragging');
+    try { if (d.on && d.list.releasePointerCapture) d.list.releasePointerCapture(d.pid); } catch (err) { /* déjà relâché */ }
+    if (S.colOrder) S.colOrder.drag = null;
   }
   // Collection sans ordre (de A à Z) : « Réorganiser… » dit pourquoi. Faite d'une catégorie ou d'une page de Wikipédia
   // (`wp:` / `links:` sans colonne), elle reste LA collection de cette source (une seule par compte : targets/save
@@ -6873,8 +7096,55 @@
         ]))) : status ? h('p', { class: 'prop-list prop-list--empty', role: 'status' }, status) : null,
     ]);
   }
+  // Mode réorganisation de « Mes collections » (S.colOrder) : une ligne compacte par collection (poignée, numéro, éventail,
+  // nom, « 12 sur 40 »), « ↑ » / « ↓ » / « En tête » / « À la fin », « Annuler » et « Enregistrer l'ordre ».
+  function viewColOrder(r) {
+    const byId = new Map(collections.value.mine.map((c) => [c.id, c]));
+    const ids = colOrderIds(r);
+    const n = ids.length;
+    const btn = (id, act, label, text, off) => h('button', { class: 'co-move', type: 'button', 'data-act': act, disabled: r.busy, 'aria-disabled': off ? 'true' : null,
+      'aria-label': label, title: label, onClick: () => { if (!off) colMove(id, act); else { r.said = act === 'up' || act === 'first' ? `« ${colName(id)} » est déjà en tête.` : `« ${colName(id)} » est déjà à la fin.`; r.saidN++; } } }, text);
+    return h('section', { class: 'group colorder', 'aria-labelledby': 'h-mine' }, [
+      h('div', { class: 'section-head' }, [
+        h('h2', { id: 'h-mine', tabindex: '-1' }, 'Mes collections'),
+        h('span', { class: 'badge' }, 'Réorganisation'),
+        h('span', { class: 'spacer' }),
+        h('span', { class: ['small', 'muted', 'co-state'] }, r.dirty ? 'Ordre modifié, pas encore enregistré' : 'Ordre inchangé'),
+        h('button', { class: 'btn', type: 'button', disabled: r.busy, onClick: cancelColOrder }, 'Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: r.busy || !r.dirty, 'aria-busy': r.busy ? 'true' : null, onClick: saveColOrder },
+          r.busy ? 'Enregistrement…' : 'Enregistrer l\'ordre'),
+      ]),
+      h('p', { class: 'hint', id: 'colorder-help' }, [
+        'Glisse une collection à sa place (au doigt, par sa poignée ', icon('grip', 'sm'), sr('poignée'), '), ou utilise ↑ et ↓. ',
+        'Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
+      ]),
+      errLine(r.error),
+      h('div', { class: 'co-wrap' }, [
+        h('ol', { class: ['co-list', { dragging: r.drag != null }], 'aria-label': 'Ordre de tes collections', 'aria-describedby': 'colorder-help', onPointerdown: coPointerDown }, ids.map((id, i) => {
+          const col = byId.get(id);
+          if (!col) return null;
+          const p = progressOf(col);
+          return h('li', { class: ['co-row', { lifted: r.drag === id }], key: id, 'data-id': id }, [
+            h('span', { class: 'co-grip', title: 'Glisser pour déplacer', 'aria-hidden': 'true' }, [icon('grip')]),
+            h('span', { class: 'co-no num', 'aria-hidden': 'true' }, fmt(i + 1)),
+            h('span', { class: 'fan', 'aria-hidden': 'true' }, p.sample.length ? p.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
+            h('span', { class: 'co-info' }, [h('span', { class: 'name' }, col.name), h('span', { class: 'small muted' }, `${fmt(p.own)} sur ${fmt(p.total)}`)]),
+            h('span', { class: 'co-moves' }, [
+              btn(id, 'first', `« ${col.name} » : en tête`, 'En tête', i === 0),
+              btn(id, 'up', `« ${col.name} » : une place plus haut`, '↑', i === 0),
+              btn(id, 'down', `« ${col.name} » : une place plus bas`, '↓', i === n - 1),
+              btn(id, 'last', `« ${col.name} » : à la fin`, 'À la fin', i === n - 1),
+            ]),
+          ]);
+        })),
+        h('span', { class: 'co-mark', 'aria-hidden': 'true' }),
+      ]),
+      h('p', { class: 'sr', role: 'status' }, r.said ? [h('span', { key: r.saidN }, r.said)] : []),
+    ]);
+  }
   function viewCollections() {
     const { mine } = collections.value;
+    if (S.colOrder && mine.length) return h('div', { class: 'groups' }, [viewColOrder(S.colOrder)]);
     const props = proposer && !S.prefs.hide_proposals ? wpVisible.value.length : 0;
     const add = (label) => h('button', { class: 'btn primary', type: 'button', onClick: () => openEditor(null) }, [icon('plus', 'sm'), label]);
     return h('div', { class: 'groups' }, [
@@ -6885,6 +7155,7 @@
           // Propositions d'après tes cartes : la fenêtre s'ouvre directement sur elles.
           props && mine.length ? h('button', { class: 'linkish props-link', type: 'button', onClick: () => openEditor(null, 'props') }, [icon('spark', 'sm'),
             `${fmt(props)} ${plural(props, 'proposition', 'propositions')} d'après tes cartes`]) : null,
+          mine.length > 1 ? h('button', { id: 'colorder-btn', class: 'btn', type: 'button', title: "Changer l'ordre de tes collections", onClick: startColOrder }, [icon('move', 'sm'), 'Réorganiser']) : null,
           mine.length ? add('Nouvelle collection') : null,
         ]),
         mine.length ? h('div', { class: 'rows' }, mine.map(viewRow))
@@ -11658,7 +11929,7 @@
         // Réseau revenu alors que le classeur n'a pas pu s'ouvrir (clé gardée) : on réessaie tout seul.
         window.addEventListener('online', () => { if (S.boot === 'welcome' && S.key && (S.healthError || (S.bootError && !S.bootHint))) boot(); });
         // Ordre réorganisé pas encore enregistré : recharger ou fermer la page le demande d'abord (message du navigateur).
-        window.addEventListener('beforeunload', (e) => { routeFlush(); if (S.reorder && S.reorder.dirty) { e.preventDefault(); e.returnValue = ''; } });
+        window.addEventListener('beforeunload', (e) => { routeFlush(); if ((S.reorder && S.reorder.dirty) || (S.colOrder && S.colOrder.dirty)) { e.preventDefault(); e.returnValue = ''; } });
         setLive();
         boot(LINK_KEY);
       });
