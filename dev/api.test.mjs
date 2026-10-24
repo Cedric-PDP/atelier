@@ -876,6 +876,7 @@ await test("targets/order : l'ordre de « Mes collections », sans toucher aux �
   for (const n of ['A', 'B', 'C']) {
     const r = await call('POST', 'targets/save', { key: ana.key, body: { name: n, items: [{ title: n, status: 'ok' }] } });
     ids.push(r.json.target.id);
+    await new Promise((res) => setTimeout(res, 3)); // created_at à la milliseconde : sinon l'ordre de départ tient aux ids, tirés au hasard
   }
   const names = async () => (await call('GET', 'targets', { key: ana.key })).json.targets.map((t) => t.name).join('');
   assert.equal(await names(), 'ABC');
