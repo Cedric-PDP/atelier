@@ -14,6 +14,8 @@ export const PLAN_CARDS = 3000; // cartes à coter rendues par le plan (une pass
 const PLAN_WANTED = 500; // titres des cartes qui manquent aux collections, surveillés aux enchères
 const IDS_MAX = 2000; // titres -> card_id gardés par compte
 export const PART_PRICES = 500; // cotes par envoi
+// Bonnes affaires gardées par lecture du marché (2026-10-24 : 50 avant) : les meilleures remises, la page les filtre.
+export const DEALS_MAX = 150;
 // Quotas du jour des cotes : une cote = une ligne écrite (et son index). Abonnement payant (2026-10-17) : 50 millions
 // de lignes écrites par mois comprises ; avant, D1 gratuit (100 000 par jour pour tout) imposait 3 000 et 30 000.
 export const QUOTA_USER = 15000;
@@ -324,7 +326,7 @@ const FIELDS = {
 // Valeur d'un champ absent : null pour ceux qui peuvent l'être ; more = 0.
 const ABSENT = { img: null, cote: null, n: null, cur: null, more: 0 };
 const KINDS = {
-  deals: { max: 50, fields: ['a', 'id', 't', 'r', 's', 'img', 'end', 'cote', 'n', 'ask', 'bid', 'lead', 'more'], st: null },
+  deals: { max: DEALS_MAX, fields: ['a', 'id', 't', 'r', 's', 'img', 'end', 'cote', 'n', 'ask', 'bid', 'lead', 'more'], st: null },
   bids: { max: 100, fields: ['a', 'id', 't', 'r', 's', 'img', 'end', 'cote', 'n', 'mine', 'cur', 'lead'], st: new Set(['run', 'won', 'lost', 'off']) },
   sales: { max: 100, fields: ['a', 'id', 't', 'r', 's', 'img', 'end', 'cote', 'n', 'base', 'cur', 'bid'], st: new Set(['run', 'sold', 'unsold', 'off']) },
 };

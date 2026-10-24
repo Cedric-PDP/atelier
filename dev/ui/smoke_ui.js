@@ -283,7 +283,7 @@ function mockApi() {
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
-          if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 4096) return json(400, { error: 'Préférences invalides.' });
+          if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 16384) return json(400, { error: 'Préférences invalides.' });
           st.prefs = body.prefs;
         }
         if ('pseudo' in body) {
@@ -5125,6 +5125,62 @@ async function main() {
       sel.value = '';
       sel.dispatch('change');
       await settle(40);
+    }
+    // Filtres des bonnes affaires à acheter (2026-10-24), gardés dans les préférences du compte : la seule affaire montrée,
+    // Voulue A (SR, 50W pour une cote de 100, sans enchère, finit dans 1 h).
+    {
+      const deals = () => d.querySelector('[data-section="acheter"]').querySelectorAll('.lot__title').map(text).filter((t) => t.includes('Voulue'));
+      const btn = () => d.getElementById('deal-filters-btn');
+      const sortSel = d.getElementById('deal-sort');
+      check(sortSel && sortSel.querySelectorAll('option').map(text).join(' | ') === 'Fin la plus proche | Meilleure remise | Plus grosse économie | Prix croissant', 'tri des bonnes affaires : ' + (sortSel ? sortSel.querySelectorAll('option').map(text).join(' | ') : 'absent'));
+      check(text(btn()) === 'Filtres' && btn().getAttribute('aria-expanded') === 'false' && !d.getElementById('deal-filters'), 'panneau des filtres fermé par défaut');
+      btn().click();
+      await settle(40);
+      check(!!d.getElementById('deal-filters') && btn().getAttribute('aria-expanded') === 'true', 'panneau des filtres pas ouvert');
+      const chip = (label) => d.getElementById('deal-filters').querySelectorAll('button').find((b) => text(b) === label);
+      chip('L').click();
+      await settle(40);
+      check(deals().length === 0 && text(btn()) === 'Filtres · 1' && text(d.querySelector('.deal-summary')).startsWith('0 affaire sur 1 · L'), 'filtre de rareté L : ' + deals().join(', ') + ' / ' + text(btn()));
+      if (!SERVER) check(JSON.stringify(um.prefs.deal_filter.r) === '["L"]', 'filtre pas gardé au compte : ' + JSON.stringify(um.prefs));
+      chip('L').click();
+      chip('30 %').click();
+      await settle(40);
+      check(deals().length === 1, '« finit bientôt » sans mise : montrée malgré le seuil de 30 %');
+      d.getElementById('deal-soon').dispatch('change');
+      await settle(40);
+      check(deals().length === 0, 'sans « finit bientôt » : 50 % de la cote ne passe pas 30 %');
+      d.querySelector('.deal-summary').querySelector('button').click(); // « Effacer les filtres »
+      await settle(40);
+      check(deals().length === 1 && text(btn()) === 'Filtres' && !d.querySelector('.deal-summary'), 'filtres pas effacés');
+      // Champ de saisie : la liste suit tout de suite, le compte après une pause de la frappe.
+      type(d.getElementById('deal-max'), '40');
+      await settle(40);
+      check(deals().length === 0, 'prix ≤ 40W : Voulue A (50W) doit disparaître');
+      await sleep(900);
+      if (!SERVER) check(um.prefs.deal_filter.max === 40, 'prix maximal pas enregistré au compte : ' + JSON.stringify(um.prefs.deal_filter));
+      // Enregistrer ces filtres, les effacer, les reprendre d'un clic, puis supprimer le filtre enregistré.
+      chip('Enregistrer ces filtres…').click();
+      await settle(40);
+      type(d.getElementById('deal-preset-name'), '  Petits prix ');
+      d.querySelector('.deal-filters__save').dispatch('submit');
+      await settle(60);
+      const presets = () => (d.querySelector('.deal-presets') ? d.querySelector('.deal-presets').querySelectorAll('.chip') : []);
+      check(presets().length === 1 && text(presets()[0]) === 'Petits prix' && presets()[0].classList.contains('on'), 'filtre enregistré : ' + presets().map(text).join(', '));
+      if (!SERVER) check(um.prefs.deal_presets.length === 1 && um.prefs.deal_presets[0].name === 'Petits prix' && um.prefs.deal_presets[0].f.max === 40, 'filtre enregistré pas gardé au compte : ' + JSON.stringify(um.prefs.deal_presets));
+      chip('Effacer les filtres').click();
+      await settle(40);
+      check(deals().length === 1 && !presets()[0].classList.contains('on'), 'filtres effacés : le filtre enregistré ne doit plus être actif');
+      presets()[0].querySelector('.chip__label').click();
+      await settle(40);
+      check(deals().length === 0 && presets()[0].classList.contains('on') && String(d.getElementById('deal-max').value) === '40', 'filtre enregistré pas repris');
+      presets()[0].querySelector('.x').click();
+      await settle(40);
+      check(presets().length === 0, 'filtre enregistré pas supprimé');
+      if (!SERVER) check(um.prefs.deal_presets.length === 0, 'suppression pas gardée au compte');
+      chip('Effacer les filtres').click();
+      btn().click();
+      await settle(40);
+      check(deals().length === 1 && !d.getElementById('deal-filters'), 'retour aux filtres par défaut, panneau fermé');
     }
     // Bonnes affaires, mes enchères et mes ventes en cours : un lien vers l'enchère dans le jeu.
     {

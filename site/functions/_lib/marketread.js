@@ -16,7 +16,7 @@ import { HttpError } from './http.js';
 import { RARITIES } from './cards.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet } from './game.js';
 import { LEASE_MS } from './refresh.js';
-import { PART_PRICES, PLAN_CARDS, lastAttempt, planFor, writeFail, writeLive, writePrices } from './market.js';
+import { DEALS_MAX, PART_PRICES, PLAN_CARDS, lastAttempt, planFor, writeFail, writeLive, writePrices } from './market.js';
 import { cleanText } from './util.js';
 
 export const SUPA_MAX = 30;
@@ -27,7 +27,6 @@ export const FAST_GAP_MS = 250;
 export const FAST_MAX = 60;
 const FAST_PLAN = PLAN_CARDS * 2;
 export const CLICK_GAP_MS = 60_000;
-const HOUR = 3600_000;
 const DAY = 86400_000;
 const RANKS = ['C', 'PC', 'R', 'SR', 'UR', 'L'];
 const CARD = 'card:cards(wikipedia_title,image_url,hide_image)';
@@ -218,16 +217,15 @@ async function read(env, user, s, plan, auto, light) {
     }
     for (const a of sales) if (a && a.card_id && a.status === 'active') mine.push(a.card_id);
     await take(auctions.map((a) => String(a.card_id)).concat(mine.map(String)).filter((id, k, all) => all.indexOf(id) === k && !fresh[id]).slice(0, 300));
-    // Bonnes affaires : la moins chère par carte (une collection n'en demande qu'un exemplaire, de n'importe quelle
-    // rareté) ; more = les autres enchères intéressantes sur la même carte.
+    // Bonnes affaires : enchères demandées (enchère actuelle, sinon prix de départ) au plus à la cote fiable de leur
+    // rareté ; la moins chère par carte (une collection n'en demande qu'un exemplaire, de n'importe quelle rareté) ;
+    // more = les autres enchères intéressantes sur la même carte.
     const best = {};
     for (const a of auctions) {
       const x = lot(a, fresh, titleOf[a.card_id]);
       const bid = !!a.current_bidder_id;
       const ask = money(bid ? a.current_bid : a.base_amount);
-      const base = money(a.base_amount);
-      if (!x || x.cote === null || x.n < 3 || ask === null
-        || !(ask <= 0.8 * x.cote || (!bid && Date.parse(x.end) - Date.now() < 2 * HOUR && base !== null && base <= x.cote))) continue;
+      if (!x || x.cote === null || !(x.cote > 0) || x.n < 3 || ask === null || !(ask <= x.cote)) continue;
       x.ask = ask;
       x.bid = bid;
       x.lead = !!uid && a.current_bidder_id === uid;
@@ -244,7 +242,10 @@ async function read(env, user, s, plan, auto, light) {
       }
       best[x.id] = x;
     }
-    lv.deals = lv.deals.sort((a, b) => Date.parse(a.end) - Date.parse(b.end)).slice(0, 50);
+    // Les DEALS_MAX meilleures remises (prix demandé / cote), puis de la fin la plus proche à la plus lointaine : la page
+    // filtre (pourcentage de la cote, prix, rareté…), 80 % de la cote par défaut.
+    lv.deals = lv.deals.sort((a, b) => a.ask / a.cote - b.ask / b.cote || Date.parse(a.end) - Date.parse(b.end)).slice(0, DEALS_MAX)
+      .sort((a, b) => Date.parse(a.end) - Date.parse(b.end));
     const seen = {};
     for (const b of bids) {
       const a = b && b.auction;

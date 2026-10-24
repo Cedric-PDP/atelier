@@ -534,7 +534,7 @@ await test('renouvellement de la clé principale ; routes de l\'ancien favori re
   assert.equal((await call('DELETE', 'me', { key: r.json.key })).status, 200);
 });
 
-await test('préférences : {} par défaut, remplacement entier, 4 Ko, objet seulement, par compte', async () => {
+await test('préférences : {} par défaut, remplacement entier, 16 Ko, objet seulement, par compte', async () => {
   const kim = await signup('Kim');
   const lea = await signup('Léa');
   let r = await call('GET', 'me', { key: kim.key });
@@ -560,19 +560,19 @@ await test('préférences : {} par défaut, remplacement entier, 4 Ko, objet seu
     r = await call('PATCH', 'me', { key: kim.key, body: { prefs: bad } });
     assert.equal(r.status, 400, JSON.stringify(bad));
   }
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(4096) } } });
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(16384) } } });
   assert.equal(r.status, 413);
-  assert.match(r.json.error, /4 Ko/);
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'é'.repeat(2050) } } }); // 4 108 octets, 2 058 caractères
+  assert.match(r.json.error, /16 Ko/);
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'é'.repeat(8194) } } }); // 16 396 octets, 8 202 caractères
   assert.equal(r.status, 413);
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(4000) } } });
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(16000) } } });
   assert.equal(r.status, 200);
   r = await call('PATCH', 'me', { key: kim.key, body: {} });
   assert.equal(r.status, 400);
   // Chaque compte a les siennes.
   assert.deepEqual((await call('GET', 'me', { key: lea.key })).json.prefs, {});
   await call('PATCH', 'me', { key: lea.key, body: { prefs: { hide_catalog: true } } });
-  assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.x.length, 4000);
+  assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.x.length, 16000);
   await call('DELETE', 'me', { key: kim.key });
   await call('DELETE', 'me', { key: lea.key });
 });
@@ -3252,11 +3252,11 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
     active('a1', 'w1', 'R', { base_amount: 50, end_at: soon(H) }), // sans enchère, 50 % de la cote
     active('a1b', 'w1', 'R', { base_amount: 90, end_at: soon(1.5 * H) }), // sans enchère, finit dans moins de 2 h, départ ≤ cote
     active('a2', 'w2', 'SR', { current_bid: 70, current_bidder_id: 'quelqu-un', base_amount: 20, end_at: soon(5 * H) }), // 70 % de la cote
-    active('a3', 'w3', 'C', { current_bid: 95, current_bidder_id: 'quelqu-un', end_at: soon(3 * H) }), // 95 % : pas une affaire
-    active('a3b', 'w3', 'C', { base_amount: 90, end_at: soon(3 * H) }), // sans enchère mais plus de 2 h
+    active('a3', 'w3', 'C', { current_bid: 95, current_bidder_id: 'quelqu-un', end_at: soon(3 * H) }), // 95 % : gardée (la page filtre), mais pas la moins chère
+    active('a3b', 'w3', 'C', { base_amount: 90, end_at: soon(3 * H) }), // sans enchère, 90 %
     active('a4', 'w1', 'R', { seller_id: uid, base_amount: 1, end_at: soon(H) }), // la mienne
     active('a5', 'w1', 'R', { is_shiny: true, base_amount: 1, end_at: soon(H) }), // brillante : pas de cote
-    active('a6', 'w3', 'C', { current_bid: 85, current_bidder_id: uid, end_at: soon(4 * H) }), // j'y mène, 85 % : pas une affaire
+    active('a6', 'w3', 'C', { current_bid: 85, current_bidder_id: uid, end_at: soon(4 * H) }), // j'y mène, 85 % : la moins chère de w3
     // Mes ventes : en cours avec une enchère, vendue, invendue, trop ancienne.
     active('s1', 'c5', 'C', { seller_id: uid, base_amount: 30, current_bid: 35, current_bidder_id: 'x', end_at: soon(2 * H) }),
     { ...active('s2', 'c6', 'C', { seller_id: uid, base_amount: 30, end_at: isoAgo(30 * H) }), status: 'settled_sold', final_price: 70 },
@@ -3273,7 +3273,7 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
   const n0 = supa.rest().length;
   const r = await m.full();
   assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual(r.json, { ok: true, read: 63, left: 0, deals: 2, running: 1 });
+  assert.deepEqual(r.json, { ok: true, read: 63, left: 0, deals: 3, running: 1 });
   // Rythme et plafond : 30 requêtes au plus, une pause d'une seconde (ici REFRESH_PAUSE_MS) avant chacune sauf la première.
   const calls = supa.rest().slice(n0);
   assert.equal(calls.length, 6);
@@ -3294,8 +3294,9 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
   assert.equal(priceOf(e, 'c5').C.p, 50);
   // La lecture du marché, montrée par la page ; l'essai noté réussi, lu par le serveur.
   const mk = await m.market();
-  assert.deepEqual(mk.live.deals.map((d) => [d.a, d.ask, d.bid, d.cote, d.t]), [['a1', 50, false, 100, 'Voulue 1'], ['a2', 70, true, 100, 'Voulue 2']]);
-  assert.deepEqual(mk.live.deals.map((d) => d.more), [1, 0], 'la moins chère par carte, les autres comptées (a1b)');
+  assert.deepEqual(mk.live.deals.map((d) => [d.a, d.ask, d.bid, d.lead, d.cote, d.t]), [['a1', 50, false, false, 100, 'Voulue 1'], ['a6', 85, true, true, 100, odd], ['a2', 70, true, false, 100, 'Voulue 2']],
+    'au plus à la cote (2026-10-24), de la fin la plus proche à la plus lointaine');
+  assert.deepEqual(mk.live.deals.map((d) => d.more), [1, 2, 0], 'la moins chère par carte, les autres comptées (a1b ; a3, a3b)');
   assert.deepEqual(mk.live.bids.map((b) => [b.a, b.st, b.mine, b.cur, b.lead, b.cote]), [['a6', 'run', 85, 85, true, 100], ['a7', 'won', 80, 80, false, 50], ['a8', 'lost', 110, 120, false, 50]]);
   assert.deepEqual(mk.live.sales.map((x) => [x.a, x.st, x.base, x.cur, x.bid]), [['s1', 'run', 30, 35, true], ['a4', 'run', 1, null, false], ['s2', 'sold', 30, 70, false], ['s3', 'unsold', 30, null, false]]);
   assert.equal(mk.live.deals[0].img, 'https://upload.wikimedia.org/' + 'Titre du jeu w1'.length + '.jpg');
@@ -3316,6 +3317,32 @@ await test('marché : une passe (cotes : médiane des 30 ventes, 7 jours, brilla
   assert.ok(!p1.some((p) => p.startsWith('cards?')), 'titres déjà résolus redemandés');
   assert.ok(!p1.some((p) => p.includes('status=eq.settled_sold') && p.includes('"c1"')), 'cote fraîche relue');
   assert.ok(p1.some((p) => p.includes('status=eq.settled_sold') && p.includes('"w1"')), 'cote d\'une enchère en cours toujours relue');
+  clearMarketGame();
+  e.DB.close();
+});
+
+await test('marché : bonnes affaires, les 150 meilleures remises (prix demandé / cote), puis par fin', async () => {
+  const e = makeEnv({ REFRESH_PAUSE_MS: '1' });
+  clearMarketGame();
+  const m = await marketMember('Rem', e);
+  const N = 220;
+  const t = (i) => `Remise ${i}`;
+  const item = (title) => ({ title, description: null, image: null, status: 'ok' });
+  assert.equal((await call('POST', 'targets/save', { key: m.u.key, e, body: { name: 'Remises', items: Array.from({ length: N }, (_, i) => item(t(i))) } })).status, 200);
+  supa.cards = Array.from({ length: N }, (_, i) => ({ id: `r${i}`, wikipedia_title: t(i), lang: 'fr' }));
+  // Cote 100 pour chacune ; r<i> demandée à 1 + i/2 W (r0 : 1 %, r199 : 100 %), r200 à r219 au-dessus de la cote ; la fin
+  // la plus proche pour les plus chères : un tri par fin garderait les mauvaises.
+  for (let i = 0; i < N; i++) {
+    for (let k = 0; k < 3; k++) addAuctions(sale(`r${i}`, 'C', 100, (k + 1) * H));
+    addAuctions({ id: `x${i}`, card_id: `r${i}`, status: 'active', snapshot_rarity: 'C', is_shiny: false, seller_id: 'vendeur', current_bid: null, current_bidder_id: null,
+      base_amount: i < 200 ? 1 + Math.floor(i / 2) : 101 + i, end_at: new Date(Date.now() + (N - i) * 60_000).toISOString(), card: { wikipedia_title: t(i), image_url: null, hide_image: false } });
+  }
+  const r = await m.full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.deals, 150, 'au-dessus de la cote : écartées ; 150 au plus');
+  const deals = (await m.market()).live.deals;
+  assert.ok(deals.every((d) => d.ask <= d.cote), 'au plus à la cote');
+  assert.deepEqual(deals.map((d) => d.a), Array.from({ length: 150 }, (_, i) => `x${149 - i}`), 'les 150 meilleures remises, de la fin la plus proche à la plus lointaine');
   clearMarketGame();
   e.DB.close();
 });
