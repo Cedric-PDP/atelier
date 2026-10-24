@@ -1,6 +1,7 @@
 {
   "versions": [
     {"id": "2026-10-24", "date": "2026-10-24", "sections": [{"icon": "💬", "title": "Chat", "items": [{"text": "Réagis aux messages : « Réagir » sur une bulle, puis choisis un emoji (👍 ❤️ 😂 😮 😢 🎉 🔥 👀). Les réactions s'affichent sous le message avec leur nombre. Survole-les pour voir qui a réagi, clique dessus pour ajouter ou retirer la tienne.", "to": "#/chat", "link": "Chat"}]},
+      {"icon": "🔄", "title": "Échanges possibles", "items": [{"text": "Un seul bloc par paire de membres (« Toi ⇄ Paul ») : ce que tu peux lui donner et ce qu'il peut te donner sont maintenant réunis, avec un seul bouton « Proposer un échange ».", "to": "#/amis/echanges", "link": "Échanges possibles"}]},
       {"icon": "🤝", "title": "Amis dans le jeu", "items": [
       {"text": "Le jeu n'accepte un échange qu'entre amis. Si tu n'es pas encore ami avec quelqu'un, « Proposer un échange » te le dit et envoie la demande d'ami en un clic.", "to": "#/amis/echanges", "link": "Échanges possibles"},
       {"text": "Nouvelle case dans les Réglages : le classeur envoie une demande d'ami dans le jeu à chaque membre qui relie son compte. Elle est décochée par défaut.", "to": "#/reglages", "link": "Réglages"},
