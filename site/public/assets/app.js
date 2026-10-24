@@ -1980,7 +1980,8 @@
   }
   // « Liste de souhaits du jeu » (PATCH /api/me {auto_wish}, coupée par défaut) : le serveur met dans la liste de souhaits
   // du jeu les cartes qui manquent aux collections et en retire celles qu'on possède (wishlist.js). Cochée, une première
-  // passe part tout de suite côté serveur : son résultat arrive avec la relecture suivante de GET /api/me.
+  // passe part tout de suite côté serveur : son résultat arrive avec la relecture suivante de GET /api/me. Décochée, le
+  // bouton (même route) retire de la liste toutes les cartes des collections.
   async function setAutoWish(on) {
     if (S.autoWish.busy) return;
     Object.assign(S.autoWish, { busy: true, error: '', msg: '' });
@@ -2007,12 +2008,15 @@
       S.autoWish.syncBusy = false;
     }
   }
-  // Ce qu'a fait une passe : « 12 cartes ajoutées, 1 retirée » ; rien : « Rien à changer ».
+  // Ce qu'a fait une passe : « 12 cartes ajoutées, 1 retirée » ; « 3 cartes retirées » ; rien : « Rien à changer ».
+  // Passe de retrait (clear, clic case décochée) : ce qui reste à retirer.
   function wishDone(w) {
     if (!w) return '';
     const parts = [];
     if (w.added) parts.push(`${fmt(w.added)} ${plural(w.added, 'carte ajoutée', 'cartes ajoutées')}`);
-    if (w.removed) parts.push(`${fmt(w.removed)} ${plural(w.removed, 'retirée', 'retirées')}`);
+    if (w.removed) parts.push(w.added ? `${fmt(w.removed)} ${plural(w.removed, 'retirée', 'retirées')}` : `${fmt(w.removed)} ${plural(w.removed, 'carte retirée', 'cartes retirées')}`);
+    if (w.clear && w.left) parts.push(`${fmt(w.left)} encore à retirer : clique à nouveau dans une minute`);
+    if (w.clear && !parts.length) return 'Aucune carte de tes collections dans ta liste de souhaits du jeu.';
     return parts.length ? parts.join(', ') + '.' : 'Rien à changer.';
   }
   // Dernière passe (GET /api/me, wish) : quand, ce qu'elle a fait, ce qui reste ; ou son échec.
@@ -8084,10 +8088,10 @@
             onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.auto_wish); setAutoWish(want); } }),
           'Mettre dans ma liste de souhaits du jeu les cartes qui manquent à mes collections',
         ]),
-        h('p', { class: 'small muted' }, "Coché, le classeur ajoute à ta liste de souhaits du jeu chaque carte d'une de tes collections que tu n'as pas, et en retire chaque carte que tu obtiens. Il le fait dès que tu crées ou modifies une collection, après chaque synchro de tes cartes, et pendant les lectures automatiques (toutes les 10 minutes, par lots). Il ne retire jamais une carte que tu ne possèdes pas, même si elle n'est plus dans une collection. Le jeu te prévient quand une carte de ta liste de souhaits est mise en vente. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
+        h('p', { class: 'small muted' }, "Coché, le classeur ajoute à ta liste de souhaits du jeu chaque carte d'une de tes collections que tu n'as pas, et en retire chaque carte que tu obtiens. Il le fait dès que tu crées ou modifies une collection, après chaque synchro de tes cartes, et pendant les lectures automatiques (toutes les 10 minutes, par lots). Il ne retire jamais une carte que tu ne possèdes pas, même si elle n'est plus dans une collection. Décoché, « Retirer mes collections de ma liste de souhaits » en enlève toutes les cartes de tes collections, possédées ou non ; les autres cartes de ta liste restent. Le jeu te prévient quand une carte de ta liste de souhaits est mise en vente. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
         S.me && S.me.auto_wish ? wishLine(S.me.wish) : null,
         (S.me && S.me.session && S.me.session.linked && !S.me.session.lost) ? h('div', { class: 'actions' }, [
-          h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy, onClick: syncWish }, S.autoWish.syncBusy ? 'Mise à jour…' : 'Mettre à jour maintenant'),
+          h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy, onClick: syncWish }, S.autoWish.syncBusy ? 'Mise à jour…' : (S.me && S.me.auto_wish ? 'Mettre à jour maintenant' : 'Retirer mes collections de ma liste de souhaits')),
         ]) : h('p', { class: 'small muted' }, "Relie d'abord ton compte du jeu (onglet « Synchro ») : la liste de souhaits est mise à jour avec lui."),
         S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
         errLine(S.autoWish.error),

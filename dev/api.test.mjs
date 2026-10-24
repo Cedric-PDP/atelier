@@ -4133,6 +4133,8 @@ await test('liste de souhaits : « Mettre à jour » ajoute les cartes qui manqu
   assert.equal(r.status, 200);
   // Case coupée : rien après l'enregistrement.
   assert.equal(userRow(m.id, e).wish_dirty, 0);
+  // Case cochée sans passer par PATCH (pas de passe après la réponse) : le clic ajoute et retire.
+  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
   const n0 = supa.calls.length;
   r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
   assert.equal(r.status, 200, JSON.stringify(r.json));
@@ -4158,6 +4160,29 @@ await test('liste de souhaits : « Mettre à jour » ajoute les cartes qui manqu
   r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
   assert.deepEqual([r.status, r.json.wish.added, r.json.wish.removed, r.json.wish.size], [200, 0, 0, 3]);
   assert.deepEqual(wishCalls(n1), [`GET wishlist_items?user_id=eq.${m.uid}`]);
+  // Case décochée : le clic retire toutes les cartes des collections, possédées ou non (mini-00000 = « Carte 0 », remise à
+  // la main ; « Ignoré » n'est pas vérifié mais compte), et garde les autres (g-x) ; rien n'est ajouté.
+  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 0 WHERE id = ?').run(m.id);
+  supa.cards.push(gameCard('g-i', 'Ignoré'));
+  supa.wishlist.push({ user_id: m.uid, card_id: 'mini-00000' }, { user_id: m.uid, card_id: 'g-i' });
+  oldWish(m.id, e);
+  const n2 = supa.calls.length;
+  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.wish.clear, r.json.wish.added, r.json.wish.removed, r.json.wish.size, r.json.wish.left], [true, 0, 4, 1, 0]);
+  assert.deepEqual(supa.wishes(m.uid), ['g-x']);
+  assert.deepEqual(wishCalls(n2), [
+    `GET wishlist_items?user_id=eq.${m.uid}`,
+    'GET cards?wikipedia_title=in.("Carte 0","Ignoré")',
+    `DELETE wishlist_items?user_id=eq.${m.uid}&card_id=in.("g-a","g-b","mini-00000","g-i")`,
+  ]);
+  // Plus rien à retirer : la liste est lue, rien d'autre.
+  oldWish(m.id, e);
+  const n3 = supa.calls.length;
+  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.wish.removed, r.json.wish.size], [200, 0, 1]);
+  assert.deepEqual(wishCalls(n3), [`GET wishlist_items?user_id=eq.${m.uid}`]);
+  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
   // Refus du jeu : noté dans l'état, rendu au clic.
   e.DB.sqlite.prepare("DELETE FROM game_titles WHERE title = 'Pas dans le jeu'").run();
   supa.cards.push(gameCard('g-c', 'Pas dans le jeu'));

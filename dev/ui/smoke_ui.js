@@ -3172,10 +3172,12 @@ async function main() {
         api.canRequest(false);
         // Réglages, « Liste de souhaits du jeu » : la case (PATCH auto_wish), puis « Mettre à jour maintenant ».
         check(byId('set-auto-wish') && !byId('set-auto-wish').checked, 'case « Liste de souhaits du jeu » absente ou cochée');
+        const wishPanel = () => doc.querySelectorAll('section').find((x) => text(x).startsWith('Liste de souhaits du jeu'));
+        check(wishPanel().querySelectorAll('button').some((b) => text(b) === 'Retirer mes collections de ma liste de souhaits')
+          && !wishPanel().querySelectorAll('button').some((b) => text(b) === 'Mettre à jour maintenant'), 'case décochée : bouton de retrait attendu : ' + text(wishPanel()));
         byId('set-auto-wish').checked = true;
         byId('set-auto-wish').dispatch('change');
         await settle(80);
-        const wishPanel = () => doc.querySelectorAll('section').find((x) => text(x).startsWith('Liste de souhaits du jeu'));
         check(byId('set-auto-wish').checked && text(wishPanel()).includes('Première mise à jour en cours'), 'case cochée : ' + text(wishPanel()));
         wishPanel().querySelectorAll('button').find((b) => text(b) === 'Mettre à jour maintenant').click();
         await settle(80);

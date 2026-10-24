@@ -13,6 +13,9 @@
 // - juste après un enregistrement de collection, un « Rafraîchir » ou la case cochée (wishSoon, après la réponse) ;
 // - au clic sur « Mettre à jour ma liste de souhaits » (POST /api/wishlist/sync).
 // Jamais une carte retirée parce qu'elle a quitté une collection : seulement parce qu'elle est possédée.
+//
+// Case décochée, le clic fait une passe de retrait (clear, 2026-10-24, demande de l'utilisateur) : toutes les cartes de
+// ses collections (possédées ou non) sortent de sa liste de souhaits ; les autres cartes de la liste restent.
 
 import { HttpError } from './http.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet, supaWrite } from './game.js';
@@ -69,19 +72,29 @@ const OWNED = `SELECT j.value AS id FROM json_each(?2) AS j
 const REMEMBER = `INSERT INTO game_titles (title, card_id, at) SELECT json_extract(j.value, '$[0]'), json_extract(j.value, '$[1]'), ?2
   FROM json_each(?1) AS j WHERE true
   ON CONFLICT (title) DO UPDATE SET card_id = excluded.card_id, at = excluded.at`;
+// Tous les titres de ses collections (passe de retrait), quel que soit leur état ou leur possession.
+const ALL_TITLES = `SELECT DISTINCT json_extract(i.value, '$.title') AS t
+  FROM targets AS t0, json_each(t0.items) AS i
+  WHERE t0.user_id = ?1 AND i.type = 'object' AND json_type(i.value, '$.title') = 'text'
+    AND length(json_extract(i.value, '$.title')) BETWEEN 1 AND 300
+  LIMIT ${WANTED_MAX}`;
+// Ses cartes dont le titre est dans ?2 (une carte possédée peut être d'une autre langue que celle trouvée par titre).
+const OWNED_TITLED = `SELECT c.card_id AS id FROM cards AS c
+  WHERE c.user_id = ?1 AND json_extract(c.data, '$.title') IN (SELECT value FROM json_each(?2))`;
 const CARD_ID = /^[A-Za-z0-9_-]{1,100}$/;
 
 // Une passe pour `user` (ligne de USER_COLUMNS), session `s` ouverte, sous son bail (pris par l'appelant). max : requêtes
-// au jeu au plus. → l'état rangé (users.wish_state) : {at, via, rev, size, added, removed, left, none, error?}. Une
-// limite du jeu remonte (429 limited) après avoir noté l'état ; les autres erreurs aussi (l'état dit pourquoi).
-export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_GAP_MS } = {}) {
+// au jeu au plus ; clear : passe de retrait (cartes des collections retirées, rien d'ajouté). → l'état rangé
+// (users.wish_state) : {at, via, clear?, rev, size, added, removed, left, none, error?}. Une limite du jeu remonte
+// (429 limited) après avoir noté l'état ; les autres erreurs aussi (l'état dit pourquoi).
+export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_GAP_MS, clear = false } = {}) {
   const db = env.DB;
   const uid = s.uid || user.game_uid;
   if (!uid) throw new HttpError(401, 'Relie à nouveau ton compte du jeu (onglet « Synchro ») : il manque ton identifiant de joueur.', { needs_link: true });
   const who = encodeURIComponent(uid);
   // Ce que la passe a vu des cartes : une lecture finie pendant la passe la rendra due à nouveau.
   const head = await db.prepare('UPDATE users SET wish_dirty = 0 WHERE id = ?1 RETURNING cards_rev').bind(user.id).first();
-  const out = { at: nowIso(), via, rev: head ? head.cards_rev : user.cards_rev, size: null, added: 0, removed: 0, left: 0, none: 0 };
+  const out = { at: nowIso(), via, ...(clear ? { clear: true } : {}), rev: head ? head.cards_rev : user.cards_rev, size: null, added: 0, removed: 0, left: 0, none: 0 };
   let n = 0;
   const room = () => n < max;
   const wait = () => (n++ ? gap : 0);
@@ -95,16 +108,22 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       if (rows.length < 1000) break;
       if (page === WISH_PAGES - 1) throw new HttpError(400, `Liste de souhaits trop grande : ${WISH_PAGES * 1000} cartes au plus.`);
     }
-    // 2. Les cartes possédées en sortent.
-    const owned = wish.size ? (await db.prepare(OWNED).bind(user.id, JSON.stringify([...wish])).all()).results.map((r) => r.id) : [];
-    for (const part of lots(owned, DEL_LOT)) {
-      if (!room()) break;
-      await supaWrite(env, user, s, 'DELETE', `wishlist_items?user_id=eq.${who}&card_id=in.${inList(part)}`, null, { gap: wait() });
-      for (const id of part) wish.delete(id);
-      out.removed += part.length;
-    }
-    // 3. Titres qui manquent aux collections → cartes du jeu (cache commun, puis recherche par titre).
-    const titles = (await db.prepare(wantedSql(WANTED_MAX)).bind(user.id).all()).results.map((r) => r.t);
+    const drop = async (gone) => {
+      let done = 0;
+      for (const part of lots(gone, DEL_LOT)) {
+        if (!room()) break;
+        await supaWrite(env, user, s, 'DELETE', `wishlist_items?user_id=eq.${who}&card_id=in.${inList(part)}`, null, { gap: wait() });
+        for (const id of part) wish.delete(id);
+        done += part.length;
+      }
+      out.removed += done;
+      return gone.length - done;
+    };
+    // 2. Les cartes possédées en sortent (passe normale).
+    if (!clear) await drop(wish.size ? (await db.prepare(OWNED).bind(user.id, JSON.stringify([...wish])).all()).results.map((r) => r.id) : []);
+    // 3. Titres qui manquent aux collections (retrait : tous leurs titres, rien à chercher si la liste est vide) → cartes
+    // du jeu (cache commun, puis recherche par titre).
+    const titles = clear && !wish.size ? [] : (await db.prepare(clear ? ALL_TITLES : wantedSql(WANTED_MAX)).bind(user.id).all()).results.map((r) => r.t);
     const ids = new Map();
     const stale = new Date(Date.now() - NOT_FOUND_MS).toISOString();
     if (titles.length) {
@@ -125,20 +144,26 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       for (const [t, id] of pairs) ids.set(t, id);
       await db.prepare(REMEMBER).bind(JSON.stringify(pairs), nowIso()).run();
     }
-    // 4. Celles qui ne sont ni possédées (sous un autre titre) ni déjà souhaitées entrent dans la liste.
-    const wanted = [...new Set(titles.map((t) => ids.get(t)).filter((id) => id))];
     out.none = titles.filter((t) => ids.get(t) === '').length;
-    const have = wanted.length ? new Set((await db.prepare(OWNED).bind(user.id, JSON.stringify(wanted)).all()).results.map((r) => r.id)) : new Set();
-    const add = wanted.filter((id) => !have.has(id) && !wish.has(id));
-    let done = 0;
-    for (const part of lots(add, ADD_LOT)) {
-      if (!room()) break;
-      await supaWrite(env, user, s, 'POST', 'wishlist_items', part.map((id) => ({ user_id: uid, card_id: id })), { gap: wait() });
-      for (const id of part) wish.add(id);
-      done += part.length;
-      out.added += part.length;
+    const found = [...new Set(titles.map((t) => ids.get(t)).filter((id) => id))];
+    if (clear) {
+      // 4'. Retrait : les cartes trouvées et ses cartes de ces titres, si elles sont dans la liste.
+      const mine = titles.length ? (await db.prepare(OWNED_TITLED).bind(user.id, JSON.stringify(titles)).all()).results.map((r) => String(r.id)) : [];
+      out.left = (await drop([...new Set([...found, ...mine])].filter((id) => wish.has(id)))) + unresolved;
+    } else {
+      // 4. Celles qui ne sont ni possédées (sous un autre titre) ni déjà souhaitées entrent dans la liste.
+      const have = found.length ? new Set((await db.prepare(OWNED).bind(user.id, JSON.stringify(found)).all()).results.map((r) => r.id)) : new Set();
+      const add = found.filter((id) => !have.has(id) && !wish.has(id));
+      let done = 0;
+      for (const part of lots(add, ADD_LOT)) {
+        if (!room()) break;
+        await supaWrite(env, user, s, 'POST', 'wishlist_items', part.map((id) => ({ user_id: uid, card_id: id })), { gap: wait() });
+        for (const id of part) wish.add(id);
+        done += part.length;
+        out.added += part.length;
+      }
+      out.left = add.length - done + unresolved;
     }
-    out.left = add.length - done + unresolved;
     out.size = wish.size;
   } catch (err) {
     out.error = err && err.message ? String(err.message).slice(0, 300) : 'Échec de la mise à jour de la liste de souhaits.';
@@ -182,7 +207,8 @@ export async function wishSoon(env, userId) {
   }
 }
 
-// POST /api/wishlist/sync {} → l'état de la passe (voir wishPass). Au clic, même case décochée ; une fois par minute.
+// POST /api/wishlist/sync {} → l'état de la passe (voir wishPass). Au clic, même case décochée : c'est alors une passe de
+// retrait (cartes des collections retirées de la liste) ; une fois par minute.
 // 401 {needs_link}, 409 (une lecture tourne), 429 {retry_after} ou {limited}, 503 (interrupteur), 502.
 export async function syncWishlist(env, user) {
   if (!WISH_ROUTE.known) throw new HttpError(503, "Le classeur ne sait plus écrire dans ta liste de souhaits du jeu : le jeu a peut-être changé.");
@@ -192,7 +218,7 @@ export async function syncWishlist(env, user) {
   if (since < SOON_GAP_MS) {
     throw new HttpError(429, 'Ta liste de souhaits vient d\'être mise à jour : réessaie dans une minute.', { retry_after: Math.ceil((SOON_GAP_MS - since) / 1000) });
   }
-  const out = await underLease(env, user, { via: 'clic', max: CLICK_MAX });
+  const out = await underLease(env, user, { via: 'clic', max: CLICK_MAX, clear: !user.auto_wish });
   if (!out) throw new HttpError(409, 'Une lecture de ta collection ou du marché est en cours : réessaie dans un instant.');
   return { wish: out };
 }
