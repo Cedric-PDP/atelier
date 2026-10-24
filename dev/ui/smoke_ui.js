@@ -278,6 +278,7 @@ function mockApi() {
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
           market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend,
+          auto_wish: !!st.autoWish, wish: st.wish || null,
           wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at } });
       }
       if (p === '/api/me' && method === 'PATCH') {
@@ -312,9 +313,19 @@ function mockApi() {
           if (typeof body.auto_friend !== 'boolean') return json(400, { error: '« auto_friend » vaut true ou false.' });
           st.autoFriend = body.auto_friend;
         }
+        if ('auto_wish' in body) {
+          if (typeof body.auto_wish !== 'boolean') return json(400, { error: '« auto_wish » vaut true ou false.' });
+          st.autoWish = body.auto_wish;
+        }
         if ('name' in body) st.name = body.name;
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
-          auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend });
+          auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend, auto_wish: !!st.autoWish });
+      }
+      // Liste de souhaits du jeu : « Mettre à jour maintenant » rend une passe fixe (2 ajoutées, 1 retirée).
+      if (p === '/api/wishlist/sync' && method === 'POST') {
+        if (!st.linked) return json(401, { error: "Relie d'abord ton compte du jeu.", needs_link: true });
+        st.wish = { at: new Date().toISOString(), via: 'clic', size: 345, added: 2, removed: 1, left: 0, none: 3 };
+        return json(200, { wish: st.wish });
       }
       // Amis dans le jeu : statut de chaque membre qui partage ; une demande d'ami passe le membre à « sent ».
       if ((p === '/api/friends' || p.startsWith('/api/friends?')) && method === 'GET') {
@@ -3131,6 +3142,17 @@ async function main() {
         await settle();
         delete api.gameFriends['Paul'];
         api.canRequest(false);
+        // Réglages, « Liste de souhaits du jeu » : la case (PATCH auto_wish), puis « Mettre à jour maintenant ».
+        check(byId('set-auto-wish') && !byId('set-auto-wish').checked, 'case « Liste de souhaits du jeu » absente ou cochée');
+        byId('set-auto-wish').checked = true;
+        byId('set-auto-wish').dispatch('change');
+        await settle(80);
+        const wishPanel = () => doc.querySelectorAll('section').find((x) => text(x).startsWith('Liste de souhaits du jeu'));
+        check(byId('set-auto-wish').checked && text(wishPanel()).includes('Première mise à jour en cours'), 'case cochée : ' + text(wishPanel()));
+        wishPanel().querySelectorAll('button').find((b) => text(b) === 'Mettre à jour maintenant').click();
+        await settle(80);
+        check(text(wishPanel()).includes('2 cartes ajoutées, 1 retirée.') && text(wishPanel()).includes('345 cartes dans ta liste de souhaits du jeu')
+          && text(wishPanel()).includes('3 titres de tes collections sans carte dans le jeu'), 'liste de souhaits mise à jour : ' + text(wishPanel()));
         await goTab('amis');
         check(pairs().length > 0, "retour à « Échanges possibles » attendu");
       }

@@ -17,6 +17,10 @@
 // Amis : GET /api/friends ({friendships:[…]}, forme relevée dans le HAR du 2026-10-22, d'après `friendships`) et POST
 // /api/friends {addressee_id} → 201 {friendship} (envoi d'une demande, relevé dans le HAR du 2026-10-24) ;
 // `friendReply` force sa réponse, `siteLimit = 'friends'` limite ces deux routes.
+// Liste de souhaits : table wishlist_items ({user_id, card_id}, ses propres lignes seulement) : GET, POST (un objet ou une
+// liste ; une carte déjà souhaitée → 409, comme une clé unique) et DELETE (filtres eq. et in.), relevés dans le HAR du
+// 2026-10-24 (POST et DELETE ; GET supposé) ; `wishReply` (method, body) → {status, body} force la réponse d'une écriture,
+// `wishes(uid)` rend sa liste.
 
 import assert from 'node:assert/strict';
 
@@ -101,6 +105,11 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     maxAuctions: 5, // enchères actives par vendeur (maxConcurrentAuctions)
     friendships: [], // {id, requester_id, addressee_id, status} : GET /api/friends, POST /api/friends
     friendReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/friends
+    wishlist: [], // {user_id, card_id} : table wishlist_items
+    wishReply: null, // (method, body) → {status, body} pour forcer la réponse d'une écriture de wishlist_items
+    wishes(uid) {
+      return this.wishlist.filter((w) => w.user_id === uid).map((w) => w.card_id).sort();
+    },
     reset() {
       this.players.clear();
       this.cards = [];
@@ -117,6 +126,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.maxAuctions = 5;
       this.friendships = [];
       this.friendReply = null;
+      this.wishlist = [];
+      this.wishReply = null;
     },
     befriend(a, b, status = 'accepted') {
       this.friendships.push({ id: `amitie-${this.friendships.length + 1}`, requester_id: a, addressee_id: b, status });
@@ -202,6 +213,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       if (!p) return reply({ code: 'PGRST301', message: 'JWT expired' }, 401);
       return reply({ id: p.uid, username: p.username, is_pro: false, packs_remaining: 0, wikibidous_balance: p.wikibidous });
     }
+    if (method !== 'GET' && u.pathname === '/rest/v1/wishlist_items') return wishWrite(u, method, h, init.body);
     if (method !== 'GET') throw new Error('écriture dans la base du jeu : ' + method + ' ' + url);
     if (u.pathname === '/auth/v1/user') {
       const p = byAccess(h);
@@ -221,6 +233,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       auctions: () => all.flatMap((p) => p.auctions).filter((a) => a.status === 'active' || a.seller_id === me.uid || a.winner_id === me.uid
         || (a.status && a.status.startsWith('settled'))),
       auction_bids: () => me.bids,
+      wishlist_items: () => supa.wishlist.filter((w) => w.user_id === me.uid),
     }[table];
     if (!source) throw new Error('table inattendue : ' + url);
     let rows = source().filter((r) => [...u.searchParams].every(([k, v]) => {
@@ -248,6 +261,41 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     if (/count=exact/.test(h.get('prefer') || '') && !supa.noCount) headers['content-range'] = page.length ? `${off}-${off + page.length - 1}/${total}` : `*/${total}`;
     if (supa.after) await supa.after(supa.rest().length);
     return reply(page, 200, headers);
+  }
+
+  // Écriture dans wishlist_items (RLS : ses propres lignes) : POST d'un objet ou d'une liste (201, sans corps), DELETE filtré.
+  function wishWrite(u, method, h, body) {
+    if (supa.limit === 429) return reply({ message: 'Too Many Requests' }, 429);
+    if (supa.limit === 'automation_limit') return reply({ code: 'automation_limit', message: 'automation limit' }, 403);
+    const me = byAccess(h);
+    if (!me) return reply({ code: 'PGRST301', message: 'JWT expired' }, 401);
+    assert.equal(h.get('content-profile'), 'public');
+    const forced = supa.wishReply && supa.wishReply(method, body);
+    if (forced) return reply(forced.body ?? {}, forced.status);
+    if (method === 'POST') {
+      const data = JSON.parse(body || 'null');
+      const rows = Array.isArray(data) ? data : [data];
+      for (const r of rows) {
+        if (!r || r.user_id !== me.uid) return reply({ code: '42501', message: 'new row violates row-level security policy for table "wishlist_items"' }, 403);
+        if (supa.wishlist.some((w) => w.user_id === r.user_id && w.card_id === r.card_id)) {
+          return reply({ code: '23505', message: 'duplicate key value violates unique constraint "wishlist_items_pkey"' }, 409);
+        }
+      }
+      for (const r of rows) supa.wishlist.push({ user_id: r.user_id, card_id: r.card_id });
+      return new Response(null, { status: 201 });
+    }
+    if (method === 'DELETE') {
+      const keep = (w) => ![...u.searchParams].every(([k, v]) => {
+        const x = String(w[k]);
+        if (v.startsWith('eq.')) return x === v.slice(3);
+        if (v.startsWith('in.')) return pgList(v).includes(x);
+        throw new Error('filtre inattendu : ' + k + '=' + v);
+      });
+      assert.ok(u.searchParams.get('user_id'), 'DELETE filtré sur user_id');
+      supa.wishlist = supa.wishlist.filter((w) => w.user_id !== me.uid || keep(w));
+      return new Response(null, { status: 204 });
+    }
+    throw new Error('écriture inattendue : ' + method + ' ' + u);
   }
 
   // Site du jeu : joueur d'après le jeton d'accès de son cookie de session (refait par le serveur du classeur).

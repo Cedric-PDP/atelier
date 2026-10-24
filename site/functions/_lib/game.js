@@ -4,8 +4,8 @@
 // Gardée chiffrée (users.game_session_enc), renouvelée par le serveur avant expiration, sous verrou : la version
 // (game_session_v) est comparée et incrémentée dans la même requête, qui perd reprend la session la plus récente ; le bail
 // (sync_lock) empêche deux lectures en même temps avec la même session. Lecture seule (rpc/get_my_profile, une fonction de
-// lecture, compris), sauf une
-// proposition d'échange à un ami (trades.js, seule écriture dans le jeu) ; aucun en-tête n'imite un navigateur.
+// lecture, compris), sauf la liste de souhaits du jeu (wishlist.js, supaWrite) ; les écritures du site du jeu (échange,
+// vente, demandes d'ami) passent par trades.js ; aucun en-tête n'imite un navigateur.
 
 import { HttpError } from './http.js';
 import { cookieFromHar, decryptCookie, encryptCookie } from './session.js';
@@ -220,6 +220,31 @@ export async function supaRpc(env, user, s, fn, body = {}, { gap = 0, retry = tr
     return supaRpc(env, user, s, fn, body, { retry: false });
   }
   if (!res.ok) throw new HttpError(502, `La base du jeu a refusé une lecture (${res.status}) : le jeu a peut-être changé.`);
+  return data;
+}
+
+// Écriture dans une table du jeu avec la session du joueur (liste de souhaits, wishlist.js) : POST (corps JSON) ou DELETE
+// rest/v1/<path>, comme la page du jeu (HAR du 2026-10-24 : content-profile public, réponse 201 ou 204 sans corps). Une
+// seule tentative (une écriture ne se rejoue pas à l'aveugle), sauf après un jeton refusé (401 : renouvellement, puis un
+// nouvel essai). Erreurs : 429 limited, 502 (jeu injoignable, session refusée), 409 (refus du jeu, avec son message).
+export async function supaWrite(env, user, s, method, path, body = null, { gap = 0, retry = true } = {}) {
+  if (gap) await pause(env, gap);
+  const headers = { apikey: ANON, authorization: `Bearer ${s.auth.access_token}`, accept: 'application/json', 'content-type': 'application/json', 'content-profile': 'public' };
+  const init = { method, headers };
+  if (body !== null) init.body = JSON.stringify(body);
+  const res = await send(env, `${SUPABASE}/rest/v1/${path}`, init, 0);
+  if (!res) throw new HttpError(502, "La base du jeu n'a pas répondu à une écriture : elle sera refaite à la prochaine passe.");
+  const data = await readJson(res);
+  if (res.status === 429 || (data && !Array.isArray(data) && data.code === 'automation_limit')) throw new HttpError(429, LIMITED, { limited: true });
+  if (res.status === 401) {
+    if (!retry) throw new HttpError(502, 'La base du jeu refuse ta session même renouvelée : le jeu a peut-être changé.');
+    await renewSession(env, user, s);
+    return supaWrite(env, user, s, method, path, body, { retry: false });
+  }
+  if (!res.ok) {
+    const said = data && typeof (data.message || data.error) === 'string' ? String(data.message || data.error).slice(0, 200) : '';
+    throw new HttpError(409, `La base du jeu a refusé une écriture (${res.status})${said ? ` : « ${said} »` : ''}.`, { status: res.status });
+  }
   return data;
 }
 

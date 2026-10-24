@@ -279,6 +279,9 @@
     merge: null,
     tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done, fr (amitié dans le jeu)}
     autoFriend: { busy: false, error: '' }, // case « Demandes d'ami automatiques » de Réglages (PATCH /api/me {auto_friend})
+    // Section « Liste de souhaits du jeu » de Réglages : case (PATCH /api/me {auto_wish}) et « Mettre à jour maintenant »
+    // (POST /api/wishlist/sync) ; msg = résultat du clic.
+    autoWish: { busy: false, error: '', syncBusy: false, msg: '' },
     friendsAdd: null, // « Ajouter les membres pas encore amis » : {st (loading | ready | error), list [{id, name, pseudo, st, result?, error?}], pick (ids cochés), busy, error, fromCheck}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
@@ -1973,6 +1976,53 @@
     } finally {
       S.autoFriend.busy = false;
     }
+  }
+  // « Liste de souhaits du jeu » (PATCH /api/me {auto_wish}, coupée par défaut) : le serveur met dans la liste de souhaits
+  // du jeu les cartes qui manquent aux collections et en retire celles qu'on possède (wishlist.js). Cochée, une première
+  // passe part tout de suite côté serveur : son résultat arrive avec la relecture suivante de GET /api/me.
+  async function setAutoWish(on) {
+    if (S.autoWish.busy) return;
+    Object.assign(S.autoWish, { busy: true, error: '', msg: '' });
+    try {
+      const r = await api('PATCH', '/api/me', { auto_wish: on });
+      const now = typeof r.auto_wish === 'boolean' ? r.auto_wish : on;
+      if (S.me) S.me.auto_wish = now;
+    } catch (e) {
+      S.autoWish.error = e.message;
+    } finally {
+      S.autoWish.busy = false;
+    }
+  }
+  async function syncWish() {
+    if (S.autoWish.syncBusy) return;
+    Object.assign(S.autoWish, { syncBusy: true, error: '', msg: '' });
+    try {
+      const r = await api('POST', '/api/wishlist/sync', {});
+      if (S.me) S.me.wish = r.wish;
+      S.autoWish.msg = wishDone(r.wish);
+    } catch (e) {
+      S.autoWish.error = e.message;
+    } finally {
+      S.autoWish.syncBusy = false;
+    }
+  }
+  // Ce qu'a fait une passe : « 12 cartes ajoutées, 1 retirée » ; rien : « Rien à changer ».
+  function wishDone(w) {
+    if (!w) return '';
+    const parts = [];
+    if (w.added) parts.push(`${fmt(w.added)} ${plural(w.added, 'carte ajoutée', 'cartes ajoutées')}`);
+    if (w.removed) parts.push(`${fmt(w.removed)} ${plural(w.removed, 'retirée', 'retirées')}`);
+    return parts.length ? parts.join(', ') + '.' : 'Rien à changer.';
+  }
+  // Dernière passe (GET /api/me, wish) : quand, ce qu'elle a fait, ce qui reste ; ou son échec.
+  function wishLine(w) {
+    if (!w) return h('p', { class: 'small muted' }, 'Première mise à jour en cours : son résultat s\'affiche ici dans une minute.');
+    if (w.error) return h('p', { class: 'status err' }, `Dernière mise à jour en échec (${agoText(w.at)}) : ${w.error}`);
+    const bits = [`Dernière mise à jour ${agoText(w.at)} : ${wishDone(w).replace(/\.$/, '')}`];
+    if (Number.isInteger(w.size)) bits.push(`${fmt(w.size)} ${plural(w.size, 'carte', 'cartes')} dans ta liste de souhaits du jeu`);
+    if (w.left) bits.push(`${fmt(w.left)} encore à ajouter (le classeur continue toutes les 10 minutes)`);
+    if (w.none) bits.push(`${fmt(w.none)} ${plural(w.none, 'titre', 'titres')} de tes collections sans carte dans le jeu`);
+    return h('p', { class: 'small muted' }, bits.join(' · ') + '.');
   }
   // « Ajouter les membres pas encore amis » : ta liste d'amis du jeu relue (GET /api/friends?fresh=1), les membres qui ne
   // sont ni tes amis ni en attente cochés d'avance, puis les demandes envoyées d'un coup (POST /api/friends/request-all,
@@ -7905,6 +7955,20 @@
         (S.me && S.me.session && S.me.session.linked && !S.me.session.lost) ? h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: () => openFriendsAdd(false) }, 'Ajouter les membres pas encore amis…')]) : null,
         h('p', { class: 'small muted' }, "Le jeu n'accepte les échanges qu'entre amis. Coché, le classeur envoie seul, depuis ton compte du jeu relié, une demande d'ami à chaque membre qui relie le sien (et à ceux déjà là), une seule fois par membre, pendant les lectures automatiques. Il n'accepte jamais une demande à ta place : ça se fait dans le jeu. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
         errLine(S.autoFriend.error),
+      ]),
+      section('Liste de souhaits du jeu', [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-auto-wish', checked: !!(S.me && S.me.auto_wish), disabled: S.autoWish.busy,
+            onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.auto_wish); setAutoWish(want); } }),
+          'Mettre dans ma liste de souhaits du jeu les cartes qui manquent à mes collections',
+        ]),
+        h('p', { class: 'small muted' }, "Coché, le classeur ajoute à ta liste de souhaits du jeu chaque carte d'une de tes collections que tu n'as pas, et en retire chaque carte que tu obtiens. Il le fait dès que tu crées ou modifies une collection, après chaque synchro de tes cartes, et pendant les lectures automatiques (toutes les 10 minutes, par lots). Il ne retire jamais une carte que tu ne possèdes pas, même si elle n'est plus dans une collection. Le jeu te prévient quand une carte de ta liste de souhaits est mise en vente. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
+        S.me && S.me.auto_wish ? wishLine(S.me.wish) : null,
+        (S.me && S.me.session && S.me.session.linked && !S.me.session.lost) ? h('div', { class: 'actions' }, [
+          h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy, onClick: syncWish }, S.autoWish.syncBusy ? 'Mise à jour…' : 'Mettre à jour maintenant'),
+        ]) : h('p', { class: 'small muted' }, "Relie d'abord ton compte du jeu (onglet « Synchro ») : la liste de souhaits est mise à jour avec lui."),
+        S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
+        errLine(S.autoWish.error),
       ]),
       section('Synchro rapide du marché', [
         h('label', { class: 'check' }, [

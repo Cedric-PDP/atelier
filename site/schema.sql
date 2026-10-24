@@ -26,7 +26,10 @@
 -- cours (favori « Relier ») ; wikibidous / wikibidous_at = solde de wikibidous du joueur lu dans le jeu à la dernière
 -- synchro, et quand (NULL tant qu'il n'a pas été lu), montré aux membres avec qui il partage ses cartes ; auto_friend =
 -- demandes d'ami du jeu envoyées seules aux autres membres reliés (case choisie, coupée par défaut) ; game_friends = sa
--- liste d'amis du jeu lue à la dernière vérification (JSON {at, list:[{uid, name, st, out}]}, friends.js).
+-- liste d'amis du jeu lue à la dernière vérification (JSON {at, list:[{uid, name, st, out}]}, friends.js) ; auto_wish =
+-- liste de souhaits du jeu tenue par le classeur (cartes qui manquent aux collections ajoutées, cartes possédées retirées ;
+-- case choisie, coupée par défaut) ; wish_dirty = collections changées depuis la dernière passe ; wish_state = dernière passe
+-- (JSON {at, via, rev, size, added, removed, left, none, error?}, wishlist.js).
 -- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
 -- collé), import_key_hash, import_key_enc (clé d'import de l'ancien favori).
 CREATE TABLE IF NOT EXISTS users (
@@ -67,7 +70,10 @@ CREATE TABLE IF NOT EXISTS users (
     wikibidous INTEGER,
     wikibidous_at TEXT,
     auto_friend INTEGER NOT NULL DEFAULT 0,
-    game_friends TEXT
+    game_friends TEXT,
+    auto_wish INTEGER NOT NULL DEFAULT 0,
+    wish_dirty INTEGER NOT NULL DEFAULT 0,
+    wish_state TEXT
 );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -234,6 +240,15 @@ CREATE TABLE IF NOT EXISTS friend_requests (
     via TEXT NOT NULL,
     result TEXT NOT NULL,
     PRIMARY KEY (user_id, target_uid)
+);
+
+-- Titres de Wikipédia → carte du jeu (cards.id), trouvés par la liste de souhaits (functions/_lib/wishlist.js) : commun à
+-- tous les classeurs (des cartes du jeu, liées à aucun joueur). card_id = '' : aucune carte de ce titre dans le jeu à la
+-- date `at` (recherché à nouveau après 7 jours).
+CREATE TABLE IF NOT EXISTS game_titles (
+    title TEXT PRIMARY KEY,
+    card_id TEXT NOT NULL,
+    at TEXT NOT NULL
 );
 
 -- Journal des synchros (functions/_lib/synclog.js) : une ligne par lecture de la collection, réussie ou non, et par

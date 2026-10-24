@@ -1,6 +1,6 @@
 // Lectures sans geste du joueur, lancées par les déclencheurs planifiés de Cloudflare (wrangler.jsonc, `triggers`) :
 // la collection de chaque membre relié (vérifiée toutes les 10 minutes avec son solde de wikibidous, relue en entier si elle
-// a bougé et au moins toutes les 6 heures), le marché de chaque membre relié (cotes, enchères et ventes : une passe toutes les 20 minutes au plus). Une passe par déclencheur, un bail par passe (cron_state) pour que deux
+// a bougé et au moins toutes les 6 heures ; ses demandes d'ami et sa liste de souhaits du jeu, s'il les a choisies), le marché de chaque membre relié (cotes, enchères et ventes : une passe toutes les 20 minutes au plus). Une passe par déclencheur, un bail par passe (cron_state) pour que deux
 // invocations ne se chevauchent pas. Garde-fous : SYNC_PAUSED suspend tout, un membre sans « Synchro automatique » ou en
 // pause (FAILS_MAX échecs d'affilée) est sauté, une limite du jeu (429, automation_limit) arrête la passe et saute la suivante.
 
@@ -13,6 +13,7 @@ import { errorEntry, writeLog } from './synclog.js';
 import { FULL_START_SQL } from './market.js';
 import { marketPass } from './marketread.js';
 import { autoFriends } from './friends.js';
+import { wishDue, wishPass } from './wishlist.js';
 
 export { FAILS_MAX, LEASE_MS };
 export const COLLECTION_CRON = '*/10 * * * *';
@@ -95,7 +96,7 @@ function needsRead(state, seen, now) {
 async function collectionPass(env, { now }) {
   const db = env.DB;
   const start = Date.now();
-  const counts = { checked: 0, read: 0, failed: 0, friends: 0 };
+  const counts = { checked: 0, read: 0, failed: 0, friends: 0, wished: 0 };
   let limited = false;
   for (const member of await eligibleMembers(db, byLastCheck)) {
     if (Date.now() - start >= CRON_BUDGET_MS) break;
@@ -140,6 +141,26 @@ async function collectionPass(env, { now }) {
           console.error(err);
         }
       }
+      if (member.auto_wish) {
+        // Liste de souhaits du jeu (wishlist.js), sous le même bail, seulement quand elle est due (collections ou cartes
+        // changées, reste à faire, 6 h). Comme les demandes d'ami : seule une limite du jeu arrête la passe.
+        try {
+          const row = await db.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?1`).bind(member.id).first();
+          if (row && wishDue(row)) {
+            const ws = await sessionOf(env, row);
+            ws.via = 'cron';
+            const r = await wishPass(env, row, ws, { via: 'cron' });
+            counts.wished += r.added + r.removed;
+          }
+        } catch (err) {
+          if (err && err.extra && err.extra.limited) {
+            await skipNext(db, 'collection', SKIP_AFTER_LIMIT_MS.collection, now);
+            limited = true;
+            break;
+          }
+          console.error(err);
+        }
+      }
     } catch (err) {
       if (err && err.extra && err.extra.needs_link) continue; // déjà noté au journal par game.js ; le membre n'est plus éligible
       counts.failed++;
@@ -161,7 +182,8 @@ async function collectionPass(env, { now }) {
   }
   const text = `${counts.checked} ${plural(counts.checked, 'membre vérifié', 'membres vérifiés')}, ${counts.read} ${plural(counts.read, 'relu', 'relus')}, `
     + `${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`
-    + (counts.friends ? `, ${counts.friends} ${plural(counts.friends, "demande d'ami envoyée", "demandes d'ami envoyées")}` : '');
+    + (counts.friends ? `, ${counts.friends} ${plural(counts.friends, "demande d'ami envoyée", "demandes d'ami envoyées")}` : '')
+    + (counts.wished ? `, ${counts.wished} ${plural(counts.wished, 'carte', 'cartes')} de liste de souhaits` : '');
   return limited ? `limite du jeu (${text})` : text;
 }
 

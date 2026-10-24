@@ -40,7 +40,10 @@ export const SCHEMA = [
     wikibidous INTEGER,
     wikibidous_at TEXT,
     auto_friend INTEGER NOT NULL DEFAULT 0,
-    game_friends TEXT
+    game_friends TEXT,
+    auto_wish INTEGER NOT NULL DEFAULT 0,
+    wish_dirty INTEGER NOT NULL DEFAULT 0,
+    wish_state TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -150,6 +153,11 @@ export const SCHEMA = [
     result TEXT NOT NULL,
     PRIMARY KEY (user_id, target_uid)
   )`,
+  `CREATE TABLE IF NOT EXISTS game_titles (
+    title TEXT PRIMARY KEY,
+    card_id TEXT NOT NULL,
+    at TEXT NOT NULL
+  )`,
   `CREATE TABLE IF NOT EXISTS sync_log (
     id INTEGER PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -200,6 +208,9 @@ const ADDED_COLUMNS = [
   ['users', 'wikibidous_at', 'TEXT'],
   ['users', 'auto_friend', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'game_friends', 'TEXT'],
+  ['users', 'auto_wish', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'wish_dirty', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'wish_state', 'TEXT'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['targets', 'pos', 'INTEGER'],

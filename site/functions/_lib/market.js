@@ -117,8 +117,9 @@ const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id
 
 // Titres des cartes qui manquent aux collections (éléments vérifiés, titre absent des cartes du classeur), des
 // collections changées le plus récemment d'abord, dans leur ordre. Rapprochement par titre seulement : le serveur n'a
-// pas les qids des cartes (une carte possédée sous un autre titre est écartée plus tard, par son card_id).
-const WANTED = `WITH it AS (
+// pas les qids des cartes (une carte possédée sous un autre titre est écartée plus tard, par son card_id). Aussi lu par la
+// liste de souhaits du jeu (wishlist.js), avec une autre limite.
+export const wantedSql = (limit) => `WITH it AS (
     SELECT json_extract(i.value, '$.title') AS t, t0.updated_at AS u, CAST(i.key AS INTEGER) AS k
     FROM targets AS t0, json_each(t0.items) AS i
     WHERE t0.user_id = ?1 AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
@@ -126,7 +127,8 @@ const WANTED = `WITH it AS (
   SELECT t FROM it
   WHERE typeof(t) = 'text' AND length(t) BETWEEN 1 AND 300
     AND t NOT IN (SELECT json_extract(data, '$.title') FROM cards WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')
-  GROUP BY t ORDER BY MAX(u) DESC, MIN(k) LIMIT ${PLAN_WANTED}`;
+  GROUP BY t ORDER BY MAX(u) DESC, MIN(k) LIMIT ${limit}`;
+const WANTED = wantedSql(PLAN_WANTED);
 
 const QUOTA = "SELECT user_id, quota_day, quota_n FROM market WHERE user_id IN (?1, '*')";
 

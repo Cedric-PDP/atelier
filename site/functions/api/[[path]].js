@@ -21,6 +21,7 @@ import { createTrade } from '../_lib/trades.js';
 import { listFriends, requestFriend, requestFriends } from '../_lib/friends.js';
 import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
+import { markWish, syncWishlist, wishSoon } from '../_lib/wishlist.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -69,12 +70,25 @@ const ROUTES = {
   'friends/request-all': { POST: [requestFriends, 'main'] }, // plusieurs demandes d'ami d'un coup (Réglages)
   'market/sell': { GET: [sellInfo, 'main'], POST: [sellCard, 'main'] }, // mettre une carte en vente dans le jeu (et ses exemplaires)
   'market/cancel': { POST: [cancelSale, 'main'] }, // annuler une de tes ventes, tant que personne n'a misé
+  'wishlist/sync': { POST: [syncWishlist, 'main'] }, // « Mettre à jour ma liste de souhaits » du jeu (wishlist.js)
 };
+
+// Après ces gestes réussis, la liste de souhaits du jeu (wishlist.js) est mise à jour en arrière-plan, après la réponse,
+// pour un membre qui l'a choisie : collection enregistrée (en entier, pas un morceau d'envoi ; elle devient due),
+// « Rafraîchir » (due si les cartes ont changé), case « Liste de souhaits du jeu » cochée. → true si la passe est due.
+async function wishAfter(env, user, key, method, result) {
+  if (!user || (!user.auto_wish && !(key === 'me' && result && result.auto_wish))) return false;
+  if (key === 'targets/save' && result && result.target) {
+    await markWish(env.DB, user.id);
+    return true;
+  }
+  return key === 'refresh' || (key === 'me' && method === 'PATCH' && !!(result && result.auto_wish));
+}
 // Chemins avec un paramètre → leur entrée dans ROUTES.
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*']];
 
 // Corps plus petits que la limite générale (5 Mo).
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024, 'wishlist/sync': 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {
@@ -102,7 +116,7 @@ async function cronState(db) {
   }
 }
 
-async function handle(request, env, path) {
+async function handle(request, env, path, waitUntil) {
   // Sans base, tout répond 503, sauf /api/health qui sert justement à le diagnostiquer.
   if (!env.DB && path !== 'health') {
     throw new HttpError(503, "Le classeur n'est pas encore configuré : la base D1 n'est pas liée (variable DB).");
@@ -124,7 +138,9 @@ async function handle(request, env, path) {
   const body = request.method === 'POST' || request.method === 'PATCH'
     ? await readJson(request, Object.hasOwn(BODY_LIMITS, path) ? BODY_LIMITS[path] : MAX_BODY)
     : {};
-  return handler(env, user, body, request);
+  const result = await handler(env, user, body, request);
+  if (waitUntil && await wishAfter(env, user, key, request.method, result)) waitUntil(wishSoon(env, user.id));
+  return result;
 }
 
 export async function onRequest(context) {
@@ -138,7 +154,7 @@ export async function onRequest(context) {
     response = new Response(null, { status: 204 });
   } else {
     try {
-      const result = await handle(request, env, path);
+      const result = await handle(request, env, path, typeof context.waitUntil === 'function' ? (p) => context.waitUntil(p) : null);
       response = result instanceof Response ? result : json(result);
     } catch (err) {
       response = errorResponse(err);
