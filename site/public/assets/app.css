@@ -213,6 +213,10 @@ main.wrap { padding-block: 26px 110px; }
 
 /* ------------------------------------------------------------------ album d'une collection */
 .album-head { display: grid; gap: 12px; margin-bottom: 20px; }
+.album-sync { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.album-sync--single { grid-template-columns: minmax(0, 1fr); }
+.album-sync > .album-wish { min-width: 0; align-content: start; }
+@media (max-width: 760px) { .album-sync { grid-template-columns: minmax(0, 1fr); } }
 .album-wish { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
 .album-wish .check { align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
 .album-wish .check input { flex: none; margin-top: 3px; }

@@ -822,14 +822,70 @@ d'amis de chaque membre sur le site du jeu et peut envoyer des demandes d'ami (`
 - **Ce qui est montré** : à toi seul, ton amitié avec chaque membre qui partage (statut), jamais ta liste d'amis du jeu ni
   celle d'un autre membre. « Supprimer mon classeur » efface ses demandes notées.
 
+## Auto-tag dans le jeu
+
+Demande du 2026-10-25 : dans chaque collection, un tag existant du jeu peut être synchronisé **dans les deux sens**.
+Code : `functions/_lib/autotag.js`, appelé par `readCollection` sous son verrou, uniquement sur une lecture complète
+vérifiée (nombre de lignes exact, exemplaires distincts, compte avant/après et dernier exemplaire stables, aucune carte
+ignorée ; forme et propriétaire des lignes et des tags vérifiés). L'ancienne lecture seule par règles reste inchangée
+quand l'auto-tag est désactivé ; ses règles sont conservées mais suspendues pour l'album tant que l'auto-tag est actif.
+
+- **Configuration** : `POST /api/targets/autotag {id, tag, enabled}` (clé principale, 2 Ko) → `{target}`. `tag` : nom
+  existant, nettoyé, 1–200 caractères ; `enabled` booléen. Aucun choix par défaut (ni premier tag ni ancienne règle).
+  L'activation sans tag est refusée (400), côté serveur comme dans l'interface. Un tag vide avec `enabled:false`
+  efface la configuration. Collection absente : 404 ; conflit : 409. Un tag ne pilote
+  qu'une collection par compte (index unique sur la clé repliée ; le moteur vérifie aussi l'id réel si le nom change).
+  `GET /api/targets` et les réponses d'enregistrement incluent `auto_tag:{tag,key,enabled}|null` et
+  `auto_tag_state:{at,added,removed,cards_added,cards_removed,left,error?}|null`. Jamais partagés avec les amis.
+  `auto_tag_id` et `auto_tag_baseline` restent privés. Les modifications ordinaires et les envois en morceaux conservent
+  cette configuration. Désactiver ou supprimer l'album ne retire pas ses tags ; réactiver repart de l'union des deux côtés.
+- **Écritures observées** : requêtes communiquées par l'utilisateur :
+  `POST rest/v1/user_card_tags {user_card_id,tag_id}` → 201 ;
+  `DELETE rest/v1/user_card_tags?user_card_id=eq.<exemplaire>&tag_id=eq.<tag>` → 204. Chaque ajout est un objet unique,
+  aucune écriture en lot supposée. Session du joueur, `supaWrite`, renouvellement sur 401, arrêt sur refus ou limite.
+  Le tag est retrouvé parmi les tags des exemplaires lus avec la collection, puis son id est conservé (même s'il n'est
+  plus posé sur aucune carte). Aucun tag créé. Pour la première liaison, il doit déjà être posé sur une carte possédée.
+- **Première passe** : union des cartes de l'album et des cartes possédées portant ce tag. Les cases manquantes restent
+  dans l'album ; une carte nouvellement obtenue les remplit et reçoit le tag. Rapprochement par titre normalisé, avec les
+  alias déjà connus de `game_titles` ; pas de nouvelle résolution Wikidata côté serveur.
+- **Passes suivantes** : une carte retirée de l'album perd le tag. Un tag retiré dans le jeu retire la carte de l'album.
+  Un tag ajouté dans le jeu ajoute la carte à l'album. Un seul exemplaire tagué suffit ; en ajouter ne modifie pas les
+  autres exemplaires. Un retrait enlève les associations de tous ses exemplaires encore tagués. Une vente/cession de
+  l'exemplaire tagué est distinguée d'un retrait de tag : s'il reste un exemplaire, il reçoit le tag et l'album est conservé.
+  Si le dernier exemplaire disparaît, la case reste dans l'album et redevient non obtenue par l'import des possessions.
+  Récupérer la carte remplit la même case et lui redonne le tag. Même si le compte devient entièrement vide, deux lectures
+  exactes à zéro permettent ce rafraîchissement pour un compte avec auto-tag actif (`allowEmpty` interne, refusé sans
+  confirmation exacte). Une réponse vide non vérifiée ne supprime jamais les possessions.
+- **Conflits et reprise** : le dernier état conserve les ids des exemplaires tagués. Une modification de l'album a priorité
+  si les deux côtés ont changé avant la passe. Les écritures de l'album sont conditionnelles (`updated_at`, configuration
+  inchangée). Une intention est persistée avant les POST pour qu'un retrait concurrent ne réapparaisse pas après succès
+  du POST. Les erreurs et opérations restantes sont reprises à la prochaine synchro ; jamais de réessai aveugle.
+- **Déclencheurs** : « Rafraîchir » et cron collection (10 min, synchro automatique active). Avec un auto-tag actif, le
+  cron relit entièrement les exemplaires même si leur nombre/date n'a pas changé : un simple changement de tag doit être
+  détecté, y compris navigateur fermé. Au plus 30 écritures de tag par passe et une seconde entre écritures (tous albums
+  confondus). Après des écritures confirmées, les pages modifiées sont réimportées avant la réponse : les tags affichés
+  sont à jour dès la même synchro, et les albums sont relus dans l'interface avant ses anciens ajouts automatiques.
+- **Bouton dans l'album** : « Synchroniser maintenant », sous l'option auto-tag, déclenche le même rafraîchissement
+  manuel (`POST /api/refresh`) et applique les auto-tags actifs. Nécessite un tag choisi, l'option activée et un compte
+  du jeu relié ; désactivé pendant une synchro. Les erreurs et la limite d'une minute apparaissent dans l'album.
+- **Journal** : la ligne de lecture complète inclut « Auto-tag réussi / partiel / en échec » et les nombres de tags
+  ajoutés et retirés, même zéro. Une passe partielle ou refusée rend la ligne `warn` si l'import a réussi. Le détail
+  `data.auto_tag` contient `{result:ok|partial|error,added,removed,left,cards_added,cards_removed,error?}` ; le message
+  d'erreur est nettoyé avant stockage. Sans auto-tag actif, le journal conserve son format habituel.
+- **Limites** : tailles des collections inchangées (1,7 Mo par album et 5 Mo d'éléments/règles par compte), contrôle du
+  volume de l'état supplémentaire pour rester sous la limite de ligne D1. Une erreur d'auto-tag ne bloque pas l'import
+  des cartes : bilan dans l'album et avertissement au clic. Une limite du jeu suspend la suite du cron comme les autres
+  actions. Les tests utilisent le jeu simulé ; validation finale sur un compte réel encore à faire.
+
 ## Liste de souhaits du jeu
 
 Depuis le 2026-10-25, Réglages propose deux modes (`users.wish_mode`, rendu par `GET /api/me` et modifié par
 `PATCH /api/me {wish_mode}`) : `all` (« Toutes mes collections », albums existants et futurs) et `selected`
 (« Collection par collection », valeur par défaut). Tout autre mode, ou un corps mêlant `wish_mode` et l'ancien
 `auto_wish`, est refusé (400). Le mode individuel utilise les cases « Synchroniser cette collection avec ma liste de
-souhaits du jeu » des albums. Changer de mode ne modifie jamais ces cases. En mode complet, l'album indique que la
-synchronisation est globale et propose un lien vers Réglages ; la case individuelle est masquée. Une nouvelle collection
+souhaits du jeu » des albums. Changer de mode ne modifie jamais ces cases. En mode complet, le bloc de souhaits est
+masqué dans l'album (réglage et bilan restent dans Réglages), et l'auto-tag occupe toute la largeur. Sinon, souhaits et
+auto-tag sont côte à côte sur ordinateur et empilés sous 760 px. Une nouvelle collection
 a sa case décochée, mais participe quand même en mode complet. Bouton manuel et bilan disponibles aux deux endroits.
 
 - **Contrat** : `POST /api/targets/save` accepte `wish_sync?: boolean`. Absent, le choix existant est préservé,

@@ -14,6 +14,7 @@ import { FULL_START_SQL } from './market.js';
 import { marketPass } from './marketread.js';
 import { autoFriends } from './friends.js';
 import { wishDue, wishPass } from './wishlist.js';
+import { autoTagLinks } from './autotag.js';
 
 export { FAILS_MAX, LEASE_MS };
 export const COLLECTION_CRON = '*/10 * * * *';
@@ -107,11 +108,17 @@ async function collectionPass(env, { now }) {
       s.via = 'cron';
       await freshAuth(env, member, s);
       const seen = await checkCollection(env, member, s);
-      if (needsRead(syncState(member), seen, now)) {
+      // Un tag peut changer sans nouveau exemplaire : lecture complète à chaque passage si l'auto-tag est actif.
+      if (needsRead(syncState(member), seen, now) || (await autoTagLinks(db, member.id)).length) {
         // La vérification a pu renouveler la session : la lecture repart de la ligne à jour, sous le même bail.
         const user = await db.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?1`).bind(member.id).first();
-        await readCollection(env, user, { via: 'cron', lease });
+        const refreshed = await readCollection(env, user, { via: 'cron', lease });
         counts.read++;
+        if (refreshed.auto_tag && refreshed.auto_tag.limited) {
+          await skipNext(db, 'collection', SKIP_AFTER_LIMIT_MS.collection, now);
+          limited = true;
+          break;
+        }
       } else {
         // Le solde de wikibidous bouge sans la collection (ventes, achats, échanges) : relu à chaque vérification.
         const balance = balanceStatement(db, member.id, await readBalance(env, member, s, { gap: 250 }));

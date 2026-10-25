@@ -157,7 +157,7 @@ async function fakeGame() {
   const supa = mockSupabase();
   const userOf = (key) => authenticate(new Request('http://local/', { headers: { 'x-classeur-key': String(key || '') } }), env);
   const rowsOf = (cards, uid) => cards.flatMap((c) => {
-    const tagsOf = { tags: (c.gtags || []).map((n) => ({ id: `t-${n}`, name: n, color: (c.gtagc && c.gtagc[n]) || null })) };
+    const tagsOf = { tags: (c.gtags || []).map((n) => ({ id: `t-${Buffer.from(n, 'utf8').toString('base64url')}`, name: n, color: (c.gtagc && c.gtagc[n]) || null })) };
     const variants = c.variants && Object.keys(c.variants).length ? Object.entries(c.variants) : [[c.rarity + (c.shiny ? '*' : ''), c.count ?? 1]];
     return variants.map(([v, n]) => {
       const rarity = v.replace('*', '');

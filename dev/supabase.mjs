@@ -107,6 +107,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     friendReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/friends
     wishlist: [], // {user_id, card_id} : table wishlist_items
     wishReply: null, // (method, body) → {status, body} pour forcer la réponse d'une écriture de wishlist_items
+    tagReply: null, // (method, body) → refus simulé de user_card_tags
     wishes(uid) {
       return this.wishlist.filter((w) => w.user_id === uid).map((w) => w.card_id).sort();
     },
@@ -128,6 +129,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.friendReply = null;
       this.wishlist = [];
       this.wishReply = null;
+      this.tagReply = null;
     },
     befriend(a, b, status = 'accepted') {
       this.friendships.push({ id: `amitie-${this.friendships.length + 1}`, requester_id: a, addressee_id: b, status });
@@ -142,7 +144,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       p.expires_at = Math.floor(now() / 1000) + expiresIn;
     },
     addPlayer(uid, { username = null, expiresIn = 3600, cards = [], wikibidous = 0 } = {}) {
-      const p = { uid, username, cards, wikibidous, auctions: [], bids: [], prev: null, phantom: 0 };
+      const p = { uid, username, cards, wikibidous, auctions: [], bids: [], prev: null, phantom: 0, tagDefs: new Map() };
       this.mint(p, expiresIn);
       this.players.set(uid, p);
       return p;
@@ -214,6 +216,31 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       return reply({ id: p.uid, username: p.username, is_pro: false, packs_remaining: 0, wikibidous_balance: p.wikibidous });
     }
     if (method !== 'GET' && u.pathname === '/rest/v1/wishlist_items') return wishWrite(u, method, h, init.body);
+    if (method !== 'GET' && u.pathname === '/rest/v1/user_card_tags') {
+      const me = byAccess(h);
+      if (!me) return reply({ message: 'JWT expired' }, 401);
+      if (supa.limit === 429) return reply({}, 429);
+      if (supa.limit === 'automation_limit') return reply({ code: 'automation_limit' }, 403);
+      const body = JSON.parse(init.body || '{}');
+      const forcedTag = supa.tagReply && supa.tagReply(method, body);
+      if (forcedTag) return reply(forcedTag.body || {}, forcedTag.status);
+      const copyId = method === 'POST' ? body.user_card_id : (u.searchParams.get('user_card_id') || '').slice(3);
+      const tagId = method === 'POST' ? body.tag_id : (u.searchParams.get('tag_id') || '').slice(3);
+      const row = me.cards.find(r => r.id === copyId);
+      if (!row) return reply({ message: 'Exemplaire absent ou interdit' }, 403);
+      if (method === 'POST') {
+        const tag = me.cards.flatMap(r => r.tags || []).map(t => t.tag).find(t => t && t.id === tagId) || me.tagDefs.get(tagId);
+        if (!tag) return reply({ message: 'Tag inconnu' }, 400);
+        if ((row.tags || []).some(t => t.tag.id === tagId)) return reply({ message: 'Already tagged' }, 409);
+        row.tags = [...(row.tags || []), { tag: { ...tag } }];
+        return new Response(null, { status: 201 });
+      }
+      if (method === 'DELETE') {
+        row.tags = (row.tags || []).filter(t => t.tag.id !== tagId);
+        return new Response(null, { status: 204 });
+      }
+      throw new Error('Méthode de tag inattendue');
+    }
     if (method !== 'GET') throw new Error('écriture dans la base du jeu : ' + method + ' ' + url);
     if (u.pathname === '/auth/v1/user') {
       const p = byAccess(h);
@@ -224,6 +251,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     if (supa.limit === 'automation_limit') return reply({ code: 'automation_limit', message: 'automation limit' }, 403);
     const me = byAccess(h);
     if (!me) return reply({ code: 'PGRST301', message: 'JWT expired' }, 401);
+    for (const r of me.cards) for (const t of r.tags || []) if (t && t.tag) me.tagDefs.set(t.tag.id, { ...t.tag });
     const table = u.pathname.slice('/rest/v1/'.length);
     const all = [...supa.players.values()];
     const source = {

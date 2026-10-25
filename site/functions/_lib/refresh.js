@@ -10,8 +10,9 @@ import { HttpError } from './http.js';
 import { RARITIES, badCard, entryToCard } from './cards.js';
 import { REFRESH_SOURCE, finalizeImport } from './import.js';
 import { acquireLease, balanceStatement, freshAuth, readBalance, releaseLease, sessionOf, supaGet } from './game.js';
-import { errorEntry, logStatements, writeLog } from './synclog.js';
+import { cleanMessage, errorEntry, logStatements, writeLog } from './synclog.js';
 import { nowIso } from './util.js';
+import { autoTagLinks, syncAutoTags } from './autotag.js';
 
 export const FAILS_MAX = 3; // échecs d'affilée des lectures automatiques avant la pause (jusqu'à un clic réussi)
 export const CLICK_GAP_MS = 60_000;
@@ -90,6 +91,8 @@ export async function readCollection(env, user, { via, force = false, lease: giv
   try {
     await freshAuth(env, user, s);
     const started = nowIso();
+    const links = await autoTagLinks(db, user.id);
+    const tagRows = [];
     await db.batch([...purgeStaging(db), db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id)]);
     const base = `user_cards?select=${ENTRY_FIELDS}&user_id=eq.${encodeURIComponent(s.uid)}&${ORDER}&limit=${PAGE}`;
     let before = null;
@@ -101,6 +104,8 @@ export async function readCollection(env, user, { via, force = false, lease: giv
         before = count;
         lastBefore = rows[0]?.obtained_at ?? null;
         if (before === 0 || !rows.length) {
+          // Auto-tag : confirmer aussi une collection entièrement vidée pour afficher les albums comme non obtenus.
+          if (links.length && before === 0 && rows.length === 0) break;
           await db.batch([releaseLease(db, user.id, lease), ...logStatements(db, user.id, {
             kind: 'full', result: 'warn', message: "Collection vide dans le jeu : rien n'a été changé.", data: { via },
           })]);
@@ -109,15 +114,25 @@ export async function readCollection(env, user, { via, force = false, lease: giv
         }
       }
       skipped += await stagePage(db, user.id, p, rows);
+      if (links.length) tagRows.push(...rows);
       if (rows.length < PAGE) break;
       if (p + 1 >= MAX_PAGES) throw new HttpError(400, 'Collection trop grande : 50 000 exemplaires au plus.');
     }
     const end = await checkCollection(env, user, s);
+    let autoTag = null;
+    if (links.length) {
+      if (before !== null && before === end.rows && before === tagRows.length
+        && new Set(tagRows.map(r => r.id)).size === tagRows.length && lastBefore === end.last_at && skipped === 0) {
+        autoTag = await syncAutoTags(env, user, s, tagRows, links);
+        if (autoTag.changed) for (let p = 0; p * PAGE < tagRows.length; p++) await stagePage(db, user.id, p, tagRows.slice(p * PAGE, (p + 1) * PAGE));
+      } else autoTag = { error: 'Lecture non vérifiée : auto-tag reporté à la prochaine synchro.' };
+    }
     const balance = balanceStatement(db, user.id, await readBalance(env, user, s, { gap: PAGE_GAP_MS }));
     const result = await finalizeImport(db, user, {
       source: REFRESH_SOURCE,
       key: 0,
       exact: { before, after: end.rows, lastBefore, lastAfter: end.last_at },
+      allowEmpty: links.length > 0 && before === 0,
       started,
       clear: [
         db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id),
@@ -126,10 +141,15 @@ export async function readCollection(env, user, { via, force = false, lease: giv
         releaseLease(db, user.id, lease),
       ],
       skipped,
-      log: { via },
+      log: { via, ...(autoTag ? { auto_tag: {
+        result: autoTag.error ? 'error' : autoTag.left ? 'partial' : 'ok',
+        added: autoTag.added || 0, removed: autoTag.removed || 0, left: autoTag.left || 0,
+        cards_added: autoTag.cards_added || 0, cards_removed: autoTag.cards_removed || 0,
+        ...(autoTag.error ? { error: cleanMessage(autoTag.error) } : {}),
+      } } : {}) },
     });
     held = false;
-    return result;
+    return autoTag ? { ...result, auto_tag: autoTag } : result;
   } finally {
     if (held) await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
   }

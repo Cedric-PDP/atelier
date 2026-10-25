@@ -22,6 +22,7 @@ const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js
 const { marketPass } = await import(lib('_lib/marketread.js'));
 const { FRIEND_ROUTE } = await import(lib('_lib/friends.js'));
 const { WISH_ROUTE, wishPass } = await import(lib('_lib/wishlist.js'));
+const { syncAutoTags, autoTagLinks } = await import(lib('_lib/autotag.js'));
 
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
@@ -4142,6 +4143,190 @@ await test("amis du jeu : demandes automatiques pendant le cron (case cochée, u
   // Effacer son classeur efface ses demandes notées.
   assert.equal((await call('DELETE', 'me', { key: a.u.key, e })).status, 200);
   assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM friend_requests WHERE user_id = ?').get(a.id).n, 0);
+  e.DB.close();
+});
+
+// --- Auto-tag dans le jeu ---------------------------------------------------------------------------------------
+const PLANET_TAG = { id: 'tag-planetes', name: 'Planètes', color: '#34d399' };
+const hasGameTag = row => (row.tags || []).some(t => t.tag.id === PLANET_TAG.id);
+const albumOf = async (m, e) => (await call('GET', 'targets', { key: m.u.key, e })).json.targets.find(t => t.id === 'planetes');
+async function tagFixture(name) {
+  const e = makeEnv(); supa.reset();
+  const list = mini(3).map((c, i) => ({ ...c, title: ['Terre', 'Mars', 'Vénus'][i] }));
+  const m = await cronMember(name, e, list);
+  const p = supa.player(m.uid);
+  p.cards[0].tags = [{ tag: { ...PLANET_TAG } }];
+  p.cards.push({ ...p.cards[1], id: 'deuxieme-mars', tags: [] });
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'planetes', name: 'Planètes', items: [{ title: 'Mars' }, { title: 'Neptune' }] } });
+  const link = await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: PLANET_TAG.name, enabled: true } });
+  assert.equal(link.status, 200, JSON.stringify(link.json));
+  const full = async () => {
+    e.DB.sqlite.prepare('UPDATE users SET sync_click_at = NULL WHERE id = ?').run(m.id);
+    return call('POST', 'refresh', { key: m.u.key, e, body: {} });
+  };
+  return { e, m, p, full };
+}
+
+await test('auto-tag : union initiale, un seul exemplaire, ajout/retrait dans les deux sens et arrêt', async () => {
+  const { e, m, p, full } = await tagFixture('AutoTag1');
+  let r = await full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.auto_tag.error, undefined);
+  assert.deepEqual((await albumOf(m, e)).items.map(i => i.title), ['Mars', 'Neptune', 'Terre']);
+  let log = (await m.log())[0];
+  assert.equal(log.result, 'ok');
+  assert.match(log.message, /Auto-tag réussi : 1 tag ajouté, 0 retiré/);
+  assert.deepEqual([log.data.auto_tag.result, log.data.auto_tag.added, log.data.auto_tag.removed], ['ok', 1, 0]);
+  assert.equal(p.cards.filter(c => c.card_id === m.cards[1].id && hasGameTag(c)).length, 1);
+  const imported = (await call('GET', 'cards', { key: m.u.key, e })).json.cards;
+  assert.ok(imported.find(c => c.title === 'Mars').gtags.includes('Planètes'), 'écriture du tag visible après la même synchro');
+  // Enlever Terre de l'album : retirer son tag, sans enlever les cartes manquantes (Neptune).
+  let t = await albumOf(m, e);
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: t.id, name: t.name, items: t.items.filter(i => i.title !== 'Terre') } });
+  await full(); assert.equal(hasGameTag(p.cards[0]), false);
+  log = (await m.log())[0];
+  assert.match(log.message, /Auto-tag réussi : 0 tag ajouté, 1 retiré/);
+  await full(); assert.ok(!(await albumOf(m, e)).items.some(i => i.title === 'Terre'), 'pas de réajout en boucle');
+  // Tag ajouté directement dans le jeu : ajouter Vénus à l'album.
+  p.cards.find(c => c.card_id === m.cards[2].id).tags = [{ tag: { ...PLANET_TAG } }];
+  await full(); assert.ok((await albumOf(m, e)).items.some(i => i.title === 'Vénus'));
+  // Tag retiré directement : retirer Mars de l'album.
+  for (const c of p.cards.filter(c => c.card_id === m.cards[1].id)) c.tags = [];
+  await full(); assert.ok(!(await albumOf(m, e)).items.some(i => i.title === 'Mars'));
+  await full(); assert.equal(p.cards.filter(c => c.card_id === m.cards[1].id && hasGameTag(c)).length, 0);
+  // Carte nouvellement obtenue appartenant à l'album : tag automatiquement posé.
+  const neptune = { ...mini(1, 100)[0], title: 'Neptune' };
+  p.cards.push(rowOf(neptune, { uid: m.uid }));
+  await full(); assert.ok(hasGameTag(p.cards.find(c => c.card_id === neptune.id)));
+  await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: PLANET_TAG.name, enabled: false } });
+  p.cards[0].tags = [{ tag: { ...PLANET_TAG } }];
+  r = await full(); assert.equal(r.json.auto_tag, undefined);
+  assert.ok(!(await albumOf(m, e)).items.some(i => i.title === 'Terre'), 'arrêt : aucune propagation');
+  assert.equal(userRow(m.id, e).sync_lock, null);
+  r = await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: '', enabled: true } });
+  assert.equal(r.status, 400, 'aucune activation sans tag, même en appel direct');
+  r = await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: '', enabled: false } });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.target.auto_tag, null, 'le choix peut être vidé après désactivation');
+  e.DB.close();
+});
+
+await test('auto-tag : cron détecte un changement de tag sans nouvelle carte ; exemplaire vendu', async () => {
+  const { e, m, p, full } = await tagFixture('AutoTagCron');
+  await full();
+  p.cards[2].tags = [{ tag: { ...PLANET_TAG } }];
+  assert.match(await runCron(e, COLLECTION_CRON), /1 relu/);
+  assert.ok((await albumOf(m, e)).items.some(i => i.title === 'Vénus'));
+  const taggedMars = p.cards.find(c => c.card_id === m.cards[1].id && hasGameTag(c));
+  p.cards.splice(p.cards.indexOf(taggedMars), 1);
+  const r = await full();
+  assert.equal(r.json.auto_tag.error, undefined);
+  assert.ok((await albumOf(m, e)).items.some(i => i.title === 'Mars'), 'vendre un exemplaire ne supprime pas la collection');
+  assert.ok(hasGameTag(p.cards.find(c => c.card_id === m.cards[1].id)), 'tag transféré à l’exemplaire restant');
+  e.DB.close();
+});
+
+await test('auto-tag : vente du dernier exemplaire → carte conservée mais non obtenue, même si le compte devient vide', async () => {
+  const { e, m, p, full } = await tagFixture('AutoTagVente');
+  await full();
+  const album = await albumOf(m, e);
+  p.cards = p.cards.filter(c => c.card_id !== m.cards[1].id);
+  let r = await full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.auto_tag.cards_removed, 0);
+  assert.deepEqual((await albumOf(m, e)).items, album.items, 'vente : les cases et leurs métadonnées restent');
+  let owned = (await call('GET', 'cards', { key: m.u.key, e })).json.cards;
+  assert.ok(!owned.some(c => c.id === m.cards[1].id), 'Mars est non obtenue dans l’album');
+  // Vente de toutes les autres cartes : deux lectures confirment zéro, sans effacer les albums.
+  p.cards = [];
+  r = await full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.count, 0);
+  assert.equal(r.json.complete, true);
+  assert.deepEqual((await albumOf(m, e)).items, album.items);
+  owned = (await call('GET', 'cards', { key: m.u.key, e })).json.cards;
+  assert.deepEqual(owned, [], 'toutes les cases sont non obtenues');
+  // Récupérer Mars remplit sa case et rétablit le tag, sans ajouter un second élément.
+  p.cards = [rowOf(m.cards[1], { uid: m.uid, eid: 'nouveau-mars' })];
+  r = await full();
+  assert.equal(r.json.auto_tag.error, undefined);
+  assert.ok(hasGameTag(p.cards[0]));
+  assert.deepEqual((await albumOf(m, e)).items, album.items);
+  e.DB.close();
+});
+
+await test('auto-tag : permissions, tag unique, métadonnées conservées, lecture incomplète et refus du jeu', async () => {
+  const { e, m, p, full } = await tagFixture('AutoTagErreurs');
+  const other = await signup('AutoTagAutre', e);
+  assert.equal((await call('POST', 'targets/autotag', { key: other.key, e, body: { id: 'planetes', tag: 'Planètes', enabled: true } })).status, 404);
+  assert.equal((await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: 'Planètes', enabled: 'oui' } })).status, 400);
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'autre', name: 'Autre', items: [] } });
+  assert.equal((await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'autre', tag: 'PLANÈTES', enabled: true } })).status, 409);
+  let t = await albumOf(m, e);
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: t.id, name: 'Renommée', items: t.items } });
+  assert.equal((await albumOf(m, e)).auto_tag.enabled, true);
+  p.phantom = 1;
+  let r = await full(); assert.ok(r.json.auto_tag.error);
+  assert.equal(supa.calls.filter(c => c.method !== 'GET' && c.path.endsWith('/user_card_tags')).length, 0);
+  p.phantom = 0;
+  supa.tagReply = () => ({ status: 403, body: { message: 'refus-test' } });
+  r = await full(); assert.match(r.json.auto_tag.error, /refus-test/);
+  const failedLog = (await m.log())[0];
+  assert.equal(failedLog.result, 'warn', 'lecture réussie, auto-tag en échec');
+  assert.match(failedLog.message, /Auto-tag en échec : 0 tag ajouté, 0 retiré/);
+  assert.match(failedLog.data.auto_tag.error, /refus-test/);
+  assert.equal((await albumOf(m, e)).auto_tag_state.error, r.json.auto_tag.error);
+  assert.equal(userRow(m.id, e).sync_lock, null);
+  supa.tagReply = null;
+  r = await full(); assert.equal(r.json.auto_tag.error, undefined);
+  assert.equal(p.cards.filter(c => c.card_id === m.cards[1].id && hasGameTag(c)).length, 1);
+  const n = supa.calls.length;
+  await full();
+  assert.equal(supa.calls.slice(n).filter(c => c.method !== 'GET' && c.path.endsWith('/user_card_tags')).length, 0, 'passe suivante idempotente');
+  e.DB.close();
+});
+
+await test('auto-tag : journal partiel avec compteurs puis succès à la reprise', async () => {
+  const { e, m, p, full } = await tagFixture('AutoTagJournal');
+  const more = mini(35, 200);
+  p.cards.push(...more.map(c => rowOf(c, { uid: m.uid })));
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'planetes', name: 'Planètes', items: more.map(c => ({ title: c.title })) } });
+  let r = await full();
+  assert.equal(r.status, 200);
+  assert.deepEqual([r.json.auto_tag.added, r.json.auto_tag.left], [30, 5]);
+  let log = (await m.log())[0];
+  assert.equal(log.result, 'warn');
+  assert.match(log.message, /Auto-tag partiel : 30 tags ajoutés, 0 retiré ; 5 en attente/);
+  assert.equal(log.data.auto_tag.result, 'partial');
+  r = await full();
+  assert.deepEqual([r.json.auto_tag.added, r.json.auto_tag.left], [5, 0]);
+  log = (await m.log())[0];
+  assert.equal(log.result, 'ok');
+  assert.match(log.message, /Auto-tag réussi : 5 tags ajoutés, 0 retiré/);
+  e.DB.close();
+});
+
+await test('auto-tag : reprise par lots et modification concurrente pendant un POST', async () => {
+  const { e, m, p } = await tagFixture('AutoTagReprise');
+  const user = userRow(m.id, e);
+  const session = await sessionOf(e, user);
+  const readRows = () => JSON.parse(JSON.stringify(p.cards));
+  let r = await syncAutoTags(e, user, session, readRows(), await autoTagLinks(e.DB, m.id), { maxWrites: 0, gap: 0 });
+  assert.equal(r.left, 1); assert.equal(r.added, 0);
+  let changed = false;
+  supa.tagReply = method => {
+    if (method === 'POST' && !changed) {
+      changed = true;
+      e.DB.sqlite.prepare("UPDATE targets SET items = '[{\"title\":\"Neptune\"}]', updated_at = '2099-01-01' WHERE user_id = ? AND id = 'planetes'").run(m.id);
+    }
+    return null;
+  };
+  await syncAutoTags(e, user, session, readRows(), await autoTagLinks(e.DB, m.id), { gap: 0 });
+  supa.tagReply = null;
+  r = await syncAutoTags(e, user, session, readRows(), await autoTagLinks(e.DB, m.id), { gap: 0 });
+  assert.equal(r.error, undefined);
+  assert.deepEqual((await albumOf(m, e)).items.map(i => i.title), ['Neptune']);
+  assert.equal(p.cards.filter(hasGameTag).length, 0, 'le POST concurrent ne ressuscite pas les cartes retirées');
   e.DB.close();
 });
 

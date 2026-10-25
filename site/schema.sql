@@ -127,6 +127,10 @@ CREATE TABLE IF NOT EXISTS targets (
     auto TEXT,
     pos INTEGER,
     wish_sync INTEGER NOT NULL DEFAULT 0,
+    auto_tag TEXT, -- {tag, key, enabled} : configuration de l'auto-tag bidirectionnel, jamais partagée
+    auto_tag_id TEXT,
+    auto_tag_baseline TEXT, -- {card_id:{tagged:[id d'exemplaire]}} : dernier état et intentions pour reprise
+    auto_tag_state TEXT,
     PRIMARY KEY (user_id, id)
 );
 
@@ -318,3 +322,4 @@ CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id);
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid);
 
 CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash);
+CREATE UNIQUE INDEX IF NOT EXISTS targets_by_auto_tag ON targets (user_id, json_extract(auto_tag, '$.key')) WHERE json_extract(auto_tag, '$.enabled') = 1;

@@ -282,6 +282,7 @@
     // Liste de souhaits dans les albums : choix par collection et synchronisation manuelle.
     // (POST /api/wishlist/sync) ; msg = résultat du clic.
     autoWish: { busy: false, error: '', syncBusy: false, msg: '', targetId: null },
+    autoTag: { busy: false, targetId: null, syncTargetId: null, error: '' },
     friendsAdd: null, // « Ajouter les membres pas encore amis » : {st (loading | ready | error), list [{id, name, pseudo, st, result?, error?}], pick (ids cochés), busy, error, fromCheck}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
@@ -1350,6 +1351,7 @@
     Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, colOrder: null, autoBusy: null,
       q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
+    Object.assign(S.autoTag, { busy: false, targetId: null, syncTargetId: null, error: '' });
     S.refresh.msg = '';
     S.refresh.error = false;
     S.refresh.warn = false;
@@ -1846,6 +1848,8 @@
         }
       }
       await Promise.all([syncCards(), loadMe()]);
+      if (res.auto_tag || targets.value.some(t => t.auto_tag && t.auto_tag.enabled)) await loadTargets();
+      if (res.auto_tag && res.auto_tag.error) { S.refresh.warn = true; S.refresh.msg += ` Auto-tag : ${res.auto_tag.error}`; }
       startPageviews();
       afterCards();
     } catch (e) {
@@ -2065,23 +2069,74 @@
     return h('p', { class: 'small muted' }, bits.join(' · ') + '.');
   }
   function viewTargetWish(t) {
+    if (S.me && S.me.wish_mode === 'all') return null;
     const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
-    const all = S.me && S.me.wish_mode === 'all';
     const ownMessage = S.autoWish.targetId === t.id;
     return h('section', { class: 'album-wish', 'aria-label': 'Liste de souhaits du jeu' }, [
-      all ? h('p', { class: 'small muted' }, ['Toutes les collections sont synchronisées. ',
-        h('a', { href: '#/reglages' }, 'Réglages'), '.']) : h('label', { class: 'check' }, [
+      h('label', { class: 'check' }, [
         h('input', { id: 'collection-wish-sync', type: 'checkbox', checked: !!t.wish_sync, disabled: S.autoWish.busy,
           onChange: (e) => { const on = e.target.checked; e.target.checked = !!t.wish_sync; setTargetWish(t, on); } }),
         'Synchroniser les souhaits de cette collection',
       ]),
-      all ? null : h('p', { class: 'small muted' }, ['Ajoute les cartes manquantes, retire celles obtenues. ', h('a', { href: '#/reglages' }, 'Réglages')]),
+      h('p', { class: 'small muted' }, ['Ajoute les cartes manquantes, retire celles obtenues. ', h('a', { href: '#/reglages' }, 'Réglages')]),
       linked ? h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy || S.autoWish.busy,
         onClick: () => syncWish(t) }, S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant')])
         : h('p', { class: 'small muted' }, 'Compte du jeu à relier dans « Synchro ».'),
-      S.me && S.me.wish ? h('div', null, [h('p', { class: 'small muted' }, 'Bilan global :'), wishLine(S.me.wish)]) : null,
+      S.me && S.me.wish ? wishLine(S.me.wish) : null,
       ownMessage && S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
       ownMessage ? errLine(S.autoWish.error) : null,
+    ]);
+  }
+  async function setCollectionAutoTag(t, tag, enabled) {
+    if (S.autoTag.busy) return;
+    if (enabled && !tag) return;
+    const gen = cardsGen;
+    Object.assign(S.autoTag, { busy: true, targetId: t.id, syncTargetId: null, error: '' });
+    try {
+      const r = await api('POST', '/api/targets/autotag', { id: t.id, tag, enabled });
+      if (gen !== cardsGen) return;
+      if (r.target) upsertTarget(r.target);
+    } catch (e) {
+      if (gen === cardsGen) S.autoTag.error = e.message;
+    } finally {
+      if (gen === cardsGen) S.autoTag.busy = false;
+    }
+  }
+  async function syncCollectionAutoTag(t) {
+    if (S.refresh.running || S.autoTag.busy || !(t.auto_tag && t.auto_tag.enabled)) return;
+    S.autoTag.syncTargetId = t.id;
+    await runRefresh();
+  }
+  function viewAutoTag(t) {
+    const cfg = t.auto_tag || {};
+    const tags = gameTagList.value.map(g => g.label);
+    if (cfg.tag && !tags.includes(cfg.tag)) tags.unshift(cfg.tag);
+    const chosen = cfg.tag || '';
+    const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
+    const st = t.auto_tag_state;
+    return h('section', { class: 'album-wish', 'aria-label': 'Auto-tag dans le jeu' }, [
+      h('label', { class: 'check' }, [
+        h('input', { id: 'collection-auto-tag', type: 'checkbox', checked: !!cfg.enabled, disabled: S.autoTag.busy || !chosen,
+          onChange: e => { const enabled = e.target.checked; e.target.checked = !!cfg.enabled; setCollectionAutoTag(t, chosen, enabled); } }),
+        'Auto-tag dans WikiMasters',
+      ]),
+      h('div', { class: 'actions' }, [h('button', { id: 'collection-auto-tag-sync', class: 'btn', type: 'button',
+        disabled: !cfg.enabled || !chosen || !linked || S.autoTag.busy || S.refresh.running,
+        onClick: () => syncCollectionAutoTag(t) }, S.refresh.running ? 'Synchronisation…' : 'Synchroniser maintenant')]),
+      tags.length ? h('label', { class: 'wish-mode' }, [h('span', { class: 'small muted' }, 'Tag du jeu lié à cette collection. Désactiver conserve cartes et tags.'),
+        h('select', { id: 'collection-auto-tag-name', class: 'field full', value: chosen, disabled: S.autoTag.busy || !!cfg.enabled,
+          title: cfg.enabled ? 'Désactive l’auto-tag pour changer le tag lié.' : null,
+          onChange: e => setCollectionAutoTag(t, e.target.value, false) }, [h('option', { value: '' }, 'Choisir un tag du jeu…'),
+            ...tags.map(tag => h('option', { key: tag, value: tag }, tag))]),
+      ]) : h('p', { class: 'small muted' }, 'Pose un tag sur une carte dans le jeu, puis rafraîchis le classeur.'),
+      cfg.enabled ? h('p', { class: 'small muted' }, 'L’auto-tag remplace l’ajout automatique par règles pour cet album.') : null,
+      cfg.enabled && !(S.me && S.me.session && S.me.session.linked && !S.me.session.lost)
+        ? h('p', { class: 'small muted' }, 'Compte du jeu à relier dans « Synchro ».') : null,
+      st ? h('p', { class: st.error ? 'status err' : 'small muted', role: 'status' }, st.error ||
+        `Dernière synchro : ${fmt(st.added || 0)} tag(s) ajouté(s), ${fmt(st.removed || 0)} retiré(s) · ${fmt(st.cards_added || 0)} carte(s) ajoutée(s), ${fmt(st.cards_removed || 0)} retirée(s)${st.left ? ` · ${fmt(st.left)} opération(s) en attente` : ''}.`) : null,
+      S.autoTag.targetId === t.id ? errLine(S.autoTag.error) : null,
+      S.autoTag.syncTargetId === t.id && !S.refresh.running && (S.refresh.error || S.refresh.warn)
+        ? h('p', { class: S.refresh.error ? 'status err' : 'warn', role: 'status' }, S.refresh.msg) : null,
     ]);
   }
   // « Ajouter les membres pas encore amis » : ta liste d'amis du jeu relue (GET /api/friends?fresh=1), les membres qui ne
@@ -3687,7 +3742,7 @@
   // page recalcule dessus (rien à ajouter, en général) : jamais de doublon ni d'écrasement. Sans collection à règles :
   // rien à faire, aucune requête (les lectures incrémentales restent les mêmes).
   const AUTO_MAX_RULES = 20; // targets.js : MAX_RULES
-  const autoOf = (t) => (t && t.auto && t.auto.rules.length ? t.auto : null);
+  const autoOf = (t) => (t && !(t.auto_tag && t.auto_tag.enabled) && t.auto && t.auto.rules.length ? t.auto : null);
   // Clé d'une règle : celle de sa proposition dans la fenêtre (« g:<tag du jeu replié> », « c:<catégorie repliée> »,
   // « t:<tag> » ou « t:<Catégorie de tags>/ »).
   const ruleKey = (r) => (r.k === 'gtag' ? 'g:' + catKey(r.v) : r.k === 'cat' ? 'c:' + catKey(r.v) : 't:' + r.v);
@@ -7667,7 +7722,9 @@
         // « Réorganiser » et « Fusionner avec… », elles ne tenaient plus sur la même ligne).
         h('div', { class: 'toolbar album-actions' }, actions),
         cv ? null : viewAutoLine(col),
-        cv ? null : viewTargetWish(col.t),
+        cv ? null : h('div', { class: ['album-sync', { 'album-sync--single': S.me && S.me.wish_mode === 'all' }] }, [
+          viewTargetWish(col.t), viewAutoTag(col.t),
+        ]),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', S.albumFilter === 'all', () => { S.albumFilter = 'all'; }),
@@ -12142,6 +12199,7 @@
       if (!(imported || (me && Number.isInteger(me.cards_rev) && me.cards_rev !== cardsRev))) return;
       try {
         const changed = await syncCards(me);
+        if (imported) await loadTargets(); // auto-tag activé ailleurs : charger aussi les nouveaux liens avant runAutoAdd
         if (imported && poll) {
           const n = Array.isArray(me.new_ids) ? me.new_ids.length : 0;
           notify(`Mis à jour depuis wiki-masters.com${n ? ` : ${fmt(n)} ${plural(n, 'nouvelle carte', 'nouvelles cartes')}` : ''} (${cards$(cards.value.length)}).`);

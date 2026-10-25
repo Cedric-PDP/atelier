@@ -34,6 +34,11 @@ node dev/server.mjs
 
 ## Où modifier le projet
 
+L'auto-tag se règle dans chaque album : choisir un tag du jeu déjà lu sur une carte, puis cocher « Auto-tag dans WikiMasters ».
+« Rafraîchir » applique les ajouts et retraits dans les deux sens ; avec `--cron`, cela se fait aussi automatiquement.
+Le moteur est dans `site/functions/_lib/autotag.js`. En mode simulé, ces écritures restent dans le faux jeu ; aucun appel
+ne part vers un vrai compte. Le faux jeu est en mémoire et repart vide quand le serveur redémarre.
+
 | Chemin | Rôle |
 | --- | --- |
 | `site/public/index.html` | Document HTML, chargement de Vue et des ressources |

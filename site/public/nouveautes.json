@@ -1,6 +1,12 @@
 {
   "versions": [
     {"id": "2026-10-25", "date": "2026-10-25", "sections": [
+      {"icon": "🏷️", "title": "Auto-tag dans le jeu", "items": [
+        {"text": "Dans une collection, choisis un tag du jeu et active « Auto-tag dans WikiMasters ». À chaque synchronisation manuelle ou automatique, les cartes de la collection reçoivent ce tag sur un seul exemplaire, et les cartes taguées dans le jeu rejoignent la collection.", "to": "#/collections", "link": "Mes collections"},
+        {"text": "Retirer une carte de la collection retire son tag ; retirer son tag dans le jeu retire aussi la carte de la collection. Une carte vendue ou échangée reste dans la collection et redevient non obtenue si tu n'en as plus d'exemplaire. La première synchro réunit les cartes des deux côtés. Un tag ne peut piloter qu'une collection."},
+        {"text": "L'auto-tag fonctionne aussi lorsque le classeur est fermé. Le désactiver laisse les cartes et les tags en place. Il remplace l'ancien ajout automatique par règles pour la collection concernée."},
+        {"text": "Aucun tag n'est choisi par défaut : sélectionne un tag avant de pouvoir activer l'auto-tag. Le bouton « Synchroniser maintenant » est disponible juste dessous. Le journal des synchros indique si l'auto-tag a réussi, ainsi que les nombres de tags ajoutés et retirés.", "to": "#/maj", "link": "Synchro"}
+      ]},
       {"icon": "⭐", "title": "Deux modes pour les souhaits du jeu", "items": [
         {"text": "Dans Réglages, choisis « Toutes mes collections » pour synchroniser les cartes manquantes de toutes tes collections et catégories, y compris les futures, ou « Collection par collection » pour choisir les albums à synchroniser.", "to": "#/reglages", "link": "Choisir mon mode"},
         {"text": "En mode « Collection par collection », coche la synchronisation dans chaque album souhaité. Décocher retire ses souhaits, sauf les cartes encore demandées par une autre collection synchronisée. Les cartes obtenues sont retirées automatiquement ; les souhaits sans rapport restent.", "to": "#/collections", "link": "Mes collections"},

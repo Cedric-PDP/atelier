@@ -80,6 +80,10 @@ export const SCHEMA = [
     auto TEXT,
     pos INTEGER,
     wish_sync INTEGER NOT NULL DEFAULT 0,
+    auto_tag TEXT,
+    auto_tag_id TEXT,
+    auto_tag_baseline TEXT,
+    auto_tag_state TEXT,
     PRIMARY KEY (user_id, id)
   )`,
   `CREATE TABLE IF NOT EXISTS wish_managed (
@@ -197,6 +201,7 @@ export const SCHEMA = [
   `CREATE INDEX IF NOT EXISTS sync_log_by_user ON sync_log (user_id, id)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid)`,
   `CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS targets_by_auto_tag ON targets (user_id, json_extract(auto_tag, '$.key')) WHERE json_extract(auto_tag, '$.enabled') = 1`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.
@@ -240,6 +245,10 @@ const ADDED_COLUMNS = [
   ['targets', 'auto', 'TEXT'],
   ['targets', 'pos', 'INTEGER'],
   ['targets', 'wish_sync', 'INTEGER NOT NULL DEFAULT 0'],
+  ['targets', 'auto_tag', 'TEXT'],
+  ['targets', 'auto_tag_id', 'TEXT'],
+  ['targets', 'auto_tag_baseline', 'TEXT'],
+  ['targets', 'auto_tag_state', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],

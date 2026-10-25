@@ -510,6 +510,16 @@ function mockApi() {
         return json(200, { ok: true });
       }
       if (p === '/api/targets') return json(200, { targets: st.targets });
+      if (p === '/api/targets/autotag') {
+        const t = st.targets.find(t => t.id === body.id);
+        if (!t) return json(404, { error: 'Collection absente.' });
+        if (typeof body.tag !== 'string' || (!body.tag && body.enabled) || typeof body.enabled !== 'boolean') return json(400, { error: 'Configuration invalide.' });
+        if (body.enabled && st.targets.some(x => x !== t && x.auto_tag && x.auto_tag.enabled && x.auto_tag.key === body.tag.toLowerCase())) return json(409, { error: 'Tag déjà lié.' });
+        t.auto_tag = body.tag ? { tag: body.tag, key: body.tag.toLowerCase(), enabled: body.enabled } : null;
+        t.auto_tag_state = null;
+        t.updated_at = 'y' + ++seq;
+        return json(200, { target: t });
+      }
       if (p === '/api/targets/save') {
         // Envoi en morceaux (upload {id, part, last}, comme targets.js) : les morceaux sans last sont gardés, le dernier
         // les reprend dans l'ordre ; la réponse n'a pas les éléments (items: null). Un envoi seul : 600 Ko au plus.
@@ -4260,6 +4270,7 @@ async function main() {
     check((await rawApi('POST', '/api/targets/save', keyA, { name: 'Vaccination', source: 'wp:Vaccination', items: [it0('Louis Pasteur')] })).status === 200, 'collection « Vaccination » refusée');
     ls.set('classeur-key', keyA);
     ls.set('classeur-known', JSON.stringify([{ key: keyA, name: 'Alek' }]));
+    if (!SERVER) api.link(keyA);
     const pa = openPage({ idb: 'absent' });
     const d = pa.doc;
     const txt = () => text(d.body);
@@ -4275,6 +4286,31 @@ async function main() {
       await settle(80);
     };
     await openRow('Maladies');
+    // Auto-tag : un tag choisi dans l'album, activation/désactivation conservées ; l'ancien ajout reste inchangé à l'arrêt.
+    check(d.getElementById('collection-auto-tag') && !d.getElementById('collection-auto-tag').checked, 'auto-tag décoché par défaut');
+    const autoTagName = () => d.getElementById('collection-auto-tag-name');
+    check(autoTagName().value === '' && d.getElementById('collection-auto-tag').disabled, 'aucun tag présélectionné, activation impossible');
+    check(d.getElementById('collection-auto-tag-sync').disabled, 'synchro auto-tag impossible avant activation');
+    autoTagName().value = 'Maladie'; autoTagName().dispatch('change');
+    await settle(80);
+    check(await waitFor(() => autoTagName().value === 'Maladie' && !autoTagName().disabled), 'tag lié enregistré');
+    d.getElementById('collection-auto-tag').checked = true;
+    d.getElementById('collection-auto-tag').dispatch('change');
+    await settle(80);
+    check(await waitFor(() => d.getElementById('collection-auto-tag').checked && autoTagName().disabled), 'auto-tag activé : ' + txt());
+    check(!d.getElementById('collection-auto-tag-sync').disabled, 'bouton de synchro disponible sous l’auto-tag');
+    if (!SERVER) {
+      const mark = apiLog.length;
+      d.getElementById('collection-auto-tag-sync').click();
+      check(await waitFor(() => apiLog.slice(mark).includes('POST /api/refresh') && !d.getElementById('collection-auto-tag-sync').disabled), 'Synchroniser maintenant lance le rafraîchissement');
+    }
+    d.getElementById('collection-auto-tag').checked = false;
+    d.getElementById('collection-auto-tag').dispatch('change');
+    await settle(80);
+    check(await waitFor(() => !d.getElementById('collection-auto-tag').checked && !autoTagName().disabled), 'auto-tag arrêté');
+    autoTagName().value = ''; autoTagName().dispatch('change');
+    await settle(80);
+    check(await waitFor(() => autoTagName().value === '' && d.getElementById('collection-auto-tag').disabled), 'choix de tag vidé, activation désactivée');
     check(txt().includes('2 sur 4') && btnIn(d.body, ADD) && !btnIn(d.body, 'Ajouter par catégorie du jeu'), `« ${ADD} » absent de l'album de « Maladies »`);
     btnIn(d.body, ADD).click();
     await settle();
@@ -4769,8 +4805,8 @@ async function main() {
     check(n2 === 1 || (n2 === 2 && (SERVER || api.conflicts.length === conflicts0 + 1)), 'deux onglets : un ajout, l\'autre refusé (409) : ' + n2);
     console.log(`ajout automatique, deux onglets : ${n2} ${n2 > 1 ? 'envois (le second refusé, 409, puis rien à ajouter)' : 'envoi'}`);
     check(titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole', 'deux onglets : doublon');
-    // Collection changée ailleurs (un autre appareil) depuis la dernière lecture de la page : l'envoi est refusé (409), la
-    // page repart de la collection d'aujourd'hui (rien d'écrasé) et ajoute quand même la nouvelle carte.
+    // Collection changée ailleurs : la synchro relit désormais les albums avant l'ajout. Un envoi suffit ; si une autre
+    // page a encore gagné la course, le 409 est repris. L'ajout distant doit toujours être conservé.
     {
       const cur = await colU('Maladies');
       check((await rawApi('POST', '/api/targets/save', keyU, { id: cur.id, name: cur.name, items: [...cur.items, itU('Ajoutée ailleurs')] })).status === 200, 'changement ailleurs refusé');
@@ -4780,7 +4816,8 @@ async function main() {
       await u.pg.live();
       check(await until(async () => titlesOf(await colU('Maladies')) === 'Grippe|Peste|Lèpre|Variole|Ajoutée ailleurs|Coqueluche'),
         'changement ailleurs écrasé, ou carte non ajoutée : ' + titlesOf(await colU('Maladies')));
-      check(saves(from).length === 2 && (SERVER || api.conflicts.length === c0 + 1), 'changement ailleurs : un envoi refusé (409) puis un autre attendus : ' + saves(from).length);
+      const attempts = saves(from).length;
+      check(attempts === 1 || (attempts === 2 && (SERVER || api.conflicts.length === c0 + 1)), 'changement ailleurs : un ajout, avec reprise sur conflit si nécessaire : ' + attempts);
       check(await waitFor(() => u.toast().includes('1 carte ajoutée automatiquement à « Maladies ».')), 'changement ailleurs : notification ' + u.toast());
     }
 

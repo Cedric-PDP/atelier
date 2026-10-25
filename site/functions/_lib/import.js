@@ -183,7 +183,7 @@ async function supersededReply(db, user, kind, data, extra = {}) {
 // écrites que s'il l'a été). log = {via} pour la ligne du journal (synclog.js).
 // Réponse : {count, fresh, new_ids, complete, skipped, removed, kept} (+ moved: true ; ou superseded: true) ; le journal
 // compte aussi les cartes déjà là mises à jour par une lecture non vérifiée (updated).
-export async function finalizeImport(db, user, { source, key, exact = {}, started = null, clear = [], skipped = 0, log = {} }) {
+export async function finalizeImport(db, user, { source, key, exact = {}, started = null, clear = [], skipped = 0, log = {}, allowEmpty = false }) {
   const cte = collectionCte(source);
   // Un passage : cartes distinctes (valides ou non ; une entrée sans identifiant de carte n'en est pas une), entrées
   // invalides, plus récent obtained_at, exemplaires lus (dédoublonnés, d), cartes du classeur (have) et cartes du classeur
@@ -200,7 +200,9 @@ export async function finalizeImport(db, user, { source, key, exact = {}, starte
     ? (await db.prepare(`${cte} SELECT COUNT(DISTINCT card_id) AS n FROM e WHERE bad IS NULL`).bind(user.id, key).first()).n
     : ids;
   if (count > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
-  if (count === 0) throw new HttpError(400, "Collection vide : rien n'a été lu (ton classeur est inchangé).");
+  const confirmedEmpty = allowEmpty && source === REFRESH_SOURCE && exact.before === 0 && exact.after === 0
+    && sum.rows === 0 && skipped === 0 && !exact.lastBefore && !exact.lastAfter;
+  if (count === 0 && !confirmedEmpty) throw new HttpError(400, "Collection vide : rien n'a été lu (ton classeur est inchangé).");
   const invalid = ids - count;
   const complete = Number.isInteger(exact.before) ? sum.rows === exact.before : null;
   const moved = exact.after !== exact.before || (exact.lastAfter ?? null) !== (exact.lastBefore ?? null);
@@ -321,6 +323,17 @@ export async function finalizeImport(db, user, { source, key, exact = {}, starte
 
 // Ligne du journal d'une lecture complète appliquée (data : voir finalizeImport).
 function fullLogEntry(d, verified) {
+  const entry = collectionLogEntry(d, verified);
+  const tag = d.auto_tag;
+  if (!tag) return entry;
+  const status = tag.result === 'error' ? 'Auto-tag en échec' : tag.left ? 'Auto-tag partiel' : 'Auto-tag réussi';
+  const counts = `${num(tag.added)} ${plural(tag.added, 'tag ajouté', 'tags ajoutés')}, ${num(tag.removed)} ${plural(tag.removed, 'retiré', 'retirés')}`;
+  const detail = tag.error ? ` ; ${tag.error}` : tag.left ? ` ; ${num(tag.left)} en attente` : '';
+  return { ...entry, result: entry.result === 'ok' && tag.result !== 'ok' ? 'warn' : entry.result,
+    message: `${status} : ${counts}${detail}. ${entry.message}` };
+}
+
+function collectionLogEntry(d, verified) {
   const nouvelles = d.fresh ? `${num(d.fresh)} ${plural(d.fresh, 'nouvelle', 'nouvelles')}` : 'aucune nouvelle';
   const ignored = d.skipped ? ` ; ${num(d.skipped)} ${plural(d.skipped, 'entrée ignorée', 'entrées ignorées')} (sans titre ou rareté inconnue)` : '';
   if (verified) {

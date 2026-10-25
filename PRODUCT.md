@@ -28,6 +28,7 @@ du jeu relié une fois, qui croise la collection avec les catégories et les pag
 - Accès par lien personnel (`#cle=…`), pas de mot de passe ; chaque vue a sa propre adresse (`#/…`).
 - Sections : Collections (albums), Mes cartes, Entre amis, Marché, Chat, Synchro, Réglages, Nouveautés.
 - Liste de souhaits du jeu : Réglages propose le compte complet (toutes les collections, futures comprises) ou le choix par collection. Les choix individuels sont conservés entre les modes ; les souhaits qui ne sont plus demandés sont retirés.
+- Auto-tag : une collection peut être synchronisée avec un tag existant du jeu, dans les deux sens (ajouts et retraits), sur un seul exemplaire. Fonctionne côté serveur, y compris sans navigateur ouvert.
 
 ## Capabilities and Constraints
 

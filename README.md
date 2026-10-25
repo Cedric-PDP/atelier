@@ -8,6 +8,11 @@ décocher retire automatiquement les souhaits qui ne sont plus demandés par une
 nouveaux albums sont décochés par défaut. L'ancien réglage global actif est migré vers le mode complet ; s'il était
 désactivé, toutes les cases restent décochées en mode individuel. Bouton de synchronisation et bilan dans Réglages et les albums.
 
+**Auto-tag du jeu** : dans chaque collection, choisis un tag existant et active « Auto-tag dans WikiMasters ».
+La synchro manuelle ou automatique propage les ajouts et retraits dans les deux sens ; un exemplaire tagué suffit.
+La première passe réunit les deux côtés ; un tag ne peut être lié qu'à une collection. Désactiver conserve cartes et tags.
+Une carte vendue ou échangée reste dans la collection : sans exemplaire possédé, elle redevient « non obtenue ».
+
 Site de suivi de collection pour [WikiMasters](https://www.wiki-masters.com) (jeu de cartes tirées des articles de
 Wikipédia en français), pour l'utilisateur **et ses amis**. **Sans lien avec le jeu.** Branche orpheline
 `wikimasters` du dépôt `spam-atelier` : rien à voir avec SPAM, rien de cette branche ne va dans `main`.
