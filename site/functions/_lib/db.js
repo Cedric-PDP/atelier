@@ -42,6 +42,7 @@ export const SCHEMA = [
     auto_friend INTEGER NOT NULL DEFAULT 0,
     game_friends TEXT,
     auto_wish INTEGER NOT NULL DEFAULT 0,
+    wish_mode TEXT NOT NULL DEFAULT 'selected',
     wish_dirty INTEGER NOT NULL DEFAULT 0,
     wish_state TEXT,
     react_min INTEGER NOT NULL DEFAULT 0,
@@ -78,7 +79,14 @@ export const SCHEMA = [
     updated_at TEXT NOT NULL,
     auto TEXT,
     pos INTEGER,
+    wish_sync INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, id)
+  )`,
+  `CREATE TABLE IF NOT EXISTS wish_managed (
+    user_id TEXT NOT NULL,
+    card_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    PRIMARY KEY (user_id, card_id)
   )`,
   `CREATE TABLE IF NOT EXISTS refresh_staging (
     user_id TEXT NOT NULL,
@@ -221,6 +229,7 @@ const ADDED_COLUMNS = [
   ['users', 'auto_friend', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'game_friends', 'TEXT'],
   ['users', 'auto_wish', 'INTEGER NOT NULL DEFAULT 0'],
+  ['users', 'wish_mode', "TEXT NOT NULL DEFAULT 'selected'"],
   ['users', 'wish_dirty', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'wish_state', 'TEXT'],
   ['users', 'react_min', 'INTEGER NOT NULL DEFAULT 0'],
@@ -230,6 +239,7 @@ const ADDED_COLUMNS = [
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['targets', 'pos', 'INTEGER'],
+  ['targets', 'wish_sync', 'INTEGER NOT NULL DEFAULT 0'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],
@@ -267,6 +277,17 @@ async function applySchema(db) {
 // le même lot (une transaction) ; la modification ne s'applique que si cette ligne vient d'être posée par CE lot
 // (run_id tiré au hasard) : deux instances qui démarrent ensemble ne la font qu'une fois, et jamais plus ensuite.
 const MIGRATIONS = [
+  // Ancien site : garder le mode global s'il était actif. Une base déjà passée au choix par collection garde ses choix.
+  ['mode-souhaits-2026-10-25', `UPDATE users SET wish_mode = 'all' WHERE auto_wish = 1
+     AND NOT EXISTS (SELECT 1 FROM migrations WHERE name = 'souhaits-par-collection-2026-10-25')`],
+  // Reprend le réglage global de chaque membre pour toutes ses collections existantes (catégories comprises).
+  // Réglage coupé : la nouvelle colonne reste à 0. Cette migration unique ne réécrit pas les choix faits ensuite.
+  ['souhaits-par-collection-2026-10-25', `UPDATE targets SET wish_sync = 1
+     WHERE user_id IN (SELECT id FROM users WHERE auto_wish = 1)`],
+  ['souhaits-suivis-2026-10-25', `INSERT OR IGNORE INTO wish_managed (user_id, card_id, title)
+     SELECT t.user_id, g.card_id, g.title FROM targets AS t, json_each(t.items) AS i
+       JOIN game_titles AS g ON g.title = json_extract(i.value, '$.title')
+     WHERE t.wish_sync = 1 AND g.card_id <> ''`],
   // 2026-10-16, demande de l'administrateur : partage entre membres (cartes et collections) activé pour tous les
   // classeurs existants ; chacun peut le couper dans Réglages, et un nouveau classeur partage dès sa création.
   ['partage-par-defaut-2026-10-16', `UPDATE users SET shared = 1, shared_targets = 1,

@@ -13,7 +13,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const lib = (f) => pathToFileURL(path.join(root, 'site', 'functions', f)).href;
 const { onRequest } = await import(lib('api/[[path]].js'));
-const { SCHEMA } = await import(lib('_lib/db.js'));
+const { SCHEMA, ensureSchema } = await import(lib('_lib/db.js'));
 const { decryptCookie } = await import(lib('_lib/session.js'));
 const { openSession, renewSession, sealSession, sessionOf } = await import(lib('_lib/game.js'));
 const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
@@ -21,7 +21,7 @@ const { sha256Hex } = await import(lib('_lib/util.js'));
 const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js'));
 const { marketPass } = await import(lib('_lib/marketread.js'));
 const { FRIEND_ROUTE } = await import(lib('_lib/friends.js'));
-const { WISH_ROUTE } = await import(lib('_lib/wishlist.js'));
+const { WISH_ROUTE, wishPass } = await import(lib('_lib/wishlist.js'));
 
 const SECRET = 'secret-de-test';
 const GAME_USER = 'joueur-du-jeu-0b5e7c';
@@ -250,6 +250,39 @@ await test('schema.sql = schéma appliqué par le code', async () => {
 });
 
 // --- Configuration ------------------------------------------------------------------------------------------
+
+await test('souhaits : migration du réglage global et des cartes déjà prises en charge', async () => {
+  const file = path.join(os.tmpdir(), `classeur-wish-migration-${process.pid}-${Date.now()}.sqlite`);
+  const db = createD1(file);
+  for (const sql of SCHEMA.filter(sql => !sql.includes('CREATE TABLE IF NOT EXISTS wish_managed'))) {
+    db.sqlite.exec(sql.replace('wish_sync INTEGER NOT NULL DEFAULT 0,', '').replace("wish_mode TEXT NOT NULL DEFAULT 'selected',", ''));
+  }
+  db.sqlite.exec(`INSERT INTO users (id, key_hash, created_at, auto_wish) VALUES ('a', 'hash-a', '2026-10-01', 1), ('b', 'hash-b', '2026-10-01', 0);
+    INSERT INTO targets (user_id, id, name, items, created_at, updated_at) VALUES
+      ('a', 'album', 'Album', '[{"title":"Mars"}]', '2026-10-01', '2026-10-01'),
+      ('a', 'categorie', 'Catégorie', '[{"title":"Mars"}]', '2026-10-01', '2026-10-01'),
+      ('b', 'album', 'Album', '[{"title":"Mars"}]', '2026-10-01', '2026-10-01'),
+      ('b', 'categorie', 'Catégorie', '[{"title":"Mars"}]', '2026-10-01', '2026-10-01');
+    UPDATE targets SET source = 'wp:Planètes' WHERE id = 'categorie';
+    INSERT INTO game_titles (title, card_id, at) VALUES ('Mars', 'g-mars', '2026-10-01');`);
+  await ensureSchema(db);
+  assert.deepEqual(db.sqlite.prepare('SELECT wish_mode FROM users ORDER BY id').all().map(r => r.wish_mode), ['all', 'selected']);
+  assert.deepEqual(db.sqlite.prepare('SELECT user_id, id, wish_sync FROM targets ORDER BY user_id, id').all().map(r => [r.user_id, r.id, r.wish_sync]),
+    [['a', 'album', 1], ['a', 'categorie', 1], ['b', 'album', 0], ['b', 'categorie', 0]]);
+  assert.deepEqual(db.sqlite.prepare('SELECT user_id, card_id FROM wish_managed').all().map(r => [r.user_id, r.card_id]), [['a', 'g-mars']]);
+  db.sqlite.exec("UPDATE targets SET wish_sync = 0 WHERE user_id = 'a'");
+  db.sqlite.exec("UPDATE targets SET wish_sync = 1 WHERE user_id = 'b' AND id = 'categorie'");
+  const again = createD1(file);
+  await ensureSchema(again);
+  assert.deepEqual(again.sqlite.prepare('SELECT wish_sync FROM targets ORDER BY user_id, id').all().map(r => r.wish_sync), [0, 0, 0, 1],
+    'les choix par collection faits après migration restent inchangés au redémarrage');
+  // Base déjà passée au choix par collection avant l'ajout des modes : auto_wish est un indicateur interne.
+  again.sqlite.exec("DELETE FROM migrations WHERE name = 'mode-souhaits-2026-10-25'; UPDATE users SET wish_mode = 'selected', auto_wish = 1 WHERE id = 'a'");
+  const withModes = createD1(file);
+  await ensureSchema(withModes);
+  assert.equal(withModes.sqlite.prepare("SELECT wish_mode FROM users WHERE id = 'a'").get().wish_mode, 'selected');
+  db.close(); again.close(); withModes.close(); await rm(file, { force: true });
+});
 
 await test('health et 503 sans base', async () => {
   const noDb = { COOKIE_SECRET: SECRET, SIGNUP_CODE: 'invitation' };
@@ -2500,7 +2533,7 @@ await test('partage entre membres : base existante (colonnes ajoutées, index un
   const again = { ...old, DB: createD1(file) };
   r = await call('GET', 'me', { key: 'cle-ancienne', e: again });
   assert.deepEqual([r.status, r.json.shared, r.json.shared_targets], [200, false, false]);
-  assert.equal(again.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM migrations').get().n, 2, 'chaque migration une seule fois');
+  assert.equal(again.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM migrations').get().n, 5, 'chaque migration une seule fois');
   old.DB.close();
   again.DB.close();
   await rm(file, { force: true });
@@ -4121,152 +4154,120 @@ const wishCalls = (from) => supa.calls.slice(from).filter((c) => /\/rest\/v1\/(w
 const wishOf = (id, e) => JSON.parse(userRow(id, e).wish_state || 'null');
 const oldWish = (id, e) => e.DB.sqlite.prepare("UPDATE users SET wish_state = json_set(wish_state, '$.at', '2020-01-01T00:00:00.000Z') WHERE id = ?").run(id);
 
-await test('liste de souhaits : « Mettre à jour » ajoute les cartes qui manquent aux collections, retire les cartes possédées, garde le reste', async () => {
-  const e = makeEnv();
-  supa.reset();
+await test('souhaits par collection : sélection, chevauchement, désactivation, acquisition et suppression', async () => {
+  const e = makeEnv(); supa.reset();
   const m = await cronMember('Souhait1', e, mini(3));
-  supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B'), gameCard('g-b-en', 'Manque B', 'en'), gameCard('mini-00000', 'Carte 0')];
-  // Déjà dans sa liste : une carte qu'il possède (retirée) et une carte d'aucune collection (gardée).
-  supa.wishlist = [{ user_id: m.uid, card_id: 'mini-00001' }, { user_id: m.uid, card_id: 'g-x' }];
-  let r = await call('POST', 'targets/save', { key: m.u.key, e, body: { name: 'Manques', items: [
-    { title: 'Manque A' }, { title: 'Manque B' }, { title: 'Pas dans le jeu' }, { title: 'Carte 0' }, { title: 'Ignoré', status: 'missing' }] } });
-  assert.equal(r.status, 200);
-  // Case coupée : rien après l'enregistrement.
-  assert.equal(userRow(m.id, e).wish_dirty, 0);
-  // Case cochée sans passer par PATCH (pas de passe après la réponse) : le clic ajoute et retire.
-  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
-  const n0 = supa.calls.length;
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual([r.json.wish.added, r.json.wish.removed, r.json.wish.size, r.json.wish.left, r.json.wish.none, r.json.wish.via], [2, 1, 3, 0, 1, 'clic']);
-  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-b', 'g-x']);
-  assert.deepEqual(wishCalls(n0), [
-    `GET wishlist_items?user_id=eq.${m.uid}`,
-    `DELETE wishlist_items?user_id=eq.${m.uid}&card_id=in.("mini-00001")`,
-    'GET cards?wikipedia_title=in.("Manque A","Manque B","Pas dans le jeu")',
-    'POST wishlist_items',
-  ]);
-  const post = supa.calls.find((c) => c.method === 'POST' && c.path === '/rest/v1/wishlist_items');
-  assert.deepEqual(JSON.parse(post.body), [{ user_id: m.uid, card_id: 'g-a' }, { user_id: m.uid, card_id: 'g-b' }], 'la carte française, une liste');
-  assert.deepEqual(e.DB.sqlite.prepare('SELECT title, card_id FROM game_titles ORDER BY title').all().map((x) => [x.title, x.card_id]),
-    [['Manque A', 'g-a'], ['Manque B', 'g-b'], ['Pas dans le jeu', '']]);
-  assert.deepEqual((await call('GET', 'me', { key: m.u.key, e })).json.wish.added, 2);
-  // Une fois par minute.
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.deepEqual([r.status, r.json.retry_after > 0], [429, true]);
-  // Plus rien à faire : la liste est lue, aucune écriture, les titres connus ne sont pas recherchés.
-  oldWish(m.id, e);
-  const n1 = supa.calls.length;
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.deepEqual([r.status, r.json.wish.added, r.json.wish.removed, r.json.wish.size], [200, 0, 0, 3]);
-  assert.deepEqual(wishCalls(n1), [`GET wishlist_items?user_id=eq.${m.uid}`]);
-  // Case décochée : le clic retire toutes les cartes des collections, possédées ou non (mini-00000 = « Carte 0 », remise à
-  // la main ; « Ignoré » n'est pas vérifié mais compte), et garde les autres (g-x) ; rien n'est ajouté.
-  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 0 WHERE id = ?').run(m.id);
-  supa.cards.push(gameCard('g-i', 'Ignoré'));
-  supa.wishlist.push({ user_id: m.uid, card_id: 'mini-00000' }, { user_id: m.uid, card_id: 'g-i' });
-  oldWish(m.id, e);
-  const n2 = supa.calls.length;
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.equal(r.status, 200, JSON.stringify(r.json));
-  assert.deepEqual([r.json.wish.clear, r.json.wish.added, r.json.wish.removed, r.json.wish.size, r.json.wish.left], [true, 0, 4, 1, 0]);
-  assert.deepEqual(supa.wishes(m.uid), ['g-x']);
-  assert.deepEqual(wishCalls(n2), [
-    `GET wishlist_items?user_id=eq.${m.uid}`,
-    'GET cards?wikipedia_title=in.("Carte 0","Ignoré")',
-    `DELETE wishlist_items?user_id=eq.${m.uid}&card_id=in.("g-a","g-b","mini-00000","g-i")`,
-  ]);
-  // Plus rien à retirer : la liste est lue, rien d'autre.
-  oldWish(m.id, e);
-  const n3 = supa.calls.length;
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.deepEqual([r.status, r.json.wish.removed, r.json.wish.size], [200, 0, 1]);
-  assert.deepEqual(wishCalls(n3), [`GET wishlist_items?user_id=eq.${m.uid}`]);
-  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
-  // Refus du jeu : noté dans l'état, rendu au clic.
-  e.DB.sqlite.prepare("DELETE FROM game_titles WHERE title = 'Pas dans le jeu'").run();
-  supa.cards.push(gameCard('g-c', 'Pas dans le jeu'));
-  supa.wishReply = (method) => (method === 'POST' ? { status: 400, body: { message: 'wishlist full' } } : null);
-  oldWish(m.id, e);
-  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
-  assert.equal(r.status, 409);
-  assert.match(r.json.error, /wishlist full/);
-  assert.match(wishOf(m.id, e).error, /wishlist full/);
-  supa.wishReply = null;
-  assert.equal(userRow(m.id, e).sync_lock, null, 'bail rendu');
-  // Sans compte relié : 401 ; interrupteur : 503.
+  supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B'), gameCard('g-c', 'Manque C')];
+  // Souhait manuel sans rapport : même possédé, le classeur doit le préserver.
+  supa.wishlist = [{ user_id: m.uid, card_id: 'g-x' }, { user_id: m.uid, card_id: 'mini-00001' }];
+  const save = (id, titles, wish_sync, waits = null) => call('POST', 'targets/save', { key: m.u.key, e, waits,
+    body: { id, name: id, items: titles.map(title => ({ title })), ...(wish_sync === undefined ? {} : { wish_sync }) } });
+  const sync = async () => { oldWish(m.id, e); const r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} }); assert.equal(r.status, 200, JSON.stringify(r.json)); return r; };
+  const wishes = () => supa.wishes(m.uid);
+  let r = await save('a', ['Manque A', 'Manque B'], true);
+  assert.equal(r.status, 200); assert.equal(r.json.target.wish_sync, true);
+  await save('b', ['Manque B', 'Manque C'], false);
+  assert.equal((await save('bad', [], 'oui')).status, 400);
+  await sync();
+  assert.deepEqual(wishes(), ['g-a', 'g-b', 'g-x', 'mini-00001']);
+  // Le choix est préservé quand un autre enregistrement ne porte pas ce champ.
+  r = await save('a', ['Manque A', 'Manque B']);
+  assert.equal(r.json.target.wish_sync, true);
+  r = await call('GET', 'targets', { key: m.u.key, e });
+  assert.deepEqual(r.json.targets.map(t => [t.id, t.wish_sync]).sort(), [['a', true], ['b', false]]);
+  await save('b', ['Manque B', 'Manque C'], true); await sync();
+  await save('a', ['Manque A', 'Manque B'], false); r = await sync();
+  assert.equal(r.json.wish.removed, 1);
+  assert.deepEqual(wishes(), ['g-b', 'g-c', 'g-x', 'mini-00001']);
+  // Acquisition détectée par Rafraîchir : retire B, garde le souhait manuel possédé.
+  supa.player(m.uid).cards.push(rowOf({ id: 'g-b', title: 'Manque B', rarity: 'R', count: 1 }, { uid: m.uid }));
+  oldWish(m.id, e); const waits = [];
+  e.DB.sqlite.prepare('UPDATE users SET sync_click_at = NULL WHERE id = ?').run(m.id);
+  await call('POST', 'refresh', { key: m.u.key, e, body: {}, waits }); await Promise.all(waits);
+  assert.deepEqual(wishes(), ['g-c', 'g-x', 'mini-00001']);
+  // Suppression de la dernière collection : nettoyage en arrière-plan.
+  oldWish(m.id, e); const cleanup = [];
+  await call('POST', 'targets/delete', { key: m.u.key, e, body: { id: 'b' }, waits: cleanup }); await Promise.all(cleanup);
+  assert.deepEqual(wishes(), ['g-x', 'mini-00001']);
+  assert.equal(userRow(m.id, e).auto_wish, 0);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ?').get(m.id).n, 0);
   const other = await signup('Souhait2', e);
-  r = await call('POST', 'wishlist/sync', { key: other.key, e, body: {} });
-  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
-  WISH_ROUTE.known = false;
-  after(() => { WISH_ROUTE.known = true; });
-  oldWish(m.id, e);
+  await call('POST', 'targets/save', { key: other.key, e, body: { id: 'a', name: 'Autre', items: [], wish_sync: true } });
+  assert.equal(e.DB.sqlite.prepare('SELECT wish_sync FROM targets WHERE user_id = ? AND id = ?').get(m.id, 'a').wish_sync, 0);
+  e.DB.close();
+});
+
+await test('souhaits par collection : arrière-plan, cron, dernière sélection et reprise après erreur', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('Souhait3', e, mini(3));
+  supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B')];
+  let waits = [];
+  const body = { id: 'liste', name: 'Manques', items: [{ title: 'Manque A' }, { title: 'Pas dans le jeu' }], wish_sync: true };
+  let r = await call('POST', 'targets/save', { key: m.u.key, e, body, waits }); await Promise.all(waits);
+  assert.equal(r.status, 200); assert.deepEqual(supa.wishes(m.uid), ['g-a']); assert.equal(wishOf(m.id, e).none, 1);
+  waits = []; body.items.push({ title: 'Manque B' });
+  await call('POST', 'targets/save', { key: m.u.key, e, body, waits }); await Promise.all(waits);
+  assert.deepEqual(supa.wishes(m.uid), ['g-a']); assert.equal(userRow(m.id, e).wish_dirty, 1);
+  assert.match(await runCron(e, COLLECTION_CRON), /1 carte de liste de souhaits/);
+  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-b']);
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { ...body, wish_sync: false } });
+  assert.equal(userRow(m.id, e).auto_wish, 1, 'retraits en attente après la dernière désactivation');
+  supa.wishReply = () => ({ status: 403, body: { code: 'automation_limit' } });
+  assert.match(await runCron(e, COLLECTION_CRON), /^limite du jeu/); assert.equal(await runCron(e, COLLECTION_CRON), null);
+  assert.ok(wishOf(m.id, e).error); supa.wishReply = null; oldWish(m.id, e);
+  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
+  assert.equal(r.status, 200, JSON.stringify(r.json)); assert.equal(r.json.wish.removed, 2);
+  assert.deepEqual(supa.wishes(m.uid), []); assert.equal(userRow(m.id, e).auto_wish, 0);
+  assert.equal((await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} })).status, 429);
+  WISH_ROUTE.known = false; after(() => { WISH_ROUTE.known = true; });
   assert.equal((await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} })).status, 503);
   e.DB.close();
 });
 
-await test('liste de souhaits : case cochée → passe tout de suite ; collection enregistrée, « Rafraîchir » et cron la tiennent à jour', async () => {
-  const e = makeEnv();
-  supa.reset();
-  const m = await cronMember('Souhait3', e, mini(3));
+await test('souhaits : mode compte complet, nouvelles collections et retour aux sélections individuelles', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitModes', e, mini(3));
   supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B'), gameCard('g-c', 'Manque C')];
-  assert.equal((await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'liste', name: 'Manques', items: [{ title: 'Manque A' }, { title: 'Carte 1' }] } })).status, 200);
-  let r = await call('PATCH', 'me', { key: m.u.key, e, body: { auto_wish: 'oui' } });
-  assert.equal(r.status, 400);
-  // Case cochée : une passe après la réponse.
-  let waits = [];
-  r = await call('PATCH', 'me', { key: m.u.key, e, body: { auto_wish: true }, waits });
-  assert.deepEqual([r.status, r.json.auto_wish, waits.length], [200, true, 1]);
-  await Promise.all(waits);
-  assert.deepEqual(supa.wishes(m.uid), ['g-a']);
-  assert.deepEqual([wishOf(m.id, e).via, userRow(m.id, e).wish_dirty], ['auto', 0]);
-  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.auto_wish, true);
-  // Collection modifiée moins d'une minute après : pas de passe tout de suite (due), le cron la fait.
-  waits = [];
-  assert.equal((await call('POST', 'targets/save', { key: m.u.key, e, waits, body: { id: 'liste', name: 'Manques', items: [{ title: 'Manque A' }, { title: 'Manque B' }] } })).status, 200);
-  await Promise.all(waits);
-  assert.deepEqual([supa.wishes(m.uid), userRow(m.id, e).wish_dirty], [['g-a'], 1]);
-  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec, 1 carte de liste de souhaits');
-  assert.deepEqual([supa.wishes(m.uid), userRow(m.id, e).wish_dirty, wishOf(m.id, e).via], [['g-a', 'g-b'], 0, 'cron']);
-  // Rien de changé : le cron ne touche pas à la liste de souhaits.
-  let n0 = supa.calls.length;
-  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec');
-  assert.deepEqual(wishCalls(n0), []);
-  // Collection modifiée plus d'une minute après : passe tout de suite.
-  oldWish(m.id, e);
-  waits = [];
-  await call('POST', 'targets/save', { key: m.u.key, e, waits, body: { id: 'liste', name: 'Manques', items: [{ title: 'Manque A' }, { title: 'Manque B' }, { title: 'Manque C' }] } });
+  for (const [id, title, wish_sync] of [['a', 'Manque A', true], ['b', 'Manque B', false]]) {
+    await call('POST', 'targets/save', { key: m.u.key, e, body: { id, name: id, items: [{ title }], wish_sync } });
+  }
+  const mode = async (wish_mode) => {
+    oldWish(m.id, e); const waits = [];
+    const r = await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode }, waits });
+    await Promise.all(waits); assert.equal(r.status, 200, JSON.stringify(r.json)); assert.equal(r.json.wish_mode, wish_mode);
+  };
+  await mode('all');
+  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-b']);
+  oldWish(m.id, e); const waits = [];
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'c', name: 'Nouvelle', items: [{ title: 'Manque C' }] }, waits });
   await Promise.all(waits);
   assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-b', 'g-c']);
-  // Le joueur obtient Manque B : « Rafraîchir » la retire de la liste.
-  oldWish(m.id, e);
-  supa.player(m.uid).cards.push(rowOf({ id: 'g-b', title: 'Manque B', rarity: 'R', count: 1 }, { uid: m.uid }));
-  waits = [];
-  e.DB.sqlite.prepare('UPDATE users SET sync_click_at = NULL WHERE id = ?').run(m.id);
-  assert.equal((await call('POST', 'refresh', { key: m.u.key, e, body: {}, waits })).status, 200);
-  await Promise.all(waits);
-  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-c']);
-  assert.equal(wishOf(m.id, e).removed, 1);
-  // Obtenue sans clic : la relecture du cron la fait aussi (cartes changées).
-  supa.player(m.uid).cards.push(rowOf({ id: 'g-c', title: 'Manque C', rarity: 'R', count: 1 }, { uid: m.uid, obtained_at: '2026-10-24T10:00:00.000Z' }));
-  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 1 relu, 0 échec, 1 carte de liste de souhaits');
+  await mode('selected');
   assert.deepEqual(supa.wishes(m.uid), ['g-a']);
-  // Une limite du jeu arrête la passe du cron et saute la suivante.
-  e.DB.sqlite.prepare('UPDATE users SET wish_dirty = 1 WHERE id = ?').run(m.id);
-  supa.wishReply = () => ({ status: 403, body: { code: 'automation_limit' } });
-  supa.wishlist = [];
-  assert.match(await runCron(e, COLLECTION_CRON), /^limite du jeu/);
-  assert.equal(await runCron(e, COLLECTION_CRON), null, 'passe suivante sautée');
-  supa.wishReply = null;
-  // Case décochée : plus rien, même collection changée.
-  e.DB.sqlite.prepare('UPDATE cron_state SET skip_until = NULL').run();
-  assert.equal((await call('PATCH', 'me', { key: m.u.key, e, body: { auto_wish: false } })).status, 200);
-  waits = [];
-  await call('POST', 'targets/save', { key: m.u.key, e, waits, body: { id: 'liste', name: 'Manques', items: [{ title: 'Manque A' }] } });
-  assert.equal(waits.length, 0);
-  n0 = supa.calls.length;
-  assert.equal(await runCron(e, COLLECTION_CRON), '1 membre vérifié, 0 relu, 0 échec');
-  assert.deepEqual(wishCalls(n0), []);
+  assert.deepEqual(e.DB.sqlite.prepare('SELECT wish_sync FROM targets WHERE user_id = ? ORDER BY id').all(m.id).map(r => r.wish_sync), [1, 0, 0]);
+  assert.equal((await call('GET', 'me', { key: m.u.key, e })).json.wish_mode, 'selected');
+  assert.equal((await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode: 'bad' } })).status, 400);
+  assert.equal((await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode: 'all', auto_wish: false } })).status, 400);
+  e.DB.close();
+});
+
+await test('souhaits : retrait par lots poursuivi après la désactivation de la dernière collection', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitLots', e, mini(3));
+  const ids = Array.from({ length: 205 }, (_, i) => `wish-${i}`);
+  for (const id of ids) e.DB.sqlite.prepare('INSERT INTO wish_managed (user_id, card_id, title) VALUES (?, ?, ?)').run(m.id, id, id);
+  supa.wishlist = [...ids, 'manual'].map(card_id => ({ user_id: m.uid, card_id }));
+  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
+  const user = userRow(m.id, e);
+  const s = await sessionOf(e, user);
+  let r = await wishPass(e, user, s, { via: 'cron', max: 2, gap: 0 });
+  assert.deepEqual([r.removed, r.left], [100, 105]);
+  assert.equal(userRow(m.id, e).auto_wish, 1);
+  oldWish(m.id, e);
+  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.wish.removed, r.json.wish.left], [200, 105, 0]);
+  assert.deepEqual(supa.wishes(m.uid), ['manual']);
+  assert.equal(userRow(m.id, e).auto_wish, 0);
   e.DB.close();
 });
 

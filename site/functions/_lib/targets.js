@@ -39,6 +39,7 @@ function toTarget(row, items = row.items) {
     items: raw(items),
     source: row.source,
     auto: row.auto ? raw(row.auto) : null,
+    wish_sync: !!row.wish_sync,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -180,7 +181,7 @@ function nextAuto(body, stored) {
 // ancienne à la plus récente.
 export async function listTargets(env, user) {
   const { results } = await env.DB.prepare(
-    'SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY pos IS NULL, pos, created_at, id',
+    'SELECT id, name, items, source, auto, wish_sync, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY pos IS NULL, pos, created_at, id',
   )
     .bind(user.id)
     .all();
@@ -200,6 +201,7 @@ export async function listTargets(env, user) {
 export async function saveTarget(env, user, body) {
   const out = await storeTarget(env, user, body);
   if (out.part !== undefined) return { part: out.part };
+  await updateWishWork(env.DB, user.id);
   return { target: raw(jsonText(toTarget(out.row, out.chunked ? 'null' : out.itemsJson))) };
 }
 
@@ -218,6 +220,7 @@ function uploadOf(body) {
 // d'un envoi en plusieurs (upload sans last) est seulement mis de côté : {part}.
 async function storeTarget(env, user, body) {
   const db = env.DB;
+  if (body.wish_sync !== undefined && typeof body.wish_sync !== 'boolean') throw new HttpError(400, '« wish_sync » vaut true ou false.');
   const up = uploadOf(body);
   if (!Array.isArray(body.items)) throw new HttpError(400, 'Le champ « items » doit être une liste.');
   const items = body.items.map(cleanItem);
@@ -290,7 +293,7 @@ async function storeTarget(env, user, body) {
               COALESCE(SUM(CASE WHEN id <> ?2 THEN length(CAST(items AS BLOB)) + COALESCE(length(CAST(auto AS BLOB)), 0) END), 0) AS bytes
        FROM targets WHERE user_id = ?1`,
     ).bind(user.id, id),
-    db.prepare('SELECT auto, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, id),
+    db.prepare('SELECT auto, wish_sync, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, id),
   ]);
   const others = othersRes.results[0];
   const cur = curRes.results[0] || null;
@@ -305,6 +308,7 @@ async function storeTarget(env, user, body) {
   const now = nowIso();
   const setAuto = auto === undefined ? 0 : 1;
   const autoText = auto === undefined ? null : auto;
+  const wishSync = body.wish_sync === undefined ? (cur && cur.wish_sync ? 1 : 0) : body.wish_sync ? 1 : 0;
   // Éléments : ?4, ou, envoyée en morceaux (?4 = l'envoi), ceux de target_uploads (le dernier compris) dans l'ordre,
   // assemblés en SQL.
   const itemsSql = chunked
@@ -314,20 +318,20 @@ async function storeTarget(env, user, body) {
   const write = expect !== null
     // Remplacement conditionnel : rien n'est écrit si un autre enregistrement est passé entre-temps.
     ? db.prepare(
-      `UPDATE targets SET name = ?3, items = ${itemsSql}, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END
+      `UPDATE targets SET name = ?3, items = ${itemsSql}, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END, wish_sync = CASE WHEN ?11 = 1 THEN ?10 ELSE wish_sync END
        WHERE user_id = ?1 AND id = ?2 AND updated_at = ?9
-       RETURNING id, name, source, auto, created_at, updated_at`,
+       RETURNING id, name, source, auto, wish_sync, created_at, updated_at`,
     )
-      .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect)
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect, wishSync, body.wish_sync === undefined ? 0 : 1)
     : db.prepare(
-      `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at, auto)
-       VALUES (?1, ?2, ?3, ${itemsSql}, ?5, ?6, ?6, ?8)
+      `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at, auto, wish_sync)
+       VALUES (?1, ?2, ?3, ${itemsSql}, ?5, ?6, ?6, ?8, ?9)
        ON CONFLICT (user_id, id) DO UPDATE SET
          name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at,
-         auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END
-       RETURNING id, name, source, auto, created_at, updated_at`,
+         auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END, wish_sync = CASE WHEN ?10 = 1 THEN excluded.wish_sync ELSE targets.wish_sync END
+       RETURNING id, name, source, auto, wish_sync, created_at, updated_at`,
     )
-      .bind(user.id, id, name, items4, source, now, setAuto, autoText);
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText, wishSync, body.wish_sync === undefined ? 0 : 1);
   let row;
   if (chunked) {
     // Une transaction : le dernier morceau rangé, la collection écrite, les morceaux effacés.
@@ -364,7 +368,7 @@ async function stashPart(db, user, up, text, bytes) {
 // 409 d'un enregistrement conditionnel (expect_updated_at) : la collection telle qu'elle est maintenant (null si elle a
 // été supprimée), pour que la page reparte d'elle.
 async function conflict(db, user, id) {
-  const row = await db.prepare('SELECT id, name, items, source, auto, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
+  const row = await db.prepare('SELECT id, name, items, source, auto, wish_sync, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
     .bind(user.id, id)
     .first();
   return new HttpError(409, "Cette collection a changé entre-temps (dans un autre onglet ou sur un autre appareil) : rien n'a été enregistré.", {
@@ -392,5 +396,11 @@ export async function orderTargets(env, user, body) {
 export async function deleteTarget(env, user, body) {
   if (typeof body.id !== 'string' || !body.id) throw new HttpError(400, 'Indique la collection à supprimer (id).');
   await env.DB.prepare('DELETE FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, body.id).run();
+  await updateWishWork(env.DB, user.id);
   return { ok: true };
 }
+
+// auto_wish devient un indicateur interne : collections cochées ou retraits encore à effectuer.
+export const updateWishWork = (db, userId) => db.prepare(`UPDATE users SET wish_dirty = 1,
+  auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
+    OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(userId).run();

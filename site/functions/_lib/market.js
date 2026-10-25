@@ -121,10 +121,10 @@ const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id
 // collections changées le plus récemment d'abord, dans leur ordre. Rapprochement par titre seulement : le serveur n'a
 // pas les qids des cartes (une carte possédée sous un autre titre est écartée plus tard, par son card_id). Aussi lu par la
 // liste de souhaits du jeu (wishlist.js), avec une autre limite.
-export const wantedSql = (limit) => `WITH it AS (
+export const wantedSql = (limit, wishOnly = false) => `WITH it AS (
     SELECT json_extract(i.value, '$.title') AS t, t0.updated_at AS u, CAST(i.key AS INTEGER) AS k
     FROM targets AS t0, json_each(t0.items) AS i
-    WHERE t0.user_id = ?1 AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
+    WHERE t0.user_id = ?1 ${wishOnly ? "AND (t0.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))" : ''} AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
   )
   SELECT t FROM it
   WHERE typeof(t) = 'text' AND length(t) BETWEEN 1 AND 300

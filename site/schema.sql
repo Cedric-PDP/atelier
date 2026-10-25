@@ -27,8 +27,9 @@
 -- synchro, et quand (NULL tant qu'il n'a pas été lu), montré aux membres avec qui il partage ses cartes ; auto_friend =
 -- demandes d'ami du jeu envoyées seules aux autres membres reliés (case choisie, coupée par défaut) ; game_friends = sa
 -- liste d'amis du jeu lue à la dernière vérification (JSON {at, list:[{uid, name, st, out}]}, friends.js) ; auto_wish =
--- liste de souhaits du jeu tenue par le classeur (cartes qui manquent aux collections ajoutées, cartes possédées retirées ;
--- case choisie, coupée par défaut) ; wish_dirty = collections changées depuis la dernière passe ; wish_state = dernière passe
+-- indicateur interne de souhaits à gérer (mode all, collections avec wish_sync = 1 ou cartes suivies à retirer) ;
+-- wish_mode = all (toutes les collections, futures comprises) ou selected (cases individuelles, conservées entre les modes) ;
+-- wish_dirty = collections changées depuis la dernière passe ; wish_state = dernière passe
 -- (JSON {at, via, rev, size, added, removed, left, none, error?}, wishlist.js).
 -- Plus lues depuis le 2026-10-22, vidées par migration : cookie_enc, cookie_updated_at, session_expired (ancien cookie
 -- collé), import_key_hash, import_key_enc (clé d'import de l'ancien favori).
@@ -72,6 +73,7 @@ CREATE TABLE IF NOT EXISTS users (
     auto_friend INTEGER NOT NULL DEFAULT 0,
     game_friends TEXT,
     auto_wish INTEGER NOT NULL DEFAULT 0,
+    wish_mode TEXT NOT NULL DEFAULT 'selected',
     wish_dirty INTEGER NOT NULL DEFAULT 0,
     wish_state TEXT,
     -- limites des réactions du chat (functions/_lib/chat.js) : nombre dans la fenêtre d'une minute et de 24 h en cours, et
@@ -124,7 +126,16 @@ CREATE TABLE IF NOT EXISTS targets (
     updated_at TEXT NOT NULL,
     auto TEXT,
     pos INTEGER,
+    wish_sync INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (user_id, id)
+);
+
+-- Cartes prises en charge par les collections synchronisées, pour les retirer à la désactivation sans toucher aux autres souhaits.
+CREATE TABLE IF NOT EXISTS wish_managed (
+    user_id TEXT NOT NULL,
+    card_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    PRIMARY KEY (user_id, card_id)
 );
 
 -- Pages lues dans la base du jeu par une lecture de la collection, en attendant la dernière (refresh.js) : une page de

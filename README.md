@@ -1,5 +1,13 @@
 # Le classeur (WikiMasters)
 
+Pour commencer sur Windows : [lancement local et repères dans le code](LOCAL.md).
+
+**Souhaits du jeu** : dans Réglages, choisis « Toutes mes collections » (albums existants et futurs) ou « Collection par
+collection » (cases dans chaque album). Changer de mode conserve les sélections individuelles. En mode individuel,
+décocher retire automatiquement les souhaits qui ne sont plus demandés par une autre collection synchronisée. Les
+nouveaux albums sont décochés par défaut. L'ancien réglage global actif est migré vers le mode complet ; s'il était
+désactivé, toutes les cases restent décochées en mode individuel. Bouton de synchronisation et bilan dans Réglages et les albums.
+
 Site de suivi de collection pour [WikiMasters](https://www.wiki-masters.com) (jeu de cartes tirées des articles de
 Wikipédia en français), pour l'utilisateur **et ses amis**. **Sans lien avec le jeu.** Branche orpheline
 `wikimasters` du dépôt `spam-atelier` : rien à voir avec SPAM, rien de cette branche ne va dans `main`.

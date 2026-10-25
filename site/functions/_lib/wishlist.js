@@ -1,21 +1,7 @@
-// Liste de souhaits du jeu (2026-10-24, demande de l'utilisateur) : pour un membre qui l'a choisi (case « Liste de
-// souhaits du jeu », users.auto_wish, coupée par défaut), le classeur met dans sa liste de souhaits du jeu les cartes qui
-// manquent à ses collections, et en retire les cartes qu'il possède. Table wishlist_items du jeu ({user_id, card_id}),
-// écrite comme le fait la page d'une carte du jeu (HAR du 2026-10-24) : POST rest/v1/wishlist_items {user_id, card_id}
-// → 201, DELETE rest/v1/wishlist_items?user_id=eq.<uid>&card_id=eq.<id> → 204. La lecture de la liste (GET, même table)
-// n'est pas dans le HAR : non vérifiée sur la vraie base.
-//
-// Une passe (wishPass), sous le bail du membre (sync_lock) : lit sa liste de souhaits, en retire les cartes possédées,
-// trouve les cartes du jeu des titres qui manquent aux collections (cache commun game_titles, puis cards du jeu par
-// titre), ajoute celles qui n'y sont pas encore. Lancée :
-// - par le cron de la collection (cron.js), quand elle est due (wishDue : collections changées, cartes changées, reste à
-//   faire, ou plus de 6 h) ;
-// - juste après un enregistrement de collection, un « Rafraîchir » ou la case cochée (wishSoon, après la réponse) ;
-// - au clic sur « Mettre à jour ma liste de souhaits » (POST /api/wishlist/sync).
-// Jamais une carte retirée parce qu'elle a quitté une collection : seulement parce qu'elle est possédée.
-//
-// Case décochée, le clic fait une passe de retrait (clear, 2026-10-24, demande de l'utilisateur) : toutes les cartes de
-// ses collections (possédées ou non) sortent de sa liste de souhaits ; les autres cartes de la liste restent.
+// Liste de souhaits par collection : wish_sync sélectionne les albums.
+// wish_managed mémorise les cartes prises en charge ; les retraits protègent les autres collections cochées.
+// Une passe sous sync_lock lit le jeu, retire les cartes obtenues ou qui ne sont plus demandées,
+// puis ajoute les manquantes. Déclencheurs : collections, Rafraîchir, cron et bouton manuel.
 
 import { HttpError } from './http.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet, supaWrite } from './game.js';
@@ -63,38 +49,40 @@ export function wishDue(user, now = Date.now()) {
   return st.left > 0 || age >= EVERY_MS;
 }
 
-// Les collections ont changé : la prochaine passe est due (seulement pour un membre qui a coché la case).
-export const markWish = (db, userId) => db.prepare('UPDATE users SET wish_dirty = 1 WHERE id = ?1 AND auto_wish = 1').bind(userId).run();
-
 const CACHED = `SELECT j.value AS t, g.card_id AS id, g.at FROM json_each(?1) AS j JOIN game_titles AS g ON g.title = j.value`;
 const OWNED = `SELECT j.value AS id FROM json_each(?2) AS j
   WHERE EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND c.card_id = j.value)`;
 const REMEMBER = `INSERT INTO game_titles (title, card_id, at) SELECT json_extract(j.value, '$[0]'), json_extract(j.value, '$[1]'), ?2
   FROM json_each(?1) AS j WHERE true
   ON CONFLICT (title) DO UPDATE SET card_id = excluded.card_id, at = excluded.at`;
-// Tous les titres de ses collections (passe de retrait), quel que soit leur état ou leur possession.
-const ALL_TITLES = `SELECT DISTINCT json_extract(i.value, '$.title') AS t
-  FROM targets AS t0, json_each(t0.items) AS i
-  WHERE t0.user_id = ?1 AND i.type = 'object' AND json_type(i.value, '$.title') = 'text'
-    AND length(json_extract(i.value, '$.title')) BETWEEN 1 AND 300
-  LIMIT ${WANTED_MAX}`;
-// Ses cartes dont le titre est dans ?2 (une carte possédée peut être d'une autre langue que celle trouvée par titre).
-const OWNED_TITLED = `SELECT c.card_id AS id FROM cards AS c
-  WHERE c.user_id = ?1 AND json_extract(c.data, '$.title') IN (SELECT value FROM json_each(?2))`;
 const CARD_ID = /^[A-Za-z0-9_-]{1,100}$/;
 
+// Tous les titres cochés, sans la limite de recherche par passe : une carte commune doit rester souhaitée.
+const SELECTED = `SELECT DISTINCT json_extract(i.value, '$.title') AS title
+  FROM targets AS t, json_each(t.items) AS i WHERE t.user_id = ?1
+    AND (t.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))
+    AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'`;
+const DROP_MANAGED = `WITH selected AS (${SELECTED})
+  SELECT m.card_id AS id FROM wish_managed AS m WHERE m.user_id = ?1 AND (
+    EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND c.card_id = m.card_id)
+    OR NOT EXISTS (SELECT 1 FROM selected AS s LEFT JOIN game_titles AS g ON g.title = s.title
+      WHERE s.title = m.title OR g.card_id = m.card_id))`;
+const TRACK = `INSERT INTO wish_managed (user_id, card_id, title)
+  SELECT ?1, json_extract(value, '$[1]'), json_extract(value, '$[0]') FROM json_each(?2) WHERE true
+  ON CONFLICT (user_id, card_id) DO UPDATE SET title = excluded.title`;
+
 // Une passe pour `user` (ligne de USER_COLUMNS), session `s` ouverte, sous son bail (pris par l'appelant). max : requêtes
-// au jeu au plus ; clear : passe de retrait (cartes des collections retirées, rien d'ajouté). → l'état rangé
-// (users.wish_state) : {at, via, clear?, rev, size, added, removed, left, none, error?}. Une limite du jeu remonte
+// au jeu au plus. → l'état rangé
+// (users.wish_state) : {at, via, rev, size, added, removed, left, none, error?}. Une limite du jeu remonte
 // (429 limited) après avoir noté l'état ; les autres erreurs aussi (l'état dit pourquoi).
-export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_GAP_MS, clear = false } = {}) {
+export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_GAP_MS } = {}) {
   const db = env.DB;
   const uid = s.uid || user.game_uid;
   if (!uid) throw new HttpError(401, 'Relie à nouveau ton compte du jeu (onglet « Synchro ») : il manque ton identifiant de joueur.', { needs_link: true });
   const who = encodeURIComponent(uid);
   // Ce que la passe a vu des cartes : une lecture finie pendant la passe la rendra due à nouveau.
   const head = await db.prepare('UPDATE users SET wish_dirty = 0 WHERE id = ?1 RETURNING cards_rev').bind(user.id).first();
-  const out = { at: nowIso(), via, ...(clear ? { clear: true } : {}), rev: head ? head.cards_rev : user.cards_rev, size: null, added: 0, removed: 0, left: 0, none: 0 };
+  const out = { at: nowIso(), via, rev: head ? head.cards_rev : user.cards_rev, size: null, added: 0, removed: 0, left: 0, none: 0 };
   let n = 0;
   const room = () => n < max;
   const wait = () => (n++ ? gap : 0);
@@ -119,11 +107,19 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       out.removed += done;
       return gone.length - done;
     };
-    // 2. Les cartes possédées en sortent (passe normale).
-    if (!clear) await drop(wish.size ? (await db.prepare(OWNED).bind(user.id, JSON.stringify([...wish])).all()).results.map((r) => r.id) : []);
-    // 3. Titres qui manquent aux collections (retrait : tous leurs titres, rien à chercher si la liste est vide) → cartes
+    // 2. Cartes suivies obtenues ou qui ne sont plus demandées par aucune collection cochée.
+    const gone = (await db.prepare(DROP_MANAGED).bind(user.id).all()).results.map((r) => r.id);
+    // Même une carte retirée à la main du jeu peut être oubliée par le classeur.
+    const absent = gone.filter((id) => !wish.has(id));
+    if (absent.length) await db.prepare('DELETE FROM wish_managed WHERE user_id = ?1 AND card_id IN (SELECT value FROM json_each(?2))')
+      .bind(user.id, JSON.stringify(absent)).run();
+    const pendingDrop = await drop(gone.filter((id) => wish.has(id)));
+    const removed = gone.filter((id) => !wish.has(id));
+    if (removed.length) await db.prepare('DELETE FROM wish_managed WHERE user_id = ?1 AND card_id IN (SELECT value FROM json_each(?2))')
+      .bind(user.id, JSON.stringify(removed)).run();
+    // 3. Titres qui manquent aux collections cochées → cartes
     // du jeu (cache commun, puis recherche par titre).
-    const titles = clear && !wish.size ? [] : (await db.prepare(clear ? ALL_TITLES : wantedSql(WANTED_MAX)).bind(user.id).all()).results.map((r) => r.t);
+    const titles = (await db.prepare(wantedSql(WANTED_MAX, true)).bind(user.id).all()).results.map((r) => r.t);
     const ids = new Map();
     const stale = new Date(Date.now() - NOT_FOUND_MS).toISOString();
     if (titles.length) {
@@ -146,14 +142,13 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
     }
     out.none = titles.filter((t) => ids.get(t) === '').length;
     const found = [...new Set(titles.map((t) => ids.get(t)).filter((id) => id))];
-    if (clear) {
-      // 4'. Retrait : les cartes trouvées et ses cartes de ces titres, si elles sont dans la liste.
-      const mine = titles.length ? (await db.prepare(OWNED_TITLED).bind(user.id, JSON.stringify(titles)).all()).results.map((r) => String(r.id)) : [];
-      out.left = (await drop([...new Set([...found, ...mine])].filter((id) => wish.has(id)))) + unresolved;
-    } else {
+    {
       // 4. Celles qui ne sont ni possédées (sous un autre titre) ni déjà souhaitées entrent dans la liste.
       const have = found.length ? new Set((await db.prepare(OWNED).bind(user.id, JSON.stringify(found)).all()).results.map((r) => r.id)) : new Set();
       const add = found.filter((id) => !have.has(id) && !wish.has(id));
+      // Mémorisé avant l'écriture : une erreur ou une désactivation pendant une passe ne perd pas les retraits à faire.
+      const track = titles.filter((t) => ids.get(t) && !have.has(ids.get(t))).map((t) => [t, ids.get(t)]);
+      if (track.length) await db.prepare(TRACK).bind(user.id, JSON.stringify(track)).run();
       let done = 0;
       for (const part of lots(add, ADD_LOT)) {
         if (!room()) break;
@@ -162,7 +157,7 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
         done += part.length;
         out.added += part.length;
       }
-      out.left = add.length - done + unresolved;
+      out.left = pendingDrop + add.length - done + unresolved;
     }
     out.size = wish.size;
   } catch (err) {
@@ -171,6 +166,9 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
     throw err;
   }
   await saveState(db, user.id, out);
+  // Conserve une modification de collection arrivée pendant la passe (wish_dirty).
+  await db.prepare(`UPDATE users SET auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
+    OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(user.id).run();
   return out;
 }
 
@@ -207,8 +205,7 @@ export async function wishSoon(env, userId) {
   }
 }
 
-// POST /api/wishlist/sync {} → l'état de la passe (voir wishPass). Au clic, même case décochée : c'est alors une passe de
-// retrait (cartes des collections retirées de la liste) ; une fois par minute.
+// POST /api/wishlist/sync {} : synchronise les collections choisies et termine les retraits ; une fois par minute.
 // 401 {needs_link}, 409 (une lecture tourne), 429 {retry_after} ou {limited}, 503 (interrupteur), 502.
 export async function syncWishlist(env, user) {
   if (!WISH_ROUTE.known) throw new HttpError(503, "Le classeur ne sait plus écrire dans ta liste de souhaits du jeu : le jeu a peut-être changé.");
@@ -218,7 +215,7 @@ export async function syncWishlist(env, user) {
   if (since < SOON_GAP_MS) {
     throw new HttpError(429, 'Ta liste de souhaits vient d\'être mise à jour : réessaie dans une minute.', { retry_after: Math.ceil((SOON_GAP_MS - since) / 1000) });
   }
-  const out = await underLease(env, user, { via: 'clic', max: CLICK_MAX, clear: !user.auto_wish });
+  const out = await underLease(env, user, { via: 'clic', max: CLICK_MAX });
   if (!out) throw new HttpError(409, 'Une lecture de ta collection ou du marché est en cours : réessaie dans un instant.');
   return { wish: out };
 }

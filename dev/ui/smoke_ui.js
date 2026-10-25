@@ -306,7 +306,7 @@ function mockApi() {
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
           market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend,
-          auto_wish: !!st.autoWish, wish: st.wish || null,
+          auto_wish: !!st.autoWish, wish_mode: st.wishMode || 'selected', wish: st.wish || null,
           wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at } });
       }
       if (p === '/api/me' && method === 'PATCH') {
@@ -345,9 +345,13 @@ function mockApi() {
           if (typeof body.auto_wish !== 'boolean') return json(400, { error: '« auto_wish » vaut true ou false.' });
           st.autoWish = body.auto_wish;
         }
+        if ('wish_mode' in body) {
+          if (!['all', 'selected'].includes(body.wish_mode)) return json(400, { error: 'Mode invalide.' });
+          st.wishMode = body.wish_mode;
+        }
         if ('name' in body) st.name = body.name;
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
-          auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend, auto_wish: !!st.autoWish });
+          auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend, auto_wish: !!st.autoWish, wish_mode: st.wishMode || 'selected' });
       }
       // Liste de souhaits du jeu : « Mettre à jour maintenant » rend une passe fixe (2 ajoutées, 1 retirée).
       if (p === '/api/wishlist/sync' && method === 'POST') {
@@ -535,6 +539,7 @@ function mockApi() {
         if (!t) { t = { id: 't' + (st.targets.length + 1), created_at: 'x', auto: null }; st.targets.push(t); }
         Object.assign(t, { name: body.name, items: body.items, source: body.source || null, updated_at: 'y' + ++seq });
         if (auto !== undefined) t.auto = auto;
+        if (body.wish_sync !== undefined) t.wish_sync = !!body.wish_sync;
         st.targetsRev = (st.targetsRev || 0) + 1; // dernier changement, vu par les autres membres (GET /api/members)
         return json(200, { target: chunked ? { ...t, items: null } : t });
       }
@@ -1765,6 +1770,15 @@ async function main() {
     'catégorie déjà en collection : « Ouvrir ta collection » attendu, ' + at());
   needButton('Ouvrir ta collection').click();
   check(await waitFor(() => at().includes('depuis la catégorie Wikipédia') && at().includes('2 sur 6') && has('Supprimer')), '« Ouvrir ta collection » : ' + at());
+  // Choix des souhaits directement dans l'album : persistance du choix et désactivation.
+  check(byId('collection-wish-sync') && !byId('collection-wish-sync').checked, 'collection non sélectionnée par défaut');
+  byId('collection-wish-sync').checked = true;
+  byId('collection-wish-sync').dispatch('change');
+  check(await waitFor(() => byId('collection-wish-sync').checked && has('Collection sélectionnée')), 'souhaits activés dans la collection : ' + at());
+  if (!SERVER) check(api.st.targets.find(t => t.source === 'wp:Violet').wish_sync === true, 'choix des souhaits enregistré');
+  byId('collection-wish-sync').checked = false;
+  byId('collection-wish-sync').dispatch('change');
+  check(await waitFor(() => !byId('collection-wish-sync').checked && has('Synchronisation arrêtée')), 'souhaits désactivés dans la collection : ' + at());
   needButton('Supprimer').click();
   await settle();
   check(has('Supprimer « Violet » ?'), 'confirmation de suppression de la collection faite d\'une catégorie absente');
@@ -3175,19 +3189,11 @@ async function main() {
         await settle();
         delete api.gameFriends['Paul'];
         api.canRequest(false);
-        // Réglages, « Liste de souhaits du jeu » : la case (PATCH auto_wish), puis « Mettre à jour maintenant ».
-        check(byId('set-auto-wish') && !byId('set-auto-wish').checked, 'case « Liste de souhaits du jeu » absente ou cochée');
-        const wishPanel = () => doc.querySelectorAll('section').find((x) => text(x).startsWith('Liste de souhaits du jeu'));
-        check(wishPanel().querySelectorAll('button').some((b) => text(b) === 'Retirer mes collections de ma liste de souhaits')
-          && !wishPanel().querySelectorAll('button').some((b) => text(b) === 'Mettre à jour maintenant'), 'case décochée : bouton de retrait attendu : ' + text(wishPanel()));
-        byId('set-auto-wish').checked = true;
-        byId('set-auto-wish').dispatch('change');
-        await settle(80);
-        check(byId('set-auto-wish').checked && text(wishPanel()).includes('Première mise à jour en cours'), 'case cochée : ' + text(wishPanel()));
-        wishPanel().querySelectorAll('button').find((b) => text(b) === 'Mettre à jour maintenant').click();
-        await settle(80);
-        check(text(wishPanel()).includes('2 cartes ajoutées, 1 retirée.') && text(wishPanel()).includes('345 cartes dans ta liste de souhaits du jeu')
-          && text(wishPanel()).includes('3 titres de tes collections sans carte dans le jeu'), 'liste de souhaits mise à jour : ' + text(wishPanel()));
+        check(byId('set-wish-mode') && byId('set-wish-mode').value === 'selected', 'choix du mode des souhaits dans Réglages');
+        byId('set-wish-mode').value = 'all'; byId('set-wish-mode').dispatch('change');
+        check(await waitFor(() => byId('set-wish-mode').value === 'all' && has('Toutes tes collections sont synchronisées')), 'mode compte complet');
+        byId('set-wish-mode').value = 'selected'; byId('set-wish-mode').dispatch('change');
+        check(await waitFor(() => byId('set-wish-mode').value === 'selected' && has('Tes choix individuels ont été conservés')), 'retour au choix par collection');
         await goTab('amis');
         check(pairs().length > 0, "retour à « Échanges possibles » attendu");
       }

@@ -279,9 +279,9 @@
     merge: null,
     tradeNew: null, // « Proposer un échange » : {f (l'ami), give, get (ids de cartes cochées), giveWb, getWb (wikibidous tapés), busy, error, done, fr (amitié dans le jeu)}
     autoFriend: { busy: false, error: '' }, // case « Demandes d'ami automatiques » de Réglages (PATCH /api/me {auto_friend})
-    // Section « Liste de souhaits du jeu » de Réglages : case (PATCH /api/me {auto_wish}) et « Mettre à jour maintenant »
+    // Liste de souhaits dans les albums : choix par collection et synchronisation manuelle.
     // (POST /api/wishlist/sync) ; msg = résultat du clic.
-    autoWish: { busy: false, error: '', syncBusy: false, msg: '' },
+    autoWish: { busy: false, error: '', syncBusy: false, msg: '', targetId: null },
     friendsAdd: null, // « Ajouter les membres pas encore amis » : {st (loading | ready | error), list [{id, name, pseudo, st, result?, error?}], pick (ids cochés), busy, error, fromCheck}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
@@ -1996,34 +1996,51 @@
       S.autoFriend.busy = false;
     }
   }
-  // « Liste de souhaits du jeu » (PATCH /api/me {auto_wish}, coupée par défaut) : le serveur met dans la liste de souhaits
-  // du jeu les cartes qui manquent aux collections et en retire celles qu'on possède (wishlist.js). Cochée, une première
-  // passe part tout de suite côté serveur : son résultat arrive avec la relecture suivante de GET /api/me. Décochée, le
-  // bouton (même route) retire de la liste toutes les cartes des collections.
-  async function setAutoWish(on) {
+  // Choix par collection ; saveTargetFresh préserve les modifications concurrentes (autres onglets/appareils).
+  async function setWishMode(mode) {
     if (S.autoWish.busy) return;
-    Object.assign(S.autoWish, { busy: true, error: '', msg: '' });
+    const gen = cardsGen;
+    Object.assign(S.autoWish, { busy: true, targetId: null, error: '', msg: '' });
     try {
-      const r = await api('PATCH', '/api/me', { auto_wish: on });
-      const now = typeof r.auto_wish === 'boolean' ? r.auto_wish : on;
-      if (S.me) S.me.auto_wish = now;
+      const r = await api('PATCH', '/api/me', { wish_mode: mode });
+      if (gen !== cardsGen) return;
+      if (S.me) Object.assign(S.me, { wish_mode: r.wish_mode, auto_wish: r.auto_wish });
+      S.autoWish.msg = mode === 'all' ? 'Toutes tes collections sont synchronisées, y compris celles que tu créeras.'
+        : 'Seules les collections cochées sont synchronisées. Tes choix individuels ont été conservés.';
     } catch (e) {
-      S.autoWish.error = e.message;
+      if (gen === cardsGen) S.autoWish.error = e.message;
     } finally {
-      S.autoWish.busy = false;
+      if (gen === cardsGen) S.autoWish.busy = false;
     }
   }
-  async function syncWish() {
+  async function setTargetWish(t, on) {
+    if (S.autoWish.busy) return;
+    const gen = cardsGen;
+    Object.assign(S.autoWish, { busy: true, targetId: t.id, error: '', msg: '' });
+    try {
+      const nt = await saveTargetFresh(t.id, { wish_sync: on });
+      if (!nt || gen !== cardsGen) return;
+      S.autoWish.msg = on ? 'Collection sélectionnée pour les souhaits du jeu.'
+        : 'Synchronisation arrêtée. Retrait des souhaits non partagés en attente.';
+    } catch (e) {
+      if (gen === cardsGen) S.autoWish.error = e.message;
+    } finally {
+      if (gen === cardsGen) S.autoWish.busy = false;
+    }
+  }
+  async function syncWish(t = null) {
     if (S.autoWish.syncBusy) return;
-    Object.assign(S.autoWish, { syncBusy: true, error: '', msg: '' });
+    const gen = cardsGen;
+    Object.assign(S.autoWish, { syncBusy: true, targetId: t ? t.id : null, error: '', msg: '' });
     try {
       const r = await api('POST', '/api/wishlist/sync', {});
+      if (gen !== cardsGen) return;
       if (S.me) S.me.wish = r.wish;
       S.autoWish.msg = wishDone(r.wish);
     } catch (e) {
-      S.autoWish.error = e.message;
+      if (gen === cardsGen) S.autoWish.error = e.message;
     } finally {
-      S.autoWish.syncBusy = false;
+      if (gen === cardsGen) S.autoWish.syncBusy = false;
     }
   }
   // Ce qu'a fait une passe : « 12 cartes ajoutées, 1 retirée » ; « 3 cartes retirées » ; rien : « Rien à changer ».
@@ -2043,9 +2060,29 @@
     if (w.error) return h('p', { class: 'status err' }, `Dernière mise à jour en échec (${agoText(w.at)}) : ${w.error}`);
     const bits = [`Dernière mise à jour ${agoText(w.at)} : ${wishDone(w).replace(/\.$/, '')}`];
     if (Number.isInteger(w.size)) bits.push(`${fmt(w.size)} ${plural(w.size, 'carte', 'cartes')} dans ta liste de souhaits du jeu`);
-    if (w.left) bits.push(`${fmt(w.left)} encore à ajouter (le classeur continue toutes les 10 minutes)`);
+    if (w.left) bits.push(`${fmt(w.left)} encore à traiter (le classeur continue pendant les synchronisations automatiques)`);
     if (w.none) bits.push(`${fmt(w.none)} ${plural(w.none, 'titre', 'titres')} de tes collections sans carte dans le jeu`);
     return h('p', { class: 'small muted' }, bits.join(' · ') + '.');
+  }
+  function viewTargetWish(t) {
+    const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
+    const all = S.me && S.me.wish_mode === 'all';
+    const ownMessage = S.autoWish.targetId === t.id;
+    return h('section', { class: 'album-wish', 'aria-label': 'Liste de souhaits du jeu' }, [
+      all ? h('p', { class: 'small muted' }, ['Toutes les collections sont synchronisées. ',
+        h('a', { href: '#/reglages' }, 'Réglages'), '.']) : h('label', { class: 'check' }, [
+        h('input', { id: 'collection-wish-sync', type: 'checkbox', checked: !!t.wish_sync, disabled: S.autoWish.busy,
+          onChange: (e) => { const on = e.target.checked; e.target.checked = !!t.wish_sync; setTargetWish(t, on); } }),
+        'Synchroniser les souhaits de cette collection',
+      ]),
+      all ? null : h('p', { class: 'small muted' }, ['Ajoute les cartes manquantes, retire celles obtenues. ', h('a', { href: '#/reglages' }, 'Réglages')]),
+      linked ? h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy || S.autoWish.busy,
+        onClick: () => syncWish(t) }, S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant')])
+        : h('p', { class: 'small muted' }, 'Compte du jeu à relier dans « Synchro ».'),
+      S.me && S.me.wish ? h('div', null, [h('p', { class: 'small muted' }, 'Bilan global :'), wishLine(S.me.wish)]) : null,
+      ownMessage && S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
+      ownMessage ? errLine(S.autoWish.error) : null,
+    ]);
   }
   // « Ajouter les membres pas encore amis » : ta liste d'amis du jeu relue (GET /api/friends?fresh=1), les membres qui ne
   // sont ni tes amis ni en attente cochés d'avance, puis les demandes envoyées d'un coup (POST /api/friends/request-all,
@@ -7630,6 +7667,7 @@
         // « Réorganiser » et « Fusionner avec… », elles ne tenaient plus sur la même ligne).
         h('div', { class: 'toolbar album-actions' }, actions),
         cv ? null : viewAutoLine(col),
+        cv ? null : viewTargetWish(col.t),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', S.albumFilter === 'all', () => { S.albumFilter = 'all'; }),
@@ -8101,18 +8139,21 @@
         errLine(S.autoFriend.error),
       ]),
       section('Liste de souhaits du jeu', [
-        h('label', { class: 'check' }, [
-          h('input', { type: 'checkbox', id: 'set-auto-wish', checked: !!(S.me && S.me.auto_wish), disabled: S.autoWish.busy,
-            onChange: (e) => { const want = e.target.checked; e.target.checked = !!(S.me && S.me.auto_wish); setAutoWish(want); } }),
-          'Mettre dans ma liste de souhaits du jeu les cartes qui manquent à mes collections',
+        h('label', { class: 'wish-mode' }, [h('span', { class: 'small muted' }, 'Mode de synchronisation'),
+          h('select', { id: 'set-wish-mode', class: 'field full', value: S.me && S.me.wish_mode || 'selected', disabled: S.autoWish.busy || S.autoWish.syncBusy,
+            onChange: (e) => { const mode = e.target.value; e.target.value = S.me && S.me.wish_mode || 'selected'; setWishMode(mode); } }, [
+            h('option', { value: 'all' }, 'Toutes mes collections'),
+            h('option', { value: 'selected' }, 'Collection par collection'),
+          ]),
         ]),
-        h('p', { class: 'small muted' }, "Coché, le classeur ajoute à ta liste de souhaits du jeu chaque carte d'une de tes collections que tu n'as pas, et en retire chaque carte que tu obtiens. Il le fait dès que tu crées ou modifies une collection, après chaque synchro de tes cartes, et pendant les lectures automatiques (toutes les 10 minutes, par lots). Il ne retire jamais une carte que tu ne possèdes pas, même si elle n'est plus dans une collection. Décoché, « Retirer mes collections de ma liste de souhaits » en enlève toutes les cartes de tes collections, possédées ou non ; les autres cartes de ta liste restent. Le jeu te prévient quand une carte de ta liste de souhaits est mise en vente. C'est une action faite à ta place, que le jeu peut remarquer. Désactivé par défaut."),
-        S.me && S.me.auto_wish ? wishLine(S.me.wish) : null,
-        (S.me && S.me.session && S.me.session.linked && !S.me.session.lost) ? h('div', { class: 'actions' }, [
-          h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy, onClick: syncWish }, S.autoWish.syncBusy ? 'Mise à jour…' : (S.me && S.me.auto_wish ? 'Mettre à jour maintenant' : 'Retirer mes collections de ma liste de souhaits')),
-        ]) : h('p', { class: 'small muted' }, "Relie d'abord ton compte du jeu (onglet « Synchro ») : la liste de souhaits est mise à jour avec lui."),
-        S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
-        errLine(S.autoWish.error),
+        h('p', { class: 'small muted' }, '« Toutes mes collections » synchronise les cartes manquantes de toutes tes collections et catégories, y compris les nouvelles. « Collection par collection » utilise les cases dans tes albums. Changer de mode conserve ces choix individuels ; les souhaits qui ne sont plus demandés sont retirés automatiquement.'),
+        S.me && S.me.session && S.me.session.linked && !S.me.session.lost ? h('div', { class: 'actions' }, [
+          h('button', { class: 'btn', type: 'button', disabled: S.autoWish.busy || S.autoWish.syncBusy, onClick: () => syncWish() },
+            S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant'),
+        ]) : h('p', { class: 'small muted' }, 'Relie ton compte du jeu dans « Synchro » pour appliquer ce choix.'),
+        S.me && S.me.wish ? wishLine(S.me.wish) : null,
+        S.autoWish.targetId === null && S.autoWish.msg ? h('p', { class: 'status ok', role: 'status' }, S.autoWish.msg) : null,
+        S.autoWish.targetId === null ? errLine(S.autoWish.error) : null,
       ]),
       section('Synchro rapide du marché', [
         h('label', { class: 'check' }, [

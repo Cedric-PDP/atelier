@@ -213,6 +213,11 @@ main.wrap { padding-block: 26px 110px; }
 
 /* ------------------------------------------------------------------ album d'une collection */
 .album-head { display: grid; gap: 12px; margin-bottom: 20px; }
+.album-wish { display: grid; gap: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.album-wish .check { align-items: flex-start; font-weight: 600; overflow-wrap: anywhere; }
+.album-wish .check input { flex: none; margin-top: 3px; }
+.wish-mode { display: grid; gap: 6px; min-width: 0; }
+.wish-mode select { min-width: 0; }
 .back { justify-self: start; background: none; border: 0; padding: 0; color: var(--link); font-weight: 600; }
 .album-title { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
 .album-title h2 { font-size: clamp(1.5rem, 3.4vw, 2.1rem); font-weight: 600; letter-spacing: -0.02em; overflow-wrap: anywhere; }

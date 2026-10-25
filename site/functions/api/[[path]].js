@@ -21,7 +21,7 @@ import { createTrade } from '../_lib/trades.js';
 import { listFriends, requestFriend, requestFriends } from '../_lib/friends.js';
 import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
-import { markWish, syncWishlist, wishSoon } from '../_lib/wishlist.js';
+import { syncWishlist, wishSoon } from '../_lib/wishlist.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -74,15 +74,11 @@ const ROUTES = {
   'wishlist/sync': { POST: [syncWishlist, 'main'] }, // « Mettre à jour ma liste de souhaits » du jeu (wishlist.js)
 };
 
-// Après ces gestes réussis, la liste de souhaits du jeu (wishlist.js) est mise à jour en arrière-plan, après la réponse,
-// pour un membre qui l'a choisie : collection enregistrée (en entier, pas un morceau d'envoi ; elle devient due),
-// « Rafraîchir » (due si les cartes ont changé), case « Liste de souhaits du jeu » cochée. → true si la passe est due.
+// Après une collection enregistrée/supprimée, Rafraîchir ou l'ancien réglage global : passe en arrière-plan.
+// wishSoon relit le compte et vérifie ce qui est dû, y compris les retraits de la dernière collection.
 async function wishAfter(env, user, key, method, result) {
+  if (user && ((key === 'targets/save' && result && result.target) || key === 'targets/delete')) return true;
   if (!user || (!user.auto_wish && !(key === 'me' && result && result.auto_wish))) return false;
-  if (key === 'targets/save' && result && result.target) {
-    await markWish(env.DB, user.id);
-    return true;
-  }
   return key === 'refresh' || (key === 'me' && method === 'PATCH' && !!(result && result.auto_wish));
 }
 // Chemins avec un paramètre → leur entrée dans ROUTES.

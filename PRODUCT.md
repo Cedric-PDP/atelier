@@ -27,6 +27,7 @@ du jeu relié une fois, qui croise la collection avec les catégories et les pag
 - Synchronisation par le serveur : le membre relie son compte du jeu une fois (fenêtre privée, favori « Relier » ou cookie à coller), puis le classeur lit collection (toutes les 10 min) et marché (20 min) sur n'importe quel appareil, téléphone compris ; « Rafraîchir » au clic.
 - Accès par lien personnel (`#cle=…`), pas de mot de passe ; chaque vue a sa propre adresse (`#/…`).
 - Sections : Collections (albums), Mes cartes, Entre amis, Marché, Chat, Synchro, Réglages, Nouveautés.
+- Liste de souhaits du jeu : Réglages propose le compte complet (toutes les collections, futures comprises) ou le choix par collection. Les choix individuels sont conservés entre les modes ; les souhaits qui ne sont plus demandés sont retirés.
 
 ## Capabilities and Constraints
 
