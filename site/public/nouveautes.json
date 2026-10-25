@@ -1,6 +1,9 @@
 {
   "versions": [
-    {"id": "2026-10-25", "date": "2026-10-25", "sections": [
+    {"id": "2026-10-26", "date": "2026-10-26", "sections": [
+      {"icon": "⭐", "title": "Titres sans cartes dans le jeu", "items": [
+        {"text": "Après une synchronisation des souhaits, « Voir les titres sans cartes » ouvre la liste des titres non trouvés pour toutes tes collections synchronisées. Copie leurs noms pour les vérifier dans le jeu, puis retire les titres sélectionnés ou toute la liste de ces collections.", "to": "#/souhaits-sans-cartes", "link": "Voir les titres sans cartes"}
+      ]},
       {"icon": "🏷️", "title": "Auto-tag dans le jeu", "items": [
         {"text": "Dans une collection, choisis un tag du jeu et active « Auto-tag dans WikiMasters ». À chaque synchronisation manuelle ou automatique, les cartes de la collection reçoivent ce tag sur un seul exemplaire, et les cartes taguées dans le jeu rejoignent la collection.", "to": "#/collections", "link": "Mes collections"},
         {"text": "Retirer une carte de la collection retire son tag ; retirer son tag dans le jeu retire aussi la carte de la collection. Une carte vendue ou échangée reste dans la collection et redevient non obtenue si tu n'en as plus d'exemplaire. La première synchro réunit les cartes des deux côtés. Un tag ne peut piloter qu'une collection."},

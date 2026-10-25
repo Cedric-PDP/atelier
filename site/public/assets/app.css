@@ -1290,3 +1290,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 /* ------------------------------------------------------------------ app installée */
 .modal h3.install-h { margin-top: 6px; font-size: 1rem; font-weight: 600; }
 .update > .app-note { grid-column: 1 / -1; }
+.wish-missing-link { margin-left: .6em; }
+.wish-missing-list { padding: 0; list-style: none; }
+.wish-missing-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
+.wish-missing-item .check { min-width: 0; overflow-wrap: anywhere; }
+.wish-missing-collections { grid-column: 1 / -1; overflow-wrap: anywhere; }

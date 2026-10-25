@@ -4382,6 +4382,63 @@ await test('souhaits par collection : sélection, chevauchement, désactivation,
   e.DB.close();
 });
 
+await test('titres sans cartes : bilan, portée, sélection, suppression complète et résultats périmés', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SansCartes', e, mini(3));
+  supa.cards = [gameCard('existe', 'Existe')];
+  const req = (method, route, body) => call(method, route, { key: m.u.key, e, body });
+  const save = (id, titles, wish_sync = true) => req('POST', 'targets/save', {
+    id, name: id, wish_sync, items: titles.map(title => ({ title, status: 'ok' })),
+  });
+  await save('a', ['Absent A', 'Absent B', 'Existe']);
+  await save('b', ['Absent A', 'Absent B']);
+  await save('off', ['Absent A', 'Absent C'], false);
+  oldWish(m.id, e);
+  let r = await req('POST', 'wishlist/sync', {});
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.wish.none, 2);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_missing WHERE user_id = ?').get(m.id).n, 2);
+  let list = (await req('GET', 'wishlist/missing')).json;
+  assert.deepEqual(list.items.map(i => i.title), ['Absent A', 'Absent B']);
+  assert.deepEqual(list.items[0].collections.map(c => c.id).sort(), ['a', 'b']);
+  assert.equal((await req('POST', 'wishlist/missing', { titles: [], revision: list.revision })).status, 400);
+  const other = await signup('SansCartesAutre', e);
+  assert.deepEqual((await call('GET', 'wishlist/missing', { key: other.key, e })).json.items, []);
+  // Un titre résolu depuis l'affichage rend la demande périmée ; aucun retrait.
+  e.DB.sqlite.prepare("UPDATE game_titles SET card_id = 'apparu' WHERE title = 'Absent B'").run();
+  assert.equal((await req('POST', 'wishlist/missing', { all: true, revision: list.revision })).status, 409);
+  list = (await req('GET', 'wishlist/missing')).json;
+  r = await req('POST', 'wishlist/missing', { titles: ['Absent A', 'Existe', 'Absent C'], revision: list.revision });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.removed, 1);
+  const albums = () => e.DB.sqlite.prepare('SELECT id, items FROM targets WHERE user_id = ? ORDER BY id').all(m.id)
+    .map(t => [t.id, JSON.parse(t.items).map(i => i.title)]);
+  assert.deepEqual(albums(), [['a', ['Absent B', 'Existe']], ['b', ['Absent B']], ['off', ['Absent A', 'Absent C']]]);
+  // Mode complet : inclut les albums décochés après une nouvelle passe, et conserve les titres trouvés.
+  await req('PATCH', 'me', { wish_mode: 'all' }); oldWish(m.id, e);
+  r = await req('POST', 'wishlist/sync', {}); assert.equal(r.status, 200);
+  list = (await req('GET', 'wishlist/missing')).json;
+  assert.deepEqual(list.items.map(i => i.title), ['Absent A', 'Absent C']);
+  await save('a', ['Absent B', 'Existe', 'Nouveau']);
+  assert.equal((await req('POST', 'wishlist/missing', { all: true, revision: list.revision })).status, 409);
+  list = (await req('GET', 'wishlist/missing')).json;
+  assert.ok(!list.items.some(i => i.title === 'Nouveau'), 'un titre non recherché ne peut pas être supprimé');
+  r = await req('POST', 'wishlist/missing', { all: true, revision: list.revision });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.removed, 2);
+  assert.deepEqual(albums(), [['a', ['Absent B', 'Existe', 'Nouveau']], ['b', ['Absent B']], ['off', []]]);
+  assert.equal(wishOf(m.id, e).none, 0);
+  // Ancien bilan sans liste persistée : compatibilité avec les résultats négatifs encore frais.
+  await save('off', ['Absent C']);
+  e.DB.sqlite.prepare('UPDATE users SET wish_state = ? WHERE id = ?').run(JSON.stringify({ at: new Date().toISOString(), none: 1 }), m.id);
+  assert.deepEqual((await req('GET', 'wishlist/missing')).json.items.map(i => i.title), ['Absent C']);
+  e.DB.sqlite.prepare("UPDATE game_titles SET at = '2020-01-01' WHERE title = 'Absent C'").run();
+  assert.deepEqual((await req('GET', 'wishlist/missing')).json.items, []);
+  await req('DELETE', 'me');
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_missing WHERE user_id = ?').get(m.id).n, 0);
+  e.DB.close(); supa.reset();
+});
+
 await test('souhaits par collection : arrière-plan, cron, dernière sélection et reprise après erreur', async () => {
   const e = makeEnv(); supa.reset();
   const m = await cronMember('Souhait3', e, mini(3));

@@ -282,6 +282,7 @@
     // Liste de souhaits dans les albums : choix par collection et synchronisation manuelle.
     // (POST /api/wishlist/sync) ; msg = résultat du clic.
     autoWish: { busy: false, error: '', syncBusy: false, msg: '', targetId: null },
+    wishMissing: { busy: false, error: '', message: '', items: [], revision: '', selected: new Set(), limit: 100 },
     autoTag: { busy: false, targetId: null, syncTargetId: null, error: '' },
     friendsAdd: null, // « Ajouter les membres pas encore amis » : {st (loading | ready | error), list [{id, name, pseudo, st, result?, error?}], pick (ids cochés), busy, error, fromCheck}
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
@@ -1352,6 +1353,7 @@
       q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     Object.assign(S.autoTag, { busy: false, targetId: null, syncTargetId: null, error: '' });
+    Object.assign(S.wishMissing, { busy: false, error: '', message: '', items: [], revision: '', selected: new Set(), limit: 100 });
     S.refresh.msg = '';
     S.refresh.error = false;
     S.refresh.warn = false;
@@ -2066,8 +2068,71 @@
     if (Number.isInteger(w.size)) bits.push(`${fmt(w.size)} ${plural(w.size, 'carte', 'cartes')} dans ta liste de souhaits du jeu`);
     if (w.left) bits.push(`${fmt(w.left)} encore à traiter (le classeur continue pendant les synchronisations automatiques)`);
     if (w.none) bits.push(`${fmt(w.none)} ${plural(w.none, 'titre', 'titres')} de tes collections sans carte dans le jeu`);
-    return h('p', { class: 'small muted' }, bits.join(' · ') + '.');
+    return h('p', { class: 'small muted' }, [bits.join(' · ') + '.', w.none
+      ? h('a', { href: '#/souhaits-sans-cartes', class: 'wish-missing-link' }, 'Voir les titres sans cartes') : null]);
   }
+  async function loadMissingWishes() {
+    const gen = cardsGen, m = S.wishMissing;
+    Object.assign(m, { busy: true, error: '', items: [], revision: '', selected: new Set(), limit: 100 });
+    try {
+      const r = await api('GET', '/api/wishlist/missing');
+      if (gen === cardsGen) Object.assign(m, { items: r.items, revision: r.revision });
+    } catch (e) { if (gen === cardsGen) m.error = e.message; }
+    finally { if (gen === cardsGen) m.busy = false; }
+  }
+  function askDeleteMissingWishes(all) {
+    const m = S.wishMissing;
+    const titles = [...m.selected], revision = m.revision, gen = cardsGen;
+    const n = all ? m.items.length : titles.length;
+    if (!n || m.busy) return;
+    openConfirm({ title: 'Supprimer les titres sans cartes ?',
+      text: `Retirer ${fmt(n)} ${plural(n, 'titre', 'titres')} de toutes les collections synchronisées qui les contiennent ?`,
+      ok: all ? 'Tout supprimer' : 'Supprimer les sélectionnés', danger: true,
+      run: async () => {
+        try {
+          const r = await api('POST', '/api/wishlist/missing', all ? { all: true, revision } : { titles, revision });
+          if (gen !== cardsGen) return;
+          m.message = `${fmt(r.removed)} ${plural(r.removed, 'titre retiré', 'titres retirés')}.`
+            + (r.skipped ? ' Certaines collections ont été modifiées entre-temps et ont été conservées.' : '');
+          await Promise.all([loadTargets(), loadMissingWishes()]);
+          if (S.me && S.me.wish) S.me.wish.none = m.items.length;
+        } catch (e) {
+          if (gen === cardsGen && e.status === 409) await loadMissingWishes();
+          throw e;
+        }
+      } });
+  }
+  function viewMissingWishes() {
+    const m = S.wishMissing;
+    return h('div', { class: 'wish-missing' }, [
+      h('a', { href: '#/collections', class: 'back' }, '← Mes collections'),
+      h('div', { class: 'section-head' }, [h('h2', { id: 'h-wish-missing' }, 'Titres sans cartes')]),
+      h('p', { class: 'small muted' }, 'Titres non trouvés dans le jeu pour toutes tes collections synchronisées. Copie un nom pour le vérifier dans WikiMasters.'),
+      h('div', { class: 'actions' }, [
+        h('button', { id: 'wish-missing-delete-all', class: 'btn danger', disabled: m.busy || !m.items.length,
+          onClick: () => askDeleteMissingWishes(true) }, 'Supprimer tous ces titres des collections'),
+        h('button', { id: 'wish-missing-delete-selected', class: 'btn danger', disabled: m.busy || !m.selected.size,
+          onClick: () => askDeleteMissingWishes(false) }, `Supprimer les sélectionnés (${fmt(m.selected.size)})`),
+        h('button', { class: 'btn', disabled: m.busy, onClick: () => loadMissingWishes() }, 'Actualiser'),
+      ]),
+      m.message ? h('p', { class: 'status ok', role: 'status' }, m.message) : null,
+      errLine(m.error),
+      m.busy ? h('p', { role: 'status' }, 'Chargement…') : !m.error && !m.items.length
+        ? h('p', null, 'Aucun titre sans carte dans tes collections synchronisées.') : null,
+      !m.busy && m.items.length ? h('p', { class: 'small muted' }, `${fmt(m.items.length)} ${plural(m.items.length, 'titre', 'titres')}`) : null,
+      h('ul', { class: 'wish-missing-list' }, m.items.slice(0, m.limit).map((r) => h('li', { class: 'wish-missing-item', key: r.title }, [
+        h('label', { class: 'check' }, [h('input', { type: 'checkbox', checked: m.selected.has(r.title),
+          onChange: (e) => e.target.checked ? m.selected.add(r.title) : m.selected.delete(r.title) }), h('span', null, r.title)]),
+        copyNameButton(r.title),
+        h('div', { class: 'small muted wish-missing-collections' }, r.collections.map((c, i) => [i ? ' · ' : '',
+          h('a', { href: '#/collections/' + encodeURIComponent(c.id) }, c.name)])),
+      ]))),
+      m.items.length > m.limit ? h('button', { class: 'btn', onClick: () => { m.limit += 100; } }, 'Afficher la suite') : null,
+    ]);
+  }
+  watch(() => S.boot === 'app' && S.tab === 'souhaits-sans-cartes', (on) => {
+    if (on) { S.wishMissing.message = ''; loadMissingWishes(); }
+  });
   function viewTargetWish(t) {
     if (S.me && S.me.wish_mode === 'all') return null;
     const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
@@ -7078,7 +7143,7 @@
   const M_NAV = [['collections', 'Collections', 'album'], ['amis', 'Amis', 'users'], ['chat', 'Chat', 'chat'], ['marche', 'Marché', 'coins']];
   const M_MORE = [['cartes', 'Mes cartes', 'grid', 'Toutes tes cartes, tes tags et les filtres'], ['maj', 'Synchro', 'refresh', 'Ton compte du jeu, la synchro et son journal'],
     ['reglages', 'Réglages', 'gear', 'Prénom, pseudo, partage, lien personnel'], ['nouveautes', 'Nouveautés', 'spark', 'Ce qui a changé dans le classeur']];
-  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Synchro', reglages: 'Réglages', nouveautes: 'Nouveautés' };
+  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Synchro', reglages: 'Réglages', nouveautes: 'Nouveautés', 'souhaits-sans-cartes': 'Titres sans cartes' };
   // ---------------------------------------------------------------- app installée (PWA)
   // L'app installée (écran d'accueil) est la même page, ouverte sans barre d'adresse. Sur iPhone, elle a son propre
   // stockage, séparé de Safari : au premier lancement elle ne connaît pas la clé, d'où « J'ai déjà un lien » en tête de
@@ -10646,11 +10711,12 @@
     else if (S.tab === 'chat') panel = viewChat();
     else if (S.tab === 'marche') panel = viewMarket();
     else if (S.tab === 'nouveautes') panel = viewNews();
+    else if (S.tab === 'souhaits-sans-cartes') panel = viewMissingWishes();
     else panel = S.album ? viewAlbum() : viewCollections();
-    const page = S.tab === 'nouveautes'; // page à part, sans onglet : une région nommée par son titre
+    const page = S.tab === 'nouveautes' || S.tab === 'souhaits-sans-cartes'; // page à part, sans onglet : une région nommée par son titre
     return h('main', { class: ['wrap', 'tab-' + S.tab], id: 'main' }, [
       S.tab === 'collections' && !S.album ? viewMobileSummary() : null,
-      h('section', page ? { id: 'panel-' + S.tab, 'aria-labelledby': 'h-news', key: S.tab }
+      h('section', page ? { id: 'panel-' + S.tab, 'aria-labelledby': S.tab === 'souhaits-sans-cartes' ? 'h-wish-missing' : 'h-news', key: S.tab }
         : { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
     ]);
   }
@@ -12313,7 +12379,7 @@
     else if (a === 'page' && title(b)) r.album = { kind: 'category', id: PAGE_SRC + title(b) };
     else if (a === 'ami' && b) { r.tab = 'amis'; r.friend = b; r.falbum = c || null; }
     else if (a === 'amis' && b === 'echanges') { r.tab = 'amis'; r.trades = true; }
-    else if (TABS.some(([id]) => id === a) || a === 'nouveautes') r.tab = a;
+    else if (TABS.some(([id]) => id === a) || a === 'nouveautes' || a === 'souhaits-sans-cartes') r.tab = a;
     return r;
   }
 

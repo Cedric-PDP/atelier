@@ -83,6 +83,7 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
   // Ce que la passe a vu des cartes : une lecture finie pendant la passe la rendra due à nouveau.
   const head = await db.prepare('UPDATE users SET wish_dirty = 0 WHERE id = ?1 RETURNING cards_rev').bind(user.id).first();
   const out = { at: nowIso(), via, rev: head ? head.cards_rev : user.cards_rev, size: null, added: 0, removed: 0, left: 0, none: 0 };
+  let missing = null;
   let n = 0;
   const room = () => n < max;
   const wait = () => (n++ ? gap : 0);
@@ -140,7 +141,9 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       for (const [t, id] of pairs) ids.set(t, id);
       await db.prepare(REMEMBER).bind(JSON.stringify(pairs), nowIso()).run();
     }
-    out.none = titles.filter((t) => ids.get(t) === '').length;
+    missing = titles.filter((t) => ids.get(t) === '');
+    out.none = missing.length;
+    out.missing_checked = true;
     const found = [...new Set(titles.map((t) => ids.get(t)).filter((id) => id))];
     {
       // 4. Celles qui ne sont ni possédées (sous un autre titre) ni déjà souhaitées entrent dans la liste.
@@ -162,18 +165,25 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
     out.size = wish.size;
   } catch (err) {
     out.error = err && err.message ? String(err.message).slice(0, 300) : 'Échec de la mise à jour de la liste de souhaits.';
-    await saveState(db, user.id, out);
+    await saveState(db, user.id, out, missing);
     throw err;
   }
-  await saveState(db, user.id, out);
+  await saveState(db, user.id, out, missing);
   // Conserve une modification de collection arrivée pendant la passe (wish_dirty).
   await db.prepare(`UPDATE users SET auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
     OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(user.id).run();
   return out;
 }
 
-const saveState = (db, userId, st) => db.prepare('UPDATE users SET wish_state = ?2 WHERE id = ?1').bind(userId, JSON.stringify(st)).run()
-  .catch((err) => console.error(err));
+async function saveState(db, userId, st, missing) {
+  const statements = [];
+  if (missing !== null) {
+    statements.push(db.prepare('DELETE FROM wish_missing WHERE user_id = ?1').bind(userId));
+    statements.push(db.prepare('INSERT INTO wish_missing (user_id, title) SELECT ?1, value FROM json_each(?2)').bind(userId, JSON.stringify(missing)));
+  }
+  statements.push(db.prepare('UPDATE users SET wish_state = ?2 WHERE id = ?1').bind(userId, JSON.stringify(st)));
+  await db.batch(statements);
+}
 
 // Passe sous un bail pris ici. → l'état, ou null si le bail est déjà pris (une autre lecture tourne).
 async function underLease(env, user, opts) {

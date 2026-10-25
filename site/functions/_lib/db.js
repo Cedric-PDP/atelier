@@ -86,6 +86,11 @@ export const SCHEMA = [
     auto_tag_state TEXT,
     PRIMARY KEY (user_id, id)
   )`,
+  `CREATE TABLE IF NOT EXISTS wish_missing (
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    PRIMARY KEY (user_id, title)
+  )`,
   `CREATE TABLE IF NOT EXISTS wish_managed (
     user_id TEXT NOT NULL,
     card_id TEXT NOT NULL,

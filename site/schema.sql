@@ -135,6 +135,12 @@ CREATE TABLE IF NOT EXISTS targets (
 );
 
 -- Cartes prises en charge par les collections synchronisées, pour les retirer à la désactivation sans toucher aux autres souhaits.
+CREATE TABLE IF NOT EXISTS wish_missing (
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    PRIMARY KEY (user_id, title)
+  );
+
 CREATE TABLE IF NOT EXISTS wish_managed (
     user_id TEXT NOT NULL,
     card_id TEXT NOT NULL,

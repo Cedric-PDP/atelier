@@ -236,7 +236,7 @@ export async function deleteMe(env, user) {
   await db.batch(
     // Marché : sa lecture du marché et ses quotas (market), l'historique de sa valeur, ses compteurs de lectures des fiches
     // (game_reads) ; les cotes (prices), communes et liées à aucun classeur, restent. Ses demandes d'ami du jeu notées (friend_requests).
-    ['cards', 'cards_gone', 'tags', 'targets', 'wish_managed', 'refresh_staging', 'market', 'value_history', 'sync_log', 'game_reads', 'friend_requests'].map((t) =>
+    ['cards', 'cards_gone', 'tags', 'targets', 'wish_managed', 'wish_missing', 'refresh_staging', 'market', 'value_history', 'sync_log', 'game_reads', 'friend_requests'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
     ).concat(eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );

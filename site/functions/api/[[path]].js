@@ -21,6 +21,7 @@ import { createTrade } from '../_lib/trades.js';
 import { listFriends, requestFriend, requestFriends } from '../_lib/friends.js';
 import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
+import { listMissingWishes, deleteMissingWishes } from '../_lib/wishmissing.js';
 import { syncWishlist, wishSoon } from '../_lib/wishlist.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
@@ -72,6 +73,7 @@ const ROUTES = {
   'friends/request-all': { POST: [requestFriends, 'main'] }, // plusieurs demandes d'ami d'un coup (Réglages)
   'market/sell': { GET: [sellInfo, 'main'], POST: [sellCard, 'main'] }, // mettre une carte en vente dans le jeu (et ses exemplaires)
   'market/cancel': { POST: [cancelSale, 'main'] }, // annuler une de tes ventes, tant que personne n'a misé
+  'wishlist/missing': { GET: [listMissingWishes, 'main'], POST: [deleteMissingWishes, 'main'] },
   'wishlist/sync': { POST: [syncWishlist, 'main'] }, // « Mettre à jour ma liste de souhaits » du jeu (wishlist.js)
 };
 

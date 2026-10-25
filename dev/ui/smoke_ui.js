@@ -354,6 +354,27 @@ function mockApi() {
           auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend, auto_wish: !!st.autoWish, wish_mode: st.wishMode || 'selected' });
       }
       // Liste de souhaits du jeu : « Mettre à jour maintenant » rend une passe fixe (2 ajoutées, 1 retirée).
+      if (p === '/api/wishlist/missing') {
+        const titles = new Map();
+        for (const t of st.targets || []) if (t.wish_sync || st.wishMode === 'all') {
+          for (const i of t.items) if (i.title.startsWith('Sans jeu ')) {
+            if (!titles.has(i.title)) titles.set(i.title, []);
+            titles.get(i.title).push({ id: t.id, name: t.name });
+          }
+        }
+        const items = [...titles].map(([title, collections]) => ({ title, collections }));
+        if (method === 'GET') return json(200, { items, revision: 'missing-test' });
+        if (method === 'POST') {
+          const chosen = new Set(body.all ? [...titles.keys()] : body.titles);
+          let collections = 0;
+          for (const t of st.targets || []) if (t.wish_sync || st.wishMode === 'all') {
+            const before = t.items.length;
+            t.items = t.items.filter((i) => !chosen.has(i.title));
+            if (before !== t.items.length) collections++;
+          }
+          return json(200, { removed: chosen.size, collections, skipped: 0 });
+        }
+      }
       if (p === '/api/wishlist/sync' && method === 'POST') {
         if (!st.linked) return json(401, { error: "Relie d'abord ton compte du jeu.", needs_link: true });
         st.wish = { at: new Date().toISOString(), via: 'clic', size: 345, added: 2, removed: 1, left: 0, none: 3 };
@@ -1328,6 +1349,11 @@ async function main() {
     return { doc: p.doc, win: p.win, ctx: c, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
       longTimers, live: async () => { for (const f of [...longTimers.values()]) await f(); } };
   };
+  if (process.argv.includes('--wish-missing-only')) {
+    await testMissingWishes();
+    console.log('WISH MISSING UI OK');
+    return;
+  }
   const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
 
   await settle(60);
@@ -6400,6 +6426,59 @@ async function main() {
     console.log('membres cités : #u:, lien, aperçu (pseudo, cartes, collections, complètes), prénom seul sans partage');
   }
 
+  // Titres sans cartes : ouverture directe, copie, sélection, confirmation et retrait de toute la liste.
+  await testMissingWishes();
+  async function testMissingWishes() {
+    if (SERVER) return;
+    const saved = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
+    const key = await makeOtherAccount('SansJeu');
+    const make = async (name, titles, wish_sync) => rawApi('POST', '/api/targets/save', key,
+      { name, items: titles.map(title => ({ title, status: 'ok' })), wish_sync });
+    await make('Synchro A', ['Sans jeu A', 'Sans jeu B', 'À garder'], true);
+    await make('Synchro B', ['Sans jeu A'], true);
+    await make('Hors synchro', ['Sans jeu A'], false);
+    api.link(key);
+    await rawApi('POST', '/api/wishlist/sync', key, {});
+    ls.set('classeur-key', key);
+    ls.set('classeur-known', JSON.stringify([{ key, name: 'SansJeu' }]));
+    const pg = openPage({ idb: 'absent', hash: '#/souhaits-sans-cartes' });
+    const d = pg.doc;
+    const rows = () => d.querySelectorAll('.wish-missing-item');
+    check(await waitFor(() => rows().length === 2), 'titres sans cartes : page directe non chargée : ' + text(d.body).slice(-1000));
+    check(text(rows()[0]).includes('Synchro A') && text(rows()[0]).includes('Synchro B') && !text(rows()[0]).includes('Hors synchro'), 'titres sans cartes : collections concernées');
+    const go = async (href) => {
+      pg.ctx.history.pushState(null, '', href);
+      for (const f of [...(pg.win.listeners.hashchange || [])]) f({ type: 'hashchange' });
+      await settle(80);
+    };
+    const album = rows()[0].querySelector('a').getAttribute('href');
+    await go(album);
+    check(await waitFor(() => d.querySelector('.wish-missing-link')), 'titres sans cartes : lien dans la collection');
+    await go('#/reglages');
+    check(await waitFor(() => d.querySelector('.wish-missing-link')), 'titres sans cartes : lien dans Réglages');
+    await go(d.querySelector('.wish-missing-link').getAttribute('href'));
+    check(await waitFor(() => rows().length === 2), 'titres sans cartes : ouverture depuis Réglages');
+    rows()[0].querySelector('.copy-name').click();
+    await settle();
+    check(copied[copied.length - 1] === 'Sans jeu A', 'titres sans cartes : nom copié');
+    const cb = rows()[0].querySelector('input'); cb.checked = true; cb.dispatch('change');
+    await settle();
+    const picked = d.getElementById('wish-missing-delete-selected');
+    check(!picked.disabled && text(picked).includes('(1)'), 'titres sans cartes : sélection');
+    picked.click(); await settle();
+    const dialog = () => d.querySelector('[role="dialog"]');
+    const confirm = (label) => dialog().querySelectorAll('button').find(b => text(b) === label);
+    check(dialog(), 'titres sans cartes : confirmation absente');
+    confirm('Supprimer les sélectionnés').click();
+    check(await waitFor(() => !dialog() && rows().length === 1), 'titres sans cartes : suppression sélection');
+    d.getElementById('wish-missing-delete-all').click(); await settle();
+    confirm('Tout supprimer').click();
+    check(await waitFor(() => !dialog() && text(d.body).includes('Aucun titre sans carte')), 'titres sans cartes : supprimer tout');
+    const albums = (await rawApi('GET', '/api/targets', key)).body.targets;
+    check(albums.find(t => t.name === 'Hors synchro').items.length === 1 && albums.find(t => t.name === 'Synchro A').items[0].title === 'À garder', 'titres sans cartes : titres à conserver');
+    for (const [k, v] of saved) v == null ? ls.delete(k) : ls.set(k, v);
+  }
+
   // Nouveautés : page à part (#/nouveautes), pastille « nouveau » tant que la dernière version n'a pas été vue dans ce
   // navigateur, liens internes, messages système du chat (nouveautes.json, contrat : SPEC.md, « Nouveautés »).
   {
@@ -6412,7 +6491,7 @@ async function main() {
         check(typeof g.title === 'string' && g.title && Array.isArray(g.items) && g.items.length, 'nouveautes.json : rubrique mal formée ' + JSON.stringify(g).slice(0, 200));
         for (const it of g.items) {
           check(typeof it.text === 'string' && it.text && it.text.length <= 600, 'nouveautes.json : ligne mal formée ' + JSON.stringify(it));
-          if (it.to != null) check(/^#\/(collections|cartes|amis|marche|chat|maj|reglages|nouveautes)(\/|\?|$)/.test(it.to) && typeof it.link === 'string', 'nouveautes.json : lien interne inconnu ' + it.to);
+          if (it.to != null) check(/^#\/(collections|cartes|amis|marche|chat|maj|reglages|nouveautes|souhaits-sans-cartes)(\/|\?|$)/.test(it.to) && typeof it.link === 'string', 'nouveautes.json : lien interne inconnu ' + it.to);
         }
       }
     }
