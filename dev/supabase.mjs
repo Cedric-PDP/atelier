@@ -11,7 +11,8 @@
 // rangée, [{bidder_id, amount}] ; forme relevée par le projet de référence, pas vérifiée ici ; `siteLimit` : 429 |
 // 'automation_limit') ; écritures : POST /api/trades (une proposition d'échange, relevée dans le HAR du 2026-10-22), et
 // GET /api/marketplace/mine, POST /api/marketplace (mise en vente d'un exemplaire), DELETE /api/marketplace/<id>
-// (annulation, refusée après une mise) relevées dans le HAR du 2026-10-23 ; `sellReply` force la réponse d'une mise en
+// (annulation, refusée après une mise) relevées dans le HAR du 2026-10-23, POST /api/marketplace/<id>/bid {amount} (une mise,
+// relevée dans le HAR du 2026-10-26 ; solde débité, `bidReply` force sa réponse) ; `sellReply` force la réponse d'une mise en
 // vente, `maxAuctions` le plafond d'enchères actives, `siteLimit` limite aussi ces routes. RLS de user_cards :
 // ses propres exemplaires seulement, sauf `readOthers` (ceux de tout le monde, comme si le jeu les laissait lire).
 // Amis : GET /api/friends ({friendships:[…]}, forme relevée dans le HAR du 2026-10-22, d'après `friendships`) et POST
@@ -102,6 +103,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     tradeReply: null, // (body) → {status, body, setCookie?} pour forcer la réponse de POST /api/trades
     siteLimit: null, // 429 | 'automation_limit' : routes du marché du site limitées
     sellReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/marketplace
+    bidReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/marketplace/<id>/bid
     maxAuctions: 5, // enchères actives par vendeur (maxConcurrentAuctions)
     friendships: [], // {id, requester_id, addressee_id, status} : GET /api/friends, POST /api/friends
     friendReply: null, // (body) → {status, body, network?} pour forcer la réponse de POST /api/friends
@@ -378,6 +380,28 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       me.auctions.push(a);
       return reply({ auction_id: a.id }, 201);
     }
+    if (method === 'POST' && (m = /^\/api\/marketplace\/([^/]+)\/bid$/.exec(u.pathname))) {
+      assert.equal(h.get('origin'), GAME, 'Origin du jeu');
+      const body = JSON.parse(init.body || '{}');
+      if (supa.bidReply) {
+        const f = supa.bidReply(body);
+        if (f.network) throw new TypeError('fetch failed');
+        return reply(f.body ?? {}, f.status);
+      }
+      const id = decodeURIComponent(m[1]);
+      const a = [...supa.players.values()].flatMap((p) => p.auctions).find((x) => x.id === id);
+      if (!a || a.status !== 'active' || !(Date.parse(a.end_at) > now())) return reply({ error: 'Enchère introuvable ou terminée' }, 404);
+      if (a.seller_id === me.uid) return reply({ error: 'Vous ne pouvez pas enchérir sur votre propre vente' }, 400);
+      const min = a.current_bidder_id ? a.current_bid + 1 : a.base_amount;
+      if (!Number.isInteger(body.amount) || body.amount < min) return reply({ error: `Enchère minimale : ${min}` }, 400);
+      const bal = me.wikibidous ?? 0;
+      if (body.amount > bal) return reply({ error: 'Solde insuffisant' }, 400);
+      me.wikibidous = bal - body.amount;
+      a.current_bid = body.amount;
+      a.current_bidder_id = me.uid;
+      (a.bids = a.bids || []).push({ bidder_id: me.uid, amount: body.amount });
+      return reply({ auction_id: a.id, current_bid: body.amount, bidder_balance: me.wikibidous });
+    }
     if (method === 'DELETE' && (m = /^\/api\/marketplace\/([^/]+)$/.exec(u.pathname))) {
       assert.equal(h.get('origin'), GAME, 'Origin du jeu');
       const a = me.auctions.find((x) => x.id === decodeURIComponent(m[1]));
@@ -391,8 +415,8 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       const a = [...supa.players.values()].flatMap((p) => p.auctions).find((x) => x.id === id);
       if (!a) return reply({ error: 'Enchère introuvable' }, 404);
       const name = (uid) => (supa.players.get(uid) || {}).username || null;
-      const { bids = [], card, ...auction } = a;
-      return reply({ auction: { ...auction, seller: { username: name(a.seller_id) }, current_bidder: a.current_bidder_id ? { username: name(a.current_bidder_id) } : null },
+      const { bids = [], card, ...auction } = a; // la carte, comme le jeu (relevé dans le HAR du 2026-10-26) : son titre seulement
+      return reply({ auction: { ...auction, card: card && card.wikipedia_title ? { wikipedia_title: card.wikipedia_title } : null, seller: { username: name(a.seller_id) }, current_bidder: a.current_bidder_id ? { username: name(a.current_bidder_id) } : null },
         bids: bids.map((b) => ({ ...b, auction_id: id })) });
     }
     if (u.pathname === '/api/friends' && supa.siteLimit === 'friends') return reply({ code: 'automation_limit', error: 'automation limit' }, 403);

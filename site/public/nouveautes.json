@@ -16,7 +16,10 @@
         {"text": "Passer d'un mode à l'autre conserve tes choix par collection : tu les retrouves en revenant au mode individuel. Une nouvelle collection est automatiquement incluse en mode complet ; en mode individuel, elle est décochée par défaut."},
         {"text": "Lors de la migration de l'ancien site, une synchronisation globale activée reste en mode complet et toutes les collections existantes sont cochées ; si elle était désactivée, le mode individuel est choisi avec toutes les collections décochées. Les choix individuels déjà faits dans la nouvelle version sont conservés."},
         {"text": "« Synchroniser les souhaits maintenant » et le bilan des mises à jour sont disponibles dans Réglages et dans tes collections."}
-      ]}
+      ]},
+      {"icon":"🪙","title":"Marché","items":[{"text":"Mise sur une enchère sans quitter le classeur : bouton « Miser » sur chaque bonne affaire à acheter et sur chaque enchère en cours de la fiche d'une carte. La mise est proposée au minimum, avec la cote et ton solde sous les yeux.","to":"#/marche","link":"Marché"}]},
+      {"icon":"🔄","title":"Échanges possibles","items":[{"text":"Une carte n'est plus proposée à l'échange si celui qui la donne n'en a qu'une et qu'elle remplit une de ses propres collections. Ses doubles restent proposés.","to":"#/amis/echanges","link":"Échanges possibles"}]},
+      {"icon":"🗂️","title":"Collections","items":[{"text":"Dans un album rangé par intercalaires, les cartes hors section (celles d'avant le premier intercalaire) s'affichent maintenant tout en bas, sous les sections.","to":"#/collections","link":"Collections"}]}
     ]},
     {"id": "2026-10-24", "date": "2026-10-24", "sections": [{"icon": "💬", "title": "Chat", "items": [{"text": "Réagis aux messages : « Réagir » sur une bulle, puis choisis un emoji (👍 ❤️ 😂 😮 😢 🎉 🔥 👀). Les réactions s'affichent sous le message avec leur nombre. Survole-les pour voir qui a réagi, clique dessus pour ajouter ou retirer la tienne.", "to": "#/chat", "link": "Chat"}]},
       {"icon": "🔄", "title": "Échanges possibles", "items": [{"text": "Un seul bloc par paire de membres (« Toi ⇄ Paul ») : ce que tu peux lui donner et ce qu'il peut te donner sont maintenant réunis, avec un seul bouton « Proposer un échange ».", "to": "#/amis/echanges", "link": "Échanges possibles"}]},
@@ -135,6 +138,7 @@
     { "id": "2026-10-20", "at": "2026-10-20T07:24:03Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-20" },
     { "id": "2026-10-22", "at": "2026-10-22T21:20:50Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-22" },
     { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" },
-    { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" }
+    { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" },
+    { "id": "2026-10-26", "at": "2026-10-26T08:33:31Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-26" }
   ]
 }

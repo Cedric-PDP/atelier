@@ -180,6 +180,7 @@ plus faite.
 | `GET /api/market/sell?id=<card_id>` | (clé principale ; 2026-10-23) | `{card_id, copies:[{k, n, fav}], selling, max}` : **tes exemplaires** de la carte dans le jeu par rareté d'exemplaire et brillance (`k` : « R », « R* » ; `n` exemplaires, `fav` dont favoris), lus dans sa base, et **tes enchères actives** sur leur plafond (`selling` / `max`, lus sur le site du jeu, `GET /api/marketplace/mine` ; `null` s'il ne les donne pas). Voir « Le marché », « Vendre ». `400` ; `401 {needs_link:true}` ; `429 {retry_after}` / `429 {limited:true}` comme le détail d'une enchère ; `409`, `502` |
 | `POST /api/market/sell` | (clé principale ; 2026-10-23) `{id, k, base, minutes}` : `id` = la carte, `k` = rareté d'exemplaire à vendre, `base` = mise de départ (entier, 1 à 10 000 000 W), `minutes` = 10, 30, 60, 180, 360 ou 720 ; 2 Ko | `{auction:{a, k, base, minutes, end}, url}` : l'enchère **créée dans le jeu** (`end` : fin estimée), ajoutée aussitôt à « Tes ventes » de la dernière lecture du marché. `400` corps mal formé ; `401 needs_link` ; `409` plus d'exemplaire de cette rareté dans le jeu, refus du jeu (son message repris : plafond d'enchères actives…) ou `409 {verify:true}` le jeu demande une vérification anti-robot (la vente se fait alors dans le jeu) ; `429 {limited:true}` le jeu limite (pause de 10 min) ou `429 {retry_after}` plafond par minute ; `502` panne ou réponse inattendue (« regarde dans le jeu si elle a été créée ») |
 | `POST /api/market/cancel` | (clé principale ; 2026-10-23) `{a}` : l'id de l'enchère ; 2 Ko | `{a, status:"cancelled"}` : ta vente **retirée du marché du jeu**, marquée terminée (`off`) dans « Tes ventes ». Seulement **tant que personne n'a misé** : `409 {has_bid:true}` sinon ; `409 {gone:true}` vente inconnue du jeu ou terminée ; `403` la vente d'un autre ; `400`, `401`, `429`, `502` comme ci-dessus |
+| `POST /api/market/bid` | (clé principale ; 2026-10-26) `{a, amount}` : l'id de l'enchère et ta mise (entier, 1 à 10 000 000 W) ; 1 Ko | `{a, amount, cur, balance, url}` : ta **mise faite dans le jeu** (`cur` : enchère actuelle, `balance` : ton solde de wikibidous rendu par le jeu, rangé dans le compte, ou `null`) ; la dernière lecture du marché la prend aussitôt (« Tes mises », bonne affaire « tu mènes »). L'enchère est **relue d'abord** sur le site du jeu : `409 {min, cur}` mise trop basse (sans mise : au moins le prix de départ ; après une mise : au moins un W de plus que l'enchère actuelle) ; `409 {lead:true}` tu mènes déjà ; `409 {gone:true}` enchère finie ou inconnue du jeu ; `403` ta propre vente ; `409` refus du jeu (son message repris : solde…) ou `409 {verify:true}` vérification anti-robot ; `400`, `401 needs_link`, `429`, `502` (« regarde dans le jeu si elle est passée ») comme une mise en vente. Voir « Le marché », « Miser » |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
 **Message** (chat) : `{id, author, mine, text, created_at, refs?, members?, reply?, reactions?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
@@ -260,10 +261,11 @@ au plus).
 
 Depuis le 2026-10-22, le classeur lit la collection et le marché **directement dans la base du jeu** (Supabase, projet
 `cyrxjeppjqsxxjayfrur` : Auth et PostgREST), avec **une session du jeu par membre gardée par le serveur** (`game.js`,
-`session.js`, `link.js`). Deux écritures dans le jeu, toujours au clic du membre : la **proposition d'un échange** à un ami
+`session.js`, `link.js`). Écritures dans le jeu au clic du membre : la **proposition d'un échange** à un ami
 (`POST /api/trades/create`, `trades.js`, voir « Proposer un échange »), et depuis le 2026-10-23 la **mise en vente** d'une de ses
 cartes et l'**annulation** d'une de ses ventes sans mise (`POST /api/market/sell`, `POST /api/market/cancel`, `sell.js`, voir « Le
-marché », « Vendre ») ; rien d'autre.
+marché », « Vendre »), et depuis le 2026-10-26 une **mise** sur une enchère (`POST /api/market/bid`, `bid.js`, voir « Miser ») ; plus les
+demandes d'ami et la liste de souhaits (voir « Règles du jeu »).
 
 **Pourquoi une session dédiée, née en fenêtre privée.** Le jeu n'a qu'une connexion par e-mail et mot de passe, derrière un
 captcha (relevé du 2026-10-22 : `GET /auth/v1/settings` ne donne que `external.email: true` ; `POST
@@ -704,7 +706,11 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
   compléter tes collections » ; celles qu'un ami montre ; aucune pour un ami qui ne les montre pas (on ne sait pas ce
   qui lui manque : « Léa ne partage pas ses collections : impossible de savoir ce qui lui manque », ses cartes comptent
-  quand même pour les autres). Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
+  quand même pour les autres). **Jamais une carte qui casserait une collection de X** (2026-10-26, demande de
+  l'utilisateur) : une carte que X n'a qu'en un exemplaire et qui remplit une case d'une de ses collections n'est pas
+  proposée (en double, elle l'est : il en garde une) ; pour un ami qui ne montre pas ses collections, on ne peut pas le
+  savoir : ses cartes restent proposées. Vaut aussi pour « Ce qui pourrait intéresser tes amis » et pour la fenêtre
+  « Proposer un échange », qui reprennent ce calcul. Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
   collections de Z qu'elle complète (un même article dans deux
   collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
   en double » ; **un bloc par paire de membres** (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs
@@ -1779,7 +1785,11 @@ fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde s
   un **cadre gris clair à onglet** (`.sep-frame`, 4 px autour, onglet en haut à gauche, derrière la carte : elle passe
   devant quand elle se soulève au survol) ; son nom accessible dit « intercalaire ». En tri « Ordre », **sans filtre**
   (« Toutes ») et pour une collection qui a un ordre, un intercalaire **commence une nouvelle ligne** de la grille (une
-  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé) ; en tri
+  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé). Les
+  cartes d'avant le premier intercalaire (hors de toute section, « non triées ») sont montrées **après** les sections, sur
+  leur propre ligne (2026-10-26, demande de l'utilisateur : les intercalaires toujours au-dessus des cartes non triées) ;
+  seulement à l'affichage (album à toi ou d'un ami) : la collection garde son ordre, et « Réorganiser » montre l'ordre
+  rangé. En tri
   « A → Z », « Rareté », « Prix ↑/↓ » ou avec un filtre, il ne garde que son cadre.
 - **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), l'onglet d'un
   intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, chevron, `aria-expanded`, « Replier / Déplier
@@ -1990,6 +2000,23 @@ reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste mon
     `Referer` du jeu, **une seule tentative**, `Set-Cookie` gardé, refus du jeu repris (300 caractères), comme « Proposer un échange ».
     `human_verification_required` (le jeu ouvre alors un captcha) → `409 {verify:true}`. **Non vérifié sur le jeu** : la vente avec ce cookie refait
     depuis une adresse Cloudflare (la proposition d'échange marche ainsi), et quand le jeu demande la vérification anti-robot.
+- **Miser** (2026-10-26, `bid.js`, route relevée dans un HAR du jeu du 2026-10-26 : `POST /api/marketplace/<id>/bid` `{amount}` → `200
+  {auction_id, current_bid, bidder_balance}`, le solde **déjà débité** de la mise) : bouton **« Miser »** sur chaque ligne de « Bonnes affaires à
+  acheter » (sauf celle que tu mènes) et sur chaque enchère en cours de la fiche d'une carte (sauf ta vente, celle que tu mènes, une enchère finie
+  ou que le jeu ne connaît plus ; pas dans la fenêtre « Mettre en vente »), seulement avec un compte relié. La fenêtre « Miser sur « … » » (par-dessus
+  la fiche, qui reste ouverte) : exemplaire, enchère actuelle ou prix de départ (« aucune mise »), cote (« ~ » sous 3 ventes), fin, ton solde lu à la
+  dernière synchro ; **ta mise** (W, entier) proposée au minimum, puces « minimum · 50W » et « la cote · 100W » (si plus haute) ; avertissements :
+  sous le minimum (envoi désactivé), au-dessus de la cote, plus que ton solde. **Minimum** : sans mise, le prix de départ ; après une mise, un W de
+  plus que l'enchère actuelle (dans la fiche, celle lue sur le site du jeu si elle est plus haute) : le pas réel du jeu n'est pas connu, son
+  refus est montré tel quel. « Miser 56W dans le jeu » → `POST /api/market/bid` ; refus `409 {min, cur}` (quelqu'un a misé entre-temps) : le
+  minimum et l'enchère actuelle suivent, et le champ s'il était au minimum. Réussite : « Mise faite : tu mènes. Ta mise : 56W · ton solde dans le
+  jeu : 944W. », « Ouvrir dans le jeu ↗ » ; la fiche la montre aussitôt « tu mènes », le marché est relu (la ligne passe « tu mènes », sans
+  « Miser »). **Côté serveur** : comme « Vendre » (session de la route du site, deux appels comptés dans les 20 par minute, pause de 10 min,
+  cookie refait, une seule tentative, `human_verification_required` → `409 {verify:true}`) ; relecture `GET /api/marketplace/<id>` (statut, fin,
+  vendeur, meneur, `effective_bid` ou `base_amount` sans mise, `current_bid` sinon), puis la mise ; le solde rendu va dans `users.wikibidous`, et
+  la dernière lecture du marché est corrigée sans changer son heure (`patchLive` : bonne affaire `ask`/`bid`/`lead`, ligne de « Tes mises » en
+  tête, `st:"run"`). **Non vérifié sur le jeu** : la mise depuis une adresse Cloudflare, le pas minimal après une mise, ce que devient la mise
+  d'un enchérisseur dépassé.
 - **« Mes ventes en cours »** (2026-10-23 ; section pleine largeur sous la valeur, **ouverte par défaut**, `open.ventes`) : tes ventes pas encore
   finies (`live.sales` en `run` dont la fin n'est pas passée, y compris celles faites depuis le classeur, ajoutées par le serveur), la fin la plus
   proche d'abord, 20 puis « Afficher 20 de plus ». Une ligne : rareté, titre (sa fiche), « brillante », départ, enchère actuelle et écart à la cote,
@@ -2113,7 +2140,11 @@ assumé de l'utilisateur, décrit ici tel qu'il est.
   (`POST /api/marketplace` du site du jeu), et « Annuler la vente » retire une de ses ventes tant que personne n'a misé (`DELETE
   /api/marketplace/<id>`, après une relecture de l'enchère). Même chemin que l'échange (cookie refait, depuis le serveur, une seule tentative),
   donc la même exposition à ces règles ; ces routes du marché du site sont celles qui renvoient `automation_limit`, et le jeu peut aussi demander
-  une vérification anti-robot (la vente se fait alors dans le jeu). Jamais sans clic, jamais de mise, d'achat ni de baisse de prix.
+  une vérification anti-robot (la vente se fait alors dans le jeu). Jamais sans clic, jamais de baisse de prix.
+- **Miser, au clic** (2026-10-26, demande de l'utilisateur) : « Miser … dans le jeu » place une mise au nom du membre (`POST
+  /api/marketplace/<id>/bid` du site du jeu, après une relecture de l'enchère), comme dans l'écran d'une enchère du jeu. Même chemin et même
+  exposition que « Vendre ». Une mise engage le membre (il achète si personne ne surenchérit) et le jeu retient le montant sur son solde.
+  Jamais sans clic, une mise par clic, jamais de surenchère automatique.
 - **Aucune imitation de navigateur** : pour les lectures, les en-têtes sont `apikey` (clé publique du jeu), `Authorization: Bearer` (la session du
   membre) et `Accept` ; le `User-Agent` est celui de la plateforme, pas celui d'un navigateur.
 - Pour 50 membres reliés, c'est au plus de l'ordre de 4 500 requêtes par heure vers le jeu pour le marché, plus une vérification par membre toutes

@@ -288,6 +288,9 @@
     // « Mettre en vente » : {c (la carte), k (rareté d'exemplaire choisie), base (texte du champ), minutes, info (GET
     // /api/market/sell), infoBusy, infoError, busy, error, verify, done (la vente créée), cancelBusy, cancelError, cancelled}.
     sell: null,
+    // « Miser » : {x (l'enchère, voir openBid), min (mise minimale), amount (texte du champ), busy, error, verify, done (la
+    // mise faite : {amount, cur, balance, url})}.
+    bid: null,
     // « Réorganiser » (album d'une de tes collections qui a un ordre) : brouillon du nouvel ordre, voir startReorder.
     reorder: null,
     // « Réorganiser » de « Mes collections » : brouillon de l'ordre des collections, voir startColOrder.
@@ -1078,6 +1081,9 @@
   // compléter tes collections » (celles faites d'une catégorie comprises) ; celles qu'un ami montre ; rien pour un ami qui ne les
   // montre pas (on ne sait pas ce qui lui manque : il est seulement nommé). Une ligne par carte et par couple
   // (X → Z), avec toutes les collections de Z qu'elle complète ; rapprochement titre puis qid (match.js), comme ailleurs.
+  // Jamais une carte qui casserait une collection de X (2026-10-26, demande de l'utilisateur) : une carte que X n'a qu'en
+  // un exemplaire et qui remplit une case d'une de ses collections n'est pas proposée (en double, elle l'est : il en
+  // garde une). Pour un ami qui ne montre pas ses collections, on ne peut pas savoir : ses cartes restent proposées.
   // Calculé une fois par chargement (et quand un qid est appris), filtré à part (tradeView).
   const ME = ''; // « toi » dans les échanges (un identifiant public n'est jamais vide)
   const rarityRank = (r) => RANK[r] ?? 9;
@@ -1101,11 +1107,25 @@
       return [];
     }
     const sameCol = (a, b) => (a.id != null && b.id != null ? a.id === b.id : a.name === b.name && a.cat === b.cat);
+    // Collections de chacun, et ses cartes qui y remplissent une case (à ne pas donner s'il n'en a qu'une).
+    const colsBy = new Map();
+    const usedBy = new Map();
+    for (const p of people) {
+      const cols = colsOf(p);
+      const used = new Set();
+      for (const col of cols) for (const it of col.items) {
+        if (!it || (it.status && it.status !== 'ok')) continue;
+        const c = p.index.findCard(it);
+        if (c) used.add(c.id);
+      }
+      colsBy.set(p, cols);
+      usedBy.set(p, used);
+    }
     const pairs = [];
     for (const z of people) {
       // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
       const holes = new Map();
-      for (const col of colsOf(z)) {
+      for (const col of colsBy.get(z)) {
         const c = { id: col.id, name: col.name, cat: col.cat };
         for (const it of col.items) {
           if (!it || (it.status && it.status !== 'ok')) continue;
@@ -1121,6 +1141,7 @@
       if (!holes.size) continue;
       for (const x of people) {
         if (x === z) continue;
+        const used = usedBy.get(x);
         const byCard = new Map();
         for (const hole of holes.values()) {
           if (!hole) continue;
@@ -1129,6 +1150,7 @@
           const row = byCard.get(c.id);
           if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
           const count = Math.max(1, Number(c.count) || 1);
+          if (count < 2 && used.has(c.id)) continue;
           byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
         }
         if (!byCard.size) continue;
@@ -4038,6 +4060,7 @@
     if (m === 'trade') S.tradeNew = null;
     if (m === 'friendsadd') S.friendsAdd = null;
     if (m === 'sell') S.sell = null;
+    if (m === 'bid') S.bid = null;
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -6771,6 +6794,57 @@
       back: S.modal === 'sell' ? 'sell' : null,
     });
   }
+  // ================================================================ mise sur une enchère du jeu (SPEC.md, « Miser »)
+  // « Miser » (« Bonnes affaires à acheter », enchères en cours de la fiche d'une carte) : le serveur relit l'enchère sur le
+  // site du jeu, puis mise à ton nom avec ta session reliée (POST /api/market/bid). Mise minimale : le prix de départ sans
+  // mise, un W de plus que l'enchère actuelle après (le jeu peut demander plus : son refus est montré).
+  // x : l'enchère {a, t, r, s, ask, bid, cur?, end, cote?, n?} (une bonne affaire, ou une enchère de la fiche).
+  const bidMin = (x) => (x.bid ? Math.floor(Number(x.cur ?? x.ask) || 0) + 1 : Math.max(1, Math.ceil(Number(x.ask) || 1)));
+  const bidAmountOf = (b) => { const n = Number(String(b.amount).replace(/\s/g, '')); return Number.isInteger(n) && n >= 1 && n <= 1e7 ? n : null; };
+  function openBid(x) {
+    const min = bidMin(x);
+    S.bid = { x: markRaw({ ...x }), min, amount: String(min), busy: false, error: '', verify: false, done: null };
+    S.modal = 'bid';
+  }
+  const bidButton = (x, cls) => (sellLinked() ? h('button', { class: ['btn', 'small', 'primary', cls || ''], type: 'button', 'aria-label': `Miser sur « ${x.t} »`, onClick: () => openBid(x) }, 'Miser') : null);
+  async function sendBid(b) {
+    if (b.busy) return;
+    const amount = bidAmountOf(b);
+    if (amount === null) { b.error = 'Ta mise : un nombre entier de W, 1 au moins.'; return; }
+    b.busy = true;
+    b.error = '';
+    b.verify = false;
+    const a = b.x.a;
+    try {
+      const r = await api('POST', '/api/market/bid', { a, amount });
+      const cur = Number.isFinite(r.cur) ? r.cur : amount;
+      b.done = markRaw({ amount: r.amount || amount, cur, balance: Number.isInteger(r.balance) ? r.balance : null, url: r.url || gameAuctionUrl(a) });
+      if (b.done.balance != null && S.me) S.me.wikibidous = { n: b.done.balance, at: new Date().toISOString() };
+      // La fiche la montre tout de suite « tu mènes » ; « Bonnes affaires » et « Tes mises » la prennent dans la lecture du
+      // marché, que le serveur vient de mettre à jour.
+      if (CM.data && CM.data.auctions.some((y) => y.a === a)) {
+        const data = markRaw({ ...CM.data, auctions: CM.data.auctions.map((y) => (y.a === a ? { ...y, ask: cur, cur, bid: true, lead: true } : y)) });
+        cmCache.set(CM.key, { data, at: CM.at });
+        CM.data = data;
+      }
+      const det = CM.details[a];
+      if (det && !det.gone) CM.details = { ...CM.details, [a]: markRaw({ ...det, leading: true, leader: null, cur, my_bid: amount, bids: (det.bids || 0) + 1 }) };
+      loadMarket(true);
+    } catch (e) {
+      b.error = e.message + (e.status === 429 && e.data && e.data.retry_after && !e.data.limited ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
+      b.verify = !!(e.data && e.data.verify);
+      // Quelqu'un a misé entre-temps : le minimum suit.
+      if (e.data && Number.isInteger(e.data.min)) {
+        const auto = bidAmountOf(b) === b.min;
+        b.min = e.data.min;
+        if (e.data.cur != null) b.x = markRaw({ ...b.x, bid: true, cur: e.data.cur, ask: e.data.cur });
+        if (auto) b.amount = String(b.min);
+      }
+      if (e.data && e.data.needs_link) loadMe().catch(() => {});
+    } finally {
+      b.busy = false;
+    }
+  }
   // « Mes ventes en cours » (onglet « Marché ») : tes ventes pas encore finies d'après la dernière lecture du marché (ou
   // ajoutées par une vente du classeur depuis), la fin la plus proche d'abord. Section ouverte et onglet affiché : leurs
   // mises sont relues sur le site du jeu (GET /api/market/auction, gardées CM_DETAIL_KEEP, SALES_DETAILS au plus) : la
@@ -6890,7 +6964,8 @@
   // soulève au survol. key : celle de l'élément de la grille, quand le cadre en est un.
   const sepFrame = (node, on, key) => (on ? h('div', { class: 'sep-frame', key: key || null }, [node]) : node);
   // Sections d'un album : un intercalaire commence une nouvelle ligne de la grille (gridBreak avant lui, sauf en tête),
-  // seulement dans l'ordre de la collection, sans filtre ; ailleurs, il ne garde que son cadre.
+  // les cartes hors section aussi (après les sections, foldSlots), seulement dans l'ordre de la collection, sans filtre ;
+  // ailleurs, il ne garde que son cadre.
   const showSections = (ordered, sort, filter) => !!ordered && sort === 'order' && filter === 'all';
   const gridBreak = (key) => h('div', { class: 'grid-break', key: 'sec:' + key, 'aria-hidden': 'true' });
   // fold : foldSlots de l'album ; l'onglet d'un intercalaire suivi d'au moins une carte devient le bouton qui replie sa
@@ -6898,7 +6973,7 @@
   function albumKids(slots, sections, render, fold) {
     const kids = [];
     slots.forEach((s, n) => {
-      if (sections && n > 0 && s.item.sep) kids.push(gridBreak(s.key));
+      if (sections && n > 0 && (s.item.sep || (fold && s.key === fold.loose))) kids.push(gridBreak(s.key));
       const sec = sections && s.item.sep && fold ? fold.sec.get(s.key) : null;
       kids.push(sec && sec.n ? h('div', { class: ['sec-wrap', { folded: sec.folded }], key: 'w:' + s.key }, [render(s), foldTab(fold.album, s.item.title, sec)]) : render(s));
     });
@@ -6917,20 +6992,25 @@
     const cur = foldedIn(album);
     setFolded(album, cur.includes(title) ? cur.filter((t) => t !== title) : [...cur, title]);
   }
-  // Une section repliée ne garde que son intercalaire. {slots (à montrer), sec (clé de l'intercalaire → {n : cartes de sa
-  // section, folded}), album}.
+  // Une section repliée ne garde que son intercalaire. Les cartes d'avant le premier intercalaire (hors de toute section)
+  // passent après les sections, sur une nouvelle ligne (2026-10-26, demande de l'utilisateur : les intercalaires toujours
+  // au-dessus des cartes non triées) ; seulement à l'affichage, la collection garde son ordre. {slots (à montrer), sec
+  // (clé de l'intercalaire → {n : cartes de sa section, folded}), loose (clé de la première carte hors section, ou null),
+  // album}.
   function foldSlots(slots, sections, album) {
     const sec = new Map();
-    if (!sections) return { slots, sec, album };
+    if (!sections) return { slots, sec, loose: null, album };
     const folded = new Set(foldedIn(album));
     const out = [];
+    const loose = [];
     let cur = null;
     for (const s of slots) {
       if (s.item.sep) { cur = { n: 0, folded: folded.has(s.item.title) }; sec.set(s.key, cur); out.push(s); continue; }
-      if (cur) cur.n++;
-      if (!cur || !cur.folded) out.push(s);
+      if (!cur) { loose.push(s); continue; }
+      cur.n++;
+      if (!cur.folded) out.push(s);
     }
-    return { slots: out, sec, album };
+    return { slots: out.concat(loose), sec, loose: loose.length && out.length ? loose[0].key : null, album };
   }
   function foldTab(album, title, sec) {
     const what = `la section « ${title} » (${cards$(sec.n)})`;
@@ -10125,7 +10205,7 @@
   }
 
   // ================================================================ rendu : onglet Marché, cotes des fiches
-  const MARKET_RULES = "Les cotes et la lecture du marché sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro ») : une passe par membre toutes les 20 minutes tant que la synchro automatique est active, qui relit aussi les cotes de tes cartes, les plus anciennes d'abord ; et à ton clic sur « Actualiser le marché » (une fois par minute au plus), une passe plus courte : tes enchères, tes ventes, les bonnes affaires et leurs cotes. Chaque passe fait au plus 30 requêtes, une par seconde, sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : si le jeu limite les lectures, la passe s'arrête et la suivante est sautée. Le classeur ne fait que montrer : enchères et ventes se font dans le jeu, par toi.";
+  const MARKET_RULES = "Les cotes et la lecture du marché sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro ») : une passe par membre toutes les 20 minutes tant que la synchro automatique est active, qui relit aussi les cotes de tes cartes, les plus anciennes d'abord ; et à ton clic sur « Actualiser le marché » (une fois par minute au plus), une passe plus courte : tes enchères, tes ventes, les bonnes affaires et leurs cotes. Chaque passe fait au plus 30 requêtes, une par seconde, sans passer par les pages du marché du jeu, qui limitent les outils automatiques. C'est plus risqué qu'une synchro de ta collection : si le jeu limite les lectures, la passe s'arrête et la suivante est sautée. Au clic, et seulement là, le classeur met une de tes cartes en vente, annule une vente sans mise ou mise sur une enchère, à ton nom, avec ta session ; le reste se fait dans le jeu.";
   const MARKET_HOW = "Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») : le classeur les lit tout seul toutes les 20 minutes (« Actualiser le marché » ne relit que tes enchères, tes ventes et les bonnes affaires).";
   const MARKET_OLD = 2 * 3600000; // lecture du marché « ancienne » au-delà de 2 h (les enchères bougent vite)
   // « il y a 5 min », « il y a 2 h », « il y a 3 jours ».
@@ -10348,7 +10428,7 @@
             x.cote > x.ask ? h('span', { class: 'lot__save' }, [' · économie ', priceTag(x.cote - x.ask, { tag: 'span' })]) : null]),
           h('span', { class: 'lot__meta small' }, [soon ? h('span', { class: 'flag' }, 'finit bientôt') : null, x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : null, leftText(x.end),
             cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '',
-            x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '', gameLink(x.a)]),
+            x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '', gameLink(x.a), x.lead ? null : bidButton(x, 'lot__bid')]),
         ]);
       })) : h('p', { class: 'muted' }, 'Aucune bonne affaire ne passe ces filtres.'),
       marketMoreButton('acheter', list.length), note];
@@ -10540,10 +10620,12 @@
     ]);
   }
 
-  // Lien vers une enchère dans le jeu : c'est toi qui mises ou achètes, là-bas.
+  // Lien vers une enchère dans le jeu (« Miser » le fait aussi depuis le classeur).
   const gameAuctionUrl = (id) => 'https://www.wiki-masters.com/marketplace/' + encodeURIComponent(id);
   const gameLink = (id, label) => h('a', { class: 'game-link', href: gameAuctionUrl(id), target: '_blank', rel: 'noopener noreferrer', title: "Ouvrir l'enchère dans WikiMasters" },
     [label || 'Ouvrir dans le jeu', ' ↗']);
+  // Titre de la carte de la fiche ouverte (ta carte, celle d'un ami, une carte qui te manque), '' sans fiche.
+  const ficheCardTitle = () => (openCard.value && openCard.value.title) || (S.openMissing && S.openMissing.title) || '';
   // Section « Marché dans le jeu » d'une fiche : enchères en cours sur la carte (de la moins chère à la plus chère), puis
   // la courbe de ses prix de vente. mine : ta carte (pour choisir la rareté de la courbe), s'il y en a une.
   function viewCardMarket(mine) {
@@ -10593,6 +10675,8 @@
     if (own && !a.bid && !(det && (det.bids || det.gone))) {
       facts.push(h('button', { class: 'linkish', type: 'button', key: 'cancel', onClick: () => askCancelSale(a.a) }, 'Annuler ma vente'));
     }
+    // « Miser » : pas sur ta vente, ni quand tu mènes, ni depuis « Mettre en vente » (sa fenêtre la fermerait).
+    const canBid = !own && !lead && !(det && det.gone) && left > 0 && S.modal !== 'sell' && !!ficheCardTitle();
     if (lead) facts.push(h('span', { class: 'flag ok', key: 'lead' }, 'tu mènes'));
     else if (mineBid) facts.push(h('span', { class: 'flag', key: 'out' }, ['dépassée · ta mise ', priceTag(mineBid, { tag: 'span' })]));
     if (det && det.gone) facts.push(h('span', { key: 'gone' }, "le jeu ne la connaît plus (finie ou retirée)"));
@@ -10615,7 +10699,8 @@
       h('span', { class: 'lot__line small muted' }, [a.bid || (det && det.bids) ? 'enchère en cours' : `aucune mise, prix de départ`,
         a.atk != null || a.def != null ? ` · ATK ${a.atk != null ? fmt(a.atk) : '?'} · DEF ${a.def != null ? fmt(a.def) : '?'}` : '']),
       facts.length ? h('span', { class: 'lot__meta small' }, facts) : null,
-      h('span', { class: 'auction__go' }, [gameLink(a.a)]),
+      h('span', { class: 'auction__go' }, [gameLink(a.a), canBid ? bidButton({ a: a.a, t: ficheCardTitle(), r: a.r, s: a.s, ask: shown, bid: !!(a.bid || (det && det.bids) || (det && det.cur != null)),
+        cur: det && det.cur != null ? det.cur : a.cur, end: a.end, cote: q ? q.p : null, n: q ? q.n : null }) : null]),
     ]);
   }
   // Prix de vente de la carte dans une rareté d'exemplaire (et brillance) : à chaque vente, la médiane des 30 dernières
@@ -11809,6 +11894,62 @@
       ]),
     ]);
   }
+  // « Miser » : l'enchère (exemplaire, prix actuel, cote, fin, ton solde), ta mise avec des montants proposés (le minimum,
+  // la cote), puis la mise faite.
+  function modalBid() {
+    const b = S.bid;
+    if (!b) return null;
+    const x = b.x;
+    const k = x.r + (x.s ? '*' : '');
+    const title = `Miser sur « ${x.t} »`;
+    const linked = sellLinked();
+    const wb = S.me && S.me.wikibidous;
+    if (b.done) {
+      const d = b.done;
+      return h(Modal, { key: 'bid', title, onClose: closeModal }, () => [
+        h('p', { class: 'trade-done', role: 'status' }, [h('b', null, 'Mise faite : tu mènes.'), ' Ta mise : ', priceTag(d.amount, { tag: 'span' }),
+          d.balance != null ? [' · ton solde dans le jeu : ', priceTag(d.balance, { tag: 'span' })] : '', '.']),
+        h('p', { class: 'note' }, `Si personne ne surenchérit d'ici la fin (${leftText(x.end)}), la carte est à toi à ce prix. Le jeu retient ta mise sur ton solde de wikibidous.`),
+        foot([h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir dans le jeu ↗'), closeBtn()]),
+      ]);
+    }
+    const amount = bidAmountOf(b);
+    const cote = x.cote != null && Number(x.cote) > 0 ? Number(x.cote) : null;
+    const sure = cote != null && x.n >= 3;
+    const chips = [[b.min, 'minimum']];
+    if (cote != null && Math.round(cote) > b.min) chips.push([Math.round(cote), sure ? 'la cote' : 'la cote (peu fiable)']);
+    const warns = [];
+    if (amount !== null && amount < b.min) warns.push(`Il faut au moins ${wfmt(b.min)}${x.bid ? " (un W de plus que l'enchère actuelle ; le jeu peut demander davantage)" : ' (prix de départ)'}.`);
+    if (amount !== null && cote != null && amount > cote) warns.push(`${fmt(Math.round((amount - cote) / cote * 100))} % au-dessus de la cote (${wfmt(cote)}).`);
+    if (amount !== null && wb && Number.isFinite(wb.n) && amount > wb.n) warns.push(`Plus que ton solde lu ${wb.at ? agoText(wb.at) : 'à la dernière synchro'} (${wfmt(wb.n)}) : le jeu refusera sans doute.`);
+    const facts = [
+      fact('Exemplaire', [pill(x.r), ' ', variantName(k)]),
+      fact(x.bid ? 'Enchère actuelle' : 'Prix de départ', [priceTag(x.bid ? (x.cur ?? x.ask) : x.ask, { tag: 'span' }), x.bid ? '' : ' · aucune mise']),
+      fact('Cote', cote != null ? [priceTag(cote, { tag: 'span', approx: !sure, title: sure ? null : 'Moins de 3 ventes : cote peu fiable' })] : 'pas de cote'),
+      fact('Fin', leftText(x.end).replace(/^encore /, 'dans ')),
+    ];
+    if (wb && Number.isFinite(wb.n)) facts.push(fact('Ton solde', [priceTag(wb.n, { tag: 'span' }), h('span', { class: 'muted' }, wb.at ? ` · lu ${agoText(wb.at)}` : '')]));
+    return h(Modal, { key: 'bid', title, onClose: closeModal }, () => [
+      h('p', null, "Le classeur mise à ton nom dans le jeu, avec ta session reliée. Une mise engage : si personne ne surenchérit avant la fin, tu achètes la carte à ce prix."),
+      linked ? null : h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : le classeur mise avec ta session. ",
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); closeCard(); openSyncTab(); } }, 'Relier mon compte')]),
+      h('div', { class: 'facts sell-facts' }, facts),
+      h('label', { class: 'sell-field', for: 'bid-amount' }, [h('span', { class: 'sell-label' }, 'Ta mise'),
+        h('span', { class: 'sell-input' }, [h('input', { id: 'bid-amount', class: 'field', type: 'number', min: String(b.min), step: '1', inputmode: 'numeric', value: b.amount, disabled: b.busy,
+          onInput: (e) => { b.amount = e.target.value; b.error = ''; } }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
+      h('div', { class: 'cmk__keys', role: 'group', 'aria-label': 'Mises proposées' }, chips.map(([n, label]) => h('button', {
+        key: label, type: 'button', class: ['chip-btn', { on: amount === n }], disabled: b.busy, onClick: () => { b.amount = String(n); b.error = ''; },
+      }, `${label} · ${wfmt(n)}`))),
+      warns.length ? h('ul', { class: 'sell-warns', role: 'status' }, warns.map((w, i) => h('li', { key: i, class: 'warn' }, w))) : null,
+      errLine(b.error),
+      b.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: gameAuctionUrl(x.a), target: '_blank', rel: 'noopener noreferrer' }, "Ouvrir l'enchère dans le jeu ↗")]) : null,
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: b.busy || !linked || amount === null || amount < b.min, onClick: () => sendBid(b) },
+          b.busy ? 'Mise en cours…' : amount !== null ? `Miser ${wfmt(amount)} dans le jeu` : 'Miser dans le jeu'),
+      ]),
+    ]);
+  }
   // Lien d'un autre classeur ouvert alors qu'une clé est déjà gardée : on demande.
   function modalSwitch() {
     const ask = S.switchAsk;
@@ -11835,7 +11976,7 @@
     ]);
   }
 
-  const MODALS = { trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, bid: modalBid, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

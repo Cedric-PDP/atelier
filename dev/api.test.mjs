@@ -4749,6 +4749,106 @@ await test('vente : GET /api/market/sell (exemplaires, enchères actives), POST 
   e.DB.close();
 });
 
+await test('mise : POST /api/market/bid (relue puis misée, minimum, ta vente, tu mènes, finie, refus, vérification, limite), solde et lecture du marché mis à jour', async () => {
+  const e = makeEnv();
+  clearMarketGame();
+  const m = await marketMember('Hugo', e);
+  const me = supa.player(m.uid);
+  me.wikibidous = 500;
+  const end = new Date(Date.now() + H).toISOString();
+  const auction = (id, x = {}) => ({ id, card_id: 'w1', status: 'active', seller_id: 'vendeur', base_amount: 10, current_bid: null, current_bidder_id: null,
+    end_at: end, snapshot_rarity: 'R', is_shiny: false, card: { wikipedia_title: 'Voulue 1' }, bids: [], ...x });
+  addAuctions(auction('m1'), auction('m2', { current_bid: 40, current_bidder_id: 'autre', bids: [{ bidder_id: 'autre', amount: 40 }] }),
+    auction('m3', { end_at: new Date(Date.now() - 1000).toISOString() }));
+  me.auctions.push(auction('m4', { seller_id: m.uid }));
+  // Une lecture du marché gardée, avec m1 en bonne affaire : elle passe « tu mènes » sans attendre la suivante.
+  const liveAt = isoAgo(5 * 60_000);
+  const deal = { a: 'm1', id: 'w1', t: 'Voulue 1', r: 'R', s: false, img: null, end, cote: 80, n: 4, ask: 10, bid: false, lead: false, more: 0 };
+  e.DB.sqlite.prepare('INSERT OR REPLACE INTO market (user_id, live, live_at) VALUES (?, ?, ?)').run(m.id, JSON.stringify({ deals: [deal], bids: [], sales: [] }), liveAt);
+  const live = () => JSON.parse(e.DB.sqlite.prepare('SELECT live FROM market WHERE user_id = ?').get(m.id).live);
+  const site = () => supa.calls.filter((c) => c.url.startsWith('https://www.wiki-masters.com/')).map((c) => c.method + ' ' + c.path);
+  const bid = (a, amount) => call('POST', 'market/bid', { key: m.u.key, e, body: { a, amount } });
+
+  // Corps mal formés : rien ne part au jeu.
+  supa.calls = [];
+  for (const [a, amount] of [['m1', 0], ['m1', 1.5], ['m1', '10'], ['a b', 10], [null, 10]]) assert.equal((await bid(a, amount)).status, 400, `${a} ${amount}`);
+  assert.deepEqual(site(), []);
+
+  // Sans mise : au moins le prix de départ ; relue, puis misée ; solde et lecture du marché mis à jour.
+  supa.calls = [];
+  let r = await bid('m1', 9);
+  assert.deepEqual([r.status, r.json.min, r.json.cur, site()], [409, 10, null, ['GET /api/marketplace/m1']]);
+  supa.calls = [];
+  r = await bid('m1', 12);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { a: 'm1', amount: 12, cur: 12, balance: 488, url: 'https://www.wiki-masters.com/marketplace/m1' });
+  assert.deepEqual(site(), ['GET /api/marketplace/m1', 'POST /api/marketplace/m1/bid']);
+  const post = supa.calls.find((c) => c.method === 'POST');
+  assert.deepEqual(JSON.parse(post.body), { amount: 12 });
+  assert.equal(post.headers.referer, 'https://www.wiki-masters.com/marketplace/m1');
+  for (const tok of [me.access, me.refresh]) assert.ok(!JSON.stringify(r.json).includes(tok), 'jeton absent de la réponse');
+  assert.deepEqual((await call('GET', 'me', { key: m.u.key, e })).json.wikibidous.n, 488);
+  let lv = live();
+  assert.deepEqual(lv.deals.map((x) => [x.a, x.ask, x.bid, x.lead]), [['m1', 12, true, true]]);
+  assert.deepEqual(lv.bids.map((x) => [x.a, x.id, x.t, x.r, x.mine, x.cur, x.lead, x.st, x.cote]), [['m1', 'w1', 'Voulue 1', 'R', 12, 12, true, 'run', 80]]);
+  assert.equal(e.DB.sqlite.prepare('SELECT live_at FROM market WHERE user_id = ?').get(m.id).live_at, liveAt, "l'heure reste celle de la lecture");
+  // Tu mènes déjà : rien ne part au-delà de la lecture.
+  supa.calls = [];
+  r = await bid('m1', 20);
+  assert.deepEqual([r.status, r.json.lead, site()], [409, true, ['GET /api/marketplace/m1']]);
+
+  // Après une mise d'un autre : au moins un W de plus ; mise hors de la lecture du marché : ajoutée à « Tes mises ».
+  r = await bid('m2', 40);
+  assert.deepEqual([r.status, r.json.min, r.json.cur], [409, 41, 40]);
+  r = await bid('m2', 41);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(live().bids.map((x) => [x.a, x.t, x.mine, x.lead]), [['m2', 'Voulue 1', 41, true], ['m1', 'Voulue 1', 12, true]]);
+
+  // Finie, inconnue, ta vente.
+  supa.calls = [];
+  r = await bid('m3', 10);
+  assert.deepEqual([r.status, r.json.gone, site()], [409, true, ['GET /api/marketplace/m3']]);
+  assert.deepEqual([(await bid('nulle-part', 10)).json.gone, (await bid('m4', 10)).status], [true, 403]);
+
+  // Refus du jeu (solde) : son message ; vérification anti-robot : verify ; panne : à vérifier dans le jeu.
+  addAuctions(auction('m5', { base_amount: 1000 }));
+  r = await bid('m5', 1000);
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /Solde insuffisant/);
+  supa.bidReply = () => ({ status: 403, body: { code: 'human_verification_required', error: 'Vérification requise' } });
+  r = await bid('m5', 1000);
+  assert.deepEqual([r.status, r.json.verify], [409, true]);
+  supa.bidReply = () => ({ network: true });
+  r = await bid('m5', 1000);
+  assert.equal(r.status, 502);
+  assert.match(r.json.error, /regarde dans le jeu/);
+  supa.bidReply = null;
+
+  // Le jeu limite : pause de 10 min des routes du marché, plus rien ne part.
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+  supa.siteLimit = 'automation_limit';
+  r = await bid('m5', 1000);
+  assert.deepEqual([r.status, r.json.limited], [429, true]);
+  supa.siteLimit = null;
+  supa.calls = [];
+  assert.deepEqual([(await bid('m5', 1000)).json.limited, site()], [true, []]);
+
+  // Sans lecture du marché gardée : la mise passe quand même.
+  e.DB.sqlite.prepare('DELETE FROM game_reads').run();
+  e.DB.sqlite.prepare('DELETE FROM market WHERE user_id = ?').run(m.id);
+  me.wikibidous = 5000;
+  assert.equal((await bid('m5', 1000)).status, 200);
+
+  // Sans compte relié : 401 needs_link, rien ne part.
+  const n = await signup('Iris', e);
+  supa.calls = [];
+  r = await call('POST', 'market/bid', { key: n.key, e, body: { a: 'm1', amount: 50 } });
+  assert.deepEqual([r.status, r.json.needs_link, site()], [401, true, []]);
+  clearMarketGame();
+  supa.reset();
+  e.DB.close();
+});
+
 await test('DELETE /api/me efface tout', async () => {
   await call('POST', 'targets/save', { key: alice.key, body: { name: 'À effacer', items: [] } });
   env.DB.sqlite.prepare("INSERT INTO refresh_staging (user_id, page, entries, created_at) VALUES (?, 0, '[]', ?)").run(alice.user.id, new Date().toISOString());
