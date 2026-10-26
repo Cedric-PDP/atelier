@@ -299,9 +299,9 @@ const MIGRATIONS = [
   ['souhaits-par-collection-2026-10-25', `UPDATE targets SET wish_sync = 1
      WHERE user_id IN (SELECT id FROM users WHERE auto_wish = 1)`],
   ['souhaits-suivis-2026-10-25', `INSERT OR IGNORE INTO wish_managed (user_id, card_id, title)
-     SELECT t.user_id, g.card_id, g.title FROM targets AS t, json_each(t.items) AS i
-       JOIN game_titles AS g ON g.title = json_extract(i.value, '$.title')
-     WHERE t.wish_sync = 1 AND g.card_id <> ''`],
+     SELECT t.user_id, g.card_id, g.title FROM targets AS t
+       CROSS JOIN json_each(t.items) AS i CROSS JOIN game_titles AS g
+     WHERE t.wish_sync = 1 AND g.title = json_extract(i.value, '$.title') AND g.card_id <> ''`],
   // 2026-10-16, demande de l'administrateur : partage entre membres (cartes et collections) activé pour tous les
   // classeurs existants ; chacun peut le couper dans Réglages, et un nouveau classeur partage dès sa création.
   ['partage-par-defaut-2026-10-16', `UPDATE users SET shared = 1, shared_targets = 1,
@@ -314,7 +314,11 @@ const MIGRATIONS = [
 ];
 
 async function applyMigrations(db) {
+  // Ne pas exécuter à nouveau le corps des migrations déjà terminées : même protégée
+  // par EXISTS, une jointure coûteuse peut parcourir les données avant de tester ce garde.
+  const applied = new Set((await db.prepare('SELECT name FROM migrations').all()).results.map((r) => r.name));
   for (const [name, sql] of MIGRATIONS) {
+    if (applied.has(name)) continue;
     const runId = crypto.randomUUID();
     await db.batch([
       db.prepare('INSERT OR IGNORE INTO migrations (name, run_id, applied_at) VALUES (?1, ?2, ?3)').bind(name, runId, new Date().toISOString()),

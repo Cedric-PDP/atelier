@@ -285,6 +285,41 @@ await test('souhaits : migration du réglage global et des cartes déjà prises 
   db.close(); again.close(); withModes.close(); await rm(file, { force: true });
 });
 
+await test('migration des souhaits : cache volumineux, recherche par index et migrations terminées ignorées', async () => {
+  const db = createD1(':memory:');
+  for (const sql of SCHEMA) db.sqlite.exec(sql);
+  db.sqlite.exec(`INSERT INTO users (id, key_hash, created_at, auto_wish) VALUES
+    ('actif', 'hash-actif', '2026-10-01', 1), ('inactif', 'hash-inactif', '2026-10-01', 0)`);
+  const items = Array.from({ length: 4000 }, (_, i) => ({ title: 'Titre ' + i }));
+  items.push({ title: 'Sans résultat' }, { title: 'Jamais recherché' });
+  const album = db.sqlite.prepare('INSERT INTO targets (user_id, id, name, items, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)');
+  for (const uid of ['actif', 'inactif']) album.run(uid, 'album', 'Album', JSON.stringify(items), '2026-10-01', '2026-10-01');
+  const cache = db.sqlite.prepare('INSERT INTO game_titles (title, card_id, at) VALUES (?, ?, ?)');
+  db.sqlite.exec('BEGIN');
+  for (let i = 0; i < 10000; i++) cache.run('Titre ' + i, 'carte-' + i, '2026-10-01');
+  cache.run('Sans résultat', '', '2026-10-01');
+  db.sqlite.exec('COMMIT');
+  const writes = [];
+  const freshInstance = () => ({ prepare: (sql) => db.prepare(sql), batch: (statements) => {
+    writes.push(...statements);
+    return db.batch(statements);
+  } });
+  await ensureSchema(freshInstance());
+  assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = 'actif'").get().n, 4000);
+  assert.equal(db.sqlite.prepare("SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = 'inactif'").get().n, 0);
+  const migration = writes.find(s => s.sql.includes('INSERT OR IGNORE INTO wish_managed'));
+  assert.ok(migration, 'la migration initiale est exécutée');
+  const plan = db.sqlite.prepare('EXPLAIN QUERY PLAN ' + migration.sql)
+    .all(Object.fromEntries(migration.params.map((p, i) => ['?' + (i + 1), p]))).map(r => r.detail).join('\n');
+  assert.match(plan, /SEARCH g USING INDEX.*\(title=\?\)/, plan);
+  assert.doesNotMatch(plan, /SCAN g\b/, 'le cache ne doit pas être parcouru avant chaque album :\n' + plan);
+  writes.length = 0;
+  await ensureSchema(freshInstance());
+  assert.ok(!writes.some(s => s.sql.includes('INSERT OR IGNORE INTO migrations')), 'une nouvelle instance ignore les migrations déjà appliquées');
+  assert.ok(!writes.some(s => s.sql.includes('INSERT OR IGNORE INTO wish_managed')), 'aucune nouvelle jointure sur les titres au redémarrage');
+  db.close();
+});
+
 await test('health et 503 sans base', async () => {
   const noDb = { COOKIE_SECRET: SECRET, SIGNUP_CODE: 'invitation' };
   let r = await call('GET', 'health', { e: noDb });
