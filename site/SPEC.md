@@ -702,7 +702,11 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
   compléter tes collections » ; celles qu'un ami montre ; aucune pour un ami qui ne les montre pas (on ne sait pas ce
   qui lui manque : « Léa ne partage pas ses collections : impossible de savoir ce qui lui manque », ses cartes comptent
-  quand même pour les autres). Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
+  quand même pour les autres). **Jamais une carte qui casserait une collection de X** (2026-10-26, demande de
+  l'utilisateur) : une carte que X n'a qu'en un exemplaire et qui remplit une case d'une de ses collections n'est pas
+  proposée (en double, elle l'est : il en garde une) ; pour un ami qui ne montre pas ses collections, on ne peut pas le
+  savoir : ses cartes restent proposées. Vaut aussi pour « Ce qui pourrait intéresser tes amis » et pour la fenêtre
+  « Proposer un échange », qui reprennent ce calcul. Une ligne par carte et par couple : rareté, titre, « ×n » si X l'a en double, puis les
   collections de Z qu'elle complète (un même article dans deux
   collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
   en double » ; **un bloc par paire de membres** (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs

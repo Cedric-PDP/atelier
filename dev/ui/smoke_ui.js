@@ -3263,6 +3263,22 @@ async function main() {
         ]) check((await rawApi('POST', '/api/targets/save', paulKey, t)).status === 200, 'catégorie de Paul refusée');
         needButton('Actualiser').click();
         check(await waitFor(() => row('Paul') && text(row('Paul')).includes('partage ses collections : 4'), 5000), 'ligne de Paul (4 collections) : ' + text(row('Paul')));
+        // Échanges : une carte qui casserait une collection de celui qui donne n'est plus proposée (2026-10-26). Jupiter, que
+        // Paul n'a qu'en un exemplaire, est maintenant dans sa « Planète du Système solaire » : il ne la donne plus ; Mars,
+        // dans la même collection mais en double, reste.
+        needButton('Voir les échanges possibles').click();
+        await settle();
+        check(titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Article 5', 'Paul → Toi (Jupiter gardée pour sa collection) : ' + text(pair('Paul → Toi')));
+        const tradeBtn = (pr, t) => (pr ? pr.querySelectorAll('button').find((b) => text(b) === t) : null) || null;
+        const tmd = () => one('modal');
+        tradeBtn(duoOf('Toi → Paul'), 'Proposer un échange à Paul').click();
+        await settle(80);
+        const pick = tmd() ? tmd().querySelectorAll('.trade-pick')[1] : null;
+        check(pick && pick.querySelectorAll('.trade-pick__title').map(text).join(' | ') === 'Mars (planète) | Article 5', 'fenêtre : Jupiter de Paul ne doit plus être proposée : ' + (pick ? text(pick) : 'absente'));
+        tmd().querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
+        await settle();
+        needButton('← Entre amis').click();
+        await settle();
         const openBinder = async (name) => { all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de ' + name)[0].click(); await settle(); };
         const sect = (id) => all((n) => n.tagName === 'SECTION' && n.getAttribute('aria-labelledby') === id)[0] || null;
         const colRow = (name) => cls('row').find((n) => n.querySelector('.name') && text(n.querySelector('.name')) === name) || null;

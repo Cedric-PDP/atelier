@@ -1076,6 +1076,9 @@
   // compléter tes collections » (celles faites d'une catégorie comprises) ; celles qu'un ami montre ; rien pour un ami qui ne les
   // montre pas (on ne sait pas ce qui lui manque : il est seulement nommé). Une ligne par carte et par couple
   // (X → Z), avec toutes les collections de Z qu'elle complète ; rapprochement titre puis qid (match.js), comme ailleurs.
+  // Jamais une carte qui casserait une collection de X (2026-10-26, demande de l'utilisateur) : une carte que X n'a qu'en
+  // un exemplaire et qui remplit une case d'une de ses collections n'est pas proposée (en double, elle l'est : il en
+  // garde une). Pour un ami qui ne montre pas ses collections, on ne peut pas savoir : ses cartes restent proposées.
   // Calculé une fois par chargement (et quand un qid est appris), filtré à part (tradeView).
   const ME = ''; // « toi » dans les échanges (un identifiant public n'est jamais vide)
   const rarityRank = (r) => RANK[r] ?? 9;
@@ -1099,11 +1102,25 @@
       return [];
     }
     const sameCol = (a, b) => (a.id != null && b.id != null ? a.id === b.id : a.name === b.name && a.cat === b.cat);
+    // Collections de chacun, et ses cartes qui y remplissent une case (à ne pas donner s'il n'en a qu'une).
+    const colsBy = new Map();
+    const usedBy = new Map();
+    for (const p of people) {
+      const cols = colsOf(p);
+      const used = new Set();
+      for (const col of cols) for (const it of col.items) {
+        if (!it || (it.status && it.status !== 'ok')) continue;
+        const c = p.index.findCard(it);
+        if (c) used.add(c.id);
+      }
+      colsBy.set(p, cols);
+      usedBy.set(p, used);
+    }
     const pairs = [];
     for (const z of people) {
       // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
       const holes = new Map();
-      for (const col of colsOf(z)) {
+      for (const col of colsBy.get(z)) {
         const c = { id: col.id, name: col.name, cat: col.cat };
         for (const it of col.items) {
           if (!it || (it.status && it.status !== 'ok')) continue;
@@ -1119,6 +1136,7 @@
       if (!holes.size) continue;
       for (const x of people) {
         if (x === z) continue;
+        const used = usedBy.get(x);
         const byCard = new Map();
         for (const hole of holes.values()) {
           if (!hole) continue;
@@ -1127,6 +1145,7 @@
           const row = byCard.get(c.id);
           if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
           const count = Math.max(1, Number(c.count) || 1);
+          if (count < 2 && used.has(c.id)) continue;
           byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
         }
         if (!byCard.size) continue;
