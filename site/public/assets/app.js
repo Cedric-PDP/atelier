@@ -6752,7 +6752,8 @@
   // soulève au survol. key : celle de l'élément de la grille, quand le cadre en est un.
   const sepFrame = (node, on, key) => (on ? h('div', { class: 'sep-frame', key: key || null }, [node]) : node);
   // Sections d'un album : un intercalaire commence une nouvelle ligne de la grille (gridBreak avant lui, sauf en tête),
-  // seulement dans l'ordre de la collection, sans filtre ; ailleurs, il ne garde que son cadre.
+  // les cartes hors section aussi (après les sections, foldSlots), seulement dans l'ordre de la collection, sans filtre ;
+  // ailleurs, il ne garde que son cadre.
   const showSections = (ordered, sort, filter) => !!ordered && sort === 'order' && filter === 'all';
   const gridBreak = (key) => h('div', { class: 'grid-break', key: 'sec:' + key, 'aria-hidden': 'true' });
   // fold : foldSlots de l'album ; l'onglet d'un intercalaire suivi d'au moins une carte devient le bouton qui replie sa
@@ -6760,7 +6761,7 @@
   function albumKids(slots, sections, render, fold) {
     const kids = [];
     slots.forEach((s, n) => {
-      if (sections && n > 0 && s.item.sep) kids.push(gridBreak(s.key));
+      if (sections && n > 0 && (s.item.sep || (fold && s.key === fold.loose))) kids.push(gridBreak(s.key));
       const sec = sections && s.item.sep && fold ? fold.sec.get(s.key) : null;
       kids.push(sec && sec.n ? h('div', { class: ['sec-wrap', { folded: sec.folded }], key: 'w:' + s.key }, [render(s), foldTab(fold.album, s.item.title, sec)]) : render(s));
     });
@@ -6779,20 +6780,25 @@
     const cur = foldedIn(album);
     setFolded(album, cur.includes(title) ? cur.filter((t) => t !== title) : [...cur, title]);
   }
-  // Une section repliée ne garde que son intercalaire. {slots (à montrer), sec (clé de l'intercalaire → {n : cartes de sa
-  // section, folded}), album}.
+  // Une section repliée ne garde que son intercalaire. Les cartes d'avant le premier intercalaire (hors de toute section)
+  // passent après les sections, sur une nouvelle ligne (2026-10-26, demande de l'utilisateur : les intercalaires toujours
+  // au-dessus des cartes non triées) ; seulement à l'affichage, la collection garde son ordre. {slots (à montrer), sec
+  // (clé de l'intercalaire → {n : cartes de sa section, folded}), loose (clé de la première carte hors section, ou null),
+  // album}.
   function foldSlots(slots, sections, album) {
     const sec = new Map();
-    if (!sections) return { slots, sec, album };
+    if (!sections) return { slots, sec, loose: null, album };
     const folded = new Set(foldedIn(album));
     const out = [];
+    const loose = [];
     let cur = null;
     for (const s of slots) {
       if (s.item.sep) { cur = { n: 0, folded: folded.has(s.item.title) }; sec.set(s.key, cur); out.push(s); continue; }
-      if (cur) cur.n++;
-      if (!cur || !cur.folded) out.push(s);
+      if (!cur) { loose.push(s); continue; }
+      cur.n++;
+      if (!cur.folded) out.push(s);
     }
-    return { slots: out, sec, album };
+    return { slots: out.concat(loose), sec, loose: loose.length && out.length ? loose[0].key : null, album };
   }
   function foldTab(album, title, sec) {
     const what = `la section « ${title} » (${cards$(sec.n)})`;

@@ -3603,6 +3603,8 @@ async function main() {
     await seedCards(keyO, CONT.map((x, i) => mkc('o' + i, x.title)));
     check((await rawApi('POST', '/api/targets/save', keyN, { name: 'Continents', items: CONT })).status === 200, 'intercalaires : collection refusée');
     await rawApi('POST', '/api/targets/save', keyN, { name: 'Olympe', items: [it('Zeus')] }); // complète (Ninon a Zeus)
+    // Cartes avant le premier intercalaire (hors section) : montrées après les sections, sur leur ligne.
+    await rawApi('POST', '/api/targets/save', keyN, { name: 'Mêlée', items: [it('Zeus'), it('Pangée'), it('Continent', { sep: true }), it('Afrique', { qid: 'Q15' })] });
     await rawApi('POST', '/api/targets/save', keyO, { name: "Continents d'Olga", items: CONT });
     for (const k of [keyN, keyO]) check((await rawApi('PATCH', '/api/me', k, { shared: true, shared_targets: true })).status === 200, 'intercalaires : partage refusé');
     ls.set('classeur-key', keyN);
@@ -3635,6 +3637,21 @@ async function main() {
       const at = d.querySelectorAll('.album-title')[0];
       check(at && at.classList.contains('complete') && text(at).includes('1 sur 1') && text(at).includes('Complète'), 'en-tête d\'une collection complète : ' + (at ? at.className + ' / ' + text(at) : 'absent'));
     }
+    btnIn('← Toutes les collections').click();
+    await settle();
+    rowOf('Mêlée').click();
+    await settle(80);
+    check(layout() === '[Continent] Afrique | Zeus Pangée', 'cartes hors section : après les intercalaires attendues, ' + layout());
+    d.querySelectorAll('.sec-fold')[0].click();
+    await settle();
+    check(layout() === '[Continent] | Zeus Pangée', 'cartes hors section, section repliée : ' + layout());
+    d.querySelectorAll('.sec-fold')[0].click();
+    await settle();
+    btnIn('Rareté').click();
+    await settle();
+    check(!d.querySelectorAll('.grid-break').length, 'cartes hors section, tri par rareté : pas de nouvelle ligne, ' + layout());
+    btnIn('Ordre').click();
+    await settle();
     btnIn('← Toutes les collections').click();
     await settle();
     // Album des continents, dans l'ordre : trois sections, intercalaires dans leur cadre (case vide comprise).

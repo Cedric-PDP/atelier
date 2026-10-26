@@ -1738,7 +1738,11 @@ fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde s
   un **cadre gris clair à onglet** (`.sep-frame`, 4 px autour, onglet en haut à gauche, derrière la carte : elle passe
   devant quand elle se soulève au survol) ; son nom accessible dit « intercalaire ». En tri « Ordre », **sans filtre**
   (« Toutes ») et pour une collection qui a un ordre, un intercalaire **commence une nouvelle ligne** de la grille (une
-  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé) ; en tri
+  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé). Les
+  cartes d'avant le premier intercalaire (hors de toute section, « non triées ») sont montrées **après** les sections, sur
+  leur propre ligne (2026-10-26, demande de l'utilisateur : les intercalaires toujours au-dessus des cartes non triées) ;
+  seulement à l'affichage (album à toi ou d'un ami) : la collection garde son ordre, et « Réorganiser » montre l'ordre
+  rangé. En tri
   « A → Z », « Rareté », « Prix ↑/↓ » ou avec un filtre, il ne garde que son cadre.
 - **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), l'onglet d'un
   intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, chevron, `aria-expanded`, « Replier / Déplier
