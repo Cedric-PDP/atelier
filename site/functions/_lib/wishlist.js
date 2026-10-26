@@ -50,8 +50,8 @@ export function wishDue(user, now = Date.now()) {
 }
 
 const CACHED = `SELECT j.value AS t, g.card_id AS id, g.at FROM json_each(?1) AS j JOIN game_titles AS g ON g.title = j.value`;
-const OWNED = `SELECT j.value AS id FROM json_each(?2) AS j
-  WHERE EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND c.card_id = j.value)`;
+const OWNED = `SELECT c.card_id AS id, json_extract(c.data, '$.title') AS title
+  FROM json_each(?2) AS j CROSS JOIN cards AS c WHERE c.user_id = ?1 AND c.card_id = j.value`;
 const REMEMBER = `INSERT INTO game_titles (title, card_id, at) SELECT json_extract(j.value, '$[0]'), json_extract(j.value, '$[1]'), ?2
   FROM json_each(?1) AS j WHERE true
   ON CONFLICT (title) DO UPDATE SET card_id = excluded.card_id, at = excluded.at`;
@@ -62,11 +62,12 @@ const SELECTED = `SELECT DISTINCT json_extract(i.value, '$.title') AS title
   FROM targets AS t, json_each(t.items) AS i WHERE t.user_id = ?1
     AND (t.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))
     AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'`;
-const DROP_MANAGED = `WITH selected AS (${SELECTED})
+const DROP_MANAGED = `WITH selected AS MATERIALIZED (${SELECTED}), selected_ids AS MATERIALIZED (
+    SELECT DISTINCT g.card_id FROM selected AS s CROSS JOIN game_titles AS g WHERE g.title = s.title AND g.card_id <> '')
   SELECT m.card_id AS id FROM wish_managed AS m WHERE m.user_id = ?1 AND (
     EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND c.card_id = m.card_id)
-    OR NOT EXISTS (SELECT 1 FROM selected AS s LEFT JOIN game_titles AS g ON g.title = s.title
-      WHERE s.title = m.title OR g.card_id = m.card_id))`;
+    OR (m.title NOT IN (SELECT title FROM selected WHERE title IS NOT NULL)
+      AND m.card_id NOT IN (SELECT card_id FROM selected_ids)))`;
 const TRACK = `INSERT INTO wish_managed (user_id, card_id, title)
   SELECT ?1, json_extract(value, '$[1]'), json_extract(value, '$[0]') FROM json_each(?2) WHERE true
   ON CONFLICT (user_id, card_id) DO UPDATE SET title = excluded.title`;
@@ -108,8 +109,18 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       out.removed += done;
       return gone.length - done;
     };
-    // 2. Cartes suivies obtenues ou qui ne sont plus demandées par aucune collection cochée.
-    const gone = (await db.prepare(DROP_MANAGED).bind(user.id).all()).results.map((r) => r.id);
+    // 2. Toute carte possédée sort des souhaits, même ajoutée à la main ou hors des collections choisies.
+    // On conserve aussi le nettoyage des anciens souhaits suivis devenus inutiles.
+    const managed = (await db.prepare(DROP_MANAGED).bind(user.id).all()).results.map((r) => r.id);
+    const owned = wish.size ? (await db.prepare(OWNED).bind(user.id, JSON.stringify([...wish])).all()).results : [];
+    const known = new Set(managed);
+    const untracked = owned.filter((r) => !known.has(r.id));
+    if (untracked.length) await db.batch([
+      // Intention durable avant DELETE : erreur ou limite de requêtes ne perdent pas les retraits à terminer.
+      db.prepare(TRACK).bind(user.id, JSON.stringify(untracked.map((r) => [typeof r.title === 'string' ? r.title : '', r.id]))),
+      db.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?1').bind(user.id),
+    ]);
+    const gone = [...new Set([...owned.map((r) => r.id), ...managed])];
     // Même une carte retirée à la main du jeu peut être oubliée par le classeur.
     const absent = gone.filter((id) => !wish.has(id));
     if (absent.length) await db.prepare('DELETE FROM wish_managed WHERE user_id = ?1 AND card_id IN (SELECT value FROM json_each(?2))')

@@ -325,12 +325,16 @@ export async function finalizeImport(db, user, { source, key, exact = {}, starte
 function fullLogEntry(d, verified) {
   const entry = collectionLogEntry(d, verified);
   const tag = d.auto_tag;
-  if (!tag) return entry;
+  const fav = d.auto_favorite;
+  if (!tag && !fav) return entry;
+  const favText = fav ? `Auto-favoris ${fav.result === 'error' ? 'en échec' : fav.left ? 'partiel' : 'réussi'} : ${num(fav.added)} favori(s) ajouté(s)${fav.left ? ` ; ${num(fav.left)} en attente` : ''}. ` : '';
+  if (!tag) return { ...entry, result: entry.result === 'ok' && fav.result !== 'ok' ? 'warn' : entry.result,
+    message: favText + (fav.error ? fav.error + '. ' : '') + entry.message };
   const status = tag.result === 'error' ? 'Auto-tag en échec' : tag.left ? 'Auto-tag partiel' : 'Auto-tag réussi';
   const counts = `${num(tag.added)} ${plural(tag.added, 'tag ajouté', 'tags ajoutés')}, ${num(tag.removed)} ${plural(tag.removed, 'retiré', 'retirés')}`;
   const detail = tag.error ? ` ; ${tag.error}` : tag.left ? ` ; ${num(tag.left)} en attente` : '';
-  return { ...entry, result: entry.result === 'ok' && tag.result !== 'ok' ? 'warn' : entry.result,
-    message: `${status} : ${counts}${detail}. ${entry.message}` };
+  return { ...entry, result: entry.result === 'ok' && (tag.result !== 'ok' || (fav && fav.result !== 'ok')) ? 'warn' : entry.result,
+    message: `${favText}${status} : ${counts}${detail}. ${fav && fav.error ? fav.error + '. ' : ''}${entry.message}` };
 }
 
 function collectionLogEntry(d, verified) {

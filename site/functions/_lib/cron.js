@@ -15,6 +15,7 @@ import { marketPass } from './marketread.js';
 import { autoFriends } from './friends.js';
 import { wishDue, wishPass } from './wishlist.js';
 import { autoTagLinks } from './autotag.js';
+import { hasAutoFavorites } from './autofavorite.js';
 
 export { FAILS_MAX, LEASE_MS };
 export const COLLECTION_CRON = '*/10 * * * *';
@@ -108,13 +109,13 @@ async function collectionPass(env, { now }) {
       s.via = 'cron';
       await freshAuth(env, member, s);
       const seen = await checkCollection(env, member, s);
-      // Un tag peut changer sans nouveau exemplaire : lecture complète à chaque passage si l'auto-tag est actif.
-      if (needsRead(syncState(member), seen, now) || (await autoTagLinks(db, member.id)).length) {
+      // Tags et favoris peuvent changer sans nouvel exemplaire : lecture complète si une option est active.
+      if (needsRead(syncState(member), seen, now) || (await autoTagLinks(db, member.id)).length || await hasAutoFavorites(db, member.id)) {
         // La vérification a pu renouveler la session : la lecture repart de la ligne à jour, sous le même bail.
         const user = await db.prepare(`SELECT ${USER_COLUMNS} FROM users WHERE id = ?1`).bind(member.id).first();
         const refreshed = await readCollection(env, user, { via: 'cron', lease });
         counts.read++;
-        if (refreshed.auto_tag && refreshed.auto_tag.limited) {
+        if ((refreshed.auto_tag && refreshed.auto_tag.limited) || (refreshed.auto_favorite && refreshed.auto_favorite.limited)) {
           await skipNext(db, 'collection', SKIP_AFTER_LIMIT_MS.collection, now);
           limited = true;
           break;

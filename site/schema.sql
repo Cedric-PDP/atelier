@@ -131,6 +131,8 @@ CREATE TABLE IF NOT EXISTS targets (
     auto_tag_id TEXT,
     auto_tag_baseline TEXT, -- {card_id:{tagged:[id d'exemplaire]}} : dernier état et intentions pour reprise
     auto_tag_state TEXT,
+    auto_favorite INTEGER NOT NULL DEFAULT 0,
+    auto_favorite_state TEXT,
     PRIMARY KEY (user_id, id)
 );
 

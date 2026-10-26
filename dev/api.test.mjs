@@ -4202,6 +4202,94 @@ async function tagFixture(name) {
   return { e, m, p, full };
 }
 
+await test('auto-favoris : option indépendante, exemplaire unique, reprise et conservation', async () => {
+  const { e, m, p, full } = await tagFixture('AutoFavorite');
+  const opt = enabled => call('POST', 'targets/favorite', { key: m.u.key, e, body: { id: 'planetes', enabled } });
+  assert.equal((await albumOf(m, e)).auto_favorite, false);
+  assert.equal((await opt('oui')).status, 400);
+  assert.equal((await call('POST', 'targets/favorite', { key: m.u.key, e, body: { id: 'absent', enabled: true } })).status, 404);
+  assert.equal((await call('POST', 'targets/favorite', { key: bob.key, e, body: { id: 'planetes', enabled: true } })).status, 401);
+  await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: '', enabled: false } });
+  assert.equal((await opt(true)).json.target.auto_favorite, true);
+  let r = await full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.auto_favorite.error, undefined);
+  assert.equal(r.json.auto_favorite.added, 1);
+  assert.equal(p.cards.filter(c => c.starred).length, 1);
+  assert.equal((await albumOf(m, e)).auto_favorite_state.added, 1);
+  assert.match((await m.log())[0].message, /Auto-favoris réussi : 1/);
+  r = await full();
+  assert.equal(r.json.auto_favorite.added, 0, 'idempotent');
+  p.cards.find(c => c.starred).starred = false;
+  supa.favoriteReply = () => ({ status: 503, body: { message: 'refus-favori' } });
+  r = await full();
+  assert.ok(r.json.auto_favorite.error);
+  assert.equal(p.cards.filter(c => c.starred).length, 0);
+  assert.equal((await m.log())[0].result, 'warn');
+  supa.favoriteReply = null;
+  r = await full();
+  assert.equal(r.json.auto_favorite.added, 1, 'écriture reprise');
+  p.cards = p.cards.filter(c => !c.starred);
+  r = await full();
+  assert.equal(r.json.auto_favorite.added, 1, 'autre exemplaire protégé si le favori disparaît');
+  let t = await albumOf(m, e);
+  await call('POST', 'targets/save', { key: m.u.key, e, body: { id: t.id, name: t.name, items: [] } });
+  assert.equal((await albumOf(m, e)).auto_favorite, true, 'enregistrement préserve le réglage');
+  await full();
+  await opt(false);
+  await full();
+  assert.equal(p.cards.filter(c => c.starred).length, 1, 'retrait et désactivation conservent les favoris');
+  e.DB.close();
+});
+
+await test('auto-favoris : lots, limite par passe, refus et protection contre les changements concurrents', async () => {
+  const { syncAutoFavorites, autoFavoriteLinks } = await import('../site/functions/_lib/autofavorite.js');
+  const { e, m, p } = await tagFixture('AutoFavoriteLots');
+  const many = mini(205);
+  p.cards = many.map(c => rowOf(c, { uid: m.uid }));
+  const save = items => call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'planetes', name: 'Planètes', items } });
+  await save(many.map(c => ({ title: c.title })));
+  await call('POST', 'targets/favorite', { key: m.u.key, e, body: { id: 'planetes', enabled: true } });
+  const session = await sessionOf(e, userRow(m.id, e));
+  const pass = async () => syncAutoFavorites(e, { id: m.id }, session, JSON.parse(JSON.stringify(p.cards)), await autoFavoriteLinks(e.DB, m.id), { gap: 0, maxWrites: 1 });
+  let r = await pass();
+  assert.deepEqual([r.added, r.left, r.error], [100, 105, undefined]);
+  r = await pass(); assert.deepEqual([r.added, r.left], [100, 5]);
+  r = await pass(); assert.deepEqual([r.added, r.left], [5, 0]);
+  assert.equal(p.cards.filter(c => c.starred).length, 205);
+  p.cards.forEach(c => { c.starred = false; });
+  const old = await autoFavoriteLinks(e.DB, m.id);
+  await save([]);
+  r = await syncAutoFavorites(e, { id: m.id }, session, p.cards, old, { gap: 0 });
+  assert.match(r.error, /modifiées/);
+  assert.equal(p.cards.filter(c => c.starred).length, 0);
+  e.DB.close();
+});
+
+await test('auto-favoris : auto-tag partagé, lecture vérifiée et cron sans nouvel achat', async () => {
+  const { e, m, p, full } = await tagFixture('AutoFavoriteCron');
+  const other = await signup('AutreFavori', e);
+  assert.equal((await call('POST', 'targets/favorite', { key: other.key, e, body: { id: 'planetes', enabled: true } })).status, 404);
+  await call('POST', 'targets/favorite', { key: m.u.key, e, body: { id: 'planetes', enabled: true } });
+  supa.noCount = true;
+  let r = await full();
+  assert.match(r.json.auto_favorite.error, /non vérifiée/);
+  assert.equal(p.cards.filter(c => c.starred).length, 0);
+  supa.noCount = false;
+  r = await full();
+  assert.equal(r.json.auto_favorite.added, 2, 'Mars et Terre importée par le tag');
+  const mars = p.cards.filter(c => c.card_id === m.cards[1].id);
+  assert.equal(mars.filter(c => c.starred).length, 1);
+  assert.ok(hasGameTag(mars.find(c => c.starred)), 'favori sur le même exemplaire que le tag');
+  const cards = (await call('GET', 'cards', { key: m.u.key, e })).json.cards;
+  assert.ok(cards.find(c => c.title === 'Mars').starred, 'import reflète les favoris immédiatement');
+  await call('POST', 'targets/autotag', { key: m.u.key, e, body: { id: 'planetes', tag: '', enabled: false } });
+  p.cards.forEach(c => { c.starred = false; });
+  assert.match(await runCron(e, COLLECTION_CRON), /1 relu/);
+  assert.equal(p.cards.filter(c => c.starred).length, 2, 'favoris seuls : lecture forcée sans nouvel achat');
+  e.DB.close();
+});
+
 await test('auto-tag : union initiale, un seul exemplaire, ajout/retrait dans les deux sens et arrêt', async () => {
   const { e, m, p, full } = await tagFixture('AutoTag1');
   let r = await full();
@@ -4378,7 +4466,7 @@ await test('souhaits par collection : sélection, chevauchement, désactivation,
   const e = makeEnv(); supa.reset();
   const m = await cronMember('Souhait1', e, mini(3));
   supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B'), gameCard('g-c', 'Manque C')];
-  // Souhait manuel sans rapport : même possédé, le classeur doit le préserver.
+  // Souhaits manuels sans rapport : le possédé doit sortir, le non possédé doit rester.
   supa.wishlist = [{ user_id: m.uid, card_id: 'g-x' }, { user_id: m.uid, card_id: 'mini-00001' }];
   const save = (id, titles, wish_sync, waits = null) => call('POST', 'targets/save', { key: m.u.key, e, waits,
     body: { id, name: id, items: titles.map(title => ({ title })), ...(wish_sync === undefined ? {} : { wish_sync }) } });
@@ -4389,7 +4477,7 @@ await test('souhaits par collection : sélection, chevauchement, désactivation,
   await save('b', ['Manque B', 'Manque C'], false);
   assert.equal((await save('bad', [], 'oui')).status, 400);
   await sync();
-  assert.deepEqual(wishes(), ['g-a', 'g-b', 'g-x', 'mini-00001']);
+  assert.deepEqual(wishes(), ['g-a', 'g-b', 'g-x']);
   // Le choix est préservé quand un autre enregistrement ne porte pas ce champ.
   r = await save('a', ['Manque A', 'Manque B']);
   assert.equal(r.json.target.wish_sync, true);
@@ -4398,23 +4486,92 @@ await test('souhaits par collection : sélection, chevauchement, désactivation,
   await save('b', ['Manque B', 'Manque C'], true); await sync();
   await save('a', ['Manque A', 'Manque B'], false); r = await sync();
   assert.equal(r.json.wish.removed, 1);
-  assert.deepEqual(wishes(), ['g-b', 'g-c', 'g-x', 'mini-00001']);
-  // Acquisition détectée par Rafraîchir : retire B, garde le souhait manuel possédé.
+  assert.deepEqual(wishes(), ['g-b', 'g-c', 'g-x']);
+  // Acquisition détectée par Rafraîchir : retire B ; le souhait manuel non possédé reste.
+  supa.wishlist.push({ user_id: m.uid, card_id: 'mini-00002' }); // déjà possédée, mais jamais suivie par le classeur
   supa.player(m.uid).cards.push(rowOf({ id: 'g-b', title: 'Manque B', rarity: 'R', count: 1 }, { uid: m.uid }));
   oldWish(m.id, e); const waits = [];
   e.DB.sqlite.prepare('UPDATE users SET sync_click_at = NULL WHERE id = ?').run(m.id);
   await call('POST', 'refresh', { key: m.u.key, e, body: {}, waits }); await Promise.all(waits);
-  assert.deepEqual(wishes(), ['g-c', 'g-x', 'mini-00001']);
+  assert.deepEqual(wishes(), ['g-c', 'g-x']);
+  assert.equal(wishOf(m.id, e).removed, 2, 'retire la carte acquise et le souhait manuel déjà possédé');
   // Suppression de la dernière collection : nettoyage en arrière-plan.
   oldWish(m.id, e); const cleanup = [];
   await call('POST', 'targets/delete', { key: m.u.key, e, body: { id: 'b' }, waits: cleanup }); await Promise.all(cleanup);
-  assert.deepEqual(wishes(), ['g-x', 'mini-00001']);
+  assert.deepEqual(wishes(), ['g-x']);
   assert.equal(userRow(m.id, e).auto_wish, 0);
   assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ?').get(m.id).n, 0);
   const other = await signup('Souhait2', e);
   await call('POST', 'targets/save', { key: other.key, e, body: { id: 'a', name: 'Autre', items: [], wish_sync: true } });
   assert.equal(e.DB.sqlite.prepare('SELECT wish_sync FROM targets WHERE user_id = ? AND id = ?').get(m.id, 'a').wish_sync, 0);
   e.DB.close();
+});
+
+await test('souhaits stricts : tous les possédés retirés, souhaits manuels non possédés conservés, lots et reprise après refus', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitStrict', e, mini(205));
+  const other = await signup('SouhaitStrictAutre', e);
+  e.DB.sqlite.prepare('INSERT INTO cards (user_id, card_id, data) VALUES (?, ?, ?)')
+    .run(other.user.id, 'other-owned', JSON.stringify({ title: 'Carte de l’autre', count: 1, rarity: 'C' }));
+  supa.wishlist = [...m.cards.map(c => c.id), 'manual', 'other-owned'].map(card_id => ({ user_id: m.uid, card_id }));
+  const session = await sessionOf(e, userRow(m.id, e));
+  // Aucun album synchronisé : le clic peut quand même nettoyer les souhaits possédés.
+  let r = await wishPass(e, userRow(m.id, e), session, { via: 'clic', max: 2, gap: 0 });
+  assert.deepEqual([r.removed, r.left], [100, 105]);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ?').get(m.id).n, 105);
+  assert.equal(userRow(m.id, e).auto_wish, 1, 'poursuivre les retraits possédés, même sans album sélectionné');
+  supa.wishReply = () => ({ status: 400, body: { message: 'refus test' } });
+  await assert.rejects(wishPass(e, userRow(m.id, e), session, { via: 'cron', gap: 0 }), /refus test/);
+  assert.equal(userRow(m.id, e).auto_wish, 1);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ?').get(m.id).n, 105, 'échec : les retraits restent mémorisés');
+  supa.wishReply = null; oldWish(m.id, e);
+  r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.wish.removed, r.json.wish.left], [105, 0]);
+  assert.deepEqual(supa.wishes(m.uid), ['manual', 'other-owned'], 'les souhaits non possédés restent, même si une autre personne les possède');
+  assert.equal(userRow(m.id, e).auto_wish, 0);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ?').get(m.id).n, 0);
+  e.DB.close(); supa.reset();
+});
+
+await test('souhaits : 4 000 souhaits suivis, alias conservés et retraits après modification sans parcours répétés', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitStrictVolume', e);
+  const at = new Date().toISOString();
+  const items = Array.from({ length: 4000 }, (_, i) => ({ title: 'Titre souhaité ' + i }));
+  const cache = e.DB.sqlite.prepare('INSERT INTO game_titles (title, card_id, at) VALUES (?, ?, ?)');
+  const managed = e.DB.sqlite.prepare('INSERT INTO wish_managed (user_id, card_id, title) VALUES (?, ?, ?)');
+  e.DB.sqlite.exec('BEGIN');
+  e.DB.sqlite.prepare('INSERT INTO targets (user_id, id, name, items, wish_sync, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)')
+    .run(m.id, 'grand', 'Collection', JSON.stringify(items), at, at);
+  for (let i = 0; i < 4000; i++) {
+    cache.run(items[i].title, 'wish-' + i, at);
+    managed.run(m.id, 'wish-' + i, 'Ancien titre ' + i);
+  }
+  e.DB.sqlite.prepare('UPDATE users SET auto_wish = 1 WHERE id = ?').run(m.id);
+  e.DB.sqlite.exec('COMMIT');
+  supa.wishlist = [...items.map((_, i) => 'wish-' + i), 'manual'].map(card_id => ({ user_id: m.uid, card_id }));
+  const observed = [];
+  const prepare = e.DB.prepare.bind(e.DB);
+  e.DB.prepare = (sql) => {
+    const st = prepare(sql), bind = st.bind.bind(st);
+    st.bind = (...args) => { const bound = bind(...args); observed.push(bound); return bound; };
+    return st;
+  };
+  const session = await sessionOf(e, userRow(m.id, e));
+  let r = await wishPass(e, userRow(m.id, e), session, { via: 'cron', gap: 0 });
+  assert.deepEqual([r.removed, r.added, r.left], [0, 0, 0], 'les alias demandés par la collection restent souhaités');
+  const st = observed.find(s => s.sql.startsWith('WITH selected AS MATERIALIZED'));
+  const plan = e.DB.sqlite.prepare('EXPLAIN QUERY PLAN ' + st.sql)
+    .all(Object.fromEntries(st.params.map((p, i) => ['?' + (i + 1), p])));
+  assert.equal(plan.filter(p => /SCAN i VIRTUAL TABLE/.test(p.detail)).length, 1, 'un seul parcours des éléments de collection');
+  assert.match(plan.map(p => p.detail).join('\n'), /SEARCH g USING INDEX.*\(title=\?\)/);
+  e.DB.sqlite.prepare('UPDATE targets SET items = ? WHERE user_id = ? AND id = ?').run(JSON.stringify(items.slice(500)), m.id, 'grand');
+  r = await wishPass(e, userRow(m.id, e), session, { via: 'cron', gap: 0 });
+  assert.deepEqual([r.removed, r.added, r.left], [500, 0, 0]);
+  assert.equal(supa.wishes(m.uid).length, 3501);
+  assert.ok(supa.wishes(m.uid).includes('manual'));
+  e.DB.close(); supa.reset();
 });
 
 await test('titres sans cartes : bilan, portée, sélection, suppression complète et résultats périmés', async () => {

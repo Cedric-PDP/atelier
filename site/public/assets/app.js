@@ -1882,8 +1882,12 @@
         }
       }
       await Promise.all([syncCards(), loadMe()]);
-      if (res.auto_tag || targets.value.some(t => t.auto_tag && t.auto_tag.enabled)) await loadTargets();
+      if (res.auto_tag || res.auto_favorite || targets.value.some(t => t.auto_favorite || (t.auto_tag && t.auto_tag.enabled))) await loadTargets();
       if (res.auto_tag && res.auto_tag.error) { S.refresh.warn = true; S.refresh.msg += ` Auto-tag : ${res.auto_tag.error}`; }
+      if (res.auto_favorite) {
+        if (res.auto_favorite.error) { S.refresh.warn = true; S.refresh.msg += ` Auto-favoris : ${res.auto_favorite.error}`; }
+        else S.refresh.msg += ` Auto-favoris : ${fmt(res.auto_favorite.added || 0)} ajouté(s)${res.auto_favorite.left ? ` · ${fmt(res.auto_favorite.left)} en attente` : ''}.`;
+      }
       startPageviews();
       afterCards();
     } catch (e) {
@@ -2176,7 +2180,7 @@
           onChange: (e) => { const on = e.target.checked; e.target.checked = !!t.wish_sync; setTargetWish(t, on); } }),
         'Synchroniser les souhaits de cette collection',
       ]),
-      h('p', { class: 'small muted' }, ['Ajoute les cartes manquantes, retire celles obtenues. ', h('a', { href: '#/reglages' }, 'Réglages')]),
+      h('p', { class: 'small muted' }, ['Ajoute les manquantes, retire tous les souhaits déjà obtenus. ', h('a', { href: '#/reglages' }, 'Réglages')]),
       linked ? h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', disabled: S.autoWish.syncBusy || S.autoWish.busy,
         onClick: () => syncWish(t) }, S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant')])
         : h('p', { class: 'small muted' }, 'Compte du jeu à relier dans « Synchro ».'),
@@ -2201,9 +2205,22 @@
     }
   }
   async function syncCollectionAutoTag(t) {
-    if (S.refresh.running || S.autoTag.busy || !(t.auto_tag && t.auto_tag.enabled)) return;
+    if (S.refresh.running || S.autoTag.busy || !(t.auto_favorite || (t.auto_tag && t.auto_tag.enabled))) return;
     S.autoTag.syncTargetId = t.id;
     await runRefresh();
+  }
+  async function setCollectionAutoFavorite(t, enabled) {
+    if (S.autoTag.busy) return;
+    const gen = cardsGen;
+    Object.assign(S.autoTag, { busy: true, targetId: t.id, syncTargetId: null, error: '' });
+    try {
+      const r = await api('POST', '/api/targets/favorite', { id: t.id, enabled });
+      if (gen === cardsGen && r.target) upsertTarget(r.target);
+    } catch (e) {
+      if (gen === cardsGen) S.autoTag.error = e.message;
+    } finally {
+      if (gen === cardsGen) S.autoTag.busy = false;
+    }
   }
   function viewAutoTag(t) {
     const cfg = t.auto_tag || {};
@@ -2213,13 +2230,17 @@
     const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
     const st = t.auto_tag_state;
     return h('section', { class: 'album-wish', 'aria-label': 'Auto-tag dans le jeu' }, [
-      h('label', { class: 'check' }, [
+      h('div', { class: 'album-auto-options' }, [h('label', { class: 'check' }, [
         h('input', { id: 'collection-auto-tag', type: 'checkbox', checked: !!cfg.enabled, disabled: S.autoTag.busy || !chosen,
           onChange: e => { const enabled = e.target.checked; e.target.checked = !!cfg.enabled; setCollectionAutoTag(t, chosen, enabled); } }),
         'Auto-tag dans WikiMasters',
-      ]),
+      ]), h('label', { class: 'check' }, [
+        h('input', { id: 'collection-auto-favorite', type: 'checkbox', checked: !!t.auto_favorite, disabled: S.autoTag.busy,
+          onChange: e => { const enabled = e.target.checked; e.target.checked = !!t.auto_favorite; setCollectionAutoFavorite(t, enabled); } }),
+        'Auto-favoris dans WikiMasters',
+      ])]),
       h('div', { class: 'actions' }, [h('button', { id: 'collection-auto-tag-sync', class: 'btn', type: 'button',
-        disabled: !cfg.enabled || !chosen || !linked || S.autoTag.busy || S.refresh.running,
+        disabled: !(t.auto_favorite || (cfg.enabled && chosen)) || !linked || S.autoTag.busy || S.refresh.running,
         onClick: () => syncCollectionAutoTag(t) }, S.refresh.running ? 'Synchronisation…' : 'Synchroniser maintenant')]),
       tags.length ? h('label', { class: 'wish-mode' }, [h('span', { class: 'small muted' }, 'Tag du jeu lié à cette collection. Désactiver conserve cartes et tags.'),
         h('select', { id: 'collection-auto-tag-name', class: 'field full', value: chosen, disabled: S.autoTag.busy || !!cfg.enabled,
@@ -2228,10 +2249,13 @@
             ...tags.map(tag => h('option', { key: tag, value: tag }, tag))]),
       ]) : h('p', { class: 'small muted' }, 'Pose un tag sur une carte dans le jeu, puis rafraîchis le classeur.'),
       cfg.enabled ? h('p', { class: 'small muted' }, 'L’auto-tag remplace l’ajout automatique par règles pour cet album.') : null,
-      cfg.enabled && !(S.me && S.me.session && S.me.session.linked && !S.me.session.lost)
+      t.auto_favorite ? h('p', { class: 'small muted' }, 'Un exemplaire en favori par carte. Désactiver conserve les favoris.') : null,
+      (cfg.enabled || t.auto_favorite) && !linked
         ? h('p', { class: 'small muted' }, 'Compte du jeu à relier dans « Synchro ».') : null,
       st ? h('p', { class: st.error ? 'status err' : 'small muted', role: 'status' }, st.error ||
         `Dernière synchro : ${fmt(st.added || 0)} tag(s) ajouté(s), ${fmt(st.removed || 0)} retiré(s) · ${fmt(st.cards_added || 0)} carte(s) ajoutée(s), ${fmt(st.cards_removed || 0)} retirée(s)${st.left ? ` · ${fmt(st.left)} opération(s) en attente` : ''}.`) : null,
+      t.auto_favorite_state ? h('p', { class: t.auto_favorite_state.error ? 'status err' : 'small muted', role: 'status' },
+        t.auto_favorite_state.error || `Dernière synchro favoris : ${fmt(t.auto_favorite_state.added || 0)} ajouté(s)${t.auto_favorite_state.left ? ` · ${fmt(t.auto_favorite_state.left)} en attente` : ''}.`) : null,
       S.autoTag.targetId === t.id ? errLine(S.autoTag.error) : null,
       S.autoTag.syncTargetId === t.id && !S.refresh.running && (S.refresh.error || S.refresh.warn)
         ? h('p', { class: S.refresh.error ? 'status err' : 'warn', role: 'status' }, S.refresh.msg) : null,
@@ -8359,7 +8383,7 @@
             h('option', { value: 'selected' }, 'Collection par collection'),
           ]),
         ]),
-        h('p', { class: 'small muted' }, '« Toutes mes collections » synchronise les cartes manquantes de toutes tes collections et catégories, y compris les nouvelles. « Collection par collection » utilise les cases dans tes albums. Changer de mode conserve ces choix individuels ; les souhaits qui ne sont plus demandés sont retirés automatiquement.'),
+        h('p', { class: 'small muted' }, '« Toutes mes collections » synchronise les cartes manquantes de toutes tes collections et catégories, y compris les nouvelles. « Collection par collection » utilise les cases dans tes albums. Changer de mode conserve ces choix individuels ; les souhaits qui ne sont plus demandés sont retirés automatiquement. Toute carte déjà obtenue est retirée des souhaits, même ajoutée directement dans le jeu.'),
         S.me && S.me.session && S.me.session.linked && !S.me.session.lost ? h('div', { class: 'actions' }, [
           h('button', { class: 'btn', type: 'button', disabled: S.autoWish.busy || S.autoWish.syncBusy, onClick: () => syncWish() },
             S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant'),

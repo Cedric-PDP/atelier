@@ -110,6 +110,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     wishlist: [], // {user_id, card_id} : table wishlist_items
     wishReply: null, // (method, body) → {status, body} pour forcer la réponse d'une écriture de wishlist_items
     tagReply: null, // (method, body) → refus simulé de user_card_tags
+    favoriteReply: null,
     wishes(uid) {
       return this.wishlist.filter((w) => w.user_id === uid).map((w) => w.card_id).sort();
     },
@@ -132,6 +133,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       this.wishlist = [];
       this.wishReply = null;
       this.tagReply = null;
+      this.favoriteReply = null;
     },
     befriend(a, b, status = 'accepted') {
       this.friendships.push({ id: `amitie-${this.friendships.length + 1}`, requester_id: a, addressee_id: b, status });
@@ -242,6 +244,20 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
         return new Response(null, { status: 204 });
       }
       throw new Error('Méthode de tag inattendue');
+    }
+    if (method === 'PATCH' && u.pathname === '/rest/v1/user_cards') {
+      const me = byAccess(h);
+      if (!me) return reply({ message: 'JWT expired' }, 401);
+      if (supa.limit === 429) return reply({}, 429);
+      if (supa.limit === 'automation_limit') return reply({ code: 'automation_limit' }, 403);
+      const body = JSON.parse(init.body || '{}');
+      assert.deepEqual(body, { starred: true });
+      assert.equal(u.searchParams.get('user_id'), 'eq.' + me.uid);
+      const ids = JSON.parse('[' + u.searchParams.get('id').slice(4, -1) + ']');
+      const forced = supa.favoriteReply && supa.favoriteReply(body, ids);
+      if (forced) return reply(forced.body || {}, forced.status);
+      for (const row of me.cards) if (ids.includes(row.id)) row.starred = true;
+      return new Response(null, { status: 204 });
     }
     if (method !== 'GET') throw new Error('écriture dans la base du jeu : ' + method + ' ' + url);
     if (u.pathname === '/auth/v1/user') {

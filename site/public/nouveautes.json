@@ -1,6 +1,9 @@
 {
   "versions": [
     {"id": "2026-10-26", "date": "2026-10-26", "sections": [
+      {"icon": "🔒", "title": "Auto-favoris dans le jeu", "items": [
+        {"text": "Active « Auto-favoris dans WikiMasters » dans une collection pour mettre automatiquement un exemplaire de chaque carte obtenue en favori dans le jeu. L'option fonctionne avec ou sans auto-tag, lors des synchronisations manuelles et automatiques. Retirer une carte de la collection ou désactiver l'option conserve ses favoris.", "to": "#/collections", "link": "Mes collections"}
+      ]},
       {"icon": "⚡", "title": "Cache Wikipédia", "items": [
         {"text": "Les identifiants des articles sont désormais conservés dans un stockage local plus grand et chargés avant les recherches. Consulter les cartes des amis ne fait plus oublier celles de ton classeur à cause de l'ancien plafond de 30 000 titres : un F5 réutilise les résultats déjà enregistrés. Les données restent conservées 30 jours."}
       ]},
@@ -16,7 +19,7 @@
       ]},
       {"icon": "⭐", "title": "Deux modes pour les souhaits du jeu", "items": [
         {"text": "Dans Réglages, choisis « Toutes mes collections » pour synchroniser les cartes manquantes de toutes tes collections et catégories, y compris les futures, ou « Collection par collection » pour choisir les albums à synchroniser.", "to": "#/reglages", "link": "Choisir mon mode"},
-        {"text": "En mode « Collection par collection », coche la synchronisation dans chaque album souhaité. Décocher retire ses souhaits, sauf les cartes encore demandées par une autre collection synchronisée. Les cartes obtenues sont retirées automatiquement ; les souhaits sans rapport restent.", "to": "#/collections", "link": "Mes collections"},
+        {"text": "En mode « Collection par collection », coche la synchronisation dans chaque album souhaité. Décocher retire ses souhaits, sauf les cartes non obtenues encore demandées par une autre collection synchronisée. Tous les souhaits déjà obtenus sont retirés automatiquement, même ajoutés manuellement dans le jeu ; les autres souhaits sans rapport restent.", "to": "#/collections", "link": "Mes collections"},
         {"text": "Passer d'un mode à l'autre conserve tes choix par collection : tu les retrouves en revenant au mode individuel. Une nouvelle collection est automatiquement incluse en mode complet ; en mode individuel, elle est décochée par défaut."},
         {"text": "Lors de la migration de l'ancien site, une synchronisation globale activée reste en mode complet et toutes les collections existantes sont cochées ; si elle était désactivée, le mode individuel est choisi avec toutes les collections décochées. Les choix individuels déjà faits dans la nouvelle version sont conservés."},
         {"text": "« Synchroniser les souhaits maintenant » et le bilan des mises à jour sont disponibles dans Réglages et dans tes collections."}

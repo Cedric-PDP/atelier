@@ -532,6 +532,15 @@ function mockApi() {
         return json(200, { ok: true });
       }
       if (p === '/api/targets') return json(200, { targets: st.targets });
+      if (p === '/api/targets/favorite') {
+        const t = st.targets.find(t => t.id === body.id);
+        if (!t) return json(404, { error: 'Collection absente.' });
+        if (typeof body.enabled !== 'boolean') return json(400, { error: 'Configuration invalide.' });
+        t.auto_favorite = body.enabled;
+        t.auto_favorite_state = null;
+        t.updated_at = 'y' + ++seq;
+        return json(200, { target: t });
+      }
       if (p === '/api/targets/autotag') {
         const t = st.targets.find(t => t.id === body.id);
         if (!t) return json(404, { error: 'Collection absente.' });
@@ -4367,6 +4376,14 @@ async function main() {
     const autoTagName = () => d.getElementById('collection-auto-tag-name');
     check(autoTagName().value === '' && d.getElementById('collection-auto-tag').disabled, 'aucun tag présélectionné, activation impossible');
     check(d.getElementById('collection-auto-tag-sync').disabled, 'synchro auto-tag impossible avant activation');
+    check(!d.getElementById('collection-auto-favorite').checked && !d.getElementById('collection-auto-favorite').disabled, 'auto-favoris indépendant du tag, désactivé par défaut');
+    d.getElementById('collection-auto-favorite').checked = true;
+    d.getElementById('collection-auto-favorite').dispatch('change');
+    check(await waitFor(() => d.getElementById('collection-auto-favorite').checked && !d.getElementById('collection-auto-favorite').disabled), 'auto-favoris activé sans tag');
+    check(!d.getElementById('collection-auto-tag-sync').disabled && d.getElementById('collection-auto-tag').disabled, 'synchro disponible pour favoris seuls');
+    d.getElementById('collection-auto-favorite').checked = false;
+    d.getElementById('collection-auto-favorite').dispatch('change');
+    check(await waitFor(() => !d.getElementById('collection-auto-favorite').checked && !d.getElementById('collection-auto-favorite').disabled), 'auto-favoris désactivé');
     autoTagName().value = 'Maladie'; autoTagName().dispatch('change');
     await settle(80);
     check(await waitFor(() => autoTagName().value === 'Maladie' && !autoTagName().disabled), 'tag lié enregistré');

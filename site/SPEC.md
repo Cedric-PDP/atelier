@@ -845,6 +845,21 @@ d'amis de chaque membre sur le site du jeu et peut envoyer des demandes d'ami (`
 - **Ce qui est montré** : à toi seul, ton amitié avec chaque membre qui partage (statut), jamais ta liste d'amis du jeu ni
   celle d'un autre membre. « Supprimer mon classeur » efface ses demandes notées.
 
+## Auto-favoris dans le jeu
+
+Dans le même bloc que l'auto-tag, une seconde case indépendante, désactivée par défaut, active les favoris sans
+nécessiter de tag. Les cases sont côte à côte quand la largeur le permet, puis empilées sous 760 px.
+`POST /api/targets/favorite {id, enabled}` réserve le réglage au propriétaire de la collection.
+Les réponses privées des collections incluent `auto_favorite` et `auto_favorite_state:{at,added,left,error?}|null`.
+Lors d'une lecture complète vérifiée, un seul exemplaire possédé par carte de la collection est mis en favori.
+Un favori existant suffit ; sinon l'exemplaire déjà auto-tagué est préféré. L'API du jeu reçoit
+`PATCH user_cards?user_id=eq.<uid>&id=in.(...) {starred:true}`, par lots de 100, au plus cinq lots par passe.
+Les opérations restantes ou refusées seront reprises à la prochaine passe. Aucune suppression de favori :
+désactiver l'option ou retirer une carte de la collection conserve les favoris existants.
+Le cron relit complètement les exemplaires même sans nouvel achat si cette option est active ; le bouton
+« Synchroniser maintenant » fonctionne aussi pour les favoris seuls. Le journal indique le bilan et les erreurs.
+Après l'auto-tag, les collections sont relues pour appliquer les favoris à leur contenu actualisé.
+
 ## Auto-tag dans le jeu
 
 Demande du 2026-10-25 : dans chaque collection, un tag existant du jeu peut être synchronisé **dans les deux sens**.
@@ -914,14 +929,18 @@ a sa case décochée, mais participe quand même en mode complet. Bouton manuel 
 - **Contrat** : `POST /api/targets/save` accepte `wish_sync?: boolean`. Absent, le choix existant est préservé,
   y compris lors des envois en morceaux, modifications, tris et ajouts automatiques. La réponse et `GET /api/targets`
   rendent `target.wish_sync`. Ce choix n'est pas partagé avec les amis.
-- **Traitement** (`functions/_lib/wishlist.js`) : lit `wishlist_items` avec la session reliée ; retire les cartes suivies
-  qui sont possédées ou ne sont plus demandées, puis ajoute les cartes manquantes des collections cochées (`status: ok`).
+- **Traitement** (`functions/_lib/wishlist.js`) : lit `wishlist_items` avec la session reliée ; retire toutes les cartes
+  possédées ainsi que les souhaits suivis qui ne sont plus demandés, puis ajoute les manquantes des collections cochées (`status: ok`).
   Rapprochement par titre puis identifiant du jeu, carte française préférée, cache commun `game_titles`.
 - **Retraits** : `wish_managed {user_id, card_id, title}` mémorise les cartes prises en charge, y compris un souhait déjà
   présent correspondant à une collection cochée. Décocher, supprimer une collection ou retirer un élément provoque le
-  retrait des souhaits qui ne sont plus demandés. Une carte commune à plusieurs collections cochées reste. Les souhaits
-  sans rapport avec les collections choisies sont préservés, même possédés. Suivi enregistré avant l'ajout au jeu pour
-  reprendre après erreur ou modification simultanée.
+  retrait des souhaits qui ne sont plus demandés. Une carte non possédée commune à plusieurs collections cochées reste.
+  Règle stricte : toute carte présente dans la collection importée est retirée des souhaits, même ajoutée directement
+  dans le jeu ou hors des albums synchronisés. Les souhaits manuels sans rapport sont conservés seulement si la carte
+  n'est pas possédée. Les retraits possédés sont mémorisés avant DELETE pour continuer après erreur/limite, y compris
+  lorsqu'un clic de nettoyage a été lancé sans album sélectionné. Le retrait devient effectif lors d'une passe des
+  souhaits, après détection de l'acquisition par l'import. Les collections et identifiants demandés sont regroupés une
+  seule fois pour protéger les cartes encore souhaitées sans répéter les parcours par souhait.
 - **Déclencheurs** : après enregistrement/suppression d'une collection et « Rafraîchir », en arrière-plan (`waitUntil`),
   au clic sur « Synchroniser les souhaits maintenant », et par le cron collection si la synchro automatique est active.
   Une minute entre deux passes après un geste/au clic ; sinon le cron reprend toutes les 10 minutes. En local : `--cron`.

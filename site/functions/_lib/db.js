@@ -84,6 +84,8 @@ export const SCHEMA = [
     auto_tag_id TEXT,
     auto_tag_baseline TEXT,
     auto_tag_state TEXT,
+    auto_favorite INTEGER NOT NULL DEFAULT 0,
+    auto_favorite_state TEXT,
     PRIMARY KEY (user_id, id)
   )`,
   `CREATE TABLE IF NOT EXISTS wish_missing (
@@ -254,6 +256,8 @@ const ADDED_COLUMNS = [
   ['targets', 'auto_tag_id', 'TEXT'],
   ['targets', 'auto_tag_baseline', 'TEXT'],
   ['targets', 'auto_tag_state', 'TEXT'],
+  ['targets', 'auto_favorite', 'INTEGER NOT NULL DEFAULT 0'],
+  ['targets', 'auto_favorite_state', 'TEXT'],
   ['refresh_staging', 'created_at', "TEXT NOT NULL DEFAULT ''"],
   ['refresh_staging', 'skipped', 'INTEGER NOT NULL DEFAULT 0'],
   ['market', 'attempt', 'TEXT'],

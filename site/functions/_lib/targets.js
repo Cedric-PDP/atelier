@@ -42,6 +42,8 @@ function toTarget(row, items = row.items) {
     wish_sync: !!row.wish_sync,
     auto_tag: row.auto_tag ? raw(row.auto_tag) : null,
     auto_tag_state: row.auto_tag_state ? raw(row.auto_tag_state) : null,
+    auto_favorite: !!row.auto_favorite,
+    auto_favorite_state: row.auto_favorite_state ? raw(row.auto_favorite_state) : null,
     created_at: row.created_at,
     updated_at: row.updated_at,
   };
@@ -183,7 +185,7 @@ function nextAuto(body, stored) {
 // ancienne à la plus récente.
 export async function listTargets(env, user) {
   const { results } = await env.DB.prepare(
-    'SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY pos IS NULL, pos, created_at, id',
+    'SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at FROM targets WHERE user_id = ?1 ORDER BY pos IS NULL, pos, created_at, id',
   )
     .bind(user.id)
     .all();
@@ -322,7 +324,7 @@ async function storeTarget(env, user, body) {
     ? db.prepare(
       `UPDATE targets SET name = ?3, items = ${itemsSql}, source = ?5, updated_at = ?6, auto = CASE WHEN ?7 = 1 THEN ?8 ELSE auto END, wish_sync = CASE WHEN ?11 = 1 THEN ?10 ELSE wish_sync END
        WHERE user_id = ?1 AND id = ?2 AND updated_at = ?9
-       RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, created_at, updated_at`,
+       RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at`,
     )
       .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect, wishSync, body.wish_sync === undefined ? 0 : 1)
     : db.prepare(
@@ -331,7 +333,7 @@ async function storeTarget(env, user, body) {
        ON CONFLICT (user_id, id) DO UPDATE SET
          name = excluded.name, items = excluded.items, source = excluded.source, updated_at = excluded.updated_at,
          auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END, wish_sync = CASE WHEN ?10 = 1 THEN excluded.wish_sync ELSE targets.wish_sync END
-       RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, created_at, updated_at`,
+       RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at`,
     )
       .bind(user.id, id, name, items4, source, now, setAuto, autoText, wishSync, body.wish_sync === undefined ? 0 : 1);
   let row;
@@ -370,7 +372,7 @@ async function stashPart(db, user, up, text, bytes) {
 // 409 d'un enregistrement conditionnel (expect_updated_at) : la collection telle qu'elle est maintenant (null si elle a
 // été supprimée), pour que la page reparte d'elle.
 async function conflict(db, user, id) {
-  const row = await db.prepare('SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
+  const row = await db.prepare('SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
     .bind(user.id, id)
     .first();
   return new HttpError(409, "Cette collection a changé entre-temps (dans un autre onglet ou sur un autre appareil) : rien n'a été enregistré.", {
@@ -407,6 +409,25 @@ export const updateWishWork = (db, userId) => db.prepare(`UPDATE users SET wish_
   auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
     OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(userId).run();
 
+// Auto-favoris indépendant du tag ; arrêter conserve les favoris du jeu.
+export async function setAutoFavorite(env, user, body) {
+  if (typeof body.id !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(body.id) || typeof body.enabled !== 'boolean') {
+    throw new HttpError(400, 'Indique la collection et un choix auto-favoris activé ou désactivé.');
+  }
+  const row = await env.DB.prepare('SELECT auto_favorite, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, body.id).first();
+  if (!row) throw new HttpError(404, "Cette collection n'existe plus.");
+  if (!!row.auto_favorite !== body.enabled) {
+    const at = new Date(Math.max(Date.now(), Date.parse(row.updated_at) + 1 || 0)).toISOString();
+    const saved = await env.DB.prepare(`UPDATE targets SET auto_favorite = ?3, auto_favorite_state = NULL, updated_at = ?4
+      WHERE user_id = ?1 AND id = ?2 AND updated_at = ?5 RETURNING id`)
+      .bind(user.id, body.id, body.enabled ? 1 : 0, at, row.updated_at).first();
+    if (!saved) throw await conflict(env.DB, user, body.id);
+  }
+  const target = await env.DB.prepare('SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
+    .bind(user.id, body.id).first();
+  return { target: raw(jsonText(toTarget(target))) };
+}
+
 // Un tag existant du jeu par collection ; arrêter conserve cartes et tags, réactiver repart de leur union.
 export async function setAutoTag(env, user, body) {
   if (typeof body.id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(body.id)) throw new HttpError(400, 'Identifiant de collection invalide.');
@@ -431,7 +452,7 @@ export async function setAutoTag(env, user, body) {
       throw err;
     }
   }
-  const target = await env.DB.prepare('SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
+  const target = await env.DB.prepare('SELECT id, name, items, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at FROM targets WHERE user_id = ?1 AND id = ?2')
     .bind(user.id, body.id).first();
   return { target: raw(jsonText(toTarget(target))) };
 }
