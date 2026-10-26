@@ -1366,6 +1366,11 @@ async function main() {
     console.log('WISH MISSING UI OK');
     return;
   }
+  if (process.argv.includes('--qid-cache-only')) {
+    await testQidArchive();
+    console.log('QID CACHE UI OK');
+    return;
+  }
   const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
 
   await settle(60);
@@ -6523,6 +6528,37 @@ async function main() {
     console.log('membres cités : #u:, lien, aperçu (pseudo, cartes, collections, complètes), prénom seul sans partage');
   }
 
+  // Le vrai cache IndexedDB de match.js : au-delà de 30 000 titres, deux onglets et oubli du navigateur.
+  await testQidArchive();
+  async function testQidArchive() {
+    const page = openPage({ hash: '#/collections' });
+    const M = page.ctx.ClasseurMatch;
+    const storageKey = 'classeur-qid-test-volume', stamp = Date.now();
+    const titles = Array.from({ length: 35000 }, (_, i) => 'Titre test ' + i);
+    let calls = 0;
+    const opts = { storageKey, now: () => stamp, gap: 0,
+      fetch: async (url) => { calls++; return { ok: true, json: async () => ({ query: { pages:
+        new URL(url).searchParams.get('titles').split('|').map(title => ({ title, pageprops: { wikibase_item: 'Q123' } })) } }) }; } };
+    const first = M.createResolver(opts);
+    await first.resolve(titles);
+    check(calls === 700, 'cache qid : 700 lots au premier chargement, ' + calls);
+    const saved = () => idb.dump(storageKey + '-cache', 'titles');
+    check(saved() && saved().size === 35000, 'cache qid : les 35 000 titres sont archivés');
+    const second = M.createResolver(opts);
+    calls = 0;
+    await second.resolve(titles);
+    check(calls === 0 && second.known(titles[0]) === 'Q123', 'cache qid : aucun appel après rechargement');
+    const newer = M.createResolver({ ...opts, now: () => stamp + 100 });
+    await newer.ready();
+    newer.remember([[titles[0], 'Q456'], ['Autre onglet', 'Q789']]);
+    await newer.flush();
+    first.remember([[titles[0], 'Q111']]);
+    await first.flush();
+    check(saved().get(titles[0])[1][0] === 'Q456' && saved().has('Autre onglet'), 'cache qid : un onglet ancien ne remplace pas les données récentes des autres');
+    first.clear(); await first.flush();
+    check(saved().size === 0 && !ls.has(storageKey), 'cache qid : oubli complet, IndexedDB et localStorage');
+  }
+
   // Titres sans cartes : ouverture directe, copie, sélection, confirmation et retrait de toute la liste.
   await testMissingWishes();
   async function testMissingWishes() {
@@ -6568,6 +6604,43 @@ async function main() {
     check(dialog(), 'titres sans cartes : confirmation absente');
     confirm('Supprimer les sélectionnés').click();
     check(await waitFor(() => !dialog() && rows().length === 1), 'titres sans cartes : suppression sélection');
+    // Erreur D1 puis absence de réponse : la fenêtre rend la main sans renvoyer la suppression.
+    const fetchBefore = pg.ctx.fetch, timeoutBefore = pg.ctx.setTimeout;
+    let failure = 'd1', sends = 0;
+    pg.ctx.setTimeout = (fn, ms, ...args) => timeoutBefore(fn, ms === 30000 ? 20 : ms, ...args);
+    pg.ctx.fetch = (url, init = {}) => {
+      if (String(url) === '/api/wishlist/missing' && (init.method || 'GET') === 'POST') {
+        sends++;
+        if (failure === 'd1') return Promise.resolve({ ok: false, status: 500,
+          json: async () => ({ error: 'D1 DB exceeded its CPU time limit and was reset.' }) });
+        return new Promise((resolve, reject) => init.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true }));
+      }
+      return fetchBefore(url, init);
+    };
+    d.getElementById('wish-missing-delete-all').click(); await settle();
+    confirm('Tout supprimer').click();
+    check(await waitFor(() => dialog() && text(dialog()).includes('CPU time limit') && !confirm('Tout supprimer').disabled), 'titres sans cartes : erreur D1 sans blocage');
+    confirm('Annuler').click(); await settle();
+    failure = 'timeout';
+    d.getElementById('wish-missing-delete-all').click(); await settle();
+    confirm('Tout supprimer').click();
+    check(await waitFor(() => dialog() && text(dialog()).includes('la suppression a peut-être été appliquée') && !confirm('Tout supprimer').disabled), 'titres sans cartes : délai dépassé sans blocage');
+    check(sends === 2 && rows().length === 1, 'titres sans cartes : pas de nouvelle tentative automatique ni de faux succès');
+    confirm('Annuler').click(); await settle();
+    pg.ctx.fetch = (url, init = {}) => {
+      if (String(url) === '/api/wishlist/missing' && (init.method || 'GET') === 'GET') {
+        return new Promise((resolve, reject) => init.signal.addEventListener('abort', () => reject(new Error('aborted')), { once: true }));
+      }
+      return fetchBefore(url, init);
+    };
+    const refresh = () => d.querySelectorAll('button').find(b => text(b) === 'Actualiser');
+    refresh().click();
+    check(await waitFor(() => text(d.body).includes('Le serveur met trop de temps à répondre') && !refresh().disabled), 'titres sans cartes : lecture expirée, actualisation toujours possible');
+    check(!text(d.body).includes('Aucun titre sans carte'), 'titres sans cartes : une erreur ne doit pas annoncer une liste vide');
+    pg.ctx.fetch = fetchBefore;
+    pg.ctx.setTimeout = timeoutBefore;
+    refresh().click();
+    check(await waitFor(() => rows().length === 1), 'titres sans cartes : récupération après une lecture sans réponse');
     d.getElementById('wish-missing-delete-all').click(); await settle();
     confirm('Tout supprimer').click();
     check(await waitFor(() => !dialog() && text(d.body).includes('Aucun titre sans carte')), 'titres sans cartes : supprimer tout');

@@ -369,7 +369,7 @@
     constructor(status, message, data) { super(message); this.status = status; this.data = data || {}; }
   }
 
-  // opts.key : appel avec une autre clé que celle gardée (vérifier un lien avant de l'adopter).
+  // opts.key : autre clé ; opts.timeoutMs : rendre la main si une opération reste sans réponse.
   async function api(method, path, body, opts) {
     const headers = { Accept: 'application/json' };
     const keyed = path !== '/api/account' && path !== '/api/health';
@@ -377,10 +377,19 @@
     if (keyed && key) headers['X-Classeur-Key'] = key;
     const init = { method, headers, credentials: 'same-origin' };
     if (body !== undefined) { headers['Content-Type'] = 'application/json'; init.body = JSON.stringify(body); }
+    const ctrl = opts && opts.timeoutMs ? new AbortController() : null;
+    if (ctrl) init.signal = ctrl.signal;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), opts.timeoutMs) : null;
     let r;
-    try { r = await fetch(path, init); } catch (e) { throw new ApiError(0, 'Le classeur ne répond pas : vérifie ta connexion, puis réessaie.'); }
     let data = null;
-    try { data = await r.json(); } catch (e) { data = null; }
+    try {
+      r = await fetch(path, init);
+      try { data = await r.json(); } catch (e) { if (ctrl && ctrl.signal.aborted) throw e; }
+    } catch (e) {
+      if (ctrl && ctrl.signal.aborted) throw new ApiError(0,
+        opts.timeoutMessage || 'Le serveur met trop de temps à répondre. Réessaie dans un instant.', { timeout: true });
+      throw new ApiError(0, 'Le classeur ne répond pas : vérifie ta connexion, puis réessaie.');
+    } finally { if (timer) clearTimeout(timer); }
     if (!r.ok) {
       const msg = (data && typeof data.error === 'string' && data.error) || `Le classeur a répondu ${r.status}.`;
       // Clé inconnue (classeur supprimé, lien erroné) : retour à l'accueil. Un compte du jeu à relier n'est pas concerné.
@@ -1713,6 +1722,7 @@
       S.boot = 'welcome';
       return;
     }
+    if (resolver) { await resolver.ready(); qidVersion.value++; }
     if (stale()) return;
     S.bootError = '';
     S.bootHint = '';
@@ -2097,7 +2107,7 @@
     const gen = cardsGen, m = S.wishMissing;
     Object.assign(m, { busy: true, error: '', items: [], revision: '', selected: new Set(), limit: 100 });
     try {
-      const r = await api('GET', '/api/wishlist/missing');
+      const r = await api('GET', '/api/wishlist/missing', undefined, { timeoutMs: 30000 });
       if (gen === cardsGen) Object.assign(m, { items: r.items, revision: r.revision });
     } catch (e) { if (gen === cardsGen) m.error = e.message; }
     finally { if (gen === cardsGen) m.busy = false; }
@@ -2112,12 +2122,13 @@
       ok: all ? 'Tout supprimer' : 'Supprimer les sélectionnés', danger: true,
       run: async () => {
         try {
-          const r = await api('POST', '/api/wishlist/missing', all ? { all: true, revision } : { titles, revision });
+          const r = await api('POST', '/api/wishlist/missing', all ? { all: true, revision } : { titles, revision },
+            { timeoutMs: 30000, timeoutMessage: 'Le serveur met trop de temps à répondre. Actualise la liste avant de réessayer : la suppression a peut-être été appliquée.' });
           if (gen !== cardsGen) return;
           m.message = `${fmt(r.removed)} ${plural(r.removed, 'titre retiré', 'titres retirés')}.`
             + (r.skipped ? ' Certaines collections ont été modifiées entre-temps et ont été conservées.' : '');
           await Promise.all([loadTargets(), loadMissingWishes()]);
-          if (S.me && S.me.wish) S.me.wish.none = m.items.length;
+          if (S.me && S.me.wish && !m.error) S.me.wish.none = m.items.length;
         } catch (e) {
           if (gen === cardsGen && e.status === 409) await loadMissingWishes();
           throw e;

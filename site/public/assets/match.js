@@ -2,8 +2,8 @@
  *
  * Une carte compte pour un élément si leurs titres normalisés sont égaux, sinon s'ils désignent le même élément
  * Wikidata (Q…) : article renommé depuis la création de la carte, redirection, parenthèse d'homonymie… Les qids des
- * titres viennent de Wikipédia (pageprops, redirections suivies) et sont gardés 30 jours dans localStorage
- * (« classeur-qid »). Script classique (ni module, ni eval) : il définit window.ClasseurMatch.
+ * titres viennent de Wikipédia (pageprops, redirections suivies) et sont gardés 30 jours dans IndexedDB,
+ * avec localStorage (« classeur-qid ») en secours. Script classique : il définit window.ClasseurMatch.
  *
  * Intégration (interface) :
  * - index.html : <script defer src="/assets/match.js"></script> juste avant celui d'app.js (les scripts defer
@@ -25,6 +25,7 @@
   const STORAGE_KEY = 'classeur-qid';
   const TTL = 30 * 24 * 3600 * 1000;
   const MAX_ENTRIES = 30000; // ~20 000 cartes au plus par compte, plus les éléments des collections
+  const MAX_ARCHIVE = 200000; // cartes du membre, de ses amis et titres de leurs collections
   const BATCH = 50; // titres par requête (limite de l'API sans compte)
   const URL_BUDGET = 6000; // longueur encodée des titres d'une requête (URL de ~8 Ko au plus)
   const MAX_TRIES = 8;
@@ -133,6 +134,69 @@
     try { return root.localStorage || null; } catch (e) { return null; }
   }
 
+  // Cache par titre, indépendant du cache IndexedDB des cartes. Les écritures ne remplacent
+  // que les titres appris : deux onglets/comptes ne s'effacent pas mutuellement leur cache.
+  function defaultArchive(key) {
+    let idb;
+    try { idb = root.indexedDB; } catch (e) { return null; }
+    if (!idb) return null;
+    let dbp = null;
+    function within(p) {
+      return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(null), 1500);
+        p.then((v) => { clearTimeout(timer); resolve(v); }, () => { clearTimeout(timer); resolve(null); });
+      });
+    }
+    function open() {
+      if (!dbp) dbp = within(new Promise((resolve) => {
+        const req = idb.open(key + '-cache', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('titles');
+        req.onsuccess = () => {
+          const db = req.result;
+          db.onversionchange = () => { db.close(); dbp = null; };
+          resolve(db);
+        };
+        req.onerror = req.onblocked = () => resolve(null);
+      }));
+      return dbp;
+    }
+    async function transaction(mode, run) {
+      const db = await open();
+      if (!db) return null;
+      return within(new Promise((resolve, reject) => {
+        const tx = db.transaction('titles', mode);
+        let out = true;
+        tx.oncomplete = () => resolve(out);
+        tx.onerror = tx.onabort = () => reject(tx.error);
+        run(tx.objectStore('titles'), (v) => { out = v; });
+      }));
+    }
+    return {
+      load: () => transaction('readonly', (st, done) => {
+        const req = st.getAll(); req.onsuccess = () => done(req.result || []);
+      }),
+      save: async (pairs, removed) => {
+        // La reprise de 30 000 anciens titres ne doit pas remplir une seule grosse transaction.
+        const ops = [...pairs.map(pair => [pair, false]), ...(removed || []).map(pair => [pair, true])];
+        for (let i = 0; i < ops.length; i += 1000) {
+          const ok = await transaction('readwrite', (st) => {
+            for (const [pair, drop] of ops.slice(i, i + 1000)) {
+              const req = st.get(pair[0]);
+              req.onsuccess = () => {
+                const old = req.result;
+                if (drop) { if (old && old[1] && old[1][1] === pair[1][1]) st.delete(pair[0]); }
+                else if (!old || !Array.isArray(old[1]) || old[1][1] <= pair[1][1]) st.put(pair, pair[0]);
+              };
+            }
+          });
+          if (!ok) return null;
+        }
+        return true;
+      },
+      clear: () => transaction('readwrite', (st) => st.clear()),
+    };
+  }
+
   const query = (params) => Object.keys(params).map((k) => k + '=' + encodeURIComponent(params[k])).join('&');
 
   // ------------------------------------------------------------------ titres -> éléments Wikidata
@@ -147,6 +211,13 @@
     const ttl = opts.ttl || TTL;
     const max = opts.max || MAX_ENTRIES;
     const key = opts.storageKey || STORAGE_KEY;
+    const archiveStore = opts.archive !== undefined ? opts.archive : defaultArchive(key);
+    let archive = archiveStore;
+    let archiveReady = null;
+    let archived = false;
+    let writes = Promise.resolve();
+    let generation = 0;
+    const pending = new Map();
 
     let map = null; // titre normalisé -> [qid | null, horodatage en ms]
     let dirty = false;
@@ -177,12 +248,64 @@
       if ((t === undefined ? now() : t) - e[1] >= ttl) { map.delete(k); return undefined; }
       return e[0];
     }
-    function put(k, q, t) { entries().set(k, [q, t]); dirty = true; }
+    function put(k, q, t) { const v = [q, t]; entries().set(k, v); if (archive) pending.set(k, v); dirty = true; }
+
+    function saveArchive(removed) {
+      if (!archived || (!pending.size && !(removed && removed.length))) return writes;
+      const pairs = Array.from(pending);
+      pending.clear();
+      const target = archive;
+      writes = writes.then(() => target.save(pairs, removed || [])).then((ok) => {
+        if (ok === null || ok === false) throw new Error('Cache indisponible');
+      }).catch(() => {
+        // Quota, mode privé ou stockage refusé : les données restent en mémoire et en secours.
+        archived = false; archive = null; dirty = true; persist();
+      });
+      return writes;
+    }
+
+    // Toujours attendre ce chargement AVANT de calculer les titres à demander à Wikipédia.
+    function ready() {
+      if (!archive) return Promise.resolve();
+      if (!archiveReady) {
+        const gen = generation;
+        const previousWrites = writes;
+        archiveReady = previousWrites.then(() => archive.load()).then((rows) => {
+          if (!Array.isArray(rows)) throw new Error('Cache indisponible');
+          archived = true;
+          if (gen !== generation) return;
+          const current = entries();
+          const time = now();
+          const stored = new Map();
+          const removed = [];
+          let changed = false;
+          for (const pair of rows) {
+            const v = pair && pair[1];
+            if (!Array.isArray(pair) || typeof pair[0] !== 'string' || !Array.isArray(v)
+              || (v[0] !== null && !isQid(v[0])) || typeof v[1] !== 'number') continue;
+            if (time - v[1] >= ttl) { removed.push(pair); continue; }
+            stored.set(pair[0], v);
+            const old = current.get(pair[0]);
+            if (!old || old[1] < v[1]) { current.set(pair[0], v); pending.delete(pair[0]); changed = true; }
+          }
+          const kept = new Set(Array.from(current).filter(([, v]) => time - v[1] < ttl)
+            .sort((a, b) => b[1][1] - a[1][1]).slice(0, MAX_ARCHIVE).map(([k]) => k));
+          for (const [k, v] of stored) if (!kept.has(k)) removed.push([k, v]);
+          // Reprise de l'ancien localStorage sans le vider, y compris si l'archive était vide.
+          for (const [k, v] of current) if (kept.has(k) && (!stored.has(k) || stored.get(k)[1] < v[1])) pending.set(k, v);
+          if (changed) version++;
+          saveArchive(removed);
+        }).catch(() => { archived = false; archive = null; });
+      }
+      return archiveReady;
+    }
 
     // Écrit le cache : les plus récentes d'abord ; plus de place -> on n'en garde que la moitié, puis le quart.
     function persist() {
       if (!dirty) return;
       dirty = false;
+      if (archive && !archiveReady) ready();
+      if (archived) saveArchive();
       if (!storage) return;
       const t = now();
       let list = Array.from(entries()).filter((e) => t - e[1][1] < ttl);
@@ -231,7 +354,7 @@
     }
 
     // Un lot : [[clé, titre envoyé]…] ; chaque titre reçoit un qid ou null.
-    async function fetchBatch(list, signal) {
+    async function fetchBatch(list, signal, gen) {
       const titles = list.map((e) => e[1]).join('|');
       const pages = new Map();
       const alias = new Map();
@@ -250,6 +373,7 @@
         cont = j.continue;
       }
       throwIfAborted(signal);
+      if (gen !== generation) throw abortError();
       const t = now();
       for (const [k, sent] of list) {
         let cur = sent;
@@ -288,7 +412,11 @@
     async function resolve(titles, o) {
       o = o || {};
       const signal = o.signal || null;
+      const gen = generation;
       throwIfAborted(signal);
+      await waitFor(ready(), signal);
+      throwIfAborted(signal);
+      if (gen !== generation) throw abortError();
       const want = new Map();
       for (const t of titles || []) {
         const k = normTitle(t);
@@ -309,6 +437,7 @@
       let fetched = 0;
       try {
         for (const batch of batches(todo)) {
+          if (gen !== generation) throw abortError();
           const release = await lock(signal);
           try {
             // Une autre résolution a pu trouver ces titres pendant l'attente.
@@ -317,7 +446,7 @@
               const wait = lastAt + gap - now();
               if (gap > 0 && lastAt && wait > 0) await sleep(wait, signal);
               throwIfAborted(signal);
-              try { await fetchBatch(left, signal); } finally { lastAt = now(); }
+              try { await fetchBatch(left, signal, gen); } finally { lastAt = now(); }
               if (++fetched % 20 === 0) persist(); // et à la fin
             }
           } finally { release(); }
@@ -325,7 +454,7 @@
           done += batch.length;
           if (o.onProgress) o.onProgress(done, total);
         }
-      } finally { persist(); }
+      } finally { persist(); await writes; }
       return out;
     }
 
@@ -345,10 +474,16 @@
     }
 
     function clear() {
+      generation++;
       map = new Map();
+      pending.clear();
       dirty = false;
       version++;
       try { if (storage) storage.removeItem(key); } catch (e) { /* rien à faire */ }
+      if (archiveStore) {
+        const target = archiveStore;
+        writes = Promise.all([writes, archiveReady]).then(() => target.clear()).catch(() => {});
+      }
     }
 
     return {
@@ -359,6 +494,8 @@
       remember,
       clear,
       persist,
+      ready,
+      flush: async () => { await ready(); persist(); await writes; },
       get version() { return version; }, // change à chaque qid appris : de quoi recalculer
       get size() { return entries().size; },
     };

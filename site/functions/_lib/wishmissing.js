@@ -3,21 +3,33 @@
 import { HttpError } from './http.js';
 import { acquireLease, releaseLease } from './game.js';
 import { LEASE_MS } from './refresh.js';
-import { nowIso, sha256Hex } from './util.js';
+import { sha256Hex } from './util.js';
 import { NOT_FOUND_MS, WANTED_MAX, wishState } from './wishlist.js';
-import { wantedSql } from './market.js';
 
 const ACTIVE = `(wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))`;
-const ELIGIBLE = `WITH wanted AS (${wantedSql(WANTED_MAX, true)})
-  SELECT w.t AS title FROM wanted AS w JOIN game_titles AS g ON g.title = w.t
-  WHERE g.card_id = '' AND g.at >= ?2 AND (?3 = 0 OR EXISTS
-    (SELECT 1 FROM wish_missing AS m WHERE m.user_id = ?1 AND m.title = w.t))`;
-// Pendant un retrait par lots, la limite de recherche ne doit pas déplacer les titres
-// d'une collection à l'autre. On revérifie les seuls titres déjà approuvés par la liste.
-const REMOVABLE = `SELECT g.title FROM game_titles AS g WHERE g.card_id = '' AND g.at >= ?2
-  AND g.title IN (SELECT value FROM json_each(?4)) AND (?3 = 0 OR EXISTS
+// Les albums sont dépliés une seule fois, et non une fois par titre manquant.
+// Même sélection/priorité que wantedSql ; les titres possédés sont également lus une seule fois.
+const LIST = `WITH entries AS MATERIALIZED (
+    SELECT t.id, t.name, t.updated_at, CAST(i.key AS INTEGER) AS k, json_extract(i.value, '$.title') AS title
+    FROM targets AS t CROSS JOIN json_each(t.items) AS i WHERE t.user_id = ?1 AND ${ACTIVE}
+      AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
+  ), wanted AS MATERIALIZED (
+    SELECT title FROM entries WHERE typeof(title) = 'text' AND length(title) BETWEEN 1 AND 300
+      AND title NOT IN (SELECT json_extract(data, '$.title') FROM cards
+        WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')
+    GROUP BY title ORDER BY MAX(updated_at) DESC, MIN(k) LIMIT ${WANTED_MAX}
+  ), missing AS MATERIALIZED (
+  SELECT w.title FROM wanted AS w CROSS JOIN game_titles AS g
+  WHERE g.title = w.title AND g.card_id = '' AND g.at >= ?2 AND (?3 = 0 OR EXISTS
+    (SELECT 1 FROM wish_missing AS m WHERE m.user_id = ?1 AND m.title = w.title)))
+  SELECT e.title, json_group_array(json_object('id', e.id, 'name', e.name)) AS collections
+  FROM (SELECT DISTINCT title, id, name FROM entries) AS e JOIN missing AS m ON m.title = e.title
+  GROUP BY e.title ORDER BY e.title COLLATE NOCASE`;
+const REMOVABLE = `SELECT g.title FROM json_each(?4) AS j CROSS JOIN game_titles AS g
+  WHERE g.title = j.value AND g.card_id = '' AND g.at >= ?2 AND (?3 = 0 OR EXISTS
     (SELECT 1 FROM wish_missing AS m WHERE m.user_id = ?1 AND m.title = g.title))
-  AND NOT EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = ?1 AND json_extract(c.data, '$.title') = g.title)`;
+  AND g.title NOT IN (SELECT json_extract(data, '$.title') FROM cards
+    WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')`;
 
 async function readList(env, user) {
   const db = env.DB;
@@ -26,12 +38,7 @@ async function readList(env, user) {
   const since = new Date(Date.now() - NOT_FOUND_MS).toISOString();
   // Les anciens bilans n'avaient que le nombre : leur cache négatif reste utilisable.
   const checked = st && st.missing_checked ? 1 : 0;
-  const rows = st && (st.none || checked) ? (await db.prepare(`WITH missing AS (${ELIGIBLE})
-    SELECT m.title, json_group_array(json_object('id', t.id, 'name', t.name)) AS collections
-    FROM missing AS m JOIN targets AS t ON t.user_id = ?1 AND ${ACTIVE}
-    WHERE EXISTS (SELECT 1 FROM json_each(t.items) AS i WHERE i.type = 'object'
-      AND json_extract(i.value, '$.title') = m.title AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok')
-    GROUP BY m.title ORDER BY m.title COLLATE NOCASE`).bind(user.id, since, checked).all()).results : [];
+  const rows = st && (st.none || checked) ? (await db.prepare(LIST).bind(user.id, since, checked).all()).results : [];
   const targets = (await db.prepare(`SELECT id, updated_at FROM targets WHERE user_id = ?1 AND ${ACTIVE} ORDER BY id`).bind(user.id).all()).results;
   const items = rows.map((r) => ({ title: r.title, collections: JSON.parse(r.collections) }));
   const revision = await sha256Hex(JSON.stringify([head.wish_mode, head.wish_state, targets, items]));
@@ -61,15 +68,15 @@ export async function deleteMissingWishes(env, user, body) {
     const targets = (await db.prepare(`SELECT id, items, updated_at FROM targets WHERE user_id = ?1 AND ${ACTIVE}
       AND EXISTS (SELECT 1 FROM json_each(items) AS i WHERE json_extract(i.value, '$.title') IN
         (SELECT value FROM json_each(?2)))`).bind(user.id, JSON.stringify(titles)).all()).results;
-    const at = nowIso();
+    // Un horodatage strictement plus récent conserve la protection contre les éditions simultanées.
+    const at = new Date(Math.max(Date.now(), ...targets.map(t => Date.parse(t.updated_at) + 1 || 0))).toISOString();
     // Chaque écriture vérifie aussi le contenu : une édition simultanée est conservée.
     // Le cache est revérifié dans la transaction : un titre résolu entre-temps reste dans l'album.
     const unchanged = targets.filter((t) => current.targets.some((v) => v.id === t.id && v.updated_at === t.updated_at));
-    const results = unchanged.length ? await db.batch(unchanged.map((t) => db.prepare(`WITH missing AS (${REMOVABLE})
+    const results = unchanged.length ? await db.batch(unchanged.map((t) => db.prepare(`WITH missing AS MATERIALIZED (${REMOVABLE})
       UPDATE targets SET items = (SELECT json_group_array(json(i.value)) FROM json_each(targets.items) AS i
         WHERE NOT (i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
-          AND json_extract(i.value, '$.title') IN (SELECT title FROM missing)
-          AND json_extract(i.value, '$.title') IN (SELECT value FROM json_each(?4)))), updated_at = ?5
+          AND json_extract(i.value, '$.title') IN (SELECT title FROM missing))), updated_at = ?5
       WHERE user_id = ?1 AND id = ?6 AND updated_at = ?7 AND items = ?8 AND ${ACTIVE}
         AND EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = ?9)
       RETURNING id`).bind(user.id, current.since, current.checked, JSON.stringify(titles), at, t.id, t.updated_at, t.items, current.mode))) : [];

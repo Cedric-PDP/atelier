@@ -625,6 +625,21 @@ lisible. Marché : 15 000 cotes par classeur et par jour, 150 000 pour tout le s
 parce qu'elle ne coûte rien et garde les requêtes courtes : aucune requête ne traite plus de ~500 cartes en JavaScript. La finalisation d'une lecture
 se fait **en SQL dans D1** (ajouts, retraits, modifications, `new_ids`), et le temps SQL ne compte pas. `dev/api.test.mjs` mesure le JavaScript de chaque chemin.
 
+## Cache des identifiants Wikipédia
+
+`match.js` garde les identifiants Wikidata et les résultats négatifs pendant 30 jours dans IndexedDB
+(`classeur-qid-cache`, magasin `titles`). Ce cache est commun aux classeurs et amis consultés dans ce navigateur.
+Il est chargé avant les recherches réseau et avant l'affichage du classeur : les cartes des amis ne doivent pas
+évincer les identifiants de ses propres cartes au prochain F5. Au chargement, les données expirées et les plus
+anciennes au-delà de 200 000 titres sont nettoyées. L'ancien localStorage `classeur-qid` est repris automatiquement
+et reste un secours borné à 30 000 titres si IndexedDB est absent, refusé ou indisponible ; son ouverture/chaque
+transaction ne bloque pas plus de 1,5 s. L'écriture d'un gros lot est découpée en transactions de 1 000 titres.
+Les écritures portent sur les seuls titres appris et préservent une donnée plus récente écrite par un autre onglet.
+« Oublier ce navigateur » efface également l'archive ; un chargement/requête terminé après l'oubli ne la restaure pas.
+Tests : 85 000 titres (1 700 requêtes simulées, puis 0 après rechargement), attente d'un cache lent, reprise de
+localStorage, stockage refusé, deux onglets, expiration et effacement. Le même scénario a été vérifié dans Chrome
+avec son véritable IndexedDB et des réponses Wikipédia simulées, sur une instance locale isolée.
+
 ## Partage entre membres
 
 Les membres du classeur (l'utilisateur et ses amis) peuvent se montrer leurs cartes, pour voir qui a celles qui
@@ -931,6 +946,11 @@ a sa case décochée, mais participe quand même en mode complet. Bouton manuel 
   le mode, le contenu des albums et le cache ; une édition concurrente est conservée (`skipped`), jamais écrasée.
   Ils marquent `wish_dirty`, actualisent `none` et ne suppriment aucune carte du jeu. La suppression du compte efface
   aussi `wish_missing`.
+  Pour les grandes collections, les éléments des albums et les titres possédés sont regroupés une seule fois : CTE
+  matérialisées, recherche par clé dans `game_titles`, aucun parcours des cartes pour chaque titre à retirer.
+  Régression couverte avec 5 000 titres, une collection de 6 200 éléments, 15 000 cartes possédées, titres communs
+  et album désynchronisé. Les appels de cette page expirent après 30 s côté navigateur ; une suppression sans réponse
+  n'est jamais renvoyée automatiquement et demande de vérifier la liste avant une nouvelle tentative.
 - **Migration** : ancien réglage global actif → mode `all` et collections existantes cochées ; sinon mode `selected`
   et cases décochées. Une base déjà passée au choix par collection reste en mode `selected`, sans réinterpréter
   l'indicateur interne `auto_wish` comme un ancien réglage. Cartes connues dans le cache

@@ -234,7 +234,104 @@ const rejectsAbort = async (p) => assert.rejects(p, (e) => e && e.name === 'Abor
   assert.equal(JSON.parse(storage.getItem('classeur-qid'))['Article 8'], undefined, 'les entrées expirées ne sont pas réécrites');
 }
 
+// ------------------------------------------------------------------ cache persistant dépassant localStorage, rechargement et défaillances
+class FakeArchive {
+  constructor(rows = []) { this.rows = new Map(rows); }
+  async load() { return [...this.rows].map(([k, v]) => [k, [...v]]); }
+  async save(pairs, removed = []) {
+    for (const [k, v] of pairs) if (!this.rows.has(k) || this.rows.get(k)[1] <= v[1]) this.rows.set(k, [...v]);
+    for (const [k, v] of removed) if (this.rows.get(k)?.[1] === v[1]) this.rows.delete(k);
+    return true;
+  }
+  async clear() { this.rows.clear(); return true; }
+}
+{
+  const archive = new FakeArchive();
+  const s = setup({ archive });
+  const many = Array.from({ length: 85000 }, (_, i) => 'Article ' + (i + 1));
+  many[0] = 'Sans élément'; many[1] = 'Introuvable';
+  await s.resolver.resolve(many);
+  assert.equal(s.wiki.calls.length, 1700, 'premier chargement complet, requêtes simulées par lots de 50');
+  assert.equal(Object.keys(JSON.parse(s.storage.getItem('classeur-qid'))).length, 30000, 'secours localStorage borné');
+  assert.equal(archive.rows.size, 85000, 'les cartes anciennes ne sont pas évincées par celles des amis');
+  const reloaded = M.createResolver(s.opts);
+  s.wiki.calls.length = 0;
+  await reloaded.resolve(many);
+  assert.equal(s.wiki.calls.length, 0, 'F5 avec 85 000 titres : aucune requête Wikipédia');
+  assert.equal(reloaded.known('Article 3'), 'Q1003');
+  assert.equal(reloaded.known('Article 85000'), 'Q86000');
+  assert.equal(reloaded.known('Sans élément'), null, 'les résultats sans identifiant sont conservés');
+  assert.equal(reloaded.known('Introuvable'), null);
+  console.log('cache persistant : 85 000 titres, 1 700 requêtes simulées au premier passage, 0 au rechargement');
+}
+{
+  let release;
+  const loaded = new Promise(resolve => { release = resolve; });
+  const s = setup({ archive: { load: () => loaded, save: async () => true } });
+  const resolving = s.resolver.resolve(['Fer']);
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(s.wiki.calls.length, 0, 'attend le cache lent avant toute requête');
+  release([['Fer', ['Q677', T0]]]);
+  await resolving;
+  assert.equal(s.wiki.calls.length, 0, 'un titre récupéré du cache ne doit pas être demandé au réseau');
+}
+{
+  const archive = new FakeArchive([['Fer', ['Q1', T0 - DAY]], ['Expiré', ['Q2', T0 - 31 * DAY]]]);
+  const s = setup({ archive });
+  s.storage.setItem('classeur-qid', JSON.stringify({ Fer: ['Q677', T0] }));
+  await s.resolver.ready(); await s.resolver.flush();
+  assert.equal(s.resolver.known('Fer'), 'Q677', "l'ancien localStorage récent prime sur l'archive périmée");
+  assert.equal(archive.rows.get('Fer')[0], 'Q677', 'migration des données récentes');
+  assert.ok(!archive.rows.has('Expiré'), 'nettoyage des données expirées');
+  const other = M.createResolver(s.opts);
+  await other.ready();
+  s.resolver.remember([['Premier onglet', 'Q10']]);
+  other.remember([['Deuxième onglet', 'Q20']]);
+  await Promise.all([s.resolver.flush(), other.flush()]);
+  assert.ok(archive.rows.has('Premier onglet') && archive.rows.has('Deuxième onglet'), 'les deux onglets ne se remplacent pas le cache');
+}
+{
+  const s = setup({ archive: { load: async () => { throw new Error('SecurityError'); } } });
+  await s.resolver.resolve(['Fer']);
+  assert.equal(s.resolver.known('Fer'), 'Q677', 'stockage refusé : le rapprochement reste fonctionnel');
+  assert.equal(JSON.parse(s.storage.getItem('classeur-qid')).Fer[0], 'Q677');
+  let cleared = false;
+  const w = setup({ archive: { load: async () => [], save: async () => null, clear: async () => { cleared = true; } } });
+  await w.resolver.resolve(['Fer']);
+  assert.equal(JSON.parse(w.storage.getItem('classeur-qid')).Fer[0], 'Q677', 'écriture refusée : secours localStorage');
+  w.resolver.clear(); await w.resolver.flush();
+  assert.ok(cleared, 'oublier ce navigateur efface aussi une archive dont les écritures ont échoué');
+}
+{
+  let release;
+  const archive = new FakeArchive([['Fer', ['Q677', T0]]]);
+  archive.load = () => new Promise(resolve => { release = resolve; });
+  const s = setup({ archive });
+  const ready = s.resolver.ready();
+  await new Promise(resolve => setImmediate(resolve));
+  s.resolver.clear();
+  release([['Fer', ['Q677', T0]]]);
+  await ready; await s.resolver.flush();
+  assert.equal(s.resolver.known('Fer'), undefined, "un chargement terminé après l'oubli ne ressuscite pas le cache");
+  assert.equal(archive.rows.size, 0);
+}
+
 // ------------------------------------------------------------------ cache borné, stockage abîmé ou plein, remember
+{
+  let release;
+  const waiting = new Promise(resolve => { release = resolve; });
+  const archive = new FakeArchive();
+  const s = setup({ archive, fetch: async () => { await waiting; return response(200, { query: { pages: [{ title: 'Fer', pageprops: { wikibase_item: 'Q677' } }] } }); } });
+  const resolving = s.resolver.resolve(['Fer']);
+  const rejected = rejectsAbort(resolving);
+  await new Promise(resolve => setImmediate(resolve));
+  s.resolver.clear(); release();
+  await rejected; await s.resolver.flush();
+  assert.equal(s.resolver.known('Fer'), undefined, 'une réponse réseau arrivée après l\'oubli ne restaure pas le cache');
+  assert.equal(archive.rows.size, 0);
+  assert.equal(s.storage.getItem('classeur-qid'), null);
+}
+
 {
   const { storage, resolver, clock } = setup({ max: 100, now: undefined });
   // Horloge qui avance d'une minute à chaque lecture : les lots ont des horodatages croissants.

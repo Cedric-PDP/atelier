@@ -1,8 +1,12 @@
 {
   "versions": [
     {"id": "2026-10-26", "date": "2026-10-26", "sections": [
+      {"icon": "⚡", "title": "Cache Wikipédia", "items": [
+        {"text": "Les identifiants des articles sont désormais conservés dans un stockage local plus grand et chargés avant les recherches. Consulter les cartes des amis ne fait plus oublier celles de ton classeur à cause de l'ancien plafond de 30 000 titres : un F5 réutilise les résultats déjà enregistrés. Les données restent conservées 30 jours."}
+      ]},
       {"icon": "⭐", "title": "Titres sans cartes dans le jeu", "items": [
-        {"text": "Après une synchronisation des souhaits, « Voir les titres sans cartes » ouvre la liste des titres non trouvés pour toutes tes collections synchronisées. Copie leurs noms pour les vérifier dans le jeu, puis retire les titres sélectionnés ou toute la liste de ces collections.", "to": "#/souhaits-sans-cartes", "link": "Voir les titres sans cartes"}
+        {"text": "Après une synchronisation des souhaits, « Voir les titres sans cartes » ouvre la liste des titres non trouvés pour toutes tes collections synchronisées. Copie leurs noms pour les vérifier dans le jeu, puis retire les titres sélectionnés ou toute la liste de ces collections.", "to": "#/souhaits-sans-cartes", "link": "Voir les titres sans cartes"},
+        {"text": "La liste et la suppression des titres sans cartes sont optimisées pour les grandes collections. Si le serveur ne répond pas sous 30 secondes, la page rend la main et invite à vérifier la liste avant de relancer la suppression."}
       ]},
       {"icon": "🏷️", "title": "Auto-tag dans le jeu", "items": [
         {"text": "Dans une collection, choisis un tag du jeu et active « Auto-tag dans WikiMasters ». À chaque synchronisation manuelle ou automatique, les cartes de la collection reçoivent ce tag sur un seul exemplaire, et les cartes taguées dans le jeu rejoignent la collection.", "to": "#/collections", "link": "Mes collections"},

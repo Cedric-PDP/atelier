@@ -4474,6 +4474,77 @@ await test('titres sans cartes : bilan, portée, sélection, suppression complè
   e.DB.close(); supa.reset();
 });
 
+await test('titres sans cartes : 5 000 retraits, 15 000 cartes, albums communs et plans sans parcours répétés', async () => {
+  const e = makeEnv();
+  const u = await signup('SansCartesVolume', e), uid = u.user.id;
+  const at = new Date().toISOString();
+  const missing = Array.from({ length: 5000 }, (_, i) => 'Sans carte ' + String(i).padStart(4, '0'));
+  const keep = Array.from({ length: 1200 }, (_, i) => ({ title: 'Possédée ' + i, status: 'ok', description: 'À conserver', sep: i === 0 }));
+  const items = [...missing.map(title => ({ title, status: 'ok', image: null })), ...keep];
+  const insertTarget = e.DB.sqlite.prepare('INSERT INTO targets (user_id, id, name, items, created_at, updated_at, wish_sync) VALUES (?, ?, ?, ?, ?, ?, ?)');
+  const insertCard = e.DB.sqlite.prepare('INSERT INTO cards (user_id, card_id, data) VALUES (?, ?, ?)');
+  const insertTitle = e.DB.sqlite.prepare('INSERT INTO game_titles (title, card_id, at) VALUES (?, ?, ?)');
+  const insertMissing = e.DB.sqlite.prepare('INSERT INTO wish_missing (user_id, title) VALUES (?, ?)');
+  e.DB.sqlite.exec('BEGIN');
+  insertTarget.run(uid, 'grand', 'Lepidoptera', JSON.stringify(items), at, at, 1);
+  insertTarget.run(uid, 'commun', 'Titres communs', JSON.stringify([...items.slice(0, 1500), keep[0]]), at, at, 1);
+  insertTarget.run(uid, 'off', 'Non synchronisée', JSON.stringify(items), at, at, 0);
+  for (let i = 0; i < 15000; i++) insertCard.run(uid, 'owned-' + i, JSON.stringify({ title: 'Possédée ' + i, count: 1, rarity: 'C' }));
+  for (const title of missing) { insertTitle.run(title, '', at); insertMissing.run(uid, title); }
+  for (let i = 0; i < 15000; i++) insertTitle.run('Possédée ' + i, 'owned-' + i, at);
+  e.DB.sqlite.prepare('UPDATE users SET wish_state = ? WHERE id = ?').run(JSON.stringify({ at, none: 5000, missing_checked: true }), uid);
+  e.DB.sqlite.exec('COMMIT');
+  const observed = [];
+  const prepare = e.DB.prepare.bind(e.DB);
+  e.DB.prepare = (sql) => {
+    const st = prepare(sql), bind = st.bind.bind(st);
+    st.bind = (...args) => { const bound = bind(...args); observed.push(bound); return bound; };
+    return st;
+  };
+  const req = (method, body) => call(method, 'wishlist/missing', { key: u.key, e, body });
+  const sqlStart = e.DB.sqlMs;
+  let r = await req('GET');
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal(r.json.items.length, 5000);
+  assert.deepEqual(r.json.items[0].collections.map(c => c.id).sort(), ['commun', 'grand']);
+  const selected = missing.slice(0, 1200);
+  r = await req('POST', { titles: selected, revision: r.json.revision });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { removed: 1200, collections: 2, skipped: 0 });
+  let list = (await req('GET')).json;
+  assert.equal(list.items.length, 3800);
+  // Évolution depuis l'affichage : protéger titre résolu, obtenu, et cache expiré même en grande quantité.
+  e.DB.sqlite.prepare("UPDATE game_titles SET card_id = 'apparue' WHERE title = ?").run(missing[2000]);
+  insertCard.run(uid, 'nouvelle', JSON.stringify({ title: missing[2001], count: 1, rarity: 'C' }));
+  e.DB.sqlite.prepare("UPDATE game_titles SET at = '2020-01-01' WHERE title = ?").run(missing[2002]);
+  assert.equal((await req('POST', { all: true, revision: list.revision })).status, 409);
+  list = (await req('GET')).json;
+  assert.equal(list.items.length, 3797);
+  r = await req('POST', { all: true, revision: list.revision });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json, { removed: 3797, collections: 2, skipped: 0 });
+  const album = id => JSON.parse(e.DB.sqlite.prepare('SELECT items FROM targets WHERE user_id = ? AND id = ?').get(uid, id).items);
+  assert.deepEqual(album('grand'), [...items.slice(2000, 2003), ...keep], 'tous les champs et titres protégés sont conservés dans leur ordre');
+  assert.deepEqual(album('commun'), [keep[0]]);
+  assert.deepEqual(album('off'), items, 'les albums non synchronisés sont intacts');
+  assert.equal((await req('GET')).json.items.length, 0);
+  const listQuery = observed.find(s => s.sql.startsWith('WITH entries AS MATERIALIZED'));
+  const deleteQuery = observed.find(s => s.sql.startsWith('WITH missing AS MATERIALIZED'));
+  for (const st of [listQuery, deleteQuery]) {
+    assert.ok(st, 'requête observée');
+    const plan = e.DB.sqlite.prepare('EXPLAIN QUERY PLAN ' + st.sql)
+      .all(Object.fromEntries(st.params.map((p, i) => ['?' + (i + 1), p])));
+    const text = plan.map(p => p.detail).join('\n');
+    assert.match(text, /SEARCH g USING INDEX.*\(title=\?\)/, text);
+    assert.equal(plan.filter(p => /SCAN i VIRTUAL TABLE/.test(p.detail)).length, 1, text);
+    for (const p of plan.filter(p => /SEARCH cards /.test(p.detail))) {
+      assert.match(plan.find(parent => parent.id === p.parent).detail, /LIST SUBQUERY/, 'les cartes sont regroupées une fois, sans recherche corrélée par titre :\n' + text);
+    }
+  }
+  console.log(`    titres sans cartes, 5 000 titres + 15 000 cartes : SQLite ${(e.DB.sqlMs - sqlStart).toFixed(1)} ms pour l'ensemble du scénario`);
+  e.DB.close();
+});
+
 await test('souhaits par collection : arrière-plan, cron, dernière sélection et reprise après erreur', async () => {
   const e = makeEnv(); supa.reset();
   const m = await cronMember('Souhait3', e, mini(3));
