@@ -1,5 +1,6 @@
 {
   "versions": [
+    {"id": "2026-10-26", "date": "2026-10-26", "sections": [{"icon": "🔄", "title": "Échanges possibles", "items": [{"text": "Une carte n'est plus proposée à l'échange si celui qui la donne n'en a qu'une et qu'elle remplit une de ses propres collections. Ses doubles restent proposés.", "to": "#/amis/echanges", "link": "Échanges possibles"}]}]},
     {"id": "2026-10-24", "date": "2026-10-24", "sections": [{"icon": "💬", "title": "Chat", "items": [{"text": "Réagis aux messages : « Réagir » sur une bulle, puis choisis un emoji (👍 ❤️ 😂 😮 😢 🎉 🔥 👀). Les réactions s'affichent sous le message avec leur nombre. Survole-les pour voir qui a réagi, clique dessus pour ajouter ou retirer la tienne.", "to": "#/chat", "link": "Chat"}]},
       {"icon": "🔄", "title": "Échanges possibles", "items": [{"text": "Un seul bloc par paire de membres (« Toi ⇄ Paul ») : ce que tu peux lui donner et ce qu'il peut te donner sont maintenant réunis, avec un seul bouton « Proposer un échange ».", "to": "#/amis/echanges", "link": "Échanges possibles"}]},
       {"icon": "🤝", "title": "Amis dans le jeu", "items": [
@@ -117,6 +118,7 @@
     { "id": "2026-10-20", "at": "2026-10-20T07:24:03Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-20" },
     { "id": "2026-10-22", "at": "2026-10-22T21:20:50Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-22" },
     { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" },
-    { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" }
+    { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" },
+    { "id": "2026-10-26", "at": "2026-10-26T08:33:31Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-26" }
   ]
 }
