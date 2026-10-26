@@ -21,6 +21,7 @@ import { createTrade } from '../_lib/trades.js';
 import { listFriends, requestFriend, requestFriends } from '../_lib/friends.js';
 import { auctionDetail, cardMarket } from '../_lib/cardmarket.js';
 import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
+import { placeBid } from '../_lib/bid.js';
 import { markWish, syncWishlist, wishSoon } from '../_lib/wishlist.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
@@ -71,6 +72,7 @@ const ROUTES = {
   'friends/request-all': { POST: [requestFriends, 'main'] }, // plusieurs demandes d'ami d'un coup (Réglages)
   'market/sell': { GET: [sellInfo, 'main'], POST: [sellCard, 'main'] }, // mettre une carte en vente dans le jeu (et ses exemplaires)
   'market/cancel': { POST: [cancelSale, 'main'] }, // annuler une de tes ventes, tant que personne n'a misé
+  'market/bid': { POST: [placeBid, 'main'] }, // miser sur une enchère du jeu
   'wishlist/sync': { POST: [syncWishlist, 'main'] }, // « Mettre à jour ma liste de souhaits » du jeu (wishlist.js)
 };
 
@@ -89,7 +91,7 @@ async function wishAfter(env, user, key, method, result) {
 const PATTERNS = [[/^members\/[^/]+\/cards$/, 'members/*/cards'], [/^members\/[^/]+\/targets$/, 'members/*/targets'], [/^chat\/\d{1,15}$/, 'chat/*'], [/^chat\/\d{1,15}\/react$/, 'chat/*/react']];
 
 // Corps plus petits que la limite générale (5 Mo), par entrée de ROUTES.
-const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'chat/*/react': 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024, 'wishlist/sync': 1024 };
+const BODY_LIMITS = { account: 4 * 1024, chat: 8 * 1024, 'chat/*/react': 1024, 'link/session': 20 * 1024, 'trades/create': 8 * 1024, 'friends/request': 1024, 'friends/request-all': 4 * 1024, 'market/sell': 2 * 1024, 'market/cancel': 2 * 1024, 'market/bid': 1024, 'wishlist/sync': 1024 };
 
 // GET /api/health : présence de la configuration, jamais de valeur secrète.
 async function health(env) {

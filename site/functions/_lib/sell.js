@@ -38,7 +38,7 @@ async function copiesOf(env, user, s, id) {
 }
 
 // Réponse du site du jeu à une écriture ou une lecture du marché : limite (pause de 10 min), session refusée.
-async function guard(db, user, res, data, what) {
+export async function guard(db, user, res, data, what) {
   if (res.status === 429 || (data && data.code === 'automation_limit')) {
     await block(db, user.id);
     throw new HttpError(429, LIMITED, { limited: true, retry_after: 600 });
@@ -47,9 +47,9 @@ async function guard(db, user, res, data, what) {
     throw new HttpError(502, `Le jeu a refusé ta session (${res.status}) : ${what} dans le jeu.`);
   }
 }
-const said = (data) => (data && typeof (data.error || data.message) === 'string' ? String(data.error || data.message).slice(0, 300) : '');
+export const said = (data) => (data && typeof (data.error || data.message) === 'string' ? String(data.error || data.message).slice(0, 300) : '');
 
-function needUid(s) {
+export function needUid(s) {
   if (!s.uid) throw new HttpError(401, 'Relie à nouveau ton compte du jeu (onglet « Synchro ») : il manque ton identifiant de joueur.', { needs_link: true });
 }
 

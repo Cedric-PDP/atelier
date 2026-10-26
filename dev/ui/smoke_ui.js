@@ -258,6 +258,7 @@ function mockApi() {
     calls,
     sold: [], // ventes créées (POST /api/market/sell)
     cancelled: [], // ventes annulées (POST /api/market/cancel)
+    bidsSent: [], // mises faites (POST /api/market/bid)
     sellFail: null,
     cancelFail: null,
     conflicts: [], // enregistrements conditionnels refusés (409) : ids des collections
@@ -610,6 +611,17 @@ function mockApi() {
         const live = st.market && st.market.live;
         if (live) live.sales.unshift({ a, id: c.id, t: c.title, r: body.k.replace('*', ''), s: body.k.endsWith('*'), img: null, end, cote: null, n: null, base: body.base, cur: null, bid: false, st: 'run' });
         return json(200, { auction: { a, k: body.k, base: body.base, minutes: body.minutes, end }, url: 'https://www.wiki-masters.com/marketplace/' + a });
+      }
+      // Miser (SPEC.md, « Miser ») : self.bidsSent = mises faites ; self.bidFail = {status, error, extra} : la prochaine est refusée.
+      if (p === '/api/market/bid' && method === 'POST') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        if (self.bidFail) { const r = self.bidFail; self.bidFail = null; return json(r.status, { error: r.error, ...(r.extra || {}) }); }
+        if (typeof body.a !== 'string' || !Number.isInteger(body.amount) || body.amount < 1) return json(400, { error: 'Mise invalide.' });
+        self.bidsSent.push({ ...body });
+        const live = st.market && st.market.live;
+        const x = live && live.deals.find((y) => y.a === body.a);
+        if (x) Object.assign(x, { ask: body.amount, bid: true, lead: true });
+        return json(200, { a: body.a, amount: body.amount, cur: body.amount, balance: 1000 - body.amount, url: 'https://www.wiki-masters.com/marketplace/' + body.a });
       }
       if (p === '/api/market/cancel' && method === 'POST') {
         if (self.cancelFail) { const r = self.cancelFail; self.cancelFail = null; return json(r.status, { error: r.error, ...(r.extra || {}) }); }
@@ -5284,6 +5296,45 @@ async function main() {
       const hrefs = d.getElementById('panel-marche').querySelectorAll('a').filter((a) => a.classList.contains('game-link')).map((a) => a.getAttribute('href'));
       check(hrefs.includes('https://www.wiki-masters.com/marketplace/a1') && hrefs.every((x) => /^https:\/\/www\.wiki-masters\.com\/marketplace\/[a-z0-9-]+$/.test(x)), 'liens vers les enchères du jeu : ' + hrefs.join(', '));
     }
+    // « Miser » sur une bonne affaire (Voulue A, 50W sans mise, cote 100W) : la fenêtre propose le prix de départ (et la
+    // cote), prévient au-dessus de la cote, refuse sous le minimum ; la mise part au serveur, puis « tu mènes ».
+    {
+      const md = () => d.querySelectorAll('.modal')[0] || null;
+      const mdText = () => (md() ? text(md()) : '');
+      const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
+      const dealRow = () => d.querySelector('[data-section="acheter"]').querySelectorAll('li').find((n) => text(n).includes('Voulue A')) || null;
+      const bidBtn = () => (dealRow() ? dealRow().querySelectorAll('button').find((b) => text(b) === 'Miser') || null : null);
+      check(bidBtn() && bidBtn().getAttribute('aria-label') === 'Miser sur « Voulue A »', 'bouton « Miser » absent de la bonne affaire : ' + (dealRow() ? text(dealRow()) : 'ligne absente'));
+      bidBtn().click();
+      await settle(40);
+      const amount = () => d.getElementById('bid-amount');
+      check(mdText().includes('Miser sur « Voulue A »') && mdText().includes('Prix de départ50W · aucune mise') && mdText().includes('Cote100W') && String(amount().value) === '50',
+        'fenêtre « Miser » : ' + mdText().slice(0, 400));
+      check(inMd('minimum · 50W') && inMd('la cote · 100W') && inMd('Miser 50W dans le jeu'), 'mises proposées : ' + md().querySelectorAll('button').map(text).join(' | '));
+      amount().value = '40';
+      amount().dispatch('input');
+      await settle(20);
+      check(mdText().includes('Il faut au moins 50W') && inMd('Miser 40W dans le jeu').disabled, 'mise sous le minimum : ' + mdText().slice(0, 600));
+      amount().value = '120';
+      amount().dispatch('input');
+      await settle(20);
+      check(mdText().includes('20 % au-dessus de la cote'), 'mise au-dessus de la cote : ' + mdText().slice(0, 600));
+      // Refus du serveur (quelqu'un a misé entre-temps) : message, le minimum suit.
+      inMd('minimum · 50W').click();
+      await settle(20);
+      api.bidFail = { status: 409, error: "Quelqu'un a misé 55W : il faut au moins 56W.", extra: { min: 56, cur: 55 } };
+      inMd('Miser 50W dans le jeu').click();
+      await settle(60);
+      check(mdText().includes('il faut au moins 56W') && String(amount().value) === '56' && mdText().includes('Enchère actuelle55W') && api.bidsSent.length === 0, 'refus de la mise : ' + mdText().slice(0, 600));
+      inMd('Miser 56W dans le jeu').click();
+      await settle(80);
+      check(api.bidsSent.length === 1 && api.bidsSent[0].a === 'a1' && api.bidsSent[0].amount === 56, 'mise envoyée : ' + JSON.stringify(api.bidsSent));
+      check(mdText().includes('Mise faite : tu mènes.') && mdText().includes('Ta mise : 56W') && mdText().includes('ton solde dans le jeu : 944W')
+        && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/a1'), 'mise faite : ' + mdText());
+      inMd('Fermer').click();
+      await settle(60);
+      check(await waitFor(() => dealRow() && text(dealRow()).includes('tu mènes') && !bidBtn()), 'bonne affaire misée : « tu mènes », plus de « Miser » : ' + (dealRow() ? text(dealRow()) : 'absente'));
+    }
     // Fiche d'une carte qui manque : ses enchères en cours (lues à l'ouverture), de la moins chère à la plus chère, comparées à
     // la cote de leur rareté, le détail des moins chères (site du jeu), un lien vers chacune ; la courbe de ses prix de vente.
     const inH = (h) => new Date(Date.now() + h * 3600_000).toISOString();
@@ -5312,6 +5363,19 @@ async function main() {
       check(rt[1].includes('+30 % vs cote') && rt[1].includes('4 mises de 2 joueurs') && rt[1].includes('mène : Rival') && rt[1].includes('vendeur : Marchande') && rt[1].includes('dépassée · ta mise 90W') && rt[1].includes('ATK 10 · DEF 20'), 'enchère détaillée : ' + rt[1]);
       check(rt[2].includes('tu mènes') && rt[2].includes('brillante') && rt[2].includes('cote ~260W') && !rt[2].includes('vs cote') && !rt[2].includes('dépassée') && rows[2].classList.contains('lead'), 'enchère que je mène : ' + rt[2]);
       check(rows.every((n) => n.querySelectorAll('a').some((a) => a.classList.contains('game-link') && /^https:\/\/www\.wiki-masters\.com\/marketplace\/e[123]$/.test(a.getAttribute('href')) && a.getAttribute('target') === '_blank')), 'liens vers le jeu dans la fiche');
+      // « Miser » sur chaque enchère, sauf celle que je mène ; après une mise, un W de plus que l'enchère lue sur le site du jeu.
+      const rowBid = (n) => n.querySelectorAll('button').find((b) => text(b) === 'Miser') || null;
+      check(rowBid(rows[0]) && rowBid(rows[1]) && !rowBid(rows[2]), 'boutons « Miser » de la fiche : ' + rows.map((n) => !!rowBid(n)).join(', '));
+      rowBid(rows[1]).click();
+      await settle(40);
+      {
+        const mdt = () => (d.querySelectorAll('.modal')[0] ? text(d.querySelectorAll('.modal')[0]) : '');
+        check(mdt().includes('Miser sur « Voulue A »') && mdt().includes('Enchère actuelle130W') && String(d.getElementById('bid-amount').value) === '131', 'fenêtre « Miser » de la fiche : ' + mdt().slice(0, 400));
+        check(d.querySelectorAll('.fiche').length === 1, 'la fiche reste ouverte sous la fenêtre');
+        d.querySelectorAll('.modal')[0].querySelectorAll('button').find((b) => text(b).trim() === 'Annuler').click();
+        await settle(40);
+        check(!d.querySelectorAll('.modal').length && d.querySelectorAll('.fiche').length === 1, 'fenêtre « Miser » fermée, fiche gardée');
+      }
       const calls = apiLog.slice(mark);
       check(calls.filter((x) => x === 'GET /api/market/card?id=w1').length === 1 && calls.filter((x) => x.startsWith('GET /api/market/auction?id=')).length === 3, 'lectures de la fiche : ' + calls.join(', '));
       // Courbe : la rareté vendue le plus souvent (Super rare, 3 ventes) ; la brillante n'a qu'une vente, pas de puce.
