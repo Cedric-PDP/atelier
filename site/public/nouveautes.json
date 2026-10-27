@@ -1,5 +1,8 @@
 {
   "versions": [
+    {"id": "2026-10-27", "date": "2026-10-27", "sections": [
+      {"icon":"🃏","title":"Mes cartes","items":[{"text":"Le raccourci « Doublons » affiche les cartes possédées en au moins deux exemplaires, toutes raretés et brillances confondues. Il se combine avec les autres filtres et se retrouve sur téléphone dans « Tags et filtres ».","to":"#/cartes?doublons=1","link":"Voir mes doublons"}]}
+    ]},
     {"id": "2026-10-26", "date": "2026-10-26", "sections": [
       {"icon": "🔒", "title": "Auto-favoris dans le jeu", "items": [
         {"text": "Active « Auto-favoris dans WikiMasters » dans une collection pour mettre automatiquement un exemplaire de chaque carte obtenue en favori dans le jeu. L'option fonctionne avec ou sans auto-tag, lors des synchronisations manuelles et automatiques. Retirer une carte de la collection ou désactiver l'option conserve ses favoris.", "to": "#/collections", "link": "Mes collections"}

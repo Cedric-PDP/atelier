@@ -111,6 +111,11 @@ collection »). Jamais montré aux autres membres.
 
 **Tags du jeu dans la page** : fiche d'une carte, « Tags du jeu » en pastilles (couleur du jeu en point, gris
 `#94a3b8` sans couleur ; lecture seule : ils se changent dans le jeu), au-dessus de « Tes tags » et à part d'eux ;
+« Mes cartes », section « Raccourcis » : « Doublons » garde les cartes dont le nombre total d'exemplaires est supérieur
+à un, toutes raretés et brillances confondues. Le compteur indique le nombre de cartes différentes concernées. Ce filtre
+se combine aux autres, se retire via sa pastille ou la réinitialisation et reste dans l'adresse (`doublons=1`). Sur mobile,
+il figure dans la même feuille de filtres que les autres raccourcis.
+
 « Mes cartes », section « Tags du jeu » du menu de gauche (après « Raccourcis ») : un bouton par tag (sans tenir compte
 de la casse) avec son nombre de cartes, les plus portés d'abord, 24 puis « Afficher les N autres » ; clic : ce tag seul
 (ou plus aucun), Ctrl/⌘+clic : combiner (toutes les cartes qui les portent tous), combinable avec tes tags du classeur ;
@@ -1307,7 +1312,7 @@ chemin, `/collections/…`, y serait un 404 au rafraîchissement). Rien côté s
 | `#/ami/<id public>` · `#/ami/<id public>/<id de sa collection>` (`?depuis=echanges`) | le classeur d'un ami, une de ses collections |
 
 Paramètres, absents à leur valeur par défaut : « Mes cartes » `q`, `tri` (≠ `rarity`), `rarete` (répété), `tag`
-(répété, tags du classeur), `jeu` (répété, tags du jeu), `sans-tag=1`, `nouvelles=1` ; album (le tien ou celui d'un ami)
+(répété, tags du classeur), `jeu` (répété, tags du jeu), `sans-tag=1`, `nouvelles=1`, `doublons=1` ; album (le tien ou celui d'un ami)
 `filtre`, `tri` (≠ `order`) ; classeur d'un ami `q`, `filtre=missing`, `tri` ; partout `carte=<id>` = fiche d'une de
 tes cartes (pas les cases vides). Une valeur inconnue revient à la valeur par défaut, une vue inconnue à « Collections ».
 

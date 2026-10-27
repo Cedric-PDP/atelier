@@ -1375,6 +1375,11 @@ async function main() {
     console.log('WISH MISSING UI OK');
     return;
   }
+  if (process.argv.includes('--duplicates-only')) {
+    await testDuplicates();
+    console.log('DUPLICATES UI OK');
+    return;
+  }
   if (process.argv.includes('--qid-cache-only')) {
     await testQidArchive();
     console.log('QID CACHE UI OK');
@@ -6577,7 +6582,45 @@ async function main() {
   }
 
   // Titres sans cartes : ouverture directe, copie, sélection, confirmation et retrait de toute la liste.
+  await testDuplicates();
   await testMissingWishes();
+  async function testDuplicates() {
+    const saved = ['classeur-key', 'classeur-known'].map(k => [k, ls.get(k)]);
+    const key = await makeOtherAccount('Doubles');
+    await seedCards(key, [
+      { id: 'double-1', title: 'Mars', rarity: 'C', count: 2, variants: { C: 1, R: 1 } },
+      { id: 'double-2', title: 'Terre', rarity: 'R', count: 3 },
+      { id: 'single-1', title: 'Vénus', rarity: 'L', count: 1 },
+    ]);
+    ls.set('classeur-key', key);
+    ls.set('classeur-known', JSON.stringify([{ key, name: 'Doubles' }]));
+    const pg = openPage({ idb: 'absent', hash: '#/cartes?doublons=1' });
+    const d = pg.doc;
+    const titles = () => d.querySelectorAll('.card__title').map(text).sort().join('|');
+    check(await waitFor(() => titles() === 'Mars|Terre'), 'doublons : adresse directe et cartes de différentes raretés');
+    const chip = () => d.querySelectorAll('button.chip').find(b => text(b.querySelector('.chip__label')) === 'Doublons');
+    check(chip().getAttribute('aria-pressed') === 'true' && text(chip().querySelector('.n')) === '2', 'doublons : raccourci actif et compteur');
+    check(text(d.querySelector('.mfilter')).includes('1'), 'doublons : compteur mobile');
+    const search = d.getElementById('q'); search.value = 'Terre'; search.dispatch('input');
+    await settle();
+    check(titles() === 'Terre', 'doublons combinés avec la recherche');
+    search.value = 'Vénus'; search.dispatch('input'); await settle();
+    check(!d.querySelectorAll('.cell').length && text(d.body).includes('Aucune carte ne correspond'), 'doublons : exemplaire unique exclu même si la recherche correspond');
+    search.value = ''; search.dispatch('input');
+    chip().click(); await settle();
+    check(titles() === 'Mars|Terre|Vénus' && chip().getAttribute('aria-pressed') === 'false', 'doublons : désactivation');
+    chip().click(); await settle(); await sleep(400);
+    check(pg.ctx.location.hash.includes('doublons=1'), 'doublons : adresse mise à jour');
+    d.querySelectorAll('button').find(b => b.getAttribute('aria-label') === 'Retirer le filtre Doublons').click();
+    await settle();
+    check(titles() === 'Mars|Terre|Vénus', 'doublons : pastille de retrait');
+    chip().click(); await settle();
+    d.querySelectorAll('button').find(b => text(b) === 'Réinitialiser les filtres').click();
+    await settle();
+    check(titles() === 'Mars|Terre|Vénus' && chip().getAttribute('aria-pressed') === 'false', 'doublons : réinitialisation');
+    for (const [k, v] of saved) { if (v == null) ls.delete(k); else ls.set(k, v); }
+  }
+
   async function testMissingWishes() {
     if (SERVER) return;
     const saved = ['classeur-key', 'classeur-known'].map((k) => [k, ls.get(k)]);
