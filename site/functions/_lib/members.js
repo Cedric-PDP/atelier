@@ -142,7 +142,8 @@ const MEMBER_T = 'SELECT public_id AS id, name, shared_targets AS st FROM users 
 // Une page de collections par clé (id > dernière lue) : `before` = taille rangée des collections qui la précèdent dans
 // la page ; on garde celles qui commencent sous TARGETS_PAGE_BYTES (la première toujours), et la suivante revient sans
 // contenu (j NULL) pour dire qu'il en reste. Chaque collection est réduite en SQL : nom, puis pour chaque élément vérifié
-// (status ok) son titre, son qid s'il en a un et `sep: true` si c'est un intercalaire ; rien d'autre ne sort de targets
+// (status ok) son titre, son qid s'il en a un et `sep: true` si c'est un intercalaire, et chaque intercalaire libre
+// (status label) avec `sep: true, label: true` ; rien d'autre ne sort de targets
 // (ni source, ni dates, ni descriptions, ni ajout automatique : colonne auto), sauf sa nature (kind) : 'category' pour
 // une catégorie de Wikipédia suivie (source « wp:… »), sinon 'collection'.
 const MEMBER_TARGETS = `WITH page AS (
@@ -156,6 +157,8 @@ const MEMBER_TARGETS = `WITH page AS (
       'name', p.name,
       'kind', CASE WHEN substr(coalesce(p.source, ''), 1, 3) = 'wp:' THEN 'category' ELSE 'collection' END,
       'items', (SELECT json_group_array(json(CASE
+          WHEN json_extract(e.value, '$.status') = 'label'
+            THEN json_object('title', json_extract(e.value, '$.title'), 'sep', json('true'), 'label', json('true'))
           WHEN json_extract(e.value, '$.qid') IS NULL AND coalesce(json_type(e.value, '$.sep'), '') <> 'true'
             THEN json_object('title', json_extract(e.value, '$.title'))
           WHEN json_extract(e.value, '$.qid') IS NULL
@@ -164,7 +167,7 @@ const MEMBER_TARGETS = `WITH page AS (
             THEN json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid'))
           ELSE json_object('title', json_extract(e.value, '$.title'), 'qid', json_extract(e.value, '$.qid'), 'sep', json('true')) END))
         FROM json_each(p.items) AS e
-        WHERE e.type = 'object' AND json_type(e.value, '$.title') = 'text' AND coalesce(json_extract(e.value, '$.status'), 'ok') = 'ok')
+        WHERE e.type = 'object' AND json_type(e.value, '$.title') = 'text' AND coalesce(json_extract(e.value, '$.status'), 'ok') IN ('ok', 'label'))
     ) END AS j
   FROM page AS p
   WHERE p.before < ?3 OR p.id = (SELECT MIN(id) FROM page WHERE before >= ?3)

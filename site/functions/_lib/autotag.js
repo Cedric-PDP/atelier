@@ -55,6 +55,7 @@ export async function syncAutoTags(env, user, session, rows, links, { maxWrites 
       const aliases = new Map(cached.map(r => [key(r.title), r.card_id]));
       const byTitle = new Map([...cards.values()].map(c => [key(c.title), c.id]));
       for (const it of items) {
+        if (it && it.status === 'label') continue; // intercalaire libre : pas une carte
         const id = byTitle.get(key(it.title)) || aliases.get(key(it.title));
         if (id) { if (!index.has(id)) index.set(id, []); index.get(id).push(it); }
       }

@@ -567,7 +567,9 @@ function mockApi() {
           chunked = true;
         } else if (Buffer.byteLength(JSON.stringify(body.items || [])) > 600 * 1024) return json(400, { error: 'Collection trop volumineuse pour un seul envoi : 600 Ko au plus.' });
         if (Buffer.byteLength(JSON.stringify(body.items || [])) > 1_700_000) return json(400, { error: 'Collection trop volumineuse : 1,7 Mo au plus.' });
-        if (!Array.isArray(body.items) || !body.items.every((i) => typeof i.title === 'string' && ['ok', 'missing', 'disambiguation'].includes(i.status))) return json(400, { error: 'items invalides' });
+        if (!Array.isArray(body.items) || !body.items.every((i) => typeof i.title === 'string' && ['ok', 'missing', 'disambiguation', 'label'].includes(i.status))) return json(400, { error: 'items invalides' });
+        // Intercalaire libre : rangé comme targets.js (nom seul, toujours sep: true).
+        body = { ...body, items: body.items.map((i) => (i.status === 'label' ? { title: i.title.trim(), description: null, image: null, status: 'label', sep: true } : i)) };
         let t = body.id ? st.targets.find((x) => x.id === body.id) : null;
         // Enregistrement conditionnel (expect_updated_at) : un autre est passé avant -> 409 avec la collection d'aujourd'hui
         // (null si elle a été supprimée), rien d'écrit.
@@ -3971,6 +3973,115 @@ async function main() {
       d.querySelectorAll('.sec-fold').find((x) => (x.getAttribute('aria-label') || '').includes('« Sous-continent »')).click();
       await settle();
     }
+  }
+
+  // Intercalaires libres (Paula, 2026-10-28) : un nom qui ouvre une section sans être une carte (status label). Ni case
+  // ni cadre, hors de la progression (« 2 sur 3 ») ; absent en tri par rareté ; « ## » dans l'éditeur (relu, enregistré
+  // sans vérification) ; dans « Réorganiser », ajouté avant la carte choisie (en tête sans choix), renommé, retiré.
+  {
+    const keyP = await makeOtherAccount('Paula');
+    const mkc = (id, title) => ({ id, title, rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'pays', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    const it = (title) => ({ title, description: null, image: null, status: 'ok' });
+    const lab = (title) => ({ title, description: null, image: null, status: 'label', sep: true });
+    await seedCards(keyP, ['France', 'Allemagne'].map((t, i) => mkc('p' + i, t)));
+    check((await rawApi('POST', '/api/targets/save', keyP, { name: 'Pays', items: [lab('Europe'), it('France'), it('Allemagne'), lab('Asie'), it('Japon')] })).status === 200,
+      'intercalaires libres : collection refusée');
+    ls.set('classeur-key', keyP);
+    ls.set('classeur-known', JSON.stringify([{ key: keyP, name: 'Paula' }]));
+    const p = openPage({ idb: 'absent' });
+    check(await waitFor(() => p.count() === 2), 'intercalaires libres : classeur de Paula non ouvert');
+    p.doc.getElementById('tab-collections').click();
+    await settle();
+    const d = p.doc;
+    const rowOf = (name) => d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')) || null;
+    const btnIn = (root, t) => (root ? root.querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
+    const grid = () => d.querySelectorAll('.cardgrid')[0] || null;
+    const layout = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => {
+      if (n.classList.contains('sec-head')) return (n.classList.contains('sec-head--label') ? '§§' : '§') + text(n.querySelector('.sec-head__name'));
+      const t = text(n.querySelector('h3'));
+      return n.querySelector('.sep-frame') || n.classList.contains('sep-frame') ? `[${t}]` : t;
+    }).join(' ') : '');
+    const serverItems = async () => (await rawApi('GET', '/api/targets', keyP)).body.targets.find((x) => x.name === 'Pays').items;
+    check(rowOf('Pays') && (rowOf('Pays').getAttribute('aria-label') || '').startsWith('Pays : 2 sur 3'), 'progression sans les intercalaires libres : ' + (rowOf('Pays') && rowOf('Pays').getAttribute('aria-label')));
+    rowOf('Pays').click();
+    await settle(80);
+    check(layout() === '§§Europe France Allemagne §§Asie Japon' && text(d.querySelectorAll('.album-title')[0]).includes('2 sur 3'), 'album : sections libres attendues, ' + layout());
+    {
+      const eu = d.querySelectorAll('.sec-head').find((n) => text(n.querySelector('.sec-head__name')) === 'Europe');
+      check(eu && eu.classList.contains('complete') && text(eu.querySelector('.sec-head__count')) === '2 / 2', 'section libre complète (2 / 2) attendue : ' + (eu ? eu.className + ' / ' + text(eu) : 'absente'));
+      eu.querySelector('.sec-fold').click();
+      await settle();
+      check(layout() === '§§Europe §§Asie Japon' && text(d.querySelectorAll('.sec-head.folded')[0].querySelector('.sec-head__more')) === '+2', 'section libre repliée : ' + layout());
+      d.querySelectorAll('.sec-head.folded')[0].querySelector('.sec-fold').click();
+      await settle();
+    }
+    btnIn(d.body, 'Rareté').click();
+    await settle();
+    check(!d.querySelectorAll('.sec-head').length && !layout().includes('Europe') && !layout().includes('Asie'), 'tri par rareté : intercalaires libres absents attendus, ' + layout());
+    btnIn(d.body, 'Ordre').click();
+    await settle();
+    // Éditeur : « ## » relu ; un intercalaire libre ajouté, un autre renommé, enregistrés sans vérification sur Wikipédia.
+    btnIn(d.body, 'Modifier').click();
+    await settle();
+    {
+      const ta = d.getElementById('ed-text');
+      check(ta && ta.value === '## Europe\nFrance\nAllemagne\n## Asie\nJapon', 'éditeur : intercalaires libres en « ## » attendus, ' + JSON.stringify(ta && ta.value));
+      check(text(d.querySelectorAll('.modal')[0]).includes('5 lignes · 2 intercalaires libres') && text(d.querySelectorAll('.modal')[0]).includes('« ## » et un nom'), 'éditeur : compte ou explication des intercalaires libres absent');
+      const mark = apiLog.length;
+      type(ta, '## Europe de l\'Ouest\nFrance\nAllemagne\n##   Asie\nJapon\n## Océanie\n');
+      d.querySelectorAll('.modal')[0].querySelectorAll('button').find((b) => text(b).trim() === 'Enregistrer').click();
+      check(await waitFor(() => !d.querySelectorAll('.modal').length), 'éditeur : enregistrement sans effet, ' + text(d.querySelectorAll('.modal')[0] || d.body).slice(0, 300));
+      check(apiLog.slice(mark).filter((x) => x.startsWith('POST /api/targets/save')).length === 1, 'éditeur : un seul enregistrement attendu');
+    }
+    {
+      const items = await serverItems();
+      check(items.map((x) => (x.status === 'label' ? '#' : '') + x.title).join('|') === "#Europe de l'Ouest|France|Allemagne|#Asie|Japon|#Océanie" && items.filter((x) => x.status === 'label').every((x) => x.sep === true),
+        'éditeur : intercalaires libres enregistrés, ' + JSON.stringify(items));
+    }
+    await settle(80);
+    check(layout() === "§§Europe de l'Ouest France Allemagne §§Asie Japon §§Océanie", 'après l\'éditeur : ' + layout());
+    // « Réorganiser » : ajouté en tête (aucune carte choisie), puis avant Japon (choisi) ; Océanie renommée puis retirée.
+    btnIn(d.body, 'Réorganiser').click();
+    await settle(80);
+    {
+      const bar = () => d.querySelectorAll('.reorder-bar')[0];
+      const roLayout = () => d.querySelectorAll('.ro-tile').map((n) => (n.classList.contains('ro-tile--label') ? '#' : '') + text(n.querySelector('.ro-label') || n.querySelector('.ro-title')).split(',')[0]).join('|');
+      const tileFor = (t) => d.querySelectorAll('.ro-tile').find((n) => text(n.querySelector('.ro-title')).startsWith(t + ',') || text(n.querySelector('.ro-title')) === t) || null;
+      check(tileFor('Océanie') && tileFor('Océanie').classList.contains('ro-tile--label') && text(tileFor('Océanie').querySelector('.ro-title')) === 'Océanie, intercalaire libre', 'vignette d\'un intercalaire libre : ' + (tileFor('Océanie') ? tileFor('Océanie').className : 'absente'));
+      check(btnIn(d.body, 'Ajouter un intercalaire') && btnIn(d.body, 'Ajouter un intercalaire').disabled, '« Ajouter un intercalaire » sans nom : grisé attendu');
+      type(d.getElementById('reorder-label'), '  Amériques ');
+      await settle();
+      btnIn(d.body, 'Ajouter un intercalaire').click();
+      await settle();
+      check(roLayout() === "#Amériques|#Europe de l'Ouest|France|Allemagne|#Asie|Japon|#Océanie" && d.getElementById('reorder-label').value === '' && text(bar()).includes('Ordre modifié'),
+        'intercalaire libre ajouté en tête : ' + roLayout());
+      tileFor('Japon').querySelector('.ro-title').click();
+      await settle();
+      type(d.getElementById('reorder-label'), 'Japonais');
+      await settle();
+      btnIn(d.body, 'Ajouter un intercalaire').click();
+      await settle();
+      check(roLayout() === "#Amériques|#Europe de l'Ouest|France|Allemagne|#Asie|#Japonais|Japon|#Océanie", 'intercalaire libre ajouté avant la carte choisie : ' + roLayout());
+      tileFor('Océanie').querySelector('.ro-title').click();
+      await settle();
+      check(btnIn(bar(), 'Retirer') && d.getElementById('reorder-rename'), 'intercalaire libre choisi : « Renommer » et « Retirer » attendus');
+      type(d.getElementById('reorder-rename'), 'Pacifique');
+      await settle();
+      btnIn(bar(), 'Renommer').click();
+      await settle();
+      check(roLayout().endsWith('|#Pacifique'), 'intercalaire libre renommé : ' + roLayout());
+      tileFor('Japonais').querySelector('.ro-title').click();
+      await settle();
+      btnIn(bar(), 'Retirer').click();
+      await settle();
+      check(roLayout() === "#Amériques|#Europe de l'Ouest|France|Allemagne|#Asie|Japon|#Pacifique", 'intercalaire libre retiré : ' + roLayout());
+      btnIn(bar(), 'Enregistrer l\'ordre').click();
+      check(await waitFor(() => !d.querySelectorAll('.reorder-bar').length), 'ordre non enregistré : ' + text(bar() || d.body).slice(0, 300));
+      const items = await serverItems();
+      check(items.map((x) => (x.status === 'label' ? '#' : '') + x.title).join('|') === "#Amériques|#Europe de l'Ouest|France|Allemagne|#Asie|Japon|#Pacifique", 'réorganisation enregistrée : ' + JSON.stringify(items.map((x) => x.title)));
+    }
+    await settle(80);
+    check(layout() === "§§Amériques §§Europe de l'Ouest France Allemagne §§Asie Japon §§Pacifique", 'album après la réorganisation : ' + layout());
   }
 
   // Propositions d'après les cartes, sans les sous-catégories (Iris : 8 cartes de couleurs). Rouge, Vert et Jaune sont

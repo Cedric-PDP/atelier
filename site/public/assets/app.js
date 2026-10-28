@@ -111,6 +111,12 @@
   };
   // Rareté relevée dans le jeu (collection créée depuis les cartes du jeu), sinon null.
   const realRarity = (item) => (item && RARITIES.includes(item.rarity) ? item.rarity : null);
+  // Intercalaire libre (2026-10-28, demande de l'utilisateur : « déclarer un regroupement sans que ce soit lié à une
+  // carte ») : élément {title, status: 'label', sep: true}, un nom qui ouvre une section de l'album. Jamais une carte :
+  // ni case vide, ni progression, ni souhait ; montré seulement par le bandeau de sa section (ordre de la collection,
+  // sans filtre) et dans « Réorganiser ».
+  const isLabel = (item) => !!item && item.status === 'label';
+  const cardItems = (items) => items.reduce((n, it) => n + (isLabel(it) ? 0 : 1), 0);
   const addTo = (tags, tag) => (tags.includes(tag) || tags.length >= 30 ? tags : [...tags, tag]);
   const dateOf = (iso) => { const d = new Date(iso); return iso && !Number.isNaN(d.getTime()) ? d : null; };
   const dateLong = (iso) => { const d = dateOf(iso); return d ? d.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' }) : '—'; };
@@ -784,7 +790,7 @@
   const cardIndex = computed(() => (Match ? Match.createIndex(cards.value, resolver) : null));
   function findCard(item) {
     void qidVersion.value;
-    if (!item) return null;
+    if (!item || isLabel(item)) return null;
     if (cardIndex.value) return cardIndex.value.findCard(item);
     const list = byTitle.value.get(normTitle(item.title));
     return list ? list[0] : null;
@@ -914,7 +920,7 @@
       sample.push(c);
     }
     sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
-    return { own, total: col.items.length, byR, sample: sample.slice(0, 3) };
+    return { own, total: cardItems(col.items), byR, sample: sample.slice(0, 3) };
   }
   const progress = computed(() => new Map(collections.value.all.map((col) => [col.key, progressFor(col)])));
   // Catégorie ou page de Wikipédia ouverte (source d'une collection à créer) : ses articles (ou les articles liés depuis
@@ -926,7 +932,7 @@
     return cv ? { kind: 'category', id: cv.key, key: 'cat:' + cv.key, name: cv.name, items: cv.items || [], ordered: !!(page && cv.col), cat: !page, page, cv } : null;
   });
   const catProgress = computed(() => (catAlbum.value ? progressFor(catAlbum.value) : null));
-  const progressOf = (col) => (col.kind === 'category' ? catProgress.value : progress.value.get(col.key)) || { own: 0, total: col.items.length, byR: {}, sample: [] };
+  const progressOf = (col) => (col.kind === 'category' ? catProgress.value : progress.value.get(col.key)) || { own: 0, total: cardItems(col.items), byR: {}, sample: [] };
   const activeAlbum = computed(() => {
     const a = S.album;
     if (!a) return null;
@@ -939,13 +945,15 @@
     if (!col) return [];
     void S.pv.version;
     const owned = byTitle.value;
+    let no = 0; // numéro de la case (les intercalaires libres n'en ont pas)
     let slots = col.items.map((item, i) => {
+      if (isLabel(item)) return { i: no, key: 'label:' + i + ':' + item.title, item, card: null, views: null, real: null, est: null, thumb: null };
       const card = findCard(item);
       const info = card ? null : pvCache.get(item.title);
       const views = info ? info[0] : null;
       // real : rareté donnée par le jeu (pastille sans « ≈ ») ; est : estimée d'après les vues, pour les autres.
       const real = card ? null : realRarity(item);
-      return { i: i + 1, key: card ? card.id + ':' + i : 'vide:' + i + ':' + item.title, item, card, views, real, est: card || real || item.status !== 'ok' ? null : estRarity(views), thumb: info ? info[1] : null };
+      return { i: ++no, key: card ? card.id + ':' + i : 'vide:' + i + ':' + item.title, item, card, views, real, est: card || real || item.status !== 'ok' ? null : estRarity(views), thumb: info ? info[1] : null };
     });
     if (S.albumFilter === 'owned') slots = slots.filter((s) => s.card);
     if (S.albumFilter === 'missing') slots = slots.filter((s) => !s.card);
@@ -1017,7 +1025,7 @@
   // ou même qid.
   function membershipsOfItem(item) {
     const k = normTitle(item.title);
-    return collections.value.all.filter((col) => col.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)));
+    return collections.value.all.filter((col) => col.items.some((it) => !isLabel(it) && (normTitle(it.title) === k || (!!item.qid && it.qid === item.qid))));
   }
   const personalLink = computed(() => (S.key ? location.origin + '/#cle=' + S.key : ''));
   // Favori « Relier » : pose le jeton à usage unique dans window.__classeurLien et charge le code de liaison depuis le
@@ -1270,7 +1278,7 @@
       if (m) { help++; if ((Number(m.count) || 1) >= 2) helpDup++; }
     }
     sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
-    return { own, total: t.items.length, byR, sample: sample.slice(0, 3), help, helpDup, value, priced, cards: seen.size };
+    return { own, total: cardItems(t.items), byR, sample: sample.slice(0, 3), help, helpDup, value, priced, cards: seen.size };
   }
   const friendTargetsView = computed(() => {
     const f = openFriend.value;
@@ -1316,14 +1324,17 @@
     void S.pv.version;
     const index = friendIndexOf(fa.f.id);
     const holes = myHoles.value;
+    let no = 0;
     return fa.t.items.map((item, i) => {
+      if (isLabel(item)) return { i: no, key: 'label:' + i + ':' + item.title, item, card: null, mine: null, want: null, views: null, real: null, est: null, thumb: null };
+      no++;
       const card = index.findCard(item);
       const mine = findCard(item);
       const hole = card && !mine ? holes.findCard(item) || holes.findCard(card) : null;
       const info = card || mine ? null : pvCache.get(item.title);
       const views = info ? info[0] : null;
       const real = card ? null : mine ? okRarity(mine.rarity) : null;
-      return { i: i + 1, key: (card ? 'c:' + card.id : 'v:' + item.title) + ':' + i, item, card, mine, want: hole ? hole.cols : null,
+      return { i: no, key: (card ? 'c:' + card.id : 'v:' + item.title) + ':' + i, item, card, mine, want: hole ? hole.cols : null,
         views, real, est: card || real ? null : estRarity(views), thumb: info ? info[1] : null };
     });
   });
@@ -2542,8 +2553,13 @@
   // ---------------------------------------------------------------- collections à compléter
   // Ligne de l'éditeur d'une collection : un titre ou une adresse fr.wikipedia.org ; « # » devant (interdit dans un titre de
   // Wikipédia, donc sans ambiguïté) en fait un intercalaire, qui ouvre une section (SEP_MARK : ce qu'écrit openEditor).
+  // « ## » devant un nom en fait un intercalaire libre (isLabel) : la section seule, sans carte ni vérification.
   const SEP_LINE = /^#\s*/;
   const SEP_MARK = '# ';
+  const LABEL_LINE = /^##\s*/;
+  const LABEL_MARK = '## ';
+  const LABEL_MAX = 300; // longueur d'un titre pour targets.js
+  const itemLine = (i) => (isLabel(i) ? LABEL_MARK : i.sep ? SEP_MARK : '') + i.title;
   function parseLine(line) {
     let s = String(line || '').trim().replace(SEP_LINE, '');
     if (!s) return null;
@@ -2567,10 +2583,10 @@
     S.editor = {
       id: t ? t.id : null,
       name: t ? t.name : '',
-      text: t ? t.items.map((i) => (i.sep ? SEP_MARK : '') + i.title).join('\n') : '',
+      text: t ? t.items.map(itemLine).join('\n') : '',
       source: t ? t.source || null : null,
-      known: markRaw(new Map(t ? t.items.map((i) => [i.title, i]) : [])),
-      base: markRaw(t ? t.items.map((i) => i.title) : []), // titres à l'ouverture (exclusions de l'ajout automatique)
+      known: markRaw(new Map(t ? t.items.filter((i) => !isLabel(i)).map((i) => [i.title, i]) : [])),
+      base: markRaw(t ? t.items.filter((i) => !isLabel(i)).map((i) => i.title) : []), // titres à l'ouverture (exclusions de l'ajout automatique)
       busy: false, progress: '', error: '', issues: null,
       mode: t ? 'liste' : NEW_MODES.some((m) => m[0] === mode) ? mode : NEW_MODES[0][0],
       kw: { q: '', searching: false, error: '', interp: '', cands: [], chosen: null, searched: '' },
@@ -2584,15 +2600,25 @@
     const name = ed.name.trim();
     if (!name) { ed.error = 'Donne un nom à ta collection.'; return; }
     const titles = [];
+    const lines = []; // dans l'ordre : un titre, ou {label} pour un intercalaire libre (« ## »)
     const seen = new Set();
+    const seenLabels = new Set();
     const seps = new Set(); // titres marqués « # » (intercalaires), sur au moins une de leurs lignes
     const bad = [];
     ed.text.split('\n').forEach((line, i) => {
+      const trimmed = line.trim();
+      if (LABEL_LINE.test(trimmed)) {
+        const label = trimmed.replace(LABEL_LINE, '').replace(/\s+/g, ' ').trim();
+        if (!label) return;
+        if (label.length > LABEL_MAX) { bad.push(`ligne ${i + 1} : intercalaire trop long (${LABEL_MAX} caractères au plus)`); return; }
+        if (!seenLabels.has(label)) { seenLabels.add(label); lines.push({ label }); }
+        return;
+      }
       const r = parseLine(line);
       if (r == null) return;
       if (typeof r === 'object') { bad.push(`ligne ${i + 1} : ${r.error}`); return; }
-      if (SEP_LINE.test(line.trim())) seps.add(r);
-      if (!seen.has(r)) { seen.add(r); titles.push(r); }
+      if (SEP_LINE.test(trimmed)) seps.add(r);
+      if (!seen.has(r)) { seen.add(r); titles.push(r); lines.push(r); }
     });
     if (bad.length) { ed.error = 'À corriger : ' + bad.slice(0, 4).join(' ; ') + (bad.length > 4 ? ' ; …' : '.'); return; }
     if (!titles.length) { ed.error = 'Ajoute au moins un article, un par ligne.'; return; }
@@ -2609,7 +2635,8 @@
       const items = [];
       const kept = new Map();
       let redirected = 0;
-      for (const t of titles) {
+      for (const t of lines) {
+        if (typeof t === 'object') { items.push({ title: t.label, description: null, image: null, status: 'label', sep: true }); continue; }
         const it = ed.known.get(t);
         if (!it) continue;
         if (it.title !== t) redirected++;
@@ -2623,7 +2650,7 @@
         kept.set(it.title, item);
         items.push(item);
       }
-      const issues = items.filter((i) => i.status !== 'ok');
+      const issues = items.filter((i) => i.status !== 'ok' && !isLabel(i));
       if (issues.length && !force) {
         ed.issues = issues.map((i) => ({ title: i.title, status: i.status }));
         ed.progress = '';
@@ -2637,11 +2664,12 @@
       // la main ne le sont plus.
       const cur = ed.id ? autoOf(targets.value.find((x) => x.id === ed.id)) : null;
       if (cur) {
-        const now = new Set(items.map((i) => titleKey(i.title)));
+        const cardsNow = items.filter((i) => !isLabel(i));
+        const now = new Set(cardsNow.map((i) => titleKey(i.title)));
         const before = new Set(ed.base.map(titleKey));
         const skipped = new Set(cur.skip.map(titleKey));
         const add = ed.base.filter((x) => !now.has(titleKey(x)));
-        const del = items.filter((i) => !before.has(titleKey(i.title)) && skipped.has(titleKey(i.title))).map((i) => i.title);
+        const del = cardsNow.filter((i) => !before.has(titleKey(i.title)) && skipped.has(titleKey(i.title))).map((i) => i.title);
         if (add.length || del.length) body.auto_skip = { ...(add.length ? { add } : {}), ...(del.length ? { del } : {}) };
       }
       const r = await saveTargetApi(body);
@@ -2813,11 +2841,12 @@
   }
   // Ordre de `list` (des éléments) reporté sur `items` : indices dans items, dans l'ordre des titres de list, puis ceux
   // de items qui n'y sont pas, à la fin, dans leur ordre (deux éléments de même titre gardent leur ordre entre eux).
+  const orderKey = (it) => (isLabel(it) ? '\u0000' : '') + normTitle(it.title); // un intercalaire libre n'est jamais une carte
   function alignOrder(list, items) {
     const pool = new Map();
-    items.forEach((it, i) => { const k = normTitle(it.title); if (pool.has(k)) pool.get(k).push(i); else pool.set(k, [i]); });
+    items.forEach((it, i) => { const k = orderKey(it); if (pool.has(k)) pool.get(k).push(i); else pool.set(k, [i]); });
     const out = [];
-    for (const it of list) { const q = pool.get(normTitle(it.title)); if (q && q.length) out.push(q.shift()); }
+    for (const it of list) { const q = pool.get(orderKey(it)); if (q && q.length) out.push(q.shift()); }
     const used = new Set(out);
     items.forEach((_, i) => { if (!used.has(i)) out.push(i); });
     return out;
@@ -2842,7 +2871,7 @@
     if (S.openId || S.openMissing) closeCard();
     Object.assign(S, { albumSort: 'order', albumFilter: 'all' });
     S.reorder = { id: t.id, name: t.name, base: markRaw(t.items), order: markRaw(t.items.map((_, i) => i)), dirty: false, active: null, drag: null, pos: '',
-      busy: false, error: '', said: '', saidN: 0, away: false };
+      busy: false, error: '', said: '', saidN: 0, away: false, labels: false, label: '', rename: '' };
     nextTick(() => { const el = document.getElementById('album-name'); if (el) el.focus(); });
   }
   function sayReorder(r, text) { r.said = text; r.saidN++; }
@@ -2865,7 +2894,7 @@
     next.splice(from, 1);
     next.splice(dest, 0, k);
     r.order = markRaw(next);
-    r.dirty = !isIdentity(next);
+    r.dirty = reorderDirty(r);
     sayReorder(r, `« ${title} »${r.base[k].sep ? ' (intercalaire)' : ''} : position ${fmt(dest + 1)} sur ${fmt(n)}.`);
     return true;
   }
@@ -2888,6 +2917,52 @@
     r.pos = '';
     const k = r.active;
     if (moveTo(k, p - 1)) showTile(k);
+  }
+  // Brouillon différent de la collection rangée : ordre changé, ou intercalaire libre ajouté, renommé ou retiré
+  // (r.labels : le brouillon a alors ses propres éléments, base n'est plus t.items).
+  function reorderDirty(r) {
+    if (!r.labels) return !isIdentity(r.order);
+    const t = targets.value.find((x) => x.id === r.id);
+    return !t || !sameIds(r.order.map((k) => r.base[k]), t.items);
+  }
+  // Intercalaires libres du mode réorganisation (2026-10-28) : « Ajouter un intercalaire » (champ en tête) le met avant
+  // l'élément choisi (en tête sans choix) ; choisi, il se renomme ou se retire dans la barre du bas. Comme un
+  // déplacement, rien n'est envoyé avant « Enregistrer l'ordre ».
+  const labelName = (v) => String(v || '').replace(/\s+/g, ' ').trim();
+  function addLabel() {
+    const r = S.reorder;
+    if (!r || r.busy) return;
+    const name = labelName(r.label);
+    if (!name || name.length > LABEL_MAX) { r.error = `Nom de l'intercalaire : 1 à ${fmt(LABEL_MAX)} caractères.`; sayReorder(r, r.error); return; }
+    const k = r.base.length;
+    const at = r.active != null && r.order.includes(r.active) ? r.order.indexOf(r.active) : 0;
+    const next = r.order.slice();
+    next.splice(at, 0, k);
+    Object.assign(r, { base: markRaw([...r.base, { title: name, description: null, image: null, status: 'label', sep: true }]), order: markRaw(next),
+      labels: true, label: '', rename: '', active: k, pos: '', error: '' });
+    r.dirty = reorderDirty(r);
+    sayReorder(r, `Intercalaire « ${name} » ajouté en position ${fmt(at + 1)} sur ${fmt(next.length)}.`);
+    showTile(k);
+  }
+  function renameLabel(k) {
+    const r = S.reorder;
+    if (!r || r.busy || !isLabel(r.base[k])) return;
+    const name = labelName(r.rename);
+    if (!name || name.length > LABEL_MAX) { r.error = `Nom de l'intercalaire : 1 à ${fmt(LABEL_MAX)} caractères.`; sayReorder(r, r.error); return; }
+    const old = r.base[k].title;
+    if (name === old) { r.rename = ''; return; }
+    const base = r.base.slice();
+    base[k] = { ...base[k], title: name };
+    Object.assign(r, { base: markRaw(base), labels: true, rename: '', error: '' });
+    r.dirty = reorderDirty(r);
+    sayReorder(r, `Intercalaire « ${old} » renommé « ${name} ».`);
+  }
+  function removeLabel(k) {
+    const r = S.reorder;
+    if (!r || r.busy || !isLabel(r.base[k])) return;
+    Object.assign(r, { order: markRaw(r.order.filter((x) => x !== k)), labels: true, active: null, pos: '', rename: '', error: '' });
+    r.dirty = reorderDirty(r);
+    sayReorder(r, `Intercalaire « ${r.base[k].title} » retiré.`);
   }
   // Vignette de l'élément k montrée (déplacée au loin par la barre du bas).
   function showTile(k) {
@@ -2919,10 +2994,14 @@
   }
   // Collection changée pendant la réorganisation (ailleurs dans la page) : l'ordre en cours est reporté sur ses éléments
   // d'aujourd'hui (par titre) ; ceux qui ont disparu sont retirés, les nouveaux viennent à la fin.
+  // Intercalaires libres changés dans le brouillon (r.labels) : ce sont les siens qui restent.
   function rebaseReorder(r, t) {
     roDragEnd();
-    const next = alignOrder(r.order.map((k) => r.base[k]), t.items);
-    Object.assign(r, { base: markRaw(t.items), order: markRaw(next), dirty: !isIdentity(next), active: null, drag: null, name: t.name });
+    const draft = r.order.map((k) => r.base[k]);
+    const items = r.labels ? t.items.filter((it) => !isLabel(it)).concat(draft.filter(isLabel)) : t.items;
+    const next = alignOrder(draft, items);
+    Object.assign(r, { base: markRaw(items), order: markRaw(next), active: null, drag: null, name: t.name });
+    r.dirty = reorderDirty(r);
   }
   async function saveOrder() {
     const r = S.reorder;
@@ -2953,8 +3032,10 @@
     const t = targets.value.find((x) => x.id === id);
     if (!t) { notify("Cette collection n'existe plus : rien à remettre.", true); return; }
     const gen = cardsGen;
+    // Intercalaires libres : ceux d'avant (un ajout, un renommage ou un retrait est aussi annulé).
+    const items = t.items.filter((it) => !isLabel(it)).concat(before.filter(isLabel));
     try {
-      await saveItemsOf(t, alignOrder(before, t.items).map((i) => t.items[i]));
+      await saveItemsOf(t, alignOrder(before, items).map((i) => items[i]));
       if (gen === cardsGen) notify(`Ordre d'avant remis dans « ${t.name} ».`);
     } catch (e) {
       if (gen === cardsGen) notify(e.message, true);
@@ -3265,12 +3346,14 @@
   // complétés), headMoot (la première carte ajoutée est déjà un intercalaire), changed, noImages (images retirées pour
   // tenir dans 1,7 Mo), hadImages, kb (taille en Ko si elle ne tient pas), tooBig, own (tes cartes après)}.
   function mergeTargetItems(base, other, opts) {
-    const qidOf = (it) => it.qid || (resolver ? resolver.known(it.title) || null : null);
+    // Un intercalaire libre ne se confond qu'avec un intercalaire libre du même nom (jamais avec une carte).
+    const qidOf = (it) => (isLabel(it) ? null : it.qid || (resolver ? resolver.known(it.title) || null : null));
+    const keyOf = (it) => (isLabel(it) ? '\u0000' : '') + titleKey(it.title);
     const items = base.slice();
     const byTitle = new Map();
     const byQid = new Map();
     const remember = (it, i) => {
-      const k = titleKey(it.title);
+      const k = keyOf(it);
       if (!byTitle.has(k)) byTitle.set(k, i);
       const q = qidOf(it);
       if (q && !byQid.has(q)) byQid.set(q, i);
@@ -3282,17 +3365,17 @@
     let carry = false; // intercalaire de l'autre déjà présent : la prochaine carte ajoutée ouvre sa section
     let headMoot = false;
     for (const it of other) {
-      const k = titleKey(it.title);
+      const k = keyOf(it);
       const q = qidOf(it);
       const j = byTitle.has(k) ? byTitle.get(k) : q && byQid.has(q) ? byQid.get(q) : -1;
       if (j >= 0) {
         present++;
-        const add = mergeGain(items[j], it, titleKey(items[j].title) === k);
+        const add = isLabel(it) ? {} : mergeGain(items[j], it, keyOf(items[j]) === k);
         if (Object.keys(add).length) {
           items[j] = { ...items[j], ...add };
           if (j < base.length) gains.set(j, new Set([...(gains.get(j) || []), ...Object.keys(add)]));
         }
-        if (it.sep === true && opts.sections) carry = true;
+        if (it.sep === true && opts.sections && !isLabel(it)) carry = true;
         continue;
       }
       const item = mergeCopy(it);
@@ -3604,6 +3687,7 @@
     const inside = new Map(); // catégorie du jeu -> éléments de la collection qui la portent (ta carte, sinon l'élément)
     let known = 0;
     for (const it of t.items) {
+      if (isLabel(it)) continue;
       titles.add(titleKey(it.title));
       if (it.qid) qids.add(it.qid);
       const c = findCard(it);
@@ -3806,7 +3890,7 @@
     if (!t) { ta.error = "Cette collection n'existe plus."; return; }
     const st = tagAddAuto.value || { had: null, rules: [], skipAdd: [], changed: false };
     // Rapprochés de nouveau au moment d'enregistrer (la collection a pu changer depuis l'ouverture) : aucun doublon.
-    const titles = new Set(t.items.map((it) => titleKey(it.title)));
+    const titles = new Set(t.items.filter((it) => !isLabel(it)).map((it) => titleKey(it.title)));
     const qids = new Set(t.items.map((it) => it.qid).filter(Boolean));
     const fresh = [];
     for (const c of tagAddPicked.value) {
@@ -3916,6 +4000,7 @@
     const qids = new Set();
     const inIds = new Set();
     for (const it of t.items) {
+      if (isLabel(it)) continue;
       titles.add(titleKey(it.title));
       if (it.qid) qids.add(it.qid);
       const c = findCard(it);
@@ -5836,6 +5921,7 @@
   function prepFriendTarget(t) {
     const items = (Array.isArray(t.items) ? t.items : []).filter((it) => it && typeof it.title === 'string' && it.title)
       .map((it) => {
+        if (it.label === true) return { title: it.title, status: 'label', sep: true }; // intercalaire libre
         const out = typeof it.qid === 'string' && QID_RE.test(it.qid) ? { title: it.title, qid: it.qid } : { title: it.title };
         if (it.sep === true) out.sep = true; // intercalaire : il ouvre une section de son album
         return out;
@@ -5955,7 +6041,7 @@
       for (const tg of f.targets || []) {
         for (const it of tg.items) {
           if (items >= FRIEND_ITEM_QIDS) break;
-          if (it.qid) continue;
+          if (it.qid || isLabel(it)) continue;
           const k = Match.normTitle(it.title);
           if (!k || titles.has(k) || resolver.knownKey(k, t) !== undefined || (index && index.findCard(it))) continue;
           titles.set(k, it.title);
@@ -6149,6 +6235,7 @@
     fr.copyBusy = true;
     try {
       const items = t.items.map((it) => {
+        if (isLabel(it)) return { title: it.title, description: null, image: null, status: 'label', sep: true };
         const item = { title: it.title, description: null, image: null, status: 'ok' };
         if (it.qid) item.qid = it.qid;
         if (it.sep) item.sep = true; // ses intercalaires aussi : la même collection, mêmes sections
@@ -7151,7 +7238,7 @@
         h('h3', { class: 'sec-head__h' }, h('span', { class: 'sec-head__tab' }, 'Hors intercalaire')),
         h('span', { class: 'sec-head__meta' }, cards$(fold.looseN)),
       ]));
-      if (!(sec && sec.folded)) kids.push(render(s));
+      if (!(sec && sec.folded) && !isLabel(s.item)) kids.push(render(s));
     });
     return kids;
   }
@@ -7176,7 +7263,8 @@
   // hors section, ou null), looseN, album}. Possédée = s.card (la tienne, ou celle de l'ami dans son album).
   function foldSlots(slots, sections, album) {
     const sec = new Map();
-    if (!sections) return { slots, sec, loose: null, looseN: 0, album };
+    // Hors des sections, un intercalaire libre n'a rien à montrer.
+    if (!sections) return { slots: slots.some((s) => isLabel(s.item)) ? slots.filter((s) => !isLabel(s.item)) : slots, sec, loose: null, looseN: 0, album };
     const folded = new Set(foldedIn(album));
     const out = [];
     const loose = [];
@@ -7191,8 +7279,8 @@
     };
     for (const s of slots) {
       if (s.item.sep) {
-        cur = { n: 0, folded: folded.has(s.item.title), own: 0, total: 0, byR: {}, sample: [] };
-        count(cur, s);
+        cur = { n: 0, folded: folded.has(s.item.title), own: 0, total: 0, byR: {}, sample: [], label: isLabel(s.item) };
+        if (!cur.label) count(cur, s); // un intercalaire libre n'est pas une carte de sa section
         sec.set(s.key, cur);
         out.push(s);
         continue;
@@ -7218,10 +7306,10 @@
     const folded = sec.n && sec.folded;
     const fan = folded ? h('span', { class: 'sec-head__fan', 'aria-hidden': 'true' }, [
       h('span', { class: 'fan' }, sec.sample.length ? sec.sample.map(viewMini) : [h('span', { class: 'mini empty' })]),
-      h('span', { class: 'sec-head__more num' }, '+' + fmt(sec.n + 1)),
+      h('span', { class: 'sec-head__more num' }, '+' + fmt(sec.label ? sec.n : sec.n + 1)),
     ]) : null;
     const tab = h('span', { class: 'sec-head__tab' }, [sec.n ? icon('chev', 'sm') : null, h('span', { class: 'sec-head__name' }, title)]);
-    const cls = ['sec-head', { 'sec-head--fold': !!sec.n, folded, complete: done }];
+    const cls = ['sec-head', { 'sec-head--fold': !!sec.n, 'sec-head--label': !!sec.label, folded, complete: done }];
     if (!sec.n) return h('div', { class: cls, key: 'sec:' + s.key }, [h('h3', { class: 'sec-head__h' }, tab), h('span', { class: 'sec-head__meta' }, meta)]);
     const what = `la section « ${title} » (${cards$(sec.n)})`;
     return h('div', { class: cls, key: 'sec:' + s.key }, [
@@ -7982,7 +8070,7 @@
     let problems = 0;
     let estimated = 0;
     for (const it of col.items) {
-      if (findCard(it)) continue;
+      if (isLabel(it) || findCard(it)) continue;
       if (it.status !== 'ok') { problems++; continue; }
       const real = realRarity(it);
       if (real) { missG[real] = (missG[real] || 0) + 1; continue; }
@@ -8191,7 +8279,13 @@
         h('p', { class: 'hint reorder-help', id: 'reorder-help' }, [
           'Glisse une carte à sa place (au doigt, par sa poignée ', icon('grip', 'sm'), sr('poignée'), '), ou utilise ← et →. ',
           'Choisis une carte pour la mettre en tête, à la fin ou à une position (barre du bas). ',
-          'Un intercalaire garde son rôle : il ouvre toujours une nouvelle ligne. Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
+          'Un intercalaire garde son rôle : il ouvre toujours une nouvelle ligne. Un intercalaire libre (un nom, sans carte) s\'ajoute ci-dessous, avant la carte choisie. Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
+        ]),
+        h('form', { class: 'reorder-add', onSubmit: (e) => { e.preventDefault(); addLabel(); } }, [
+          h('label', { class: 'sr', for: 'reorder-label' }, "Nom de l'intercalaire libre"),
+          h('input', { id: 'reorder-label', class: 'field', value: r.label, maxlength: LABEL_MAX, autocomplete: 'off', placeholder: "Nom de l'intercalaire (Europe, Années 80…)",
+            onInput: (e) => { r.label = e.target.value; } }),
+          h('button', { class: 'btn small', type: 'submit', disabled: r.busy || !labelName(r.label) }, [icon('plus', 'sm'), 'Ajouter un intercalaire']),
         ]),
       ]),
       h(ReorderGrid),
@@ -8218,6 +8312,13 @@
               onInput: (e) => { r.pos = e.target.value; } }),
             h('button', { class: 'btn small', type: 'submit', disabled: r.busy || !String(r.pos).trim() }, 'Déplacer'),
           ]),
+          isLabel(item) ? h('form', { class: 'reorder-bar__pos reorder-bar__rename', onSubmit: (e) => { e.preventDefault(); renameLabel(k); } }, [
+            h('label', { class: 'sr', for: 'reorder-rename' }, `Nouveau nom de l'intercalaire « ${item.title} »`),
+            h('input', { id: 'reorder-rename', class: 'field', value: r.rename, maxlength: LABEL_MAX, autocomplete: 'off', placeholder: 'Nouveau nom',
+              onInput: (e) => { r.rename = e.target.value; } }),
+            h('button', { class: 'btn small', type: 'submit', disabled: r.busy || !labelName(r.rename) }, 'Renommer'),
+          ]) : null,
+          isLabel(item) ? h('button', { class: 'btn small danger', type: 'button', disabled: r.busy, onClick: () => removeLabel(k) }, 'Retirer') : null,
         ]),
       ]) : h('p', { class: 'reorder-bar__hint small muted' }, 'Choisis une carte pour la mettre en tête, à la fin ou à une position précise.'),
       h('div', { class: 'reorder-bar__end' }, [
@@ -8236,6 +8337,7 @@
   // son initiale.
   function roArt(s) {
     const it = s.item;
+    if (isLabel(it)) return h('span', { class: 'ro-art ro-art--label', 'aria-hidden': 'true' }, [h('span', { class: 'ro-label' }, it.title)]);
     const img = s.card ? artOf(s.card.title, s.card.image) : artOf(it.title, it.image || s.thumb);
     return h('span', { class: 'ro-art', 'aria-hidden': 'true' }, [
       h('span', { class: 'ro-noart' }, artCover() ? [viewCover(s.card ? s.card.category : it.description, it.title, 'mini')] : initialOf(it.title)),
@@ -8249,11 +8351,12 @@
     const it = s.item;
     const c = s.card;
     const r = c ? okRarity(c.rarity) || 'C' : null;
-    return h('li', { class: ['ro-tile', r ? 'r' + r : 'ro-tile--missing', { sep: !!it.sep, active, lifted }], 'data-k': String(s.k) }, [
+    const label = isLabel(it);
+    return h('li', { class: ['ro-tile', r ? 'r' + r : label ? 'ro-tile--label' : 'ro-tile--missing', { sep: !!it.sep, active, lifted }], 'data-k': String(s.k) }, [
       roArt(s),
       h('span', { class: 'ro-no' }, fmt(n)),
       h('span', { class: 'ro-grip', title: 'Glisser pour déplacer', 'aria-hidden': 'true' }, [icon('grip')]),
-      h('span', { class: 'ro-title' }, [it.title, it.sep ? sr(', intercalaire') : null, c ? null : sr(', pas encore dans ta collection')]),
+      h('span', { class: 'ro-title' }, [it.title, label ? sr(', intercalaire libre') : it.sep ? sr(', intercalaire') : null, c || label ? null : sr(', pas encore dans ta collection')]),
       h('span', { class: 'ro-moves' }, [
         h('button', { class: 'ro-move', type: 'button', 'data-act': 'prev', title: 'Une place avant', 'aria-label': `« ${it.title} » : une place avant`, 'aria-disabled': n === 1 ? 'true' : null }, '←'),
         h('button', { class: 'ro-move', type: 'button', 'data-act': 'next', title: 'Une place après', 'aria-label': `« ${it.title} » : une place après`, 'aria-disabled': last ? 'true' : null }, '→'),
@@ -11418,7 +11521,7 @@
     // Ses collections qui contiennent cet article : même titre, ou même qid.
     const f = friendList.value.find((x) => x.id === fx.id) || null;
     const k = normTitle(item.title);
-    const theirs = f && f.targets ? f.targets.filter((t) => t.items.some((it) => normTitle(it.title) === k || (!!item.qid && it.qid === item.qid))) : [];
+    const theirs = f && f.targets ? f.targets.filter((t) => t.items.some((it) => !isLabel(it) && (normTitle(it.title) === k || (!!item.qid && it.qid === item.qid)))) : [];
     const progressById = friendTargetsView.value && openFriend.value && openFriend.value.id === fx.id ? friendTargetsView.value.byId : new Map();
     const goMine = (col) => { closeCard(); openAlbum(col.kind, col.id); };
     const goTheirs = (t) => { closeCard(); openFriendAlbum(fx.id, t.id, S.friends.albumFrom); };
@@ -11595,17 +11698,19 @@
   function viewListMode(ed) {
     const filled = ed.text.split('\n').filter((l) => l.trim());
     const lines = filled.length;
-    const seps = filled.filter((l) => SEP_LINE.test(l.trim()) && l.trim().replace(SEP_LINE, '')).length;
+    const labels = filled.filter((l) => LABEL_LINE.test(l.trim()) && l.trim().replace(LABEL_LINE, '')).length;
+    const seps = filled.filter((l) => SEP_LINE.test(l.trim()) && !LABEL_LINE.test(l.trim()) && l.trim().replace(SEP_LINE, '')).length;
     return [
       h('label', { class: 'sr', for: 'ed-name' }, 'Nom de la collection'),
       h('input', { id: 'ed-name', class: 'field full', value: ed.name, maxlength: 120, autocomplete: 'off', placeholder: "Nom, par exemple Dieux de l'Olympe",
         onInput: (e) => { ed.name = e.target.value; } }),
       ed.id ? h('p', { class: 'note' }, 'Un article Wikipédia par ligne : son titre exact (« Zeus ») ou son adresse fr.wikipedia.org. Chaque article est vérifié sur Wikipédia.') : null,
-      h('p', { class: 'note', id: 'ed-sep-help' }, "Intercalaire : « # » en début de ligne (« # Sous-continent ») ; cette carte ouvre alors une section de l'album, avec un bord à part. Elle se possède et compte comme les autres."),
+      h('p', { class: 'note', id: 'ed-sep-help' }, ["Intercalaire : « # » en début de ligne (« # Sous-continent ») ; cette carte ouvre alors une section de l'album, avec un bord à part. Elle se possède et compte comme les autres. ",
+        "Intercalaire libre : « ## » et un nom (« ## Europe ») ; il ouvre une section sans être une carte (rien à posséder, rien à vérifier)."]),
       h('label', { class: 'sr', for: 'ed-text' }, 'Articles, un par ligne'),
       h('textarea', { id: 'ed-text', class: 'field full', rows: 12, value: ed.text, spellcheck: 'false', 'aria-describedby': 'ed-sep-help',
         placeholder: 'Zeus\nHéra\nhttps://fr.wikipedia.org/wiki/Poséidon', onInput: (e) => { ed.text = e.target.value; ed.issues = null; } }),
-      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')}${seps ? ` · ${fmt(seps)} ${plural(seps, 'intercalaire', 'intercalaires')}` : ''}`),
+      h('p', { class: 'note' }, `${fmt(lines)} ${plural(lines, 'ligne', 'lignes')}${seps ? ` · ${fmt(seps)} ${plural(seps, 'intercalaire', 'intercalaires')}` : ''}${labels ? ` · ${fmt(labels)} ${plural(labels, 'intercalaire libre', 'intercalaires libres')}` : ''}`),
       ed.progress ? h('p', { class: 'progress-msg', role: 'status' }, ed.progress) : null,
       ed.issues ? h('div', { class: 'panel' }, [
         h('p', { class: 'warn' }, `${fmt(ed.issues.length)} ${plural(ed.issues.length, 'article pose', 'articles posent')} problème :`),
@@ -12695,7 +12800,7 @@
           h('ol', { class: ['ro-grid', { dragging: r.drag != null }], 'aria-label': `Ordre de « ${r.name} »`, 'aria-describedby': 'reorder-help',
             onPointerdown: roPointerDown, onClick: roClick, onFocusin: roFocusIn, onDragstart: (e) => e.preventDefault() }, kids),
           h('div', { class: 'ro-mark', 'aria-hidden': 'true' }),
-          g ? h('div', { class: ['ro-ghost', g.card ? 'r' + (okRarity(g.card.rarity) || 'C') : 'ro-ghost--missing'], 'aria-hidden': 'true',
+          g ? h('div', { class: ['ro-ghost', g.card ? 'r' + (okRarity(g.card.rarity) || 'C') : isLabel(g.item) ? 'ro-ghost--label' : 'ro-ghost--missing'], 'aria-hidden': 'true',
             style: roDrag ? { '--gx': roDrag.x + 'px', '--gy': roDrag.y + 'px' } : null },
             [roArt(g), h('span', null, g.item.title)]) : null,
         ]);

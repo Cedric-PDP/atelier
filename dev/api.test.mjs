@@ -896,6 +896,21 @@ await test('collections à compléter : save, mise à jour, limites, liste, supp
   r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'seps', name: 'Continents', items: seps.items.map(({ sep, ...it }) => it) } });
   assert.ok(r.json.target.items.every((x) => !('sep' in x)));
   await call('POST', 'targets/delete', { key: alice.key, body: { id: 'seps' } });
+  // Intercalaire libre (status label) : un nom qui ouvre une section, jamais une carte : toujours sep: true, sans
+  // description, image, qid ni rareté.
+  r = await call('POST', 'targets/save', { key: alice.key, body: { id: 'labels', name: 'Par continent', items: [
+    { title: '  Europe  ', status: 'label', description: 'à oublier', image: 'https://example.org/x.jpg', qid: 'Q46', rarity: 'R', sep: false },
+    { title: 'France', status: 'ok' },
+    { title: 'France', status: 'label' },
+  ] } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual(r.json.target.items, [
+    { title: 'Europe', description: null, image: null, status: 'label', sep: true },
+    { title: 'France', description: null, image: null, status: 'ok' },
+    { title: 'France', description: null, image: null, status: 'label', sep: true },
+  ]);
+  assert.equal((await call('POST', 'targets/save', { key: alice.key, body: { name: 'Vide', items: [{ title: ' ', status: 'label' }] } })).status, 400);
+  await call('POST', 'targets/delete', { key: alice.key, body: { id: 'labels' } });
   await new Promise((res) => setTimeout(res, 5));
   r = await call('POST', 'targets/save', { key: alice.key, body: { id: t.id, name: 'Chanteuses 2', items: items.slice(0, 1) } });
   assert.equal(r.json.target.id, t.id);
@@ -2406,7 +2421,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
     { title: 'Mercure (homonymie)', status: 'disambiguation' },
     { title: 'Article-introuvable', status: 'missing', sep: true },
   ] })).json.target;
-  const cat = (await save(ben, { name: 'Dieux grecs', source: 'catalog:dieux-grecs', items: [{ title: 'Zeus', qid: 'Q34201', status: 'ok', sep: true }, { title: 'Héra', status: 'ok' }] })).json.target;
+  const cat = (await save(ben, { name: 'Dieux grecs', source: 'catalog:dieux-grecs', items: [{ title: 'Zeus', qid: 'Q34201', status: 'ok', sep: true }, { title: 'Héra', status: 'ok' }, { title: 'Titans', status: 'label' }] })).json.target;
   await patch(ben, { prefs: { note: 'préférence-secrète' } });
 
   // Partage activé par défaut depuis 2026-10-16 (cartes et collections) : ce test part de comptes qui l'ont coupé.
@@ -2456,7 +2471,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.deepEqual([r.json.member, r.json.part, r.json.next_part], [{ id: benPub, name: 'Ben' }, '0', null]);
   const expected = [
     { id: planets.id, name: 'Planètes', kind: 'category', items: [{ title: 'Mars (planète)', qid: 'Q111' }, { title: 'Vénus (planète)', sep: true }] },
-    { id: cat.id, name: 'Dieux grecs', kind: 'collection', items: [{ title: 'Zeus', qid: 'Q34201', sep: true }, { title: 'Héra' }] },
+    { id: cat.id, name: 'Dieux grecs', kind: 'collection', items: [{ title: 'Zeus', qid: 'Q34201', sep: true }, { title: 'Héra' }, { title: 'Titans', sep: true, label: true }] },
   ].sort((a, b) => (a.id < b.id ? -1 : 1));
   assert.deepEqual(r.json.targets, expected);
   assert.deepEqual((await targetsOf(ana, benPub)).json, r.json, 'sans part : la première page');

@@ -538,7 +538,7 @@
 
     // item : {title, qid?} ou un titre. D'abord le titre, puis le qid de l'item (ou, à défaut, celui de son titre).
     function findCard(item) {
-      if (!item) return null;
+      if (!item || item.status === 'label') return null; // intercalaire libre : jamais une carte
       const title = typeof item === 'string' ? item : item.title;
       const k = normTitle(title);
       const c = byTitle.get(k);
@@ -555,7 +555,7 @@
       const out = new Map();
       let need = !!(opts && opts.allCards);
       for (const it of items || []) {
-        if (!it || findCard(it)) continue;
+        if (!it || it.status === 'label' || findCard(it)) continue;
         need = true;
         if (typeof it === 'object' && isQid(it.qid)) continue;
         const title = typeof it === 'string' ? it : it.title;

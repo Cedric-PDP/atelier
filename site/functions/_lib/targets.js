@@ -15,7 +15,8 @@ const MAX_PART_BYTES = 600 * 1024;
 const MAX_UPLOADS = 3; // collections envoyées en morceaux en même temps, par compte (au-delà : les plus anciennes partent)
 const MAX_TOTAL_BYTES = 5 * 1024 * 1024; // toutes les collections d'un compte
 const MAX_SKIP_DELTA = 20000; // titres d'un auto_skip.add ou .del (n'en restent que MAX_SKIP)
-const STATUSES = new Set(['ok', 'missing', 'disambiguation']);
+// 'label' : intercalaire libre (2026-10-28), une section de l'album qui n'est pas une carte (voir cleanItem).
+const STATUSES = new Set(['ok', 'missing', 'disambiguation', 'label']);
 const QID = /^Q[1-9][0-9]{0,11}$/;
 // Rareté d'une carte dans le jeu (élément d'une collection créée depuis une recherche du jeu).
 const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
@@ -64,8 +65,12 @@ function cleanItem(item, i) {
   }
   const status = item.status ?? 'ok';
   if (!STATUSES.has(status)) {
-    throw new HttpError(400, `Élément n° ${i + 1} : statut inconnu (ok, missing ou disambiguation).`);
+    throw new HttpError(400, `Élément n° ${i + 1} : statut inconnu (ok, missing, disambiguation ou label).`);
   }
+  // Intercalaire libre (2026-10-28, demande de l'utilisateur : « déclarer un regroupement sans que ce soit lié à une
+  // carte ») : seulement un nom qui ouvre une section, jamais une carte (ni description, image, qid ni rareté ; toujours
+  // `sep: true`). Les lectures du serveur qui ne prennent que les éléments `ok` (souhaits, cartes manquantes) l'ignorent.
+  if (status === 'label') return { title, description: null, image: null, status, sep: true };
   const description = typeof item.description === 'string' ? cut(cleanText(item.description), 500) || null : null;
   const image = typeof item.image === 'string' && item.image.length <= 1000 && /^https?:\/\//i.test(item.image)
     ? item.image

@@ -619,6 +619,15 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .reorder-bar__pos { display: inline-flex; gap: 6px; align-items: center; }
 .reorder-bar__pos .field { width: 5.2em; padding: 5px 8px; font-size: 13px; }
 .reorder-bar .btn[aria-disabled="true"] { opacity: 0.5; }
+.reorder-bar__rename .field { width: 11em; }
+/* Intercalaire libre (un nom, sans carte) : « Ajouter un intercalaire » sous l'aide ; sa vignette est un onglet gris
+   portant son nom, sans image ni numéro de case. */
+.reorder-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.reorder-add .field { flex: 0 1 22rem; min-width: 0; padding: 6px 10px; font-size: 14px; }
+.ro-tile--label { border-color: var(--sep); background: color-mix(in srgb, var(--sep) 16%, var(--surface)); }
+.ro-art--label, .ro-ghost--label .ro-art--label { display: grid; place-items: center; padding: 8px; background: var(--sep); }
+.ro-label { font: 600 13px/1.2 var(--f-head); color: var(--ink); text-align: center; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.ro-ghost--label { border-color: var(--sep); }
 .reorder-bar__state { flex: 1 1 auto; color: var(--muted); }
 /* « Réorganiser » de « Mes collections » : une ligne compacte par collection, repère d'insertion horizontal. */
 .co-wrap { position: relative; }
