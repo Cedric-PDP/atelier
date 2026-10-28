@@ -2758,6 +2758,24 @@ async function main() {
     byId('set-art-cover').dispatch('change');
     await settle(SERVER ? 300 : 60);
     check(!byId('set-art-cover').checked && !cls('cover').length && (SERVER || api.st.prefs.art_cover === false), 'couverture non décochée');
+    // Style des cartes : « Classique » par défaut (rendu d'origine) ; un autre style pose cs cs--<style> et le visage .cf
+    // sur toutes les cartes, et l'on revient au rendu d'origine en rechoisissant Classique.
+    check(byId('set-card-style-classique') && byId('set-card-style-classique').checked && cls('cstyle__opt').length === 5, '« Style des cartes » absent ou pas sur Classique par défaut');
+    byId('set-card-style-neon').checked = true;
+    byId('set-card-style-neon').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    check(SERVER || api.st.prefs.card_style === 'neon', 'style des cartes non enregistré : ' + JSON.stringify(SERVER ? {} : api.st.prefs));
+    await goTab('cartes');
+    await settle(60);
+    check(cls('cs--neon').length === nCards && cls('cf').length === nCards && !cls('card__body').length, 'style Néon chrome non appliqué : ' + cls('cs--neon').length + ' sur ' + nCards);
+    await goTab('reglages');
+    byId('set-card-style-classique').checked = true;
+    byId('set-card-style-classique').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    await goTab('cartes');
+    await settle(60);
+    check(!cls('cs').length && cls('card__body').length === nCards, 'retour au style Classique raté');
+    await goTab('reglages');
   }
   check(has("Un lien ouvert reste dans l'historique du navigateur"), "l'avertissement sur l'historique manque");
   needButton('Changer ma clé').click();

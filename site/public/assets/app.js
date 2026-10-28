@@ -6993,21 +6993,115 @@
   const noArt = (c, img) => h('div', { class: 'card__noart' },
     artCover() ? (img ? [] : [viewCover(c.category, c.title, 'card')]) : [h('span', null, initialOf(c.title))]);
 
+  // ---------------------------------------------------------------- style des cartes (Réglages, prefs.card_style)
+  // « classique » (par défaut) = le rendu d'origine, inchangé ; les quatre autres posent un visage .cf (conteneur des
+  // unités cqw, qui suivent la taille de la carte) dans la carte et la classe cs cs--<style>. Leur finition monte avec la
+  // rareté (app.css, « styles de carte »). L'inclinaison et le reflet suivent la souris (tiltCards, plus bas).
+  const CARD_STYLES = [
+    { id: 'classique', name: 'Classique', what: 'Le rendu d\'origine : image en haut, texte sur la couleur de la rareté.' },
+    { id: 'plein', name: 'Holo plein cadre', what: 'L\'illustration prend toute la carte, cadre métal de plus en plus brillant avec la rareté.' },
+    { id: 'tcg', name: 'Cadre TCG', what: 'Carte de jeu à cases : bandeau du nom, fenêtre d\'illustration, ligne de type, statistiques en blocs.' },
+    { id: 'musee', name: 'Musée', what: 'Plein cadre façon œuvre exposée : cartel crème, titre en sérif, sceau de rareté.' },
+    { id: 'neon', name: 'Néon chrome', what: 'Cadre chromé, liseré néon ; Communes et Peu communes en bichromie, couleurs pleines dès Rare.' },
+  ];
+  const cardStyle = () => (CARD_STYLES.some((s) => s.id === S.prefs.card_style) ? S.prefs.card_style : 'classique');
+  const csClass = (st) => (st === 'classique' ? null : ['cs', 'cs--' + st]);
+  // Carte des aperçus des Réglages : ta plus rare qui a une image (à rareté égale, la plus forte), sinon un exemple.
+  const styleSample = computed(() => {
+    let best = null, bestKey = -1;
+    for (const c of cards.value) {
+      if (!c.image) continue;
+      const key = RAR_UP.indexOf(okRarity(c.rarity) || 'C') * 1e6 + Math.min(999999, (c.atk || 0) + (c.def || 0));
+      if (key > bestKey) { best = c; bestKey = key; }
+    }
+    return best || { id: 'exemple', title: 'La Joconde', category: 'peinture de Léonard de Vinci', rarity: 'L', atk: 9640, def: 9410, image: null, count: 1 };
+  });
+  // Visage d'une carte d'un des quatre styles. o : big (fiche), star (étoile du jeu montrée), isNew, have (carte d'un
+  // ami : true / false ; undefined sinon), countTitle. Les statistiques manquent sur les cartes d'un ami.
+  function csFace(st, c, r, img, o) {
+    const art = h('div', { class: 'cf__art' }, [
+      noArt(c, img),
+      img ? h('img', { src: img, alt: '', loading: o.big ? null : 'lazy', decoding: 'async', onError: hideBroken }) : null,
+    ]);
+    const holoArt = h('div', { class: 'cf__holo cf__holo--art' });
+    const gem = h('span', { class: 'cf__gem', 'aria-hidden': 'true' }, st === 'neon' ? RARITY_NAME[r] : r);
+    const star = o.star && c.starred ? h('svg', { class: 'cf__star', viewBox: '0 0 24 24', role: 'img', 'aria-label': 'Favorite dans le jeu' }, [h('use', { href: '#i-star' })]) : null;
+    const count = c.count > 1 ? h('span', { class: 'cf__count', title: o.countTitle }, '×' + fmt(c.count)) : null;
+    const flag = o.have != null ? h('span', { class: ['cf__flag', { have: o.have }] }, o.have ? "Tu l'as" : 'Te manque')
+      : o.isNew ? h('span', { class: 'cf__flag' }, 'Nouvelle') : null;
+    const title = h(o.big ? 'p' : 'h3', { class: 'cf__title' }, c.title);
+    const cat = c.category ? h('p', { class: 'cf__cat' }, c.category) : null;
+    const stat = (k, name, v) => h('span', { class: ['cf__stat', k], title: name }, [icon(k === 'atk' ? 'swords' : 'shield'),
+      h('small', { 'aria-hidden': 'true' }, k === 'atk' ? 'ATK' : 'DEF'), sr(name + ' '), h('b', null, fmt(v))]);
+    const stats = c.atk != null || c.def != null ? h('div', { class: 'cf__stats' }, [stat('atk', 'Attaque', c.atk || 0), stat('def', 'Défense', c.def || 0)]) : null;
+    const glare = h('div', { class: 'cf__glare' });
+    const badges = [star, count, flag];
+    if (st === 'tcg') {
+      return [h('div', { class: 'cf__holo cf__holo--card' }), h('div', { class: 'cf__face' }, [
+        h('div', { class: 'cf__name' }, [title, gem]),
+        h('div', { class: 'cf__window' }, [art, holoArt, ...badges]),
+        cat ? h('p', { class: 'cf__type' }, c.category) : null,
+        stats,
+      ]), glare];
+    }
+    if (st === 'musee') return [art, holoArt, h('div', { class: 'cf__edge' }), gem, ...badges, h('div', { class: 'cf__label' }, [title, cat, stats]), glare];
+    const info = h('div', { class: 'cf__info' }, [title, cat, stats]);
+    if (st === 'neon') return [art, h('div', { class: 'cf__tint' }), holoArt, h('div', { class: 'cf__scrim' }), h('div', { class: 'cf__neon' }), h('div', { class: 'cf__chrome' }), gem, ...badges, info, glare];
+    return [art, holoArt, h('div', { class: 'cf__scrim' }), h('div', { class: 'cf__frame' }, [h('div', { class: 'cf__holo' })]), gem, ...badges, info, glare];
+  }
+  // Inclinaison et reflet à la souris (pas au doigt) : variables --mx, --my (position du pointeur), --rx, --ry (angles),
+  // --o (reflet allumé), posées par le CSSOM sur la carte survolée et retirées quand elle n'est plus sous le pointeur.
+  let tiltEl = null;
+  const still = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function tiltOff() {
+    if (!tiltEl) return;
+    for (const p of ['--mx', '--my', '--o', '--rx', '--ry']) tiltEl.style.removeProperty(p);
+    tiltEl = null;
+  }
+  document.addEventListener('pointermove', (e) => {
+    const el = e.pointerType === 'mouse' && e.target && e.target.closest ? e.target.closest('.card.cs') : null;
+    if (el !== tiltEl) tiltOff();
+    if (!el) return;
+    tiltEl = el;
+    const b = el.getBoundingClientRect();
+    const x = Math.min(1, Math.max(0, (e.clientX - b.left) / b.width)), y = Math.min(1, Math.max(0, (e.clientY - b.top) / b.height));
+    el.style.setProperty('--mx', (x * 100).toFixed(1) + '%');
+    el.style.setProperty('--my', (y * 100).toFixed(1) + '%');
+    el.style.setProperty('--o', '1');
+    if (!still && !el.classList.contains('card--friend')) {
+      el.style.setProperty('--rx', ((0.5 - y) * 14).toFixed(2) + 'deg');
+      el.style.setProperty('--ry', ((x - 0.5) * 18).toFixed(2) + 'deg');
+    }
+  }, { passive: true });
+  document.addEventListener('pointerout', (e) => { if (!e.relatedTarget) tiltOff(); }, { passive: true });
+
   // ---------------------------------------------------------------- la carte de jeu (5:7)
-  function viewCard(c, big, sep) {
+  // look : style imposé (aperçus des Réglages, carte inerte) ; sinon celui des Réglages.
+  function viewCard(c, big, sep, look) {
     const r = okRarity(c.rarity) || 'C';
     const img = artOf(c.title, c.image);
+    const st = look || cardStyle();
+    const inert = big || !!look;
     const open = (e) => {
-      if (big) return;
+      if (inert) return;
       if (e.shiftKey || e.ctrlKey || e.metaKey) { toggleSelect(c.id, e); return; }
       openCardFrom(c.id, e);
     };
+    if (st !== 'classique') {
+      return h('article', {
+        class: ['card', csClass(st), 'r' + r, { shiny: c.shiny, big }],
+        role: inert ? null : 'button', tabindex: inert ? null : '0', 'aria-hidden': look ? 'true' : null,
+        'aria-label': look ? null : `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${sep ? ', intercalaire' : ''}${big ? '' : ' : ouvrir la fiche'}`,
+        onClick: open,
+        onKeydown: inert ? null : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardFrom(c.id, e); } },
+      }, [h('div', { class: 'cf' }, csFace(st, c, r, img, { big, star: true, isNew: !inert && newIdSet.value.has(c.id), countTitle: `${fmt(c.count)} exemplaires` }))]);
+    }
     return h('article', {
       class: ['card', 'r' + r, { shiny: c.shiny, big }],
-      role: big ? null : 'button', tabindex: big ? null : '0',
-      'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${sep ? ', intercalaire' : ''}${big ? '' : ' : ouvrir la fiche'}`,
+      role: inert ? null : 'button', tabindex: inert ? null : '0', 'aria-hidden': look ? 'true' : null,
+      'aria-label': look ? null : `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${sep ? ', intercalaire' : ''}${big ? '' : ' : ouvrir la fiche'}`,
       onClick: open,
-      onKeydown: big ? null : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardFrom(c.id, e); } },
+      onKeydown: inert ? null : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardFrom(c.id, e); } },
     }, [
       h('div', { class: 'card__art' }, [
         noArt(c, img),
@@ -7016,7 +7110,7 @@
       pill(r),
       c.starred ? h('svg', { class: 'card__star', viewBox: '0 0 24 24', role: 'img', 'aria-label': 'Favorite dans le jeu' }, [h('use', { href: '#i-star' })]) : null,
       c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires` }, '×' + fmt(c.count)) : null,
-      !big && newIdSet.value.has(c.id) ? h('span', { class: 'card__new' }, 'Nouvelle') : null,
+      !inert && newIdSet.value.has(c.id) ? h('span', { class: 'card__new' }, 'Nouvelle') : null,
       h('div', { class: 'card__body' }, [
         h(big ? 'p' : 'h3', { class: 'card__title' }, c.title),
         c.category ? h('p', { class: 'card__desc' }, c.category) : null,
@@ -8442,6 +8536,14 @@
         h('p', { class: 'small muted' }, "Les cotes se lisent quatre fois plus vite (une requête toutes les 250 ms au lieu d'une par seconde) et deux fois plus par passe (60 requêtes au lieu de 30). Le jeu pourrait remarquer ce rythme et limiter, voire sanctionner, ton compte : c'est un essai, à tes risques. Désactivé par défaut."),
         errLine(S.fast.error),
       ]),
+      section('Style des cartes', [
+        h('div', { class: 'cstyle', role: 'radiogroup', 'aria-label': 'Style des cartes' }, CARD_STYLES.map((o) => h('label', { key: o.id, class: ['cstyle__opt', { on: cardStyle() === o.id }] }, [
+          h('input', { type: 'radio', name: 'card-style', id: 'set-card-style-' + o.id, value: o.id, 'aria-label': o.name, checked: cardStyle() === o.id, onChange: () => savePrefs({ card_style: o.id }) }),
+          h('span', { class: 'cstyle__card' }, [viewCard(styleSample.value, false, false, o.id)]),
+          h('span', { class: 'cstyle__name' }, o.name),
+        ]))),
+        h('p', { class: 'small muted' }, CARD_STYLES.find((o) => o.id === cardStyle()).what + ' La finition monte avec la rareté (de mate pour une Commune à dorée et holo pour une Légendaire) ; une carte brillante est holo. À la souris, la carte penche et son reflet suit le pointeur. Gardé avec ton compte, sur tous tes appareils.'),
+      ]),
       section('Illustrations des cartes', [
         h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', id: 'set-art-en', checked: !!S.prefs.art_en, onChange: (e) => savePrefs({ art_en: e.target.checked }) }),
@@ -8685,23 +8787,31 @@
             : "Aucun échange possible pour l'instant : personne n'a de carte qui manque aux collections d'un autre."),
     ]);
   }
+  // Contenu d'une carte d'un ami (« Tu l'as » ou « Te manque ») dans le style des Réglages.
+  function friendCardKids(c, r, have, countTitle) {
+    const img = artOf(c.title, c.image);
+    const st = cardStyle();
+    if (st !== 'classique') return [h('div', { class: 'cf' }, csFace(st, c, r, img, { have, countTitle }))];
+    return [
+      h('div', { class: 'card__art' }, [
+        noArt(c, img),
+        img ? h('img', { src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+      ]),
+      pill(r),
+      c.count > 1 ? h('span', { class: 'card__count', title: countTitle }, '×' + fmt(c.count)) : null,
+      h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
+      h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
+      r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
+    ];
+  }
   // Carte d'un ami (lecture seule) : pas de fiche ni de sélection ; « Te manque » si tu ne l'as pas.
   function viewFriendCard(c) {
     const r = okRarity(c.rarity) || 'C';
     const have = !!findCard(c);
     return h('div', { class: 'cell', key: c.id }, [
-      h('article', { class: ['card', 'card--friend', 'r' + r, { shiny: c.shiny, have }],
-        'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}, ${have ? "tu l'as" : 'te manque'}` }, [
-        h('div', { class: 'card__art' }, [
-          noArt(c, artOf(c.title, c.image)),
-          artOf(c.title, c.image) ? h('img', { src: artOf(c.title, c.image), alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
-        ]),
-        pill(r),
-        c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires` }, '×' + fmt(c.count)) : null,
-        h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
-        h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
-        r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
-      ]),
+      h('article', { class: ['card', 'card--friend', csClass(cardStyle()), 'r' + r, { shiny: c.shiny, have }],
+        'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}, ${have ? "tu l'as" : 'te manque'}` },
+      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires`)),
       c.url ? h('a', { class: 'cell__link', href: c.url, target: '_blank', rel: 'noopener noreferrer' }, 'Wikipédia ↗') : null,
     ]);
   }
@@ -8756,18 +8866,9 @@
     const label = `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}${sep ? ', intercalaire' : ''} chez ${friendName(f)}, `
       + `${have ? "tu l'as" : want ? 'manque à ' + colsText(want, ', ') : 'te manque'} : ouvrir la fiche`;
     return h('div', { class: ['cell', { pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === s.item.title, sep }], key: s.key }, [
-      sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
-        onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } }, [
-        h('div', { class: 'card__art' }, [
-          noArt(c, artOf(c.title, c.image)),
-          artOf(c.title, c.image) ? h('img', { src: artOf(c.title, c.image), alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
-        ]),
-        pill(r),
-        c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires chez ${friendName(f)}` }, '×' + fmt(c.count)) : null,
-        h('span', { class: ['card__mark', { have }] }, have ? "Tu l'as" : 'Te manque'),
-        h('div', { class: 'card__body' }, [h('h3', { class: 'card__title' }, c.title)]),
-        r === 'L' ? h('div', { class: 'card__sheen', 'aria-hidden': 'true' }) : null,
-      ]), sep),
+      sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', csClass(cardStyle()), 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
+        onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } },
+      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires chez ${friendName(f)}`)), sep),
       want ? h('p', { class: 'cell__want', title: 'Manque à : ' + colsText(want, ', ') }, ['→ ', colsText(want, ' · ')]) : null,
     ]);
   }

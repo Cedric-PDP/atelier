@@ -35,6 +35,7 @@
   --def: #193cb8;
   --f-head: "Outfit", "Segoe UI", system-ui, sans-serif;
   --f-body: "Inter", "Segoe UI", system-ui, sans-serif;
+  --f-serif: "Fraunces", Georgia, serif; /* style de carte « Musée » */
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   color-scheme: dark;
 }
@@ -301,6 +302,168 @@ main.wrap { padding-block: 26px 110px; }
 .card.big .card__body { padding: 16px 16px 14px; }
 .card.big .pill { font-size: 13px; padding: 3px 10px; left: 12px; top: 12px; }
 .card.big .card__star { width: 22px; height: 22px; right: 12px; top: 11px; }
+
+/* ------------------------------------------------------------------ styles de carte (Réglages, prefs.card_style)
+   Classique = les règles ci-dessus, seules. Les quatre autres (.cs.cs--plein, --tcg, --musee, --neon) posent un visage
+   .cf, conteneur des unités cqw : tout suit la largeur de la carte, de la grille à la fiche. Finition par rareté :
+   C mate, PC argent, R cadre holo, SR illustration holo, UR holo et cadre orange, L or et reflet qui dérive seul ;
+   brillante = holo partout. --mx, --my, --rx, --ry, --o sont posés par le script au survol de la souris. */
+@property --mx { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
+@property --my { syntax: "<percentage>"; inherits: true; initial-value: 50%; }
+.card.cs { --rx: 0deg; --ry: 0deg; --o: 0; background: #000; color: #fff; transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.6s var(--ease), box-shadow 0.3s, opacity 0.3s; }
+.card.cs:hover, .card.cs:focus-visible, .card.cs.big:hover { transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.08s linear, box-shadow 0.3s, opacity 0.3s; }
+.card.cs.shiny, .card.cs.shiny::after { box-shadow: 0 14px 30px -14px var(--shadow); }
+.card.cs.shiny::after { display: none; }
+.cell.selected .card.cs { box-shadow: 0 0 0 3px var(--accent), 0 14px 30px -14px var(--shadow); }
+.cf { position: absolute; inset: 0; container-type: inline-size; border-radius: inherit; overflow: hidden; }
+.cf__art { position: absolute; inset: 0; overflow: hidden; background: rgba(0, 0, 0, 0.2); }
+.cf__art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+.cf__art img.broken { display: none; }
+.cf .ic { width: 1em; height: 1em; stroke-width: 2; }
+.cf__holo { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; mix-blend-mode: color-dodge; opacity: calc(0.16 + var(--o) * 0.42); transition: opacity 0.4s;
+  background-image:
+    repeating-linear-gradient(112deg, #ff7773 0%, #ffed5f 6%, #a8ff5f 12%, #83fff7 18%, #7894ff 24%, #d875ff 30%, #ff7773 36%),
+    repeating-linear-gradient(28deg, rgba(0, 0, 0, 0.5) 0 2px, transparent 2px 5px);
+  background-size: 320% 320%, 100% 100%; background-position: var(--mx) var(--my), 0 0; filter: brightness(0.75) contrast(1.35) saturate(1.2); }
+.cf__glare { position: absolute; inset: 0; z-index: 30; pointer-events: none; border-radius: inherit; mix-blend-mode: overlay; opacity: var(--o); transition: opacity 0.4s;
+  background: radial-gradient(farthest-corner circle at var(--mx) var(--my), rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.15) 30%, rgba(0, 0, 0, 0.35) 90%); }
+.card.cs.rC .cf__holo, .card.cs.rPC .cf__holo, .card.cs.rR .cf__holo--art { display: none; }
+.card.cs.shiny .cf__holo { display: block; }
+@media (prefers-reduced-motion: no-preference) {
+  .card.cs.rL:not(:hover) { animation: cs-drift 7s ease-in-out infinite alternate; }
+  .card.cs.rL:not(:hover) .cf__holo { opacity: 0.3; }
+}
+@keyframes cs-drift { 0% { --mx: 10%; --my: 20%; } 50% { --mx: 70%; --my: 40%; } 100% { --mx: 95%; --my: 85%; } }
+/* étiquettes communes : étoile du jeu (en haut à droite, sous la case de sélection), exemplaires, « Nouvelle » / « Tu l'as » */
+.cf__star { position: absolute; z-index: 12; right: 5cqw; top: 5cqw; width: 10cqw; height: 10cqw; color: #ffe144; filter: drop-shadow(0 0.5px 2px rgba(0, 0, 0, 0.7)); }
+.cf__count { position: absolute; z-index: 12; right: 5cqw; top: 17cqw; font: 700 5.6cqw/1 var(--f-body); color: #fff; background: rgba(0, 0, 0, 0.6); padding: 1.6cqw 3.2cqw; border-radius: 99px; }
+.cf__flag { position: absolute; z-index: 12; left: 5cqw; top: 18cqw; font: 700 5.6cqw/1 var(--f-body); color: var(--accent-fg); background: var(--accent); padding: 1.6cqw 3.4cqw; border-radius: 99px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+.cf__flag.have { color: #fff; background: rgba(0, 0, 0, 0.6); box-shadow: none; }
+.cf__title { margin: 0; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cf__cat { margin: 0; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.cf__stats { display: flex; font-variant-numeric: tabular-nums; }
+.cf__stat { display: inline-flex; align-items: center; }
+.cf__stat small { font-weight: 700; letter-spacing: 0.1em; }
+
+/* Holo plein cadre : l'illustration prend toute la carte, texte sur un dégradé sombre, cadre métal de la rareté */
+.card.cs--plein { border-radius: 14px; box-shadow: 0 18px 34px -16px var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.05); }
+.card.cs--plein:hover { box-shadow: 0 26px 44px -18px var(--shadow), 0 0 26px -4px color-mix(in srgb, var(--rc) 55%, transparent); }
+.card.cs--plein.big { border-radius: 20px; }
+.cs--plein .cf__holo--art { z-index: 1; }
+.cs--plein .cf__scrim { position: absolute; inset: 0; z-index: 2; background: linear-gradient(to top, rgba(4, 5, 5, 0.96) 0%, rgba(4, 5, 5, 0.78) 22%, rgba(4, 5, 5, 0.15) 46%, transparent 58%), linear-gradient(to bottom, rgba(0, 0, 0, 0.45), transparent 22%); }
+.cs--plein .cf__frame { position: absolute; inset: 0; z-index: 6; border-radius: inherit; padding: 2.4cqw; pointer-events: none; background: var(--frame);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.cs--plein .cf__frame .cf__holo { border-radius: 0; opacity: calc(0.5 + var(--o) * 0.5); }
+.cs--plein.rC { --frame: linear-gradient(160deg, #3b423f, #1c201e); }
+.cs--plein.rPC { --frame: linear-gradient(155deg, #f3f6fb 0%, #9aa6b8 30%, #e8edf5 52%, #6c778a 78%, #d6dde8 100%); }
+.cs--plein.rR, .cs--plein.rSR { --frame: linear-gradient(155deg, color-mix(in srgb, var(--rc) 25%, #fff) 0%, var(--rc) 30%, var(--deep) 60%, var(--rc) 85%, color-mix(in srgb, var(--rc) 25%, #fff) 100%); }
+.cs--plein.rUR { --frame: linear-gradient(155deg, #fff1db 0%, #fa9931 25%, #8a4207 50%, #ffc06b 75%, #fff1db 100%); }
+.cs--plein.rL { --frame: linear-gradient(155deg, #fffbe2 0%, #e9c15a 18%, #8a6410 38%, #fff4cc 52%, #b8891c 70%, #fff4cc 100%); }
+.cs--plein .cf__gem { position: absolute; z-index: 8; left: 5cqw; top: 5cqw; height: 11cqw; padding: 0 3.6cqw; display: grid; place-items: center; font: 800 5.4cqw/1 var(--f-head); color: #111;
+  clip-path: polygon(14% 0, 86% 0, 100% 50%, 86% 100%, 14% 100%, 0 50%); background: linear-gradient(135deg, color-mix(in srgb, var(--rc) 25%, #fff), var(--rc) 45%, color-mix(in srgb, var(--rc) 60%, var(--deep))); }
+.cs--plein .cf__info { position: absolute; z-index: 8; left: 0; right: 0; bottom: 0; padding: 0 6.5cqw 6.5cqw; }
+.cs--plein .cf__title { font: 800 9.6cqw/1.04 var(--f-head); letter-spacing: -0.015em; color: #fff; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8); text-wrap: balance; }
+.cs--plein .cf__cat { margin-top: 1.6cqw; font: 600 4.6cqw/1.25 var(--f-body); letter-spacing: 0.06em; text-transform: uppercase; color: color-mix(in srgb, var(--rc) 75%, #fff); }
+.cs--plein .cf__stats { margin-top: 4cqw; gap: 2.6cqw; }
+.cs--plein .cf__stat { flex: 1; justify-content: center; gap: 1.8cqw; padding: 2cqw 0; border-radius: 99px; font: 700 5.8cqw/1 var(--f-body); color: #fff; background: rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14); }
+.cs--plein .cf__stat small { display: none; }
+.cs--plein .cf__stat.atk .ic { color: #ff6b6b; }
+.cs--plein .cf__stat.def .ic { color: #6ea8ff; }
+
+/* Cadre TCG : bordure métal de la rareté, bandeau du nom, fenêtre d'illustration, ligne de type, statistiques en blocs */
+.card.cs--tcg { border-radius: 12px; box-shadow: 0 18px 34px -16px var(--shadow);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--rc) 25%, #fff) 0%, var(--rc) 22%, color-mix(in srgb, var(--rc) 55%, var(--deep)) 55%, var(--rc) 80%, color-mix(in srgb, var(--rc) 25%, #fff) 100%); }
+.card.cs--tcg.rC { background: linear-gradient(150deg, #e9eeeb 0%, #aeb8b3 22%, #6d7772 55%, #aeb8b3 80%, #e9eeeb 100%); }
+.card.cs--tcg.rL { background: linear-gradient(150deg, #fff7d1 0%, #e9c15a 18%, #8a6410 40%, #fff4cc 55%, #b8891c 75%, #fff4cc 100%); }
+.card.cs--tcg:hover { box-shadow: 0 26px 44px -18px var(--shadow), 0 0 24px -6px var(--rc); }
+.card.cs--tcg.big { border-radius: 18px; }
+.cs--tcg .cf { padding: 3%; } /* en % : la largeur de la carte (un conteneur ne peut pas se mesurer en cqw) */
+.cs--tcg .cf__holo--card { z-index: 0; }
+.cs--tcg.rR .cf__holo--card, .cs--tcg.rSR .cf__holo--card, .cs--tcg.rUR .cf__holo--card, .cs--tcg.rL .cf__holo--card { opacity: calc(0.35 + var(--o) * 0.4); }
+.cs--tcg .cf__face { position: relative; z-index: 1; height: 100%; border-radius: 2.6cqw; padding: 2.4cqw; display: flex; flex-direction: column; gap: 2cqw; background: linear-gradient(180deg, #1b1f1e, #0f1211); box-shadow: inset 0 0 0 0.6cqw rgba(0, 0, 0, 0.35); }
+.cs--tcg .cf__name { display: flex; align-items: center; gap: 2cqw; padding: 1.8cqw 2.6cqw; border-radius: 2cqw; color: #15110c; background: linear-gradient(180deg, color-mix(in srgb, var(--rc) 22%, #fff), color-mix(in srgb, var(--rc) 75%, #fff)); box-shadow: inset 0 -0.8cqw 0 rgba(0, 0, 0, 0.12); }
+.cs--tcg.rC .cf__name { background: linear-gradient(180deg, #f4f7f5, #cfd8d3); }
+.cs--tcg .cf__title { flex: 1; min-width: 0; font: 700 6.4cqw/1.15 var(--f-head); display: block; white-space: nowrap; text-overflow: ellipsis; }
+.cs--tcg .cf__gem { flex: none; width: 7.6cqw; height: 7.6cqw; border-radius: 50%; display: grid; place-items: center; font: 800 3.4cqw/1 var(--f-head); color: #fff; background: radial-gradient(circle at 35% 30%, var(--rc), var(--deep)); box-shadow: 0 0 0 0.5cqw rgba(0, 0, 0, 0.25); }
+.cs--tcg .cf__window { position: relative; flex: 1; min-height: 0; border-radius: 1.6cqw; overflow: hidden; background: #000; box-shadow: 0 0 0 0.9cqw color-mix(in srgb, var(--rc) 60%, #000); container-type: inline-size; }
+.cs--tcg .cf__window::after { content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; box-shadow: inset 0 0 0 0.5cqw rgba(255, 255, 255, 0.18), inset 0 -8cqw 10cqw -6cqw rgba(0, 0, 0, 0.6); }
+.cs--tcg .cf__holo--art { z-index: 2; }
+.cs--tcg .cf__star { top: 3cqw; right: 3cqw; }
+.cs--tcg .cf__count { top: auto; bottom: 3cqw; right: 3cqw; }
+.cs--tcg .cf__flag { top: auto; bottom: 3cqw; left: 3cqw; }
+.cs--tcg .cf__type { margin: 0; padding: 1.4cqw 2.6cqw; border-radius: 1.4cqw; font: italic 500 4.4cqw/1.25 var(--f-body); color: #d9dfdc; background: rgba(255, 255, 255, 0.06); box-shadow: inset 0 0 0 0.4cqw color-mix(in srgb, var(--rc) 35%, transparent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cs--tcg .cf__stats { gap: 2cqw; }
+.cs--tcg .cf__stat { flex: 1; justify-content: space-between; padding: 1.6cqw 2.6cqw; border-radius: 1.8cqw; font: 800 6.2cqw/1 var(--f-head); color: #fff; }
+.cs--tcg .cf__stat .ic { display: none; }
+.cs--tcg .cf__stat small { font: 700 3.4cqw/1 var(--f-body); opacity: 0.85; }
+.cs--tcg .cf__stat.atk { background: linear-gradient(180deg, #c3262f, #7a0d14); }
+.cs--tcg .cf__stat.def { background: linear-gradient(180deg, #2f5be0, #142e85); }
+
+/* Musée : plein cadre, liseré fin, cartel crème (titre en sérif), sceau de rareté ; double cadre doré pour une Légendaire */
+.card.cs--musee { border-radius: 10px; box-shadow: 0 18px 34px -16px var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.06); }
+.card.cs--musee:hover { box-shadow: 0 26px 44px -18px var(--shadow), 0 0 22px -6px color-mix(in srgb, var(--rc) 60%, transparent); }
+.card.cs--musee.rL { box-shadow: 0 18px 34px -16px var(--shadow), 0 0 0 4px #c9a13a, 0 0 0 5px #5c4300; }
+.card.cs--musee.big { border-radius: 14px; }
+.cs--musee .cf__art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent 45%); }
+.cs--musee .cf__holo--art { z-index: 2; }
+.cs--musee .cf__edge { position: absolute; inset: 2.8cqw; z-index: 5; border-radius: 1.8cqw; pointer-events: none; box-shadow: inset 0 0 0 0.45cqw rgba(255, 255, 255, 0.55); }
+.cs--musee.rUR .cf__edge { box-shadow: inset 0 0 0 0.6cqw #f2b066; }
+.cs--musee.rL .cf__edge { box-shadow: inset 0 0 0 0.9cqw #e9c15a, inset 0 0 0 1.4cqw rgba(92, 67, 0, 0.6); }
+.cs--musee .cf__gem { position: absolute; z-index: 9; left: 5.5cqw; top: 5.5cqw; width: 14cqw; height: 14cqw; border-radius: 50%; display: grid; place-items: center; font: 600 4.6cqw/1 var(--f-serif); color: var(--deep);
+  background: radial-gradient(circle at 32% 28%, color-mix(in srgb, var(--rc) 25%, #fff) 0, var(--rc) 45%, color-mix(in srgb, var(--rc) 55%, var(--deep)) 100%);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5), inset 0 0 0 0.7cqw rgba(255, 255, 255, 0.35), inset 0 0 0 1.4cqw color-mix(in srgb, var(--deep) 30%, transparent); }
+.cs--musee .cf__flag { top: 22cqw; }
+.cs--musee .cf__label { position: absolute; z-index: 9; left: 5.5cqw; right: 5.5cqw; bottom: 5.5cqw; padding: 3.6cqw 4.2cqw 3.2cqw; border-radius: 1.4cqw; color: #1d1812;
+  background: linear-gradient(180deg, #fbf7ee, #efe7d6); box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7), inset 0 0.7cqw 0 var(--rc); }
+.cs--musee.rC .cf__label { box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7), inset 0 0.7cqw 0 #c9c2b2; }
+.cs--musee .cf__title { font: 600 8cqw/1.08 var(--f-serif); letter-spacing: -0.01em; text-wrap: balance; }
+.cs--musee .cf__cat { margin-top: 1.2cqw; font: italic 500 4.4cqw/1.25 var(--f-serif); color: #6b6253; }
+.cs--musee .cf__stats { margin-top: 2.6cqw; padding-top: 2.2cqw; border-top: 0.35cqw solid rgba(29, 24, 18, 0.18); justify-content: space-between; font: 700 5cqw/1 var(--f-body); }
+.cs--musee .cf__stat { gap: 1.4cqw; }
+.cs--musee .cf__stat .ic { display: none; }
+.cs--musee .cf__stat small { font: 600 3.2cqw/1 var(--f-body); letter-spacing: 0.14em; color: #8a8070; }
+
+/* Néon chrome : cadre chromé, liseré néon ; Communes et Peu communes en bichromie, couleurs pleines dès Rare */
+.card.cs--neon { border-radius: 16px; background: #050507; box-shadow: 0 18px 34px -16px var(--shadow), 0 0 26px -10px color-mix(in srgb, var(--rc) 70%, transparent); }
+.card.cs--neon:hover { box-shadow: 0 26px 44px -18px var(--shadow), 0 0 36px -6px var(--rc); }
+.card.cs--neon.big { border-radius: 22px; }
+.cs--neon.rC .cf__art img, .cs--neon.rPC .cf__art img { filter: grayscale(1) contrast(1.15); }
+.cs--neon .cf__tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(165deg, var(--rc), var(--deep)); mix-blend-mode: color; opacity: 0; }
+.cs--neon.rC .cf__tint, .cs--neon.rPC .cf__tint { opacity: 0.9; }
+.cs--neon.shiny .cf__tint { opacity: 0.35; }
+.cs--neon .cf__holo--art { z-index: 3; }
+.cs--neon .cf__scrim { position: absolute; inset: 0; z-index: 2; background: linear-gradient(to top, #050507 0%, rgba(5, 5, 7, 0.85) 26%, transparent 55%), linear-gradient(to right, rgba(5, 5, 7, 0.6), transparent 30%); }
+.cs--neon .cf__chrome { position: absolute; inset: 0; z-index: 7; border-radius: inherit; padding: 1.8cqw; pointer-events: none;
+  background: linear-gradient(135deg, #fff 0%, #8d939d 18%, #2a2e35 36%, #e3e7ee 52%, #50555f 70%, #fafbfd 86%, #8d939d 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.cs--neon.rL .cf__chrome { background: linear-gradient(135deg, #fffbe2 0%, #e9c15a 18%, #6b4d05 36%, #fff4cc 52%, #a57a12 70%, #fffbe2 86%, #e9c15a 100%); }
+.cs--neon .cf__neon { position: absolute; inset: 1.8cqw; z-index: 6; border-radius: 4.6cqw; pointer-events: none; box-shadow: inset 0 0 0 0.5cqw var(--rc), inset 0 0 5cqw -1cqw var(--rc); }
+.cs--neon .cf__gem { position: absolute; z-index: 8; left: 3.4cqw; top: 6cqw; writing-mode: vertical-rl; transform: rotate(180deg); font: 800 4cqw/1 var(--f-head); letter-spacing: 0.3em; text-transform: uppercase; color: var(--rc); text-shadow: 0 0 8px var(--rc); }
+.cs--neon .cf__flag { left: 10cqw; top: 6cqw; }
+.cs--neon .cf__count { background: none; font: 800 6cqw/1 var(--f-head); text-shadow: 0 0 8px var(--rc); }
+.cs--neon .cf__info { position: absolute; z-index: 8; left: 6cqw; right: 6cqw; bottom: 6cqw; }
+.cs--neon .cf__title { font: 900 9cqw/1 var(--f-head); text-transform: uppercase; letter-spacing: -0.01em; color: #fff; text-shadow: 0 0 14px color-mix(in srgb, var(--rc) 70%, transparent); text-wrap: balance; }
+.cs--neon .cf__cat { margin-top: 1.6cqw; font: 500 4.4cqw/1.25 var(--f-body); color: rgba(255, 255, 255, 0.65); }
+.cs--neon .cf__stats { margin-top: 3.4cqw; justify-content: space-between; align-items: end; }
+.cs--neon .cf__stat { display: grid; gap: 0.6cqw; }
+.cs--neon .cf__stat .ic { display: none; }
+.cs--neon .cf__stat small { font: 700 3.2cqw/1 var(--f-body); letter-spacing: 0.2em; color: rgba(255, 255, 255, 0.6); }
+.cs--neon .cf__stat b { font: 800 10cqw/0.9 var(--f-head); letter-spacing: -0.02em; }
+.cs--neon .cf__stat.atk b { color: #ff5c7a; text-shadow: 0 0 12px rgba(255, 92, 122, 0.6); }
+.cs--neon .cf__stat.def { text-align: right; }
+.cs--neon .cf__stat.def b { color: #5cc8ff; text-shadow: 0 0 12px rgba(92, 200, 255, 0.6); }
+
+/* Réglages : les cinq styles en aperçu, la carte choisie entourée */
+.cstyle { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 14px; margin-bottom: 10px; }
+.cstyle__opt { position: relative; display: grid; gap: 8px; justify-items: center; padding: 10px 8px 8px; border-radius: 14px; border: 1px solid var(--border); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+.cstyle__opt:hover { border-color: var(--muted); }
+.cstyle__opt.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.cstyle__opt input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.cstyle__opt:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cstyle__card { width: 100%; max-width: 132px; pointer-events: none; }
+.cstyle__card .card { cursor: inherit; }
+.cstyle__name { font: 600 13px/1.2 var(--f-head); text-align: center; }
+.cstyle__opt.on .cstyle__name { color: var(--accent); }
 
 /* Case de sélection : en haut à droite au survol, toujours visible en mode sélection (elle cache l'étoile). */
 .pick { position: absolute; top: 7px; right: 7px; z-index: 6; width: 24px; height: 24px; display: grid; place-items: center; cursor: pointer;

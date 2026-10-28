@@ -1901,6 +1901,30 @@ vers Wikipédia en anglais. Logique dans `assets/art.js` (`window.ClasseurArt`),
 - **CSP** : `en.wikipedia.org` dans `connect-src`, `commons.wikimedia.org` dans `img-src` (`_headers`). Icônes : symboles
   `i-k-*` du sprite de `index.html` (avec `i-list` et `i-swords`).
 
+## Style des cartes (interface, 2026-10-28)
+
+Réglages, section **« Style des cartes »** : cinq choix (boutons radio `set-card-style-<id>`, chacun avec un aperçu de ta
+carte la plus rare qui a une image, à rareté égale la plus forte ; La Joconde sans image si tu n'en as pas), gardé avec
+le compte dans **`prefs.card_style`** (`PATCH /api/me`, le même sur tous les appareils). Absent ou inconnu = `classique`.
+
+| id | nom | rendu |
+|---|---|---|
+| `classique` | Classique | le rendu d'origine, inchangé (image en haut, texte sur la texture de la rareté) |
+| `plein` | Holo plein cadre | illustration sur toute la carte, texte sur un dégradé sombre, pierre de rareté, cadre métal |
+| `tcg` | Cadre TCG | bordure métal de la rareté, bandeau du nom, fenêtre d'illustration, ligne de type (description), ATK / DEF en blocs |
+| `musee` | Musée | plein cadre, liseré, cartel crème (titre en Fraunces), sceau de rareté ; double cadre doré pour une Légendaire |
+| `neon` | Néon chrome | cadre chromé, liseré néon, rareté écrite à la verticale ; C et PC en bichromie, couleurs pleines dès R |
+
+S'applique à tes cartes (grilles, fiche) et aux cartes d'un ami (« Entre amis », albums d'un ami) ; pas aux cases vides,
+vignettes ni au mode réorganisation. Un style autre que `classique` pose `cs cs--<id>` sur l'`article.card` et un seul
+enfant `.cf` (le visage, conteneur des unités `cqw` : tout suit la largeur de la carte), au lieu de `.card__art`,
+`.card__body`, de la pastille et de `.card__sheen`. Finition par rareté, commune aux quatre : C mate, PC cadre argent,
+R cadre holo, SR illustration holo, UR holo et cadre orange, L or et reflet holo qui dérive seul (sans mouvement si le
+système demande moins d'animations) ; une carte brillante est holo, quelle que soit sa rareté. À la souris (pas au
+doigt), la carte penche et un reflet suit le pointeur : variables `--mx`, `--my`, `--rx`, `--ry`, `--o` posées par le
+CSSOM (la CSP n'autorise aucun style en ligne), reflet sans inclinaison pour les cartes d'un ami. Polices :
+Outfit 800 et 900, Fraunces (Google Fonts, déjà permis par la CSP).
+
 ## Le marché (cotes, valeur, bonnes affaires)
 
 Demande du 2026-10-16, d'après la description de l'outil d'un ami (Python, Vercel). Avant le 2026-10-22, un favori lisait le marché dans la page du jeu, sans
