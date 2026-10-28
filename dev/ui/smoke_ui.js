@@ -907,6 +907,9 @@ const DEF_MALADIE = [
 ];
 const defCalls = [];
 let wikiCalls = 0;
+// Wikipédia en anglais (art.js, case « Image de Wikipédia en anglais ») : appels faits, image rendue pour chaque article.
+const enCalls = [];
+const EN_IMG = 'https://upload.wikimedia.org/wikipedia/en/a/ab/';
 const pvAsked = []; // titres dont les vues (prop=pageviews) ont été demandées, dans l'ordre
 const propose = { categories: 0 };
 const wdSearches = [];
@@ -924,6 +927,14 @@ function wikiHandle(url) {
     const S2 = { footballeur: [{ id: 'Q937857', label: 'footballeur' }], musique: [{ id: 'Q638', label: 'musique' }] };
     wdSearches.push(p.search);
     return { search: S2[p.search.toLowerCase()] || [] };
+  }
+  if (u.hostname === 'en.wikipedia.org') {
+    const p = Object.fromEntries(u.searchParams);
+    enCalls.push(p.titles);
+    if (p.origin !== '*' || p.prop !== 'pageimages|pageprops' || p.ppprop !== 'page_image' || p.pilicense !== 'any') throw new Error('appel Wikipédia en anglais inattendu : ' + url);
+    // Chaque article anglais a une image principale non libre (page_image).
+    return { query: { pages: p.titles.split('|').map((title) => ({ title, pageprops: { page_image: 'x.png' },
+      thumbnail: { source: EN_IMG + encodeURIComponent(title) + '.png?utm_source=en.wikipedia.org' } })) } };
   }
   if (u.hostname === 'query.wikidata.org') {
     const q = u.searchParams.get('query');
@@ -972,6 +983,11 @@ function wikiHandle(url) {
   }
   const p = Object.fromEntries(u.searchParams);
   if (p.origin !== '*' || p.format !== 'json' || p.formatversion !== '2') throw new Error('paramètres Wikipédia manquants : ' + url);
+  // Article anglais lié (art.js) : « EN <titre> » pour tout titre.
+  if (p.prop === 'langlinks') {
+    if (p.lllang !== 'en') throw new Error('langlinks hors anglais : ' + url);
+    return { query: { pages: p.titles.split('|').map((title) => ({ title, langlinks: [{ lang: 'en', title: 'EN ' + title }] })) } };
+  }
   // HTML rendu d'une page (tableaux : colonne clé) ; une page sans tableau rend un paragraphe.
   if (p.action === 'parse') {
     if (p.prop !== 'text' || p.redirects !== '1' || !p.page) throw new Error('lecture du HTML incorrecte : ' + url);
@@ -1229,7 +1245,7 @@ async function main() {
       const headers = init.headers || {};
       const method = init.method || 'GET';
       const body = init.body ? JSON.parse(init.body) : undefined;
-      if (/^https:\/\/(fr\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
+      if (/^https:\/\/(fr\.wikipedia\.org|en\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
         if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
         const data = wikiHandle(url);
         if (opts.wikiHold) { // réponse de Wikipédia rendue plus tard (réseau lent) ; abandonnée entre-temps : rejetée
@@ -1275,8 +1291,8 @@ async function main() {
   app.setAttribute('id', 'app');
   doc.body.appendChild(app);
   vm.runInContext(fs.readFileSync(VUE, 'utf8'), ctx, { filename: 'vue.js' });
-  for (const m of ['match.js', 'propose.js']) vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', m), 'utf8'), ctx, { filename: m });
-  check0(/assets\/match\.js[\s\S]*assets\/propose\.js[\s\S]*assets\/app\.js/.test(html), 'match.js et propose.js doivent être chargés avant app.js');
+  for (const m of ['match.js', 'propose.js', 'art.js']) vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', m), 'utf8'), ctx, { filename: m });
+  check0(/assets\/match\.js[\s\S]*assets\/propose\.js[\s\S]*assets\/art\.js[\s\S]*assets\/app\.js/.test(html), 'match.js, propose.js et art.js doivent être chargés avant app.js');
   vm.runInContext(fs.readFileSync(path.join(PUB, 'assets', 'app.js'), 'utf8'), ctx, { filename: 'app.js' });
 
   const settle = async (ms = 30) => { const t = SERVER ? Math.max(ms, 250) : ms; for (let i = 0; i < 6; i++) await sleep(t / 6); };
@@ -1366,7 +1382,7 @@ async function main() {
     const box = p.doc.createElement('div');
     box.setAttribute('id', 'app');
     p.doc.body.appendChild(box);
-    for (const file of [VUE, ...['match.js', 'propose.js', 'app.js'].map((m) => path.join(PUB, 'assets', m))]) vm.runInContext(fs.readFileSync(file, 'utf8'), c, { filename: path.basename(file) });
+    for (const file of [VUE, ...['match.js', 'propose.js', 'art.js', 'app.js'].map((m) => path.join(PUB, 'assets', m))]) vm.runInContext(fs.readFileSync(file, 'utf8'), c, { filename: path.basename(file) });
     return { doc: p.doc, win: p.win, ctx: c, count: () => countIn(p.doc), visible: async () => { for (const f of p.doc.listeners.visibilitychange || []) await f(); },
       longTimers, live: async () => { for (const f of [...longTimers.values()]) await f(); } };
   };
@@ -2702,6 +2718,46 @@ async function main() {
     byId('set-fast-sync').dispatch('change');
     await settle(SERVER ? 300 : 60);
     check(!byId('set-fast-sync').checked && (SERVER || api.st.fastSync === false), '« Synchro rapide du marché » non décochée');
+  }
+  {
+    // « Illustrations des cartes » : deux cases décochées par défaut (préférences du compte). Décochées, rien ne change :
+    // jamais d'appel à Wikipédia en anglais, jamais de couverture.
+    const artImgs = () => all((n) => n.tagName === 'IMG' && n.parentNode && n.parentNode.classList.contains('card__art')).map((n) => n.getAttribute('src'));
+    const en = byId('set-art-en');
+    const cover = byId('set-art-cover');
+    check(en && cover && !en.checked && !cover.checked && has('Homer Simpson en cosplay'), '« Illustrations des cartes » absentes ou cochées par défaut');
+    await goTab('cartes');
+    const before = artImgs();
+    const nCards = cls('card').length;
+    check(nCards > before.length && !cls('cover').length && !enCalls.length, 'Mes cartes : affichage par défaut changé (ou aucune carte sans image pour le test)');
+    await goTab('reglages');
+    byId('set-art-en').checked = true;
+    byId('set-art-en').dispatch('change');
+    byId('set-art-cover').checked = true;
+    byId('set-art-cover').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    check(SERVER || (api.st.prefs.art_en === true && api.st.prefs.art_cover === true), 'cases des illustrations non enregistrées : ' + JSON.stringify(SERVER ? {} : api.st.prefs));
+    await goTab('cartes');
+    await settle(SERVER ? 1500 : 900);
+    const imgs = artImgs();
+    check(enCalls.length > 0 && imgs.length === nCards && imgs.every((u) => u.startsWith(EN_IMG + 'EN%20') && !u.includes('utm_')),
+      'image anglaise non prise : ' + JSON.stringify({ calls: enCalls.length, n: nCards, imgs: imgs.slice(0, 3) }));
+    await goTab('reglages');
+    byId('set-art-en').checked = false;
+    byId('set-art-en').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    await goTab('cartes');
+    await settle(60);
+    // Image anglaise retirée : les cartes reprennent leur image du jeu, celles qui n'en ont pas montrent leur couverture.
+    check(JSON.stringify(artImgs()) === JSON.stringify(before), "case décochée : images d'avant non revenues");
+    const bare = nCards - before.length; // cartes sans image du jeu : elles seules ont une couverture
+    check(cls('cover--card').length === bare && cls('cover__label').length === bare && cls('cover__ic').length === bare,
+      'couverture : ' + cls('cover--card').length + ' au lieu de ' + bare);
+    await goTab('reglages');
+    byId('set-art-cover').checked = false;
+    byId('set-art-cover').dispatch('change');
+    await settle(SERVER ? 300 : 60);
+    check(!byId('set-art-cover').checked && !cls('cover').length && (SERVER || api.st.prefs.art_cover === false), 'couverture non décochée');
   }
   check(has("Un lien ouvert reste dans l'historique du navigateur"), "l'avertissement sur l'historique manque");
   needButton('Changer ma clé').click();

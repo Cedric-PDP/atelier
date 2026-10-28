@@ -299,6 +299,7 @@
     settings: { name: '', busy: false, error: '', saved: false, pseudo: '', pBusy: false, pError: '', pSaved: false },
     copied: '',
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
+    artV: 0, // avance quand art.js apprend l'image anglaise d'un lot de titres (case « Image de Wikipédia en anglais »)
     prefs: { hidden_proposals: [], hide_proposals: false }, // préférences du compte (GET/PATCH /api/me) : propositions retirées, masquées
     tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
     bulkCat: '',
@@ -4283,6 +4284,22 @@
   }
   const restoreProposals = async () => { await savePrefs({ hidden_proposals: [] }); computeProposals(true); };
 
+  // ---------------------------------------------------------------- illustrations (art.js) : deux cases des Réglages
+  // prefs.art_en : image de l'article anglais quand elle est meilleure (personnage dessiné, affiche, pochette, logo) ;
+  // prefs.art_cover : couverture dessinée (nature de l'article, drapeau) pour une carte sans image. Décochées par défaut :
+  // l'affichage reste alors exactement celui d'avant (aucune requête vers Wikipédia en anglais).
+  const Art = window.ClasseurArt || null;
+  const enQ = makeQueue(300);
+  const art = Art ? Art.createArt({ get: (url) => getJson(/^https:\/\/en\./.test(url) ? enQ : wikiQ, url, 0), onChange: () => { S.artV++; } }) : null;
+  const artEn = () => !!(art && S.prefs.art_en);
+  const artCover = () => !!(Art && S.prefs.art_cover);
+  // Image à montrer pour un article (titre français) qui a déjà img (ou null).
+  function artOf(title, img) {
+    if (!artEn()) return img || null;
+    void S.artV; // relu quand un lot arrive
+    return art.image(title, img);
+  }
+
   // ---------------------------------------------------------------- propositions d'après les catégories Wikipédia (propose.js)
   const Propose = window.ClasseurPropose || null;
   const proposer = Propose ? Propose.createProposer({}) : null;
@@ -6961,9 +6978,25 @@
     return order.map((cat) => ({ cat, tags: groups.get(cat), count: perCat.get(cat) || 0 }));
   });
 
+  // Couverture d'une carte sans image (case « Couverture dessinée ») : icône de la nature de l'article, son nom et le
+  // drapeau du pays que nomme sa description. size : card (haut d'une carte), slot (case vide, fiche), mini (vignette).
+  function viewCover(desc, title, size) {
+    const c = Art.coverOf(desc, title);
+    return h('div', { class: ['cover', 'cover--' + size], 'aria-hidden': 'true' }, [
+      h('svg', { class: 'cover__ic', focusable: 'false' }, [h('use', { href: '#i-' + c.icon })]),
+      size === 'mini' ? null : h('span', { class: 'cover__label' }, c.label),
+      c.flag && size !== 'mini' ? h('img', { class: 'cover__flag', src: c.flag, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+    ]);
+  }
+  // Fond sous l'image d'une carte : son initiale (affichage par défaut) ; avec la couverture, celle-ci si la carte n'a pas
+  // d'image, rien sinon (elle se verrait à travers une image transparente).
+  const noArt = (c, img) => h('div', { class: 'card__noart' },
+    artCover() ? (img ? [] : [viewCover(c.category, c.title, 'card')]) : [h('span', null, initialOf(c.title))]);
+
   // ---------------------------------------------------------------- la carte de jeu (5:7)
   function viewCard(c, big, sep) {
     const r = okRarity(c.rarity) || 'C';
+    const img = artOf(c.title, c.image);
     const open = (e) => {
       if (big) return;
       if (e.shiftKey || e.ctrlKey || e.metaKey) { toggleSelect(c.id, e); return; }
@@ -6977,8 +7010,8 @@
       onKeydown: big ? null : (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCardFrom(c.id, e); } },
     }, [
       h('div', { class: 'card__art' }, [
-        h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
-        c.image ? h('img', { src: c.image, alt: '', loading: big ? null : 'lazy', decoding: 'async', onError: hideBroken }) : null,
+        noArt(c, img),
+        img ? h('img', { src: img, alt: '', loading: big ? null : 'lazy', decoding: 'async', onError: hideBroken }) : null,
       ]),
       pill(r),
       c.starred ? h('svg', { class: 'card__star', viewBox: '0 0 24 24', role: 'img', 'aria-label': 'Favorite dans le jeu' }, [h('use', { href: '#i-star' })]) : null,
@@ -7099,11 +7132,12 @@
   // (frère du bouton « Copier le nom », jamais parent : pas de contrôle dans un contrôle), qui passe au-dessus.
   function viewSlot(s, col) {
     const it = s.item;
-    const img = it.image || s.thumb;
+    const img = artOf(it.title, it.image || s.thumb);
     let views = '';
     if (it.status === 'ok') views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
     return sepFrame(h('div', { class: ['slot', { pulled: !!S.openMissing && S.openMissing.title === it.title, sep: !!it.sep }], key: s.key }, [
-      img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+      img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken })
+        : artCover() && it.status === 'ok' ? viewCover(it.description, it.title, 'slot') : null,
       col.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: 'Pas encore dans ta collection : ouvrir la fiche',
         'aria-label': `${it.title}${it.sep ? ', intercalaire' : ''} : pas encore dans ta collection, ouvrir la fiche`, onClick: (e) => openMissingFrom(it, e) }),
@@ -7126,7 +7160,9 @@
   }
   function viewMini(c, i) {
     const r = okRarity(c.rarity) || 'C';
-    return h('span', { class: ['mini', 'r' + r], key: c.id + ':' + i }, c.image ? [h('img', { src: c.image, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken })] : null);
+    const img = artOf(c.title, c.image);
+    return h('span', { class: ['mini', 'r' + r], key: c.id + ':' + i }, img ? [h('img', { src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken })]
+      : artCover() ? [viewCover(c.category, c.title, 'mini')] : null);
   }
   function rarityBar(byR, total, cls) {
     return h('span', { class: cls || 'bar', 'aria-hidden': 'true' }, RAR_UP.map((r) => (byR[r]
@@ -8013,9 +8049,9 @@
   // son initiale.
   function roArt(s) {
     const it = s.item;
-    const img = s.card ? s.card.image : it.image || s.thumb;
+    const img = s.card ? artOf(s.card.title, s.card.image) : artOf(it.title, it.image || s.thumb);
     return h('span', { class: 'ro-art', 'aria-hidden': 'true' }, [
-      h('span', { class: 'ro-noart' }, initialOf(it.title)),
+      h('span', { class: 'ro-noart' }, artCover() ? [viewCover(s.card ? s.card.category : it.description, it.title, 'mini')] : initialOf(it.title)),
       img ? h('img', { src: img, alt: '', loading: 'lazy', decoding: 'async', draggable: 'false', onError: hideBroken }) : null,
     ]);
   }
@@ -8406,6 +8442,18 @@
         h('p', { class: 'small muted' }, "Les cotes se lisent quatre fois plus vite (une requête toutes les 250 ms au lieu d'une par seconde) et deux fois plus par passe (60 requêtes au lieu de 30). Le jeu pourrait remarquer ce rythme et limiter, voire sanctionner, ton compte : c'est un essai, à tes risques. Désactivé par défaut."),
         errLine(S.fast.error),
       ]),
+      section('Illustrations des cartes', [
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-art-en', checked: !!S.prefs.art_en, onChange: (e) => savePrefs({ art_en: e.target.checked }) }),
+          "Prendre l'image de Wikipédia en anglais quand elle est meilleure (essai)",
+        ]),
+        h('p', { class: 'small muted' }, "Wikipédia en français n'accepte aucune image sous droits d'auteur : un personnage dessiné, une affiche de film, une pochette d'album ou un logo y sont remplacés par une photo libre (Homer Simpson en cosplay) ou par rien. Coché, le classeur prend l'image de l'article anglais quand ses rédacteurs l'ont préférée aux images libres, ou quand la carte n'a pas d'image. Seulement dans le classeur : la carte du jeu ne change pas. Désactivé par défaut."),
+        h('label', { class: 'check' }, [
+          h('input', { type: 'checkbox', id: 'set-art-cover', checked: !!S.prefs.art_cover, onChange: (e) => savePrefs({ art_cover: e.target.checked }) }),
+          'Dessiner une couverture pour les cartes sans image (essai)',
+        ]),
+        h('p', { class: 'small muted' }, "Coché, une carte sans image montre la nature de son article (personne, lieu, espèce, film…), lue dans sa description, et le drapeau du pays qu'elle nomme, au lieu de son initiale. Désactivé par défaut."),
+      ]),
       section('Ce navigateur', [
         h('p', null, "Sur un appareil partagé, fais-lui oublier ta clé et tout ce qu'il garde du classeur. Ton classeur reste intact : ton lien le rouvre."),
         h('div', { class: 'actions' }, [h('button', { class: 'btn', type: 'button', onClick: askForget }, 'Oublier ce navigateur')]),
@@ -8645,8 +8693,8 @@
       h('article', { class: ['card', 'card--friend', 'r' + r, { shiny: c.shiny, have }],
         'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}, ${have ? "tu l'as" : 'te manque'}` }, [
         h('div', { class: 'card__art' }, [
-          h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
-          c.image ? h('img', { src: c.image, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+          noArt(c, artOf(c.title, c.image)),
+          artOf(c.title, c.image) ? h('img', { src: artOf(c.title, c.image), alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
         ]),
         pill(r),
         c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires` }, '×' + fmt(c.count)) : null,
@@ -8711,8 +8759,8 @@
       sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
         onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } }, [
         h('div', { class: 'card__art' }, [
-          h('div', { class: 'card__noart' }, [h('span', null, initialOf(c.title))]),
-          c.image ? h('img', { src: c.image, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+          noArt(c, artOf(c.title, c.image)),
+          artOf(c.title, c.image) ? h('img', { src: artOf(c.title, c.image), alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
         ]),
         pill(r),
         c.count > 1 ? h('span', { class: 'card__count', title: `${fmt(c.count)} exemplaires chez ${friendName(f)}` }, '×' + fmt(c.count)) : null,
@@ -8730,12 +8778,13 @@
     const f = fa.f;
     const mine = s.mine;
     const n = mine ? Math.max(1, Number(mine.count) || 1) : 0;
-    const img = (mine && mine.image) || s.thumb;
+    const img = artOf(it.title, (mine && mine.image) || s.thumb);
     let views = '';
     if (!mine) views = s.views != null ? `${fmt(s.views)} vues / 30 j` : S.pv.running ? 'vues…' : 'vues inconnues';
     const give = mine ? (n > 1 ? `, tu l'as (${fmt(n)} exemplaires)` : ", tu l'as") : '';
     return sepFrame(h('div', { class: ['slot', { can: !!mine, pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === it.title, sep: !!it.sep }], key: s.key }, [
-      img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken }) : null,
+      img ? h('img', { class: 'slot__bg', src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken })
+        : artCover() ? viewCover((mine && mine.category) || it.description, it.title, 'slot') : null,
       fa.ordered ? h('span', { class: 'slot__no', 'aria-hidden': 'true' }, String(s.i)) : null,
       h('button', { class: 'slot__open', type: 'button', title: `Manque à ${friendName(f)} : ouvrir la fiche`,
         'aria-label': `${it.title}${it.sep ? ', intercalaire' : ''} : manque à ${friendName(f)}${give}, ouvrir la fiche`, onClick: (e) => openFriendItem(f, s, e) }),
@@ -10984,7 +11033,7 @@
     void S.pv.version;
     const info = pvCache.get(item.title);
     const views = info ? info[0] : null;
-    const img = item.image || (info ? info[1] : null);
+    const img = artOf(item.title, item.image || (info ? info[1] : null));
     const ok = item.status === 'ok';
     const real = ok ? realRarity(item) : null; // rareté donnée par le jeu : pas d'estimation
     const est = ok && !real ? estRarity(views) : null;
@@ -10998,7 +11047,8 @@
       onKeydown: (e) => trapTab(e, boxRef.value) }, [
       h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
       h('div', { class: 'slot big', 'aria-hidden': 'true' }, [
-        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken }) : null,
+        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken })
+          : artCover() && ok ? viewCover(item.description, item.title, 'slot') : null,
         h('div', { class: 'slot__top' }, ok ? [real ? pill(real) : pill(est, true)] : []),
         h('p', { class: 'slot__name' }, item.title),
       ]),
@@ -11042,7 +11092,7 @@
     const views = info ? info[0] : null;
     const real = (fc && okRarity(fc.rarity)) || (mine && okRarity(mine.rarity)) || null;
     const est = real ? null : estRarity(views);
-    const img = (fc && fc.image) || (mine && mine.image) || (info ? info[1] : null);
+    const img = artOf(item.title, (fc && fc.image) || (mine && mine.image) || (info ? info[1] : null));
     const url = (fc && fc.url) || (mine && mine.url) || wikiUrl(item.title);
     const myCols = mine ? membershipsOf(mine) : membershipsOfItem(item);
     // Ses collections qui contiennent cet article : même titre, ou même qid.
@@ -11065,7 +11115,8 @@
       onKeydown: (e) => trapTab(e, boxRef.value) }, [
       h('button', { class: 'close', type: 'button', ref: closeRef, 'aria-label': 'Fermer la fiche', onClick: closeCard }, [icon('x')]),
       h('div', { class: ['slot', 'big', { can: !fc && !!mine }], 'aria-hidden': 'true' }, [
-        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken }) : null,
+        img ? h('img', { class: 'slot__bg', src: img, alt: '', decoding: 'async', onError: hideBroken })
+          : artCover() ? viewCover((fc && fc.category) || (mine && mine.category) || item.description, item.title, 'slot') : null,
         h('div', { class: 'slot__top' }, [real ? pill(real) : pill(est, true)]),
         h('p', { class: 'slot__name' }, item.title),
       ]),

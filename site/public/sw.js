@@ -6,7 +6,7 @@
 // - Vue (cdnjs) et polices Google : même chose (adresses versionnées) ; illustrations de Wikimedia : jamais.
 // Pour tout annuler : remplacer ce fichier par un service worker qui se désinstalle (README, « App installée »).
 const CACHE = 'classeur-v1';
-const SHELL = ['/', '/assets/app.css', '/assets/app.js', '/assets/match.js', '/assets/propose.js', '/assets/icon.svg'];
+const SHELL = ['/', '/assets/app.css', '/assets/app.js', '/assets/match.js', '/assets/propose.js', '/assets/art.js', '/assets/icon.svg'];
 const CDN = new Set(['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com']);
 
 self.addEventListener('install', (e) => {

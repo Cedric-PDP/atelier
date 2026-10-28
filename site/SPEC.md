@@ -1865,6 +1865,37 @@ Bandeau : « N collections » = le nombre de collections de « Mes collections �
 comprises ; pas de total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » = toutes tes
 collections qui contiennent la carte (par titre ou qid), celles faites d'une catégorie comprises.
 
+## Illustrations des cartes (interface, 2026-10-28)
+
+Réglages, section **« Illustrations des cartes »** : deux cases, **décochées par défaut**, gardées avec le compte dans `prefs`
+(`PATCH /api/me`, les mêmes sur tous les appareils). Décochées, l'affichage est exactement celui d'avant : image du jeu
+(`image_url`) pour une carte possédée, vignette de Wikipédia en français pour une case vide, initiale sinon, et aucune requête
+vers Wikipédia en anglais. Logique dans `assets/art.js` (`window.ClasseurArt`), tests : `dev/art.test.mjs`.
+
+- **`prefs.art_en`** « Prendre l'image de Wikipédia en anglais quand elle est meilleure (essai) ». Wikipédia en français
+  n'accepte aucune image sous droits : un personnage dessiné, une affiche, une pochette ou un logo y sont remplacés par une photo
+  libre (Homer Simpson en cosplay) ou par rien. Pour chaque carte affichée (cartes, cases vides, vignettes, fiches, mode
+  réorganisation, cartes et albums d'un ami), par lots de 50 titres : `prop=langlinks&lllang=en` sur fr.wikipedia.org (file
+  de Wikipédia, priorité basse), puis `prop=pageimages|pageprops&ppprop=page_image&pilicense=any&pithumbsize=330` sur
+  en.wikipedia.org (sa propre file, une requête toutes les 300 ms). Image prise : celle de l'article anglais si son image
+  principale **n'est pas libre** (`pageprops.page_image` présent : ses rédacteurs l'ont préférée aux images libres) ; sinon
+  celle d'avant ; et, faute d'image d'avant, l'image libre de l'article anglais. Réponses gardées 14 jours dans ce navigateur
+  (`localStorage` « classeur-art », 6 000 titres au plus, adresses sans `https://upload.wikimedia.org/wikipedia/` ni `utm_*`) ;
+  un échec n'est pas redemandé avant le prochain chargement de la page. Seulement dans le classeur : la carte du jeu ne change pas.
+- **`prefs.art_cover`** « Dessiner une couverture pour les cartes sans image (essai) ». Une carte sans image (après l'option
+  précédente si elle est cochée) montre, à la place de son initiale, une **couverture** : icône et nom de la nature de
+  l'article (Personne, Lieu, Bâtiment, Relief, Cours d'eau, Espèce, Plante, Film ou série, Musique, Livre, Jeu, Œuvre d'art,
+  Sport, Organisation, Histoire, Date, Astre, Science, Cuisine, Véhicule, Homonymie, Liste ; « Article » sinon), lue dans sa
+  description courte (`category` d'une carte, `description` d'un élément de collection) et, pour quelques formes de titre
+  (« (homonymie) », « Liste de », astéroïde « (12345) … », année), dans le titre ; et le **drapeau** du premier des ~90 pays
+  nommés dans la description (nom ou adjectif : « village au Cameroun », « footballeur algérien »), image de Commons
+  (`https://commons.wikimedia.org/wiki/Special:FilePath/Flag_of_<pays>.svg?width=96`, qui redirige vers upload.wikimedia.org).
+  Aucune requête de plus. Sur une carte : couleurs de sa rareté ; dans une case vide et la fiche d'une carte manquante :
+  discrète, comme son image ; vignettes : l'icône seule. Une carte qui a une image n'a pas de couverture dessous (elle se
+  verrait à travers une image transparente).
+- **CSP** : `en.wikipedia.org` dans `connect-src`, `commons.wikimedia.org` dans `img-src` (`_headers`). Icônes : symboles
+  `i-k-*` du sprite de `index.html` (avec `i-list` et `i-swords`).
+
 ## Le marché (cotes, valeur, bonnes affaires)
 
 Demande du 2026-10-16, d'après la description de l'outil d'un ami (Python, Vercel). Avant le 2026-10-22, un favori lisait le marché dans la page du jeu, sans
