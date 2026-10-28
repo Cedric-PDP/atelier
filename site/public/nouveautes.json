@@ -10,7 +10,8 @@
         {"text": "En-tête d'album allégé : les actions secondaires sont sous « Plus »."}
       ]},
       {"icon": "🤝", "title": "Entre amis", "items": [
-        {"text": "Quatre onglets, dont Échanges : choisis une paire de membres et compare.", "to": "#/amis/echanges", "link": "Échanges"}
+        {"text": "Quatre onglets, dont Échanges : choisis une paire de membres et compare.", "to": "#/amis/echanges", "link": "Échanges"},
+        {"text": "Les cartes en favori dans le jeu sont grisées : le jeu refuse de les échanger.", "to": "#/amis/echanges", "link": "Échanges"}
       ]},
       {"icon": "⚙️", "title": "Réglages", "items": [
         {"text": "Réglages rangés en cinq groupes avec sommaire.", "to": "#/reglages", "link": "Réglages"}
