@@ -17,8 +17,12 @@
         {"text": "Clique sur l'onglet pour replier la section : il ne reste que l'onglet, avec un aperçu de ses cartes et « +N »."}
       ]},
       {"icon": "🤝", "title": "Entre amis", "items": [
-        {"text": "Page allégée : les membres en cartes compactes, puis trois onglets « Pour toi », « Pour tes amis » et « Échanges ».", "to": "#/amis", "link": "Entre amis"},
+        {"text": "La page est découpée en quatre onglets, chacun avec son adresse : Collections (tes amis et leurs collections), Pour toi, Pour tes amis et Échanges.", "to": "#/amis", "link": "Entre amis"},
         {"text": "Échanges possibles : choisis une paire de membres à gauche, et vois à droite ce que chacun donne, côte à côte.", "to": "#/amis/echanges", "link": "Échanges"}
+      ]},
+      {"icon": "📒", "title": "Albums", "items": [
+        {"text": "L'en-tête d'une collection est plus léger : « Modifier » et « Réorganiser » sont à portée de main, et le reste des actions est dans « Plus ».", "to": "#/collections", "link": "Collections"},
+        {"text": "Le détail des cartes manquantes et la « Synchro avec le jeu » sont repliés sous la barre ; leur titre résume ce qui est actif."}
       ]}
     ]},
     {"id": "2026-10-27", "date": "2026-10-27", "sections": [
