@@ -2871,7 +2871,7 @@
     if (S.openId || S.openMissing) closeCard();
     Object.assign(S, { albumSort: 'order', albumFilter: 'all' });
     S.reorder = { id: t.id, name: t.name, base: markRaw(t.items), order: markRaw(t.items.map((_, i) => i)), dirty: false, active: null, drag: null, pos: '',
-      busy: false, error: '', said: '', saidN: 0, away: false, labels: false, label: '', rename: '' };
+      busy: false, error: '', said: '', saidN: 0, away: false, labels: false, label: '', rename: '', sort: 'rarity' };
     nextTick(() => { const el = document.getElementById('album-name'); if (el) el.focus(); });
   }
   function sayReorder(r, text) { r.said = text; r.saidN++; }
@@ -2963,6 +2963,53 @@
     Object.assign(r, { order: markRaw(r.order.filter((x) => x !== k)), labels: true, active: null, pos: '', rename: '', error: '' });
     r.dirty = reorderDirty(r);
     sayReorder(r, `Intercalaire « ${r.base[k].title} » retiré.`);
+  }
+  // « Trier la section » (2026-10-28, demande de l'utilisateur : « trier d'un coup toutes les cartes d'un intercalaire
+  // selon un ordre défini, par exemple par rareté ») : intercalaire choisi, les éléments qui le suivent jusqu'au prochain
+  // intercalaire sont rangés d'un coup ; l'intercalaire reste en tête. Tri stable (à égalité, l'ordre d'avant : trier
+  // de A à Z puis par rareté range chaque rareté de A à Z). Rareté d'une case vide : celle du jeu, sinon l'estimée
+  // d'après les vues ; inconnue : à la fin. Comme un déplacement, rien n'est envoyé avant « Enregistrer l'ordre ».
+  const SECTION_SORTS = [
+    ['rarity', 'Rareté (L → C)'],
+    ['rarity-up', 'Rareté (C → L)'],
+    ['az', 'A → Z'],
+    ['za', 'Z → A'],
+    ['owned', 'Possédées d\'abord'],
+  ];
+  function sortSection(k) {
+    const r = S.reorder;
+    if (!r || r.busy || !r.base[k] || !r.base[k].sep) return;
+    const at = r.order.indexOf(k);
+    if (at < 0) return;
+    let end = at + 1;
+    while (end < r.order.length && !r.base[r.order[end]].sep) end++;
+    const part = r.order.slice(at + 1, end);
+    const title = r.base[k].title;
+    if (part.length < 2) { sayReorder(r, `La section « ${title} » a moins de deux cartes : rien à trier.`); return; }
+    const info = reorderInfo.value;
+    const rank = (x) => {
+      const s = info[x];
+      if (s && s.card) return RANK[s.card.rarity] ?? 9;
+      const it = r.base[x];
+      const pv = pvCache.get(it.title);
+      return RANK[realRarity(it) || estRarity(pv ? pv[0] : null)] ?? 9;
+    };
+    const name = (x) => r.base[x].title;
+    const how = r.sort;
+    const cmp = how === 'rarity' ? (a, b) => rank(a) - rank(b)
+      : how === 'rarity-up' ? (a, b) => (rank(a) === 9) - (rank(b) === 9) || rank(b) - rank(a)
+        : how === 'az' ? (a, b) => COLLATOR.compare(name(a), name(b))
+          : how === 'za' ? (a, b) => COLLATOR.compare(name(b), name(a))
+            : (a, b) => (info[a] && info[a].card ? 0 : 1) - (info[b] && info[b].card ? 0 : 1);
+    const sorted = part.map((x, i) => [x, i]).sort((a, b) => cmp(a[0], b[0]) || a[1] - b[1]).map(([x]) => x);
+    const label = (SECTION_SORTS.find(([v]) => v === how) || SECTION_SORTS[0])[1];
+    if (sorted.every((x, i) => x === part[i])) { sayReorder(r, `La section « ${title} » est déjà triée : ${label}.`); return; }
+    const next = r.order.slice();
+    next.splice(at + 1, part.length, ...sorted);
+    r.order = markRaw(next);
+    r.error = '';
+    r.dirty = reorderDirty(r);
+    sayReorder(r, `Section « ${title} » triée : ${label} (${cards$(part.length)}).`);
   }
   // Vignette de l'élément k montrée (déplacée au loin par la barre du bas).
   function showTile(k) {
@@ -8279,7 +8326,7 @@
         h('p', { class: 'hint reorder-help', id: 'reorder-help' }, [
           'Glisse une carte à sa place (au doigt, par sa poignée ', icon('grip', 'sm'), sr('poignée'), '), ou utilise ← et →. ',
           'Choisis une carte pour la mettre en tête, à la fin ou à une position (barre du bas). ',
-          'Un intercalaire garde son rôle : il ouvre toujours une nouvelle ligne. Un intercalaire libre (un nom, sans carte) s\'ajoute ci-dessous, avant la carte choisie. Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
+          'Un intercalaire garde son rôle : il ouvre toujours une nouvelle ligne. Un intercalaire libre (un nom, sans carte) s\'ajoute ci-dessous, avant la carte choisie. Choisis un intercalaire pour trier d\'un coup les cartes de sa section (rareté, A → Z…). Rien n\'est envoyé avant « Enregistrer l\'ordre ».',
         ]),
         h('form', { class: 'reorder-add', onSubmit: (e) => { e.preventDefault(); addLabel(); } }, [
           h('label', { class: 'sr', for: 'reorder-label' }, "Nom de l'intercalaire libre"),
@@ -8319,6 +8366,12 @@
             h('button', { class: 'btn small', type: 'submit', disabled: r.busy || !labelName(r.rename) }, 'Renommer'),
           ]) : null,
           isLabel(item) ? h('button', { class: 'btn small danger', type: 'button', disabled: r.busy, onClick: () => removeLabel(k) }, 'Retirer') : null,
+          item.sep ? h('form', { class: 'reorder-bar__pos reorder-bar__sort', onSubmit: (e) => { e.preventDefault(); sortSection(k); } }, [
+            h('label', { class: 'sr', for: 'reorder-sort' }, `Ordre des cartes de la section « ${item.title} »`),
+            h('select', { id: 'reorder-sort', class: 'field', value: r.sort, disabled: r.busy, onChange: (e) => { r.sort = e.target.value; } },
+              SECTION_SORTS.map(([v, t]) => h('option', { value: v, selected: v === r.sort }, t))),
+            h('button', { class: 'btn small', type: 'submit', disabled: r.busy }, 'Trier la section'),
+          ]) : null,
         ]),
       ]) : h('p', { class: 'reorder-bar__hint small muted' }, 'Choisis une carte pour la mettre en tête, à la fin ou à une position précise.'),
       h('div', { class: 'reorder-bar__end' }, [

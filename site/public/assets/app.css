@@ -620,6 +620,7 @@ html.ro-dragging { -webkit-user-select: none; user-select: none; }
 .reorder-bar__pos .field { width: 5.2em; padding: 5px 8px; font-size: 13px; }
 .reorder-bar .btn[aria-disabled="true"] { opacity: 0.5; }
 .reorder-bar__rename .field { width: 11em; }
+.reorder-bar__sort .field { width: auto; }
 /* Intercalaire libre (un nom, sans carte) : « Ajouter un intercalaire » sous l'aide ; sa vignette est un onglet gris
    portant son nom, sans image ni numéro de case. */
 .reorder-add { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }

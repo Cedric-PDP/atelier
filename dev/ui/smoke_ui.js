@@ -3980,10 +3980,10 @@ async function main() {
   // sans vérification) ; dans « Réorganiser », ajouté avant la carte choisie (en tête sans choix), renommé, retiré.
   {
     const keyP = await makeOtherAccount('Paula');
-    const mkc = (id, title) => ({ id, title, rarity: 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'pays', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
+    const mkc = (id, title, rarity) => ({ id, title, rarity: rarity || 'C', atk: 1, def: 1, quality: 1, pageviews: 10, category: 'pays', image: null, url: null, count: 1, shiny: false, starred: false, obtained_at: '2026-10-01T00:00:00Z' });
     const it = (title) => ({ title, description: null, image: null, status: 'ok' });
     const lab = (title) => ({ title, description: null, image: null, status: 'label', sep: true });
-    await seedCards(keyP, ['France', 'Allemagne'].map((t, i) => mkc('p' + i, t)));
+    await seedCards(keyP, [mkc('p0', 'France'), mkc('p1', 'Allemagne', 'SR')]);
     check((await rawApi('POST', '/api/targets/save', keyP, { name: 'Pays', items: [lab('Europe'), it('France'), it('Allemagne'), lab('Asie'), it('Japon')] })).status === 200,
       'intercalaires libres : collection refusée');
     ls.set('classeur-key', keyP);
@@ -4082,6 +4082,43 @@ async function main() {
     }
     await settle(80);
     check(layout() === "§§Amériques §§Europe de l'Ouest France Allemagne §§Asie Japon §§Pacifique", 'album après la réorganisation : ' + layout());
+    // « Trier la section » : intercalaire choisi, ses cartes rangées d'un coup (rareté L → C par défaut, puis A → Z,
+    // Z → A) ; déjà triée : l'annonce le dit ; une carte choisie n'a pas de tri ; « Annuler » n'envoie rien.
+    btnIn(d.body, 'Réorganiser').click();
+    await settle(80);
+    {
+      const bar = () => d.querySelectorAll('.reorder-bar')[0];
+      const said = () => text(bar().querySelectorAll('[role="status"]')[0] || bar()).trim();
+      const roLayout = () => d.querySelectorAll('.ro-tile').map((n) => (n.classList.contains('ro-tile--label') ? '#' : '') + text(n.querySelector('.ro-label') || n.querySelector('.ro-title')).split(',')[0]).join('|');
+      const tileFor = (t) => d.querySelectorAll('.ro-tile').find((n) => text(n.querySelector('.ro-title')).split(',')[0] === t) || null;
+      tileFor('France').querySelector('.ro-title').click();
+      await settle();
+      check(!btnIn(bar(), 'Trier la section'), 'carte choisie : pas de « Trier la section » attendu');
+      tileFor("Europe de l'Ouest").querySelector('.ro-title').click();
+      await settle();
+      check(btnIn(bar(), 'Trier la section') && d.getElementById('reorder-sort').value === 'rarity', 'intercalaire choisi : « Trier la section » (rareté) attendu');
+      btnIn(bar(), 'Trier la section').click();
+      await settle();
+      check(roLayout() === "#Amériques|#Europe de l'Ouest|Allemagne|France|#Asie|Japon|#Pacifique" && said().includes('triée : Rareté (L → C) (2 cartes)') && text(bar()).includes('Ordre modifié'),
+        'section triée par rareté : ' + roLayout() + ' / ' + said());
+      btnIn(bar(), 'Trier la section').click();
+      await settle();
+      check(said().includes('déjà triée'), 'section déjà triée : ' + said());
+      const sel = d.getElementById('reorder-sort');
+      sel.value = 'za';
+      sel.dispatch('change');
+      await settle();
+      btnIn(bar(), 'Trier la section').click();
+      await settle();
+      check(roLayout() === "#Amériques|#Europe de l'Ouest|France|Allemagne|#Asie|Japon|#Pacifique" && text(bar()).includes('Ordre inchangé'), 'section triée Z → A (ordre d\'origine) : ' + roLayout());
+      tileFor('Asie').querySelector('.ro-title').click();
+      await settle();
+      btnIn(bar(), 'Trier la section').click();
+      await settle();
+      check(said().includes('moins de deux cartes'), 'section d\'une carte : ' + said());
+      btnIn(bar(), 'Annuler').click();
+      check(await waitFor(() => !d.querySelectorAll('.reorder-bar').length), '« Annuler » sans effet');
+    }
   }
 
   // Propositions d'après les cartes, sans les sous-catégories (Iris : 8 cartes de couleurs). Rouge, Vert et Jaune sont

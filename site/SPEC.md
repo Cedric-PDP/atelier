@@ -1581,6 +1581,14 @@ fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde s
      le focus reste sur la flèche de l'élément déplacé. Une vignette **choisie** (clic, toucher, ou focus sur ses flèches)
      apparaît dans la **barre du bas** (fixe, comme la bande de sélection) : « <titre> · 3 sur 20 », « En tête », « À la
      fin », champ « N° » + « Déplacer » (position de 1 à N ; hors bornes : « Position : un nombre entier de 1 à N. ») ;
+   - **« Trier la section »** (2026-10-28, demande de l'utilisateur : « trier d'un coup toutes les cartes d'un intercalaire
+     selon un ordre défini, par exemple par rareté ») : quand l'élément choisi est un intercalaire (carte ou libre), la
+     barre du bas a un menu (« Rareté (L → C) », par défaut, « Rareté (C → L) », « A → Z », « Z → A », « Possédées
+     d'abord ») et « Trier la section » : les éléments qui le suivent jusqu'au prochain intercalaire sont rangés d'un coup,
+     l'intercalaire reste en tête. Tri stable (à égalité, l'ordre d'avant : « A → Z » puis « Rareté » range chaque rareté
+     de A à Z) ; rareté d'une case vide : celle du jeu, sinon l'estimée d'après les vues, inconnue à la fin. Annonce
+     « Section « … » triée : Rareté (L → C) (N cartes). », « … est déjà triée », ou « moins de deux cartes : rien à
+     trier ». Rien n'est envoyé avant « Enregistrer l'ordre » ;
    - **annonce** pour les lecteurs d'écran (`role=status`, cachée à l'œil) à chaque déplacement : « « Afrique » : position 3
      sur 20. » (« (intercalaire) » pour un intercalaire), « Déplacement annulé. », « … reste à sa place. » ;
    - **« Enregistrer l'ordre »** (grisé tant que l'ordre est celui de la collection ; la barre dit « Ordre modifié, pas
