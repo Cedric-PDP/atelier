@@ -20,7 +20,8 @@
       ]},
       {"icon": "🤝", "title": "Entre amis", "items": [
         {"text": "La page est découpée en quatre onglets, chacun avec son adresse : Collections (tes amis et leurs collections), Pour toi, Pour tes amis et Échanges.", "to": "#/amis", "link": "Entre amis"},
-        {"text": "Échanges possibles : choisis une paire de membres à gauche, et vois à droite ce que chacun donne, côte à côte.", "to": "#/amis/echanges", "link": "Échanges"}
+        {"text": "Échanges possibles : choisis une paire de membres à gauche, et vois à droite ce que chacun donne, côte à côte.", "to": "#/amis/echanges", "link": "Échanges"},
+        {"text": "Chaque paire montre ses deux sens, et un ami introuvable dans le jeu est grisé.", "to": "#/amis/echanges", "link": "Échanges"}
       ]},
       {"icon": "📒", "title": "Albums", "items": [
         {"text": "L'en-tête d'une collection est plus léger : « Modifier » et « Réorganiser » sont à portée de main, et le reste des actions est dans « Plus ».", "to": "#/collections", "link": "Collections"},
