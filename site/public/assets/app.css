@@ -1224,18 +1224,35 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .duos__item:hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--border)); }
 .duos__item.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--surface)); }
 .duos__names { font: 600 14px/1.3 var(--f-head); overflow-wrap: anywhere; }
-.duos__n { font-size: 12px; color: var(--muted); }
-.duos__dup { color: var(--accent); }
+.duos__dirs { display: grid; gap: 1px; margin-top: 2px; }
+.duos__dir { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; font-size: 12px; color: var(--muted); }
+.duos__way { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.duos__n { flex: none; font-weight: 600; color: var(--fg); }
+.duos__dir.none, .duos__dir.none .duos__n { color: var(--faint); font-weight: 400; }
+.duos__dup { color: var(--accent); font-weight: 400; }
+/* Paire avec un ami qu'on ne peut pas désigner dans le jeu (ni relié ni pseudo) : grisée, encore lisible. */
+.duos__item.off { background: transparent; border-style: dashed; color: var(--muted); }
+.duos__item.off .duos__names, .duos__item.off .duos__n { color: var(--muted); }
+.duos__item.off .trade__arrow, .trade.off .fcol__name .trade__arrow { color: var(--faint); }
+.duos__item.off.on { border-color: var(--faint); background: var(--surface); }
+.duos__off { font-size: 11.5px; color: var(--muted); }
 .duos__panels { min-width: 0; }
 .trade { padding: 14px 16px; gap: 12px; }
-.trade__sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.trade__sides.one { grid-template-columns: minmax(0, 1fr); }
+.trade__sides { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: stretch; }
+.trade__sides > .trade__side { padding: 0 16px; }
+.trade__sides > .trade__side:first-child { padding-left: 0; }
+.trade__sides > .trade__side + .trade__side { padding-right: 0; border-left: 1px solid var(--border); }
 @media (max-width: 860px) {
   .duos { grid-template-columns: minmax(0, 1fr); }
   .duos__list { position: static; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
-  .duos__item { flex: none; }
+  .duos__item { flex: none; width: 220px; }
 }
-@media (max-width: 640px) { .trade__sides { grid-template-columns: minmax(0, 1fr); } .members { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+  .trade__sides { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .trade__sides > .trade__side, .trade__sides > .trade__side + .trade__side { padding: 0; border-left: 0; }
+  .trade__sides > .trade__side + .trade__side { padding-top: 14px; border-top: 1px solid var(--border); }
+}
+@media (max-width: 640px) { .members { grid-template-columns: minmax(0, 1fr); } }
 .fitems { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .fitem { width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; text-align: left; border: 1px solid transparent; background: var(--surface-2); border-radius: 9px; padding: 6px 10px; color: var(--fg); font-size: 13px; }
 .fitem:hover, .fitem:focus-visible { border-color: var(--accent); }
@@ -1264,9 +1281,16 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .album-head + .trade-note, .trade-note + .fcols, .trade-note + .empty-box { margin-bottom: 12px; }
 .trade__arrow { color: var(--accent); font-weight: 700; }
 /* Une paire de membres, les deux sens dans le même bloc : chaque sens sous son titre « X → Z », le second séparé d'un filet. */
-.trade__side { display: grid; gap: 6px; min-width: 0; }
+.trade__side { display: grid; gap: 6px; min-width: 0; align-content: start; }
 .trade__side > .linkish { justify-self: start; }
-.trade__dir { margin: 0; font: 600 13.5px/1.25 var(--f-body); color: var(--fg); overflow-wrap: anywhere; }
+.trade__dir { margin: 0 0 2px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font: 600 13.5px/1.25 var(--f-body); color: var(--fg); overflow-wrap: anywhere; }
+.trade__who { min-width: 0; }
+.trade__role { font: 600 11px var(--f-body); text-transform: uppercase; letter-spacing: 0.08em; color: var(--faint); }
+.trade__count { margin-left: auto; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fg); }
+.trade__side--empty .trade__count { color: var(--faint); font-weight: 400; }
+.trade__none { margin: 0; padding: 12px; border: 1px dashed var(--border); border-radius: 9px; font-size: 12.5px; color: var(--muted); }
+.trade.off .fcol__name { color: var(--muted); }
+.trade .trade__off { margin: 0; }
 .trade__side .fcol__sum { margin: 0; }
 /* « Proposer un échange » : bouton du bloc toi ↔ ami, fenêtre à deux listes (tu donnes, tu reçois). */
 .fcol__head .trade__new { margin-left: auto; }

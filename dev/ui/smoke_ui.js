@@ -69,6 +69,7 @@ function mockApi() {
   let tradeFail = null; // {status, error} : le prochain échange est refusé
   const gameFriends = {}; // amitié dans le jeu avec chaque membre, par prénom (GET /api/friends) ; absent : amis
   const friendRequests = []; // demandes d'ami envoyées (POST /api/friends/request)
+  const noGame = new Set(); // membres (prénoms) ni reliés ni avec pseudo pour GET /api/members (game: false)
   let canRequest = false; // la route d'envoi d'une demande d'ami est-elle connue du serveur (can_request) ?
   let seq = 0;
   const mk = (p) => (p + '_'.repeat(43)).slice(0, 43);
@@ -278,6 +279,7 @@ function mockApi() {
     failTrade(r) { tradeFail = r; },
     gameFriends,
     friendRequests,
+    noGame,
     canRequest(v) { canRequest = v; },
     isLinked(key) { return !!(users.find((x) => x.key === key) || {}).linked; },
     handle(method, p, headers, body) {
@@ -426,7 +428,7 @@ function mockApi() {
         if (method !== 'GET') return json(405, { error: 'Méthode non autorisée.' });
         if (!st.shared) return json(403, { error: "Pour voir les cartes des autres membres, montre d'abord les tiennes : Réglages, « Partage entre membres »." });
         if (p === '/api/members') {
-          return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, count: u.cards.length, fetched_at: u.fetched_at,
+          return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, game: !noGame.has(u.name), count: u.cards.length, fetched_at: u.fetched_at,
             targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null,
             wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at } })) });
         }
@@ -3189,11 +3191,11 @@ async function main() {
       fnavBtn('Échanges').click();
       await settle();
       // Un bloc par paire de membres (« Toi ⇄ Paul »), les deux sens dedans (« Toi → Paul », puis « Paul → Toi »).
-      const dirOf = (n) => text(n.querySelector('.trade__dir')).replace(' pour ', '');
-      const pairs = () => cls('trade__side').map(dirOf);
-      const pair = (name) => cls('trade__side').find((n) => dirOf(n) === name) || null;
+      const dirOf = (n) => text(n.querySelector('.trade__who')).replace(' pour ', '');
+      const pairs = () => cls('trade__side').filter((n) => !n.querySelector('.trade__none')).map(dirOf);
+      const pair = (name) => cls('trade__side').find((n) => dirOf(n) === name && !n.querySelector('.trade__none')) || null;
       const duos = () => cls('trade').map((n) => text(n.querySelector('.fcol__name')).replace(' et ', ''));
-      const duoOf = (name) => cls('trade').find((n) => n.querySelectorAll('.trade__dir').some((x) => text(x).replace(' pour ', '') === name)) || null;
+      const duoOf = (name) => cls('trade').find((n) => n.querySelectorAll('.trade__who').some((x) => text(x).replace(' pour ', '') === name)) || null;
       const pressed = () => one('seg') ? one('seg').querySelectorAll('button').filter((b) => b.getAttribute('aria-pressed') === 'true').map(text).join() : '';
       check(has('Échanges possibles') && pressed() === 'Tout le monde', 'page des échanges : filtre par défaut ' + pressed());
       // « Seulement les cartes en double », cochée par défaut : chaque ligne montrée est un double (×n) de celui qui donne.
@@ -3227,6 +3229,34 @@ async function main() {
         check(text(pair('Paul → Toi').querySelectorAll('.fitem')[0]).includes('Planète du Système solaire') && !text(pair('Paul → Toi')).includes('(catégorie)') && !text(a7).includes('(catégorie)'),
           'nature des collections dans les échanges : ' + text(pair('Paul → Toi').querySelectorAll('.fitem')[0]));
         check(!pair('Toi → Léa') && !cls('trade').some((n) => n.querySelector('.badge')), "plus d'estimation pour Léa, qui ne partage pas ses collections");
+        // Les deux sens toujours côte à côte (2026-10-28) : le côté vide est montré, avec sa raison ; la tuile de chaque
+        // paire, dans la liste, compte les deux sens.
+        const leaEmpty = cls('trade__side').find((n) => dirOf(n) === 'Toi → Léa' && n.querySelector('.trade__none'));
+        check(leaEmpty && text(leaEmpty).includes('Léa ne partage pas ses collections'), 'Toi → Léa : côté vide et sa raison attendus : ' + (leaEmpty ? text(leaEmpty) : ''));
+        const tiles = () => cls('duos__item');
+        const tileName = (n) => text(n.querySelector('.duos__names')).replace(' et ', '');
+        const dirsOf = (n) => n.querySelectorAll('.duos__dir').map((x) => text(x).replace(' pour ', '')).join(' | ');
+        const paulTile = tiles().find((n) => tileName(n) === 'Toi ⇄ Paul');
+        check(paulTile && dirsOf(paulTile) === 'Toi → Paul4 (3 en double) | Paul → Toi3 (1 en double)', 'tuile Toi ⇄ Paul : ' + (paulTile ? dirsOf(paulTile) : ''));
+        const leaTile = tiles().find((n) => tileName(n) === 'Toi ⇄ Léa');
+        check(leaTile && dirsOf(leaTile) === 'Toi → Léa0 | Léa → Toi3 (1 en double)', 'tuile Toi ⇄ Léa : ' + (leaTile ? dirsOf(leaTile) : ''));
+        // Un ami ni relié ni avec pseudo : sa paire grisée, rangée en dernier, sans « Proposer un échange », la raison dite.
+        if (!SERVER) {
+          api.noGame.add('Léa');
+          exactButton('Actualiser').click();
+          await settle(80);
+          const last = tiles()[tiles().length - 1];
+          const off = (n) => /(^| )off( |$)/.test(n.getAttribute('class') || '');
+          const leaDuo = cls('trade').find((n) => text(n.querySelector('.fcol__name')).replace(' et ', '') === 'Toi ⇄ Léa');
+          check(last && tileName(last) === 'Toi ⇄ Léa' && off(last) && text(last).includes('Échange impossible') && !off(tiles()[0]),
+            'paire avec Léa (ni reliée ni pseudo) grisée et en dernier : ' + tiles().map(tileName).join(', '));
+          check(leaDuo && off(leaDuo) && !leaDuo.querySelector('.trade__new') && text(leaDuo).includes("Léa n'a ni relié son compte du jeu ni donné son pseudo du jeu"),
+            'panneau de Léa : sans bouton, avec la raison : ' + (leaDuo ? text(leaDuo) : ''));
+          api.noGame.delete('Léa');
+          exactButton('Actualiser').click();
+          await settle(80);
+          check(!tiles().some(off), 'Léa de nouveau joignable : plus rien de grisé');
+        }
         // Ta carte : sa fiche ; une case vide chez toi : la fiche de la carte manquante. Une ligne pour un ami : deux boutons
         // côte à côte (ta carte, et chaque collection de l'ami, qui ouvre son album), jamais l'un dans l'autre.
         check(a7.tagName === 'DIV' && a7.querySelector('.fitem__main') && a7.querySelectorAll('.fitem__col').map(text).sort().join(' | ') === 'Exemples de Paul | Les préférées de Paul'

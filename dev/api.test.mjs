@@ -2283,12 +2283,13 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.equal(r.status, 200);
   const benMe = await me(ben);
   assert.deepEqual(benMe.wikibidous && benMe.wikibidous.n, 0, 'solde lu à la synchro, rendu par /api/me');
-  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 12, fetched_at: benMe.fetched_at, targets: null,
+  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, count: 12, fetched_at: benMe.fetched_at, targets: null,
     wikibidous: benMe.wikibidous }]);
   // Classeur vide (ni carte ni collection) : absent de la liste ; Ana y apparaît avec sa première collection.
   assert.deepEqual((await members(ben)).json.members, [], 'un classeur vide ne doit pas être listé');
   await call('POST', 'targets/save', { key: ana.key, body: { name: 'Première', items: [{ title: 'Article premier', status: 'ok' }] } });
-  assert.deepEqual((await members(ben)).json.members.map((m) => [m.id, m.name, m.count]), [[anaPub, 'Ana', 0]]);
+  // game : Ana n'a ni relié son compte du jeu ni donné de pseudo, on ne saurait pas à qui proposer un échange.
+  assert.deepEqual((await members(ben)).json.members.map((m) => [m.id, m.name, m.count, m.game]), [[anaPub, 'Ana', 0, false]]);
   assert.equal((await members(cleo)).status, 403);
   assert.equal((await pageOf(cleo, benPub)).status, 403);
 
@@ -2456,7 +2457,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.equal(pubOf(ben), benPub, 'l\'identifiant public ne change pas');
   const lastChange = [planets.updated_at, cat.updated_at].sort().pop();
   const benMe = await me(ben);
-  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
+  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
     wikibidous: benMe.wikibidous }]);
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);

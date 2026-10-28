@@ -1202,6 +1202,10 @@
   // Un bloc par paire de membres (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs, on
   // ne s'y retrouvait pas) : les deux sens ensemble, toi d'abord (puis de A à Z entre deux amis), ce que tu donnes avant ce
   // que tu reçois. Ordre des blocs : le plus de doubles, puis le plus de cases ; à égalité, par prénoms (toi d'abord).
+  // ab = le sens a → b, ba = b → a (null : rien dans ce sens). off : une paire avec toi et un ami qui n'a ni relié son
+  // compte du jeu ni donné son pseudo (on ne saurait pas à qui proposer l'échange) : grisée, rangée après les autres
+  // (2026-10-28, demande de l'utilisateur).
+  const offTrade = (d) => !!(d.a.me && d.b.f && !d.b.f.game);
   function tradeDuos(pairs) {
     const who = (p) => (p.me ? '' : friendName(p.f));
     const duos = new Map();
@@ -1209,12 +1213,12 @@
       const [a, b] = COLLATOR.compare(who(p.x), who(p.z)) <= 0 ? [p.x, p.z] : [p.z, p.x];
       const key = a.id + '<>' + b.id;
       let d = duos.get(key);
-      if (!d) duos.set(key, (d = { key, a, b, sides: [], dup: 0, n: 0 }));
-      if (p.x === a) d.sides.unshift(p); else d.sides.push(p);
+      if (!d) duos.set(key, (d = { key, a, b, ab: null, ba: null, dup: 0, n: 0 }));
+      if (p.x === a) d.ab = p; else d.ba = p;
       d.dup += p.dup;
       d.n += p.rows.length;
     }
-    return [...duos.values()].sort((u, v) => v.dup - u.dup || v.n - u.n
+    return [...duos.values()].sort((u, v) => offTrade(u) - offTrade(v) || v.dup - u.dup || v.n - u.n
       || COLLATOR.compare(who(u.a), who(v.a)) || COLLATOR.compare(who(u.b), who(v.b)));
   }
   // « Ce qui pourrait intéresser tes amis » : tes cartes qui complètent les collections qu'ils montrent, tes doubles
@@ -6013,7 +6017,7 @@
           const tg = m.targets && typeof m.targets === 'object' ? m.targets : null;
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
-          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
+          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous) });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
@@ -8997,27 +9001,53 @@
     }
     return h('div', { class: 'fitem fitem--static', role: 'group', 'aria-label': label }, [...body, cols]);
   }
-  // Un sens d'une paire : « Toi → Paul », son résumé, ses lignes.
-  function viewTradeSide(p) {
+  // Un sens d'une paire : « Toi → Paul » (avec « Tu donnes » / « Tu reçois » quand tu y es) et son nombre de cartes, son
+  // résumé, ses lignes ; x et z : qui donne, qui reçoit ; p : ce sens (null : rien dans ce sens, et pourquoi).
+  function viewTradeSide(x, z, p) {
+    const role = x.me ? 'Tu donnes' : z.me ? 'Tu reçois' : null;
+    const head = h('h3', { class: 'trade__dir' }, [
+      h('span', { class: 'trade__who' }, [personWho(x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(z)]),
+      role ? h('span', { class: 'trade__role' }, role) : null,
+      h('span', { class: 'trade__count num' }, cards$(p ? p.rows.length : 0)),
+    ]);
+    if (!p) {
+      const hiddenZ = z.f && trades.value.hidden.includes(z.f);
+      const dup = tradeDupOn() ? 'en double ' : '';
+      const why = hiddenZ ? `${friendName(z.f)} ne partage pas ses collections : impossible de savoir ce qui lui manque.`
+        : `${x.me ? "Tu n'as" : friendName(x.f) + " n'a"} aucune carte ${dup}qui manque aux collections ${z.me ? 'que tu partages' : 'de ' + friendName(z.f)}.`;
+      return h('section', { class: 'trade__side trade__side--empty', key: x.id + '>' + z.id }, [head, h('p', { class: 'trade__none' }, why)]);
+    }
     const key = 'trade:' + p.key;
     const rows = S.friends.more[key] ? p.rows : p.rows.slice(0, FRIEND_ROWS);
     return h('section', { class: 'trade__side', key: p.key }, [
-      h('h3', { class: 'trade__dir' }, [personWho(p.x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personWho(p.z)]),
+      head,
       h('p', { class: 'fcol__sum' }, tradeSum(p)),
       h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
       moreToggle(key, p.rows.length),
     ]);
   }
-  // Une paire : « Toi ⇄ Paul », « Proposer un échange », puis les deux sens côte à côte (ce que tu donnes, ce que tu reçois).
-  // hidden : pas la paire choisie dans la liste (maître-détail de « Échanges possibles »).
+  // Les deux sens d'une paire dans sa tuile de la liste : « Toi → Paul  10 (3 en double) », « Paul → Toi  0 ».
+  function viewDuoCounts(d) {
+    const line = (x, z, p) => h('span', { class: ['duos__dir', { none: !p }] }, [
+      h('span', { class: 'duos__way' }, [personOf(x), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' → '), h('span', { class: 'sr' }, ' pour '), personOf(z)]),
+      h('span', { class: 'duos__n num' }, [p ? fmt(p.rows.length) : '0', p && p.dup && p.dup < p.rows.length ? h('span', { class: 'duos__dup' }, ` (${fmt(p.dup)} en double)`) : null]),
+    ]);
+    return h('span', { class: 'duos__dirs' }, [line(d.a, d.b, d.ab), line(d.b, d.a, d.ba)]);
+  }
+  // Une paire : « Toi ⇄ Paul », « Proposer un échange », puis les deux sens côte à côte, toujours tous les deux (à gauche
+  // a → b, ce que tu donnes ; à droite b → a, ce que tu reçois ; 2026-10-28, demande de l'utilisateur : un seul sens
+  // prenait toute la largeur, on ne voyait plus qui donnait à qui). hidden : pas la paire choisie dans la liste
+  // (maître-détail de « Échanges possibles »). Paire grisée (offTrade) : pas de bouton, la raison à la place.
   function viewTradeDuo(d, hidden) {
     const f = d.a.me ? d.b.f : null;
-    return h('article', { class: ['fcol', 'trade'], key: d.key, id: 'duo-' + d.key, role: 'tabpanel', 'aria-labelledby': 'duo-tab-' + d.key, hidden: hidden || null }, [
+    const off = offTrade(d);
+    return h('article', { class: ['fcol', 'trade', { off }], key: d.key, id: 'duo-' + d.key, role: 'tabpanel', 'aria-labelledby': 'duo-tab-' + d.key, hidden: hidden || null }, [
       h('div', { class: 'fcol__head' }, [
         h('span', { class: 'fcol__name' }, [personWho(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personWho(d.b)]),
-        f ? h('button', { class: 'btn small primary trade__new', type: 'button', onClick: () => openTradeNew(f) }, `Proposer un échange à ${friendName(f)}`) : null,
+        f && !off ? h('button', { class: 'btn small primary trade__new', type: 'button', onClick: () => openTradeNew(f) }, `Proposer un échange à ${friendName(f)}`) : null,
       ]),
-      h('div', { class: ['trade__sides', { one: d.sides.length < 2 }] }, d.sides.map(viewTradeSide)),
+      off ? h('p', { class: 'trade-note trade__off' }, [h('b', null, friendName(f)), " n'a ni relié son compte du jeu ni donné son pseudo du jeu : impossible de lui proposer un échange depuis le classeur (il peut donner son pseudo dans ses Réglages)."]) : null,
+      h('div', { class: 'trade__sides' }, [viewTradeSide(d.a, d.b, d.ab), viewTradeSide(d.b, d.a, d.ba)]),
     ]);
   }
   // Ce que disent les échanges : les membres qui ne partagent pas leurs collections (on ne sait pas ce qui leur
@@ -9081,11 +9111,12 @@
       ]),
       list.length ? h('div', { class: 'duos' }, [
         h('div', { class: 'duos__list', role: 'tablist', 'aria-orientation': 'vertical', 'aria-label': 'Paires de membres', onKeydown: onKey }, list.map((d) => h('button', {
-          key: d.key, id: 'duo-tab-' + d.key, type: 'button', role: 'tab', class: ['duos__item', { on: d === cur }], 'aria-selected': String(d === cur),
+          key: d.key, id: 'duo-tab-' + d.key, type: 'button', role: 'tab', class: ['duos__item', { on: d === cur, off: offTrade(d) }], 'aria-selected': String(d === cur),
           'aria-controls': 'duo-' + d.key, tabindex: d === cur ? '0' : '-1', onClick: pick(d),
         }, [
           h('span', { class: 'duos__names' }, [personOf(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personOf(d.b)]),
-          h('span', { class: 'duos__n num' }, [cards$(d.n), d.dup ? h('span', { class: 'duos__dup' }, ` · ${fmt(d.dup)} en double`) : null]),
+          viewDuoCounts(d),
+          offTrade(d) ? h('span', { class: 'duos__off' }, 'Échange impossible : ni compte du jeu relié ni pseudo') : null,
         ]))),
         h('div', { class: 'duos__panels' }, list.map((d) => viewTradeDuo(d, d !== cur))),
       ]) : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
