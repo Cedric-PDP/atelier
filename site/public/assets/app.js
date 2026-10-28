@@ -416,8 +416,9 @@
     try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); }
     return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
   };
-  // Vignette de Wikipédia : la page la retrouve d'elle-même (pageimages), elle n'a pas besoin d'être rangée.
-  const WIKI_THUMB = /^https?:\/\/upload\.wikimedia\.org\//i;
+  // Vignette de Wikipédia : la page la retrouve d'elle-même (pageimages), elle n'a pas besoin d'être rangée. L'API les
+  // sert sur thumb.wikimedia.org (avec des paramètres utm_…) depuis fin octobre 2026, avant sur upload.wikimedia.org.
+  const WIKI_THUMB = /^https?:\/\/(upload|thumb)\.wikimedia\.org\//i;
   async function saveTargetApi(body) {
     let items = Array.isArray(body.items) ? body.items : [];
     // Au-delà de 1,7 Mo, les vignettes de Wikipédia partent (comme à la fusion) : une liste de 8 000 articles avec leurs
