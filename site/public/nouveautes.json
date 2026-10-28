@@ -14,7 +14,8 @@
       ]},
       {"icon": "📁", "title": "Intercalaires", "items": [
         {"text": "Chaque intercalaire ouvre une section avec un vrai onglet de classeur, sa progression (« 4 / 7 ») et sa barre de raretés, doré quand la section est complète.", "to": "#/collections", "link": "Collections"},
-        {"text": "Clique sur l'onglet pour replier la section : il ne reste que l'onglet, avec un aperçu de ses cartes et « +N »."}
+        {"text": "Clique sur l'onglet pour replier la section : il ne reste que l'onglet, avec un aperçu de ses cartes et « +N »."},
+        {"text": "Crée des intercalaires libres, un simple nom sans carte derrière : `## Europe` dans « Modifier », ou « Ajouter un intercalaire » dans « Réorganiser » (où il se renomme et se retire). Ils ouvrent une section sans compter dans ta progression.", "to": "#/collections", "link": "Collections"}
       ]},
       {"icon": "🤝", "title": "Entre amis", "items": [
         {"text": "La page est découpée en quatre onglets, chacun avec son adresse : Collections (tes amis et leurs collections), Pour toi, Pour tes amis et Échanges.", "to": "#/amis", "link": "Entre amis"},
