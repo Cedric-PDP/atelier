@@ -319,7 +319,7 @@
     // seule, avec son filtre (all | has : il les a | lacks : lui manquent | help : tu peux l'aider), son tri et d'où on
     // l'a ouverte (albumFrom : 'trades' = « Échanges possibles ») ; copyBusy : « Créer la même collection chez moi » en
     // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
-    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, view: 'fill', duo: null, trade: 'all', tradeDup: true,
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, duo: null, trade: 'all', tradeDup: true,
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
     // « Chat » (un salon pour tous les classeurs) : user = compte dont `read` (dernier message lu, aussi dans
     // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
@@ -8023,17 +8023,20 @@
         wpLink(cv.title),
       ];
     } else {
+      // « Modifier » et « Réorganiser » visibles ; le reste dans le menu « Plus » (2026-10-28 : en-tête allégé).
       actions = [
-        h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags du jeu']),
         h('button', { class: 'btn', type: 'button', onClick: () => openEditor(col.t) }, [icon('pen', 'sm'), 'Modifier']),
         // « Réorganiser » (2 éléments au moins) ; « Réorganiser… » d'une collection sans ordre : pourquoi (explainUnordered).
         viewReorderButton(col),
-        // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
-        targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
-        h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
-        // Faite des tableaux d'une page : la rouvrir pour en faire une autre collection (d'autres sections, tout ensemble).
-        col.page && col.column ? h('button', { class: 'btn', type: 'button', onClick: () => openPage(col.page, true) }, [icon('plus', 'sm'), 'Autres sections de la page']) : null,
-        col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
+        moreMenu([
+          h('button', { class: 'btn', type: 'button', onClick: () => openTagAdd(col) }, [icon('tag', 'sm'), 'Ajouter par tags du jeu']),
+          // « Fusionner avec… » : seulement s'il y a une autre collection avec qui fusionner.
+          targets.value.length > 1 ? h('button', { class: 'btn', type: 'button', onClick: () => openMerge(col.t) }, [icon('merge', 'sm'), 'Fusionner avec…']) : null,
+          // Faite des tableaux d'une page : la rouvrir pour en faire une autre collection (d'autres sections, tout ensemble).
+          col.page && col.column ? h('button', { class: 'btn', type: 'button', onClick: () => openPage(col.page, true) }, [icon('plus', 'sm'), 'Autres sections de la page']) : null,
+          col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
+          h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
+        ]),
       ];
     }
     const total = albumFold.value.slots.length;
@@ -8044,10 +8047,13 @@
     return h('div', null, [
       h('div', { class: 'album-head' }, [
         h('button', { class: 'back', type: 'button', onClick: closeAlbum }, '← Toutes les collections'),
-        h('div', { class: ['album-title', { complete: done }] }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
-          done ? doneMark() : null,
-          w && w.priced ? h('span', { class: 'album-value' }, ['Valeur : ', priceTag(w.value), ` (${pricedOf(w.priced, w.cards)})`]) : null,
-          cv ? h('span', { class: 'badge' }, pg ? 'page de Wikipédia' : 'catégorie de Wikipédia') : sourceKind(col)]),
+        h('div', { class: 'album-top' }, [
+          h('div', { class: ['album-title', { complete: done }] }, [h('h2', { id: 'album-name', tabindex: '-1' }, col.name), reading ? null : h('span', { class: 'num' }, `${fmt(p.own)} sur ${fmt(p.total)}`),
+            done ? doneMark() : null,
+            w && w.priced ? h('span', { class: 'album-value' }, ['Valeur : ', priceTag(w.value), ` (${pricedOf(w.priced, w.cards)})`]) : null,
+            cv ? h('span', { class: 'badge' }, pg ? 'page de Wikipédia' : 'catégorie de Wikipédia') : sourceKind(col)]),
+          h('div', { class: 'toolbar album-actions' }, actions),
+        ]),
         cv && cv.subcats ? h('label', { class: 'check' }, [
           h('input', { type: 'checkbox', checked: cv.withSubs, disabled: cv.loading || cv.busy, onChange: toggleCatSubs }),
           ` inclure les sous-catégories (1 niveau : ${fmt(cv.subcats)})`]) : null,
@@ -8061,19 +8067,33 @@
         tooBig ? h('p', { class: 'warn' }, pg && pg.col ? 'Plus de 20 000 articles dans cette colonne : trop pour une collection (décoche des tableaux). Seuls les 20 000 premiers sont montrés.'
           : pg ? `Plus de 20 000 articles liés : trop pour une collection${pgTop && pg.allLinks ? ' (ne garde que les « ' + pgTop.label + ' »)' : ''}. Seuls les 20 000 premiers sont montrés.`
           : 'Plus de 20 000 articles : trop grande pour une collection. Seuls les 20 000 premiers sont montrés.') : null,
-        !reading && ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
-        reading ? null : h('div', { class: 'missing-sum' }, missLine),
-        w && w.costPriced ? h('div', { class: 'missing-sum worth-sum', title: "Pour chaque carte qui manque, la moins chère de ses cotes fiables (3 ventes au moins), toutes raretés d'exemplaire confondues : n'importe quel exemplaire remplit la case. Cotes connues : celles des cartes que le classeur a trouvées dans le jeu." }, [
-          h('span', null, ['Pour la compléter : ', priceTag(w.cost, { about: true })]),
-          h('span', null, `(${pricedOf(w.costPriced, w.missing)} qui ${plural(w.missing, 'manque', 'manquent')}, à la moins chère de leurs cotes)`),
-        ]) : null,
-        !reading && missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
-        // Actions de la collection sur leur propre ligne, au-dessus des filtres et des tris (2026-10-18 : avec
-        // « Réorganiser » et « Fusionner avec… », elles ne tenaient plus sur la même ligne).
-        h('div', { class: 'toolbar album-actions' }, actions),
-        cv ? null : viewAutoLine(col),
-        cv ? null : h('div', { class: ['album-sync', { 'album-sync--single': S.me && S.me.wish_mode === 'all' }] }, [
-          viewTargetWish(col.t), viewAutoTag(col.t),
+        // Le détail (raretés de ce que tu as et de ce qui manque, prix pour la compléter) et les réglages de synchro avec le
+        // jeu : deux volets repliés sous la barre (2026-10-28, demande de l'utilisateur : « accessibles mais pas le main
+        // focus »), leur résumé dans leur titre.
+        reading ? null : h('div', { class: 'album-meta' }, [
+          h('details', { class: 'album-fold' }, [
+            h('summary', null, [icon('chev', 'sm'), h('span', { class: 'album-fold__sum' }, [
+              missing > 0 ? [h('b', null, fmt(missing)), ` ${plural(missing, 'manque', 'manquent')}`] : p.total ? 'Complète' : 'Vide',
+              w && w.costPriced ? [' · pour la compléter ', priceTag(w.cost, { about: true, tag: 'span' })] : null,
+              problems ? ` · ${fmt(problems)} à vérifier` : null,
+            ]), h('span', { class: 'album-fold__more' }, 'Détail')]),
+            h('div', { class: 'album-fold__body' }, [
+              ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
+              h('div', { class: 'missing-sum' }, missLine),
+              w && w.costPriced ? h('div', { class: 'missing-sum worth-sum', title: "Pour chaque carte qui manque, la moins chère de ses cotes fiables (3 ventes au moins), toutes raretés d'exemplaire confondues : n'importe quel exemplaire remplit la case. Cotes connues : celles des cartes que le classeur a trouvées dans le jeu." }, [
+                h('span', null, ['Pour la compléter : ', priceTag(w.cost, { about: true })]),
+                h('span', null, `(${pricedOf(w.costPriced, w.missing)} qui ${plural(w.missing, 'manque', 'manquent')}, à la moins chère de leurs cotes)`),
+              ]) : null,
+              missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
+            ]),
+          ]),
+          cv ? null : h('details', { class: 'album-fold' }, [
+            h('summary', null, [icon('chev', 'sm'), h('span', { class: 'album-fold__sum' }, ['Synchro avec le jeu', ...gameChips(col)]), h('span', { class: 'album-fold__more' }, 'Régler')]),
+            h('div', { class: 'album-fold__body' }, [
+              viewAutoLine(col),
+              h('div', { class: ['album-sync', { 'album-sync--single': S.me && S.me.wish_mode === 'all' }] }, [viewTargetWish(col.t), viewAutoTag(col.t)]),
+            ]),
+          ]),
         ]),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Filtrer' }, [
@@ -8097,6 +8117,33 @@
       shown < total ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { S.albumLimit += ALBUM_PAGE; } },
         `Afficher les ${fmt(Math.min(ALBUM_PAGE, total - shown))} suivantes (${fmt(total - shown)} restantes)`)]) : null,
     ]);
+  }
+  // Menu « Plus » (actions rares d'un album) : un <details> ; un clic ailleurs ou Échap le referme.
+  const moreMenu = (items) => h('details', { class: 'menu' }, [
+    h('summary', { class: 'btn', 'aria-label': "Plus d'actions" }, [icon('more', 'sm'), 'Plus']),
+    h('div', { class: 'menu__list' }, items),
+  ]);
+  const closeMenus = (keep) => { for (const m of document.querySelectorAll('details.menu[open]')) if (m !== keep) m.removeAttribute('open'); };
+  if (typeof document.addEventListener === 'function') {
+    document.addEventListener('click', (e) => {
+      const m = e.target && e.target.closest ? e.target.closest('details.menu') : null;
+      // Un choix du menu le referme aussi (sauf le clic sur son bouton « Plus », qui l'ouvre ou le ferme lui-même).
+      closeMenus(m && !(e.target.closest('.menu__list')) ? m : null);
+    });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenus(null); });
+  }
+  // Ce qui est actif entre cette collection et le jeu, en pastilles dans le titre du volet « Synchro avec le jeu ».
+  function gameChips(col) {
+    const t = col.t;
+    if (!t) return [];
+    const auto = col.kind === 'target' ? autoOf(t) : null;
+    const chip = (label) => h('span', { class: 'gchip' }, label);
+    const out = [];
+    if (S.me && S.me.wish_mode !== 'all' && t.wish_sync) out.push(chip('souhaits'));
+    if (t.auto_tag && t.auto_tag.enabled && t.auto_tag.tag) out.push(chip('tag « ' + t.auto_tag.tag + ' »'));
+    if (t.auto_favorite) out.push(chip('favoris'));
+    if (auto) out.push(chip('ajout automatique'));
+    return out.length ? out : [h('span', { class: 'gchip off' }, 'rien d\'actif')];
   }
   // Album d'une collection qui a un ajout automatique : « Ajout automatique : tag du jeu « Maladie », … », « Changer les
   // règles » (la fenêtre, règles cochées) et « Arrêter » (règles effacées, cartes déjà ajoutées gardées).
@@ -8849,6 +8896,7 @@
     return h('div', { class: 'friends' }, [
       viewFriendsHead(),
       friendsNav('trades'),
+      tradeSummary(),
       h('div', { class: 'trades-head' }, [
         h('div', { class: 'section-head' }, [h('h2', null, 'Échanges possibles'),
           h('small', { class: 'num' }, `${fmt(n)} ${plural(n, 'carte', 'cartes')} à donner · ${fmt(list.length)} ${plural(list.length, 'paire', 'paires')} de membres`)]),
@@ -9060,14 +9108,23 @@
           worth && worth.p.priced ? h('span', { class: 'album-value', title: FRIEND_WORTH }, ['Valeur : ', priceTag(worth.p.value), ` (${pricedOf(worth.p.priced, worth.p.cards)})`]) : null,
           h('span', { class: 'badge' }, 'lecture seule'), t.cat ? h('span', { class: 'row-kind' }, 'depuis la catégorie Wikipédia') : null]),
         rarityBar(byR, total, 'bar big'),
-        ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
-        h('div', { class: 'missing-sum' }, missLine),
-        help || want ? h('div', { class: 'missing-sum give-sum' }, [
-          help ? h('span', { key: 'help' }, ['Tu peux l\'aider : ', h('b', { class: 'num' }, fmt(help)), ` ${plural(help, 'carte', 'cartes')}`, helpDup ? [' dont ', h('b', { class: 'num' }, fmt(helpDup)), ' en double'] : null]) : null,
-          want ? h('span', { key: 'want' }, [help ? '· ' : '', h('b', { class: 'num' }, fmt(want)), ` de ses cartes ${plural(want, 'manque', 'manquent')} à tes collections`]) : null,
-        ]) : null,
-        missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
-        h('p', { class: 'hint' }, TRADE_NOTE),
+        // Le détail replié sous la barre, comme dans tes albums (2026-10-28) : son titre dit ce que tu peux lui donner.
+        h('div', { class: 'album-meta' }, [h('details', { class: 'album-fold' }, [
+          h('summary', null, [icon('chev', 'sm'), h('span', { class: 'album-fold__sum' }, [
+            missing > 0 ? [h('b', null, fmt(missing)), ` lui ${plural(missing, 'manque', 'manquent')}`] : total ? 'Complète' : 'Vide',
+            help ? [" · tu peux l'aider : ", h('b', null, fmt(help))] : null,
+          ]), h('span', { class: 'album-fold__more' }, 'Détail')]),
+          h('div', { class: 'album-fold__body' }, [
+            ownLine ? h('div', { class: 'missing-sum' }, ownLine) : null,
+            h('div', { class: 'missing-sum' }, missLine),
+            help || want ? h('div', { class: 'missing-sum give-sum' }, [
+              help ? h('span', { key: 'help' }, ['Tu peux l\'aider : ', h('b', { class: 'num' }, fmt(help)), ` ${plural(help, 'carte', 'cartes')}`, helpDup ? [' dont ', h('b', { class: 'num' }, fmt(helpDup)), ' en double'] : null]) : null,
+              want ? h('span', { key: 'want' }, [help ? '· ' : '', h('b', { class: 'num' }, fmt(want)), ` de ses cartes ${plural(want, 'manque', 'manquent')} à tes collections`]) : null,
+            ]) : null,
+            missing > 0 ? h('p', { class: 'hint', 'aria-live': 'polite' }, hint) : null,
+            h('p', { class: 'hint' }, TRADE_NOTE),
+          ]),
+        ])]),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg seg--four', role: 'group', 'aria-label': 'Filtrer' }, [
             seg('Toutes', fr.albumFilter === 'all', setFilter('all')),
@@ -9135,10 +9192,16 @@
       ]),
     ]);
   }
-  // « Entre amis » (2026-10-28, demande de l'utilisateur : « trop pleine et mal découpée ») : l'en-tête et les membres en
-  // cartes compactes, puis trois sous-onglets : « Pour toi » (ce qui complète tes collections), « Pour tes amis » (tes
-  // cartes qui complètent les leurs) et « Échanges » (la page « Échanges possibles »). Les deux premiers sont dans la page
-  // (S.friends.view) ; le troisième a son adresse (#/amis/echanges).
+  // « Entre amis » (2026-10-28, demande de l'utilisateur : « complètement splittée par sous-menu ») : un en-tête commun
+  // (titre, « Actualiser », sous-menu) et quatre sous-pages, chacune avec son adresse (S.friends.page) :
+  // « Collections » (#/amis : chaque membre et les collections qu'il partage), « Pour toi » (#/amis/pour-toi), « Pour tes
+  // amis » (#/amis/pour-eux) et « Échanges » (#/amis/echanges, viewTrades).
+  const FRIEND_PAGES = [[null, 'Collections', 'amis'], ['fill', 'Pour toi', 'amis/pour-toi'], ['wants', 'Pour tes amis', 'amis/pour-eux'], ['trades', 'Échanges', 'amis/echanges']];
+  function openFriendsPage(page) {
+    if (page === 'trades') { openTrades(S.friends.trade || 'all'); return; }
+    Object.assign(S.friends, { page, open: null, album: null, albumFrom: null });
+    toTop();
+  }
   function viewFriendsHead() {
     const fr = S.friends;
     return h('div', { class: 'section-head' }, [
@@ -9148,19 +9211,46 @@
       h('button', { class: 'btn small', type: 'button', disabled: fr.busy, onClick: () => loadFriends(true) }, [icon('refresh', fr.busy ? 'sm spin' : 'sm'), 'Actualiser']),
     ]);
   }
+  // Compte de chaque sous-page : collections partagées, cases que tes amis remplissent, cartes que tu peux leur donner,
+  // cartes de tous les échanges.
   function friendsNav(active) {
+    const n = {
+      cols: allFriendCols.value.reduce((a, x) => a + (x.rows ? x.rows.length : 0), 0),
+      fill: friendHighlights.value.reduce((a, x) => a + x.rows.length, 0),
+      wants: friendWants.value.reduce((a, x) => a + x.rows.length, 0),
+      trades: trades.value.pairs.reduce((a, p) => a + p.rows.length, 0),
+    };
+    return h('nav', { class: 'fnav', 'aria-label': 'Entre amis' }, FRIEND_PAGES.map(([id, label]) => {
+      const on = (active || null) === id;
+      const c = n[id || 'cols'];
+      return h('button', { key: label, type: 'button', class: ['fnav__btn', { on }], 'aria-current': on ? 'page' : null, onClick: () => { if (!on) openFriendsPage(id); } },
+        [h('span', null, label), c ? h('span', { class: 'fnav__n num', 'aria-label': `(${fmt(c)})` }, fmt(c)) : null]);
+    }));
+  }
+  // Les collections partagées de chaque membre, avec leur progression (comme « Ses collections » de son classeur).
+  const allFriendCols = computed(() => {
+    void qidVersion.value;
+    return friendList.value.map((f) => {
+      if (!f.tshare || !f.targets) return { f, rows: null };
+      const index = friendIndexOf(f.id);
+      return { f, rows: f.targets.map((t) => ({ t, key: 'ft:' + f.id + ':' + t.id, p: friendProgressFor(index, t) })).sort((a, b) => COLLATOR.compare(a.t.name, b.t.name)) };
+    });
+  });
+  // Sous-page « Collections » : un bloc par membre (sa carte, puis ses collections ; 5 avant « Voir les N »).
+  function viewFriendsCols() {
     const fr = S.friends;
-    const fill = friendHighlights.value.reduce((a, x) => a + x.rows.length, 0);
-    const wants = friendWants.value.reduce((a, x) => a + x.rows.length, 0);
-    const swaps = trades.value.pairs.reduce((a, p) => a + p.rows.length, 0);
-    const item = (id, label, n, go) => h('button', { key: id, type: 'button', class: ['fnav__btn', { on: active === id }], 'aria-current': active === id ? 'page' : null, onClick: go },
-      [h('span', null, label), n ? h('span', { class: 'fnav__n num', 'aria-label': `(${fmt(n)})` }, fmt(n)) : null]);
-    const view = (v) => () => { fr.view = v; if (fr.page) closeTrades(); };
-    return h('nav', { class: 'fnav', 'aria-label': 'Entre amis' }, [
-      item('fill', 'Pour toi', fill, view('fill')),
-      item('wants', 'Pour tes amis', wants, view('wants')),
-      item('trades', 'Échanges', swaps, () => { if (fr.page !== 'trades') openTrades(fr.trade || 'all'); }),
-    ]);
+    return h('div', { class: 'fmembers' }, allFriendCols.value.map(({ f, rows }) => {
+      const key = 'mcols:' + f.id;
+      const shown = rows ? (fr.more[key] ? rows : rows.slice(0, FRIEND_ROWS)) : [];
+      return h('section', { class: 'fmember', key: f.id, 'aria-label': friendName(f) }, [
+        viewMemberRow(f),
+        !f.tshare ? h('p', { class: 'small muted fmember__none' }, `${friendName(f)} ne partage pas ses collections : parcours son classeur pour voir ses cartes.`)
+          : !rows ? h('p', { class: 'small muted fmember__none', role: 'status' }, 'Lecture de ses collections…')
+            : !rows.length ? h('p', { class: 'small muted fmember__none' }, `${friendName(f)} n'a pas encore de collection.`)
+              : h('div', { class: 'rows' }, shown.map((r) => viewFriendColRow(f, r))),
+        rows ? moreToggle(key, rows.length) : null,
+      ]);
+    }));
   }
   function viewFriends() {
     if (!sharing()) return viewShareOff();
@@ -9170,53 +9260,61 @@
     if (fr.page === 'trades') return viewTrades();
     const list = friendList.value;
     const loadingAll = fr.busy || list.some((f) => !f.cards || (f.tshare && !f.targets));
-    const fill = friendHighlights.value;
-    const wants = friendWants.value;
-    // Résumé des échanges qui te concernent (« Échanges » les détaille, pour tout le monde aussi).
-    const pairs = trades.value.pairs;
-    const giveTo = pairs.filter((p) => p.x.me);
-    const getFrom = pairs.filter((p) => p.z.me);
-    const give = giveTo.reduce((a, p) => a + p.rows.length, 0);
-    const get = getFrom.reduce((a, p) => a + p.rows.length, 0);
-    const others = pairs.filter((p) => !p.x.me && !p.z.me).reduce((a, p) => a + p.rows.length, 0);
-    // Qui en profite : les amis à qui tes cartes servent le plus (« les collections de Paul et Léa »), et tes collections
-    // que leurs cartes complètent le plus (« « Planètes » et « Couleurs » »).
-    const giveNames = giveTo.slice().sort((a, b) => b.rows.length - a.rows.length || COLLATOR.compare(friendName(a.z.f), friendName(b.z.f))).map((p) => friendName(p.z.f));
-    const getNames = rankNames(getFrom.flatMap((p) => p.rows), (r) => r.cols.map((c) => c.name));
-    const view = fr.view === 'wants' ? 'wants' : 'fill';
+    const page = fr.page === 'fill' || fr.page === 'wants' ? fr.page : null;
     const t = trades.value;
-    return h('div', { class: 'friends' }, [
-      viewFriendsHead(),
-      fr.loading ? h('p', { class: 'small muted', role: 'status' }, fr.loading) : null,
-      errLine(fr.error),
-      S.me && S.me.user && !S.me.user.pseudo ? h('p', { class: 'small muted pseudo-ask' }, ['Ajoute ton pseudo du jeu pour que tes amis te trouvent dans WikiMasters : ',
-        h('button', { class: 'linkish', type: 'button', onClick: openSettings }, 'Réglages'), '.']) : null,
-      list.length ? h('div', { class: 'members' }, list.map(viewMemberRow))
-        : fr.status === 'loading' || fr.busy ? h('p', { class: 'muted', role: 'status' }, 'Lecture des membres…')
-          : fr.status === 'ready' ? h('p', { class: 'empty-box' }, "Personne d'autre ne montre encore ses cartes : propose à tes amis d'activer « Montrer mes cartes aux autres membres » dans leurs Réglages.") : null,
-      list.length ? h('p', { class: 'trade-sum' }, pairs.length || !loadingAll ? [
-        h('b', null, fmt(give)), ` de tes cartes ${plural(give, 'peut', 'peuvent')} compléter les collections ${giveNames.length ? 'de ' + namesText(giveNames, false) : 'de tes amis'} ; `,
-        h('b', null, fmt(get)), ` de leurs cartes ${plural(get, 'peut', 'peuvent')} compléter ${getNames.length ? namesText(getNames, true) : 'les tiennes'}`,
-        others ? ['. Entre eux : ', h('b', null, fmt(others)), '.'] : '.',
-      ] : 'Recherche dans les classeurs…') : null,
-      list.length ? friendsNav(view) : null,
-      list.length ? h('section', { class: 'fpanel', 'aria-labelledby': 'h-fill', hidden: view !== 'fill' || null }, [
+    let body;
+    if (!list.length) {
+      body = [fr.status === 'loading' || fr.busy ? h('p', { class: 'muted', role: 'status' }, 'Lecture des membres…')
+        : fr.status === 'ready' ? h('p', { class: 'empty-box' }, "Personne d'autre ne montre encore ses cartes : propose à tes amis d'activer « Montrer mes cartes aux autres membres » dans leurs Réglages.") : null];
+    } else if (page === 'fill') {
+      const fill = friendHighlights.value;
+      body = [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-fill' }, 'Pour compléter tes collections'),
           h('small', null, 'les cartes qui te manquent et que tes amis ont ; leurs doubles d\'abord')]),
         !sharingTargets() ? h('p', { class: 'trade-note' }, ['Tes amis ne voient pas tes collections : ils ne savent pas ce qui te manque. ',
           h('button', { class: 'linkish', type: 'button', disabled: fr.shareBusy, onClick: () => setSharedTargets(true) }, 'Partager aussi mes collections à compléter')]) : null,
         fill.length ? h('div', { class: 'fcols' }, fill.map(viewFillCol))
           : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche dans les classeurs de tes amis…' : "Tes amis n'ont aucune des cartes qui manquent à tes collections."),
-      ]) : null,
-      list.length ? h('section', { class: 'fpanel', 'aria-labelledby': 'h-wants', hidden: view !== 'wants' || null }, [
+        h('p', { class: 'small muted friends-trade' }, TRADE_NOTE),
+      ];
+    } else if (page === 'wants') {
+      const wants = friendWants.value;
+      body = [
         h('div', { class: 'section-head' }, [h('h2', { id: 'h-wants' }, 'Ce qui pourrait intéresser tes amis'),
           h('small', null, 'tes cartes qui manquent aux collections qu\'ils partagent')]),
         wants.length ? h('div', { class: 'fcols' }, wants.map(viewWant))
           : h('p', { class: 'empty-box' }, loadingAll ? 'Recherche…' : !list.some((f) => f.tshare) ? 'Aucun de tes amis ne partage ses collections : impossible de savoir ce qui leur manque.'
             : 'Aucune de tes cartes ne manque aux collections de tes amis.'),
         wants.length && t.hidden.length ? h('p', { class: 'small muted' }, `Rien pour ${andList(t.hidden.map(friendName))}, qui ne ${t.hidden.length > 1 ? 'partagent pas leurs' : 'partage pas ses'} collections.`) : null,
-      ]) : null,
-      h('p', { class: 'small muted friends-trade' }, TRADE_NOTE),
+        h('p', { class: 'small muted friends-trade' }, TRADE_NOTE),
+      ];
+    } else body = [viewFriendsCols()];
+    return h('div', { class: 'friends' }, [
+      viewFriendsHead(),
+      fr.loading ? h('p', { class: 'small muted', role: 'status' }, fr.loading) : null,
+      errLine(fr.error),
+      S.me && S.me.user && !S.me.user.pseudo ? h('p', { class: 'small muted pseudo-ask' }, ['Ajoute ton pseudo du jeu pour que tes amis te trouvent dans WikiMasters : ',
+        h('button', { class: 'linkish', type: 'button', onClick: openSettings }, 'Réglages'), '.']) : null,
+      list.length ? friendsNav(page) : null,
+      h('section', { class: 'fpanel', 'aria-labelledby': page === 'fill' ? 'h-fill' : page === 'wants' ? 'h-wants' : 'h-friends' }, body),
+    ]);
+  }
+  // Résumé des échanges qui te concernent, en tête de « Échanges » : les amis à qui tes cartes servent le plus (« les
+  // collections de Paul et Léa »), et tes collections que leurs cartes complètent le plus (« « Planètes » et « Couleurs » »).
+  function tradeSummary() {
+    const pairs = trades.value.pairs;
+    const giveTo = pairs.filter((p) => p.x.me);
+    const getFrom = pairs.filter((p) => p.z.me);
+    const give = giveTo.reduce((a, p) => a + p.rows.length, 0);
+    const get = getFrom.reduce((a, p) => a + p.rows.length, 0);
+    const others = pairs.filter((p) => !p.x.me && !p.z.me).reduce((a, p) => a + p.rows.length, 0);
+    const giveNames = giveTo.slice().sort((a, b) => b.rows.length - a.rows.length || COLLATOR.compare(friendName(a.z.f), friendName(b.z.f))).map((p) => friendName(p.z.f));
+    const getNames = rankNames(getFrom.flatMap((p) => p.rows), (r) => r.cols.map((c) => c.name));
+    if (!pairs.length) return null;
+    return h('p', { class: 'trade-sum' }, [
+      h('b', null, fmt(give)), ` de tes cartes ${plural(give, 'peut', 'peuvent')} compléter les collections ${giveNames.length ? 'de ' + namesText(giveNames, false) : 'de tes amis'} ; `,
+      h('b', null, fmt(get)), ` de leurs cartes ${plural(get, 'peut', 'peuvent')} compléter ${getNames.length ? namesText(getNames, true) : 'les tiennes'}`,
+      others ? ['. Entre eux : ', h('b', null, fmt(others)), '.'] : '.',
     ]);
   }
 
@@ -12799,6 +12897,8 @@
         if (fr.q) p.set('q', fr.q);
         if (fr.filter !== 'all') p.set('filtre', fr.filter);
         if (fr.sort !== 'rarity') p.set('tri', fr.sort);
+      } else if (fr.page === 'fill' || fr.page === 'wants') {
+        path = fr.page === 'fill' ? 'amis/pour-toi' : 'amis/pour-eux';
       } else if (fr.page === 'trades') {
         path = 'amis/echanges';
         if (fr.trade !== 'all') p.set('qui', fr.trade);
@@ -12813,7 +12913,7 @@
   // falbum, trades, p (paramètres)}. Ce qui ne se lit pas (onglet inconnu, fragment sans « #/ ») = « Collections ».
   function parseRoute(hash) {
     const raw = String(hash || '').replace(/^#/, '');
-    const r = { tab: 'collections', album: null, withSubs: false, friend: null, falbum: null, trades: false, p: new URLSearchParams() };
+    const r = { tab: 'collections', album: null, withSubs: false, friend: null, falbum: null, trades: false, fpage: null, p: new URLSearchParams() };
     if (!raw.startsWith('/')) return r;
     const qi = raw.indexOf('?');
     if (qi >= 0) r.p = new URLSearchParams(raw.slice(qi + 1));
@@ -12825,6 +12925,7 @@
     else if (a === 'page' && title(b)) r.album = { kind: 'category', id: PAGE_SRC + title(b) };
     else if (a === 'ami' && b) { r.tab = 'amis'; r.friend = b; r.falbum = c || null; }
     else if (a === 'amis' && b === 'echanges') { r.tab = 'amis'; r.trades = true; }
+    else if (a === 'amis' && (b === 'pour-toi' || b === 'pour-eux')) { r.tab = 'amis'; r.fpage = b === 'pour-toi' ? 'fill' : 'wants'; }
     else if (TABS.some(([id]) => id === a) || a === 'nouveautes' || a === 'souhaits-sans-cartes') r.tab = a;
     return r;
   }
@@ -12869,6 +12970,8 @@
         Object.assign(fr, { q: p.get('q') || '', filter: pick('filtre', FRIEND_FILTERS, 'all'), sort: pick('tri', FRIEND_CARD_SORTS, 'rarity') });
       } else if (r.trades) {
         if (fr.page !== 'trades' || fr.open) openTrades(p.get('qui') || 'all'); else fr.trade = p.get('qui') || 'all';
+      } else if (r.fpage) {
+        if (fr.page !== r.fpage || fr.open) openFriendsPage(r.fpage);
       } else if (fr.open || fr.page) {
         Object.assign(fr, { open: null, album: null, albumFrom: null, page: null });
         toTop();

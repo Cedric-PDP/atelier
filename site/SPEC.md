@@ -685,11 +685,14 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre, au qid et au drapeau `sep` ; une réponse reste sous
   ~2 Mo (une collection fait 1,7 Mo rangés au plus), même pour un compte à 5 Mo de collections.
 - **Interface** (onglet « Entre amis », remise à plat le 2026-10-28, demande de l'utilisateur : « trop pleine et mal
-  découpée, très haute ») : les membres qui partagent en **cartes compactes** (prénom, pseudo, « Parcourir son classeur »,
-  pastilles « N cartes », « N cartes que tu n'as pas », « N en double », et en pied la synchro, « partage ses
-  collections : N » ou « ne partage pas ses collections », la valeur) ; le résumé des échanges en une ligne ; puis trois
-  **sous-onglets** soulignés avec leur compte (`.fnav`) : « Pour toi » et « Pour tes amis », deux panneaux de la page
-  (`S.friends.view`, l'autre caché), et « Échanges », la page « Échanges possibles » (ci-dessous). Chaque bloc (une
+  découpée, très haute » ; puis, le même jour : « complètement splittée par sous-menu ») : un en-tête commun (« Entre
+  amis », « Actualiser ») et un **sous-menu** souligné avec le compte de chaque sous-page (`.fnav`), **quatre
+  sous-pages, chacune avec son adresse** (`S.friends.page`) : « Collections » (`#/amis`, par défaut : pour chaque membre
+  qui partage, sa **carte compacte** — prénom, pseudo, pastilles « N cartes », « N cartes que tu n'as pas », « N en
+  double », « Parcourir son classeur », et en pied la synchro, « partage ses collections : N » ou « ne partage pas ses
+  collections », la valeur — puis ses collections partagées en lignes, comme « Ses collections », 5 avant « Voir les
+  N ») ; « Pour toi » (`#/amis/pour-toi`) ; « Pour tes amis » (`#/amis/pour-eux`) ; « Échanges » (`#/amis/echanges`, la
+  page « Échanges possibles », ci-dessous, avec le résumé des échanges en une ligne en tête). Chaque bloc (une
   collection, un ami) se replie par son chevron (`.fcol__fold`, gardé le temps de la visite) et montre **5 lignes** avant
   « Voir les N » ; « Le classeur montre qui a quoi… » une seule fois, en pied. « Pour compléter tes collections » (« Pour
   toi », avec « Tes amis ne voient pas tes collections… » si tu ne les partages pas) = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
@@ -1317,6 +1320,7 @@ chemin, `/collections/…`, y serait un 404 au rafraîchissement). Rien côté s
 | `#/categorie/<nom>` (`?sous=1` : sous-catégories comprises) · `#/page/<titre>` | une catégorie, une page de Wikipédia (titres avec « _ » à la place des espaces) |
 | `#/cartes` · `#/amis` · `#/marche` · `#/chat` · `#/maj` · `#/reglages` | les onglets |
 | `#/nouveautes` | la page « Nouveautés » (hors des onglets, voir « Nouveautés ») |
+| `#/amis/pour-toi`, `#/amis/pour-eux` | « Entre amis », sous-pages « Pour toi » et « Pour tes amis » (2026-10-28) |
 | `#/amis/echanges` (`?qui=me` ou l'identifiant public d'un membre) | « Échanges possibles » |
 | `#/ami/<id public>` · `#/ami/<id public>/<id de sa collection>` (`?depuis=echanges`) | le classeur d'un ami, une de ses collections |
 
@@ -1341,6 +1345,17 @@ tes cartes (pas les cases vides). Une valeur inconnue revient à la valeur par d
   « Ajouter par tags du jeu », fusion), les fenêtres, la colonne et les sections choisies d'une page de Wikipédia.
 
 ## Onglet « Collections » (interface)
+
+**En-tête d'un album** (2026-10-28, demande de l'utilisateur : les infos et cases à cocher « trop massives » doivent
+rester accessibles sans être le centre de la page) : le titre (« 14 sur 21 », valeur, source) et les actions sur une
+ligne — « Modifier », « Réorganiser » et un menu **« Plus »** (`details.menu` : « Ajouter par tags du jeu »,
+« Fusionner avec… », « Autres sections de la page », « Voir sur Wikipédia », « Supprimer » ; un clic ailleurs ou
+Échap le referme) —, la barre des raretés, puis **deux volets repliés** (`.album-fold`) : « N manquent · pour la
+compléter ≈ X » (le détail des raretés possédées et manquantes, le coût, l'aide sur « ≈ ») et « Synchro avec le jeu »,
+avec en pastilles ce qui est actif (souhaits, tag, favoris, ajout automatique ; « rien d'actif ») et dedans
+l'ajout automatique, la liste de souhaits, l'auto-tag et les auto-favoris ; enfin filtres et tris. L'album d'une
+collection d'un ami replie de même son détail (« N lui manquent · tu peux l'aider : M »). L'album d'une catégorie ou
+d'une page de Wikipédia garde « Créer une collection » et « Voir sur Wikipédia » visibles.
 
 Depuis le 2026-10-20 (demande de l'utilisateur : « on peut créer des collections de plusieurs manières différentes et
 elles sont accessibles de manières différentes. Il faut complètement uniformiser tout ça »), l'onglet n'a plus qu'**une

@@ -235,7 +235,7 @@ main.wrap { padding-block: 26px 110px; }
 .missing-sum b { color: var(--fg); }
 .hint { font-size: 12px; color: var(--faint); max-width: 80ch; }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
-.toolbar.album-actions { gap: 8px 10px; margin-bottom: 10px; }
+.toolbar.album-actions { gap: 8px 10px; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
 .seg button { border: 0; background: none; padding: 6px 13px; font-size: 13px; color: var(--muted); }
 .seg button + button { border-left: 1px solid var(--border); }
@@ -1621,3 +1621,40 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .wish-missing-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 14px 0; border-bottom: 1px solid var(--border); }
 .wish-missing-item .check { min-width: 0; overflow-wrap: anywhere; }
 .wish-missing-collections { grid-column: 1 / -1; overflow-wrap: anywhere; }
+/* En-tête d'un album (2026-10-28) : titre et actions sur une ligne, barre des raretés, puis deux volets repliés
+   (« N manquent · pour la compléter » et « Synchro avec le jeu ») au-dessus des filtres. */
+.album-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px 20px; }
+.album-top .album-title { flex: 1 1 22rem; min-width: 0; }
+.album-top .toolbar.album-actions { flex: 0 1 auto; margin: 0; justify-content: flex-end; }
+.album-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; }
+.album-fold { flex: 0 1 auto; min-width: 0; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+.album-fold[open] { flex-basis: 100%; }
+.album-fold > summary { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 9px; cursor: pointer; list-style: none; font-size: 13px; color: var(--muted); border-radius: 10px; }
+.album-fold > summary::-webkit-details-marker { display: none; }
+.album-fold > summary:hover { color: var(--fg); }
+.album-fold > summary > .ic { width: 13px; height: 13px; flex: none; transition: transform 0.2s var(--ease); }
+.album-fold[open] > summary > .ic { transform: rotate(90deg); }
+.album-fold__sum { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; }
+.album-fold__sum b { color: var(--fg); font-variant-numeric: tabular-nums; }
+.album-fold__more { margin-left: auto; padding-left: 10px; font-size: 12px; font-weight: 600; color: var(--link); }
+.album-fold[open] .album-fold__more { display: none; }
+.album-fold__body { display: grid; gap: 10px; padding: 4px 12px 12px; }
+.gchip { font-size: 11.5px; font-weight: 600; padding: 1px 8px; border-radius: 99px; color: var(--link); border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border)); }
+.gchip.off { color: var(--faint); border-color: var(--border); font-weight: 500; }
+/* Menu « Plus » : un bouton, la liste posée dessous, à droite. */
+.menu { position: relative; }
+.menu > summary { list-style: none; }
+.menu > summary::-webkit-details-marker { display: none; }
+.menu[open] > summary { border-color: var(--accent); }
+.menu__list { position: absolute; z-index: 30; right: 0; top: calc(100% + 6px); min-width: 230px; display: grid; gap: 2px; padding: 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); box-shadow: 0 18px 40px -12px var(--shadow); }
+.menu__list .btn { justify-content: flex-start; border-color: transparent; background: none; font-weight: 500; }
+.menu__list .btn:hover { border-color: transparent; background: var(--surface); }
+/* « Entre amis », sous-page « Collections » : un bloc par membre, sa carte puis ses collections. */
+.fmembers { display: grid; gap: 26px; }
+.fmember { display: grid; gap: 10px; min-width: 0; }
+.fmember > .member { grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 18px; }
+.fmember > .member .member__foot { grid-column: 1 / -1; }
+.fmember > .member .member__chips { justify-content: flex-end; }
+.fmember__none { padding-left: 4px; }
+.fmember > .linkish { justify-self: start; }
+@media (max-width: 640px) { .fmember > .member { grid-template-columns: minmax(0, 1fr); } .fmember > .member .member__chips { justify-content: flex-start; } }

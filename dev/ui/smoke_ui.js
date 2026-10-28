@@ -3036,7 +3036,10 @@ async function main() {
     const fnavBtn = (t) => { const b = cls('fnav__btn').find((n) => text(n.querySelector('span')) === t); if (!b) fail('sous-onglet absent : ' + t); return b; };
     const fcol = (name) => cls('fcol').find((n) => text(n.querySelector('.fcol__name')) === name) || null;
     const titlesIn = (n) => n.querySelectorAll('.fitem__title').map(text);
-    check(await waitFor(() => has('Paul') && has('Léa') && fcol('Planète du Système solaire'), 5000), 'Entre amis : membres ou mise en avant absents');
+    // Sous-pages (2026-10-28) : « Collections » par défaut, puis « Pour toi ».
+    check(await waitFor(() => has('Paul') && has('Léa') && cls('fnav__btn').length === 4, 5000), 'Entre amis : membres ou sous-menu absents');
+    fnavBtn('Pour toi').click();
+    check(await waitFor(() => fcol('Planète du Système solaire'), 5000), 'Entre amis : « Pour toi » absent');
     check(fcol('Planète du Système solaire').querySelector('.row-kind') && text(fcol('Planète du Système solaire').querySelector('.row-kind')) === 'depuis la catégorie Wikipédia', 'collection tirée de la catégorie : mention discrète attendue');
     check(apiLog.slice(mark).includes('PATCH /api/me') && !has('Zoé') && !has('Bob'), 'seuls les membres qui partagent doivent apparaître');
     if (!SERVER) {
@@ -3060,6 +3063,8 @@ async function main() {
       check(fcol('Exemples de test') && titlesIn(fcol('Exemples de test')).join() === 'Article 5', 'Exemples de test : Article 5 (chez Paul) attendu');
     }
     // Membres : nombre de cartes et cartes qui me manquent.
+    fnavBtn('Collections').click();
+    await settle();
     const paulRow = cls('member').find((n) => text(n).includes('Paul'));
     check(paulRow && text(paulRow).includes('5 cartes') && text(paulRow).includes('4 cartes que tu n\'as pas') && text(paulRow).includes('1 en double'), 'ligne de Paul : ' + text(paulRow));
     // Pseudo dans le jeu : celui de Paul avec un lien vers son profil du jeu ; Léa n'en a pas donné.
@@ -3071,6 +3076,8 @@ async function main() {
       check(leaRow && !text(leaRow).includes('pseudo dans le jeu'), 'Léa : pas de pseudo attendu');
     }
     // L'inverse : personne ne partage encore ses collections, donc rien à leur proposer (plus d'estimation par le catalogue).
+    fnavBtn('Pour tes amis').click();
+    await settle();
     check(await waitFor(() => has('Aucun de tes amis ne partage ses collections : impossible de savoir ce qui leur manque.')) && !fcol('Paul') && !fcol('Léa')
       && !cls('badge').some((b) => text(b) === 'estimation'), 'tes cartes pour tes amis : rien sans leurs collections, ' + text(doc.body).slice(-400));
     // Rien des amis dans IndexedDB (le cache ne garde que mon classeur).
@@ -3078,6 +3085,8 @@ async function main() {
     check(!JSON.stringify(cachedCards()).includes('p-mars') && !JSON.stringify(cachedCards()).includes('Pluton'), 'les cartes des amis ne doivent pas aller dans IndexedDB');
 
     // Album : badge discret sur les cases vides qu'un ami peut remplir ; fiche de la case vide : « Chez : … ».
+    fnavBtn('Pour toi').click();
+    await settle();
     fcol('Planète du Système solaire').querySelector('.fcol__name').click();
     await settle(80);
     check(has("Il t'en manque") && tabBtn('collections').getAttribute('aria-selected') === 'true', 'le nom de la collection doit ouvrir son album');
@@ -3101,6 +3110,8 @@ async function main() {
     // Classeur de Paul en lecture seule : toutes ses cartes, puis « Me manquent », recherche.
     mark = apiLog.length;
     await goTab('amis');
+    fnavBtn('Collections').click();
+    await settle();
     if (!SERVER) check(apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/')).length === 0, 'cartes des amis relues sans changement : ' + apiLog.slice(mark).join(', '));
     all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de Paul')[0].click();
     await settle();
@@ -3115,7 +3126,7 @@ async function main() {
     check(cls('card--friend').length === 1 && cls('card--friend')[0].classList.contains('shiny'), 'recherche dans le classeur d\'un ami');
     needButton('← Entre amis').click();
     await settle();
-    check(has('Pour compléter tes collections'), 'retour à la vue d\'ensemble');
+    check(has('Parcourir son classeur') && cls('fnav__btn').some((b) => b.classList.contains('on') && text(b).startsWith('Collections')), 'retour à la vue d\'ensemble');
 
     // 29. Échanges possibles : Paul montre aussi ses collections (deux), Léa non (estimation d'après le catalogue), Zoé
     // ne montre rien. Une ligne « carte de X → collection(s) de Z » par carte, groupées par couple ; vraies collections
@@ -3154,6 +3165,8 @@ async function main() {
       check(text(row('Léa')).includes('ne partage pas ses collections'), 'ligne de Léa : ' + text(row('Léa')));
       const tsum = () => (one('trade-sum') ? text(one('trade-sum')) : '');
       // Les amis et tes collections les plus concernés, nommés (2026-10-16).
+      fnavBtn('Échanges').click();
+      await settle();
       check(await waitFor(() => tsum().includes('4 de tes cartes peuvent compléter les collections de Paul ; 6 de leurs cartes peuvent compléter « Planète du Système solaire » et « Exemples de test ». Entre eux : 3.'), 8000),
         'résumé des échanges : ' + tsum());
       if (!SERVER) {
@@ -3162,6 +3175,8 @@ async function main() {
       }
       check(has('ne partage pas ses collections') && has('Tes amis ne voient pas tes collections'), 'notes des échanges absentes');
       // « Ce qui pourrait intéresser tes amis » : les collections que Paul montre ; rien pour Léa, qui ne les montre pas.
+      fnavBtn('Pour tes amis').click();
+      await settle();
       check(fcol('Paul') && titlesIn(fcol('Paul')).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && !fcol('Paul').querySelector('.badge'),
         'tes cartes pour Paul (ses collections) : ' + (fcol('Paul') ? text(fcol('Paul')) : 'absent'));
       // Le résumé nomme ses collections concernées, les plus complétées d'abord (« Les préférées de Paul » : 4 cartes).
@@ -3364,7 +3379,7 @@ async function main() {
       // Rien des amis dans IndexedDB ; rien de relu en revenant sur l'onglet quand rien n'a changé.
       await sleep(1600);
       check(!JSON.stringify(cachedCards()).includes('Les préférées de Paul'), 'les collections des amis ne doivent pas aller dans IndexedDB');
-      fnavBtn('Pour toi').click(); // sous-onglets (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
+      fnavBtn('Collections').click(); // sous-pages (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
       await settle();
       mark = apiLog.length;
       await goTab('collections');
@@ -3410,6 +3425,8 @@ async function main() {
           { name: 'Planète du Système solaire', source: 'wp:Planète du Système solaire', items: its(['Mars (planète)', 'Jupiter (planète)', 'Terre', 'Saturne (planète)']) },
           { name: 'Élément chimique', source: 'wp:Élément chimique', items: its(['Hydrogène', 'Hélium', 'Lithium']) },
         ]) check((await rawApi('POST', '/api/targets/save', paulKey, t)).status === 200, 'catégorie de Paul refusée');
+        fnavBtn('Collections').click();
+        await settle();
         needButton('Actualiser').click();
         check(await waitFor(() => row('Paul') && text(row('Paul')).includes('partage ses collections : 4'), 5000), 'ligne de Paul (4 collections) : ' + text(row('Paul')));
         // Échanges : une carte qui casserait une collection de celui qui donne n'est plus proposée (2026-10-26). Jupiter, que
@@ -3426,7 +3443,7 @@ async function main() {
         check(pick && pick.querySelectorAll('.trade-pick__title').map(text).join(' | ') === 'Mars (planète) | Article 5', 'fenêtre : Jupiter de Paul ne doit plus être proposée : ' + (pick ? text(pick) : 'absente'));
         tmd().querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
         await settle();
-        fnavBtn('Pour toi').click(); // sous-onglets (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
+        fnavBtn('Collections').click(); // sous-pages (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
         await settle();
         const openBinder = async (name) => { all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de ' + name)[0].click(); await settle(); };
         const sect = (id) => all((n) => n.tagName === 'SECTION' && n.getAttribute('aria-labelledby') === id)[0] || null;
@@ -3568,6 +3585,8 @@ async function main() {
         needButton('← Entre amis').click();
         await settle();
         // Depuis « Ce qui pourrait intéresser tes amis » : le nom d'une collection de Paul ouvre son album.
+        fnavBtn('Pour tes amis').click();
+        await settle();
         fcol('Paul').querySelectorAll('.fitem__col')[0].click();
         await settle(80);
         check(atitle().includes('Paul en a') && buttonByText('← Retour au classeur de Paul') && !buttonByText('← Échanges possibles'), 'album depuis « Ce qui pourrait intéresser tes amis » : ' + atitle());
