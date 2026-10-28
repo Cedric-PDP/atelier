@@ -50,7 +50,8 @@ function collectionCte(source) {
       'count', SUM(json_extract(v, '$.count')),
       'shiny', json(CASE WHEN MAX(json_extract(v, '$.shiny')) THEN 'true' ELSE 'false' END),
       'starred', json(CASE WHEN MAX(json_extract(v, '$.starred')) THEN 'true' ELSE 'false' END),
-      'obtained_at', MIN(json_extract(v, '$.obtained_at'))
+      'obtained_at', MIN(json_extract(v, '$.obtained_at')),
+      'fav', SUM(COALESCE(json_extract(v, '$.fav'), CASE WHEN json_extract(v, '$.starred') AND json_extract(v, '$.count') = 1 THEN 1 ELSE 0 END))
     ) AS data, MAX(json_type(v, '$.gtags') = 'array') AS gread
     FROM d WHERE bad IS NULL GROUP BY card_id
   ),

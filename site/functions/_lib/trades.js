@@ -233,6 +233,17 @@ export async function createTrade(env, user, body) {
       throw new HttpError(409, `${friendName} n'a plus dans le jeu : ${missingHis.map((id) => `« ${title(hisTitles, id)} »`).join(', ')}.`);
     }
 
+    // Le jeu refuse un exemplaire favori : si tous les exemplaires d'une carte le sont, inutile de l'interroger.
+    const allStarred = (copies, ids) => ids.filter((id) => copies.get(id).every((r) => r.starred));
+    const lockedMine = allStarred(myCopies, give);
+    if (lockedMine.length) {
+      throw new HttpError(409, `En favori dans le jeu, donc non échangeables : ${lockedMine.map((id) => `« ${title(myTitles, id)} »`).join(', ')}. Décoche-les, ou retire le favori dans le jeu.`);
+    }
+    const lockedHis = allStarred(hisCopies, get);
+    if (lockedHis.length) {
+      throw new HttpError(409, `En favori chez ${friendName} dans le jeu, donc non échangeables : ${lockedHis.map((id) => `« ${title(hisTitles, id)} »`).join(', ')}.`);
+    }
+
     const items = [
       ...give.map((id) => ({ user_card_id: pickCopy(myCopies.get(id)).id, card_id: id, offered_by: s.uid })),
       ...get.map((id) => ({ user_card_id: pickCopy(hisCopies.get(id)).id, card_id: id, offered_by: recipient })),

@@ -64,6 +64,8 @@ function validCard(c) {
   if (c.url !== null) out.url = c.url;
   if (c.shiny) out.shiny = true;
   if (c.starred) out.starred = true;
+  // Exemplaires en favori (le jeu refuse d'échanger un exemplaire favori) : facultatif, ignoré s'il est incohérent.
+  if (Number.isInteger(c.fav) && c.fav > 0 && c.fav <= c.count) out.fav = c.fav;
   if (c.obtained_at !== null) out.obtained_at = c.obtained_at;
   if (c.eid !== null) out.eid = c.eid;
   const variants = c.variants === null || c.variants === undefined ? null : cleanVariants(c.variants, c.count);
@@ -142,6 +144,7 @@ export function entryToCard(entry, names = new Map()) {
     count: entry.count ?? 1,
     shiny: !!entry.is_shiny,
     starred: !!entry.starred,
+    fav: entry.starred ? entry.count ?? 1 : 0,
     obtained_at: opt(entry.obtained_at),
     eid: entry.id === undefined || entry.id === null ? null : String(entry.id),
     variants: { [(RARITIES.has(entry.snapshot_rarity) ? entry.snapshot_rarity : c.rarity) + (entry.is_shiny ? '*' : '')]: entry.count ?? 1 },

@@ -668,7 +668,7 @@ await test('première lecture : regroupement, hide_image, entrées invalides, sa
   assert.equal(cards.cards.length, 120);
   assert.ok(cards.fetched_at);
   const keys = ['id', 'title', 'rarity', 'atk', 'def', 'quality', 'pageviews', 'category', 'image', 'url', 'count',
-    'shiny', 'starred', 'obtained_at', 'variants', 'gtags', 'tags'];
+    'shiny', 'starred', 'obtained_at', 'fav', 'variants', 'gtags', 'tags'];
   for (const c of cards.cards) assert.deepEqual(Object.keys(c), keys);
   const byId = new Map(cards.cards.map((c) => [c.id, c]));
   const d = byId.get(dup.id);
@@ -679,6 +679,8 @@ await test('première lecture : regroupement, hide_image, entrées invalides, sa
   assert.deepEqual(d.variants, Object.fromEntries(Object.entries(want).sort()));
   assert.equal(d.shiny, true);
   assert.equal(d.starred, true);
+  assert.equal(d.fav, 1, 'fav = exemplaires des lignes favorites (une ligne de 1 sur dup.n + 3)');
+  assert.equal(byId.get(base[6].id).fav, 0);
   assert.equal(d.obtained_at, '2026-01-02T10:00:00.000Z');
   assert.equal(byId.get(base[6].id).count, base[6].n);
   assert.equal(byId.get(pic.id).image, null);
@@ -2300,8 +2302,8 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.deepEqual(r.json.member, { id: benPub, name: 'Ben', fetched_at: (await me(ben)).fetched_at });
   assert.deepEqual([r.json.part, r.json.next_part, r.json.cards.length], ['0', null, 12]);
   const own = (await call('GET', 'cards', { key: ben.key })).json.cards;
-  assert.deepEqual(r.json.cards, own.map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: c.shiny, image: c.image ?? null, url: c.url ?? null })));
-  assert.deepEqual(r.json.cards.map((c) => Object.keys(c).join(',')), own.map(() => 'id,title,rarity,count,shiny,image,url'));
+  assert.deepEqual(r.json.cards, own.map((c) => ({ id: c.id, title: c.title, rarity: c.rarity, count: c.count, shiny: c.shiny, fav: 0, image: c.image ?? null, url: c.url ?? null })));
+  assert.deepEqual(r.json.cards.map((c) => Object.keys(c).join(',')), own.map(() => 'id,title,rarity,count,shiny,fav,image,url'));
   assert.deepEqual((await pageOf(ana, benPub)).json, r.json, 'sans part : la première page');
   // Avec la cote de la carte (cache commun des ventes, pour la valeur de son classeur dans la page) : `v` tel que rangé,
   // seulement pour une carte qui en a une (rien pour une carte lue sans vente, `{}`, ni pour une carte jamais cotée).
@@ -3922,6 +3924,23 @@ await test('échange : POST /api/trades/create propose un échange dans le jeu (
   r = await create({ member: pub(ben), get: [benCards[0].id] });
   assert.equal(r.status, 200);
   assert.deepEqual(site().map((c) => c.path), ['/api/trades', '/api/trades'], 'cartes de Ben lues dans la base');
+
+  // Tous les exemplaires d'une carte en favori : refus avant d'interroger le jeu (de ton côté, puis du sien).
+  const nTrades = supa.trades.length;
+  supa.player(anaUid).cards.find((x) => x.id === `ex-${anaCards[1].id}`).starred = true;
+  supa.player(benUid).cards.find((x) => x.id === `ex-${benCards[1].id}`).starred = true;
+  supa.calls = [];
+  r = await create({ member: pub(ben), give: [anaCards[1].id] });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /favori/);
+  assert.ok(r.json.error.includes(anaCards[1].title));
+  r = await create({ member: pub(ben), get: [benCards[1].id] });
+  assert.equal(r.status, 409);
+  assert.match(r.json.error, /favori/);
+  assert.equal(supa.trades.length, nTrades);
+  assert.deepEqual(site().map((c) => c.path), [], 'aucun appel au site du jeu');
+  supa.player(anaUid).cards.find((x) => x.id === `ex-${anaCards[1].id}`).starred = false;
+  supa.player(benUid).cards.find((x) => x.id === `ex-${benCards[1].id}`).starred = false;
 
   // Wikibidous d'un côté ou de l'autre (initiator_wikibidous = ceux d'Ana, recipient_wikibidous = ceux de Ben), seuls ou
   // avec des cartes ; mal formés : 400 sans rien envoyer ; plus que le solde : refus du jeu repris.

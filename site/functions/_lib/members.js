@@ -105,6 +105,7 @@ const MEMBER_PAGE = `SELECT c.card_id, json_object(
     'rarity', json_extract(c.data, '$.rarity'),
     'count', json_extract(c.data, '$.count'),
     'shiny', json(CASE WHEN json_extract(c.data, '$.shiny') THEN 'true' ELSE 'false' END),
+    'fav', COALESCE(json_extract(c.data, '$.fav'), 0),
     'image', json_extract(c.data, '$.image'),
     'url', json_extract(c.data, '$.url')
   ) AS j, CASE WHEN p.data <> '{}' THEN p.data END AS v

@@ -1205,7 +1205,18 @@
   // ab = le sens a → b, ba = b → a (null : rien dans ce sens). off : une paire avec toi et un ami qui n'a ni relié son
   // compte du jeu ni donné son pseudo (on ne saurait pas à qui proposer l'échange) : grisée, rangée après les autres
   // (2026-10-28, demande de l'utilisateur).
-  const offTrade = (d) => !!(d.a.me && d.b.f && !d.b.f.game);
+  const noGameTrade = (d) => !!(d.a.me && d.b.f && !d.b.f.game);
+  // Le jeu refuse d'échanger un exemplaire favori (2026-10-28) : une carte dont tous les exemplaires le sont est grisée (fav =
+  // exemplaires favoris, lu à la synchro ; sans lui, seule une carte à un seul exemplaire favori est sûre). Une paire dont
+  // toutes les cartes, dans les deux sens, sont dans ce cas est grisée en entier.
+  const favLocked = (c) => {
+    const n = Math.max(1, Number(c.count) || 1);
+    const f = Number(c.fav);
+    return f > 0 ? f >= n : !!c.starred && n === 1;
+  };
+  const lockedSide = (p) => !!p && p.rows.length > 0 && p.rows.every((r) => favLocked(r.card));
+  const lockedTrade = (d) => !!(d.ab || d.ba) && (!d.ab || lockedSide(d.ab)) && (!d.ba || lockedSide(d.ba));
+  const offTrade = (d) => noGameTrade(d) || lockedTrade(d);
   function tradeDuos(pairs) {
     const who = (p) => (p.me ? '' : friendName(p.f));
     const duos = new Map();
@@ -5951,7 +5962,7 @@
     // v : les cotes de la carte (cache commun des ventes du jeu), {"R": {p, n, w, l, d}}, ou null.
     const v = c.v && typeof c.v === 'object' && !Array.isArray(c.v) ? c.v : null;
     return markRaw({ id: String(c.id), title, rarity: RARITY_NAME[c.rarity] ? c.rarity : null, count: Math.max(1, Number(c.count) || 1),
-      shiny: c.shiny === true, image: link(c.image), url: link(c.url), v, _k: fold(title) });
+      fav: Math.max(0, Number(c.fav) || 0), shiny: c.shiny === true, image: link(c.image), url: link(c.url), v, _k: fold(title) });
   }
   async function readMemberCards(id, gen) {
     const out = [];
@@ -6182,7 +6193,7 @@
   }
   function openTradeNew(f) {
     const { give, get } = tradeRowsWith(f);
-    const pick = (rows) => rows.filter((r) => r.dup).map((r) => r.card.id);
+    const pick = (rows) => rows.filter((r) => r.dup && !favLocked(r.card)).map((r) => r.card.id);
     S.tradeNew = { f, give: pick(give), get: pick(get), giveWb: '', getWb: '', busy: false, error: '', done: null,
       fr: { st: 'loading', canRequest: false, busy: false, error: '' } };
     S.modal = 'trade';
@@ -8991,6 +9002,7 @@
     const body = [
       pill(r.card.rarity), h('span', { class: 'fitem__title' }, r.card.title),
       r.dup ? h('span', { class: 'holder dup', title: `${p.x.me ? 'Tu en as' : friendName(p.x.f) + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null,
+      favLocked(r.card) ? h('span', { class: 'fitem__fav', title: "Favori dans le jeu : le jeu refuse de l'échanger" }, 'favori') : null,
     ];
     // Collections de Z : chez un ami, chaque nom ouvre son album (lecture seule) ; d'ici, un lien ramène aux échanges.
     const cols = h('span', { class: 'fitem__cols' }, ['→ ', ...colLinks(p.z.me ? null : p.z.f, r.cols, 'trades')]);
@@ -9022,7 +9034,7 @@
     return h('section', { class: 'trade__side', key: p.key }, [
       head,
       h('p', { class: 'fcol__sum' }, tradeSum(p)),
-      h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id }, [viewTradeRow(p, r)]))),
+      h('ul', { class: 'fitems' }, rows.map((r) => h('li', { key: r.card.id, class: { locked: favLocked(r.card) } }, [viewTradeRow(p, r)]))),
       moreToggle(key, p.rows.length),
     ]);
   }
@@ -9046,7 +9058,8 @@
         h('span', { class: 'fcol__name' }, [personWho(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personWho(d.b)]),
         f && !off ? h('button', { class: 'btn small primary trade__new', type: 'button', onClick: () => openTradeNew(f) }, `Proposer un échange à ${friendName(f)}`) : null,
       ]),
-      off ? h('p', { class: 'trade-note trade__off' }, [h('b', null, friendName(f)), " n'a ni relié son compte du jeu ni donné son pseudo du jeu : impossible de lui proposer un échange depuis le classeur (il peut donner son pseudo dans ses Réglages)."]) : null,
+      off && noGameTrade(d) ? h('p', { class: 'trade-note trade__off' }, [h('b', null, friendName(f)), " n'a ni relié son compte du jeu ni donné son pseudo du jeu : impossible de lui proposer un échange depuis le classeur (il peut donner son pseudo dans ses Réglages)."])
+        : off ? h('p', { class: 'trade-note trade__off' }, 'Toutes ces cartes sont en favori dans le jeu : le jeu refuse de les échanger.') : null,
       h('div', { class: 'trade__sides' }, [viewTradeSide(d.a, d.b, d.ab), viewTradeSide(d.b, d.a, d.ba)]),
     ]);
   }
@@ -9116,7 +9129,7 @@
         }, [
           h('span', { class: 'duos__names' }, [personOf(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personOf(d.b)]),
           viewDuoCounts(d),
-          offTrade(d) ? h('span', { class: 'duos__off' }, 'Échange impossible : ni compte du jeu relié ni pseudo') : null,
+          offTrade(d) ? h('span', { class: 'duos__off' }, noGameTrade(d) ? 'Échange impossible : ni compte du jeu relié ni pseudo' : 'Échange impossible : cartes en favori dans le jeu') : null,
         ]))),
         h('div', { class: 'duos__panels' }, list.map((d) => viewTradeDuo(d, d !== cur))),
       ]) : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
@@ -12333,11 +12346,13 @@
       ]);
     };
     const row = (side, r) => {
-      const on = tn[side].includes(r.card.id);
-      return h('li', { key: r.card.id, class: { on } }, [
+      const locked = favLocked(r.card);
+      const on = !locked && tn[side].includes(r.card.id);
+      return h('li', { key: r.card.id, class: { on, locked } }, [
         h('label', { class: 'check' }, [
-          h('input', { type: 'checkbox', checked: on, disabled: tn.busy, onChange: () => toggleTradeCard(tn, side, r.card.id) }),
+          h('input', { type: 'checkbox', checked: on, disabled: tn.busy || locked, onChange: () => toggleTradeCard(tn, side, r.card.id) }),
           pill(r.card.rarity), h('span', { class: 'trade-pick__title' }, r.card.title),
+          locked ? h('span', { class: 'fitem__fav', title: "Favori dans le jeu : le jeu refuse de l'échanger" }, 'favori') : null,
           r.dup ? h('span', { class: 'holder dup', title: `${side === 'give' ? 'Tu en as' : name + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null]),
         h('span', { class: 'why' }, '→ ' + colsText(r.cols, ', ')),
       ]);
@@ -12346,10 +12361,10 @@
       h('legend', null, [legend, h('span', { class: 'n' }, ` · ${fmt(tn[key].length)} / ${fmt(rows.length)}`)]),
       rows.length ? h('ul', { class: 'trade-pick__list' }, rows.map((r) => row(key, r))) : h('p', { class: 'note' }, empty),
       rows.length > 1 ? h('p', { class: 'trade-pick__all' }, [
-        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.map((r) => r.card.id); tn.error = ''; } }, 'Tout cocher'), ' · ',
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => !favLocked(r.card)).map((r) => r.card.id); tn.error = ''; } }, 'Tout cocher'), ' · ',
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = []; } }, 'Rien'),
         ' · ',
-        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => r.dup).map((r) => r.card.id); } }, 'Les doubles')]) : null,
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => r.dup && !favLocked(r.card)).map((r) => r.card.id); } }, 'Les doubles')]) : null,
       wb,
     ]);
     return h(Modal, { key: 'trade', title, wide: true, onClose: closeModal }, () => [
