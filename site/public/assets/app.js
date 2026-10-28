@@ -416,8 +416,17 @@
     try { crypto.getRandomValues(a); } catch (e) { for (let i = 0; i < a.length; i++) a[i] = Math.floor(Math.random() * 256); }
     return Array.from(a, (b) => b.toString(16).padStart(2, '0')).join('');
   };
+  // Vignette de Wikipédia : la page la retrouve d'elle-même (pageimages), elle n'a pas besoin d'être rangée.
+  const WIKI_THUMB = /^https?:\/\/upload\.wikimedia\.org\//i;
   async function saveTargetApi(body) {
-    const items = Array.isArray(body.items) ? body.items : [];
+    let items = Array.isArray(body.items) ? body.items : [];
+    // Au-delà de 1,7 Mo, les vignettes de Wikipédia partent (comme à la fusion) : une liste de 8 000 articles avec leurs
+    // adresses d'images n'y tiendrait pas, sans elles si (2026-10-28). Les images du jeu restent.
+    if (items.some((it) => it && typeof it.image === 'string' && WIKI_THUMB.test(it.image))
+      && utf8Length(JSON.stringify(items)) > TARGET_MAX_BYTES) {
+      items = items.map((it) => (it && typeof it.image === 'string' && WIKI_THUMB.test(it.image) ? { ...it, image: null } : it));
+      body = { ...body, items };
+    }
     const parts = [];
     let cur = [];
     let size = 2;
