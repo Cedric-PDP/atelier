@@ -8,6 +8,17 @@
       {"icon": "🖼️", "title": "Illustrations des cartes", "items": [
         {"text":"Nouvelle case « Prendre l'image de Wikipédia en anglais quand elle est meilleure » : personnages dessinés, affiches de films, pochettes d'albums et logos à la place des photos de cosplay ou des cases vides (Homer Simpson, par exemple). Décochée par défaut.","to":"#/reglages","link":"Réglages"},
         {"text":"Nouvelle case « Dessiner une couverture pour les cartes sans image » : la nature de l'article (personne, lieu, espèce, film…) et le drapeau de son pays au lieu de l'initiale. Décochée par défaut.","to":"#/reglages","link":"Réglages"}
+      ]},
+      {"icon": "⚙️", "title": "Réglages", "items": [
+        {"text": "Les réglages sont rangés en cinq groupes avec un sommaire, une ligne courte par réglage et des interrupteurs ; les explications longues sont sous « En savoir plus ».", "to": "#/reglages", "link": "Réglages"}
+      ]},
+      {"icon": "📁", "title": "Intercalaires", "items": [
+        {"text": "Chaque intercalaire ouvre une section avec un vrai onglet de classeur, sa progression (« 4 / 7 ») et sa barre de raretés, doré quand la section est complète.", "to": "#/collections", "link": "Collections"},
+        {"text": "Clique sur l'onglet pour replier la section : il ne reste que l'onglet, avec un aperçu de ses cartes et « +N »."}
+      ]},
+      {"icon": "🤝", "title": "Entre amis", "items": [
+        {"text": "Page allégée : les membres en cartes compactes, puis trois onglets « Pour toi », « Pour tes amis » et « Échanges ».", "to": "#/amis", "link": "Entre amis"},
+        {"text": "Échanges possibles : choisis une paire de membres à gauche, et vois à droite ce que chacun donne, côte à côte.", "to": "#/amis/echanges", "link": "Échanges"}
       ]}
     ]},
     {"id": "2026-10-27", "date": "2026-10-27", "sections": [
@@ -159,6 +170,7 @@
     { "id": "2026-10-22", "at": "2026-10-22T21:20:50Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-22" },
     { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" },
     { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" },
-    { "id": "2026-10-26", "at": "2026-10-26T08:33:31Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-26" }
+    { "id": "2026-10-26", "at": "2026-10-26T08:33:31Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-26" },
+    { "id": "2026-10-28", "at": "2026-10-28T11:15:11Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-28" }
   ]
 }
