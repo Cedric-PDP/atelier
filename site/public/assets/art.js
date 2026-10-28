@@ -4,7 +4,8 @@
  *    image sous droits (personnage dessiné, affiche, pochette, logo) et met à la place une photo libre (Homer Simpson en
  *    cosplay) ou rien. L'article anglais lié (langlinks) les a. On prend son image quand son image principale n'est pas
  *    libre (pageprops.page_image : ses rédacteurs l'ont préférée aux images libres, c'est l'œuvre elle-même), ou quand la
- *    carte n'a aucune image. Réponses gardées 14 jours dans localStorage (« classeur-art »).
+ *    carte n'a aucune image. Sans image principale (image trop allongée, écartée par Wikipédia), l'image non libre de
+ *    l'article dont le nom reprend son titre. Réponses gardées 14 jours dans localStorage (« classeur-art »).
  * 2. « Couverture dessinée pour les cartes sans image » (prefs.art_cover) : coverOf(description, titre) donne la nature
  *    de l'article (icône et mot : Personne, Lieu, Espèce…), lue dans la description courte (Wikidata), et le drapeau
  *    du pays qu'elle nomme (fichier de Commons). Aucune requête.
@@ -40,6 +41,20 @@
     return a;
   };
   const follow = (alias, t) => { let cur = t; for (let i = 0; i < 5 && alias[cur]; i++) cur = alias[cur]; return cur; };
+  const fold = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/_/g, ' ').toLowerCase().trim();
+  // Fichier dont le nom est le titre de l'article (sans sa parenthèse d'homonymie), ou commence par lui suivi d'un
+  // séparateur (« Bart Simpson 200px ») ; le nom exact d'abord, puis le plus court.
+  function fileFor(title, files) {
+    const t = fold(String(title).replace(/\s*\([^)]*\)$/, ''));
+    let best = null;
+    for (const f of files) {
+      const exact = f.name === t;
+      if (!exact && !(f.name.startsWith(t) && /^[\s\-–(,.\d]/.test(f.name.slice(t.length)))) continue;
+      const score = (exact ? 0 : 1000) + f.name.length;
+      if (!best || score < best.score) best = { score, url: f.url };
+    }
+    return best ? best.url : null;
+  }
 
   function loadStore(storage) {
     const map = new Map();
@@ -102,12 +117,33 @@
       const eq = (en && en.query) || {};
       const ealias = aliasOf(eq);
       const pages = new Map((eq.pages || []).map((p) => [p.title, p]));
-      for (const [e, list] of want) {
+      const found = new Map(); // titre anglais -> [image non libre | null, image quelconque | null]
+      const bare = []; // articles anglais sans image principale
+      for (const e of want.keys()) {
         const p = pages.get(follow(ealias, e));
         const any = p && p.thumbnail && p.thumbnail.source ? p.thumbnail.source : null;
-        const nf = any && p.pageprops && p.pageprops.page_image ? any : null;
-        for (const t of list) remember(t, nf, any);
+        found.set(e, [any && p.pageprops && p.pageprops.page_image ? any : null, any]);
+        if (p && !p.missing && !any) bare.push(p.title);
       }
+      // 3. Sans image principale (Wikipédia écarte une image trop allongée : Marge Simpson, 130 × 400) : l'image de
+      //    l'article hébergée par Wikipédia en anglais, donc non libre, dont le nom reprend son titre (« Marge Simpson.png »).
+      if (bare.length) {
+        const im = await get(qs(EN_API, { action: 'query', generator: 'images', gimlimit: 'max', prop: 'imageinfo', iiprop: 'url',
+          iiurlwidth: '330', titles: bare.join('|') }));
+        const files = [];
+        for (const f of ((im && im.query) || {}).pages || []) {
+          const info = (f.imageinfo || [])[0];
+          const m = /^[^:]+:(.+)\.(png|jpe?g|gif|webp|svg)$/i.exec(f.title || '');
+          if (m && f.imagerepository === 'local' && info && (info.thumburl || info.url)) files.push({ name: fold(m[1]), url: info.thumburl || info.url });
+        }
+        for (const [e] of want) {
+          const p = pages.get(follow(ealias, e));
+          if (!p || !bare.includes(p.title)) continue;
+          const url = fileFor(p.title, files);
+          if (url) found.set(e, [url, url]);
+        }
+      }
+      for (const [e, list] of want) for (const t of list) remember(t, found.get(e)[0], found.get(e)[1]);
     }
 
     async function pump() {

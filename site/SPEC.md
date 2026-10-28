@@ -1879,7 +1879,12 @@ vers Wikipédia en anglais. Logique dans `assets/art.js` (`window.ClasseurArt`),
   de Wikipédia, priorité basse), puis `prop=pageimages|pageprops&ppprop=page_image&pilicense=any&pithumbsize=330` sur
   en.wikipedia.org (sa propre file, une requête toutes les 300 ms). Image prise : celle de l'article anglais si son image
   principale **n'est pas libre** (`pageprops.page_image` présent : ses rédacteurs l'ont préférée aux images libres) ; sinon
-  celle d'avant ; et, faute d'image d'avant, l'image libre de l'article anglais. Réponses gardées 14 jours dans ce navigateur
+  celle d'avant ; et, faute d'image d'avant, l'image libre de l'article anglais. **Article anglais sans image principale**
+  (Wikipédia écarte une image trop allongée : `Marge Simpson.png`, 130 × 400) : une requête de plus pour ces articles,
+  `generator=images&prop=imageinfo&iiurlwidth=330`, et l'image prise est un fichier hébergé par Wikipédia en anglais
+  (`imagerepository: local`, donc non libre ; png, jpg, gif, webp ou svg) dont le nom est le titre de l'article sans sa
+  parenthèse, ou commence par lui suivi d'un séparateur (« Bart Simpson 200px ») : le nom exact d'abord, puis le plus court.
+  Une image de fiche nommée autrement que l'article n'est pas trouvée. Réponses gardées 14 jours dans ce navigateur
   (`localStorage` « classeur-art », 6 000 titres au plus, adresses sans `https://upload.wikimedia.org/wikipedia/` ni `utm_*`) ;
   un échec n'est pas redemandé avant le prochain chargement de la page. Seulement dans le classeur : la carte du jeu ne change pas.
 - **`prefs.art_cover`** « Dessiner une couverture pour les cartes sans image (essai) ». Une carte sans image (après l'option

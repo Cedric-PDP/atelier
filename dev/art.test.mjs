@@ -72,8 +72,11 @@ const EN = {
   'Coca-Cola': { title: 'Coca-Cola', thumbnail: { source: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/2/27/Coca.jpg/330px-Coca.jpg?utm_source=en' } },
   'Darth Vader': { title: 'Darth Vader', pageprops: { page_image: 'Vader.jpg' }, thumbnail: { source: 'https://upload.wikimedia.org/wikipedia/en/0/0b/Vader.jpg' } },
   Nowhere: { title: 'Nowhere' },
+  'Marge Simpson': { title: 'Marge Simpson' }, // image de la fiche trop allongée : pas d'image principale
+  'Lisa Simpson': { title: 'Lisa Simpson' }, // seul fichier proche : « Lisa Simpsonite », pas le sien
 };
-const LINKS = { 'Homer Simpson': 'Homer Simpson', 'Coca-Cola': 'Coca-Cola', 'Dark Vador': 'Darth Vader', 'Dark Vader': null, Nulle: 'Nowhere' };
+const LINKS = { 'Homer Simpson': 'Homer Simpson', 'Coca-Cola': 'Coca-Cola', 'Dark Vador': 'Darth Vader', 'Dark Vader': null, Nulle: 'Nowhere',
+  'Marge Simpson': 'Marge Simpson', 'Lisa Simpson': 'Lisa Simpson' };
 let fail = false;
 async function get(url) {
   const u = new URL(url);
@@ -90,6 +93,19 @@ async function get(url) {
       .map((t) => (LINKS[t] ? { title: t, langlinks: [{ lang: 'en', title: LINKS[t] }] } : { title: t })) } };
   }
   assert.equal(u.hostname, 'en.wikipedia.org');
+  if (p.generator === 'images') {
+    // Images des articles sans image principale : celles de Wikipédia en anglais (local, non libres) et de Commons (shared).
+    assert.equal(p.titles, 'Nowhere|Marge Simpson|Lisa Simpson', 'seuls les articles sans image principale');
+    const F = (title, repo, url) => ({ title, imagerepository: repo, imageinfo: [{ url, thumburl: url + '?utm_source=en' }] });
+    return { query: { pages: [
+      F('File:Cosplayers of Homer and Marge.jpg', 'shared', 'https://thumb.wikimedia.org/c/cos.jpg'),
+      F('File:Marge Simpson.png', 'local', 'https://upload.wikimedia.org/wikipedia/en/0/0b/Marge_Simpson.png'),
+      F('File:Marge - Good Night.png', 'local', 'https://upload.wikimedia.org/wikipedia/en/a/a7/Marge_-_Good_Night.png'),
+      F('File:Marge Simpson.ogg', 'local', 'https://upload.wikimedia.org/wikipedia/en/x/xx/Marge.ogg'),
+      F('File:Symbol support vote.svg', 'local', 'https://upload.wikimedia.org/wikipedia/en/9/94/Vote.svg'),
+      F('File:Lisa Simpsonite.png', 'local', 'https://upload.wikimedia.org/wikipedia/en/l/li/Lisa_ite.png'),
+    ] } };
+  }
   assert.equal(p.pilicense, 'any');
   assert.equal(p.ppprop, 'page_image');
   return { query: { pages: p.titles.split('|').map((t) => EN[t] || { title: t, missing: true }) } };
@@ -105,9 +121,11 @@ art.image('Coca-Cola', null); // demandé deux fois : un seul titre dans la requ
 art.image('Dark Vader', null);
 art.image('Sans lien', 'https://upload.wikimedia.org/a.jpg');
 art.image('Nulle', null);
+art.image('Marge Simpson', FR_IMG);
+art.image('Lisa Simpson', FR_IMG);
 await sleep(150);
-assert.equal(calls.length, 2, 'un lot : une requête en français, une en anglais : ' + calls.join(' ; '));
-assert.equal(calls[0], 'fr.wikipedia.org Homer Simpson|Coca-Cola|Dark Vader|Sans lien|Nulle');
+assert.equal(calls.length, 3, 'un lot : une requête en français, deux en anglais (images des articles sans image principale) : ' + calls.join(' ; '));
+assert.equal(calls[0], 'fr.wikipedia.org Homer Simpson|Coca-Cola|Dark Vader|Sans lien|Nulle|Marge Simpson|Lisa Simpson');
 assert.ok(changes >= 1);
 // Image principale non libre en anglais : elle remplace la photo libre (sans les paramètres de suivi).
 assert.equal(art.image('Homer Simpson', FR_IMG), 'https://upload.wikimedia.org/wikipedia/en/0/02/Homer_Simpson_2006.png');
@@ -119,6 +137,9 @@ assert.equal(art.image('Dark Vader', null), 'https://upload.wikimedia.org/wikipe
 // Sans article anglais, ou article sans image : l'image d'avant.
 assert.equal(art.image('Sans lien', 'https://upload.wikimedia.org/a.jpg'), 'https://upload.wikimedia.org/a.jpg');
 assert.equal(art.image('Nulle', null), null);
+// Sans image principale : le fichier non libre qui porte son nom (ni la photo de Commons, ni le son, ni un autre nom).
+assert.equal(art.image('Marge Simpson', FR_IMG), 'https://upload.wikimedia.org/wikipedia/en/0/0b/Marge_Simpson.png');
+assert.equal(art.image('Lisa Simpson', FR_IMG), FR_IMG, '« Lisa Simpsonite » n\'est pas « Lisa Simpson »');
 // Gardé dans localStorage, sans le début commun des adresses ; relu par une nouvelle page.
 await sleep(1700);
 const raw = JSON.parse(storage.getItem(A.STORAGE_KEY));
