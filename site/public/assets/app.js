@@ -319,7 +319,7 @@
     // seule, avec son filtre (all | has : il les a | lacks : lui manquent | help : tu peux l'aider), son tri et d'où on
     // l'a ouverte (albumFrom : 'trades' = « Échanges possibles ») ; copyBusy : « Créer la même collection chez moi » en
     // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
-    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, duo: null, trade: 'all', tradeDup: true,
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, duo: null, trade: 'all',
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
     // « Chat » (un salon pour tous les classeurs) : user = compte dont `read` (dernier message lu, aussi dans
     // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
@@ -1188,7 +1188,7 @@
     let list = trades.value.pairs;
     if (t === 'me') list = list.filter((p) => p.x.me || p.z.me);
     else if (t !== 'all' && friendList.value.some((f) => f.id === t)) list = list.filter((p) => p.x.id === t || p.z.id === t);
-    if (S.friends.tradeDup) list = list.map((p) => ({ ...p, rows: p.rows.filter((r) => r.dup) })).filter((p) => p.rows.length);
+    if (tradeDupOn()) list = list.map((p) => ({ ...p, rows: p.rows.filter((r) => r.dup) })).filter((p) => p.rows.length);
     return tradeDuos(list);
   });
   // Un bloc par paire de membres (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs, on
@@ -5805,7 +5805,7 @@
     chatMembers.value = [];
     chatMembersAt = 0;
     chatMembersJob = null;
-    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all', tradeDup: true,
+    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all',
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copies: {} });
   }
   // Carte d'un ami (champs montrés par le serveur, rien d'autre) ; adresses vérifiées avant d'en faire des liens.
@@ -6019,9 +6019,18 @@
     toTop();
   }
   function closeFriendBinder() { S.friends.open = null; S.friends.album = null; toTop(); }
-  // « Échanges possibles » : sous-page de l'onglet, avec son filtre (tout le monde par défaut).
+  // Filtre (« Tout le monde » ou « Ce qui me concerne ») et case « Seulement les cartes en double » d'« Échanges
+  // possibles » retenus avec le compte (prefs.trade_filter, prefs.trade_dup ; 2026-10-28, demande de l'utilisateur : la
+  // page s'ouvre comme on l'a laissée, sur tous ses appareils). Un membre choisi dans « Un membre… » ne l'est pas.
+  const tradePref = () => (S.prefs.trade_filter === 'me' ? 'me' : 'all');
+  const tradeDupOn = () => S.prefs.trade_dup !== false;
+  function setTradeFilter(v) {
+    S.friends.trade = v;
+    if ((v === 'all' || v === 'me') && v !== tradePref()) savePrefs({ trade_filter: v });
+  }
+  // « Échanges possibles » : sous-page de l'onglet, avec son filtre (le dernier choisi, tout le monde par défaut).
   function openTrades(filter) {
-    Object.assign(S.friends, { page: 'trades', open: null, album: null, trade: filter || 'all' });
+    Object.assign(S.friends, { page: 'trades', open: null, album: null, trade: filter || tradePref() });
     toTop();
   }
   function closeTrades() { S.friends.page = null; toTop(); }
@@ -8902,14 +8911,14 @@
           h('small', { class: 'num' }, `${fmt(n)} ${plural(n, 'carte', 'cartes')} à donner · ${fmt(list.length)} ${plural(list.length, 'paire', 'paires')} de membres`)]),
         h('div', { class: 'toolbar' }, [
           h('div', { class: 'seg', role: 'group', 'aria-label': 'Échanges à montrer' }, [
-            seg('Tout le monde', fr.trade === 'all' || (fr.trade !== 'me' && !member), () => { fr.trade = 'all'; }),
-            seg('Ce qui me concerne', fr.trade === 'me', () => { fr.trade = 'me'; }),
+            seg('Tout le monde', fr.trade === 'all' || (fr.trade !== 'me' && !member), () => setTradeFilter('all')),
+            seg('Ce qui me concerne', fr.trade === 'me', () => setTradeFilter('me')),
           ]),
           h('label', { class: 'sr', for: 'trade-member' }, 'Les échanges d\'un membre'),
-          h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { fr.trade = e.target.value || 'all'; } },
+          h('select', { id: 'trade-member', class: 'field', value: member ? member.id : '', onChange: (e) => { if (e.target.value) fr.trade = e.target.value; else setTradeFilter(tradePref()); } },
             [h('option', { value: '' }, 'Un membre…'), ...friendList.value.map((f) => h('option', { key: f.id, value: f.id }, nameWithPseudo(f)))]),
           h('label', { class: 'check' }, [
-            h('input', { id: 'trade-dup', type: 'checkbox', checked: fr.tradeDup, onChange: () => { fr.tradeDup = !fr.tradeDup; } }),
+            h('input', { id: 'trade-dup', type: 'checkbox', checked: tradeDupOn(), onChange: () => savePrefs({ trade_dup: !tradeDupOn() }) }),
             ' Seulement les cartes en double']),
         ]),
         ...tradeNotes(),
@@ -8924,7 +8933,7 @@
         ]))),
         h('div', { class: 'duos__panels' }, list.map((d) => viewTradeDuo(d, d !== cur))),
       ]) : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
-        : all.length ? (fr.tradeDup ? 'Aucune carte en double à donner avec ce filtre : décoche « Seulement les cartes en double », ou essaie « Tout le monde ».'
+        : all.length ? (tradeDupOn() ? 'Aucune carte en double à donner avec ce filtre : décoche « Seulement les cartes en double », ou essaie « Tout le monde ».'
           : 'Aucun échange possible avec ce filtre : essaie « Tout le monde ».')
           : "Aucun échange possible pour l'instant : personne n'a de carte qui manque aux collections d'un autre."),
       h('p', { class: 'small muted friends-trade' }, TRADE_NOTE),
@@ -9198,7 +9207,7 @@
   // amis » (#/amis/pour-eux) et « Échanges » (#/amis/echanges, viewTrades).
   const FRIEND_PAGES = [[null, 'Collections', 'amis'], ['fill', 'Pour toi', 'amis/pour-toi'], ['wants', 'Pour tes amis', 'amis/pour-eux'], ['trades', 'Échanges', 'amis/echanges']];
   function openFriendsPage(page) {
-    if (page === 'trades') { openTrades(S.friends.trade || 'all'); return; }
+    if (page === 'trades') { openTrades(); return; }
     Object.assign(S.friends, { page, open: null, album: null, albumFrom: null });
     toTop();
   }
@@ -12969,7 +12978,7 @@
         if (fr.open !== r.friend || fr.album != null) openFriendBinder(r.friend);
         Object.assign(fr, { q: p.get('q') || '', filter: pick('filtre', FRIEND_FILTERS, 'all'), sort: pick('tri', FRIEND_CARD_SORTS, 'rarity') });
       } else if (r.trades) {
-        if (fr.page !== 'trades' || fr.open) openTrades(p.get('qui') || 'all'); else fr.trade = p.get('qui') || 'all';
+        if (fr.page !== 'trades' || fr.open) openTrades(p.get('qui') || tradePref()); else fr.trade = p.get('qui') || tradePref();
       } else if (r.fpage) {
         if (fr.page !== r.fpage || fr.open) openFriendsPage(r.fpage);
       } else if (fr.open || fr.page) {

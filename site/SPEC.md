@@ -751,7 +751,11 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   comptés), puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
   plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Tout le
   monde » (par défaut : peu d'échanges pour l'instant, demande de l'utilisateur du 2026-10-16), « Ce qui me concerne » (tu
-  donnes ou tu reçois), ou un membre (il donne ou il reçoit). Une ligne de
+  donnes ou tu reçois), ou un membre (il donne ou il reçoit) ; case « Seulement les cartes en double » (cochée par
+  défaut). **Retenus avec le compte** (2026-10-28, demande de l'utilisateur : « je n'utilise que « Ce qui me concerne »,
+  sans les doublons ») : le choix « Tout le monde » / « Ce qui me concerne » (`prefs.trade_filter`, `all` ou `me`) et la
+  case (`prefs.trade_dup`, `false` = décochée) ; la page s'ouvre ainsi sur tous ses appareils, sauf `?qui=` dans
+  l'adresse ; un membre choisi n'est pas retenu, et « Un membre… » ramène au choix retenu. Une ligne de
   ta carte ouvre sa fiche ; une ligne pour toi ouvre la fiche de la case vide ; entre deux amis, rien à ouvrir (sauf,
   comme sur toute ligne pour un ami, le nom de ses collections : son album). Calcul
   dans le navigateur (`trades`, propriété calculée : refait quand les cartes, les collections ou les qids changent ;

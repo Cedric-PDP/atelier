@@ -3204,11 +3204,13 @@ async function main() {
       }
       byId('trade-dup').dispatch('change');
       await settle();
+      check(!byId('trade-dup').checked && (SERVER || api.st.prefs.trade_dup === false), 'case des doubles : décochée et retenue avec le compte (prefs.trade_dup) attendu');
       check(pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi | Léa → Paul', 'couples (tout le monde, tous les exemplaires) : ' + pairs().join(' | '));
       check(duos().join(' | ') === 'Toi ⇄ Paul | Toi ⇄ Léa | Léa ⇄ Paul', 'un bloc par paire : ' + duos().join(' | '));
       exactButton('Ce qui me concerne').click();
       await settle();
       check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
+      check(SERVER || api.st.prefs.trade_filter === 'me', '« Ce qui me concerne » non retenu avec le compte (prefs.trade_filter) : ' + JSON.stringify(api.st.prefs));
       {
         const p = pair('Toi → Paul');
         check(titlesIn(p).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60', 'Toi → Paul : ' + titlesIn(p).join(' | '));
