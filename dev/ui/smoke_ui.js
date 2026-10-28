@@ -3032,6 +3032,8 @@ async function main() {
     check(has('Montrer mes cartes aux autres membres') && has('Le partage est réciproque') && has('Jamais tes tags'), 'Entre amis : invitation au partage absente');
     check(!apiLog.slice(mark).some((x) => x.includes('/api/members')), 'sans partage, la page ne doit pas lire les membres : ' + apiLog.slice(mark).join(', '));
     needButton('Montrer mes cartes aux autres membres').click();
+    // Sous-onglets « Pour toi » · « Pour tes amis » · « Échanges » (2026-10-28).
+    const fnavBtn = (t) => { const b = cls('fnav__btn').find((n) => text(n.querySelector('span')) === t); if (!b) fail('sous-onglet absent : ' + t); return b; };
     const fcol = (name) => cls('fcol').find((n) => text(n.querySelector('.fcol__name')) === name) || null;
     const titlesIn = (n) => n.querySelectorAll('.fitem__title').map(text);
     check(await waitFor(() => has('Paul') && has('Léa') && fcol('Planète du Système solaire'), 5000), 'Entre amis : membres ou mise en avant absents');
@@ -3158,7 +3160,7 @@ async function main() {
         const reads = apiLog.slice(mark).filter((x) => x.startsWith('GET /api/members/'));
         check(reads.length === 2 && reads.every((x) => x.startsWith('GET /api/members/' + paulPub + '/targets?part=')), 'collections lues : celles de Paul seulement, 2 pages : ' + reads.join(', '));
       }
-      check(has('Léa ne partage pas ses collections') && has('Tes amis ne voient pas tes collections'), 'notes des échanges absentes');
+      check(has('ne partage pas ses collections') && has('Tes amis ne voient pas tes collections'), 'notes des échanges absentes');
       // « Ce qui pourrait intéresser tes amis » : les collections que Paul montre ; rien pour Léa, qui ne les montre pas.
       check(fcol('Paul') && titlesIn(fcol('Paul')).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60' && !fcol('Paul').querySelector('.badge'),
         'tes cartes pour Paul (ses collections) : ' + (fcol('Paul') ? text(fcol('Paul')) : 'absent'));
@@ -3167,7 +3169,7 @@ async function main() {
         'résumé de tes cartes pour Paul : ' + text(fcol('Paul').querySelector('.fcol__sum')));
       check(!fcol('Léa') && has('Rien pour Léa, qui ne partage pas ses collections.'), 'tes cartes pour Léa : rien attendu (elle ne partage pas ses collections)');
       // La page : « Tout le monde » par défaut (demande de l'utilisateur, 2026-10-16), puis « Ce qui me concerne ».
-      needButton('Voir les échanges possibles').click();
+      fnavBtn('Échanges').click();
       await settle();
       // Un bloc par paire de membres (« Toi ⇄ Paul »), les deux sens dedans (« Toi → Paul », puis « Paul → Toi »).
       const dirOf = (n) => text(n.querySelector('.trade__dir')).replace(' pour ', '');
@@ -3362,7 +3364,7 @@ async function main() {
       // Rien des amis dans IndexedDB ; rien de relu en revenant sur l'onglet quand rien n'a changé.
       await sleep(1600);
       check(!JSON.stringify(cachedCards()).includes('Les préférées de Paul'), 'les collections des amis ne doivent pas aller dans IndexedDB');
-      needButton('← Entre amis').click();
+      fnavBtn('Pour toi').click(); // sous-onglets (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
       await settle();
       mark = apiLog.length;
       await goTab('collections');
@@ -3413,7 +3415,7 @@ async function main() {
         // Échanges : une carte qui casserait une collection de celui qui donne n'est plus proposée (2026-10-26). Jupiter, que
         // Paul n'a qu'en un exemplaire, est maintenant dans sa « Planète du Système solaire » : il ne la donne plus ; Mars,
         // dans la même collection mais en double, reste.
-        needButton('Voir les échanges possibles').click();
+        fnavBtn('Échanges').click();
         await settle();
         check(titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Article 5', 'Paul → Toi (Jupiter gardée pour sa collection) : ' + text(pair('Paul → Toi')));
         const tradeBtn = (pr, t) => (pr ? pr.querySelectorAll('button').find((b) => text(b) === t) : null) || null;
@@ -3424,7 +3426,7 @@ async function main() {
         check(pick && pick.querySelectorAll('.trade-pick__title').map(text).join(' | ') === 'Mars (planète) | Article 5', 'fenêtre : Jupiter de Paul ne doit plus être proposée : ' + (pick ? text(pick) : 'absente'));
         tmd().querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
         await settle();
-        needButton('← Entre amis').click();
+        fnavBtn('Pour toi').click(); // sous-onglets (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
         await settle();
         const openBinder = async (name) => { all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-label') === 'Parcourir le classeur de ' + name)[0].click(); await settle(); };
         const sect = (id) => all((n) => n.tagName === 'SECTION' && n.getAttribute('aria-labelledby') === id)[0] || null;
@@ -3574,7 +3576,7 @@ async function main() {
         needButton('← Entre amis').click();
         await settle();
         // Depuis « Échanges possibles » : le nom d'une collection de Paul ouvre son album ; un lien ramène aux échanges, filtre gardé.
-        needButton('Voir les échanges possibles').click();
+        fnavBtn('Échanges').click();
         await settle();
         exactButton('Ce qui me concerne').click(); // un filtre autre que celui par défaut : il doit être gardé au retour
         await settle();
@@ -3612,7 +3614,7 @@ async function main() {
     check((await rawApi('GET', '/api/members', paulKey)).body.members.some((m) => m.name === 'Cédric'), 'Paul doit me voir');
     await goTab('reglages');
     const cb = byId('set-shared');
-    check(has('Partage entre membres') && cb && cb.checked, 'réglage du partage absent ou décoché');
+    check(has('Partage et amis') && cb && cb.checked, 'réglage du partage absent ou décoché');
     cb.checked = false;
     cb.dispatch('change');
     await settle(80);
@@ -3764,9 +3766,10 @@ async function main() {
     const rowOf = (name) => d.querySelectorAll('.row').find((n) => (n.getAttribute('aria-label') || '').startsWith(name + ' :')) || null;
     const btnIn = (t) => d.querySelectorAll('button').find((b) => text(b).trim() === t) || null;
     const grid = () => d.querySelectorAll('.cardgrid')[0] || null;
-    // Enfants de la grille : « | » pour une nouvelle ligne, « [Titre] » pour un intercalaire (cadre), « Titre » sinon.
+    // Enfants de la grille : « §Titre » pour le bandeau d'une section (« §Titre+ » repliée, « §· » hors intercalaire,
+    // 2026-10-28), « [Titre] » pour un intercalaire (cadre), « Titre » sinon.
     const layout = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => {
-      if (n.classList.contains('grid-break')) return '|';
+      if (n.classList.contains('sec-head')) return n.classList.contains('sec-head--loose') ? '§·' : '§' + text(n.querySelector('.sec-head__name')) + (n.classList.contains('folded') ? '+' : '');
       const t = text(n.querySelector('h3'));
       return n.querySelector('.sep-frame') || n.classList.contains('sep-frame') ? `[${t}]` : t;
     }).join(' ') : '');
@@ -3788,15 +3791,15 @@ async function main() {
     await settle();
     rowOf('Mêlée').click();
     await settle(80);
-    check(layout() === '[Continent] Afrique | Zeus Pangée', 'cartes hors section : après les intercalaires attendues, ' + layout());
+    check(layout() === '§Continent [Continent] Afrique §· Zeus Pangée', 'cartes hors section : après les intercalaires attendues, ' + layout());
     d.querySelectorAll('.sec-fold')[0].click();
     await settle();
-    check(layout() === '[Continent] | Zeus Pangée', 'cartes hors section, section repliée : ' + layout());
+    check(layout() === '§Continent+ §· Zeus Pangée', 'cartes hors section, section repliée : ' + layout());
     d.querySelectorAll('.sec-fold')[0].click();
     await settle();
     btnIn('Rareté').click();
     await settle();
-    check(!d.querySelectorAll('.grid-break').length, 'cartes hors section, tri par rareté : pas de nouvelle ligne, ' + layout());
+    check(!d.querySelectorAll('.sec-head').length, 'cartes hors section, tri par rareté : pas de nouvelle ligne, ' + layout());
     btnIn('Ordre').click();
     await settle();
     btnIn('← Toutes les collections').click();
@@ -3805,7 +3808,7 @@ async function main() {
     rowOf('Continents').click();
     await settle(80);
     check(!d.querySelectorAll('.album-title')[0].classList.contains('complete'), 'collection incomplète : en-tête doré');
-    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée', 'intercalaires dans l\'ordre : ' + layout());
+    check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Amérique du Nord §Supercontinent [Supercontinent] Pangée', 'intercalaires dans l\'ordre : ' + layout());
     {
       const cont = d.querySelectorAll('.cell').find((c) => text(c.querySelector('.card__title')) === 'Continent');
       check(cont.classList.contains('sep') && (cont.querySelector('.card').getAttribute('aria-label') || '').startsWith('Continent, Commune, intercalaire'),
@@ -3818,23 +3821,23 @@ async function main() {
     // Tri par rareté, filtre « Manquantes » : le cadre reste, plus de nouvelle ligne.
     btnIn('Rareté').click();
     await settle();
-    check(!d.querySelectorAll('.grid-break').length && d.querySelectorAll('.sep-frame').length === 3, 'tri par rareté : cadres sans sections attendus, ' + layout());
+    check(!d.querySelectorAll('.sec-head').length && d.querySelectorAll('.sep-frame').length === 3, 'tri par rareté : cadres sans sections attendus, ' + layout());
     btnIn('Ordre').click();
     btnIn('Manquantes').click();
     await settle();
     check(layout() === '[Sous-continent] Amérique du Nord', 'filtre « Manquantes » : ' + layout());
     btnIn('Toutes').click();
     await settle();
-    // Repli d'une section (onglet de l'intercalaire) : il ne reste que l'intercalaire, « +2 » ; gardé dans ce navigateur,
+    // Repli d'une section (son bandeau) : il ne reste que le bandeau, « +3 » (intercalaire compris) ; gardé dans ce navigateur,
     // sans effet hors des sections (tri par rareté) ; « Tout replier » (chaque section garde sa ligne) / « Tout déplier ».
     {
       const tab = (t) => d.querySelectorAll('.sec-fold').find((b) => (b.getAttribute('aria-label') || '').includes('« ' + t + ' »')) || null;
       check(d.querySelectorAll('.sec-fold').length === 3 && tab('Continent').getAttribute('aria-expanded') === 'true', 'repli : trois onglets ouverts attendus');
       tab('Continent').click();
       await settle();
-      check(layout() === '[Continent] | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée' && tab('Continent').getAttribute('aria-expanded') === 'false'
-        && text(tab('Continent')).includes('+2') && (tab('Continent').getAttribute('aria-label') || '').startsWith('Déplier la section « Continent » (2 cartes)'), 'repli de « Continent » : ' + layout());
-      check(d.querySelectorAll('.sec-wrap.folded').length === 1 && (JSON.parse(ls.get('classeur-sections') || '{}')[Object.keys(JSON.parse(ls.get('classeur-sections') || '{}'))[0]] || []).join() === 'Continent',
+      check(layout() === '§Continent+ §Sous-continent [Sous-continent] Amérique du Nord §Supercontinent [Supercontinent] Pangée' && tab('Continent').getAttribute('aria-expanded') === 'false'
+        && text(tab('Continent')).includes('+3') && (tab('Continent').getAttribute('aria-label') || '').startsWith('Déplier la section « Continent » (2 cartes)'), 'repli de « Continent » : ' + layout());
+      check(d.querySelectorAll('.sec-head.folded').length === 1 && (JSON.parse(ls.get('classeur-sections') || '{}')[Object.keys(JSON.parse(ls.get('classeur-sections') || '{}'))[0]] || []).join() === 'Continent',
         'repli : non gardé dans le navigateur, ' + ls.get('classeur-sections'));
       btnIn('Rareté').click();
       await settle();
@@ -3843,10 +3846,10 @@ async function main() {
       await settle();
       btnIn('Tout replier').click();
       await settle();
-      check(layout() === '[Continent] | [Sous-continent] | [Supercontinent]' && !!btnIn('Tout déplier'), 'tout replier : ' + layout());
+      check(layout() === '§Continent+ §Sous-continent+ §Supercontinent+' && !!btnIn('Tout déplier'), 'tout replier : ' + layout());
       btnIn('Tout déplier').click();
       await settle();
-      check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée' && !ls.get('classeur-sections').includes('Continent'), 'tout déplier : ' + layout());
+      check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Amérique du Nord §Supercontinent [Supercontinent] Pangée' && !ls.get('classeur-sections').includes('Continent'), 'tout déplier : ' + layout());
     }
     // Éditeur : « # » devant les intercalaires ; « # » retiré de Supercontinent, ajouté (sans espace) à Pangée, enregistré
     // sans revérifier les articles (tous déjà connus).
@@ -3868,7 +3871,7 @@ async function main() {
         'éditeur : intercalaires enregistrés (ou autres champs perdus) : ' + s.seps + ' / ' + JSON.stringify(s.afrique));
     }
     await settle(80);
-    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord Supercontinent | [Pangée]', 'après l\'éditeur : ' + layout());
+    check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Amérique du Nord Supercontinent §Pangée [Pangée]', 'après l\'éditeur : ' + layout());
     // Fiche d'une carte possédée de l'album : case « Intercalaire » cochée ; décochée, la collection est renvoyée sans le
     // drapeau (le reste gardé).
     const sepBox = () => { const t = d.querySelectorAll('.sep-toggle')[0]; return t ? t.querySelector('input') : null; };
@@ -3884,7 +3887,7 @@ async function main() {
     }
     d.querySelectorAll('.fiche')[0].querySelector('.close').click();
     await settle(400);
-    check(layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord Supercontinent Pangée', 'après la fiche (carte) : ' + layout());
+    check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Amérique du Nord Supercontinent Pangée', 'après la fiche (carte) : ' + layout());
     // Fiche d'une case vide : même case, cochée cette fois.
     d.querySelectorAll('.slot__open').find((b) => (b.getAttribute('aria-label') || '').startsWith('Amérique du Nord :')).click();
     await settle(80);
@@ -3899,7 +3902,7 @@ async function main() {
     }
     d.querySelectorAll('.fiche')[0].querySelector('.close').click();
     await settle(400);
-    check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée', 'après la fiche (case vide) : ' + layout());
+    check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] §Amérique du Nord [Amérique du Nord] Supercontinent Pangée', 'après la fiche (case vide) : ' + layout());
     // « Retirer de « Continents » » (fiche de la case vide Amérique du Nord) : la collection est renvoyée sans elle, la
     // fiche se ferme ; « Annuler » dans le message la remet à sa place, intercalaire compris.
     d.querySelectorAll('.slot__open').find((b) => (b.getAttribute('aria-label') || '').startsWith('Amérique du Nord')).click();
@@ -3911,13 +3914,13 @@ async function main() {
       rm.click();
       check(await until(async () => (await serverSeps()).t.items.length === 6 && !d.querySelectorAll('.fiche').length), 'retrait : collection non renvoyée sans l\'élément, ou fiche restée ouverte');
       await settle(80);
-      check(!(await serverSeps()).t.items.some((i) => i.title === 'Amérique du Nord') && layout() === '[Continent] Afrique Europe | [Sous-continent] Supercontinent Pangée', 'après le retrait : ' + layout());
+      check(!(await serverSeps()).t.items.some((i) => i.title === 'Amérique du Nord') && layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Supercontinent Pangée', 'après le retrait : ' + layout());
       const toast = d.querySelectorAll('.toast')[0];
       check(toast && text(toast).includes('« Amérique du Nord » retirée de « Continents ».'), 'message du retrait absent : ' + (toast ? text(toast) : ''));
       toast.querySelectorAll('button').find((b) => text(b) === 'Annuler').click();
       check(await until(async () => (await serverSeps()).t.items.length === 7), '« Annuler » : élément non remis');
       await settle(80);
-      check((await serverSeps()).seps === 'Continent, Sous-continent, Amérique du Nord' && layout() === '[Continent] Afrique Europe | [Sous-continent] | [Amérique du Nord] Supercontinent Pangée',
+      check((await serverSeps()).seps === 'Continent, Sous-continent, Amérique du Nord' && layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] §Amérique du Nord [Amérique du Nord] Supercontinent Pangée',
         '« Annuler » : élément remis ailleurs ou sans son intercalaire : ' + layout());
     }
     // Depuis « Mes cartes », la fiche n'a pas la case (aucun album ouvert là).
@@ -3936,14 +3939,14 @@ async function main() {
     check(rowOf("Continents d'Olga").classList.contains('complete') && text(rowOf("Continents d'Olga")).includes('Complète'), 'collection complète d\'Olga : ligne dorée attendue, ' + text(rowOf("Continents d'Olga")));
     rowOf("Continents d'Olga").click();
     await settle(80);
-    check(d.querySelectorAll('.album-title')[0].classList.contains('complete') && layout() === '[Continent] Afrique Europe | [Sous-continent] Amérique du Nord | [Supercontinent] Pangée',
+    check(d.querySelectorAll('.album-title')[0].classList.contains('complete') && layout() === '§Continent [Continent] Afrique Europe §Sous-continent [Sous-continent] Amérique du Nord §Supercontinent [Supercontinent] Pangée',
       'album d\'Olga : en-tête doré et intercalaires attendus, ' + layout());
     check(!d.querySelectorAll('.sep-toggle').length && !d.querySelectorAll('button').some((b) => text(b).includes('Réorganiser')), 'album d\'Olga : rien à modifier (ni à réorganiser)');
     {
       const tab = d.querySelectorAll('.sec-fold').find((x) => (x.getAttribute('aria-label') || '').includes('« Sous-continent »'));
       tab.click();
       await settle();
-      check(layout() === '[Continent] Afrique Europe | [Sous-continent] | [Supercontinent] Pangée', 'album d\'Olga : section repliée, ' + layout());
+      check(layout() === '§Continent [Continent] Afrique Europe §Sous-continent+ §Supercontinent [Supercontinent] Pangée', 'album d\'Olga : section repliée, ' + layout());
       d.querySelectorAll('.sec-fold').find((x) => (x.getAttribute('aria-label') || '').includes('« Sous-continent »')).click();
       await settle();
     }
@@ -5564,7 +5567,7 @@ async function main() {
     d.getElementById('tab-amis').click();
     const nino = () => d.querySelectorAll('.member').find((n) => text(n.querySelector('.name')) === 'Nino') || null;
     check(await waitFor(() => nino() && text(nino()).includes('valeur 500W'), 5000), 'ligne de Nino : valeur absente, ' + (nino() ? text(nino()) : 'absente'));
-    check(text(nino()).includes('valeur 500W2 cartes cotées sur 3') && nino().querySelectorAll('.w').length === 1, 'ligne de Nino : ' + text(nino()));
+    check(text(nino()).includes('valeur 500W (2 cartes cotées sur 3)') && nino().querySelectorAll('.w').length === 1, 'ligne de Nino : ' + text(nino()));
     check(!d.querySelectorAll('.member').some((n) => n !== nino() && n.querySelector('.w')), 'valeur affichée pour un ami sans carte cotée');
     nino().querySelectorAll('button').find((b) => text(b) === 'Parcourir son classeur').click();
     await settle(60);
@@ -6024,12 +6027,12 @@ async function main() {
     // Vignettes du mode réorganisation : « | » pour une nouvelle ligne, « [Titre] » pour un intercalaire.
     const roLayout = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1).map((n) => (n.classList.contains('grid-break') ? '|'
       : n.classList.contains('sep') ? `[${roTitle(n)}]` : roTitle(n))).join(' ') : '');
-    // Album ordinaire : même écriture (cartes et cases vides).
-    const albumLayout = () => { const g = d.querySelectorAll('.cardgrid')[0]; return g ? g.childNodes.filter((n) => n.nodeType === 1).map((n) => {
-      if (n.classList.contains('grid-break')) return '|';
+    // Album ordinaire : même écriture (cartes et cases vides) ; le bandeau d'une section ouvre une ligne (« | », sauf en tête).
+    const albumLayout = () => { const g = d.querySelectorAll('.cardgrid')[0]; return g ? g.childNodes.filter((n) => n.nodeType === 1).map((n, i) => {
+      if (n.classList.contains('sec-head')) return i ? '|' : null;
       const t = text(n.querySelector('h3'));
       return n.querySelector('.sep-frame') || n.classList.contains('sep-frame') ? `[${t}]` : t;
-    }).join(' ') : ''; };
+    }).filter((x) => x !== null).join(' ') : ''; };
     const said = () => { const p = bar() && bar().querySelectorAll('p').find((x) => x.getAttribute('role') === 'status'); return p ? text(p) : ''; };
     const barName = () => (bar() && bar().querySelector('.reorder-bar__name') ? text(bar().querySelector('.reorder-bar__name')) : '');
     const saves = (mark) => apiLog.slice(mark).filter((x) => x === 'POST /api/targets/save').length;

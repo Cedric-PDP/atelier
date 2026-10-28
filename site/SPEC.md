@@ -684,9 +684,15 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   curseur`) : une somme cumulée (`SUM … OVER`) de leur taille rangée garde celles qui commencent sous 512 Ko (la première
   toujours), chacune réduite en SQL (`json_each`, `json_group_array`) au nom, au titre, au qid et au drapeau `sep` ; une réponse reste sous
   ~2 Mo (une collection fait 1,7 Mo rangés au plus), même pour un compte à 5 Mo de collections.
-- **Interface** (onglet « Entre amis ») : liste des membres qui partagent (avec « partage ses collections : N » ou « ne
-  partage pas ses collections ») ; « Échanges possibles »
-  (résumé, puis sa page, ci-dessous) ; « Pour compléter tes collections » = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
+- **Interface** (onglet « Entre amis », remise à plat le 2026-10-28, demande de l'utilisateur : « trop pleine et mal
+  découpée, très haute ») : les membres qui partagent en **cartes compactes** (prénom, pseudo, « Parcourir son classeur »,
+  pastilles « N cartes », « N cartes que tu n'as pas », « N en double », et en pied la synchro, « partage ses
+  collections : N » ou « ne partage pas ses collections », la valeur) ; le résumé des échanges en une ligne ; puis trois
+  **sous-onglets** soulignés avec leur compte (`.fnav`) : « Pour toi » et « Pour tes amis », deux panneaux de la page
+  (`S.friends.view`, l'autre caché), et « Échanges », la page « Échanges possibles » (ci-dessous). Chaque bloc (une
+  collection, un ami) se replie par son chevron (`.fcol__fold`, gardé le temps de la visite) et montre **5 lignes** avant
+  « Voir les N » ; « Le classeur montre qui a quoi… » une seule fois, en pied. « Pour compléter tes collections » (« Pour
+  toi », avec « Tes amis ne voient pas tes collections… » si tu ne les partages pas) = pour chaque collection, les cases vides qu'au moins un ami peut remplir, avec qui les a et en combien d'exemplaires (en
   double d'abord : les plus faciles à échanger), les collections où les amis remplissent le plus de cases d'abord ;
   « Ce qui pourrait intéresser tes amis » = tes cartes (tes doubles d'abord) qui remplissent une case vide des
   collections qu'ils montrent, résumé par leurs noms (« 3 de tes cartes complètent « A », « B » et « C » · 2 que tu as en
@@ -722,7 +728,10 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   (et vignettes) demandées seulement pour les cases que ni lui ni toi n'avez, dans la même file et le même cache que tes
   albums. Dans « Échanges possibles » et « Ce qui pourrait intéresser tes amis », le nom d'une collection d'un ami ouvre
   son album (ta carte reste un bouton à part : jamais un bouton dans un autre).
-- **Page « Échanges possibles »** (sous-page de l'onglet) : « telle carte de X pourrait compléter telle collection de
+- **Page « Échanges possibles »** (sous-onglet « Échanges », `#/amis/echanges` ; **maître-détail** depuis le
+  2026-10-28 : sous les filtres, à gauche la liste des paires « Toi ⇄ Paul » avec « 7 cartes · 4 en double » (onglets
+  verticaux, flèches du clavier ; en bande défilante sur téléphone), à droite la paire choisie, ses deux sens **côte à
+  côte** ; la première paire par défaut, les autres dans la page, cachées) : « telle carte de X pourrait compléter telle collection de
   Z », X et Z parmi toi et les amis dont les cartes sont lues (X ≠ Z). Collections de Z : les tiennes comme dans « Pour
   compléter tes collections » ; celles qu'un ami montre ; aucune pour un ami qui ne les montre pas (on ne sait pas ce
   qui lui manque : « Léa ne partage pas ses collections : impossible de savoir ce qui lui manque », ses cartes comptent
@@ -734,7 +743,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   collections de Z qu'elle complète (un même article dans deux
   collections de Z : une seule ligne). Groupées par couple « X → Z » avec « Paul peut compléter 5 cases chez Léa, dont 3
   en double » ; **un bloc par paire de membres** (2026-10-24, demande d'un membre : « Toi → Paul » et « Paul → Toi » étaient deux blocs
-  séparés, on ne s'y retrouvait pas) : « Toi ⇄ Paul », avec ses deux sens l'un sous l'autre (ce que tu donnes, puis ce que
+  séparés, on ne s'y retrouvait pas) : « Toi ⇄ Paul », avec ses deux sens côte à côte (ce que tu donnes, puis ce que
   tu reçois ; entre deux amis, de A à Z : « Léa ⇄ Paul », « Léa → Paul » puis « Paul → Léa ») ; ordre des blocs : ceux qui ont le plus de doubles (les deux sens
   comptés), puis le plus de cases (toi d'abord à égalité) ; dans un couple, les doubles d'abord (les
   plus faciles à donner), puis les cartes qui remplissent le plus de collections, puis la rareté. Filtres : « Tout le
@@ -830,8 +839,8 @@ d'amis de chaque membre sur le site du jeu et peut envoyer des demandes d'ami (`
   → `{users:[{id, username}]}`, non utilisé). Interrupteur `FRIEND_ROUTE.known` (`friends.js`) : à `false`, plus aucune
   demande ne part (`503` au clic, rien au cron), si le jeu change sa route. Avant d'envoyer, la liste est relue : rien ne
   part si vous êtes déjà amis ou si une demande attend, dans un sens ou dans l'autre.
-- **Demandes automatiques** (case « Envoyer une demande d'ami aux membres du classeur », Réglages, section « Amis dans le
-  jeu », `users.auto_friend`, **coupée par défaut**) : pendant la vérification de la collection par le cron (toutes les 10
+- **Demandes automatiques** (case « Envoyer une demande d'ami aux membres du classeur », Réglages, groupe « Partage et amis »,
+  `users.auto_friend`, **coupée par défaut**) : pendant la vérification de la collection par le cron (toutes les 10
   min, membres éligibles aux lectures automatiques, sous leur bail), pour un membre qui l'a cochée, une demande à chaque
   autre membre **relié au jeu** (qui a un `game_uid`) à qui il n'a encore rien demandé : un nouveau membre la reçoit à la
   passe qui suit sa liaison, les membres déjà là à la première passe après la case cochée. 5 demandes au plus par membre
@@ -1826,19 +1835,23 @@ fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde s
 - **Intercalaire** (élément `sep: true`) : une carte qui ouvre une section (« Continent », « Sous-continent »,
   « Supercontinent » dans « Continents et Sous-continents »), et qui reste une carte comme les autres. Dans les grilles
   d'album (les tiens, et ceux des collections d'un ami, en lecture seule), la carte possédée ou la case vide est posée sur
-  un **cadre gris clair à onglet** (`.sep-frame`, 4 px autour, onglet en haut à gauche, derrière la carte : elle passe
-  devant quand elle se soulève au survol) ; son nom accessible dit « intercalaire ». En tri « Ordre », **sans filtre**
-  (« Toutes ») et pour une collection qui a un ordre, un intercalaire **commence une nouvelle ligne** de la grille (une
-  ligne vide de toute la largeur avant lui, `.grid-break`, sauf en tête : l'écart entre deux sections est doublé). Les
+  un **cadre gris clair** (`.sep-frame`, 4 px autour, derrière la carte : elle passe devant quand elle se soulève au
+  survol ; un petit onglet en haut à gauche hors des sections) ; son nom accessible dit « intercalaire ». En tri
+  « Ordre », **sans filtre** (« Toutes ») et pour une collection qui a un ordre, un intercalaire est précédé d'un
+  **bandeau de section** (2026-10-28, demande de l'utilisateur : « la gestion des intercalaires n'est pas très
+  satisfaisante et belle ») de toute la largeur, qui ouvre une nouvelle ligne (`.sec-head`) : l'onglet gris clair de
+  l'intercalaire (son nom) posé sur un filet, « 4 / 7 » (cartes possédées de la section, intercalaire compris) et la
+  barre de ses raretés ; section complète : onglet et filet dorés, « Complète ». Les
   cartes d'avant le premier intercalaire (hors de toute section, « non triées ») sont montrées **après** les sections, sur
   leur propre ligne (2026-10-26, demande de l'utilisateur : les intercalaires toujours au-dessus des cartes non triées) ;
   seulement à l'affichage (album à toi ou d'un ami) : la collection garde son ordre, et « Réorganiser » montre l'ordre
-  rangé. En tri
+  rangé ; elles ont leur bandeau, « Hors intercalaire » (pointillés, ni repli ni progression). En tri
   « A → Z », « Rareté », « Prix ↑/↓ » ou avec un filtre, il ne garde que son cadre.
-- **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), l'onglet d'un
-  intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, chevron, `aria-expanded`, « Replier / Déplier
-  la section « … » (N cartes) »). Repliée, la section ne montre plus que son intercalaire, posé sur une **pile** (cadres
-  décalés derrière lui) avec « +N » sur l'onglet ; repliée ou non, une section **garde sa ligne**. « Tout
+- **Replier une section** (2026-10-19, demande de l'utilisateur) : là où les sections existent (ci-dessus), le bandeau d'un
+  intercalaire suivi d'au moins une carte est un **bouton** (`.sec-fold`, dans un titre de niveau 3, chevron,
+  `aria-expanded`, « Replier / Déplier la section « … » (N cartes) : 4 sur 7 »). Repliée (2026-10-28), la section ne
+  montre plus que son **bandeau** (onglet assombri, filet en pointillés), avec en éventail jusqu'à trois de ses cartes
+  possédées et « +N » (ses éléments, intercalaire compris) ; repliée ou non, une section **garde sa ligne**. « Tout
   replier » / « Tout déplier » dans la barre de l'album, dès qu'une section a des cartes. Les cartes repliées ne comptent
   ni dans « Afficher les N suivantes » ni dans la sélection par plage (Maj+clic). Dans tes albums comme dans ceux d'un ami ;
   rien n'est envoyé : les sections repliées sont gardées dans ce navigateur (`localStorage` `classeur-sections` : par
@@ -1864,6 +1877,23 @@ fenêtre sur « Propositions ». « Modifier » (album d'une collection) garde s
 Bandeau : « N collections » = le nombre de collections de « Mes collections » (toutes, celles faites d'une catégorie
 comprises ; pas de total à atteindre). Fiches (carte possédée, case vide) : « Dans tes collections » = toutes tes
 collections qui contiennent la carte (par titre ou qid), celles faites d'une catégorie comprises.
+
+## Onglet « Réglages » (interface, 2026-10-28)
+
+Remis à plat à la demande de l'utilisateur (« beaucoup trop chargé, pas organisé ») : **cinq groupes**, chacun une liste
+à lignes (`.set-group`, `.set-row`) ; une ligne = l'intitulé, une phrase courte dessous, le contrôle à droite (champ et
+« Enregistrer », liste, bouton, ou **interrupteur** : une case `role="switch"`, même `id` qu'avant, toute la ligne la
+bascule) ; le texte long replié dessous, « En savoir plus » (`<details>`) ; pastilles « essai », « risqué », « à ta
+place » sur les réglages concernés. Sur ordinateur, un **sommaire collant** à gauche (`.set-nav`) mène à chaque groupe
+et suit le défilement ; sous 860 px, il devient une bande de pastilles en haut.
+
+| Groupe | Réglages |
+|---|---|
+| Profil | Ton prénom ; ton pseudo dans WikiMasters |
+| Partage et amis | Montrer mes cartes aux autres membres du classeur (et, dessous, en retrait : et mes collections à compléter) ; envoyer une demande d'ami aux membres du classeur (« Ajouter les membres pas encore amis… » quand le compte du jeu est relié) — voir « Partage entre membres » et « Amis dans le jeu » |
+| Synchro avec le jeu | Liste de souhaits du jeu (mode, « Synchroniser les souhaits maintenant », dernière passe) ; lire le marché plus vite (« Synchro rapide du marché ») |
+| Apparence | Style des cartes (aperçus) ; image de Wikipédia en anglais ; couverture dessinée — voir les deux sections suivantes |
+| Accès et sécurité | Ton lien personnel (copier, « Changer ma clé ») ; autres classeurs ouverts dans ce navigateur ; oublier ce navigateur ; supprimer mon classeur |
 
 ## Illustrations des cartes (interface, 2026-10-28)
 
