@@ -171,5 +171,38 @@ assert.deepEqual(fr.map((c) => c.split('|').length), [50, 50, 20]);
 art4.clear();
 assert.equal(art4.size, 0);
 
+// ------------------------------------------------------------------ « Changer l'illustration » : images de chaque langue
+{
+  const C = 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ab/Homer.jpg/330px-Homer.jpg';
+  const EN = 'https://upload.wikimedia.org/wikipedia/en/0/02/Homer_Simpson_2006.png';
+  const asked = [];
+  const PT = 'https://upload.wikimedia.org/wikipedia/pt/0/02/Homer_Simpson_2006.png';
+  const page = (title, src, file, extra) => ({ query: { pages: [{ title, ...(src ? { thumbnail: { source: src + '?utm_source=x' }, pageimage: file } : {}), ...extra }] } });
+  const pages = {
+    'fr.wikipedia.org': page('Homer Simpson', C, 'Homer.jpg', { langlinks: [{ lang: 'en', title: 'Homer Simpson' }, { lang: 'de', title: 'Homer Simpson' },
+      { lang: 'ja', title: 'ホーマー・シンプソン' }, { lang: 'xx', title: 'Ignorée' }, { lang: 'it', title: 'Homer Simpson' }, { lang: 'pt', title: 'Homer Simpson' }] }),
+    'en.wikipedia.org': page('Homer Simpson', EN, 'Homer_Simpson_2006.png'),
+    'pt.wikipedia.org': page('Homer Simpson', PT, 'Homer_Simpson_2006.png'),
+    'de.wikipedia.org': page('Homer Simpson', C, 'Homer.jpg'),
+    'ja.wikipedia.org': page('ホーマー・シンプソン', null),
+  };
+  const getC = async (url) => {
+    const u = new URL(url);
+    asked.push(u.host + ' ' + u.searchParams.get('titles'));
+    if (u.host === 'it.wikipedia.org') throw new Error('panne');
+    return pages[u.host];
+  };
+  const r = await A.candidates('Homer Simpson', getC);
+  assert.equal(r.missing, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(r.list)), [
+    { url: C, file: 'Homer.jpg', langs: [{ code: 'fr', name: 'Français' }, { code: 'de', name: 'Allemand' }] },
+    { url: EN, file: 'Homer Simpson 2006.png', langs: [{ code: 'en', name: 'Anglais' }, { code: 'pt', name: 'Portugais' }] },
+  ], 'même image (même fichier) regroupée, sans utm, langue en panne ou sans image sautée');
+  assert.ok(!asked.some((a) => a.startsWith('xx.')), 'langue hors de la liste jamais demandée');
+  assert.ok(asked.includes('ja.wikipedia.org ホーマー・シンプソン'), 'titre de la langue');
+  const none = await A.candidates('Inexistant', async () => ({ query: { pages: [{ title: 'Inexistant', missing: true }] } }));
+  assert.deepEqual(JSON.parse(JSON.stringify(none)), { missing: true, list: [] });
+}
+
 console.log(`${cases.length} natures, drapeaux, image anglaise (${calls.length} requêtes simulées)`);
 console.log('ART OK');

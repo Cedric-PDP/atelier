@@ -6,15 +6,18 @@
  *    libre (pageprops.page_image : ses rédacteurs l'ont préférée aux images libres, c'est l'œuvre elle-même), ou quand la
  *    carte n'a aucune image. Sans image principale (image trop allongée, écartée par Wikipédia), l'image non libre de
  *    l'article dont le nom reprend son titre. Réponses gardées 14 jours dans localStorage (« classeur-art »).
- * 2. « Couverture dessinée pour les cartes sans image » (prefs.art_cover) : coverOf(description, titre) donne la nature
+ * 2. « Changer l'illustration » (fiche d'une carte) : candidates(titre, get) rend les images principales de l'article dans
+ *    plusieurs versions linguistiques de Wikipédia (LANGS), pour en choisir une ; le choix est gardé par le serveur
+ *    (GET /api/art, POST /api/art/set) et passe avant tout le reste.
+ * 3. « Couverture dessinée pour les cartes sans image » (prefs.art_cover) : coverOf(description, titre) donne la nature
  *    de l'article (icône et mot : Personne, Lieu, Espèce…), lue dans la description courte (Wikidata), et le drapeau
  *    du pays qu'elle nomme (fichier de Commons). Aucune requête.
  *
  * Script classique (ni module, ni eval) : il définit window.ClasseurArt.
  *
  * Intégration (interface) :
- * - index.html : <script defer src="/assets/art.js"></script> avant celui d'app.js ; CSP : en.wikipedia.org dans
- *   connect-src, commons.wikimedia.org dans img-src (Special:FilePath redirige vers upload.wikimedia.org).
+ * - index.html : <script defer src="/assets/art.js"></script> avant celui d'app.js ; CSP : *.wikipedia.org dans
+ *   connect-src (les langues de LANGS), commons.wikimedia.org dans img-src (Special:FilePath redirige vers upload.wikimedia.org).
  * - app.js : art = ClasseurArt.createArt({get, onChange}) ; get(url) rend le JSON (files d'attente de app.js), onChange
  *   avance un compteur réactif. art.image(titre, image) rend aussitôt l'image à montrer (celle donnée tant que l'anglais
  *   n'est pas connu) et demande l'anglais au besoin, par lots de 50, une requête à la fois.
@@ -177,6 +180,44 @@
     return { image, known, clear, get size() { return map.size; } };
   }
 
+  // ---------------------------------------------------------------- « Changer l'illustration » : images de chaque langue
+  // Langues regardées, dans l'ordre montré (le français d'abord) ; une langue où l'article n'existe pas est sautée.
+  const LANGS = [['fr', 'Français'], ['en', 'Anglais'], ['de', 'Allemand'], ['es', 'Espagnol'], ['it', 'Italien'], ['pt', 'Portugais'],
+    ['nl', 'Néerlandais'], ['pl', 'Polonais'], ['sv', 'Suédois'], ['ca', 'Catalan'], ['ru', 'Russe'], ['uk', 'Ukrainien'],
+    ['ar', 'Arabe'], ['ja', 'Japonais'], ['zh', 'Chinois'], ['ko', 'Coréen']];
+  const wpApi = (lang) => 'https://' + lang + '.wikipedia.org/w/api.php';
+  const imgParams = { action: 'query', redirects: '1', prop: 'pageimages', piprop: 'thumbnail|name', pithumbsize: '330', pilicense: 'any' };
+  const firstPage = (j) => { const p = ((j && j.query) || {}).pages; return p && p[0] && !p[0].missing && !p[0].invalid ? p[0] : null; };
+  // Image principale d'une page (libre ou non) : {url (sans paramètres), file} ou null.
+  const imageOfPage = (p) => {
+    const src = p && p.thumbnail && p.thumbnail.source;
+    return src ? { url: String(src).split('?')[0], file: String(p.pageimage || '').replace(/_/g, ' ') } : null;
+  };
+
+  // Images principales de l'article (titre français) dans les versions linguistiques de LANGS : une requête sur
+  // fr.wikipedia.org (son image et ses liens de langue), puis une par langue qui a l'article, en parallèle. Une même image
+  // n'est rendue qu'une fois, avec toutes ses langues : même nom de fichier (une image non libre est hébergée à part par
+  // chaque Wikipédia qui l'utilise : Homer_Simpson_2006.png en anglais, portugais, catalan…), à défaut même adresse.
+  // get(url) -> Promise<json>. Rend {missing, list:[{url, file, langs:[{code, name}]}]} ; une langue qui ne répond pas est sautée.
+  async function candidates(title, get) {
+    const fr = firstPage(await get(qs(FR_API, { ...imgParams, prop: 'pageimages|langlinks', lllimit: 'max', titles: String(title) })));
+    if (!fr) return { missing: true, list: [] };
+    const links = new Map((fr.langlinks || []).map((l) => [l.lang, l.title]));
+    const found = await Promise.all(LANGS.map(async ([code, name]) => {
+      if (code === 'fr') return { code, name, img: imageOfPage(fr) };
+      if (!links.has(code)) return null;
+      try { return { code, name, img: imageOfPage(firstPage(await get(qs(wpApi(code), { ...imgParams, titles: links.get(code) })))) }; } catch (e) { return null; }
+    }));
+    const byFile = new Map();
+    for (const f of found) {
+      if (!f || !f.img) continue;
+      const k = f.img.file || f.img.url;
+      const cur = byFile.get(k);
+      if (cur) cur.langs.push({ code: f.code, name: f.name }); else byFile.set(k, { ...f.img, langs: [{ code: f.code, name: f.name }] });
+    }
+    return { missing: false, list: [...byFile.values()] };
+  }
+
   // ---------------------------------------------------------------- couverture : nature de l'article
   // Mots cherchés en début de mot (lettres accentuées comprises) ; règles dans l'ordre, la première qui répond gagne.
   const W = (s) => new RegExp('(?:^|[^\\p{L}])(?:' + s + ')', 'u');
@@ -285,6 +326,6 @@
     return { kind: k[0], label: k[1], icon: k[2], flag: flagUrl(country) };
   }
 
-  root.ClasseurArt = Object.freeze({ createArt, coverOf, kindOf, countryOf, flagUrl, STORAGE_KEY, TTL,
+  root.ClasseurArt = Object.freeze({ createArt, candidates, LANGS, coverOf, kindOf, countryOf, flagUrl, STORAGE_KEY, TTL,
     ICONS: Object.freeze([...new Set(KINDS.map((k) => k[2]).concat(DEFAULT_KIND[2]))]) });
 })(typeof window !== 'undefined' ? window : globalThis);

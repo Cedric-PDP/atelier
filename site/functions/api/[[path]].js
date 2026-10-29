@@ -24,6 +24,7 @@ import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
 import { listMissingWishes, deleteMissingWishes } from '../_lib/wishmissing.js';
 import { syncWishlist, wishSoon } from '../_lib/wishlist.js';
 import { placeBid } from '../_lib/bid.js';
+import { listArt, setArt } from '../_lib/art.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -51,6 +52,8 @@ const ROUTES = {
   'targets/favorite': { POST: [setAutoFavorite, 'main'] },
   'targets/autotag': { POST: [setAutoTag, 'main'] },
   'tags/rename': { POST: [renameTag, 'main'] },
+  art: { GET: [listArt, 'main'] }, // illustrations choisies à la main (fiche, « Changer l'illustration »)
+  'art/set': { POST: [setArt, 'main'] },
   targets: { GET: [listTargets, 'main'] },
   'targets/save': { POST: [saveTarget, 'main'] },
   'targets/delete': { POST: [deleteTarget, 'main'] },

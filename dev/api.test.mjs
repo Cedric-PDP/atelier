@@ -847,6 +847,48 @@ await test('étiquettes gardées quand la carte disparaît puis revient', async 
   assert.deepEqual(cards.find((c) => c.id === gone.id).tags, ['Garder']);
 });
 
+// --- Illustrations choisies -----------------------------------------------------------------------------------
+
+await test('illustrations choisies : set, remplacement, retour par défaut, limites, par compte, effacées avec le compte', async () => {
+  const ana = await signup('Ana');
+  const ben = await signup('Ben');
+  const img = 'https://upload.wikimedia.org/wikipedia/en/thumb/0/02/Homer_Simpson_2006.png/330px-Homer_Simpson_2006.png';
+  let r = await call('GET', 'art', { key: ana.key });
+  assert.deepEqual(r.json, { picks: {} });
+  r = await call('POST', 'art/set', { key: ana.key, body: { title: '  Homer   Simpson ', url: img } });
+  assert.equal(r.status, 200);
+  assert.deepEqual(r.json, { title: 'Homer Simpson', url: img });
+  const img2 = 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/aa/Homer.jpg/330px-Homer.jpg';
+  await call('POST', 'art/set', { key: ana.key, body: { title: 'Homer Simpson', url: img2 } });
+  await call('POST', 'art/set', { key: ana.key, body: { title: 'Bart Simpson', url: img } });
+  assert.deepEqual((await call('GET', 'art', { key: ana.key })).json.picks, { 'Homer Simpson': img2, 'Bart Simpson': img });
+  assert.deepEqual((await call('GET', 'art', { key: ben.key })).json.picks, {});
+  // Retour à l'image par défaut.
+  r = await call('POST', 'art/set', { key: ana.key, body: { title: 'Bart Simpson', url: null } });
+  assert.deepEqual(r.json, { title: 'Bart Simpson', url: null });
+  assert.deepEqual((await call('GET', 'art', { key: ana.key })).json.picks, { 'Homer Simpson': img2 });
+  // Adresses hors de upload.wikimedia.org, titres invalides.
+  for (const url of ['https://example.com/x.png', 'http://upload.wikimedia.org/x.png', 'javascript:alert(1)', 42, 'https://upload.wikimedia.org/a b.png',
+    'https://upload.wikimedia.org/a.png?utm_source=x', 'https://evil.wikimedia.org/a.png']) {
+    assert.equal((await call('POST', 'art/set', { key: ana.key, body: { title: 'X', url } })).status, 400, String(url));
+  }
+  for (const title of ['', '   ', 'x'.repeat(301), 12, null]) {
+    assert.equal((await call('POST', 'art/set', { key: ana.key, body: { title, url: img } })).status, 400, String(title));
+  }
+  assert.equal((await call('GET', 'art')).status, 401);
+  // 5 000 au plus : une nouvelle refusée, un remplacement permis.
+  const db = env.DB.sqlite;
+  const ins = db.prepare('INSERT INTO art_picks (user_id, title, url, at) VALUES (?, ?, ?, ?)');
+  for (let i = 1; i < 5000; i++) ins.run(ana.user.id, 'T' + i, img, '2026-10-29T00:00:00Z');
+  r = await call('POST', 'art/set', { key: ana.key, body: { title: 'Encore une', url: img } });
+  assert.equal(r.status, 400);
+  assert.match(r.json.error, /5\s000/);
+  assert.equal((await call('POST', 'art/set', { key: ana.key, body: { title: 'Homer Simpson', url: img } })).status, 200);
+  await call('DELETE', 'me', { key: ana.key });
+  await call('DELETE', 'me', { key: ben.key });
+  assert.equal(rows('SELECT COUNT(*) AS n FROM art_picks WHERE user_id = ?', ana.user.id)[0].n, 0);
+});
+
 // --- Collections à compléter ----------------------------------------------------------------------------------
 
 await test('collections à compléter : save, mise à jour, limites, liste, suppression', async () => {

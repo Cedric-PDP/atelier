@@ -308,6 +308,16 @@ CREATE TABLE IF NOT EXISTS sync_log (
     data TEXT NOT NULL DEFAULT '{}'
 );
 
+-- Illustrations choisies à la main (functions/_lib/art.js) : pour un article (titre de Wikipédia en français), l'image
+-- principale d'une de ses versions linguistiques (adresse sur upload.wikimedia.org), choisie dans la fiche. 5 000 au plus.
+CREATE TABLE IF NOT EXISTS art_picks (
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (user_id, title)
+);
+
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);

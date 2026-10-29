@@ -77,7 +77,7 @@ function mockApi() {
   function makeUser(name) {
     // Compte du jeu relié : linked, lost, linkAt, autoSync, fails, fullAt ; game = sa collection dans le jeu (sinon ses
     // cartes), phantom = exemplaires comptés par le jeu mais jamais lus ; clickAt = dernier « Rafraîchir » (un par minute).
-    const u = { id: 'u' + ++seq, key: mk('cle' + seq), name: name || null, cards: [], tags: new Map(), targets: [], fetched_at: null,
+    const u = { id: 'u' + ++seq, key: mk('cle' + seq), name: name || null, cards: [], tags: new Map(), art: {}, targets: [], fetched_at: null,
       new_ids: [], linked: false, lost: null, linkAt: null, autoSync: true, fails: 0, fullAt: null, game: null, phantom: 0, clickAt: 0, linkToken: null,
       calls, rev: 1, changed: new Map() };
     users.push(u);
@@ -521,6 +521,12 @@ function mockApi() {
         return json(200, { ...res, fresh: res.new_ids.length, removed: 0, kept: 0, skipped: 2 });
       }
       if (p === '/api/tags/set') { st.tags.set(body.card_id, body.tags); bump(st, [body.card_id]); return json(200, { tags: body.tags }); }
+      if (p === '/api/art' && method === 'GET') return json(200, { picks: { ...st.art } });
+      if (p === '/api/art/set') {
+        if (body.url && !/^https:\/\/(upload|thumb)\.wikimedia\.org\/[^?#\s]+$/.test(body.url)) return json(400, { error: 'Adresse refusée.' });
+        if (body.url) st.art[body.title] = body.url; else delete st.art[body.title];
+        return json(200, { title: body.title, url: body.url || null });
+      }
       if (p === '/api/tags/bulk') {
         if (body.add.includes('QUOTA')) return json(503, { error: 'La base du classeur est pleine pour aujourd\'hui (quota gratuit atteint) : réessaie demain.' });
         for (const id of body.card_ids) { let t = st.tags.get(id) || []; t = t.filter((x) => !body.remove.includes(x)); for (const a of body.add) if (!t.includes(a)) t.push(a); st.tags.set(id, t); }
@@ -918,6 +924,7 @@ const pvAsked = []; // titres dont les vues (prop=pageviews) ont été demandée
 const propose = { categories: 0 };
 const wdSearches = [];
 let lastProbe = '';
+const pickCalls = []; // « Changer l'illustration » : « <langue> <titre> »
 let pvContinueSeen = false;
 function wikiHandle(url) {
   wikiCalls++;
@@ -931,6 +938,20 @@ function wikiHandle(url) {
     const S2 = { footballeur: [{ id: 'Q937857', label: 'footballeur' }], musique: [{ id: 'Q638', label: 'musique' }] };
     wdSearches.push(p.search);
     return { search: S2[p.search.toLowerCase()] || [] };
+  }
+  // « Changer l'illustration » (art.js, candidates) : image principale de l'article dans chaque langue. Français et
+  // allemand partagent la même image (Commons), l'anglais a la sienne, le japonais n'en a pas ; une langue absente de
+  // langlinks n'est jamais demandée.
+  if (u.searchParams.get('prop') === 'pageimages' || u.searchParams.get('prop') === 'pageimages|langlinks') {
+    const p = Object.fromEntries(u.searchParams);
+    const lang = u.hostname.split('.')[0];
+    pickCalls.push(lang + ' ' + p.titles);
+    if (p.origin !== '*' || p.pilicense !== 'any' || p.piprop !== 'thumbnail|name') throw new Error('appel « Changer l\'illustration » inattendu : ' + url);
+    const C = 'https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ab/' + encodeURIComponent(p.titles) + '.jpg/330px-x.jpg?utm_source=x';
+    const imgs = { fr: [C, p.titles + '.jpg'], de: [C, p.titles + '.jpg'], en: ['https://upload.wikimedia.org/wikipedia/en/0/02/' + encodeURIComponent(p.titles) + '_EN.png', p.titles + '_EN.png'] };
+    const img = imgs[lang];
+    return { query: { pages: [{ title: p.titles, ...(img ? { thumbnail: { source: img[0] }, pageimage: img[1] } : {}),
+      ...(lang === 'fr' ? { langlinks: [{ lang: 'en', title: p.titles }, { lang: 'de', title: p.titles }, { lang: 'ja', title: 'JA ' + p.titles }] } : {}) }] } };
   }
   if (u.hostname === 'en.wikipedia.org') {
     const p = Object.fromEntries(u.searchParams);
@@ -1249,7 +1270,7 @@ async function main() {
       const headers = init.headers || {};
       const method = init.method || 'GET';
       const body = init.body ? JSON.parse(init.body) : undefined;
-      if (/^https:\/\/(fr\.wikipedia\.org|en\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
+      if (/^https:\/\/([a-z-]+\.wikipedia\.org|query\.wikidata\.org|www\.wikidata\.org)\//.test(url)) {
         if (init.signal && init.signal.aborted) { const e = new Error('abandon'); e.name = 'AbortError'; throw e; }
         const data = wikiHandle(url);
         if (opts.wikiHold) { // réponse de Wikipédia rendue plus tard (réseau lent) ; abandonnée entre-temps : rejetée
@@ -1642,6 +1663,45 @@ async function main() {
     await settle();
     check(copied.length === n + 1 && copied[n] === 'Rihanna', 'le nom n\'est pas copié : ' + JSON.stringify(copied.slice(n)));
     check(fiche() && fiche().querySelectorAll('button').some((x) => x.getAttribute('aria-label') === 'Nom « Rihanna » copié'), 'pas de « Nom copié » après la copie (ou fiche fermée)');
+  }
+  // « Changer l'illustration » : l'image par défaut, puis celles des langues (même image regroupée), choix enregistré par
+  // le serveur et pris partout ; « Revenir à l'image par défaut » l'efface. Échap ferme la fenêtre avant la fiche.
+  {
+    const ficheImg = () => fiche().querySelectorAll('img').find((n) => n.parentNode && n.parentNode.classList.contains('card__art')) || null;
+    const before = ficheImg() ? ficheImg().getAttribute('src') : null;
+    const opts = () => all((n) => n.tagName === 'BUTTON' && n.classList.contains('artpick__opt'));
+    const openPick = async () => {
+      fiche().querySelectorAll('button').filter((b) => text(b).startsWith("Changer l'illustration"))[0].click();
+      for (let i = 0; i < 100 && (!one('artpick') || has('Recherche des images')); i++) await sleep(20);
+      await settle();
+    };
+    await openPick();
+    check(one('artpick') && opts().length === 3, "« Changer l'illustration » : " + opts().map(text).join(' | '));
+    check(text(opts()[0]).includes('Par défaut') && opts()[0].getAttribute('aria-checked') === 'true', 'image par défaut non choisie à l\'ouverture');
+    check(text(opts()[1]) === 'Français, Allemand' && text(opts()[2]) === 'Anglais', 'langues des images : ' + opts().slice(1).map(text).join(' | '));
+    check(pickCalls.length === 4 && pickCalls.every((c) => /^(fr|en|de|ja) /.test(c)), 'langues demandées : ' + pickCalls.join(', '));
+    check(needButton('Garder cette image').disabled, '« Garder » actif sans changement');
+    opts()[2].click();
+    await settle();
+    needButton('Garder cette image').click();
+    await settle(SERVER ? 300 : 80);
+    const EN = 'https://upload.wikimedia.org/wikipedia/en/0/02/Rihanna_EN.png';
+    check(!one('artpick') && fiche(), 'fenêtre non fermée après « Garder », ou fiche fermée avec elle');
+    check(SERVER || api.st.art.Rihanna === EN, 'choix non enregistré : ' + JSON.stringify(SERVER ? {} : api.st.art));
+    check(ficheImg() && ficheImg().getAttribute('src') === EN && has('Illustration changée'), 'image choisie non montrée dans la fiche : ' + (ficheImg() && ficheImg().getAttribute('src')));
+    check(fiche().querySelectorAll('button').some((b) => text(b) === "Changer l'illustration (choisie)"), 'bouton sans « (choisie) »');
+    await openPick();
+    check(opts().find((b) => b.getAttribute('aria-checked') === 'true') === opts()[2], 'image choisie non cochée à la réouverture');
+    win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
+    await settle();
+    check(!one('artpick') && fiche(), 'Échap : la fenêtre doit se fermer avant la fiche');
+    await openPick();
+    opts()[0].click();
+    await settle();
+    needButton("Revenir à l'image par défaut").click();
+    await settle(SERVER ? 300 : 80);
+    check(SERVER || !('Rihanna' in api.st.art), 'choix non effacé');
+    check((ficheImg() ? ficheImg().getAttribute('src') : null) === before && has('Illustration par défaut rétablie'), 'image par défaut non revenue');
   }
   win.listeners.keydown.forEach((f) => f({ key: 'Escape', preventDefault() {} }));
   await settle(500);
@@ -3214,7 +3274,7 @@ async function main() {
       exactButton('Ce qui me concerne').click();
       await settle();
       check(pressed() === 'Ce qui me concerne' && pairs().join(' | ') === 'Toi → Paul | Paul → Toi | Léa → Toi', 'couples (ce qui me concerne) : ' + pairs().join(' | '));
-      check(SERVER || api.st.prefs.trade_filter === 'me', '« Ce qui me concerne » non retenu avec le compte (prefs.trade_filter) : ' + JSON.stringify(api.st.prefs));
+      check(SERVER || api.st.prefs.trade_filter === 'me', '« Ce qui me concerne » non retenu avec le compte (prefs.trade_filter) : ' + JSON.stringify(SERVER ? {} : api.st.prefs));
       {
         const p = pair('Toi → Paul');
         check(titlesIn(p).join(' | ') === 'Article 7 | Rihanna | Terre | Article 60', 'Toi → Paul : ' + titlesIn(p).join(' | '));

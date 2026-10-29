@@ -188,6 +188,8 @@ plus faite.
 | `POST /api/market/sell` | (clé principale ; 2026-10-23) `{id, k, base, minutes}` : `id` = la carte, `k` = rareté d'exemplaire à vendre, `base` = mise de départ (entier, 1 à 10 000 000 W), `minutes` = 10, 30, 60, 180, 360 ou 720 ; 2 Ko | `{auction:{a, k, base, minutes, end}, url}` : l'enchère **créée dans le jeu** (`end` : fin estimée), ajoutée aussitôt à « Tes ventes » de la dernière lecture du marché. `400` corps mal formé ; `401 needs_link` ; `409` plus d'exemplaire de cette rareté dans le jeu, refus du jeu (son message repris : plafond d'enchères actives…) ou `409 {verify:true}` le jeu demande une vérification anti-robot (la vente se fait alors dans le jeu) ; `429 {limited:true}` le jeu limite (pause de 10 min) ou `429 {retry_after}` plafond par minute ; `502` panne ou réponse inattendue (« regarde dans le jeu si elle a été créée ») |
 | `POST /api/market/cancel` | (clé principale ; 2026-10-23) `{a}` : l'id de l'enchère ; 2 Ko | `{a, status:"cancelled"}` : ta vente **retirée du marché du jeu**, marquée terminée (`off`) dans « Tes ventes ». Seulement **tant que personne n'a misé** : `409 {has_bid:true}` sinon ; `409 {gone:true}` vente inconnue du jeu ou terminée ; `403` la vente d'un autre ; `400`, `401`, `429`, `502` comme ci-dessus |
 | `POST /api/market/bid` | (clé principale ; 2026-10-26) `{a, amount}` : l'id de l'enchère et ta mise (entier, 1 à 10 000 000 W) ; 1 Ko | `{a, amount, cur, balance, url}` : ta **mise faite dans le jeu** (`cur` : enchère actuelle, `balance` : ton solde de wikibidous rendu par le jeu, rangé dans le compte, ou `null`) ; la dernière lecture du marché la prend aussitôt (« Tes mises », bonne affaire « tu mènes »). L'enchère est **relue d'abord** sur le site du jeu : `409 {min, cur}` mise trop basse (sans mise : au moins le prix de départ ; après une mise : au moins un W de plus que l'enchère actuelle) ; `409 {lead:true}` tu mènes déjà ; `409 {gone:true}` enchère finie ou inconnue du jeu ; `403` ta propre vente ; `409` refus du jeu (son message repris : solde…) ou `409 {verify:true}` vérification anti-robot ; `400`, `401 needs_link`, `429`, `502` (« regarde dans le jeu si elle est passée ») comme une mise en vente. Voir « Le marché », « Miser » |
+| `GET /api/art` | (clé principale ; 2026-10-29) | `{picks:{<titre>: <adresse>}}` : tes illustrations choisies, voir « Changer l'illustration d'une carte » |
+| `POST /api/art/set` | (clé principale ; 2026-10-29) `{title, url}` (`url` : image de `upload.` ou `thumb.wikimedia.org` sans paramètres ; `null` ou `''` = image par défaut) | `{title, url}` ; `400` adresse refusée, titre vide ou de plus de 300 caractères, plus de 5 000 choix |
 | `GET /api/sync-log` | (clé principale) | `{entries:[{at, kind, result, message, data}]}` : les 50 dernières lectures au plus, de la plus récente à la plus ancienne, voir « Journal des synchros » |
 
 **Message** (chat) : `{id, author, mine, text, created_at, refs?, members?, reply?, reactions?}` : `id` = numéro (croissant, jamais réutilisé), `author` = nom
@@ -1978,8 +1980,37 @@ vers Wikipédia en anglais. Logique dans `assets/art.js` (`window.ClasseurArt`),
   Aucune requête de plus. Sur une carte : couleurs de sa rareté ; dans une case vide et la fiche d'une carte manquante :
   discrète, comme son image ; vignettes : l'icône seule. Une carte qui a une image n'a pas de couverture dessous (elle se
   verrait à travers une image transparente).
-- **CSP** : `en.wikipedia.org` dans `connect-src`, `commons.wikimedia.org` dans `img-src` (`_headers`). Icônes : symboles
-  `i-k-*` du sprite de `index.html` (avec `i-list` et `i-swords`).
+- **CSP** : `*.wikipedia.org` dans `connect-src` (avant le 2026-10-29 : `fr.` et `en.` seulement), `commons.wikimedia.org`
+  dans `img-src` (`_headers`). Icônes : symboles `i-k-*` du sprite de `index.html` (avec `i-list` et `i-swords`).
+
+### Changer l'illustration d'une carte (2026-10-29)
+
+Demande de l'utilisateur : pouvoir remplacer l'illustration par défaut de chaque carte en choisissant parmi les images
+principales de l'article dans plusieurs langues.
+
+- **Où** : bouton « Changer l'illustration » (« … (choisie) » quand un choix existe) en bas de la fiche d'une de tes cartes,
+  d'une carte qui te manque (article vérifié) et d'une carte d'un ami. Il ouvre une fenêtre par-dessus la fiche (Échap la
+  ferme avant la fiche).
+- **Images proposées** (`ClasseurArt.candidates`, `assets/art.js`) : d'abord « Par défaut » (l'image montrée sans choix :
+  celle du jeu ou de Wikipédia, ou l'anglaise si la case `art_en` est cochée ; la couverture ou l'initiale sans image), puis
+  l'image principale de l'article (`prop=pageimages&piprop=thumbnail|name&pithumbsize=330&pilicense=any`, libre ou non) dans
+  16 langues, dans cet ordre : français, anglais, allemand, espagnol, italien, portugais, néerlandais, polonais, suédois,
+  catalan, russe, ukrainien, arabe, japonais, chinois, coréen. Une requête sur fr.wikipedia.org (image et `langlinks`), puis
+  une par langue où l'article existe (file de la page, une toutes les 60 ms ; une langue qui échoue est sautée). Une même
+  image n'est proposée qu'une fois, avec toutes ses langues sous la vignette : même nom de fichier (une image non libre est
+  hébergée à part par chaque Wikipédia qui s'en sert), à défaut même adresse ; celle qui est déjà l'image par défaut n'est pas
+  répétée. Vignettes au cadrage des cartes (4:3, haut de l'image). Rien n'est gardé dans le navigateur : les images sont
+  redemandées à chaque ouverture.
+- **Choix** : un clic coche une image (boutons `role=radio`) ; « Garder cette image » l'enregistre, « Revenir à l'image par
+  défaut » efface le choix. Adresse rangée sans paramètres (`utm_*`).
+- **Gardé par le serveur**, avec le compte (table `art_picks`, une ligne par titre d'article, 5 000 au plus) :
+  `GET /api/art` → `{picks:{<titre>: <adresse>}}`, lu au démarrage (en échec : images par défaut) ; `POST /api/art/set
+  {title, url}` → `{title, url}`, `url` = image de `https://upload.wikimedia.org/` ou `https://thumb.wikimedia.org/` sans `?`
+  ni `#` (sinon `400`), `null` ou `''` = revenir à l'image par défaut ; titre de 1 à 300 caractères (espaces réduits).
+  Effacée avec le compte (`DELETE /api/me`). Jamais montrée aux autres membres.
+- **Effet** : l'image choisie passe avant tout le reste (image du jeu, image anglaise) partout où paraît l'article : tes
+  cartes, cases vides, vignettes, fiches, mode réorganisation, cartes et albums d'un ami (dans **ton** classeur seulement).
+  La carte du jeu ne change pas.
 
 ## Style des cartes (interface, 2026-10-28)
 

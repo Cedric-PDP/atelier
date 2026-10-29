@@ -306,6 +306,10 @@
     copied: '',
     pv: { version: 0, running: false, done: 0, total: 0, error: '' },
     artV: 0, // avance quand art.js apprend l'image anglaise d'un lot de titres (case « Image de Wikipédia en anglais »)
+    artPicks: {}, // illustrations choisies à la main (GET /api/art) : titre de l'article -> adresse de l'image
+    // « Changer l'illustration » : {title, base (image par défaut), desc, st (loading | ready | missing | error), list
+    // (ClasseurArt.candidates), sel ('' = par défaut, sinon l'adresse choisie), busy, error}.
+    artPick: null,
     prefs: { hidden_proposals: [], hide_proposals: false }, // préférences du compte (GET/PATCH /api/me) : propositions retirées, masquées
     tagCatsOpen: (() => { const v = store.json(LS.tagCats); return Array.isArray(v) ? v.filter((x) => typeof x === 'string') : []; })(),
     bulkCat: '',
@@ -1772,6 +1776,8 @@
     routeOn = true;
     routeSync();
     loadNews(true); // pastille « nouveau » du lien Nouveautés, messages système du chat
+    S.artPicks = {};
+    loadArtPicks();
     if (S.linkError) { notify(S.linkError, true); S.linkError = ''; }
     if (ask) { S.switchAsk = ask; S.modal = 'switch'; }
     S.loadingCards = true;
@@ -4257,6 +4263,7 @@
     if (m === 'friendsadd') S.friendsAdd = null;
     if (m === 'sell') S.sell = null;
     if (m === 'bid') S.bid = null;
+    if (m === 'art') S.artPick = null;
   }
   function openConfirm(o) {
     S.confirm = { title: o.title, text: o.text, ok: o.ok, danger: !!o.danger, run: markRaw(o.run), after: o.after ? markRaw(o.after) : null,
@@ -4450,12 +4457,62 @@
   const art = Art ? Art.createArt({ get: (url) => getJson(/^https:\/\/en\./.test(url) ? enQ : wikiQ, url, 0), onChange: () => { S.artV++; } }) : null;
   const artEn = () => !!(art && S.prefs.art_en);
   const artCover = () => !!(Art && S.prefs.art_cover);
-  // Image à montrer pour un article (titre français) qui a déjà img (ou null).
+  // Image à montrer pour un article (titre français) qui a déjà img (ou null) : celle choisie à la main d'abord.
   function artOf(title, img) {
+    return (title && S.artPicks[title]) || artDefault(title, img);
+  }
+  // Sans choix à la main : l'image donnée, ou l'anglaise (case des Réglages).
+  function artDefault(title, img) {
     if (!artEn()) return img || null;
     void S.artV; // relu quand un lot arrive
     return art.image(title, img);
   }
+
+  // ---------------------------------------------------------------- « Changer l'illustration » (fiches)
+  // Images principales de l'article dans plusieurs langues de Wikipédia (art.js, candidates) ; le choix est gardé par le
+  // serveur (POST /api/art/set), pour toutes les cartes et cases vides de cet article, sur tous tes appareils.
+  const langQ = makeQueue(60); // autres langues que le français : une requête par langue, l'une après l'autre
+  async function loadArtPicks() {
+    try {
+      const r = await api('GET', '/api/art');
+      S.artPicks = r && r.picks && typeof r.picks === 'object' ? r.picks : {};
+    } catch (e) { /* illustrations par défaut : rien d'autre ne change */ }
+  }
+  async function openArtPick(title, base, desc) {
+    if (!Art) return;
+    const ap = reactive({ title, base: base || null, desc: desc || '', st: 'loading', list: [], sel: S.artPicks[title] || '', busy: false, error: '' });
+    S.artPick = ap;
+    S.modal = 'art';
+    try {
+      const r = await Art.candidates(title, (url) => getJson(/^https:\/\/fr\./.test(url) ? wikiQ : langQ, url, 1));
+      if (S.artPick !== ap) return;
+      ap.list = markRaw(r.list);
+      ap.st = r.missing ? 'missing' : 'ready';
+    } catch (e) {
+      if (S.artPick !== ap) return;
+      ap.st = 'error';
+      ap.error = e.message;
+    }
+  }
+  async function saveArtPick(ap) {
+    if (ap.busy) return;
+    ap.busy = true;
+    ap.error = '';
+    try {
+      const r = await api('POST', '/api/art/set', { title: ap.title, url: ap.sel || null });
+      const next = { ...S.artPicks };
+      if (r.url) next[ap.title] = r.url; else delete next[ap.title];
+      S.artPicks = next;
+      if (S.artPick === ap) closeModal();
+      notify(r.url ? 'Illustration changée.' : 'Illustration par défaut rétablie.');
+    } catch (e) {
+      ap.error = e.message;
+    } finally {
+      ap.busy = false;
+    }
+  }
+  const artPickButton = (title, base, desc) => (Art ? h('button', { class: 'btn small', type: 'button', onClick: () => openArtPick(title, base, desc) },
+    [icon('pen', 'sm'), S.artPicks[title] ? "Changer l'illustration (choisie)" : "Changer l'illustration"]) : null);
 
   // ---------------------------------------------------------------- propositions d'après les catégories Wikipédia (propose.js)
   const Propose = window.ClasseurPropose || null;
@@ -11546,6 +11603,7 @@
         viewSuggestions(c),
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         h('div', { class: 'actions' }, [
+          artPickButton(c.title, c.image, c.category),
           h('a', { href: c.url || wikiUrl(c.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
       ]),
@@ -11606,6 +11664,7 @@
         ok ? viewCardMarket(null) : null,
         mine.length ? h('div', null, [h('h3', null, 'Dans tes collections'), memberList(mine)]) : null,
         h('div', { class: 'actions' }, [
+          ok ? artPickButton(item.title, item.image || (info ? info[1] : null), item.description) : null,
           h('a', { href: wikiUrl(item.title), target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
       ]),
@@ -11674,6 +11733,7 @@
         theirs.length ? h('div', null, [h('h3', null, `Dans les collections de ${fx.name}`), theirList]) : null,
         myCols.length ? h('div', null, [h('h3', null, 'Dans tes collections'), myList(myCols)]) : null,
         h('div', { class: 'actions' }, [
+          artPickButton(item.title, (fc && fc.image) || (mine && mine.image) || (info ? info[1] : null), (fc && fc.category) || (mine && mine.category) || item.description),
           h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, "Lire l'article sur Wikipédia ↗"),
         ]),
       ]),
@@ -12603,7 +12663,41 @@
     ]);
   }
 
-  const MODALS = { trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, bid: modalBid, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  // « Changer l'illustration » : l'image par défaut, puis les images principales de l'article dans chaque langue de
+  // Wikipédia qui en a une (une même image une fois, avec ses langues). Un clic choisit, « Garder » enregistre.
+  function modalArt() {
+    const ap = S.artPick;
+    if (!ap) return null;
+    const def = artDefault(ap.title, ap.base);
+    const opt = (key, sel, img, caption, label) => h('li', { key }, [
+      h('button', { class: 'artpick__opt', type: 'button', role: 'radio', 'aria-checked': String(ap.sel === sel), 'aria-label': label,
+        disabled: ap.busy, onClick: () => { ap.sel = sel; } }, [
+        h('span', { class: 'artpick__img' }, img ? [h('img', { src: img, alt: '', loading: 'lazy', decoding: 'async', onError: hideBroken })]
+          : artCover() ? [viewCover(ap.desc, ap.title, 'mini')] : [h('span', { class: 'artpick__none' }, initialOf(ap.title))]),
+        h('span', { class: 'artpick__cap' }, caption),
+      ]),
+    ]);
+    const list = ap.list.filter((x) => x.url !== def || ap.sel === x.url);
+    const changed = ap.sel !== (S.artPicks[ap.title] || '');
+    return h(Modal, { key: 'art', title: `Illustration de « ${ap.title} »`, wide: true, onClose: closeModal }, () => [
+      h('p', { class: 'small muted' }, "L'image principale de l'article dans les versions de Wikipédia qui en ont une. Seulement dans le classeur : la carte du jeu ne change pas. Gardée avec ton compte, pour toutes les cartes et cases de cet article."),
+      h('ul', { class: 'artpick', role: 'radiogroup', 'aria-label': 'Illustrations proposées' }, [
+        opt('def', '', def, [h('b', null, 'Par défaut'), def ? null : h('span', null, ' (sans image)')], 'Image par défaut'),
+        ...list.map((x) => opt(x.url, x.url, x.url, x.langs.map((l) => l.name).join(', '), `Image de Wikipédia en ${x.langs.map((l) => l.name.toLowerCase()).join(', ')}${x.file ? ' : ' + x.file : ''}`)),
+      ]),
+      ap.st === 'loading' ? h('p', { class: 'small muted', role: 'status' }, 'Recherche des images dans les autres langues…') : null,
+      ap.st === 'ready' && !list.length ? h('p', { class: 'small muted', role: 'status' }, "Aucune autre image : l'article n'a pas d'image principale dans les langues regardées.") : null,
+      ap.st === 'missing' ? h('p', { class: 'warn' }, 'Article introuvable sur Wikipédia.') : null,
+      errLine(ap.error),
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: ap.busy || !changed, 'aria-busy': ap.busy ? 'true' : null, onClick: () => saveArtPick(ap) },
+          ap.busy ? 'Enregistrement…' : ap.sel || !S.artPicks[ap.title] ? 'Garder cette image' : "Revenir à l'image par défaut"),
+      ]),
+    ]);
+  }
+
+  const MODALS = { art: modalArt, trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, bid: modalBid, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

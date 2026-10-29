@@ -198,6 +198,13 @@ export const SCHEMA = [
     message TEXT NOT NULL,
     data TEXT NOT NULL DEFAULT '{}'
   )`,
+  `CREATE TABLE IF NOT EXISTS art_picks (
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    url TEXT NOT NULL,
+    at TEXT NOT NULL,
+    PRIMARY KEY (user_id, title)
+  )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
