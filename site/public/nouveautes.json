@@ -1,5 +1,13 @@
 {
   "versions": [
+    {"id": "2026-10-29-palmares", "date": "2026-10-29", "sections": [
+      {"icon": "🏆", "title": "Palmarès", "items": [
+        {"text": "Une nouvelle page avant Réglages célèbre les membres du classeur avec cinq podiums or, argent et bronze.", "to": "#/palmares", "link": "Voir le palmarès"},
+        {"text": "Retrouve les champions des collections complétées, de la carte la plus chère, des cartes données dans les échanges acceptés et des messages envoyés dans le tchat."},
+        {"text": "« À ça du bol de sangria » récompense les collections presque terminées : entre 90 % et moins de 100 %."},
+        {"text": "Les podiums respectent tes réglages de partage. Le suivi des échanges commence avec cette nouveauté ; les messages déjà purgés ne sont pas récupérés."}
+      ]}
+    ]},
     {"id": "2026-10-29", "date": "2026-10-29", "sections": [
       {"icon": "🛒", "title": "Marché", "items": [
         {"text": "Bonnes affaires cherchées sur toutes tes cartes manquantes, sans limite de 500.", "to": "#/marche", "link": "Marché"},
