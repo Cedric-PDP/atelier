@@ -1,5 +1,6 @@
 {
   "versions": [
+    {"id": "2026-10-29-marche", "date": "2026-10-29", "sections": [{"icon": "🛒", "title": "Marché", "items": [{"text": "Le Marché se range en quatre onglets : Acheter, Vendre, Mes enchères, Valeur.", "to": "#/marche", "link": "Marché"}, {"text": "Crée tes propres onglets de recherche, chacun avec son nom et ses filtres.", "to": "#/marche", "link": "Acheter"}, {"text": "Choisis une affaire : sa fiche, ses enchères et ses ventes s'affichent à droite."}]}, {"icon": "💰", "title": "Ventes et mises", "items": [{"text": "Mets une carte en vente sans fenêtre, à 90 % de sa cote.", "to": "#/marche/vendre", "link": "Vendre"}, {"text": "Tes mises dépassées passent en tête de « Mes enchères ».", "to": "#/marche/encheres", "link": "Mes enchères"}]}]},
     {"id": "2026-10-29-palmares", "date": "2026-10-29", "sections": [
       {"icon": "🏆", "title": "Palmarès", "items": [
         {"text": "Une nouvelle page avant Réglages célèbre les membres du classeur avec cinq podiums or, argent et bronze.", "to": "#/palmares", "link": "Voir le palmarès"},
