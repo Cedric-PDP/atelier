@@ -48,7 +48,18 @@ export const SCHEMA = [
     react_min INTEGER NOT NULL DEFAULT 0,
     react_min_at TEXT,
     react_day INTEGER NOT NULL DEFAULT 0,
-    react_day_at TEXT
+    react_day_at TEXT,
+    chat_sent INTEGER NOT NULL DEFAULT 0
+  )`,
+  `CREATE TABLE IF NOT EXISTS award_trades (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    recipient_id TEXT NOT NULL,
+    given INTEGER NOT NULL,
+    received INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    checked_at TEXT
   )`,
   `CREATE TABLE IF NOT EXISTS cards (
     user_id TEXT NOT NULL,
@@ -279,6 +290,7 @@ const ADDED_COLUMNS = [
   ['users', 'react_min_at', 'TEXT'],
   ['users', 'react_day', 'INTEGER NOT NULL DEFAULT 0'],
   ['users', 'react_day_at', 'TEXT'],
+  ['users', 'chat_sent', 'INTEGER NOT NULL DEFAULT 0'],
   ['cards', 'rev', 'INTEGER NOT NULL DEFAULT 0'],
   ['targets', 'auto', 'TEXT'],
   ['targets', 'pos', 'INTEGER'],
@@ -326,6 +338,7 @@ async function applySchema(db) {
 // le même lot (une transaction) ; la modification ne s'applique que si cette ligne vient d'être posée par CE lot
 // (run_id tiré au hasard) : deux instances qui démarrent ensemble ne la font qu'une fois, et jamais plus ensuite.
 const MIGRATIONS = [
+  ['palmares-chat-2026-10-29', `UPDATE users SET chat_sent = (SELECT COUNT(*) FROM chat_messages c WHERE c.user_id = users.id) WHERE true`],
   // Ancien site : garder le mode global s'il était actif. Une base déjà passée au choix par collection garde ses choix.
   ['mode-souhaits-2026-10-25', `UPDATE users SET wish_mode = 'all' WHERE auto_wish = 1
      AND NOT EXISTS (SELECT 1 FROM migrations WHERE name = 'souhaits-par-collection-2026-10-25')`],

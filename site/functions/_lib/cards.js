@@ -4,7 +4,7 @@
 import { HttpError, raw } from './http.js';
 import { base64ToBytes, base64url, cleanText } from './util.js';
 
-export const MAX_CARDS = 20_000;
+export const MAX_CARDS = 30_000;
 export const RARITIES = new Set(['C', 'PC', 'R', 'SR', 'UR', 'L']);
 // Raretés de la plus basse à la plus haute : une carte possédée en plusieurs raretés garde la plus haute.
 export const RARITY_ORDER = ['C', 'PC', 'R', 'SR', 'UR', 'L'];

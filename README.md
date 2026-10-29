@@ -52,6 +52,7 @@ serveur (une catégorie suivie a la source `wp:<nom>`).
 ```bash
 node dev/api.test.mjs                       # l'API, la session du jeu, la lecture de la collection, les cron et le marché (faux Supabase), avec mesures de CPU ; doit finir par API OK
 node dev/worker.test.mjs                    # le point d'entrée Worker ; doit finir par WORKER OK
+node dev/palmares.test.mjs                  # podiums, partage, compteurs du tchat et échanges confirmés ; PALMARES OK
 node dev/match.test.mjs                     # rapprochement par identifiant Wikidata ; MATCH OK
 node dev/propose.test.mjs                   # propositions d'après les catégories ; PROPOSE OK
 node dev/art.test.mjs                       # illustrations (nature, drapeau, image anglaise) ; ART OK

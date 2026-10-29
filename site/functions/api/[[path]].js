@@ -26,6 +26,7 @@ import { listMissingWishes, deleteMissingWishes } from '../_lib/wishmissing.js';
 import { syncWishlist, wishSoon } from '../_lib/wishlist.js';
 import { placeBid } from '../_lib/bid.js';
 import { listArt, setArt } from '../_lib/art.js';
+import { getPalmares } from '../_lib/palmares.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -60,6 +61,7 @@ const ROUTES = {
   'targets/delete': { POST: [deleteTarget, 'main'] },
   'targets/order': { POST: [orderTargets, 'main'] },
   members: { GET: [listMembers, 'main'] },
+  palmares: { GET: [getPalmares, 'main'] },
   'members/*/cards': { GET: [memberCards, 'main'] }, // members/<identifiant public>/cards
   'members/*/targets': { GET: [memberTargets, 'main'] }, // ses collections à compléter, s'il les montre
   chat: { GET: [listChat, 'main'], POST: [postChat, 'main'] }, // un salon pour tous les classeurs

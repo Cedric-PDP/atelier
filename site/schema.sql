@@ -81,8 +81,21 @@ CREATE TABLE IF NOT EXISTS users (
     react_min INTEGER NOT NULL DEFAULT 0,
     react_min_at TEXT,
     react_day INTEGER NOT NULL DEFAULT 0,
-    react_day_at TEXT
+    react_day_at TEXT,
+    chat_sent INTEGER NOT NULL DEFAULT 0
 );
+
+-- Échanges créés par le classeur : confirmation relue dans le jeu.
+CREATE TABLE IF NOT EXISTS award_trades (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    recipient_id TEXT NOT NULL,
+    given INTEGER NOT NULL,
+    received INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TEXT NOT NULL,
+    checked_at TEXT
+  );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
 -- dernier changement (données ou étiquettes).

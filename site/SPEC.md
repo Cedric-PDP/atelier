@@ -1,5 +1,31 @@
 # Le classeur — contrat entre l'interface et le serveur
 
+## Palmarès (`#/palmares`)
+
+`GET /api/palmares` exige la clé principale et le partage des cartes (403 sinon). Retour :
+`{updated_at, categories:[{id, entries:[{id, name, mine, score, rank, card?}]}]}`.
+Les identifiants des joueurs sont publics ; aucun identifiant interne ni détail de collection n'est renvoyé.
+Trois membres au maximum par catégorie, scores strictement positifs, ex æquo au même rang et départage
+d'affichage stable par identifiant public. Un podium vide garde trois places à prendre.
+
+- `completed` : nombre de collections sauvegardées et partagées complètes ; collections vides exclues,
+  titres dédupliqués, intercalaires libres et articles non vérifiés exclus.
+- `value` : cote maximale d'une variante possédée, au moins trois ventes ; `card:{title, variant}`.
+- `traded` : cartes données dans les échanges créés depuis l'application et confirmés acceptés par le jeu.
+  `award_trades` garde l'identifiant de l'échange, les deux membres et les nombres de cartes de chaque côté.
+  Les propositions en attente, refusées ou annulées ne comptent pas. Le statut est relu pendant les synchros
+  complètes, par lots de 100 avec rotation. Une panne de cette lecture ne bloque pas la collection.
+- `near` : nombre de collections partagées entre 90 % inclus et 100 % exclus.
+- `chat` : compteur historique `users.chat_sent`, incrémenté dans la transaction d'un envoi réussi.
+  Suppression et purge des messages ne le diminuent pas. Migration initiale depuis les messages encore conservés.
+
+Les deux podiums de collections exigent aussi `shared_targets`. Leur rapprochement utilise les titres normalisés,
+sans résolution Wikidata côté serveur : les alias connus seulement du navigateur peuvent donner une progression
+différente dans un album. Les anciens échanges et les messages déjà purgés ne sont pas reconstitués.
+La suppression d'un compte anonymise ses lignes d'échanges et conserve la contribution de l'autre joueur.
+La lecture PostgREST `trades?select=id,status` et les statuts d'acceptation sont couverts par le faux jeu local ;
+les permissions et le statut exact du jeu réel restent à vérifier sur un compte relié.
+
 Site multi-utilisateur (l'utilisateur et ses amis) pour suivre une collection WikiMasters (wiki-masters.com, cartes =
 articles de Wikipédia FR) **hors du jeu** : étiquettes personnelles, collections à compléter. Inspiré de
 wikimaster-one.vercel.app (« Le classeur »), réécrit avec notre propre code.
@@ -152,7 +178,7 @@ plus faite.
 | `GET /api/cards?since=R` | `R` : entier ≥ 0, la `rev` gardée (sinon `400`, et `400` avec `part`) | `{rev, delta:true, cards:[Carte], gone:[id…], fetched_at, new_ids}` : cartes changées (données ou étiquettes) et cartes retirées depuis `R` ; ou `{rev, delta:false}` : tout recharger (voir « Lecture incrémentale ») |
 | `POST /api/session` | `{cookie}` **ou** `{har:{log:{entries:[{request:{url, headers:[{name,value}]}}]}}}` : l'en-tête `Cookie` (16 384 caractères au plus) d'une page du jeu, **copié depuis une fenêtre privée** où le membre est connecté, ou un HAR dont le serveur extrait l'en-tête `Cookie` d'une requête vers `www.wiki-masters.com` (de préférence `/api/my-collection`) | `{ok:true, pseudo, session}` (`pseudo` : son pseudo dans le jeu, ou `null` ; `session` : comme dans `GET /api/me`) : relie le compte du jeu de cette session au classeur après l'avoir **vérifiée auprès du jeu** (`auth/v1/user`, `profiles`), voir « Session du jeu ». `400` ni cookie ni HAR, pas de session `sb-…-auth-token` lisible, HAR sans requête vers le jeu ou sans cookie ; `401 {error}` session que le jeu ne reconnaît pas (expirée, ou copiée hors d'une fenêtre privée) ; `409` compte du jeu déjà relié à un autre classeur ; `429 {limited:true}` le jeu limite les lectures automatiques ; `502` base du jeu injoignable ; `500` sans `COOKIE_SECRET` |
 | `DELETE /api/session` | | `{ok:true}` : le classeur oublie la session du jeu (chiffrée, `game_uid`, état « à relier », bail, échecs d'affilée) ; le compte du jeu n'est pas déconnecté ; cartes, étiquettes et collections restent |
-| `POST /api/refresh` | `{}` | `{count, fresh, new_ids, complete, skipped, removed, kept}` : « Rafraîchir », une **lecture complète** de la collection par le serveur (voir « Lecture de la collection »). `count` = cartes du classeur après la lecture ; `fresh` = cartes nouvelles ; `new_ids` = pastilles « nouvelle » (remplacées seulement si la lecture apporte une carte nouvelle) ; `complete` = `true` (lecture vérifiée), `false` (non vérifiée : rien n'est retiré, `moved:true` en plus si la collection a bougé pendant la lecture) ou `null` (pas de compte exact) ; `skipped` = entrées du jeu ignorées (invalides) ; `removed` = cartes retirées, seulement par une lecture vérifiée ; `kept` = cartes du classeur non vues, gardées. `{…, superseded:true}` : rien d'écrit, une lecture commencée après celle-ci est déjà appliquée. `{count:0, empty:true}` : collection vide dans le jeu, rien n'a changé. Un succès remet `sync_fails` à 0. Erreurs : `401 {error, needs_link:true}` aucun compte relié, ou session « à relier » ; `409` une lecture de ce compte est déjà en cours (cron, autre appareil) ; `429 {error, retry_after}` (**secondes**, 60 au plus) moins d'une minute après le clic précédent, tous appareils confondus ; `429 {error, limited:true}` le jeu limite les lectures automatiques ; `502` base du jeu injoignable ou réponse inattendue ; `400` plus de 50 000 exemplaires ou 20 000 cartes. Les refus `409` et `429 retry_after` (avant toute lecture) ne sont pas notés au journal ; les autres échecs le sont |
+| `POST /api/refresh` | `{}` | `{count, fresh, new_ids, complete, skipped, removed, kept}` : « Rafraîchir », une **lecture complète** de la collection par le serveur (voir « Lecture de la collection »). `count` = cartes du classeur après la lecture ; `fresh` = cartes nouvelles ; `new_ids` = pastilles « nouvelle » (remplacées seulement si la lecture apporte une carte nouvelle) ; `complete` = `true` (lecture vérifiée), `false` (non vérifiée : rien n'est retiré, `moved:true` en plus si la collection a bougé pendant la lecture) ou `null` (pas de compte exact) ; `skipped` = entrées du jeu ignorées (invalides) ; `removed` = cartes retirées, seulement par une lecture vérifiée ; `kept` = cartes du classeur non vues, gardées. `{…, superseded:true}` : rien d'écrit, une lecture commencée après celle-ci est déjà appliquée. `{count:0, empty:true}` : collection vide dans le jeu, rien n'a changé. Un succès remet `sync_fails` à 0. Erreurs : `401 {error, needs_link:true}` aucun compte relié, ou session « à relier » ; `409` une lecture de ce compte est déjà en cours (cron, autre appareil) ; `429 {error, retry_after}` (**secondes**, 60 au plus) moins d'une minute après le clic précédent, tous appareils confondus ; `429 {error, limited:true}` le jeu limite les lectures automatiques ; `502` base du jeu injoignable ou réponse inattendue ; `400` plus de 50 000 exemplaires ou 30 000 cartes. Les refus `409` et `429 retry_after` (avant toute lecture) ne sont pas notés au journal ; les autres échecs le sont |
 | `POST /api/link` | `{}` | `{token, until}` : un **jeton de liaison à usage unique**, valable 30 minutes (`until` = son échéance, ISO), pour le favori « Relier » ; le serveur n'en garde que le SHA-256, un nouveau jeton remplace l'ancien ; il n'ouvre jamais le classeur (voir « Liaison par favori « Relier » ») |
 | `POST /api/link/session` | **sans clé** ; CORS : seulement `https://www.wiki-masters.com` et `https://wiki-masters.com` (`OPTIONS` répond `204`) ; 20 Ko au plus. `{token, cookie}` : le jeton de liaison et le cookie de session de la page du jeu | `{ok:true, pseudo}` : dépose et lie la session (mêmes vérifications que `POST /api/session`, `via:'relier'` au journal). `401` jeton inconnu, périmé ou déjà utilisé (« Lien de liaison périmé ou déjà utilisé… ») ou session non valable ; `400` cookie illisible (**le jeton n'est pas consommé**) ; `409` compte du jeu déjà relié à un autre classeur ; `429`, `502` comme ci-dessus. Le jeton est consommé avant la vérification auprès du jeu : un `401` de session, un `409` ou un `429` le consomment |
 | `POST /api/tags/set` | `{card_id, tags:[…]}` | `{tags}` |
@@ -449,7 +475,7 @@ ses **tags du jeu** lus sont réunis avec ceux déjà gardés (jamais retirés, 
 donc jamais de cartes.** Une carte possédée en plusieurs raretés garde la plus haute (C < PC < R < SR < UR < L) ; ses exemplaires
 par rareté d'exemplaire et brillance (`variants`) sont additionnés, et gardés seulement s'ils les comptent tous ; ses tags du jeu
 sont réunis sur tous ses exemplaires. Collection vide dans le jeu (compte 0, ou page 0 vide) : rien n'est changé, une ligne
-`warn` « Collection vide dans le jeu : rien n'a été changé. » est écrite, la réponse est `{count:0, empty:true}` ; plus de 20 000
+`warn` « Collection vide dans le jeu : rien n'a été changé. » est écrite, la réponse est `{count:0, empty:true}` ; plus de 30 000
 cartes : `400`.
 
 **État de la lecture** : `users.sync_state` (JSON, réécrit par chaque finalisation ; `$.count` aussi par `GET /api/me` pour un classeur
@@ -622,7 +648,7 @@ et `https://wiki-masters.com` (`Access-Control-Allow-Methods: POST, OPTIONS`, `A
 `Access-Control-Max-Age: 86400`, `Vary: Origin`). Le favori « Relier » n'envoie pas de clé ni de cookie du classeur (`credentials: omit`). Le reste est même origine.
 
 **Limites et quotas** (D1 : 500 Mo, 100 000 lignes écrites par jour en gratuit ; le classeur est sur l'abonnement payant des Workers depuis le 2026-10-17,
-50 millions de lignes écrites par mois comprises) : `MAX_USERS` comptes (variable, 50 par défaut) ; 20 000 cartes et 50 000 exemplaires par lecture ;
+50 millions de lignes écrites par mois comprises) : `MAX_USERS` comptes (variable, 50 par défaut) ; 30 000 cartes et 50 000 exemplaires par lecture ;
 étiquette = texte nettoyé, 60 caractères au plus (2 niveaux au plus dans le nom : « Catégorie/Sous-catégorie », catégories larges : Pays,
 Métiers, Lieux, Culture et œuvres, Sciences et nature, Histoire et événements, Organisations, Autres), 30 par carte, 50 000 par compte, 5 000
 couples carte×étiquette par appel `tags/bulk` ; collections à compléter : 50 par compte, sans nombre d'éléments maximal, 1,7 Mo chacune (600 Ko

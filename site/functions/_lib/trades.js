@@ -272,6 +272,12 @@ export async function createTrade(env, user, body) {
     }
     const trade = data && data.trade && typeof data.trade.id === 'string' ? data.trade : null;
     if (!trade) throw new HttpError(502, "Le jeu a accepté la demande sans renvoyer l'échange : vérifie dans le jeu (Échanges).");
+    try {
+      await db.prepare(`INSERT OR IGNORE INTO award_trades (id, user_id, recipient_id, given, received, created_at)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(trade.id, user.id, friend.id, give.length, get.length, nowIso()).run();
+    } catch {
+      throw new HttpError(502, "L’échange a été créé dans le jeu, mais son enregistrement au palmarès a échoué. Ne le propose pas à nouveau : retrouve-le dans le jeu, onglet Échanges.");
+    }
     return {
       trade: { id: trade.id, status: trade.status || 'pending' },
       given: give.map((id) => ({ id, title: title(myTitles, id) })),

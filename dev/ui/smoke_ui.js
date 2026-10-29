@@ -356,6 +356,12 @@ function mockApi() {
         return json(200, { user: { id: st.id, name: st.name }, prefs: st.prefs || {}, shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null,
           auto_sync: st.autoSync, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend, auto_wish: !!st.autoWish, wish_mode: st.wishMode || 'selected' });
       }
+      if (p === '/api/palmares' && method === 'GET') {
+        if (!st.shared) return json(403, { error: 'Active le partage entre membres dans Réglages pour participer au palmarès.' });
+        return json(200, { updated_at: new Date().toISOString(), categories: ['completed', 'value', 'traded', 'near', 'chat'].map((id) => ({
+          id, entries: id === 'completed' ? [{ id: st.pub, name: st.name, mine: true, score: 2, rank: 1 }] : [],
+        })) });
+      }
       // Liste de souhaits du jeu : « Mettre à jour maintenant » rend une passe fixe (2 ajoutées, 1 retirée).
       if (p === '/api/wishlist/missing') {
         const titles = new Map();
@@ -1460,6 +1466,24 @@ async function main() {
   const h1 = () => text(doc.body.querySelector('h1'));
   const tabBtn = (id) => byId('tab-' + id);
   const goTab = async (id) => { tabBtn(id).click(); await settle(); };
+  {
+    const sharing = !SERVER ? { shared: api.st.shared, pub: api.st.pub } : null;
+    if (!SERVER) { api.st.shared = true; api.st.pub = api.st.pub || 'podium-test'; }
+    const tabs = one('tabs').querySelectorAll('button').map((n) => n.id);
+    check(tabs.indexOf('tab-palmares') + 1 === tabs.indexOf('tab-reglages'), 'Palmarès doit précéder Réglages');
+    await goTab('palmares');
+    check(await waitFor(() => doc.querySelectorAll('.award').length === 5), 'les cinq podiums ne sont pas affichés');
+    check(doc.querySelectorAll('.podium-place').length === 15, 'trois places par podium attendues');
+    check(has('À ça du bol de sangria') && has('Le tchateur') && has('Les plus gros partageurs'), 'titres du palmarès absents');
+    if (!SERVER) check(has('2 collections') && has('Toi'), 'score et repère personnel du podium absents');
+    const more = all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-controls') === 'mmore')[0];
+    more.click();
+    await settle();
+    check(one('mmore').querySelectorAll('button').some((n) => text(n).includes('Palmarès')), 'Palmarès absent sur mobile');
+    more.click();
+    await goTab('maj');
+    if (!SERVER) Object.assign(api.st, sharing);
+  }
   // Bouton du contenu de l'onglet « Synchro » (le bandeau a aussi un « Relier mon compte »).
   const syncButton = (t) => { const u = one('update'); const b = u && u.querySelectorAll('button').find((n) => text(n).trim() === t); if (!b) fail('bouton absent de « Synchro » : ' + t + '\n' + text(u).slice(0, 600)); return b; };
   const relierLink = () => all((n) => n.tagName === 'A' && n.classList.contains('bookmarklet'))[0] || null;

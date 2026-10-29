@@ -379,6 +379,7 @@ export async function postChat(env, user, body, request) {
   const text = await storeRefs(db, user, typed, new URL(request.url).host.toLowerCase());
   const [ins] = await db.batch([
     db.prepare(INSERT).bind(user.id, text, at, minute, CHAT_PER_MINUTE, day, CHAT_PER_DAY, CHAT_ROOM_PER_DAY - 1, replyTo),
+    db.prepare('UPDATE users SET chat_sent = chat_sent + 1 WHERE id = ?1 AND changes() > 0').bind(user.id),
     db.prepare(PURGE).bind(CHAT_KEEP),
     db.prepare(PURGE_REACTIONS).bind(CHAT_KEEP),
   ]);

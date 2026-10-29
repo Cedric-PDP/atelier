@@ -7667,7 +7667,7 @@
   }
 
   // ================================================================ rendu : bandeau et onglets
-  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['marche', 'Marché'], ['chat', 'Chat'], ['maj', 'Synchro'], ['reglages', 'Réglages']];
+  const TABS = [['collections', 'Collections'], ['cartes', 'Mes cartes'], ['amis', 'Entre amis'], ['marche', 'Marché'], ['chat', 'Chat'], ['maj', 'Synchro'], ['palmares', 'Palmarès'], ['reglages', 'Réglages']];
   function onTabKey(e) {
     const i = TABS.findIndex(([id]) => id === S.tab);
     let j = -1;
@@ -7754,8 +7754,9 @@
   // ordinateur aussi, mais caché par le CSS (.m-only) : la version large ne change pas.
   const M_NAV = [['collections', 'Collections', 'album'], ['amis', 'Amis', 'users'], ['chat', 'Chat', 'chat'], ['marche', 'Marché', 'coins']];
   const M_MORE = [['cartes', 'Mes cartes', 'grid', 'Toutes tes cartes, tes tags et les filtres'], ['maj', 'Synchro', 'refresh', 'Ton compte du jeu, la synchro et son journal'],
+    ['palmares', 'Palmarès', 'spark', 'Les podiums des membres du classeur'],
     ['reglages', 'Réglages', 'gear', 'Prénom, pseudo, partage, lien personnel'], ['nouveautes', 'Nouveautés', 'spark', 'Ce qui a changé dans le classeur']];
-  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Synchro', reglages: 'Réglages', nouveautes: 'Nouveautés', 'souhaits-sans-cartes': 'Titres sans cartes' };
+  const M_TITLE = { collections: 'Collections', cartes: 'Mes cartes', amis: 'Entre amis', marche: 'Marché', chat: 'Chat', maj: 'Synchro', palmares: 'Palmarès', reglages: 'Réglages', nouveautes: 'Nouveautés', 'souhaits-sans-cartes': 'Titres sans cartes' };
   // ---------------------------------------------------------------- app installée (PWA)
   // L'app installée (écran d'accueil) est la même page, ouverte sans barre d'adresse. Sur iPhone, elle a son propre
   // stockage, séparé de Safari : au premier lancement elle ne connaît pas la clé, d'où « J'ai déjà un lien » en tête de
@@ -8896,6 +8897,65 @@
     return h('div', { class: 'update' }, [
       STANDALONE ? h('p', { class: 'notice app-note' }, [h('strong', null, "Tu es dans l'app installée."), " Pour relier ton compte, il faut une fenêtre privée du navigateur : copie l'adresse du favori ci-dessous, puis colle-la dans un onglet privé de Safari ou Chrome où tu es connecté au jeu. Ensuite, l'app suit ta collection toute seule."]) : null,
       viewGameAccount(), viewLink(), viewSyncLog()]);
+  }
+
+  // ================================================================ rendu : palmarès
+  const awards = reactive({ loading: false, error: '', data: null });
+  let awardsRequest = 0;
+  const AWARDS = [
+    ['completed', '🏆', 'Le plus de collections complétées', 'Les collections partagées remplies à 100 %.', 'collection'],
+    ['value', '💎', 'La carte la plus chère', 'La meilleure cote d’un exemplaire possédé, avec au moins 3 ventes.', 'W'],
+    ['traded', '🤝', 'Les plus gros partageurs', 'Les cartes données dans les échanges acceptés, créés depuis l’application.', 'carte'],
+    ['near', '🍹', 'À ça du bol de sangria', 'Les collections partagées entre 90 % et moins de 100 % : presque au bout !', 'collection'],
+    ['chat', '💬', 'Le tchateur', 'Les messages envoyés dans le tchat, même après leur suppression.', 'message'],
+  ];
+  async function loadAwards() {
+    const request = ++awardsRequest;
+    const gen = cardsGen;
+    awards.loading = true;
+    awards.error = '';
+    awards.data = null;
+    try {
+      const data = await api('GET', '/api/palmares');
+      if (gen === cardsGen && request === awardsRequest) awards.data = data;
+    } catch (e) { if (gen === cardsGen && request === awardsRequest) awards.error = e.message; }
+    finally { if (request === awardsRequest) awards.loading = false; }
+  }
+  watch(() => S.boot === 'app' && S.tab === 'palmares' ? cardsGen + ':' + myPid() : '', (key) => { if (key) loadAwards(); else awards.data = null; });
+  function viewAwards() {
+    return h('section', { class: 'awards', 'aria-labelledby': 'awards-title', 'aria-busy': String(awards.loading) }, [
+      h('div', { class: 'awards-head' }, [
+        h('div', null, [h('p', { class: 'awards-eyebrow' }, 'LE CERCLE DES COLLECTIONNEURS'), h('h1', { id: 'awards-title' }, 'Palmarès'),
+          h('p', { class: 'muted' }, 'Les petites victoires méritent leur podium.')]),
+        h('button', { class: 'btn', disabled: awards.loading, onClick: loadAwards }, awards.loading ? 'Chargement…' : 'Actualiser'),
+      ]),
+      awards.error ? h('p', { class: 'notice', role: 'alert' }, [awards.error, ' ', h('a', { href: '#/reglages' }, 'Réglages')]) : null,
+      awards.loading ? h('p', { class: 'muted', role: 'status' }, 'On prépare les podiums…') : null,
+      awards.data ? h('div', { class: 'awards-grid' }, AWARDS.map(([id, emoji, title, description, unit]) => {
+        const entries = (awards.data.categories.find((c) => c.id === id) || {}).entries || [];
+        return h('article', { class: ['award', 'award--' + id], 'aria-labelledby': 'award-' + id, key: id }, [
+          h('span', { class: 'award-symbol', 'aria-hidden': 'true' }, emoji),
+          h('h2', { id: 'award-' + id }, title), h('p', { class: 'small muted' }, description),
+          h('ol', { class: 'podium', 'aria-label': title }, [0, 1, 2].map((i) => {
+            const entry = entries[i];
+            return h('li', { class: ['podium-place', 'podium-place--' + (i + 1), { 'podium-place--empty': !entry }], key: i }, [
+              h('div', { class: 'podium-person' }, [
+                h('span', { class: 'podium-medal', 'aria-hidden': 'true' }, entry ? ['🥇', '🥈', '🥉'][Math.min(entry.rank - 1, 2)] : '○'),
+                h('strong', { class: 'podium-name' }, entry ? entry.name : 'Place à prendre'),
+                entry && entry.mine ? h('span', { class: 'podium-you' }, 'Toi') : null,
+                entry ? h('span', { class: 'podium-score' }, unit === 'W' ? `${fmt(entry.score)} W` : `${fmt(entry.score)} ${unit}${entry.score > 1 ? 's' : ''}`) : null,
+                entry && entry.card ? h('span', { class: 'podium-card', title: entry.card.title }, `${entry.card.title} · ${entry.card.variant}`) : null,
+              ]),
+              h('div', { class: 'podium-step' }, entry ? `${entry.rank}${entry.rank === 1 ? 'er' : 'e'}` : '—'),
+            ]);
+          })),
+          !entries.length ? h('p', { class: 'small muted award-empty' }, 'Le premier podium attend ses champions.') : null,
+        ]);
+      })) : null,
+      h('p', { class: 'small muted awards-note' }, 'Seuls les membres qui partagent leurs cartes participent. Les podiums de collections demandent aussi le partage des collections. Les ex æquo gardent le même rang ; trois membres sont affichés au maximum.'),
+      h('p', { class: 'small muted' }, 'Collections : comparaison par titre, sans les intercalaires libres ni les articles non vérifiés. Un article renommé peut entraîner un écart avec la progression de son album.'),
+      h('p', { class: 'small muted' }, 'Échanges : suivi à partir de l’ajout du palmarès, confirmation à la synchronisation du compte du jeu. Tchat : reprise des messages encore conservés, puis compteur permanent des nouveaux envois.'),
+    ]);
   }
 
   // ================================================================ rendu : onglet Réglages
@@ -11636,6 +11696,7 @@
     let panel;
     if (S.tab === 'cartes') panel = viewCards();
     else if (S.tab === 'maj') panel = viewUpdate();
+    else if (S.tab === 'palmares') panel = viewAwards();
     else if (S.tab === 'reglages') panel = viewSettings();
     else if (S.tab === 'amis') panel = viewFriends();
     else if (S.tab === 'chat') panel = viewChat();

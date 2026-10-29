@@ -238,7 +238,11 @@ export async function deleteMe(env, user) {
     // (game_reads) ; les cotes (prices), communes et liées à aucun classeur, restent. Ses demandes d'ami du jeu notées (friend_requests), ses illustrations choisies (art_picks).
     ['cards', 'cards_gone', 'tags', 'targets', 'wish_managed', 'wish_missing', 'refresh_staging', 'market', 'value_history', 'sync_log', 'game_reads', 'friend_requests', 'art_picks'].map((t) =>
       db.prepare(`DELETE FROM ${t} WHERE user_id = ?1`).bind(user.id),
-    ).concat(eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
+    ).concat(
+      db.prepare(`UPDATE award_trades SET user_id = CASE WHEN user_id = ?1 THEN '' ELSE user_id END,
+        recipient_id = CASE WHEN recipient_id = ?1 THEN '' ELSE recipient_id END WHERE user_id = ?1 OR recipient_id = ?1`).bind(user.id),
+      db.prepare("DELETE FROM award_trades WHERE user_id = '' AND recipient_id = ''"),
+      eraseChatOf(db, user.id), db.prepare('DELETE FROM users WHERE id = ?1').bind(user.id)),
   );
   return { ok: true };
 }

@@ -274,6 +274,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
     const all = [...supa.players.values()];
     const source = {
       user_cards: () => (supa.readOthers ? all.flatMap((p) => p.cards) : me.cards),
+      trades: () => supa.trades.filter((t) => t.initiator_id === me.uid || t.recipient_id === me.uid),
       profiles: () => all.map((p) => ({ id: p.uid, username: p.username })),
       cards: () => supa.cards,
       auctions: () => all.flatMap((p) => p.auctions).filter((a) => a.status === 'active' || a.seller_id === me.uid || a.winner_id === me.uid

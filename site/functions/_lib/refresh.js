@@ -6,6 +6,7 @@
 // ligne au journal des synchros (synclog.js).
 
 import { purgeStaging } from './db.js';
+import { syncTradeAwards } from './palmares.js';
 import { HttpError } from './http.js';
 import { RARITIES, badCard, entryToCard } from './cards.js';
 import { REFRESH_SOURCE, finalizeImport } from './import.js';
@@ -91,6 +92,8 @@ export async function readCollection(env, user, { via, force = false, lease: giv
   let held = true;
   try {
     await freshAuth(env, user, s);
+    // Un historique des échanges indisponible ne bloque pas la collection.
+    await syncTradeAwards(env, user, s).catch((err) => console.error('Palmarès : vérification des échanges', err.message));
     const started = nowIso();
     const links = await autoTagLinks(db, user.id);
     const favoriteLinks = await autoFavoriteLinks(db, user.id);

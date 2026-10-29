@@ -200,7 +200,7 @@ export async function finalizeImport(db, user, { source, key, exact = {}, starte
   const count = sum && sum.nbad
     ? (await db.prepare(`${cte} SELECT COUNT(DISTINCT card_id) AS n FROM e WHERE bad IS NULL`).bind(user.id, key).first()).n
     : ids;
-  if (count > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
+  if (count > MAX_CARDS) throw new HttpError(400, `Collection trop grande : ${MAX_CARDS.toLocaleString('fr-FR')} cartes au plus.`);
   const confirmedEmpty = allowEmpty && source === REFRESH_SOURCE && exact.before === 0 && exact.after === 0
     && sum.rows === 0 && skipped === 0 && !exact.lastBefore && !exact.lastAfter;
   if (count === 0 && !confirmedEmpty) throw new HttpError(400, "Collection vide : rien n'a été lu (ton classeur est inchangé).");
@@ -212,7 +212,7 @@ export async function finalizeImport(db, user, { source, key, exact = {}, starte
   const unseen = sum.unseen || 0;
   const fresh = count - (have - unseen); // cartes lues absentes du classeur
   const total = verified ? count : have + fresh;
-  if (total > MAX_CARDS) throw new HttpError(400, 'Collection trop grande : 20 000 cartes au plus.');
+  if (total > MAX_CARDS) throw new HttpError(400, `Collection trop grande : ${MAX_CARDS.toLocaleString('fr-FR')} cartes au plus.`);
   // Lecture non vérifiée : cartes déjà là dont un champ de carte du jeu a changé ou qui reçoivent un tag du jeu de plus
   // (mises à jour plus bas), pour le journal.
   const updated = verified ? 0 : (await db.prepare(
