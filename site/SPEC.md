@@ -848,8 +848,22 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
 - **Chargement** : à la demande (ouverture de l'onglet, d'un album ou d'une case vide, si tu partages), par pages de
   1 000, gardé en mémoire le temps de la visite, **jamais dans IndexedDB** ; la liste des membres est relue à chaque
   ouverture de l'onglet (sinon au plus toutes les 10 min) et les cartes d'un ami ne le sont que si sa synchro ou son
-  nombre de cartes a changé ; ses collections (après ses cartes) seulement s'il les montre et si leur nombre ou leur
-  dernier changement a bougé. Pendant la résolution des qids des amis, les recalculs sont limités à un par seconde.
+  nombre de cartes a changé ; ses collections seulement s'il les montre et si leur nombre ou leur
+  dernier changement a bougé. Cartes et collections sont chargées dans une file de quatre flux au maximum,
+  les pages de chaque flux restant séquentielles. Une erreur de lecture n'empêche pas les autres membres de charger,
+  puis les lectures manquantes peuvent être reprises. Un changement de compte ou l'arrêt du partage invalide les
+  réponses en cours. Les index des cartes sont réutilisés tant que leur liste ne change pas (les qids appris restent
+  pris en compte). Un cache de calcul en mémoire conserve la progression de chaque collection, les statistiques
+  et la valeur de chaque liste de cartes, l'analyse des cartes utilisées/manquantes de chaque membre et les lignes
+  d'échange de chaque paire orientée. Il ne conserve qu'une version de chaque résultat. Une actualisation des noms,
+  soldes ou styles conserve les calculs si les données utilisées sont inchangées ; les noms et autres métadonnées
+  affichés restent ceux de la dernière lecture. Un changement de cartes ou de collections invalide l'analyse du membre
+  et les paires qui le concernent ; une exclusion invalide ses propositions comme donneur. Une nouvelle version réelle
+  des correspondances Wikidata invalide les calculs de rapprochement (une notification sans nouveau qid ne suffit pas).
+  Les statistiques d'aide tiennent aussi compte des changements de tes cartes. Les paires des membres retirés sont
+  supprimées et les caches sont vidés à l'arrêt du partage ou au changement de compte. Aucun cache de calcul n'est
+  persisté après rechargement de la page, ni écrit dans D1. Les compteurs des sous-onglets attendent la fin du chargement pour éviter de recalculer toutes les
+  paires d'échanges à chaque réponse. Pendant la résolution des qids des amis, les recalculs sont limités à un par seconde.
 - **Valeur du classeur d'un ami** (2026-10-16, calculée dans la page) : ses cartes telles qu'il les montre (rareté,
   exemplaires, brillance : tous ses exemplaires comptés dans la rareté de sa carte, un seul brillant s'il l'est, comme une
   carte « approchée » du marché) × les cotes fiables venues avec ses cartes (`v`). Sur sa ligne (« valeur 12 500W · 205

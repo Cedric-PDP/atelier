@@ -1110,11 +1110,45 @@
   const friendWho = (f) => h('span', { class: { 'has-pseudo': !!(f && f.pseudo) }, title: pseudoTip(f) }, friendName(f));
   const nameWithPseudo = (f) => friendName(f) + (f && f.pseudo ? ` (${f.pseudo})` : '');
   // Index des cartes de chaque ami : par titre, puis par identifiant Wikidata, comme pour les tiennes (match.js).
+  // Une seule version de chaque résultat ; rien n'est écrit sur disque.
+  let friendProgressCache = new WeakMap();
+  let friendStatsCache = new WeakMap();
+  let friendWorthCache = new WeakMap();
+  const friendTradePeople = new Map();
+  const friendTradePairs = new Map();
+  function cachedFriendValue(cache, key, deps, calculate) {
+    const previous = cache.get(key);
+    if (previous && previous.deps.length === deps.length && deps.every((dep, i) => Object.is(dep, previous.deps[i]))) return previous.value;
+    const value = calculate();
+    cache.set(key, { deps, value });
+    return value;
+  }
+  function friendMatchRevision() {
+    void qidVersion.value; // dépendance Vue ; une notification sans nouveau qid ne vide pas le cache
+    return resolver ? resolver.version : qidVersion.value;
+  }
+  function clearFriendCalculations() {
+    friendProgressCache = new WeakMap(); friendStatsCache = new WeakMap(); friendWorthCache = new WeakMap();
+    friendTradePeople.clear(); friendTradePairs.clear();
+  }
+  function pruneFriendCalculations(ids) {
+    for (const id of friendTradePeople.keys()) if (!ids.has(id)) friendTradePeople.delete(id);
+    for (const key of friendTradePairs.keys()) if (key.split('>').some((id) => !ids.has(id))) friendTradePairs.delete(key);
+  }
+  const friendIndexCache = new WeakMap();
   function makeFriendIndex(list) {
-    if (Match) return Match.createIndex(list, resolver);
+    const cached = friendIndexCache.get(list);
+    if (cached) return cached;
+    if (Match) {
+      const index = Match.createIndex(list, resolver);
+      friendIndexCache.set(list, index);
+      return index;
+    }
     const m = new Map();
     for (const c of list) { const k = normTitle(c.title); if (!m.has(k)) m.set(k, c); }
-    return { findCard: (it) => (it ? m.get(normTitle(typeof it === 'string' ? it : it.title)) || null : null) };
+    const index = { findCard: (it) => (it ? m.get(normTitle(typeof it === 'string' ? it : it.title)) || null : null) };
+    friendIndexCache.set(list, index);
+    return index;
   }
   const friendIndexes = computed(() => (sharing() ? friendList.value.filter((f) => f.cards && f.cards.length).map((f) => ({ f, index: makeFriendIndex(f.cards) })) : []));
   // Amis qui ont la carte d'un élément de collection : les doubles d'abord (les plus faciles à échanger), puis par prénom.
@@ -1189,56 +1223,60 @@
     }
     const sameCol = (a, b) => (a.id != null && b.id != null ? a.id === b.id : a.name === b.name && a.cat === b.cat);
     // Collections de chacun, et ses cartes qui y remplissent une case (à ne pas donner s'il n'en a qu'une).
-    const colsBy = new Map();
-    const usedBy = new Map();
+    const states = new Map();
+    const revision = friendMatchRevision();
     for (const p of people) {
       const cols = colsOf(p);
-      const used = new Set();
-      for (const col of cols) for (const it of col.items) {
-        if (!it || (it.status && it.status !== 'ok')) continue;
-        const c = p.index.findCard(it);
-        if (c) used.add(c.id);
-      }
-      colsBy.set(p, cols);
-      usedBy.set(p, used);
+      const state = cachedFriendValue(friendTradePeople, p.id,
+        [p.me ? cards.value : p.f.cards, p.me ? friendCols.value : p.f.targets, p.me || p.f.tshare, revision], () => {
+          const used = new Set();
+          const holes = new Map();
+          for (const col of cols) {
+            const c = { id: col.id, name: col.name, cat: col.cat };
+            for (const it of col.items) {
+              if (!it || (it.status && it.status !== 'ok')) continue;
+              const own = p.index.findCard(it);
+              if (own) used.add(own.id);
+              const k = normTitle(it.title);
+              let hole = holes.get(k);
+              if (hole === undefined) {
+                hole = own ? null : { item: it, cols: [] };
+                holes.set(k, hole);
+              }
+              if (hole && !hole.cols.some((x) => sameCol(x, c))) hole.cols.push(c);
+            }
+          }
+          return { used, holes };
+      });
+      states.set(p, state);
     }
     const pairs = [];
     for (const z of people) {
-      // Cases vides de Z (un même article dans deux de ses collections : une seule case, les deux noms).
-      const holes = new Map();
-      for (const col of colsBy.get(z)) {
-        const c = { id: col.id, name: col.name, cat: col.cat };
-        for (const it of col.items) {
-          if (!it || (it.status && it.status !== 'ok')) continue;
-          const k = normTitle(it.title);
-          let hole = holes.get(k);
-          if (hole === undefined) {
-            hole = z.index.findCard(it) ? null : { item: it, cols: [] };
-            holes.set(k, hole);
-          }
-          if (hole && !hole.cols.some((x) => sameCol(x, c))) hole.cols.push(c);
-        }
-      }
+      const { holes } = states.get(z);
       if (!holes.size) continue;
       for (const x of people) {
         if (x === z) continue;
-        const used = usedBy.get(x);
-        const byCard = new Map();
-        for (const hole of holes.values()) {
-          if (!hole) continue;
-          const c = x.index.findCard(hole.item);
-          if (!c) continue;
-          const row = byCard.get(c.id);
-          if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
-          if (x.me ? isKept(c) : x.f.keep && x.f.keep.has(c.id)) continue; // exclue des échanges (prefs.keep)
-          const count = Math.max(1, Number(c.count) || 1);
-          if (count < 2 && used.has(c.id)) continue;
-          byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
-        }
-        if (!byCard.size) continue;
-        const rows = [...byCard.values()].sort((a, b) => (b.dup - a.dup) || (a.dup ? b.count - a.count : 0) || b.cols.length - a.cols.length
-          || rarityRank(a.card.rarity) - rarityRank(b.card.rarity) || COLLATOR.compare(a.card.title, b.card.title));
-        pairs.push({ key: x.id + '>' + z.id, x, z, rows, dup: rows.filter((r) => r.dup).length });
+        const result = cachedFriendValue(friendTradePairs, x.id + '>' + z.id,
+          [states.get(x), states.get(z), x.me ? keepPref.value : x.f.keep], () => {
+            const { used } = states.get(x);
+            const byCard = new Map();
+            for (const hole of holes.values()) {
+              if (!hole) continue;
+              const c = x.index.findCard(hole.item);
+              if (!c) continue;
+              const row = byCard.get(c.id);
+              if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
+              if (x.me ? isKept(c) : x.f.keep && x.f.keep.has(c.id)) continue; // exclue des échanges (prefs.keep)
+              const count = Math.max(1, Number(c.count) || 1);
+              if (count < 2 && used.has(c.id)) continue;
+              byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
+            }
+            const rows = [...byCard.values()].sort((a, b) => (b.dup - a.dup) || (a.dup ? b.count - a.count : 0) || b.cols.length - a.cols.length
+              || rarityRank(a.card.rarity) - rarityRank(b.card.rarity) || COLLATOR.compare(a.card.title, b.card.title));
+            return { rows, dup: rows.reduce((n, row) => n + (row.dup ? 1 : 0), 0) };
+        });
+        if (!result.rows.length) continue;
+        pairs.push({ key: x.id + '>' + z.id, x, z, rows: result.rows, dup: result.dup });
       }
     }
     // Les couples qui ont le plus de doubles (les plus faciles à donner), puis le plus de cases ; à égalité, par
@@ -1302,10 +1340,13 @@
     const m = new Map();
     for (const f of friendList.value) {
       if (!f.cards) continue;
-      let missing = 0;
-      let dup = 0;
-      for (const c of f.cards) if (!findCard(c)) { missing++; if (c.count >= 2) dup++; }
-      m.set(f.id, { missing, dup });
+      const result = cachedFriendValue(friendStatsCache, f.cards, [cards.value, friendMatchRevision()], () => {
+        let missing = 0;
+        let dup = 0;
+        for (const c of f.cards) if (!findCard(c)) { missing++; if (c.count >= 2) dup++; }
+        return { missing, dup };
+      });
+      m.set(f.id, result);
     }
     return m;
   });
@@ -1334,27 +1375,29 @@
   const noneIndex = { findCard: () => null };
   const friendIndexOf = (id) => { const x = friendIndexes.value.find((y) => y.f.id === id); return x ? x.index : noneIndex; };
   function friendProgressFor(index, t) {
-    let own = 0;
-    let help = 0;
-    let helpDup = 0;
-    const byR = {};
-    const sample = [];
-    // Valeur de ses cartes de cette collection (comme celle de son classeur, friendWorths), chaque carte une fois.
-    const seen = new Set();
-    let value = 0;
-    let priced = 0;
-    for (const it of t.items) {
-      const c = index.findCard(it);
-      if (c) {
-        own++; byR[c.rarity] = (byR[c.rarity] || 0) + 1; sample.push(c);
-        if (!seen.has(c.id)) { seen.add(c.id); const x = cardWorth(c, c.v); if (x.priced) { priced++; value += x.value; } }
-        continue;
+    return cachedFriendValue(friendProgressCache, t, [index, cards.value, friendMatchRevision()], () => {
+      let own = 0;
+      let help = 0;
+      let helpDup = 0;
+      const byR = {};
+      const sample = [];
+      // Valeur de ses cartes de cette collection (comme celle de son classeur, friendWorths), chaque carte une fois.
+      const seen = new Set();
+      let value = 0;
+      let priced = 0;
+      for (const it of t.items) {
+        const c = index.findCard(it);
+        if (c) {
+          own++; byR[c.rarity] = (byR[c.rarity] || 0) + 1; sample.push(c);
+          if (!seen.has(c.id)) { seen.add(c.id); const x = cardWorth(c, c.v); if (x.priced) { priced++; value += x.value; } }
+          continue;
+        }
+        const m = findCard(it);
+        if (m) { help++; if ((Number(m.count) || 1) >= 2) helpDup++; }
       }
-      const m = findCard(it);
-      if (m) { help++; if ((Number(m.count) || 1) >= 2) helpDup++; }
-    }
-    sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
-    return { own, total: cardItems(t.items), byR, sample: sample.slice(0, 3), help, helpDup, value, priced, cards: seen.size };
+      sample.sort((a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.image ? 1 : 0) - (a.image ? 1 : 0));
+      return { own, total: cardItems(t.items), byR, sample: sample.slice(0, 3), help, helpDup, value, priced, cards: seen.size };
+    });
   }
   const friendTargetsView = computed(() => {
     const f = openFriend.value;
@@ -6061,6 +6104,7 @@
   const FRIENDS_TTL = 10 * 60 * 1000; // liste des membres relue au plus toutes les 10 min (sauf onglet ou « Actualiser »)
   function clearFriends() {
     friendsGen++;
+    clearFriendCalculations();
     friendsJob = null;
     friendsAt = 0;
     if (friendQidCtrl) { friendQidCtrl.abort(); friendQidCtrl = null; }
@@ -6130,6 +6174,7 @@
     const gen = friendsGen;
     const fr = S.friends;
     const job = (async () => {
+      friendsAt = 0; // une actualisation en échec doit pouvoir reprendre les données manquantes
       fr.busy = true;
       fr.error = '';
       if (!friendList.value.length) fr.status = 'loading';
@@ -6144,44 +6189,70 @@
           const tg = m.targets && typeof m.targets === 'object' ? m.targets : null;
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
+          const kept = Array.isArray(m.keep) ? m.keep.map(String) : [];
+          const keep = kept.length ? p && p.keep && p.keep.size === kept.length && kept.every((id) => p.keep.has(id)) ? p.keep : new Set(kept) : null;
           return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, cstyle: typeof m.card_style === 'string' ? m.card_style : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous),
             // ses cartes exclues des échanges (ids), relues avec la liste : jamais proposées dans « Échanges possibles »
-            keep: Array.isArray(m.keep) && m.keep.length ? new Set(m.keep.map(String)) : null });
+            keep });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
+        pruneFriendCalculations(new Set([ME, ...list.map((f) => f.id)]));
         if (fr.open && !list.some((f) => f.id === fr.open)) { fr.open = null; routeSync(); } // a cessé de partager, ou adresse morte
         fr.status = 'ready';
+        // Quatre flux au maximum ; les pages d'un même flux restent dans l'ordre.
+        // Collections et cartes avancent ensemble, sans attendre tous les classeurs.
+        const jobs = [];
         for (const f of list) {
-          if (f.cards) continue;
-          fr.loading = `Lecture des cartes de ${friendName(f)}…`;
-          let got;
-          try {
-            got = await readMemberCards(f.id, gen);
-          } catch (e) {
-            if (gen !== friendsGen) return;
-            // A cessé de partager entre la liste et ses cartes : il disparaît de la liste.
-            if (e.status === 404) { friendList.value = friendList.value.filter((x) => x.id !== f.id); continue; }
-            throw e;
-          }
-          if (got === null || gen !== friendsGen) return;
-          friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, cards: got }) : x));
+          if (!f.cards) jobs.push(async () => {
+            let got;
+            try {
+              got = await readMemberCards(f.id, gen);
+            } catch (e) {
+              if (gen !== friendsGen) return;
+              // A cessé de partager entre la liste et ses cartes : il disparaît de la liste.
+              if (e.status === 404) { friendList.value = friendList.value.filter((x) => x.id !== f.id); return; }
+              throw e;
+            }
+            if (got === null || gen !== friendsGen) return;
+            friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, cards: got }) : x));
+          });
+          if (f.tshare && !f.targets) jobs.push(async () => {
+            if (!friendList.value.some((x) => x.id === f.id && x.tshare)) return;
+            let got;
+            try {
+              got = await readMemberTargets(f.id, gen);
+            } catch (e) {
+              if (gen !== friendsGen) return;
+              // A cessé de montrer ses collections entre la liste et cette lecture : il redevient « ne partage pas ».
+              if (e.status === 404) { friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, tshare: false, tmark: null, targets: null }) : x)); return; }
+              throw e;
+            }
+            if (got === null || gen !== friendsGen) return;
+            friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, targets: got }) : x));
+          });
         }
-        for (const f of friendList.value) {
-          if (!f.tshare || f.targets) continue;
-          fr.loading = `Lecture des collections de ${friendName(f)}…`;
-          let got;
-          try {
-            got = await readMemberTargets(f.id, gen);
-          } catch (e) {
-            if (gen !== friendsGen) return;
-            // A cessé de montrer ses collections entre la liste et cette lecture : il redevient « ne partage pas ».
-            if (e.status === 404) { friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, tshare: false, tmark: null, targets: null }) : x)); continue; }
-            throw e;
+        let cursor = 0;
+        let done = 0;
+        const errors = [];
+        async function worker() {
+          while (gen === friendsGen && cursor < jobs.length) {
+            const job = jobs[cursor++];
+            try { await job(); }
+            catch (e) {
+              errors.push(e);
+              if (e.status === 403 && gen === friendsGen && S.me) {
+                S.me.shared = false; S.me.shared_targets = false; clearFriends();
+              }
+            } finally {
+              done++;
+              if (gen === friendsGen) fr.loading = 'Lecture des classeurs… (' + done + '/' + jobs.length + ')';
+            }
           }
-          if (got === null || gen !== friendsGen) return;
-          friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, targets: got }) : x));
         }
+        await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, () => worker()));
+        if (gen !== friendsGen) return;
+        if (errors.length) throw errors[0];
         friendsAt = Date.now();
         resolveFriendQids();
       } catch (e) {
@@ -6757,13 +6828,16 @@
     const m = new Map();
     for (const f of friendList.value) {
       if (!f.cards) continue;
-      let value = 0;
-      let priced = 0;
-      for (const c of f.cards) {
-        const x = cardWorth(c, c.v);
-        if (x.priced) { priced++; value += x.value; }
-      }
-      m.set(f.id, { value, priced, cards: f.cards.length });
+      const result = cachedFriendValue(friendWorthCache, f.cards, [], () => {
+        let value = 0;
+        let priced = 0;
+        for (const c of f.cards) {
+          const x = cardWorth(c, c.v);
+          if (x.priced) { priced++; value += x.value; }
+        }
+        return { value, priced, cards: f.cards.length };
+      });
+      m.set(f.id, result);
     }
     return m;
   });
@@ -9675,7 +9749,11 @@
   // Compte de chaque sous-page : collections partagées, cases que tes amis remplissent, cartes que tu peux leur donner,
   // cartes de tous les échanges.
   function friendsNav(active) {
-    const n = {
+    // Les badges d'échanges parcourent toutes les paires de membres : les calculer après le chargement,
+    // plutôt qu'à chaque page reçue. Le nombre de collections est déjà connu dans /api/members.
+    const n = S.friends.busy ? {
+      cols: friendList.value.reduce((a, f) => a + f.tcount, 0), fill: 0, wants: 0, trades: 0,
+    } : {
       cols: allFriendCols.value.reduce((a, x) => a + (x.rows ? x.rows.length : 0), 0),
       fill: friendHighlights.value.reduce((a, x) => a + x.rows.length, 0),
       wants: friendWants.value.reduce((a, x) => a + x.rows.length, 0),
@@ -9722,7 +9800,7 @@
     const list = friendList.value;
     const loadingAll = fr.busy || list.some((f) => !f.cards || (f.tshare && !f.targets));
     const page = fr.page === 'fill' || fr.page === 'wants' ? fr.page : null;
-    const t = trades.value;
+    const t = page === 'wants' ? trades.value : null;
     let body;
     if (!list.length) {
       body = [fr.status === 'loading' || fr.busy ? h('p', { class: 'muted', role: 'status' }, 'Lecture des membres…')

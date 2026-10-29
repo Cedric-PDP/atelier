@@ -7161,7 +7161,7 @@ async function main() {
         check(typeof g.title === 'string' && g.title && Array.isArray(g.items) && g.items.length, 'nouveautes.json : rubrique mal formée ' + JSON.stringify(g).slice(0, 200));
         for (const it of g.items) {
           check(typeof it.text === 'string' && it.text && it.text.length <= 600, 'nouveautes.json : ligne mal formée ' + JSON.stringify(it));
-          if (it.to != null) check(/^#\/(collections|cartes|amis|marche|chat|maj|reglages|nouveautes|souhaits-sans-cartes)(\/|\?|$)/.test(it.to) && typeof it.link === 'string', 'nouveautes.json : lien interne inconnu ' + it.to);
+          if (it.to != null) check(/^#\/(collections|cartes|amis|marche|chat|maj|palmares|reglages|nouveautes|souhaits-sans-cartes)(\/|\?|$)/.test(it.to) && typeof it.link === 'string', 'nouveautes.json : lien interne inconnu ' + it.to);
         }
       }
     }
