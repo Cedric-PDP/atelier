@@ -424,13 +424,20 @@ function mockApi() {
       }
       // Partage entre membres : 403 sans partager soi-même, 404 pour un membre qui ne partage pas ; cartes par pages
       // de 2 ici (curseur opaque), sans étiquettes, champs montrés seulement.
+      // Cartes exclues des échanges d'un membre (prefs.keep : une à une ou par ses tags), comme le serveur.
+      const keepOf = (u) => {
+        const k = (u.prefs && u.prefs.keep) || {};
+        const ids = new Set(k.cards || []);
+        const tags = new Set(k.tags || []);
+        return u.cards.filter((c) => ids.has(c.id) || (u.tags.get(c.id) || []).some((t) => tags.has(t))).map((c) => c.id);
+      };
       if (p === '/api/members' || p.startsWith('/api/members/')) {
         if (method !== 'GET') return json(405, { error: 'Méthode non autorisée.' });
         if (!st.shared) return json(403, { error: "Pour voir les cartes des autres membres, montre d'abord les tiennes : Réglages, « Partage entre membres »." });
         if (p === '/api/members') {
           return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, game: !noGame.has(u.name), count: u.cards.length, fetched_at: u.fetched_at,
             targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null,
-            wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at } })) });
+            wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at }, keep: keepOf(u) })) });
         }
         // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre, au qid et au
         // drapeau d'intercalaire (sep: true) des éléments vérifiés.
@@ -3285,6 +3292,14 @@ async function main() {
         check(titlesIn(pair('Léa → Toi')).join(' | ') === 'Saturne (planète) | Jupiter (planète) | Neptune' && text(pair('Léa → Toi')).includes('Léa peut compléter 3 cases chez toi, dont 1 en double'),
           'Léa → Toi : ' + text(pair('Léa → Toi')));
         check(titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5', 'Paul → Toi : ' + text(pair('Paul → Toi')));
+        // Paul exclut Article 5 des échanges (prefs.keep, 2026-10-29) : il quitte « Paul → Toi » dès la relecture des membres.
+        check((await rawApi('PATCH', '/api/me', paulKey, { prefs: { keep: { cards: ['p-a5'], tags: [] } } })).status === 200, 'exclusion de Paul refusée');
+        needButton('Actualiser').click();
+        check(await waitFor(() => pair('Paul → Toi') && titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Jupiter (planète)', 5000),
+          'Paul → Toi, Article 5 exclu : ' + (pair('Paul → Toi') ? titlesIn(pair('Paul → Toi')).join(' | ') : 'absent'));
+        check((await rawApi('PATCH', '/api/me', paulKey, { prefs: {} })).status === 200, 'réintégration de Paul refusée');
+        needButton('Actualiser').click();
+        check(await waitFor(() => pair('Paul → Toi') && titlesIn(pair('Paul → Toi')).join(' | ') === 'Mars (planète) | Jupiter (planète) | Article 5', 5000), 'Article 5 non réintégré');
         // Plus de « (catégorie) » : une collection faite d'une catégorie est une collection comme les autres.
         check(text(pair('Paul → Toi').querySelectorAll('.fitem')[0]).includes('Planète du Système solaire') && !text(pair('Paul → Toi')).includes('(catégorie)') && !text(a7).includes('(catégorie)'),
           'nature des collections dans les échanges : ' + text(pair('Paul → Toi').querySelectorAll('.fitem')[0]));
@@ -5504,6 +5519,59 @@ async function main() {
       check(d.querySelectorAll('.fiche').length === 1 && text(d.querySelectorAll('.fiche')[0]).includes('Vente 24'), 'fiche de la carte à vendre absente');
       d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
       await settle(40);
+      // Exclue des échanges et ventes (prefs.keep, 2026-10-29) : la case de sa fiche la retire de « à vendre », une ligne le
+      // dit ; « La voir » ouvre « Mes cartes » sur les cartes exclues (cadenas) ; un tag exclu exclut ses cartes ; décochée, elle revient.
+      const ficheOf = (t) => { const b = sell().querySelectorAll('li').find((n) => text(n).includes(t)); b.querySelector('.lot__title').querySelector('button').click(); };
+      const keepBox = () => { const f = d.querySelectorAll('.fiche')[0]; const k = f && f.querySelectorAll('.keep-toggle')[0]; return k ? k.querySelector('input') : null; };
+      const closeFiche = async () => { d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click(); await settle(40); };
+      ficheOf('Vente 24');
+      await settle(60);
+      check(keepBox() && !keepBox().checked, 'case « Exclue des échanges et ventes » absente ou déjà cochée');
+      keepBox().checked = true;
+      keepBox().dispatch('change');
+      await settle(60);
+      check(keepBox().checked, 'case « Exclue » non cochée après le clic');
+      await closeFiche();
+      check(rows().join(' | ') === 'Vente 23 | Vente 22' && text(sell()).includes('1 carte exclue des échanges et des ventes : pas proposée ici.'), 'carte exclue encore à vendre : ' + rows().join(' | ') + ' / ' + text(sell()).slice(-400));
+      // Vente 23 reçoit le tag « Gardée » (sa fiche), exclu plus bas.
+      ficheOf('Vente 23');
+      await settle(60);
+      type(d.getElementById('new-tag'), 'Gardée');
+      d.getElementById('new-tag').parentNode.dispatch('submit');
+      await settle(80);
+      await closeFiche();
+      sell().querySelectorAll('button').find((b) => text(b) === 'La voir').click();
+      await settle(80);
+      const grid = () => d.querySelectorAll('.cardgrid')[0];
+      const cellsOf = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1) : []);
+      check(d.getElementById('panel-cartes') && cellsOf().length === 1 && text(cellsOf()[0]).includes('Vente 24') && cellsOf()[0].querySelector('.cell__keep')
+        && text(d.querySelectorAll('.count-line')[0]).includes('Exclues des échanges et ventes'), '« La voir » : ' + cellsOf().map((n) => text(n)).join(' | '));
+      // Un tag exclu (champ du panneau des filtres) : Vente 23, taguée « Gardée », est exclue aussi ; sa fiche le dit, case grisée.
+      type(d.getElementById('keep-tag'), 'Gardée');
+      d.getElementById('keep-tag').parentNode.dispatch('submit');
+      await settle(80);
+      check(text(d.querySelectorAll('.keep-facet')[0]).includes('Gardée'), 'tag exclu absent du panneau : ' + text(d.querySelectorAll('.keep-facet')[0]));
+      d.getElementById('tab-marche').click();
+      await settle(80);
+      check(rows().join(' | ') === 'Vente 22' && text(sell()).includes('2 cartes exclues'), 'tag exclu : ' + rows().join(' | '));
+      // Réintégrer : le tag (« × » du panneau), puis la carte (sa fiche).
+      sell().querySelectorAll('button').find((b) => text(b) === 'Les voir').click();
+      await settle(80);
+      d.querySelectorAll('.keep-facet')[0].querySelectorAll('button.x')[0].click();
+      await settle(80);
+      check(cellsOf().length === 1 && text(cellsOf()[0]).includes('Vente 24'), 'tag réintégré : ' + cellsOf().map((n) => text(n)).join(' | '));
+      cellsOf()[0].querySelector('.card').dispatch('click');
+      await settle(60);
+      keepBox().checked = false;
+      keepBox().dispatch('change');
+      await settle(60);
+      await closeFiche();
+      check(!cellsOf().length, 'carte réintégrée encore dans « Exclues »');
+      d.querySelectorAll('button').find((x) => x.getAttribute('aria-label') === 'Retirer le filtre Exclues').click();
+      await settle(40);
+      d.getElementById('tab-marche').click();
+      await settle(80);
+      check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && !text(sell()).includes('exclue'), 'après réintégration : ' + rows().join(' | '));
     }
     // Mes enchères et mes ventes.
     check(panel().includes('ta mise 8W · enchère actuelle 9W · cote 10W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());

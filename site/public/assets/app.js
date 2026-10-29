@@ -254,6 +254,8 @@
     untaggedOnly: false,
     newOnly: false,
     duplicatesOnly: false,
+    keptOnly: false, // « Exclues des échanges et ventes » (prefs.keep)
+    keepTag: '', // tag tapé dans « Exclues des échanges et ventes »
     limit: PAGE,
     selected: new Set(),
     lastClicked: null,
@@ -851,7 +853,50 @@
   const tagCount = computed(() => new Map(tagList.value.map((t) => [t.name, t.count])));
   const untaggedCount = computed(() => cards.value.reduce((n, c) => n + (c.tags.length ? 0 : 1), 0));
   const duplicatesCount = computed(() => cards.value.reduce((n, c) => n + (c.count > 1 ? 1 : 0), 0));
-  const hasFilters = computed(() => !!(S.tagFilter.length || S.gtagFilter.length || S.untaggedOnly || S.newOnly || S.duplicatesOnly || S.q.trim() || S.rarities.length));
+  // Cartes exclues des échanges et des ventes (2026-10-29, demande de l'utilisateur) : choisies une à une ou par tag
+  // (tags exacts), gardées avec le compte (prefs.keep = {cards: [ids], tags: [tags]}). Une carte exclue n'est proposée ni
+  // dans « Échanges possibles » (donc ni « Ce qui pourrait intéresser tes amis » ni « Proposer un échange ») ni dans
+  // « Bonnes affaires à vendre » ; GET /api/members dit aussi à tes amis lesquelles de tes cartes le sont (keep, sans les
+  // tags), pour que leurs échanges ne les demandent pas.
+  const KEEP_MAX_CARDS = 1000;
+  const KEEP_MAX_TAGS = 100;
+  const keepPref = computed(() => {
+    const k = S.prefs && S.prefs.keep && typeof S.prefs.keep === 'object' ? S.prefs.keep : {};
+    const list = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === 'string' && x) : []);
+    return { cards: new Set(list(k.cards)), tags: new Set(list(k.tags)) };
+  });
+  // Ce qui exclut une carte : null, ou {card} (exclue elle-même) et {tag} (le premier de ses tags exclus, ou null).
+  function keptBy(c) {
+    const k = keepPref.value;
+    const card = k.cards.has(String(c.id));
+    const tag = k.tags.size ? c.tags.find((t) => k.tags.has(t)) || null : null;
+    return card || tag ? { card, tag } : null;
+  }
+  const isKept = (c) => !!keptBy(c);
+  const keptCount = computed(() => cards.value.reduce((n, c) => n + (isKept(c) ? 1 : 0), 0));
+  const saveKeep = (cardIds, tags) => savePrefs({ keep: { cards: [...cardIds], tags: [...tags] } });
+  // Exclure (on) ou réintégrer des cartes choisies une à une. Réintégrer une carte exclue par un tag ne la réintègre pas :
+  // il faut retirer le tag de la liste (la fiche le dit).
+  function setKeepCards(ids, on) {
+    const k = keepPref.value;
+    const next = new Set(k.cards);
+    for (const id of ids) { if (on) next.add(String(id)); else next.delete(String(id)); }
+    if (next.size > KEEP_MAX_CARDS) {
+      notify(`${fmt(KEEP_MAX_CARDS)} cartes exclues une à une au plus : pour en exclure davantage, pose-leur un tag et exclus ce tag.`, true);
+      return Promise.resolve(false);
+    }
+    return saveKeep(next, k.tags);
+  }
+  function addKeepTag(raw) {
+    const t = cleanTag(raw);
+    const k = keepPref.value;
+    if (!t || k.tags.has(t)) { S.keepTag = ''; return; }
+    if (k.tags.size >= KEEP_MAX_TAGS) { notify(`${fmt(KEEP_MAX_TAGS)} tags exclus au plus.`, true); return; }
+    S.keepTag = '';
+    saveKeep(k.cards, [...k.tags, t]);
+  }
+  const removeKeepTag = (t) => { const k = keepPref.value; saveKeep(k.cards, [...k.tags].filter((x) => x !== t)); };
+  const hasFilters = computed(() => !!(S.tagFilter.length || S.gtagFilter.length || S.untaggedOnly || S.newOnly || S.duplicatesOnly || S.keptOnly || S.q.trim() || S.rarities.length));
   const SORTERS = {
     rarity: (a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.pageviews ?? -1) - (a.pageviews ?? -1),
     pageviews: (a, b) => (b.pageviews ?? -1) - (a.pageviews ?? -1),
@@ -872,6 +917,7 @@
       && (!S.untaggedOnly || !c.tags.length)
       && (!S.newOnly || fresh.has(c.id))
       && (!S.duplicatesOnly || c.count > 1)
+      && (!S.keptOnly || isKept(c))
       && tags.every((tok) => (tok.endsWith('/') ? c.tags.some((t) => tagCat(t) === tok.slice(0, -1)) : c.tags.includes(tok)))
       && S.gtagFilter.every((k) => c.gtags.some((t) => catKey(t) === k)));
     // Prix (cote de ton meilleur exemplaire ; sans cote fiable, à la fin) : à égalité, par rareté.
@@ -1184,6 +1230,7 @@
           if (!c) continue;
           const row = byCard.get(c.id);
           if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
+          if (x.me ? isKept(c) : x.f.keep && x.f.keep.has(c.id)) continue; // exclue des échanges (prefs.keep)
           const count = Math.max(1, Number(c.count) || 1);
           if (count < 2 && used.has(c.id)) continue;
           byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
@@ -1425,7 +1472,7 @@
     cardsGen++;
     cardsJob = Promise.resolve();
     Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, colOrder: null, autoBusy: null,
-      q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
+      q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, keptOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     Object.assign(S.autoTag, { busy: false, targetId: null, syncTargetId: null, error: '' });
     Object.assign(S.wishMissing, { busy: false, error: '', message: '', items: [], revision: '', selected: new Set(), limit: 100 });
@@ -2387,7 +2434,7 @@
     toTop();
   }
   function resetFilters() {
-    Object.assign(S, { q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, rarities: [] });
+    Object.assign(S, { q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, keptOnly: false, rarities: [] });
   }
   function openAlbum(kind, id) {
     if (kind !== 'category') stopCategory();
@@ -2420,6 +2467,8 @@
   }
   function toggleUntagged() { S.untaggedOnly = !S.untaggedOnly; S.tagFilter = []; S.newOnly = false; S.tab = 'cartes'; }
   function toggleNew() { S.newOnly = !S.newOnly; S.tagFilter = []; S.untaggedOnly = false; S.tab = 'cartes'; }
+  // « Les voir » (« Bonnes affaires à vendre ») : « Mes cartes » avec seulement les cartes exclues des échanges et ventes.
+  function showKept() { resetFilters(); S.keptOnly = true; setTab('cartes'); }
   function toggleRarity(r, ev) {
     // Aucune rareté choisie = toutes. Clic : ajouter ou retirer ; Ctrl/⌘+clic : n'afficher qu'elle.
     if (ev && (ev.ctrlKey || ev.metaKey)) { S.rarities = S.rarities.length === 1 && S.rarities[0] === r ? [] : [r]; return; }
@@ -6096,7 +6145,9 @@
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
           return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, cstyle: typeof m.card_style === 'string' ? m.card_style : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
-            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous) });
+            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous),
+            // ses cartes exclues des échanges (ids), relues avec la liste : jamais proposées dans « Échanges possibles »
+            keep: Array.isArray(m.keep) && m.keep.length ? new Set(m.keep.map(String)) : null });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
         if (fr.open && !list.some((f) => f.id === fr.open)) { fr.open = null; routeSync(); } // a cessé de partager, ou adresse morte
@@ -6761,7 +6812,9 @@
     const list = [];
     let unpriced = 0;
     let onSale = 0;
+    let kept = 0;
     for (const c of cards.value) {
+      if (isKept(c)) { kept++; continue; } // exclue des échanges et des ventes (prefs.keep)
       const inCol = used.has(c.id);
       if (inCol && MP.hideCol) continue; // « Cacher les cartes de mes collections » (cochée par défaut)
       const p = map.get(String(c.id));
@@ -6788,7 +6841,7 @@
       list.push({ c, price: Number(best.q.p), q: best.q, k: best.k, n: copies.length, extra: inCol ? copies.length : 0 });
     }
     list.sort((a, b) => b.price - a.price || COLLATOR.compare(a.c.title, b.c.title));
-    return { list, unpriced, onSale };
+    return { list, unpriced, onSale, kept };
   });
   // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes, « Valeur
   // de ton classeur » comprise depuis le 2026-10-18) et seuil
@@ -7480,8 +7533,10 @@
   }
   function viewCell(c, sep) {
     const sel = S.selected.has(c.id);
+    const kept = isKept(c);
     return h('div', { class: ['cell', { selected: sel, pulled: S.openId === c.id, sep }] }, [
       sepFrame(viewCard(c, false, sep), sep),
+      kept ? h('span', { class: 'cell__keep', title: 'Exclue des échanges et ventes' }, [icon('lock', 'sm'), sr('Exclue des échanges et ventes')]) : null,
       h('label', { class: 'pick', title: 'Sélectionner (Maj+clic : une plage)' }, [
         h('input', { type: 'checkbox', checked: sel, 'aria-label': 'Sélectionner ' + c.title, onClick: (e) => toggleSelect(c.id, e) }),
         icon('check'),
@@ -8579,6 +8634,7 @@
           newIds.value.length ? facetChip('new', 'Nouvelles du dernier rafraîchissement', newIds.value.length, S.newOnly, toggleNew) : null,
         ]),
       ]),
+      viewKeepFacet(),
       h('div', { class: 'facet' }, [
         h('h3', null, ['Tags du jeu', glist.length > 1 ? h('span', { class: 'hint-inline' }, 'Ctrl/⌘+clic : combiner') : null]),
         glist.length ? h('div', { class: 'chips' }, gshown.map((g) => h('button', { key: 'g:' + g.key, class: 'chip gchip', type: 'button', style: gtagStyle(g.color),
@@ -8600,6 +8656,27 @@
       h('div', { class: 'facet' }, [h('h3', null, 'Suggestions'), ...viewSuggBox()]),
     ]);
   }
+  // « Exclues des échanges et ventes » (prefs.keep) : le filtre, les tags exclus (« × » les réintègre) et un champ pour en
+  // exclure un ; les cartes s'excluent une à une depuis la sélection ou leur fiche.
+  function viewKeepFacet() {
+    const k = keepPref.value;
+    const tags = [...k.tags].sort((a, b) => COLLATOR.compare(tagTitle(a), tagTitle(b)));
+    return h('div', { class: 'facet keep-facet' }, [
+      h('h3', null, 'Exclues des échanges et ventes'),
+      h('p', { class: 'small muted' }, "Jamais proposées dans « Échanges possibles » ni dans « Bonnes affaires à vendre », chez toi comme chez tes amis. Exclus des cartes depuis la sélection ou leur fiche, ou tout un tag :"),
+      keptCount.value || S.keptOnly ? h('div', { class: 'chips' }, [facetChip('kept', 'Exclues', keptCount.value, S.keptOnly, () => { S.keptOnly = !S.keptOnly; S.tab = 'cartes'; },
+        'Cartes exclues des échanges et des ventes, une à une ou par un tag')]) : null,
+      tags.length ? h('div', { class: 'tags' }, tags.map((t) => h('span', { class: 'tag own', key: t, title: tagTitle(t) + ` · ${cards$(tagCount.value.get(t) || 0)}` }, [
+        icon('lock', 'sm'), tagTitle(t),
+        h('button', { type: 'button', class: 'x', 'aria-label': `Ne plus exclure le tag ${tagTitle(t)}`, onClick: () => removeKeepTag(t) }, [icon('x', 'sm')])]))) : null,
+      h('form', { class: 'add-row', onSubmit: (e) => { e.preventDefault(); addKeepTag(S.keepTag); } }, [
+        h('label', { class: 'sr', for: 'keep-tag' }, 'Tag à exclure des échanges et ventes'),
+        h('input', { id: 'keep-tag', class: 'field', list: 'taglist', value: S.keepTag, maxlength: 60, autocomplete: 'off', placeholder: 'Tag à exclure…',
+          onInput: (e) => { S.keepTag = e.target.value; } }),
+        h('button', { class: 'btn small', type: 'submit', disabled: !S.keepTag.trim() }, 'Exclure'),
+      ]),
+    ]);
+  }
   function filterChip(key, label, onRemove, removeLabel) {
     return h('span', { class: 'chip on', key }, [h('span', { class: 'chip__label' }, label),
       h('button', { type: 'button', class: 'x', 'aria-label': removeLabel, onClick: onRemove }, [icon('x', 'sm')])]);
@@ -8615,6 +8692,7 @@
       S.untaggedOnly ? filterChip('untagged', 'Sans tag', () => { S.untaggedOnly = false; }, 'Retirer le filtre Sans tag') : null,
       S.newOnly ? filterChip('new', 'Nouvelles', () => { S.newOnly = false; }, 'Retirer le filtre Nouvelles') : null,
       S.duplicatesOnly ? filterChip('duplicates', 'Doublons', () => { S.duplicatesOnly = false; }, 'Retirer le filtre Doublons') : null,
+      S.keptOnly ? filterChip('kept', 'Exclues des échanges et ventes', () => { S.keptOnly = false; }, 'Retirer le filtre Exclues') : null,
       S.q.trim() ? filterChip('q', `« ${S.q.trim()} »`, () => { S.q = ''; }, 'Effacer la recherche') : null,
       rar.length ? filterChip('rar', 'Raretés : ' + rar.join(', '), () => { S.rarities = []; }, 'Afficher toutes les raretés') : null,
       S.tagFilter.length === 1 && !S.tagFilter[0].endsWith('/') ? h('button', { class: 'linkish', type: 'button', onClick: () => openTagEdit(S.tagFilter[0]) }, `Renommer ou supprimer « ${tagSub(S.tagFilter[0])} »`) : null,
@@ -8633,7 +8711,7 @@
     const counts = rarityCount.value;
     const total = filtered.value.length;
     const shown = visibleCards.value.length;
-    const nf = S.tagFilter.length + S.gtagFilter.length + (S.untaggedOnly ? 1 : 0) + (S.newOnly ? 1 : 0) + (S.duplicatesOnly ? 1 : 0);
+    const nf = S.tagFilter.length + S.gtagFilter.length + (S.untaggedOnly ? 1 : 0) + (S.newOnly ? 1 : 0) + (S.duplicatesOnly ? 1 : 0) + (S.keptOnly ? 1 : 0);
     return h('div', { class: ['cards-layout', { 'm-facets': S.mFacets }] }, [
       S.mFacets ? h('div', { class: 'msheet-backdrop m-only', onClick: () => { S.mFacets = false; } }) : null,
       viewFacets(),
@@ -11146,7 +11224,7 @@
   // chère à la moins chère : rareté et brillance de l'exemplaire, titre (sa fiche), « ×3 » ou « 2 en trop », « Copier le
   // nom », cote, dernière vente.
   function viewSell() {
-    const { list, unpriced, onSale } = sellOffers.value;
+    const { list, unpriced, onSale, kept: excluded } = sellOffers.value;
     const kept = list.filter((x) => x.price >= MP.min);
     const shown = kept.slice(0, marketShown('vendre'));
     return [
@@ -11176,6 +11254,8 @@
         })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
       M.loaded ? marketMoreButton('vendre', kept.length) : null,
       M.loaded && onSale ? h('p', { class: 'small muted' }, `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.`) : null,
+      M.loaded && excluded ? h('p', { class: 'small muted' }, [`${fmt(excluded)} ${plural(excluded, 'carte exclue', 'cartes exclues')} des échanges et des ventes : pas ${excluded > 1 ? 'proposées' : 'proposée'} ici. `,
+        h('button', { class: 'linkish', type: 'button', onClick: showKept }, excluded > 1 ? 'Les voir' : 'La voir')]) : null,
       M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes).`) : null,
     ];
   }
@@ -11517,6 +11597,18 @@
         : { id: 'panel-' + S.tab, role: 'tabpanel', 'aria-labelledby': 'tab-' + S.tab, key: S.tab }, [panel]),
     ]);
   }
+  // Sélection : « Exclure des échanges et ventes » (celles qui ne le sont pas déjà une à une) ou « Réintégrer » (celles
+  // exclues une à une ; une carte exclue par un tag le reste).
+  function viewBulkKeep() {
+    const k = keepPref.value;
+    const ids = [...S.selected].map(String);
+    const on = ids.filter((id) => k.cards.has(id)).length;
+    return [
+      on < ids.length ? h('button', { class: 'btn', type: 'button', title: 'Ces cartes ne seront plus proposées dans « Échanges possibles » ni dans « Bonnes affaires à vendre »',
+        onClick: () => setKeepCards(ids, true) }, [icon('lock', 'sm'), 'Exclure des échanges et ventes']) : null,
+      on ? h('button', { class: 'btn', type: 'button', onClick: () => setKeepCards(ids, false) }, `Réintégrer (${fmt(on)})`) : null,
+    ];
+  }
   function viewBulk() {
     const n = S.selected.size;
     if (!n) return null;
@@ -11528,6 +11620,7 @@
       catSelect('bulk-cat', S.bulkCat, (v) => { S.bulkCat = v; }, 'Catégorie du tag (facultatif)', true),
       h('button', { class: 'btn primary', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('add') }, 'Ajouter'),
       h('button', { class: 'btn', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('remove') }, 'Retirer'),
+      viewBulkKeep(),
       h('button', { class: 'btn ghost', type: 'button', onClick: clearSelection }, 'Vider la sélection'),
       errLine(S.bulkError),
     ]);
@@ -11589,6 +11682,21 @@
       errLine(S.sepError),
     ]);
   }
+  // Fiche d'une de tes cartes : case « Exclue des échanges et ventes » (prefs.keep) ; exclue par un tag, elle le dit, et la
+  // case cochée reste grisée tant que le tag est exclu.
+  function viewKeepToggle(c) {
+    const by = keptBy(c);
+    return h('div', { class: 'keep-toggle' }, [
+      h('label', { class: 'check' }, [
+        h('input', { type: 'checkbox', checked: !!by, disabled: !!(by && by.tag && !by.card), 'aria-describedby': 'keep-toggle-help',
+          onChange: (e) => setKeepCards([c.id], e.target.checked) }),
+        ' Exclue des échanges et ventes',
+      ]),
+      h('p', { id: 'keep-toggle-help', class: 'small muted' }, by && by.tag
+        ? [`Exclue par le tag « ${tagTitle(by.tag)} » (« Mes cartes », « Exclues des échanges et ventes »). `, by.card ? 'Aussi exclue elle-même.' : null]
+        : 'Ni proposée dans « Échanges possibles », chez toi comme chez tes amis, ni dans « Bonnes affaires à vendre ».'),
+    ]);
+  }
   function viewFiche(c, closeRef, boxRef) {
     const mine = membershipsOf(c); // toutes tes collections, celles faites d'une catégorie de Wikipédia comprises
     const goto = (col) => { closeCard(); openAlbum(col.kind, col.id); };
@@ -11614,6 +11722,7 @@
         ]),
         viewCote(c),
         h('div', { class: 'actions sell-cta' }, [h('button', { class: 'btn small', type: 'button', onClick: () => openSell(c) }, [icon('coins', 'sm'), 'Mettre en vente dans le jeu'])]),
+        viewKeepToggle(c),
         viewCardMarket(c),
         // Tags posés dans le jeu (lecture seule ici : ils se changent dans wiki-masters.com), avec leur couleur.
         c.gtags.length ? h('div', null, [
@@ -13240,6 +13349,7 @@
       if (S.untaggedOnly) p.set('sans-tag', '1');
       if (S.newOnly) p.set('nouvelles', '1');
       if (S.duplicatesOnly) p.set('doublons', '1');
+      if (S.keptOnly) p.set('exclues', '1');
     } else if (S.tab === 'amis') {
       if (fr.open && fr.album != null) {
         path = 'ami/' + encSeg(fr.open) + '/' + encSeg(fr.album);
@@ -13309,7 +13419,7 @@
       setTab('cartes');
       const list = (k, ok) => [...new Set(p.getAll(k).filter((v) => v && (!ok || ok.includes(v))))];
       Object.assign(S, { q: p.get('q') || '', sort: pick('tri', SORTS.map(([v]) => v), 'rarity'), rarities: list('rarete', RARITIES), tagFilter: list('tag'),
-        gtagFilter: list('jeu'), untaggedOnly: p.get('sans-tag') === '1', newOnly: p.get('nouvelles') === '1', duplicatesOnly: p.get('doublons') === '1' });
+        gtagFilter: list('jeu'), untaggedOnly: p.get('sans-tag') === '1', newOnly: p.get('nouvelles') === '1', duplicatesOnly: p.get('doublons') === '1', keptOnly: p.get('exclues') === '1' });
       if (isPriceSort(S.sort)) loadMarket(false);
     } else if (r.tab === 'amis') {
       setTab('amis');
@@ -13410,7 +13520,7 @@
     },
   };
 
-  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly, () => S.duplicatesOnly], () => { S.limit = PAGE; });
+  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly, () => S.duplicatesOnly, () => S.keptOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
   // Mode réorganisation quitté par la navigation (autre album, liste des collections, autre onglet) : sans changement, il
   // se referme ; avec un ordre modifié, le brouillon est gardé et un message le dit une fois (« Y revenir »).

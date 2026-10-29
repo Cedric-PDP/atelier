@@ -4,7 +4,7 @@
 // d'exemplaires, si elle est brillante, son illustration et son adresse Wikipédia, et sa cote (cache commun des ventes du
 // jeu, de quoi calculer la valeur de son classeur dans la page) ; son solde de wikibidous lu à la dernière synchro (de quoi
 // en demander dans un échange). Jamais les étiquettes, les
-// préférences, les clés, le cookie du jeu ni l'id interne du compte (ni les collections à compléter, sauf second réglage
+// préférences (sauf deux choses qui en découlent : son style de carte, et les ids de ses cartes exclues des échanges), les clés, le cookie du jeu ni l'id interne du compte (ni les collections à compléter, sauf second réglage
 // ci-dessous) : un membre est désigné par son identifiant public (users.public_id, tiré à chaque activation du partage,
 // effacé à sa désactivation).
 // Second réglage, à part (users.shared_targets, seulement avec le premier) : montrer aussi ses collections à compléter,
@@ -67,6 +67,14 @@ function requireSharing(user) {
 // y voir (2026-10-17, classeurs créés en double puis abandonnés).
 const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, (COALESCE(u.game_uid, '') <> '' OR COALESCE(u.game_pseudo, '') <> '') AS game, u.fetched_at, u.wikibidous AS wb, u.wikibidous_at AS wb_at,
     json_extract(CASE WHEN json_valid(u.prefs) THEN u.prefs ELSE '{}' END, '$.card_style') AS cstyle,
+    CASE WHEN json_valid(u.prefs) AND COALESCE(json_array_length(u.prefs, '$.keep.cards'), 0) + COALESCE(json_array_length(u.prefs, '$.keep.tags'), 0) > 0
+      THEN (SELECT json_group_array(id) FROM (
+        SELECT k.value AS id FROM json_each(u.prefs, '$.keep.cards') AS k
+          WHERE k.type = 'text' AND EXISTS (SELECT 1 FROM cards AS c WHERE c.user_id = u.id AND c.card_id = k.value)
+        UNION
+        SELECT g.card_id FROM tags AS g JOIN cards AS c ON c.user_id = g.user_id AND c.card_id = g.card_id
+          WHERE g.user_id = u.id AND g.tag IN (SELECT x.value FROM json_each(u.prefs, '$.keep.tags') AS x WHERE x.type = 'text')))
+    END AS keep,
     (SELECT COUNT(*) FROM cards AS c WHERE c.user_id = u.id) AS count,
     u.shared_targets AS st,
     CASE WHEN u.shared_targets = 1 THEN (SELECT COUNT(*) FROM targets AS t WHERE t.user_id = u.id) END AS t_count,
@@ -92,6 +100,9 @@ export async function listMembers(env, user) {
       fetched_at: r.fetched_at,
       targets: r.st ? { count: r.t_count || 0, updated_at: r.t_at || null } : null,
       wikibidous: r.wb === null || r.wb === undefined ? null : { n: r.wb, at: r.wb_at || null },
+      // Ses cartes exclues des échanges et des ventes (2026-10-29, prefs.keep : choisies une à une ou par ses tags, résolues
+      // ici : ses tags ne sortent jamais), que les échanges ne proposent pas ; [] s'il n'en exclut aucune.
+      keep: typeof r.keep === 'string' ? JSON.parse(r.keep) : [],
     })),
   };
 }
