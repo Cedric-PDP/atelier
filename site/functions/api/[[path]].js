@@ -11,8 +11,9 @@ import { bulkTags, renameTag, setTags } from '../_lib/tags.js';
 import { deleteTarget, listTargets, orderTargets, saveTarget, setAutoTag, setAutoFavorite } from '../_lib/targets.js';
 import { listMembers, memberCards, memberTargets } from '../_lib/members.js';
 import { deleteChat, lastChat, listChat, postChat, reactChat } from '../_lib/chat.js';
-import { getMarket, listPrices } from '../_lib/market.js';
+import { listPrices } from '../_lib/market.js';
 import { refreshMarket, searchCards } from '../_lib/marketread.js';
+import { getMarketWithScan, scanMarket } from '../_lib/marketscan.js';
 import { listSyncLog } from '../_lib/synclog.js';
 import { favoriScript } from '../_lib/favori.js';
 import { syncPaused } from '../_lib/cron.js';
@@ -65,9 +66,10 @@ const ROUTES = {
   'chat/*': { DELETE: [deleteChat, 'main'] }, // chat/<numéro du message> : par son auteur
   'chat/*/react': { POST: [reactChat, 'main'] }, // chat/<numéro du message>/react : mettre ou retirer une réaction
   'chat/last': { GET: [lastChat, false] }, // heure du dernier message, sans clé (outil de publication des nouveautés)
-  market: { GET: [getMarket, 'main'] }, // valeur du classeur, historique, dernière lecture du marché
+  market: { GET: [getMarketWithScan, 'main'] }, // valeur du classeur, historique, dernière lecture du marché, état du marché entier
   'market/prices': { GET: [listPrices, 'main'] }, // cotes de mes cartes et des cartes voulues
   'market/refresh': { POST: [refreshMarket, 'main'] }, // « Mettre à jour les cotes » : une passe de marché
+  'market/scan': { POST: [scanMarket, 'main'] }, // « Relire tout le marché » : réservé au compte de MARKET_SCAN_PSEUDO
   'market/card': { GET: [cardMarket, 'main'] }, // enchères en cours et ventes d'une carte (fiche)
   'market/auction': { GET: [auctionDetail, 'main'] }, // mises, meneur et vendeur d'une enchère (site du jeu)
   'game/cards': { GET: [searchCards, 'main'] }, // cartes du jeu par titre (« Depuis le jeu »)

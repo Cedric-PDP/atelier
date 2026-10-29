@@ -136,7 +136,7 @@ export async function cardMarket(env, user, _body, request) {
   let v = null;
   if (covered) {
     v = cotes(sold.filter((x) => x && Date.parse(x.settled_at) >= window));
-    // Rangée dans le cache commun (une cote du quota du jour) ; quota atteint ou cote refusée : montrée quand même.
+    // Rangée dans le cache commun ; cote refusée : montrée quand même.
     await writePrices(env.DB, user, [{ id, v }]).catch(() => {});
   }
   return { card_id: id, at, auctions, more: running.length > AUCTIONS_MAX, sales, v };

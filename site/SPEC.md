@@ -62,7 +62,7 @@ automatiques »), `REFRESH_PAUSE_MS` (tests : remplace toutes les attentes). Dé
 
 Toujours du JSON : `{ "error": "message en français, lisible tel quel" }` avec un statut 4xx/5xx. Champs en plus possibles : `needs_link: true`
 (aucun compte du jeu relié, ou session du jeu qui ne sert plus : l'interface propose de relier, voir « Session du jeu »), `retry_after` (`429`,
-en **secondes**), `limited: true` (`429` : le jeu limite les lectures automatiques), `quota` (`429` : cotes encore acceptées aujourd'hui),
+en **secondes**), `limited: true` (`429` : le jeu limite les lectures automatiques),
 `conflict: true` avec `target` (`409` de `targets/save`). Sans base liée (`env.DB` absent), toute route sauf `/api/health` répond
 `503 {error:"Le classeur n'est pas encore configuré : …"}`.
 
@@ -171,11 +171,12 @@ plus faite.
 | `DELETE /api/chat/<id>` | (clé principale) | `{ok:true}` (aussi s'il l'avait déjà supprimé) ; `403` message d'un autre, `404` message inexistant ou supprimé |
 | `POST /api/chat/<id>/react` | `{emoji, on}` (clé principale ; 2026-10-24 ; 1 Ko ; `emoji` parmi 👍 ❤️ 😂 😮 😢 🎉 🔥 👀, `on` : `true` mettre, `false` retirer) | `{id, reactions:[Reaction]}` : les réactions du message après le changement (`[]` sans) ; déjà mise ou déjà retirée : rien ne change. `400` emoji hors de la liste, `on` qui n'est pas un booléen, classeur sans prénom ; `404` message inexistant, supprimé ou purgé ; `429 {error, retry_after}` au-delà de 30 réactions mises ou retirées par minute ou 500 par 24 h pour ce classeur. Voir « Chat », réactions |
 | `GET /api/chat/last` | (sans clé) | `{last_at}` : heure du dernier message d'un membre (`null` sans message), suppressions sautées ; ni texte, ni auteur, ni numéro. Sert au skill « publier » (voir « Nouveautés ») |
-| `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai de lecture (`v` : `'serveur'` ; `null` : jamais) |
+| `GET /api/market` | (clé principale) | `{value:{value, priced, cards, approx}, history:[{date, value, priced, cards}], live:{deals, bids, sales} \| null, live_at, attempt:{start, end?, ok?, why?, v, auto} \| null, scan:{mine, full_at, running, fresh, last_at, last_result} \| null}` : valeur calculée maintenant (le point du jour mis à jour s'il a changé), 400 jours d'historique au plus, lecture du marché de moins de 7 jours, dernier essai de lecture (`v` : `'serveur'` ; `null` : jamais), état du marché entier (`null` sans `MARKET_SCAN_PSEUDO` ; `mine` : ce compte le lit ; voir « Marché entier ») |
 | `GET /api/market/card?id=<card_id>` ou `?title=<titre>` | (clé principale ; 2026-10-22) | `{card_id, at, auctions:[{a, r, s, ask, bid, cur, base, end, atk, def, lead, mine, n}], more, sales:[{d, p, k}], v}` : le **marché d'une carte**, lu à l'ouverture de sa fiche dans la base du jeu (voir « Le marché », « Marché d'une carte ») ; `card_id: null` : aucune carte du jeu n'a ce titre. `400` paramètres mal formés ; `401 {needs_link:true}` aucun compte relié ; `429 {retry_after}` plus de 12 fiches lues dans la minute ; `429 {limited:true}` / `502` comme une passe |
 | `GET /api/market/auction?id=<id de l'enchère>` | (clé principale ; 2026-10-22) | `{a, gone, status, bids, bidders, leader, seller, leading, selling, my_bid, cur}` : le **détail d'une enchère**, lu sur le site du jeu (`/api/marketplace/<id>`) ; `{a, gone:true}` : le jeu ne la connaît plus. `429 {retry_after}` plus de 20 détails dans la minute ; `429 {limited:true, retry_after}` le jeu limite : détails en pause 10 min pour ce membre ; `409` session à renouveler pendant qu'une lecture tient le bail ; `401`, `502` |
 | `GET /api/market/prices?part=X` | (clé principale ; `part` comme pour `GET /api/cards`) | `{prices:[{id, v, at, t?}], part, next_part}` : cotes de tes cartes et des cartes voulues dont le card_id est connu (`t` : leur titre dans tes collections), pages de 1 000 |
-| `POST /api/market/refresh` | `{}` | `{ok:true, read, left, deals, running, light:true}` : « Actualiser le marché », une **passe légère de lecture du marché** par le serveur avec la session reliée (2026-10-23 : tes enchères, tes ventes, les bonnes affaires et leurs cotes, **sans les cotes du plan**, laissées aux lectures automatiques ; voir « Le marché ») : `read` = cotes lues, `left` = cotes du plan à relire (par les lectures automatiques), `deals` = bonnes affaires, `running` = tes mises en cours. `401 {error, needs_link:true}` aucun compte relié ou session « à relier » ; `409` une passe, ou une lecture de la collection, est déjà en cours ; `429 {error, retry_after}` (**secondes**, 60 au plus) la dernière passe de ce classeur a commencé il y a moins de 60 s, **même finie**, d'où qu'elle vienne ; `429 {error, quota:0}` quota du jour des cotes atteint (rien n'est lu) ; `429 {error, limited:true}` le jeu limite les lectures ; `502`. Un échec en cours de passe garde les cotes déjà lues et note sa raison dans `attempt.why` |
+| `POST /api/market/scan` | `{}` | `{result, scan}` : « Relire tout le marché » (2026-10-29), **réservé au compte de `MARKET_SCAN_PSEUDO`** (`403` sinon) : une lecture complète du marché entier reprise de zéro (ou celle en cours, continuée), environ une minute ; `result` = son résultat (« marché entier : 160 000 enchères lues, lecture complète finie ») ; `429 {error, retry_after}` si une lecture complète a fini il y a moins d'une heure ; `409` si une lecture tient la session ; `429 {limited:true}` le jeu limite les lectures. Voir « Marché entier » |
+| `POST /api/market/refresh` | `{}` | `{ok:true, read, left, deals, running, light:true}` : « Actualiser le marché », une **passe légère de lecture du marché** par le serveur avec la session reliée (2026-10-23 : tes enchères, tes ventes, les bonnes affaires et leurs cotes, **sans les cotes du plan**, laissées aux lectures automatiques ; voir « Le marché ») : `read` = cotes lues, `left` = cotes du plan à relire (par les lectures automatiques), `deals` = bonnes affaires, `running` = tes mises en cours. `401 {error, needs_link:true}` aucun compte relié ou session « à relier » ; `409` une passe, ou une lecture de la collection, est déjà en cours ; `429 {error, retry_after}` (**secondes**, 60 au plus) la dernière passe de ce classeur a commencé il y a moins de 60 s, **même finie**, d'où qu'elle vienne ; `429 {error, limited:true}` le jeu limite les lectures ; `502`. Un échec en cours de passe garde les cotes déjà lues et note sa raison dans `attempt.why` |
 | `GET /api/game/cards?q=` | (clé principale) `q` : 1 à 100 caractères (sinon `400`) | `{cards:[{card_id, title, rarity, category, image}], more}` : les cartes du jeu dont le **titre contient** `q` (une requête `cards?wikipedia_title=ilike.*q*` avec la session reliée), dans l'ordre des titres, 200 au plus (`more:true` : il y en a d'autres) ; la version française d'un même titre l'emporte, une rareté inconnue est écartée, `image` = `null` si la carte la cache. `401 {error, needs_link:true}`, `429 {limited:true}`, `502`. Sert « Depuis le jeu » (voir « Onglet « Collections » »). **Non vérifié sur la vraie base** : le filtre `ilike` sur `wikipedia_title`, et ce que la sécurité par rangée du jeu laisse voir à un joueur (la recherche pourrait rendre moins que la « Collection globale » du jeu) |
 | `POST /api/trades/create` | (clé principale) `{member, give?, get?, give_wb?, get_wb?}` : `member` = identifiant public de l'ami, `give` / `get` = ids de cartes du jeu (tes cartes, les siennes), 40 au plus ; `give_wb` / `get_wb` (2026-10-23) = wikibidous que tu donnes / que tu demandes, entiers de 0 à 100 000 000 (absents : 0, sinon `400`) ; au moins une carte ou des wikibidous ; 8 Ko | `{trade:{id, status}, given:[{id, title}], received:[{id, title}], given_wb, received_wb, url}` : la proposition d'échange **créée dans le jeu** (en attente : l'ami l'accepte dans le jeu), voir « Proposer un échange ». `403` sans partage ; `404` ami inconnu ou qui ne partage pas ; `401 needs_link` sans compte relié ; `409` carte absente du jeu (titres nommés) ou dont tous les exemplaires sont en favori (2026-10-28, refus avant d'appeler le jeu), ami introuvable dans le jeu, bail pris, ou refus du jeu (son message repris) ; `502` panne ou réponse inattendue du jeu (« regarde dans le jeu s'il a été créé ») ; `429` limite du jeu |
 | `GET /api/friends[?fresh=1]` | (clé principale ; 2026-10-24) | `{linked, at, members:{<identifiant public>: st}, list:[{id, name, pseudo, st}], can_request, auto_friend, error?}` : pour chaque autre membre qui montre ses cartes, ton amitié avec lui **dans le jeu** (`st` : `friends` amis, `sent` ta demande attend, `received` sa demande t'attend, `none` rien ou demande refusée, `unknown` sans compte relié, liste illisible, ou membre ni relié ni avec pseudo), d'après ta liste d'amis du site du jeu gardée (`at`), relue si elle a plus d'une minute ou avec `fresh=1` ; une lecture impossible garde l'ancienne et dit pourquoi (`error`). `can_request` : le classeur envoie les demandes d'ami (interrupteur `FRIEND_ROUTE.known`). Voir « Amis dans le jeu » |
@@ -560,7 +561,7 @@ Succès : `sync_fails` remis à 0.
 **Passe « marché »** : membres triés par **début de leur dernière passe complète** (`market.attempt.start`, ou `attempt.full` après une passe
 légère au clic ; les plus anciennes — et jamais lues — d'abord) ; **sauté** si une passe complète de ce membre a commencé il y a moins de 20 min
 (**un clic ne compte pas** depuis le 2026-10-23 : il ne relit pas les cotes du plan), si une autre lecture tient sa session
-(`409`), ou si son **quota du jour des cotes** est atteint (sauté **sans échec**, la raison est dans `attempt.why`). Une passe fait au plus
+(`409`). Une passe fait au plus
 30 requêtes à une par seconde : environ 30 s par membre, donc une vingtaine de membres au plus tiennent dans `CRON_BUDGET_MS` ; l'ordre fait
 tourner les autres. **Rien n'est écrit au `sync_log` pour le marché.** Succès : `sync_fails` remis à 0 ; échec (hors limite du jeu, quota, bail pris, session à relier) : un échec de plus.
 
@@ -2041,7 +2042,7 @@ Outfit 800 et 900, Fraunces (Google Fonts, déjà permis par la CSP).
 Demande du 2026-10-16, d'après la description de l'outil d'un ami (Python, Vercel). Avant le 2026-10-22, un favori lisait le marché dans la page du jeu, sans
 aucune session sur le serveur ; **depuis le 2026-10-22, c'est le serveur qui lit**, avec la session du jeu reliée du membre (voir
 « Session du jeu »). Code : `functions/_lib/marketread.js` (la passe de lecture, `POST /api/market/refresh`, `GET /api/game/cards`),
-`functions/_lib/market.js` (plan, quotas, cotes, valeur, lecture rangée, `GET /api/market`), `functions/_lib/cron.js` (la passe
+`functions/_lib/market.js` (plan, cotes, valeur, lecture rangée, `GET /api/market`), `functions/_lib/cron.js` (la passe
 automatique), onglet « Marché » de `app.js`.
 
 **Qui lit quoi.** Le serveur, **au clic** du membre sur « Actualiser le marché » (`POST /api/market/refresh`) et **sans clic**, **une passe
@@ -2061,8 +2062,7 @@ par défaut**) lit **une requête toutes les 250 ms, 60 par passe**, sur un plan
 `PLAN_CARDS`) : lui seul prend le risque d'être vu ou limité par le jeu (la page le dit) ; les autres ne changent pas. Jamais moins de 5 min entre
 deux passes complètes d'un classeur quand la seconde est automatique (`AUTO_GAP` ; une passe légère ne compte pas), jamais deux passes en même temps pour un membre (bail `sync_lock`, `409`). Au clic,
 **une passe par minute au plus**, d'où qu'elle vienne : `429 {error, retry_after}` (secondes) dès que la **dernière passe a commencé il y
-a moins de 60 s, même finie** ; `409` si une passe (ou une lecture de la collection) est en cours ; `429 {quota:0}` si le quota du jour
-des cotes est atteint (rien n'est lu). Arrêt aussitôt, avec la raison, sur `429`/`automation_limit` (« Le jeu limite les lectures
+a moins de 60 s, même finie** ; `409` si une passe (ou une lecture de la collection) est en cours. Arrêt aussitôt, avec la raison, sur `429`/`automation_limit` (« Le jeu limite les lectures
 automatiques : réessaie plus tard. », `429 {limited:true}` ; la passe automatique suivante est sautée), sur une autre erreur
 `4xx` ou un format inattendu (« La base du jeu a refusé une lecture (400) : … le jeu a peut-être changé ») et sur une erreur passagère
 (`502`) ; **les cotes déjà lues sont gardées**, la lecture du marché aussi si elle était déjà rangée, et l'échec est noté (`attempt.why`,
@@ -2085,7 +2085,7 @@ avec « N cotes lues avant l'arrêt ont été gardées »).
    **lecture du marché** (`market.live`) ;
 6. **cotes des cartes du plan** (les plus anciennes d'abord), par lots de 100 : `auctions?status=eq.settled_sold&settled_at=gte.<il y a 90
    jours>&card_id=in.(…)&order=card_id,settled_at.desc,id&limit=1000&offset=…` (pages de 1 000 dans un ordre stable ; plafond atteint au milieu d'un
-   lot : seules les cartes lues en entier sont gardées), dans la limite du quota du jour ;
+   lot : seules les cartes lues en entier sont gardées) ;
 7. **rangement des cotes** par 500, le dernier lot (`last`) recalcule la valeur du jour et note l'essai fini (`end`, `ok:true`).
 Les listes `in.(…)` sont découpées pour rester sous 5 000 caractères encodés (une adresse trop longue serait refusée, `414`). Réponse :
 `{ok:true, read, left, deals, running}` : cotes lues, cotes du plan restant à lire (`stale` moins celles lues), bonnes affaires, mises en cours. Un
@@ -2106,8 +2106,10 @@ membre serait trop de trafic (près de 50 Mo) : elle est faite **une fois pour t
 celui dont le pseudo du jeu est la variable **`MARKET_SCAN_PSEUDO`** (choix de l'utilisateur : son compte, lui seul en prend le
 risque ; posée dans les deux `wrangler.jsonc`, `vars`, faute d'accès au tableau de bord de Cloudflare). Sans cette variable, rien ne change. Au début de chaque déclencheur du marché (avant les membres), sous le bail de ce compte :
 - **lecture complète**, une fois par jour (`SCAN_FULL_MS`) : `auctions?select=id,card_id,seller_id,…,created_at,card:cards(wikipedia_title,image_url,hide_image)&status=eq.active&end_at=gt.<maintenant>&id=gt.<curseur>&order=id&limit=10000`,
-  6 pages par déclencheur (`SCAN_PAGES`, une requête par seconde), le curseur rangé après chaque page dans `market_scan` : environ
-  16 pages, donc 3 déclencheurs. Finie, elle efface les enchères qu'elle n'a pas vues (`seen_at` antérieur à son début) ;
+  en un passage (2026-10-29, demande de l'utilisateur : 20 pages au plus, `SCAN_PAGES`, pour environ 16 ; une minute environ), arrêté au
+  bout de 3 minutes (`SCAN_BUDGET_MS`) pour laisser leur temps aux membres : le curseur est rangé après chaque page dans `market_scan`
+  et le passage suivant reprend là. Une requête par seconde, ou toutes les 250 ms (`FAST_GAP_MS`) si ce compte a coché « Synchro rapide
+  du marché ». Finie, elle efface les enchères qu'elle n'a pas vues (`seen_at` antérieur à son début) ;
 - **sinon, les nouvelles enchères** : `…&created_at=gte.<plus récente vue − 5 min>&order=created_at,id&limit=10000&offset=…` (3 pages au
   plus) ;
 - puis les enchères finies sont effacées. Rangement dans **`auctions_live`** (voir `schema.sql`) par lots de 1 000 : titre, rareté,
@@ -2117,7 +2119,10 @@ risque ; posée dans les deux `wrangler.jsonc`, `vars`, faute d'accès au tablea
 Les passes des membres s'en servent tant que la dernière lecture complète a moins de **36 h** (`SCAN_FRESH_MS`) ; au-delà (compte
 délié, session perdue, limite du jeu répétée), elles reviennent d'elles-mêmes à la recherche ciblée (étapes 3 et 4). Le résultat du
 déclencheur le dit (« … ; marché entier : 60 000 enchères lues, lecture complète en cours ») ; une limite du jeu arrête le déclencheur et
-saute le suivant, comme pour les membres. Coût : environ 160 000 lignes écrites par jour dans D1 (et autant pour l'index des titres),
+saute le suivant, comme pour les membres. **Au clic** : « Relire tout le marché » (onglet « Marché », visible seulement pour ce compte,
+`POST /api/market/scan`) relance une lecture complète de zéro, une fois par heure au plus. L'onglet « Marché » de chaque membre dit
+depuis quand le marché entier est lu (ou qu'en attendant ses bonnes affaires sont cherchées sur 500 cartes), et, pour ce compte, le
+dernier passage. Coût : environ 160 000 lignes écrites par jour dans D1 (et autant pour l'index des titres),
 soit une dizaine de millions par mois sur les 50 de l'abonnement. **Pas encore vérifié avec le vrai jeu** : que le filtre sur
 `created_at` reste rapide de son côté (sinon, lecture complète plus fréquente), et la durée réelle d'une page avec la carte jointe.
 
@@ -2152,10 +2157,11 @@ passe complète, `null` sans, gardés par un échec ; `fullStart` et `FULL_START
 - **Cotes validées** avant écriture (`400`, rien d'écrit) : identifiant `[A-Za-z0-9_-]` (100 au plus), clés `C|PC|R|SR|UR|L` + `*` (12 au
   plus), montants de 0 à 10⁹, ventes entières de 1 à 10⁶, date ISO pas dans le futur, une carte une fois par envoi, 500 par envoi ; arrondies
   au centime ; remplacées en entier (`read_at` = maintenant).
-- **Quotas du jour** (UTC) : 15 000 cotes par classeur, 150 000 pour tout le site (ligne `market` de user_id `'*'`) : une cote = une ligne
-  écrite (et l'index de sa clé primaire) ; abonnement payant Workers depuis le 2026-10-17 (50 millions de lignes écrites par mois comprises) ;
-  au-delà `429 {quota}`, à quelques envois simultanés près. Avec 50 membres, `QUOTA_ALL` et le volume de requêtes vers le jeu (jusqu'à ~4 500
-  par heure) sont à surveiller : les rythmes sont des constantes.
+- **Plus de quota du jour des cotes** (2026-10-29, demande de l'utilisateur : avec le marché entier, les 15 000 cotes par classeur et
+  150 000 pour tout le site d'avant auraient été atteintes vite). Une passe reste bornée par ses requêtes (`SUPA_MAX`) ; une cote = une
+  ligne écrite (et l'index de sa clé primaire), sur les 50 millions par mois de l'abonnement payant Workers (depuis le 2026-10-17). Les
+  colonnes `market.quota_day` et `quota_n` ne sont plus lues. Avec 50 membres, les lignes écrites (tableau de bord de D1) et le volume de
+  requêtes vers le jeu (jusqu'à ~4 500 par heure) sont à surveiller : les rythmes sont des constantes.
 - **Valeur** (`value_history`, un point par classeur et par jour UTC, le dernier calcul du jour remplaçant les précédents, 400 jours) :
   somme, sur les exemplaires (`variants` ; sinon approchés), de la cote fiable de leur rareté et brillance × leur nombre ; `priced` = cartes avec
   au moins un exemplaire coté, `cards` = cartes, `approx` = cartes sans détail de leurs exemplaires. Calculée en SQL dans D1 et écrite : à la fin
@@ -2305,8 +2311,7 @@ par le serveur. Code : `functions/_lib/cardmarket.js`, `viewCardMarket` de `app.
   connaît pas le schéma) et `auctions?select=snapshot_rarity,final_price,settled_at,is_shiny&status=eq.settled_sold&card_id=eq.<id>&order=settled_at.desc,id&limit=1000`
   (les 1 000 ventes les plus récentes). Une enchère : `a` son id, `r`/`s` rareté et brillance de l'exemplaire, `ask` le prix à battre (enchère actuelle,
   sinon prix de départ), `bid` quelqu'un a misé, `cur`, `base`, `end`, `atk`/`def` de l'exemplaire, `lead` tu mènes, `mine` ta vente ; **jamais** l'identifiant
-  du vendeur ni de l'enchérisseur. `v` : cotes recalculées de ces ventes (90 jours, comme une passe), rangées dans le cache commun (une cote du quota du
-  jour ; quota atteint : montrée quand même), `null` si les 1 000 ventes ne couvrent pas les 90 jours.
+  du vendeur ni de l'enchérisseur. `v` : cotes recalculées de ces ventes (90 jours, comme une passe), rangées dans le cache commun, `null` si les 1 000 ventes ne couvrent pas les 90 jours.
 - `GET /api/market/auction` : la seule source du nombre de mises, du meneur et du vendeur (la table `auction_bids` ne montre que tes mises) est la
   **route du site du jeu** `https://www.wiki-masters.com/api/marketplace/<id>`, avec le cookie de session refait (comme « Proposer un échange » ;
   jamais avec un jeton qui expire dans moins de 5 min : renouvelé avant, sous bail, `409` si une lecture le tient). Forme lue (relevée par le projet de

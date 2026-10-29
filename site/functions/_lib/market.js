@@ -16,10 +16,9 @@ const IDS_MAX = 2000; // titres -> card_id gardés par compte
 export const PART_PRICES = 500; // cotes par envoi
 // Bonnes affaires gardées par lecture du marché (2026-10-24 : 50 avant) : les meilleures remises, la page les filtre.
 export const DEALS_MAX = 150;
-// Quotas du jour des cotes : une cote = une ligne écrite (et son index). Abonnement payant (2026-10-17) : 50 millions
-// de lignes écrites par mois comprises ; avant, D1 gratuit (100 000 par jour pour tout) imposait 3 000 et 30 000.
-export const QUOTA_USER = 15000;
-export const QUOTA_ALL = 150000;
+// Plus de quota du jour des cotes (2026-10-29, demande de l'utilisateur : le marché entier les aurait atteints vite) : une
+// passe est déjà bornée par ses requêtes (SUPA_MAX), et l'abonnement payant (2026-10-17) comprend 50 millions de lignes
+// écrites par mois. Les colonnes market.quota_day et quota_n ne sont plus lues.
 const VALUE_GAP = 3600_000; // après un import, la valeur du jour est recalculée au plus une fois par heure
 // La lecture du marché est montrée (avec son âge) puis oubliée au bout de 7 jours : la page dit qu'elle est vieille bien
 // avant (les enchères changent vite), mais les mises et les ventes du joueur restent utiles.
@@ -148,17 +147,6 @@ export const wantedSql = (limit, wishOnly = false) => `WITH ${WANT_ORDER}, it AS
   GROUP BY t ORDER BY MIN(p) LIMIT ${limit}`;
 const WANTED = wantedSql(PLAN_WANTED);
 
-const QUOTA = "SELECT user_id, quota_day, quota_n FROM market WHERE user_id IN (?1, '*')";
-
-function quotaLeft(rows, userId) {
-  const d = today();
-  const used = (id) => {
-    const r = rows.find((x) => x.user_id === id);
-    return r && r.quota_day === d ? r.quota_n : 0;
-  };
-  return Math.max(0, Math.min(QUOTA_USER - used(userId), QUOTA_ALL - used('*')));
-}
-
 const parseIds = (text) => {
   try {
     const o = JSON.parse(text || '{}');
@@ -198,7 +186,7 @@ export const fullStart = (a) => (a ? (a.light ? a.full ?? null : a.start) : null
 export const FULL_START_SQL = (col) => `CASE WHEN json_valid(${col}) THEN CASE WHEN json_extract(${col}, '$.light')
   THEN json_extract(${col}, '$.full') ELSE json_extract(${col}, '$.start') END END`;
 
-// Ce qu'une passe doit lire : {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}, quota}.
+// Ce qu'une passe doit lire : {cards: [card_id…], stale, fresh, wanted: [titre…], ids: {titre: card_id | ""}}.
 // auto : lecture automatique, refusée ({skip: true, until}, rien d'autre de lu ni d'écrit) si une passe complète de ce
 // classeur a commencé il y a moins de 5 min. Sinon l'essai est noté (start, v, auto ; light et full pour une passe
 // légère) : la page voit qu'une lecture a commencé, puis comment elle a fini. cards : nombre de cartes à coter rendues
@@ -212,10 +200,9 @@ export async function planFor(db, user, { auto = false, light = false, cards = P
   }
   const cutoff = new Date(Date.now() - FRESH_MS).toISOString();
   const attempt = light ? { start: nowIso(), v: READER, auto: false, light: true, full: fullStart(prev) } : { start: nowIso(), v: READER, auto: !!auto };
-  const [plan, wanted, quota] = await db.batch([
+  const [plan, wanted] = await db.batch([
     db.prepare(PLAN).bind(user.id, cutoff, light ? 0 : cards),
     db.prepare(WANTED).bind(user.id),
-    db.prepare(QUOTA).bind(user.id),
     db.prepare(SET_ATTEMPT).bind(user.id, JSON.stringify(attempt)),
   ]);
   const head = plan.results.find((r) => r.h === 0) || { stale: 0, fresh: 0 };
@@ -229,7 +216,6 @@ export async function planFor(db, user, { auto = false, light = false, cards = P
     fresh: head.fresh,
     wanted: titles,
     ids,
-    quota: quotaLeft(quota.results, user.id),
   };
 }
 
@@ -278,8 +264,7 @@ function cleanPriceEntry(e, i) {
 }
 
 // Cotes lues par une passe, [{id, v}] : 500 au plus par appel, contrôlées (cleanPriceEntry), remplacées en entier (une
-// carte relue a toutes ses ventes récentes), datées de maintenant. Quotas du jour : 15 000 par compte, 150 000 pour tout
-// le site (429 au-delà, rien d'écrit). last : fin de la passe, la valeur du jour de ce classeur est recalculée et son
+// carte relue a toutes ses ventes récentes), datées de maintenant. last : fin de la passe, la valeur du jour de ce classeur est recalculée et son
 // essai noté fini (ok ; un échec noté ensuite par writeFail le remplace).
 export async function writePrices(db, user, list, last = false) {
   if (!Array.isArray(list)) throw bad('Il manque les cotes.');
@@ -287,23 +272,13 @@ export async function writePrices(db, user, list, last = false) {
   const rows = list.map(cleanPriceEntry);
   const seen = new Set(rows.map((r) => r[0]));
   if (seen.size !== rows.length) throw bad('Une carte est cotée deux fois dans le même envoi.');
-  const { results } = await db.prepare(QUOTA).bind(user.id).all();
-  const left = quotaLeft(results, user.id);
-  if (rows.length > left) {
-    throw new HttpError(429, `Quota du jour des cotes atteint (${QUOTA_USER} par classeur, ${QUOTA_ALL} pour tout le site) : la suite demain. Rien n'a été écrit pour cet envoi.`, { quota: left });
-  }
   const now = nowIso();
   const d = today();
-  const bump = `INSERT INTO market (user_id, quota_day, quota_n) VALUES (?1, ?2, ?3)
-    ON CONFLICT (user_id) DO UPDATE SET quota_n = CASE WHEN market.quota_day = excluded.quota_day THEN market.quota_n + excluded.quota_n ELSE excluded.quota_n END,
-      quota_day = excluded.quota_day`;
   if (rows.length) {
     await db.batch([
       db.prepare(`INSERT INTO prices (card_id, data, read_at)
         SELECT json_extract(j.value, '$[0]'), json_extract(j.value, '$[1]'), ?2 FROM json_each(?1) AS j WHERE true
         ON CONFLICT (card_id) DO UPDATE SET data = excluded.data, read_at = excluded.read_at`).bind(JSON.stringify(rows), now),
-      db.prepare(bump).bind(user.id, d, rows.length),
-      db.prepare(bump).bind('*', d, rows.length),
     ]);
   }
   if (last === true) {
@@ -312,7 +287,7 @@ export async function writePrices(db, user, list, last = false) {
     await db.prepare(`UPDATE market SET attempt = json_remove(json_set(attempt, '$.end', ?2, '$.ok', json('true')), '$.why')
       WHERE user_id = ?1 AND json_valid(attempt)`).bind(user.id, nowIso()).run();
   }
-  return { written: rows.length, quota: left - rows.length };
+  return { written: rows.length };
 }
 
 // ---------------------------------------------------------------- lecture du marché, montrée par la page

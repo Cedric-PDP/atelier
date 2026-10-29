@@ -3620,7 +3620,7 @@ await test('marché : bonnes affaires, les 150 meilleures remises (prix demandé
   e.DB.close();
 });
 
-await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au plus par passe, la suivante reprend, quota du jour', async () => {
+await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au plus par passe, la suivante reprend, plus de quota du jour', async () => {
   const e = makeEnv();
   clearMarketGame();
   // Plan : own-a fraîche (pas relue), own-b de plus de 12 h, own-c très ancienne, own-d jamais lue.
@@ -3653,15 +3653,11 @@ await test('marché : plan (cotes les plus anciennes d\'abord), 30 requêtes au 
   const now = asked(restPaths(n0));
   assert.equal(new Set(now).size, 250);
   assert.ok(now.every((id) => !before.has(id)), 'la passe suivante reprend là où la première s\'est arrêtée');
-  // Quota du classeur atteint : rien n'est lu, 429, la raison notée dans l'essai.
+  // Plus de quota du jour (2026-10-29) : un ancien compteur au-delà des 15 000 d'avant n'empêche plus rien.
   e.DB.sqlite.prepare("UPDATE market SET quota_n = 15000, quota_day = ? WHERE user_id = ?").run(todayUtc(), m.id);
-  n0 = supa.calls.length;
   r = await m.press();
-  assert.deepEqual([r.status, r.json.quota], [429, 0]);
-  assert.match(r.json.error, /^Quota du jour des cotes atteint pour ton classeur \(ou pour tout le site\) : reprise demain\. Rien n'a été lu\.$/);
-  assert.equal(supa.calls.length, n0);
-  const a = (await m.market()).attempt;
-  assert.deepEqual([a.ok, a.why, a.v], [false, r.json.error, 'serveur']);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.equal((await m.market()).attempt.ok, true);
   clearMarketGame();
   e.DB.close();
 });
@@ -4894,16 +4890,20 @@ await test('marché entier (MARKET_SCAN_PSEUDO) : lecture complète par pages et
     auction('z-finie', 552, { end_at: isoAgo(H) }), auction('z-sans-titre', 553, { card: null }));
   for (let k = 0; k < 3; k++) addAuctions(sale('w550', 'R', 100, (k + 1) * H));
   e.DB.sqlite.prepare('INSERT INTO prices (card_id, data, read_at) VALUES (?, ?, ?)').run('w550', JSON.stringify({ R: { p: 100, n: 3, w: null, l: 100, d: isoAgo(H) } }), isoAgo(H));
-  // Pages d'une enchère (MARKET_SCAN_PAGE) : 6 par passage, la lecture complète reprend au curseur.
+  // Pages d'une enchère (MARKET_SCAN_PAGE). Passage arrêté au bout de MARKET_SCAN_BUDGET_MS (ici tout de suite : une seule
+  // page) ; le suivant reprend au curseur et finit (20 pages au plus).
   const scanRow = () => e.DB.sqlite.prepare("SELECT * FROM market_scan WHERE name = 'all'").get();
   const n0 = supa.rest().length;
-  assert.equal(await scanPass(e), 'marché entier : 6 enchères lues, lecture complète en cours');
+  e.MARKET_SCAN_BUDGET_MS = '-1';
+  assert.equal(await scanPass(e), 'marché entier : 1 enchère lue, lecture complète en cours');
+  assert.equal(restPaths(n0).length, 1);
+  assert.deepEqual([scanRow().cursor, scanRow().full_at], ['x550', null]);
+  delete e.MARKET_SCAN_BUDGET_MS;
+  assert.equal(await scanPass(e), 'marché entier : 6 enchères lues, lecture complète finie');
   const scanPaths = restPaths(n0);
-  assert.equal(scanPaths.length, 6);
+  assert.equal(scanPaths.length, 9, 'x550 ; puis x551, y1…y5, z-sans-titre et une page vide');
   assert.ok(scanPaths.every((p) => p.startsWith('auctions?select=') && p.includes('status=eq.active') && p.includes('order=id&limit=1')), scanPaths[0]);
   assert.ok(!scanPaths[0].includes('id=gt.') && scanPaths[1].includes('&id=gt.x550&'), 'curseur sur id : ' + scanPaths[1]);
-  assert.deepEqual([scanRow().cursor, scanRow().full_at], ['y4', null]);
-  assert.equal(await scanPass(e), 'marché entier : 1 enchère lue, lecture complète finie');
   const live = e.DB.sqlite.prepare('SELECT id, title, ask, seller FROM auctions_live ORDER BY id').all();
   assert.deepEqual(live.map((x) => x.id), ['x550', 'x551', 'y1', 'y2', 'y3', 'y4', 'y5'], 'finie et sans titre : écartées');
   assert.deepEqual(live.find((x) => x.id === 'x551').seller, b.id, 'vendeur membre : son classeur');
@@ -4938,6 +4938,25 @@ await test('marché entier (MARKET_SCAN_PSEUDO) : lecture complète par pages et
   e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(60 * 60_000));
   e.MARKET_SCAN_PAGE = '100';
   assert.equal(await runCron(e, MARKET_CRON), '2 membres lus, 0 échec ; marché entier : 7 enchères lues, lecture complète finie');
+  // « Relire tout le marché » : réservé au compte de MARKET_SCAN_PSEUDO, une fois par heure ; GET /api/market dit l'état.
+  const sb = (await b.market()).scan;
+  assert.deepEqual([sb.mine, sb.fresh, sb.running, sb.last_result], [false, true, false, 'marché entier : 7 enchères lues, lecture complète finie']);
+  assert.equal((await a.market()).scan.mine, true, 'pseudo comparé sans la casse');
+  assert.equal((await call('POST', 'market/scan', { key: b.u.key, e, body: {} })).status, 403);
+  let rs = await call('POST', 'market/scan', { key: a.u.key, e, body: {} });
+  assert.equal(rs.status, 429, JSON.stringify(rs.json));
+  assert.ok(rs.json.retry_after > 3000, 'relu à l\'instant par le déclencheur');
+  e.DB.sqlite.prepare("UPDATE market_scan SET full_at = ? WHERE name = 'all'").run(isoAgo(2 * H));
+  const n4 = supa.rest().length;
+  rs = await call('POST', 'market/scan', { key: a.u.key, e, body: {} });
+  assert.equal(rs.status, 200, JSON.stringify(rs.json));
+  assert.equal(rs.json.result, 'marché entier : 7 enchères lues, lecture complète finie');
+  assert.ok(restPaths(n4).every((p) => p.includes('order=id&limit=100')), 'lecture complète, pas les nouvelles');
+  assert.deepEqual([rs.json.scan.mine, rs.json.scan.fresh], [true, true]);
+  // Sans MARKET_SCAN_PSEUDO : pas d'état, pas de bouton.
+  delete e.MARKET_SCAN_PSEUDO;
+  assert.equal((await a.market()).scan, null);
+  assert.equal((await call('POST', 'market/scan', { key: a.u.key, e, body: {} })).status, 403);
   clearMarketGame();
   e.DB.close();
 });

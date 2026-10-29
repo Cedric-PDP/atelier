@@ -1,8 +1,9 @@
 // Lecture du marché entier, partagée par tout le classeur (2026-10-29, demande de l'utilisateur : plus de limite de 500
 // cartes voulues) : toutes les enchères en cours du jeu (près de 160 000), avec la session d'UN seul compte, celui dont le
 // pseudo du jeu est MARKET_SCAN_PSEUDO (sans elle, rien ne change : recherche ciblée par membre). Rangées dans
-// auctions_live. Une lecture complète par jour, étalée sur plusieurs déclencheurs du marché (SCAN_PAGES pages de 10 000
-// par déclencheur, curseur sur id : le serveur du jeu rend 10 000 lignes par requête, mesuré le 2026-10-29) ; entre deux,
+// auctions_live. Une lecture complète par jour, en un passage du déclencheur du marché (SCAN_PAGES pages de 10 000 au plus,
+// curseur sur id : le serveur du jeu rend 10 000 lignes par requête, mesuré le 2026-10-29 ; arrêtée au bout de
+// SCAN_BUDGET_MS, le passage suivant reprend au curseur), ou au clic de ce compte (POST /api/market/scan) ; entre deux,
 // seulement les nouvelles enchères (created_at). Les passes de marché des membres y prennent leurs candidates (enchères
 // sur les cartes qui manquent à leurs collections, sous leur cote), puis les relisent de façon ciblée.
 // Rien du jeu sur les joueurs : le vendeur est rangé comme l'id du classeur du membre qui vend, '' pour tout autre joueur.
@@ -11,11 +12,15 @@ import { HttpError } from './http.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, releaseLease, sessionOf, supaGet } from './game.js';
 import { LEASE_MS } from './refresh.js';
 import { USER_COLUMNS } from './auth.js';
-import { WANTED_TITLES } from './market.js';
+import { WANTED_TITLES, getMarket } from './market.js';
+import { FAST_GAP_MS } from './marketread.js';
 import { nowIso } from './util.js';
 
 export const SCAN_PAGE = 10000;
-export const SCAN_PAGES = 6; // pages par déclencheur (≈ 60 000 enchères, une vingtaine de secondes)
+export const SCAN_PAGES = 20; // pages par passage : tout le marché (≈ 16 pages le 2026-10-29), environ une minute
+// Un passage s'arrête après ce temps (le suivant reprend au curseur) : les lectures des membres passent juste après.
+export const SCAN_BUDGET_MS = 3 * 60_000;
+export const SCAN_CLICK_GAP_MS = 3600_000; // « Relire tout le marché » : une fois par heure au plus
 export const SCAN_NEW_PAGES = 3; // nouvelles enchères : pages par déclencheur
 export const SCAN_FULL_MS = 24 * 3600_000; // une lecture complète par jour
 // Au-delà, la lecture du marché entier est tenue pour arrêtée : les passes des membres reviennent à la recherche ciblée.
@@ -96,9 +101,11 @@ export async function scanFresh(db, now = Date.now()) {
   return Number.isFinite(at) && now - at < SCAN_FRESH_MS;
 }
 
-// Un passage, depuis le déclencheur du marché (cron.js) → texte pour cron_state, ou null si elle est coupée. Une limite du
-// jeu (429) remonte (le déclencheur s'arrête et saute le suivant) ; toute autre erreur est notée et rendue en texte.
-export async function scanPass(env, { now = Date.now() } = {}) {
+// Un passage → texte (pour cron_state), ou null si elle est coupée. via : cron (déclencheur du marché, cron.js) ou clic
+// (POST /api/market/scan : force = lecture complète reprise de zéro, sauf si une est déjà en cours). Une limite du jeu (429)
+// remonte (le déclencheur s'arrête et saute le suivant) ; toute autre erreur est notée, puis rendue en texte (cron) ou
+// renvoyée (clic). Rythme : une requête par seconde, toutes les 250 ms si le compte a coché « Synchro rapide du marché ».
+export async function scanPass(env, { now = Date.now(), via = 'cron', force = false } = {}) {
   const pseudo = scanPseudo(env);
   if (!pseudo) return null;
   const db = env.DB;
@@ -111,26 +118,32 @@ export async function scanPass(env, { now = Date.now() } = {}) {
     AND game_session_enc IS NOT NULL AND game_session_lost IS NULL`).bind(pseudo).first();
   if (!user) return note(`marché entier : aucun classeur relié au compte du jeu « ${pseudo} »`);
   const lease = await acquireLease(db, user.id, LEASE_MS);
-  if (!lease) return note('marché entier : session du compte occupée, reprise au prochain passage');
+  if (!lease) {
+    if (via === 'clic') throw new HttpError(409, 'Une lecture du marché ou de ta collection est déjà en cours avec ton compte : réessaie dans un instant.');
+    return note('marché entier : session du compte occupée, reprise au prochain passage');
+  }
   try {
     const s = await sessionOf(env, user);
-    s.via = 'cron';
+    s.via = via;
     await freshAuth(env, user, s);
     const st = (await db.prepare(STATE).first()) || {};
+    const t0 = Date.now();
     const sellers = await memberSellers(db);
     const size = Number(env.MARKET_SCAN_PAGE) || SCAN_PAGE; // plus petit dans les tests
+    const budget = Number(env.MARKET_SCAN_BUDGET_MS) || SCAN_BUDGET_MS;
     let n = 0;
-    const get = async (path) => (await supaGet(env, user, s, path, { gap: n++ ? SUPA_GAP_MS : 0 })).rows;
+    const gap = user.fast_sync ? FAST_GAP_MS : SUPA_GAP_MS;
+    const get = async (path) => (await supaGet(env, user, s, path, { gap: n++ ? gap : 0 })).rows;
     const seen = new Date(now).toISOString();
     let stored = 0;
     let text;
     const going = typeof st.cursor === 'string';
-    if (going || !st.full_at || now - Date.parse(st.full_at) >= SCAN_FULL_MS) {
+    if (force || going || !st.full_at || now - Date.parse(st.full_at) >= SCAN_FULL_MS) {
       // Lecture complète, reprise au curseur ; chaque page rangée avec son curseur (un arrêt ne perd que la page en cours).
       const start = going && st.full_start ? st.full_start : seen;
       let cursor = st.cursor || '';
       let done = false;
-      for (let p = 0; p < SCAN_PAGES; p++) {
+      for (let p = 0; p < SCAN_PAGES && (p === 0 || Date.now() - t0 < budget); p++) {
         const page = await get(`auctions?select=${FIELDS}&status=eq.active&end_at=gt.${iso(now)}`
           + `${cursor ? `&id=gt.${encodeURIComponent(cursor)}` : ''}&order=id&limit=${size}`);
         const { stmts, n: k } = upserts(db, page, sellers, seen);
@@ -176,7 +189,11 @@ export async function scanPass(env, { now = Date.now() } = {}) {
       await note('marché entier : limite du jeu');
       throw err;
     }
-    if (err instanceof HttpError) return note(`marché entier : ${String(err.message).slice(0, 200)}`);
+    if (err instanceof HttpError) {
+      const text = await note(`marché entier : ${String(err.message).slice(0, 200)}`);
+      if (via === 'clic') throw err;
+      return text;
+    }
     throw err;
   } finally {
     await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
@@ -210,4 +227,47 @@ export async function syncCandidates(db, cands, rows) {
   const titles = JSON.stringify([...new Set(cands.map((c) => c.title))]);
   const ids = JSON.stringify(cands.map((c) => c.card_id));
   await db.batch([...stmts, db.prepare(FORGET).bind(titles, ids, JSON.stringify(rows.map((a) => String(a && a.id))))]);
+}
+
+const isScanUser = (env, user) => {
+  const pseudo = scanPseudo(env);
+  return !!(pseudo && user && typeof user.game_pseudo === 'string' && user.game_pseudo.toLowerCase() === pseudo.toLowerCase());
+};
+
+// État pour la page (champ `scan` de GET /api/market) : null sans MARKET_SCAN_PSEUDO ; sinon {mine (ce compte la lit),
+// full_at (début de la dernière lecture complète finie), running (une lecture complète en cours), fresh (les passes des
+// membres s'en servent), last_at, last_result}.
+export async function scanState(db, env, user, now = Date.now()) {
+  if (!scanPseudo(env)) return null;
+  const row = (await db.prepare("SELECT cursor, full_at, last_at, last_result FROM market_scan WHERE name = 'all'").first()) || {};
+  const at = Date.parse(row.full_at || '');
+  return {
+    mine: isScanUser(env, user),
+    full_at: row.full_at || null,
+    running: typeof row.cursor === 'string',
+    fresh: Number.isFinite(at) && now - at < SCAN_FRESH_MS,
+    last_at: row.last_at || null,
+    last_result: row.last_result || null,
+  };
+}
+
+// GET /api/market avec l'état du marché entier.
+export async function getMarketWithScan(env, user) {
+  return { ...(await getMarket(env, user)), scan: await scanState(env.DB, env, user) };
+}
+
+// POST /api/market/scan {} : « Relire tout le marché », réservé au compte de MARKET_SCAN_PSEUDO (403 sinon) ; une lecture
+// complète reprise de zéro (ou celle en cours, continuée), une fois par heure au plus (429 {retry_after}) → {result, scan}.
+export async function scanMarket(env, user) {
+  if (!isScanUser(env, user)) throw new HttpError(403, 'Réservé au compte du jeu qui lit le marché entier pour le classeur.');
+  const db = env.DB;
+  const now = Date.now();
+  const st = (await db.prepare(STATE).first()) || {};
+  const last = Date.parse(st.full_at || '');
+  if (typeof st.cursor !== 'string' && Number.isFinite(last) && last > now - SCAN_CLICK_GAP_MS && last <= now + 60_000) {
+    const wait = Math.max(1, Math.ceil((last + SCAN_CLICK_GAP_MS - now) / 1000));
+    throw new HttpError(429, `Marché entier relu il y a moins d'une heure : réessaie dans ${Math.ceil(wait / 60)} min.`, { retry_after: wait });
+  }
+  const result = await scanPass(env, { now, via: 'clic', force: true });
+  return { result, scan: await scanState(db, env, user) };
 }

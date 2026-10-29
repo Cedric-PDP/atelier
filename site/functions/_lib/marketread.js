@@ -119,11 +119,6 @@ export async function marketPass(env, user, { via, auto = false, light = false }
     s.via = via;
     const plan = await planFor(db, user, { auto, light, cards: user.fast_sync ? FAST_PLAN : PLAN_CARDS });
     if (plan.skip) return { skip: true, until: plan.until };
-    if (!(plan.quota > 0)) {
-      const why = "Quota du jour des cotes atteint pour ton classeur (ou pour tout le site) : reprise demain. Rien n'a été lu.";
-      await writeFail(db, user, { why, auto });
-      throw new HttpError(429, why, { quota: 0 });
-    }
     return await read(env, user, s, plan, auto, light);
   } finally {
     await releaseLease(db, user.id, lease).run().catch((err) => console.error(err));
@@ -173,9 +168,9 @@ async function read(env, user, s, plan, auto, light) {
   let told = false;
   const take = async (list) => {
     const parts = lots(list, 100);
-    for (let i = 0; i < parts.length && room() && sent.length < plan.quota; i++) {
+    for (let i = 0; i < parts.length && room(); i++) {
       for (const x of await readCotes(parts[i])) {
-        if (!fresh[x.id] && sent.length < plan.quota && CARD_ID.test(x.id)) {
+        if (!fresh[x.id] && CARD_ID.test(x.id)) {
           fresh[x.id] = x.v;
           sent.push(x);
         }

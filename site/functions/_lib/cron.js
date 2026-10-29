@@ -241,7 +241,6 @@ async function marketCronPass(env, { now }) {
         limited = true;
         break;
       }
-      if (extra.quota !== undefined) continue; // quota du jour des cotes : pas un échec du membre
       counts.failed++;
       await noteFailure(db, member.id);
     }

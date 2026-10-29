@@ -6391,7 +6391,7 @@
   // tes cartes et des cartes qui te manquent (GET /api/market/prices, communes à tous les classeurs). Relu à l'ouverture,
   // après chaque changement des cartes, à l'ouverture de l'onglet « Marché » (une fois par minute au plus, sauf demande),
   // et quand GET /api/me (relu chaque minute, checkRemote) annonce une nouvelle lecture (market_at).
-  const M = reactive({ loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, at: 0, hover: -1, refreshing: false, msg: '', msgErr: false });
+  const M = reactive({ loaded: false, busy: false, error: '', value: null, history: [], live: null, liveAt: null, attempt: null, scan: null, at: 0, hover: -1, refreshing: false, scanning: false, msg: '', msgErr: false });
   const prices = shallowRef(new Map()); // card_id -> {id, v: {"R": {p, n, w, l, d}, "R*": …}, at}
   const wantedPrices = shallowRef(new Map()); // titre (normTitle) d'une carte qui te manque -> la même chose
   let marketJob = null;
@@ -6433,7 +6433,8 @@
         wantedPrices.value = byTitle;
         const live = m.live && typeof m.live === 'object' ? m.live : null;
         const attempt = m.attempt && typeof m.attempt === 'object' && typeof m.attempt.start === 'string' ? m.attempt : null;
-        Object.assign(M, { value: m.value || null, history: Array.isArray(m.history) ? m.history : [], live, liveAt: m.live_at || null, attempt, loaded: true, error: '' });
+        const scan = m.scan && typeof m.scan === 'object' ? m.scan : null;
+        Object.assign(M, { value: m.value || null, history: Array.isArray(m.history) ? m.history : [], live, liveAt: m.live_at || null, attempt, scan, loaded: true, error: '' });
         if (seen > marketSeen) marketSeen = seen;
       } catch (e) {
         if (gen === cardsGen) M.error = e.message;
@@ -6473,6 +6474,27 @@
       else loadMarket(true);
     } finally {
       if (gen === cardsGen) M.refreshing = false;
+    }
+  }
+  // « Relire tout le marché » (POST /api/market/scan) : seulement pour le compte qui lit le marché entier pour le classeur
+  // (scan.mine) ; une fois par heure au plus. La lecture prend environ une minute.
+  async function scanWholeMarket() {
+    if (M.scanning || !M.scan || !M.scan.mine) return;
+    const gen = cardsGen;
+    Object.assign(M, { scanning: true, msg: 'Lecture de tout le marché sur WikiMasters (environ une minute)…', msgErr: false });
+    try {
+      const r = await api('POST', '/api/market/scan', {});
+      if (gen !== cardsGen) return;
+      M.msg = typeof r.result === 'string' ? r.result.replace(/^marché entier : /, 'Marché entier : ') : 'Marché entier relu.';
+      if (r.scan && typeof r.scan === 'object') M.scan = r.scan;
+      await loadMarket(true);
+    } catch (e) {
+      if (gen !== cardsGen) return;
+      M.msgErr = true;
+      M.msg = e.message;
+      loadMarket(true);
+    } finally {
+      if (gen === cardsGen) M.scanning = false;
     }
   }
   // Marché d'une carte, lu par le serveur à l'ouverture de sa fiche ou de « Mettre en vente » (GET /api/market/card : ses enchères en cours et ses
@@ -10909,6 +10931,15 @@
     } else if (!a) {
       out.push(h('p', { class: 'small warn', key: 'age' }, "Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Actualiser le marché »."));
     }
+    const sc = M.scan;
+    if (sc && sc.fresh) {
+      out.push(h('p', { class: 'small muted', key: 'scan' }, `Marché entier lu par le classeur ${agoText(sc.full_at)} : les bonnes affaires sont cherchées sur toutes les cartes qui te manquent.${sc.running ? ' Une relecture complète est en cours.' : ''}`));
+    } else if (sc) {
+      out.push(h('p', { class: 'small muted', key: 'scan' }, `${sc.running ? 'Lecture du marché entier en cours.' : "Le marché entier n'a pas été lu depuis plus de 36 h."} En attendant, les bonnes affaires sont cherchées sur 500 cartes qui te manquent au plus.`));
+    }
+    if (sc && sc.mine && sc.last_at && sc.last_result) {
+      out.push(h('p', { class: 'small muted', key: 'scanlast' }, `Dernier passage sur le marché entier (avec ton compte), ${agoText(sc.last_at)} : ${sc.last_result.replace(/^marché entier : /, '')}.`));
+    }
     if (a && a.ok === false && a.why) {
       out.push(h('p', { class: 'status err', role: 'status', key: 'fail' }, `Dernier essai, ${agoText(a.end || a.start)}${a.auto ? ' (automatique)' : ''} : ${a.why}`));
     } else if (a && !a.end && Date.now() - Date.parse(a.start) > 10 * 60000) {
@@ -11230,7 +11261,10 @@
     return h('div', { class: 'market' }, [
       marketSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
         h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
-          h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing, onClick: refreshMarket },
+          M.scan && M.scan.mine ? h('button', { class: 'btn small ghost', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: scanWholeMarket,
+            title: 'Relit toutes les enchères en cours du jeu avec ton compte (une fois par heure au plus)' },
+            [icon('refresh', M.scanning ? 'spin' : ''), M.scanning ? 'Lecture du marché entier…' : 'Relire tout le marché']) : null,
+          h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: refreshMarket },
             [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Actualiser le marché'])]),
         M.msg ? h('p', { class: M.msgErr ? 'status err' : 'small muted', role: 'status' }, M.msg) : null,
         !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
