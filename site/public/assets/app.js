@@ -856,7 +856,7 @@
   // Cartes exclues des échanges et des ventes (2026-10-29, demande de l'utilisateur) : choisies une à une ou par tag
   // (tags exacts), gardées avec le compte (prefs.keep = {cards: [ids], tags: [tags]}). Une carte exclue n'est proposée ni
   // dans « Échanges possibles » (donc ni « Ce qui pourrait intéresser tes amis » ni « Proposer un échange ») ni dans
-  // « Bonnes affaires à vendre » ; GET /api/members dit aussi à tes amis lesquelles de tes cartes le sont (keep, sans les
+  // « Vendre » (Marché) ; GET /api/members dit aussi à tes amis lesquelles de tes cartes le sont (keep, sans les
   // tags), pour que leurs échanges ne les demandent pas.
   const KEEP_MAX_CARDS = 1000;
   const KEEP_MAX_TAGS = 100;
@@ -2510,7 +2510,7 @@
   }
   function toggleUntagged() { S.untaggedOnly = !S.untaggedOnly; S.tagFilter = []; S.newOnly = false; S.tab = 'cartes'; }
   function toggleNew() { S.newOnly = !S.newOnly; S.tagFilter = []; S.untaggedOnly = false; S.tab = 'cartes'; }
-  // « Les voir » (« Bonnes affaires à vendre ») : « Mes cartes » avec seulement les cartes exclues des échanges et ventes.
+  // « Les voir » (« Vendre » (Marché)) : « Mes cartes » avec seulement les cartes exclues des échanges et ventes.
   function showKept() { resetFilters(); S.keptOnly = true; setTab('cartes'); }
   function toggleRarity(r, ev) {
     // Aucune rareté choisie = toutes. Clic : ajouter ou retirer ; Ctrl/⌘+clic : n'afficher qu'elle.
@@ -6623,13 +6623,15 @@
   // ventes conclues, dans la base du jeu), puis le détail de ses enchères les moins chères (GET /api/market/auction :
   // mises, meneur, vendeur, ta mise, sur le site du jeu ; trois à la fois, CM_DETAILS au plus par fiche). Gardés en mémoire
   // (CM_KEEP pour une carte, CM_DETAIL_KEEP pour une enchère) : rouvrir une fiche ne relit rien tout de suite.
-  const CM_KEEP = 60000;
+  const CM_KEEP = 3 * 60000; // 1 min avant le 2026-10-29 (fiches du Marché : on repasse souvent sur les mêmes cartes)
+  const CM_PANE_WAIT = 350; // fiche du Marché : lue quand on s'arrête sur une ligne, pas à chaque ligne parcourue au clavier
   const CM_DETAIL_KEEP = 2 * 60000;
   const CM_DETAILS = 10;
   const CM = reactive({ key: '', busy: false, error: '', data: null, at: 0, variant: '', hover: -1, all: false, now: Date.now(), details: {}, detailBusy: {}, detailError: '' });
   const cmCache = new Map(); // clé de la fiche -> {data, at}
   const cmDetailAt = new Map(); // id de l'enchère -> heure de lecture de son détail
   let cmTimer = null;
+  let cmWait = null;
   // Clé du marché de la fiche ouverte : « id:<card_id> » (ta carte, celle d'un ami, une carte qui te manque dont le
   // classeur connaît l'identifiant) ou « t:<titre> » (le serveur la cherche) ; '' sans fiche ou sans compte relié.
   const ficheMarketKey = computed(() => {
@@ -6638,7 +6640,8 @@
     const c = openCard.value;
     if (c) return 'id:' + c.id;
     const it = S.openMissing;
-    if (!it || it.status !== 'ok') return '';
+    if (!it) return paneMarketKey();
+    if (it.status !== 'ok') return '';
     const fc = it.friend && it.friend.card;
     if (fc && fc.id != null) return 'id:' + fc.id;
     const mine = findCard(it);
@@ -6646,6 +6649,9 @@
     const w = wantedPrices.value.get(normTitle(it.title));
     return w ? 'id:' + w.id : 't:' + normTitle(it.title);
   });
+  // Clé du marché de l'élément ouvert dans la fiche du Marché (liste « Acheter », « Vendre » ou « Mes enchères »), quand
+  // aucune fiche de carte n'est ouverte par-dessus.
+  const paneMarketKey = () => { const p = paneItem.value; return p && p.id ? 'id:' + p.id : ''; };
   async function loadCardMarket(key, force) {
     if (!key) return;
     const hit = cmCache.get(key);
@@ -6707,12 +6713,18 @@
   const auctionsByPrice = (list) => list.slice().sort((a, b) => askOf(a) - askOf(b) || Date.parse(a.end) - Date.parse(b.end));
   watch(ficheMarketKey, (key) => {
     Object.assign(CM, { key, data: null, error: '', busy: false, variant: '', hover: -1, all: false, detailError: '' });
+    clearTimeout(cmWait);
+    cmWait = null;
     clearInterval(cmTimer);
     cmTimer = null;
     if (!key) return;
     CM.now = Date.now();
     cmTimer = setInterval(() => { CM.now = Date.now(); }, 30000); // temps restant des enchères
-    loadCardMarket(key, false);
+    const hit = cmCache.get(key);
+    if (key === paneMarketKey() && !openCard.value && !S.openMissing && !(hit && Date.now() - hit.at < CM_KEEP)) {
+      CM.busy = true;
+      cmWait = setTimeout(() => { cmWait = null; if (CM.key === key) loadCardMarket(key, false); }, CM_PANE_WAIT);
+    } else loadCardMarket(key, false);
   });
   // Exemplaires d'une carte par rareté d'exemplaire et brillance (« R* ») : son détail (variants) si le serveur l'a
   // lu, sinon approché comme le fait le serveur (tous dans sa plus haute rareté, un seul brillant si elle l'est).
@@ -6854,7 +6866,7 @@
   const variantName = (k) => (RARITY_NAME[k.replace('*', '')] || k) + (k.endsWith('*') ? ', brillante' : '');
   const variantOrder = (a, b) => rarityRank(a.replace('*', '')) - rarityRank(b.replace('*', '')) || (a < b ? -1 : a > b ? 1 : 0);
   const pctOf = (p, w) => { const d = Math.round(((p - w) / w) * 100); return (d > 0 ? '+' : d < 0 ? '−' : '') + NUM.format(Math.abs(d)) + ' %'; };
-  // « Bonnes affaires à vendre » : tes cartes qui ne servent à aucune de tes collections (rapprochement titre puis qid,
+  // « Vendre » (Marché) : tes cartes qui ne servent à aucune de tes collections (rapprochement titre puis qid,
   // comme les albums) ; case décochée (MP.hideCol, cochée par défaut, 2026-10-18), aussi les exemplaires en trop de celles qui y servent (une collection n'a besoin que d'un exemplaire :
   // on garde le moins coté, cote peu fiable comprise pour en juger ; « 2 en trop »). Prix d'une ligne : la plus haute cote
   // fiable de ses exemplaires à vendre ; du plus cher au moins cher (le seuil est appliqué à l'affichage). unpriced : cartes
@@ -6917,53 +6929,73 @@
     list.sort((a, b) => b.price - a.price || COLLATOR.compare(a.c.title, b.c.title));
     return { list, unpriced, onSale, kept };
   });
-  // Onglet « Marché » : sections repliables (accordéon : « Mes enchères » fermée par défaut, les autres ouvertes, « Valeur
-  // de ton classeur » comprise depuis le 2026-10-18) et seuil
-  // des « Bonnes affaires à vendre » (100W par défaut), gardés par classeur dans ce navigateur (localStorage, accès protégés
-  // : sans lui, les valeurs par défaut). Chaque liste montre 20 cartes, puis « Afficher 20 de plus ».
-  const MARKET_OPEN = Object.freeze({ valeur: true, ventes: true, acheter: true, vendre: true, encheres: false, filtres: false, cols: false }); // filtres, cols : les panneaux des filtres et des collections de « à acheter »
+  // Onglet « Marché » (refonte du 2026-10-29) : quatre sous-onglets (#/marche, #/marche/vendre, #/marche/encheres,
+  // #/marche/valeur). « Acheter », « Vendre » et « Mes enchères » : une liste à gauche, la fiche de l'élément choisi à
+  // droite, sur une hauteur fixe (la liste et la fiche défilent chacune de leur côté) ; sur téléphone, la liste, puis la
+  // fiche en plein écran (retour en haut à gauche). « Acheter » a ses onglets de recherche (prefs.deal_tabs, plus bas).
+  // sel : l'élément choisi de chaque liste (enchère, carte, mise ou vente) ; open : fiche ouverte sur téléphone ; edit :
+  // panneau des filtres de l'onglet de recherche ; menu : onglet dont le menu « ⋯ » est ouvert ; pop : détail de la lecture
+  // du marché ; done : « Terminées ces 14 jours » dépliées ; now : avance toutes les 30 s (temps restants) ; sell : la vente
+  // en préparation dans la fiche de « Vendre » ; wide : écran large (plus de 760 px).
+  const MK_SUBS = [['acheter', 'Acheter'], ['vendre', 'Vendre'], ['encheres', 'Mes enchères'], ['valeur', 'Valeur']];
+  const MK = reactive({ sub: 'acheter', tab: '', sel: { acheter: '', vendre: '', encheres: '' }, open: false, edit: false, menu: '', pop: false, done: false,
+    now: Date.now(), sell: null, wide: true });
+  {
+    let mqNarrow = null; // le même seuil que la mise en page du téléphone (app.css)
+    try { mqNarrow = typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 760px)') : null; } catch { mqNarrow = null; }
+    if (mqNarrow) {
+      MK.wide = !mqNarrow.matches;
+      if (typeof mqNarrow.addEventListener === 'function') mqNarrow.addEventListener('change', (e) => { MK.wide = !e.matches; if (MK.wide) MK.open = false; });
+    }
+  }
+  if (typeof setInterval === 'function') setInterval(() => { if (S.tab === 'marche') MK.now = Date.now(); }, 30000);
+  // Préférences du Marché gardées par classeur dans ce navigateur (localStorage, accès protégés : sans lui, les valeurs par
+  // défaut) : seuil de « Vendre » (100W par défaut), « Pas les cartes de mes collections » (cochée par défaut), dernier
+  // onglet de recherche ouvert (dtab) et période de la courbe de la valeur (60 jours par défaut).
   const MARKET_MIN = 100;
-  const MARKET_STEP = 20;
-  // col : collection choisie dans « à acheter » avant le 2026-10-24 (reprise une fois dans ses filtres, voir dealFilter) ; hideCol : « à vendre » sans les cartes de tes collections (cochée par défaut).
-  const MP = reactive({ user: null, open: { ...MARKET_OPEN }, min: MARKET_MIN, more: {}, col: '', hideCol: true });
+  const MK_PERIODS = [[7, '7 jours'], [60, '60 jours'], [365, '1 an']];
+  // col : collection choisie dans « à acheter » avant le 2026-10-24 (reprise une fois dans ses filtres, voir dealTabs).
+  const MP = reactive({ user: null, min: MARKET_MIN, col: '', hideCol: true, dtab: '', period: 60 });
   function loadMarketPrefs(user) {
     const all = store.json(LS.market);
     const mine = user && all && typeof all === 'object' && !Array.isArray(all) && all[user] && typeof all[user] === 'object' ? all[user] : {};
-    const open = { ...MARKET_OPEN };
-    if (mine.open && typeof mine.open === 'object') for (const k of Object.keys(MARKET_OPEN)) if (typeof mine.open[k] === 'boolean') open[k] = mine.open[k];
     const min = Number(mine.min);
-    Object.assign(MP, { user: user || null, open, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, more: {}, col: typeof mine.col === 'string' ? mine.col : '', hideCol: mine.hideCol !== false });
+    const period = Number(mine.period);
+    Object.assign(MP, { user: user || null, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, col: typeof mine.col === 'string' ? mine.col : '', hideCol: mine.hideCol !== false,
+      dtab: typeof mine.dtab === 'string' ? mine.dtab.slice(0, 40) : '', period: MK_PERIODS.some(([n]) => n === period) ? period : 60 });
+    MK.tab = MP.dtab;
   }
   function saveMarketPrefs() {
     if (!MP.user) return;
     const all = store.json(LS.market);
     const map = all && typeof all === 'object' && !Array.isArray(all) ? all : {};
-    map[MP.user] = { open: { ...MP.open }, min: MP.min, col: MP.col, hideCol: MP.hideCol };
+    map[MP.user] = { min: MP.min, col: MP.col, hideCol: MP.hideCol, dtab: MP.dtab, period: MP.period };
     store.set(LS.market, JSON.stringify(map));
   }
   watch(() => (S.me && S.me.user ? S.me.user.id : null), (u) => loadMarketPrefs(u), { immediate: true });
-  function toggleMarketSection(id) {
-    MP.open[id] = !MP.open[id];
-    saveMarketPrefs();
-  }
   function setMarketMin(raw) {
     if (String(raw).trim() === '') return; // champ vidé pour en taper un autre : le seuil ne bouge pas encore
     const n = Number(String(raw).replace(',', '.'));
     if (!Number.isFinite(n) || n < 0) return;
     MP.min = Math.min(n, 1e9);
-    MP.more.vendre = 0;
     saveMarketPrefs();
   }
-  // Les `shown` premières d'une liste de la page (20, puis 20 de plus à chaque clic).
-  const marketShown = (key) => MP.more[key] || MARKET_STEP;
-  function marketMoreButton(key, total) {
-    const shown = marketShown(key);
-    if (total <= shown) return null;
-    const rest = total - shown;
-    return h('div', { class: 'show-more' }, [h('button', { class: 'btn small', type: 'button', onClick: () => { MP.more[key] = shown + MARKET_STEP; } },
-      `Afficher ${fmt(Math.min(MARKET_STEP, rest))} de plus (${fmt(rest)} ${plural(rest, 'restante', 'restantes')})`)]);
+  function setMarketPeriod(n) {
+    MP.period = n;
+    M.hover = -1;
+    saveMarketPrefs();
   }
-  // Filtres de « Bonnes affaires à acheter » (2026-10-24), dans les préférences du compte (PATCH /api/me : les mêmes sur
+  // Sous-onglet du Marché ; ce qui était ouvert dedans (fiche sur téléphone, menus, panneau des filtres) se ferme.
+  function setMarketSub(id) {
+    if (!MK_SUBS.some(([x]) => x === id)) id = 'acheter';
+    Object.assign(MK, { sub: id, open: false, edit: false, menu: '', pop: false });
+  }
+  // Une ligne d'une liste : choisie ; sur téléphone, sa fiche s'ouvre en plein écran.
+  function pickRow(sub, key) {
+    MK.sel[sub] = key;
+    if (!MK.wide) { MK.open = true; toTop(); }
+  }
+  // Filtres de « Acheter » (Marché) (2026-10-24), dans les préférences du compte (PATCH /api/me : les mêmes sur
   // tous les appareils) : deal_filter = le filtre en cours, deal_presets = les filtres enregistrés [{name, f}]. Le serveur
   // garde les enchères jusqu'à la cote (les 150 meilleures remises) ; par défaut, comme avant, la page montre celles à
   // 80 % de la cote au plus, et celles qui finissent bientôt sans mise (moins de 2 h).
@@ -7006,12 +7038,30 @@
       sort: pick(o.sort, DEAL_SORTS.map(([v]) => v), DEAL_DEFAULT.sort),
     };
   }
-  // Sans filtre enregistré au compte, la collection choisie avant le 2026-10-24 (gardée dans ce navigateur) est reprise.
-  const dealFilter = computed(() => normDealFilter(S.prefs.deal_filter || { col: MP.col }));
+  // Onglets de recherche de « Acheter » (2026-10-29), dans les préférences du compte (PATCH /api/me : les mêmes sur tous
+  // les appareils) : deal_tabs = [{id, name, f}], DEAL_TABS_MAX au plus, chacun avec ses propres filtres (normDealFilter).
+  // Avant eux (pas de deal_tabs), le filtre en cours (deal_filter, sinon la collection choisie avant le 2026-10-24, gardée
+  // dans ce navigateur) devient l'onglet « Toutes » et chaque filtre enregistré (deal_presets) un onglet : rien n'est écrit
+  // au compte avant le premier changement. Le nom est gardé tel que tapé (espaces compris) ; vide, il s'affiche « Sans nom ».
+  const DEAL_TABS_MAX = 12;
+  const DEAL_TAB_ID = /^[A-Za-z0-9_-]{1,40}$/;
+  const newDealTabId = () => 'o' + Date.now().toString(36) + Math.floor(Math.random() * 46656).toString(36);
+  const tabName = (t) => (t.name.trim() || 'Sans nom');
+  const legacyDealFilter = computed(() => normDealFilter(S.prefs.deal_filter || { col: MP.col }));
   const dealPresets = computed(() => (Array.isArray(S.prefs.deal_presets) ? S.prefs.deal_presets : [])
     .filter((p) => p && typeof p.name === 'string' && p.name.trim()).slice(0, DEAL_PRESETS_MAX)
     .map((p) => ({ name: p.name.trim().slice(0, DEAL_NAME_MAX), f: normDealFilter(p.f) })));
-  const sameDealFilter = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const dealTabs = computed(() => {
+    const raw = Array.isArray(S.prefs.deal_tabs) ? S.prefs.deal_tabs : [];
+    const seen = new Set();
+    const list = raw.filter((t) => t && typeof t.id === 'string' && DEAL_TAB_ID.test(t.id) && !seen.has(t.id) && seen.add(t.id)).slice(0, DEAL_TABS_MAX)
+      .map((t) => ({ id: t.id, name: typeof t.name === 'string' ? t.name.slice(0, DEAL_NAME_MAX) : '', f: normDealFilter(t.f) }));
+    if (list.length) return list;
+    return [{ id: 'toutes', name: 'Toutes', f: legacyDealFilter.value }, ...dealPresets.value.map((p, i) => ({ id: 'f' + i, name: p.name, f: p.f }))].slice(0, DEAL_TABS_MAX);
+  });
+  // L'onglet ouvert (MK.tab, sinon le premier) et ses filtres.
+  const curDealTab = computed(() => dealTabs.value.find((t) => t.id === MK.tab) || dealTabs.value[0]);
+  const dealFilter = computed(() => curDealTab.value.f);
   // Les collections incluses et exclues d'un filtre, en mots (celles qui n'existent plus sont ignorées).
   function dealColWords(f) {
     const names = (keys) => keys.map((k) => collections.value.all.find((c) => c.key === k)).filter(Boolean).map((c) => `« ${c.name} »`);
@@ -7052,18 +7102,17 @@
     save: (a, b) => (b.cote - b.ask) - (a.cote - a.ask) || Date.parse(a.end) - Date.parse(b.end),
     price: (a, b) => a.ask - b.ask || Date.parse(a.end) - Date.parse(b.end),
   };
-  // Change le filtre en cours. later : depuis un champ de saisie, enregistré au compte après une pause de la frappe
-  // (DEAL_SAVE_MS) ; compté comme un changement en route (prefsPending) pour qu'une relecture de GET /api/me ne le défasse
-  // pas, et oublié si le classeur change entre-temps.
+  // Enregistre les onglets de recherche (tous : leur ordre compte). later : depuis un champ de saisie, enregistré au compte
+  // après une pause de la frappe (DEAL_SAVE_MS) ; compté comme un changement en route (prefsPending) pour qu'une relecture
+  // de GET /api/me ne le défasse pas, et oublié si le classeur change entre-temps.
   let dealSaveTimer = null;
-  function setDealFilter(patch, later) {
-    const f = normDealFilter({ ...dealFilter.value, ...patch });
-    MP.more.acheter = 0;
+  function saveDealTabs(list, later) {
+    const deal_tabs = list.map((t) => ({ id: t.id, name: t.name, f: t.f }));
     if (!later) {
       if (dealSaveTimer) { clearTimeout(dealSaveTimer); dealSaveTimer = null; prefsPending--; }
-      return savePrefs({ deal_filter: f });
+      return savePrefs({ deal_tabs });
     }
-    S.prefs = normPrefs({ ...S.prefs, deal_filter: f });
+    S.prefs = normPrefs({ ...S.prefs, deal_tabs });
     prefsGen++;
     if (dealSaveTimer) clearTimeout(dealSaveTimer); else prefsPending++;
     const gen = cardsGen;
@@ -7073,6 +7122,12 @@
       if (gen === cardsGen) savePrefs({});
     }, DEAL_SAVE_MS);
     return null;
+  }
+  // Change les filtres de l'onglet ouvert : enregistrés tout de suite dans l'onglet (choix de l'utilisateur, 2026-10-29).
+  function setDealFilter(patch, later) {
+    const cur = curDealTab.value;
+    const f = normDealFilter({ ...cur.f, ...patch });
+    return saveDealTabs(dealTabs.value.map((t) => (t.id === cur.id ? { ...t, f } : t)), later);
   }
   // Champ de saisie d'un montant (W) : vide = pas de limite.
   const setDealAmount = (k, raw) => setDealFilter({ [k]: String(raw).trim() === '' ? null : wOrNull(String(raw).replace(',', '.')) }, true);
@@ -7094,19 +7149,57 @@
   const clearDealCols = () => setDealFilter({ cols: [], xcols: [] });
   // « Effacer les filtres » : ceux du panneau ; les collections et le tri restent.
   const clearDealFilter = () => setDealFilter({ ...DEAL_DEFAULT, cols: dealFilter.value.cols, xcols: dealFilter.value.xcols, sort: dealFilter.value.sort });
-  // Filtres enregistrés : un nom (40 caractères), le filtre en cours avec sa collection et son tri ; un nom déjà pris est
-  // remplacé ; DEAL_PRESETS_MAX au plus.
-  const DP = reactive({ naming: false, name: '', error: '', q: '' }); // q : recherche dans la liste des collections
-  async function saveDealPreset() {
-    const name = DP.name.trim().replace(/\s+/g, ' ').slice(0, DEAL_NAME_MAX);
-    if (!name) { DP.error = 'Donne un nom à ces filtres.'; return; }
-    const list = dealPresets.value.filter((p) => p.name.toLowerCase() !== name.toLowerCase());
-    if (list.length >= DEAL_PRESETS_MAX) { DP.error = `${DEAL_PRESETS_MAX} filtres enregistrés au plus : supprimes-en un d'abord.`; return; }
-    Object.assign(DP, { naming: false, name: '', error: '' });
-    await savePrefs({ deal_presets: [...list, { name, f: dealFilter.value }] });
+  const DP = reactive({ q: '' }); // recherche dans la liste des collections du panneau des filtres
+  // Onglets : ouvrir, créer (filtres par défaut, panneau des filtres ouvert pour le nommer), renommer, dupliquer, déplacer,
+  // supprimer (jamais le dernier).
+  function pickDealTab(id) {
+    Object.assign(MK, { tab: id, menu: '', edit: MK.edit && MK.tab === id, open: false });
+    DP.q = '';
+    MP.dtab = id;
+    saveMarketPrefs();
   }
-  const applyDealPreset = (p) => setDealFilter({ ...p.f });
-  const deleteDealPreset = (p) => savePrefs({ deal_presets: dealPresets.value.filter((x) => x.name !== p.name) });
+  function addDealTab() {
+    const list = dealTabs.value;
+    if (list.length >= DEAL_TABS_MAX) return;
+    const t = { id: newDealTabId(), name: 'Nouvel onglet', f: normDealFilter(DEAL_DEFAULT) };
+    saveDealTabs([...list, t]);
+    pickDealTab(t.id);
+    MK.edit = true;
+    nextTick(() => { const el = document.getElementById('deal-tab-name'); if (el && typeof el.focus === 'function') { el.focus(); if (typeof el.select === 'function') el.select(); } });
+  }
+  const renameDealTab = (name) => saveDealTabs(dealTabs.value.map((t) => (t.id === curDealTab.value.id ? { ...t, name: String(name).slice(0, DEAL_NAME_MAX) } : t)), true);
+  function dupDealTab(id) {
+    const list = dealTabs.value;
+    const i = list.findIndex((t) => t.id === id);
+    if (i < 0 || list.length >= DEAL_TABS_MAX) return;
+    const t = { id: newDealTabId(), name: (tabName(list[i]) + ' (copie)').slice(0, DEAL_NAME_MAX), f: list[i].f };
+    saveDealTabs([...list.slice(0, i + 1), t, ...list.slice(i + 1)]);
+    pickDealTab(t.id);
+  }
+  function moveDealTab(id, dir) {
+    const list = dealTabs.value.slice();
+    const i = list.findIndex((t) => t.id === id);
+    const j = i + dir;
+    if (i < 0 || j < 0 || j >= list.length) return;
+    list.splice(j, 0, list.splice(i, 1)[0]);
+    saveDealTabs(list);
+  }
+  function deleteDealTab(id) {
+    const list = dealTabs.value;
+    const t = list.find((x) => x.id === id);
+    if (!t || list.length <= 1) return;
+    openConfirm({
+      title: "Supprimer l'onglet",
+      text: `Supprimer l'onglet « ${tabName(t)} » et ses filtres ? Les enchères du jeu ne changent pas.`,
+      ok: "Supprimer l'onglet",
+      danger: true,
+      run: async () => {
+        const rest = dealTabs.value.filter((x) => x.id !== id);
+        if (curDealTab.value.id === id) pickDealTab(rest[0].id);
+        if (!(await saveDealTabs(rest))) throw new Error("L'onglet n'a pas pu être supprimé : réessaie.");
+      },
+    });
+  }
   const leftText = (end) => {
     const ms = Date.parse(end) - Date.now();
     if (!(ms > 0)) return 'se termine';
@@ -7117,28 +7210,35 @@
   };
 
   // ================================================================ vente d'une carte dans le jeu (SPEC.md, « Vendre »)
-  // « Mettre en vente » (fiche d'une de tes cartes, « Bonnes affaires à vendre ») : le serveur met en vente un exemplaire
+  // « Mettre en vente » (fiche d'une de tes cartes, « Vendre » (Marché)) : le serveur met en vente un exemplaire
   // dans le jeu avec ta session reliée (POST /api/market/sell) ; la fenêtre montre tout ce que le classeur sait du marché
   // de la carte (cotes, enchères en cours, ventes, tes ventes) et propose des prix. Une vente s'annule tant que personne
   // n'a misé (POST /api/market/cancel) : depuis la fenêtre, « Mes enchères » ou les enchères de la fiche.
   const SELL_DURATIONS = [[10, '10 min'], [30, '30 min'], [60, '1 h'], [180, '3 h'], [360, '6 h'], [720, '12 h']];
   const SELL_MINUTES = 60; // la durée par défaut du jeu
   const sellLinked = () => { const sess = (S.me && S.me.session) || {}; return !!sess.linked && !sess.lost; };
-  // Prix de départ proposé pour une rareté d'exemplaire : la cote fiable, sinon la cote peu fiable ; '' sans cote.
-  function sellDefaultBase(c, k) {
+  const SELL_PANE_PCT = 0.9; // fiche de « Vendre » : départ proposé à 90 % de la cote (choix de l'utilisateur, 2026-10-29)
+  // Prix de départ proposé pour une rareté d'exemplaire : la cote fiable, sinon la cote peu fiable (× pct, 1 par défaut) ;
+  // '' sans cote.
+  function sellDefaultBase(c, k, pct) {
     const p = prices.value.get(String(c.id));
     const q = p && p.v ? p.v[k] : null;
-    return q && Number.isFinite(Number(q.p)) && Number(q.p) >= 1 ? String(Math.round(Number(q.p))) : '';
+    return q && Number.isFinite(Number(q.p)) && Number(q.p) >= 1 ? String(Math.max(1, Math.round(Number(q.p) * (pct || 1)))) : '';
   }
-  // k : la rareté d'exemplaire à vendre (« Bonnes affaires à vendre » : celle de la ligne) ; sinon celle de tes exemplaires
+  // Une vente en préparation : celle de la fenêtre (S.sell) ou celle de la fiche de « Vendre » (MK.sell).
+  const sellLive = (sl) => S.sell === sl || MK.sell === sl;
+  // k : la rareté d'exemplaire à vendre (« Vendre » (Marché) : celle de la ligne) ; sinon celle de tes exemplaires
   // qui a la plus haute cote fiable, puis la plus haute rareté.
-  function openSell(c, k) {
+  function makeSell(c, k, pct) {
     const list = variantsOf(c).list.map(([x]) => x);
     const v = (prices.value.get(String(c.id)) || {}).v || {};
     const score = (x) => (reliable(v[x]) ? Number(v[x].p) : -1);
     const best = k && list.includes(k) ? k : list.slice().sort((a, b) => score(b) - score(a) || variantOrder(b, a))[0] || c.rarity || 'C';
-    S.sell = { c: markRaw(c), k: best, base: sellDefaultBase(c, best), minutes: SELL_MINUTES, info: null, infoBusy: false, infoError: '',
+    return { c: markRaw(c), k: best, pct: pct || 1, base: sellDefaultBase(c, best, pct), minutes: SELL_MINUTES, info: null, infoBusy: false, infoError: '',
       busy: false, error: '', verify: false, done: null, cancelBusy: false, cancelError: '', cancelled: false };
+  }
+  function openSell(c, k) {
+    S.sell = makeSell(c, k);
     S.modal = 'sell';
     if (sellLinked()) loadSellInfo(S.sell);
   }
@@ -7149,21 +7249,21 @@
     sl.infoError = '';
     try {
       const r = await api('GET', '/api/market/sell?id=' + encodeURIComponent(sl.c.id));
-      if (S.sell !== sl) return;
+      if (!sellLive(sl)) return;
       sl.info = markRaw({ copies: Array.isArray(r.copies) ? r.copies : [], selling: r.selling ?? null, max: r.max ?? null });
       const ks = sl.info.copies.map((x) => x.k);
       if (ks.length && !ks.includes(sl.k)) setSellVariant(sl, ks[0]);
     } catch (e) {
-      if (S.sell === sl) sl.infoError = e.message + (e.status === 429 && e.data && e.data.retry_after ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
+      if (sellLive(sl)) sl.infoError = e.message + (e.status === 429 && e.data && e.data.retry_after ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
       if (e.data && e.data.needs_link) loadMe().catch(() => {});
     } finally {
-      if (S.sell === sl) sl.infoBusy = false;
+      if (sellLive(sl)) sl.infoBusy = false;
     }
   }
   function setSellVariant(sl, k) {
-    const auto = sl.base === '' || sl.base === sellDefaultBase(sl.c, sl.k);
+    const auto = sl.base === '' || sl.base === sellDefaultBase(sl.c, sl.k, sl.pct);
     sl.k = k;
-    if (auto) sl.base = sellDefaultBase(sl.c, k); // prix encore celui proposé : suit la rareté
+    if (auto) sl.base = sellDefaultBase(sl.c, k, sl.pct); // prix encore celui proposé : suit la rareté
     sl.error = '';
     CM.variant = k; // la courbe des prix de vente montre cette rareté, si elle a assez de ventes
     CM.hover = -1;
@@ -7247,7 +7347,7 @@
     });
   }
   // ================================================================ mise sur une enchère du jeu (SPEC.md, « Miser »)
-  // « Miser » (« Bonnes affaires à acheter », enchères en cours de la fiche d'une carte) : le serveur relit l'enchère sur le
+  // « Miser » (« Acheter » (Marché), enchères en cours de la fiche d'une carte) : le serveur relit l'enchère sur le
   // site du jeu, puis mise à ton nom avec ta session reliée (POST /api/market/bid). Mise minimale : le prix de départ sans
   // mise, un W de plus que l'enchère actuelle après (le jeu peut demander plus : son refus est montré).
   // x : l'enchère {a, t, r, s, ask, bid, cur?, end, cote?, n?} (une bonne affaire, ou une enchère de la fiche).
@@ -7331,7 +7431,7 @@
     };
     await Promise.all([worker(), worker()]);
   }
-  watch(() => (S.boot === 'app' && S.tab === 'marche' && MP.open.ventes && sellLinked() ? runningSales.value.map((x) => x.a).join() : ''), (ids) => {
+  watch(() => (S.boot === 'app' && S.tab === 'marche' && MK.sub === 'encheres' && sellLinked() ? runningSales.value.map((x) => x.a).join() : ''), (ids) => {
     if (ids) loadSaleDetails(false);
   }, { immediate: true });
 
@@ -7885,6 +7985,9 @@
   // Sous-vue ouverte : le retour du haut fait ce que faisait le « ← … » du contenu (caché sur téléphone).
   function mobileBack() {
     const fr = S.friends;
+    if (S.tab === 'marche' && MK.open && paneItem.value) {
+      return { title: paneItem.value.t, label: (MK_SUBS.find(([id]) => id === MK.sub) || [0, 'Marché'])[1], run: () => { MK.open = false; toTop(); } };
+    }
     if (S.tab === 'collections' && S.album) {
       const col = activeAlbum.value;
       return { title: col ? col.name : 'Collection', label: 'Toutes les collections', run: closeAlbum };
@@ -8761,7 +8864,7 @@
     const tags = [...k.tags].sort((a, b) => COLLATOR.compare(tagTitle(a), tagTitle(b)));
     return h('div', { class: 'facet keep-facet' }, [
       h('h3', null, 'Exclues des échanges et ventes'),
-      h('p', { class: 'small muted' }, "Jamais proposées dans « Échanges possibles » ni dans « Bonnes affaires à vendre », chez toi comme chez tes amis. Exclus des cartes depuis la sélection ou leur fiche, ou tout un tag :"),
+      h('p', { class: 'small muted' }, "Jamais proposées dans « Échanges possibles » ni dans « Vendre » (Marché), chez toi comme chez tes amis. Exclus des cartes depuis la sélection ou leur fiche, ou tout un tag :"),
       keptCount.value || S.keptOnly ? h('div', { class: 'chips' }, [facetChip('kept', 'Exclues', keptCount.value, S.keptOnly, () => { S.keptOnly = !S.keptOnly; S.tab = 'cartes'; },
         'Cartes exclues des échanges et des ventes, une à une ou par un tag')]) : null,
       tags.length ? h('div', { class: 'tags' }, tags.map((t) => h('span', { class: 'tag own', key: t, title: tagTitle(t) + ` · ${cards$(tagCount.value.get(t) || 0)}` }, [
@@ -11254,14 +11357,6 @@
       ]),
     ]);
   }
-  // Une enchère (bonne affaire, mise, vente) : rareté de l'exemplaire, titre (ouvre sa fiche), brillance.
-  function lotTitle(x, extra) {
-    const mine = cardById.value.get(x.id) || null;
-    const open = (e) => (mine ? openCardFrom(mine.id, e) : openMissingFrom({ title: x.t, description: null, image: x.img || null, status: 'ok', rarity: x.r }, e));
-    return h('span', { class: 'lot__title' }, [pill(x.r), ' ', h('button', { class: 'linkish', type: 'button', onClick: open }, x.t), x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null, extra || null]);
-  }
-  const vsCote = (amount, x) => (x.cote != null && amount != null ? h('span', { class: 'lot__cote' },
-    [' · cote ', priceTag(x.cote, { approx: !(x.n >= 3), tag: 'span', title: x.n >= 3 ? null : 'Moins de 3 ventes : cote peu fiable' }), ` (${pctOf(amount, x.cote)})`]) : h('span', { class: 'lot__cote' }, ' · pas de cote'));
   // Bonnes affaires de la dernière lecture encore valables : enchère pas finie, carte que tu n'as pas eue depuis (gagnée,
   // échangée…), une seule par carte (la moins chère : une lecture en a parfois plusieurs ; more =
   // les autres). ended / owned : écartées pour l'une ou l'autre raison.
@@ -11281,15 +11376,37 @@
     }
     return { list: [...best.values()].sort((a, b) => Date.parse(a.end) - Date.parse(b.end)), ended, owned };
   }
-  // Bonnes affaires de la dernière lecture passées aux filtres (dealFilter) : all = toutes celles encore valables, avec leurs
-  // collections ; pass = celles qui passent les filtres du panneau ; list = et les collections incluses et exclues, dans l'ordre
-  // choisi ; options = les collections que remplissent celles de pass, de celle qui en a le plus à celle qui en a le moins (une
-  // collection incluse ou exclue y reste à 0 tant qu'elle existe) ; inc, exc = les collections incluses et exclues qui existent.
-  function filteredDeals(live) {
-    const { list: deals, ended, owned } = dealsOf(live);
+  // Bonnes affaires de la dernière lecture, une fois pour tous les onglets de recherche : celles encore valables (dealsOf),
+  // avec les collections qu'elles remplissent ; relues à chaque lecture du marché, et toutes les 30 s (fin des enchères).
+  const dealPool = computed(() => {
+    void MK.now;
+    if (!M.live) return null;
+    const { list, ended, owned } = dealsOf(M.live);
+    return { all: list.map((x) => ({ x, cols: membershipsOfItem({ title: x.t }) })), ended, owned };
+  });
+  // Les collections d'un filtre qui existent encore ; une affaire passe si elle sert à l'une des incluses (aucune : toutes)
+  // et à aucune des exclues.
+  const liveCols = (keys) => keys.filter((k) => collections.value.all.some((c) => c.key === k));
+  const colsPass = (d, inc, exc) => (!inc.length || d.cols.some((c) => inc.includes(c.key))) && !d.cols.some((c) => exc.includes(c.key));
+  // Nombre d'affaires de chaque onglet de recherche (le chiffre de son onglet).
+  const dealTabCounts = computed(() => {
+    const pool = dealPool.value;
+    const now = Date.now();
+    return new Map(dealTabs.value.map((t) => {
+      const inc = liveCols(t.f.cols);
+      const exc = liveCols(t.f.xcols);
+      return [t.id, pool ? pool.all.filter((d) => dealMatches(d.x, t.f, now) && colsPass(d, inc, exc)).length : 0];
+    }));
+  });
+  // L'onglet ouvert : all = toutes les affaires valables ; pass = celles qui passent ses filtres hors collections ; list =
+  // et ses collections, dans son tri ; options = les collections que remplissent celles de pass, de celle qui en a le plus à
+  // celle qui en a le moins (une collection incluse ou exclue y reste à 0 tant qu'elle existe) ; inc, exc = ses collections
+  // incluses et exclues qui existent.
+  const filteredDeals = computed(() => {
+    const pool = dealPool.value;
     const f = dealFilter.value;
     const now = Date.now();
-    const all = deals.map((x) => ({ x, cols: membershipsOfItem({ title: x.t }) }));
+    const all = pool ? pool.all : [];
     const pass = all.filter((d) => dealMatches(d.x, f, now));
     const counts = new Map();
     for (const d of pass) for (const c of d.cols) counts.set(c.key, { col: c, n: ((counts.get(c.key) || {}).n || 0) + 1 });
@@ -11301,12 +11418,11 @@
     const options = [...counts.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.col.name, b.col.name));
     const inc = f.cols.filter((k) => counts.has(k));
     const exc = f.xcols.filter((k) => counts.has(k));
-    const list = pass.filter((d) => (!inc.length || d.cols.some((c) => inc.includes(c.key))) && !d.cols.some((c) => exc.includes(c.key)))
-      .sort((a, b) => DEAL_ORDER[f.sort](a.x, b.x));
-    return { all, pass, list, options, inc, exc, ended, owned };
-  }
-  // Panneau des filtres (ouvert ou fermé, gardé dans ce navigateur : MP.open.filtres) : % de la cote, prix, économie,
-  // rareté, brillance, mise, fin, ventes ; « Effacer les filtres », « Enregistrer ces filtres… ».
+    const list = pass.filter((d) => colsPass(d, inc, exc)).sort((a, b) => DEAL_ORDER[f.sort](a.x, b.x));
+    return { all, pass, list, options, inc, exc };
+  });
+  // Filtres de l'onglet ouvert (panneau « Filtres de l'onglet ») : % de la cote, prix, économie, rareté, brillance, mise,
+  // fin, ventes ; « Effacer les filtres ». Chaque changement est enregistré tout de suite dans l'onglet.
   function viewDealFilters(f) {
     const amount = (id, label, k, hint) => h('label', { class: 'sell-min' }, [label,
       h('input', { id, class: 'field', type: 'number', min: '0', step: '10', inputmode: 'numeric', value: f[k] == null ? '' : f[k], placeholder: hint,
@@ -11332,25 +11448,11 @@
       group('Cote', segs('Ventes au moins', f.n, DEAL_SALES.map((n) => [n, `${n} ventes et +`]), (v) => setDealFilter({ n: v }))),
       h('div', { class: 'deal-filters__foot' }, [
         h('button', { class: 'btn small', type: 'button', disabled: !dealFilterWords(f).length, onClick: clearDealFilter }, 'Effacer les filtres'),
-        DP.naming ? null : h('button', { class: 'btn small', type: 'button', onClick: () => Object.assign(DP, { naming: true, name: '', error: '' }) }, [icon('bookmark'), 'Enregistrer ces filtres…']),
       ]),
-      DP.naming ? h('form', { class: 'deal-filters__save', onSubmit: (e) => { e.preventDefault(); saveDealPreset(); } }, [
-        h('label', { class: 'sr', for: 'deal-preset-name' }, 'Nom des filtres'),
-        h('input', { id: 'deal-preset-name', class: 'field', type: 'text', maxlength: DEAL_NAME_MAX, placeholder: 'Pépites UR, petits prix…', value: DP.name, onInput: (e) => { DP.name = e.target.value; DP.error = ''; } }),
-        h('button', { class: 'btn small primary', type: 'submit' }, 'Enregistrer'),
-        h('button', { class: 'btn small', type: 'button', onClick: () => Object.assign(DP, { naming: false, name: '', error: '' }) }, 'Annuler'),
-        DP.error ? h('p', { class: 'status err', role: 'alert' }, DP.error) : h('p', { class: 'small muted' }, 'Avec les collections et le tri choisis. Un nom déjà pris est remplacé. Gardés avec ton compte : sur tous tes appareils.'),
-      ]) : null,
     ]);
   }
-  // Panneau des collections (MP.open.cols) : chaque collection que remplissent les affaires, avec leur nombre, « Inclure » ou
-  // « Exclure » ; une recherche au-delà de 8 collections ; « Toutes les collections » libère tout.
-  // Le bouton des collections : « Toutes les collections (12) », « Envies (3) », « 2 collections · 1 exclue (5) ».
-  function dealColsLabel(options, inc, exc, nAll, n) {
-    if (!inc.length && !exc.length) return `Toutes les collections (${fmt(nAll)})`;
-    const what = inc.length === 1 ? options.find((o) => o.col.key === inc[0]).col.name : inc.length ? `${fmt(inc.length)} collections` : 'Toutes les collections';
-    return `${what}${exc.length ? ` · ${fmt(exc.length)} ${plural(exc.length, 'exclue', 'exclues')}` : ''} (${fmt(n)})`;
-  }
+  // Collections de l'onglet : chaque collection que remplissent les affaires, avec leur nombre, « Inclure » ou « Exclure » ;
+  // une recherche au-delà de 8 collections ; « Toutes les collections » libère tout.
   function viewDealCols(options, inc, exc) {
     const q = normName(DP.q || '');
     const shown = q ? options.filter((o) => normName(o.col.name).includes(q)) : options;
@@ -11371,196 +11473,498 @@
       h('div', { class: 'deal-filters__foot' }, [h('button', { class: 'btn small', type: 'button', disabled: !inc.length && !exc.length, onClick: clearDealCols }, 'Toutes les collections')]),
     ]);
   }
-  function viewDeals(live) {
-    if (!live) return h('p', { class: 'muted' }, "Pas de lecture du marché : clique « Actualiser le marché » en haut de l'onglet (le classeur la refait ensuite toutes les 20 minutes).");
-    const f = dealFilter.value;
-    const { all, pass, list, options, inc, exc, ended, owned } = filteredDeals(live);
-    const hidden = [ended ? `${fmt(ended)} ${plural(ended, 'enchère finie', 'enchères finies')} depuis la lecture` : '', owned ? `${fmt(owned)} ${plural(owned, 'carte que tu as maintenant', 'cartes que tu as maintenant')}` : ''].filter(Boolean);
-    const note = hidden.length ? h('p', { class: 'small muted' }, `Plus montrées : ${hidden.join(', ')}.`) : null;
-    if (!all.length) return [h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.'), note];
-    const words = dealFilterWords(f);
-    const open = !!MP.open.filtres;
-    const colsOpen = !!MP.open.cols;
-    const colWords = dealColWords({ cols: inc, xcols: exc });
-    const presets = dealPresets.value;
-    const bar = h('div', { class: 'deal-bar' }, [
-      h('button', { class: ['btn', 'small', 'deal-col', { on: inc.length || exc.length }], type: 'button', id: 'deal-cols-btn', 'aria-expanded': String(colsOpen), 'aria-controls': 'deal-cols',
-        onClick: () => toggleMarketSection('cols') }, [icon('album'), dealColsLabel(options, inc, exc, pass.length, list.length)]),
-      h('label', { class: 'deal-sort' }, [h('span', { class: 'sr' }, 'Trier'),
-        h('select', { id: 'deal-sort', class: 'field', value: f.sort, onChange: (e) => setDealFilter({ sort: e.target.value }) }, DEAL_SORTS.map(([v, l]) => h('option', { key: v, value: v }, l)))]),
-      h('button', { class: ['btn', 'small', { on: words.length }], type: 'button', id: 'deal-filters-btn', 'aria-expanded': String(open), 'aria-controls': 'deal-filters',
-        onClick: () => toggleMarketSection('filtres') }, [icon('filter'), words.length ? `Filtres · ${fmt(words.length)}` : 'Filtres']),
+
+  // ---------------------------------------------------------------- Marché : morceaux communs aux listes et aux fiches
+  // Vignette d'une carte : son illustration, sinon son initiale sur la couleur de sa rareté.
+  function mkThumb(t, r, s, img, big) {
+    const src = artOf(t, img);
+    return h('span', { class: ['mk-thumb', 'r' + (okRarity(r) || 'C'), { shiny: !!s, big: !!big }], 'aria-hidden': 'true' }, [
+      h('span', { class: 'mk-thumb__i' }, initialOf(t)),
+      src ? h('img', { src, alt: '', loading: 'lazy', decoding: 'async', referrerpolicy: 'no-referrer', onError: hideBroken }) : null,
     ]);
-    const chips = presets.length ? h('div', { class: 'chips deal-presets', role: 'group', 'aria-label': 'Filtres enregistrés' }, presets.map((p) => {
-      const on = sameDealFilter(p.f, f);
-      return h('span', { key: p.name, class: ['chip', { on }] }, [
-        h('button', { class: 'chip__label linkish', type: 'button', 'aria-pressed': String(on), title: [...dealColWords(p.f), ...dealFilterWords(p.f)].join(' · ') || 'Filtres par défaut', onClick: () => applyDealPreset(p) }, p.name),
-        h('button', { class: 'x', type: 'button', 'aria-label': `Supprimer les filtres « ${p.name} »`, title: 'Supprimer', onClick: () => deleteDealPreset(p) }, [icon('x', 'sm')]),
-      ]);
-    })) : null;
-    const summary = words.length || colWords.length
-      ? h('p', { class: 'small muted deal-summary' }, [`${fmt(list.length)} ${plural(list.length, 'affaire', 'affaires')} sur ${fmt(all.length)} · ${[...colWords, ...words].join(', ')}. `,
-        words.length ? h('button', { class: 'linkish', type: 'button', onClick: clearDealFilter }, 'Effacer les filtres') : null])
-      : null;
-    return [bar, chips, colsOpen ? viewDealCols(options, inc, exc) : null, open ? viewDealFilters(f) : null, summary,
-      list.length ? h('ul', { class: 'lots' }, list.slice(0, marketShown('acheter')).map(({ x, cols }) => {
-        const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
-        return h('li', { key: x.a, class: 'lot' }, [
-          lotTitle(x, copyNameButton(x.t)),
-          h('span', { class: 'lot__line' }, [priceTag(x.ask), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', vsCote(x.ask, x),
-            x.cote > x.ask ? h('span', { class: 'lot__save' }, [' · économie ', priceTag(x.cote - x.ask, { tag: 'span' })]) : null]),
-          h('span', { class: 'lot__meta small' }, [soon ? h('span', { class: 'flag' }, 'finit bientôt') : null, x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : null, leftText(x.end),
-            cols.length ? ` · pour ${cols.slice(0, 2).map((c) => `« ${c.name} »`).join(', ')}${cols.length > 2 ? '…' : ''}` : '',
-            x.more ? ` · ${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte` : '', gameLink(x.a), x.lead ? null : bidButton(x, 'lot__bid')]),
-        ]);
-      })) : h('p', { class: 'muted' }, 'Aucune bonne affaire ne passe ces filtres.'),
-      marketMoreButton('acheter', list.length), note];
   }
-  // « Bonnes affaires à vendre » : seuil (« Valeur minimale : [100]W »), puis tes cartes dont la cote l'atteint, de la plus
-  // chère à la moins chère : rareté et brillance de l'exemplaire, titre (sa fiche), « ×3 » ou « 2 en trop », « Copier le
-  // nom », cote, dernière vente.
-  function viewSell() {
-    const { list, unpriced, onSale, kept: excluded } = sellOffers.value;
-    const kept = list.filter((x) => x.price >= MP.min);
-    const shown = kept.slice(0, marketShown('vendre'));
+  // Temps restant (« 2 h 10 », en orange sous une heure) et écart à la cote (« −46 % », en vert à 10 % sous la cote).
+  const mkClock = (end) => {
+    const ms = Date.parse(end) - Date.now();
+    return h('span', { class: ['mk-clock', { hot: ms < 3600000 }], title: 'Fin le ' + dateShort(end) }, [icon('clock', 'sm'), leftText(end).replace(/^encore /, '')]);
+  };
+  function mkGap(amount, cote) {
+    if (!(Number(cote) > 0) || amount == null) return h('span', { class: 'mk-gap' }, 'pas de cote');
+    const g = Math.round(((amount - cote) / cote) * 100);
+    return h('span', { class: ['mk-gap', g <= -10 ? 'good' : g >= 10 ? 'bad' : ''], title: `Cote : ${wfmt(cote)}` }, pctOf(amount, cote));
+  }
+  // Une ligne de liste (cliquable en entier : sa fiche à droite, ou en plein écran sur téléphone).
+  const mkRow = (sub, key, on, kids) => h('li', { key, id: 'mk-row-' + key, class: ['mk-row', { on }], role: 'option', 'aria-selected': String(on), onClick: () => pickRow(sub, key) }, kids);
+  // Flèches du clavier dans une liste (la liste a le focus) : l'élément précédent ou suivant, Début et Fin.
+  function mkListKeys(sub, keys) {
+    return (e) => {
+      if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key) || !keys.length) return;
+      e.preventDefault();
+      const i = keys.indexOf(MK.sel[sub] || (MK.wide ? keys[0] : ''));
+      const j = e.key === 'Home' ? 0 : e.key === 'End' ? keys.length - 1 : Math.max(0, Math.min(keys.length - 1, i + (e.key === 'ArrowDown' ? 1 : -1)));
+      MK.sel[sub] = keys[j];
+      nextTick(() => { const el = document.getElementById('mk-row-' + keys[j]); if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({ block: 'nearest' }); });
+    };
+  }
+  // L'élément choisi d'une liste ; sur écran large, le premier tant que rien n'est choisi (ou que le choisi a disparu).
+  const pickOf = (sub, list, keyOf) => list.find((x) => keyOf(x) === MK.sel[sub]) || (MK.wide && list.length ? list[0] : null);
+  // En-tête d'une fiche : vignette, titre, rareté, étiquettes, actions.
+  function mkHead(o) {
+    return h('div', { class: 'mk-dhead' }, [mkThumb(o.t, o.r, o.s, o.img, true), h('div', { class: 'mk-dhead__text' }, [
+      h('h2', { class: 'mk-dhead__title' }, o.t),
+      h('div', { class: 'mk-dhead__tags' }, [pill(o.r), o.s ? h('span', { class: 'tag-mini' }, 'brillante') : null, ...(o.tags || [])]),
+      o.acts && o.acts.length ? h('div', { class: 'mk-dhead__acts' }, o.acts) : null,
+    ])]);
+  }
+  const mkKv = (label, value, cls) => h('div', { class: ['mk-kv', cls || ''] }, [h('span', { class: 'mk-kv__k' }, label), h('span', { class: 'mk-kv__v' }, value)]);
+  const mkEmpty = (text, more) => h('div', { class: 'mk-empty' }, [h('p', null, text), more || null]);
+  const ficheButton = (open) => h('button', { class: 'btn small ghost', type: 'button', onClick: open }, [icon('eye', 'sm'), 'Ouvrir la fiche']);
+  // Liste à gauche, fiche à droite. Sur téléphone (open) : la fiche seule, le retour du haut ramène à la liste.
+  function mkSplit(master, detail, has) {
+    return h('div', { class: ['mk-split', { open: MK.open && has }], id: 'mk-panel', role: 'tabpanel', 'aria-labelledby': 'mk-sub-' + MK.sub }, [
+      h('div', { class: 'mk-master' }, master),
+      h('div', { class: 'mk-detail', id: 'mk-detail', tabindex: '-1' }, detail),
+    ]);
+  }
+  // Hauteur de la liste et de la fiche sur écran large : jusqu'en bas de la fenêtre (440 px au moins). Seule une variable
+  // CSS est posée (CSSOM : la CSP n'autorise pas les styles en ligne).
+  function fitMarket() {
+    const el = typeof document !== 'undefined' ? document.getElementById('mk-panel') : null;
+    if (!el || !el.style || typeof el.getBoundingClientRect !== 'function') return;
+    const top = el.getBoundingClientRect().top + (Number(window.scrollY) || 0);
+    el.style.setProperty('--mk-h', Math.max(440, Math.round((Number(window.innerHeight) || 800) - top - 16)) + 'px');
+  }
+  watch(() => [S.tab, MK.sub, M.loaded, !!M.live, M.msg, MK.wide], () => nextTick(fitMarket));
+  if (typeof window.addEventListener === 'function') window.addEventListener('resize', () => { if (S.tab === 'marche') fitMarket(); });
+  // L'élément ouvert dans la fiche du Marché (sa carte : son marché est lu comme celui d'une fiche, voir ficheMarketKey) ;
+  // sur téléphone, seulement quand sa fiche est ouverte.
+  const paneItem = computed(() => {
+    if (S.tab !== 'marche' || !(MK.wide || MK.open)) return null;
+    if (MK.sub === 'acheter') { const d = selectedDeal.value; return d ? { id: d.x.id, t: d.x.t } : null; }
+    if (MK.sub === 'vendre') { const o = selectedOffer.value; return o ? { id: String(o.c.id), t: o.c.title } : null; }
+    if (MK.sub === 'encheres') { const m = selectedMine.value; return m && m.x.id ? { id: String(m.x.id), t: m.x.t } : null; }
+    return null;
+  });
+
+  // ---------------------------------------------------------------- Marché : barre du haut (sous-onglets, lecture)
+  function viewMkBar() {
+    const nBuy = M.live ? dealTabCounts.value.get(curDealTab.value.id) || 0 : 0;
+    const nSell = M.loaded ? sellShown.value.length : 0;
+    const g = mineGroups.value;
+    const out = g.out.length;
+    const nMine = out || g.lead.length + g.sales.length;
+    const badge = { acheter: nBuy ? fmt(nBuy) : '', vendre: nSell ? fmt(nSell) : '', encheres: nMine ? fmt(nMine) : '', valeur: '' };
+    const tip = { encheres: out ? `${fmt(out)} ${plural(out, 'mise dépassée', 'mises dépassées')}` : null };
+    return h('div', { class: 'mk-bar' }, [
+      h('div', { class: 'mk-subs', role: 'tablist', 'aria-label': 'Marché' }, MK_SUBS.map(([id, label]) => h('button', {
+        key: id, id: 'mk-sub-' + id, class: ['mk-sub', { on: MK.sub === id }], type: 'button', role: 'tab', 'aria-selected': String(MK.sub === id), 'aria-controls': 'mk-panel',
+        onClick: () => setMarketSub(id),
+      }, [label, badge[id] ? h('span', { class: ['mk-badge', { alert: id === 'encheres' && out }], title: tip[id] || null }, badge[id]) : null]))),
+      viewMkRead(),
+    ]);
+  }
+  // État de la lecture du marché : « Lu il y a 6 min » (en orange au-delà de 2 h, ou après un essai raté), le détail au clic ;
+  // « Actualiser ».
+  function viewMkRead() {
+    const old = !M.liveAt || Date.now() - Date.parse(M.liveAt) > MARKET_OLD || !!(M.attempt && M.attempt.ok === false);
+    const pool = dealPool.value;
+    const hidden = pool ? [pool.ended ? `${fmt(pool.ended)} ${plural(pool.ended, 'enchère finie', 'enchères finies')} depuis la lecture` : '',
+      pool.owned ? `${fmt(pool.owned)} ${plural(pool.owned, 'carte que tu as maintenant', 'cartes que tu as maintenant')}` : ''].filter(Boolean) : [];
+    return h('div', { class: 'mk-read' }, [
+      h('button', { class: ['mk-read__btn', { old }], type: 'button', 'aria-expanded': String(MK.pop), 'aria-controls': 'mk-read-pop', onClick: () => { MK.pop = !MK.pop; } },
+        [h('span', { class: 'mk-dot', 'aria-hidden': 'true' }), M.liveAt ? `Lu ${agoText(M.liveAt)}` : 'Pas encore lu']),
+      h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: refreshMarket },
+        [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Actualiser']),
+      MK.pop ? h('div', { class: 'mk-pop', id: 'mk-read-pop', role: 'region', 'aria-label': 'Lecture du marché' }, [
+        ...viewMarketRead(),
+        hidden.length ? h('p', { class: 'small muted' }, `Bonnes affaires plus montrées : ${hidden.join(', ')}.`) : null,
+        M.scan && M.scan.mine ? h('button', { class: 'btn small ghost', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: scanWholeMarket,
+          title: 'Relit toutes les enchères en cours du jeu avec ton compte (une fois par heure au plus)' },
+          [icon('refresh', M.scanning ? 'spin' : ''), M.scanning ? 'Lecture du marché entier…' : 'Relire tout le marché']) : null,
+      ]) : null,
+    ]);
+  }
+
+  // ---------------------------------------------------------------- Marché : « Acheter »
+  const selectedDeal = computed(() => pickOf('acheter', filteredDeals.value.list, (d) => d.x.a));
+  function viewBuy() {
+    const tabs = dealTabs.value;
+    const cur = curDealTab.value;
+    const counts = dealTabCounts.value;
+    const tabBar = h('div', { class: 'mk-tabs', role: 'tablist', 'aria-label': 'Onglets de recherche' }, [
+      ...tabs.map((t, i) => h('div', { key: t.id, class: ['mk-tab', { on: t.id === cur.id }] }, [
+        h('button', { class: 'mk-tab__name', type: 'button', role: 'tab', id: 'mk-tab-' + t.id, 'aria-selected': String(t.id === cur.id),
+          onClick: () => pickDealTab(t.id), onContextmenu: (e) => { e.preventDefault(); pickDealTab(t.id); MK.menu = t.id; } },
+          [h('span', { class: 'mk-tab__label' }, tabName(t)), h('span', { class: 'mk-badge' }, M.live ? fmt(counts.get(t.id) || 0) : '–')]),
+        h('button', { class: 'mk-tab__more', type: 'button', 'aria-label': `Onglet « ${tabName(t)} » : renommer, filtres, dupliquer, déplacer, supprimer`,
+          'aria-haspopup': 'menu', 'aria-expanded': String(MK.menu === t.id), onClick: () => { MK.menu = MK.menu === t.id ? '' : t.id; } }, [icon('more', 'sm')]),
+        MK.menu === t.id ? viewDealTabMenu(t, i, tabs.length) : null,
+      ])),
+      h('button', { class: 'mk-tab mk-tab--add', type: 'button', id: 'mk-tab-add', disabled: tabs.length >= DEAL_TABS_MAX,
+        title: tabs.length >= DEAL_TABS_MAX ? `${DEAL_TABS_MAX} onglets au plus : supprimes-en un d'abord.` : 'Un onglet de recherche avec ses propres filtres', onClick: addDealTab },
+      [icon('plus', 'sm'), 'Nouvel onglet']),
+    ]);
+    if (!M.live) {
+      return [tabBar, mkSplit([mkEmpty(M.loaded ? "Pas de lecture du marché : clique « Actualiser » en haut (le classeur la refait ensuite toutes les 20 minutes)." : 'Lecture du marché…')],
+        [mkEmpty('Les bonnes affaires apparaissent à la prochaine lecture du marché.')], false)];
+    }
+    const { all, list, options, inc, exc } = filteredDeals.value;
+    const f = dealFilter.value;
+    const words = [...dealColWords({ cols: inc, xcols: exc }), ...dealFilterWords(f)];
+    const fbar = h('div', { class: 'mk-fbar' }, [
+      ...words.map((w, i) => h('button', { key: 'w' + i, class: 'mk-fchip', type: 'button', onClick: () => { MK.edit = true; } }, w)),
+      h('button', { key: 'f', class: ['mk-fchip', 'ghost', { on: MK.edit }], type: 'button', id: 'deal-filters-btn', 'aria-expanded': String(MK.edit), 'aria-controls': 'mk-editor',
+        onClick: () => { MK.edit = !MK.edit; } }, [icon('filter', 'sm'), words.length ? 'Modifier les filtres' : 'Filtres']),
+    ]);
+    const head = h('div', { class: 'mk-lhead' }, [
+      h('span', { class: 'mk-count' }, [h('b', null, fmt(list.length)), ` ${plural(list.length, 'affaire', 'affaires')}`, all.length !== list.length ? ` sur ${fmt(all.length)}` : '']),
+      h('label', { class: 'mk-sort' }, [h('span', { class: 'sr' }, 'Trier'),
+        h('select', { id: 'deal-sort', class: 'field', value: f.sort, onChange: (e) => setDealFilter({ sort: e.target.value }) }, DEAL_SORTS.map(([v, l]) => h('option', { key: v, value: v }, l)))]),
+    ]);
+    const sel = selectedDeal.value;
+    const keys = list.map((d) => d.x.a);
+    const rows = list.length
+      ? h('ul', { class: 'mk-list', role: 'listbox', tabindex: '0', 'aria-label': `Bonnes affaires · ${tabName(cur)}`, 'aria-activedescendant': sel ? 'mk-row-' + sel.x.a : null,
+        onKeydown: mkListKeys('acheter', keys) }, list.map((d) => viewDealRow(d, sel === d)))
+      : mkEmpty(all.length ? `Aucune enchère ne passe les filtres de « ${tabName(cur)} ».` : 'Aucune bonne affaire à la dernière lecture.',
+        all.length ? h('button', { class: 'btn small', type: 'button', onClick: () => { MK.edit = true; } }, 'Modifier les filtres') : null);
+    const master = [fbar, head, rows, MK.edit ? viewDealEditor(options, inc, exc, list.length) : null];
+    return [tabBar, mkSplit(master, sel ? viewBuyDetail(sel) : [mkEmpty('Choisis une enchère dans la liste.', h('p', { class: 'small faint' }, '↑ ↓ passent de l\'une à l\'autre.'))], !!sel)];
+  }
+  function viewDealRow(d, on) {
+    const x = d.x;
+    const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
+    const sub = [d.cols.length ? d.cols.slice(0, 2).map((c) => c.name).join(' · ') + (d.cols.length > 2 ? '…' : '') : '',
+      x.bid ? 'avec mise' : 'sans mise', x.more ? `+${fmt(x.more)} ${plural(x.more, 'autre enchère', 'autres enchères')}` : ''].filter(Boolean).join(' · ');
+    return mkRow('acheter', x.a, on, [
+      mkThumb(x.t, x.r, x.s, x.img),
+      h('span', { class: 'mk-row__main' }, [
+        h('span', { class: 'mk-row__t' }, [pill(x.r), h('span', { class: 'mk-row__title' }, x.t), x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
+          x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]),
+        h('span', { class: 'mk-row__s' }, sub)]),
+      h('span', { class: 'mk-row__p' }, [priceTag(x.ask), h('span', { class: 'mk-row__m' }, [mkGap(x.ask, x.cote), mkClock(x.end)])]),
+    ]);
+  }
+  // Menu « ⋯ » d'un onglet de recherche (et clic droit sur l'onglet).
+  function viewDealTabMenu(t, i, n) {
+    const item = (label, ic, run, o) => h('button', { type: 'button', role: 'menuitem', class: ['mk-menu__item', { danger: !!(o && o.danger) }], disabled: !!(o && o.disabled),
+      onClick: () => { MK.menu = ''; run(); } }, [icon(ic, 'sm'), label]);
     return [
-      h('label', { class: 'sell-min' }, ['Valeur minimale : ',
-        h('input', { id: 'sell-min', class: 'field', type: 'number', min: '0', step: '10', inputmode: 'numeric', value: MP.min, 'aria-describedby': 'sell-min-hint',
-          onInput: (e) => setMarketMin(e.target.value) }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')]),
-      h('label', { class: 'check sell-hide' }, [
-        h('input', { id: 'sell-hide-col', type: 'checkbox', checked: MP.hideCol, onChange: () => { MP.hideCol = !MP.hideCol; MP.more.vendre = 0; saveMarketPrefs(); } }),
-        ' Cacher les cartes de mes collections']),
-      h('p', { id: 'sell-min-hint', class: 'small muted' }, MP.hideCol
-        ? 'Tes cartes qui ne servent à aucune de tes collections, dont la cote fiable atteint ce seuil.'
-        : "Tes cartes qui ne servent à aucune de tes collections, et les exemplaires en trop de celles qui y servent (on en garde un, le moins coté), dont la cote fiable atteint ce seuil."),
-      !M.loaded ? h('p', { class: 'muted', role: 'status' }, M.error ? M.error : 'Lecture des cotes…')
-        : kept.length ? h('ul', { class: 'lots' }, shown.map((x) => {
-          const c = x.c;
-          const r = x.k.replace('*', '');
-          return h('li', { key: c.id, class: 'lot' }, [
-            h('span', { class: 'lot__title' }, [pill(r), ' ', h('button', { class: 'linkish', type: 'button', onClick: (e) => openCardFrom(c.id, e) }, c.title),
-              x.k.endsWith('*') ? h('span', { class: 'tag-mini' }, 'brillante') : null,
-              x.extra ? h('span', { class: 'holder dup', title: "Exemplaires en plus de celui que gardent tes collections" }, `${fmt(x.extra)} en trop`)
-                : x.n > 1 ? h('span', { class: 'holder dup', title: `${fmt(x.n)} exemplaires` }, '×' + fmt(x.n)) : null,
-              copyNameButton(c.title)]),
-            h('span', { class: 'lot__line' }, [priceTag(x.price), ` · ${fmt(x.q.n)} ${plural(x.q.n, 'vente', 'ventes')}`,
-              x.q.l != null ? [' · dernière ', priceTag(x.q.l, { tag: 'span' }), x.q.d ? ` le ${dateDay(x.q.d)}` : ''] : null]),
-            h('span', { class: 'lot__meta small' }, [h('button', { class: 'linkish', type: 'button', 'aria-label': `Mettre en vente « ${c.title} »`, onClick: () => openSell(c, x.k) }, 'Mettre en vente')]),
-          ]);
-        })) : h('p', { class: 'muted' }, list.length ? `Aucune carte à vendre à ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.'),
-      M.loaded ? marketMoreButton('vendre', kept.length) : null,
-      M.loaded && onSale ? h('p', { class: 'small muted' }, `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.`) : null,
-      M.loaded && excluded ? h('p', { class: 'small muted' }, [`${fmt(excluded)} ${plural(excluded, 'carte exclue', 'cartes exclues')} des échanges et des ventes : pas ${excluded > 1 ? 'proposées' : 'proposée'} ici. `,
+      h('div', { key: 'back', class: 'mk-menu-back', 'aria-hidden': 'true', onClick: () => { MK.menu = ''; } }),
+      h('div', { key: 'menu', class: 'mk-menu', role: 'menu', 'aria-label': `Onglet « ${tabName(t)} »` }, [
+        item('Renommer, filtres…', 'pen', () => { pickDealTab(t.id); MK.edit = true; }),
+        item('Dupliquer', 'copy', () => dupDealTab(t.id), { disabled: n >= DEAL_TABS_MAX }),
+        item('Déplacer à gauche', 'move', () => moveDealTab(t.id, -1), { disabled: i === 0 }),
+        item('Déplacer à droite', 'move', () => moveDealTab(t.id, 1), { disabled: i === n - 1 }),
+        item("Supprimer l'onglet", 'trash', () => deleteDealTab(t.id), { danger: true, disabled: n <= 1 }),
+      ]),
+    ];
+  }
+  // Panneau des filtres de l'onglet ouvert, par-dessus la liste (la fiche reste visible) : nom, collections, filtres ; le
+  // nombre d'affaires suit en direct.
+  function viewDealEditor(options, inc, exc, n) {
+    const t = curDealTab.value;
+    return h('div', { class: 'mk-editor', id: 'mk-editor', role: 'region', 'aria-label': `Filtres de l'onglet « ${tabName(t)} »` }, [
+      h('div', { class: 'mk-editor__head' }, [h('h3', null, "Filtres de l'onglet"),
+        h('button', { class: 'x', type: 'button', 'aria-label': 'Fermer les filtres', onClick: () => { MK.edit = false; } }, [icon('x')])]),
+      h('div', { class: 'mk-editor__body' }, [
+        h('label', { class: 'mk-field', for: 'deal-tab-name' }, [h('span', { class: 'mk-field__k' }, "Nom de l'onglet"),
+          h('input', { id: 'deal-tab-name', class: 'field', type: 'text', maxlength: DEAL_NAME_MAX, value: t.name, placeholder: 'Galaxies, petits prix…', autocomplete: 'off',
+            onInput: (e) => renameDealTab(e.target.value) })]),
+        h('div', { class: 'mk-field' }, [h('span', { class: 'mk-field__k' }, 'Collections'), viewDealCols(options, inc, exc)]),
+        h('div', { class: 'mk-field' }, [h('span', { class: 'mk-field__k' }, 'Enchères'), viewDealFilters(t.f)]),
+      ]),
+      h('div', { class: 'mk-editor__foot' }, [
+        h('span', { class: 'small muted', role: 'status' }, [h('b', null, fmt(n)), ` ${plural(n, 'affaire', 'affaires')} · enregistré au fur et à mesure`]),
+        h('button', { class: 'btn small primary', type: 'button', onClick: () => { MK.edit = false; } }, 'Fermer'),
+      ]),
+    ]);
+  }
+  // Fiche d'une bonne affaire : l'enchère et « Miser », puis tout le marché de la carte (ses enchères en cours, la courbe de
+  // ses ventes avec le prix à battre en pointillé).
+  function viewBuyDetail(d) {
+    const x = d.x;
+    const k = x.r + (x.s ? '*' : '');
+    const det = CM.details[x.a] || null;
+    const save = x.cote != null ? x.cote - x.ask : null;
+    const open = (e) => openMissingFrom({ title: x.t, description: null, image: x.img || null, status: 'ok', rarity: x.r }, e);
+    const facts = [h('span', { key: 'gap' }, [mkGap(x.ask, x.cote), ' par rapport à la cote', x.n != null ? ` (${fmt(x.n)} ${plural(x.n, 'vente', 'ventes')})` : ''])];
+    if (det && !det.gone) {
+      if (det.bids) facts.push(h('span', { key: 'n' }, `${fmt(det.bids)} ${plural(det.bids, 'mise', 'mises')}${det.leader && !det.leading ? ` · mène : ${det.leader}` : ''}`));
+      if (det.seller) facts.push(h('span', { key: 's' }, `vendeur : ${det.seller}`));
+    } else if (det && det.gone) facts.push(h('span', { key: 'gone', class: 'warn' }, 'le jeu ne la montre plus en cours'));
+    if (x.more) facts.push(h('span', { key: 'more' }, `${fmt(x.more)} ${plural(x.more, 'autre enchère intéressante', 'autres enchères intéressantes')} sur cette carte`));
+    return [
+      mkHead({ t: x.t, r: x.r, s: x.s, img: x.img, tags: d.cols.map((c) => h('span', { key: c.key, class: 'mk-colchip' }, c.name)), acts: [copyNameButton(x.t), ficheButton(open)] }),
+      h('div', { class: 'mk-deal' }, [
+        mkKv(x.bid ? 'Prix à battre' : 'Prix de départ', priceTag(x.ask)),
+        mkKv(`Cote · ${variantName(k)}`, x.cote != null ? priceTag(x.cote, { approx: !(x.n >= 3), title: x.n >= 3 ? null : 'Moins de 3 ventes : cote peu fiable' }) : '—'),
+        mkKv('Économie', save > 0 ? priceTag(save) : '—', 'good'),
+        mkKv('Fin', mkClock(x.end)),
+        h('div', { class: 'mk-deal__act' }, [x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : bidButton(x, 'mk-bid'), gameLink(x.a)]),
+        h('p', { class: 'mk-deal__facts' }, facts),
+      ]),
+      h('div', { class: 'mk-sect' }, [viewCardMarket(null, { mark: x.ask })]),
+    ];
+  }
+
+  // ---------------------------------------------------------------- Marché : « Vendre »
+  // Tes cartes dont la cote atteint le seuil (sellOffers, « Pas les cartes de mes collections » cochée par défaut).
+  const sellShown = computed(() => sellOffers.value.list.filter((x) => x.price >= MP.min));
+  const selectedOffer = computed(() => pickOf('vendre', sellShown.value, (x) => String(x.c.id)));
+  // La vente en préparation dans la fiche : refaite quand la carte ou l'exemplaire choisis changent ; mise de départ
+  // proposée : 90 % de la cote (choix de l'utilisateur, 2026-10-29).
+  watch(() => { const o = S.tab === 'marche' && MK.sub === 'vendre' && (MK.wide || MK.open) ? selectedOffer.value : null; return o ? String(o.c.id) + '|' + o.k : ''; }, (key) => {
+    const o = selectedOffer.value;
+    MK.sell = key && o ? makeSell(o.c, o.k, SELL_PANE_PCT) : null;
+  });
+  function viewSellPane() {
+    const { unpriced, onSale, kept: excluded } = sellOffers.value;
+    const list = sellShown.value;
+    const sel = selectedOffer.value;
+    const tools = h('div', { class: 'mk-fbar mk-fbar--sell' }, [
+      h('label', { class: 'sell-min' }, ["Cote d'au moins ",
+        h('input', { id: 'sell-min', class: 'field', type: 'number', min: '0', step: '10', inputmode: 'numeric', value: MP.min, onInput: (e) => setMarketMin(e.target.value) }),
+        h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')]),
+      h('label', { class: 'check' }, [
+        h('input', { id: 'sell-hide-col', type: 'checkbox', checked: MP.hideCol, onChange: () => { MP.hideCol = !MP.hideCol; saveMarketPrefs(); } }),
+        ' Pas les cartes de mes collections']),
+    ]);
+    if (!M.loaded) return mkSplit([tools, M.error ? errLine(M.error) : mkEmpty('Lecture des cotes…')], [], false);
+    const total = list.reduce((s, x) => s + x.price * Math.max(1, x.n), 0);
+    const head = h('div', { class: 'mk-lhead' }, [h('span', { class: 'mk-count' }, [h('b', null, fmt(list.length)), ` ${plural(list.length, 'carte à vendre', 'cartes à vendre')}`,
+      list.length ? [' · ', priceTag(total, { tag: 'span', about: true }), ' en tout'] : ''])]);
+    const keys = list.map((x) => String(x.c.id));
+    const rows = list.length
+      ? h('ul', { class: 'mk-list', role: 'listbox', tabindex: '0', 'aria-label': 'Cartes à vendre', 'aria-activedescendant': sel ? 'mk-row-' + sel.c.id : null, onKeydown: mkListKeys('vendre', keys) },
+        list.map((x) => viewOfferRow(x, sel === x)))
+      : mkEmpty(sellOffers.value.list.length ? `Aucune carte cotée ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.');
+    const notes = [
+      onSale ? `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.` : null,
+      unpriced ? `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes).` : null,
+    ].filter(Boolean);
+    const foot = notes.length || excluded ? h('div', { class: 'mk-lfoot small muted' }, [
+      ...notes.map((n, i) => h('p', { key: i }, n)),
+      excluded ? h('p', { key: 'x' }, [`${fmt(excluded)} ${plural(excluded, 'carte exclue', 'cartes exclues')} des échanges et des ventes : pas ${excluded > 1 ? 'proposées' : 'proposée'} ici. `,
         h('button', { class: 'linkish', type: 'button', onClick: showKept }, excluded > 1 ? 'Les voir' : 'La voir')]) : null,
-      M.loaded && unpriced ? h('p', { class: 'small muted' }, `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes).`) : null,
-    ];
+    ]) : null;
+    return mkSplit([tools, head, rows, foot], sel ? viewOfferDetail(sel) : [mkEmpty('Choisis une carte dans la liste.')], !!sel);
   }
-  // « Mes ventes en cours » : une ligne par vente (rareté, titre : sa fiche), départ, enchère actuelle et cote, mises et
-  // meneur lus sur le site du jeu, temps restant, « Ouvrir dans le jeu ↗ », et « Annuler la vente » tant qu'il n'y a
-  // aucune mise.
-  function viewOnSale(live) {
-    if (!live) return [h('p', { class: 'muted' }, 'Tes ventes en cours apparaissent ici à la prochaine lecture du marché par le classeur.')];
-    const list = runningSales.value;
+  function viewOfferRow(x, on) {
+    const c = x.c;
+    const r = x.k.replace('*', '');
+    const q = x.q;
+    return mkRow('vendre', String(c.id), on, [
+      mkThumb(c.title, r, x.k.endsWith('*'), c.image),
+      h('span', { class: 'mk-row__main' }, [
+        h('span', { class: 'mk-row__t' }, [pill(r), h('span', { class: 'mk-row__title' }, c.title), x.k.endsWith('*') ? h('span', { class: 'tag-mini' }, 'brillante') : null,
+          x.extra ? h('span', { class: 'flag', title: 'Exemplaires en plus de celui que gardent tes collections' }, `${fmt(x.extra)} en trop`)
+            : x.n > 1 ? h('span', { class: 'flag', title: `${fmt(x.n)} exemplaires` }, '×' + fmt(x.n)) : null]),
+        h('span', { class: 'mk-row__s' }, [`${fmt(q.n)} ${plural(q.n, 'vente', 'ventes')}`, q.l != null ? [' · dernière ', priceTag(q.l, { tag: 'span' }), q.d ? ` le ${dateDay(q.d)}` : ''] : null])]),
+      h('span', { class: 'mk-row__p' }, [priceTag(x.price), h('span', { class: 'mk-row__m' }, 'cote')]),
+    ]);
+  }
+  function viewOfferDetail(x) {
+    const c = x.c;
+    const r = x.k.replace('*', '');
+    const cols = membershipsOf(c);
+    const sl = MK.sell && String(MK.sell.c.id) === String(c.id) ? MK.sell : null;
+    const note = x.extra ? `${fmt(x.extra)} en trop : tes collections en gardent un` : cols.length ? null : 'ne sert à aucune de tes collections';
     return [
-      h('div', { class: 'market__head' }, [
-        h('p', { class: 'small muted' }, `D'après la lecture du marché ${agoText(M.liveAt)}, et les ventes faites depuis le classeur ; mises relues sur le site du jeu. Une vente s'annule tant que personne n'a misé.`),
-        list.length ? h('button', { class: 'linkish', type: 'button', disabled: Object.keys(SD.busy).length > 0, onClick: () => loadSaleDetails(true) }, Object.keys(SD.busy).length ? 'Lecture…' : 'Relire les mises') : null]),
-      list.length ? h('ul', { class: 'lots' }, list.slice(0, marketShown('encours')).map((x) => {
-        const d = SD.details[x.a] || null;
-        const gone = !!(d && (d.gone || (d.status && d.status !== 'active')));
-        const bids = d && !d.gone ? d.bids : null;
-        const bid = gone ? false : d && !d.gone ? !!(d.bids || d.cur != null) : x.bid;
-        const cur = d && !d.gone && d.cur != null ? d.cur : x.cur;
-        return h('li', { key: x.a, class: 'lot' }, [
-          lotTitle(x),
-          h('span', { class: 'lot__line' }, ['départ ', priceTag(x.base, { tag: 'span' }), cur != null ? [' · enchère ', priceTag(cur, { tag: 'span' })] : '', vsCote(cur != null ? cur : x.base, x)]),
-          h('span', { class: 'lot__meta small' }, gone ? [h('span', { class: 'flag' }, 'terminée ou retirée'), ' le jeu ne la montre plus en cours']
-            : [h('span', { class: ['flag', { ok: bid }] }, bid ? (bids ? `${fmt(bids)} ${plural(bids, 'mise', 'mises')}` : 'enchère reçue') : 'sans enchère'),
-              bid && d && d.leader ? `mène : ${d.leader}` : null, leftText(x.end), gameLink(x.a),
-              bid ? h('span', { class: 'faint' }, 'plus annulable')
-                : h('button', { class: 'linkish', type: 'button', 'aria-label': `Annuler la vente de « ${x.t} »`, onClick: () => askCancelSale(x.a, x.t) }, 'Annuler la vente'),
-              SD.busy[x.a] ? h('span', { class: 'faint' }, 'mises…') : null]),
-        ]);
-      })) : h('p', { class: 'small muted' }, 'Aucune vente en cours. Mets une carte en vente depuis sa fiche, ou depuis « Bonnes affaires à vendre ».'),
-      marketMoreButton('encours', list.length),
-      SD.error ? h('p', { class: 'small warn', role: 'status' }, SD.error) : null,
+      mkHead({ t: c.title, r, s: x.k.endsWith('*'), img: c.image, tags: [x.n > 1 ? h('span', { key: 'n', class: 'mk-colchip' }, '×' + fmt(x.n)) : null, note ? h('span', { key: 'note', class: 'small muted' }, note) : null],
+        acts: [copyNameButton(c.title), ficheButton((e) => openCardFrom(c.id, e))] }),
+      sl ? viewSellForm(sl) : null,
+      h('div', { class: 'mk-sect' }, [viewCardMarket(c, { mark: sl ? sellBaseOf(sl) : null })]),
     ];
   }
+  // « Mettre en vente » dans la fiche de « Vendre » (le même formulaire que la fenêtre de la fiche d'une carte). Les
+  // exemplaires de la carte dans le jeu (GET /api/market/sell, limité par le jeu) ne sont lus qu'au premier geste dans le
+  // formulaire, pas à chaque carte parcourue.
+  function viewSellForm(sl) {
+    const wake = () => { if (!sl.info && !sl.infoBusy && sellLinked()) loadSellInfo(sl); };
+    if (sl.done) {
+      const d = sl.done;
+      return h('div', { class: 'mk-sellbox', role: 'status' }, [
+        sl.cancelled ? h('p', null, [h('b', null, 'Vente annulée.'), ` « ${sl.c.title} » revient dans ta collection du jeu.`])
+          : h('p', null, [h('b', null, `« ${sl.c.title} » est en vente dans le jeu.`), ` ${variantName(d.k)}, départ `, priceTag(d.base, { tag: 'span' }), d.end ? `, fin vers ${dateShort(d.end)}.` : '.']),
+        errLine(sl.cancelError),
+        h('div', { class: 'mk-sellbox__foot' }, [
+          h('a', { class: 'btn ghost', href: d.url, target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir dans le jeu ↗'),
+          sl.cancelled ? null : h('button', { class: 'btn danger', type: 'button', disabled: sl.cancelBusy, onClick: () => cancelFromSell(sl) }, sl.cancelBusy ? 'Annulation…' : 'Annuler la vente'),
+        ]),
+      ]);
+    }
+    const { left, base, full, none, linked } = sellForm(sl, 'mk-');
+    return h('div', { class: 'mk-sellbox', onFocusin: wake }, [
+      h('h3', null, 'Mettre en vente'),
+      linked ? null : h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : le classeur met en vente avec ta session. ",
+        h('button', { class: 'linkish', type: 'button', onClick: openSyncTab }, 'Relier mon compte')]),
+      h('div', { class: 'mk-sellbox__form' }, left),
+      errLine(sl.error),
+      sl.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir ma collection dans le jeu ↗')]) : null,
+      h('div', { class: 'mk-sellbox__foot' }, [
+        h('span', { class: 'small muted' }, "Réservé pendant l'enchère ; annulable tant que personne n'a misé."),
+        h('button', { class: 'btn primary', type: 'button', id: 'mk-sell-go', disabled: sl.busy || !linked || base === null || full || none, onClick: async () => {
+          wake();
+          await sendSell(sl);
+          // La carte quitte « Vendre » à la relecture du marché (avec sa fiche) : la vente faite est aussi annoncée.
+          if (sl.done) notify(`« ${sl.c.title} » est en vente dans le jeu : retrouve-la dans « Mes enchères ».`);
+        } },
+          sl.busy ? 'Mise en vente…' : 'Mettre en vente dans le jeu'),
+      ]),
+    ]);
+  }
+
+  // ---------------------------------------------------------------- Marché : « Mes enchères »
+  // Tes mises et tes ventes (dernière lecture du marché, 14 jours), rangées par ce qui demande une action : mises dépassées,
+  // celles où tu mènes, tes ventes en cours, puis les terminées (repliées).
   const BID_STATE = { won: 'gagnée', lost: 'perdue', off: 'terminée' };
   const SALE_STATE = { sold: 'vendue', unsold: 'invendue', off: 'annulée ou terminée' };
-  function viewMine(live) {
-    if (!live) return h('p', { class: 'muted' }, 'Tes mises et tes ventes des 14 derniers jours apparaissent ici à la prochaine lecture du marché par le classeur.');
-    const bids = Array.isArray(live.bids) ? live.bids : [];
-    const sales = Array.isArray(live.sales) ? live.sales : [];
-    return h('div', { class: 'mine' }, [
-      h('h3', null, 'Tes mises'),
-      bids.length ? h('ul', { class: 'lots' }, bids.slice(0, marketShown('mises')).map((x) => h('li', { key: x.a, class: 'lot' }, [
-        lotTitle(x),
-        h('span', { class: 'lot__line' }, ['ta mise ', priceTag(x.mine, { tag: 'span' }), x.cur != null ? [` · ${x.st === 'run' ? 'enchère actuelle' : 'prix final'} `, priceTag(x.cur, { tag: 'span' })] : '', vsCote(x.cur != null ? x.cur : x.mine, x)]),
-        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.lead }] }, x.lead ? 'tu mènes' : 'dépassée'), leftText(x.end), gameLink(x.a)]
-          : [h('span', { class: ['flag', { ok: x.st === 'won' }] }, BID_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
-      ]))) : h('p', { class: 'small muted' }, 'Aucune mise ces 14 derniers jours.'),
-      marketMoreButton('mises', bids.length),
-      h('h3', null, 'Tes ventes'),
-      sales.length ? h('ul', { class: 'lots' }, sales.slice(0, marketShown('ventes')).map((x) => h('li', { key: x.a, class: 'lot' }, [
-        lotTitle(x),
-        h('span', { class: 'lot__line' }, ['départ ', priceTag(x.base, { tag: 'span' }), x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '', vsCote(x.cur != null ? x.cur : x.base, x)]),
-        h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end), gameLink(x.a),
-          x.bid ? null : h('button', { class: 'linkish', type: 'button', 'aria-label': `Annuler la vente de « ${x.t} »`, onClick: () => askCancelSale(x.a, x.t) }, 'Annuler la vente')]
-          : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
-      ]))) : h('p', { class: 'small muted' }, 'Aucune vente ces 14 derniers jours.'),
-      marketMoreButton('ventes', sales.length),
-    ]);
+  const mineGroups = computed(() => {
+    void MK.now;
+    const live = M.live;
+    const now = Date.now();
+    const bids = live && Array.isArray(live.bids) ? live.bids.filter((x) => x && typeof x.a === 'string') : [];
+    const sales = live && Array.isArray(live.sales) ? live.sales.filter((x) => x && typeof x.a === 'string') : [];
+    const running = (x) => x.st === 'run' && Date.parse(x.end) > now;
+    const item = (kind) => (x) => ({ key: (kind === 'bid' ? 'b-' : 's-') + x.a, kind, x });
+    const byEnd = (a, b) => Date.parse(a.x.end) - Date.parse(b.x.end);
+    return {
+      out: bids.filter((x) => running(x) && !x.lead).map(item('bid')).sort(byEnd),
+      lead: bids.filter((x) => running(x) && x.lead).map(item('bid')).sort(byEnd),
+      sales: runningSales.value.map(item('sale')),
+      done: [...bids.filter((x) => !running(x)).map(item('bid')), ...sales.filter((x) => !running(x)).map(item('sale'))].sort((a, b) => -byEnd(a, b)),
+    };
+  });
+  const mineList = computed(() => { const g = mineGroups.value; return [...g.out, ...g.lead, ...g.sales, ...(MK.done ? g.done : [])]; });
+  const selectedMine = computed(() => pickOf('encheres', mineList.value, (m) => m.key));
+  // Une vente en cours vue sur le site du jeu (SD, relu à l'ouverture de « Mes enchères ») : mises, enchère, meneur.
+  function saleNow(x) {
+    const d = SD.details[x.a] || null;
+    const gone = !!(d && (d.gone || (d.status && d.status !== 'active')));
+    const bids = d && !d.gone ? d.bids : null;
+    return { d, gone, bids, bid: gone ? false : d && !d.gone ? !!(d.bids || d.cur != null) : !!x.bid, cur: d && !d.gone && d.cur != null ? d.cur : x.cur };
   }
-  // Une section repliable de l'onglet (accordéon) : un bouton dans le titre (aria-expanded), le contenu rendu seulement
-  // quand elle est ouverte. note : ce que la section contient, dit dans le titre (utile quand elle est fermée).
-  function marketSection(id, title, note, body, cls) {
-    const open = !!MP.open[id];
-    const bodyId = 'marche-' + id;
-    return h('section', { class: ['panel', 'acc', cls || '', { open }], key: id, 'data-section': id }, [
-      h('h2', { class: 'acc__head' }, [h('button', { class: 'acc__btn', type: 'button', 'aria-expanded': String(open), 'aria-controls': bodyId, onClick: () => toggleMarketSection(id) },
-        [icon('chev', 'sm'), h('span', null, title), note ? h('span', { class: 'acc__note' }, note) : null])]),
-      h('div', { class: 'acc__body', id: bodyId, hidden: !open }, open ? body() : []),
+  function mineFlag(m) {
+    const x = m.x;
+    if (m.kind === 'bid') {
+      if (x.st === 'run' && Date.parse(x.end) > Date.now()) return x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : h('span', { class: 'flag warn' }, 'dépassée');
+      return h('span', { class: ['flag', { ok: x.st === 'won' }] }, BID_STATE[x.st] || x.st);
+    }
+    if (x.st === 'run' && Date.parse(x.end) > Date.now()) {
+      const s = saleNow(x);
+      if (s.gone) return h('span', { class: 'flag' }, 'terminée ou retirée');
+      return h('span', { class: ['flag', { ok: s.bid }] }, s.bid ? (s.bids ? `${fmt(s.bids)} ${plural(s.bids, 'mise', 'mises')}` : 'enchère reçue') : 'sans enchère');
+    }
+    return h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st);
+  }
+  function viewMinePane() {
+    if (!M.live) return mkSplit([mkEmpty('Tes mises et tes ventes des 14 derniers jours apparaissent ici à la prochaine lecture du marché par le classeur.')], [], false);
+    const g = mineGroups.value;
+    const sel = selectedMine.value;
+    const keys = mineList.value.map((m) => m.key);
+    const busy = Object.keys(SD.busy).length > 0;
+    const row = (m) => {
+      const x = m.x;
+      const run = x.st === 'run' && Date.parse(x.end) > Date.now();
+      const s = m.kind === 'sale' && run ? saleNow(x) : null;
+      const cur = s ? s.cur : x.cur;
+      const line = m.kind === 'bid' ? ['ta mise ', priceTag(x.mine, { tag: 'span' }), cur != null && cur !== x.mine ? [run ? ' · enchère ' : ' · prix final ', priceTag(cur, { tag: 'span' })] : '']
+        : ['départ ', priceTag(x.base, { tag: 'span' }), cur != null ? [x.st === 'sold' ? ' · vendue ' : ' · enchère ', priceTag(cur, { tag: 'span' })] : ''];
+      return mkRow('encheres', m.key, sel === m, [
+        mkThumb(x.t, x.r, x.s, x.img),
+        h('span', { class: 'mk-row__main' }, [h('span', { class: 'mk-row__t' }, [pill(x.r), h('span', { class: 'mk-row__title' }, x.t), mineFlag(m)]), h('span', { class: 'mk-row__s' }, line)]),
+        h('span', { class: 'mk-row__p' }, [priceTag(cur != null ? cur : m.kind === 'bid' ? x.mine : x.base), h('span', { class: 'mk-row__m' }, run ? mkClock(x.end) : dateDay(x.end))]),
+      ]);
+    };
+    const group = (title, list, extra) => (list.length || extra ? [h('li', { key: 'g-' + title, class: 'mk-group', role: 'presentation' }, [h('span', null, title), extra || h('span', null, fmt(list.length))]),
+      ...list.map(row)] : []);
+    const items = [
+      ...group('À relancer · dépassées', g.out), ...group('Tu mènes', g.lead), ...group('Mes ventes en cours', g.sales),
+      ...(g.done.length ? (MK.done ? group('Terminées ces 14 jours', g.done) : group('Terminées ces 14 jours', [], h('button', { class: 'linkish', type: 'button', onClick: () => { MK.done = true; } }, `Afficher (${fmt(g.done.length)})`))) : []),
+    ];
+    const head = h('div', { class: 'mk-lhead' }, [h('span', { class: 'mk-count' }, `Lu ${M.liveAt ? agoText(M.liveAt) : '—'} ; mises de tes ventes relues sur le site du jeu`),
+      g.sales.length ? h('button', { class: 'linkish', type: 'button', disabled: busy, onClick: () => loadSaleDetails(true) }, busy ? 'Lecture…' : 'Relire les mises') : null]);
+    const list = keys.length || g.done.length
+      ? h('ul', { class: 'mk-list', role: 'listbox', tabindex: '0', 'aria-label': 'Mes mises et mes ventes', 'aria-activedescendant': sel ? 'mk-row-' + sel.key : null, onKeydown: mkListKeys('encheres', keys) }, items)
+      : mkEmpty('Aucune mise ni vente ces 14 derniers jours. Mets une carte en vente depuis « Vendre », ou mise depuis « Acheter ».');
+    return mkSplit([head, list, SD.error ? h('p', { class: 'mk-lfoot small warn', role: 'status' }, SD.error) : null], sel ? viewMineDetail(sel) : [mkEmpty('Choisis une mise ou une vente dans la liste.')], !!sel);
+  }
+  function viewMineDetail(m) {
+    const x = m.x;
+    const run = x.st === 'run' && Date.parse(x.end) > Date.now();
+    const mine = x.id ? cardById.value.get(String(x.id)) || null : null;
+    const open = mine ? (e) => openCardFrom(mine.id, e) : (e) => openMissingFrom({ title: x.t, description: null, image: x.img || null, status: 'ok', rarity: x.r }, e);
+    const s = m.kind === 'sale' && run ? saleNow(x) : null;
+    const cur = s ? s.cur : x.cur;
+    let text;
+    let act = null;
+    if (m.kind === 'bid') {
+      if (run && !x.lead) {
+        text = `Quelqu'un a misé au-dessus de toi${cur != null ? ` (${wfmt(cur)})` : ''}.${x.cote != null && cur != null && cur < x.cote ? ` La cote est à ${wfmt(x.cote)} : tu peux encore remiser en dessous.` : ''}`;
+        act = sellLinked() ? h('button', { class: 'btn primary mk-bid', type: 'button', 'aria-label': `Miser sur « ${x.t} »`,
+          onClick: () => openBid({ a: x.a, t: x.t, r: x.r, s: x.s, ask: cur != null ? cur : x.mine, bid: true, cur: cur != null ? cur : x.mine, end: x.end, cote: x.cote, n: x.n }) }, 'Remiser') : null;
+      } else text = run ? 'Tu mènes : rien à faire tant que personne ne te dépasse.' : `Enchère ${BID_STATE[x.st] || 'terminée'} le ${dateDay(x.end)}.`;
+    } else if (run) {
+      if (s.gone) text = 'Le jeu ne la montre plus en cours : terminée ou retirée.';
+      else if (s.bid) text = `Ta vente a reçu des mises${s.d && s.d.leader ? ` (mène : ${s.d.leader})` : ''} : elle n'est plus annulable.`;
+      else {
+        text = "Personne n'a encore misé : tu peux annuler la vente.";
+        act = h('button', { class: 'btn', type: 'button', 'aria-label': `Annuler la vente de « ${x.t} »`, onClick: () => askCancelSale(x.a, x.t) }, 'Annuler la vente');
+      }
+    } else text = `Vente ${SALE_STATE[x.st] || 'terminée'} le ${dateDay(x.end)}.`;
+    return [
+      mkHead({ t: x.t, r: x.r, s: x.s, img: x.img, tags: [mineFlag(m)], acts: [copyNameButton(x.t), ficheButton(open)] }),
+      h('div', { class: 'mk-deal' }, [
+        m.kind === 'bid' ? mkKv('Ta mise', priceTag(x.mine)) : mkKv('Départ', priceTag(x.base)),
+        mkKv(run ? 'Enchère actuelle' : 'Prix final', cur != null ? priceTag(cur) : '—'),
+        mkKv('Cote', x.cote != null ? priceTag(x.cote, { approx: !(x.n >= 3) }) : 'pas de cote'),
+        mkKv(run ? 'Fin' : 'Fini le', run ? mkClock(x.end) : dateDay(x.end)),
+        h('div', { class: 'mk-deal__act' }, [act, run ? gameLink(x.a) : null]),
+        h('p', { class: 'mk-deal__facts' }, text),
+      ]),
+      x.id ? h('div', { class: 'mk-sect' }, [viewCardMarket(mine, { mark: cur != null ? cur : null })]) : null,
+    ];
+  }
+
+  // ---------------------------------------------------------------- Marché : « Valeur »
+  function viewValue() {
+    const v = M.value;
+    const since = Date.now() - (MP.period + 1) * 86400000;
+    const hist = (Array.isArray(M.history) ? M.history : []).filter((p) => p && Date.parse(p.date) >= since);
+    return h('div', { class: 'mk-value', id: 'mk-panel', role: 'tabpanel', 'aria-labelledby': 'mk-sub-valeur' }, [
+      h('section', { class: 'panel mk-value__main' }, [
+        h('h2', null, 'Valeur de ton classeur'),
+        !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
+        M.loaded && v ? h('p', { class: 'market__big' }, [priceTag(v.value), h('span', { class: 'muted' }, ` · ${pricedOf(v.priced, v.cards)}`)]) : null,
+        M.loaded && v && v.approx ? h('p', { class: 'small muted' }, `Dont ${fmt(v.approx)} ${plural(v.approx, 'carte comptée', 'cartes comptées')} dans sa plus haute rareté : le détail de leurs exemplaires arrive avec la prochaine relecture complète de ta collection.`) : null,
+        M.loaded && v && !v.priced ? h('p', { class: 'muted' }, MARKET_HOW) : null,
+        M.loaded ? h('div', { class: 'seg', role: 'group', 'aria-label': 'Période de la courbe' }, MK_PERIODS.map(([n, l]) => seg(l, MP.period === n, () => setMarketPeriod(n)))) : null,
+        M.loaded ? viewValueChart(hist) : null,
+        h('p', { class: 'small muted' }, "Valeur = somme des cotes fiables (3 ventes au moins) de chacun de tes exemplaires, selon sa rareté et s'il est brillant ; cote = médiane des 30 dernières ventes sur 90 jours. Un point par jour."),
+      ]),
+      h('div', { class: 'mk-value__side' }, [
+        h('section', { class: 'panel' }, [h('h2', null, 'Lecture du marché'), h('div', { class: 'market__read' }, viewMarketRead()),
+          h('div', { class: 'actions' }, [
+            h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: refreshMarket },
+              [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Actualiser le marché']),
+            M.scan && M.scan.mine ? h('button', { class: 'btn small ghost', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: scanWholeMarket },
+              [icon('refresh', M.scanning ? 'spin' : ''), M.scanning ? 'Lecture du marché entier…' : 'Relire tout le marché']) : null,
+          ])]),
+        h('section', { class: 'panel market__rules' }, [h('h2', null, 'À savoir'),
+          h('p', { class: 'notice warn-box' }, MARKET_RULES),
+          h('p', { class: 'small muted' }, "Les cotes sont communes à tous les classeurs du site (des ventes du jeu, liées à aucun joueur) : une cote lue il y a plus de 12 h est relue à la lecture suivante d'un membre qui a la carte.")]),
+      ]),
     ]);
   }
   function viewMarket() {
-    const v = M.value;
-    const stamp = M.liveAt ? `lue par le classeur ${agoText(M.liveAt)}` : '';
-    const live = M.live;
-    const nDeals = live ? filteredDeals(live).list.length : 0;
-    const nBids = live && Array.isArray(live.bids) ? live.bids.length : 0;
-    const nSales = live && Array.isArray(live.sales) ? live.sales.length : 0;
-    const nSell = M.loaded ? sellOffers.value.list.filter((x) => x.price >= MP.min).length : 0;
-    // En haut, la valeur et où en est la lecture du marché (repliable comme les autres sections : repliée, le titre garde
-    // la valeur) ; « Mes ventes en cours » ; puis côte à côte « à acheter » et « à vendre » (l'une sous l'autre sur un
-    // écran étroit) ; « Mes enchères » (fermée par défaut) ; « À savoir ».
-    return h('div', { class: 'market' }, [
-      marketSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
-        h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
-          M.scan && M.scan.mine ? h('button', { class: 'btn small ghost', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: scanWholeMarket,
-            title: 'Relit toutes les enchères en cours du jeu avec ton compte (une fois par heure au plus)' },
-            [icon('refresh', M.scanning ? 'spin' : ''), M.scanning ? 'Lecture du marché entier…' : 'Relire tout le marché']) : null,
-          h('button', { class: 'btn small', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: refreshMarket },
-            [icon('refresh', M.refreshing ? 'spin' : ''), M.refreshing ? 'Lecture…' : 'Actualiser le marché'])]),
-        M.msg ? h('p', { class: M.msgErr ? 'status err' : 'small muted', role: 'status' }, M.msg) : null,
-        !M.loaded ? (M.error ? errLine(M.error) : h('p', { class: 'muted', role: 'status' }, 'Lecture des cotes…')) : null,
-        M.loaded && v ? h('p', { class: 'market__big' }, [priceTag(v.value), h('span', { class: 'muted' }, ` · ${fmt(v.priced)} ${plural(v.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(v.cards)}`)]) : null,
-        M.loaded && v && v.approx ? h('p', { class: 'small muted' }, `Dont ${fmt(v.approx)} ${plural(v.approx, 'carte comptée', 'cartes comptées')} dans sa plus haute rareté : le détail de leurs exemplaires arrive avec la prochaine relecture complète de ta collection.`) : null,
-        M.loaded && v && !v.priced ? h('p', { class: 'muted' }, MARKET_HOW) : null,
-        M.loaded ? viewValueChart(M.history) : null,
-        h('p', { class: 'small muted' }, 'Valeur = somme des cotes fiables (3 ventes au moins) de chacun de tes exemplaires, selon sa rareté et s\'il est brillant ; cote = médiane des 30 dernières ventes sur 90 jours. Un point par jour.'),
-        M.loaded && M.error ? errLine(M.error) : null,
-        M.loaded ? h('div', { class: 'market__read' }, viewMarketRead()) : null,
-      ], 'market__value'),
-      marketSection('ventes', 'Mes ventes en cours', M.loaded && runningSales.value.length ? fmt(runningSales.value.length) : '', () => viewOnSale(live), 'market__wide'),
-      marketSection('acheter', 'Bonnes affaires à acheter', nDeals ? fmt(nDeals) : '', () => [
-        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte, au plus à la cote ; les filtres choisissent lesquelles montrer (par défaut : au plus 80 % de la cote, ou « finit bientôt » sans enchère).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
-        viewDeals(live)]),
-      marketSection('vendre', 'Bonnes affaires à vendre', nSell ? fmt(nSell) : '', viewSell),
-      marketSection('encheres', 'Mes enchères', live ? `${fmt(nBids)} ${plural(nBids, 'mise', 'mises')} · ${fmt(nSales)} ${plural(nSales, 'vente', 'ventes')}` : '', () => [viewMine(live)], 'market__wide'),
-      h('section', { class: 'panel market__rules' }, [h('h2', null, 'À savoir'),
-        h('p', { class: 'notice warn-box' }, MARKET_RULES),
-        h('p', { class: 'small muted' }, 'Les cotes sont communes à tous les classeurs du site (des ventes du jeu, liées à aucun joueur) : une cote lue il y a plus de 12 h est relue à la lecture suivante d\'un membre qui a la carte.')]),
+    void MK.now;
+    const body = MK.sub === 'vendre' ? viewSellPane() : MK.sub === 'encheres' ? viewMinePane() : MK.sub === 'valeur' ? viewValue() : viewBuy();
+    return h('div', { class: ['mk', 'mk--' + MK.sub, { 'mk--open': MK.open }] }, [
+      viewMkBar(),
+      M.msg ? h('p', { class: ['mk-msg', M.msgErr ? 'status err' : 'small muted'], role: 'status' }, M.msg) : null,
+      M.loaded && M.error && MK.sub !== 'valeur' ? errLine(M.error) : null,
+      body,
     ]);
   }
   // Fiche d'une carte possédée : cote de chacun de tes exemplaires (rareté, brillance), « ~ » si moins de 3 ventes.
@@ -11613,10 +12017,11 @@
   const gameLink = (id, label) => h('a', { class: 'game-link', href: gameAuctionUrl(id), target: '_blank', rel: 'noopener noreferrer', title: "Ouvrir l'enchère dans WikiMasters" },
     [label || 'Ouvrir dans le jeu', ' ↗']);
   // Titre de la carte de la fiche ouverte (ta carte, celle d'un ami, une carte qui te manque), '' sans fiche.
-  const ficheCardTitle = () => (openCard.value && openCard.value.title) || (S.openMissing && S.openMissing.title) || '';
+  const ficheCardTitle = () => (openCard.value && openCard.value.title) || (S.openMissing && S.openMissing.title) || (S.modal !== 'sell' && paneItem.value && paneItem.value.t) || '';
   // Section « Marché dans le jeu » d'une fiche : enchères en cours sur la carte (de la moins chère à la plus chère), puis
-  // la courbe de ses prix de vente. mine : ta carte (pour choisir la rareté de la courbe), s'il y en a une.
-  function viewCardMarket(mine) {
+  // la courbe de ses prix de vente. mine : ta carte (pour choisir la rareté de la courbe), s'il y en a une ; o.mark : un prix
+  // à marquer en pointillé sur la courbe (fiches du Marché : le prix à battre, la mise de départ).
+  function viewCardMarket(mine, o) {
     void CM.now;
     if (S.boot !== 'app') return null;
     const sess = (S.me && S.me.session) || {};
@@ -11643,7 +12048,7 @@
         `Afficher les ${fmt(list.length)} enchères`)]) : null,
       CM.detailError ? h('p', { class: 'small warn', role: 'status' }, CM.detailError) : null,
       list.length ? h('p', { class: 'small muted' }, `Mises, meneur et vendeur : lus sur le site du jeu pour les ${fmt(Math.min(CM_DETAILS, list.length))} moins chères (il limite les lectures automatiques).`) : null,
-      viewSalesChart(d, mine),
+      viewSalesChart(d, mine, o && o.mark),
     ]);
   }
   // Une enchère en cours de la fiche : rareté et brillance de l'exemplaire, prix à battre comparé à la cote de cette
@@ -11693,7 +12098,7 @@
   }
   // Prix de vente de la carte dans une rareté d'exemplaire (et brillance) : à chaque vente, la médiane des 30 dernières
   // (comme la cote) ; les ventes en points. Une puce par rareté vendue au moins deux fois.
-  function viewSalesChart(d, mine) {
+  function viewSalesChart(d, mine, mark) {
     const by = new Map();
     for (let i = d.sales.length - 1; i >= 0; i--) {
       const x = d.sales[i];
@@ -11718,7 +12123,8 @@
     const R = 14;
     const T = 12;
     const B = 28;
-    const all = pts.flatMap((p) => [p.p, p.v]);
+    const ref = Number(mark) > 0 ? Number(mark) : null;
+    const all = pts.flatMap((p) => [p.p, p.v]).concat(ref != null ? [ref] : []);
     let lo = Math.min(...all);
     let hi = Math.max(...all);
     if (lo === hi) { lo = Math.max(0, lo - 1); hi += 1; }
@@ -11739,7 +12145,7 @@
     };
     const recent = sales.slice(-8).reverse();
     return h('div', { class: 'cmk__sales' }, [
-      h('h3', null, ['Prix de vente ', h('span', { class: 'hint-inline' }, `médiane des 30 dernières ventes · ${fmt(sales.length)} ${plural(sales.length, 'vente', 'ventes')} depuis le ${dateDay(sales[0].d)}`)]),
+      h('h3', null, ['Prix de vente ', h('span', { class: 'hint-inline' }, `médiane des 30 dernières ventes · ${fmt(sales.length)} ${plural(sales.length, 'vente', 'ventes')} depuis le ${dateDay(sales[0].d)}${ref != null ? ` · en pointillé : ${wfmt(ref)}` : ''}`)]),
       keys.length > 1 ? h('div', { class: 'cmk__keys', role: 'group', 'aria-label': "Rareté de l'exemplaire" }, keys.map((k) => h('button', {
         key: k, type: 'button', class: ['chip-btn', { on: k === key }], 'aria-pressed': String(k === key), onClick: () => { CM.variant = k; CM.hover = -1; },
       }, `${variantName(k)} · ${fmt(by.get(k).length)}`))) : h('p', { class: 'small muted' }, variantName(key)),
@@ -11753,6 +12159,7 @@
           ]),
           ...pts.map((p, i) => h('circle', { key: 's' + i, class: 'chart__sale', cx: x(p.t).toFixed(1), cy: y(p.p).toFixed(1), r: 2.5 })),
           h('polyline', { class: 'chart__line', points: line }),
+          ref != null ? h('line', { class: 'chart__mark', x1: L, x2: W - R, y1: y(ref).toFixed(1), y2: y(ref).toFixed(1) }, [h('title', null, `Prix marqué : ${wfmt(ref)}`)]) : null,
           hov >= 0 ? h('line', { class: 'chart__cross', x1: x(sel.t).toFixed(1), x2: x(sel.t).toFixed(1), y1: T, y2: H - B }) : null,
           h('circle', { class: 'chart__dot on', cx: x(sel.t).toFixed(1), cy: y(sel.v).toFixed(1), r: 5 }),
           h('text', { class: 'chart__tick', x: L, y: H - 8 }, dateDay(pts[0].d)),
@@ -11801,7 +12208,7 @@
     const ids = [...S.selected].map(String);
     const on = ids.filter((id) => k.cards.has(id)).length;
     return [
-      on < ids.length ? h('button', { class: 'btn', type: 'button', title: 'Ces cartes ne seront plus proposées dans « Échanges possibles » ni dans « Bonnes affaires à vendre »',
+      on < ids.length ? h('button', { class: 'btn', type: 'button', title: 'Ces cartes ne seront plus proposées dans « Échanges possibles » ni dans « Vendre » (Marché)',
         onClick: () => setKeepCards(ids, true) }, [icon('lock', 'sm'), 'Exclure des échanges et ventes']) : null,
       on ? h('button', { class: 'btn', type: 'button', onClick: () => setKeepCards(ids, false) }, `Réintégrer (${fmt(on)})`) : null,
     ];
@@ -11891,7 +12298,7 @@
       ]),
       h('p', { id: 'keep-toggle-help', class: 'small muted' }, by && by.tag
         ? [`Exclue par le tag « ${tagTitle(by.tag)} » (« Mes cartes », « Exclues des échanges et ventes »). `, by.card ? 'Aussi exclue elle-même.' : null]
-        : 'Ni proposée dans « Échanges possibles », chez toi comme chez tes amis, ni dans « Bonnes affaires à vendre ».'),
+        : 'Ni proposée dans « Échanges possibles », chez toi comme chez tes amis, ni dans « Vendre » (Marché).'),
     ]);
   }
   function viewFiche(c, closeRef, boxRef) {
@@ -12827,6 +13234,37 @@
         ]),
       ]);
     }
+    const { left, base, full, none, mk } = sellForm(sl, '');
+    const mineSales = mk.mine.slice(0, 5);
+    const right = linked ? [
+      mineSales.length ? h('div', { class: 'sell-mine' }, [h('h3', null, ['Tes ventes de cette carte ', h('span', { class: 'hint-inline' }, '14 derniers jours')]),
+        h('ul', { class: 'lots' }, mineSales.map((x) => h('li', { key: x.a, class: 'lot' }, [
+          h('span', { class: 'lot__line' }, [variantName(x.r + (x.s ? '*' : '')), ' · départ ', priceTag(x.base, { tag: 'span' }),
+            x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '']),
+          h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end)]
+            : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
+        ])))]) : null,
+      viewCardMarket(c),
+    ] : [];
+    return h(Modal, { key: 'sell', title, wide: true, cls: 'sell', onClose: closeModal }, () => [
+      h('p', null, "Le classeur met un exemplaire aux enchères dans le jeu, à ton nom, avec ta session reliée. Il est réservé pendant l'enchère ; tu peux l'annuler tant que personne n'a misé."),
+      linked ? null : h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : le classeur met en vente avec ta session. ",
+        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); closeCard(); openSyncTab(); } }, 'Relier mon compte')]),
+      h('div', { class: 'sell-cols' }, [h('div', { class: 'sell-main' }, left), right.length ? h('div', { class: 'sell-market' }, right) : null]),
+      errLine(sl.error),
+      sl.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir ma collection dans le jeu ↗')]) : null,
+      foot([
+        closeBtn('Annuler'),
+        h('button', { class: 'btn primary', type: 'button', disabled: sl.busy || !linked || base === null || full || none, onClick: () => sendSell(sl) },
+          sl.busy ? 'Mise en vente…' : 'Mettre en vente dans le jeu'),
+      ]),
+    ]);
+  }
+  // Formulaire « Mettre en vente » (fenêtre, fiche de « Vendre ») : left = ses champs ; base = la mise de départ lisible ;
+  // full / none : plus de place pour une enchère, plus d'exemplaire ; mk = le marché de la carte (sellMarket).
+  function sellForm(sl, pre) {
+    const c = sl.c;
+    const linked = sellLinked();
     const info = sl.info;
     const copies = info ? info.copies : variantsOf(c).list.map(([k, n]) => ({ k, n, fav: 0 }));
     const total = copies.reduce((t, x) => t + (Number(x.n) || 0), 0);
@@ -12874,7 +13312,6 @@
     }
     if (info && info.max != null && info.selling != null) facts.push(fact('Tes enchères actives', `${fmt(info.selling)} / ${fmt(info.max)}`));
 
-    const mineSales = mk.mine.slice(0, 5);
     const left = [
       h('fieldset', { class: 'sell-field' }, [
         h('legend', null, ['Exemplaire', sl.infoBusy ? h('span', { class: 'n' }, ' · lecture dans le jeu…') : null]),
@@ -12884,42 +13321,20 @@
         sl.infoError ? h('p', { class: 'small warn', role: 'status' }, sl.infoError) : null,
       ]),
       h('div', { class: 'facts sell-facts' }, facts),
-      h('label', { class: 'sell-field', for: 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
-        h('span', { class: 'sell-input' }, [h('input', { id: 'sell-base', class: 'field', type: 'number', min: '1', step: '1', inputmode: 'numeric', value: sl.base, disabled: sl.busy,
+      h('label', { class: 'sell-field', for: pre + 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
+        h('span', { class: 'sell-input' }, [h('input', { id: pre + 'sell-base', class: 'field', type: 'number', min: '1', step: '1', inputmode: 'numeric', value: sl.base, disabled: sl.busy,
           onInput: (e) => { sl.base = e.target.value; sl.error = ''; } }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
       chips.length ? h('div', { class: 'cmk__keys', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
         key: label, type: 'button', class: ['chip-btn', { on: base === n }], disabled: sl.busy, onClick: () => { sl.base = String(n); sl.error = ''; },
       }, `${label} · ${wfmt(n)}`))) : null,
-      h('div', { class: 'sell-field' }, [h('span', { class: 'sell-label', id: 'sell-dur' }, 'Durée'),
-        h('div', { class: 'cmk__keys', role: 'group', 'aria-labelledby': 'sell-dur' }, SELL_DURATIONS.map(([m, label]) => h('button', {
+      h('div', { class: 'sell-field' }, [h('span', { class: 'sell-label', id: pre + 'sell-dur' }, 'Durée'),
+        h('div', { class: 'cmk__keys', role: 'group', 'aria-labelledby': pre + 'sell-dur' }, SELL_DURATIONS.map(([m, label]) => h('button', {
           key: m, type: 'button', class: ['chip-btn', { on: sl.minutes === m }], 'aria-pressed': String(sl.minutes === m), disabled: sl.busy, onClick: () => { sl.minutes = m; },
         }, label)))]),
       warns.length ? h('ul', { class: 'sell-warns', role: 'status' }, warns.map((w, i) => h('li', { key: i, class: 'warn' }, w))) : null,
       h('p', { class: 'merge-sum', role: 'status' }, base !== null ? [`${variantName(sl.k)} · départ `, priceTag(base, { tag: 'span' }), ` · ${duration}`] : 'Indique une mise de départ (en W, 1 au moins).'),
     ];
-    const right = linked ? [
-      mineSales.length ? h('div', { class: 'sell-mine' }, [h('h3', null, ['Tes ventes de cette carte ', h('span', { class: 'hint-inline' }, '14 derniers jours')]),
-        h('ul', { class: 'lots' }, mineSales.map((x) => h('li', { key: x.a, class: 'lot' }, [
-          h('span', { class: 'lot__line' }, [variantName(x.r + (x.s ? '*' : '')), ' · départ ', priceTag(x.base, { tag: 'span' }),
-            x.cur != null ? [` · ${x.st === 'sold' ? 'vendue' : 'enchère'} `, priceTag(x.cur, { tag: 'span' })] : '']),
-          h('span', { class: 'lot__meta small' }, x.st === 'run' ? [h('span', { class: ['flag', { ok: x.bid }] }, x.bid ? 'enchère reçue' : 'sans enchère'), leftText(x.end)]
-            : [h('span', { class: ['flag', { ok: x.st === 'sold' }] }, SALE_STATE[x.st] || x.st), ` le ${dateDay(x.end)}`]),
-        ])))]) : null,
-      viewCardMarket(c),
-    ] : [];
-    return h(Modal, { key: 'sell', title, wide: true, cls: 'sell', onClose: closeModal }, () => [
-      h('p', null, "Le classeur met un exemplaire aux enchères dans le jeu, à ton nom, avec ta session reliée. Il est réservé pendant l'enchère ; tu peux l'annuler tant que personne n'a misé."),
-      linked ? null : h('p', { class: 'warn', role: 'alert' }, ["Relie d'abord ton compte du jeu : le classeur met en vente avec ta session. ",
-        h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); closeCard(); openSyncTab(); } }, 'Relier mon compte')]),
-      h('div', { class: 'sell-cols' }, [h('div', { class: 'sell-main' }, left), right.length ? h('div', { class: 'sell-market' }, right) : null]),
-      errLine(sl.error),
-      sl.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir ma collection dans le jeu ↗')]) : null,
-      foot([
-        closeBtn('Annuler'),
-        h('button', { class: 'btn primary', type: 'button', disabled: sl.busy || !linked || base === null || full || none, onClick: () => sendSell(sl) },
-          sl.busy ? 'Mise en vente…' : 'Mettre en vente dans le jeu'),
-      ]),
-    ]);
+    return { left, base, full, none, linked, mk };
   }
   // « Miser » : l'enchère (exemplaire, prix actuel, cote, fin, ton solde), ta mise avec des montants proposés (le minimum,
   // la cote), puis la mise faite.
@@ -13563,6 +13978,9 @@
         path = 'amis/echanges';
         if (fr.trade !== 'all') p.set('qui', fr.trade);
       }
+    } else if (S.tab === 'marche') {
+      if (MK.sub !== 'acheter') path = 'marche/' + MK.sub;
+      else if (curDealTab.value.id !== dealTabs.value[0].id) p.set('onglet', curDealTab.value.id);
     }
     if (S.openId) p.set('carte', S.openId);
     const q = p.toString();
@@ -13586,6 +14004,7 @@
     else if (a === 'ami' && b) { r.tab = 'amis'; r.friend = b; r.falbum = c || null; }
     else if (a === 'amis' && b === 'echanges') { r.tab = 'amis'; r.trades = true; }
     else if (a === 'amis' && (b === 'pour-toi' || b === 'pour-eux')) { r.tab = 'amis'; r.fpage = b === 'pour-toi' ? 'fill' : 'wants'; }
+    else if (a === 'marche') { r.tab = 'marche'; r.msub = b || 'acheter'; }
     else if (TABS.some(([id]) => id === a) || a === 'nouveautes' || a === 'souhaits-sans-cartes') r.tab = a;
     return r;
   }
@@ -13637,6 +14056,12 @@
         toTop();
       }
       if (isPriceSort(fr.albumSort) || isPriceSort(fr.sort)) loadMarket(false);
+    } else if (r.tab === 'marche') {
+      setTab('marche');
+      if (MK.sub !== r.msub || MK.open) setMarketSub(r.msub);
+      const o = p.get('onglet');
+      const tab = o && dealTabs.value.some((t) => t.id === o) ? o : MK.sub === 'acheter' ? dealTabs.value[0].id : MK.tab;
+      if (MK.tab !== tab && (o || r.msub === 'acheter')) MK.tab = tab;
     } else setTab(r.tab);
     // Fiche d'une de tes cartes (pas encore chargées au démarrage : boot la rouvre ensuite).
     const card = p.get('carte');

@@ -34,7 +34,7 @@ du jeu relié une fois, qui croise la collection avec les catégories et les pag
 
 - Vue 3 runtime depuis cdnjs, rendu en fonctions `h()`, sans build ; CSP stricte (pas de style en ligne).
 - Thème sombre par défaut, clair quand le système le demande.
-- **Version web (ordinateur) figée** : toute refonte mobile se fait sous media query, sans changer le rendu large.
+- **Version web (ordinateur) figée** : toute refonte mobile se fait sous media query, sans changer le rendu large. Exception voulue par l'utilisateur : l'onglet Marché, refait sur ordinateur aussi le 2026-10-29 (sous-onglets, liste à gauche et fiche à droite sur une hauteur fixe, onglets de recherche) ; ce nouveau rendu large est à son tour celui à garder.
 - Vocabulaire : « collections » = listes de l'utilisateur ; « catégories » = catégories de Wikipédia (une source).
 
 ## Brand Commitments

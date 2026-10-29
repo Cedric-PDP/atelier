@@ -5393,7 +5393,7 @@ async function main() {
     const q = (p, n, w = null) => ({ p, n, w, l: p - 1, d: '2026-10-15T10:00:00.000Z' });
     um.market = {
       value: { value: 1234, priced: 2, cards: 3, approx: 1 },
-      history: [{ date: '2026-10-14', value: 1000, priced: 2, cards: 3 }, { date: '2026-10-15', value: 1100, priced: 2, cards: 3 }, { date: '2026-10-16', value: 1234, priced: 2, cards: 3 }],
+      history: [2, 1, 0].map((n, i) => ({ date: new Date(Date.now() - n * 86400_000).toISOString().slice(0, 10), value: [1000, 1100, 1234][i], priced: 2, cards: 3 })),
       live_at: new Date().toISOString(),
       attempt: { start: new Date(Date.now() - 60_000).toISOString(), end: new Date().toISOString(), ok: true, v: 'serveur', auto: true },
       live: {
@@ -5420,6 +5420,7 @@ async function main() {
     };
     ls.set('classeur-key', keyM);
     ls.set('classeur-known', JSON.stringify([{ key: keyM, name: 'Mona' }]));
+    check((await rawApi('PATCH', '/api/me', keyM, { prefs: { deal_presets: [{ name: 'Petits prix', f: { max: 40 } }] } })).status === 200, 'filtre enregistré refusé (marché)');
     const pm = openPage({ idb: 'absent' });
     const d = pm.doc;
     const body = () => text(d.body);
@@ -5456,214 +5457,348 @@ async function main() {
     check(segBtn('Prix ↓').getAttribute('aria-label') === 'Prix décroissant', 'tri « Prix ↓ » : libellé lisible attendu');
     btn('← Toutes les collections').click();
     await settle(40);
+    // Marché (refonte du 2026-10-29) : sous-onglets Acheter, Vendre, Mes enchères, Valeur ; liste à gauche, fiche à droite.
+    // Le marché de Voulue A (w1) est lu par sa fiche dans « Acheter » (choisie d'office : la seule affaire montrée).
+    const inH = (h) => new Date(Date.now() + h * 3600_000).toISOString();
+    const dayAgo = (n) => new Date(Date.now() - n * 86400_000).toISOString();
+    api.cardMarket = { w1: {
+      auctions: [{ a: 'e1', r: 'SR', s: false, ask: 120, bid: true, cur: 120, base: 50, end: inH(5), atk: 10, def: 20, lead: false, mine: false, n: null },
+        { a: 'e2', r: 'SR', s: false, ask: 60, bid: false, cur: null, base: 60, end: inH(0.5), atk: 11, def: 21, lead: false, mine: false, n: null },
+        { a: 'e3', r: 'SR', s: true, ask: 250, bid: true, cur: 250, base: 100, end: inH(30), atk: 12, def: 22, lead: true, mine: false, n: null }],
+      sales: [{ d: dayAgo(1), p: 110, k: 'SR' }, { d: dayAgo(2), p: 90, k: 'SR' }, { d: dayAgo(3), p: 100, k: 'SR' }, { d: dayAgo(4), p: 300, k: 'SR*' }],
+      v: { SR: { p: 100, n: 5, w: null, l: 110, d: dayAgo(1) }, 'SR*': { p: 260, n: 1, w: null, l: 300, d: dayAgo(4) } }, // celles de la liste des cotes
+    } };
+    api.auctionDetails = { e1: { a: 'e1', gone: false, status: 'active', bids: 4, bidders: 2, leader: 'Rival', seller: 'Marchande', leading: false, selling: false, my_bid: 90, cur: 130 },
+      e2: { a: 'e2', gone: false, status: 'active', bids: 0, bidders: 0, leader: null, seller: 'Marchande', leading: false, selling: false, my_bid: null, cur: null },
+      e3: { a: 'e3', gone: false, status: 'active', bids: 1, bidders: 1, leader: null, seller: 'Autre', leading: true, selling: false, my_bid: 250, cur: 250 } };
+    const mark = apiLog.length;
     d.getElementById('tab-marche').click();
     await settle(80);
     const panel = () => text(d.getElementById('panel-marche'));
-    check(/Valeur de ton classeur/.test(panel()) && panel().includes('1 234W · 2 cartes cotées sur 3') && panel().includes('Dont 1 carte comptée dans sa plus haute rareté'), 'valeur de l\'onglet Marché : ' + panel().slice(0, 300));
-    // Graphique : une ligne de 3 points, lisible sans couleur (valeur et date au-dessus, tableau des valeurs).
-    const svg = d.querySelectorAll('svg').find((n) => n.classList.contains('chart__svg'));
-    check(svg && svg.querySelectorAll('polyline').length === 1 && svg.querySelectorAll('circle').length === 3 && /Valeur du classeur, un point par jour/.test(svg.getAttribute('aria-label') || ''), 'graphique de la valeur absent');
-    check(d.querySelectorAll('.chart__table')[0].querySelectorAll('tr').length === 4 && panel().includes('Voir les valeurs'), 'tableau des valeurs absent');
-    // Bonnes affaires : carte qui manque, prix demandé, écart à la cote, « finit bientôt », collection qu'elle complète.
-    check(panel().includes('Voulue A') && panel().includes('50W (prix de départ, sans enchère) · cote 100W (−50 %)') && panel().includes('finit bientôt') && panel().includes('pour « Envies »'), 'bonnes affaires : ' + panel());
-    // Une seule par carte (la moins chère, l'autre comptée) ; finies depuis la lecture ou carte que tu as maintenant : plus
-    // montrées, et dit.
+    const fiche = () => text(d.querySelectorAll('.fiche')[0]);
+    const sub = (id) => d.getElementById('mk-sub-' + id);
+    const goSub = async (id) => { sub(id).click(); await settle(60); };
+    const master = () => d.querySelector('.mk-master');
+    const detail = () => d.getElementById('mk-detail');
+    const rowEls = () => (master() ? master().querySelectorAll('li').filter((n) => n.classList.contains('mk-row')) : []);
+    const rowTitles = () => rowEls().map((n) => text(n.querySelector('.mk-row__title')));
+    const rowOf = (t) => rowEls().find((n) => text(n.querySelector('.mk-row__title')) === t) || null;
+    const tabsOf = () => d.querySelectorAll('.mk-tab').filter((n) => !n.classList.contains('mk-tab--add'));
+    const tabText = () => tabsOf().map((n) => text(n.querySelector('.mk-tab__name'))).join(' | ');
+    // Quatre sous-onglets, « Acheter » ouvert, avec leurs nombres ; la lecture du marché en une ligne, son détail au clic.
+    check(['acheter', 'vendre', 'encheres', 'valeur'].every((id) => sub(id)) && sub('acheter').getAttribute('aria-selected') === 'true'
+      && text(sub('acheter')) === 'Acheter1' && text(sub('vendre')) === 'Vendre21' && text(sub('encheres')) === 'Mes enchères1'
+      && sub('encheres').querySelector('.mk-badge').classList.contains('alert'), 'sous-onglets du Marché : ' + ['acheter', 'vendre', 'encheres', 'valeur'].map((id) => (sub(id) ? text(sub(id)) : '?')).join(' | '));
+    check(!panel().includes('Cartes qui bougent') && !d.querySelectorAll('.acc').length, 'ancien accordéon encore là');
+    const readBtn = () => d.querySelector('.mk-read__btn');
+    check(text(readBtn()) === "Lu à l'instant" && !readBtn().classList.contains('old') && !d.getElementById('mk-read-pop'), 'état de la lecture : ' + text(readBtn()));
+    readBtn().click();
+    await settle(30);
+    check(text(d.getElementById('mk-read-pop')).includes("Lecture du marché par le classeur : à l'instant")
+      && text(d.getElementById('mk-read-pop')).includes('Bonnes affaires plus montrées : 1 enchère finie depuis la lecture, 1 carte que tu as maintenant.'), 'détail de la lecture : ' + text(d.getElementById('mk-read-pop')));
+    readBtn().click();
+    await settle(30);
+    // Onglets de recherche : sans deal_tabs, le filtre en cours devient « Toutes » et le filtre enregistré « Petits prix » un
+    // onglet (rien d'écrit au compte avant le premier changement).
+    check(tabText() === 'Toutes1 | Petits prix0' && tabsOf()[0].classList.contains('on'), 'onglets de recherche repris des anciens filtres : ' + tabText());
+    if (!SERVER) check(!um.prefs.deal_tabs, 'onglets écrits au compte sans changement');
+    // La liste : une affaire par carte (Voulue A, la moins chère, l'autre comptée) ; Voulue B (finie) et Marché 3 (que Mona
+    // a maintenant) pas montrées. Choisie d'office, sa fiche à droite.
+    check(rowTitles().join(' | ') === 'Voulue A' && rowEls()[0].classList.contains('on') && rowEls()[0].getAttribute('aria-selected') === 'true', 'liste des bonnes affaires : ' + rowTitles().join(' | '));
     {
-      const buy = text(d.querySelectorAll('section').find((n) => n.getAttribute('data-section') === 'acheter'));
-      check(!buy.includes('70W (enchère en cours)') && buy.includes('1 autre enchère intéressante sur cette carte') && !buy.includes('Voulue B') && !buy.includes('Marché 3'),
-        'bonnes affaires, doublons, enchères finies ou cartes déjà là : ' + buy);
+      const r = text(rowEls()[0]);
+      check(r.includes('50W') && r.includes('−50 %') && r.includes('finit bientôt') && r.includes('Envies') && r.includes('sans mise') && r.includes('+1 autre enchère'), 'ligne de Voulue A : ' + r);
     }
-    check(panel().includes('Plus montrées : 1 enchère finie depuis la lecture, 1 carte que tu as maintenant.'), 'bonnes affaires écartées non dites : ' + panel());
-    // Âge de la lecture, essai réussi : rien d'autre à dire.
-    check(panel().includes("Lecture du marché par le classeur : à l'instant") && !panel().includes("n'est pas à jour") && !panel().includes('Dernier essai'), 'âge de la lecture du marché : ' + panel().slice(0, 900));
-    // Sections : « à acheter » et « à vendre » côte à côte, puis « Mes enchères » sur toute la largeur (plus de « Cartes
-    // qui bougent ») ; accordéon, « Mes enchères » fermée par défaut (rien de rendu), état gardé par classeur.
-    const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
-    const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
-    const accBtn = (id) => section(id).querySelector('.acc__btn');
-    check(sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'valeur,ventes*,acheter,vendre,encheres*',
-      'sections du Marché : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
-    // « Valeur de ton classeur » : repliable comme les autres, ouverte par défaut ; repliée, son titre garde la valeur.
-    check(accBtn('valeur').getAttribute('aria-expanded') === 'true' && d.querySelectorAll('.market__big').length === 1, '« Valeur de ton classeur » doit être ouverte par défaut');
-    accBtn('valeur').click();
-    await settle(40);
-    check(accBtn('valeur').getAttribute('aria-expanded') === 'false' && !d.querySelectorAll('.market__big').length && text(accBtn('valeur')).includes('1 234W')
-      && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].open.valeur === false, '« Valeur de ton classeur » repliée : ' + text(accBtn('valeur')));
-    accBtn('valeur').click();
-    await settle(40);
-    check(accBtn('valeur').getAttribute('aria-expanded') === 'true' && d.querySelectorAll('.market__big').length === 1, '« Valeur de ton classeur » ne se rouvre pas');
-    check(!panel().includes('Cartes qui bougent') && !d.querySelectorAll('.movers').length, '« Cartes qui bougent » encore là');
-    check(text(accBtn('acheter')).includes('Bonnes affaires à acheter1'), 'nombre de bonnes affaires montrées dans le titre : ' + text(accBtn('acheter')));
-    check(['acheter', 'vendre'].every((id) => accBtn(id).getAttribute('aria-expanded') === 'true') && accBtn('encheres').getAttribute('aria-expanded') === 'false'
-      && !text(section('encheres')).includes('Tes mises') && text(accBtn('encheres')).includes('2 mises · 2 ventes'), '« Mes enchères » doit être fermée par défaut : ' + text(section('encheres')));
-    check(text(accBtn('acheter')).startsWith('Bonnes affaires à acheter') && text(accBtn('vendre')).startsWith('Bonnes affaires à vendre'), 'titres des deux colonnes');
-    accBtn('encheres').click();
-    await settle(40);
-    check(accBtn('encheres').getAttribute('aria-expanded') === 'true' && text(section('encheres')).includes('Tes mises'), '« Mes enchères » ne s\'ouvre pas');
-    const prefs = () => JSON.parse(ls.get('classeur-marche') || '{}');
-    check(Object.values(prefs()).length === 1 && Object.values(prefs())[0].open.encheres === true && Object.values(prefs())[0].open.acheter === true, 'état des sections non gardé : ' + ls.get('classeur-marche'));
-    accBtn('vendre').click();
-    await settle(40);
-    check(accBtn('vendre').getAttribute('aria-expanded') === 'false' && !section('vendre').querySelector('.lots') && Object.values(prefs())[0].open.vendre === false, '« Bonnes affaires à vendre » ne se ferme pas');
-    accBtn('vendre').click();
-    await settle(40);
-    // « Bonnes affaires à vendre » : seuil 100W par défaut ; « Cacher les cartes de mes collections » cochée par défaut :
-    // 21 « Vente » (105W à 505W) et Favorite F (300W : une favorite du jeu reste proposée), pas Marché 1, 2 ni 3 (dans
-    // « Envies ») ; du plus cher au moins cher ; 20 lignes puis « Afficher 2 de plus » ; une carte sans cote annoncée.
-    // Décochée : Marché 1 aussi (3 exemplaires, un gardé, « 2 en trop » à 400W), jamais Marché 2 ni 3 (un seul exemplaire).
+    const deal = () => detail().querySelector('.mk-deal');
+    check(text(detail().querySelector('.mk-dhead__title')) === 'Voulue A' && text(deal()).includes('Prix de départ50W') && text(deal()).includes('Cote · Super rare100W')
+      && text(deal()).includes('Économie50W') && text(deal()).includes('1 autre enchère intéressante sur cette carte'), 'fiche de la bonne affaire : ' + text(detail()).slice(0, 500));
+    check(deal().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/a1' && a.getAttribute('target') === '_blank'), 'lien vers l\'enchère dans le jeu absent');
+    // Le marché de la carte, lu après une courte pause : ses enchères, de la moins chère à la plus chère, le détail des
+    // moins chères (site du jeu) ; la courbe de ses ventes avec le prix à battre en pointillé.
+    check(await waitFor(() => text(detail()).includes('mène : Rival')), 'marché de la carte absent de la fiche : ' + text(detail()).slice(0, 800));
     {
-      const sell = () => section('vendre');
-      const rows = () => sell().querySelectorAll('li').map((n) => text(n.querySelector('.lot__title').querySelector('button')));
-      check(d.getElementById('sell-min') && String(d.getElementById('sell-min').value) === '100', 'seuil par défaut : 100 attendu');
-      check(d.getElementById('sell-hide-col') && d.getElementById('sell-hide-col').checked === true, '« Cacher les cartes de mes collections » absente ou décochée par défaut');
-      check(rows().length === 20 && rows().slice(0, 8).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21 | Vente 20 | Vente 19 | Vente 18 | Vente 17' && !rows().some((t) => t.startsWith('Marché')),
-        'à vendre (20 premières) : ' + rows().join(' | '));
-      check(text(sell()).includes('1 carte sans cote fiable : le classeur les lit peu à peu'), 'cartes sans cote non annoncées : ' + text(sell()));
-      const more = sell().querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
-      check(more && text(more) === 'Afficher 1 de plus (1 restante)', 'bouton « Afficher plus » : ' + (more ? text(more) : 'absent'));
-      more.click();
+      const rows = detail().querySelectorAll('li').filter((n) => n.classList.contains('auction'));
+      const rt = rows.map(text);
+      check(rows.length === 3 && rt[0].includes('60W') && rt[1].includes('130W') && rt[2].includes('250W'), 'enchères de la carte : ' + rt.join(' || '));
+      check(rt[1].includes('+30 % vs cote') && rt[1].includes('4 mises de 2 joueurs') && rt[1].includes('dépassée · ta mise 90W'), 'enchère détaillée : ' + rt[1]);
+      const svg = detail().querySelectorAll('svg').find((n) => /Prix de vente en Super rare/.test(n.getAttribute('aria-label') || ''));
+      check(svg && svg.querySelectorAll('line').some((n) => n.classList.contains('chart__mark')) && text(detail()).includes('en pointillé : 50W'), 'prix à battre absent de la courbe');
+      const calls = apiLog.slice(mark);
+      check(calls.filter((x) => x === 'GET /api/market/card?id=w1').length === 1 && calls.filter((x) => x.startsWith('GET /api/market/auction?id=e')).length === 3, 'lectures de la fiche : ' + calls.join(', '));
+    }
+    // Onglet « Petits prix » (prix ≤ 40W) : rien ne passe ; ses filtres modifiés dans son panneau, enregistrés tout de suite
+    // dans l'onglet (les deux onglets sont alors écrits au compte).
+    tabsOf()[1].querySelector('.mk-tab__name').click();
+    await settle(40);
+    check(tabsOf()[1].classList.contains('on') && !rowEls().length && text(master()).includes('Aucune enchère ne passe les filtres de « Petits prix »') && text(master()).includes('prix ≤ 40W'),
+      'onglet « Petits prix » : ' + text(master()));
+    d.getElementById('deal-filters-btn').click();
+    await settle(40);
+    check(d.getElementById('mk-editor') && String(d.getElementById('deal-tab-name').value) === 'Petits prix' && String(d.getElementById('deal-max').value) === '40', 'panneau des filtres de l\'onglet');
+    type(d.getElementById('deal-max'), '');
+    await settle(40);
+    check(rowTitles().join(' | ') === 'Voulue A' && tabText() === 'Toutes1 | Petits prix1', 'prix maximal retiré : ' + tabText());
+    await sleep(900);
+    if (!SERVER) check(Array.isArray(um.prefs.deal_tabs) && um.prefs.deal_tabs.map((t) => t.name).join() === 'Toutes,Petits prix' && um.prefs.deal_tabs[1].f.max === null,
+      'onglets pas écrits au compte : ' + JSON.stringify(um.prefs.deal_tabs));
+    // Nouvel onglet : filtres par défaut, son panneau ouvert pour le nommer ; collections incluses ou exclues, rareté, % de la cote.
+    d.getElementById('mk-tab-add').click();
+    await settle(40);
+    check(tabsOf().length === 3 && tabsOf()[2].classList.contains('on') && String(d.getElementById('deal-tab-name').value) === 'Nouvel onglet', 'nouvel onglet : ' + tabText());
+    type(d.getElementById('deal-tab-name'), 'Galaxies');
+    await settle(40);
+    check(text(tabsOf()[2].querySelector('.mk-tab__label')) === 'Galaxies', 'onglet pas renommé : ' + tabText());
+    {
+      const colRows = () => d.getElementById('deal-cols').querySelectorAll('.deal-cols__row');
+      const press = (label) => colRows()[0].querySelectorAll('button').find((b) => text(b) === label).click();
+      check(colRows().length === 1 && text(colRows()[0].querySelector('.deal-cols__name')) === 'Envies (1)', 'collections de l\'onglet : ' + colRows().map(text).join(' | '));
+      press('Exclure');
       await settle(40);
-      check(rows().length === 21 && rows().slice(-2).join(' | ') === 'Vente 05 | Vente 04' && !sell().querySelectorAll('button').some((b) => text(b).startsWith('Afficher')), 'après « Afficher plus » : ' + rows().length);
-      // Favorite F : en vente dans le jeu (enchère en cours), encore dans le classeur : pas proposée, et la ligne le dit.
-      check(!rows().includes('Favorite F') && text(sell()).includes('1 carte déjà en vente dans le jeu (« Mes enchères ») : pas proposée ici, même si ton classeur la garde encore.'),
-        'carte déjà en vente proposée : ' + text(sell()).slice(-300));
-      // Case décochée : les exemplaires en trop des cartes de tes collections (Marché 1), réglage gardé ; recochée ensuite.
-      d.getElementById('sell-hide-col').dispatch('change');
+      check(!rowEls().length && tabText() === 'Toutes1 | Petits prix1 | Galaxies0' && text(master()).includes('sans « Envies »'), 'Envies exclue : ' + tabText());
+      press('Inclure');
       await settle(40);
-      const m1 = sell().querySelectorAll('li').find((n) => text(n).includes('Marché 1'));
-      check(rows().length === 20 && rows().slice(6, 8).join(' | ') === 'Marché 1 | Vente 18' && !rows().some((t) => t === 'Marché 2' || t === 'Marché 3') && Object.values(prefs())[0].hideCol === false,
-        'case décochée : ' + rows().slice(0, 8).join(' | ') + ' / ' + ls.get('classeur-marche'));
-      check(m1 && text(m1).includes('2 en trop') && text(m1).includes('400W · 10 ventes · dernière 399W le 15 octobre') && m1.querySelector('.copy-name') && m1.querySelector('.w'), 'ligne de Marché 1 : ' + (m1 ? text(m1) : 'absente'));
-      d.getElementById('sell-hide-col').dispatch('change');
+      check(rowTitles().join() === 'Voulue A' && tabText().endsWith('Galaxies1') && text(master()).includes('pour « Envies »'), 'Envies incluse : ' + tabText());
+    }
+    {
+      const chip = (label) => d.getElementById('deal-filters').querySelectorAll('button').find((b) => text(b) === label);
+      chip('L').click();
       await settle(40);
-      check(!rows().includes('Marché 1') && Object.values(prefs())[0].hideCol === true, 'case recochée : Marché 1 doit disparaître');
-      type(d.getElementById('sell-min'), '450');
+      check(!rowEls().length && tabText().endsWith('Galaxies0'), 'filtre de rareté L : ' + tabText());
+      chip('L').click();
+      chip('30 %').click();
       await settle(40);
-      check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && Object.values(prefs())[0].min === 450, 'seuil 450W : ' + rows().join(' | ') + ' / ' + ls.get('classeur-marche'));
-      type(d.getElementById('sell-min'), '');
+      check(rowEls().length === 1, '« finit bientôt » sans mise : montrée malgré le seuil de 30 %');
+      d.getElementById('deal-soon').dispatch('change');
       await settle(40);
-      check(rows().length === 3 && Object.values(prefs())[0].min === 450, 'champ vidé : le seuil ne doit pas bouger');
-      // Une ligne ouvre la fiche de la carte.
-      sell().querySelectorAll('li')[0].querySelector('.lot__title').querySelector('button').click();
+      check(!rowEls().length, 'sans « finit bientôt » : 50 % de la cote ne passe pas 30 %');
+      chip('Effacer les filtres').click();
+      await settle(40);
+      check(rowEls().length === 1 && text(master()).includes('pour « Envies »'), 'filtres effacés (la collection reste)');
+    }
+    await sleep(900);
+    if (!SERVER) {
+      const g = (um.prefs.deal_tabs || [])[2] || {};
+      check(g.name === 'Galaxies' && g.f && g.f.cols.length === 1 && !g.f.xcols.length && g.f.pct === 80 && g.f.soon === true, 'onglet « Galaxies » au compte : ' + JSON.stringify(g));
+    }
+    d.querySelectorAll('.mk-editor__foot')[0].querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
+    await settle(40);
+    check(!d.getElementById('mk-editor'), 'panneau des filtres pas fermé');
+    // Menu « ⋯ » : dupliquer, déplacer, supprimer (confirmation) ; jamais le dernier onglet.
+    {
+      const menuOf = (i) => { tabsOf()[i].querySelector('.mk-tab__more').click(); };
+      const item = (label) => d.querySelectorAll('.mk-menu__item').find((b) => text(b) === label);
+      menuOf(2);
+      await settle(30);
+      item('Dupliquer').click();
+      await settle(40);
+      check(tabText() === 'Toutes1 | Petits prix1 | Galaxies1 | Galaxies (copie)1' && tabsOf()[3].classList.contains('on'), 'onglet dupliqué : ' + tabText());
+      menuOf(3);
+      await settle(30);
+      item('Déplacer à gauche').click();
+      await settle(40);
+      check(tabText() === 'Toutes1 | Petits prix1 | Galaxies (copie)1 | Galaxies1', 'onglet déplacé : ' + tabText());
+      menuOf(2);
+      await settle(30);
+      item("Supprimer l'onglet").click();
+      await settle(40);
+      const md = d.querySelectorAll('.modal')[0];
+      check(md && text(md).includes('Supprimer l\'onglet « Galaxies (copie) » et ses filtres ?'), 'confirmation de suppression absente');
+      md.querySelectorAll('button').find((b) => text(b).trim() === "Supprimer l'onglet").click();
+      await settle(80);
+      check(tabText() === 'Toutes1 | Petits prix1 | Galaxies1' && !d.querySelectorAll('.modal').length, 'onglet supprimé : ' + tabText());
+      if (!SERVER) check(um.prefs.deal_tabs.length === 3, 'suppression pas gardée au compte : ' + JSON.stringify(um.prefs.deal_tabs));
+      tabsOf()[0].querySelector('.mk-tab__name').click();
+      await settle(40);
+    }
+    // « Miser » depuis la fiche (Voulue A, 50W sans mise, cote 100W) : la fenêtre propose le prix de départ (et la cote),
+    // prévient au-dessus de la cote, refuse sous le minimum ; la mise part au serveur, puis « tu mènes ».
+    {
+      const md = () => d.querySelectorAll('.modal')[0] || null;
+      const mdText = () => (md() ? text(md()) : '');
+      const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
+      const bidBtn = () => (deal() ? deal().querySelectorAll('button').find((b) => text(b) === 'Miser') || null : null);
+      check(bidBtn() && bidBtn().getAttribute('aria-label') === 'Miser sur « Voulue A »', 'bouton « Miser » absent de la fiche : ' + (deal() ? text(deal()) : 'fiche absente'));
+      bidBtn().click();
+      await settle(40);
+      const amount = () => d.getElementById('bid-amount');
+      check(mdText().includes('Miser sur « Voulue A »') && mdText().includes('Prix de départ50W · aucune mise') && mdText().includes('Cote100W') && String(amount().value) === '50',
+        'fenêtre « Miser » : ' + mdText().slice(0, 400));
+      check(inMd('minimum · 50W') && inMd('la cote · 100W') && inMd('Miser 50W dans le jeu'), 'mises proposées : ' + md().querySelectorAll('button').map(text).join(' | '));
+      amount().value = '40';
+      amount().dispatch('input');
+      await settle(20);
+      check(mdText().includes('Il faut au moins 50W') && inMd('Miser 40W dans le jeu').disabled, 'mise sous le minimum : ' + mdText().slice(0, 600));
+      amount().value = '120';
+      amount().dispatch('input');
+      await settle(20);
+      check(mdText().includes('20 % au-dessus de la cote'), 'mise au-dessus de la cote : ' + mdText().slice(0, 600));
+      // Refus du serveur (quelqu'un a misé entre-temps) : message, le minimum suit.
+      inMd('minimum · 50W').click();
+      await settle(20);
+      api.bidFail = { status: 409, error: "Quelqu'un a misé 55W : il faut au moins 56W.", extra: { min: 56, cur: 55 } };
+      inMd('Miser 50W dans le jeu').click();
       await settle(60);
-      check(d.querySelectorAll('.fiche').length === 1 && text(d.querySelectorAll('.fiche')[0]).includes('Vente 24'), 'fiche de la carte à vendre absente');
-      d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
+      check(mdText().includes('il faut au moins 56W') && String(amount().value) === '56' && mdText().includes('Enchère actuelle55W') && api.bidsSent.length === 0, 'refus de la mise : ' + mdText().slice(0, 600));
+      inMd('Miser 56W dans le jeu').click();
+      await settle(80);
+      check(api.bidsSent.length === 1 && api.bidsSent[0].a === 'a1' && api.bidsSent[0].amount === 56, 'mise envoyée : ' + JSON.stringify(api.bidsSent));
+      check(mdText().includes('Mise faite : tu mènes.') && mdText().includes('Ta mise : 56W') && mdText().includes('ton solde dans le jeu : 944W')
+        && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/a1'), 'mise faite : ' + mdText());
+      inMd('Fermer').click();
+      await settle(60);
+      check(await waitFor(() => rowOf('Voulue A') && text(rowOf('Voulue A')).includes('tu mènes') && text(deal()).includes('tu mènes') && !bidBtn()),
+        'bonne affaire misée : « tu mènes », plus de « Miser » : ' + (deal() ? text(deal()) : 'fiche absente'));
+    }
+    // Fiche de la carte (« Ouvrir la fiche ») : ses cotes par rareté, et son marché sans nouvelle lecture (déjà lu par la
+    // fiche du Marché) ; « Miser » sur chaque enchère, sauf celle que je mène.
+    {
+      const m2 = apiLog.length;
+      detail().querySelectorAll('button').find((b) => text(b) === 'Ouvrir la fiche').click();
+      await settle(60);
+      check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100W5 ventes') && fiche().includes('Super rare, brillante~260W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
+      const f = d.querySelectorAll('.fiche')[0];
+      const rows = f.querySelectorAll('li').filter((n) => n.classList.contains('auction'));
+      const rt = rows.map(text);
+      check(rows.length === 3 && rt[0].includes('−40 % vs cote') && rt[0].includes('aucune mise, prix de départ') && rows[0].querySelector('.auction__clock').classList.contains('hot'), 'enchère sans mise : ' + rt[0]);
+      check(rt[1].includes('mène : Rival') && rt[1].includes('vendeur : Marchande') && rt[1].includes('ATK 10 · DEF 20'), 'enchère détaillée dans la fiche : ' + rt[1]);
+      check(rt[2].includes('tu mènes') && rt[2].includes('brillante') && rt[2].includes('cote ~260W') && !rt[2].includes('vs cote') && rows[2].classList.contains('lead'), 'enchère que je mène : ' + rt[2]);
+      check(rows.every((n) => n.querySelectorAll('a').some((a) => a.classList.contains('game-link') && /^https:\/\/www\.wiki-masters\.com\/marketplace\/e[123]$/.test(a.getAttribute('href')))), 'liens vers le jeu dans la fiche');
+      const rowBid = (n) => n.querySelectorAll('button').find((b) => text(b) === 'Miser') || null;
+      check(rowBid(rows[0]) && rowBid(rows[1]) && !rowBid(rows[2]), 'boutons « Miser » de la fiche : ' + rows.map((n) => !!rowBid(n)).join(', '));
+      rowBid(rows[1]).click();
       await settle(40);
-      // Exclue des échanges et ventes (prefs.keep, 2026-10-29) : la case de sa fiche la retire de « à vendre », une ligne le
-      // dit ; « La voir » ouvre « Mes cartes » sur les cartes exclues (cadenas) ; un tag exclu exclut ses cartes ; décochée, elle revient.
-      const ficheOf = (t) => { const b = sell().querySelectorAll('li').find((n) => text(n).includes(t)); b.querySelector('.lot__title').querySelector('button').click(); };
+      const mdt = () => (d.querySelectorAll('.modal')[0] ? text(d.querySelectorAll('.modal')[0]) : '');
+      check(mdt().includes('Miser sur « Voulue A »') && mdt().includes('Enchère actuelle130W') && String(d.getElementById('bid-amount').value) === '131', 'fenêtre « Miser » de la fiche : ' + mdt().slice(0, 400));
+      d.querySelectorAll('.modal')[0].querySelectorAll('button').find((b) => text(b).trim() === 'Annuler').click();
+      await settle(40);
+      check(!d.querySelectorAll('.modal').length && d.querySelectorAll('.fiche').length === 1, 'fenêtre « Miser » fermée, fiche gardée');
+      check(!apiLog.slice(m2).some((x) => x.startsWith('GET /api/market/card')), 'fiche : marché relu alors qu\'il vient d\'être lu : ' + apiLog.slice(m2).join(', '));
+      f.querySelectorAll('button.close')[0].click();
+      await settle(40);
+    }
+    // « Vendre » : seuil 100W par défaut, « Pas les cartes de mes collections » cochée : les 21 « Vente » (105W à 505W) du plus
+    // cher au moins cher (toute la liste : plus de « Afficher 20 de plus »), pas Marché 1, 2 ni 3 (dans « Envies »), pas
+    // Favorite F (déjà en vente dans le jeu) ; une carte sans cote annoncée.
+    await goSub('vendre');
+    check(sub('vendre').getAttribute('aria-selected') === 'true' && String(d.getElementById('sell-min').value) === '100' && d.getElementById('sell-hide-col').checked === true, 'onglet « Vendre » : seuil ou case');
+    check(rowTitles().length === 21 && rowTitles().slice(0, 4).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21' && rowTitles().slice(-1)[0] === 'Vente 04'
+      && !rowTitles().some((t) => t.startsWith('Marché') || t === 'Favorite F'), 'à vendre : ' + rowTitles().join(' | '));
+    check(text(master()).includes('1 carte sans cote fiable : le classeur les lit peu à peu') && text(master()).includes('1 carte déjà en vente dans le jeu (« Mes enchères ») : pas proposée ici'), 'notes de « Vendre » : ' + text(master()).slice(-500));
+    d.getElementById('sell-hide-col').dispatch('change');
+    await settle(40);
+    {
+      const m1 = rowOf('Marché 1');
+      check(m1 && text(m1).includes('2 en trop') && text(m1).includes('400W') && text(m1).includes('10 ventes · dernière 399W le 15 octobre') && rowTitles().length === 22, 'case décochée : ' + (m1 ? text(m1) : rowTitles().join(' | ')));
+    }
+    d.getElementById('sell-hide-col').dispatch('change');
+    await settle(40);
+    check(!rowOf('Marché 1'), 'case recochée : Marché 1 doit disparaître');
+    type(d.getElementById('sell-min'), '450');
+    await settle(40);
+    check(rowTitles().join(' | ') === 'Vente 24 | Vente 23 | Vente 22', 'seuil 450W : ' + rowTitles().join(' | '));
+    type(d.getElementById('sell-min'), '');
+    await settle(40);
+    check(rowTitles().length === 3 && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].min === 450, 'champ vidé : le seuil ne doit pas bouger');
+    // La fiche de Vente 24 (choisie d'office) : « Mettre en vente » sur place, départ proposé à 90 % de la cote (505W → 455W) ;
+    // les exemplaires sont lus dans le jeu au premier geste ; la vente part au serveur (rareté, prix, durée).
+    {
+      const box = () => detail().querySelector('.mk-sellbox');
+      check(text(detail().querySelector('.mk-dhead__title')) === 'Vente 24' && box() && String(d.getElementById('mk-sell-base').value) === '455', 'fiche de Vente 24 : ' + text(detail()).slice(0, 400));
+      check(!apiLog.some((x) => x === 'GET /api/market/sell?id=v24'), 'exemplaires lus avant le premier geste');
+      type(d.getElementById('mk-sell-base'), '300');
+      await settle(30);
+      check(text(box()).includes('Départ 41 % sous la cote (505W)'), 'avertissement sous la cote : ' + text(box()));
+      box().querySelectorAll('button').find((b) => text(b) === '3 h').click();
+      await settle(30);
+      d.getElementById('mk-sell-go').click();
+      await settle(120);
+      check(api.sold.length === 1 && api.sold[0].id === 'v24' && api.sold[0].k === 'C' && api.sold[0].base === 300 && api.sold[0].minutes === 180, 'vente envoyée : ' + JSON.stringify(api.sold));
+      const toastText = () => d.querySelectorAll('.toast').map(text).join(' | ');
+      check(apiLog.includes('GET /api/market/sell?id=v24') && await waitFor(() => toastText().includes('« Vente 24 » est en vente dans le jeu')), 'vente faite : ' + toastText() + ' / ' + apiLog.slice(-6).join(', '));
+      check(await waitFor(() => !rowOf('Vente 24')), 'Vente 24 encore proposée à la vente');
+      // Refus du jeu (vérification anti-robot) : le message et un lien vers le jeu.
+      rowOf('Vente 23').click();
+      await settle(60);
+      api.sellFail = { status: 409, error: 'Le jeu demande de vérifier que tu es bien humain.', extra: { verify: true } };
+      d.getElementById('mk-sell-go').click();
+      await settle(80);
+      check(text(box()).includes('Le jeu demande de vérifier que tu es bien humain.') && box().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/collection'), 'vérification demandée : ' + text(box()));
+    }
+    // Exclue des échanges et ventes (prefs.keep, 2026-10-29) : la case de sa fiche la retire de « Vendre », une ligne le dit ;
+    // « La voir » ouvre « Mes cartes » sur les cartes exclues (cadenas) ; un tag exclu exclut ses cartes ; décochée, elle revient.
+    {
+      type(d.getElementById('sell-min'), '100');
+      await settle(40);
+      const ficheOf = async (t) => { rowOf(t).click(); await settle(60); detail().querySelectorAll('button').find((b) => text(b) === 'Ouvrir la fiche').click(); await settle(60); };
       const keepBox = () => { const f = d.querySelectorAll('.fiche')[0]; const k = f && f.querySelectorAll('.keep-toggle')[0]; return k ? k.querySelector('input') : null; };
       const closeFiche = async () => { d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click(); await settle(40); };
-      ficheOf('Vente 24');
-      await settle(60);
+      const top3 = () => rowTitles().slice(0, 3).join(' | ');
+      await ficheOf('Vente 23');
       check(keepBox() && !keepBox().checked, 'case « Exclue des échanges et ventes » absente ou déjà cochée');
       keepBox().checked = true;
       keepBox().dispatch('change');
       await settle(60);
-      check(keepBox().checked, 'case « Exclue » non cochée après le clic');
       await closeFiche();
-      check(rows().join(' | ') === 'Vente 23 | Vente 22' && text(sell()).includes('1 carte exclue des échanges et des ventes : pas proposée ici.'), 'carte exclue encore à vendre : ' + rows().join(' | ') + ' / ' + text(sell()).slice(-400));
-      // Vente 23 reçoit le tag « Gardée » (sa fiche), exclu plus bas.
-      ficheOf('Vente 23');
-      await settle(60);
+      check(top3() === 'Vente 22 | Vente 21 | Vente 20' && text(master()).includes('1 carte exclue des échanges et des ventes : pas proposée ici.'), 'carte exclue encore à vendre : ' + top3());
+      await ficheOf('Vente 22');
       type(d.getElementById('new-tag'), 'Gardée');
       d.getElementById('new-tag').parentNode.dispatch('submit');
       await settle(80);
       await closeFiche();
-      sell().querySelectorAll('button').find((b) => text(b) === 'La voir').click();
+      master().querySelectorAll('button').find((b) => text(b) === 'La voir').click();
       await settle(80);
       const grid = () => d.querySelectorAll('.cardgrid')[0];
       const cellsOf = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1) : []);
-      check(d.getElementById('panel-cartes') && cellsOf().length === 1 && text(cellsOf()[0]).includes('Vente 24') && cellsOf()[0].querySelector('.cell__keep')
-        && text(d.querySelectorAll('.count-line')[0]).includes('Exclues des échanges et ventes'), '« La voir » : ' + cellsOf().map((n) => text(n)).join(' | '));
-      // Un tag exclu (champ du panneau des filtres) : Vente 23, taguée « Gardée », est exclue aussi ; sa fiche le dit, case grisée.
+      check(d.getElementById('panel-cartes') && cellsOf().length === 1 && text(cellsOf()[0]).includes('Vente 23') && cellsOf()[0].querySelector('.cell__keep'), '« La voir » : ' + cellsOf().map((n) => text(n)).join(' | '));
       type(d.getElementById('keep-tag'), 'Gardée');
       d.getElementById('keep-tag').parentNode.dispatch('submit');
       await settle(80);
-      check(text(d.querySelectorAll('.keep-facet')[0]).includes('Gardée'), 'tag exclu absent du panneau : ' + text(d.querySelectorAll('.keep-facet')[0]));
       d.getElementById('tab-marche').click();
       await settle(80);
-      check(rows().join(' | ') === 'Vente 22' && text(sell()).includes('2 cartes exclues'), 'tag exclu : ' + rows().join(' | '));
-      // Réintégrer : le tag (« × » du panneau), puis la carte (sa fiche).
-      sell().querySelectorAll('button').find((b) => text(b) === 'Les voir').click();
+      check(sub('vendre').getAttribute('aria-selected') === 'true' && top3() === 'Vente 21 | Vente 20 | Vente 19' && text(master()).includes('2 cartes exclues'), 'tag exclu : ' + top3());
+      master().querySelectorAll('button').find((b) => text(b) === 'Les voir').click();
       await settle(80);
       d.querySelectorAll('.keep-facet')[0].querySelectorAll('button.x')[0].click();
       await settle(80);
-      check(cellsOf().length === 1 && text(cellsOf()[0]).includes('Vente 24'), 'tag réintégré : ' + cellsOf().map((n) => text(n)).join(' | '));
       cellsOf()[0].querySelector('.card').dispatch('click');
       await settle(60);
       keepBox().checked = false;
       keepBox().dispatch('change');
       await settle(60);
       await closeFiche();
-      check(!cellsOf().length, 'carte réintégrée encore dans « Exclues »');
       d.querySelectorAll('button').find((x) => x.getAttribute('aria-label') === 'Retirer le filtre Exclues').click();
       await settle(40);
       d.getElementById('tab-marche').click();
       await settle(80);
-      check(rows().join(' | ') === 'Vente 24 | Vente 23 | Vente 22' && !text(sell()).includes('exclue'), 'après réintégration : ' + rows().join(' | '));
+      check(top3() === 'Vente 23 | Vente 22 | Vente 21' && !text(master()).includes('exclue'), 'après réintégration : ' + top3());
+      type(d.getElementById('sell-min'), '450');
+      await settle(40);
     }
-    // Mes enchères et mes ventes.
-    check(panel().includes('ta mise 8W · enchère actuelle 9W · cote 10W (−10 %)') && panel().includes('dépassée') && panel().includes('gagnée') && panel().includes('pas de cote'), 'mes enchères : ' + panel());
-    check(panel().includes('départ 5W · vendue 12W · cote 20W (−40 %)'), 'mes ventes : ' + panel());
-    check(panel().includes('sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro »)') && panel().includes('une passe par membre toutes les 20 minutes')
-      && panel().includes('30 requêtes, une par seconde') && panel().includes("la passe s'arrête et la suivante est sautée"), 'avertissement des règles absent');
-    // Aucun « 12 W » (espace avant le W) ; les montants de l'onglet en vert (classe w), hors écarts (hausse, baisse).
-    check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
-    check(d.getElementById('panel-marche').querySelectorAll('.w').length >= 12 && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W', "montants de l'onglet Marché : classe w attendue");
-    // « Mettre en vente » depuis « Bonnes affaires à vendre » (seuil 450W : Vente 24, 23, 22) : la fenêtre lit les
-    // exemplaires dans le jeu et le marché de la carte, propose la cote, prévient d'un départ bien sous la cote ; la vente
-    // part au serveur (rareté, prix, durée), puis s'annule depuis la fenêtre.
+    // « Mes enchères » : mises dépassées d'abord (Marché 3), puis tes ventes en cours (Favorite F, Vente 24 qui vient d'être
+    // mise en vente), les terminées repliées (Ailleurs gagnée, Marché 2 vendue) ; mises de tes ventes relues sur le site du jeu.
+    await goSub('encheres');
+    const groups = () => master().querySelectorAll('li').filter((n) => n.classList.contains('mk-group')).map(text);
+    check(groups().join(' | ') === 'À relancer · dépassées1 | Mes ventes en cours2 | Terminées ces 14 joursAfficher (2)' && rowTitles().join(' | ') === 'Marché 3 | Favorite F | Vente 24',
+      'Mes enchères : ' + groups().join(' | ') + ' / ' + rowTitles().join(' | '));
+    check(text(rowOf('Marché 3')).includes('dépassée') && text(rowOf('Marché 3')).includes('ta mise 8W · enchère 9W'), 'mise dépassée : ' + text(rowOf('Marché 3')));
+    check(text(detail()).includes("Quelqu'un a misé au-dessus de toi (9W). La cote est à 10W : tu peux encore remiser en dessous.")
+      && detail().querySelectorAll('button').some((b) => text(b) === 'Remiser' && b.getAttribute('aria-label') === 'Miser sur « Marché 3 »'), 'fiche de la mise dépassée : ' + text(detail()).slice(0, 500));
+    check(await waitFor(() => apiLog.includes('GET /api/market/auction?id=s2')) && await waitFor(() => text(rowOf('Favorite F')).includes('sans enchère')), 'mises de Favorite F pas relues : ' + apiLog.slice(-8).join(', '));
+    master().querySelectorAll('button').find((b) => text(b) === 'Afficher (2)').click();
+    await settle(40);
+    check(rowTitles().join(' | ') === 'Marché 3 | Favorite F | Vente 24 | Marché 2 | Ailleurs' && text(rowOf('Ailleurs')).includes('gagnée') && text(rowOf('Marché 2')).includes('départ 5W · vendue 12W'),
+      'terminées : ' + rowTitles().join(' | '));
+    // Une vente sans mise s'annule (confirmation) ; le jeu refuse si quelqu'un a misé. Une mise reçue : plus annulable.
     {
       const md = () => d.querySelectorAll('.modal')[0] || null;
       const mdText = () => (md() ? text(md()) : '');
       const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
-      const sell = () => section('vendre');
-      const row24 = sell().querySelectorAll('li').find((n) => text(n).includes('Vente 24'));
-      const from = apiLog.length;
-      row24.querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
+      const cancelBtn = () => detail().querySelectorAll('button').find((b) => text(b) === 'Annuler la vente') || null;
+      rowOf('Favorite F').click();
       await settle(60);
-      check(md() && md().classList.contains('sell') && mdText().includes('Mettre en vente « Vente 24 »'), 'fenêtre de vente absente : ' + mdText().slice(0, 200));
-      // Exemplaires lus dans le jeu ; le marché de la carte, lu à l'ouverture de sa fiche juste avant, vient du cache.
-      check(await waitFor(() => apiLog.slice(from).includes('GET /api/market/sell?id=v24')) && !apiLog.slice(from).includes('GET /api/market/card?id=v24'), 'lectures de la fenêtre : ' + apiLog.slice(from).join(', '));
-      await settle(40);
-      check(String(d.getElementById('sell-base').value) === '505' && inMd('la cote · 505W') && inMd('la dernière vente · 504W'), 'prix proposés : ' + mdText());
-      check(mdText().includes('Cote · Commune505W · 5 ventes') && mdText().includes('Tes enchères actives1 / 5') && mdText().includes('Commune · départ 505W · 1 h'), 'marché dans la fenêtre : ' + mdText());
-      check(mdText().includes('Enchères en cours') && mdText().includes('Personne ne vend cette carte en ce moment.'), 'enchères de la carte dans la fenêtre : ' + mdText());
-      type(d.getElementById('sell-base'), '300');
-      await settle(30);
-      check(mdText().includes('Départ 41 % sous la cote (505W)'), 'avertissement sous la cote : ' + mdText());
-      inMd('3 h').click();
-      await settle(30);
-      inMd('Mettre en vente dans le jeu').click();
-      await settle(80);
-      check(api.sold.length === 1 && api.sold[0].id === 'v24' && api.sold[0].k === 'C' && api.sold[0].base === 300 && api.sold[0].minutes === 180, 'vente envoyée : ' + JSON.stringify(api.sold));
-      check(mdText().includes('« Vente 24 » est en vente dans le jeu.') && mdText().includes('Commune, départ 300W') && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/vente-1'),
-        'vente faite : ' + mdText());
-      inMd('Annuler la vente').click();
-      await settle(80);
-      check(api.cancelled.join() === 'vente-1' && mdText().includes('Vente annulée.') && !inMd('Annuler la vente'), 'annulation depuis la fenêtre : ' + mdText());
-      inMd('Fermer').click();
-      await settle(40);
-      check(!md(), 'fenêtre de vente pas refermée');
-      // Refus du jeu (vérification anti-robot) : le message et un lien vers le jeu.
-      type(d.getElementById('sell-min'), '100');
-      await settle(40);
-      sell().querySelectorAll('li').find((n) => text(n).includes('Vente 23')).querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
-      await settle(80);
-      api.sellFail = { status: 409, error: 'Le jeu demande de vérifier que tu es bien humain.', extra: { verify: true } };
-      inMd('Mettre en vente dans le jeu').click();
-      await settle(80);
-      check(mdText().includes('Le jeu demande de vérifier que tu es bien humain.') && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/collection'), 'vérification demandée : ' + mdText());
-      inMd('Annuler').click();
-      await settle(40);
-      type(d.getElementById('sell-min'), '450');
-      await settle(40);
-      // « Mes enchères » : une vente en cours sans mise s'annule (confirmation) ; le jeu refuse si quelqu'un a misé.
-      const salesLi = () => section('encheres').querySelectorAll('li').filter((n) => text(n).includes('Favorite F') && text(n).includes('sans enchère'));
-      check(salesLi().length === 1 && salesLi()[0].querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'annulation dans « Mes enchères » absente');
+      check(cancelBtn() && text(detail()).includes("Personne n'a encore misé : tu peux annuler la vente."), 'annulation de Favorite F absente : ' + text(detail()).slice(0, 400));
       api.cancelFail = { status: 409, error: "Quelqu'un a déjà misé sur cette vente : le jeu ne permet plus de l'annuler.", extra: { has_bid: true } };
-      salesLi()[0].querySelectorAll('button').find((b) => text(b) === 'Annuler la vente').click();
+      cancelBtn().click();
       await settle(40);
       check(mdText().includes('Retirer « Favorite F » du marché du jeu ?'), 'confirmation absente : ' + mdText());
       inMd('Annuler la vente').click();
@@ -5671,47 +5806,45 @@ async function main() {
       check(mdText().includes("Quelqu'un a déjà misé sur cette vente"), 'refus du jeu absent : ' + mdText());
       inMd('Annuler').click();
       await settle(40);
-    }
-    // « Mes ventes en cours » (ouverte par défaut, en haut) : Favorite F, mises relues sur le site du jeu, annulable ; une
-    // vente faite depuis la fenêtre y arrive, avec une mise elle n'est plus annulable, et une annulation l'en retire.
-    {
-      const enc = () => section('ventes');
-      const rowsOf = () => enc().querySelectorAll('li');
-      check(accBtn('ventes').getAttribute('aria-expanded') === 'true' && text(accBtn('ventes')).startsWith('Mes ventes en cours'), '« Mes ventes en cours » fermée ou absente');
-      check(await waitFor(() => apiLog.includes('GET /api/market/auction?id=s2')), 'mises de Favorite F pas relues : ' + apiLog.slice(-8).join(', '));
+      const v24 = um.market.live.sales.find((x) => x.t === 'Vente 24');
+      Object.assign(v24, { bid: true, cur: 600 });
+      master().querySelectorAll('button').find((b) => text(b) === 'Relire les mises').click();
+      await settle(80);
+      rowOf('Vente 24').click();
+      await settle(60);
+      check(text(rowOf('Vente 24')).includes('1 mise') && text(rowOf('Vente 24')).includes('enchère 600W') && text(detail()).includes('mène : Acheteur') && !cancelBtn(), 'vente avec une mise : ' + text(detail()).slice(0, 400));
+      rowOf('Favorite F').click();
+      await settle(60);
+      cancelBtn().click();
       await settle(40);
-      check(rowsOf().length === 1 && text(rowsOf()[0]).includes('Favorite F') && text(rowsOf()[0]).includes('départ 250W') && text(rowsOf()[0]).includes('sans enchère')
-        && rowsOf()[0].querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'ventes en cours : ' + text(enc()));
-      // Une vente depuis la fenêtre (Vente 22, 3 h), puis une mise reçue : plus annulable.
-      section('vendre').querySelectorAll('li').find((n) => text(n).includes('Vente 22')).querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
-      await settle(80);
-      const md = () => d.querySelectorAll('.modal')[0] || null;
-      md().querySelectorAll('button').find((b) => text(b).trim() === 'Mettre en vente dans le jeu').click();
-      await settle(80);
-      md().querySelectorAll('button').find((b) => text(b).trim() === 'Fermer').click();
-      await settle(80);
-      check(await waitFor(() => rowsOf().length === 2) && rowsOf().some((n) => text(n).includes('Vente 22') && n.querySelectorAll('button').some((b) => text(b) === 'Annuler la vente')),
-        'vente faite depuis la fenêtre absente des ventes en cours : ' + text(enc()));
-      const v22 = um.market.live.sales.find((x) => x.t === 'Vente 22');
-      Object.assign(v22, { bid: true, cur: 600 });
-      enc().querySelectorAll('button').find((b) => text(b) === 'Relire les mises').click();
-      await settle(80);
-      const row22 = rowsOf().find((n) => text(n).includes('Vente 22'));
-      check(text(row22).includes('enchère 600W') && text(row22).includes('1 mise') && text(row22).includes('mène : Acheteur') && text(row22).includes('plus annulable')
-        && !row22.querySelectorAll('button').some((b) => text(b) === 'Annuler la vente'), 'vente avec une mise : ' + text(row22));
-      // Annuler Favorite F : confirmation, puis elle quitte la section.
-      rowsOf().find((n) => text(n).includes('Favorite F')).querySelectorAll('button').find((b) => text(b) === 'Annuler la vente').click();
-      await settle(40);
-      md().querySelectorAll('button').find((b) => text(b).trim() === 'Annuler la vente').click();
+      inMd('Annuler la vente').click();
       await settle(120);
-      check(api.cancelled.includes('s2') && await waitFor(() => rowsOf().length === 1 && !text(enc()).includes('Favorite F')), 'annulation depuis les ventes en cours : ' + text(enc()));
+      check(api.cancelled.includes('s2') && await waitFor(() => !rowOf('Favorite F') || !text(rowOf('Favorite F')).includes('sans enchère')), 'annulation depuis Mes enchères : ' + rowTitles().join(' | '));
     }
+    // « Valeur » : valeur, courbe (un point par jour, sa période), lecture du marché, règles.
+    await goSub('valeur');
+    check(panel().includes('1 234W · 2 cartes cotées sur 3') && panel().includes('Dont 1 carte comptée dans sa plus haute rareté') && text(d.querySelectorAll('.market__big')[0].querySelector('.w')) === '1 234W',
+      "valeur de l'onglet Marché : " + panel().slice(0, 300));
+    {
+      const svg = d.querySelectorAll('svg').find((n) => n.classList.contains('chart__svg'));
+      check(svg && svg.querySelectorAll('polyline').length === 1 && svg.querySelectorAll('circle').length === 3 && /Valeur du classeur, un point par jour/.test(svg.getAttribute('aria-label') || ''), 'graphique de la valeur absent');
+      check(d.querySelectorAll('.chart__table')[0].querySelectorAll('tr').length === 4 && panel().includes('Voir les valeurs'), 'tableau des valeurs absent');
+      const seg7 = d.querySelectorAll('button').find((b) => text(b) === '7 jours');
+      seg7.click();
+      await settle(30);
+      check(seg7.getAttribute('aria-pressed') === 'true' && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].period === 7, 'période de la courbe non gardée');
+    }
+    check(panel().includes("Lecture du marché par le classeur : à l'instant") && !panel().includes('Dernier essai'), 'âge de la lecture du marché : ' + panel().slice(0, 900));
+    check(panel().includes('sont faites par le classeur, dans la base du jeu, avec le compte que tu as relié (onglet « Synchro »)') && panel().includes('une passe par membre toutes les 20 minutes')
+      && panel().includes('30 requêtes, une par seconde') && panel().includes("la passe s'arrête et la suivante est sautée"), 'avertissement des règles absent');
+    // Aucun « 12 W » (espace avant le W) dans l'onglet.
+    check(!/\d W\b/.test(panel()), 'montant avec une espace avant le W : ' + panel().match(/.{0,30}\d W\b.{0,10}/));
+    await goSub('acheter');
     // Fiche d'une carte possédée (depuis « Mes cartes ») : cote de chaque exemplaire.
     d.getElementById('tab-cartes').click();
     await settle(60);
     d.querySelectorAll('.cell').find((n) => text(n).includes('Marché 1')).querySelector('.card').dispatch('click');
     await settle(60);
-    const fiche = () => text(d.querySelectorAll('.fiche')[0]);
     check(/Cote/.test(fiche()) && fiche().includes('2 × Rare400W10 ventes · dernière 399W le 15 octobre · 7 jours : +33 %') && fiche().includes('Rare, brillante~900W2 ventes'), 'cote de la fiche : ' + fiche());
     check(fiche().includes('Tes exemplaires cotés : 800W'), 'total des exemplaires : ' + fiche());
     {
@@ -5749,188 +5882,6 @@ async function main() {
       sortSel.dispatch('change');
       await settle(40);
     }
-    // Fiche d'une carte qui manque (depuis une bonne affaire) : ses cotes par rareté.
-    d.getElementById('tab-marche').click();
-    await settle(40);
-    // Collections des bonnes affaires à acheter (2026-10-29 : plusieurs, incluses ou exclues) : « Toutes les collections (1) »,
-    // puis Envies incluse (« Envies (1) »), exclue (« Toutes les collections · 1 exclue (0) »), et libérée.
-    {
-      const btn = () => d.getElementById('deal-cols-btn');
-      const voulue = () => d.querySelector('[data-section="acheter"]').querySelectorAll('.lot__title').some((n) => text(n).includes('Voulue A'));
-      check(btn() && text(btn()) === 'Toutes les collections (1)' && !d.getElementById('deal-cols'), 'bouton des collections : ' + (btn() ? text(btn()) : 'absent'));
-      btn().click();
-      await settle(40);
-      const rows = () => d.getElementById('deal-cols').querySelectorAll('.deal-cols__row');
-      const press = (label) => rows()[0].querySelectorAll('button').find((b) => text(b) === label).click();
-      check(rows().length === 1 && text(rows()[0].querySelector('.deal-cols__name')) === 'Envies (1)', 'collections des bonnes affaires : ' + rows().map(text).join(' | '));
-      press('Inclure');
-      await settle(40);
-      check(voulue() && text(btn()) === 'Envies (1)' && text(d.querySelector('.deal-summary')).startsWith('1 affaire sur 1 · pour « Envies »'), 'Envies incluse : ' + text(btn()));
-      if (!SERVER) check(um.prefs.deal_filter.cols.length === 1 && um.prefs.deal_filter.xcols.length === 0, 'collection incluse pas gardée au compte : ' + JSON.stringify(um.prefs.deal_filter));
-      press('Exclure');
-      await settle(40);
-      check(!voulue() && text(btn()) === 'Toutes les collections · 1 exclue (0)' && rows()[0].classList.contains('out'), 'Envies exclue : ' + text(btn()));
-      if (!SERVER) check(um.prefs.deal_filter.cols.length === 0 && um.prefs.deal_filter.xcols.length === 1, 'collection exclue pas gardée au compte : ' + JSON.stringify(um.prefs.deal_filter));
-      press('Exclure');
-      await settle(40);
-      check(voulue() && text(btn()) === 'Toutes les collections (1)' && !d.querySelector('.deal-summary'), 'Envies libérée : ' + text(btn()));
-      btn().click();
-      await settle(40);
-    }
-    // Filtres des bonnes affaires à acheter (2026-10-24), gardés dans les préférences du compte : la seule affaire montrée,
-    // Voulue A (SR, 50W pour une cote de 100, sans enchère, finit dans 1 h).
-    {
-      const deals = () => d.querySelector('[data-section="acheter"]').querySelectorAll('.lot__title').map(text).filter((t) => t.includes('Voulue'));
-      const btn = () => d.getElementById('deal-filters-btn');
-      const sortSel = d.getElementById('deal-sort');
-      check(sortSel && sortSel.querySelectorAll('option').map(text).join(' | ') === 'Fin la plus proche | Meilleure remise | Plus grosse économie | Prix croissant', 'tri des bonnes affaires : ' + (sortSel ? sortSel.querySelectorAll('option').map(text).join(' | ') : 'absent'));
-      check(text(btn()) === 'Filtres' && btn().getAttribute('aria-expanded') === 'false' && !d.getElementById('deal-filters'), 'panneau des filtres fermé par défaut');
-      btn().click();
-      await settle(40);
-      check(!!d.getElementById('deal-filters') && btn().getAttribute('aria-expanded') === 'true', 'panneau des filtres pas ouvert');
-      const chip = (label) => d.getElementById('deal-filters').querySelectorAll('button').find((b) => text(b) === label);
-      chip('L').click();
-      await settle(40);
-      check(deals().length === 0 && text(btn()) === 'Filtres · 1' && text(d.querySelector('.deal-summary')).startsWith('0 affaire sur 1 · L'), 'filtre de rareté L : ' + deals().join(', ') + ' / ' + text(btn()));
-      if (!SERVER) check(JSON.stringify(um.prefs.deal_filter.r) === '["L"]', 'filtre pas gardé au compte : ' + JSON.stringify(um.prefs));
-      chip('L').click();
-      chip('30 %').click();
-      await settle(40);
-      check(deals().length === 1, '« finit bientôt » sans mise : montrée malgré le seuil de 30 %');
-      d.getElementById('deal-soon').dispatch('change');
-      await settle(40);
-      check(deals().length === 0, 'sans « finit bientôt » : 50 % de la cote ne passe pas 30 %');
-      d.querySelector('.deal-summary').querySelector('button').click(); // « Effacer les filtres »
-      await settle(40);
-      check(deals().length === 1 && text(btn()) === 'Filtres' && !d.querySelector('.deal-summary'), 'filtres pas effacés');
-      // Champ de saisie : la liste suit tout de suite, le compte après une pause de la frappe.
-      type(d.getElementById('deal-max'), '40');
-      await settle(40);
-      check(deals().length === 0, 'prix ≤ 40W : Voulue A (50W) doit disparaître');
-      await sleep(900);
-      if (!SERVER) check(um.prefs.deal_filter.max === 40, 'prix maximal pas enregistré au compte : ' + JSON.stringify(um.prefs.deal_filter));
-      // Enregistrer ces filtres, les effacer, les reprendre d'un clic, puis supprimer le filtre enregistré.
-      chip('Enregistrer ces filtres…').click();
-      await settle(40);
-      type(d.getElementById('deal-preset-name'), '  Petits prix ');
-      d.querySelector('.deal-filters__save').dispatch('submit');
-      await settle(60);
-      const presets = () => (d.querySelector('.deal-presets') ? d.querySelector('.deal-presets').querySelectorAll('.chip') : []);
-      check(presets().length === 1 && text(presets()[0]) === 'Petits prix' && presets()[0].classList.contains('on'), 'filtre enregistré : ' + presets().map(text).join(', '));
-      if (!SERVER) check(um.prefs.deal_presets.length === 1 && um.prefs.deal_presets[0].name === 'Petits prix' && um.prefs.deal_presets[0].f.max === 40, 'filtre enregistré pas gardé au compte : ' + JSON.stringify(um.prefs.deal_presets));
-      chip('Effacer les filtres').click();
-      await settle(40);
-      check(deals().length === 1 && !presets()[0].classList.contains('on'), 'filtres effacés : le filtre enregistré ne doit plus être actif');
-      presets()[0].querySelector('.chip__label').click();
-      await settle(40);
-      check(deals().length === 0 && presets()[0].classList.contains('on') && String(d.getElementById('deal-max').value) === '40', 'filtre enregistré pas repris');
-      presets()[0].querySelector('.x').click();
-      await settle(40);
-      check(presets().length === 0, 'filtre enregistré pas supprimé');
-      if (!SERVER) check(um.prefs.deal_presets.length === 0, 'suppression pas gardée au compte');
-      chip('Effacer les filtres').click();
-      btn().click();
-      await settle(40);
-      check(deals().length === 1 && !d.getElementById('deal-filters'), 'retour aux filtres par défaut, panneau fermé');
-    }
-    // Bonnes affaires, mes enchères et mes ventes en cours : un lien vers l'enchère dans le jeu.
-    {
-      const hrefs = d.getElementById('panel-marche').querySelectorAll('a').filter((a) => a.classList.contains('game-link')).map((a) => a.getAttribute('href'));
-      check(hrefs.includes('https://www.wiki-masters.com/marketplace/a1') && hrefs.every((x) => /^https:\/\/www\.wiki-masters\.com\/marketplace\/[a-z0-9-]+$/.test(x)), 'liens vers les enchères du jeu : ' + hrefs.join(', '));
-    }
-    // « Miser » sur une bonne affaire (Voulue A, 50W sans mise, cote 100W) : la fenêtre propose le prix de départ (et la
-    // cote), prévient au-dessus de la cote, refuse sous le minimum ; la mise part au serveur, puis « tu mènes ».
-    {
-      const md = () => d.querySelectorAll('.modal')[0] || null;
-      const mdText = () => (md() ? text(md()) : '');
-      const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
-      const dealRow = () => d.querySelector('[data-section="acheter"]').querySelectorAll('li').find((n) => text(n).includes('Voulue A')) || null;
-      const bidBtn = () => (dealRow() ? dealRow().querySelectorAll('button').find((b) => text(b) === 'Miser') || null : null);
-      check(bidBtn() && bidBtn().getAttribute('aria-label') === 'Miser sur « Voulue A »', 'bouton « Miser » absent de la bonne affaire : ' + (dealRow() ? text(dealRow()) : 'ligne absente'));
-      bidBtn().click();
-      await settle(40);
-      const amount = () => d.getElementById('bid-amount');
-      check(mdText().includes('Miser sur « Voulue A »') && mdText().includes('Prix de départ50W · aucune mise') && mdText().includes('Cote100W') && String(amount().value) === '50',
-        'fenêtre « Miser » : ' + mdText().slice(0, 400));
-      check(inMd('minimum · 50W') && inMd('la cote · 100W') && inMd('Miser 50W dans le jeu'), 'mises proposées : ' + md().querySelectorAll('button').map(text).join(' | '));
-      amount().value = '40';
-      amount().dispatch('input');
-      await settle(20);
-      check(mdText().includes('Il faut au moins 50W') && inMd('Miser 40W dans le jeu').disabled, 'mise sous le minimum : ' + mdText().slice(0, 600));
-      amount().value = '120';
-      amount().dispatch('input');
-      await settle(20);
-      check(mdText().includes('20 % au-dessus de la cote'), 'mise au-dessus de la cote : ' + mdText().slice(0, 600));
-      // Refus du serveur (quelqu'un a misé entre-temps) : message, le minimum suit.
-      inMd('minimum · 50W').click();
-      await settle(20);
-      api.bidFail = { status: 409, error: "Quelqu'un a misé 55W : il faut au moins 56W.", extra: { min: 56, cur: 55 } };
-      inMd('Miser 50W dans le jeu').click();
-      await settle(60);
-      check(mdText().includes('il faut au moins 56W') && String(amount().value) === '56' && mdText().includes('Enchère actuelle55W') && api.bidsSent.length === 0, 'refus de la mise : ' + mdText().slice(0, 600));
-      inMd('Miser 56W dans le jeu').click();
-      await settle(80);
-      check(api.bidsSent.length === 1 && api.bidsSent[0].a === 'a1' && api.bidsSent[0].amount === 56, 'mise envoyée : ' + JSON.stringify(api.bidsSent));
-      check(mdText().includes('Mise faite : tu mènes.') && mdText().includes('Ta mise : 56W') && mdText().includes('ton solde dans le jeu : 944W')
-        && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/a1'), 'mise faite : ' + mdText());
-      inMd('Fermer').click();
-      await settle(60);
-      check(await waitFor(() => dealRow() && text(dealRow()).includes('tu mènes') && !bidBtn()), 'bonne affaire misée : « tu mènes », plus de « Miser » : ' + (dealRow() ? text(dealRow()) : 'absente'));
-    }
-    // Fiche d'une carte qui manque : ses enchères en cours (lues à l'ouverture), de la moins chère à la plus chère, comparées à
-    // la cote de leur rareté, le détail des moins chères (site du jeu), un lien vers chacune ; la courbe de ses prix de vente.
-    const inH = (h) => new Date(Date.now() + h * 3600_000).toISOString();
-    const dayAgo = (n) => new Date(Date.now() - n * 86400_000).toISOString();
-    api.cardMarket = { w1: {
-      auctions: [{ a: 'e1', r: 'SR', s: false, ask: 120, bid: true, cur: 120, base: 50, end: inH(5), atk: 10, def: 20, lead: false, mine: false, n: null },
-        { a: 'e2', r: 'SR', s: false, ask: 60, bid: false, cur: null, base: 60, end: inH(0.5), atk: 11, def: 21, lead: false, mine: false, n: null },
-        { a: 'e3', r: 'SR', s: true, ask: 250, bid: true, cur: 250, base: 100, end: inH(30), atk: 12, def: 22, lead: true, mine: false, n: null }],
-      sales: [{ d: dayAgo(1), p: 110, k: 'SR' }, { d: dayAgo(2), p: 90, k: 'SR' }, { d: dayAgo(3), p: 100, k: 'SR' }, { d: dayAgo(4), p: 300, k: 'SR*' }],
-      v: { SR: { p: 100, n: 5, w: null, l: 110, d: dayAgo(1) }, 'SR*': { p: 260, n: 1, w: null, l: 300, d: dayAgo(4) } }, // celles de la liste des cotes
-    } };
-    api.auctionDetails = { e1: { a: 'e1', gone: false, status: 'active', bids: 4, bidders: 2, leader: 'Rival', seller: 'Marchande', leading: false, selling: false, my_bid: 90, cur: 130 },
-      e2: { a: 'e2', gone: false, status: 'active', bids: 0, bidders: 0, leader: null, seller: 'Marchande', leading: false, selling: false, my_bid: null, cur: null },
-      e3: { a: 'e3', gone: false, status: 'active', bids: 1, bidders: 1, leader: null, seller: 'Autre', leading: true, selling: false, my_bid: 250, cur: 250 } };
-    const mark = apiLog.length;
-    d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
-    await settle(60);
-    check(fiche().includes('Cote dans le jeu') && fiche().includes('Super rare100W5 ventes') && fiche().includes('Super rare, brillante~260W1 vente'), 'cote d\'une carte qui manque : ' + fiche());
-    check(await waitFor(() => fiche().includes('mène : Rival')), 'détail des enchères absent : ' + fiche());
-    {
-      const f = d.querySelectorAll('.fiche')[0];
-      const rows = f.querySelectorAll('li').filter((n) => n.classList.contains('auction'));
-      const rt = rows.map(text);
-      check(rows.length === 3 && rt[0].includes('60W') && rt[1].includes('130W') && rt[2].includes('250W'), 'enchères de la fiche, de la moins chère à la plus chère : ' + rt.join(' || '));
-      check(rt[0].includes('−40 % vs cote') && rt[0].includes('aucune mise, prix de départ') && rows[0].querySelector('.auction__clock').classList.contains('hot'), 'enchère sans mise : ' + rt[0]);
-      check(rt[1].includes('+30 % vs cote') && rt[1].includes('4 mises de 2 joueurs') && rt[1].includes('mène : Rival') && rt[1].includes('vendeur : Marchande') && rt[1].includes('dépassée · ta mise 90W') && rt[1].includes('ATK 10 · DEF 20'), 'enchère détaillée : ' + rt[1]);
-      check(rt[2].includes('tu mènes') && rt[2].includes('brillante') && rt[2].includes('cote ~260W') && !rt[2].includes('vs cote') && !rt[2].includes('dépassée') && rows[2].classList.contains('lead'), 'enchère que je mène : ' + rt[2]);
-      check(rows.every((n) => n.querySelectorAll('a').some((a) => a.classList.contains('game-link') && /^https:\/\/www\.wiki-masters\.com\/marketplace\/e[123]$/.test(a.getAttribute('href')) && a.getAttribute('target') === '_blank')), 'liens vers le jeu dans la fiche');
-      // « Miser » sur chaque enchère, sauf celle que je mène ; après une mise, un W de plus que l'enchère lue sur le site du jeu.
-      const rowBid = (n) => n.querySelectorAll('button').find((b) => text(b) === 'Miser') || null;
-      check(rowBid(rows[0]) && rowBid(rows[1]) && !rowBid(rows[2]), 'boutons « Miser » de la fiche : ' + rows.map((n) => !!rowBid(n)).join(', '));
-      rowBid(rows[1]).click();
-      await settle(40);
-      {
-        const mdt = () => (d.querySelectorAll('.modal')[0] ? text(d.querySelectorAll('.modal')[0]) : '');
-        check(mdt().includes('Miser sur « Voulue A »') && mdt().includes('Enchère actuelle130W') && String(d.getElementById('bid-amount').value) === '131', 'fenêtre « Miser » de la fiche : ' + mdt().slice(0, 400));
-        check(d.querySelectorAll('.fiche').length === 1, 'la fiche reste ouverte sous la fenêtre');
-        d.querySelectorAll('.modal')[0].querySelectorAll('button').find((b) => text(b).trim() === 'Annuler').click();
-        await settle(40);
-        check(!d.querySelectorAll('.modal').length && d.querySelectorAll('.fiche').length === 1, 'fenêtre « Miser » fermée, fiche gardée');
-      }
-      const calls = apiLog.slice(mark);
-      check(calls.filter((x) => x === 'GET /api/market/card?id=w1').length === 1 && calls.filter((x) => x.startsWith('GET /api/market/auction?id=')).length === 3, 'lectures de la fiche : ' + calls.join(', '));
-      // Courbe : la rareté vendue le plus souvent (Super rare, 3 ventes) ; la brillante n'a qu'une vente, pas de puce.
-      check(fiche().includes('Prix de vente') && fiche().includes('3 ventes depuis le') && f.querySelectorAll('svg').some((n) => /Prix de vente en Super rare/.test(n.getAttribute('aria-label') || '')), 'courbe des prix de vente : ' + fiche().slice(-600));
-      // Rouvrir la fiche tout de suite ne relit rien.
-      f.querySelectorAll('button.close')[0].click();
-      await settle(40);
-      d.querySelectorAll('.lot__title').flatMap((n) => n.querySelectorAll('button')).find((b) => text(b) === 'Voulue A').click();
-      await settle(60);
-      check(apiLog.slice(mark).filter((x) => x.startsWith('GET /api/market/card') || x.startsWith('GET /api/market/auction')).length === 4, 'fiche rouverte : rien de relu');
-    }
-    d.querySelectorAll('.fiche')[0].querySelectorAll('button.close')[0].click();
-    await settle(40);
     // Valeur du classeur d'un ami (cotes venues avec ses cartes, rareté de sa carte pour tous ses exemplaires) : Marché 1
     // (1 rare à 400W, la brillante n'a que 2 ventes), Voulue A (100W), Sans cote : 500W, 2 cartes cotées sur 3.
     d.getElementById('tab-amis').click();
@@ -5978,6 +5929,8 @@ async function main() {
     await settle(40);
     d.getElementById('tab-marche').click();
     await settle(40);
+    d.getElementById('mk-sub-valeur').click(); // la lecture du marché en détail, et « Actualiser le marché »
+    await settle(40);
     // Nouvelle lecture du serveur (market_at de GET /api/me, relu chaque minute) : l'onglet est relu, une fois. Ici un essai
     // raté : la raison est dite ; puis une lecture de 3 h : elle est dite ancienne ; puis « Actualiser le marché » (une
     // passe du serveur, une par minute) ; puis jamais de lecture ni d'essai : quoi faire.
@@ -6003,6 +5956,7 @@ async function main() {
       await settle(80);
       check(panel().includes('Lecture du marché par le classeur : il y a 3 h') && panel().includes('Elle date de plus de 2 h') && !panel().includes('Dernier essai'),
         'lecture ancienne : ' + panel().slice(0, 1200));
+      check(text(d.querySelector('.mk-read__btn')) === 'Lu il y a 3 h' && d.querySelector('.mk-read__btn').classList.contains('old'), 'barre du Marché : lecture ancienne pas signalée');
       // « Actualiser le marché » : POST /api/market/refresh (passe légère), puis le marché est relu ; un second clic tout de suite est refusé
       // (429) et dit combien attendre ; un compte délié côté serveur (401 needs_link) est dit.
       check(!btn('Relire') && !btn('Mettre à jour les cotes') && btn('Actualiser le marché'), '« Actualiser le marché » attendu à la place de « Relire » et « Mettre à jour les cotes »');
@@ -6032,16 +5986,24 @@ async function main() {
       await pm.live();
       await settle(80);
     }
-    check(panel().includes('Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») : le classeur les lit tout seul toutes les 20 minutes') && panel().includes('Pas de lecture du marché') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
-    check(panel().includes("Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Actualiser le marché »."), 'jamais de lecture : quoi faire non dit');
+    check(panel().includes('Pas encore de cote : relie ton compte du jeu (onglet « Synchro ») : le classeur les lit tout seul toutes les 20 minutes') && !body().includes('valeur ('), 'classeur sans cote : ' + panel().slice(0, 400));
+    check(panel().includes("Le classeur n'a pas encore lu le marché : relie ton compte (onglet « Synchro ») ou clique « Actualiser le marché ».") && text(d.querySelector('.mk-read__btn')) === 'Pas encore lu', 'jamais de lecture : quoi faire non dit');
+    d.getElementById('mk-sub-acheter').click();
+    await settle(40);
+    check(panel().includes('Pas de lecture du marché') && text(d.querySelectorAll('.mk-tab')[0]).includes('Toutes–'), 'Acheter sans lecture : ' + panel().slice(0, 400));
     {
       const pm2 = openPage({ idb: 'absent' });
       check(await waitFor(() => pm2.count() === 29), 'classeur de Mona non rouvert');
       pm2.doc.getElementById('tab-marche').click();
       await settle(80);
-      const btn2 = (id) => pm2.doc.querySelectorAll('section').find((n) => n.getAttribute('data-section') === id).querySelector('.acc__btn');
-      check(btn2('encheres').getAttribute('aria-expanded') === 'true' && btn2('vendre').getAttribute('aria-expanded') === 'true' && String(pm2.doc.getElementById('sell-min').value) === '450',
-        'nouvelle page : état des sections ou seuil non gardés');
+      // Gardés dans ce navigateur : le seuil de « Vendre », la période de la courbe ; au compte : les onglets de recherche.
+      check(pm2.doc.querySelectorAll('.mk-tab__label').map(text).join(' | ') === 'Toutes | Petits prix | Galaxies', 'nouvelle page : onglets de recherche non gardés');
+      pm2.doc.getElementById('mk-sub-vendre').click();
+      await settle(60);
+      check(String(pm2.doc.getElementById('sell-min').value) === '450', 'nouvelle page : seuil non gardé');
+      pm2.doc.getElementById('mk-sub-valeur').click();
+      await settle(60);
+      check(pm2.doc.querySelectorAll('button').find((b) => text(b) === '7 jours').getAttribute('aria-pressed') === 'true', 'nouvelle page : période de la courbe non gardée');
     }
   }
 

@@ -186,7 +186,7 @@ plus faite.
 | `GET /api/health` | (sans clé) | `{ok, db, cookie_secret, signup_open, sync_paused, cron}` : présence des réglages, jamais leur valeur ; `sync_paused` : `SYNC_PAUSED` est posé (toutes les lectures automatiques suspendues, voir « Lectures automatiques ») ; `cron` : `{collection:{last_at, last_result}, market:{last_at, last_result}}`, la dernière passe de chaque déclencheur (`null` tant qu'il n'a rien fait), ou `null` si la table `cron_state` n'existe pas encore (la santé répond avant la création du schéma) ; `ok` vaut `false` sans base liée |
 | `POST /api/account` | `{code, name?}` (`code` = `SIGNUP_CODE`) | `201 {key, user:{id, name}}` ; `409` si le prénom est déjà celui d'un autre classeur (comparé sans casse, accents ni espaces en trop), avec un message qui dit comment retrouver son lien (Réglages d'un appareil où il est ouvert, ou un nouveau lien demandé à la personne qui gère le classeur) ; exception : un classeur de ce prénom qui n'a jamais servi (aucune lecture, aucun compte du jeu relié, aucune carte ni collection) est effacé et remplacé (2026-10-17 : des amis qui avaient perdu leur lien recréaient un second classeur) ; sans prénom, aucun contrôle |
 | `GET /api/me` | | `{user:{id, name, created_at, pseudo}, fetched_at, card_count, cards_rev, new_ids, prefs, shared, shared_targets, public_id, last_chat_id, market_at, last_sync, wikibidous, wish_mode, auto_wish, wish, session:{linked, lost, at, auto_sync, paused, fails, checked_at, full_at}}` (`auto_wish`, `wish` (2026-10-24) : l’indicateur interne de souhaits à gérer et sa dernière passe, ou `null`, voir « Liste de souhaits du jeu » ; `wikibidous` (2026-10-23) : son solde de wikibidous lu dans le jeu à la dernière synchro, `{n, at}`, ou `null` s'il n'a jamais été lu, voir « Lecture de la collection » ; `session` (2026-10-22) : l'état du compte du jeu relié, **jamais** son contenu : `linked` = session présente et utilisable, `lost` = `null` ou pourquoi elle ne sert plus (« révoquée ») : le membre est « à relier », `at` = liaison ou dernier renouvellement, `auto_sync` = réglage « Synchro automatique », `paused` = `fails` ≥ 3 : les lectures automatiques sont en pause, `fails` = échecs d'affilée, `checked_at` = dernière vérification légère ou lecture, `full_at` = dernière lecture **vérifiée** complète, voir « Lecture de la collection » ; `public_id` (2026-10-20) : son propre identifiant public tant qu'il montre ses cartes, `null` sinon, pour se citer dans le chat (« #u: ») ; `last_chat_id` : numéro du dernier message du chat, supprimé ou non, `0` sans message, lu dans la même requête que le compte, voir « Chat » ; `market_at` (2026-10-17) : heure de la dernière lecture du marché reçue ou du dernier essai fini, réussi ou non, `null` sans, lue dans la même requête (ligne `market` par sa clé primaire) : la page relit alors l'onglet « Marché », voir « Le marché » ; `cards_rev` : révision de la liste des cartes, voir « Lecture incrémentale » ; `shared` : montre ses cartes aux autres membres, `shared_targets` : et ses collections à compléter, voir « Partage entre membres » ; `card_count` : tenu par les lectures dans `sync_state`, sans relire les cartes (classeur lu avant ce compteur : compté une fois, puis gardé là, si `sync_state` n'a pas changé entre-temps) ; `last_sync` : dernière ligne du journal des synchros, `{at, kind, via, result, message}` ou `null`, gardée dans le compte (aucune requête de plus), voir « Journal des synchros »). `next_full` et `has_import_key` (d'avant le 2026-10-22) n'existent plus |
-| `PATCH /api/me` | `{name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?, fast_sync?, auto_friend?, wish_mode?, auto_wish?}` (`pseudo` : pseudo dans le jeu, 2026-10-18, 40 caractères au plus, sans espace ni « / ? # < > \ », vide = aucun ; rendu dans `user.pseudo` de `GET /api/me`, et aux membres avec qui il partage dans `GET /api/members` : « Entre amis » le montre avec « copier » et un lien vers son profil du jeu, `https://www.wiki-masters.com/profile/<pseudo>` ; ailleurs, la page le montre partout où paraît le prénom d'un de ces membres (2026-10-19, demande de l'utilisateur : « voir le pseudo in game partout où un pseudo est affiché ») : discret à côté du prénom dans les messages du chat (lien vers son profil du jeu), dans les suggestions de « @ » et la liste « Un membre… » des échanges, en info-bulle (prénom souligné en pointillés) sur les mentions, les « qui a quoi », « Chez : … » des fiches et des cases vides et les noms des échanges ; rien de plus du serveur : la page le tire de `GET /api/members` (le chat associe auteur et mentions au membre par le prénom, unique), donc jamais pour un membre qui ne montre pas ses cartes, ni sur tes propres messages ; réglé dans Réglages, « Ton pseudo dans WikiMasters ») (`prefs` : objet JSON ≤ 16 Ko (4 Ko avant le 2026-10-24), remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; `deal_filter` et `deal_presets` (2026-10-24) = filtres de « Bonnes affaires à acheter », en cours et enregistrés (voir « Le marché ») ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `auto_sync` : booléen, le réglage « Synchro automatique » (`true` par défaut : le serveur lit la collection et le marché tout seul, voir « Lectures automatiques » ; `false` : seulement au clic), sinon `400` ; `fast_sync` : booléen, le réglage « Synchro rapide du marché » (`false` par défaut, voir « Rythme » du marché ; aussi rendu par `GET /api/me`), sinon `400` ; `auto_friend` (2026-10-24) : booléen, le réglage « Envoyer une demande d'ami aux membres du classeur » (`false` par défaut, voir « Amis dans le jeu » ; aussi rendu par `GET /api/me`), sinon `400` ; `auto_wish` : ancien réglage global, conservé pour les pages déjà ouvertes ; sélectionne/désélectionne toutes les collections existantes. Le choix actuel passe par `targets.wish_sync` (voir « Liste de souhaits du jeu »), sinon `400`) | `{user, prefs, shared, shared_targets, public_id, auto_sync, fast_sync, auto_friend, wish_mode, auto_wish}` (`public_id` : comme `GET /api/me`, après la modification) ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
+| `PATCH /api/me` | `{name?, pseudo?, prefs?, shared?, shared_targets?, auto_sync?, fast_sync?, auto_friend?, wish_mode?, auto_wish?}` (`pseudo` : pseudo dans le jeu, 2026-10-18, 40 caractères au plus, sans espace ni « / ? # < > \ », vide = aucun ; rendu dans `user.pseudo` de `GET /api/me`, et aux membres avec qui il partage dans `GET /api/members` : « Entre amis » le montre avec « copier » et un lien vers son profil du jeu, `https://www.wiki-masters.com/profile/<pseudo>` ; ailleurs, la page le montre partout où paraît le prénom d'un de ces membres (2026-10-19, demande de l'utilisateur : « voir le pseudo in game partout où un pseudo est affiché ») : discret à côté du prénom dans les messages du chat (lien vers son profil du jeu), dans les suggestions de « @ » et la liste « Un membre… » des échanges, en info-bulle (prénom souligné en pointillés) sur les mentions, les « qui a quoi », « Chez : … » des fiches et des cases vides et les noms des échanges ; rien de plus du serveur : la page le tire de `GET /api/members` (le chat associe auteur et mentions au membre par le prénom, unique), donc jamais pour un membre qui ne montre pas ses cartes, ni sur tes propres messages ; réglé dans Réglages, « Ton pseudo dans WikiMasters ») (`prefs` : objet JSON ≤ 16 Ko (4 Ko avant le 2026-10-24), remplacé en entier, rangé tel quel par le serveur : `hidden_proposals` = catégories proposées retirées (`wp:<nom>`), `hide_proposals` = propositions masquées ; `deal_filter` et `deal_presets` (2026-10-24) = filtres de « Bonnes affaires à acheter », en cours et enregistrés, remplacés le 2026-10-29 par `deal_tabs` (onglets de recherche de « Acheter ») ; voir « Le marché » ; les anciennes `hidden_catalog` (ids du catalogue et `wp:<nom>`) et `hide_catalog` restent acceptées : l'interface les lit, garde les `wp:<nom>`, oublie les ids du catalogue et réécrit le tout au nouveau format à la modification suivante ; `shared` : booléen, sinon `400` ; `shared_targets` : booléen, `true` seulement si l'on montre ses cartes (déjà, ou `shared:true` dans la même requête), sinon `400` ; `shared:false` le remet à `false` ; `auto_sync` : booléen, le réglage « Synchro automatique » (`true` par défaut : le serveur lit la collection et le marché tout seul, voir « Lectures automatiques » ; `false` : seulement au clic), sinon `400` ; `fast_sync` : booléen, le réglage « Synchro rapide du marché » (`false` par défaut, voir « Rythme » du marché ; aussi rendu par `GET /api/me`), sinon `400` ; `auto_friend` (2026-10-24) : booléen, le réglage « Envoyer une demande d'ami aux membres du classeur » (`false` par défaut, voir « Amis dans le jeu » ; aussi rendu par `GET /api/me`), sinon `400` ; `auto_wish` : ancien réglage global, conservé pour les pages déjà ouvertes ; sélectionne/désélectionne toutes les collections existantes. Le choix actuel passe par `targets.wish_sync` (voir « Liste de souhaits du jeu »), sinon `400`) | `{user, prefs, shared, shared_targets, public_id, auto_sync, fast_sync, auto_friend, wish_mode, auto_wish}` (`public_id` : comme `GET /api/me`, après la modification) ; `GET /api/me` renvoie aussi `prefs` (`{}` par défaut) |
 | `DELETE /api/me` | | `{ok:true}` : efface tout (cartes, cartes retirées, étiquettes, collections, lecture en attente, marché et valeur, journal des synchros, **session du jeu chiffrée**) et le compte ; ses messages du chat sont vidés et perdent leur auteur (voir « Chat »). La session n'est pas déconnectée côté jeu |
 | `GET /api/favori.js` | (sans clé) | le code du favori « Relier » (`public/assets/relier.js`, où `__SITE__` devient l'origine du classeur), `text/javascript`, `Cache-Control: no-store`, `X-Content-Type-Options: nosniff` : c'est ce que charge le favori (voir « Liaison par favori « Relier » »). `503` sans les fichiers du site (`ASSETS`), `404` si `relier.js` manque |
 | `POST /api/key/rotate` | | `{key}` : nouvelle clé principale ; l'ancienne (et l'ancien lien) cesse de marcher |
@@ -894,7 +894,7 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   choisies une à une (1 000 au plus : au-delà, poser un tag) et des **tags exacts** du classeur (100 au plus ; une carte
   portant l'un d'eux est exclue, y compris celles qui le recevront plus tard). Une carte exclue n'est proposée ni dans
   « Échanges possibles » (donc ni « Ce qui pourrait intéresser tes amis » ni la fenêtre « Proposer un échange »), ni dans
-  « Bonnes affaires à vendre » (une ligne le dit : « 2 cartes exclues des échanges et des ventes : pas proposées ici. Les
+  « Vendre » du Marché (une ligne le dit : « 2 cartes exclues des échanges et des ventes : pas proposées ici. Les
   voir »). **Chez les amis aussi** : `GET /api/members` rend `keep`, les ids des cartes exclues de chaque membre, résolus
   par le serveur (cartes choisies qu'il a encore, et ses cartes qui portent un tag exclu, par la table `tags`) ; ses tags
   ne sortent jamais. Relu avec la liste des membres (pas besoin de relire ses cartes) ; une carte exclue d'un ami n'est
@@ -1403,6 +1403,7 @@ chemin, `/collections/…`, y serait un 404 au rafraîchissement). Rien côté s
 | `#/collections/<id>` | une de tes collections |
 | `#/categorie/<nom>` (`?sous=1` : sous-catégories comprises) · `#/page/<titre>` | une catégorie, une page de Wikipédia (titres avec « _ » à la place des espaces) |
 | `#/cartes` · `#/amis` · `#/marche` · `#/chat` · `#/maj` · `#/reglages` | les onglets |
+| `#/marche/vendre` · `#/marche/encheres` · `#/marche/valeur` · `#/marche?onglet=<id>` | les sous-onglets du Marché ; `onglet` : un onglet de recherche de « Acheter » (`deal_tabs`), sauf le premier |
 | `#/nouveautes` | la page « Nouveautés » (hors des onglets, voir « Nouveautés ») |
 | `#/amis/pour-toi`, `#/amis/pour-eux` | « Entre amis », sous-pages « Pour toi » et « Pour tes amis » (2026-10-28) |
 | `#/amis/echanges` (`?qui=me` ou l'identifiant public d'un membre) | « Échanges possibles » |
@@ -2246,48 +2247,70 @@ passe complète, `null` sans, gardés par un échec ; `fullStart` et `FULL_START
 session d'un membre dans la base du jeu. (Avant le 2026-10-22, une clé d'import qui fuyait permettait d'envoyer de fausses cotes.) Une cote
 fausse venant du jeu lui-même durerait jusqu'à ce qu'un membre la relise (plus de 12 h après).
 
-**Interface** : bandeau, tuile « 12 340W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »** : en haut, la valeur
-(« 205 cartes cotées sur 1 048 », cartes approchées), graphique de la valeur dès deux jours (SVG dans la page, survol : le jour le plus
-proche ; « Voir les valeurs » : le tableau), le bouton **« Actualiser le marché »** (message « Marché relu : 4 bonnes affaires · 2 enchères en cours · 12 cotes
-relues (736 autres à relire : le classeur s'en charge toutes les 20 minutes) ») et **où en est la lecture du marché** (voir ci-dessous) ; puis, **côte à côte** (l'une sous l'autre
-sous 760 px), après « Mes ventes en cours » (2026-10-23, ci-dessous), « Bonnes affaires à acheter » et « Bonnes affaires à vendre » ; puis « Mes enchères » (tes mises, tes ventes) et « À savoir »
-(avertissement des règles du jeu : le classeur lit le marché dans la base du jeu, ce qui est plus risqué que sa synchro de la collection ; si
-le jeu limite les lectures, la passe s'arrête et la suivante est sautée). Ces sections, et « Valeur de ton classeur » (repliée, son titre garde
-la valeur), sont **repliables** (accordéon : `aria-expanded`, contenu rendu seulement ouvert) : toutes ouvertes par défaut, **sauf « Mes
-enchères », fermée** ; l'état est gardé par classeur dans ce navigateur (`localStorage` `classeur-marche` : `{<id du compte>: {open, min, col,
-hideCol}}`, accès protégés ; `open.filtres` : le panneau des filtres de « à acheter » ; `col` : la collection choisie avant le 2026-10-24,
-reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste montre **20 cartes**, puis « Afficher 20 de plus (N restantes) ».
-- **Filtres de « Bonnes affaires à acheter »** (2026-10-24, demande de l'utilisateur : « n'afficher que les affaires sous un certain %, un
-  prix… ») : une barre avec les **collections** (bouton « Toutes les collections (N) », comptées après les filtres ; depuis le 2026-10-29, il ouvre la liste des collections que remplissent ces affaires, chacune avec son nombre et « Inclure » / « Exclure » (un deuxième clic la libère), une recherche au-delà de 8, et « Toutes les collections » qui libère tout : une affaire passe si elle sert à **au moins une** collection incluse (aucune incluse : toutes) et à **aucune** collection exclue ; le bouton dit « Envies (3) », « 2 collections · 1 exclue (5) »…), le **tri** (« Fin la plus proche »
-  par défaut, « Meilleure remise » = prix / cote, « Plus grosse économie » = cote − prix, « Prix croissant ») et le bouton **« Filtres »**
-  (« Filtres · 3 » avec trois filtres actifs), qui ouvre un panneau : **au plus [80] % de la cote** (champ, puces 30 / 50 / 70 / 80 / 100 %),
-  case « Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h, au plus à la cote) » (cochée par défaut), **prix** de … à … W,
-  **économie** d'au moins … W, **rareté** (puces L à C ; aucune = toutes), **brillante** (peu importe, seulement, exclure), **enchère** (toutes,
-  avec mise, sans mise, tu mènes), **fin** (toutes, < 1 h, < 6 h, < 24 h), **cote** (3, 5 ou 10 ventes et plus). Avec des filtres actifs, une
-  ligne « 4 affaires sur 47 · pour « Envies », sans « Pokémon », ≤ 50 % de la cote, UR, L. Effacer les filtres » (les collections et le tri restent) ; le nombre du titre de la
-  section compte les affaires montrées ; « Aucune bonne affaire ne passe ces filtres. » ; chaque ligne dit aussi l'économie (cote − prix).
-  **Gardés avec le compte** (pas dans le navigateur : les mêmes sur le téléphone et l'ordinateur), dans `prefs` (`PATCH /api/me`) :
-  `deal_filter` = `{pct, soon, min, max, save, r:[raretés], shiny:''|'only'|'no', bid:''|'bid'|'nobid'|'lead', end:0|1|6|24, n:3|5|10, cols:[clés], xcols:[clés], sort}`
+**Interface** : bandeau, tuile « 12 340W · valeur (205 cotées) » quand une carte est cotée ; onglet **« Marché »** (refait le 2026-10-29,
+demande de l'utilisateur : « une seule page où tout est affiché en vrac, devenue inutilisable ») : **quatre sous-onglets**, chacun avec son
+adresse (`#/marche` = « Acheter », `#/marche/vendre`, `#/marche/encheres`, `#/marche/valeur`) et son nombre (affaires de l'onglet de recherche
+ouvert, cartes à vendre, mises dépassées en orange sinon mises et ventes en cours). À droite de la barre, **où en est la lecture du marché** en une
+ligne (« Lu il y a 6 min », point vert ; orange au-delà de 2 h ou après un essai raté), son détail au clic (les phrases de « Lecture du marché »
+ci-dessous, les bonnes affaires plus montrées, « Relire tout le marché » pour le compte qui lit le marché entier), et **« Actualiser »** (message
+« Marché relu : 4 bonnes affaires · 2 enchères en cours · 12 cotes relues (736 autres à relire : le classeur s'en charge toutes les 20 minutes) »
+sous la barre). « Acheter », « Vendre » et « Mes enchères » : **une liste à gauche, la fiche de l'élément choisi à droite**, sur une **hauteur
+fixe** (jusqu'en bas de la fenêtre, 440 px au moins : la liste et la fiche défilent chacune de leur côté ; variable CSS `--mk-h` posée par le
+script) ; toute la liste est là (plus de « Afficher 20 de plus ») ; ↑ ↓ Début Fin passent d'un élément à l'autre (la liste a le focus) ; le
+premier est choisi d'office. La fiche d'un élément lit le **marché de sa carte** comme une fiche (`GET /api/market/card` puis le détail des
+moins chères, voir « Marché d'une carte ») après **350 ms** sans changer de ligne (on peut parcourir la liste sans tout lire), gardé **3 min**
+(1 min avant). Sur téléphone (sous 760 px) : la liste seule, puis la fiche en plein écran (toucher une ligne ; rien n'est lu avant), le retour
+en haut à gauche ramène à la liste ; les sous-onglets et les onglets de recherche défilent de côté. Gardés par classeur dans ce navigateur
+(`localStorage` `classeur-marche` : `{<id du compte>: {min, col, hideCol, dtab, period}}`, accès protégés ; `dtab` = le dernier onglet de
+recherche ouvert, `period` = la période de la courbe de la valeur ; `col` : la collection choisie avant le 2026-10-24, reprise tant qu'aucun
+filtre n'est gardé au compte ; l'ancien `open` des sections repliables n'est plus lu).
+- **« Acheter »** : les bonnes affaires (enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte, au plus à la
+  cote ; finies depuis la lecture ou carte obtenue depuis : plus montrées, et dit dans le détail de la lecture). **Onglets de recherche** (au-dessus
+  de la liste) : chacun a un **nom** et **ses propres filtres** (ci-dessous) et dit combien d'affaires les passent ; « Nouvel onglet » (12 au plus)
+  en crée un aux filtres par défaut et ouvre son panneau pour le nommer ; « ⋯ » ou clic droit : « Renommer, filtres… », « Dupliquer », « Déplacer à
+  gauche / à droite », « Supprimer l'onglet » (confirmation ; jamais le dernier). Au-dessus de la liste, les filtres de l'onglet en mots (« pour
+  « Galaxies » », « sans « Pokémon » », « ≤ 50 % de la cote », « UR, L ») et « Filtres » / « Modifier les filtres », qui ouvre le **panneau des
+  filtres de l'onglet** par-dessus la liste (la fiche reste visible) : nom de l'onglet, **collections** (celles que remplissent ces affaires, chacune
+  avec son nombre et « Inclure » / « Exclure » (un deuxième clic la libère), une recherche au-delà de 8, « Toutes les collections » libère tout : une
+  affaire passe si elle sert à **au moins une** collection incluse (aucune incluse : toutes) et à **aucune** collection exclue), puis **au plus [80] %
+  de la cote** (champ, puces 30 / 50 / 70 / 80 / 100 %), case « Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h, au plus à la cote) »
+  (cochée par défaut), **prix** de … à … W, **économie** d'au moins … W, **rareté** (puces L à C ; aucune = toutes), **brillante** (peu importe,
+  seulement, exclure), **enchère** (toutes, avec mise, sans mise, tu mènes), **fin** (toutes, < 1 h, < 6 h, < 24 h), **cote** (3, 5 ou 10 ventes et
+  plus), « Effacer les filtres » (les collections et le tri restent) ; le nombre d'affaires suit en direct. Le **tri** est en tête de la liste (« Fin
+  la plus proche » par défaut, « Meilleure remise » = prix / cote, « Plus grosse économie » = cote − prix, « Prix croissant »). Chaque changement est
+  **enregistré tout de suite dans l'onglet** (choix de l'utilisateur ; 0,8 s après la frappe dans un champ, une relecture de `GET /api/me`
+  entre-temps ne le défait pas). Une ligne : vignette (illustration, sinon l'initiale sur la couleur de la rareté), rareté, titre, « brillante »,
+  « tu mènes » ou « finit bientôt », ses collections, avec ou sans mise, « +2 autres enchères », prix, écart à la cote (en vert à 10 % sous la cote),
+  temps restant (orange sous 1 h). **Fiche** : vignette, titre, rareté, collections, « Copier le nom », « Ouvrir la fiche » (la fiche de la carte qui
+  manque) ; l'enchère (prix à battre ou de départ, cote de la rareté, économie, fin ; « Miser » (voir « Miser ») ou « tu mènes », « Ouvrir dans le jeu
+  ↗ » ; écart à la cote et nombre de ventes, mises, meneur et vendeur lus sur le site du jeu, autres enchères intéressantes) ; puis le marché de la
+  carte : ses enchères en cours et la **courbe de ses ventes, le prix à battre en pointillé**.
+  **Gardés avec le compte** (pas dans le navigateur : les mêmes sur le téléphone et l'ordinateur), dans `prefs` (`PATCH /api/me`) : `deal_tabs` =
+  `[{id, name, f}]` (12 au plus ; `id` = 1 à 40 caractères `[A-Za-z0-9_-]`, unique ; `name` tel que tapé, 40 caractères, vide = « Sans nom »), `f` =
+  `{pct, soon, min, max, save, r:[raretés], shiny:''|'only'|'no', bid:''|'bid'|'nobid'|'lead', end:0|1|6|24, n:3|5|10, cols:[clés], xcols:[clés], sort}`
   (défaut : `{pct:80, soon:true, min:null, max:null, save:null, r:[], shiny:'', bid:'', end:0, n:3, cols:[], xcols:[], sort:'end'}`, normalisé à la
-  lecture ; 50 collections au plus de chaque côté, une clé à la fois incluse et exclue reste incluse ; l'ancien `col` d'une seule collection, d'avant le 2026-10-29, est repris dans `cols`), enregistré tout de suite au clic et 0,8 s après la frappe dans un champ (une relecture de `GET /api/me` entre-temps ne le défait
-  pas). **Filtres enregistrés** : « Enregistrer ces filtres… » (dans le panneau) demande un nom (40 caractères ; un nom déjà pris, sans tenir
-  compte des majuscules, est remplacé) et garde le filtre en cours avec ses collections et son tri, 12 au plus (`deal_presets` =
-  `[{name, f}]`) ; ils s'affichent en puces sous la barre (la puce du filtre en cours mise en avant ; un clic l'applique, « × » le supprime,
-  sans confirmation).
-- **« Bonnes affaires à vendre »** : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis qid, comme les albums). Jamais une carte exclue des échanges et des ventes (2026-10-29, voir « Partage entre membres », « Cartes exclues des échanges et des ventes »).
-  Case **« Cacher les cartes de mes collections »**, cochée par défaut (gardée dans ce navigateur, `hideCol`) : décochée, la liste montre aussi
+  lecture ; 50 collections au plus de chaque côté, une clé à la fois incluse et exclue reste incluse ; l'ancien `col` d'une seule collection, d'avant
+  le 2026-10-29, est repris dans `cols`). **Reprise** : sans `deal_tabs`, l'ancien filtre en cours (`deal_filter`) devient l'onglet « Toutes » et
+  chaque filtre enregistré (`deal_presets` = `[{name, f}]`, d'avant le 2026-10-29) un onglet ; rien n'est écrit au compte avant le premier
+  changement, et `deal_filter` / `deal_presets` ne sont plus écrits.
+- **« Vendre »** (« Bonnes affaires à vendre » avant le 2026-10-29) : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis qid, comme les albums). Jamais une carte exclue des échanges et des ventes (2026-10-29, voir « Partage entre membres », « Cartes exclues des échanges et des ventes »).
+  Case **« Pas les cartes de mes collections »**, cochée par défaut (gardée dans ce navigateur, `hideCol`) : décochée, la liste montre aussi
   les **exemplaires en trop** de celles qui y servent (une collection n'a besoin que d'un exemplaire de la carte : on garde le moins coté, et la
-  ligne dit « 2 en trop ») ; prix d'une ligne = la plus haute cote fiable de ses exemplaires à vendre, au moins le seuil « Valeur minimale :
-  [100]W » (gardé avec l'état des sections) ; de la plus chère à la moins chère. Une ligne : rareté de l'exemplaire, titre (sa fiche),
-  « brillante », « ×3 » ou « 2 en trop », « Copier le nom », cote, ventes, dernière vente. Cartes sans cote fiable : « 12 cartes sans cote fiable :
+  ligne dit « 2 en trop ») ; prix d'une ligne = la plus haute cote fiable de ses exemplaires à vendre, au moins le seuil « Cote d'au moins
+  [100]W » (gardé dans ce navigateur, `min`) ; de la plus chère à la moins chère ; en tête, combien et leur total (« ~4 300W en tout »). Une ligne :
+  vignette, rareté de l'exemplaire, titre, « brillante », « ×3 » ou « 2 en trop », ventes, dernière vente, cote. **Fiche** : la carte (« Copier le
+  nom », « Ouvrir la fiche »), **« Mettre en vente » sur place** (le formulaire de la fenêtre « Vendre » ci-dessous, sans fenêtre ; mise de départ
+  proposée à **90 % de la cote**, choix de l'utilisateur ; tes exemplaires dans le jeu, `GET /api/market/sell`, lus au premier geste dans le
+  formulaire, pas à chaque carte parcourue ; la vente faite est annoncée, « retrouve-la dans « Mes enchères » », et la carte quitte la liste),
+  puis le marché de la carte (la concurrence, la courbe des ventes, la mise de départ en pointillé). Cartes sans cote fiable : « 12 cartes sans cote fiable :
   le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes). »
 - **Cartes déjà en vente dans le jeu** : une carte mise aux enchères quitte la collection du jeu, mais reste dans le classeur tant qu'une
   lecture complète **vérifiée** ne l'a pas retirée (pendant que le joueur joue, les compteurs bougent et la lecture n'est pas vérifiée : rien
-  n'est retiré, voir « Lecture de la collection »). « Bonnes affaires à vendre » écarte donc, d'après la dernière lecture du marché
+  n'est retiré, voir « Lecture de la collection »). « Vendre » écarte donc, d'après la dernière lecture du marché
   (`live.sales`), un exemplaire (même rareté et brillance si possible) par vente **en cours** (`run`) ou **conclue** (`sold`) ; une carte dont il
   ne reste aucun exemplaire n'est pas proposée, et une ligne le dit. Invendue ou annulée : la carte est revenue au joueur, elle reste proposée.
 - **Vendre** (2026-10-23, `sell.js`, routes relevées dans un HAR du jeu du 2026-10-23 et dans le code de sa page) : « Mettre en vente dans le jeu »
-  dans la fiche d'une de tes cartes, et « Mettre en vente » sur chaque ligne de « Bonnes affaires à vendre » (avec la rareté de la ligne). La
+  dans la fiche d'une de tes cartes, et le même formulaire dans la fiche de « Vendre » (avec la rareté de la ligne, voir plus haut). La
   fenêtre « Mettre en vente « … » » (large ; le formulaire à gauche, le marché à droite, l'un sous l'autre sous 760 px) :
   - **Exemplaire** : une puce par rareté d'exemplaire et brillance de tes exemplaires **dans le jeu** (`GET /api/market/sell`, lu à l'ouverture ;
     avant, ceux du classeur), « ×2 », « favori » ; par défaut, la rareté de la ligne, sinon celle qui a la plus haute cote fiable.
@@ -2295,8 +2318,8 @@ reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste mon
     7 jours, enchères en cours (combien, la moins chère, avec ou sans mise ; tes ventes à part), ventes conclues, tes enchères actives sur leur
     plafond ; « Tes ventes de cette carte » (14 derniers jours, dernière lecture du marché) ; puis tout le « Marché dans le jeu » de la fiche
     (enchères en cours avec leur détail, courbe des prix de vente, qui suit la rareté choisie). Ce marché est lu comme à l'ouverture d'une fiche
-    (`GET /api/market/card`, gardé 60 s : déjà lu si la fiche est ouverte dessous).
-  - **Mise de départ** (W, entier, 1 au moins), proposée à la cote de la rareté (elle suit la rareté tant qu'on ne l'a pas changée) ; puces
+    (`GET /api/market/card`, gardé 3 min : déjà lu si la fiche est ouverte dessous).
+  - **Mise de départ** (W, entier, 1 au moins), proposée à la cote de la rareté (à 90 % de la cote dans la fiche de « Vendre » ; elle suit la rareté tant qu'on ne l'a pas changée) ; puces
     « la cote · 505W », « sous la moins chère en vente · 59W », « la dernière vente · 504W ». **Durée** : 10 min, 30 min, 1 h (par défaut, comme
     le jeu), 3 h, 6 h, 12 h.
   - **Avertissements** : plafond d'enchères actives atteint (envoi désactivé), plus d'exemplaire dans le jeu (désactivé), départ à moins de 70 % ou
@@ -2304,9 +2327,9 @@ reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste mon
     favori dans le jeu. Résumé « Commune · départ 300W · 3 h ».
   - « Mettre en vente dans le jeu » → `POST /api/market/sell`. Réussite : « « … » est en vente dans le jeu. Commune, départ 300W, fin vers … », lien
     « Ouvrir dans le jeu ↗ » et **« Annuler la vente »** ; l'enchère rejoint aussitôt la liste de la fiche (« ta vente ») et « Mes enchères »
-    (le serveur l'ajoute à la dernière lecture du marché, sans changer son heure), et la carte quitte « Bonnes affaires à vendre ». Vérification
+    (le serveur l'ajoute à la dernière lecture du marché, sans changer son heure), et la carte quitte « Vendre ». Vérification
     anti-robot demandée par le jeu : le message et « Ouvrir ma collection dans le jeu ↗ ». Toute erreur reste dans la fenêtre.
-  - **Annuler une vente** : depuis la fenêtre après la vente, depuis « Mes ventes en cours » et « Mes enchères » (« Annuler la vente » sur une vente
+  - **Annuler une vente** : depuis la fenêtre (ou la fiche de « Vendre ») après la vente, depuis la fiche d'une vente de « Mes enchères » (« Annuler la vente » sur une vente
     en cours sans enchère reçue) et depuis la liste des enchères d'une fiche (« Annuler ma vente » sur la tienne, sans mise) ; hors de la fenêtre, une confirmation
     d'abord. Le jeu n'annule plus une vente dès qu'une mise existe : le serveur relit l'enchère juste avant et refuse (`409 {has_bid:true}`, « Quelqu'un
     a déjà misé sur cette vente : le jeu ne permet plus de l'annuler. »). Pas de baisse du prix de départ depuis le classeur (le jeu la permet une
@@ -2323,8 +2346,8 @@ reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste mon
     `human_verification_required` (le jeu ouvre alors un captcha) → `409 {verify:true}`. **Non vérifié sur le jeu** : la vente avec ce cookie refait
     depuis une adresse Cloudflare (la proposition d'échange marche ainsi), et quand le jeu demande la vérification anti-robot.
 - **Miser** (2026-10-26, `bid.js`, route relevée dans un HAR du jeu du 2026-10-26 : `POST /api/marketplace/<id>/bid` `{amount}` → `200
-  {auction_id, current_bid, bidder_balance}`, le solde **déjà débité** de la mise) : bouton **« Miser »** sur chaque ligne de « Bonnes affaires à
-  acheter » (sauf celle que tu mènes) et sur chaque enchère en cours de la fiche d'une carte (sauf ta vente, celle que tu mènes, une enchère finie
+  {auction_id, current_bid, bidder_balance}`, le solde **déjà débité** de la mise) : bouton **« Miser »** dans la fiche d'une bonne affaire de
+  « Acheter » (sauf celle que tu mènes), « Remiser » dans celle d'une mise dépassée de « Mes enchères », et sur chaque enchère en cours de la fiche d'une carte (sauf ta vente, celle que tu mènes, une enchère finie
   ou que le jeu ne connaît plus ; pas dans la fenêtre « Mettre en vente »), seulement avec un compte relié. La fenêtre « Miser sur « … » » (par-dessus
   la fiche, qui reste ouverte) : exemplaire, enchère actuelle ou prix de départ (« aucune mise »), cote (« ~ » sous 3 ventes), fin, ton solde lu à la
   dernière synchro ; **ta mise** (W, entier) proposée au minimum, puces « minimum · 50W » et « la cote · 100W » (si plus haute) ; avertissements :
@@ -2339,14 +2362,23 @@ reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste mon
   la dernière lecture du marché est corrigée sans changer son heure (`patchLive` : bonne affaire `ask`/`bid`/`lead`, ligne de « Tes mises » en
   tête, `st:"run"`). **Non vérifié sur le jeu** : la mise depuis une adresse Cloudflare, le pas minimal après une mise, ce que devient la mise
   d'un enchérisseur dépassé.
-- **« Mes ventes en cours »** (2026-10-23 ; section pleine largeur sous la valeur, **ouverte par défaut**, `open.ventes`) : tes ventes pas encore
-  finies (`live.sales` en `run` dont la fin n'est pas passée, y compris celles faites depuis le classeur, ajoutées par le serveur), la fin la plus
-  proche d'abord, 20 puis « Afficher 20 de plus ». Une ligne : rareté, titre (sa fiche), « brillante », départ, enchère actuelle et écart à la cote,
-  « sans enchère » ou « 2 mises » et « mène : <pseudo> », temps restant, « Ouvrir dans le jeu ↗ », et **« Annuler la vente »** (confirmation, voir
-  « Vendre ») tant qu'il n'y a aucune mise, sinon « plus annulable ». Section ouverte dans l'onglet affiché : les mises des 10 premières sont
-  **relues sur le site du jeu** (`GET /api/market/auction`, deux à la fois, gardées 2 min ; la lecture du marché peut dater de 20 min) ;
-  « Relire les mises » les relit ; une vente que le jeu ne montre plus en cours : « terminée ou retirée ». Une vente annulée quitte la section.
-- **Lecture du marché** (en haut, sous la valeur) : « Lecture du marché par le classeur : il y a 12 min (17 octobre, 10:02). » ; au-delà de 2 h,
+- **« Mes enchères »** (2026-10-29 : « Mes ventes en cours » et « Mes enchères » d'avant réunies) : tes mises et tes ventes de la dernière
+  lecture du marché (14 jours), rangées par ce qui demande une action : **« À relancer · dépassées »** (mises en cours où tu ne mènes plus), **« Tu
+  mènes »**, **« Mes ventes en cours »** (`live.sales` en `run` dont la fin n'est pas passée, y compris celles faites depuis le classeur), chacune de
+  la fin la plus proche à la plus lointaine, puis **« Terminées ces 14 jours »** repliées (« Afficher (4) » : gagnées, perdues, vendues, invendues,
+  la plus récente d'abord). Une ligne : vignette, rareté, titre, état (« dépassée », « tu mènes », « sans enchère », « 2 mises », « gagnée »…), ta
+  mise ou le départ, l'enchère, le temps restant. **Fiche** : la carte (« Copier le nom », « Ouvrir la fiche »), ta mise ou le départ, l'enchère
+  actuelle ou le prix final, la cote, la fin ; ce qu'il y a à faire (« Quelqu'un a misé au-dessus de toi (380W). La cote est à 610W : tu peux
+  encore remiser en dessous. » et **« Remiser »**, qui ouvre « Miser » ; « Personne n'a encore misé : tu peux annuler la vente. » et **« Annuler la
+  vente »** (confirmation, voir « Vendre ») ; sinon « plus annulable », « mène : <pseudo> ») ; puis le marché de la carte. Sous-onglet ouvert : les
+  mises des 10 premières ventes en cours sont **relues sur le site du jeu** (`GET /api/market/auction`, deux à la fois, gardées 2 min ; la lecture
+  du marché peut dater de 20 min) ; « Relire les mises » les relit ; une vente que le jeu ne montre plus en cours : « terminée ou retirée ».
+- **« Valeur »** : la valeur (« 205 cartes cotées sur 1 048 », cartes approchées), le graphique de la valeur (SVG dans la page, survol : le jour le
+  plus proche ; « Voir les valeurs » : le tableau) sur **7 jours, 60 jours (par défaut) ou 1 an** (gardé dans ce navigateur), dès deux jours dans la
+  période ; « Lecture du marché » en détail (ci-dessous) avec « Actualiser le marché » et « Relire tout le marché » ; et « À savoir » (avertissement des
+  règles du jeu : le classeur lit le marché dans la base du jeu, ce qui est plus risqué que sa synchro de la collection ; si le jeu limite les lectures,
+  la passe s'arrête et la suivante est sautée).
+- **Lecture du marché** (détail de « Lu il y a … » dans la barre du Marché, et « Valeur ») : « Lecture du marché par le classeur : il y a 12 min (17 octobre, 10:02). » ; au-delà de 2 h,
   en orange, « Elle date de plus de 2 h : des enchères ont pu finir ou monter. Clique « Actualiser le marché » (le classeur la refait toutes les
   20 minutes quand la synchro automatique est active). » ; jamais d'essai : « Le classeur n'a pas encore lu le marché : relie ton compte (onglet
   « Synchro ») ou clique « Actualiser le marché ». » ; cotes lues mais pas la lecture du marché : « Cotes lues par le classeur il y a 5 min ;
