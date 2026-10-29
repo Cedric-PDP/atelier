@@ -38,6 +38,7 @@ export async function getPalmares(env, user) {
     // Écarter images, descriptions et tags : seuls les titres et variantes servent au calcul.
     db.prepare(`SELECT c.user_id, json_object('title', json_extract(c.data, '$.title'),
       'rarity', json_extract(c.data, '$.rarity'), 'count', json_extract(c.data, '$.count'),
+      'fav', json_extract(c.data, '$.fav'), 'starred', json_extract(c.data, '$.starred'),
       'shiny', json_extract(c.data, '$.shiny'), 'variants', json_extract(c.data, '$.variants')) AS data,
       p.data AS prices FROM cards c JOIN users u ON u.id = c.user_id
       LEFT JOIN prices p ON p.card_id = c.card_id WHERE u.shared = 1 AND u.public_id IS NOT NULL`),
@@ -49,11 +50,24 @@ export async function getPalmares(env, user) {
     db.prepare(`SELECT user_id, recipient_id, given, received FROM award_trades WHERE status IN ('accepted', 'completed')`),
   ]);
   const stats = new Map(members.results.map((m) => [m.id, { member: { id: m.public_id, name: m.name || m.game_pseudo || 'Un membre', mine: m.id === user.id },
-    titles: new Set(), sharedTargets: !!m.shared_targets, completed: 0, near: 0, value: 0, card: null, traded: 0, chat: m.chat_sent }]));
+    titles: new Set(), available: new Map(), used: new Set(), sharedTargets: !!m.shared_targets, completed: 0, near: 0, value: 0, card: null,
+    traded: 0, chat: m.chat_sent, squirrel: 0, stock: null, curator: 0, collection: null, rat: 0 }]));
   for (const row of cards.results) {
     const s = stats.get(row.user_id);
     const c = parse(row.data, {});
-    s.titles.add(norm(c.title));
+    const title = norm(c.title);
+    const count = Number.isSafeInteger(c.count) ? Math.max(0, c.count) : 1;
+    if (!title || !count) continue;
+    s.titles.add(title);
+    if (count > s.squirrel || (count === s.squirrel && String(c.title).localeCompare(s.stock?.title || '', 'fr') < 0)) {
+      s.squirrel = count;
+      s.stock = { title: c.title };
+    }
+    // Même un exemplaire unique peut aider, s'il ne sert à aucune de ses collections.
+    // Les favoris du jeu restent non échangeables.
+    const favorites = Number.isSafeInteger(c.fav) ? Math.min(count, Math.max(0, c.fav)) : c.starred ? count : 0;
+    const available = count - favorites;
+    if (available > 0) s.available.set(title, (s.available.get(title) || 0) + available);
     const prices = parse(row.prices, {});
     const variants = c.variants || { [c.rarity]: Math.max(0, (c.count || 1) - (c.shiny ? 1 : 0)), ...(c.shiny ? { [c.rarity + '*']: 1 } : {}) };
     for (const [variant, count] of Object.entries(variants)) {
@@ -64,15 +78,37 @@ export async function getPalmares(env, user) {
       }
     }
   }
+  // Index des besoins : un même titre dans plusieurs collections d'un membre ne compte qu'une fois.
+  const needs = new Map();
   for (const row of targets.results) {
     if (storageCollection(row.name)) continue;
     const s = stats.get(row.user_id);
     const items = new Set(parse(row.items, []).filter((i) => i && (!i.status || i.status === 'ok') && i.title).map((i) => norm(i.title)));
     if (!items.size) continue;
     let own = 0;
-    for (const title of items) if (s.titles.has(title)) own++;
-    if (own === items.size) s.completed++;
+    for (const title of items) {
+      s.used.add(title);
+      if (s.titles.has(title)) own++;
+      else {
+        if (!needs.has(title)) needs.set(title, new Set());
+        needs.get(title).add(row.user_id);
+      }
+    }
+    if (own === items.size) {
+      s.completed++;
+      if (items.size > s.curator || (items.size === s.curator && row.name.localeCompare(s.collection?.name || '', 'fr') < 0)) {
+        s.curator = items.size;
+        s.collection = { name: row.name };
+      }
+    }
     else if (own / items.size >= 0.9) s.near++;
+  }
+  for (const [id, s] of stats) {
+    for (const [title, available] of s.available) {
+      if (s.used.has(title)) continue;
+      const recipients = needs.get(title);
+      if (recipients) s.rat += Math.min(available, recipients.size - (recipients.has(id) ? 1 : 0));
+    }
   }
   for (const t of trades.results) {
     // Le partageur est celui qui donne la carte ; un même échange crédite les deux côtés selon leurs dons.
@@ -83,10 +119,13 @@ export async function getPalmares(env, user) {
     const sorted = [...stats.values()].filter((s) => (!collections || s.sharedTargets) && s[key] > 0)
       .sort((a, b) => b[key] - a[key] || a.member.id.localeCompare(b.member.id));
     return sorted.slice(0, 3).map((s) => ({ ...s.member, score: s[key], rank: sorted.findIndex((x) => x[key] === s[key]) + 1,
-      ...(key === 'value' ? { card: s.card } : {}) }));
+      ...(key === 'value' ? { card: s.card } : {}),
+      ...(key === 'squirrel' ? { card: s.stock } : {}),
+      ...(key === 'curator' ? { collection: s.collection } : {}) }));
   };
   return { updated_at: nowIso(), categories: [
     { id: 'completed', entries: board('completed', true) }, { id: 'value', entries: board('value') },
     { id: 'traded', entries: board('traded') }, { id: 'near', entries: board('near', true) }, { id: 'chat', entries: board('chat') },
+    { id: 'squirrel', entries: board('squirrel') }, { id: 'curator', entries: board('curator', true) }, { id: 'rat', entries: board('rat', true) },
   ] };
 }

@@ -3,8 +3,9 @@
 ## Palmarès (`#/palmares`)
 
 `GET /api/palmares` exige la clé principale et le partage des cartes (403 sinon). Retour :
-`{updated_at, categories:[{id, entries:[{id, name, mine, score, rank, card?}]}]}`.
-Les identifiants des joueurs sont publics ; aucun identifiant interne ni détail de collection n'est renvoyé.
+`{updated_at, categories:[{id, entries:[{id, name, mine, score, rank, card?, collection?}]}]}`.
+Les identifiants des joueurs sont publics ; aucun identifiant interne ni contenu de collection n'est renvoyé.
+Le conservateur montre seulement le nom de sa collection gagnante, déjà partagée.
 Trois membres au maximum par catégorie, scores strictement positifs, ex æquo au même rang et départage
 d'affichage stable par identifiant public. Un podium vide garde trois places à prendre.
 
@@ -18,8 +19,19 @@ d'affichage stable par identifiant public. Un podium vide garde trois places à 
 - `near` : nombre de collections partagées entre 90 % inclus et 100 % exclus.
 - `chat` : compteur historique `users.chat_sent`, incrémenté dans la transaction d'un envoi réussi.
   Suppression et purge des messages ne le diminuent pas. Migration initiale depuis les messages encore conservés.
+- `squirrel` (« L’écureuil ») : plus grand nombre d'exemplaires d'une même carte possédée, toutes variantes comprises ;
+  `card:{title}`. Les favoris comptent dans ce stock, comme les autres exemplaires.
+- `curator` (« Le conservateur ») : taille de la plus grande collection partagée complète, titres distincts vérifiés ;
+  `collection:{name}`. Une collection vide ou de rangement est exclue.
+- `rat` (« Le rat ») : nombre de besoins chez les autres membres que ses cartes pourraient remplir, uniquement pour
+  les titres absents de toutes ses propres collections éligibles. Même un exemplaire unique peut compter ; les copies
+  favorites sont exclues. Pour chaque titre, le score est le minimum entre les copies disponibles et le nombre d'autres
+  membres à qui il manque (une fois par membre, même s'il apparaît dans plusieurs de ses collections). Les cartes qui
+  servent à une collection du propriétaire ne comptent pas, même en double. Le propriétaire doit aussi partager ses
+  collections ; les besoins privés ou issus des listes de rangement ne comptent pas. Ce podium mesure le potentiel
+  d'aide actuel, sans déduire un refus de partager ni un comportement passé. Aucun appel de base supplémentaire.
 
-Les deux podiums de collections exigent aussi `shared_targets`. Leur rapprochement utilise les titres normalisés,
+Les trois podiums de collections et « Le rat » exigent aussi `shared_targets`. Leur rapprochement utilise les titres normalisés,
 et exclut les listes de rangement : noms commençant par « lock market » ou « à vendre », ainsi que les noms
 « autre » et « autres ». Comparaison sans casse ni accents, espaces et séparateurs équivalents ; les noms
 thématiques contenant seulement le mot « autres » restent éligibles. Le filtrage est recalculé à chaque lecture.

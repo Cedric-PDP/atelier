@@ -358,8 +358,12 @@ function mockApi() {
       }
       if (p === '/api/palmares' && method === 'GET') {
         if (!st.shared) return json(403, { error: 'Active le partage entre membres dans Réglages pour participer au palmarès.' });
-        return json(200, { updated_at: new Date().toISOString(), categories: ['completed', 'value', 'traded', 'near', 'chat'].map((id) => ({
-          id, entries: id === 'completed' ? [{ id: st.pub, name: st.name, mine: true, score: 2, rank: 1 }] : [],
+        return json(200, { updated_at: new Date().toISOString(), categories: ['completed', 'value', 'traded', 'near', 'chat', 'squirrel', 'curator', 'rat'].map((id) => ({
+          id, entries: ['completed', 'squirrel', 'curator', 'rat'].includes(id) ? [{ id: st.pub, name: st.name, mine: true,
+            score: id === 'squirrel' ? 47 : id === 'curator' ? 12 : id === 'rat' ? 3 : 2, rank: 1,
+            ...(id === 'squirrel' ? { card: { title: 'Napoléon' } } : {}),
+            ...(id === 'curator' ? { collection: { name: 'Empire' } } : {}),
+          }] : [],
         })) });
       }
       // Liste de souhaits du jeu : « Mettre à jour maintenant » rend une passe fixe (2 ajoutées, 1 retirée).
@@ -1472,10 +1476,12 @@ async function main() {
     const tabs = one('tabs').querySelectorAll('button').map((n) => n.id);
     check(tabs.indexOf('tab-palmares') + 1 === tabs.indexOf('tab-reglages'), 'Palmarès doit précéder Réglages');
     await goTab('palmares');
-    check(await waitFor(() => doc.querySelectorAll('.award').length === 5), 'les cinq podiums ne sont pas affichés');
-    check(doc.querySelectorAll('.podium-place').length === 15, 'trois places par podium attendues');
+    check(await waitFor(() => doc.querySelectorAll('.award').length === 8), 'les huit podiums ne sont pas affichés');
+    check(doc.querySelectorAll('.podium-place').length === 24, 'trois places par podium attendues');
     check(has('À ça du bol de sangria') && has('Le tchateur') && has('Les plus gros partageurs'), 'titres du palmarès absents');
     if (!SERVER) check(has('2 collections') && has('Toi'), 'score et repère personnel du podium absents');
+    check(has('L’écureuil') && has('Le conservateur') && has('Le rat'), 'nouveaux podiums absents');
+    if (!SERVER) check(has('47 exemplaires') && has('Napoléon') && has('12 cartes') && has('Empire') && has('3 cases') && !has('undefined'), 'détails des nouveaux podiums incorrects');
     const more = all((n) => n.tagName === 'BUTTON' && n.getAttribute('aria-controls') === 'mmore')[0];
     more.click();
     await settle();

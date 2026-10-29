@@ -4,7 +4,7 @@ import { createD1 } from './d1.mjs';
 import { mockSupabase } from './supabase.mjs';
 import { onRequest } from '../site/functions/api/[[path]].js';
 import { ensureSchema } from '../site/functions/_lib/db.js';
-import { syncTradeAwards } from '../site/functions/_lib/palmares.js';
+import { getPalmares, syncTradeAwards } from '../site/functions/_lib/palmares.js';
 import { deleteMe } from '../site/functions/_lib/auth.js';
 
 const env = { DB: createD1(), COOKIE_SECRET: 'test', SIGNUP_CODE: 'test', MAX_USERS: '10' };
@@ -32,6 +32,7 @@ try {
     return Object.fromEntries(r.data.categories.map((c) => [c.id, c.entries]));
   };
   assert.equal((await call('GET', 'palmares')).status, 401);
+  assert.deepEqual(Object.keys(await board()), ['completed', 'value', 'traded', 'near', 'chat', 'squirrel', 'curator', 'rat']);
   assert.ok(Object.values(await board()).every((entries) => entries.length === 0));
   for (const u of users) for (let i = 0; i < 9; i++) {
     db.prepare('INSERT INTO cards (user_id, card_id, data) VALUES (?, ?, ?)').run(u.id, 'c' + i,
@@ -107,5 +108,61 @@ try {
   await deleteMe(env, alice);
   assert.equal(db.prepare('SELECT COUNT(*) AS n FROM award_trades WHERE user_id = ? OR recipient_id = ?').get(alice.id, alice.id).n, 0);
   assert.deepEqual((await board(bob)).traded.map((e) => [e.name, e.score]), [['Bob', 2]], 'supprimer un compte conserve le score de son ami');
+  await testNewAwards();
   console.log('PALMARES OK');
 } finally { supa.restore(); env.DB.close(); }
+
+async function testNewAwards() {
+  const e = { DB: createD1() };
+  try {
+    await ensureSchema(e.DB);
+    const sql = e.DB.sqlite;
+    for (const [id, name, shared, collections] of [['a', 'Alice', 1, 1], ['b', 'Bob', 1, 1], ['c', 'Chloé', 1, 1], ['d', 'Denis', 1, 0], ['x', 'Privé', 0, 1]]) {
+      sql.prepare(`INSERT INTO users (id,name,key_hash,created_at,shared,shared_targets,public_id) VALUES (?,?,?,?,?,?,?)`)
+        .run(id, name, 'hash-' + id, '2026-10-29', shared, collections, 'public-' + id);
+    }
+    const card = (id, title, count, fav = 0) => sql.prepare('INSERT INTO cards (user_id,card_id,data) VALUES (?,?,?)')
+      .run(id, title, JSON.stringify({ title, count, fav, rarity: 'R', variants: { R: count } }));
+    const collection = (id, name, titles) => sql.prepare('INSERT INTO targets (user_id,id,name,items,created_at,updated_at) VALUES (?,?,?,?,?,?)')
+      .run(id, name, name, JSON.stringify(titles.map((title) => typeof title === 'string' ? { title, status: 'ok' } : title)), '2026-10-29', '2026-10-29');
+    for (const [title, count, fav] of [['Mars', 1, 0], ['Napoléon', 47, 0], ['Vénus', 3, 2], ['Saturne', 5, 5], ['Jupiter', 8, 0], ['Lune', 1, 0], ['Besoin privé', 10, 0], ['Rangement seul', 10, 0], ['Non partagé', 10, 0]]) card('a', title, count, fav);
+    for (const title of ['Terre', 'Soleil', 'Mercure']) card('b', title, 1);
+    card('c', 'Roche', 2);
+    card('d', 'Carte cachée', 99);
+    card('x', 'Trésor privé', 1000);
+    collection('a', 'Empire', ['Napoléon', 'Jupiter', 'Jupiter', { title: 'Intercalaire', status: 'label' }, { title: 'Non vérifié', status: 'missing' }]);
+    collection('a', '🔒 LOCK_MARKET - stock', ['Mars', 'Napoléon', 'Vénus', 'Saturne', 'Jupiter', 'Lune']);
+    collection('b', 'Astronomie', ['Terre', 'Soleil', 'Mercure']);
+    collection('b', 'À trouver', ['Mars', 'Vénus', 'Saturne', 'Jupiter', 'Lune', 'Carte cachée']);
+    collection('b', 'Encore Mars', ['mars', 'Mars', { title: 'Rangement seul', status: 'label' }]);
+    collection('b', 'À vendre', ['Rangement seul']);
+    collection('c', 'Géologie', ['Roche']);
+    collection('c', 'Mes envies', ['Mars', 'Vénus', 'Saturne', 'Jupiter']);
+    collection('x', 'Privée', ['Besoin privé']);
+    collection('d', 'Non partagée', ['Non partagé']);
+    const owner = { id: 'a', shared: 1, public_id: 'public-a' };
+    const read = async () => Object.fromEntries((await getPalmares(e, owner)).categories.map((c) => [c.id, c.entries]));
+    const originalPrepare = e.DB.prepare.bind(e.DB);
+    let queries = 0;
+    e.DB.prepare = (query) => { queries++; return originalPrepare(query); };
+    let awards = await read();
+    assert.equal(queries, 4, 'les trois nouveaux podiums réutilisent les quatre lectures existantes');
+    e.DB.prepare = originalPrepare;
+    assert.deepEqual(awards.squirrel.find((r) => r.name === 'Alice').card, { title: 'Napoléon' });
+    assert.equal(awards.squirrel.find((r) => r.name === 'Alice').score, 47);
+    assert.ok(!awards.squirrel.some((r) => r.name === 'Privé'));
+    assert.deepEqual(awards.curator.map((r) => [r.name, r.score, r.collection.name]), [['Bob', 3, 'Astronomie'], ['Alice', 2, 'Empire'], ['Chloé', 1, 'Géologie']]);
+    assert.deepEqual(awards.rat.map((r) => [r.name, r.score]), [['Alice', 3]], 'Mars unique + une Vénus non favorite + Lune ; aucun double comptage des besoins');
+    assert.ok(!awards.rat.some((r) => r.name === 'Denis'), 'ses collections doivent être partagées pour savoir si ses cartes lui servent');
+    sql.prepare("UPDATE cards SET data = json_set(data, '$.fav', 0) WHERE user_id = 'a' AND card_id = 'Vénus'").run();
+    assert.equal((await read()).rat[0].score, 4, 'deux destinataires au maximum pour Vénus, même avec trois copies');
+    sql.prepare("UPDATE cards SET data = json_set(data, '$.fav', 2) WHERE user_id = 'a' AND card_id = 'Vénus'").run();
+    sql.prepare("UPDATE targets SET items = ? WHERE user_id = 'a' AND id = 'Empire'").run(JSON.stringify([{ title: 'Napoléon', status: 'ok' }]));
+    assert.equal((await read()).rat[0].score, 5, 'Jupiter devient inutile à ses collections : deux autres membres peuvent en bénéficier');
+    sql.prepare("UPDATE users SET shared_targets = 0 WHERE id = 'a'").run();
+    awards = await read();
+    assert.ok(!awards.rat.some((r) => r.name === 'Alice'));
+    assert.ok(!awards.curator.some((r) => r.name === 'Alice'));
+    assert.ok(awards.squirrel.some((r) => r.name === 'Alice'), 'l’écureuil demande seulement le partage des cartes');
+  } finally { e.DB.close(); }
+}

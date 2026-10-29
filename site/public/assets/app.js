@@ -8982,6 +8982,9 @@
     ['traded', '🤝', 'Les plus gros partageurs', 'Les cartes données dans les échanges acceptés, créés depuis l’application.', 'carte'],
     ['near', '🍹', 'À ça du bol de sangria', 'Les collections partagées entre 90 % et moins de 100 % : presque au bout !', 'collection'],
     ['chat', '💬', 'Le tchateur', 'Les messages envoyés dans le tchat, même après leur suppression.', 'message'],
+    ['squirrel', '🐿️', 'L’écureuil', 'Le plus gros stock d’une même carte. Mais pourquoi en garder autant ?', 'exemplaire'],
+    ['curator', '🏛️', 'Le conservateur', 'La plus grande collection partagée complétée à 100 %.', 'carte'],
+    ['rat', '🐀', 'Le rat', 'Des cartes bien au chaud… inutiles à ses collections, mais utiles à celles des autres !', 'case'],
   ];
   async function loadAwards() {
     const request = ++awardsRequest;
@@ -9018,7 +9021,8 @@
                 h('strong', { class: 'podium-name' }, entry ? entry.name : 'Place à prendre'),
                 entry && entry.mine ? h('span', { class: 'podium-you' }, 'Toi') : null,
                 entry ? h('span', { class: 'podium-score' }, unit === 'W' ? `${fmt(entry.score)} W` : `${fmt(entry.score)} ${unit}${entry.score > 1 ? 's' : ''}`) : null,
-                entry && entry.card ? h('span', { class: 'podium-card', title: entry.card.title }, `${entry.card.title} · ${entry.card.variant}`) : null,
+                entry && entry.card ? h('span', { class: 'podium-card', title: entry.card.title }, entry.card.title + (entry.card.variant ? ` · ${entry.card.variant}` : '')) : null,
+                entry && entry.collection ? h('span', { class: 'podium-card', title: entry.collection.name }, entry.collection.name) : null,
               ]),
               h('div', { class: 'podium-step' }, entry ? `${entry.rank}${entry.rank === 1 ? 'er' : 'e'}` : '—'),
             ]);
@@ -9026,8 +9030,9 @@
           !entries.length ? h('p', { class: 'small muted award-empty' }, 'Le premier podium attend ses champions.') : null,
         ]);
       })) : null,
-      h('p', { class: 'small muted awards-note' }, 'Seuls les membres qui partagent leurs cartes participent. Les podiums de collections demandent aussi le partage des collections. Les ex æquo gardent le même rang ; trois membres sont affichés au maximum.'),
-      h('p', { class: 'small muted' }, 'Collections : les listes « Lock Market », « À vendre » et « Autre / Autres » sont exclues des deux podiums de collections. Comparaison par titre, sans les intercalaires libres ni les articles non vérifiés. Un article renommé peut entraîner un écart avec la progression de son album.'),
+      h('p', { class: 'small muted awards-note' }, 'Seuls les membres qui partagent leurs cartes participent. Les classements qui utilisent des collections demandent aussi leur partage. Les ex æquo gardent le même rang ; trois membres sont affichés au maximum.'),
+      h('p', { class: 'small muted' }, 'Collections : les listes « Lock Market », « À vendre » et « Autre / Autres » sont exclues des podiums de collections et des besoins comptés pour « Le rat ». Comparaison par titre, sans les intercalaires libres ni les articles non vérifiés. Un article renommé peut entraîner un écart avec la progression de son album.'),
+      h('p', { class: 'small muted' }, 'Le rat : les cartes absentes de toutes ses collections peuvent aider les autres, même en un seul exemplaire. Les favoris sont exclus. Une copie peut remplir une case chez un autre membre, et une même carte manquante ne compte qu’une fois par membre. Ce score mesure le potentiel d’aide actuel.'),
       h('p', { class: 'small muted' }, 'Échanges : suivi à partir de l’ajout du palmarès, confirmation à la synchronisation du compte du jeu. Tchat : reprise des messages encore conservés, puis compteur permanent des nouveaux envois.'),
     ]);
   }
