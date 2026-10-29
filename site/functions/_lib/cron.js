@@ -25,6 +25,9 @@ export const FULL_EVERY_MS = 6 * 3600_000;
 export const CRON_BUDGET_MS = 10 * 60_000;
 export const SKIP_AFTER_LIMIT_MS = { collection: 15 * 60_000, market: 25 * 60_000 };
 export const MARKET_EVERY_MS = 20 * 60_000;
+// Marge du saut : le déclencheur part à h:05/25/45, mais un membre est lu plus tard dans la passe (marché entier, membres
+// d'avant) ; sans elle, une lecture commencée à h:07 était sautée au tick de h:25 (18 min) et le membre attendait 40 min.
+export const MARKET_SKIP_MS = MARKET_EVERY_MS - 5 * 60_000;
 
 const plural = (n, one, many) => (n > 1 ? many : one);
 
@@ -225,7 +228,7 @@ async function marketCronPass(env, { now }) {
   for (const member of await eligibleMembers(db, byLastMarket)) {
     if (Date.now() - start >= CRON_BUDGET_MS) break;
     const since = lastStart.get(member.id);
-    if (since > now - MARKET_EVERY_MS && since <= now + 60_000) continue; // passe complète il y a moins de 20 min (un clic, léger, ne compte pas)
+    if (since > now - MARKET_SKIP_MS && since <= now + 60_000) continue; // passe complète il y a moins de 15 min (un clic, léger, ne compte pas)
     try {
       const r = await marketPass(env, member, { via: 'cron', auto: true });
       if (r.skip) continue;
