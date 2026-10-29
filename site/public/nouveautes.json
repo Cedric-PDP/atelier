@@ -2,7 +2,7 @@
   "versions": [
     {"id": "2026-10-29", "date": "2026-10-29", "sections": [
       {"icon": "🛒", "title": "Marché", "items": [
-        {"text": "Les cartes manquantes suivent l'ordre de « Mes collections ».", "to": "#/marche", "link": "Marché"}
+        {"text": "Bonnes affaires cherchées sur toutes tes cartes manquantes, sans limite de 500.", "to": "#/marche", "link": "Marché"}
       ]},
       {"icon": "🖼️", "title": "Cartes", "items": [
         {"text": "Change l'illustration d'une carte depuis sa fiche.", "to": "#/cartes", "link": "Mes cartes"},
