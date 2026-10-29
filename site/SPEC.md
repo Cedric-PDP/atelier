@@ -2264,6 +2264,15 @@ en haut à gauche ramène à la liste ; les sous-onglets et les onglets de reche
 (`localStorage` `classeur-marche` : `{<id du compte>: {min, col, hideCol, dtab, period}}`, accès protégés ; `dtab` = le dernier onglet de
 recherche ouvert, `period` = la période de la courbe de la valeur ; `col` : la collection choisie avant le 2026-10-24, reprise tant qu'aucun
 filtre n'est gardé au compte ; l'ancien `open` des sections repliables n'est plus lu).
+- **Interface classique** (2026-10-29, demande de l'utilisateur : des membres s'étaient habitués à l'ancienne) : Réglages › Apparence ›
+  « Interface du Marché » (Nouvelle par défaut / Classique), gardé avec le compte (`prefs.market_ui` = `'classic'`, sinon absent ou `null`).
+  Classique = l'onglet d'avant la refonte, à l'identique : une seule page de sections repliables (« Valeur de ton classeur », « Mes ventes en
+  cours », « Bonnes affaires à acheter » et « Bonnes affaires à vendre » côte à côte, « Mes enchères » fermée par défaut, « À savoir » ; état gardé
+  dans ce navigateur, `open` de `classeur-marche`), 20 lignes puis « Afficher 20 de plus », « Miser » et « Mettre en vente » dans leurs fenêtres. Ses
+  bonnes affaires n'ont **qu'un jeu de filtres** : `deal_filter` (bouton des collections, tri, panneau « Filtres », « Effacer les filtres ») et ses
+  filtres enregistrés `deal_presets` (« Enregistrer ces filtres… », puces), sans lien avec les onglets de recherche (`deal_tabs`), qui ne bougent
+  pas. Pas de sous-onglet ni d'adresse `#/marche/<sous-onglet>` dans l'interface classique ; les textes qui nomment la liste des cartes à vendre
+  disent « Bonnes affaires à vendre » ou « Vendre » (Marché) selon l'interface.
 - **« Acheter »** : les bonnes affaires (enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte, au plus à la
   cote ; finies depuis la lecture ou carte obtenue depuis : plus montrées, et dit dans le détail de la lecture). **Onglets de recherche** (au-dessus
   de la liste) : chacun a un **nom** et **ses propres filtres** (ci-dessous) et dit combien d'affaires les passent ; « Nouvel onglet » (12 au plus)
@@ -2292,7 +2301,7 @@ filtre n'est gardé au compte ; l'ancien `open` des sections repliables n'est pl
   lecture ; 50 collections au plus de chaque côté, une clé à la fois incluse et exclue reste incluse ; l'ancien `col` d'une seule collection, d'avant
   le 2026-10-29, est repris dans `cols`). **Reprise** : sans `deal_tabs`, l'ancien filtre en cours (`deal_filter`) devient l'onglet « Toutes » et
   chaque filtre enregistré (`deal_presets` = `[{name, f}]`, d'avant le 2026-10-29) un onglet ; rien n'est écrit au compte avant le premier
-  changement, et `deal_filter` / `deal_presets` ne sont plus écrits.
+  changement ; `deal_filter` / `deal_presets` ne sont plus écrits que par l'interface classique (ci-dessus).
 - **« Vendre »** (« Bonnes affaires à vendre » avant le 2026-10-29) : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis qid, comme les albums). Jamais une carte exclue des échanges et des ventes (2026-10-29, voir « Partage entre membres », « Cartes exclues des échanges et des ventes »).
   Case **« Pas les cartes de mes collections »**, cochée par défaut (gardée dans ce navigateur, `hideCol`) : décochée, la liste montre aussi
   les **exemplaires en trop** de celles qui y servent (une collection n'a besoin que d'un exemplaire de la carte : on garde le moins coté, et la

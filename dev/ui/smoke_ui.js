@@ -5882,6 +5882,79 @@ async function main() {
       sortSel.dispatch('change');
       await settle(40);
     }
+    // Interface classique du Marché (réglage « Interface du Marché », prefs.market_ui) : l'onglet d'avant le 2026-10-29,
+    // sections repliables, un seul jeu de filtres (deal_filter, sans lien avec les onglets de recherche), puis retour.
+    {
+      const tabsBefore = SERVER ? null : JSON.stringify(um.prefs.deal_tabs);
+      d.getElementById('tab-reglages').click();
+      await settle(60);
+      const sel = d.getElementById('set-market-ui');
+      check(sel && String(sel.value) === 'new', 'réglage « Interface du Marché » absent ou pas sur « Nouvelle »');
+      sel.value = 'classic';
+      sel.dispatch('change');
+      await settle(60);
+      if (!SERVER) check(um.prefs.market_ui === 'classic', 'interface classique pas gardée au compte : ' + JSON.stringify(um.prefs.market_ui));
+      d.getElementById('tab-marche').click();
+      await settle(80);
+      const sections = () => d.getElementById('panel-marche').querySelectorAll('section').filter((n) => n.classList.contains('acc'));
+      const section = (id) => sections().find((n) => n.getAttribute('data-section') === id) || null;
+      const accBtn = (id) => section(id).querySelector('.acc__btn');
+      check(!d.getElementById('mk-sub-acheter') && !d.querySelectorAll('.mk-tab').length
+        && sections().map((n) => n.getAttribute('data-section') + (n.classList.contains('market__wide') ? '*' : '')).join(',') === 'valeur,ventes*,acheter,vendre,encheres*',
+        'sections du Marché classique : ' + sections().map((n) => n.getAttribute('data-section')).join(','));
+      check(accBtn('encheres').getAttribute('aria-expanded') === 'false' && text(accBtn('acheter')).startsWith('Bonnes affaires à acheter'), '« Mes enchères » doit être fermée par défaut');
+      accBtn('encheres').click();
+      await settle(40);
+      check(text(section('encheres')).includes('Tes mises') && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].open.encheres === true, 'état des sections non gardé');
+      const buy = () => text(section('acheter'));
+      check(buy().includes('Voulue A') && buy().includes('cote 100W') && buy().includes('pour « Envies »') && buy().includes('1 autre enchère intéressante sur cette carte'), 'bonnes affaires classiques : ' + buy());
+      // Un seul jeu de filtres : deal_filter ; les onglets de recherche ne bougent pas.
+      d.getElementById('deal-filters-btn').click();
+      await settle(40);
+      const chip = (label) => d.getElementById('deal-filters').querySelectorAll('button').find((b) => text(b) === label);
+      chip('L').click();
+      await settle(40);
+      check(!buy().includes('Voulue A') && text(d.getElementById('deal-filters-btn')) === 'Filtres · 1' && text(d.querySelector('.deal-summary')).startsWith('0 affaire sur 1 · L'), 'filtre classique de rareté L : ' + buy());
+      if (!SERVER) check(JSON.stringify(um.prefs.deal_filter.r) === '["L"]' && JSON.stringify(um.prefs.deal_tabs) === tabsBefore, 'filtre classique : deal_filter attendu, onglets inchangés : ' + JSON.stringify(um.prefs.deal_filter));
+      // Filtres enregistrés : « Enregistrer ces filtres… », puis la puce.
+      chip('Enregistrer ces filtres…').click();
+      await settle(40);
+      type(d.getElementById('deal-preset-name'), 'Légendes');
+      d.querySelector('.deal-filters__save').dispatch('submit');
+      await settle(60);
+      const presets = () => (d.querySelector('.deal-presets') ? d.querySelector('.deal-presets').querySelectorAll('.chip') : []);
+      check(presets().some((n) => text(n) === 'Légendes' && n.classList.contains('on')), 'filtre enregistré classique : ' + presets().map(text).join(', '));
+      chip('Effacer les filtres').click();
+      await settle(40);
+      check(buy().includes('Voulue A'), 'filtres classiques pas effacés');
+      d.getElementById('deal-filters-btn').click();
+      await settle(40);
+      // « Bonnes affaires à vendre » : 20 lignes puis « Afficher … de plus », « Mettre en vente » ouvre la fenêtre.
+      type(d.getElementById('sell-min'), '100');
+      await settle(40);
+      const sellRows = () => section('vendre').querySelectorAll('li');
+      const more = section('vendre').querySelectorAll('button').find((b) => text(b).startsWith('Afficher'));
+      check(sellRows().length === 20 && more && /^Afficher \d+ de plus \(\d+ restantes?\)$/.test(text(more)), 'à vendre classique : ' + sellRows().length + ' lignes, ' + (more ? text(more) : 'pas de « Afficher plus »'));
+      sellRows()[0].querySelectorAll('button').find((b) => text(b) === 'Mettre en vente').click();
+      await settle(60);
+      const md = d.querySelectorAll('.modal')[0];
+      check(md && md.classList.contains('sell') && String(d.getElementById('sell-base').value) !== '', 'fenêtre « Mettre en vente » classique absente');
+      md.querySelectorAll('button').find((b) => text(b).trim() === 'Annuler').click();
+      await settle(40);
+      type(d.getElementById('sell-min'), '450');
+      await settle(40);
+      // Retour à la nouvelle interface : ses onglets de recherche sont intacts.
+      d.getElementById('tab-reglages').click();
+      await settle(60);
+      d.getElementById('set-market-ui').value = 'new';
+      d.getElementById('set-market-ui').dispatch('change');
+      await settle(60);
+      d.getElementById('tab-marche').click();
+      await settle(80);
+      check(d.getElementById('mk-sub-acheter') && d.querySelectorAll('.mk-tab__label').map(text).join(' | ') === 'Toutes | Petits prix | Galaxies' && !d.querySelectorAll('section.acc').length,
+        'retour à la nouvelle interface : ' + d.querySelectorAll('.mk-tab__label').map(text).join(' | '));
+      if (!SERVER) check(!um.prefs.market_ui, 'nouvelle interface : market_ui doit être retiré');
+    }
     // Valeur du classeur d'un ami (cotes venues avec ses cartes, rareté de sa carte pour tous ses exemplaires) : Marché 1
     // (1 rare à 400W, la brillante n'a que 2 ventes), Voulue A (100W), Sans cote : 500W, 2 cartes cotées sur 3.
     d.getElementById('tab-amis').click();

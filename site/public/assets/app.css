@@ -1757,6 +1757,13 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .fmember__none { padding: 0 4px 4px; }
 .fmember > .linkish { justify-self: start; padding-left: 4px; }
 
+/* ------------------------------------------------------------------ Marché classique (réglage « Interface du Marché »)
+   L'onglet d'avant le 2026-10-29 : sections repliables, « à acheter » et « à vendre » côte à côte. */
+.market { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.market__value, .market__rules, .market__wide { grid-column: 1 / -1; }
+@media (max-width: 760px) { .market { grid-template-columns: minmax(0, 1fr); } }
+.market .show-more { margin-top: 4px; }
+
 /* ------------------------------------------------------------------ Marché (refonte du 2026-10-29)
    Sous-onglets et état de la lecture en haut ; « Acheter », « Vendre », « Mes enchères » : liste à gauche, fiche à droite,
    sur une hauteur fixe (--mk-h, posée par le script : jusqu'en bas de la fenêtre) ; la liste et la fiche défilent chacune.
