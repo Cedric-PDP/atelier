@@ -6,7 +6,8 @@
       ]},
       {"icon": "🖼️", "title": "Cartes", "items": [
         {"text": "Change l'illustration d'une carte depuis sa fiche.", "to": "#/cartes", "link": "Mes cartes"},
-        {"text": "Choisis parmi les images de l'article dans 16 langues de Wikipédia."}
+        {"text": "Choisis parmi les images de l'article dans 16 langues de Wikipédia."},
+        {"text": "Exclus des cartes ou des tags des échanges et des ventes.", "to": "#/cartes", "link": "Mes cartes"}
       ]}
     ]},
     {"id": "2026-10-28", "date": "2026-10-28", "sections": [
