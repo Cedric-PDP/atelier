@@ -6847,7 +6847,7 @@
   // de ton classeur » comprise depuis le 2026-10-18) et seuil
   // des « Bonnes affaires à vendre » (100W par défaut), gardés par classeur dans ce navigateur (localStorage, accès protégés
   // : sans lui, les valeurs par défaut). Chaque liste montre 20 cartes, puis « Afficher 20 de plus ».
-  const MARKET_OPEN = Object.freeze({ valeur: true, ventes: true, acheter: true, vendre: true, encheres: false, filtres: false }); // filtres : le panneau des filtres de « à acheter »
+  const MARKET_OPEN = Object.freeze({ valeur: true, ventes: true, acheter: true, vendre: true, encheres: false, filtres: false, cols: false }); // filtres, cols : les panneaux des filtres et des collections de « à acheter »
   const MARKET_MIN = 100;
   const MARKET_STEP = 20;
   // col : collection choisie dans « à acheter » avant le 2026-10-24 (reprise une fois dans ses filtres, voir dealFilter) ; hideCol : « à vendre » sans les cartes de tes collections (cochée par défaut).
@@ -6896,19 +6896,24 @@
   // pct : % de la cote au plus ; soon : garder quand même celles qui finissent bientôt sans mise ; min, max : prix demandé
   // (W) ; save : économie (cote - prix) au moins ; r : raretés (vide : toutes) ; shiny : '' | 'only' | 'no' ; bid : '' |
   // 'bid' | 'nobid' | 'lead' ; end : finit dans moins de <end> h (0 : peu importe) ; n : ventes au moins (fiabilité de la
-  // cote) ; col : collection ('' : toutes) ; sort : DEAL_SORTS.
-  const DEAL_DEFAULT = Object.freeze({ pct: 80, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, col: '', sort: 'end' });
+  // cote) ; cols : collections incluses (vide : toutes ; une affaire passe si elle sert à l'une d'elles) ; xcols : collections
+  // exclues (jamais une affaire qui sert à l'une d'elles) ; sort : DEAL_SORTS. L'ancien col (une seule collection, avant le
+  // 2026-10-29) est repris dans cols.
+  const DEAL_DEFAULT = Object.freeze({ pct: 80, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, cols: Object.freeze([]), xcols: Object.freeze([]), sort: 'end' });
   const DEAL_SORTS = [['end', 'Fin la plus proche'], ['pct', 'Meilleure remise'], ['save', 'Plus grosse économie'], ['price', 'Prix croissant']];
   const DEAL_ENDS = [[0, 'Toutes'], [1, '< 1 h'], [6, '< 6 h'], [24, '< 24 h']];
   const DEAL_SALES = [3, 5, 10];
   const DEAL_PCTS = [30, 50, 70, 80, 100];
   const DEAL_PRESETS_MAX = 12;
+  const DEAL_COLS_MAX = 50;
   const DEAL_NAME_MAX = 40;
   const DEAL_SOON_MS = 2 * 3600000;
   const DEAL_SAVE_MS = 800; // champs de saisie : enregistrés après une pause de la frappe
   const wOrNull = (v) => { const n = Number(v); return v === null || v === undefined || v === '' || !Number.isFinite(n) || n < 0 ? null : Math.min(Math.round(n), 1e9); };
+  const colKeys = (v) => [...new Set((Array.isArray(v) ? v : []).filter((k) => typeof k === 'string' && k && k.length <= 200))].slice(0, DEAL_COLS_MAX);
   function normDealFilter(f) {
     const o = f && typeof f === 'object' && !Array.isArray(f) ? f : {};
+    const cols = colKeys(Array.isArray(o.cols) ? o.cols : typeof o.col === 'string' && o.col ? [o.col] : []);
     const pct = Number(o.pct);
     const pick = (v, list, d) => (list.includes(v) ? v : d);
     return {
@@ -6922,7 +6927,8 @@
       bid: pick(o.bid, ['', 'bid', 'nobid', 'lead'], ''),
       end: pick(o.end, DEAL_ENDS.map(([v]) => v), 0),
       n: pick(o.n, DEAL_SALES, DEAL_DEFAULT.n),
-      col: typeof o.col === 'string' ? o.col.slice(0, 200) : '',
+      cols,
+      xcols: colKeys(o.xcols).filter((k) => !cols.includes(k)),
       sort: pick(o.sort, DEAL_SORTS.map(([v]) => v), DEAL_DEFAULT.sort),
     };
   }
@@ -6932,7 +6938,14 @@
     .filter((p) => p && typeof p.name === 'string' && p.name.trim()).slice(0, DEAL_PRESETS_MAX)
     .map((p) => ({ name: p.name.trim().slice(0, DEAL_NAME_MAX), f: normDealFilter(p.f) })));
   const sameDealFilter = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-  // Les filtres du panneau qui s'écartent du défaut (la collection et le tri ont leur propre liste), en mots.
+  // Les collections incluses et exclues d'un filtre, en mots (celles qui n'existent plus sont ignorées).
+  function dealColWords(f) {
+    const names = (keys) => keys.map((k) => collections.value.all.find((c) => c.key === k)).filter(Boolean).map((c) => `« ${c.name} »`);
+    const inc = names(f.cols);
+    const exc = names(f.xcols);
+    return [inc.length ? 'pour ' + inc.join(' ou ') : '', exc.length ? 'sans ' + exc.join(', ') : ''].filter(Boolean);
+  }
+  // Les filtres du panneau qui s'écartent du défaut (les collections et le tri ont leur propre bouton), en mots.
   function dealFilterWords(f) {
     const out = [];
     if (f.pct !== DEAL_DEFAULT.pct) out.push(`≤ ${f.pct} % de la cote`);
@@ -6995,11 +7008,21 @@
     if (Number.isFinite(n) && n >= 1) setDealFilter({ pct: Math.min(Math.round(n), 100) }, later);
   }
   const toggleDealRarity = (r) => setDealFilter({ r: dealFilter.value.r.includes(r) ? dealFilter.value.r.filter((x) => x !== r) : [...dealFilter.value.r, r] });
-  // « Effacer les filtres » : ceux du panneau ; la collection et le tri restent.
-  const clearDealFilter = () => setDealFilter({ ...DEAL_DEFAULT, col: dealFilter.value.col, sort: dealFilter.value.sort });
+  // Une collection : incluse, exclue ou ni l'un ni l'autre (mode 'in' | 'out' ; le même mode une deuxième fois la libère).
+  function setDealCol(key, mode) {
+    const f = dealFilter.value;
+    const was = f.cols.includes(key) ? 'in' : f.xcols.includes(key) ? 'out' : '';
+    const cols = f.cols.filter((k) => k !== key);
+    const xcols = f.xcols.filter((k) => k !== key);
+    if (mode !== was) (mode === 'in' ? cols : xcols).push(key);
+    return setDealFilter({ cols, xcols });
+  }
+  const clearDealCols = () => setDealFilter({ cols: [], xcols: [] });
+  // « Effacer les filtres » : ceux du panneau ; les collections et le tri restent.
+  const clearDealFilter = () => setDealFilter({ ...DEAL_DEFAULT, cols: dealFilter.value.cols, xcols: dealFilter.value.xcols, sort: dealFilter.value.sort });
   // Filtres enregistrés : un nom (40 caractères), le filtre en cours avec sa collection et son tri ; un nom déjà pris est
   // remplacé ; DEAL_PRESETS_MAX au plus.
-  const DP = reactive({ naming: false, name: '', error: '' });
+  const DP = reactive({ naming: false, name: '', error: '', q: '' }); // q : recherche dans la liste des collections
   async function saveDealPreset() {
     const name = DP.name.trim().replace(/\s+/g, ' ').slice(0, DEAL_NAME_MAX);
     if (!name) { DP.error = 'Donne un nom à ces filtres.'; return; }
@@ -11116,9 +11139,9 @@
     return { list: [...best.values()].sort((a, b) => Date.parse(a.end) - Date.parse(b.end)), ended, owned };
   }
   // Bonnes affaires de la dernière lecture passées aux filtres (dealFilter) : all = toutes celles encore valables, avec leurs
-  // collections ; pass = celles qui passent les filtres du panneau ; list = et la collection choisie, dans l'ordre choisi ;
-  // options = les collections que remplissent celles de pass, de celle qui en a le plus à celle qui en a le moins (la
-  // collection choisie y reste à 0 tant qu'elle existe).
+  // collections ; pass = celles qui passent les filtres du panneau ; list = et les collections incluses et exclues, dans l'ordre
+  // choisi ; options = les collections que remplissent celles de pass, de celle qui en a le plus à celle qui en a le moins (une
+  // collection incluse ou exclue y reste à 0 tant qu'elle existe) ; inc, exc = les collections incluses et exclues qui existent.
   function filteredDeals(live) {
     const { list: deals, ended, owned } = dealsOf(live);
     const f = dealFilter.value;
@@ -11127,14 +11150,17 @@
     const pass = all.filter((d) => dealMatches(d.x, f, now));
     const counts = new Map();
     for (const d of pass) for (const c of d.cols) counts.set(c.key, { col: c, n: ((counts.get(c.key) || {}).n || 0) + 1 });
-    if (f.col && !counts.has(f.col)) {
-      const col = collections.value.all.find((c) => c.key === f.col);
+    for (const k of [...f.cols, ...f.xcols]) {
+      if (counts.has(k)) continue;
+      const col = collections.value.all.find((c) => c.key === k);
       if (col) counts.set(col.key, { col, n: 0 });
     }
     const options = [...counts.values()].sort((a, b) => b.n - a.n || COLLATOR.compare(a.col.name, b.col.name));
-    const sel = counts.has(f.col) ? f.col : '';
-    const list = (sel ? pass.filter((d) => d.cols.some((c) => c.key === sel)) : pass).slice().sort((a, b) => DEAL_ORDER[f.sort](a.x, b.x));
-    return { all, pass, list, options, sel, ended, owned };
+    const inc = f.cols.filter((k) => counts.has(k));
+    const exc = f.xcols.filter((k) => counts.has(k));
+    const list = pass.filter((d) => (!inc.length || d.cols.some((c) => inc.includes(c.key))) && !d.cols.some((c) => exc.includes(c.key)))
+      .sort((a, b) => DEAL_ORDER[f.sort](a.x, b.x));
+    return { all, pass, list, options, inc, exc, ended, owned };
   }
   // Panneau des filtres (ouvert ou fermé, gardé dans ce navigateur : MP.open.filtres) : % de la cote, prix, économie,
   // rareté, brillance, mise, fin, ventes ; « Effacer les filtres », « Enregistrer ces filtres… ».
@@ -11170,43 +11196,70 @@
         h('input', { id: 'deal-preset-name', class: 'field', type: 'text', maxlength: DEAL_NAME_MAX, placeholder: 'Pépites UR, petits prix…', value: DP.name, onInput: (e) => { DP.name = e.target.value; DP.error = ''; } }),
         h('button', { class: 'btn small primary', type: 'submit' }, 'Enregistrer'),
         h('button', { class: 'btn small', type: 'button', onClick: () => Object.assign(DP, { naming: false, name: '', error: '' }) }, 'Annuler'),
-        DP.error ? h('p', { class: 'status err', role: 'alert' }, DP.error) : h('p', { class: 'small muted' }, 'Avec la collection et le tri choisis. Un nom déjà pris est remplacé. Gardés avec ton compte : sur tous tes appareils.'),
+        DP.error ? h('p', { class: 'status err', role: 'alert' }, DP.error) : h('p', { class: 'small muted' }, 'Avec les collections et le tri choisis. Un nom déjà pris est remplacé. Gardés avec ton compte : sur tous tes appareils.'),
       ]) : null,
+    ]);
+  }
+  // Panneau des collections (MP.open.cols) : chaque collection que remplissent les affaires, avec leur nombre, « Inclure » ou
+  // « Exclure » ; une recherche au-delà de 8 collections ; « Toutes les collections » libère tout.
+  // Le bouton des collections : « Toutes les collections (12) », « Envies (3) », « 2 collections · 1 exclue (5) ».
+  function dealColsLabel(options, inc, exc, nAll, n) {
+    if (!inc.length && !exc.length) return `Toutes les collections (${fmt(nAll)})`;
+    const what = inc.length === 1 ? options.find((o) => o.col.key === inc[0]).col.name : inc.length ? `${fmt(inc.length)} collections` : 'Toutes les collections';
+    return `${what}${exc.length ? ` · ${fmt(exc.length)} ${plural(exc.length, 'exclue', 'exclues')}` : ''} (${fmt(n)})`;
+  }
+  function viewDealCols(options, inc, exc) {
+    const q = normName(DP.q || '');
+    const shown = q ? options.filter((o) => normName(o.col.name).includes(q)) : options;
+    return h('div', { class: 'deal-filters deal-cols', id: 'deal-cols' }, [
+      h('p', { class: 'small muted' }, "Inclure : seulement les cartes d'au moins une des collections incluses. Exclure : jamais les cartes d'une collection exclue."),
+      options.length > 8 ? h('label', { class: 'deal-cols__q' }, [h('span', { class: 'sr' }, 'Chercher une collection'),
+        h('input', { id: 'deal-cols-q', class: 'field', type: 'search', placeholder: 'Chercher une collection…', value: DP.q, onInput: (e) => { DP.q = e.target.value; } })]) : null,
+      shown.length ? h('ul', { class: 'deal-cols__list' }, shown.map((o) => {
+        const mode = inc.includes(o.col.key) ? 'in' : exc.includes(o.col.key) ? 'out' : '';
+        return h('li', { key: o.col.key, class: ['deal-cols__row', mode] }, [
+          h('span', { class: 'deal-cols__name' }, [o.col.name, h('span', { class: 'muted' }, ` (${fmt(o.n)})`)]),
+          h('div', { class: 'seg', role: 'group', 'aria-label': o.col.name }, [
+            seg('Inclure', mode === 'in', () => setDealCol(o.col.key, 'in')),
+            seg('Exclure', mode === 'out', () => setDealCol(o.col.key, 'out')),
+          ]),
+        ]);
+      })) : h('p', { class: 'muted' }, options.length ? 'Aucune collection ne correspond.' : 'Aucune de ces affaires ne sert à tes collections.'),
+      h('div', { class: 'deal-filters__foot' }, [h('button', { class: 'btn small', type: 'button', disabled: !inc.length && !exc.length, onClick: clearDealCols }, 'Toutes les collections')]),
     ]);
   }
   function viewDeals(live) {
     if (!live) return h('p', { class: 'muted' }, "Pas de lecture du marché : clique « Actualiser le marché » en haut de l'onglet (le classeur la refait ensuite toutes les 20 minutes).");
     const f = dealFilter.value;
-    const { all, pass, list, options, sel, ended, owned } = filteredDeals(live);
+    const { all, pass, list, options, inc, exc, ended, owned } = filteredDeals(live);
     const hidden = [ended ? `${fmt(ended)} ${plural(ended, 'enchère finie', 'enchères finies')} depuis la lecture` : '', owned ? `${fmt(owned)} ${plural(owned, 'carte que tu as maintenant', 'cartes que tu as maintenant')}` : ''].filter(Boolean);
     const note = hidden.length ? h('p', { class: 'small muted' }, `Plus montrées : ${hidden.join(', ')}.`) : null;
     if (!all.length) return [h('p', { class: 'muted' }, 'Aucune bonne affaire à ta dernière lecture.'), note];
     const words = dealFilterWords(f);
     const open = !!MP.open.filtres;
+    const colsOpen = !!MP.open.cols;
+    const colWords = dealColWords({ cols: inc, xcols: exc });
     const presets = dealPresets.value;
     const bar = h('div', { class: 'deal-bar' }, [
-      h('label', { class: 'deal-col' }, [h('span', { class: 'sr' }, 'Filtrer par collection'),
-        h('select', { id: 'deal-col', class: 'field', value: sel, onChange: (e) => setDealFilter({ col: e.target.value }) }, [
-          h('option', { value: '' }, `Toutes les collections (${fmt(pass.length)})`),
-          ...options.map((o) => h('option', { key: o.col.key, value: o.col.key }, `${o.col.name} (${fmt(o.n)})`)),
-        ])]),
+      h('button', { class: ['btn', 'small', 'deal-col', { on: inc.length || exc.length }], type: 'button', id: 'deal-cols-btn', 'aria-expanded': String(colsOpen), 'aria-controls': 'deal-cols',
+        onClick: () => toggleMarketSection('cols') }, [icon('album'), dealColsLabel(options, inc, exc, pass.length, list.length)]),
       h('label', { class: 'deal-sort' }, [h('span', { class: 'sr' }, 'Trier'),
         h('select', { id: 'deal-sort', class: 'field', value: f.sort, onChange: (e) => setDealFilter({ sort: e.target.value }) }, DEAL_SORTS.map(([v, l]) => h('option', { key: v, value: v }, l)))]),
       h('button', { class: ['btn', 'small', { on: words.length }], type: 'button', id: 'deal-filters-btn', 'aria-expanded': String(open), 'aria-controls': 'deal-filters',
         onClick: () => toggleMarketSection('filtres') }, [icon('filter'), words.length ? `Filtres · ${fmt(words.length)}` : 'Filtres']),
     ]);
     const chips = presets.length ? h('div', { class: 'chips deal-presets', role: 'group', 'aria-label': 'Filtres enregistrés' }, presets.map((p) => {
-      const on = sameDealFilter(p.f, { ...f, col: sel });
+      const on = sameDealFilter(p.f, f);
       return h('span', { key: p.name, class: ['chip', { on }] }, [
-        h('button', { class: 'chip__label linkish', type: 'button', 'aria-pressed': String(on), title: dealFilterWords(p.f).join(' · ') || 'Filtres par défaut', onClick: () => applyDealPreset(p) }, p.name),
+        h('button', { class: 'chip__label linkish', type: 'button', 'aria-pressed': String(on), title: [...dealColWords(p.f), ...dealFilterWords(p.f)].join(' · ') || 'Filtres par défaut', onClick: () => applyDealPreset(p) }, p.name),
         h('button', { class: 'x', type: 'button', 'aria-label': `Supprimer les filtres « ${p.name} »`, title: 'Supprimer', onClick: () => deleteDealPreset(p) }, [icon('x', 'sm')]),
       ]);
     })) : null;
-    const summary = words.length || sel
-      ? h('p', { class: 'small muted deal-summary' }, [`${fmt(list.length)} ${plural(list.length, 'affaire', 'affaires')} sur ${fmt(all.length)}${words.length ? ' · ' + words.join(', ') : ''}. `,
+    const summary = words.length || colWords.length
+      ? h('p', { class: 'small muted deal-summary' }, [`${fmt(list.length)} ${plural(list.length, 'affaire', 'affaires')} sur ${fmt(all.length)} · ${[...colWords, ...words].join(', ')}. `,
         words.length ? h('button', { class: 'linkish', type: 'button', onClick: clearDealFilter }, 'Effacer les filtres') : null])
       : null;
-    return [bar, chips, open ? viewDealFilters(f) : null, summary,
+    return [bar, chips, colsOpen ? viewDealCols(options, inc, exc) : null, open ? viewDealFilters(f) : null, summary,
       list.length ? h('ul', { class: 'lots' }, list.slice(0, marketShown('acheter')).map(({ x, cols }) => {
         const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
         return h('li', { key: x.a, class: 'lot' }, [

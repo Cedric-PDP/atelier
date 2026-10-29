@@ -5722,17 +5722,29 @@ async function main() {
     // Fiche d'une carte qui manque (depuis une bonne affaire) : ses cotes par rareté.
     d.getElementById('tab-marche').click();
     await settle(40);
-    // Filtre par collection des bonnes affaires à acheter : « Toutes les collections (1) », puis « Envies (1) ».
+    // Collections des bonnes affaires à acheter (2026-10-29 : plusieurs, incluses ou exclues) : « Toutes les collections (1) »,
+    // puis Envies incluse (« Envies (1) »), exclue (« Toutes les collections · 1 exclue (0) »), et libérée.
     {
-      const sel = d.getElementById('deal-col');
-      const opts = sel ? sel.querySelectorAll('option').map(text) : [];
-      check(opts.join(' | ') === 'Toutes les collections (1) | Envies (1)', 'filtre des bonnes affaires par collection : ' + opts.join(' | '));
-      sel.value = sel.querySelectorAll('option')[1].getAttribute('value');
-      sel.dispatch('change');
+      const btn = () => d.getElementById('deal-cols-btn');
+      const voulue = () => d.querySelector('[data-section="acheter"]').querySelectorAll('.lot__title').some((n) => text(n).includes('Voulue A'));
+      check(btn() && text(btn()) === 'Toutes les collections (1)' && !d.getElementById('deal-cols'), 'bouton des collections : ' + (btn() ? text(btn()) : 'absent'));
+      btn().click();
       await settle(40);
-      check(d.querySelectorAll('.lot__title').some((n) => text(n).includes('Voulue A')), 'la bonne affaire de « Envies » doit rester affichée');
-      sel.value = '';
-      sel.dispatch('change');
+      const rows = () => d.getElementById('deal-cols').querySelectorAll('.deal-cols__row');
+      const press = (label) => rows()[0].querySelectorAll('button').find((b) => text(b) === label).click();
+      check(rows().length === 1 && text(rows()[0].querySelector('.deal-cols__name')) === 'Envies (1)', 'collections des bonnes affaires : ' + rows().map(text).join(' | '));
+      press('Inclure');
+      await settle(40);
+      check(voulue() && text(btn()) === 'Envies (1)' && text(d.querySelector('.deal-summary')).startsWith('1 affaire sur 1 · pour « Envies »'), 'Envies incluse : ' + text(btn()));
+      if (!SERVER) check(um.prefs.deal_filter.cols.length === 1 && um.prefs.deal_filter.xcols.length === 0, 'collection incluse pas gardée au compte : ' + JSON.stringify(um.prefs.deal_filter));
+      press('Exclure');
+      await settle(40);
+      check(!voulue() && text(btn()) === 'Toutes les collections · 1 exclue (0)' && rows()[0].classList.contains('out'), 'Envies exclue : ' + text(btn()));
+      if (!SERVER) check(um.prefs.deal_filter.cols.length === 0 && um.prefs.deal_filter.xcols.length === 1, 'collection exclue pas gardée au compte : ' + JSON.stringify(um.prefs.deal_filter));
+      press('Exclure');
+      await settle(40);
+      check(voulue() && text(btn()) === 'Toutes les collections (1)' && !d.querySelector('.deal-summary'), 'Envies libérée : ' + text(btn()));
+      btn().click();
       await settle(40);
     }
     // Filtres des bonnes affaires à acheter (2026-10-24), gardés dans les préférences du compte : la seule affaire montrée,

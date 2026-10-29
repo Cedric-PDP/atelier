@@ -2202,20 +2202,20 @@ enchères », fermée** ; l'état est gardé par classeur dans ce navigateur (`l
 hideCol}}`, accès protégés ; `open.filtres` : le panneau des filtres de « à acheter » ; `col` : la collection choisie avant le 2026-10-24,
 reprise dans les filtres tant qu'aucun n'est gardé au compte). Chaque liste montre **20 cartes**, puis « Afficher 20 de plus (N restantes) ».
 - **Filtres de « Bonnes affaires à acheter »** (2026-10-24, demande de l'utilisateur : « n'afficher que les affaires sous un certain %, un
-  prix… ») : une barre avec la **collection** (« Toutes les collections (N) », comptées après les filtres), le **tri** (« Fin la plus proche »
+  prix… ») : une barre avec les **collections** (bouton « Toutes les collections (N) », comptées après les filtres ; depuis le 2026-10-29, il ouvre la liste des collections que remplissent ces affaires, chacune avec son nombre et « Inclure » / « Exclure » (un deuxième clic la libère), une recherche au-delà de 8, et « Toutes les collections » qui libère tout : une affaire passe si elle sert à **au moins une** collection incluse (aucune incluse : toutes) et à **aucune** collection exclue ; le bouton dit « Envies (3) », « 2 collections · 1 exclue (5) »…), le **tri** (« Fin la plus proche »
   par défaut, « Meilleure remise » = prix / cote, « Plus grosse économie » = cote − prix, « Prix croissant ») et le bouton **« Filtres »**
   (« Filtres · 3 » avec trois filtres actifs), qui ouvre un panneau : **au plus [80] % de la cote** (champ, puces 30 / 50 / 70 / 80 / 100 %),
   case « Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h, au plus à la cote) » (cochée par défaut), **prix** de … à … W,
   **économie** d'au moins … W, **rareté** (puces L à C ; aucune = toutes), **brillante** (peu importe, seulement, exclure), **enchère** (toutes,
   avec mise, sans mise, tu mènes), **fin** (toutes, < 1 h, < 6 h, < 24 h), **cote** (3, 5 ou 10 ventes et plus). Avec des filtres actifs, une
-  ligne « 4 affaires sur 47 · ≤ 50 % de la cote, UR, L. Effacer les filtres » (la collection et le tri restent) ; le nombre du titre de la
+  ligne « 4 affaires sur 47 · pour « Envies », sans « Pokémon », ≤ 50 % de la cote, UR, L. Effacer les filtres » (les collections et le tri restent) ; le nombre du titre de la
   section compte les affaires montrées ; « Aucune bonne affaire ne passe ces filtres. » ; chaque ligne dit aussi l'économie (cote − prix).
   **Gardés avec le compte** (pas dans le navigateur : les mêmes sur le téléphone et l'ordinateur), dans `prefs` (`PATCH /api/me`) :
-  `deal_filter` = `{pct, soon, min, max, save, r:[raretés], shiny:''|'only'|'no', bid:''|'bid'|'nobid'|'lead', end:0|1|6|24, n:3|5|10, col, sort}`
-  (défaut : `{pct:80, soon:true, min:null, max:null, save:null, r:[], shiny:'', bid:'', end:0, n:3, col:'', sort:'end'}`, normalisé à la
-  lecture), enregistré tout de suite au clic et 0,8 s après la frappe dans un champ (une relecture de `GET /api/me` entre-temps ne le défait
+  `deal_filter` = `{pct, soon, min, max, save, r:[raretés], shiny:''|'only'|'no', bid:''|'bid'|'nobid'|'lead', end:0|1|6|24, n:3|5|10, cols:[clés], xcols:[clés], sort}`
+  (défaut : `{pct:80, soon:true, min:null, max:null, save:null, r:[], shiny:'', bid:'', end:0, n:3, cols:[], xcols:[], sort:'end'}`, normalisé à la
+  lecture ; 50 collections au plus de chaque côté, une clé à la fois incluse et exclue reste incluse ; l'ancien `col` d'une seule collection, d'avant le 2026-10-29, est repris dans `cols`), enregistré tout de suite au clic et 0,8 s après la frappe dans un champ (une relecture de `GET /api/me` entre-temps ne le défait
   pas). **Filtres enregistrés** : « Enregistrer ces filtres… » (dans le panneau) demande un nom (40 caractères ; un nom déjà pris, sans tenir
-  compte des majuscules, est remplacé) et garde le filtre en cours avec sa collection et son tri, 12 au plus (`deal_presets` =
+  compte des majuscules, est remplacé) et garde le filtre en cours avec ses collections et son tri, 12 au plus (`deal_presets` =
   `[{name, f}]`) ; ils s'affichent en puces sous la barre (la puce du filtre en cours mise en avant ; un clic l'applique, « × » le supprime,
   sans confirmation).
 - **« Bonnes affaires à vendre »** : tes cartes qui ne servent à **aucune** de tes collections (rapprochement titre puis qid, comme les albums). Jamais une carte exclue des échanges et des ventes (2026-10-29, voir « Partage entre membres », « Cartes exclues des échanges et des ventes »).

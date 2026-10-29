@@ -1478,8 +1478,14 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 
 /* « Bonnes affaires à acheter » : collection, tri, filtres (panneau) et filtres enregistrés. */
 .deal-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 10px; }
-.deal-col { flex: 1 1 220px; min-width: 0; }
-.deal-col select { width: 100%; max-width: 420px; }
+.deal-col { flex: 0 1 auto; min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deal-cols__q .field { width: 100%; max-width: 320px; }
+.deal-cols__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: 320px; overflow-y: auto; }
+.deal-cols__row { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; justify-content: space-between; padding: 4px 6px; border-radius: 8px; }
+.deal-cols__row.in { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.deal-cols__row.out .deal-cols__name { text-decoration: line-through; color: var(--muted); }
+.deal-cols__name { flex: 1 1 160px; min-width: 0; overflow-wrap: anywhere; }
+.deal-cols .seg button { padding: 4px 10px; font-size: 12.5px; }
 .deal-sort { flex: 0 1 auto; min-width: 0; }
 .deal-sort select { max-width: 100%; }
 .deal-bar .btn.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
