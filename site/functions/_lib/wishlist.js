@@ -15,7 +15,7 @@ export const SOON_MAX = 15; // d'une passe après un geste (après la réponse :
 export const CLICK_MAX = 20; // du bouton « Mettre à jour ma liste de souhaits »
 export const ADD_LOT = 100; // cartes par ajout (un POST d'une liste)
 export const DEL_LOT = 100; // cartes par retrait (un DELETE … card_id=in.(…))
-export const WANTED_MAX = 5000; // titres manquants regardés par passe (collections changées le plus récemment d'abord)
+export const WANTED_MAX = 5000; // titres manquants regardés par passe (dans l'ordre de « Mes collections »)
 export const WISH_PAGES = 10; // pages de 1 000 de la liste de souhaits lues au plus
 export const EVERY_MS = 6 * 3600_000; // passe au moins toutes les 6 h (cartes ajoutées ou retirées dans le jeu)
 export const SOON_GAP_MS = 60_000; // pas deux passes en moins d'une minute (sauf le cron)

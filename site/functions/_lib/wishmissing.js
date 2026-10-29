@@ -4,20 +4,21 @@ import { HttpError } from './http.js';
 import { acquireLease, releaseLease } from './game.js';
 import { LEASE_MS } from './refresh.js';
 import { sha256Hex } from './util.js';
+import { WANT_ORDER } from './market.js';
 import { NOT_FOUND_MS, WANTED_MAX, wishState } from './wishlist.js';
 
 const ACTIVE = `(wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))`;
 // Les albums sont dépliés une seule fois, et non une fois par titre manquant.
 // Même sélection/priorité que wantedSql ; les titres possédés sont également lus une seule fois.
-const LIST = `WITH entries AS MATERIALIZED (
-    SELECT t.id, t.name, t.updated_at, CAST(i.key AS INTEGER) AS k, json_extract(i.value, '$.title') AS title
-    FROM targets AS t CROSS JOIN json_each(t.items) AS i WHERE t.user_id = ?1 AND ${ACTIVE}
+const LIST = `WITH ${WANT_ORDER}, entries AS MATERIALIZED (
+    SELECT t.id, t.name, o.r * 10000000 + CAST(i.key AS INTEGER) AS p, json_extract(i.value, '$.title') AS title
+    FROM targets AS t JOIN o ON o.id = t.id CROSS JOIN json_each(t.items) AS i WHERE t.user_id = ?1 AND ${ACTIVE}
       AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
   ), wanted AS MATERIALIZED (
     SELECT title FROM entries WHERE typeof(title) = 'text' AND length(title) BETWEEN 1 AND 300
       AND title NOT IN (SELECT json_extract(data, '$.title') FROM cards
         WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')
-    GROUP BY title ORDER BY MAX(updated_at) DESC, MIN(k) LIMIT ${WANTED_MAX}
+    GROUP BY title ORDER BY MIN(p) LIMIT ${WANTED_MAX}
   ), missing AS MATERIALIZED (
   SELECT w.title FROM wanted AS w CROSS JOIN game_titles AS g
   WHERE g.title = w.title AND g.card_id = '' AND g.at >= ?2 AND (?3 = 0 OR EXISTS

@@ -117,19 +117,25 @@ const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id
   UNION ALL
   SELECT * FROM (SELECT 1, id, NULL, NULL FROM x WHERE at IS NULL OR at < ?2 ORDER BY at IS NOT NULL, at, w, id LIMIT ?3)`;
 
-// Titres des cartes qui manquent aux collections (éléments vérifiés, titre absent des cartes du classeur), des
-// collections changées le plus récemment d'abord, dans leur ordre. Rapprochement par titre seulement : le serveur n'a
+// Rang de chaque collection dans « Mes collections » (pos, puis celles sans place, comme GET /api/targets). Clé de
+// priorité d'un élément : r * 10 000 000 + sa place dans la collection (1,7 Mo au plus : bien moins de 10 000 000).
+export const WANT_ORDER = `o AS (
+    SELECT id, ROW_NUMBER() OVER (ORDER BY pos IS NULL, pos, created_at, id) AS r FROM targets WHERE user_id = ?1
+  )`;
+// Titres des cartes qui manquent aux collections (éléments vérifiés, titre absent des cartes du classeur), collection
+// par collection dans l'ordre de « Mes collections », puis dans l'ordre de chaque collection ; un titre présent dans
+// plusieurs collections prend la place de la première. Rapprochement par titre seulement : le serveur n'a
 // pas les qids des cartes (une carte possédée sous un autre titre est écartée plus tard, par son card_id). Aussi lu par la
 // liste de souhaits du jeu (wishlist.js), avec une autre limite.
-export const wantedSql = (limit, wishOnly = false) => `WITH it AS (
-    SELECT json_extract(i.value, '$.title') AS t, t0.updated_at AS u, CAST(i.key AS INTEGER) AS k
-    FROM targets AS t0, json_each(t0.items) AS i
+export const wantedSql = (limit, wishOnly = false) => `WITH ${WANT_ORDER}, it AS (
+    SELECT json_extract(i.value, '$.title') AS t, o.r * 10000000 + CAST(i.key AS INTEGER) AS p
+    FROM targets AS t0 JOIN o ON o.id = t0.id, json_each(t0.items) AS i
     WHERE t0.user_id = ?1 ${wishOnly ? "AND (t0.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))" : ''} AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
   )
   SELECT t FROM it
   WHERE typeof(t) = 'text' AND length(t) BETWEEN 1 AND 300
     AND t NOT IN (SELECT json_extract(data, '$.title') FROM cards WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')
-  GROUP BY t ORDER BY MAX(u) DESC, MIN(k) LIMIT ${limit}`;
+  GROUP BY t ORDER BY MIN(p) LIMIT ${limit}`;
 const WANTED = wantedSql(PLAN_WANTED);
 
 const QUOTA = "SELECT user_id, quota_day, quota_n FROM market WHERE user_id IN (?1, '*')";

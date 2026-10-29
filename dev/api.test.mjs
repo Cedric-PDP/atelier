@@ -993,6 +993,23 @@ await test("targets/order : l'ordre de « Mes collections », sans toucher aux �
   }
 });
 
+await test("cartes voulues du marché : collection par collection dans l'ordre de « Mes collections », pas la dernière modifiée", async () => {
+  const { wantedSql } = await import(lib('_lib/market.js'));
+  const e = makeEnv();
+  const u = await signup('OrdreVoulu', e);
+  const ids = {};
+  for (const [n, titles] of [['A', ['a1', 'a2', 'commun']], ['B', ['commun', 'b1', 'b2', 'b3']], ['C', ['c1']]]) {
+    const r = await call('POST', 'targets/save', { key: u.key, e, body: { name: n, items: titles.map((title) => ({ title, status: 'ok' })) } });
+    ids[n] = r.json.target.id;
+  }
+  await call('POST', 'targets/order', { key: u.key, e, body: { ids: [ids.B, ids.A] } });
+  // A modifiée en dernier : elle ne passe pas devant B pour autant ; C, sans place, vient après.
+  await call('POST', 'targets/save', { key: u.key, e, body: { id: ids.A, name: 'A', items: ['a1', 'a2', 'commun'].map((title) => ({ title, status: 'ok' })) } });
+  const wanted = async (n) => (await e.DB.prepare(wantedSql(n)).bind(u.user.id).all()).results.map((r) => r.t);
+  assert.deepEqual(await wanted(10), ['commun', 'b1', 'b2', 'b3', 'a1', 'a2', 'c1']);
+  assert.deepEqual(await wanted(5), ['commun', 'b1', 'b2', 'b3', 'a1'], 'la limite coupe les dernières collections, pas les premières');
+});
+
 await test('collections à compléter : une seule collection par catégorie de Wikipédia (source wp:)', async () => {
   const wes = await signup('Wes');
   const items = [{ title: 'Charolaise', status: 'ok' }];
@@ -4724,7 +4741,7 @@ await test('titres sans cartes : 5 000 retraits, 15 000 cartes, albums communs e
   assert.deepEqual(album('commun'), [keep[0]]);
   assert.deepEqual(album('off'), items, 'les albums non synchronisés sont intacts');
   assert.equal((await req('GET')).json.items.length, 0);
-  const listQuery = observed.find(s => s.sql.startsWith('WITH entries AS MATERIALIZED'));
+  const listQuery = observed.find(s => s.sql.startsWith('WITH o AS') && s.sql.includes('entries AS MATERIALIZED'));
   const deleteQuery = observed.find(s => s.sql.startsWith('WITH missing AS MATERIALIZED'));
   for (const st of [listQuery, deleteQuery]) {
     assert.ok(st, 'requête observée');

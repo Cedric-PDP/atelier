@@ -2059,7 +2059,8 @@ Les listes `in.(…)` sont découpées pour rester sous 5 000 caractères encod�
 **Plan** (`planFor`, en SQL) : cartes possédées et cartes voulues dont le card_id est connu (`market.ids`), cote **absente puis la plus
 ancienne d'abord**, sans celles lues depuis moins de 12 h (`FRESH_MS`), 3 000 au plus ; cartes voulues = titres des éléments vérifiés des
 collections absents des titres des cartes (en SQL ; le serveur n'a pas les qids : une carte possédée sous un autre titre peut y figurer),
-des collections changées le plus récemment d'abord, 500 au plus. Le cache commun amortit donc entre membres : une cote lue par l'un
+collection par collection dans l'ordre de « Mes collections » (`targets.pos`, puis celles sans place, comme `GET /api/targets` ; même
+ordre pour la liste de souhaits du jeu), puis dans l'ordre de chaque collection, 500 au plus. Le cache commun amortit donc entre membres : une cote lue par l'un
 n'est pas relue par un autre pendant 12 h.
 
 **Cote** (`cotes`, calculée par le serveur), par carte, **rareté d'exemplaire** (`snapshot_rarity`) et brillance (`is_shiny`) : clé `R` ou `R*`,
