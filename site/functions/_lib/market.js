@@ -103,12 +103,22 @@ export async function valueAfterCards(db, userId) {
 }
 
 // ---------------------------------------------------------------- plan d'une passe
+// Table wt(t) : titres des éléments vérifiés des collections de ?1 absents des titres de ses cartes, sans ordre ni limite
+// (enchères de la lecture du marché entier, marketscan.js).
+export const WANTED_TITLES = `wt AS (
+    SELECT DISTINCT json_extract(i.value, '$.title') AS t FROM targets AS t0, json_each(t0.items) AS i
+    WHERE t0.user_id = ?1 AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
+      AND typeof(json_extract(i.value, '$.title')) = 'text' AND length(json_extract(i.value, '$.title')) BETWEEN 1 AND 300
+      AND json_extract(i.value, '$.title') NOT IN (SELECT json_extract(data, '$.title') FROM cards WHERE user_id = ?1 AND json_type(data, '$.title') = 'text')
+  )`;
 // Cartes possédées et cartes voulues dont le card_id est connu, cote absente ou de plus de 12 h, la plus ancienne
 // d'abord (les possédées avant les voulues à égalité) : une passe s'arrête au plafond de ses requêtes, la suivante
-// reprend là. stale / fresh : nombre de cartes à coter et déjà cotées il y a moins de 12 h.
-const PLAN = `WITH own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id = ?1),
+// reprend là. stale / fresh : nombre de cartes à coter et déjà cotées il y a moins de 12 h. Cartes voulues : titres
+// résolus (market.ids), et cartes en vente (auctions_live) dont le titre manque à ses collections.
+const PLAN = `WITH ${WANTED_TITLES}, own AS (SELECT card_id AS id, 0 AS w FROM cards WHERE user_id = ?1),
   want AS (SELECT j.value AS id, 1 AS w FROM market AS m, json_each(m.ids) AS j
-    WHERE m.user_id = ?1 AND j.type = 'text' AND j.value <> ''),
+    WHERE m.user_id = ?1 AND j.type = 'text' AND j.value <> ''
+    UNION ALL SELECT DISTINCT l.card_id, 1 FROM wt JOIN auctions_live AS l ON l.title = wt.t WHERE l.seller <> ?1),
   x AS MATERIALIZED (
     SELECT a.id, a.w, p.read_at AS at FROM (SELECT id, MIN(w) AS w FROM (SELECT * FROM own UNION ALL SELECT * FROM want) GROUP BY id) AS a
     LEFT JOIN prices AS p ON p.card_id = a.id

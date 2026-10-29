@@ -16,6 +16,9 @@
     { "binding": "DB", "database_name": "classeur", "database_id": "f5a592f3-e7fa-42f3-a65f-40a2dce56449" }
   ],
   "keep_vars": true,
+  // Marché entier lu avec la session de ce compte du jeu seulement (marketscan.js, demande de son propriétaire, 2026-10-29) ;
+  // retirer la ligne pour couper (une valeur posée dans le tableau de bord serait écrasée à chaque déploiement).
+  "vars": { "MARKET_SCAN_PSEUDO": "Djodjino" },
   "observability": { "enabled": true },
   // Lectures automatiques (cron.js) : la collection toutes les 10 minutes, le marché toutes les 20 minutes (décalé de 5).
   "triggers": { "crons": ["*/10 * * * *", "5-59/20 * * * *"] }

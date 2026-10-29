@@ -20,6 +20,9 @@
   // Garde les variables posées dans le tableau de bord (MAX_USERS…) ; les secrets (COOKIE_SECRET, SIGNUP_CODE)
   // ne sont jamais touchés par un déploiement.
   "keep_vars": true,
+  // Marché entier lu avec la session de ce compte du jeu seulement (marketscan.js, demande de son propriétaire, 2026-10-29) ;
+  // retirer la ligne pour couper (une valeur posée dans le tableau de bord serait écrasée à chaque déploiement).
+  "vars": { "MARKET_SCAN_PSEUDO": "Djodjino" },
   "observability": { "enabled": true },
   // Lectures automatiques (cron.js) : la collection toutes les 10 minutes, le marché toutes les 20 minutes (décalé de 5).
   "triggers": { "crons": ["*/10 * * * *", "5-59/20 * * * *"] }

@@ -2075,8 +2075,12 @@ avec « N cotes lues avant l'arrêt ont été gardées »).
 2. **tes ventes** : `auctions?seller_id=eq.<uid>&end_at=gte.<il y a 14 jours>&order=end_at.desc&limit=100` ;
 3. **titres → cartes du jeu** : `cards?select=id,wikipedia_title,lang&wikipedia_title=in.("…","…")` (80 titres par requête au plus, 320
    par passe ; carte `lang` `fr` préférée ; `""` quand aucune carte n'a ce titre ; seulement les titres dont le card_id n'est pas encore connu) ;
+   **sauté quand le marché entier est là** (voir « Marché entier ») ;
 4. **enchères en cours sur les cartes qui manquent aux collections** : `auctions?status=eq.active&end_at=gt.<maintenant>&card_id=in.(…)&order=end_at&limit=1000`
-   (100 cartes par requête, 500 cartes au plus), moins celles du membre lui-même ;
+   (100 cartes par requête, 500 cartes au plus), moins celles du membre lui-même. **Avec le marché entier** : ces cartes sont les
+   **candidates** prises dans `auctions_live` (enchères sur un titre qui manque à ses collections, pas les siennes, pas finies, au plus à la
+   cote fiable de leur rareté, les meilleures remises d'abord, 300 cartes au plus), **sans limite du nombre de cartes voulues** ; leur
+   relecture met `auctions_live` à jour (prix, fin) et efface celles de ces cartes qui n'y sont plus (vendues, annulées) ;
 5. **cotes des cartes de ces enchères et de tes mises et ventes** (300 cartes au plus, relues à chaque passe) puis rangement de la
    **lecture du marché** (`market.live`) ;
 6. **cotes des cartes du plan** (les plus anciennes d'abord), par lots de 100 : `auctions?status=eq.settled_sold&settled_at=gte.<il y a 90
@@ -2091,8 +2095,31 @@ Les listes `in.(…)` sont découpées pour rester sous 5 000 caractères encod�
 ancienne d'abord**, sans celles lues depuis moins de 12 h (`FRESH_MS`), 3 000 au plus ; cartes voulues = titres des éléments vérifiés des
 collections absents des titres des cartes (en SQL ; le serveur n'a pas les qids : une carte possédée sous un autre titre peut y figurer),
 collection par collection dans l'ordre de « Mes collections » (`targets.pos`, puis celles sans place, comme `GET /api/targets` ; même
-ordre pour la liste de souhaits du jeu), puis dans l'ordre de chaque collection, 500 au plus. Le cache commun amortit donc entre membres : une cote lue par l'un
+ordre pour la liste de souhaits du jeu), puis dans l'ordre de chaque collection, 500 au plus ; s'y ajoutent les cartes en vente dans
+`auctions_live` dont le titre manque à ses collections (toutes, sans ordre). Le cache commun amortit donc entre membres : une cote lue par l'un
 n'est pas relue par un autre pendant 12 h.
+
+**Marché entier** (`marketscan.js`, 2026-10-29, demande de l'utilisateur : plus de limite de 500 cartes voulues). Le jeu a près de
+160 000 enchères en cours (mesuré le 2026-10-29) et son serveur rend **10 000 lignes par requête** (pas 1 000 : mesuré le même jour ;
+10 000 enchères sans la carte jointe = 3 Mo et 1,5 s, sur 9 608 cartes différentes). Une lecture de tout le marché pour chaque
+membre serait trop de trafic (près de 50 Mo) : elle est faite **une fois pour tout le classeur**, avec la session d'**un seul compte**,
+celui dont le pseudo du jeu est la variable **`MARKET_SCAN_PSEUDO`** (choix de l'utilisateur : son compte, lui seul en prend le
+risque ; posée dans les deux `wrangler.jsonc`, `vars`, faute d'accès au tableau de bord de Cloudflare). Sans cette variable, rien ne change. Au début de chaque déclencheur du marché (avant les membres), sous le bail de ce compte :
+- **lecture complète**, une fois par jour (`SCAN_FULL_MS`) : `auctions?select=id,card_id,seller_id,…,created_at,card:cards(wikipedia_title,image_url,hide_image)&status=eq.active&end_at=gt.<maintenant>&id=gt.<curseur>&order=id&limit=10000`,
+  6 pages par déclencheur (`SCAN_PAGES`, une requête par seconde), le curseur rangé après chaque page dans `market_scan` : environ
+  16 pages, donc 3 déclencheurs. Finie, elle efface les enchères qu'elle n'a pas vues (`seen_at` antérieur à son début) ;
+- **sinon, les nouvelles enchères** : `…&created_at=gte.<plus récente vue − 5 min>&order=created_at,id&limit=10000&offset=…` (3 pages au
+  plus) ;
+- puis les enchères finies sont effacées. Rangement dans **`auctions_live`** (voir `schema.sql`) par lots de 1 000 : titre, rareté,
+  brillance, prix demandé (enchère actuelle, sinon prix de départ), fin ; le vendeur n'est rangé que comme l'id du classeur du membre
+  qui vend (`''` pour tout autre joueur) : **aucun identifiant du jeu**. Une enchère sans titre de carte, ou qui ne passerait pas les
+  contrôles de la lecture du marché, n'est pas rangée.
+Les passes des membres s'en servent tant que la dernière lecture complète a moins de **36 h** (`SCAN_FRESH_MS`) ; au-delà (compte
+délié, session perdue, limite du jeu répétée), elles reviennent d'elles-mêmes à la recherche ciblée (étapes 3 et 4). Le résultat du
+déclencheur le dit (« … ; marché entier : 60 000 enchères lues, lecture complète en cours ») ; une limite du jeu arrête le déclencheur et
+saute le suivant, comme pour les membres. Coût : environ 160 000 lignes écrites par jour dans D1 (et autant pour l'index des titres),
+soit une dizaine de millions par mois sur les 50 de l'abonnement. **Pas encore vérifié avec le vrai jeu** : que le filtre sur
+`created_at` reste rapide de son côté (sinon, lecture complète plus fréquente), et la durée réelle d'une page avec la carte jointe.
 
 **Cote** (`cotes`, calculée par le serveur), par carte, **rareté d'exemplaire** (`snapshot_rarity`) et brillance (`is_shiny`) : clé `R` ou `R*`,
 `{p, n, w, l, d}` = médiane des 30 ventes les plus récentes (90 derniers jours), ventes lues, la même médiane sur les ventes de plus de 7

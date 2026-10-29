@@ -20,6 +20,7 @@ const { REFRESH_SOURCE, finalizeImport } = await import(lib('_lib/import.js'));
 const { sha256Hex } = await import(lib('_lib/util.js'));
 const { COLLECTION_CRON, MARKET_CRON, runCron } = await import(lib('_lib/cron.js'));
 const { marketPass } = await import(lib('_lib/marketread.js'));
+const { scanPass } = await import(lib('_lib/marketscan.js'));
 const { FRIEND_ROUTE } = await import(lib('_lib/friends.js'));
 const { WISH_ROUTE, wishPass } = await import(lib('_lib/wishlist.js'));
 const { syncAutoTags, autoTagLinks } = await import(lib('_lib/autotag.js'));
@@ -4871,6 +4872,73 @@ await test('souhaits : retrait par lots poursuivi après la désactivation de la
   assert.deepEqual([r.status, r.json.wish.removed, r.json.wish.left], [200, 105, 0]);
   assert.deepEqual(supa.wishes(m.uid), ['manual']);
   assert.equal(userRow(m.id, e).auto_wish, 0);
+  e.DB.close();
+});
+
+await test('marché entier (MARKET_SCAN_PSEUDO) : lecture complète par pages et reprise, nouvelles enchères, bonnes affaires au-delà de 500 cartes voulues, relecture ciblée', async () => {
+  const e = makeEnv({ REFRESH_PAUSE_MS: '1', MARKET_SCAN_PSEUDO: 'scanneur', MARKET_SCAN_PAGE: '1' });
+  clearMarketGame();
+  const a = await marketMember('Scan', e);
+  const b = await marketMember('Envies', e);
+  e.DB.sqlite.prepare("UPDATE users SET game_pseudo = 'Scanneur' WHERE id = ?").run(a.id);
+  const N = 600;
+  const t = (i) => `Voulue ${i}`;
+  assert.equal((await call('POST', 'targets/save', { key: b.u.key, e, body: { name: 'Grande', items: Array.from({ length: N }, (_, i) => ({ title: t(i), status: 'ok' })) } })).status, 200);
+  const soon = new Date(Date.now() + 3 * H).toISOString();
+  const auction = (id, i, extra = {}) => ({ id, card_id: `w${i}`, status: 'active', snapshot_rarity: 'R', is_shiny: false, seller_id: 'vendeur', current_bid: null,
+    current_bidder_id: null, base_amount: 50, end_at: soon, created_at: isoAgo(2 * H), card: { wikipedia_title: t(i), image_url: null, hide_image: false }, ...extra });
+  // Voulue 550 : au-delà des 500 premières cartes voulues ; Voulue 551 : vendue par b lui-même ; c1…c5 : cartes que personne
+  // ne cherche ; une finie et une sans titre de carte : pas rangées.
+  addAuctions(auction('x550', 550), auction('x551', 551, { seller_id: b.uid }),
+    ...[1, 2, 3, 4, 5].map((k) => auction(`y${k}`, 1000 + k)),
+    auction('z-finie', 552, { end_at: isoAgo(H) }), auction('z-sans-titre', 553, { card: null }));
+  for (let k = 0; k < 3; k++) addAuctions(sale('w550', 'R', 100, (k + 1) * H));
+  e.DB.sqlite.prepare('INSERT INTO prices (card_id, data, read_at) VALUES (?, ?, ?)').run('w550', JSON.stringify({ R: { p: 100, n: 3, w: null, l: 100, d: isoAgo(H) } }), isoAgo(H));
+  // Pages d'une enchère (MARKET_SCAN_PAGE) : 6 par passage, la lecture complète reprend au curseur.
+  const scanRow = () => e.DB.sqlite.prepare("SELECT * FROM market_scan WHERE name = 'all'").get();
+  const n0 = supa.rest().length;
+  assert.equal(await scanPass(e), 'marché entier : 6 enchères lues, lecture complète en cours');
+  const scanPaths = restPaths(n0);
+  assert.equal(scanPaths.length, 6);
+  assert.ok(scanPaths.every((p) => p.startsWith('auctions?select=') && p.includes('status=eq.active') && p.includes('order=id&limit=1')), scanPaths[0]);
+  assert.ok(!scanPaths[0].includes('id=gt.') && scanPaths[1].includes('&id=gt.x550&'), 'curseur sur id : ' + scanPaths[1]);
+  assert.deepEqual([scanRow().cursor, scanRow().full_at], ['y4', null]);
+  assert.equal(await scanPass(e), 'marché entier : 1 enchère lue, lecture complète finie');
+  const live = e.DB.sqlite.prepare('SELECT id, title, ask, seller FROM auctions_live ORDER BY id').all();
+  assert.deepEqual(live.map((x) => x.id), ['x550', 'x551', 'y1', 'y2', 'y3', 'y4', 'y5'], 'finie et sans titre : écartées');
+  assert.deepEqual(live.find((x) => x.id === 'x551').seller, b.id, 'vendeur membre : son classeur');
+  assert.ok(!JSON.stringify(live).includes(b.uid) && !JSON.stringify(live).includes('vendeur'), 'identifiant du jeu rangé');
+  assert.ok(scanRow().full_at && scanRow().cursor === null && scanRow().since === scanRow().full_at);
+  // Passe de b : candidates prises dans la table (pas de titres à résoudre), relues, puis bonne affaire au-delà de 500.
+  const n1 = supa.rest().length;
+  const r = await b.full();
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  const p1 = restPaths(n1);
+  assert.ok(!p1.some((p) => p.startsWith('cards?')), 'titres résolus alors que le marché entier est là');
+  assert.ok(p1.some((p) => p.includes('status=eq.active') && p.includes('card_id=in.("w550")')), 'relecture ciblée de la candidate');
+  assert.deepEqual((await b.market()).live.deals.map((d) => [d.a, d.t, d.ask, d.cote]), [['x550', 'Voulue 550', 50, 100]]);
+  // Nouvelles enchères : depuis la plus récente vue (5 min de marge), sans relire tout le marché.
+  addAuctions(auction('n1', 554, { created_at: new Date().toISOString() }));
+  const n2 = supa.rest().length;
+  assert.equal(await scanPass(e), 'marché entier : 1 nouvelle enchère');
+  assert.ok(restPaths(n2).every((p) => p.includes('created_at=gte.') && p.includes('order=created_at,id')), restPaths(n2)[0]);
+  assert.ok(e.DB.sqlite.prepare("SELECT 1 FROM auctions_live WHERE id = 'n1'").get());
+  // Vendue entre-temps : la relecture ciblée l'efface, la bonne affaire disparaît.
+  seller().auctions = seller().auctions.filter((x) => x.id !== 'x550');
+  assert.equal((await b.full()).status, 200);
+  assert.equal(e.DB.sqlite.prepare("SELECT 1 FROM auctions_live WHERE id = 'x550'").get(), undefined);
+  assert.deepEqual((await b.market()).live.deals, []);
+  // Le marché entier date de plus de 36 h : retour à la recherche ciblée par titres.
+  e.DB.sqlite.prepare("UPDATE market_scan SET full_at = ? WHERE name = 'all'").run(isoAgo(40 * H));
+  e.DB.sqlite.prepare('UPDATE market SET ids = ? WHERE user_id = ?').run('{}', b.id);
+  const n3 = supa.rest().length;
+  assert.equal((await b.full()).status, 200);
+  assert.ok(restPaths(n3).some((p) => p.startsWith('cards?')), 'recherche ciblée');
+  // Par le déclencheur : lu avant les membres, et dit dans son résultat ; sans MARKET_SCAN_PSEUDO, rien ne change.
+  e.DB.sqlite.prepare("UPDATE market SET attempt = json_set(attempt, '$.start', ?) WHERE json_valid(attempt)").run(isoAgo(60 * 60_000));
+  e.MARKET_SCAN_PAGE = '100';
+  assert.equal(await runCron(e, MARKET_CRON), '2 membres lus, 0 échec ; marché entier : 7 enchères lues, lecture complète finie');
+  clearMarketGame();
   e.DB.close();
 });
 

@@ -318,6 +318,41 @@ CREATE TABLE IF NOT EXISTS art_picks (
     PRIMARY KEY (user_id, title)
 );
 
+-- Enchères en cours du jeu, toutes cartes (functions/_lib/marketscan.js, 2026-10-29) : lues une fois par jour en entier
+-- avec la session d'un seul compte (MARKET_SCAN_PSEUDO), puis seulement les nouvelles (created_at) ; relues de façon
+-- ciblée par la passe de marché d'un membre pour ses bonnes affaires. title = titre Wikipédia de la carte ; r, s = rareté de
+-- l'exemplaire et brillance ; ask = prix demandé (enchère actuelle, sinon prix de départ) ; bid = 1 s'il y a une enchère ;
+-- seller = id du classeur du membre qui vend, '' pour tout autre joueur (jamais d'identifiant du jeu) ; end_at, created_at :
+-- ISO ; seen_at = dernière lecture (une enchère absente d'une lecture complète est effacée, une enchère finie aussi).
+CREATE TABLE IF NOT EXISTS auctions_live (
+    id TEXT PRIMARY KEY,
+    card_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    img TEXT,
+    r TEXT NOT NULL,
+    s INTEGER NOT NULL,
+    ask REAL NOT NULL,
+    bid INTEGER NOT NULL,
+    seller TEXT NOT NULL,
+    end_at TEXT NOT NULL,
+    created_at TEXT,
+    seen_at TEXT NOT NULL
+);
+
+-- État de la lecture du marché entier (une ligne, name = 'all') : cursor = dernier id lu de la lecture complète en cours
+-- (NULL : aucune), full_start = son début, full_at = début de la dernière lecture complète finie, since = date de
+-- création la plus récente vue (les nouvelles enchères sont lues après elle, avec 5 min de marge), last_at et last_result
+-- = dernier passage.
+CREATE TABLE IF NOT EXISTS market_scan (
+    name TEXT PRIMARY KEY,
+    cursor TEXT,
+    full_start TEXT,
+    full_at TEXT,
+    since TEXT,
+    last_at TEXT,
+    last_result TEXT
+);
+
 CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);
@@ -341,3 +376,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid);
 
 CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash);
 CREATE UNIQUE INDEX IF NOT EXISTS targets_by_auto_tag ON targets (user_id, json_extract(auto_tag, '$.key')) WHERE json_extract(auto_tag, '$.enabled') = 1;
+
+-- Enchères en cours sur les cartes qui manquent à un membre (jointure par titre).
+CREATE INDEX IF NOT EXISTS auctions_live_by_title ON auctions_live (title);

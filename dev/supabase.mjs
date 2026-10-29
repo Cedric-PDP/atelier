@@ -3,7 +3,7 @@
 // Auth : POST /auth/v1/token?grant_type=refresh_token (rotation : le jeton de renouvellement d'avant ne resert que dans les
 // 10 s, et rend alors la même session ; au-delà, il ferme toute la session, comme Supabase) ; GET /auth/v1/user.
 // PostgREST : GET /rest/v1/<table> (user_cards, profiles, cards, auctions, auction_bids), filtres eq. gte. gt. in. ilike.,
-// order, limit (1 000 au plus), offset, Prefer: count=exact (en-tête content-range) ; RLS simulée. Le `select` est
+// order, limit (10 000 au plus, comme le vrai serveur : mesuré le 2026-10-29), offset, Prefer: count=exact (en-tête content-range) ; RLS simulée. Le `select` est
 // ignoré : les lignes sont rangées déjà embarquées (card, tags: [{tag}]). POST /rest/v1/rpc/get_my_profile : le profil du
 // joueur, solde de wikibidous compris (addPlayer {wikibidous}). Toute écriture est refusée.
 // Site du jeu (www.wiki-masters.com, cookie de session de ses pages) : GET /api/profile/<pseudo>/collection?q=…,
@@ -298,7 +298,7 @@ export function mockSupabase({ now = () => Date.now() } = {}) {
       return 0;
     });
     const limit = Number(u.searchParams.get('limit') || 1000);
-    assert.ok(limit <= 1000, 'limit ≤ 1 000');
+    assert.ok(limit <= 10000, 'limit ≤ 10 000');
     const off = Number(u.searchParams.get('offset') || 0);
     const page = rows.slice(off, off + limit);
     const headers = {};

@@ -63,6 +63,7 @@ Dans le Worker `classeur-wm`, **Settings** :
 | `SIGNUP_CODE` | **Secret** | le code d'invitation que tu donneras à tes amis : **long et aléatoire** (fabrique-le comme `COOKIE_SECRET` ci-dessous, ou prends 4 ou 5 mots au hasard), pas un mot qu'on devine |
 | `MAX_USERS` | Text | facultatif : nombre maximal de classeurs (50 par défaut) |
 | `SYNC_PAUSED` | Text | facultatif : `1` suspend **toutes** les lectures automatiques (voir l'étape 6) ; à retirer ou à vider pour les relancer |
+| `MARKET_SCAN_PSEUDO` | — | **posée dans `wrangler.jsonc`** (`vars`, réappliquée à chaque déploiement : ne pas la poser ici) : le pseudo dans le jeu d'un classeur relié. Le marché entier (près de 160 000 enchères) est alors lu une fois par jour **avec la session de ce compte seulement**, puis ses nouvelles enchères toutes les 20 minutes, et les bonnes affaires ne sont plus limitées à 500 cartes voulues par membre. Sans elle : recherche ciblée, 500 cartes voulues au plus |
 
 La base `DB` n'est **pas** à ajouter ici : elle est déclarée dans `site/wrangler.jsonc` (étape 2).
 

@@ -12,6 +12,7 @@ import { FAILS_MAX, LEASE_MS, checkCollection, readCollection } from './refresh.
 import { errorEntry, writeLog } from './synclog.js';
 import { FULL_START_SQL } from './market.js';
 import { marketPass } from './marketread.js';
+import { scanPass } from './marketscan.js';
 import { autoFriends } from './friends.js';
 import { wishDue, wishPass } from './wishlist.js';
 import { autoTagLinks } from './autotag.js';
@@ -205,6 +206,18 @@ async function marketCronPass(env, { now }) {
   const start = Date.now();
   const counts = { read: 0, failed: 0 };
   let limited = false;
+  // D'abord le marché entier (marketscan.js, seulement avec MARKET_SCAN_PSEUDO), dont les passes des membres se servent.
+  let scan = null;
+  try {
+    scan = await scanPass(env, { now });
+  } catch (err) {
+    if (err && err.extra && err.extra.limited) {
+      await skipNext(db, 'market', SKIP_AFTER_LIMIT_MS.market, now);
+      return 'limite du jeu (marché entier)';
+    }
+    console.error(err);
+    scan = `marché entier : erreur (${String(err && err.message ? err.message : err).slice(0, 150)})`;
+  }
   const { results } = await db.prepare(
     `SELECT user_id, ${FULL_START_SQL('attempt')} AS start FROM market WHERE attempt IS NOT NULL`,
   ).all();
@@ -233,6 +246,7 @@ async function marketCronPass(env, { now }) {
       await noteFailure(db, member.id);
     }
   }
-  const text = `${counts.read} ${plural(counts.read, 'membre lu', 'membres lus')}, ${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`;
+  const text = `${counts.read} ${plural(counts.read, 'membre lu', 'membres lus')}, ${counts.failed} ${plural(counts.failed, 'échec', 'échecs')}`
+    + (scan ? ` ; ${scan}` : '');
   return limited ? `limite du jeu (${text})` : text;
 }

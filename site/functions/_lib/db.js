@@ -205,6 +205,29 @@ export const SCHEMA = [
     at TEXT NOT NULL,
     PRIMARY KEY (user_id, title)
   )`,
+  `CREATE TABLE IF NOT EXISTS auctions_live (
+    id TEXT PRIMARY KEY,
+    card_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    img TEXT,
+    r TEXT NOT NULL,
+    s INTEGER NOT NULL,
+    ask REAL NOT NULL,
+    bid INTEGER NOT NULL,
+    seller TEXT NOT NULL,
+    end_at TEXT NOT NULL,
+    created_at TEXT,
+    seen_at TEXT NOT NULL
+  )`,
+  `CREATE TABLE IF NOT EXISTS market_scan (
+    name TEXT PRIMARY KEY,
+    cursor TEXT,
+    full_start TEXT,
+    full_at TEXT,
+    since TEXT,
+    last_at TEXT,
+    last_result TEXT
+  )`,
   `CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash)`,
   `CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev)`,
@@ -216,6 +239,7 @@ export const SCHEMA = [
   `CREATE UNIQUE INDEX IF NOT EXISTS users_by_game_uid ON users (game_uid)`,
   `CREATE INDEX IF NOT EXISTS users_by_link ON users (link_hash)`,
   `CREATE UNIQUE INDEX IF NOT EXISTS targets_by_auto_tag ON targets (user_id, json_extract(auto_tag, '$.key')) WHERE json_extract(auto_tag, '$.enabled') = 1`,
+  `CREATE INDEX IF NOT EXISTS auctions_live_by_title ON auctions_live (title)`,
 ];
 
 // Colonnes ajoutées après coup : une base créée par une version précédente les reçoit au premier appel.

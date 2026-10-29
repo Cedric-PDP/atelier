@@ -17,6 +17,7 @@ import { RARITIES } from './cards.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet } from './game.js';
 import { LEASE_MS } from './refresh.js';
 import { DEALS_MAX, PART_PRICES, PLAN_CARDS, lastAttempt, planFor, writeFail, writeLive, writePrices } from './market.js';
+import { candidates, scanFresh, syncCandidates } from './marketscan.js';
 import { cleanText } from './util.js';
 
 export const SUPA_MAX = 30;
@@ -190,25 +191,42 @@ async function read(env, user, s, plan, auto, light) {
       + `&bidder_id=eq.${who}&placed_at=gte.${iso(now - 14 * DAY)}&order=placed_at.desc&limit=200`) : [];
     const sales = uid ? await supa(`auctions?select=id,card_id,status,end_at,base_amount,current_bid,current_bidder_id,final_price,snapshot_rarity,is_shiny,${CARD}`
       + `&seller_id=eq.${who}&end_at=gte.${iso(now - 14 * DAY)}&order=end_at.desc&limit=100`) : [];
-    const unknown = lots(wanted.filter((t) => typeof ids[t] !== 'string').slice(0, 320), 80);
-    for (let i = 0; i < unknown.length && room(); i++) {
-      for (const c of await supa(`cards?select=id,wikipedia_title,lang&wikipedia_title=in.${inList(unknown[i])}&order=id&limit=1000`)) {
-        if (c && CARD_ID.test(String(c.id)) && (!found[c.wikipedia_title] || c.lang === 'fr')) found[c.wikipedia_title] = String(c.id);
-      }
-      for (const t of unknown[i]) {
-        lv.ids[t] = found[t] || '';
-        ids[t] = lv.ids[t];
-      }
-    }
+    // Lecture du marché entier récente (marketscan.js) : cartes candidates prises dans auctions_live, sans limite du nombre
+    // de cartes voulues, puis relues ici ; sinon titres résolus ici, et 500 cartes voulues au plus.
+    const scan = await scanFresh(db, now);
+    const cands = scan ? await candidates(db, user.id, now) : [];
     const titleOf = {};
-    const want = lots(wanted.filter((t) => ids[t]).map((t) => {
-      titleOf[ids[t]] = t;
-      return ids[t];
-    }).slice(0, 500), 100);
+    let wantIds;
+    if (scan) {
+      for (const c of cands) titleOf[c.card_id] = c.title;
+      wantIds = cands.map((c) => c.card_id);
+    } else {
+      const unknown = lots(wanted.filter((t) => typeof ids[t] !== 'string').slice(0, 320), 80);
+      for (let i = 0; i < unknown.length && room(); i++) {
+        for (const c of await supa(`cards?select=id,wikipedia_title,lang&wikipedia_title=in.${inList(unknown[i])}&order=id&limit=1000`)) {
+          if (c && CARD_ID.test(String(c.id)) && (!found[c.wikipedia_title] || c.lang === 'fr')) found[c.wikipedia_title] = String(c.id);
+        }
+        for (const t of unknown[i]) {
+          lv.ids[t] = found[t] || '';
+          ids[t] = lv.ids[t];
+        }
+      }
+      wantIds = wanted.filter((t) => ids[t]).map((t) => {
+        titleOf[ids[t]] = t;
+        return ids[t];
+      }).slice(0, 500);
+    }
+    const want = lots(wantIds, 100);
     let auctions = [];
+    let asked = [];
     for (let k = 0; k < want.length && room(); k++) {
       auctions = auctions.concat(await supa(`auctions?select=id,card_id,seller_id,snapshot_rarity,current_bid,current_bidder_id,base_amount,end_at,is_shiny,${CARD}`
         + `&status=eq.active&end_at=gt.${iso(now)}&card_id=in.${inList(want[k])}&order=end_at&limit=1000`));
+      asked = asked.concat(want[k]);
+    }
+    if (scan) {
+      const done = new Set(asked);
+      await syncCandidates(db, cands.filter((c) => done.has(c.card_id)), auctions);
     }
     auctions = auctions.filter((a) => a && a.id && a.card_id && a.seller_id !== uid);
     for (const b of bids) {
