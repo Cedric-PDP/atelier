@@ -20,6 +20,10 @@ d'affichage stable par identifiant public. Un podium vide garde trois places à 
   Suppression et purge des messages ne le diminuent pas. Migration initiale depuis les messages encore conservés.
 
 Les deux podiums de collections exigent aussi `shared_targets`. Leur rapprochement utilise les titres normalisés,
+et exclut les listes de rangement : noms commençant par « lock market » ou « à vendre », ainsi que les noms
+« autre » et « autres ». Comparaison sans casse ni accents, espaces et séparateurs équivalents ; les noms
+thématiques contenant seulement le mot « autres » restent éligibles. Le filtrage est recalculé à chaque lecture.
+Le rapprochement se fait
 sans résolution Wikidata côté serveur : les alias connus seulement du navigateur peuvent donner une progression
 différente dans un album. Les anciens échanges et les messages déjà purgés ne sont pas reconstitués.
 La suppression d'un compte anonymise ses lignes d'échanges et conserve la contribution de l'autre joueur.

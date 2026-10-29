@@ -8953,7 +8953,7 @@
         ]);
       })) : null,
       h('p', { class: 'small muted awards-note' }, 'Seuls les membres qui partagent leurs cartes participent. Les podiums de collections demandent aussi le partage des collections. Les ex æquo gardent le même rang ; trois membres sont affichés au maximum.'),
-      h('p', { class: 'small muted' }, 'Collections : comparaison par titre, sans les intercalaires libres ni les articles non vérifiés. Un article renommé peut entraîner un écart avec la progression de son album.'),
+      h('p', { class: 'small muted' }, 'Collections : les listes « Lock Market », « À vendre » et « Autre / Autres » sont exclues des deux podiums de collections. Comparaison par titre, sans les intercalaires libres ni les articles non vérifiés. Un article renommé peut entraîner un écart avec la progression de son album.'),
       h('p', { class: 'small muted' }, 'Échanges : suivi à partir de l’ajout du palmarès, confirmation à la synchronisation du compte du jeu. Tchat : reprise des messages encore conservés, puis compteur permanent des nouveaux envois.'),
     ]);
   }

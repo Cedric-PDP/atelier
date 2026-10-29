@@ -22,6 +22,14 @@ export async function syncTradeAwards(env, user, session) {
 const norm = (s) => String(s || '').normalize('NFC').replace(/_/g, ' ').replace(/\s+/g, ' ').trim().toLocaleLowerCase('fr');
 const parse = (s, fallback) => { try { return JSON.parse(s) ?? fallback; } catch { return fallback; } };
 
+// Listes de rangement : les préfixes permettent aussi « À vendre - doublons ».
+// Comparaison sans accents, casse, emoji ou séparateurs ; pas de sous-chaîne dans un nom thématique.
+function storageCollection(name) {
+  const key = String(name || '').normalize('NFD').replace(/\p{M}/gu, '').toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ').trim();
+  return /^(?:lock market|a vendre)(?: |$)/.test(key) || /^(?:autre|autres)$/.test(key);
+}
+
 export async function getPalmares(env, user) {
   if (!user.shared || !user.public_id) throw new HttpError(403, 'Active le partage entre membres dans Réglages pour participer au palmarès.');
   const db = env.DB;
@@ -33,7 +41,7 @@ export async function getPalmares(env, user) {
       'shiny', json_extract(c.data, '$.shiny'), 'variants', json_extract(c.data, '$.variants')) AS data,
       p.data AS prices FROM cards c JOIN users u ON u.id = c.user_id
       LEFT JOIN prices p ON p.card_id = c.card_id WHERE u.shared = 1 AND u.public_id IS NOT NULL`),
-    db.prepare(`SELECT t.user_id, json_group_array(json_object('title', json_extract(i.value, '$.title'))) AS items
+    db.prepare(`SELECT t.user_id, t.name, json_group_array(json_object('title', json_extract(i.value, '$.title'))) AS items
       FROM targets t JOIN users u ON u.id = t.user_id, json_each(t.items) i
       WHERE u.shared = 1 AND u.public_id IS NOT NULL AND u.shared_targets = 1
         AND i.type = 'object' AND COALESCE(json_extract(i.value, '$.status'), 'ok') = 'ok'
@@ -57,6 +65,7 @@ export async function getPalmares(env, user) {
     }
   }
   for (const row of targets.results) {
+    if (storageCollection(row.name)) continue;
     const s = stats.get(row.user_id);
     const items = new Set(parse(row.items, []).filter((i) => i && (!i.status || i.status === 'ok') && i.title).map((i) => norm(i.title)));
     if (!items.size) continue;

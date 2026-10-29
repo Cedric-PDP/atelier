@@ -54,6 +54,21 @@ try {
   assert.deepEqual(b.completed.map((e) => e.score), [1, 1, 1]);
   assert.deepEqual(b.completed.map((e) => e.rank), [1, 1, 1]);
   assert.deepEqual(b.near.map((e) => e.score), [1, 1, 1]);
+  // Les listes de rangement n'avantagent ni les collections complètes ni les presque complètes.
+  for (const [i, name] of ['Lock Market', '🔒 LOCK_MARKET — réservées', 'À vendre', 'A VENDRE - doublons', 'Autre', 'AUTRES'].entries()) {
+    target(alice, 'storage-complete-' + i, [item(0)]);
+    target(alice, 'storage-near-' + i, Array.from({ length: 10 }, (_, j) => item(j)));
+    db.prepare('UPDATE targets SET name = ? WHERE user_id = ? AND id IN (?, ?)')
+      .run(name, alice.id, 'storage-complete-' + i, 'storage-near-' + i);
+  }
+  b = await board();
+  assert.deepEqual(b.completed.map((e) => e.score), [1, 1, 1], 'listes de rangement complètes exclues');
+  assert.deepEqual(b.near.map((e) => e.score), [1, 1, 1], 'listes de rangement presque complètes exclues');
+  target(alice, 'theme', [item(0)]);
+  db.prepare('UPDATE targets SET name = ? WHERE user_id = ? AND id = ?').run('Les autres planètes', alice.id, 'theme');
+  assert.equal((await board()).completed.find((e) => e.name === 'Alice').score, 2, 'un nom thématique contenant « autres » reste éligible');
+  db.prepare('UPDATE targets SET name = ? WHERE user_id = ? AND id = ?').run('À vendre', alice.id, 'theme');
+  assert.equal((await board()).completed.find((e) => e.name === 'Alice').score, 1, 'renommer une collection recalcule immédiatement son éligibilité');
   assert.ok(!JSON.stringify(b).includes('Secret'));
   assert.ok(!b.completed.some((e) => e.name === 'Denis'));
   assert.equal((await call('GET', 'palmares', secret.key)).status, 403);
