@@ -277,6 +277,8 @@ function mockApi() {
     link(key) { linkUser(users.find((x) => x.key === key)); },
     trades,
     failTrade(r) { tradeFail = r; },
+    // Le jeu dit les échanges proposés terminés (refusés ou annulés) : plus en attente.
+    endTrades() { for (const t of trades) t.pending = false; },
     gameFriends,
     friendRequests,
     noGame,
@@ -304,13 +306,14 @@ function mockApi() {
       const st = users.find((u) => u.key === key);
       if (!st) return json(401, { error: key ? 'Clé inconnue : ce classeur a peut-être été supprimé.' : 'Clé absente : ouvre ton lien personnel du classeur.' });
       const cardOut = (c) => ({ ...c, tags: st.tags.get(c.id) || [] });
+      const pendingOf = (u) => [...new Set(trades.filter((t) => t.pending !== false).flatMap((t) => (t.from === u.name ? t.give : t.to === u.name ? t.get : [])))];
       if (p === '/api/me' && method === 'GET') {
         return json(200, { user: { id: st.id, name: st.name, created_at: 'x' }, fetched_at: st.fetched_at, card_count: st.cards.length, new_ids: st.new_ids,
           prefs: st.prefs || {}, session: sessionOf(st),
           shared: !!st.shared, shared_targets: !!(st.shared && st.sharedTargets), public_id: st.shared ? st.pub || null : null, ...(self.noRev ? {} : { cards_rev: st.rev }), last_chat_id: chat.id,
           market_at: (st.market && st.market.market_at) || null, last_sync: st.lastSync || null, fast_sync: !!st.fastSync, auto_friend: !!st.autoFriend,
           auto_wish: !!st.autoWish, wish_mode: st.wishMode || 'selected', wish: st.wish || null,
-          wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at } });
+          wikibidous: st.wb == null ? null : { n: st.wb, at: st.fetched_at }, trade_pending: pendingOf(st) });
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
@@ -447,7 +450,7 @@ function mockApi() {
         if (p === '/api/members') {
           return json(200, { members: users.filter((u) => u !== st && u.shared && u.pub).map((u) => ({ id: u.pub, name: u.name, pseudo: u.pseudo || null, game: !noGame.has(u.name), count: u.cards.length, fetched_at: u.fetched_at,
             targets: u.sharedTargets ? { count: u.targets.length, updated_at: 'r' + (u.targetsRev || 0) } : null,
-            wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at }, keep: keepOf(u) })) });
+            wikibidous: u.wb == null ? null : { n: u.wb, at: u.fetched_at }, keep: keepOf(u), pending: pendingOf(u) })) });
         }
         // Collections d'un membre qui les montre : une par page ici, réduites à leur nature (kind) et au titre, au qid et au
         // drapeau d'intercalaire (sep: true) des éléments vérifiés.
@@ -3468,6 +3471,15 @@ async function main() {
         md().querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
         await settle();
         check(!md(), 'fenêtre fermée attendue');
+        // Cartes de l'échange « en attente » : plus proposées (ni Article 7 de toi à Paul, ni Mars de Paul à toi), tout de
+        // suite. Échange annulé dans le jeu : elles reviennent à la relecture de GET /api/me.
+        const rowIn = (name, t) => (pair(name) ? pair(name).querySelectorAll('.fitem').some((n) => text(n.querySelector('.fitem__title')) === t) : false);
+        check(!rowIn('Toi → Paul', 'Article 7') && !rowIn('Paul → Toi', 'Mars (planète)'),
+          'cartes en attente encore proposées : ' + text(pair('Toi → Paul') || doc.body).slice(0, 200));
+        api.endTrades();
+        for (const f of doc.listeners.visibilitychange || []) await f();
+        await settle(120);
+        check(rowIn('Toi → Paul', 'Article 7'), 'échange terminé : Article 7 de nouveau proposé attendu');
         // Réglages, « Amis dans le jeu » : cocher la case ouvre « Ajouter les membres pas encore amis » (Paul, pas encore ami :
         // coché d'avance ; Léa, déjà amie), qui envoie les demandes d'un coup ; puis retour à « Échanges possibles ».
         api.gameFriends['Paul'] = 'none';

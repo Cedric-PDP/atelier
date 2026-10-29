@@ -1975,12 +1975,15 @@ await test('GET /api/me (relu toutes les minutes par la page visible) : une requ
   assert.equal(seen.length, 1, seen.join('\n'));
   const plan = env.DB.sqlite.prepare(`EXPLAIN QUERY PLAN ${seen[0]}`).all().map((r) => r.detail);
   // Le compte par sa clé, le dernier numéro du chat (badge des non-lus) : MAX sur la clé primaire, une ligne ; l'heure
-  // de la dernière lecture du marché (market_at) : sa ligne de market, par sa clé primaire.
-  assert.deepEqual(plan.length, 5, plan.join('\n'));
+  // de la dernière lecture du marché (market_at) : sa ligne de market, par sa clé primaire ; ses cartes dans un échange en
+  // attente (trade_pending) : les seuls échanges en attente récents, par l'index award_trades_pending.
+  assert.deepEqual(plan.length, 9, plan.join('\n'));
   assert.match(plan[0], /^SEARCH users USING INDEX sqlite_autoindex_users_\d \(key_hash=\?\)$/);
   assert.deepEqual(plan.slice(1, 3), ['SCALAR SUBQUERY 1', 'SEARCH chat_messages'], plan.join('\n'));
   assert.match(plan[3], /^CORRELATED SCALAR SUBQUERY \d$/, plan.join('\n'));
-  assert.match(plan[4], /^SEARCH m USING INDEX sqlite_autoindex_market_1 \(user_id=\?\)$/, plan.join('\n'));
+  assert.ok(plan.includes('SEARCH a USING INDEX award_trades_pending (status=? AND created_at>?)'), plan.join('\n'));
+  assert.ok(!plan.some((l) => /^SCAN (a|award_trades)\b/.test(l)), plan.join('\n'));
+  assert.match(plan[8], /^SEARCH m USING INDEX sqlite_autoindex_market_1 \(user_id=\?\)$/, plan.join('\n'));
   // Classeur d'avant le compteur (sync_state absent, ou ancien format sans count) : compté une fois, puis gardé ; le reste
   // de l'état est intact.
   const setState = (v) => env.DB.sqlite.prepare('UPDATE users SET sync_state = ? WHERE id = ?').run(v, kim.user.id);
@@ -2346,7 +2349,7 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   const benMe = await me(ben);
   assert.deepEqual(benMe.wikibidous && benMe.wikibidous.n, 0, 'solde lu à la synchro, rendu par /api/me');
   assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, card_style: null, count: 12, fetched_at: benMe.fetched_at, targets: null,
-    wikibidous: benMe.wikibidous, keep: [] }]);
+    wikibidous: benMe.wikibidous, keep: [], pending: [] }]);
   // Le style de carte choisi par Ben (prefs.card_style) est montré aux autres membres.
   await call('PATCH', 'me', { key: ben.key, body: { prefs: { card_style: 'neon' } } });
   assert.equal((await members(ana)).json.members[0].card_style, 'neon');
@@ -2532,7 +2535,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   const lastChange = [planets.updated_at, cat.updated_at].sort().pop();
   const benMe = await me(ben);
   assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, card_style: null, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
-    wikibidous: benMe.wikibidous, keep: [] }]);
+    wikibidous: benMe.wikibidous, keep: [], pending: [] }]);
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
 
@@ -3968,6 +3971,19 @@ await test('échange : POST /api/trades/create propose un échange dans le jeu (
   assert.deepEqual({ ...e.DB.sqlite.prepare('SELECT user_id, recipient_id, given, received, status FROM award_trades WHERE id = ?').get(t1.id) },
     { user_id: ana.user.id, recipient_id: ben.user.id, given: 2, received: 1, status: 'pending' }, 'échange enregistré pour le palmarès, sans compter une proposition en attente');
   assert.deepEqual([t1.initiator_id, t1.recipient_id, t1.initiator_wikibidous, t1.recipient_wikibidous], [anaUid, benUid, 0, 0]);
+  // Cartes en attente : les données d'Ana chez elle, celle demandée à Ben chez lui et dans la liste des membres.
+  assert.deepEqual((await call('GET', 'me', { key: ana.key, e })).json.trade_pending.sort(), [anaCards[0].id, anaCards[1].id].sort());
+  assert.deepEqual((await call('GET', 'me', { key: ben.key, e })).json.trade_pending, [benCards[2].id]);
+  const pendingOf = async (u, other) => (await call('GET', 'members', { key: u.key, e })).json.members.find((m) => m.id === pub(other)).pending;
+  assert.deepEqual(await pendingOf(ana, ben), [benCards[2].id]);
+  assert.deepEqual((await pendingOf(ben, ana)).sort(), [anaCards[0].id, anaCards[1].id].sort());
+  // Échange fini (ou trop vieux) : plus en attente.
+  e.DB.sqlite.prepare("UPDATE award_trades SET status = 'accepted' WHERE id = ?").run(t1.id);
+  assert.deepEqual((await call('GET', 'me', { key: ana.key, e })).json.trade_pending, []);
+  assert.deepEqual(await pendingOf(ana, ben), []);
+  e.DB.sqlite.prepare("UPDATE award_trades SET status = 'pending', created_at = '2000-01-01T00:00:00.000Z' WHERE id = ?").run(t1.id);
+  assert.deepEqual((await call('GET', 'me', { key: ben.key, e })).json.trade_pending, []);
+  e.DB.sqlite.prepare("UPDATE award_trades SET created_at = ? WHERE id = ?").run(new Date().toISOString(), t1.id);
   assert.deepEqual(t1.items, [
     { user_card_id: `ex-${anaCards[0].id}`, card_id: anaCards[0].id, offered_by: anaUid },
     { user_card_id: `ex-${anaCards[1].id}`, card_id: anaCards[1].id, offered_by: anaUid },

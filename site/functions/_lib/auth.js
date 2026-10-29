@@ -6,6 +6,7 @@ import { FAILS_MAX } from './refresh.js';
 import { byteLength, cleanText, nowIso, randomToken, safeEqual, sha256Hex } from './util.js';
 import { patchSharing } from './members.js';
 import { eraseChatOf } from './chat.js';
+import { pendingSince, pendingTradeCards } from './trades.js';
 
 export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, sync_state, cards_rev, cards_gone_floor, shared, public_id, '
   + 'shared_targets, last_sync, game_pseudo, game_session_enc, game_uid, game_session_v, game_session_at, game_session_lost, sync_lock, '
@@ -87,14 +88,15 @@ export async function createAccount(env, body) {
 // Utilisateur de la requête (en-tête X-Classeur-Key), ou 401. `chat` (GET /api/me) : numéro du dernier message du chat
 // lu dans la même requête (last_chat_id ; MAX sur la clé primaire : une ligne lue). `market` (GET /api/me) : heure de la
 // dernière lecture du marché (market_at : lecture du marché reçue ou essai fini, réussi ou non ; une ligne lue par la clé
-// primaire de market).
+// primaire de market). Avec `chat`, aussi ses cartes dans un échange en attente (trade_pending, trades.js : les échanges
+// en attente récents, par l'index award_trades_pending).
 export async function authenticate(request, env, { chat = false, market = false } = {}) {
   const key = (request.headers.get('x-classeur-key') || '').trim();
   if (!key) throw new HttpError(401, 'Clé absente : ouvre ton lien personnel du classeur.');
-  const extra = (chat ? ', (SELECT MAX(id) FROM chat_messages) AS last_chat_id' : '')
+  const extra = (chat ? `, (SELECT MAX(id) FROM chat_messages) AS last_chat_id, (${pendingTradeCards('users.id')}) AS trade_pending` : '')
     + (market ? ", (SELECT max(coalesce(m.live_at, ''), coalesce(CASE WHEN json_valid(m.attempt) THEN json_extract(m.attempt, '$.end') END, '')) FROM market AS m WHERE m.user_id = users.id) AS market_at" : '');
   const user = await env.DB.prepare(`SELECT ${USER_COLUMNS}${extra} FROM users WHERE key_hash = ?1`)
-    .bind(await sha256Hex(key))
+    .bind(...[await sha256Hex(key), ...(chat ? [pendingSince()] : [])])
     .first();
   if (!user) throw new HttpError(401, 'Clé inconnue : ce lien ne correspond à aucun compte.');
   return user;
@@ -162,6 +164,9 @@ export async function getMe(env, user) {
     // Solde de wikibidous lu dans le jeu à la dernière synchro (game.js, readBalance) : {n, at}, ou null s'il n'a jamais été lu.
     wikibidous: user.wikibidous === null || user.wikibidous === undefined ? null : { n: user.wikibidous, at: user.wikibidous_at || null },
     session: sessionView(user),
+    // Ses cartes dans un échange créé par le classeur, en attente dans le jeu (2026-10-29, trades.js) : « en attente » dans
+    // « Mes cartes », jamais reproposées dans un échange.
+    trade_pending: typeof user.trade_pending === 'string' ? JSON.parse(user.trade_pending) : [],
   };
 }
 

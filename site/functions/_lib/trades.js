@@ -21,6 +21,19 @@ const PUBLIC_ID = /^[A-Za-z0-9_-]{1,64}$/;
 const PROFILE_GAP_MS = 300;
 const UNSURE = "Le jeu n'a pas répondu à la création de l'échange : regarde dans le jeu (Échanges) s'il a été créé avant de réessayer.";
 
+// Cartes « en attente » (2026-10-29, demande de l'utilisateur : une carte proposée ne doit plus être reproposée, ni dans
+// un autre échange) : celles d'un membre dans un échange créé par le classeur que le jeu n'a pas encore dit terminé
+// (award_trades.status, relu à chaque synchro complète de l'un des deux, palmares.js) ; ses cartes données s'il l'a
+// proposé, ses cartes demandées s'il le reçoit. Au-delà de PENDING_DAYS, plus tenues pour en attente (échange que le jeu
+// aurait purgé avant qu'on lise sa fin). who = id du membre (expression SQL), since = paramètre de la limite (pendingSince).
+// Index award_trades_pending : seuls les échanges en attente récents sont lus.
+export const PENDING_DAYS = 30;
+export const pendingSince = () => new Date(Date.now() - PENDING_DAYS * 86400_000).toISOString();
+export const pendingTradeCards = (who, since = '?2') => `SELECT json_group_array(DISTINCT j.value) FROM award_trades AS a,
+    json_each(CASE WHEN json_valid(CASE WHEN a.user_id = ${who} THEN a.give_ids ELSE a.get_ids END)
+      THEN CASE WHEN a.user_id = ${who} THEN a.give_ids ELSE a.get_ids END ELSE '[]' END) AS j
+    WHERE a.status = 'pending' AND (a.user_id = ${who} OR a.recipient_id = ${who}) AND a.created_at >= ${since} AND j.type = 'text'`;
+
 // Ami désigné par son identifiant public ; seulement s'il montre ses cartes (comme ses pages), et toi aussi.
 const FRIEND = `SELECT u.id, u.name, u.game_uid, u.game_pseudo FROM users AS u WHERE u.public_id = ?1 AND u.shared = 1 AND u.id <> ?2`;
 // Titres des cartes dans le classeur de chacun (pour les messages et la lecture de la page de profil de l'ami).
@@ -273,8 +286,9 @@ export async function createTrade(env, user, body) {
     const trade = data && data.trade && typeof data.trade.id === 'string' ? data.trade : null;
     if (!trade) throw new HttpError(502, "Le jeu a accepté la demande sans renvoyer l'échange : vérifie dans le jeu (Échanges).");
     try {
-      await db.prepare(`INSERT OR IGNORE INTO award_trades (id, user_id, recipient_id, given, received, created_at)
-        VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(trade.id, user.id, friend.id, give.length, get.length, nowIso()).run();
+      await db.prepare(`INSERT OR IGNORE INTO award_trades (id, user_id, recipient_id, given, received, created_at, give_ids, get_ids)
+        VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`).bind(trade.id, user.id, friend.id, give.length, get.length, nowIso(),
+        JSON.stringify(give), JSON.stringify(get)).run();
     } catch {
       throw new HttpError(502, "L’échange a été créé dans le jeu, mais son enregistrement au palmarès a échoué. Ne le propose pas à nouveau : retrouve-le dans le jeu, onglet Échanges.");
     }

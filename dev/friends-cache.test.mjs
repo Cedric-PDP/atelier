@@ -22,7 +22,7 @@ const context = vm.createContext({
   cards: { value: own }, friendCols: { value: [col('Moi', 'Jupiter')] }, friendList: { value: [a, b] },
   friendIndexes: { value: [{ f: a, index: index(cardsA) }, { f: b, index: index(cardsB) }] },
   S: { me: { user: { name: 'Moi' } } }, qidVersion: { value: 0 }, resolver: { version: 0 },
-  keepPref: { value: { cards: new Set(), tags: new Set() } },
+  keepPref: { value: { cards: new Set(), tags: new Set() } }, tradePending: { value: new Set() },
   sharing: () => true, findCard: (it) => ownIndex.findCard(it), normTitle: (s) => s,
   friendName: (f) => f.name, RANK: { R: 1 }, COLLATOR: new Intl.Collator('fr'),
   cardItems: (items) => items.filter((i) => i.status !== 'label').length,
@@ -30,6 +30,7 @@ const context = vm.createContext({
   computed: (fn) => ({ get value() { return fn(); } }),
 });
 context.isKept = (card) => context.keepPref.value.cards.has(card.id);
+context.isTradePending = (card) => context.tradePending.value.has(card.id);
 vm.runInContext(section('  let friendProgressCache =', '  const friendIndexCache ='), context);
 vm.runInContext(section('  const ME =', '  // Filtre de la page :'), context);
 vm.runInContext(section('  const friendStats =', '  // Classeur d\'un ami parcouru'), context);
@@ -86,6 +87,15 @@ assert.ok(!kept.has('>a'));
 assert.equal(kept.get('a>').rows, afterBob.get('a>').rows);
 context.friendList.value = [{ ...a, keep: new Set(['jupiter']) }, changedB];
 assert.ok(!pairs().has('a>'));
+// Cartes dans un échange en attente (trade_pending, pending de GET /api/members) : plus proposées.
+context.keepPref.value = { cards: new Set(), tags: new Set() };
+context.friendList.value = [a, changedB];
+assert.ok(pairs().has('>a') && pairs().has('a>'));
+context.tradePending.value = new Set(['mars']);
+assert.ok(!pairs().has('>a'), 'ta carte en attente');
+context.friendList.value = [{ ...a, pending: new Set(['jupiter']) }, changedB];
+assert.ok(!pairs().has('a>'), 'sa carte en attente');
+context.tradePending.value = new Set();
 
 // Une nouvelle collection et de nouveaux qids imposent une nouvelle analyse.
 context.friendList.value = [{ ...a, targets: [col('Nouvelle', 'Saturne')] }, changedB];

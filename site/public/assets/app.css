@@ -512,6 +512,12 @@ main.wrap { padding-block: 26px 110px; }
 .cell__keep { position: absolute; left: 8px; top: 33px; z-index: 5; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 7px;
   background: rgba(12, 13, 12, 0.72); color: #f2f4f3; pointer-events: none; }
 .cell__keep .ic { width: 13px; height: 13px; }
+/* Carte dans un échange en attente (trade_pending) : une horloge au même endroit, sous le cadenas s'il y en a un. */
+.cell__trade { position: absolute; left: 8px; top: 33px; z-index: 5; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 7px;
+  background: var(--accent); color: #fff; pointer-events: none; }
+.cell__trade.low { top: 59px; }
+.cell__trade .ic { width: 13px; height: 13px; }
+.trade-wait .ic { width: 13px; height: 13px; vertical-align: -2px; }
 .keep-facet .tags .tag .ic { width: 12px; height: 12px; margin-right: 3px; vertical-align: -1px; }
 .keep-toggle { margin: 10px 0; }
 .keep-toggle p { margin: 4px 0 0; }

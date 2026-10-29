@@ -16,6 +16,7 @@
 import { HttpError, raw } from './http.js';
 import { decodeCursor, encodeCursor } from './cards.js';
 import { randomToken } from './util.js';
+import { pendingSince, pendingTradeCards } from './trades.js';
 
 const PAGE_SIZE = 1000;
 const ID = /^[A-Za-z0-9_-]{1,64}$/;
@@ -75,6 +76,7 @@ const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, (COA
         SELECT g.card_id FROM tags AS g JOIN cards AS c ON c.user_id = g.user_id AND c.card_id = g.card_id
           WHERE g.user_id = u.id AND g.tag IN (SELECT x.value FROM json_each(u.prefs, '$.keep.tags') AS x WHERE x.type = 'text')))
     END AS keep,
+    (${pendingTradeCards('u.id')}) AS pending,
     (SELECT COUNT(*) FROM cards AS c WHERE c.user_id = u.id) AS count,
     u.shared_targets AS st,
     CASE WHEN u.shared_targets = 1 THEN (SELECT COUNT(*) FROM targets AS t WHERE t.user_id = u.id) END AS t_count,
@@ -87,7 +89,7 @@ const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, (COA
 // {n, at} (solde lu dans le jeu à sa dernière synchro), ou null s'il n'a jamais été lu.
 export async function listMembers(env, user) {
   requireSharing(user);
-  const { results } = await env.DB.prepare(MEMBERS).bind(user.id).all();
+  const { results } = await env.DB.prepare(MEMBERS).bind(user.id, pendingSince()).all();
   return {
     members: results.map((r) => ({
       id: r.id,
@@ -103,6 +105,9 @@ export async function listMembers(env, user) {
       // Ses cartes exclues des échanges et des ventes (2026-10-29, prefs.keep : choisies une à une ou par ses tags, résolues
       // ici : ses tags ne sortent jamais), que les échanges ne proposent pas ; [] s'il n'en exclut aucune.
       keep: typeof r.keep === 'string' ? JSON.parse(r.keep) : [],
+      // Ses cartes dans un échange créé par le classeur, en attente dans le jeu (2026-10-29, trades.js) : ni proposées ni
+      // demandées dans un autre échange tant qu'il l'est ; [] sinon.
+      pending: typeof r.pending === 'string' ? JSON.parse(r.pending) : [],
     })),
   };
 }

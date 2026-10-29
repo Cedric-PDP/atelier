@@ -85,7 +85,8 @@ CREATE TABLE IF NOT EXISTS users (
     chat_sent INTEGER NOT NULL DEFAULT 0
 );
 
--- Échanges créés par le classeur : confirmation relue dans le jeu.
+-- Échanges créés par le classeur : confirmation relue dans le jeu. give_ids / get_ids (2026-10-29) : ids des cartes de
+-- chaque côté (JSON), « en attente » chez leurs propriétaires tant que l'échange l'est (trades.js, pendingTradeCards).
 CREATE TABLE IF NOT EXISTS award_trades (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -94,7 +95,9 @@ CREATE TABLE IF NOT EXISTS award_trades (
     received INTEGER NOT NULL,
     status TEXT NOT NULL DEFAULT 'pending',
     created_at TEXT NOT NULL,
-    checked_at TEXT
+    checked_at TEXT,
+    give_ids TEXT,
+    get_ids TEXT
   );
 
 -- Cartes possédées : data = Carte de l'API, en JSON, sans les étiquettes. rev = révision (users.cards_rev) de son
@@ -371,6 +374,7 @@ CREATE INDEX IF NOT EXISTS tags_by_tag ON tags (user_id, tag);
 CREATE UNIQUE INDEX IF NOT EXISTS users_by_import_key ON users (import_key_hash);
 
 CREATE INDEX IF NOT EXISTS cards_by_rev ON cards (user_id, rev);
+CREATE INDEX IF NOT EXISTS award_trades_pending ON award_trades (status, created_at);
 
 CREATE INDEX IF NOT EXISTS cards_gone_by_rev ON cards_gone (user_id, rev);
 

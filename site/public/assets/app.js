@@ -873,6 +873,16 @@
     return card || tag ? { card, tag } : null;
   }
   const isKept = (c) => !!keptBy(c);
+  // Cartes dans un échange proposé depuis le classeur, en attente dans le jeu (2026-10-29, demande de l'utilisateur ;
+  // trade_pending de GET /api/me) : marquées « en attente » dans « Mes cartes », jamais reproposées dans un échange, ni
+  // avec le même ami ni avec un autre. Même Set tant que la liste ne change pas (caches des échanges).
+  let pendingIds = new Set();
+  const tradePending = computed(() => {
+    const list = S.me && Array.isArray(S.me.trade_pending) ? S.me.trade_pending.map(String) : [];
+    if (list.length !== pendingIds.size || list.some((id) => !pendingIds.has(id))) pendingIds = new Set(list);
+    return pendingIds;
+  });
+  const isTradePending = (c) => tradePending.value.has(String(c.id));
   const keptCount = computed(() => cards.value.reduce((n, c) => n + (isKept(c) ? 1 : 0), 0));
   const saveKeep = (cardIds, tags) => savePrefs({ keep: { cards: [...cardIds], tags: [...tags] } });
   // Exclure (on) ou réintégrer des cartes choisies une à une. Réintégrer une carte exclue par un tag ne la réintègre pas :
@@ -1257,7 +1267,7 @@
       for (const x of people) {
         if (x === z) continue;
         const result = cachedFriendValue(friendTradePairs, x.id + '>' + z.id,
-          [states.get(x), states.get(z), x.me ? keepPref.value : x.f.keep], () => {
+          [states.get(x), states.get(z), x.me ? keepPref.value : x.f.keep, x.me ? tradePending.value : x.f.pending], () => {
             const { used } = states.get(x);
             const byCard = new Map();
             for (const hole of holes.values()) {
@@ -1267,6 +1277,7 @@
               const row = byCard.get(c.id);
               if (row) { for (const n of hole.cols) if (!row.cols.some((x) => sameCol(x, n))) row.cols.push(n); continue; }
               if (x.me ? isKept(c) : x.f.keep && x.f.keep.has(c.id)) continue; // exclue des échanges (prefs.keep)
+              if (x.me ? isTradePending(c) : x.f.pending && x.f.pending.has(c.id)) continue; // déjà dans un échange en attente
               const count = Math.max(1, Number(c.count) || 1);
               if (count < 2 && used.has(c.id)) continue;
               byCard.set(c.id, { card: c, item: hole.item, cols: hole.cols.slice(), count, dup: count >= 2 });
@@ -6191,10 +6202,14 @@
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
           const kept = Array.isArray(m.keep) ? m.keep.map(String) : [];
           const keep = kept.length ? p && p.keep && p.keep.size === kept.length && kept.every((id) => p.keep.has(id)) ? p.keep : new Set(kept) : null;
+          const waits = Array.isArray(m.pending) ? m.pending.map(String) : [];
+          const pending = waits.length ? p && p.pending && p.pending.size === waits.length && waits.every((id) => p.pending.has(id)) ? p.pending : new Set(waits) : null;
           return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, cstyle: typeof m.card_style === 'string' ? m.card_style : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous),
             // ses cartes exclues des échanges (ids), relues avec la liste : jamais proposées dans « Échanges possibles »
-            keep });
+            keep,
+            // ses cartes dans un échange en attente proposé depuis le classeur (ids) : ni proposées ni demandées ailleurs
+            pending });
         }).sort((a, b) => COLLATOR.compare(friendName(a), friendName(b)));
         friendList.value = list;
         pruneFriendCalculations(new Set([ME, ...list.map((f) => f.id)]));
@@ -6382,8 +6397,9 @@
   }
   function openTradeNew(f) {
     const { give, get } = tradeRowsWith(f);
-    const pick = (rows) => rows.filter((r) => r.dup && !favLocked(r.card)).map((r) => r.card.id);
-    S.tradeNew = { f, give: pick(give), get: pick(get), giveWb: '', getWb: '', busy: false, error: '', done: null,
+    const pick = (rows, max) => rows.filter((r) => r.dup && !favLocked(r.card)).slice(0, Math.max(0, max)).map((r) => r.card.id);
+    const giveIds = pick(give, TRADE_MAX);
+    S.tradeNew = { f, give: giveIds, get: pick(get, TRADE_MAX - giveIds.length), giveWb: '', getWb: '', busy: false, error: '', done: null,
       fr: { st: 'loading', canRequest: false, busy: false, error: '' } };
     S.modal = 'trade';
     loadTradeFriend(S.tradeNew);
@@ -6433,6 +6449,14 @@
     const n = /^\d+$/.test(t) ? Number(t) : NaN;
     return Number.isSafeInteger(n) && n <= TRADE_WB_MAX ? n : null;
   }
+  // Échange créé : ses cartes passent « en attente » tout de suite, sans attendre la relecture de GET /api/me (les
+  // tiennes) et de GET /api/members (celles de l'ami), qui les rendent ensuite d'après le serveur.
+  function markTradePending(f, give, get) {
+    if (S.me && give.length) S.me.trade_pending = [...new Set([...(S.me.trade_pending || []).map(String), ...give.map(String)])];
+    if (get.length) {
+      friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, pending: new Set([...(x.pending || []), ...get.map(String)]) }) : x));
+    }
+  }
   async function sendTrade(tn) {
     if (tn.busy) return;
     tn.busy = true;
@@ -6441,6 +6465,7 @@
       const r = await api('POST', '/api/trades/create', { member: tn.f.id, give: tn.give, get: tn.get, give_wb: tradeWb(tn.giveWb) || 0, get_wb: tradeWb(tn.getWb) || 0 });
       tn.done = { given: r.given || [], received: r.received || [], givenWb: Number(r.given_wb) || 0, receivedWb: Number(r.received_wb) || 0,
         url: r.url || 'https://www.wiki-masters.com/trades' };
+      markTradePending(tn.f, tn.give, tn.get);
     } catch (e) {
       tn.error = e.message;
     } finally {
@@ -7770,12 +7795,14 @@
     return h('button', { class: 'btn small', type: 'button', onClick: () => setFolded(fold.album, open ? secs.map(([k]) => titles.get(k)) : []) },
       [icon('chev', 'sm' + (open ? ' chev-down' : '')), open ? 'Tout replier' : 'Tout déplier']);
   }
+  const TRADE_WAIT = "En attente dans un échange proposé depuis le classeur : proposée dans aucun autre tant que le jeu ne l'a pas dit accepté, refusé ou annulé (relu à chaque synchro).";
   function viewCell(c, sep) {
     const sel = S.selected.has(c.id);
     const kept = isKept(c);
     return h('div', { class: ['cell', { selected: sel, pulled: S.openId === c.id, sep }] }, [
       sepFrame(viewCard(c, false, sep), sep),
       kept ? h('span', { class: 'cell__keep', title: 'Exclue des échanges et ventes' }, [icon('lock', 'sm'), sr('Exclue des échanges et ventes')]) : null,
+      isTradePending(c) ? h('span', { class: ['cell__trade', { low: kept }], title: TRADE_WAIT }, [icon('clock', 'sm'), sr('En attente dans un échange')]) : null,
       h('label', { class: 'pick', title: 'Sélectionner (Maj+clic : une plage)' }, [
         h('input', { type: 'checkbox', checked: sel, 'aria-label': 'Sélectionner ' + c.title, onClick: (e) => toggleSelect(c.id, e) }),
         icon('check'),
@@ -12591,6 +12618,7 @@
         ]),
         viewCote(c),
         h('div', { class: 'actions sell-cta' }, [h('button', { class: 'btn small', type: 'button', onClick: () => openSell(c) }, [icon('coins', 'sm'), 'Mettre en vente dans le jeu'])]),
+        isTradePending(c) ? h('p', { class: 'note trade-wait' }, [icon('clock', 'sm'), ' ', TRADE_WAIT]) : null,
         viewKeepToggle(c),
         viewCardMarket(c),
         // Tags posés dans le jeu (lecture seule ici : ils se changent dans wiki-masters.com), avec leur couleur.
@@ -13432,23 +13460,31 @@
     const row = (side, r) => {
       const locked = favLocked(r.card);
       const on = !locked && tn[side].includes(r.card.id);
+      const full = !on && n >= TRADE_MAX;
       return h('li', { key: r.card.id, class: { on, locked } }, [
-        h('label', { class: 'check' }, [
-          h('input', { type: 'checkbox', checked: on, disabled: tn.busy || locked, onChange: () => toggleTradeCard(tn, side, r.card.id) }),
+        h('label', { class: 'check', title: full ? `${fmt(TRADE_MAX)} cartes au plus par échange` : null }, [
+          h('input', { type: 'checkbox', checked: on, disabled: tn.busy || locked || full, onChange: () => toggleTradeCard(tn, side, r.card.id) }),
           pill(r.card.rarity), h('span', { class: 'trade-pick__title' }, r.card.title),
           locked ? h('span', { class: 'fitem__fav', title: "Favori dans le jeu : le jeu refuse de l'échanger" }, 'favori') : null,
           r.dup ? h('span', { class: 'holder dup', title: `${side === 'give' ? 'Tu en as' : name + ' en a'} ${fmt(r.count)} exemplaires` }, [h('b', null, '×' + fmt(r.count))]) : null]),
         h('span', { class: 'why' }, '→ ' + colsText(r.cols, ', ')),
       ]);
     };
+    // « Tout cocher » et « Les doubles » cochent de haut en bas jusqu'à TRADE_MAX cartes en tout, l'autre côté compris
+    // (2026-10-29, demande de l'utilisateur : plus rien à décocher à la main).
+    const fill = (key, rows) => {
+      const room = TRADE_MAX - tn[key === 'give' ? 'get' : 'give'].length;
+      tn[key] = rows.filter((r) => !favLocked(r.card)).slice(0, Math.max(0, room)).map((r) => r.card.id);
+      tn.error = '';
+    };
     const side = (key, legend, rows, empty, wb) => h('fieldset', { class: 'trade-pick' }, [
       h('legend', null, [legend, h('span', { class: 'n' }, ` · ${fmt(tn[key].length)} / ${fmt(rows.length)}`)]),
       rows.length ? h('ul', { class: 'trade-pick__list' }, rows.map((r) => row(key, r))) : h('p', { class: 'note' }, empty),
       rows.length > 1 ? h('p', { class: 'trade-pick__all' }, [
-        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => !favLocked(r.card)).map((r) => r.card.id); tn.error = ''; } }, 'Tout cocher'), ' · ',
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, title: `De haut en bas, ${fmt(TRADE_MAX)} cartes au plus en tout`, onClick: () => fill(key, rows) }, 'Tout cocher'), ' · ',
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = []; } }, 'Rien'),
         ' · ',
-        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = rows.filter((r) => r.dup && !favLocked(r.card)).map((r) => r.card.id); } }, 'Les doubles')]) : null,
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => fill(key, rows.filter((r) => r.dup)) }, 'Les doubles')]) : null,
       wb,
     ]);
     return h(Modal, { key: 'trade', title, wide: true, onClose: closeModal }, () => [
