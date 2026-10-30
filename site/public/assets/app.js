@@ -2202,6 +2202,35 @@
       if (gen === cardsGen) S.autoWish.busy = false;
     }
   }
+  // « Arrêter la synchro des souhaits » : l'ancien PATCH /api/me {auto_wish:false} décoche toutes les collections et passe
+  // en « Collection par collection » ; le serveur lance la passe qui retire les souhaits qu'il avait mis (wish_managed).
+  function wishActive() {
+    return !!(S.me && (S.me.wish_mode === 'all' || targets.value.some((t) => t.wish_sync)));
+  }
+  function askStopWish() {
+    if (S.autoWish.busy || S.autoWish.syncBusy) return;
+    openConfirm({
+      title: 'Arrêter la synchro des souhaits ?',
+      text: "Toutes tes collections sont décochées et le mode passe à « Collection par collection ». Le classeur retire ensuite de ta liste de souhaits du jeu les cartes qu'il y avait mises, par lots si elles sont nombreuses. Les souhaits que tu as ajoutés toi-même sans rapport avec tes collections restent.",
+      ok: 'Arrêter la synchro',
+      danger: true,
+      run: async () => {
+        const gen = cardsGen;
+        Object.assign(S.autoWish, { busy: true, targetId: null, error: '', msg: '' });
+        try {
+          const r = await api('PATCH', '/api/me', { auto_wish: false });
+          if (gen !== cardsGen) return;
+          if (S.me) Object.assign(S.me, { wish_mode: r.wish_mode, auto_wish: r.auto_wish });
+          for (const t of targets.value) t.wish_sync = false;
+          S.autoWish.msg = !r.auto_wish ? 'Synchro des souhaits arrêtée : rien à retirer.'
+            : S.me && S.me.session && S.me.session.auto_sync ? 'Synchro des souhaits arrêtée. Le retrait des souhaits mis par le classeur est en cours : suis-le dans le bilan.'
+              : 'Synchro des souhaits arrêtée. Ta synchro automatique est coupée : clique sur « Synchroniser les souhaits maintenant » (une fois par minute) jusqu\'à ce que le bilan n\'indique plus rien à faire.';
+        } finally {
+          if (gen === cardsGen) S.autoWish.busy = false;
+        }
+      },
+    });
+  }
   async function setTargetWish(t, on) {
     if (S.autoWish.busy) return;
     const gen = cardsGen;
@@ -9358,7 +9387,9 @@
               h('option', { value: 'selected' }, 'Collection par collection'),
             ]),
             linked ? h('button', { class: 'btn', type: 'button', disabled: S.autoWish.busy || S.autoWish.syncBusy, onClick: () => syncWish() },
-              S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant') : null],
+              S.autoWish.syncBusy ? 'Mise à jour…' : 'Synchroniser les souhaits maintenant') : null,
+            wishActive() ? h('button', { id: 'set-wish-stop', class: 'btn danger', type: 'button', disabled: S.autoWish.busy || S.autoWish.syncBusy, onClick: askStopWish },
+              'Arrêter la synchro des souhaits') : null],
             after: [
               linked ? null : h('p', { class: 'small muted' }, 'Relie ton compte du jeu dans « Synchro » pour appliquer ce choix.'),
               S.me && S.me.wish ? wishLine(S.me.wish) : null,

@@ -351,6 +351,9 @@ function mockApi() {
         if ('auto_wish' in body) {
           if (typeof body.auto_wish !== 'boolean') return json(400, { error: '« auto_wish » vaut true ou false.' });
           st.autoWish = body.auto_wish;
+          // Comme le serveur : l'ancien réglage global coche ou décoche toutes les collections et choisit le mode.
+          for (const t of st.targets || []) t.wish_sync = body.auto_wish;
+          st.wishMode = body.auto_wish ? 'all' : 'selected';
         }
         if ('wish_mode' in body) {
           if (!['all', 'selected'].includes(body.wish_mode)) return json(400, { error: 'Mode invalide.' });
@@ -3510,6 +3513,16 @@ async function main() {
         check(await waitFor(() => byId('set-wish-mode').value === 'all' && has('Toutes tes collections sont synchronisées')), 'mode compte complet');
         byId('set-wish-mode').value = 'selected'; byId('set-wish-mode').dispatch('change');
         check(await waitFor(() => byId('set-wish-mode').value === 'selected' && has('Tes choix individuels ont été conservés')), 'retour au choix par collection');
+        check(!byId('set-wish-stop'), '« Arrêter la synchro des souhaits » sans rien de synchronisé');
+        byId('set-wish-mode').value = 'all'; byId('set-wish-mode').dispatch('change');
+        check(await waitFor(() => byId('set-wish-mode').value === 'all' && !!byId('set-wish-stop')), '« Arrêter la synchro des souhaits » en mode complet');
+        byId('set-wish-stop').click();
+        await settle();
+        check(md() && text(md()).includes('Arrêter la synchro des souhaits ?') && byId('set-wish-mode').value === 'all', "confirmation avant l'arrêt des souhaits");
+        mdBtn('Arrêter la synchro').click();
+        check(await waitFor(() => !md() && byId('set-wish-mode').value === 'selected' && !byId('set-wish-stop') && has('Synchro des souhaits arrêtée')),
+          'arrêt des souhaits : ' + (byId('set-wish-mode') ? byId('set-wish-mode').value : ''));
+        check(api.st.wishMode === 'selected' && !api.st.autoWish && (api.st.targets || []).every((t) => !t.wish_sync), 'arrêt des souhaits enregistré');
         await goTab('amis');
         check(pairs().length > 0, "retour à « Échanges possibles » attendu");
       }

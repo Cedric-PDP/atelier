@@ -7,6 +7,7 @@ collection » (cases dans chaque album). Changer de mode conserve les sélection
 décocher retire automatiquement les souhaits qui ne sont plus demandés par une autre collection synchronisée. Les
 nouveaux albums sont décochés par défaut. L'ancien réglage global actif est migré vers le mode complet ; s'il était
 désactivé, toutes les cases restent décochées en mode individuel. Bouton de synchronisation et bilan dans Réglages et les albums.
+« Arrêter la synchro des souhaits » (Réglages) décoche tout d'un coup et retire du jeu les souhaits mis par le classeur.
 
 **Auto-tag du jeu** : dans chaque collection, choisis un tag existant et active « Auto-tag dans WikiMasters ».
 La synchro manuelle ou automatique propage les ajouts et retraits dans les deux sens ; un exemplaire tagué suffit.

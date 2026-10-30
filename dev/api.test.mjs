@@ -4928,6 +4928,29 @@ await test('souhaits : mode compte complet, nouvelles collections et retour aux 
   e.DB.close();
 });
 
+// « Arrêter la synchro des souhaits » (Réglages) : un membre migré en mode complet, tout coché, demande tout d'un coup.
+await test('souhaits : arrêt complet (ancien auto_wish:false) décoche tout et retire les souhaits suivis', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitArret', e, mini(3));
+  supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-b', 'Manque B')];
+  for (const [id, title] of [['a', 'Manque A'], ['b', 'Manque B']]) {
+    await call('POST', 'targets/save', { key: m.u.key, e, body: { id, name: id, items: [{ title }], wish_sync: true } });
+  }
+  oldWish(m.id, e); let waits = [];
+  await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode: 'all' }, waits }); await Promise.all(waits);
+  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-b']);
+  supa.wishlist.push({ user_id: m.uid, card_id: 'manual' });
+  oldWish(m.id, e); waits = [];
+  const r = await call('PATCH', 'me', { key: m.u.key, e, body: { auto_wish: false }, waits });
+  await Promise.all(waits);
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  assert.deepEqual([r.json.wish_mode, r.json.auto_wish], ['selected', true], 'retraits en attente au moment de la réponse');
+  assert.deepEqual(e.DB.sqlite.prepare('SELECT wish_sync FROM targets WHERE user_id = ? ORDER BY id').all(m.id).map(r => r.wish_sync), [0, 0]);
+  assert.deepEqual(supa.wishes(m.uid), ['manual']);
+  assert.equal(userRow(m.id, e).auto_wish, 0);
+  e.DB.close();
+});
+
 await test('souhaits : retrait par lots poursuivi après la désactivation de la dernière collection', async () => {
   const e = makeEnv(); supa.reset();
   const m = await cronMember('SouhaitLots', e, mini(3));

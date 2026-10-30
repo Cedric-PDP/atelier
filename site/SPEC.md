@@ -1107,7 +1107,11 @@ a sa case décochée, mais participe quand même en mode complet. Bouton manuel 
   l'indicateur interne `auto_wish` comme un ancien réglage. Cartes connues dans le cache
   de ces anciennes collections reprises dans `wish_managed`. Trois migrations uniques préservent les choix ultérieurs.
   L'ancien `PATCH /api/me {auto_wish}` reste accepté pour les pages déjà ouvertes : il sélectionne/désélectionne toutes
-  les collections existantes. L'interface actuelle n'utilise plus cette commande.
+  les collections existantes. Depuis le 2026-10-30, Réglages s'en sert pour « Arrêter la synchro des souhaits » (bouton
+  montré en mode complet ou dès qu'une collection est cochée, après confirmation ; demande de l'administrateur : des
+  membres se plaignaient d'être spammés et passer en « Collection par collection » laissait leurs albums cochés par la
+  migration) : `{auto_wish:false}` décoche tout, passe en `selected`, et la passe lancée après la réponse retire les
+  souhaits suivis dans `wish_managed` (par lots ; la suite au cron si la synchro automatique est active, sinon au clic).
 
 
 ## Chat
