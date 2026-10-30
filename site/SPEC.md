@@ -2274,10 +2274,21 @@ script) ; toute la liste est là (plus de « Afficher 20 de plus ») ; ↑ ↓ D
 premier est choisi d'office. La fiche d'un élément lit le **marché de sa carte** comme une fiche (`GET /api/market/card` puis le détail des
 moins chères, voir « Marché d'une carte ») après **350 ms** sans changer de ligne (on peut parcourir la liste sans tout lire), gardé **3 min**
 (1 min avant). Sur téléphone (sous 760 px) : la liste seule, puis la fiche en plein écran (toucher une ligne ; rien n'est lu avant), le retour
-en haut à gauche ramène à la liste ; les sous-onglets et les onglets de recherche défilent de côté. Gardés par classeur dans ce navigateur
+en haut à gauche ramène à la liste ; les quatre sous-onglets tiennent dans la largeur et les onglets de recherche passent à la ligne. Gardés par classeur dans ce navigateur
 (`localStorage` `classeur-marche` : `{<id du compte>: {min, col, hideCol, dtab, period}}`, accès protégés ; `dtab` = le dernier onglet de
 recherche ouvert, `period` = la période de la courbe de la valeur ; `col` : la collection choisie avant le 2026-10-24, reprise tant qu'aucun
 filtre n'est gardé au compte ; l'ancien `open` des sections repliables n'est plus lu).
+Sur ordinateur (> 760 px, ajustement du 2026-10-30), le bandeau commun utilise un titre réduit et place son texte
+d'information à droite des statistiques. Le bouton de rafraîchissement précède les comptes de rareté, sur la même
+ligne si la place le permet, avec un écart réduit avant le menu. Dans « Vendre », les deux filtres sont alignés
+au-dessus du bloc liste/fiche et les notes sont rendues sous l'ensemble, hors de la liste. L'aperçu de la carte mesure
+48 px de large ; le formulaire est compact, avec mise de départ et durée côte à côte. Le Marché classique est inchangé.
+Sur mobile (≤ 760 px, même date), les sous-onglets sont en quatre colonnes (« Enchères »), les listes sont resserrées
+et les statuts d'achat (« finit bientôt », « tu mènes ») passent sous le titre. La vue Valeur, y compris son tableau,
+reste dans la largeur disponible. Vendre conserve ses filtres et notes dans la liste ; la fiche utilise un aperçu de
+40 px, une mise de départ et une durée côte à côte, avec un formulaire compact laissant l'action au-dessus du menu
+inférieur sur les formats vérifiés. Les enchères et ventes détaillées restent sous le formulaire, en défilement vertical.
+
 - **Interface classique** (2026-10-29, demande de l'utilisateur : des membres s'étaient habitués à l'ancienne) : Réglages › Apparence ›
   « Interface du Marché » (Nouvelle par défaut / Classique), gardé avec le compte (`prefs.market_ui` = `'classic'`, sinon absent ou `null`).
   Classique = l'onglet d'avant la refonte, à l'identique : une seule page de sections repliables (« Valeur de ton classeur », « Mes ventes en

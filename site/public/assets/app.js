@@ -7926,6 +7926,9 @@
   function viewSummary() {
     const total = cards.value.length;
     const sess = (S.me && S.me.session) || {};
+    const overview = (figures) => h('div', { class: 'summary-overview' }, [figures,
+      h('p', { class: 'note summary-note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes et les catégories de Wikipédia et de Wikidata.'),
+    ]);
     // Dernière synchro en échec ou incomplète (journal des synchros), tant que rien d'autre n'est affiché ici.
     const ls = S.me && S.me.last_sync;
     const lastBad = !S.refresh.msg && !S.refresh.running && ls && (ls.result === 'error' || ls.result === 'warn') ? ls : null;
@@ -7940,8 +7943,8 @@
     ];
     if (!total) {
       return h('div', { class: 'summary' }, [
-        h('div', { class: 'figures' }, [h('div', { class: 'figure wide' }, [h('span', null, S.loadingCards ? 'Chargement de ta collection…'
-          : "Ton classeur est vide : relie ton compte du jeu dans « Synchro ».")])]),
+        overview(h('div', { class: 'figures' }, [h('div', { class: 'figure wide' }, [h('span', null, S.loadingCards ? 'Chargement de ta collection…'
+          : "Ton classeur est vide : relie ton compte du jeu dans « Synchro ».")])])),
         h('div', { class: 'refresh-line' }, refreshBits),
       ]);
     }
@@ -7950,24 +7953,26 @@
     const nCol = collections.value.mine.length;
     const nL = counts.L || 0;
     return h('div', { class: 'summary' }, [
-      h('div', { class: 'figures' }, [
+      overview(h('div', { class: 'figures' }, [
         h('div', { class: 'figure' }, [h('b', null, fmt(total)), h('span', null, 'cartes différentes')]),
         copies.value !== total ? h('div', { class: 'figure' }, [h('b', null, fmt(copies.value)), h('span', null, 'exemplaires')]) : null,
         h('div', { class: 'figure' }, [h('b', null, fmt(nCol)), h('span', null, plural(nCol, 'collection', 'collections'))]),
         h('div', { class: 'figure' }, [h('b', null, fmt(nL)), h('span', null, plural(nL, 'légendaire', 'légendaires'))]),
         M.value && M.value.priced ? h('div', { class: 'figure', title: `${fmt(M.value.priced)} ${plural(M.value.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(M.value.cards)} : onglet « Marché »` },
           [priceTag(M.value.value), h('span', null, `valeur (${fmt(M.value.priced)} ${plural(M.value.priced, 'cotée', 'cotées')})`)]) : null,
-      ]),
+      ])),
       h('div', { class: 'rbar' }, [
         h('div', { class: 'track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
           RAR_UP.map((r) => (counts[r] ? h('i', { key: r, class: 'r' + r, title: `${RARITY_NAME[r]} : ${fmt(counts[r])}`, style: { width: ((100 * counts[r]) / total).toFixed(3) + '%' } }) : null))),
-        h('div', { class: 'rlegend' }, [
-          ...RAR_UP.map((r) => h('span', { key: r }, [pill(r), ' ', h('b', null, fmt(counts[r] || 0))])),
-          S.fetchedAt ? h('span', { class: 'stamp' }, `· instantané du ${dateShort(S.fetchedAt)}`) : null,
-          sess.lost ? h('span', { class: 'stamp warn' }, '· compte du jeu à relier') : null,
+        h('div', { class: 'summary-tail' }, [
+          h('div', { class: 'refresh-line' }, refreshBits),
+          h('div', { class: 'rlegend' }, [
+            ...RAR_UP.map((r) => h('span', { key: r }, [pill(r), ' ', h('b', null, fmt(counts[r] || 0))])),
+            S.fetchedAt ? h('span', { class: 'stamp' }, `· instantané du ${dateShort(S.fetchedAt)}`) : null,
+            sess.lost ? h('span', { class: 'stamp warn' }, '· compte du jeu à relier') : null,
+          ]),
         ]),
       ]),
-      h('div', { class: 'refresh-line' }, refreshBits),
     ]);
   }
   function viewTop() {
@@ -7975,7 +7980,6 @@
     return h('header', { class: 'top' }, [h('div', { class: 'wrap' }, [
       h('div', { class: 'headline' }, [
         h('div', null, [h('p', { class: 'eyebrow' }, 'Collections WikiMasters'), h('h1', null, name ? `Le classeur de ${name}` : 'Le classeur')]),
-        h('p', { class: 'note' }, 'Outil personnel, sans lien avec le jeu. Les cartes viennent de ta collection, les illustrations de Wikimedia Commons, les listes et les catégories de Wikipédia et de Wikidata.'),
       ]),
       viewSummary(),
       h('div', { class: 'tabs-row' }, [
@@ -11594,17 +11598,17 @@
   // En-tête d'une fiche : vignette, titre, rareté, étiquettes, actions.
   function mkHead(o) {
     return h('div', { class: 'mk-dhead' }, [mkThumb(o.t, o.r, o.s, o.img, true), h('div', { class: 'mk-dhead__text' }, [
-      h('h2', { class: 'mk-dhead__title' }, o.t),
+      h('h2', { class: 'mk-dhead__title', title: o.t }, o.t),
       h('div', { class: 'mk-dhead__tags' }, [pill(o.r), o.s ? h('span', { class: 'tag-mini' }, 'brillante') : null, ...(o.tags || [])]),
       o.acts && o.acts.length ? h('div', { class: 'mk-dhead__acts' }, o.acts) : null,
     ])]);
   }
   const mkKv = (label, value, cls) => h('div', { class: ['mk-kv', cls || ''] }, [h('span', { class: 'mk-kv__k' }, label), h('span', { class: 'mk-kv__v' }, value)]);
   const mkEmpty = (text, more) => h('div', { class: 'mk-empty' }, [h('p', null, text), more || null]);
-  const ficheButton = (open) => h('button', { class: 'btn small ghost', type: 'button', onClick: open }, [icon('eye', 'sm'), 'Ouvrir la fiche']);
+  const ficheButton = (open) => h('button', { class: 'btn small ghost', type: 'button', 'aria-label': 'Ouvrir la fiche', onClick: open }, [icon('eye', 'sm'), MK.wide ? 'Ouvrir la fiche' : 'Fiche']);
   // Liste à gauche, fiche à droite. Sur téléphone (open) : la fiche seule, le retour du haut ramène à la liste.
   function mkSplit(master, detail, has) {
-    return h('div', { class: ['mk-split', { open: MK.open && has }], id: 'mk-panel', role: 'tabpanel', 'aria-labelledby': 'mk-sub-' + MK.sub }, [
+    return h('div', { class: ['mk-split', { open: MK.open && has, 'mk-split--sell': MK.sub === 'vendre' }], id: 'mk-panel', role: 'tabpanel', 'aria-labelledby': 'mk-sub-' + MK.sub }, [
       h('div', { class: 'mk-master' }, master),
       h('div', { class: 'mk-detail', id: 'mk-detail', tabindex: '-1' }, detail),
     ]);
@@ -11642,7 +11646,7 @@
       h('div', { class: 'mk-subs', role: 'tablist', 'aria-label': 'Marché' }, MK_SUBS.map(([id, label]) => h('button', {
         key: id, id: 'mk-sub-' + id, class: ['mk-sub', { on: MK.sub === id }], type: 'button', role: 'tab', 'aria-selected': String(MK.sub === id), 'aria-controls': 'mk-panel',
         onClick: () => setMarketSub(id),
-      }, [label, badge[id] ? h('span', { class: ['mk-badge', { alert: id === 'encheres' && out }], title: tip[id] || null }, badge[id]) : null]))),
+      }, [id === 'encheres' && !MK.wide ? 'Enchères' : label, badge[id] ? h('span', { class: ['mk-badge', { alert: id === 'encheres' && out }], title: tip[id] || null }, badge[id]) : null]))),
       viewMkRead(),
     ]);
   }
@@ -11722,8 +11726,9 @@
     return mkRow('acheter', x.a, on, [
       mkThumb(x.t, x.r, x.s, x.img),
       h('span', { class: 'mk-row__main' }, [
-        h('span', { class: 'mk-row__t' }, [pill(x.r), h('span', { class: 'mk-row__title' }, x.t), x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
-          x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]),
+        h('span', { class: 'mk-row__t' }, [pill(x.r), h('span', { class: 'mk-row__title' }, x.t),
+          x.s || x.lead || soon ? h('span', { class: 'mk-row__flags' }, [x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
+            x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]) : null]),
         h('span', { class: 'mk-row__s' }, sub)]),
       h('span', { class: 'mk-row__p' }, [priceTag(x.ask), h('span', { class: 'mk-row__m' }, [mkGap(x.ask, x.cote), mkClock(x.end)])]),
     ]);
@@ -11831,7 +11836,13 @@
       excluded ? h('p', { key: 'x' }, [`${fmt(excluded)} ${plural(excluded, 'carte exclue', 'cartes exclues')} des échanges et des ventes : pas ${excluded > 1 ? 'proposées' : 'proposée'} ici. `,
         h('button', { class: 'linkish', type: 'button', onClick: showKept }, excluded > 1 ? 'Les voir' : 'La voir')]) : null,
     ]) : null;
-    return mkSplit([tools, head, rows, foot], sel ? viewOfferDetail(sel) : [mkEmpty('Choisis une carte dans la liste.')], !!sel);
+    const detail = sel ? viewOfferDetail(sel) : [mkEmpty('Choisis une carte dans la liste.')];
+    if (!MK.wide) return mkSplit([tools, head, rows, foot], detail, !!sel);
+    return h('div', { class: 'mk-selling' }, [
+      tools,
+      mkSplit([head, rows], detail, !!sel),
+      foot ? h('div', { class: 'mk-sell-notes' }, foot) : null,
+    ]);
   }
   function viewOfferRow(x, on) {
     const c = x.c;
@@ -11852,7 +11863,7 @@
     const r = x.k.replace('*', '');
     const cols = membershipsOf(c);
     const sl = MK.sell && String(MK.sell.c.id) === String(c.id) ? MK.sell : null;
-    const note = x.extra ? `${fmt(x.extra)} en trop : tes collections en gardent un` : cols.length ? null : 'ne sert à aucune de tes collections';
+    const note = x.extra ? `${fmt(x.extra)} en trop : tes collections en gardent un` : cols.length ? null : MK.wide ? 'ne sert à aucune de tes collections' : 'Hors collections';
     return [
       mkHead({ t: c.title, r, s: x.k.endsWith('*'), img: c.image, tags: [x.n > 1 ? h('span', { key: 'n', class: 'mk-colchip' }, '×' + fmt(x.n)) : null, note ? h('span', { key: 'note', class: 'small muted' }, note) : null],
         acts: [copyNameButton(c.title), ficheButton((e) => openCardFrom(c.id, e))] }),
@@ -11886,7 +11897,7 @@
       errLine(sl.error),
       sl.verify ? h('p', { class: 'note' }, [h('a', { class: 'game-link', href: 'https://www.wiki-masters.com/collection', target: '_blank', rel: 'noopener noreferrer' }, 'Ouvrir ma collection dans le jeu ↗')]) : null,
       h('div', { class: 'mk-sellbox__foot' }, [
-        h('span', { class: 'small muted' }, "Réservé pendant l'enchère ; annulable tant que personne n'a misé."),
+        h('span', { class: 'small muted' }, MK.wide ? "Réservé pendant l'enchère ; annulable tant que personne n'a misé." : 'Carte réservée · annulable avant toute mise.'),
         h('button', { class: 'btn primary', type: 'button', id: 'mk-sell-go', disabled: sl.busy || !linked || base === null || full || none, onClick: async () => {
           wake();
           await sendSell(sl);
@@ -13622,13 +13633,13 @@
         sl.infoError ? h('p', { class: 'small warn', role: 'status' }, sl.infoError) : null,
       ]),
       h('div', { class: 'facts sell-facts' }, facts),
-      h('label', { class: 'sell-field', for: pre + 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
+      h('label', { class: 'sell-field sell-field--base', for: pre + 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
         h('span', { class: 'sell-input' }, [h('input', { id: pre + 'sell-base', class: 'field', type: 'number', min: '1', step: '1', inputmode: 'numeric', value: sl.base, disabled: sl.busy,
           onInput: (e) => { sl.base = e.target.value; sl.error = ''; } }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
-      chips.length ? h('div', { class: 'cmk__keys', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
+      chips.length ? h('div', { class: 'cmk__keys sell-suggestions', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
         key: label, type: 'button', class: ['chip-btn', { on: base === n }], disabled: sl.busy, onClick: () => { sl.base = String(n); sl.error = ''; },
       }, `${label} · ${wfmt(n)}`))) : null,
-      h('div', { class: 'sell-field' }, [h('span', { class: 'sell-label', id: pre + 'sell-dur' }, 'Durée'),
+      h('div', { class: 'sell-field sell-field--duration' }, [h('span', { class: 'sell-label', id: pre + 'sell-dur' }, 'Durée'),
         h('div', { class: 'cmk__keys', role: 'group', 'aria-labelledby': pre + 'sell-dur' }, SELL_DURATIONS.map(([m, label]) => h('button', {
           key: m, type: 'button', class: ['chip-btn', { on: sl.minutes === m }], 'aria-pressed': String(sl.minutes === m), disabled: sl.busy, onClick: () => { sl.minutes = m; },
         }, label)))]),

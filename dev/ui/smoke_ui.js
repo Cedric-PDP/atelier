@@ -5695,7 +5695,9 @@ async function main() {
     check(sub('vendre').getAttribute('aria-selected') === 'true' && String(d.getElementById('sell-min').value) === '100' && d.getElementById('sell-hide-col').checked === true, 'onglet « Vendre » : seuil ou case');
     check(rowTitles().length === 21 && rowTitles().slice(0, 4).join(' | ') === 'Vente 24 | Vente 23 | Vente 22 | Vente 21' && rowTitles().slice(-1)[0] === 'Vente 04'
       && !rowTitles().some((t) => t.startsWith('Marché') || t === 'Favorite F'), 'à vendre : ' + rowTitles().join(' | '));
-    check(text(master()).includes('1 carte sans cote fiable : le classeur les lit peu à peu') && text(master()).includes('1 carte déjà en vente dans le jeu (« Mes enchères ») : pas proposée ici'), 'notes de « Vendre » : ' + text(master()).slice(-500));
+    const sellNotes = d.querySelector('.mk-sell-notes');
+    check(sellNotes && text(sellNotes).includes('1 carte sans cote fiable : le classeur les lit peu à peu') && text(sellNotes).includes('1 carte déjà en vente dans le jeu (« Mes enchères ») : pas proposée ici'), 'notes de « Vendre » : ' + text(sellNotes));
+    check(!master().querySelector('.mk-fbar--sell') && !master().querySelector('.mk-lfoot'), 'les filtres et les notes doivent encadrer tout le bloc sur desktop');
     d.getElementById('sell-hide-col').dispatch('change');
     await settle(40);
     {
@@ -5751,13 +5753,13 @@ async function main() {
       keepBox().dispatch('change');
       await settle(60);
       await closeFiche();
-      check(top3() === 'Vente 22 | Vente 21 | Vente 20' && text(master()).includes('1 carte exclue des échanges et des ventes : pas proposée ici.'), 'carte exclue encore à vendre : ' + top3());
+      check(top3() === 'Vente 22 | Vente 21 | Vente 20' && text(d.querySelector('.mk-sell-notes')).includes('1 carte exclue des échanges et des ventes : pas proposée ici.'), 'carte exclue encore à vendre : ' + top3());
       await ficheOf('Vente 22');
       type(d.getElementById('new-tag'), 'Gardée');
       d.getElementById('new-tag').parentNode.dispatch('submit');
       await settle(80);
       await closeFiche();
-      master().querySelectorAll('button').find((b) => text(b) === 'La voir').click();
+      d.querySelector('.mk-sell-notes').querySelectorAll('button').find((b) => text(b) === 'La voir').click();
       await settle(80);
       const grid = () => d.querySelectorAll('.cardgrid')[0];
       const cellsOf = () => (grid() ? grid().childNodes.filter((n) => n.nodeType === 1) : []);
@@ -5767,8 +5769,8 @@ async function main() {
       await settle(80);
       d.getElementById('tab-marche').click();
       await settle(80);
-      check(sub('vendre').getAttribute('aria-selected') === 'true' && top3() === 'Vente 21 | Vente 20 | Vente 19' && text(master()).includes('2 cartes exclues'), 'tag exclu : ' + top3());
-      master().querySelectorAll('button').find((b) => text(b) === 'Les voir').click();
+      check(sub('vendre').getAttribute('aria-selected') === 'true' && top3() === 'Vente 21 | Vente 20 | Vente 19' && text(d.querySelector('.mk-sell-notes')).includes('2 cartes exclues'), 'tag exclu : ' + top3());
+      d.querySelector('.mk-sell-notes').querySelectorAll('button').find((b) => text(b) === 'Les voir').click();
       await settle(80);
       d.querySelectorAll('.keep-facet')[0].querySelectorAll('button.x')[0].click();
       await settle(80);
@@ -5782,7 +5784,7 @@ async function main() {
       await settle(40);
       d.getElementById('tab-marche').click();
       await settle(80);
-      check(top3() === 'Vente 23 | Vente 22 | Vente 21' && !text(master()).includes('exclue'), 'après réintégration : ' + top3());
+      check(top3() === 'Vente 23 | Vente 22 | Vente 21' && !text(d.querySelector('.mk-sell-notes')).includes('exclue'), 'après réintégration : ' + top3());
       type(d.getElementById('sell-min'), '450');
       await settle(40);
     }

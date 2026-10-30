@@ -37,6 +37,15 @@ du jeu relié une fois, qui croise la collection avec les catégories et les pag
 - **Version web (ordinateur) figée** : toute refonte mobile se fait sous media query, sans changer le rendu large. Exception voulue par l'utilisateur : l'onglet Marché, refait sur ordinateur aussi le 2026-10-29 (sous-onglets, liste à gauche et fiche à droite sur une hauteur fixe, onglets de recherche) ; ce nouveau rendu large est à son tour celui à garder. L'ancien Marché reste disponible à l'identique (Réglages › « Interface du Marché » › Classique).
 - Vocabulaire : « collections » = listes de l'utilisateur ; « catégories » = catégories de Wikipédia (une source).
 
+Ajustements desktop demandés le 2026-10-30 : titre du bandeau plus petit, texte d'information aligné avec les
+statistiques, rafraîchissement à gauche des comptes par rareté et navigation rapprochée. Dans Marché › Vendre,
+filtres sur une ligne au-dessus de la liste/fiche, notes sous l'ensemble, aperçu réduit et formulaire compact.
+Ces ajustements sont réservés aux écrans de plus de 760 px ; le Marché classique est conservé.
+
+Passe mobile du Marché demandée le même jour : quatre sous-onglets sans défilement horizontal (« Enchères » en
+version courte), listes resserrées, statuts d'achat sous le titre et vue Valeur adaptée à la largeur de l'écran.
+La fiche de vente utilise un petit aperçu et un formulaire compact pour garder son action au-dessus du menu du bas.
+
 ## Brand Commitments
 
 Nom « Le classeur ». Identité actuelle (sombre, lueur émeraude, Outfit + Inter, couleurs de rareté C/PC/R/SR/UR/L,
