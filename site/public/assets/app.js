@@ -7965,12 +7965,12 @@
         h('div', { class: 'track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
           RAR_UP.map((r) => (counts[r] ? h('i', { key: r, class: 'r' + r, title: `${RARITY_NAME[r]} : ${fmt(counts[r])}`, style: { width: ((100 * counts[r]) / total).toFixed(3) + '%' } }) : null))),
         h('div', { class: 'summary-tail' }, [
-          h('div', { class: 'refresh-line' }, refreshBits),
           h('div', { class: 'rlegend' }, [
             ...RAR_UP.map((r) => h('span', { key: r }, [pill(r), ' ', h('b', null, fmt(counts[r] || 0))])),
             S.fetchedAt ? h('span', { class: 'stamp' }, `· instantané du ${dateShort(S.fetchedAt)}`) : null,
             sess.lost ? h('span', { class: 'stamp warn' }, '· compte du jeu à relier') : null,
           ]),
+          h('div', { class: 'refresh-line' }, refreshBits),
         ]),
       ]),
     ]);

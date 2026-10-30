@@ -2279,7 +2279,7 @@ en haut à gauche ramène à la liste ; les quatre sous-onglets tiennent dans la
 recherche ouvert, `period` = la période de la courbe de la valeur ; `col` : la collection choisie avant le 2026-10-24, reprise tant qu'aucun
 filtre n'est gardé au compte ; l'ancien `open` des sections repliables n'est plus lu).
 Sur ordinateur (> 760 px, ajustement du 2026-10-30), le bandeau commun utilise un titre réduit et place son texte
-d'information à droite des statistiques. Le bouton de rafraîchissement précède les comptes de rareté, sur la même
+d'information à droite des statistiques. Les comptes de rareté précèdent le bouton de rafraîchissement et son texte, sur la même
 ligne si la place le permet, avec un écart réduit avant le menu. Dans « Vendre », les deux filtres sont alignés
 au-dessus du bloc liste/fiche et les notes sont rendues sous l'ensemble, hors de la liste. L'aperçu de la carte mesure
 48 px de large ; le formulaire est compact, avec mise de départ et durée côte à côte. Le Marché classique est inchangé.

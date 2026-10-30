@@ -38,7 +38,7 @@ du jeu relié une fois, qui croise la collection avec les catégories et les pag
 - Vocabulaire : « collections » = listes de l'utilisateur ; « catégories » = catégories de Wikipédia (une source).
 
 Ajustements desktop demandés le 2026-10-30 : titre du bandeau plus petit, texte d'information aligné avec les
-statistiques, rafraîchissement à gauche des comptes par rareté et navigation rapprochée. Dans Marché › Vendre,
+statistiques, comptes par rareté avant le bouton de rafraîchissement et son texte, et navigation rapprochée. Dans Marché › Vendre,
 filtres sur une ligne au-dessus de la liste/fiche, notes sous l'ensemble, aperçu réduit et formulaire compact.
 Ces ajustements sont réservés aux écrans de plus de 760 px ; le Marché classique est conservé.
 
