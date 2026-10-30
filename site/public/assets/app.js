@@ -8022,7 +8022,7 @@
     const b = balanceInfo();
     if (!b) return null;
     return h('div', { class: ['figure', 'figure--wb', { stale: b.stale }], title: balanceTitle(b) },
-      [priceTag(b.n), h('span', null, `à dépenser · ${b.why && b.why.endsWith('figé') ? 'figé, ' : ''}lu ${b.at ? agoText(b.at) : 'à une synchro'}`)]);
+      [priceTag(b.n), h('span', null, 'à dépenser'), h('span', { class: 'figure__sub' }, `${b.why && b.why.endsWith('figé') ? 'figé, ' : ''}lu ${b.at ? agoText(b.at) : 'à une synchro'}`)]);
   }
   function viewTop() {
     const name = S.me && S.me.user && S.me.user.name;
