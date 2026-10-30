@@ -13624,21 +13624,24 @@
     }
     if (info && info.max != null && info.selling != null) facts.push(fact('Tes enchères actives', `${fmt(info.selling)} / ${fmt(info.max)}`));
 
+    const variant = h('fieldset', { class: 'sell-field' }, [
+      h('legend', null, ['Exemplaire', sl.infoBusy ? h('span', { class: 'n' }, ' · lecture dans le jeu…') : null]),
+      h('div', { class: 'cmk__keys', role: 'group', 'aria-label': "Rareté de l'exemplaire" }, copies.map((x) => h('button', {
+        key: x.k, type: 'button', class: ['chip-btn', { on: x.k === sl.k }], 'aria-pressed': String(x.k === sl.k), disabled: sl.busy, onClick: () => setSellVariant(sl, x.k),
+      }, `${variantName(x.k)}${x.n > 1 ? ' · ×' + fmt(x.n) : ''}${x.fav ? ' · favori' : ''}`))),
+      sl.infoError ? h('p', { class: 'small warn', role: 'status' }, sl.infoError) : null,
+    ]);
+    const suggestions = chips.length ? h('div', { class: 'cmk__keys sell-suggestions', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
+      key: label, type: 'button', class: ['chip-btn', { on: base === n }], disabled: sl.busy, onClick: () => { sl.base = String(n); sl.error = ''; },
+    }, `${label} · ${wfmt(n)}`))) : null;
+    const inline = pre === 'mk-';
     const left = [
-      h('fieldset', { class: 'sell-field' }, [
-        h('legend', null, ['Exemplaire', sl.infoBusy ? h('span', { class: 'n' }, ' · lecture dans le jeu…') : null]),
-        h('div', { class: 'cmk__keys', role: 'group', 'aria-label': "Rareté de l'exemplaire" }, copies.map((x) => h('button', {
-          key: x.k, type: 'button', class: ['chip-btn', { on: x.k === sl.k }], 'aria-pressed': String(x.k === sl.k), disabled: sl.busy, onClick: () => setSellVariant(sl, x.k),
-        }, `${variantName(x.k)}${x.n > 1 ? ' · ×' + fmt(x.n) : ''}${x.fav ? ' · favori' : ''}`))),
-        sl.infoError ? h('p', { class: 'small warn', role: 'status' }, sl.infoError) : null,
-      ]),
+      inline ? h('div', { class: 'sell-choice-row' }, [variant, suggestions]) : variant,
       h('div', { class: 'facts sell-facts' }, facts),
       h('label', { class: 'sell-field sell-field--base', for: pre + 'sell-base' }, [h('span', { class: 'sell-label' }, 'Mise de départ'),
         h('span', { class: 'sell-input' }, [h('input', { id: pre + 'sell-base', class: 'field', type: 'number', min: '1', step: '1', inputmode: 'numeric', value: sl.base, disabled: sl.busy,
           onInput: (e) => { sl.base = e.target.value; sl.error = ''; } }), h('span', { class: 'w', 'aria-hidden': 'true' }, 'W')])]),
-      chips.length ? h('div', { class: 'cmk__keys sell-suggestions', role: 'group', 'aria-label': 'Prix proposés' }, chips.map(([n, label]) => h('button', {
-        key: label, type: 'button', class: ['chip-btn', { on: base === n }], disabled: sl.busy, onClick: () => { sl.base = String(n); sl.error = ''; },
-      }, `${label} · ${wfmt(n)}`))) : null,
+      inline ? null : suggestions,
       h('div', { class: 'sell-field sell-field--duration' }, [h('span', { class: 'sell-label', id: pre + 'sell-dur' }, 'Durée'),
         h('div', { class: 'cmk__keys', role: 'group', 'aria-labelledby': pre + 'sell-dur' }, SELL_DURATIONS.map(([m, label]) => h('button', {
           key: m, type: 'button', class: ['chip-btn', { on: sl.minutes === m }], 'aria-pressed': String(sl.minutes === m), disabled: sl.busy, onClick: () => { sl.minutes = m; },

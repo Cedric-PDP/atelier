@@ -1899,6 +1899,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .mk-sellbox h3 { font-size: 15px; }
 .mk-sellbox p { margin: 0; }
 .mk-sellbox__form { display: grid; gap: 12px; }
+.mk-sellbox .sell-choice-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: end; gap: 6px 12px; }
+.mk-sellbox .sell-choice-row .sell-suggestions { justify-content: flex-end; min-width: 0; }
 .mk-sellbox__foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
 .mk-sellbox__foot .small { margin-right: auto; }
 
@@ -1982,7 +1984,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   .mk-split--sell .mk-sellbox__form > * { grid-column: 1 / -1; min-width: 0; }
   .mk-split--sell .mk-sellbox__form > .sell-field--base { grid-column: 1; grid-row: 3; }
   .mk-split--sell .mk-sellbox__form > .sell-field--duration { grid-column: 2; grid-row: 3; }
-  .mk-split--sell .mk-sellbox__form > .sell-suggestions { grid-row: 4; }
+  .mk-split--sell .sell-choice-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr); gap: 6px; }
+  .mk-split--sell .sell-suggestions .chip-btn { font-size: 10px; padding-inline: 5px; }
   .mk-split--sell .sell-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
   .mk-split--sell .fact { min-width: 0; padding: 5px 6px; overflow-wrap: anywhere; line-height: 1.25; }
   .mk-split--sell .fact > span { font-size: 9px; letter-spacing: .02em; }
@@ -1996,6 +1999,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   .mk-split--sell .cmk__keys { gap: 4px; }
   .mk-split--sell .chip-btn { min-height: 28px; max-width: 100%; padding: 3px 6px; font-size: 11px; white-space: normal; }
   .mk-split--sell .sell-warns, .mk-split--sell .merge-sum { font-size: 11px; line-height: 1.3; }
+  .mk-split--sell .sell-warns .warn { font-size: 11px; line-height: 1.3; }
   .mk-split--sell .mk-sellbox__foot { flex-direction: column; align-items: stretch; gap: 5px; }
   .mk-split--sell .mk-sellbox__foot .small { font-size: 10px; line-height: 1.3; }
   .mk-split--sell .mk-sellbox__foot .primary { width: 100%; min-height: 36px; padding: 7px; font-size: 12px; }
@@ -2052,10 +2056,36 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   .mk-selling .mk-sellbox__form > * { grid-column: 1 / -1; }
   .mk-selling .mk-sellbox__form > .sell-field--base { grid-column: 1; grid-row: 3; }
   .mk-selling .mk-sellbox__form > .sell-field--duration { grid-column: 2; grid-row: 3; }
-  .mk-selling .mk-sellbox__form > .sell-suggestions { grid-row: 4; }
+  .mk-selling .sell-warns .warn { font-size: 12px; line-height: 1.3; }
   .mk-selling .sell-facts { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 6px; }
   .mk-selling .sell-facts .fact { padding: 7px 9px; }
   .mk-selling .sell-field { gap: 4px; }
   .mk-selling .cmk__keys { gap: 4px; }
   .mk-selling .chip-btn { padding: 4px 7px; font-size: 12px; }
+}
+
+/* Sur un portable peu haut, garder la mise en vente et ses avertissements dans la première vue. */
+@media (min-width: 761px) and (max-height: 820px) {
+  .mk-selling .mk-dhead { grid-template-columns: 32px minmax(0, 1fr); gap: 10px; padding-block: 6px; }
+  .mk-selling .mk-thumb.big { width: 32px; font-size: 16px; }
+  .mk-selling .mk-dhead__text { gap: 3px 8px; }
+  .mk-selling .mk-dhead__title { font-size: 1rem; line-height: 1.2; }
+  .mk-selling .mk-dhead__acts .btn { padding: 4px 6px; font-size: 11px; }
+  .mk-selling .mk-sellbox { padding: 8px 10px; gap: 4px; }
+  .mk-selling .mk-sellbox h3 { margin: 0; font-size: 14px; line-height: 1.2; }
+  .mk-selling .mk-sellbox__form { row-gap: 4px; }
+  .mk-selling .sell-facts { grid-template-columns: repeat(auto-fit, minmax(84px, 1fr)); gap: 4px; }
+  .mk-selling .sell-facts .fact { padding: 5px 6px; line-height: 1.25; }
+  .mk-selling .sell-facts .fact > span { font-size: 10px; letter-spacing: .02em; }
+  .mk-selling .sell-facts .fact b { font-size: 12px; line-height: 1.25; }
+  .mk-selling .sell-facts .fact b span { line-height: 1.25; }
+  .mk-selling .sell-field { gap: 3px; }
+  .mk-selling .sell-label, .mk-selling .sell-field legend { margin-bottom: 0; font-size: 10px; }
+  .mk-selling .sell-input .field { padding-block: 5px; }
+  .mk-selling .chip-btn { padding: 3px 6px; font-size: 11px; }
+  .mk-selling .sell-warns { gap: 3px; }
+  .mk-selling .merge-sum { font-size: 12px; line-height: 1.3; }
+  .mk-selling .mk-sellbox__foot { gap: 6px; }
+  .mk-selling .mk-sellbox__foot .small { font-size: 11px; line-height: 1.3; }
+  .mk-selling .mk-sellbox__foot .primary { padding: 6px 9px; font-size: 12px; }
 }

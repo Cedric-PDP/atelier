@@ -45,6 +45,8 @@ Ces ajustements sont réservés aux écrans de plus de 760 px ; le Marché class
 Passe mobile du Marché demandée le même jour : quatre sous-onglets sans défilement horizontal (« Enchères » en
 version courte), listes resserrées, statuts d'achat sous le titre et vue Valeur adaptée à la largeur de l'écran.
 La fiche de vente utilise un petit aperçu et un formulaire compact pour garder son action au-dessus du menu du bas.
+Dans cette fiche, les prix proposés sont placés à droite de la rareté, et les avertissements jaunes sont plus petits.
+Sur ordinateur peu haut, la fiche et les champs sont encore resserrés pour garder le formulaire visible avec plusieurs avertissements.
 
 ## Brand Commitments
 

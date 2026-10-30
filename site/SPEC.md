@@ -2288,6 +2288,12 @@ et les statuts d'achat (« finit bientôt », « tu mènes ») passent sous le t
 reste dans la largeur disponible. Vendre conserve ses filtres et notes dans la liste ; la fiche utilise un aperçu de
 40 px, une mise de départ et une durée côte à côte, avec un formulaire compact laissant l'action au-dessus du menu
 inférieur sur les formats vérifiés. Les enchères et ventes détaillées restent sous le formulaire, en défilement vertical.
+Dans la fiche de vente (ordinateur et mobile), les raccourcis de prix (« la cote », « sous la moins chère en vente »,
+« la dernière vente » si distincte) sont à droite du choix de rareté, avec retour à la ligne si nécessaire. Leurs actions
+restent identiques. Les avertissements jaunes mesurent 12 px sur ordinateur et 11 px sur mobile. Sur ordinateur de
+hauteur ≤ 820 px, l'aperçu passe à 32 px et les champs, statistiques et espacements sont resserrés pour garder le
+formulaire entier visible, y compris avec les avertissements de plafond d'enchères et de prix moins chers. Le formulaire
+en fenêtre et le Marché classique conservent leur disposition.
 
 - **Interface classique** (2026-10-29, demande de l'utilisateur : des membres s'étaient habitués à l'ancienne) : Réglages › Apparence ›
   « Interface du Marché » (Nouvelle par défaut / Classique), gardé avec le compte (`prefs.market_ui` = `'classic'`, sinon absent ou `null`).
