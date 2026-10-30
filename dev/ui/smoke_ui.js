@@ -5526,7 +5526,7 @@ async function main() {
     check(rowTitles().join(' | ') === 'Voulue A' && rowEls()[0].classList.contains('on') && rowEls()[0].getAttribute('aria-selected') === 'true', 'liste des bonnes affaires : ' + rowTitles().join(' | '));
     {
       const r = text(rowEls()[0]);
-      check(r.includes('50W') && r.includes('−50 %') && r.includes('finit bientôt') && r.includes('Envies') && r.includes('sans mise') && r.includes('+1 autre enchère'), 'ligne de Voulue A : ' + r);
+      check(r.includes('50W') && r.includes('−50 %') && !r.includes('finit bientôt') && r.includes('Envies') && r.includes('sans mise') && r.includes('+1 autre enchère'), 'ligne de Voulue A : ' + r);
     }
     const deal = () => detail().querySelector('.mk-deal');
     check(text(detail().querySelector('.mk-dhead__title')) === 'Voulue A' && text(deal()).includes('Prix de départ50W') && text(deal()).includes('Cote · Super rare100W')
@@ -5584,12 +5584,17 @@ async function main() {
       await settle(40);
       check(!rowEls().length && tabText().endsWith('Galaxies0'), 'filtre de rareté L : ' + tabText());
       chip('L').click();
-      chip('30 %').click();
+      chip('−70 %').click();
       await settle(40);
-      check(rowEls().length === 1, '« finit bientôt » sans mise : montrée malgré le seuil de 30 %');
+      check(rowEls().length === 1 && text(rowEls()[0]).includes('finit bientôt') && text(master()).includes('remise ≥ 70 %'), '« finit bientôt » sans mise : montrée malgré la remise de 70 % : ' + text(master()));
       d.getElementById('deal-soon').dispatch('change');
       await settle(40);
-      check(!rowEls().length, 'sans « finit bientôt » : 50 % de la cote ne passe pas 30 %');
+      check(!rowEls().length && text(master()).includes('sans « finit bientôt »'), 'sans « finit bientôt » : −50 % ne passe pas −70 %');
+      chip('Peu importe').click();
+      await settle(40);
+      check(rowEls().length === 1 && !d.getElementById('deal-soon') && !text(master()).includes('remise ≥'), 'remise désactivée : ' + text(master()));
+      chip('−70 %').click();
+      await settle(40);
       chip('Effacer les filtres').click();
       await settle(40);
       check(rowEls().length === 1 && text(master()).includes('pour « Envies »'), 'filtres effacés (la collection reste)');
@@ -5597,7 +5602,7 @@ async function main() {
     await sleep(900);
     if (!SERVER) {
       const g = (um.prefs.deal_tabs || [])[2] || {};
-      check(g.name === 'Galaxies' && g.f && g.f.cols.length === 1 && !g.f.xcols.length && g.f.pct === 80 && g.f.soon === true, 'onglet « Galaxies » au compte : ' + JSON.stringify(g));
+      check(g.name === 'Galaxies' && g.f && g.f.cols.length === 1 && !g.f.xcols.length && g.f.pct === null && g.f.soon === true, 'onglet « Galaxies » au compte : ' + JSON.stringify(g));
     }
     d.querySelectorAll('.mk-editor__foot')[0].querySelectorAll('button').find((b) => text(b) === 'Fermer').click();
     await settle(40);

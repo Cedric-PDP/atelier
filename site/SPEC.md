@@ -2326,12 +2326,14 @@ en fenêtre et le Marché classique conservent leur disposition.
   de la liste) : chacun a un **nom** et **ses propres filtres** (ci-dessous) et dit combien d'affaires les passent ; « Nouvel onglet » (12 au plus)
   en crée un aux filtres par défaut et ouvre son panneau pour le nommer ; « ⋯ » ou clic droit : « Renommer, filtres… », « Dupliquer », « Déplacer à
   gauche / à droite », « Supprimer l'onglet » (confirmation ; jamais le dernier). Au-dessus de la liste, les filtres de l'onglet en mots (« pour
-  « Galaxies » », « sans « Pokémon » », « ≤ 50 % de la cote », « UR, L ») et « Filtres » / « Modifier les filtres », qui ouvre le **panneau des
+  « Galaxies » », « sans « Pokémon » », « remise ≥ 50 % », « UR, L ») et « Filtres » / « Modifier les filtres », qui ouvre le **panneau des
   filtres de l'onglet** par-dessus la liste (la fiche reste visible) : nom de l'onglet, **collections** (celles que remplissent ces affaires, chacune
   avec son nombre et « Inclure » / « Exclure » (un deuxième clic la libère), une recherche au-delà de 8, « Toutes les collections » libère tout : une
-  affaire passe si elle sert à **au moins une** collection incluse (aucune incluse : toutes) et à **aucune** collection exclue), puis **au plus [80] %
-  de la cote** (champ, puces 30 / 50 / 70 / 80 / 100 %), case « Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h, au plus à la cote) »
-  (cochée par défaut), **prix** de … à … W, **économie** d'au moins … W, **rareté** (puces L à C ; aucune = toutes), **brillante** (peu importe,
+  affaire passe si elle sert à **au moins une** collection incluse (aucune incluse : toutes) et à **aucune** collection exclue), puis **remise d'au
+  moins [ ] % sous la cote** (2026-10-30, dans l'unité des lignes, « −37 % » ; gardée en % de la cote, `pct = 100 − remise` ; champ vide ou puce « Peu
+  importe » : pas de filtre, le défaut ; puces −20 / −30 / −50 / −70 %), et, avec une remise seulement, case « Montrer aussi celles qui finissent bientôt
+  sans mise (moins de 2 h), même avec une remise plus petite » (cochée par défaut ; ces affaires-là, et seulement elles, portent l'étiquette « finit
+  bientôt » dans la liste), **prix** de … à … W, **économie** d'au moins … W, **rareté** (puces L à C ; aucune = toutes), **brillante** (peu importe,
   seulement, exclure), **enchère** (toutes, avec mise, sans mise, tu mènes), **fin** (toutes, < 1 h, < 6 h, < 24 h), **cote** (3, 5 ou 10 ventes et
   plus), « Effacer les filtres » (les collections et le tri restent) ; le nombre d'affaires suit en direct. Le **tri** est en tête de la liste (« Fin
   la plus proche » par défaut, « Meilleure remise » = prix / cote, « Plus grosse économie » = cote − prix, « Prix croissant »). Chaque changement est
@@ -2345,7 +2347,7 @@ en fenêtre et le Marché classique conservent leur disposition.
   **Gardés avec le compte** (pas dans le navigateur : les mêmes sur le téléphone et l'ordinateur), dans `prefs` (`PATCH /api/me`) : `deal_tabs` =
   `[{id, name, f}]` (12 au plus ; `id` = 1 à 40 caractères `[A-Za-z0-9_-]`, unique ; `name` tel que tapé, 40 caractères, vide = « Sans nom »), `f` =
   `{pct, soon, min, max, save, r:[raretés], shiny:''|'only'|'no', bid:''|'bid'|'nobid'|'lead', end:0|1|6|24, n:3|5|10, cols:[clés], xcols:[clés], sort}`
-  (défaut : `{pct:80, soon:true, min:null, max:null, save:null, r:[], shiny:'', bid:'', end:0, n:3, cols:[], xcols:[], sort:'end'}`, normalisé à la
+  (défaut : `{pct:null, soon:true, min:null, max:null, save:null, r:[], shiny:'', bid:'', end:0, n:3, cols:[], xcols:[], sort:'end'}`, normalisé à la
   lecture ; 50 collections au plus de chaque côté, une clé à la fois incluse et exclue reste incluse ; l'ancien `col` d'une seule collection, d'avant
   le 2026-10-29, est repris dans `cols`). **Reprise** : sans `deal_tabs`, l'ancien filtre en cours (`deal_filter`) devient l'onglet « Toutes » et
   chaque filtre enregistré (`deal_presets` = `[{name, f}]`, d'avant le 2026-10-29) un onglet ; rien n'est écrit au compte avant le premier

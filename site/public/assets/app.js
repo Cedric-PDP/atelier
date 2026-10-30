@@ -7084,19 +7084,20 @@
   }
   // Filtres de « Acheter » (Marché) (2026-10-24), dans les préférences du compte (PATCH /api/me : les mêmes sur
   // tous les appareils) : deal_filter = le filtre en cours, deal_presets = les filtres enregistrés [{name, f}]. Le serveur
-  // garde les enchères jusqu'à la cote (les 150 meilleures remises) ; par défaut, comme avant, la page montre celles à
-  // 80 % de la cote au plus, et celles qui finissent bientôt sans mise (moins de 2 h).
-  // pct : % de la cote au plus ; soon : garder quand même celles qui finissent bientôt sans mise ; min, max : prix demandé
+  // garde les enchères jusqu'à la cote (les 150 meilleures remises) ; par défaut, la page les montre toutes (2026-10-30 ;
+  // avant : 80 % de la cote au plus, et celles qui finissent bientôt sans mise).
+  // pct : % de la cote au plus (null : peu importe), montré comme une remise (100 - pct) pour parler comme les lignes
+  // (« −37 % ») ; soon : garder quand même celles qui finissent bientôt sans mise (avec pct seulement) ; min, max : prix demandé
   // (W) ; save : économie (cote - prix) au moins ; r : raretés (vide : toutes) ; shiny : '' | 'only' | 'no' ; bid : '' |
   // 'bid' | 'nobid' | 'lead' ; end : finit dans moins de <end> h (0 : peu importe) ; n : ventes au moins (fiabilité de la
   // cote) ; cols : collections incluses (vide : toutes ; une affaire passe si elle sert à l'une d'elles) ; xcols : collections
   // exclues (jamais une affaire qui sert à l'une d'elles) ; sort : DEAL_SORTS. L'ancien col (une seule collection, avant le
   // 2026-10-29) est repris dans cols.
-  const DEAL_DEFAULT = Object.freeze({ pct: 80, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, cols: Object.freeze([]), xcols: Object.freeze([]), sort: 'end' });
+  const DEAL_DEFAULT = Object.freeze({ pct: null, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, cols: Object.freeze([]), xcols: Object.freeze([]), sort: 'end' });
   const DEAL_SORTS = [['end', 'Fin la plus proche'], ['pct', 'Meilleure remise'], ['save', 'Plus grosse économie'], ['price', 'Prix croissant']];
   const DEAL_ENDS = [[0, 'Toutes'], [1, '< 1 h'], [6, '< 6 h'], [24, '< 24 h']];
   const DEAL_SALES = [3, 5, 10];
-  const DEAL_PCTS = [30, 50, 70, 80, 100];
+  const DEAL_OFFS = [20, 30, 50, 70]; // remises proposées (%)
   const DEAL_PRESETS_MAX = 12;
   const DEAL_COLS_MAX = 50;
   const DEAL_NAME_MAX = 40;
@@ -7160,8 +7161,8 @@
   // Les filtres du panneau qui s'écartent du défaut (les collections et le tri ont leur propre bouton), en mots.
   function dealFilterWords(f) {
     const out = [];
-    if (f.pct !== DEAL_DEFAULT.pct) out.push(`≤ ${f.pct} % de la cote`);
-    if (!f.soon) out.push('sans « finit bientôt »');
+    if (f.pct != null) out.push(`remise ≥ ${100 - f.pct} %`);
+    if (f.pct != null && !f.soon) out.push('sans « finit bientôt »');
     if (f.min != null) out.push(`prix ≥ ${wfmt(f.min)}`);
     if (f.max != null) out.push(`prix ≤ ${wfmt(f.max)}`);
     if (f.save != null) out.push(`économie ≥ ${wfmt(f.save)}`);
@@ -7172,9 +7173,11 @@
     if (f.n !== DEAL_DEFAULT.n) out.push(`${f.n} ventes et plus`);
     return out;
   }
+  // Une affaire qui ne passe la remise demandée que parce qu'elle finit bientôt sans mise (son étiquette « finit bientôt »).
+  const dealSoonOnly = (x, f, now) => f.pct != null && f.soon && !x.bid && Date.parse(x.end) - now < DEAL_SOON_MS && x.ask > (f.pct / 100) * x.cote + 1e-9;
   function dealMatches(x, f, now) {
     const left = Date.parse(x.end) - now;
-    if (!(x.ask <= (f.pct / 100) * x.cote + 1e-9 || (f.soon && !x.bid && left < DEAL_SOON_MS))) return false;
+    if (f.pct != null && !(x.ask <= (f.pct / 100) * x.cote + 1e-9 || dealSoonOnly(x, f, now))) return false;
     if (f.min != null && x.ask < f.min) return false;
     if (f.max != null && x.ask > f.max) return false;
     if (f.save != null && x.cote - x.ask < f.save) return false;
@@ -7224,10 +7227,11 @@
   }
   // Champ de saisie d'un montant (W) : vide = pas de limite.
   const setDealAmount = (k, raw) => setDealFilter({ [k]: String(raw).trim() === '' ? null : wOrNull(String(raw).replace(',', '.')) }, true);
-  function setDealPct(raw, later) {
-    if (String(raw).trim() === '') return; // champ vidé pour en taper un autre : le seuil ne bouge pas encore
+  // Champ de la remise (% sous la cote) : vide = peu importe ; gardée en % de la cote (pct = 100 - remise).
+  function setDealOff(raw, later) {
+    if (String(raw).trim() === '') return setDealFilter({ pct: null }, later);
     const n = Number(String(raw).replace(',', '.'));
-    if (Number.isFinite(n) && n >= 1) setDealFilter({ pct: Math.min(Math.round(n), 100) }, later);
+    if (Number.isFinite(n) && n >= 0) setDealFilter({ pct: 100 - Math.min(Math.round(n), 99) }, later);
   }
   const toggleDealRarity = (r) => setDealFilter({ r: dealFilter.value.r.includes(r) ? dealFilter.value.r.filter((x) => x !== r) : [...dealFilter.value.r, r] });
   // Une collection : incluse, exclue ou ni l'un ni l'autre (mode 'in' | 'out' ; le même mode une deuxième fois la libère).
@@ -11550,7 +11554,7 @@
     const list = pass.filter((d) => colsPass(d, inc, exc)).sort((a, b) => DEAL_ORDER[f.sort](a.x, b.x));
     return { all, pass, list, options, inc, exc };
   });
-  // Filtres de l'onglet ouvert (panneau « Filtres de l'onglet ») : % de la cote, prix, économie, rareté, brillance, mise,
+  // Filtres de l'onglet ouvert (panneau « Filtres de l'onglet ») : remise, prix, économie, rareté, brillance, mise,
   // fin, ventes ; « Effacer les filtres ». Chaque changement est enregistré tout de suite dans l'onglet.
   function viewDealFilters(f) {
     const amount = (id, label, k, hint) => h('label', { class: 'sell-min' }, [label,
@@ -11559,14 +11563,16 @@
     const group = (label, body) => h('div', { class: 'deal-filters__row' }, [h('span', { class: 'deal-filters__label' }, label), body]);
     const segs = (label, cur, opts, set) => h('div', { class: 'seg seg--four', role: 'group', 'aria-label': label }, opts.map(([v, l]) => seg(l, cur === v, () => set(v))));
     return h('div', { class: 'deal-filters', id: 'deal-filters' }, [
-      group('Prix demandé', h('div', { class: 'deal-filters__pct' }, [
-        h('label', { class: 'sell-min' }, ['au plus ',
-          h('input', { id: 'deal-pct', class: 'field', type: 'number', min: '1', max: '100', step: '5', inputmode: 'numeric', value: f.pct, onInput: (e) => setDealPct(e.target.value, true) }),
-          ' % de la cote']),
-        h('div', { class: 'chips' }, DEAL_PCTS.map((n) => h('button', { key: n, type: 'button', class: ['chip-btn', { on: f.pct === n }], 'aria-pressed': String(f.pct === n), onClick: () => setDealFilter({ pct: n }) }, `${n} %`))),
+      group('Remise', h('div', { class: 'deal-filters__pct' }, [
+        h('label', { class: 'sell-min' }, ['au moins ',
+          h('input', { id: 'deal-pct', class: 'field', type: 'number', min: '0', max: '99', step: '5', inputmode: 'numeric', value: f.pct == null ? '' : 100 - f.pct, placeholder: 'peu importe',
+            onInput: (e) => setDealOff(e.target.value, true) }),
+          ' % sous la cote']),
+        h('div', { class: 'chips' }, [[null, 'Peu importe'], ...DEAL_OFFS.map((n) => [100 - n, `−${n} %`])].map(([v, l]) => h('button', { key: l, type: 'button', class: ['chip-btn', { on: f.pct === v }],
+          'aria-pressed': String(f.pct === v), onClick: () => setDealFilter({ pct: v }) }, l))),
       ])),
-      h('label', { class: 'check' }, [h('input', { id: 'deal-soon', type: 'checkbox', checked: f.soon, onChange: () => setDealFilter({ soon: !f.soon }) }),
-        ' Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h, au plus à la cote)']),
+      f.pct == null ? null : h('label', { class: 'check' }, [h('input', { id: 'deal-soon', type: 'checkbox', checked: f.soon, onChange: () => setDealFilter({ soon: !f.soon }) }),
+        ' Montrer aussi celles qui finissent bientôt sans mise (moins de 2 h), même avec une remise plus petite : étiquetées « finit bientôt »']),
       group('Prix', h('div', { class: 'deal-filters__amounts' }, [amount('deal-min', 'de ', 'min', '0'), amount('deal-max', 'à ', 'max', 'sans limite')])),
       group('Économie', amount('deal-save', 'au moins ', 'save', '0')),
       group('Rareté', h('div', { class: 'chips', role: 'group', 'aria-label': 'Rareté' }, RARITIES.map((r) => h('button', {
@@ -11771,7 +11777,7 @@
   }
   function viewDealRow(d, on) {
     const x = d.x;
-    const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
+    const soon = dealSoonOnly(x, dealFilter.value, Date.now());
     const bal = balanceInfo();
     const broke = !x.lead && bal && bidMin(x) > bal.n;
     const sub = [d.cols.length ? d.cols.slice(0, 2).map((c) => c.name).join(' · ') + (d.cols.length > 2 ? '…' : '') : '',
@@ -12160,7 +12166,7 @@
       : null;
     return [bar, chips, colsOpen ? viewDealCols(options, inc, exc) : null, open ? viewDealFilters(f) : null, summary,
       list.length ? h('ul', { class: 'lots' }, list.slice(0, marketShown('acheter')).map(({ x, cols }) => {
-        const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
+        const soon = dealSoonOnly(x, f, Date.now());
         return h('li', { key: x.a, class: 'lot' }, [
           clLotTitle(x, copyNameButton(x.t)),
           h('span', { class: 'lot__line' }, [priceTag(x.ask), x.bid ? ' (enchère en cours)' : ' (prix de départ, sans enchère)', clVsCote(x.ask, x),
@@ -12306,7 +12312,7 @@
       ], 'market__value'),
       clSection('ventes', 'Mes ventes en cours', M.loaded && runningSales.value.length ? fmt(runningSales.value.length) : '', () => clOnSale(live), 'market__wide'),
       clSection('acheter', 'Bonnes affaires à acheter', nDeals ? fmt(nDeals) : '', () => [
-        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte, au plus à la cote ; les filtres choisissent lesquelles montrer (par défaut : au plus 80 % de la cote, ou « finit bientôt » sans enchère).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
+        h('p', { class: 'small muted' }, `Enchères en cours sur des cartes qui manquent à tes collections, la moins chère par carte, au plus à la cote ; les filtres choisissent lesquelles montrer (par défaut : toutes).${stamp ? ' ' + cap(stamp) + '.' : ''}`),
         clDeals(live)]),
       clSection('vendre', 'Bonnes affaires à vendre', nSell ? fmt(nSell) : '', clSell),
       clSection('encheres', 'Mes enchères', live ? `${fmt(nBids)} ${plural(nBids, 'mise', 'mises')} · ${fmt(nSales)} ${plural(nSales, 'vente', 'ventes')}` : '', () => [clMine(live)], 'market__wide'),
