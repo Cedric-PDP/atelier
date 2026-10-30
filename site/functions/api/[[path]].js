@@ -25,6 +25,7 @@ import { cancelSale, sellCard, sellInfo } from '../_lib/sell.js';
 import { listMissingWishes, deleteMissingWishes } from '../_lib/wishmissing.js';
 import { syncWishlist, wishSoon } from '../_lib/wishlist.js';
 import { placeBid } from '../_lib/bid.js';
+import { refreshBalance } from '../_lib/balance.js';
 import { listArt, setArt } from '../_lib/art.js';
 import { getPalmares } from '../_lib/palmares.js';
 
@@ -42,6 +43,7 @@ const ROUTES = {
   health: { GET: [health, false] },
   account: { POST: [(env, _user, body) => createAccount(env, body), false] },
   me: { GET: [getMe, 'main'], PATCH: [patchMe, 'main'], DELETE: [deleteMe, 'main'] },
+  'me/balance': { POST: [refreshBalance, 'main'] }, // relire son solde de wikibidous dans le jeu (au plus toutes les 30 s)
   'favori.js': { GET: [favoriScript, false] },
   'key/rotate': { POST: [rotateKey, 'main'] },
   cards: { GET: [listCards, 'main'] },

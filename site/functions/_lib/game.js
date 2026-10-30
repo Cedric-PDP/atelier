@@ -250,10 +250,11 @@ export async function supaWrite(env, user, s, method, path, body = null, { gap =
 
 // Solde de wikibidous du joueur (wikibidous_balance de son profil, rpc/get_my_profile comme la page du jeu, relevé dans
 // les HAR du 2026-10-15 et du 2026-10-23) → nombre entier, ou null si le jeu n'en rend pas de lisible. Une limite du jeu
-// (429) remonte ; toute autre erreur rend null : le solde ne fait jamais échouer une lecture de la collection.
-export async function readBalance(env, user, s, { gap = 0 } = {}) {
+// (429) remonte ; toute autre erreur rend null : le solde ne fait jamais échouer une lecture de la collection. retry: false
+// = jamais de renouvellement de la session (lecture sans bail, balance.js).
+export async function readBalance(env, user, s, { gap = 0, retry = true } = {}) {
   try {
-    const data = await supaRpc(env, user, s, 'get_my_profile', {}, { gap });
+    const data = await supaRpc(env, user, s, 'get_my_profile', {}, { gap, retry });
     const p = Array.isArray(data) ? data[0] : data;
     const n = p && typeof p === 'object' ? Number(p.wikibidous_balance) : NaN;
     return Number.isSafeInteger(n) && n >= 0 ? n : null;

@@ -260,6 +260,7 @@ function mockApi() {
     sold: [], // ventes créées (POST /api/market/sell)
     cancelled: [], // ventes annulées (POST /api/market/cancel)
     bidsSent: [], // mises faites (POST /api/market/bid)
+    balanceCalls: 0, // relectures du solde à la demande (POST /api/me/balance)
     sellFail: null,
     cancelFail: null,
     conflicts: [], // enregistrements conditionnels refusés (409) : ids des collections
@@ -686,6 +687,12 @@ function mockApi() {
         const live = st.market && st.market.live;
         if (live) live.sales.unshift({ a, id: c.id, t: c.title, r: body.k.replace('*', ''), s: body.k.endsWith('*'), img: null, end, cote: null, n: null, base: body.base, cur: null, bid: false, st: 'run' });
         return json(200, { auction: { a, k: body.k, base: body.base, minutes: body.minutes, end }, url: 'https://www.wiki-masters.com/marketplace/' + a });
+      }
+      // Solde relu à la demande (SPEC.md, « Solde de wikibidous ») : le solde « du jeu » est st.wb.
+      if (p === '/api/me/balance' && method === 'POST') {
+        if (!st.linked) return json(401, { error: 'Relie ton compte du jeu.', needs_link: true });
+        self.balanceCalls++;
+        return json(200, { wikibidous: st.wb == null ? null : { n: st.wb, at: new Date().toISOString() }, read: st.wb != null });
       }
       // Miser (SPEC.md, « Miser ») : self.bidsSent = mises faites ; self.bidFail = {status, error, extra} : la prochaine est refusée.
       if (p === '/api/market/bid' && method === 'POST') {
@@ -5630,8 +5637,10 @@ async function main() {
       const inMd = (t) => (md() ? md().querySelectorAll('button').find((b) => text(b).trim() === t) || null : null);
       const bidBtn = () => (deal() ? deal().querySelectorAll('button').find((b) => text(b) === 'Miser') || null : null);
       check(bidBtn() && bidBtn().getAttribute('aria-label') === 'Miser sur « Voulue A »', 'bouton « Miser » absent de la fiche : ' + (deal() ? text(deal()) : 'fiche absente'));
+      const bal0 = api.balanceCalls;
       bidBtn().click();
       await settle(40);
+      check(api.balanceCalls === bal0 + 1, "solde relu à l'ouverture de « Miser » : " + api.balanceCalls);
       const amount = () => d.getElementById('bid-amount');
       check(mdText().includes('Miser sur « Voulue A »') && mdText().includes('Prix de départ50W · aucune mise') && mdText().includes('Cote100W') && String(amount().value) === '50',
         'fenêtre « Miser » : ' + mdText().slice(0, 400));
@@ -5656,6 +5665,11 @@ async function main() {
       check(api.bidsSent.length === 1 && api.bidsSent[0].a === 'a1' && api.bidsSent[0].amount === 56, 'mise envoyée : ' + JSON.stringify(api.bidsSent));
       check(mdText().includes('Mise faite : tu mènes.') && mdText().includes('Ta mise : 56W') && mdText().includes('ton solde dans le jeu : 944W')
         && md().querySelectorAll('a').some((a) => a.getAttribute('href') === 'https://www.wiki-masters.com/marketplace/a1'), 'mise faite : ' + mdText());
+      // Le solde rendu par la mise : cartouche du haut et barre du marché.
+      const wbFig = d.querySelectorAll('.figure--wb')[0];
+      const wbBar = d.querySelectorAll('.mk-wb')[0];
+      check(wbFig && text(wbFig).includes('944W') && text(wbFig).includes('à dépenser') && wbBar && text(wbBar).includes('944W'),
+        'solde après la mise : ' + (wbFig ? text(wbFig) : 'cartouche absent') + ' / ' + (wbBar ? text(wbBar) : 'pastille absente'));
       inMd('Fermer').click();
       await settle(60);
       check(await waitFor(() => rowOf('Voulue A') && text(rowOf('Voulue A')).includes('tu mènes') && text(deal()).includes('tu mènes') && !bidBtn()),

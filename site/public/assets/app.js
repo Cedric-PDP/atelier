@@ -2484,7 +2484,7 @@
       pseudo: (S.me && S.me.user && S.me.user.pseudo) || '', pBusy: false, pError: '', pSaved: false });
     if (tab === 'maj') loadSyncLog();
     if (tab === 'amis') loadFriends(true);
-    if (tab === 'marche') loadMarket(Date.now() - M.at > 20000); // les cotes ont pu être relues dans le jeu entre-temps
+    if (tab === 'marche') { loadMarket(Date.now() - M.at > 20000); refreshBalance(); } // cotes et solde ont pu bouger dans le jeu entre-temps
     toTop();
   }
   function resetFilters() {
@@ -6176,6 +6176,42 @@
   }
   // Solde de wikibidous lu à la dernière synchro ({n, at} de /api/me et /api/members), ou null.
   const wbOf = (x) => (x && Number.isFinite(Number(x.n)) ? { n: Number(x.n), at: typeof x.at === 'string' ? x.at : null } : null);
+  // Ton solde relu dans le jeu à la demande (POST /api/me/balance, au plus toutes les 30 s côté serveur) : avant de dépenser
+  // (« Miser », « Proposer un échange », onglet « Marché ») et, avec force, juste après une action faite dans le jeu depuis le
+  // classeur. Silencieux : en cas d'échec, le solde de la dernière synchro reste affiché.
+  let balanceBusy = null;
+  function refreshBalance(force) {
+    const sess = S.me && S.me.session;
+    if (!sess || !sess.linked) return Promise.resolve();
+    if (!balanceBusy) {
+      balanceBusy = api('POST', '/api/me/balance', force ? { force: true } : {}).then((r) => {
+        const wb = wbOf(r && r.wikibidous);
+        if (wb && S.me) S.me.wikibidous = wb;
+      }).catch(() => {}).finally(() => { balanceBusy = null; });
+    }
+    return balanceBusy;
+  }
+  // Ton solde à afficher : {n, at, stale, why} ou null s'il n'a jamais été lu. stale : lu il y a plus de BAL_OLD, ou
+  // figé (compte à relier, lectures automatiques en pause) ; why : pourquoi, pour l'info-bulle.
+  const BAL_OLD = 30 * 60000;
+  function balanceInfo() {
+    const wb = wbOf(S.me && S.me.wikibidous);
+    if (!wb) return null;
+    const sess = (S.me && S.me.session) || {};
+    const why = !sess.linked || sess.lost ? 'compte du jeu à relier : solde figé' : sess.paused ? 'synchro en pause : solde figé'
+      : !wb.at || Date.now() - Date.parse(wb.at) > BAL_OLD ? 'pas relu depuis un moment' : '';
+    return { ...wb, stale: !!why, why };
+  }
+  const balanceTitle = (b) => `Tes wikibidous dans le jeu, lus ${b.at ? agoText(b.at) : 'à une synchro'}${b.why ? ` (${b.why})` : ''}. `
+    + 'Relus toutes les 10 minutes, à chaque synchro, et quand tu ouvres le marché, une mise ou un échange. Les mises où tu mènes en sont déjà retirées.';
+  // Pastille « 944W à dépenser » : barre du téléphone, barre du marché.
+  function balanceChip(cls) {
+    const b = balanceInfo();
+    if (!b) return null;
+    return h('span', { class: ['wb-chip', cls || '', { stale: b.stale }], title: balanceTitle(b) }, [
+      icon('coins', 'sm'), priceTag(b.n, { tag: 'span' }), h('span', { class: 'wb-chip__k' }, ' à dépenser'),
+      sr(`, solde lu ${b.at ? agoText(b.at) : 'à une synchro'}${b.why ? ', ' + b.why : ''}`)]);
+  }
   // Liste des membres (GET /api/members), puis les cartes de ceux qui ont changé, puis les collections de ceux qui les
   // montrent et dont le nombre ou le dernier changement a bougé. force : relire la liste même récente.
   function loadFriends(force) {
@@ -6403,6 +6439,7 @@
       fr: { st: 'loading', canRequest: false, busy: false, error: '' } };
     S.modal = 'trade';
     loadTradeFriend(S.tradeNew);
+    refreshBalance();
   }
   // Le jeu n'accepte un échange qu'entre amis : à l'ouverture de la fenêtre, l'amitié avec l'ami dans le jeu (GET
   // /api/friends?fresh=1). st : friends | sent | received | none | unknown (illisible, ou rien pour le désigner : la
@@ -6466,6 +6503,7 @@
       tn.done = { given: r.given || [], received: r.received || [], givenWb: Number(r.given_wb) || 0, receivedWb: Number(r.received_wb) || 0,
         url: r.url || 'https://www.wiki-masters.com/trades' };
       markTradePending(tn.f, tn.give, tn.get);
+      refreshBalance(true);
     } catch (e) {
       tn.error = e.message;
     } finally {
@@ -7369,6 +7407,7 @@
         CM.data = data;
       }
       loadMarket(true);
+      refreshBalance(true);
     } catch (e) {
       sl.error = e.message + (e.status === 429 && e.data && e.data.retry_after && !e.data.limited ? ` (encore ${fmt(Math.ceil(e.data.retry_after))} s)` : '');
       sl.verify = !!(e.data && e.data.verify);
@@ -7386,6 +7425,7 @@
       CM.data = data;
     }
     loadMarket(true);
+    refreshBalance(true);
     return true;
   }
   async function cancelFromSell(sl) {
@@ -7424,6 +7464,7 @@
     const min = bidMin(x);
     S.bid = { x: markRaw({ ...x }), min, amount: String(min), busy: false, error: '', verify: false, done: null };
     S.modal = 'bid';
+    refreshBalance();
   }
   const bidButton = (x, cls) => (sellLinked() ? h('button', { class: ['btn', 'small', 'primary', cls || ''], type: 'button', 'aria-label': `Miser sur « ${x.t} »`, onClick: () => openBid(x) }, 'Miser') : null);
   async function sendBid(b) {
@@ -7944,7 +7985,7 @@
     if (!total) {
       return h('div', { class: 'summary' }, [
         overview(h('div', { class: 'figures' }, [h('div', { class: 'figure wide' }, [h('span', null, S.loadingCards ? 'Chargement de ta collection…'
-          : "Ton classeur est vide : relie ton compte du jeu dans « Synchro ».")])])),
+          : "Ton classeur est vide : relie ton compte du jeu dans « Synchro ».")]), balanceFigure()])),
         h('div', { class: 'refresh-line' }, refreshBits),
       ]);
     }
@@ -7960,6 +8001,7 @@
         h('div', { class: 'figure' }, [h('b', null, fmt(nL)), h('span', null, plural(nL, 'légendaire', 'légendaires'))]),
         M.value && M.value.priced ? h('div', { class: 'figure', title: `${fmt(M.value.priced)} ${plural(M.value.priced, 'carte cotée', 'cartes cotées')} sur ${fmt(M.value.cards)} : onglet « Marché »` },
           [priceTag(M.value.value), h('span', null, `valeur (${fmt(M.value.priced)} ${plural(M.value.priced, 'cotée', 'cotées')})`)]) : null,
+        balanceFigure(),
       ])),
       h('div', { class: 'rbar' }, [
         h('div', { class: 'track', role: 'img', 'aria-label': 'Répartition par rareté : ' + RAR_UP.map((r) => `${RARITY_NAME[r]} ${counts[r] || 0}`).join(', ') },
@@ -7974,6 +8016,13 @@
         ]),
       ]),
     ]);
+  }
+  // Cartouche du solde dans les chiffres du haut : ce que tu peux dépenser au marché, et depuis quand il est lu.
+  function balanceFigure() {
+    const b = balanceInfo();
+    if (!b) return null;
+    return h('div', { class: ['figure', 'figure--wb', { stale: b.stale }], title: balanceTitle(b) },
+      [priceTag(b.n), h('span', null, `à dépenser · ${b.why && b.why.endsWith('figé') ? 'figé, ' : ''}lu ${b.at ? agoText(b.at) : 'à une synchro'}`)]);
   }
   function viewTop() {
     const name = S.me && S.me.user && S.me.user.name;
@@ -8094,6 +8143,7 @@
         back ? h('span', { class: 'mbar__kicker' }, back.label) : null,
         h('span', { class: 'mbar__name' }, back ? back.title : M_TITLE[S.tab] || 'Le classeur'),
       ]),
+      balanceChip('mbar__wb') || h('span', { class: 'mbar__wb', 'aria-hidden': 'true' }),
       h('button', { class: ['mbar__act', { bad: !!bad, err: S.refresh.error }], type: 'button', disabled: running,
         'aria-label': running ? 'Rafraîchissement en cours' : (sess.linked ? 'Rafraîchir la collection' : 'Relier mon compte du jeu'),
         onClick: refreshCollection }, [icon('refresh', running ? 'spin' : ''), bad || S.refresh.error ? h('i', { class: 'mbar__dot', 'aria-hidden': 'true' }) : null]),
@@ -11647,6 +11697,7 @@
         key: id, id: 'mk-sub-' + id, class: ['mk-sub', { on: MK.sub === id }], type: 'button', role: 'tab', 'aria-selected': String(MK.sub === id), 'aria-controls': 'mk-panel',
         onClick: () => setMarketSub(id),
       }, [id === 'encheres' && !MK.wide ? 'Enchères' : label, badge[id] ? h('span', { class: ['mk-badge', { alert: id === 'encheres' && out }], title: tip[id] || null }, badge[id]) : null]))),
+      balanceChip('mk-wb'),
       viewMkRead(),
     ]);
   }
@@ -11721,14 +11772,17 @@
   function viewDealRow(d, on) {
     const x = d.x;
     const soon = !x.bid && Date.parse(x.end) - Date.now() < DEAL_SOON_MS;
+    const bal = balanceInfo();
+    const broke = !x.lead && bal && bidMin(x) > bal.n;
     const sub = [d.cols.length ? d.cols.slice(0, 2).map((c) => c.name).join(' · ') + (d.cols.length > 2 ? '…' : '') : '',
       x.bid ? 'avec mise' : 'sans mise', x.more ? `+${fmt(x.more)} ${plural(x.more, 'autre enchère', 'autres enchères')}` : ''].filter(Boolean).join(' · ');
     return mkRow('acheter', x.a, on, [
       mkThumb(x.t, x.r, x.s, x.img),
       h('span', { class: 'mk-row__main' }, [
         h('span', { class: 'mk-row__t' }, [pill(x.r), h('span', { class: 'mk-row__title' }, x.t),
-          x.s || x.lead || soon ? h('span', { class: 'mk-row__flags' }, [x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
-            x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]) : null]),
+          x.s || x.lead || broke || soon ? h('span', { class: 'mk-row__flags' }, [x.s ? h('span', { class: 'tag-mini' }, 'brillante') : null,
+            x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : broke ? h('span', { class: 'flag', title: `Il faut au moins ${fmt(bidMin(x))}W, ton solde est de ${fmt(bal.n)}W` }, 'au-dessus de ton solde')
+              : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]) : null]),
         h('span', { class: 'mk-row__s' }, sub)]),
       h('span', { class: 'mk-row__p' }, [priceTag(x.ask), h('span', { class: 'mk-row__m' }, [mkGap(x.ask, x.cote), mkClock(x.end)])]),
     ]);
@@ -12230,7 +12284,9 @@
     const nBids = live && Array.isArray(live.bids) ? live.bids.length : 0;
     const nSales = live && Array.isArray(live.sales) ? live.sales.length : 0;
     const nSell = M.loaded ? sellShown.value.length : 0;
+    const bal = balanceChip();
     return h('div', { class: 'market' }, [
+      bal ? h('p', { class: 'market__wb' }, bal) : null,
       clSection('valeur', 'Valeur de ton classeur', M.loaded && v ? wfmt(v.value) : '', () => [
         h('div', { class: 'market__head' }, [h('span', { class: 'spacer' }),
           M.scan && M.scan.mine ? h('button', { class: 'btn small ghost', type: 'button', disabled: M.busy || M.refreshing || M.scanning, onClick: scanWholeMarket,

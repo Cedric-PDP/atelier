@@ -3934,6 +3934,57 @@ await test('wikibidous : solde lu à chaque synchro (clic, lecture complète et 
   assert.equal((await me()).wikibidous.n, 1234);
 });
 
+await test('wikibidous : POST /api/me/balance relit le solde à la demande (au plus toutes les 30 s, sans bail ni session)', async () => {
+  const e = makeEnv();
+  supa.reset();
+  const u = await signup('Bal', e);
+  // Sans compte relié : à relier.
+  let r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.needs_link], [401, true]);
+  await seedCards(u.key, synth(2, 980), { e });
+  const uid = uidOf(u.key);
+  const age = (ms) => e.DB.sqlite.prepare('UPDATE users SET wikibidous_at = ? WHERE id = ?').run(new Date(Date.now() - ms).toISOString(), u.user.id);
+  supa.player(uid).wikibidous = 777;
+  // Solde lu il y a moins de 30 s : rendu tel quel, sans appel au jeu.
+  let calls = supa.rpcs().length;
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.read, r.json.wikibidous.n, supa.rpcs().length], [200, false, 0, calls]);
+  // Plus vieux : relu dans le jeu, rangé, rendu par /api/me.
+  age(60_000);
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  assert.deepEqual([r.status, r.json.read, r.json.wikibidous.n, supa.rpcs().length], [200, true, 777, calls + 1]);
+  assert.equal((await call('GET', 'me', { key: u.key, e })).json.wikibidous.n, 777);
+  // Juste après une action (force) : relu dès 5 s.
+  age(10_000);
+  supa.player(uid).wikibidous = 750;
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  assert.deepEqual([r.json.read, r.json.wikibidous.n], [false, 777]);
+  r = await call('POST', 'me/balance', { key: u.key, e, body: { force: true } });
+  assert.deepEqual([r.json.read, r.json.wikibidous.n], [true, 750]);
+  // Une lecture tient le bail : la session vaut encore assez longtemps, relu quand même ; bail laissé à son détenteur.
+  age(60_000);
+  supa.player(uid).wikibidous = 700;
+  const lock = new Date(Date.now() + 60_000).toISOString();
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = ? WHERE id = ?').run(lock, u.user.id);
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  assert.deepEqual([r.json.read, r.json.wikibidous.n], [true, 700]);
+  assert.equal(e.DB.sqlite.prepare('SELECT sync_lock FROM users WHERE id = ?').get(u.user.id).sync_lock, lock);
+  e.DB.sqlite.prepare('UPDATE users SET sync_lock = NULL WHERE id = ?').run(u.user.id);
+  // Le jeu ne rend rien de lisible : l'ancien solde, read:false.
+  age(60_000);
+  const fail = supa.fail;
+  supa.fail = (url) => (url.includes('/rpc/get_my_profile') ? { status: 404, body: { message: 'not found' } } : null);
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  supa.fail = fail;
+  assert.deepEqual([r.status, r.json.read, r.json.wikibidous.n], [200, false, 700]);
+  // Le jeu limite : 429.
+  supa.limit = 429;
+  r = await call('POST', 'me/balance', { key: u.key, e, body: {} });
+  supa.limit = null;
+  assert.deepEqual([r.status, r.json.limited], [429, true]);
+  e.DB.close();
+});
+
 await test('échange : POST /api/trades/create propose un échange dans le jeu (exemplaires lus, cookie refait, repli par le profil, refus)', async () => {
   const e = makeEnv();
   supa.reset();
