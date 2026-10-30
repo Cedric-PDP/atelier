@@ -6269,7 +6269,7 @@
           const keep = kept.length ? p && p.keep && p.keep.size === kept.length && kept.every((id) => p.keep.has(id)) ? p.keep : new Set(kept) : null;
           const waits = Array.isArray(m.pending) ? m.pending.map(String) : [];
           const pending = waits.length ? p && p.pending && p.pending.size === waits.length && waits.every((id) => p.pending.has(id)) ? p.pending : new Set(waits) : null;
-          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, cstyle: typeof m.card_style === 'string' ? m.card_style : null, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
+          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
             tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous),
             // ses cartes exclues des échanges (ids), relues avec la liste : jamais proposées dans « Échanges possibles »
             keep,
@@ -9736,11 +9736,9 @@
     ]);
   }
   // Contenu d'une carte d'un ami (« Tu l'as » ou « Te manque ») dans le style des Réglages.
-  // Le style est celui que l'ami a choisi chez lui (f.cstyle, lu dans GET /api/members), pas le tien.
-  const friendStyle = (f) => (f && CARD_STYLES.some((s) => s.id === f.cstyle) ? f.cstyle : 'classique');
-  function friendCardKids(c, r, have, countTitle, f) {
+  function friendCardKids(c, r, have, countTitle) {
     const img = artOf(c.title, c.image);
-    const st = friendStyle(f);
+    const st = cardStyle();
     if (st !== 'classique') return [h('div', { class: 'cf' }, csFace(st, c, r, img, { have, countTitle }))];
     return [
       h('div', { class: 'card__art' }, [
@@ -9755,13 +9753,13 @@
     ];
   }
   // Carte d'un ami (lecture seule) : pas de fiche ni de sélection ; « Te manque » si tu ne l'as pas.
-  function viewFriendCard(c, f) {
+  function viewFriendCard(c) {
     const r = okRarity(c.rarity) || 'C';
     const have = !!findCard(c);
     return h('div', { class: 'cell', key: c.id }, [
-      h('article', { class: ['card', 'card--friend', csClass(friendStyle(f)), 'r' + r, { shiny: c.shiny, have }],
+      h('article', { class: ['card', 'card--friend', csClass(cardStyle()), 'r' + r, { shiny: c.shiny, have }],
         'aria-label': `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}, ${have ? "tu l'as" : 'te manque'}` },
-      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires`, f)),
+      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires`)),
       c.url ? h('a', { class: 'cell__link', href: c.url, target: '_blank', rel: 'noopener noreferrer' }, 'Wikipédia ↗') : null,
     ]);
   }
@@ -9816,9 +9814,9 @@
     const label = `${c.title}, ${RARITY_NAME[r]}${c.shiny ? ', brillante' : ''}${c.count > 1 ? `, ${fmt(c.count)} exemplaires` : ''}${sep ? ', intercalaire' : ''} chez ${friendName(f)}, `
       + `${have ? "tu l'as" : want ? 'manque à ' + colsText(want, ', ') : 'te manque'} : ouvrir la fiche`;
     return h('div', { class: ['cell', { pulled: !!S.openMissing && !!S.openMissing.friend && S.openMissing.title === s.item.title, sep }], key: s.key }, [
-      sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', csClass(friendStyle(f)), 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
+      sepFrame(h('article', { class: ['card', 'card--friend', 'card--fa', csClass(cardStyle()), 'r' + r, { shiny: c.shiny, have, want: !!want }], role: 'button', tabindex: '0', 'aria-label': label,
         onClick: open, onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(e); } } },
-      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires chez ${friendName(f)}`, f)), sep),
+      friendCardKids(c, r, have, `${fmt(c.count)} exemplaires chez ${friendName(f)}`)), sep),
       want ? h('p', { class: 'cell__want', title: 'Manque à : ' + colsText(want, ', ') }, ['→ ', colsText(want, ' · ')]) : null,
     ]);
   }
@@ -9991,7 +9989,7 @@
               [['rarity', 'Rareté'], ['price-up', 'Prix ↑'], ['price-down', 'Prix ↓'], ['count', 'Exemplaires'], ['title', 'Titre']].map(([v, l]) => h('option', { key: v, value: v }, l))),
           ]),
           !f.cards ? h('p', { class: 'muted', role: 'status' }, 'Lecture de ses cartes…')
-            : list.length ? h('div', { class: 'cardgrid' }, shown.map((c) => viewFriendCard(c, f)))
+            : list.length ? h('div', { class: 'cardgrid' }, shown.map(viewFriendCard))
               : h('div', { class: 'empty-box' }, fr.filter === 'missing' && !fr.q.trim() ? `Tu as déjà toutes les cartes de ${friendName(f)}.` : 'Aucune carte ne correspond.'),
           shown.length < list.length ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { fr.limit += PAGE; } },
             `Afficher plus (${fmt(list.length - shown.length)} restantes)`)]) : null,

@@ -67,7 +67,6 @@ function requireSharing(user) {
 // primaire), de quoi ne les relire que si elles ont changé. Classeurs vides (ni carte ni collection) écartés : rien à
 // y voir (2026-10-17, classeurs créés en double puis abandonnés).
 const MEMBERS = `SELECT u.public_id AS id, u.name, u.game_pseudo AS pseudo, (COALESCE(u.game_uid, '') <> '' OR COALESCE(u.game_pseudo, '') <> '') AS game, u.fetched_at, u.wikibidous AS wb, u.wikibidous_at AS wb_at,
-    json_extract(CASE WHEN json_valid(u.prefs) THEN u.prefs ELSE '{}' END, '$.card_style') AS cstyle,
     CASE WHEN json_valid(u.prefs) AND COALESCE(json_array_length(u.prefs, '$.keep.cards'), 0) + COALESCE(json_array_length(u.prefs, '$.keep.tags'), 0) > 0
       THEN (SELECT json_group_array(id) FROM (
         SELECT k.value AS id FROM json_each(u.prefs, '$.keep.cards') AS k
@@ -97,7 +96,6 @@ export async function listMembers(env, user) {
       pseudo: r.pseudo || null, // pseudo dans le jeu, s'il l'a donné (Réglages) : pour se trouver dans le jeu
       // Relié au jeu ou avec un pseudo : sinon, impossible de lui proposer un échange (2026-10-28, son nom est grisé).
       game: !!r.game,
-      card_style: typeof r.cstyle === 'string' ? r.cstyle : null, // style de carte qu'il a choisi (Réglages), pour montrer ses cartes comme chez lui
       count: r.count,
       fetched_at: r.fetched_at,
       targets: r.st ? { count: r.t_count || 0, updated_at: r.t_at || null } : null,

@@ -2348,11 +2348,8 @@ await test('partage entre membres : consentement (403/404), réciprocité, ident
   assert.equal(r.status, 200);
   const benMe = await me(ben);
   assert.deepEqual(benMe.wikibidous && benMe.wikibidous.n, 0, 'solde lu à la synchro, rendu par /api/me');
-  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, card_style: null, count: 12, fetched_at: benMe.fetched_at, targets: null,
+  assert.deepEqual(r.json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, count: 12, fetched_at: benMe.fetched_at, targets: null,
     wikibidous: benMe.wikibidous, keep: [], pending: [] }]);
-  // Le style de carte choisi par Ben (prefs.card_style) est montré aux autres membres.
-  await call('PATCH', 'me', { key: ben.key, body: { prefs: { card_style: 'neon' } } });
-  assert.equal((await members(ana)).json.members[0].card_style, 'neon');
   // Ses cartes exclues des échanges et des ventes (prefs.keep, 2026-10-29) : une choisie elle-même, les autres par un tag ;
   // les autres membres n'en voient que les ids, jamais le tag.
   await call('PATCH', 'me', { key: ben.key, body: { prefs: { keep: { cards: [benCards[0].id, 'inconnue', 7], tags: ['Étiquette-secrète', 'Autre'] } } } });
@@ -2534,7 +2531,7 @@ await test('partage entre membres : collections à compléter (réglage à part,
   assert.equal(pubOf(ben), benPub, 'l\'identifiant public ne change pas');
   const lastChange = [planets.updated_at, cat.updated_at].sort().pop();
   const benMe = await me(ben);
-  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, card_style: null, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
+  assert.deepEqual((await members(ana)).json.members, [{ id: benPub, name: 'Ben', pseudo: null, game: true, count: 6, fetched_at: benMe.fetched_at, targets: { count: 2, updated_at: lastChange },
     wikibidous: benMe.wikibidous, keep: [], pending: [] }]);
   assert.deepEqual((await members(ben)).json.members.map((m) => [m.name, m.targets]), [['Ana', null]], 'Ana ne montre pas ses collections');
   assert.equal((await targetsOf(ben, pubOf(ana))).status, 404);
