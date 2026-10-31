@@ -48,6 +48,11 @@ La fiche de vente utilise un petit aperçu et un formulaire compact pour garder 
 Dans cette fiche, les prix proposés sont placés à droite de la rareté, et les avertissements jaunes sont plus petits.
 Sur ordinateur peu haut, la fiche et les champs sont encore resserrés pour garder le formulaire visible avec plusieurs avertissements.
 
+Passe mobile des échanges entre amis (2026-10-31) : les quatre sous-onglets d'« Entre amis » tiennent dans la largeur ;
+« Échanges possibles » montre la liste des paires, puis la paire touchée seule (retour dans la barre du haut) ;
+« Proposer un échange » est une feuille pleine hauteur, un côté à la fois (onglets « Tu donnes » / « Tu reçois »), un seul
+défilement, bilan et envoi toujours visibles en bas. Rendu large inchangé.
+
 ## Brand Commitments
 
 Nom « Le classeur ». Identité actuelle (sombre, lueur émeraude, Outfit + Inter, couleurs de rareté C/PC/R/SR/UR/L,

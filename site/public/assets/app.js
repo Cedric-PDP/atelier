@@ -330,8 +330,9 @@
     // public d'un membre). album : collection de l'ami ouvert (open), en lecture
     // seule, avec son filtre (all | has : il les a | lacks : lui manquent | help : tu peux l'aider), son tri et d'où on
     // l'a ouverte (albumFrom : 'trades' = « Échanges possibles ») ; copyBusy : « Créer la même collection chez moi » en
-    // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne).
-    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, duo: null, trade: 'all',
+    // cours ; copies : collections ainsi créées pendant la visite ('<ami>:<sa collection>' -> id de la tienne). duoOpen : sur
+    // téléphone, « Échanges possibles » montre la liste des paires, puis la paire touchée seule (retour dans la barre du haut).
+    friends: { status: 'idle', busy: false, error: '', loading: '', shareBusy: false, shareError: '', open: null, q: '', filter: 'all', sort: 'rarity', limit: PAGE, more: {}, page: null, duo: null, duoOpen: false, trade: 'all',
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copyBusy: false, copies: {} },
     // « Chat » (un salon pour tous les classeurs) : user = compte dont `read` (dernier message lu, aussi dans
     // localStorage) a été chargé ; status idle | loading | ready | error ; brouillon et envoi ; older = il y a des
@@ -6152,7 +6153,7 @@
     chatMembers.value = [];
     chatMembersAt = 0;
     chatMembersJob = null;
-    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, trade: 'all',
+    Object.assign(S.friends, { status: 'idle', busy: false, error: '', loading: '', open: null, q: '', filter: 'all', limit: PAGE, more: {}, page: null, duoOpen: false, trade: 'all',
       album: null, albumFilter: 'all', albumSort: 'order', albumLimit: ALBUM_PAGE, albumFrom: null, copies: {} });
   }
   // Carte d'un ami (champs montrés par le serveur, rien d'autre) ; adresses vérifiées avant d'en faire des liens.
@@ -6447,10 +6448,10 @@
   }
   // « Échanges possibles » : sous-page de l'onglet, avec son filtre (le dernier choisi, tout le monde par défaut).
   function openTrades(filter) {
-    Object.assign(S.friends, { page: 'trades', open: null, album: null, trade: filter || tradePref() });
+    Object.assign(S.friends, { page: 'trades', open: null, album: null, duoOpen: false, trade: filter || tradePref() });
     toTop();
   }
-  function closeTrades() { S.friends.page = null; toTop(); }
+  function closeTrades() { S.friends.page = null; S.friends.duoOpen = false; toTop(); }
   // « Proposer un échange » avec un ami : ses cartes qui complètent tes collections et les tiennes qui complètent les
   // siennes (les couples toi → lui et lui → toi des échanges possibles, tous, doubles compris), doubles cochés d'avance.
   const TRADE_MAX = 40; // cartes d'un échange, des deux côtés (comme le serveur)
@@ -6464,7 +6465,8 @@
     const { give, get } = tradeRowsWith(f);
     const pick = (rows, max) => rows.filter((r) => r.dup && !favLocked(r.card)).slice(0, Math.max(0, max)).map((r) => r.card.id);
     const giveIds = pick(give, TRADE_MAX);
-    S.tradeNew = { f, give: giveIds, get: pick(get, TRADE_MAX - giveIds.length), giveWb: '', getWb: '', busy: false, error: '', done: null,
+    // tab : le côté montré sur téléphone (« Tu donnes » ou « Tu reçois ») ; sur ordinateur, les deux côte à côte.
+    S.tradeNew = { f, give: giveIds, get: pick(get, TRADE_MAX - giveIds.length), giveWb: '', getWb: '', busy: false, error: '', done: null, tab: give.length || !get.length ? 'give' : 'get',
       fr: { st: 'loading', canRequest: false, busy: false, error: '' } };
     S.modal = 'trade';
     loadTradeFriend(S.tradeNew);
@@ -8152,6 +8154,11 @@
       const name = f ? friendName(f) : '';
       if (fr.album) return { title: (friendAlbum.value && friendAlbum.value.name) || 'Collection', label: name ? `Classeur de ${name}` : 'Retour', run: closeFriendAlbum };
       if (fr.open) return { title: name ? `Classeur de ${name}` : 'Classeur', label: 'Entre amis', run: closeFriendBinder };
+      if (fr.page === 'trades' && fr.duoOpen) {
+        const list = tradeView.value;
+        const d = list.find((x) => x.key === fr.duo) || list[0];
+        if (d) return { title: `${personOf(d.a)} ⇄ ${personOf(d.b)}`, label: 'Échanges possibles', run: () => { fr.duoOpen = false; toTop(); } };
+      }
     }
     return null;
   }
@@ -9688,7 +9695,8 @@
     const loading = fr.busy || friendList.value.some((f) => !f.cards || (f.tshare && !f.targets));
     const n = list.reduce((a, d) => a + d.n, 0);
     const cur = list.find((d) => d.key === fr.duo) || list[0] || null;
-    const pick = (d) => () => { fr.duo = d.key; };
+    // Sur téléphone, toucher une paire l'ouvre seule (la liste revient par la barre du haut).
+    const pick = (d) => () => { fr.duo = d.key; if (!MK.wide) { fr.duoOpen = true; toTop(); } };
     const onKey = (e) => {
       const i = list.indexOf(cur);
       const j = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? i + 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? i - 1 : -2;
@@ -9697,7 +9705,7 @@
       fr.duo = list[j].key;
       nextTick(() => { const b = document.getElementById('duo-tab-' + list[j].key); if (b) b.focus(); });
     };
-    return h('div', { class: 'friends' }, [
+    return h('div', { class: ['friends', { 'friends--duo': fr.duoOpen && !!cur }] }, [
       viewFriendsHead(),
       friendsNav('trades'),
       tradeSummary(),
@@ -9718,7 +9726,7 @@
         ]),
         ...tradeNotes(),
       ]),
-      list.length ? h('div', { class: 'duos' }, [
+      list.length ? h('div', { class: ['duos', { open: fr.duoOpen && !!cur }] }, [
         h('div', { class: 'duos__list', role: 'tablist', 'aria-orientation': 'vertical', 'aria-label': 'Paires de membres', onKeydown: onKey }, list.map((d) => h('button', {
           key: d.key, id: 'duo-tab-' + d.key, type: 'button', role: 'tab', class: ['duos__item', { on: d === cur, off: offTrade(d) }], 'aria-selected': String(d === cur),
           'aria-controls': 'duo-' + d.key, tabindex: d === cur ? '0' : '-1', onClick: pick(d),
@@ -9726,6 +9734,7 @@
           h('span', { class: 'duos__names' }, [personOf(d.a), h('span', { class: 'trade__arrow', 'aria-hidden': 'true' }, ' ⇄ '), h('span', { class: 'sr' }, ' et '), personOf(d.b)]),
           viewDuoCounts(d),
           offTrade(d) ? h('span', { class: 'duos__off' }, noGameTrade(d) ? 'Échange impossible : ni compte du jeu relié ni pseudo' : 'Échange impossible : cartes en favori dans le jeu') : null,
+          h('span', { class: 'duos__go m-only', 'aria-hidden': 'true' }, [icon('chev')]),
         ]))),
         h('div', { class: 'duos__panels' }, list.map((d) => viewTradeDuo(d, d !== cur))),
       ]) : h('p', { class: 'empty-box' }, loading ? 'Recherche dans les classeurs…'
@@ -13579,26 +13588,43 @@
       tn[key] = rows.filter((r) => !favLocked(r.card)).slice(0, Math.max(0, room)).map((r) => r.card.id);
       tn.error = '';
     };
-    const side = (key, legend, rows, empty, wb) => h('fieldset', { class: 'trade-pick' }, [
+    const sep = () => h('span', { class: 'trade-pick__sep', 'aria-hidden': 'true' }, ' · ');
+    const side = (key, legend, rows, empty, wb) => h('fieldset', { class: ['trade-pick', 'trade-pick--' + key], id: 'trade-side-' + key }, [
       h('legend', null, [legend, h('span', { class: 'n' }, ` · ${fmt(tn[key].length)} / ${fmt(rows.length)}`)]),
       rows.length ? h('ul', { class: 'trade-pick__list' }, rows.map((r) => row(key, r))) : h('p', { class: 'note' }, empty),
       rows.length > 1 ? h('p', { class: 'trade-pick__all' }, [
-        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, title: `De haut en bas, ${fmt(TRADE_MAX)} cartes au plus en tout`, onClick: () => fill(key, rows) }, 'Tout cocher'), ' · ',
+        h('button', { class: 'linkish', type: 'button', disabled: tn.busy, title: `De haut en bas, ${fmt(TRADE_MAX)} cartes au plus en tout`, onClick: () => fill(key, rows) }, 'Tout cocher'), sep(),
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => { tn[key] = []; } }, 'Rien'),
-        ' · ',
+        sep(),
         h('button', { class: 'linkish', type: 'button', disabled: tn.busy, onClick: () => fill(key, rows.filter((r) => r.dup)) }, 'Les doubles')]) : null,
       wb,
     ]);
-    return h(Modal, { key: 'trade', title, wide: true, onClose: closeModal }, () => [
-      h('p', null, `Coche les cartes de l'échange, parmi celles que vous avez l'un pour l'autre (les doubles sont cochés d'avance), et ajoute des wikibidous d'un côté ou de l'autre si tu veux. Le classeur crée la proposition dans le jeu, à ton nom ; ${name} l'accepte ou la refuse dans le jeu.`),
+    // Sur téléphone, un côté à la fois : deux onglets (cartes cochées / proposées), cachés sur ordinateur (.m-only).
+    const tab = (key, label, rows, wb) => h('button', { type: 'button', class: { on: tn.tab === key }, 'aria-pressed': String(tn.tab === key), 'aria-controls': 'trade-side-' + key,
+      onClick: (e) => {
+        tn.tab = key;
+        // L'autre côté s'ouvre en haut de sa liste (sous les onglets collés), pas au milieu.
+        const tabs = e.currentTarget.parentElement;
+        const body = tabs.closest('.tn-body');
+        const top = tabs.nextElementSibling ? tabs.nextElementSibling.offsetTop - tabs.offsetHeight - 14 : 0;
+        if (body && body.scrollTop > top) body.scrollTop = top;
+      } }, [h('span', null, label),
+      h('span', { class: 'tn-tabs__n num' }, `${fmt(tn[key].length)} / ${fmt(rows.length)}` + (wb ? ' + ' + wfmt(wb) : ''))]);
+    // Corps et pied enveloppés (display: contents sur ordinateur, rien n'y bouge) : sur téléphone, le corps défile seul et
+    // le pied (bilan et envoi) reste en bas de la feuille.
+    return h(Modal, { key: 'trade', title, wide: true, cls: 'tn', onClose: closeModal }, () => [h('div', { class: 'tn-body' }, [
+      h('p', { class: 'tn-intro' }, `Coche les cartes de l'échange, parmi celles que vous avez l'un pour l'autre (les doubles sont cochés d'avance), et ajoute des wikibidous d'un côté ou de l'autre si tu veux. Le classeur crée la proposition dans le jeu, à ton nom ; ${name} l'accepte ou la refuse dans le jeu.`),
       linked ? null : h('p', { class: 'warn', role: 'alert' }, ['Relie d\'abord ton compte du jeu : le classeur crée l\'échange avec ta session. ',
         h('button', { class: 'linkish', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, 'Relier mon compte')]),
-      h('div', { class: 'trade-sides' }, [
+      h('div', { class: 'tn-tabs m-only', role: 'group', 'aria-label': "Côté de l'échange" }, [
+        tab('give', 'Tu donnes', give, giveWb), tab('get', 'Tu reçois', get, getWb)]),
+      h('div', { class: ['trade-sides', 'show-' + tn.tab] }, [
         side('give', 'Tu donnes', give, tn.f.tshare ? `Aucune de tes cartes ne complète les collections de ${name}.` : `${name} ne partage pas ses collections : impossible de savoir ce qui lui manque.`,
           wbField('giveWb', 'Et des wikibidous', myBal, 'Ton solde')),
         side('get', 'Tu reçois', get, `Aucune carte de ${name} ne complète tes collections.`,
           wbField('getWb', 'Et des wikibidous', hisBal, `Solde de ${name}`)),
       ]),
+    ]), h('div', { class: 'tn-foot' }, [
       h('p', { class: 'merge-sum', role: 'status' }, n || anyWb
         ? [`Tu donnes ${cards(tn.give.length)}`, giveWb ? [' et ', priceTag(giveWb, { tag: 'span' })] : '', `, tu reçois ${cards(tn.get.length)}`, getWb ? [' et ', priceTag(getWb, { tag: 'span' })] : '', '.']
         : 'Aucune carte cochée, aucun wikibidou.'),
@@ -13610,7 +13636,7 @@
         h('button', { class: 'btn primary', type: 'button', disabled: tn.busy || !linked || !(n || anyWb) || n > TRADE_MAX || badWb || overWb, onClick: () => sendTrade(tn) },
           tn.busy ? 'Création dans le jeu…' : 'Proposer l\'échange dans le jeu'),
       ]),
-    ]);
+    ])]);
   }
   // « Mettre en vente » : l'exemplaire (rareté, brillance), ce que le classeur sait du marché de la carte (cote, enchères en
   // cours, prix de vente, tes ventes), la mise de départ avec des prix proposés, la durée ; puis la vente créée, annulable
