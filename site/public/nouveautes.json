@@ -1,5 +1,10 @@
 {
   "versions": [
+    {"id": "2026-10-31", "date": "2026-10-31", "sections": [
+      {"icon": "🤝", "title": "Échanges sur téléphone", "items": [
+        {"text": "Les échanges possibles s'ouvrent paire par paire, avec un retour en haut.", "to": "#/amis/echanges", "link": "Échanges"},
+        {"text": "« Proposer un échange » montre un côté à la fois, en onglets.", "to": "#/amis/echanges", "link": "Échanges"},
+        {"text": "Le bouton d'envoi reste toujours visible en bas de la fenêtre."}]}]},
     {"id": "2026-10-30", "date": "2026-10-30", "sections": [
       {"icon": "💰", "title": "Wikibidous", "items": [
         {"text": "Ton solde « à dépenser » reste affiché en haut, avec l'heure de sa lecture."},
