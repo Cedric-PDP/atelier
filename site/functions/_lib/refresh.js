@@ -119,10 +119,11 @@ export async function readCollection(env, user, { via, force = false, lease: giv
           return { count: 0, empty: true };
         }
       }
+      // Une page vide après la cinquantième confirme une collection de 50 000 exemplaires exactement.
+      if (p >= MAX_PAGES && rows.length) throw new HttpError(400, 'Collection trop grande : 50 000 exemplaires au plus.');
       skipped += await stagePage(db, user.id, p, rows);
       if (automation) tagRows.push(...rows);
       if (rows.length < PAGE) break;
-      if (p + 1 >= MAX_PAGES) throw new HttpError(400, 'Collection trop grande : 50 000 exemplaires au plus.');
     }
     const end = await checkCollection(env, user, s);
     let autoTag = null;

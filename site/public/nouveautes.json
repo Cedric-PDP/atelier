@@ -1,5 +1,10 @@
 {
   "versions": [
+    {"id": "2026-11-05", "date": "2026-11-05", "sections": [
+      {"icon": "🃏", "title": "Capacité du classeur", "items": [
+        {"text": "Le classeur peut désormais accueillir jusqu'à 50 000 cartes différentes, contre 30 000 auparavant.", "to": "#/cartes", "link": "Mes cartes"}
+      ]}
+    ]},
     {"id": "2026-10-31", "date": "2026-10-31", "sections": [
       {"icon": "🤝", "title": "Échanges sur téléphone", "items": [
         {"text": "Les échanges possibles s'ouvrent paire par paire, avec un retour en haut.", "to": "#/amis/echanges", "link": "Échanges"},

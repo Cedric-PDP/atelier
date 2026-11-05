@@ -1601,7 +1601,7 @@ await test('migration : ancien cookie et clé d\'import vidés, colonnes de la s
   assert.equal((await linkGame('cle-ancienne', { e: old, uid: 'uid-ancien' })).status, 200);
 });
 
-await test('corps trop gros (5 Mo), 30 000 cartes au plus, lecture par pages', async () => {
+await test('corps trop gros (5 Mo), 50 000 cartes au plus, lecture par pages', async () => {
   const big = JSON.stringify({ cookie: 'a=1', pad: 'x'.repeat(5 * 1024 * 1024) });
   let r = await call('POST', 'session', { key: alice.key, raw: big, headers: { 'content-type': 'application/json' } });
   assert.equal(r.status, 413);
@@ -1609,28 +1609,28 @@ await test('corps trop gros (5 Mo), 30 000 cartes au plus, lecture par pages', a
   r = await call('POST', 'session', { key: alice.key, raw: '{}', headers: { 'content-length': String(6 * 1024 * 1024) } });
   assert.equal(r.status, 413);
 
-  // 30 000 cartes (cartes minimales) : 30 pages du jeu.
+  // 50 000 cartes (cartes minimales) : 50 pages du jeu.
   const dave = await signup('Dave');
-  r = await seedCards(dave.key, mini(30_000));
-  assert.deepEqual(r.json, { count: 30_000, fresh: 30_000, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
+  r = await seedCards(dave.key, mini(50_000));
+  assert.deepEqual(r.json, { count: 50_000, fresh: 50_000, new_ids: [], complete: true, skipped: 0, removed: 0, kept: 0 });
   const all = (await call('GET', 'cards', { key: dave.key })).json;
-  assert.equal(all.cards.length, 30_000);
+  assert.equal(all.cards.length, 50_000);
 
-  // 30 001 cartes : refusé à la fin, rien d'écrit.
+  // 50 001 cartes : refusé à la fin, rien d'écrit.
   const zed = await signup('Zed');
-  await setGameCards(zed.key, mini(30_001));
+  await setGameCards(zed.key, mini(50_001));
   r = await refreshNow(zed.key);
   assert.equal(r.status, 400);
-  assert.match(r.json.error, /30\s000 cartes/);
+  assert.match(r.json.error, /50\s000 exemplaires/);
   assert.equal((await call('GET', 'me', { key: zed.key })).json.card_count, 0);
   supa.player(uidOf(zed.key)).cards = [];
 
   // Lecture par pages de 1 000 (curseur opaque) : mêmes cartes, dans le même ordre, avec leurs étiquettes.
-  for (let k = 0; k < 6; k++) {
+  for (let k = 0; k < 10; k++) {
     r = await call('POST', 'tags/bulk', { key: dave.key, body: { card_ids: mini(5000, k * 5000).map((c) => c.id), add: ['Tout'] } });
     assert.equal(r.status, 200);
   }
-  assert.equal(rows("SELECT COUNT(*) AS n FROM tags WHERE tag = 'Tout'")[0].n, 30_000);
+  assert.equal(rows("SELECT COUNT(*) AS n FROM tags WHERE tag = 'Tout'")[0].n, 50_000);
   const ids = [];
   let part = '0';
   let pages = 0;
@@ -1646,7 +1646,7 @@ await test('corps trop gros (5 Mo), 30 000 cartes au plus, lecture par pages', a
     assert.equal(typeof r2.json.next_part, 'string');
     part = r2.json.next_part;
   }
-  assert.equal(pages, 30);
+  assert.equal(pages, 50);
   assert.deepEqual(ids, all.cards.map((c) => c.id));
   assert.equal((await call('GET', 'cards?part=!!', { key: dave.key })).status, 400);
   assert.equal((await call('GET', 'cards?part=-1', { key: dave.key })).status, 400);
