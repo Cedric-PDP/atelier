@@ -253,7 +253,7 @@
     gtagsAll: false, // « Tags du jeu » de « Mes cartes » : tous montrés (sinon les GTAG_FACET premiers)
     untaggedOnly: false,
     newOnly: false,
-    duplicatesOnly: false,
+    duplicatesOnly: false, lowValueOnly: false,
     keptOnly: false, // « Exclues des échanges et ventes » (prefs.keep)
     keepTag: '', // tag tapé dans « Exclues des échanges et ventes »
     limit: PAGE,
@@ -907,7 +907,7 @@
     saveKeep(k.cards, [...k.tags, t]);
   }
   const removeKeepTag = (t) => { const k = keepPref.value; saveKeep(k.cards, [...k.tags].filter((x) => x !== t)); };
-  const hasFilters = computed(() => !!(S.tagFilter.length || S.gtagFilter.length || S.untaggedOnly || S.newOnly || S.duplicatesOnly || S.keptOnly || S.q.trim() || S.rarities.length));
+  const hasFilters = computed(() => !!(S.tagFilter.length || S.gtagFilter.length || S.untaggedOnly || S.newOnly || S.duplicatesOnly || S.lowValueOnly || S.keptOnly || S.q.trim() || S.rarities.length));
   const SORTERS = {
     rarity: (a, b) => (RANK[a.rarity] ?? 9) - (RANK[b.rarity] ?? 9) || (b.pageviews ?? -1) - (a.pageviews ?? -1),
     pageviews: (a, b) => (b.pageviews ?? -1) - (a.pageviews ?? -1),
@@ -928,6 +928,7 @@
       && (!S.untaggedOnly || !c.tags.length)
       && (!S.newOnly || fresh.has(c.id))
       && (!S.duplicatesOnly || c.count > 1)
+      && (!S.lowValueOnly || isLowValue(c))
       && (!S.keptOnly || isKept(c))
       && tags.every((tok) => (tok.endsWith('/') ? c.tags.some((t) => tagCat(t) === tok.slice(0, -1)) : c.tags.includes(tok)))
       && S.gtagFilter.every((k) => c.gtags.some((t) => catKey(t) === k)));
@@ -1527,7 +1528,7 @@
     cardsGen++;
     cardsJob = Promise.resolve();
     Object.assign(S, { me: null, fetchedAt: null, loadingCards: false, openId: null, openMissing: null, modal: null, editor: null, confirm: null, tagEdit: null, notice: null, switchAsk: null, tab: 'collections', album: null, reorder: null, colOrder: null, autoBusy: null,
-      q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, keptOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
+      q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, lowValueOnly: false, keptOnly: false, rarities: [], limit: PAGE, lastClicked: null, bulkTag: '', bulkError: '' });
     S.selected.clear();
     Object.assign(S.autoTag, { busy: false, targetId: null, syncTargetId: null, error: '' });
     Object.assign(S.wishMissing, { busy: false, error: '', message: '', items: [], revision: '', selected: new Set(), limit: 100 });
@@ -2518,7 +2519,7 @@
     toTop();
   }
   function resetFilters() {
-    Object.assign(S, { q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, keptOnly: false, rarities: [] });
+    Object.assign(S, { q: '', tagFilter: [], gtagFilter: [], untaggedOnly: false, newOnly: false, duplicatesOnly: false, lowValueOnly: false, keptOnly: false, rarities: [] });
   }
   function openAlbum(kind, id) {
     if (kind !== 'category') stopCategory();
@@ -6881,6 +6882,14 @@
     return sure !== null ? { g: 0, p: sure } : rough !== null ? { g: 1, p: rough } : NO_PRICE;
   }
   const cardPrice = (c, v) => pickPrice(v, variantsOf(c).list.map(([k]) => k), true);
+  // Chaque variante doit avoir une cote fiable strictement sous 5 W.
+  function isLowValue(c) {
+    const v = ownCote(c);
+    return !!v && variantsOf(c).list.every(([k]) => {
+      const q = v[k];
+      return reliable(q) && q.p != null && Number.isFinite(Number(q.p)) && Number(q.p) >= 0 && Number(q.p) < 5;
+    });
+  }
   const holePrice = (v) => (v && typeof v === 'object' ? pickPrice(v, Object.keys(v).filter((k) => VARIANT_RE.test(k)), false) : NO_PRICE);
   const byPrice = (a, b, dir) => a.g - b.g || (a.g < 2 ? dir * (a.p - b.p) : 0);
   // Trie list par prix (price(x) une fois par élément), puis par tie (l'ordre habituel).
@@ -8995,6 +9004,10 @@
         h('div', { class: 'chips' }, [
           facetChip('untagged', 'Sans tag', untaggedCount.value, S.untaggedOnly, toggleUntagged),
           facetChip('duplicates', 'Doublons', duplicatesCount.value, S.duplicatesOnly, () => { S.duplicatesOnly = !S.duplicatesOnly; }, 'Cartes possédées en au moins deux exemplaires, toutes raretés et brillances confondues'),
+          facetChip('low-value', 'Moins de 5 W', cards.value.filter(isLowValue).length, S.lowValueOnly, () => {
+            S.lowValueOnly = !S.lowValueOnly;
+            if (S.lowValueOnly) { clearSelection(); S.sort = 'price-up'; loadMarket(false); }
+          }, 'Chaque variante : cote fiable (au moins 3 ventes) strictement sous 5 wikibidous'),
           newIds.value.length ? facetChip('new', 'Nouvelles du dernier rafraîchissement', newIds.value.length, S.newOnly, toggleNew) : null,
         ]),
       ]),
@@ -9056,6 +9069,7 @@
       S.untaggedOnly ? filterChip('untagged', 'Sans tag', () => { S.untaggedOnly = false; }, 'Retirer le filtre Sans tag') : null,
       S.newOnly ? filterChip('new', 'Nouvelles', () => { S.newOnly = false; }, 'Retirer le filtre Nouvelles') : null,
       S.duplicatesOnly ? filterChip('duplicates', 'Doublons', () => { S.duplicatesOnly = false; }, 'Retirer le filtre Doublons') : null,
+      S.lowValueOnly ? filterChip('low-value', 'Moins de 5 W', () => { S.lowValueOnly = false; }, 'Retirer le filtre Moins de 5 W') : null,
       S.keptOnly ? filterChip('kept', 'Exclues des échanges et ventes', () => { S.keptOnly = false; }, 'Retirer le filtre Exclues') : null,
       S.q.trim() ? filterChip('q', `« ${S.q.trim()} »`, () => { S.q = ''; }, 'Effacer la recherche') : null,
       rar.length ? filterChip('rar', 'Raretés : ' + rar.join(', '), () => { S.rarities = []; }, 'Afficher toutes les raretés') : null,
@@ -9075,7 +9089,7 @@
     const counts = rarityCount.value;
     const total = filtered.value.length;
     const shown = visibleCards.value.length;
-    const nf = S.tagFilter.length + S.gtagFilter.length + (S.untaggedOnly ? 1 : 0) + (S.newOnly ? 1 : 0) + (S.duplicatesOnly ? 1 : 0) + (S.keptOnly ? 1 : 0);
+    const nf = S.tagFilter.length + S.gtagFilter.length + (S.untaggedOnly ? 1 : 0) + (S.newOnly ? 1 : 0) + (S.duplicatesOnly ? 1 : 0) + (S.lowValueOnly ? 1 : 0) + (S.keptOnly ? 1 : 0);
     return h('div', { class: ['cards-layout', { 'm-facets': S.mFacets }] }, [
       S.mFacets ? h('div', { class: 'msheet-backdrop m-only', onClick: () => { S.mFacets = false; } }) : null,
       viewFacets(),
@@ -9086,7 +9100,7 @@
           h('label', { class: 'sr', for: 'q' }, 'Chercher dans mes cartes'),
           h('input', { id: 'q', type: 'search', value: S.q, autocomplete: 'off', placeholder: 'Chercher un titre, une description, un tag  ( / )', onInput: (e) => { S.q = e.target.value; } }),
           h('label', { class: 'sr', for: 'sort' }, 'Trier'),
-          h('select', { id: 'sort', value: S.sort, onChange: (e) => { S.sort = e.target.value; if (isPriceSort(S.sort)) loadMarket(false); } }, SORTS.map(([v, l]) => h('option', { key: v, value: v }, l))),
+          h('select', { id: 'sort', value: S.sort, onChange: (e) => { S.sort = e.target.value; if (isPriceSort(S.sort) || S.lowValueOnly) loadMarket(false); } }, SORTS.map(([v, l]) => h('option', { key: v, value: v }, l))),
           h('button', { class: 'btn', type: 'button', disabled: !total, onClick: selectAll }, 'Tout sélectionner'),
         ]),
         h('div', { class: 'chips rarity-filter', role: 'group', 'aria-label': 'Raretés (Ctrl/⌘+clic : n\'afficher qu\'elle)' }, RAR_UP.filter((r) => counts[r]).map((r) => h('button', {
@@ -9094,6 +9108,9 @@
           onClick: (e) => toggleRarity(r, e),
         }, [pill(r), h('span', { class: 'chip__label' }, RARITY_NAME[r]), h('span', { class: 'n' }, fmt(counts[r]))]))),
         viewCountLine(),
+        S.lowValueOnly ? h('p', { class: 'note', role: 'status' }, M.busy ? 'Chargement des cotes…' : M.error
+          ? 'Impossible de mettre les cotes à jour. Réessaie avant de choisir tes cartes.'
+          : 'Chaque variante possédée a une cote inférieure à 5 W, basée sur au moins 3 ventes. Les cotes inconnues ou peu fiables sont exclues. Ce sont des estimations du marché, pas un prix garanti.') : null,
         total ? h(CardGrid) : h('div', { class: 'empty-box' }, [h('p', null, 'Aucune carte ne correspond à ces filtres.'),
           h('button', { class: 'btn', type: 'button', onClick: resetFilters }, 'Réinitialiser les filtres')]),
         shown < total ? h('div', { class: 'show-more' }, [h('button', { class: 'btn', type: 'button', onClick: () => { S.limit += PAGE; } },
@@ -14393,6 +14410,7 @@
       if (S.untaggedOnly) p.set('sans-tag', '1');
       if (S.newOnly) p.set('nouvelles', '1');
       if (S.duplicatesOnly) p.set('doublons', '1');
+      if (S.lowValueOnly) p.set('moins-de-5', '1');
       if (S.keptOnly) p.set('exclues', '1');
     } else if (S.tab === 'amis') {
       if (fr.open && fr.album != null) {
@@ -14467,8 +14485,8 @@
       setTab('cartes');
       const list = (k, ok) => [...new Set(p.getAll(k).filter((v) => v && (!ok || ok.includes(v))))];
       Object.assign(S, { q: p.get('q') || '', sort: pick('tri', SORTS.map(([v]) => v), 'rarity'), rarities: list('rarete', RARITIES), tagFilter: list('tag'),
-        gtagFilter: list('jeu'), untaggedOnly: p.get('sans-tag') === '1', newOnly: p.get('nouvelles') === '1', duplicatesOnly: p.get('doublons') === '1', keptOnly: p.get('exclues') === '1' });
-      if (isPriceSort(S.sort)) loadMarket(false);
+        gtagFilter: list('jeu'), untaggedOnly: p.get('sans-tag') === '1', newOnly: p.get('nouvelles') === '1', duplicatesOnly: p.get('doublons') === '1', lowValueOnly: p.get('moins-de-5') === '1', keptOnly: p.get('exclues') === '1' });
+      if (isPriceSort(S.sort) || S.lowValueOnly) loadMarket(false);
     } else if (r.tab === 'amis') {
       setTab('amis');
       const fr = S.friends;
@@ -14574,7 +14592,7 @@
     },
   };
 
-  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly, () => S.duplicatesOnly, () => S.keptOnly], () => { S.limit = PAGE; });
+  watch([() => S.q, () => S.sort, () => S.rarities.join(), () => S.tagFilter.join('\u0001'), () => S.gtagFilter.join('\u0001'), () => S.untaggedOnly, () => S.newOnly, () => S.duplicatesOnly, () => S.lowValueOnly, () => S.keptOnly], () => { S.limit = PAGE; });
   watch([() => S.albumFilter, () => S.albumSort], () => { S.albumLimit = ALBUM_PAGE; });
   // Mode réorganisation quitté par la navigation (autre album, liste des collections, autre onglet) : sans changement, il
   // se referme ; avec un ordre modifié, le brouillon est gardé et un message le dit une fois (« Y revenir »).
