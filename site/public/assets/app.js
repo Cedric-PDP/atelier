@@ -852,7 +852,7 @@
     return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count || COLLATOR.compare(a.name, b.name));
   });
   const tagCount = computed(() => new Map(tagList.value.map((t) => [t.name, t.count])));
-  const untaggedCount = computed(() => cards.value.reduce((n, c) => n + (c.tags.length ? 0 : 1), 0));
+  const untaggedCount = computed(() => cards.value.reduce((n, c) => n + (c.tags.length || c.gtags.length ? 0 : 1), 0));
   const duplicatesCount = computed(() => cards.value.reduce((n, c) => n + (c.count > 1 ? 1 : 0), 0));
   // Cartes exclues des échanges et des ventes (2026-10-29, demande de l'utilisateur) : choisies une à une ou par tag
   // (tags exacts), gardées avec le compte (prefs.keep = {cards: [ids], tags: [tags]}). Une carte exclue n'est proposée ni
@@ -925,7 +925,7 @@
     const fresh = newIdSet.value;
     const out = cards.value.filter((c) => rar.has(c.rarity)
       && (!q || c._k.includes(q) || c.tags.some((t) => fold(t).includes(q)))
-      && (!S.untaggedOnly || !c.tags.length)
+      && (!S.untaggedOnly || (!c.tags.length && !c.gtags.length))
       && (!S.newOnly || fresh.has(c.id))
       && (!S.duplicatesOnly || c.count > 1)
       && (!S.lowValueOnly || isLowValue(c))
@@ -2550,7 +2550,7 @@
     S.newOnly = false;
     S.tab = 'cartes';
   }
-  function toggleUntagged() { S.untaggedOnly = !S.untaggedOnly; S.tagFilter = []; S.newOnly = false; S.tab = 'cartes'; }
+  function toggleUntagged() { S.untaggedOnly = !S.untaggedOnly; S.tagFilter = []; S.gtagFilter = []; S.newOnly = false; S.tab = 'cartes'; }
   function toggleNew() { S.newOnly = !S.newOnly; S.tagFilter = []; S.untaggedOnly = false; S.tab = 'cartes'; }
   // « Les voir » (« Vendre » (Marché)) : « Mes cartes » avec seulement les cartes exclues des échanges et ventes.
   function showKept() { resetFilters(); S.keptOnly = true; setTab('cartes'); }
@@ -9007,7 +9007,7 @@
       h('div', { class: 'facet' }, [
         h('h3', null, 'Raccourcis'),
         h('div', { class: 'chips' }, [
-          facetChip('untagged', 'Sans tag', untaggedCount.value, S.untaggedOnly, toggleUntagged),
+          facetChip('untagged', 'Sans tag', untaggedCount.value, S.untaggedOnly, toggleUntagged, 'Cartes sans aucun tag du jeu ni du classeur'),
           facetChip('duplicates', 'Doublons', duplicatesCount.value, S.duplicatesOnly, () => { S.duplicatesOnly = !S.duplicatesOnly; }, 'Cartes possédées en au moins deux exemplaires, toutes raretés et brillances confondues'),
           facetChip('low-value', 'Moins de 5 W', cards.value.filter(isLowValue).length, S.lowValueOnly, () => {
             S.lowValueOnly = !S.lowValueOnly;
