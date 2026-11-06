@@ -7110,7 +7110,55 @@ async function main() {
 
   // Titres sans cartes : ouverture directe, copie, sélection, confirmation et retrait de toute la liste.
   await testDuplicates();
+  await testBulkDiscard();
   await testMissingWishes();
+  async function testBulkDiscard() {
+    if (SERVER) return;
+    const saved = ['classeur-key', 'classeur-known'].map(k => [k, ls.get(k)]);
+    const key = await makeOtherAccount('Défausse');
+    const u = api.users.find(u => u.key === key);
+    await seedCards(key, [
+      { id: 'cheap', title: 'Petite cote', rarity: 'C', count: 2, variants: { C: 2 } },
+      { id: 'five', title: 'Cinq W', rarity: 'C', count: 1, variants: { C: 1 } },
+      { id: 'unknown', title: 'Sans cote', rarity: 'C', count: 1, variants: { C: 1 } },
+    ]);
+    u.market = { prices: [{ id: 'cheap', v: { C: { p: 4, n: 3 } } }, { id: 'five', v: { C: { p: 5, n: 3 } } }] };
+    ls.set('classeur-key', key);
+    ls.set('classeur-known', JSON.stringify([{ key, name: 'Défausse' }]));
+    const original = api.handle;
+    let previews = 0, sends = 0, syncs = 0;
+    api.handle = function(method, p, headers, body) {
+      if (p === '/api/cards/discard/preview') {
+        previews++;
+        check(body.ids.join() === 'cheap', 'défausse : seuls les identifiants filtrés sont proposés');
+        return { status: 200, body: { batches: ['test-batch'], copies: 2, cards: [{ id: 'cheap', title: 'Petite cote', count: 2 }] } };
+      }
+      if (p === '/api/cards/discard') { sends++; return { status: 200, body: { discarded: 2, requested: 2 } }; }
+      if (p === '/api/cards/discard/sync') { syncs++; return { status: 200, body: {} }; }
+      return original.call(api, method, p, headers, body);
+    };
+    try {
+      const pg = openPage({ idb: 'absent', hash: '#/cartes?moins-de-5=1' });
+      const d = pg.doc;
+      check(await waitFor(() => d.querySelectorAll('.card__title').map(text).join() === 'Petite cote'), 'moins de 5 : seuil strict et cotes inconnues exclues');
+      const button = label => d.querySelectorAll('button').find(b => text(b) === label);
+      button('Tout sélectionner').click(); await settle();
+      check(!!button('Défausser la sélection'), 'défausse proposée dans la sélection sous 5 W');
+      button('Défausser la sélection').click();
+      check(await waitFor(() => text(d.body).includes('Confirmer la défausse')), 'aperçu de confirmation affiché');
+      check(previews === 1 && sends === 0 && text(d.body).includes('derniers exemplaires') && text(d.body).includes('Petite cote (2 exemplaires)'), 'confirmation : quantités et dernier exemplaire, aucun envoi avant accord');
+      button('Annuler').click(); await settle();
+      check(sends === 0, 'annulation sans défausse');
+      button('Défausser la sélection').click();
+      check(await waitFor(() => !!button('Confirmer la défausse')), 'second aperçu');
+      button('Confirmer la défausse').click();
+      check(await waitFor(() => sends === 1 && syncs === 1 && !d.querySelector('.modal')), 'défausse : un seul envoi, synchronisation et fermeture');
+      check(!d.querySelector('.bulk'), 'défausse : sélection vidée après exécution');
+    } finally {
+      api.handle = original;
+      for (const [k, v] of saved) { if (v == null) ls.delete(k); else ls.set(k, v); }
+    }
+  }
   async function testDuplicates() {
     const saved = ['classeur-key', 'classeur-known'].map(k => [k, ls.get(k)]);
     const key = await makeOtherAccount('Doubles');

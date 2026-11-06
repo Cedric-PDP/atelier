@@ -28,6 +28,7 @@ import { placeBid } from '../_lib/bid.js';
 import { refreshBalance } from '../_lib/balance.js';
 import { listArt, setArt } from '../_lib/art.js';
 import { getPalmares } from '../_lib/palmares.js';
+import { previewDiscard, executeDiscard, syncAfterDiscard } from '../_lib/discard.js';
 
 // Seul le dépôt de session par le favori « Relier », lancé depuis le jeu (sous ses deux noms), accepte ces origines.
 const GAME_ORIGINS = new Set(['https://www.wiki-masters.com', 'https://wiki-masters.com']);
@@ -47,6 +48,9 @@ const ROUTES = {
   'favori.js': { GET: [favoriScript, false] },
   'key/rotate': { POST: [rotateKey, 'main'] },
   cards: { GET: [listCards, 'main'] },
+  'cards/discard/preview': { POST: [previewDiscard, 'main'] },
+  'cards/discard': { POST: [executeDiscard, 'main'] },
+  'cards/discard/sync': { POST: [syncAfterDiscard, 'main'] },
   session: { POST: [saveSession, 'main'], DELETE: [deleteSession, 'main'] },
   refresh: { POST: [refresh, 'main'] },
   link: { POST: [createLink, 'main'] }, // jeton de liaison à usage unique

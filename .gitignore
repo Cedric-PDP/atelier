@@ -5,3 +5,4 @@ cache/
 # Page construite (se refait avec scripts/build_page.js).
 dist/
 node_modules/
+.wrangler/

@@ -4383,6 +4383,10 @@
   // ---------------------------------------------------------------- fenêtres, réglages
   function closeModal() {
     const m = S.modal;
+    if (m === 'confirm' && S.confirm && S.confirm.discard && S.confirm.busy) {
+      S.confirm.stop = true;
+      return;
+    }
     S.modal = null;
     if (m === 'editor') { S.editor = null; stopCatSearch(); }
     // Confirmation ouverte depuis une autre fenêtre (« Retirer » une proposition de « Nouvelle collection ») : on y revient.
@@ -4410,6 +4414,7 @@
     cf.error = '';
     try {
       await cf.run(cf);
+      cf.busy = false;
       if (S.confirm === cf) { closeModal(); if (cf.after) cf.after(); }
     } catch (e) {
       cf.error = e.message;
@@ -12633,6 +12638,56 @@
       on ? h('button', { class: 'btn', type: 'button', onClick: () => setKeepCards(ids, false) }, `Réintégrer (${fmt(on)})`) : null,
     ];
   }
+  async function askBulkDiscard() {
+    if (S.bulkBusy || !S.lowValueOnly || S.tab !== 'cartes') return;
+    const chosen = [...S.selected].map(id => cardById.value.get(id));
+    if (!chosen.length || chosen.some(c => !c || !isLowValue(c) || isKept(c) || isTradePending(c))) {
+      S.bulkError = 'Sélectionne uniquement des cartes sous 5 W, non exclues et sans échange en attente.';
+      return;
+    }
+    S.bulkBusy = true;
+    S.bulkError = '';
+    const key = S.key;
+    try {
+      const plan = await api('POST', '/api/cards/discard/preview', { ids: chosen.map(c => String(c.id)) });
+      if (key !== S.key) return;
+      openConfirm({ title: 'Défausser cette sélection dans WikiMasters ?', danger: true,
+        text: `${cards$(plan.cards.length)} : jusqu’à ${fmt(plan.copies)} exemplaires seront supprimés définitivement du jeu, y compris les derniers exemplaires. Les cotes sont des estimations, pas un prix garanti. Les favoris, les cartes exclues et celles en attente d’échange sont protégés.`,
+        ok: 'Confirmer la défausse', run: async (cf) => {
+          if (cf.discardStarted) throw new Error('Cette opération a déjà été lancée. Ferme cette fenêtre et refais une sélection après vérification.');
+          cf.discardStarted = true;
+          let done = 0, attempted = null, stopped = false, error = null;
+          try {
+            for (let i = 0; i < plan.batches.length; i++) {
+              if (key !== S.key || cf.stop) { stopped = true; break; }
+              cf.progress = `${fmt(done)} exemplaires défaussés · lot ${i + 1}/${plan.batches.length}`;
+              attempted = plan.batches[i];
+              const result = await api('POST', '/api/cards/discard', { batch: attempted });
+              done += result.discarded;
+              if (result.discarded !== result.requested) throw new Error('Le jeu n’a retiré qu’une partie des exemplaires. Vérifie ta collection avant de poursuivre.');
+              if (i + 1 < plan.batches.length) await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          } catch (e) { error = e; }
+          if (key === S.key) {
+            clearSelection();
+            if (attempted) {
+              cf.progress = `${fmt(done)} exemplaires défaussés · mise à jour de la collection…`;
+              try {
+                const update = await api('POST', '/api/cards/discard/sync', { batch: attempted });
+                await Promise.all([syncCards(), loadMe()]);
+                afterCards();
+                if (update.complete === false || update.superseded) throw new Error('La lecture de la collection est incomplète. Rafraîchis-la avant une nouvelle défausse.');
+              } catch (e) { error = new Error(`${error ? error.message + ' ' : ''}La collection doit être rafraîchie : ${e.message}`); }
+            }
+            notify(`${fmt(done)} exemplaires défaussés${stopped ? ' · opération arrêtée' : ''}.`);
+          }
+          if (error) throw new Error(`${fmt(done)} exemplaires défaussés avant l’arrêt. ${error.message}`);
+        } });
+      S.confirm.discard = true;
+      S.confirm.details = plan.cards.map(c => `${c.title} (${fmt(c.count)} exemplaires)`);
+    } catch (e) { if (key === S.key) S.bulkError = e.message; }
+    finally { if (key === S.key) S.bulkBusy = false; }
+  }
   function viewBulk() {
     const n = S.selected.size;
     if (!n) return null;
@@ -12645,6 +12700,8 @@
       h('button', { class: 'btn primary', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('add') }, 'Ajouter'),
       h('button', { class: 'btn', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('remove') }, 'Retirer'),
       viewBulkKeep(),
+      S.tab === 'cartes' && S.lowValueOnly ? h('button', { class: 'btn danger', type: 'button', disabled: S.bulkBusy,
+        onClick: askBulkDiscard }, S.bulkBusy ? 'Vérification…' : 'Défausser la sélection') : null,
       h('button', { class: 'btn ghost', type: 'button', onClick: clearSelection }, 'Vider la sélection'),
       errLine(S.bulkError),
     ]);
@@ -13351,11 +13408,13 @@
     if (!cf) return null;
     return h(Modal, { key: 'confirm', title: cf.title, onClose: closeModal }, () => [
       h('p', null, cf.text),
+      cf.details ? h('details', null, [h('summary', null, 'Cartes concernées'), h('ul', null, cf.details.map(t => h('li', null, t)))]) : null,
       cf.progress ? h('p', { class: 'progress-msg', role: 'status' }, cf.progress) : null,
       errLine(cf.error),
       foot([
         closeBtn('Annuler'),
-        h('button', { class: ['btn', cf.danger ? 'danger solid' : 'primary'], type: 'button', disabled: cf.busy, onClick: () => runConfirm(cf) }, cf.busy ? 'Un instant…' : cf.ok),
+        cf.discard && cf.busy ? h('button', { class: 'btn', type: 'button', disabled: cf.stop, onClick: () => { cf.stop = true; } }, 'Arrêter après ce lot') : null,
+        h('button', { class: ['btn', cf.danger ? 'danger solid' : 'primary'], type: 'button', disabled: cf.busy || cf.discardStarted, onClick: () => runConfirm(cf) }, cf.busy ? 'Un instant…' : cf.ok),
       ]),
     ]);
   }

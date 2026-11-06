@@ -80,7 +80,7 @@ export async function refresh(env, user) {
 // Lecture complète (via : clic | cron). Au clic, une par minute au plus (force : sans cette limite). `lease` : bail déjà pris
 // par l'appelant (la lecture le garde, puis le rend) au lieu d'en prendre un. Une lecture réussie au clic remet à zéro les
 // échecs d'affilée des lectures automatiques.
-export async function readCollection(env, user, { via, force = false, lease: given = null } = {}) {
+export async function readCollection(env, user, { via, force = false, lease: given = null, allowEmpty = false } = {}) {
   const db = env.DB;
   if (via === 'clic' && !force) await takeClick(db, user);
   const s = await sessionOf(env, user);
@@ -111,7 +111,7 @@ export async function readCollection(env, user, { via, force = false, lease: giv
         lastBefore = rows[0]?.obtained_at ?? null;
         if (before === 0 || !rows.length) {
           // Auto-tag : confirmer aussi une collection entièrement vidée pour afficher les albums comme non obtenus.
-          if (automation && before === 0 && rows.length === 0) break;
+          if ((automation || allowEmpty) && before === 0 && rows.length === 0) break;
           await db.batch([releaseLease(db, user.id, lease), ...logStatements(db, user.id, {
             kind: 'full', result: 'warn', message: "Collection vide dans le jeu : rien n'a été changé.", data: { via },
           })]);
@@ -150,7 +150,7 @@ export async function readCollection(env, user, { via, force = false, lease: giv
       source: REFRESH_SOURCE,
       key: 0,
       exact: { before, after: end.rows, lastBefore, lastAfter: end.last_at },
-      allowEmpty: !!automation && before === 0,
+      allowEmpty: (!!automation || allowEmpty) && before === 0,
       started,
       clear: [
         db.prepare('DELETE FROM refresh_staging WHERE user_id = ?1').bind(user.id),

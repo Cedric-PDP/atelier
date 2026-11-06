@@ -396,3 +396,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS targets_by_auto_tag ON targets (user_id, json_
 
 -- Enchères en cours sur les cartes qui manquent à un membre (jointure par titre).
 CREATE INDEX IF NOT EXISTS auctions_live_by_title ON auctions_live (title);
+
+CREATE TABLE IF NOT EXISTS discard_batches (
+  id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  plan TEXT NOT NULL, status TEXT NOT NULL, result TEXT, created_at TEXT NOT NULL
+);

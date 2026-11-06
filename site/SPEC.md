@@ -2601,3 +2601,12 @@ Depuis le 2026-10-22 (choix de l'utilisateur), une enchère en cours (fiche, ong
 jeu : un simple lien, que le joueur suit ; il mise ou achète là-bas. Toute la case vide ouvre la fiche de la carte manquante (description, rareté estimée, vues, collections,
 « Copier le nom » si l'article est vérifié, Wikipédia). Mises et achats se font dans le jeu, par le joueur ; seules la mise en vente et son
 annulation partent du classeur, au clic (ci-dessus).
+# Défausse des cartes sous 5 W
+
+Dans « Mes cartes », le filtre `moins-de-5=1` permet de sélectionner puis de défausser les cartes après confirmation explicite, y compris leurs derniers exemplaires. Les cotes restent des estimations du marché.
+
+- `POST /api/cards/discard/preview {ids}` : au plus 2 000 identifiants de cartes du classeur. Relit les exemplaires du joueur dans le jeu et leurs variantes, vérifie toutes les cotes (< 5 W, au moins 3 ventes), les favoris et les exclusions par carte ou tag, et les échanges en attente connus du classeur. Enregistre des lots de 50 identifiants d’exemplaires, valables 10 minutes, avec les quantités et variantes confirmées.
+- `POST /api/cards/discard {batch}` : lot appartenant au compte authentifié. Revalide les protections et les exemplaires, prend un bail de session, marque le lot envoyé puis appelle une seule fois `POST https://www.wiki-masters.com/api/user-cards/bulk-discard {card_ids: [user_card_id]}`. Le nombre retiré est vérifié par une relecture dans le jeu. Un lot terminé rend son résultat enregistré ; un lot envoyé dont le résultat est inconnu est bloqué, jamais renvoyé.
+- `POST /api/cards/discard/sync {batch}` : après un lot envoyé, relit la collection et le solde, sans la limite du clic précédent. Une collection entièrement vide peut être confirmée dans ce contexte. Aucun autre appel de synchronisation ne change de comportement.
+
+L’interface montre le détail avant confirmation, permet l’arrêt entre deux lots et interrompt la suite en cas d’erreur ou de résultat partiel. Les sessions du jeu restent sur le serveur. Les lots sont effacés avec le compte.

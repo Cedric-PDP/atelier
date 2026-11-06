@@ -1,5 +1,10 @@
 {
   "versions": [
+    {"id": "2026-11-06-defausse", "date": "2026-11-06", "sections": [
+      {"icon": "🃏", "title": "Cartes à petite cote", "items": [
+        {"text": "Dans Mes cartes, le filtre « Moins de 5 W » montre les cartes dont chaque variante possédée a une cote fiable strictement inférieure à 5 wikibidous.", "to": "#/cartes?moins-de-5=1", "link": "Moins de 5 W"},
+        {"text": "Après sélection, « Défausser la sélection » affiche le détail et demande confirmation avant la suppression définitive dans WikiMasters. Les favoris, cartes exclues et échanges en attente connus du classeur sont protégés."},
+        {"text": "La défausse avance par lots, peut être arrêtée entre deux lots et met la collection à jour. Un lot déjà envoyé n’est jamais renvoyé automatiquement après une perte de connexion."}]}]},
     {"id": "2026-11-05", "date": "2026-11-05", "sections": [
       {"icon": "🃏", "title": "Capacité du classeur", "items": [
         {"text": "Le classeur peut désormais accueillir jusqu'à 50 000 cartes différentes, contre 30 000 auparavant.", "to": "#/cartes", "link": "Mes cartes"}
