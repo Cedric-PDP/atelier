@@ -1,5 +1,11 @@
 {
   "versions": [
+    {"id": "2026-11-10", "date": "2026-11-10", "sections": [
+      {"icon": "🔎", "title": "Chercher une carte", "items": [
+        {"text": "Cherche n'importe quelle carte du jeu, à toi ou non, touche `/` comprise."},
+        {"text": "Un clic ouvre sa fiche : cotes, enchères en cours et dernières ventes."}]},
+      {"icon": "💰", "title": "Marché", "items": [
+        {"text": "La cote s'affiche dans chaque ligne des bonnes affaires.", "to": "#/marche", "link": "Marché"}]}]},
     {"id": "2026-11-06-defausse", "date": "2026-11-06", "sections": [
       {"icon": "🃏", "title": "Cartes à petite cote", "items": [
         {"text": "Dans Mes cartes, le filtre « Moins de 5 W » montre les cartes dont chaque variante possédée a une cote fiable strictement inférieure à 5 wikibidous.", "to": "#/cartes?moins-de-5=1", "link": "Moins de 5 W"},
@@ -209,6 +215,7 @@
     { "id": "2026-10-23", "at": "2026-10-23T08:54:51Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-23" },
     { "id": "2026-10-24", "at": "2026-10-24T13:22:00Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-24" },
     { "id": "2026-10-26", "at": "2026-10-26T08:33:31Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-26" },
-    { "id": "2026-10-28", "at": "2026-10-28T11:15:11Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-28" }
+    { "id": "2026-10-28", "at": "2026-10-28T11:15:11Z", "text": "Nouvelle version du classeur disponible", "version": "2026-10-28" },
+    { "id": "2026-11-10", "at": "2026-11-10T09:17:52Z", "text": "Nouvelle version du classeur disponible", "version": "2026-11-10" }
   ]
 }
