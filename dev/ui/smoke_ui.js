@@ -3900,7 +3900,7 @@ async function main() {
     const q = p.doc.getElementById('game-q');
     check(q, 'Depuis le jeu : champ de recherche absent après la liaison : ' + text(p.doc.getElementById('newcol-panel')));
     const seen = () => text(p.doc.getElementById('newcol-panel'));
-    const press = (label) => p.doc.querySelectorAll('button').find((b) => text(b).includes(label));
+    const press = (label) => p.doc.getElementById('newcol-panel').querySelectorAll('button').find((b) => text(b).includes(label));
     const search = (v) => { q.value = v; q.dispatch('input'); press('Chercher').click(); };
     search('vache');
     check(await waitFor(() => seen().includes('Vache Highland')), 'Depuis le jeu : résultats absents : ' + seen());
@@ -3923,6 +3923,22 @@ async function main() {
     check(apiLog.filter((x) => x.startsWith('GET /api/game/cards?q=')).length === 3, 'Depuis le jeu : trois recherches attendues : ' + apiLog.filter((x) => x.includes('game/cards')).join(', '));
     check(text(p.doc.body).includes('Collection « vache » créée'), 'Depuis le jeu : message de création absent');
     console.log('depuis le jeu : collection « vache » créée (' + made.items.length + ' cartes, source ' + made.source + ')');
+
+    // « Chercher une carte » (ligne des onglets) : toutes les cartes du jeu, possédées ou non ; un clic ouvre sa fiche.
+    const sbtn = p.doc.querySelectorAll('button.search-link')[0];
+    check(sbtn, 'Chercher une carte : bouton absent de la ligne des onglets');
+    sbtn.click();
+    check(await waitFor(() => p.doc.getElementById('search-q')), 'Chercher une carte : fenêtre non ouverte');
+    const sq = p.doc.getElementById('search-q');
+    const box = () => p.doc.querySelectorAll('.search-modal')[0];
+    sq.value = 'vache'; sq.dispatch('input');
+    box().querySelectorAll('button').find((b) => text(b).includes('Chercher')).click();
+    check(await waitFor(() => box() && text(box()).includes('Vache Highland')), 'Chercher une carte : résultats absents : ' + (box() ? text(box()) : ''));
+    check(text(box()).includes('pas à toi'), 'Chercher une carte : « pas à toi » attendu : ' + text(box()));
+    box().querySelectorAll('.search-res__row').find((b) => text(b).includes('Vache Highland')).click();
+    check(await waitFor(() => !box() && text(p.doc.body).includes("Lire l'article sur Wikipédia")), 'Chercher une carte : fiche de la carte non ouverte');
+    check(apiLog.some((x) => x.startsWith('GET /api/market/card') && x.includes('Highland')), 'Chercher une carte : marché de la carte non lu : ' + apiLog.filter((x) => x.includes('market/card')).join(', '));
+    console.log('chercher une carte : « Vache Highland » trouvée et sa fiche ouverte avec son marché');
   }
 
   // Intercalaires et collections complètes (Ninon ; Olga, une amie qui montre ses collections). Un intercalaire (sep: true)

@@ -194,6 +194,19 @@ textarea { width: 100%; min-height: 96px; font: 12.5px/1.5 ui-monospace, Consola
 .news-link:hover { color: var(--fg); text-decoration: none; }
 .news-link.on { background: var(--surface-2); color: var(--fg); box-shadow: inset 0 0 0 1px var(--border); }
 .news-link .ic { color: var(--accent); }
+/* « Chercher une carte » : même allure que « Nouveautés », juste avant lui. */
+.search-link { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border: 0; border-radius: 99px; background: none; color: var(--muted); font: inherit; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.search-link:hover { color: var(--fg); background: var(--surface-2); }
+.search-link .ic { color: var(--accent); }
+/* « Chercher une carte » : résultats (toutes les cartes du jeu) */
+.search-res { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 2px; max-height: min(60vh, 520px); overflow-y: auto; }
+.search-res__row { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 8px; border: 0; border-radius: 8px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.search-res__row:hover, .search-res__row:focus-visible { background: var(--surface-2); }
+.search-res__main { display: grid; gap: 1px; min-width: 0; }
+.search-res__t { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.search-res__title { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-res__s { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.search-res__p { display: grid; justify-items: end; gap: 2px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .news-dot { padding: 1px 7px; border-radius: 99px; background: var(--accent); color: var(--accent-fg); font: 700 10.5px/15px var(--f-body); }
 .tabs button { border: 0; background: transparent; color: var(--muted); padding: 7px 15px; border-radius: 99px; font-weight: 600; white-space: nowrap; }
 .tabs button:hover { color: var(--fg); }
@@ -1585,7 +1598,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   ::selection { background: color-mix(in srgb, var(--accent) 35%, transparent); }
 
   /* Barre du haut */
-  .mbar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px; align-items: center; column-gap: 6px;
+  .mbar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: 44px minmax(0, 1fr) auto 44px 44px; align-items: center; column-gap: 2px;
     min-height: calc(var(--mbar-h) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(8px, env(safe-area-inset-right, 0px)) 0 max(8px, env(safe-area-inset-left, 0px));
     background: var(--chrome); -webkit-backdrop-filter: saturate(1.4) blur(16px); backdrop-filter: saturate(1.4) blur(16px); border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent); }
   .mbar__mark { width: 44px; height: 44px; display: grid; place-items: center; }
@@ -1933,6 +1946,8 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
 .mk-row__p > .w { font: 600 14.5px var(--f-head); font-variant-numeric: tabular-nums; }
 .mk-row__m { display: inline-flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
 .mk-gap { font-size: 11.5px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mk-cote { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.mk-cote > .w { font-weight: 600; }
 .mk-gap.good { color: var(--link); }
 .mk-gap.bad { color: var(--danger); }
 .mk-clock { display: inline-flex; align-items: center; gap: 3px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -2054,7 +2069,7 @@ button.fcol__name:hover { color: var(--link); text-decoration: underline; }
   .mk-row__p { min-width: 0; max-width: 100%; }
   .mk-row__p > .w { max-width: 100%; font-size: 13px; overflow-wrap: anywhere; white-space: normal; }
   .mk-row__m { flex-wrap: wrap; justify-content: flex-end; gap: 2px 4px; max-width: 100%; white-space: normal; font-size: 10px; }
-  .mk-gap, .mk-clock { font-size: 10px; }
+  .mk-gap, .mk-clock, .mk-cote { font-size: 10px; }
   .mk-fbar, .mk-lhead, .mk-count { min-width: 0; max-width: 100%; }
   .mk-lhead { flex-wrap: wrap; }
 

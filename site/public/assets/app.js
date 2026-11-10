@@ -282,6 +282,8 @@
     editor: null,
     confirm: null,
     tagEdit: null,
+    // « Chercher une carte » : recherche dans toutes les cartes du jeu (GET /api/game/cards), gardée d'une ouverture à l'autre.
+    search: { q: '', busy: false, error: '', needsLink: false, cards: null, more: false, searched: '' },
     // « Fusionner avec… » (album d'une de tes collections) : {id (celle d'où l'on part, qui reçoit la fusion), other (id de
     // l'autre, null tant qu'elle n'est pas choisie), name (nom de la collection fusionnée), drop (supprimer l'autre après),
     // head (la première carte ajoutée devient un intercalaire), busy, error}.
@@ -8086,6 +8088,7 @@
           // Page hors des onglets (« Nouveautés ») : le premier onglet reste joignable au clavier.
           tabindex: S.tab === id || (id === TABS[0][0] && !TABS.some(([t]) => t === S.tab)) ? '0' : '-1', onClick: () => setTab(id), onKeydown: onTabKey,
         }, id === 'chat' ? chatTabLabel(label) : label))),
+        searchButton('search-link'),
         // « Nouveautés » : une page à part (pas un onglet), pastille tant que la dernière version n'a pas été vue ici.
         h('a', { class: ['news-link', { on: S.tab === 'nouveautes' }], href: '#/nouveautes', 'aria-current': S.tab === 'nouveautes' ? 'page' : null },
           [icon('spark', 'sm'), 'Nouveautés', newsUnseen.value ? h('span', { class: 'news-dot' }, ['nouveau', sr(' : une version que tu n\'as pas encore vue')]) : null]),
@@ -8198,6 +8201,7 @@
         h('span', { class: 'mbar__name' }, back ? back.title : M_TITLE[S.tab] || 'Le classeur'),
       ]),
       balanceChip('mbar__wb') || h('span', { class: 'mbar__wb', 'aria-hidden': 'true' }),
+      searchButton('mbar__act', true),
       h('button', { class: ['mbar__act', { bad: !!bad, err: S.refresh.error }], type: 'button', disabled: running,
         'aria-label': running ? 'Rafraîchissement en cours' : (sess.linked ? 'Rafraîchir la collection' : 'Relier mon compte du jeu'),
         onClick: refreshCollection }, [icon('refresh', running ? 'spin' : ''), bad || S.refresh.error ? h('i', { class: 'mbar__dot', 'aria-hidden': 'true' }) : null]),
@@ -11696,6 +11700,9 @@
     const g = Math.round(((amount - cote) / cote) * 100);
     return h('span', { class: ['mk-gap', g <= -10 ? 'good' : g >= 10 ? 'bad' : ''], title: `Cote : ${wfmt(cote)}` }, pctOf(amount, cote));
   }
+  // Cote de la variante d'une enchère, dans sa ligne (« cote 21W », « ~21W » estompé sous 3 ventes) : visible sans ouvrir la fiche.
+  const mkCote = (x) => (Number(x.cote) > 0 ? h('span', { class: 'mk-cote', title: x.n >= 3 ? `Cote sur ${fmt(x.n)} ventes` : 'Moins de 3 ventes : cote peu fiable' },
+    ['cote ', priceTag(x.cote, { tag: 'span', approx: !(x.n >= 3) })]) : null);
   // Une ligne de liste (cliquable en entier : sa fiche à droite, ou en plein écran sur téléphone).
   const mkRow = (sub, key, on, kids) => h('li', { key, id: 'mk-row-' + key, class: ['mk-row', { on }], role: 'option', 'aria-selected': String(on), onClick: () => pickRow(sub, key) }, kids);
   // Flèches du clavier dans une liste (la liste a le focus) : l'élément précédent ou suivant, Début et Fin.
@@ -11850,7 +11857,7 @@
             x.lead ? h('span', { class: 'flag ok' }, 'tu mènes') : broke ? h('span', { class: 'flag', title: `Il faut au moins ${fmt(bidMin(x))}W, ton solde est de ${fmt(bal.n)}W` }, 'au-dessus de ton solde')
               : soon ? h('span', { class: 'flag' }, 'finit bientôt') : null]) : null]),
         h('span', { class: 'mk-row__s' }, sub)]),
-      h('span', { class: 'mk-row__p' }, [priceTag(x.ask), h('span', { class: 'mk-row__m' }, [mkGap(x.ask, x.cote), mkClock(x.end)])]),
+      h('span', { class: 'mk-row__p' }, [priceTag(x.ask), h('span', { class: 'mk-row__m' }, [mkCote(x), mkGap(x.ask, x.cote), mkClock(x.end)])]),
     ]);
   }
   // Menu « ⋯ » d'un onglet de recherche (et clic droit sur l'onglet).
@@ -13243,6 +13250,100 @@
       ownFoot ? null : foot([closeBtn()]),
     ]);
   }
+  // ================================================================ « Chercher une carte » (toutes les cartes du jeu)
+  // N'importe quelle carte du jeu, possédée ou non : recherche par titre dans la base du jeu (GET /api/game/cards, avec le
+  // compte relié, comme « Depuis le jeu »), puis sa fiche : la tienne si tu l'as, sinon celle d'une carte qui manque
+  // (description, rareté, cotes, enchères en cours, ventes, chez quels amis). Recherche lancée 400 ms après la frappe.
+  let searchTimer = null;
+  let searchSeq = 0;
+  function openSearch() {
+    if (S.modal) closeModal();
+    S.openId = null;
+    S.openMissing = null;
+    S.mMore = false;
+    S.modal = 'search';
+  }
+  function setSearchQ(v) {
+    S.search.q = v;
+    clearTimeout(searchTimer);
+    if (v.trim().length >= 2) searchTimer = setTimeout(() => runSearch(), 400);
+  }
+  async function runSearch() {
+    const g = S.search;
+    clearTimeout(searchTimer);
+    const q = g.q.trim();
+    if (!q || (q === g.searched && g.cards && !g.error)) return;
+    const seq = ++searchSeq;
+    Object.assign(g, { busy: true, error: '', needsLink: false });
+    try {
+      const r = await api('GET', '/api/game/cards?q=' + encodeURIComponent(q));
+      if (seq !== searchSeq) return;
+      Object.assign(g, { cards: Array.isArray(r.cards) ? r.cards : [], more: !!r.more, searched: q });
+    } catch (e) {
+      if (seq !== searchSeq) return;
+      g.error = e.message;
+      if (e.data && e.data.needs_link) { g.needsLink = true; loadMe().catch(() => {}); }
+    } finally {
+      if (seq === searchSeq) g.busy = false;
+    }
+  }
+  function openSearchResult(c, ev) {
+    const mine = byTitle.value.get(normTitle(c.title));
+    S.modal = null;
+    if (mine && mine.length) openCardFrom(mine[0].id, ev);
+    else openMissingFrom({ title: c.title, description: c.category || null, image: c.image || null, status: 'ok', rarity: c.rarity }, ev);
+  }
+  // Bouton « Chercher une carte » (ligne des onglets ; loupe de la barre du haut sur téléphone).
+  const searchButton = (cls, short) => h('button', { class: cls, type: 'button', 'aria-label': short ? 'Chercher une carte' : null, title: 'Chercher une carte du jeu (touche /)', onClick: openSearch },
+    short ? [icon('search')] : [icon('search', 'sm'), 'Chercher une carte']);
+  function modalSearch() {
+    const g = S.search;
+    const linked = !!(S.me && S.me.session && S.me.session.linked);
+    const n = g.cards ? g.cards.length : 0;
+    const body = !linked || g.needsLink ? [
+      h('p', { class: 'small muted' }, "Pour chercher dans les cartes du jeu, le classeur a besoin de ton compte du jeu : relie-le une fois, dans l'onglet « Synchro »."),
+      h('div', { class: 'row-actions' }, [h('button', { class: 'btn small primary', type: 'button', onClick: () => { closeModal(); openSyncTab(); } }, [icon('link', 'sm'), 'Relier mon compte'])]),
+    ] : [
+      h('label', { class: 'sr', for: 'search-q' }, 'Titre de la carte'),
+      h('div', { class: 'row-actions' }, [
+        h('input', { id: 'search-q', class: 'field full', type: 'search', value: g.q, maxlength: 100, autocomplete: 'off', spellcheck: 'false', placeholder: 'Zeus, vache, Denethor…',
+          onInput: (e) => setSearchQ(e.target.value), onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); runSearch(); } } }),
+        h('button', { class: 'btn', type: 'button', disabled: g.busy || !g.q.trim(), onClick: runSearch }, [icon('search', 'sm'), g.busy ? 'Recherche…' : 'Chercher']),
+      ]),
+      errLine(g.error),
+      g.busy && !g.cards ? h('p', { class: 'progress-msg', role: 'status' }, 'Recherche dans les cartes du jeu…') : null,
+      n ? h('ul', { class: 'search-res', 'aria-label': `Cartes trouvées pour « ${g.searched} »` }, g.cards.map((c) => {
+        const mine = byTitle.value.get(normTitle(c.title));
+        const owned = mine ? mine.reduce((a, x) => a + (Number(x.count) || 1), 0) : 0;
+        const low = cheapest(owned ? ownCote(mine[0]) : wantedCote(c.title));
+        return h('li', { key: c.card_id }, [h('button', { class: 'search-res__row', type: 'button', onClick: (e) => openSearchResult(c, e) }, [
+          mkThumb(c.title, c.rarity, false, c.image),
+          h('span', { class: 'search-res__main' }, [
+            h('span', { class: 'search-res__t' }, [pill(c.rarity), h('span', { class: 'search-res__title' }, c.title)]),
+            c.category ? h('span', { class: 'search-res__s' }, c.category) : null,
+          ]),
+          h('span', { class: 'search-res__p' }, [
+            owned ? h('span', { class: 'flag ok' }, owned > 1 ? `à toi ×${fmt(owned)}` : 'à toi') : h('span', { class: 'flag' }, 'pas à toi'),
+            low != null ? h('span', { class: 'mk-cote', title: 'La moins chère de ses cotes fiables déjà connues du classeur (le détail par rareté est dans la fiche)' }, ['cote dès ', priceTag(low, { tag: 'span' })]) : null,
+          ]),
+        ])]);
+      })) : null,
+      n && g.more ? h('p', { class: 'note' }, `Les ${fmt(n)} premières : précise ta recherche pour voir les autres.`) : null,
+      g.cards && !n && !g.busy && !g.error ? h('p', { class: 'muted' }, `Aucune carte du jeu ne contient « ${g.searched} » dans son titre.`) : null,
+      !g.cards && !g.busy ? h('p', { class: 'small muted' }, 'Toutes les cartes du jeu, que tu les aies ou non. Un clic ouvre sa fiche : cotes par rareté, enchères en cours, dernières ventes, chez quels amis.') : null,
+    ];
+    return h(Modal, { key: 'search', wide: true, cls: 'search-modal', title: 'Chercher une carte', onClose: closeModal }, () => [...body, foot([closeBtn()])]);
+  }
+  // Touche « / » (hors d'un champ, sans fenêtre ouverte) : ouvre la recherche.
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || S.modal || !S.me) return;
+      const t = e.target;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName || ''))) return;
+      e.preventDefault();
+      openSearch();
+    });
+  }
   function modalTag() {
     const te = S.tagEdit;
     if (!te) return null;
@@ -13960,7 +14061,7 @@
     ]);
   }
 
-  const MODALS = { art: modalArt, trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, bid: modalBid, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
+  const MODALS = { search: modalSearch, art: modalArt, trade: modalTrade, friendsadd: modalFriendsAdd, sell: modalSell, bid: modalBid, install: modalInstall, editor: modalEditor, confirm: modalConfirm, tag: modalTag, switch: modalSwitch, link: modalLink, arrange: modalArrange, tagadd: modalTagAdd, merge: modalMerge };
 
   // ================================================================ rendu : accueil
   function viewWelcome() {

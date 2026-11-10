@@ -2146,6 +2146,16 @@ doigt), la carte penche et un reflet suit le pointeur : variables `--mx`, `--my`
 CSSOM (la CSP n'autorise aucun style en ligne), reflet sans inclinaison pour les cartes d'un ami. Polices :
 Outfit 800 et 900, Fraunces (Google Fonts, déjà permis par la CSP).
 
+## Chercher une carte (interface, 2026-11-10)
+
+Bouton « Chercher une carte » au bout de la ligne des onglets (loupe de la barre du haut sur téléphone ; touche « / » hors
+d'un champ) : fenêtre de recherche dans **toutes les cartes du jeu**, possédées ou non, par `GET /api/game/cards?q=` (comme
+« Depuis le jeu » : compte relié requis, sinon « Relier mon compte »). Lancée 400 ms après la frappe (2 caractères au
+moins) ou à « Chercher » ; la recherche et ses résultats restent d'une ouverture à l'autre. Chaque ligne : vignette,
+rareté, titre, catégorie, « à toi (×N) » ou « pas à toi », « cote dès 21W » (la moins chère des cotes fiables déjà connues
+du classeur). Un clic ouvre la fiche : la tienne si tu l'as, sinon celle d'une carte qui manque (cotes, enchères en cours,
+ventes par `GET /api/market/card?title=`, chez quels amis).
+
 ## Le marché (cotes, valeur, bonnes affaires)
 
 Demande du 2026-10-16, d'après la description de l'outil d'un ami (Python, Vercel). Avant le 2026-10-22, un favori lisait le marché dans la page du jeu, sans
@@ -2343,7 +2353,7 @@ en fenêtre et le Marché classique conservent leur disposition.
   la plus proche » par défaut, « Meilleure remise » = prix / cote, « Plus grosse économie » = cote − prix, « Prix croissant »). Chaque changement est
   **enregistré tout de suite dans l'onglet** (choix de l'utilisateur ; 0,8 s après la frappe dans un champ, une relecture de `GET /api/me`
   entre-temps ne le défait pas). Une ligne : vignette (illustration, sinon l'initiale sur la couleur de la rareté), rareté, titre, « brillante »,
-  « tu mènes » ou « finit bientôt », ses collections, avec ou sans mise, « +2 autres enchères », prix, écart à la cote (en vert à 10 % sous la cote),
+  « tu mènes » ou « finit bientôt », ses collections, avec ou sans mise, « +2 autres enchères », prix, cote de la rareté de l'exemplaire (« cote 21W », « ~ » estompé sous 3 ventes ; 2026-11-10), écart à la cote (en vert à 10 % sous la cote),
   temps restant (orange sous 1 h). **Fiche** : vignette, titre, rareté, collections, « Copier le nom », « Ouvrir la fiche » (la fiche de la carte qui
   manque) ; l'enchère (prix à battre ou de départ, cote de la rareté, économie, fin ; « Miser » (voir « Miser ») ou « tu mènes », « Ouvrir dans le jeu
   ↗ » ; écart à la cote et nombre de ventes, mises, meneur et vendeur lus sur le site du jeu, autres enchères intéressantes) ; puis le marché de la
