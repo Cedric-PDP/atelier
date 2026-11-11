@@ -3,6 +3,7 @@
     {"id": "2026-11-11", "date": "2026-11-11", "sections": [
       {"icon": "🛒", "title": "Marché", "items": [
         {"text": "Dans « Acheter », un filtre ne garde que les cartes de ta liste de souhaits du jeu.", "to": "#/marche", "link": "Marché"},
+        {"text": "Depuis une collection, menu « Plus », « Onglet dans Acheter » crée un onglet de recherche pour elle seule.", "to": "#/marche", "link": "Marché"},
         {"text": "Tu peux exclure jusqu'à 10 000 cartes une à une des échanges et ventes (1 000 avant)."}]}]},
     {"id": "2026-11-10", "date": "2026-11-10", "sections": [
       {"icon": "🔎", "title": "Chercher une carte", "items": [

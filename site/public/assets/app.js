@@ -7325,6 +7325,16 @@
     MK.edit = true;
     nextTick(() => { const el = document.getElementById('deal-tab-name'); if (el && typeof el.focus === 'function') { el.focus(); if (typeof el.select === 'function') el.select(); } });
   }
+  // « Onglet dans Acheter » (menu « Plus » d'une collection, 2026-11-11, demande de l'utilisateur) : un onglet de recherche
+  // nommé comme la collection, qui n'inclut qu'elle ; ouvre celui qui existe déjà (cette seule collection incluse).
+  function dealTabForCol(col) {
+    const list = dealTabs.value;
+    const had = list.find((t) => t.f.cols.length === 1 && t.f.cols[0] === col.key);
+    if (!had && list.length >= DEAL_TABS_MAX) { notify(`${DEAL_TABS_MAX} onglets au plus dans Acheter : supprimes-en un d'abord.`, true); return; }
+    const id = had ? had.id : newDealTabId();
+    if (!had) saveDealTabs([...list, { id, name: String(col.name).slice(0, DEAL_NAME_MAX), f: normDealFilter({ ...DEAL_DEFAULT, cols: [col.key] }) }]);
+    location.hash = '#/marche?onglet=' + encodeURIComponent(id);
+  }
   const renameDealTab = (name) => saveDealTabs(dealTabs.value.map((t) => (t.id === curDealTab.value.id ? { ...t, name: String(name).slice(0, DEAL_NAME_MAX) } : t)), true);
   function dupDealTab(id) {
     const list = dealTabs.value;
@@ -8722,6 +8732,7 @@
           // Faite des tableaux d'une page : la rouvrir pour en faire une autre collection (d'autres sections, tout ensemble).
           col.page && col.column ? h('button', { class: 'btn', type: 'button', onClick: () => openPage(col.page, true) }, [icon('plus', 'sm'), 'Autres sections de la page']) : null,
           col.cat ? wpLink(CAT_NS + catName(col.t.source)) : col.page ? wpLink(col.page) : null,
+          classicMarket() ? null : h('button', { class: 'btn', type: 'button', onClick: () => dealTabForCol(col) }, [icon('plus', 'sm'), 'Onglet dans Acheter (Marché)']),
           h('button', { class: 'btn danger', type: 'button', onClick: () => askDeleteTarget(col.t) }, [icon('trash', 'sm'), 'Supprimer']),
         ]),
       ];

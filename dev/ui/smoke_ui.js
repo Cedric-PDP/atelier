@@ -6202,6 +6202,7 @@ async function main() {
     const box = (id) => d.getElementById(id);
     await openRow('Olympe');
     check(btnIn(d.body, 'Fusionner avec…'), '« Fusionner avec… » absent de l\'album de « Olympe »');
+    check(btnIn(d.body, 'Onglet dans Acheter (Marché)'), '« Onglet dans Acheter (Marché) » absent de l\'album de « Olympe »');
     btnIn(d.body, 'Fusionner avec…').click();
     await settle();
     check(modal() && text(modal().querySelector('h2')) === 'Fusionner « Olympe » avec…', 'fenêtre « Fusionner avec… » absente');
