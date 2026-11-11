@@ -604,7 +604,7 @@ await test('renouvellement de la clé principale ; routes de l\'ancien favori re
   assert.equal((await call('DELETE', 'me', { key: r.json.key })).status, 200);
 });
 
-await test('préférences : {} par défaut, remplacement entier, 16 Ko, objet seulement, par compte', async () => {
+await test('préférences : {} par défaut, remplacement entier, 256 Ko, objet seulement, par compte', async () => {
   const kim = await signup('Kim');
   const lea = await signup('Léa');
   let r = await call('GET', 'me', { key: kim.key });
@@ -630,19 +630,19 @@ await test('préférences : {} par défaut, remplacement entier, 16 Ko, objet se
     r = await call('PATCH', 'me', { key: kim.key, body: { prefs: bad } });
     assert.equal(r.status, 400, JSON.stringify(bad));
   }
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(16384) } } });
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(262144) } } });
   assert.equal(r.status, 413);
-  assert.match(r.json.error, /16 Ko/);
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'é'.repeat(8194) } } }); // 16 396 octets, 8 202 caractères
+  assert.match(r.json.error, /256 Ko/);
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'é'.repeat(131074) } } }); // 262 156 octets, 131 082 caractères
   assert.equal(r.status, 413);
-  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(16000) } } });
+  r = await call('PATCH', 'me', { key: kim.key, body: { prefs: { x: 'y'.repeat(200000) } } });
   assert.equal(r.status, 200);
   r = await call('PATCH', 'me', { key: kim.key, body: {} });
   assert.equal(r.status, 400);
   // Chaque compte a les siennes.
   assert.deepEqual((await call('GET', 'me', { key: lea.key })).json.prefs, {});
   await call('PATCH', 'me', { key: lea.key, body: { prefs: { hide_catalog: true } } });
-  assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.x.length, 16000);
+  assert.equal((await call('GET', 'me', { key: kim.key })).json.prefs.x.length, 200000);
   await call('DELETE', 'me', { key: kim.key });
   await call('DELETE', 'me', { key: lea.key });
 });

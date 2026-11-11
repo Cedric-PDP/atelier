@@ -861,7 +861,7 @@
   // dans « Échanges possibles » (donc ni « Ce qui pourrait intéresser tes amis » ni « Proposer un échange ») ni dans
   // « Vendre » (Marché) ; GET /api/members dit aussi à tes amis lesquelles de tes cartes le sont (keep, sans les
   // tags), pour que leurs échanges ne les demandent pas.
-  const KEEP_MAX_CARDS = 1000;
+  const KEEP_MAX_CARDS = 10000; // 1 000 avant le 2026-11-11 (préférences de 256 Ko)
   const KEEP_MAX_TAGS = 100;
   const keepPref = computed(() => {
     const k = S.prefs && S.prefs.keep && typeof S.prefs.keep === 'object' ? S.prefs.keep : {};
@@ -7140,7 +7140,7 @@
   // cote) ; cols : collections incluses (vide : toutes ; une affaire passe si elle sert à l'une d'elles) ; xcols : collections
   // exclues (jamais une affaire qui sert à l'une d'elles) ; sort : DEAL_SORTS. L'ancien col (une seule collection, avant le
   // 2026-10-29) est repris dans cols.
-  const DEAL_DEFAULT = Object.freeze({ pct: null, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, cols: Object.freeze([]), xcols: Object.freeze([]), sort: 'end' });
+  const DEAL_DEFAULT = Object.freeze({ pct: null, soon: true, min: null, max: null, save: null, r: Object.freeze([]), shiny: '', bid: '', end: 0, n: 3, cols: Object.freeze([]), xcols: Object.freeze([]), sort: 'end', wish: false });
   const DEAL_SORTS = [['end', 'Fin la plus proche'], ['pct', 'Meilleure remise'], ['save', 'Plus grosse économie'], ['price', 'Prix croissant']];
   const DEAL_ENDS = [[0, 'Toutes'], [1, '< 1 h'], [6, '< 6 h'], [24, '< 24 h']];
   const DEAL_SALES = [3, 5, 10];
@@ -7171,6 +7171,7 @@
       cols,
       xcols: colKeys(o.xcols).filter((k) => !cols.includes(k)),
       sort: pick(o.sort, DEAL_SORTS.map(([v]) => v), DEAL_DEFAULT.sort),
+      wish: o.wish === true,
     };
   }
   // Onglets de recherche de « Acheter » (2026-10-29), dans les préférences du compte (PATCH /api/me : les mêmes sur tous
@@ -7218,6 +7219,7 @@
     if (f.bid) out.push({ bid: 'avec mise', nobid: 'sans mise', lead: 'tu mènes' }[f.bid]);
     if (f.end) out.push(`fin dans moins de ${f.end} h`);
     if (f.n !== DEAL_DEFAULT.n) out.push(`${f.n} ventes et plus`);
+    if (f.wish) out.push('souhaits du jeu');
     return out;
   }
   // Une affaire qui ne passe la remise demandée que parce qu'elle finit bientôt sans mise (son étiquette « finit bientôt »).
@@ -11584,6 +11586,10 @@
   // Les collections d'un filtre qui existent encore ; une affaire passe si elle sert à l'une des incluses (aucune : toutes)
   // et à aucune des exclues.
   const liveCols = (keys) => keys.filter((k) => collections.value.all.some((c) => c.key === k));
+  // « Souhaits du jeu » (2026-11-11, demande de l'utilisateur) : seulement les affaires qui servent à une collection
+  // synchronisée avec la liste de souhaits du jeu (toutes en mode « Toutes mes collections », sinon celles cochées).
+  const wishCol = (c) => !!(S.me && S.me.wish_mode === 'all') || !!(c.t && c.t.wish_sync);
+  const wishPass = (d, f) => !f.wish || d.cols.some(wishCol);
   const colsPass = (d, inc, exc) => (!inc.length || d.cols.some((c) => inc.includes(c.key))) && !d.cols.some((c) => exc.includes(c.key));
   // Nombre d'affaires de chaque onglet de recherche (le chiffre de son onglet).
   const dealTabCounts = computed(() => {
@@ -11592,7 +11598,7 @@
     return new Map(dealTabs.value.map((t) => {
       const inc = liveCols(t.f.cols);
       const exc = liveCols(t.f.xcols);
-      return [t.id, pool ? pool.all.filter((d) => dealMatches(d.x, t.f, now) && colsPass(d, inc, exc)).length : 0];
+      return [t.id, pool ? pool.all.filter((d) => dealMatches(d.x, t.f, now) && wishPass(d, t.f) && colsPass(d, inc, exc)).length : 0];
     }));
   });
   // L'onglet ouvert : all = toutes les affaires valables ; pass = celles qui passent ses filtres hors collections ; list =
@@ -11604,7 +11610,7 @@
     const f = dealFilter.value;
     const now = Date.now();
     const all = pool ? pool.all : [];
-    const pass = all.filter((d) => dealMatches(d.x, f, now));
+    const pass = all.filter((d) => dealMatches(d.x, f, now) && wishPass(d, f));
     const counts = new Map();
     for (const d of pass) for (const c of d.cols) counts.set(c.key, { col: c, n: ((counts.get(c.key) || {}).n || 0) + 1 });
     for (const k of [...f.cols, ...f.xcols]) {
@@ -11644,6 +11650,7 @@
       group('Brillante', segs('Brillante', f.shiny, [['', 'Peu importe'], ['only', 'Seulement'], ['no', 'Exclure']], (v) => setDealFilter({ shiny: v }))),
       group('Enchère', segs('Enchère', f.bid, [['', 'Toutes'], ['bid', 'Avec mise'], ['nobid', 'Sans mise'], ['lead', 'Tu mènes']], (v) => setDealFilter({ bid: v }))),
       group('Fin', segs('Fin', f.end, DEAL_ENDS, (v) => setDealFilter({ end: v }))),
+      group('Souhaits', segs('Souhaits du jeu', f.wish, [[false, 'Peu importe'], [true, 'Seulement ma liste de souhaits']], (v) => setDealFilter({ wish: v }))),
       group('Cote', segs('Ventes au moins', f.n, DEAL_SALES.map((n) => [n, `${n} ventes et +`]), (v) => setDealFilter({ n: v }))),
       h('div', { class: 'deal-filters__foot' }, [
         h('button', { class: 'btn small', type: 'button', disabled: !dealFilterWords(f).length, onClick: clearDealFilter }, 'Effacer les filtres'),

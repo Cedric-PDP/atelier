@@ -13,7 +13,7 @@ export const USER_COLUMNS = 'id, name, created_at, fetched_at, new_ids, prefs, s
   + 'sync_click_at, auto_sync, fast_sync, sync_fails, link_hash, link_until, wikibidous, wikibidous_at, auto_friend, game_friends, '
   + 'auto_wish, wish_mode, wish_dirty, wish_state';
 const DEFAULT_MAX_USERS = 50;
-const MAX_PREFS_BYTES = 16 * 1024; // 4 Ko avant le 2026-10-24 (filtres du marché enregistrés)
+const MAX_PREFS_BYTES = 256 * 1024; // 4 Ko avant le 2026-10-24, 16 Ko avant le 2026-11-11 (cartes exclues à la main)
 
 // Pseudo dans le jeu (2026-10-18, « pour qu'on puisse se trouver ») : facultatif, 40 caractères au plus, sans espace
 // ni « / ? # < > » (il sert dans l'adresse de son profil du jeu) ; vide = aucun.
@@ -175,7 +175,7 @@ export async function getMe(env, user) {
 // vite (marketread.js) ; `auto_friend` (booléen, coupé par défaut) envoie seul une demande d'ami du jeu aux autres membres
 // reliés (friends.js) ; `auto_wish` (booléen, coupé par défaut) tient sa liste de souhaits du jeu (wishlist.js : cochée, une
 // passe est due tout de suite) ; `shared` (booléen) active ou coupe le partage entre membres,
-// `shared_targets` (booléen, seulement avec `shared`) celui des collections à compléter (members.js) ; `prefs` (objet JSON de 16 Ko au plus) remplace les préférences entières ; son
+// `shared_targets` (booléen, seulement avec `shared`) celui des collections à compléter (members.js) ; `prefs` (objet JSON de 256 Ko au plus) remplace les préférences entières ; son
 // contenu n'est pas vérifié (l'interface y range ce qu'elle veut).
 export async function patchMe(env, user, body) {
   const hasName = Object.hasOwn(body, 'name');
@@ -203,7 +203,7 @@ export async function patchMe(env, user, body) {
     if (!p || typeof p !== 'object' || Array.isArray(p)) throw new HttpError(400, 'Les préférences doivent être un objet JSON.');
     prefs = JSON.stringify(p);
     if (prefs.length > MAX_PREFS_BYTES || byteLength(prefs) > MAX_PREFS_BYTES) {
-      throw new HttpError(413, 'Préférences trop volumineuses : 16 Ko au plus.');
+      throw new HttpError(413, 'Préférences trop volumineuses : 256 Ko au plus.');
     }
   }
   // Partage entre membres (choisi, désactivé par défaut ; identifiant public tiré à chaque activation) : patchSharing.

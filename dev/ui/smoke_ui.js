@@ -318,7 +318,7 @@ function mockApi() {
       }
       if (p === '/api/me' && method === 'PATCH') {
         if ('prefs' in body) {
-          if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 16384) return json(400, { error: 'Préférences invalides.' });
+          if (!body.prefs || typeof body.prefs !== 'object' || JSON.stringify(body.prefs).length > 262144) return json(400, { error: 'Préférences invalides.' });
           st.prefs = body.prefs;
         }
         if ('pseudo' in body) {
