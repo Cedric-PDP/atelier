@@ -212,10 +212,10 @@ export async function patchMe(env, user, body) {
   const fastSync = hasFast ? (body.fast_sync ? 1 : 0) : user.fast_sync ? 1 : 0;
   const autoFriend = hasFriend ? (body.auto_friend ? 1 : 0) : user.auto_friend ? 1 : 0;
   // Compatibilité avec les anciennes pages ouvertes : le réglage global sélectionne les collections existantes.
-  if (hasWish) await env.DB.prepare('UPDATE targets SET wish_sync = ?2 WHERE user_id = ?1').bind(user.id, body.auto_wish ? 1 : 0).run();
+  if (hasWish) await env.DB.prepare("UPDATE targets SET wish_sync = ?2 WHERE user_id = ?1 AND coalesce(source, '') <> 'wishlist:game'").bind(user.id, body.auto_wish ? 1 : 0).run();
   const wishMode = hasWishMode ? body.wish_mode : hasWish ? (body.auto_wish ? 'all' : 'selected') : user.wish_mode || 'selected';
   const work = hasWish || hasWishMode ? await env.DB.prepare(`SELECT (EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)
-    OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)) AS pending`).bind(user.id).first() : null;
+    OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1 AND coalesce(source, '') <> 'wishlist:game')) AS pending`).bind(user.id).first() : null;
   const autoWish = hasWish || hasWishMode ? (wishMode === 'all' || work.pending ? 1 : 0) : user.auto_wish ? 1 : 0;
   // Case cochée à l'instant : la liste de souhaits est due (wish_dirty), le routeur lance la passe après la réponse.
   const wishDirty = hasWish || hasWishMode || (autoWish && !user.auto_wish) ? 1 : user.wish_dirty ? 1 : 0;

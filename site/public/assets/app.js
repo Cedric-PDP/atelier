@@ -2351,6 +2351,14 @@
     if (on) { S.wishMissing.message = ''; loadMissingWishes(); }
   });
   function viewTargetWish(t) {
+    // Collection « Souhaits » (wishlist.js, fillWishTarget) : tenue par le classeur, jamais renvoyée vers le jeu.
+    if (t.source === 'wishlist:game') {
+      return h('section', { class: 'album-wish', 'aria-label': 'Liste de souhaits du jeu' }, [
+        h('p', { class: 'small muted' }, ['Tenue par le classeur à chaque mise à jour des souhaits : les souhaits du jeu qui ne sont dans aucune autre collection. Une carte obtenue ou ajoutée à une autre collection en sort ; une modification à la main est remplacée. ',
+          h('a', { href: '#/reglages' }, 'Réglages')]),
+        S.me && S.me.wish ? wishLine(S.me.wish) : null,
+      ]);
+    }
     if (S.me && S.me.wish_mode === 'all') return null;
     const linked = S.me && S.me.session && S.me.session.linked && !S.me.session.lost;
     const ownMessage = S.autoWish.targetId === t.id;
@@ -8837,7 +8845,8 @@
     const auto = col.kind === 'target' ? autoOf(t) : null;
     const chip = (label) => h('span', { class: 'gchip' }, label);
     const out = [];
-    if (S.me && S.me.wish_mode !== 'all' && t.wish_sync) out.push(chip('souhaits'));
+    if (t.source === 'wishlist:game') out.push(chip('souhaits du jeu'));
+    else if (S.me && S.me.wish_mode !== 'all' && t.wish_sync) out.push(chip('souhaits'));
     if (t.auto_tag && t.auto_tag.enabled && t.auto_tag.tag) out.push(chip('tag « ' + t.auto_tag.tag + ' »'));
     if (t.auto_favorite) out.push(chip('favoris'));
     if (auto) out.push(chip('ajout automatique'));

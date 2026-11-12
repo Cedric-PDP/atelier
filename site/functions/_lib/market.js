@@ -136,10 +136,14 @@ export const WANT_ORDER = `o AS (
 // plusieurs collections prend la place de la première. Rapprochement par titre seulement : le serveur n'a
 // pas les qids des cartes (une carte possédée sous un autre titre est écartée plus tard, par son card_id). Aussi lu par la
 // liste de souhaits du jeu (wishlist.js), avec une autre limite.
+// Collection « Souhaits » tenue par la liste de souhaits (wishlist.js) : jamais synchronisée vers le jeu.
+export const WISH_SOURCE = 'wishlist:game';
+// Condition SQL « collection synchronisée vers le jeu » d'une ligne de targets (préfixe `a`, '' sans alias ; membre ?1).
+export const wishSyncedSql = (a = '') => `coalesce(${a}source, '') <> '${WISH_SOURCE}' AND (${a}wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))`;
 export const wantedSql = (limit, wishOnly = false) => `WITH ${WANT_ORDER}, it AS (
     SELECT json_extract(i.value, '$.title') AS t, o.r * 10000000 + CAST(i.key AS INTEGER) AS p
     FROM targets AS t0 JOIN o ON o.id = t0.id, json_each(t0.items) AS i
-    WHERE t0.user_id = ?1 ${wishOnly ? "AND (t0.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))" : ''} AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
+    WHERE t0.user_id = ?1 ${wishOnly ? `AND ${wishSyncedSql('t0.')}` : ''} AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'
   )
   SELECT t FROM it
   WHERE typeof(t) = 'text' AND length(t) BETWEEN 1 AND 300

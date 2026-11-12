@@ -4676,6 +4676,59 @@ await test('souhaits par collection : sélection, chevauchement, désactivation,
   e.DB.close();
 });
 
+await test('collection « Souhaits » : souhaits du jeu hors de toute collection, tenue à chaque passe, jamais renvoyée vers le jeu', async () => {
+  const e = makeEnv(); supa.reset();
+  const m = await cronMember('SouhaitCol', e, mini(2));
+  supa.cards = [gameCard('g-a', 'Manque A'), gameCard('g-m', 'Manuel M'), gameCard('g-n', 'Manuel N'), gameCard('g-o', 'Dans B')];
+  // g-m, g-n : souhaits manuels ; g-o : souhait manuel déjà dans une collection non synchronisée ; mini-00001 : possédée.
+  supa.wishlist = ['g-m', 'g-n', 'g-o', 'mini-00001'].map(card_id => ({ user_id: m.uid, card_id }));
+  // Les passes lancées en arrière-plan par l'enregistrement sont attendues : sinon elles croisent le clic suivant (429).
+  const save = async (id, titles, wish_sync) => { const waits = []; const r = await call('POST', 'targets/save', { key: m.u.key, e, waits,
+    body: { id, name: id, items: titles.map(title => ({ title })), wish_sync } }); await Promise.all(waits); return r; };
+  const sync = async () => { oldWish(m.id, e); const r = await call('POST', 'wishlist/sync', { key: m.u.key, e, body: {} }); assert.equal(r.status, 200, JSON.stringify(r.json)); return r; };
+  const col = () => e.DB.sqlite.prepare("SELECT id, name, items, wish_sync FROM targets WHERE user_id = ? AND source = 'wishlist:game'").all(m.id);
+  await save('a', ['Manque A'], true);
+  await save('b', ['Dans B'], false);
+  await sync();
+  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-m', 'g-n', 'g-o']);
+  let rows = col();
+  assert.equal(rows.length, 1);
+  assert.deepEqual([rows[0].id, rows[0].name], ['souhaits-du-jeu', 'Souhaits']);
+  assert.deepEqual(JSON.parse(rows[0].items).map(i => i.title), ['Manuel M', 'Manuel N'], 'ni le souhait suivi (A), ni celui d’une autre collection (B), ni le possédé');
+  // Même en mode « Toutes mes collections », elle n'est pas renvoyée vers le jeu (sinon ses cartes deviendraient suivies).
+  { const w = []; assert.equal((await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode: 'all' }, waits: w })).status, 200); await Promise.all(w); }
+  await sync();
+  assert.deepEqual(supa.wishes(m.uid), ['g-a', 'g-m', 'g-n', 'g-o']);
+  assert.equal(e.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM wish_managed WHERE user_id = ? AND card_id IN (?, ?)').get(m.id, 'g-m', 'g-n').n, 0);
+  assert.deepEqual(JSON.parse(col()[0].items).map(i => i.title), ['Manuel M', 'Manuel N']);
+  // Enregistrée par la page sans sa source, avec wish_sync : elle reste la collection « Souhaits », non synchronisée.
+  const w0 = [];
+  let r = await call('POST', 'targets/save', { key: m.u.key, e, waits: w0, body: { id: 'souhaits-du-jeu', name: 'Souhaits', items: [{ title: 'Manuel M' }], wish_sync: true } });
+  assert.equal(r.status, 200, JSON.stringify(r.json));
+  await Promise.all(w0);
+  assert.deepEqual([r.json.target.source, r.json.target.wish_sync], ['wishlist:game', false]);
+  assert.equal((await save('c', [], false)).status, 200);
+  r = await call('POST', 'targets/save', { key: m.u.key, e, body: { id: 'c', name: 'c', items: [], source: 'wishlist:game' } });
+  assert.equal(r.status, 400, 'source réservée');
+  // Seule la collection « Souhaits » et aucune collection cochée : pas de passe due.
+  { const w = []; assert.equal((await call('PATCH', 'me', { key: m.u.key, e, body: { wish_mode: 'selected' }, waits: w })).status, 200); await Promise.all(w); }
+  await save('a', ['Manque A'], false);
+  await sync();
+  assert.equal(userRow(m.id, e).auto_wish, 0);
+  assert.deepEqual(JSON.parse(col()[0].items).map(i => i.title), ['Manuel M', 'Manuel N'], 'A, encore dans la collection a, n’y entre pas');
+  await save('a', ['Manque A'], true);
+  await sync();
+  // Une carte obtenue en sort ; un souhait retiré dans le jeu aussi.
+  supa.wishlist = supa.wishlist.filter(w => w.card_id !== 'g-n');
+  e.DB.sqlite.prepare('INSERT INTO cards (user_id, card_id, data) VALUES (?, ?, ?)').run(m.id, 'g-m', JSON.stringify({ title: 'Manuel M', count: 1, rarity: 'C' }));
+  e.DB.sqlite.prepare('UPDATE users SET cards_rev = cards_rev + 1 WHERE id = ?').run(m.id);
+  await sync();
+  rows = col();
+  assert.equal(rows.length, 1, 'gardée vide');
+  assert.deepEqual(JSON.parse(rows[0].items), []);
+  e.DB.close();
+});
+
 await test('souhaits stricts : tous les possédés retirés, souhaits manuels non possédés conservés, lots et reprise après refus', async () => {
   const e = makeEnv(); supa.reset();
   const m = await cronMember('SouhaitStrict', e, mini(205));

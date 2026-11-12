@@ -1086,6 +1086,15 @@ a sa case décochée, mais participe quand même en mode complet. Bouton manuel 
   Les retraits protègent tous les titres sélectionnés, sans la limite de recherche. Un refus du jeu arrête la passe et
   apparaît dans son bilan. La lecture réelle de `wishlist_items` et les écritures par lots restent à valider sur un
   compte réel ; les tests utilisent le faux jeu.
+- **Collection « Souhaits »** (2026-11-12, demande de l'utilisateur) : chaque passe (étape 5, `fillWishTarget`) range
+  dans la collection de source `wishlist:game` (id `souhaits-du-jeu`, nom « Souhaits ») les souhaits du jeu qui ne sont
+  ni possédés, ni suivis (`wish_managed`), ni dans une autre collection (par titre ou par carte de `game_titles`), triés
+  par titre. Les titres inconnus du cache sont lus dans `cards` du jeu (`id=in.(…)`), dans la limite de requêtes de la
+  passe ; le reste attend la passe suivante, hors du bilan. Créée au premier souhait de ce genre (50 collections et 5 Mo
+  au plus), puis remplacée à chaque passe (une modification à la main est écrasée), gardée vide. Elle n'est jamais
+  synchronisée vers le jeu, même en mode complet (`wishSyncedSql`, market.js) : ses cartes deviendraient suivies et la
+  quitteraient. Son album remplace la case de synchro par une explication. Elle n'existe que pour un membre dont la
+  passe tourne (mode complet ou au moins une collection cochée).
 - **Titres sans cartes** (2026-10-26) : le bilan propose « Voir les titres sans cartes » si `none > 0`.
   La page `#/souhaits-sans-cartes` couvre toutes les collections synchronisées, même ouverte depuis un album.
   Chaque titre indique ses collections et propose de copier son nom pour une vérification manuelle ; cases à cocher,

@@ -4,10 +4,10 @@ import { HttpError } from './http.js';
 import { acquireLease, releaseLease } from './game.js';
 import { LEASE_MS } from './refresh.js';
 import { sha256Hex } from './util.js';
-import { WANT_ORDER } from './market.js';
+import { WANT_ORDER, wishSyncedSql } from './market.js';
 import { NOT_FOUND_MS, WANTED_MAX, wishState } from './wishlist.js';
 
-const ACTIVE = `(wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))`;
+const ACTIVE = `(${wishSyncedSql()})`;
 // Les albums sont dépliés une seule fois, et non une fois par titre manquant.
 // Même sélection/priorité que wantedSql ; les titres possédés sont également lus une seule fois.
 const LIST = `WITH ${WANT_ORDER}, entries AS MATERIALIZED (

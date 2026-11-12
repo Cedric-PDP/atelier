@@ -6,7 +6,7 @@
 import { HttpError } from './http.js';
 import { SUPA_GAP_MS, acquireLease, freshAuth, inList, lots, releaseLease, sessionOf, supaGet, supaWrite } from './game.js';
 import { LEASE_MS } from './refresh.js';
-import { wantedSql } from './market.js';
+import { WISH_SOURCE, wantedSql, wishSyncedSql } from './market.js';
 import { nowIso } from './util.js';
 import { USER_COLUMNS } from './auth.js';
 
@@ -22,6 +22,13 @@ export const SOON_GAP_MS = 60_000; // pas deux passes en moins d'une minute (sau
 export const RETRY_ERROR_MS = 3600_000; // après un échec, une heure avant la passe suivante du cron (sauf changement)
 export const NOT_FOUND_MS = 7 * 24 * 3600_000; // un titre sans carte du jeu est recherché à nouveau après 7 jours
 const RESOLVE_LOT = 80; // titres par recherche de cartes du jeu
+
+// Collection « Souhaits » (2026-11-12, demande de l'utilisateur) : tenue par chaque passe, elle reprend les souhaits du
+// jeu qui ne sont dans aucune autre collection (souhaits posés à la main dans le jeu). Repérée par sa source, jamais
+// synchronisée vers le jeu (ses cartes deviendraient des souhaits suivis et la quitteraient).
+export { WISH_SOURCE } from './market.js';
+export const WISH_TARGET_ID = 'souhaits-du-jeu';
+export const WISH_TARGET_NAME = 'Souhaits';
 
 // Interrupteur : `known` à false, plus aucune passe (clic : 503), si le jeu change sa table.
 export const WISH_ROUTE = { known: true };
@@ -60,7 +67,7 @@ const CARD_ID = /^[A-Za-z0-9_-]{1,100}$/;
 // Tous les titres cochés, sans la limite de recherche par passe : une carte commune doit rester souhaitée.
 const SELECTED = `SELECT DISTINCT json_extract(i.value, '$.title') AS title
   FROM targets AS t, json_each(t.items) AS i WHERE t.user_id = ?1
-    AND (t.wish_sync = 1 OR EXISTS (SELECT 1 FROM users WHERE id = ?1 AND wish_mode = 'all'))
+    AND ${wishSyncedSql('t.')}
     AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok'`;
 const DROP_MANAGED = `WITH selected AS MATERIALIZED (${SELECTED}), selected_ids AS MATERIALIZED (
     SELECT DISTINCT g.card_id FROM selected AS s CROSS JOIN game_titles AS g WHERE g.title = s.title AND g.card_id <> '')
@@ -173,6 +180,8 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
       }
       out.left = pendingDrop + add.length - done + unresolved;
     }
+    // 5. La collection « Souhaits » (au mieux : un titre pas encore cherché attend la passe suivante, hors du bilan).
+    await fillWishTarget(env, user, s, wish, { room, wait });
     out.size = wish.size;
   } catch (err) {
     out.error = err && err.message ? String(err.message).slice(0, 300) : 'Échec de la mise à jour de la liste de souhaits.';
@@ -181,9 +190,76 @@ export async function wishPass(env, user, s, { via, max = PASS_MAX, gap = SUPA_G
   }
   await saveState(db, user.id, out, missing);
   // Conserve une modification de collection arrivée pendant la passe (wish_dirty).
-  await db.prepare(`UPDATE users SET auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
+  await db.prepare(`UPDATE users SET auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1 AND coalesce(source, '') <> 'wishlist:game')
     OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(user.id).run();
   return out;
+}
+
+// Titres des autres collections (éléments `ok`) et cartes du jeu qu'ils désignent.
+const IN_TARGETS = `WITH s AS MATERIALIZED (SELECT DISTINCT json_extract(i.value, '$.title') AS title
+    FROM targets AS t, json_each(t.items) AS i WHERE t.user_id = ?1 AND coalesce(t.source, '') <> '${WISH_SOURCE}'
+      AND i.type = 'object' AND coalesce(json_extract(i.value, '$.status'), 'ok') = 'ok')
+  SELECT title, NULL AS id FROM s WHERE title IS NOT NULL
+  UNION ALL SELECT NULL, g.card_id FROM s CROSS JOIN game_titles AS g WHERE g.title = s.title AND g.card_id <> ''`;
+const TITLES_OF = `SELECT g.card_id AS id, min(g.title) AS title FROM json_each(?1) AS j CROSS JOIN game_titles AS g
+  WHERE g.card_id = j.value GROUP BY g.card_id`;
+
+// Remplit la collection « Souhaits » avec les souhaits du jeu `wish` (card_id) qui ne sont ni possédés, ni suivis, ni
+// dans une autre collection. Créée au premier souhait de ce genre (50 collections et 5 Mo au plus, comme ailleurs),
+// remplacée ensuite à chaque passe (une modification à la main est écrasée), gardée vide. → titres encore à chercher.
+export async function fillWishTarget(env, user, s, wish, { room, wait }) {
+  const db = env.DB;
+  const ids = [...wish];
+  const [inT, managed, owned] = await Promise.all([
+    db.prepare(IN_TARGETS).bind(user.id).all(),
+    db.prepare('SELECT card_id FROM wish_managed WHERE user_id = ?1').bind(user.id).all(),
+    ids.length ? db.prepare(OWNED).bind(user.id, JSON.stringify(ids)).all() : { results: [] },
+  ]);
+  const takenTitles = new Set(inT.results.filter((r) => r.title).map((r) => r.title));
+  const taken = new Set([...inT.results.filter((r) => r.id).map((r) => r.id), ...managed.results.map((r) => r.card_id),
+    ...owned.results.map((r) => r.id)]);
+  const free = ids.filter((id) => !taken.has(id));
+  const titles = new Map();
+  if (free.length) for (const r of (await db.prepare(TITLES_OF).bind(JSON.stringify(free)).all()).results) titles.set(r.id, r.title);
+  let left = 0;
+  for (const part of lots(free.filter((id) => !titles.has(id)), RESOLVE_LOT)) {
+    if (!room()) { left += part.length; continue; }
+    const { rows } = await supaGet(env, user, s, `cards?select=id,wikipedia_title&id=in.${inList(part)}&limit=1000`, { gap: wait() });
+    const pairs = [];
+    for (const c of rows) {
+      const t = c && typeof c.wikipedia_title === 'string' ? c.wikipedia_title.trim() : '';
+      if (part.includes(String(c && c.id)) && t && t.length <= 300) { titles.set(String(c.id), t); pairs.push([t, String(c.id)]); }
+    }
+    // Le cache commun ne remplace pas une carte déjà connue pour ce titre (la française est préférée à la recherche).
+    if (pairs.length) await db.prepare(`INSERT OR IGNORE INTO game_titles (title, card_id, at)
+      SELECT json_extract(value, '$[0]'), json_extract(value, '$[1]'), ?2 FROM json_each(?1)`).bind(JSON.stringify(pairs), nowIso()).run();
+  }
+  const seen = new Set();
+  const items = [];
+  for (const id of free) {
+    const t = titles.get(id);
+    if (!t || takenTitles.has(t) || seen.has(t)) continue;
+    seen.add(t);
+    items.push({ title: t, description: null, image: null, status: 'ok' });
+  }
+  items.sort((a, b) => a.title.localeCompare(b.title, 'fr'));
+  const json = JSON.stringify(items);
+  // Par sa source, ou par son id si un ancien enregistrement l'a perdue.
+  const cur = await db.prepare(`SELECT id, items, source, wish_sync FROM targets WHERE user_id = ?1 AND (source = ?2 OR id = ?3)
+    ORDER BY source = ?2 DESC, created_at, id LIMIT 1`).bind(user.id, WISH_SOURCE, WISH_TARGET_ID).first();
+  if (cur ? cur.items === json && cur.source === WISH_SOURCE && !cur.wish_sync : !items.length) return left;
+  const now = nowIso();
+  const fits = `(SELECT COALESCE(SUM(length(CAST(items AS BLOB)) + COALESCE(length(CAST(auto AS BLOB)), 0)), 0) FROM targets WHERE user_id = ?1)`;
+  if (cur) {
+    await db.prepare(`UPDATE targets SET items = ?3, updated_at = ?4, wish_sync = 0, source = ?5 WHERE user_id = ?1 AND id = ?2
+      AND ${fits} - length(CAST(items AS BLOB)) + length(CAST(?3 AS BLOB)) <= 5242880`).bind(user.id, cur.id, json, now, WISH_SOURCE).run();
+  } else {
+    await db.prepare(`INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at)
+      SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?6 WHERE (SELECT count(*) FROM targets WHERE user_id = ?1) < 50
+        AND ${fits} + length(CAST(?4 AS BLOB)) <= 5242880
+      ON CONFLICT (user_id, id) DO NOTHING`).bind(user.id, WISH_TARGET_ID, WISH_TARGET_NAME, json, WISH_SOURCE, now).run();
+  }
+  return left;
 }
 
 async function saveState(db, userId, st, missing) {

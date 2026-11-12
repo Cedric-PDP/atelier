@@ -3,6 +3,7 @@
 import { HttpError, jsonText, raw } from './http.js';
 import { purgeStaging } from './db.js';
 import { byteLength, cleanText, nowIso, randomToken } from './util.js';
+import { WISH_SOURCE } from './market.js';
 
 // Quotas par compte (D1 gratuit : 500 Mo en tout). Pas de nombre d'éléments maximal (2026-10-19, demande de
 // l'utilisateur : plus de limite à 3 000 par collection) : seulement leur taille.
@@ -270,6 +271,8 @@ async function storeTarget(env, user, body) {
       throw new HttpError(400, 'Le champ « source » doit être un texte de 200 caractères au plus.');
     }
     source = body.source.trim() || null;
+    // Source réservée à la collection « Souhaits » tenue par le serveur (wishlist.js).
+    if (source === WISH_SOURCE) throw new HttpError(400, 'Cette source est réservée à la collection « Souhaits ».');
   }
 
   let expect = null;
@@ -302,7 +305,7 @@ async function storeTarget(env, user, body) {
               COALESCE(SUM(CASE WHEN id <> ?2 THEN length(CAST(items AS BLOB)) + COALESCE(length(CAST(auto AS BLOB)), 0) END), 0) AS bytes
        FROM targets WHERE user_id = ?1`,
     ).bind(user.id, id),
-    db.prepare('SELECT auto, wish_sync, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, id),
+    db.prepare('SELECT auto, wish_sync, source, updated_at FROM targets WHERE user_id = ?1 AND id = ?2').bind(user.id, id),
   ]);
   const others = othersRes.results[0];
   const cur = curRes.results[0] || null;
@@ -317,7 +320,11 @@ async function storeTarget(env, user, body) {
   const now = nowIso();
   const setAuto = auto === undefined ? 0 : 1;
   const autoText = auto === undefined ? null : auto;
-  const wishSync = body.wish_sync === undefined ? (cur && cur.wish_sync ? 1 : 0) : body.wish_sync ? 1 : 0;
+  // La collection « Souhaits » garde sa source et n'est jamais synchronisée vers le jeu.
+  const wishTarget = !!(cur && cur.source === WISH_SOURCE);
+  if (wishTarget) source = WISH_SOURCE;
+  const wishSync = wishTarget ? 0 : body.wish_sync === undefined ? (cur && cur.wish_sync ? 1 : 0) : body.wish_sync ? 1 : 0;
+  const setWish = wishTarget || body.wish_sync !== undefined ? 1 : 0;
   // Éléments : ?4, ou, envoyée en morceaux (?4 = l'envoi), ceux de target_uploads (le dernier compris) dans l'ordre,
   // assemblés en SQL.
   const itemsSql = chunked
@@ -331,7 +338,7 @@ async function storeTarget(env, user, body) {
        WHERE user_id = ?1 AND id = ?2 AND updated_at = ?9
        RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at`,
     )
-      .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect, wishSync, body.wish_sync === undefined ? 0 : 1)
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText, expect, wishSync, setWish)
     : db.prepare(
       `INSERT INTO targets (user_id, id, name, items, source, created_at, updated_at, auto, wish_sync)
        VALUES (?1, ?2, ?3, ${itemsSql}, ?5, ?6, ?6, ?8, ?9)
@@ -340,7 +347,7 @@ async function storeTarget(env, user, body) {
          auto = CASE WHEN ?7 = 1 THEN excluded.auto ELSE targets.auto END, wish_sync = CASE WHEN ?10 = 1 THEN excluded.wish_sync ELSE targets.wish_sync END
        RETURNING id, name, source, auto, wish_sync, auto_tag, auto_tag_state, auto_favorite, auto_favorite_state, created_at, updated_at`,
     )
-      .bind(user.id, id, name, items4, source, now, setAuto, autoText, wishSync, body.wish_sync === undefined ? 0 : 1);
+      .bind(user.id, id, name, items4, source, now, setAuto, autoText, wishSync, setWish);
   let row;
   if (chunked) {
     // Une transaction : le dernier morceau rangé, la collection écrite, les morceaux effacés.
@@ -411,7 +418,7 @@ export async function deleteTarget(env, user, body) {
 
 // auto_wish devient un indicateur interne : collections cochées ou retraits encore à effectuer.
 export const updateWishWork = (db, userId) => db.prepare(`UPDATE users SET wish_dirty = 1,
-  auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1)
+  auto_wish = (wish_mode = 'all' OR EXISTS (SELECT 1 FROM targets WHERE user_id = ?1 AND wish_sync = 1 AND coalesce(source, '') <> 'wishlist:game')
     OR EXISTS (SELECT 1 FROM wish_managed WHERE user_id = ?1)) WHERE id = ?1`).bind(userId).run();
 
 // Auto-favoris indépendant du tag ; arrêter conserve les favoris du jeu.
