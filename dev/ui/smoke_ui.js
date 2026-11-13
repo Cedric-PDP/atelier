@@ -5429,6 +5429,7 @@ async function main() {
     const ventes = Array.from({ length: 24 }, (_, i) => mc('v' + String(i + 1).padStart(2, '0'), 'Vente ' + String(i + 1).padStart(2, '0'), 'C', 1, { variants: { C: 1 } }));
     await seedCards(keyM, [mc('m1', 'Marché 1', 'R', 3, { shiny: true, variants: { R: 2, 'R*': 1 } }), mc('m2', 'Marché 2', 'C', 1), mc('m3', 'Marché 3', 'C', 1, { variants: { C: 1 } }),
       ...ventes, mc('m9', 'Sans cote M', 'C', 1, { variants: { C: 1 } }), mc('vf', 'Favorite F', 'C', 1, { starred: true, variants: { C: 1 } })]);
+    for (const id of ['v22', 'v05']) await rawApi('POST', '/api/tags/set', keyM, { card_id: id, tags: ['À vendre'] });
     const it = (title) => ({ title, description: null, image: null, status: 'ok' });
     await rawApi('POST', '/api/targets/save', keyM, { name: 'Envies', items: [it('Voulue A'), it('Marché 1'), it('Marché 2'), it('Marché 3'), it('Voulue B')] });
     // Nino, un ami qui montre ses cartes et ses collections : Marché 1 (2 exemplaires dont 1 brillant), Voulue A, une carte
@@ -5755,6 +5756,15 @@ async function main() {
     d.getElementById('sell-hide-col').dispatch('change');
     await settle(40);
     check(!rowOf('Marché 1'), 'case recochée : Marché 1 doit disparaître');
+    // « Étiquette » : seulement les cartes du tag choisi (Vente 22 et Vente 05, étiquetées « À vendre »), gardée dans les
+    // préférences ; « Toutes mes cartes » rend toute la liste.
+    check(d.getElementById('sell-tag') && d.getElementById('sell-tag').value === '', 'menu « Étiquette » : ' + (d.getElementById('sell-tag') ? d.getElementById('sell-tag').value : 'absent'));
+    d.getElementById('sell-tag').value = 'À vendre'; d.getElementById('sell-tag').dispatch('change');
+    await settle(40);
+    check(rowTitles().join(' | ') === 'Vente 22 | Vente 05' && Object.values(JSON.parse(ls.get('classeur-marche') || '{}'))[0].tag === 'À vendre', 'étiquette « À vendre » : ' + rowTitles().join(' | '));
+    d.getElementById('sell-tag').value = ''; d.getElementById('sell-tag').dispatch('change');
+    await settle(40);
+    check(rowTitles().length === 21, 'toutes mes cartes : ' + rowTitles().length);
     type(d.getElementById('sell-min'), '450');
     await settle(40);
     check(rowTitles().join(' | ') === 'Vente 24 | Vente 23 | Vente 22', 'seuil 450W : ' + rowTitles().join(' | '));

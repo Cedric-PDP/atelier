@@ -7017,7 +7017,9 @@
     let unpriced = 0;
     let onSale = 0;
     let kept = 0;
+    const tag = sellTag();
     for (const c of cards.value) {
+      if (tag && !c.tags.includes(tag)) continue; // « Étiquette » : seulement les cartes de ce tag (2026-11-13)
       if (isKept(c)) { kept++; continue; } // exclue des échanges et des ventes (prefs.keep)
       const inCol = used.has(c.id);
       if (inCol && MP.hideCol) continue; // « Cacher les cartes de mes collections » (cochée par défaut)
@@ -7077,7 +7079,7 @@
   const MARKET_STEP = 20;
   const MK_PERIODS = [[7, '7 jours'], [60, '60 jours'], [365, '1 an']];
   // col : collection choisie dans « à acheter » avant le 2026-10-24 (reprise une fois dans ses filtres, voir dealTabs).
-  const MP = reactive({ user: null, min: MARKET_MIN, col: '', hideCol: true, dtab: '', period: 60, open: { ...MARKET_OPEN }, more: {} });
+  const MP = reactive({ user: null, min: MARKET_MIN, col: '', hideCol: true, tag: '', dtab: '', period: 60, open: { ...MARKET_OPEN }, more: {} });
   function loadMarketPrefs(user) {
     const all = store.json(LS.market);
     const mine = user && all && typeof all === 'object' && !Array.isArray(all) && all[user] && typeof all[user] === 'object' ? all[user] : {};
@@ -7085,7 +7087,7 @@
     const period = Number(mine.period);
     const open = { ...MARKET_OPEN };
     if (mine.open && typeof mine.open === 'object') for (const k of Object.keys(MARKET_OPEN)) if (typeof mine.open[k] === 'boolean') open[k] = mine.open[k];
-    Object.assign(MP, { user: user || null, open, more: {}, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, col: typeof mine.col === 'string' ? mine.col : '', hideCol: mine.hideCol !== false,
+    Object.assign(MP, { user: user || null, open, more: {}, min: Number.isFinite(min) && min >= 0 ? min : MARKET_MIN, col: typeof mine.col === 'string' ? mine.col : '', hideCol: mine.hideCol !== false, tag: typeof mine.tag === 'string' ? mine.tag.slice(0, 200) : '',
       dtab: typeof mine.dtab === 'string' ? mine.dtab.slice(0, 40) : '', period: MK_PERIODS.some(([n]) => n === period) ? period : 60 });
     MK.tab = MP.dtab;
   }
@@ -7093,7 +7095,7 @@
     if (!MP.user) return;
     const all = store.json(LS.market);
     const map = all && typeof all === 'object' && !Array.isArray(all) ? all : {};
-    map[MP.user] = { min: MP.min, col: MP.col, hideCol: MP.hideCol, dtab: MP.dtab, period: MP.period, open: { ...MP.open } };
+    map[MP.user] = { min: MP.min, col: MP.col, hideCol: MP.hideCol, tag: MP.tag, dtab: MP.dtab, period: MP.period, open: { ...MP.open } };
     store.set(LS.market, JSON.stringify(map));
   }
   watch(() => (S.me && S.me.user ? S.me.user.id : null), (u) => loadMarketPrefs(u), { immediate: true });
@@ -7104,6 +7106,21 @@
     MP.min = Math.min(n, 1e9);
     MP.more.vendre = 0;
     saveMarketPrefs();
+  }
+  // « Étiquette » de « Vendre » (2026-11-13, demande de l'utilisateur) : '' = toutes tes cartes ; sinon seulement celles
+  // qui portent ce tag (exact). Un tag gardé qui n'existe plus dans le classeur ne filtre rien.
+  const sellTag = () => (MP.tag && tagCount.value.has(MP.tag) ? MP.tag : '');
+  function setSellTag(v) {
+    MP.tag = typeof v === 'string' ? v : '';
+    MP.more.vendre = 0;
+    saveMarketPrefs();
+  }
+  function sellTagSelect() {
+    if (!tagList.value.length) return null;
+    return h('label', { class: 'sell-min' }, ['Étiquette ',
+      h('select', { id: 'sell-tag', class: 'field', value: sellTag(), onChange: (e) => setSellTag(e.target.value) }, [
+        h('option', { value: '' }, 'Toutes mes cartes'),
+        ...tagList.value.map((t) => h('option', { key: t.name, value: t.name }, `${t.name} (${fmt(t.count)})`))])]);
   }
   function toggleMarketSection(id) {
     MP.open[id] = !MP.open[id];
@@ -11971,6 +11988,7 @@
       h('label', { class: 'check' }, [
         h('input', { id: 'sell-hide-col', type: 'checkbox', checked: MP.hideCol, onChange: () => { MP.hideCol = !MP.hideCol; saveMarketPrefs(); } }),
         ' Pas les cartes de mes collections']),
+      sellTagSelect(),
     ]);
     if (!M.loaded) return mkSplit([tools, M.error ? errLine(M.error) : mkEmpty('Lecture des cotes…')], [], false);
     const total = list.reduce((s, x) => s + x.price * Math.max(1, x.n), 0);
@@ -11980,7 +11998,7 @@
     const rows = list.length
       ? h('ul', { class: 'mk-list', role: 'listbox', tabindex: '0', 'aria-label': 'Cartes à vendre', 'aria-activedescendant': sel ? 'mk-row-' + sel.c.id : null, onKeydown: mkListKeys('vendre', keys) },
         list.map((x) => viewOfferRow(x, sel === x)))
-      : mkEmpty(sellOffers.value.list.length ? `Aucune carte cotée ${wfmt(MP.min)} ou plus.` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.');
+      : mkEmpty(sellOffers.value.list.length ? `Aucune carte cotée ${wfmt(MP.min)} ou plus.` : sellTag() ? `Aucune carte à vendre avec l'étiquette « ${sellTag()} ».` : 'Aucune carte à vendre : toutes tes cartes servent à tes collections, ou ne sont pas encore cotées.');
     const notes = [
       onSale ? `${fmt(onSale)} ${plural(onSale, 'carte déjà en vente', 'cartes déjà en vente')} dans le jeu (« Mes enchères ») : pas ${onSale > 1 ? 'proposées' : 'proposée'} ici, même si ton classeur ${onSale > 1 ? 'les garde' : 'la garde'} encore.` : null,
       unpriced ? `${fmt(unpriced)} ${plural(unpriced, 'carte', 'cartes')} sans cote fiable : le classeur les lit peu à peu, les plus anciennes d'abord, à chaque lecture automatique (toutes les 20 minutes).` : null,
@@ -12286,6 +12304,7 @@
       h('label', { class: 'check sell-hide' }, [
         h('input', { id: 'sell-hide-col', type: 'checkbox', checked: MP.hideCol, onChange: () => { MP.hideCol = !MP.hideCol; MP.more.vendre = 0; saveMarketPrefs(); } }),
         ' Cacher les cartes de mes collections']),
+      sellTagSelect(),
       h('p', { id: 'sell-min-hint', class: 'small muted' }, MP.hideCol
         ? 'Tes cartes qui ne servent à aucune de tes collections, dont la cote fiable atteint ce seuil.'
         : "Tes cartes qui ne servent à aucune de tes collections, et les exemplaires en trop de celles qui y servent (on en garde un, le moins coté), dont la cote fiable atteint ce seuil."),
