@@ -889,9 +889,12 @@ l'onglet « Entre amis » ; `PATCH /api/me {shared:true|false}`, clé principale
   « Les doubles » cochent **de haut en bas** jusqu'à 40 cartes en tout, l'autre côté compris (2026-10-29, demande de
   l'utilisateur : plus besoin de décocher à la main) ; à 40, les cases encore vides sont grisées.
 - **Chargement** : à la demande (ouverture de l'onglet, d'un album ou d'une case vide, si tu partages), par pages de
-  1 000, gardé en mémoire le temps de la visite, **jamais dans IndexedDB** ; la liste des membres est relue à chaque
-  ouverture de l'onglet (sinon au plus toutes les 10 min) et les cartes d'un ami ne le sont que si sa synchro ou son
-  nombre de cartes a changé ; ses collections seulement s'il les montre et si leur nombre ou leur
+  1 000, gardé en mémoire pendant la visite et dans IndexedDB d'une visite à l'autre (2026-11-16, demande de
+  l'utilisateur : la page était trop lente à charger ; un enregistrement `f:<id du compte>` dans le magasin des cartes,
+  effacé avec le classeur, à l'oubli de la clé et à l'arrêt du partage, réécrit sans les membres qui ne partagent plus) ;
+  la liste des membres est relue au plus toutes les 10 min (« Actualiser » la force) et les cartes d'un ami ne le sont
+  que si sa synchro ou son nombre de cartes a changé depuis la mémoire ou IndexedDB ; les résultats sont posés dans la
+  page au plus une fois par seconde, pour ne pas refaire les calculs des échanges à chaque membre lu ; ses collections seulement s'il les montre et si leur nombre ou leur
   dernier changement a bougé. Cartes et collections sont chargées dans une file de quatre flux au maximum,
   les pages de chaque flux restant séquentielles. Une erreur de lecture n'empêche pas les autres membres de charger,
   puis les lectures manquantes peuvent être reprises. Un changement de compte ou l'arrêt du partage invalide les

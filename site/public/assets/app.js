@@ -199,7 +199,7 @@
     return {
       get: (user) => run('readonly', (st, out) => { const r = st.get(user); r.onsuccess = () => out(r.result); }),
       put: (rec) => run('readwrite', (st) => { st.put(rec, rec.user); }),
-      del: (user) => run('readwrite', (st) => { st.delete(user); }),
+      del: (user) => run('readwrite', (st) => { st.delete(user); st.delete('f:' + user); }),
       clear: () => run('readwrite', (st) => { st.clear(); }),
       // « Oublier cette clé » : le compte n'a pas pu être lu, on retrouve ses cartes par l'empreinte de la clé.
       dropKey: (tag) => run('readwrite', (st) => {
@@ -2524,7 +2524,7 @@
     if (tab === 'reglages') Object.assign(S.settings, { name: (S.me && S.me.user && S.me.user.name) || '', busy: false, error: '', saved: false,
       pseudo: (S.me && S.me.user && S.me.user.pseudo) || '', pBusy: false, pError: '', pSaved: false });
     if (tab === 'maj') loadSyncLog();
-    if (tab === 'amis') loadFriends(true);
+    if (tab === 'amis') loadFriends(false); // relue au plus toutes les FRIENDS_TTL ; « Actualiser » force
     if (tab === 'marche') { loadMarket(Date.now() - M.at > 20000); refreshBalance(); } // cotes et solde ont pu bouger dans le jeu entre-temps
     toTop();
   }
@@ -6155,12 +6155,14 @@
   // ================================================================ « Entre amis » : partage entre membres
   // Le partage est activé par défaut (2026-10-16 ; chacun le coupe dans Réglages) et il est réciproque : on ne voit les cartes des autres membres que
   // si on montre les siennes (PATCH /api/me {shared}). Leurs cartes sont lues à la demande (onglet « Entre amis »,
-  // ouverture d'une collection ou d'une case vide), par pages de 1 000, et gardées en mémoire pendant la visite ; elles
+  // ouverture d'une collection ou d'une case vide), par pages de 1 000, et gardées en mémoire et dans IndexedDB (saveFriendsDisk) ; elles
   // ne sont relues que si leur synchro ou leur nombre a changé. Le classeur ne fait que montrer qui a quoi : les
   // échanges se font dans le jeu, entre joueurs.
   const FRIENDS_TTL = 10 * 60 * 1000; // liste des membres relue au plus toutes les 10 min (sauf onglet ou « Actualiser »)
   function clearFriends() {
     friendsGen++;
+    // Partage coupé : les classeurs des amis gardés dans ce navigateur sont effacés aussi.
+    if (S.me && S.me.user && S.me.user.id && !sharing()) cardCache.del('f:' + S.me.user.id);
     clearFriendCalculations();
     friendsJob = null;
     friendsAt = 0;
@@ -6272,22 +6274,30 @@
       fr.error = '';
       if (!friendList.value.length) fr.status = 'loading';
       try {
-        const r = await api('GET', '/api/members');
+        const owner = S.me && S.me.user && S.me.user.id;
+        // Classeurs des amis gardés dans ce navigateur (première lecture de la visite) : seuls ceux qui ont changé
+        // depuis (synchro, nombre de cartes, collections) sont relus au serveur.
+        const [r, rec] = await Promise.all([api('GET', '/api/members'),
+          owner && !friendList.value.length ? cardCache.get('f:' + owner).catch(() => undefined) : undefined]);
         if (gen !== friendsGen) return;
+        const disk = rec && rec.v === 1 && rec.owner === owner && rec.members && typeof rec.members === 'object' ? rec.members : null;
         const prev = new Map(friendList.value.map((f) => [f.id, f]));
         const list = (Array.isArray(r.members) ? r.members : []).filter((m) => m && typeof m.id === 'string' && m.id).map((m) => {
           const p = prev.get(m.id);
           const count = Number(m.count) || 0;
           const same = p && p.cards && p.fetched_at === (m.fetched_at || null) && p.count === count;
+          const dk = disk && disk[m.id];
+          const diskCards = !same && dk && Array.isArray(dk.cards) && dk.fetched_at === (m.fetched_at || null) && dk.count === count ? dk.cards.map(markRaw) : null;
           const tg = m.targets && typeof m.targets === 'object' ? m.targets : null;
           const tmark = tg ? `${Number(tg.count) || 0}|${tg.updated_at || ''}` : null;
           const sameT = tmark !== null && p && p.targets && p.tmark === tmark;
+          const diskTargets = !sameT && tmark !== null && dk && Array.isArray(dk.targets) && dk.tmark === tmark ? dk.targets.map(markRaw) : null;
           const kept = Array.isArray(m.keep) ? m.keep.map(String) : [];
           const keep = kept.length ? p && p.keep && p.keep.size === kept.length && kept.every((id) => p.keep.has(id)) ? p.keep : new Set(kept) : null;
           const waits = Array.isArray(m.pending) ? m.pending.map(String) : [];
           const pending = waits.length ? p && p.pending && p.pending.size === waits.length && waits.every((id) => p.pending.has(id)) ? p.pending : new Set(waits) : null;
-          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : null,
-            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : null, wb: wbOf(m.wikibidous),
+          return markRaw({ id: m.id, name: typeof m.name === 'string' ? m.name : '', pseudo: typeof m.pseudo === 'string' && m.pseudo ? m.pseudo : null, game: m.game !== false, count, fetched_at: m.fetched_at || null, cards: same ? p.cards : diskCards,
+            tshare: !!tg, tcount: tg ? Number(tg.count) || 0 : 0, tmark, targets: sameT ? p.targets : diskTargets, wb: wbOf(m.wikibidous),
             // ses cartes exclues des échanges (ids), relues avec la liste : jamais proposées dans « Échanges possibles »
             keep,
             // ses cartes dans un échange en attente proposé depuis le classeur (ids) : ni proposées ni demandées ailleurs
@@ -6299,6 +6309,17 @@
         fr.status = 'ready';
         // Quatre flux au maximum ; les pages d'un même flux restent dans l'ordre.
         // Collections et cartes avancent ensemble, sans attendre tous les classeurs.
+        // Résultats gardés de côté et posés d'un coup (au plus une fois par seconde, puis à la fin) : chaque pose relance
+        // les calculs qui dépendent de la liste (Pour toi, Pour tes amis, Échanges), trop coûteux à refaire par membre.
+        const patches = new Map(); // id → champs à poser, ou null : il disparaît de la liste
+        const patch = (id, v) => patches.set(id, v === null ? null : { ...(patches.get(id) || {}), ...v });
+        const flush = () => {
+          if (!patches.size || gen !== friendsGen) return;
+          const ps = new Map(patches);
+          patches.clear();
+          friendList.value = friendList.value.filter((x) => ps.get(x.id) !== null)
+            .map((x) => (ps.has(x.id) ? markRaw({ ...x, ...ps.get(x.id) }) : x));
+        };
         const jobs = [];
         for (const f of list) {
           if (!f.cards) jobs.push(async () => {
@@ -6308,25 +6329,25 @@
             } catch (e) {
               if (gen !== friendsGen) return;
               // A cessé de partager entre la liste et ses cartes : il disparaît de la liste.
-              if (e.status === 404) { friendList.value = friendList.value.filter((x) => x.id !== f.id); return; }
+              if (e.status === 404) { patch(f.id, null); return; }
               throw e;
             }
             if (got === null || gen !== friendsGen) return;
-            friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, cards: got }) : x));
+            patch(f.id, { cards: got });
           });
           if (f.tshare && !f.targets) jobs.push(async () => {
-            if (!friendList.value.some((x) => x.id === f.id && x.tshare)) return;
+            if (patches.get(f.id) === null) return;
             let got;
             try {
               got = await readMemberTargets(f.id, gen);
             } catch (e) {
               if (gen !== friendsGen) return;
               // A cessé de montrer ses collections entre la liste et cette lecture : il redevient « ne partage pas ».
-              if (e.status === 404) { friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, tshare: false, tmark: null, targets: null }) : x)); return; }
+              if (e.status === 404) { if (patches.get(f.id) !== null) patch(f.id, { tshare: false, tmark: null, targets: null }); return; }
               throw e;
             }
-            if (got === null || gen !== friendsGen) return;
-            friendList.value = friendList.value.map((x) => (x.id === f.id ? markRaw({ ...x, targets: got }) : x));
+            if (got === null || gen !== friendsGen || patches.get(f.id) === null) return;
+            patch(f.id, { targets: got });
           });
         }
         let cursor = 0;
@@ -6347,10 +6368,17 @@
             }
           }
         }
-        await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, () => worker()));
+        const tick = setInterval(flush, 1000);
+        try {
+          await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, () => worker()));
+        } finally {
+          clearInterval(tick);
+          flush();
+        }
         if (gen !== friendsGen) return;
         if (errors.length) throw errors[0];
         friendsAt = Date.now();
+        if (owner && (jobs.length || disk)) saveFriendsDisk(owner);
         resolveFriendQids();
       } catch (e) {
         if (gen !== friendsGen) return;
@@ -6364,6 +6392,17 @@
     })();
     friendsJob = job;
     return job;
+  }
+  // Classeurs des amis gardés pour la prochaine visite : {v, user: 'f:<id du compte>', owner, keyTag, members: {<id
+  // public>: {fetched_at, count, cards, tmark, targets}}} (cartes et collections telles que préparées pour la page).
+  function saveFriendsDisk(owner) {
+    const members = {};
+    for (const f of friendList.value) {
+      if (!f.cards) continue;
+      members[f.id] = { fetched_at: f.fetched_at, count: f.count, cards: f.cards.map((c) => ({ ...c })),
+        tmark: f.targets ? f.tmark : null, targets: f.targets ? f.targets.map((t) => ({ ...t })) : null };
+    }
+    cardCache.put({ v: 1, user: 'f:' + owner, owner, keyTag: S.key ? keyTag(S.key) : null, saved_at: new Date().toISOString(), members }).catch(() => {});
   }
   const ensureFriends = () => { if (sharing()) loadFriends(false); };
   // Titres des cartes des amis que tu n'as pas : leur identifiant Wikidata (même cache que les tiennes, 30 jours) fait

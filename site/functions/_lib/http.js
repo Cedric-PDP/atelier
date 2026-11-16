@@ -51,6 +51,8 @@ export function json(data, status = 200, headers = {}) {
 // Erreurs de D1 dues à la place ou aux quotas (base pleine, quota du jour atteint, ligne trop grosse).
 function isDbFull(err) {
   const msg = String(err && err.message);
+  // Une réponse trop grosse (limite de 50 Mo par requête) vient de la requête, pas de la base : erreur interne détaillée.
+  if (/response size/i.test(msg)) return false;
   return /SQLITE_FULL|SQLITE_TOOBIG|disk is full|database is full|too big/i.test(msg)
     || (/D1|SQLITE/i.test(msg) && /full|exceeded|quota|limit/i.test(msg));
 }

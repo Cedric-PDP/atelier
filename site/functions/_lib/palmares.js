@@ -33,15 +33,8 @@ function storageCollection(name) {
 export async function getPalmares(env, user) {
   if (!user.shared || !user.public_id) throw new HttpError(403, 'Active le partage entre membres dans Réglages pour participer au palmarès.');
   const db = env.DB;
-  const [members, cards, targets, trades] = await db.batch([
+  const [members, targets, trades] = await db.batch([
     db.prepare(`SELECT id, public_id, name, game_pseudo, shared_targets, chat_sent FROM users WHERE shared = 1 AND public_id IS NOT NULL`),
-    // Écarter images, descriptions et tags : seuls les titres et variantes servent au calcul.
-    db.prepare(`SELECT c.user_id, json_object('title', json_extract(c.data, '$.title'),
-      'rarity', json_extract(c.data, '$.rarity'), 'count', json_extract(c.data, '$.count'),
-      'fav', json_extract(c.data, '$.fav'), 'starred', json_extract(c.data, '$.starred'),
-      'shiny', json_extract(c.data, '$.shiny'), 'variants', json_extract(c.data, '$.variants')) AS data,
-      p.data AS prices FROM cards c JOIN users u ON u.id = c.user_id
-      LEFT JOIN prices p ON p.card_id = c.card_id WHERE u.shared = 1 AND u.public_id IS NOT NULL`),
     db.prepare(`SELECT t.user_id, t.name, json_group_array(json_object('title', json_extract(i.value, '$.title'))) AS items
       FROM targets t JOIN users u ON u.id = t.user_id, json_each(t.items) i
       WHERE u.shared = 1 AND u.public_id IS NOT NULL AND u.shared_targets = 1
@@ -52,29 +45,38 @@ export async function getPalmares(env, user) {
   const stats = new Map(members.results.map((m) => [m.id, { member: { id: m.public_id, name: m.name || m.game_pseudo || 'Un membre', mine: m.id === user.id },
     titles: new Set(), available: new Map(), used: new Set(), sharedTargets: !!m.shared_targets, completed: 0, near: 0, value: 0, card: null,
     traded: 0, chat: m.chat_sent, squirrel: 0, stock: null, curator: 0, collection: null, rat: 0 }]));
-  for (const row of cards.results) {
-    const s = stats.get(row.user_id);
-    const c = parse(row.data, {});
-    const title = norm(c.title);
-    const count = Number.isSafeInteger(c.count) ? Math.max(0, c.count) : 1;
-    if (!title || !count) continue;
-    s.titles.add(title);
-    if (count > s.squirrel || (count === s.squirrel && String(c.title).localeCompare(s.stock?.title || '', 'fr') < 0)) {
-      s.squirrel = count;
-      s.stock = { title: c.title };
-    }
-    // Même un exemplaire unique peut aider, s'il ne sert à aucune de ses collections.
-    // Les favoris du jeu restent non échangeables.
-    const favorites = Number.isSafeInteger(c.fav) ? Math.min(count, Math.max(0, c.fav)) : c.starred ? count : 0;
-    const available = count - favorites;
-    if (available > 0) s.available.set(title, (s.available.get(title) || 0) + available);
-    const prices = parse(row.prices, {});
-    const variants = c.variants || { [c.rarity]: Math.max(0, (c.count || 1) - (c.shiny ? 1 : 0)), ...(c.shiny ? { [c.rarity + '*']: 1 } : {}) };
-    for (const [variant, count] of Object.entries(variants)) {
-      const p = prices[variant];
-      if (count > 0 && p && p.n >= 3 && Number.isFinite(p.p) && p.p > s.value) {
-        s.value = p.p;
-        s.card = { title: c.title, variant };
+  // Une lecture des cartes par membre : toutes ensemble, elles dépassent les 50 Mo qu'une réponse de D1 peut porter.
+  // Écarter images, descriptions et tags : seuls les titres et variantes servent au calcul.
+  const cardsQuery = db.prepare(`SELECT json_object('title', json_extract(c.data, '$.title'),
+      'rarity', json_extract(c.data, '$.rarity'), 'count', json_extract(c.data, '$.count'),
+      'fav', json_extract(c.data, '$.fav'), 'starred', json_extract(c.data, '$.starred'),
+      'shiny', json_extract(c.data, '$.shiny'), 'variants', json_extract(c.data, '$.variants')) AS data,
+      p.data AS prices FROM cards c LEFT JOIN prices p ON p.card_id = c.card_id WHERE c.user_id = ?1`);
+  for (const [userId, s] of stats) {
+    const { results: cards } = await cardsQuery.bind(userId).all();
+    for (const row of cards) {
+      const c = parse(row.data, {});
+      const title = norm(c.title);
+      const count = Number.isSafeInteger(c.count) ? Math.max(0, c.count) : 1;
+      if (!title || !count) continue;
+      s.titles.add(title);
+      if (count > s.squirrel || (count === s.squirrel && String(c.title).localeCompare(s.stock?.title || '', 'fr') < 0)) {
+        s.squirrel = count;
+        s.stock = { title: c.title };
+      }
+      // Même un exemplaire unique peut aider, s'il ne sert à aucune de ses collections.
+      // Les favoris du jeu restent non échangeables.
+      const favorites = Number.isSafeInteger(c.fav) ? Math.min(count, Math.max(0, c.fav)) : c.starred ? count : 0;
+      const available = count - favorites;
+      if (available > 0) s.available.set(title, (s.available.get(title) || 0) + available);
+      const prices = parse(row.prices, {});
+      const variants = c.variants || { [c.rarity]: Math.max(0, (c.count || 1) - (c.shiny ? 1 : 0)), ...(c.shiny ? { [c.rarity + '*']: 1 } : {}) };
+      for (const [variant, count] of Object.entries(variants)) {
+        const p = prices[variant];
+        if (count > 0 && p && p.n >= 3 && Number.isFinite(p.p) && p.p > s.value) {
+          s.value = p.p;
+          s.card = { title: c.title, variant };
+        }
       }
     }
   }

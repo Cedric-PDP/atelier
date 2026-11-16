@@ -1457,6 +1457,9 @@ async function main() {
     return;
   }
   const cachedCards = () => { const m = idb.dump('classeur', 'cards'); return m ? [...m.values()] : []; };
+  // Mon classeur seul / les classeurs des amis (enregistrement 'f:<id du compte>', 2026-11-16).
+  const ownCache = () => JSON.stringify(cachedCards().filter((r) => !String(r && r.user).startsWith('f:')));
+  const friendCache = () => JSON.stringify(cachedCards().filter((r) => String(r && r.user).startsWith('f:')));
 
   await settle(60);
   // 1. Accueil
@@ -3194,9 +3197,10 @@ async function main() {
     await settle();
     check(await waitFor(() => has('Aucun de tes amis ne partage ses collections : impossible de savoir ce qui leur manque.')) && !fcol('Paul') && !fcol('Léa')
       && !cls('badge').some((b) => text(b) === 'estimation'), 'tes cartes pour tes amis : rien sans leurs collections, ' + text(doc.body).slice(-400));
-    // Rien des amis dans IndexedDB (le cache ne garde que mon classeur).
+    // Cartes des amis gardées dans IndexedDB, à part de mon classeur.
     await sleep(1600);
-    check(!JSON.stringify(cachedCards()).includes('p-mars') && !JSON.stringify(cachedCards()).includes('Pluton'), 'les cartes des amis ne doivent pas aller dans IndexedDB');
+    check(!ownCache().includes('p-mars') && !ownCache().includes('Pluton'), 'les cartes des amis ne doivent pas aller dans mon classeur gardé');
+    check(friendCache().includes('p-mars'), 'les cartes des amis doivent être gardées dans IndexedDB (f:<compte>)');
 
     // Album : badge discret sur les cases vides qu'un ami peut remplir ; fiche de la case vide : « Chez : … ».
     fnavBtn('Pour toi').click();
@@ -3547,9 +3551,9 @@ async function main() {
       exactButton('Ce qui me concerne').click();
       await settle();
       check(pairs().length === 3 && byId('trade-member').value === '', 'retour à « Ce qui me concerne »');
-      // Rien des amis dans IndexedDB ; rien de relu en revenant sur l'onglet quand rien n'a changé.
+      // Amis gardés à part dans IndexedDB ; rien de relu en revenant sur l'onglet quand rien n'a changé.
       await sleep(1600);
-      check(!JSON.stringify(cachedCards()).includes('Les préférées de Paul'), 'les collections des amis ne doivent pas aller dans IndexedDB');
+      check(!ownCache().includes('Les préférées de Paul') && friendCache().includes('Les préférées de Paul'), 'collections des amis : gardées à part (f:<compte>), pas dans mon classeur');
       fnavBtn('Collections').click(); // sous-pages (2026-10-28) : plus de « ← Entre amis » sur la page des échanges
       await settle();
       mark = apiLog.length;
@@ -3792,10 +3796,10 @@ async function main() {
           'classeur de Léa : ' + (sect('h-fcols') ? text(sect('h-fcols')) : 'absent'));
         needButton('← Entre amis').click();
         await settle();
-        // Rien des collections des amis dans IndexedDB ni dans localStorage.
+        // Collections des amis hors de mon classeur gardé et de localStorage.
         await sleep(1600);
-        const kept = JSON.stringify(cachedCards());
-        check(!kept.includes('Les préférées de Paul') && !kept.includes('Livre introuvable') && !kept.includes('p-mars'), 'les collections des amis ne doivent pas aller dans IndexedDB');
+        const kept = ownCache();
+        check(!kept.includes('Les préférées de Paul') && !kept.includes('Livre introuvable') && !kept.includes('p-mars'), 'les collections des amis ne doivent pas aller dans mon classeur gardé');
         check(![...ls.values()].some((v) => String(v).includes('Les préférées de Paul') || String(v).includes('Exemples de Paul')), 'les collections des amis ne doivent pas aller dans localStorage');
       }
     }
