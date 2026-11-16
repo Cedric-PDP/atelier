@@ -12731,10 +12731,10 @@
     ];
   }
   async function askBulkDiscard() {
-    if (S.bulkBusy || !S.lowValueOnly || S.tab !== 'cartes') return;
+    if (S.bulkBusy || S.tab !== 'cartes') return;
     const chosen = [...S.selected].map(id => cardById.value.get(id));
-    if (!chosen.length || chosen.some(c => !c || !isLowValue(c) || isKept(c) || isTradePending(c))) {
-      S.bulkError = 'Sélectionne uniquement des cartes sous 5 W, non exclues et sans échange en attente.';
+    if (!chosen.length || chosen.some(c => !c)) {
+      S.bulkError = 'Une carte de la sélection est absente. Refais la sélection.';
       return;
     }
     S.bulkBusy = true;
@@ -12744,8 +12744,8 @@
       const plan = await api('POST', '/api/cards/discard/preview', { ids: chosen.map(c => String(c.id)) });
       if (key !== S.key) return;
       openConfirm({ title: 'Défausser cette sélection dans WikiMasters ?', danger: true,
-        text: `${cards$(plan.cards.length)} : jusqu’à ${fmt(plan.copies)} exemplaires seront supprimés définitivement du jeu, y compris les derniers exemplaires. Les cotes sont des estimations, pas un prix garanti. Les favoris, les cartes exclues et celles en attente d’échange sont protégés.`,
-        ok: 'Confirmer la défausse', run: async (cf) => {
+        text: `Tu demandes la suppression définitive de ${fmt(plan.copies)} exemplaires sur ${cards$(plan.cards.length)} dans WikiMasters. Tous les exemplaires sélectionnés sont concernés, y compris les derniers, les brillants, les favoris et les cartes exclues des échanges et ventes. Vérifie la liste avant de confirmer. Cette action est irréversible, quelle que soit la valeur des cartes.`,
+        ok: `Défausser définitivement ${fmt(plan.copies)} exemplaires`, run: async (cf) => {
           if (cf.discardStarted) throw new Error('Cette opération a déjà été lancée. Ferme cette fenêtre et refais une sélection après vérification.');
           cf.discardStarted = true;
           let done = 0, attempted = null, stopped = false, error = null;
@@ -12792,7 +12792,7 @@
       h('button', { class: 'btn primary', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('add') }, 'Ajouter'),
       h('button', { class: 'btn', type: 'button', disabled: S.bulkBusy || !S.bulkTag.trim(), onClick: () => bulk('remove') }, 'Retirer'),
       viewBulkKeep(),
-      S.tab === 'cartes' && S.lowValueOnly ? h('button', { class: 'btn danger', type: 'button', disabled: S.bulkBusy,
+      S.tab === 'cartes' ? h('button', { class: 'btn danger', type: 'button', disabled: S.bulkBusy,
         onClick: askBulkDiscard }, S.bulkBusy ? 'Vérification…' : 'Défausser la sélection') : null,
       h('button', { class: 'btn ghost', type: 'button', onClick: clearSelection }, 'Vider la sélection'),
       errLine(S.bulkError),

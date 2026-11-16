@@ -7161,10 +7161,12 @@ async function main() {
     api.handle = function(method, p, headers, body) {
       if (p === '/api/cards/discard/preview') {
         previews++;
-        check(body.ids.join() === 'cheap', 'défausse : seuls les identifiants filtrés sont proposés');
-        return { status: 200, body: { batches: ['test-batch'], copies: 2, cards: [{ id: 'cheap', title: 'Petite cote', count: 2 }] } };
+        check(body.ids.slice().sort().join() === 'cheap,five,unknown', 'défausse : toute la sélection est proposée, quelle que soit sa cote');
+        return { status: 200, body: { batches: ['test-batch'], copies: 4, cards: [
+          { id: 'cheap', title: 'Petite cote', count: 2 }, { id: 'five', title: 'Cinq W', count: 1 }, { id: 'unknown', title: 'Sans cote', count: 1 },
+        ] } };
       }
-      if (p === '/api/cards/discard') { sends++; return { status: 200, body: { discarded: 2, requested: 2 } }; }
+      if (p === '/api/cards/discard') { sends++; return { status: 200, body: { discarded: 4, requested: 4 } }; }
       if (p === '/api/cards/discard/sync') { syncs++; return { status: 200, body: {} }; }
       return original.call(api, method, p, headers, body);
     };
@@ -7173,16 +7175,19 @@ async function main() {
       const d = pg.doc;
       check(await waitFor(() => d.querySelectorAll('.card__title').map(text).join() === 'Petite cote'), 'moins de 5 : seuil strict et cotes inconnues exclues');
       const button = label => d.querySelectorAll('button').find(b => text(b) === label);
+      d.querySelectorAll('button.chip').find(b => text(b.querySelector('.chip__label')) === 'Moins de 5 W').click();
+      await settle();
+      check(d.querySelectorAll('.card__title').length === 3, 'défausse : sélection depuis Mes cartes sans filtre de valeur');
       button('Tout sélectionner').click(); await settle();
-      check(!!button('Défausser la sélection'), 'défausse proposée dans la sélection sous 5 W');
+      check(!!button('Défausser la sélection'), 'défausse proposée dans toute sélection de Mes cartes');
       button('Défausser la sélection').click();
-      check(await waitFor(() => text(d.body).includes('Confirmer la défausse')), 'aperçu de confirmation affiché');
-      check(previews === 1 && sends === 0 && text(d.body).includes('derniers exemplaires') && text(d.body).includes('Petite cote (2 exemplaires)'), 'confirmation : quantités et dernier exemplaire, aucun envoi avant accord');
+      check(await waitFor(() => !!button('Défausser définitivement 4 exemplaires')), 'aperçu de confirmation affiché');
+      check(previews === 1 && sends === 0 && text(d.body).includes('irréversible') && text(d.body).includes('favoris') && text(d.body).includes('Petite cote (2 exemplaires)') && text(d.body).includes('Sans cote (1 exemplaires)'), 'confirmation : quantités, irréversibilité, favoris et liste complète, aucun envoi avant accord');
       button('Annuler').click(); await settle();
       check(sends === 0, 'annulation sans défausse');
       button('Défausser la sélection').click();
-      check(await waitFor(() => !!button('Confirmer la défausse')), 'second aperçu');
-      button('Confirmer la défausse').click();
+      check(await waitFor(() => !!button('Défausser définitivement 4 exemplaires')), 'second aperçu');
+      button('Défausser définitivement 4 exemplaires').click();
       check(await waitFor(() => sends === 1 && syncs === 1 && !d.querySelector('.modal')), 'défausse : un seul envoi, synchronisation et fermeture');
       check(!d.querySelector('.bulk'), 'défausse : sélection vidée après exécution');
     } finally {

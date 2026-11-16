@@ -1,4 +1,4 @@
-// Aucun appel au vrai jeu : propriété des exemplaires, seuil, confirmation et écritures non rejouables.
+// Aucun appel au vrai jeu : propriété des exemplaires, toutes valeurs, confirmation et écritures non rejouables.
 import assert from 'node:assert/strict';
 import { createD1 } from './d1.mjs';
 import { mockSupabase, rowOf, GAME } from './supabase.mjs';
@@ -63,21 +63,28 @@ try {
   r = await call('cards/discard/sync', { batch: p.data.batches[0] }, key);
   assert.equal(r.status, 200, JSON.stringify(r));
   assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM cards WHERE user_id = ?').get(uid).n, 0, 'collection entièrement vidée : le classeur est aussi vidé');
-  for (const options of [{ price: 5 }, { n: 2 }, { starred: true }, { high: true }, { price: null }]) {
+  for (const options of [{ price: 5 }, { price: 10000 }, { n: 2 }, { starred: true }, { high: true }, { price: null }]) {
     seed(options);
-    assert.equal((await preview()).status, 409, JSON.stringify(options));
+    p = await preview();
+    assert.equal(p.status, 200, JSON.stringify(options));
+    assert.equal((await execute(p.data.batches[0])).status, 200, JSON.stringify(options));
   }
   seed();
+  env.DB.sqlite.prepare('DELETE FROM prices WHERE card_id = ?').run('card-a');
+  p = await preview();
+  assert.equal(p.status, 200, 'carte sans aucune cote');
+  assert.equal((await execute(p.data.batches[0])).status, 200);
+  seed();
   env.DB.sqlite.prepare('UPDATE users SET prefs = ? WHERE id = ?').run(JSON.stringify({ keep: { cards: ['card-a'] } }), uid);
-  assert.equal((await preview()).status, 409);
+  assert.equal((await preview()).status, 200, 'exclusion des ventes sans restriction sur la défausse explicite');
   seed();
   env.DB.sqlite.prepare('INSERT INTO tags (user_id, card_id, tag) VALUES (?, ?, ?)').run(uid, 'card-a', 'À garder');
   env.DB.sqlite.prepare('UPDATE users SET prefs = ? WHERE id = ?').run(JSON.stringify({ keep: { tags: ['À garder'] } }), uid);
-  assert.equal((await preview()).status, 409, 'exclusion par tag rangé dans la table tags');
+  assert.equal((await preview()).status, 200, 'tag exclu des ventes sans restriction sur la défausse explicite');
   seed();
   env.DB.sqlite.prepare('INSERT INTO award_trades (id, user_id, recipient_id, given, received, created_at, give_ids, get_ids) VALUES (?, ?, ?, 1, 0, ?, ?, ?)')
     .run('pending-discard', uid, 'friend', new Date().toISOString(), JSON.stringify(['card-a']), '[]');
-  assert.equal((await preview()).status, 409, 'échange en attente');
+  assert.equal((await preview()).status, 200, 'le jeu contrôle la disponibilité des exemplaires engagés dans un échange');
   env.DB.sqlite.prepare('DELETE FROM award_trades WHERE id = ?').run('pending-discard');
   seed(); p = await preview(); player.cards[0].count++;
   assert.equal((await execute(p.data.batches[0])).status, 409, 'quantité changée depuis l’aperçu');
@@ -85,7 +92,7 @@ try {
   assert.equal((await execute(p.data.batches[0])).status, 409, 'favori ajouté depuis l’aperçu');
   seed(); p = await preview();
   env.DB.sqlite.prepare('UPDATE prices SET data = ? WHERE card_id = ?').run(JSON.stringify({ C: { p: 8, n: 3 } }), 'card-a');
-  assert.equal((await execute(p.data.batches[0])).status, 409, 'cote changée depuis l’aperçu');
+  assert.equal((await execute(p.data.batches[0])).status, 200, 'la cote ne limite plus la défausse confirmée');
   seed(); p = await preview();
   env.DB.sqlite.prepare('UPDATE discard_batches SET created_at = ? WHERE id = ?').run('2020-01-01T00:00:00Z', p.data.batches[0]);
   assert.equal((await execute(p.data.batches[0])).status, 409, 'aperçu expiré');
@@ -112,5 +119,5 @@ try {
   const res = await onRequest({ env, request: new Request('https://local/api/me', { method: 'DELETE', headers: { 'x-classeur-key': key } }) });
   assert.equal(res.status, 200);
   assert.equal(env.DB.sqlite.prepare('SELECT COUNT(*) AS n FROM discard_batches WHERE user_id = ?').get(uid).n, 0);
-  console.log('DISCARD OK : aperçu, propriété, seuil, variantes, favoris, exclusions, changements, expiration, isolation, résultat partiel et anti-rejeu.');
+  console.log('DISCARD OK : aperçu, propriété, toutes valeurs, sans cote, variantes, favoris, exclusions, changements, expiration, isolation, résultat partiel et anti-rejeu.');
 } finally { supa.restore(); env.DB.close(); }

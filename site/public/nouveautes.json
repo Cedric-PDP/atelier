@@ -1,5 +1,9 @@
 {
   "versions": [
+    {"id": "2026-11-16-defausse", "date": "2026-11-16", "sections": [
+      {"icon": "🃏", "title": "Défausse depuis Mes cartes", "items": [
+        {"text": "Après sélection dans Mes cartes, « Défausser la sélection » fonctionne pour toutes les valeurs, même sans cote.", "to": "#/cartes", "link": "Mes cartes"},
+        {"text": "Le récapitulatif affiche la liste et le nombre d’exemplaires avant confirmation de la suppression définitive, y compris les derniers exemplaires, brillants, favoris et cartes exclues des échanges et ventes."}]}]},
     {"id": "2026-11-11", "date": "2026-11-11", "sections": [
       {"icon": "🛒", "title": "Marché", "items": [
         {"text": "Dans « Acheter », un filtre ne garde que les cartes de ta liste de souhaits du jeu.", "to": "#/marche", "link": "Marché"},

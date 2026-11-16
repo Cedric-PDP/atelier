@@ -2,7 +2,7 @@
 // Contrat fourni par le joueur : POST /api/user-cards/bulk-discard {card_ids: [user_card_id]}.
 import { HttpError } from './http.js';
 import { acquireLease, releaseLease, freshAuth, sessionOf, supaGet, inList } from './game.js';
-import { gameFetch, GAME_ORIGIN, pendingTradeCards, pendingSince } from './trades.js';
+import { gameFetch, GAME_ORIGIN } from './trades.js';
 import { readCollection } from './refresh.js';
 
 const ID = /^[A-Za-z0-9_-]{1,100}$/;
@@ -13,10 +13,6 @@ const TTL = 10 * 60_000;
 const parse = (s) => { try { return JSON.parse(s); } catch { return null; } };
 const fail = (s) => { throw new HttpError(409, s); };
 const uncertain = 'Résultat de la défausse incertain : vérifie ta collection dans le jeu avant toute nouvelle sélection. Ce lot ne sera pas renvoyé.';
-
-export function lowQuote(q) {
-  return !!q && Number(q.n) >= 3 && q.p != null && Number.isFinite(Number(q.p)) && Number(q.p) >= 0 && Number(q.p) < 5;
-}
 
 async function withSession(env, user, run) {
   const lease = await acquireLease(env.DB, user.id, 120_000);
@@ -46,24 +42,16 @@ async function liveCopies(env, user, s, ids) {
 }
 
 async function checkCards(env, user, ids, copies) {
-  const db = env.DB;
-  const prefs = parse(user.prefs) || {};
-  const keep = prefs.keep || {};
-  const pending = await db.prepare(`SELECT (${pendingTradeCards('?1')}) AS ids`).bind(user.id, pendingSince()).first();
-  const blocked = new Set([...(Array.isArray(keep.cards) ? keep.cards : []), ...(parse(pending?.ids) || [])]);
-  const keptTags = new Set(Array.isArray(keep.tags) ? keep.tags : []);
-  const rows = (await db.prepare(`SELECT c.card_id, c.data, p.data AS quote,
-    (SELECT json_group_array(t.tag) FROM tags t WHERE t.user_id = c.user_id AND t.card_id = c.card_id) AS tags
-    FROM cards c LEFT JOIN prices p ON p.card_id = c.card_id
+  const rows = (await env.DB.prepare(`SELECT c.card_id, c.data FROM cards c
     WHERE c.user_id = ?1 AND c.card_id IN (SELECT value FROM json_each(?2))`).bind(user.id, JSON.stringify(ids)).all()).results;
   const cards = new Map(rows.map(r => [r.card_id, r]));
   for (const id of ids) {
-    const row = cards.get(id), card = parse(row?.data), quotes = parse(row?.quote);
-    if (!card || blocked.has(id) || (parse(row?.tags) || []).some(t => keptTags.has(t))) fail('Une carte est absente, exclue ou en attente d’échange. Retire-la de la sélection.');
+    const card = parse(cards.get(id)?.data);
+    if (!card) fail('Une carte est absente du classeur. Refais la sélection.');
     const owned = copies.filter(c => c.card === id);
     if (!owned.length || owned.some(c => !ID.test(c.id) || !Number.isSafeInteger(c.count) || c.count < 1
-      || c.starred !== false || !VARIANT.test(c.k) || !lowQuote(quotes?.[c.k]))) {
-      fail('Une carte est favorite, absente ou ne possède plus une cote fiable sous 5 W pour chacun de ses exemplaires. Refais la sélection.');
+      || !VARIANT.test(c.k))) {
+      fail('Les exemplaires d’une carte sont absents ou invalides. Refais la sélection.');
     }
   }
   return cards;
@@ -113,7 +101,7 @@ export async function executeDiscard(env, user, body) {
     await checkCards(env, now, ids, copies);
     for (const p of plan) {
       const c = copies.find(c => c.id === p.id);
-      if (!c || c.card !== p.card || c.count !== p.count || c.k !== p.k) fail('Les exemplaires ont changé depuis la confirmation. Refais la sélection.');
+      if (!c || c.card !== p.card || c.count !== p.count || c.k !== p.k || c.starred !== p.starred) fail('Les exemplaires ont changé depuis la confirmation. Refais la sélection.');
     }
     const claimed = await env.DB.prepare("UPDATE discard_batches SET status = 'sent' WHERE id = ?1 AND user_id = ?2 AND status = 'ready' RETURNING id")
       .bind(batch.id, now.id).first();
